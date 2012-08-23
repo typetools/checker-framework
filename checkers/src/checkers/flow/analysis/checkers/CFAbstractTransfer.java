@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
@@ -41,12 +40,8 @@ import checkers.flow.util.ContractsUtils;
 import checkers.flow.util.FlowExpressionParseUtil;
 import checkers.flow.util.FlowExpressionParseUtil.FlowExpressionContext;
 import checkers.flow.util.FlowExpressionParseUtil.FlowExpressionParseException;
-import checkers.quals.PreconditionAnnotation;
-import checkers.quals.RequiresAnnotation;
-import checkers.quals.RequiresAnnotations;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
-import checkers.util.AnnotationUtils;
 import checkers.util.ElementUtils;
 import checkers.util.InternalUtils;
 import checkers.util.Pair;
@@ -130,7 +125,8 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
             // add properties known through precondition
             CFGMethod method = (CFGMethod) underlyingAST;
             MethodTree methodTree = method.getMethod();
-            Element methodElem = TreeUtils.elementFromDeclaration(methodTree);
+            ExecutableElement methodElem = TreeUtils
+                    .elementFromDeclaration(methodTree);
             addInformationFromPreconditions(info, factory, method, methodTree,
                     methodElem);
 
@@ -162,88 +158,37 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
      */
     protected void addInformationFromPreconditions(S info,
             AnnotatedTypeFactory factory, CFGMethod method,
-            MethodTree methodTree, Element methodElem) {
+            MethodTree methodTree, ExecutableElement methodElement) {
+        ContractsUtils contracts = ContractsUtils.getInstance(analysis.factory);
+        FlowExpressionContext flowExprContext = null;
+        Set<Pair<String, String>> preconditions = contracts
+                .getPreconditions(methodElement);
 
-        // Process single preconditions.
-        AnnotationMirror requiresAnnotation = factory.getDeclAnnotation(
-                methodElem, RequiresAnnotation.class);
-        addInformationFromPrecondition(info, factory, method, methodTree,
-                requiresAnnotation);
+        for (Pair<String, String> p : preconditions) {
+            String expression = p.first;
+            AnnotationMirror annotation = analysis.getFactory()
+                    .annotationFromName(p.second);
 
-        // Process multiple preconditions.
-        AnnotationMirror requiresAnnotations = factory.getDeclAnnotation(
-                methodElem, RequiresAnnotations.class);
-        if (requiresAnnotations != null) {
-            List<AnnotationMirror> annotations = AnnotationUtils
-                    .elementValueArray(requiresAnnotations, "value");
-            for (AnnotationMirror a : annotations) {
-                addInformationFromPrecondition(info, factory, method,
-                        methodTree, a);
+            // Only check if the postcondition concerns this checker
+            if (!analysis.getFactory().getChecker()
+                    .isSupportedAnnotation(annotation)) {
+                continue;
             }
-        }
+            if (flowExprContext == null) {
+                FlowExpressionParseUtil.buildFlowExprContextForDeclaration(
+                        methodTree, method.getClassTree(),
+                        analysis.getFactory());
+            }
 
-        // Process type-system specific annotations.
-        Class<PreconditionAnnotation> metaAnnotation = PreconditionAnnotation.class;
-        List<Pair<AnnotationMirror, AnnotationMirror>> result = factory
-                .getDeclAnnotationWithMetaAnnotation(methodElem, metaAnnotation);
-        for (Pair<AnnotationMirror, AnnotationMirror> r : result) {
-            AnnotationMirror anno = r.first;
-            AnnotationMirror metaAnno = r.second;
-            List<String> expressions = AnnotationUtils.elementValueArray(anno,
-                    "value");
-            String annotation = AnnotationUtils.elementValueClassName(metaAnno,
-                    "annotation");
-            AnnotationMirror requiredAnnotation = factory
-                    .annotationFromName(annotation);
-            addInformationFromPrecondition(info, methodTree, expressions,
-                    requiredAnnotation, method);
-        }
-    }
-
-    /**
-     * Add the information from the precondition {@code requiresAnnotation} of
-     * the method {@code method} with corresponding tree {@code methodTree} to
-     * the store {@code info}.
-     */
-    protected void addInformationFromPrecondition(S info,
-            AnnotatedTypeFactory factory, CFGMethod method,
-            MethodTree methodTree, AnnotationMirror requiresAnnotation) {
-        if (requiresAnnotation != null) {
-            List<String> expressions = AnnotationUtils.elementValueArray(
-                    requiresAnnotation, "expression");
-            String annotation = AnnotationUtils.elementValueClassName(
-                    requiresAnnotation, "annotation");
-            AnnotationMirror anno = factory.annotationFromName(annotation);
-
-            addInformationFromPrecondition(info, methodTree, expressions, anno,
-                    method);
-        }
-    }
-
-    /**
-     * Add the information from the precondition with annotation {@code anno}
-     * and expressions {@code expressions} of the method {@code method} with
-     * corresponding tree {@code methodTree} to the store {@code info}.
-     */
-    protected void addInformationFromPrecondition(S info,
-            MethodTree methodTree, List<String> expressions,
-            AnnotationMirror anno, CFGMethod method) {
-
-        FlowExpressionContext flowExprContext = FlowExpressionParseUtil
-                .buildFlowExprContextForDeclaration(methodTree,
-                        method.getClassTree(), analysis.getFactory());
-
-        // store all expressions in the store
-        for (String stringExpr : expressions) {
             FlowExpressions.Receiver expr = null;
             try {
                 // TODO: currently, these expressions are parsed at the
                 // declaration (i.e. here) and for every use. this could
                 // be optimized to store the result the first time.
                 // (same for other annotations)
-                expr = FlowExpressionParseUtil.parse(stringExpr,
+                expr = FlowExpressionParseUtil.parse(expression,
                         flowExprContext, analysis.factory.getPath(methodTree));
-                info.insertValue(expr, anno);
+                info.insertValue(expr, annotation);
             } catch (FlowExpressionParseException e) {
                 // report errors here
                 analysis.checker.report(e.getResult(), methodTree);
