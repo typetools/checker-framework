@@ -538,15 +538,6 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
         }
 
         @Override
-        public Void visitTypeCast(TypeCastTree node, AnnotatedTypeMirror type) {
-            if (!type.isAnnotated()) {
-                AnnotatedTypeMirror exprType = getAnnotatedType(node.getExpression());
-                type.addAnnotations(exprType.getAnnotations());
-            }
-            return super.visitTypeCast(node, type);
-        }
-
-        @Override
         public Void visitMethod(MethodTree node, AnnotatedTypeMirror type) {
             // A constructor that invokes another constructor in the first
             // statement is nonnull by default, as all the fields
