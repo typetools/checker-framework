@@ -207,7 +207,7 @@ public class ContractsUtils {
             String annotationString = AnnotationUtils.elementValueClassName(
                     metaAnno, "annotation");
             boolean annoResult = AnnotationUtils.elementValue(metaAnno,
-                    "result", boolean.class);
+                    "result", Boolean.class);
             for (String expr : expressions) {
                 result.add(Pair.of(expr, Pair.of(annoResult, annotationString)));
             }
@@ -231,7 +231,7 @@ public class ContractsUtils {
         String annotation = AnnotationUtils.elementValueClassName(
                 ensuresAnnotationIf, "annotation");
         boolean annoResult = AnnotationUtils.elementValue(ensuresAnnotationIf,
-                "result", boolean.class);
+                "result", Boolean.class);
         for (String expr : expressions) {
             result.add(Pair.of(expr, Pair.of(annoResult, annotation)));
         }
