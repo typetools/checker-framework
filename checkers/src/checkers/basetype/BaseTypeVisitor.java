@@ -37,10 +37,7 @@ import checkers.igj.quals.Immutable;
 import checkers.igj.quals.ReadOnly;
 import checkers.nonnull.NonNullFbcChecker;
 import checkers.quals.DefaultQualifier;
-import checkers.quals.PreconditionAnnotation;
 import checkers.quals.Pure;
-import checkers.quals.RequiresAnnotation;
-import checkers.quals.RequiresAnnotations;
 import checkers.quals.Unused;
 import checkers.source.Result;
 import checkers.source.SourceVisitor;
@@ -384,6 +381,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                         .buildFlowExprContextForDeclaration(node,
                                 getCurrentPath(), atypeFactory);
             }
+
             FlowExpressions.Receiver expr = null;
             try {
                 // TODO: currently, these expressions are parsed at the
@@ -443,6 +441,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                         .buildFlowExprContextForDeclaration(node,
                                 getCurrentPath(), atypeFactory);
             }
+
             FlowExpressions.Receiver expr = null;
             try {
                 // TODO: currently, these expressions are parsed at the
@@ -496,89 +495,6 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                                 || inferredAnno.isNoInferredAnnotation()
                                 || !AnnotationUtils.areSame(
                                         inferredAnno.getAnnotation(), annotation)) {
-                            checker.report(
-                                    Result.failure("contracts.conditional.postcondition.not.satisfied"),
-                                    returnStmt.getTree());
-                        }
-                    }
-                }
-
-            } catch (FlowExpressionParseException e) {
-                // report errors here
-                checker.report(e.getResult(), node);
-            }
-        }
-    }
-
-    /**
-     * Checks a single conditional postcondition {@code ensuresAnnotationIf} on
-     * the method {@code node}, for a given annotation {@code annotation}.
-     */
-    protected void checkConditionalPostcondition(MethodTree node,
-            AnnotationMirror ensuresAnnotationIf, String annotation) {
-        List<String> expressions = AnnotationUtils.elementValueArray(
-                ensuresAnnotationIf, "expression");
-        boolean result = AnnotationUtils.elementValue(ensuresAnnotationIf,
-                "result", Boolean.class);
-        AnnotationMirror anno = atypeFactory.annotationFromName(annotation);
-        // Only check if the postcondition concerns this checker
-        if (!checker.isSupportedAnnotation(anno)) {
-            return;
-        }
-
-        FlowExpressionContext flowExprContext = FlowExpressionParseUtil
-                .buildFlowExprContextForDeclaration(node, getCurrentPath(),
-                        atypeFactory);
-
-        for (String stringExpr : expressions) {
-            FlowExpressions.Receiver expr = null;
-            try {
-                expr = FlowExpressionParseUtil.parse(stringExpr,
-                        flowExprContext, getCurrentPath());
-                checkFlowExprParameters(node, stringExpr);
-                // check return type of method
-                boolean booleanReturnType = TypesUtils
-                        .isBooleanType(InternalUtils.typeOf(node
-                                .getReturnType()));
-                if (!booleanReturnType) {
-                    checker.report(
-                            Result.failure("contracts.conditional.postcondition.invalid.returntype"),
-                            node);
-                    // No reason to go ahead with further checking. The
-                    // annotation is invalid.
-                    continue;
-                }
-
-                List<?> returnStatements = atypeFactory.getReturnStatementStores(node);
-                for (Object rt : returnStatements) {
-                    @SuppressWarnings("unchecked")
-                    Pair<ReturnNode, TransferResult<? extends CFAbstractValue<?>, ? extends CFAbstractStore<?, ?>>> r = (Pair<ReturnNode, TransferResult<? extends CFAbstractValue<?>, ? extends CFAbstractStore<?, ?>>>) rt;
-                    ReturnNode returnStmt = r.first;
-                    if (r.second == null) {
-                        // Unreachable return statements have no stores, but there
-                        // is no need to check them.
-                        continue;
-                    }
-                    Node retValNode = returnStmt.getResult();
-                    Boolean retVal = retValNode instanceof BooleanLiteralNode ? ((BooleanLiteralNode) retValNode)
-                            .getValue() : null;
-                    CFAbstractStore<?, ?> exitStore;
-                    if (result) {
-                        exitStore = r.second.getThenStore();
-                    } else {
-                        exitStore = r.second.getElseStore();
-                    }
-                    CFAbstractValue<?> value = exitStore.getValue(expr);
-                    // don't check if return statement certainly does not
-                    // match 'result'. at the moment, this means the result
-                    // is a boolean literal
-                    if (retVal == null || retVal == result) {
-                        InferredAnnotation inferredAnno = value == null ? null
-                                : value.getAnnotationInHierarchy(anno);
-                        if (inferredAnno == null
-                                || inferredAnno.isNoInferredAnnotation()
-                                || !AnnotationUtils.areSame(
-                                        inferredAnno.getAnnotation(), anno)) {
                             checker.report(
                                     Result.failure("contracts.conditional.postcondition.not.satisfied"),
                                     returnStmt.getTree());
@@ -721,88 +637,38 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
      */
     protected void checkPreconditions(MethodInvocationTree tree,
             ExecutableElement invokedMethodElement) {
-        // Check a single precondition.
-        AnnotationMirror requiresAnnotation = atypeFactory.getDeclAnnotation(
-                invokedMethodElement, RequiresAnnotation.class);
-        checkPrecondition(tree, requiresAnnotation);
+        Set<Pair<String, String>> preconditions = contractsUtils
+                .getPreconditions(invokedMethodElement);
+        FlowExpressionContext flowExprContext = null;
 
-        // Check multiple preconditions.
-        AnnotationMirror requiresAnnotations = atypeFactory.getDeclAnnotation(
-                invokedMethodElement, RequiresAnnotations.class);
-        if (requiresAnnotations != null) {
-            List<AnnotationMirror> annotations = AnnotationUtils
-                    .elementValueArray(requiresAnnotations, "value");
-            for (AnnotationMirror a : annotations) {
-                checkPrecondition(tree, a);
+        for (Pair<String, String> p : preconditions) {
+            String expression = p.first;
+            AnnotationMirror anno = atypeFactory.annotationFromName(p.second);
+
+            // Only check if the precondition concerns this checker
+            if (!checker.isSupportedAnnotation(anno)) {
+                return;
             }
-        }
+            if (flowExprContext == null) {
+                Node nodeNode = atypeFactory.getNodeForTree(tree);
+                flowExprContext = FlowExpressionParseUtil
+                        .buildFlowExprContextForUse(
+                                (MethodInvocationNode) nodeNode, atypeFactory);
+            }
 
-        // Check type-system specific annotations.
-        Class<PreconditionAnnotation> metaAnnotation = PreconditionAnnotation.class;
-        List<Pair<AnnotationMirror, AnnotationMirror>> result = atypeFactory.getDeclAnnotationWithMetaAnnotation(
-                invokedMethodElement, metaAnnotation);
-        for (Pair<AnnotationMirror, AnnotationMirror> r : result) {
-            AnnotationMirror anno = r.first;
-            AnnotationMirror metaAnno = r.second;
-            List<String> expressions = AnnotationUtils.elementValueArray(
-                    anno, "value");
-            String annotation = AnnotationUtils.elementValueClassName(
-                    metaAnno, "annotation");
-            AnnotationMirror requiredAnnotation = atypeFactory.annotationFromName(annotation);
-            checkPrecondition(tree, requiredAnnotation, expressions);
-        }
-    }
-
-    /**
-     * Checks the precondition {@code requiresAnnotation} of the method
-     * invocation {@code tree}.
-     */
-    protected void checkPrecondition(MethodInvocationTree tree,
-            /*@Nullable*/AnnotationMirror requiresAnnotation) {
-        if (requiresAnnotation != null) {
-            List<String> expressions = AnnotationUtils.elementValueArray(
-                    requiresAnnotation, "expression");
-            String annotation = AnnotationUtils.elementValueClassName(
-                    requiresAnnotation, "annotation");
-            AnnotationMirror anno = atypeFactory.annotationFromName(annotation);
-
-            checkPrecondition(tree, anno, expressions);
-        }
-    }
-
-    /**
-     * Checks the precondition of the method invocation {@code tree}, such that
-     * the {@code expressions} have the required annotation
-     * {@code requiredAnnotation}.
-     */
-    protected void checkPrecondition(MethodInvocationTree tree,
-            AnnotationMirror requiredAnnotation, List<String> expressions) {
-
-        // Only check if the precondition concerns this checker
-        if (!checker.isSupportedAnnotation(requiredAnnotation)) {
-            return;
-        }
-
-        Node nodeNode = atypeFactory.getNodeForTree(tree);
-        FlowExpressionContext flowExprContext = FlowExpressionParseUtil
-                .buildFlowExprContextForUse((MethodInvocationNode) nodeNode,
-                        atypeFactory);
-
-        for (String stringExpr : expressions) {
             FlowExpressions.Receiver expr = null;
             try {
-                expr = FlowExpressionParseUtil.parse(stringExpr,
+                expr = FlowExpressionParseUtil.parse(expression,
                         flowExprContext, getCurrentPath());
 
                 CFAbstractStore<?, ?> store = atypeFactory.getStoreBefore(tree);
                 CFAbstractValue<?> value = store.getValue(expr);
                 InferredAnnotation inferredAnno = value == null ? null : value
-                        .getAnnotationInHierarchy(requiredAnnotation);
+                        .getAnnotationInHierarchy(anno);
                 if (inferredAnno == null
                         || inferredAnno.isNoInferredAnnotation()
                         || !AnnotationUtils.areSame(
-                                inferredAnno.getAnnotation(),
-                                requiredAnnotation)) {
+                                inferredAnno.getAnnotation(), anno)) {
                     checker.report(Result
                             .failure("contracts.precondition.not.satisfied"),
                             tree);
