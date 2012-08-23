@@ -36,10 +36,7 @@ import checkers.flow.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import checkers.igj.quals.Immutable;
 import checkers.igj.quals.ReadOnly;
 import checkers.nonnull.NonNullFbcChecker;
-import checkers.quals.ConditionalPostconditionAnnotation;
 import checkers.quals.DefaultQualifier;
-import checkers.quals.EnsuresAnnotationIf;
-import checkers.quals.EnsuresAnnotationsIf;
 import checkers.quals.PreconditionAnnotation;
 import checkers.quals.Pure;
 import checkers.quals.RequiresAnnotation;
@@ -429,45 +426,87 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
      */
     protected void checkConditionalPostconditions(MethodTree node,
             ExecutableElement methodElement) {
-        // Check for a single contract.
-        AnnotationMirror ensuresAnnotationIf = atypeFactory.getDeclAnnotation(
-                methodElement, EnsuresAnnotationIf.class);
-        checkConditionalPostcondition(node, ensuresAnnotationIf);
+        FlowExpressionContext flowExprContext = null;
+        Set<Pair<String, Pair<Boolean, String>>> conditionalPostconditions = contractsUtils.getConditionalPostconditions(methodElement);
 
-        // Check for multiple contracts.
-        AnnotationMirror ensuresAnnotationsIf = atypeFactory.getDeclAnnotation(
-                methodElement, EnsuresAnnotationsIf.class);
-        if (ensuresAnnotationsIf != null) {
-            List<AnnotationMirror> annotations = AnnotationUtils
-                    .elementValueArray(ensuresAnnotationsIf, "value");
-            for (AnnotationMirror a : annotations) {
-                checkConditionalPostcondition(node, a);
+        for (Pair<String, Pair<Boolean, String>> p : conditionalPostconditions) {
+            String expression = p.first;
+            boolean result = p.second.first;
+            AnnotationMirror annotation = atypeFactory.annotationFromName(p.second.second);
+
+            // Only check if the postcondition concerns this checker
+            if (!checker.isSupportedAnnotation(annotation)) {
+                continue;
             }
-        }
+            if (flowExprContext == null) {
+                flowExprContext = FlowExpressionParseUtil
+                        .buildFlowExprContextForDeclaration(node,
+                                getCurrentPath(), atypeFactory);
+            }
+            FlowExpressions.Receiver expr = null;
+            try {
+                // TODO: currently, these expressions are parsed at the
+                // declaration (i.e. here) and for every use. this could be
+                // optimized to store the result the first time. (same for
+                // other annotations)
+                expr = FlowExpressionParseUtil.parse(expression,
+                        flowExprContext, getCurrentPath());
+                checkFlowExprParameters(node, expression);
 
-        // Check type-system specific annotations.
-        Class<ConditionalPostconditionAnnotation> metaAnnotation = ConditionalPostconditionAnnotation.class;
-        List<Pair<AnnotationMirror, AnnotationMirror>> result = atypeFactory.getDeclAnnotationWithMetaAnnotation(
-                methodElement, metaAnnotation);
-        for (Pair<AnnotationMirror, AnnotationMirror> r : result) {
-            AnnotationMirror anno = r.first;
-            AnnotationMirror metaAnno = r.second;
-            String annotationString = AnnotationUtils.elementValueClassName(
-                    metaAnno, "annotation");
-            checkConditionalPostcondition(node, anno, annotationString);
-        }
-    }
+             // check return type of method
+                boolean booleanReturnType = TypesUtils
+                        .isBooleanType(InternalUtils.typeOf(node
+                                .getReturnType()));
+                if (!booleanReturnType) {
+                    checker.report(
+                            Result.failure("contracts.conditional.postcondition.invalid.returntype"),
+                            node);
+                    // No reason to go ahead with further checking. The
+                    // annotation is invalid.
+                    continue;
+                }
 
-    /**
-     * Checks a single conditional postcondition {@code ensuresAnnotationIf} on
-     * the method {@code node}.
-     */
-    protected void checkConditionalPostcondition(MethodTree node,
-            AnnotationMirror ensuresAnnotationIf) {
-        if (ensuresAnnotationIf != null) {
-            String annotation = AnnotationUtils.elementValueClassName(
-                    ensuresAnnotationIf, "annotation");
-            checkConditionalPostcondition(node, ensuresAnnotationIf, annotation);
+                List<?> returnStatements = atypeFactory.getReturnStatementStores(node);
+                for (Object rt : returnStatements) {
+                    @SuppressWarnings("unchecked")
+                    Pair<ReturnNode, TransferResult<? extends CFAbstractValue<?>, ? extends CFAbstractStore<?, ?>>> r = (Pair<ReturnNode, TransferResult<? extends CFAbstractValue<?>, ? extends CFAbstractStore<?, ?>>>) rt;
+                    ReturnNode returnStmt = r.first;
+                    if (r.second == null) {
+                        // Unreachable return statements have no stores, but there
+                        // is no need to check them.
+                        continue;
+                    }
+                    Node retValNode = returnStmt.getResult();
+                    Boolean retVal = retValNode instanceof BooleanLiteralNode ? ((BooleanLiteralNode) retValNode)
+                            .getValue() : null;
+                    CFAbstractStore<?, ?> exitStore;
+                    if (result) {
+                        exitStore = r.second.getThenStore();
+                    } else {
+                        exitStore = r.second.getElseStore();
+                    }
+                    CFAbstractValue<?> value = exitStore.getValue(expr);
+                    // don't check if return statement certainly does not
+                    // match 'result'. at the moment, this means the result
+                    // is a boolean literal
+                    if (retVal == null || retVal == result) {
+                        InferredAnnotation inferredAnno = value == null ? null
+                                : value.getAnnotationInHierarchy(annotation);
+                        if (inferredAnno == null
+                                || inferredAnno.isNoInferredAnnotation()
+                                || !AnnotationUtils.areSame(
+                                        inferredAnno.getAnnotation(), annotation)) {
+                            checker.report(
+                                    Result.failure("contracts.conditional.postcondition.not.satisfied"),
+                                    returnStmt.getTree());
+                        }
+                    }
+                }
+
+            } catch (FlowExpressionParseException e) {
+                // report errors here
+                checker.report(e.getResult(), node);
+            }
         }
     }
 
