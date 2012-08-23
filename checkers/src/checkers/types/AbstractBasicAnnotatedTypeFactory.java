@@ -425,7 +425,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
             List<Pair<VariableElement, Value>> fieldValues) {
         CFGBuilder builder = new CFCFGBuilder(checker);
         ControlFlowGraph cfg = builder.run(this, root, env, ast);
-        FlowAnalysis newAnalysis = createFlowAnalysis(checker, fieldValues);
+        FlowAnalysis newAnalysis = createFlowAnalysis(getChecker(), fieldValues);
         analyses.addFirst(newAnalysis);
         analyses.getFirst().performAnalysis(cfg);
         AnalysisResult<Value, Store> result = analyses.getFirst().getResult();
@@ -583,5 +583,9 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
         AnnotatedExecutableType method = mfuPair.first;
         poly.annotate(tree, method);
         return mfuPair;
+    }
+
+    public Checker getChecker() {
+        return checker;
     }
 }
