@@ -33,6 +33,13 @@ import com.sun.source.util.SimpleTreeVisitor;
  * <p>
  *
  * {@link TreeAnnotator} does not traverse trees deeply by default.
+ *
+ * This class takes care of three of the attributes of {@link ImplicitFor};
+ * the others are handled in {@link TypeAnnotator}.
+ * TODO: we currently don't check that any attribute is set, that is, a qualifier
+ * could be annotated as @ImplicitFor(), which might be misleading.
+ *
+ * @see TypeAnnotator
  */
 public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> {
 
@@ -68,8 +75,7 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
         AnnotationUtils annoFactory = AnnotationUtils.getInstance(checker.getProcessingEnvironment());
 
         // Get type qualifiers from the checker.
-        Set<Class<? extends Annotation>> quals
-            = checker.getSupportedTypeQualifiers();
+        Set<Class<? extends Annotation>> quals = checker.getSupportedTypeQualifiers();
 
         // For each qualifier, read the @ImplicitFor annotation and put its tree
         // classes and kinds into maps.
@@ -306,4 +312,25 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
         }
         return super.visitConditionalExpression(node, type);
     }*/
+
+    @Override
+    public Void visitTypeCast(TypeCastTree node, AnnotatedTypeMirror type) {
+        if (!type.isAnnotated()) {
+            AnnotatedTypeMirror exprType = typeFactory.getAnnotatedType(node.getExpression());
+            if (type.getKind() == TypeKind.TYPEVAR ) {
+                if (exprType.getKind() == TypeKind.TYPEVAR) {
+                    // If both types are type variables, take the direct annotations.
+                    type.addAnnotations(exprType.getAnnotations());
+                }
+                // else do nothing
+                // TODO: What should we do if the type is a type variable, but the expression
+                // is not?
+            } else {
+                // Use effective annotations from the expression, to get upper bound
+                // of type variables.
+                type.addAnnotations(exprType.getEffectiveAnnotations());
+            }
+        }
+        return super.visitTypeCast(node, type);
+    }
 }
