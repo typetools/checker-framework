@@ -6,6 +6,7 @@ User-visible framework improvements:
   Improvements to QualifierHierarchy construction.
   TreeAnnotator propagates the least-upper-bound of the operands of
     binary/compound operations, instead of taking the default qualifier.
+  Maven plugin now works.
 
 Internal framework improvements:
   Enable assertion checking.
