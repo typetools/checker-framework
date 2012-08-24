@@ -20,11 +20,14 @@ import java.util.List;
 import java.util.Set;
 
 /**
+ * A set of utility methods to find the necessary JSR308 jars and to resolve any sources/classes needed
+ * for compilation and checking
  * @author Adam Warski (adam at warski dot org)
  */
 public class PathUtils {
 	private final static String CHECKERS_GROUPD_ID = "types.checkers";
 	private final static String CHECKERS_ARTIFACT_ID = "jsr308-all";
+    private final static String DEFAULT_INCLUSION_PATTERN = "**/*.java";
 
 	/**
 	 * Gets the path to the jsr308-all jar.
@@ -36,10 +39,10 @@ public class PathUtils {
 	 * @return Path to the jsr308-all jar.
 	 * @throws MojoExecutionException
 	 */
-	public static String getCheckersJar(String checkersVersion, ArtifactFactory artifactFactory,
-										ArtifactResolver artifactResolver, List<?> remoteArtifactRepositories,
-										ArtifactRepository localRepository) throws MojoExecutionException {
-		Artifact checkersArtifact;
+	public static String getCheckersJar(final String checkersVersion, final ArtifactFactory artifactFactory,
+										final ArtifactResolver artifactResolver, final List<?> remoteArtifactRepositories,
+										final ArtifactRepository localRepository) throws MojoExecutionException {
+		final Artifact checkersArtifact;
 		try {
 			checkersArtifact = artifactFactory.createExtensionArtifact(CHECKERS_GROUPD_ID, CHECKERS_ARTIFACT_ID,
 					VersionRange.createFromVersionSpec(checkersVersion));
@@ -65,12 +68,12 @@ public class PathUtils {
 	 * @param session Dependency.
 	 * @return Path to the executable.
 	 */
-	public static String getExecutablePath(String executable, ToolchainManager toolchainManager, MavenSession session) {
-		File execFile = new File(executable);
+	public static String getExecutablePath(String executable, final ToolchainManager toolchainManager, final MavenSession session) {
+		final File execFile = new File(executable);
 		if (execFile.exists()) {
 			return execFile.getAbsolutePath();
 		} else {
-			Toolchain tc = toolchainManager.getToolchainFromBuildContext("jdk", session);
+			final Toolchain tc = toolchainManager.getToolchainFromBuildContext("jdk", session);
 
 			if (tc != null) {
 				executable = tc.findTool(executable);
@@ -83,23 +86,25 @@ public class PathUtils {
 	/**
 	 * Scans the given compile source roots for sources, taking into account the given includes and excludes.
 	 * @param compileSourceRoots A list of source roots. 
-	 * @param sourceIncludes Includes specification.
+	 * @param sourceIncludes Includes specification.  Defaults to DEFAULT_INCLUSION_PATTERN if no sourceIncludes are
+     *                       specified
 	 * @param sourceExcludes Excludes specification.
 	 * @return A list of included sources from the given source roots.
 	 */
-	public static List<String> scanForSources(List<?> compileSourceRoots, Set<String> sourceIncludes, Set<String> sourceExcludes) {
+	public static List<String> scanForSources(final List<?> compileSourceRoots, final Set<String> sourceIncludes,
+                                              final Set<String> sourceExcludes) {
 		if (sourceIncludes.isEmpty()) {
-			sourceIncludes.add("**/*.java");
+			sourceIncludes.add(DEFAULT_INCLUSION_PATTERN);
 		}
 
-		List<String> sources = new ArrayList<String>();
+		final List<String> sources = new ArrayList<String>();
 
 		for (Object compileSourceRoot : compileSourceRoots) {
-			File compileSourceRootFile = new File(compileSourceRoot.toString());
-			String[] sourcesFromSourceRoot =
+			final File compileSourceRootFile = new File(compileSourceRoot.toString());
+			final String[] sourcesFromSourceRoot =
 					scanForSources(compileSourceRootFile, sourceIncludes, sourceExcludes);
 
-			for (String sourceFromSourceRoot : sourcesFromSourceRoot) {
+			for (final String sourceFromSourceRoot : sourcesFromSourceRoot) {
 				sources.add(new File(compileSourceRootFile, sourceFromSourceRoot).getAbsolutePath());
 			}
 		}
@@ -107,8 +112,17 @@ public class PathUtils {
 		return sources;
 	}
 
-	private static String[] scanForSources(File sourceDir, Set<String> sourceIncludes, Set<String> sourceExcludes) {
-		DirectoryScanner ds = new DirectoryScanner();
+    /**
+     * Scans a single source dir for sources and includes only the files whose name match the patterns in
+     * sourceIncludes and excludes all files whose names match the patterns in sourceExcludes
+     * @param sourceDir The directory to scan
+     * @param sourceIncludes Only include a file if its name matches a pattern in sourceIncludes
+     * @param sourceExcludes Exclude a file if its name matches a pattern in sourceExcludes
+     * @return A set of filepath strings
+     */
+	private static String[] scanForSources(final File sourceDir, final Set<String> sourceIncludes,
+                                           final Set<String> sourceExcludes) {
+		final DirectoryScanner ds = new DirectoryScanner();
 		ds.setFollowSymlinks( true );
 		ds.setBasedir( sourceDir );
 
