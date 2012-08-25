@@ -175,9 +175,9 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
                 continue;
             }
             if (flowExprContext == null) {
-                FlowExpressionParseUtil.buildFlowExprContextForDeclaration(
-                        methodTree, method.getClassTree(),
-                        analysis.getFactory());
+                flowExprContext = FlowExpressionParseUtil
+                        .buildFlowExprContextForDeclaration(methodTree,
+                                method.getClassTree(), analysis.getFactory());
             }
 
             FlowExpressions.Receiver expr = null;
