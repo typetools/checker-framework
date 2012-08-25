@@ -23,6 +23,7 @@ import checkers.quals.Unqualified;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.util.*;
 
+import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
@@ -220,9 +221,15 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
     }
 
     @Override
-    public AnnotatedTypeMirror getDefaultedAnnotatedType(VariableTree tree) {
-        AnnotatedTypeMirror res = this.fromMember(tree);
-        this.annotateImplicit(tree.getType(), res, false);
+    public AnnotatedTypeMirror getDefaultedAnnotatedType(Tree tree) {
+        AnnotatedTypeMirror res = null;
+        if (tree instanceof VariableTree) {
+            res = this.fromMember(tree);
+            this.annotateImplicit(((VariableTree)tree).getType(), res, false);
+        } else if (tree instanceof AssignmentTree) {
+            res = this.fromExpression(((AssignmentTree) tree).getVariable());
+            this.annotateImplicit((AssignmentTree) tree, res, false);
+        }
         return res;
     }
 
