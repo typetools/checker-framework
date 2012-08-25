@@ -30,9 +30,15 @@ import checkers.util.AnnotationUtils;
  * {@link TypeAnnotator} traverses types deeply by default, except that it skips
  * the method receiver of executable types (for interoperability with
  * {@link AnnotatedTypeFactory#annotateInheritedFromClass(AnnotatedTypeMirror)}).
+ *
+ * This class takes care of two of the attributes of {@link ImplicitFor};
+ * the others are handled in {@link TreeAnnotator}.
+ *
+ * @see TreeAnnotator
  */
 public class TypeAnnotator extends AnnotatedTypeScanner<Void, ElementKind> {
 
+    // TODO: like in TreeAnnotator, these should be maps to Set<AM>.
     private final Map<TypeKind, AnnotationMirror> typeKinds;
     private final Map<Class<?>, AnnotationMirror> typeClasses;
 
@@ -51,8 +57,7 @@ public class TypeAnnotator extends AnnotatedTypeScanner<Void, ElementKind> {
         AnnotationUtils annoFactory = AnnotationUtils.getInstance(checker.getProcessingEnvironment());
 
         // Get type qualifiers from the checker.
-        Set<Class<? extends Annotation>> quals
-            = checker.getSupportedTypeQualifiers();
+        Set<Class<? extends Annotation>> quals = checker.getSupportedTypeQualifiers();
 
         // For each qualifier, read the @ImplicitFor annotation and put its type
         // classes and kinds into maps.
