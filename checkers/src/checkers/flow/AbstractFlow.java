@@ -149,7 +149,7 @@ implements Flow {
         this.root = root;
 
         if (factory == null) {
-            this.factory = new AnnotatedTypeFactory(checker, root);
+            this.factory = new GeneralAnnotatedTypeFactory(checker, root);
         } else {
             this.factory = factory;
         }

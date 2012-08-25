@@ -2,6 +2,7 @@ package tests.util;
 
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
+import javax.lang.model.element.AnnotationMirror;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.quals.Bottom;
@@ -28,6 +29,16 @@ import com.sun.source.tree.CompilationUnitTree;
 @TypeQualifiers({ Odd.class, MonotonicOdd.class, Even.class, Unqualified.class,
         Bottom.class })
 public final class TestChecker extends BaseTypeChecker {
+
+    protected AnnotationMirror BOTTOM;
+
+    @Override
+    public void initChecker(ProcessingEnvironment env) {
+        AnnotationUtils annoFactory = AnnotationUtils.getInstance(env);
+        BOTTOM = annoFactory.fromClass(Bottom.class);
+        super.initChecker(env);
+    }
+
     @Override
     public AnnotatedTypeFactory createFactory(CompilationUnitTree tree) {
         return new BasicAnnotatedTypeFactory<TestChecker>(this, tree, false);
@@ -35,7 +46,6 @@ public final class TestChecker extends BaseTypeChecker {
 
     @Override
     public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
-        return new GraphQualifierHierarchy(factory, AnnotationUtils
-                .getInstance(env).fromClass(Bottom.class));
+        return new GraphQualifierHierarchy(factory, BOTTOM);
     }
 }

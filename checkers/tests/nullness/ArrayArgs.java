@@ -22,10 +22,12 @@ public class ArrayArgs {
         //:: error: (assignment.type.incompatible)
         @NonNull String[] s4 = new String[3];
 
-        // TODO:  uncomment when issue 25 is fixed
-        // String[] s5 = new String[] { "hello", "goodbye" };
-        // test(s5);
-        // @NonNull String[] s6 = new String[] { "hello", "goodbye" };
-        // test(s6);
+        // TODO: when issue 25 is fixed, the following is safe
+        // and no error needs to be raised.
+        String[] s5 = new String[] { "hello", "goodbye" };
+        //:: error: (argument.type.incompatible)
+        test(s5);
+        @NonNull String[] s6 = new String[] { "hello", "goodbye" };
+        test(s6);
     }
 }

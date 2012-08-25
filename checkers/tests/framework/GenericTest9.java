@@ -64,10 +64,7 @@ class GenericTest9 {
     <E> Comparator4<? super E> reverseComparator4(Comparator4<? super E> comparator) {
         // Making the method type argument explicit:
         //   from4(comparator).<E>reverse();
-        // should have the same result.
-        // TODO: we currently don't handle that this is a capture of the same wildcard (?)
-        // At least the compiler isn't crashing any more and we're returning a false positive.
-        //:: error: (type.argument.type.incompatible)
+        // has the same result.
         from4(comparator).<E>reverse();
         return from4(comparator).reverse();
     }

@@ -16,6 +16,7 @@ import checkers.source.SourceVisitor;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import checkers.types.GeneralAnnotatedTypeFactory;
 import checkers.util.TreeUtils;
 
 import com.sun.source.tree.ClassTree;
@@ -101,11 +102,15 @@ public class TypeOutputtingChecker extends SourceChecker {
     }
 
     public static void main(String[] args) {
+        new TypeOutputtingChecker().run(args);
+    }
+
+    public void run(String[] args) {
         ProcessingEnvironment env =
             new JavacProcessingEnvironment(new Context(), Collections.<Processor>emptyList());
         Elements elements = env.getElementUtils();
 
-        AnnotatedTypeFactory atypeFactory = new AnnotatedTypeFactory(env, null, null, null);
+        AnnotatedTypeFactory atypeFactory = new GeneralAnnotatedTypeFactory(this, null);
 
         for (String className : args) {
             TypeElement typeElt = elements.getTypeElement(className);

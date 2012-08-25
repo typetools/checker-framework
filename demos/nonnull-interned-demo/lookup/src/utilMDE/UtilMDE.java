@@ -1119,7 +1119,7 @@ public final class UtilMDE {
         argnames = split(all_argnames, ',');
       }
 
-      argclasses = new Class<?>[argnames.length];
+      @Nullable Class<?>[] newargclasses = new Class<?>[argnames.length];
       for (int i=0; i<argnames.length; i++) {
         String argname = argnames[i].trim();
         int numbrackets = 0;
@@ -1135,8 +1135,11 @@ public final class UtilMDE {
           }
         }
         // System.out.println("argname " + i + " = " + argname + " for method " + method);
-        argclasses[i] = classForName(argname);
+        newargclasses[i] = classForName(argname);
       }
+      @SuppressWarnings("nullness") // array initialized
+      @NonNull Class<?>[] nnargclasses = newargclasses;
+      argclasses = nnargclasses;
       args_seen.put(all_argnames, argclasses);
     }
     return methodForName(classname, methodname, argclasses);

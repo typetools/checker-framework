@@ -5,8 +5,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.util.*;
 
 import javax.annotation.processing.ProcessingEnvironment;
@@ -15,7 +13,6 @@ import javax.lang.model.type.*;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
-import checkers.basetype.BaseTypeChecker;
 /*>>>
 import checkers.javari.quals.Mutable;
 import checkers.nullness.quals.Nullable;
@@ -68,7 +65,9 @@ public class AnnotatedTypeFactory {
     /** The {@link Trees} instance to use for tree node path finding. */
     protected final Trees trees;
 
-    /** optional! The AST of the source file being operated on */
+    /** Optional! The AST of the source file being operated on. */
+    // TODO: when should root be null? What are the use cases?
+    // None of the existing test checkers have a null root.
     protected final /*@Nullable*/ CompilationUnitTree root;
 
     /** The processing environment to use for accessing compiler internals. */
@@ -90,7 +89,7 @@ public class AnnotatedTypeFactory {
     final protected VisitorState visitorState;
 
     /** Represent the annotation relations. **/
-    protected final /*@Nullable*/ QualifierHierarchy qualHierarchy;
+    protected final QualifierHierarchy qualHierarchy;
 
     /** Types read from stub files (but not those from the annotated JDK jar file). */
     // Initially null, then assigned in postInit().  Caching is enabled as
@@ -107,7 +106,15 @@ public class AnnotatedTypeFactory {
     // Not final, because it is assigned in postInit().
     private Map<String, Set<AnnotationMirror>> indexDeclAnnos;
 
-    private final Class<? extends SourceChecker> checkerClass;
+    /**
+     * The Class that is used to look up annotation stub files.
+     * Stub files are located with the corresponding checker. This field has to be set
+     * to any of the classes in the directory of the checker.
+     * For example, for the Fenum Checker, to find the jdk.astub, provide the FenumChecker.class
+     * or any other class in that package.
+     * The field can be null; in that case, no annotation stub file will be loaded.
+     */
+    private final /*@Nullable*/ Class<?> resourceClass;
 
     /** @see #canHaveAnnotatedTypeParameters() */
     private final boolean annotatedTypeParams;
@@ -125,7 +132,10 @@ public class AnnotatedTypeFactory {
      */
     private final Map<String, Pair<AnnotationMirror, Set<String>>> declAliases = new HashMap<>();
 
+	/** Unique ID counter; for debugging purposes. */
     private static int uidCounter = 0;
+
+    /** Unique ID of the current object; for debugging purposes. */
     public final int uid;
 
     /**
@@ -136,27 +146,20 @@ public class AnnotatedTypeFactory {
      *
      * Root can be {@code null} if the factory does not operate on trees.
      *
+     * A subclass must call postInit at the end of its constructor.
+     *
      * @param checker the {@link SourceChecker} to which this factory belongs
      * @param root the root of the syntax tree that this factory produces
      *            annotated types for
      * @throws IllegalArgumentException if either argument is {@code null}
      */
-    public AnnotatedTypeFactory(SourceChecker checker, /*@Nullable*/ CompilationUnitTree root) {
-        this(checker.getProcessingEnvironment(),
-                (checker instanceof BaseTypeChecker) ? ((BaseTypeChecker)checker).getQualifierHierarchy() : null,
-                root,
-                checker == null ? null : checker.getClass());
-    }
-
-    /** A subclass must call postInit at the end of its constructor. */
-    public AnnotatedTypeFactory(ProcessingEnvironment env,
-                                /*@Nullable*/ QualifierHierarchy qualHierarchy,
-                                /*@Nullable*/ CompilationUnitTree root,
-                                Class<? extends SourceChecker> checkerClass) {
+    public AnnotatedTypeFactory(SourceChecker checker,
+            QualifierHierarchy qualHierarchy,
+            /*@Nullable*/ CompilationUnitTree root) {
         uid = ++uidCounter;
-        this.env = env;
+        this.env = checker.getProcessingEnvironment();
         this.root = root;
-        this.checkerClass = checkerClass;
+        this.resourceClass = checker.getClass();
         this.trees = Trees.instance(env);
         this.annotations = AnnotationUtils.getInstance(env);
         this.elements = env.getElementUtils();
@@ -164,7 +167,9 @@ public class AnnotatedTypeFactory {
         this.atypes = new AnnotatedTypes(env, this);
         this.visitorState = new VisitorState();
         this.qualHierarchy = qualHierarchy;
-        this.supportedQuals = getSupportedQualifiers();
+        if (qualHierarchy == null) {
+            SourceChecker.errorAbort("AnnotatedTypeFactory with null qualifier hierarchy not supported.");
+        }
         this.indexTypes = null; // will be set by postInit()
         this.indexDeclAnnos = null; // will be set by postInit()
         // TODO: why is the option not used?
@@ -344,7 +349,7 @@ public class AnnotatedTypeFactory {
      * which should have the "default" meaning, without flow inference.
      * TODO: describe and generalize
      */
-    public AnnotatedTypeMirror getDefaultedAnnotatedType(VariableTree tree) {
+    public AnnotatedTypeMirror getDefaultedAnnotatedType(Tree tree) {
         return null;
     }
 
@@ -1245,22 +1250,6 @@ public class AnnotatedTypeFactory {
     // Helper methods for this classes
     // **********************************************************************
 
-    /** Memoization for isRecognizedAnnotation(). set by the constructor */
-    private final Set<Name> supportedQuals;
-
-
-    /**
-     * Creates the set of the names of the recognized type qualifiers in the
-     * current checker.
-     *
-     * @return a set of the name of the recognized qualifier.
-     */
-    private Set<Name> getSupportedQualifiers() {
-        if (qualHierarchy != null)
-            return qualHierarchy.getTypeQualifiers();
-        return Collections.emptySet();
-    }
-
     /**
      * Determines whether the given annotation is a part of the type system
      * under which this type factory operates.
@@ -1270,15 +1259,8 @@ public class AnnotatedTypeFactory {
      *         this type factory operates, false otherwise
      */
     public boolean isSupportedQualifier(AnnotationMirror a) {
-        if (a!=null && supportedQuals.isEmpty()) {
-            // Only include with retention
-            // TODO: what is the logic behind this?? Why does Retention matter?
-            TypeElement elt = (TypeElement)a.getAnnotationType().asElement();
-            Retention retention = elt.getAnnotation(Retention.class);
-            return (retention == null) || retention.value() != RetentionPolicy.SOURCE;
-        }
         Name name = AnnotationUtils.annotationName(a);
-        return supportedQuals.contains(name);
+        return this.qualHierarchy.getTypeQualifiers().contains(name);
     }
 
     /** Add the annotation clazz as an alias for the annotation type. */
@@ -1658,8 +1640,8 @@ public class AnnotatedTypeFactory {
 
         if (!env.getOptions().containsKey("ignorejdkastub")) {
             InputStream in = null;
-            if (checkerClass != null)
-                in = checkerClass.getResourceAsStream("jdk.astub");
+            if (resourceClass != null)
+                in = resourceClass.getResourceAsStream("jdk.astub");
             if (in != null) {
                 StubParser stubParser = new StubParser("jdk.astub", in, this, env);
                 stubParser.parse(indexTypes, indexDeclAnnos);
@@ -1689,7 +1671,7 @@ public class AnnotatedTypeFactory {
             allstubFiles += File.pathSeparator + stubFiles;
 
         {
-            StubFiles sfanno = checkerClass.getAnnotation(StubFiles.class);
+            StubFiles sfanno = resourceClass.getAnnotation(StubFiles.class);
             if (sfanno!=null) {
                 String[] sfarr = sfanno.value();
                 stubFiles = "";
@@ -1717,8 +1699,8 @@ public class AnnotatedTypeFactory {
                 List<File> stubs = StubUtil.allStubFiles(stubPath);
                 if (stubs.size()==0) {
                     InputStream in = null;
-                    if (checkerClass != null)
-                        in = checkerClass.getResourceAsStream(stubPath);
+                    if (resourceClass != null)
+                        in = resourceClass.getResourceAsStream(stubPath);
                     if (in != null) {
                         StubParser stubParser = new StubParser(stubPath, in, this, env);
                         stubParser.parse(indexTypes, indexDeclAnnos);

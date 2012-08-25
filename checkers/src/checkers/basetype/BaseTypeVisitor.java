@@ -873,6 +873,20 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
         return null;
     }
 
+    /**
+     * If the computation of the type of the ConditionalExpressionTree in
+     * checkers.types.TypeFromTree.TypeFromExpression.visitConditionalExpression(ConditionalExpressionTree, AnnotatedTypeFactory)
+     * is correct, the following checks are redundant.
+     * However, let's add another failsafe guard and do the checks.
+     */
+    @Override
+    public Void visitConditionalExpression(ConditionalExpressionTree node, Void p) {
+        AnnotatedTypeMirror cond = atypeFactory.getAnnotatedType(node);
+        this.commonAssignmentCheck(cond, node.getTrueExpression(), "conditional.type.incompatible");
+        this.commonAssignmentCheck(cond, node.getFalseExpression(), "conditional.type.incompatible");
+        return super.visitConditionalExpression(node, p);
+    }
+
     // **********************************************************************
     // Check for illegal re-assignment
     // **********************************************************************
@@ -1071,6 +1085,17 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
     protected void commonAssignmentCheck(AnnotatedTypeMirror varType,
             AnnotatedTypeMirror valueType, Tree valueTree, /*@CompilerMessageKey*/ String errorKey) {
 
+        String valueTypeString = valueType.toString();
+        String varTypeString = varType.toString();
+        // If both types as strings are the same, try outputting
+        // the type including also invisible qualifiers.
+        // This usually means there is a mistake in type defaulting.
+        // This code is therefore not covered by a test.
+        if (valueTypeString.equals(varTypeString)) {
+            valueTypeString = valueType.toString(true);
+            varTypeString = varType.toString(true);
+        }
+
         if (options.containsKey("showchecks")) {
             long valuePos = positions.getStartPosition(root, valueTree);
             System.out.printf(
@@ -1078,8 +1103,8 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                     "About to test whether actual is a subtype of expected",
                     root.getLineMap().getLineNumber(valuePos),
                     valueTree.getKind(), valueTree,
-                    valueType.getKind(), valueType,
-                    varType.getKind(), varType);
+                    valueType.getKind(), valueTypeString,
+                    varType.getKind(), varTypeString);
         }
 
         boolean success = checker.isSubtype(valueType, varType);
@@ -1093,17 +1118,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
             }
         }
 
-        String valueTypeString = valueType.toString();
-        String varTypeString = varType.toString();
-        // In case of failure, if both types as strings are the same, try outputting
-        // the type including also invisible qualifiers.
-        // This usually means there is a mistake in type defaulting.
-        // This code is therefore not covered by a test.
-        if (!success && valueTypeString.equals(varTypeString)) {
-            valueTypeString = valueType.toString(true);
-            varTypeString = varType.toString(true);
-        }
-
+        if (options.containsKey("showchecks")) {
         if (options.containsKey("showchecks")) {
 
             long valuePos = positions.getStartPosition(root, valueTree);
@@ -1751,23 +1766,45 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
             // Keep in sync with visitWildcard
             Set<AnnotationMirror> onVar = type.getAnnotations();
             if (!onVar.isEmpty()) {
-                // System.out.printf("BaseTypeVisitor.TypeValidator.visitTypeVariable(type: %s, tree: %s)",
+                // System.out.printf("BaseTypeVisitor.TypeValidator.visitTypeVariable(type: %s, tree: %s)%n",
                 //         type, tree);
 
-                if (type.getUpperBoundField() != null) {
-                    Set<AnnotationMirror> onUpper = type.getUpperBound().getAnnotations();
-                    if (!checker.getQualifierHierarchy().isSubtype(onVar, onUpper)) {
+                {
+                    // Check whether multiple qualifiers from the same hierarchy appear.
+                    Set<AnnotationMirror> seenTops = AnnotationUtils.createAnnotationSet();
+                    for (AnnotationMirror aOnVar : onVar) {
+                        AnnotationMirror top = checker.getQualifierHierarchy().getTopAnnotation(aOnVar);
+                        if (seenTops.contains(top)) {
+                            this.reportError(type, tree);
+                        }
+                        seenTops.add(top);
+                    }
+                }
+
+                // TODO: because of the way AnnotatedTypeMirror fixes up the bounds,
+                // i.e. an annotation on the type variable always replaces a corresponding
+                // annotation in the bound, some of these checks are not actually meaningful.
+                if (type.getUpperBoundField()!=null) {
+                    AnnotatedTypeMirror upper = type.getUpperBoundField();
+                    for (AnnotationMirror aOnVar : onVar) {
+                        if (upper.isAnnotatedInHierarchy(aOnVar) &&
+                                !checker.getQualifierHierarchy().isSubtype(aOnVar, upper.getAnnotationInHierarchy(aOnVar))) {
                         this.reportError(type, tree);
                     }
+                }
+                    upper.replaceAnnotations(onVar);
                 }
 
                 if (type.getLowerBoundField() != null) {
-                    Set<AnnotationMirror> onLower = type.getLowerBound().getAnnotations();
-                    if (!onLower.isEmpty() &&
-                        !checker.getQualifierHierarchy().isSubtype(onLower, onVar)) {
+                    AnnotatedTypeMirror lower = type.getLowerBoundField();
+                    for (AnnotationMirror aOnVar : onVar) {
+                        if (lower.isAnnotatedInHierarchy(aOnVar) &&
+                            !checker.getQualifierHierarchy().isSubtype(lower.getAnnotationInHierarchy(aOnVar), aOnVar)) {
                         this.reportError(type, tree);
                     }
                 }
+                    lower.replaceAnnotations(onVar);
+            }
             }
 
             return super.visitTypeVariable(type, tree);
@@ -1781,20 +1818,40 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                 // System.out.printf("BaseTypeVisitor.TypeValidator.visitWildcard(type: %s, tree: %s)",
                 //         type, tree);
 
-                if (type.getExtendsBound() != null) {
-                    Set<AnnotationMirror> onUpper = type.getExtendsBound().getAnnotations();
-                    if (!checker.getQualifierHierarchy().isSubtype(onVar, onUpper)) {
+                {
+                    // Check whether multiple qualifiers from the same hierarchy appear.
+                    Set<AnnotationMirror> seenTops = AnnotationUtils.createAnnotationSet();
+                    for (AnnotationMirror aOnVar : onVar) {
+                        AnnotationMirror top = checker.getQualifierHierarchy().getTopAnnotation(aOnVar);
+                        if (seenTops.contains(top)) {
                         this.reportError(type, tree);
                     }
+                        seenTops.add(top);
+                }
                 }
 
-                if (type.getSuperBound() != null) {
-                    Set<AnnotationMirror> onLower = type.getSuperBound().getAnnotations();
-                    if (!onLower.isEmpty() &&
-                        !checker.getQualifierHierarchy().isSubtype(onLower, onVar)) {
+                if (type.getExtendsBoundField()!=null) {
+                    AnnotatedTypeMirror upper = type.getExtendsBoundField();
+                    for (AnnotationMirror aOnVar : onVar) {
+                        if (upper.isAnnotatedInHierarchy(aOnVar) &&
+                                !checker.getQualifierHierarchy().isSubtype(aOnVar, upper.getAnnotationInHierarchy(aOnVar))) {
                         this.reportError(type, tree);
                     }
                 }
+                    upper.replaceAnnotations(onVar);
+            }
+
+                if (type.getSuperBoundField()!=null) {
+                    AnnotatedTypeMirror lower = type.getSuperBoundField();
+                    for (AnnotationMirror aOnVar : onVar) {
+                        if (lower.isAnnotatedInHierarchy(aOnVar) &&
+                            !checker.getQualifierHierarchy().isSubtype(lower.getAnnotationInHierarchy(aOnVar), aOnVar)) {
+                            this.reportError(type, tree);
+                        }
+                    }
+                    lower.replaceAnnotations(onVar);
+                }
+
             }
             return super.visitWildcard(type, tree);
         }

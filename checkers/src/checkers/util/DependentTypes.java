@@ -1,6 +1,5 @@
 package checkers.util;
 
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.*;
 import javax.lang.model.type.*;
 
@@ -9,23 +8,25 @@ import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.model.JavacElements;
 
 import checkers.quals.Dependent;
-import checkers.types.AnnotatedTypeFactory;
+import checkers.source.SourceChecker;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
+import checkers.types.GeneralAnnotatedTypeFactory;
 
 public class DependentTypes {
-    private final AnnotatedTypeFactory factory;
+    private final GeneralAnnotatedTypeFactory factory;
     private final AnnotationUtils annoUtils;
 
-    public DependentTypes(ProcessingEnvironment env, CompilationUnitTree root) {
-        this.factory = new AnnotatedTypeFactory(env, null, root, null);
-        this.annoUtils = AnnotationUtils.getInstance(env);
+    public DependentTypes(SourceChecker checker, CompilationUnitTree root) {
+        this.factory = new GeneralAnnotatedTypeFactory(checker, root);
+        this.annoUtils = AnnotationUtils.getInstance(checker.getProcessingEnvironment());
     }
 
     AnnotationMirror getResult(Dependent anno) {
         try {
             anno.result();
         } catch (MirroredTypeException exp) {
+            // TODO: find nicer way to access Class annotation attributes.
             Name valName = TypesUtils.getQualifiedName((DeclaredType)exp.getTypeMirror());
             return annoUtils.fromName(valName);
         }
@@ -37,6 +38,7 @@ public class DependentTypes {
         try {
             anno.when();
         } catch (MirroredTypeException exp) {
+            // TODO: find nicer way to access Class annotation attributes.
             Name valName = TypesUtils.getQualifiedName((DeclaredType)exp.getTypeMirror());
             return annoUtils.fromName(valName);
         }
@@ -84,16 +86,12 @@ public class DependentTypes {
             doSubsitution(symbol, type, receiver);
     }
 
-    public void handleConstructor(NewClassTree tree, AnnotatedExecutableType type) {
-        if (!(tree.getIdentifier() instanceof AnnotatedTypeTree))
-            return;
-        AnnotatedTypeMirror dt = factory.getAnnotatedType(tree);
-
+    public void handleConstructor(NewClassTree tree, AnnotatedTypeMirror ctr, AnnotatedExecutableType type) {
         ExecutableElement constructorElt = InternalUtils.constructor(tree);
         for (int i = 0; i < constructorElt.getParameters().size(); ++i) {
             Element parameter = constructorElt.getParameters().get(i);
             AnnotatedTypeMirror paramType = type.getParameterTypes().get(i);
-            doSubsitution(parameter, paramType, dt);
+            doSubsitution(parameter, paramType, ctr);
         }
     }
 }
