@@ -113,6 +113,17 @@ public class ArrayCreationNullable {
         //:: error: (assignment.type.incompatible)
         @Nullable Object @NonNull [] @NonNull [] oaa = new Object[10][10];
         @Nullable Object @NonNull [] @Nullable [] oaa2 = new Object[10][10];
+
+        // new Object[10][10] has type @Nullable Object @NonNull[] @Nullable[]
+        //:: error: (type.invalid)
+        oaa2 = new Object @NonNull [10] @NonNull [10];
+
+        @LazyNonNull Object @NonNull [] @LazyNonNull [] oaa3 = new @LazyNonNull Object @NonNull [10] @LazyNonNull [10];
+        oaa3[0] = new @LazyNonNull Object[4];
+        //:: error: (assignment.type.incompatible)
+        oaa3[0] = null;
+        //:: error: (assignment.type.incompatible) :: error: (accessing.nullable)
+        oaa3[0][0] = null;
     }
 
     Object[] oa = new Object[] {new Object()};
