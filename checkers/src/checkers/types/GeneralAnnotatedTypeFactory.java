@@ -23,6 +23,7 @@ public class GeneralAnnotatedTypeFactory extends AnnotatedTypeFactory {
     /** Return true to support any qualifier.
       * No handling of aliases.
       */
+    @Override
     public boolean isSupportedQualifier(AnnotationMirror a) {
         return true;
     }

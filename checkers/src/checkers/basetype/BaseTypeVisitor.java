@@ -67,6 +67,7 @@ import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.CompoundAssignmentTree;
+import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
@@ -1087,6 +1088,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
 
         String valueTypeString = valueType.toString();
         String varTypeString = varType.toString();
+
         // If both types as strings are the same, try outputting
         // the type including also invisible qualifiers.
         // This usually means there is a mistake in type defaulting.
@@ -1118,7 +1120,6 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
             }
         }
 
-        if (options.containsKey("showchecks")) {
         if (options.containsKey("showchecks")) {
 
             long valuePos = positions.getStartPosition(root, valueTree);

@@ -80,7 +80,7 @@ public class JavariAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Javari
      */
     public JavariAnnotatedTypeFactory(JavariChecker checker,
         CompilationUnitTree root) {
-        super(checker, checker.getQualifierHierarchy(), root);
+        super(checker, root);
         this.treePre = new JavariTreePreAnnotator();
         this.typePost = new JavariTypePostAnnotator();
         this.READONLY = checker.READONLY;
