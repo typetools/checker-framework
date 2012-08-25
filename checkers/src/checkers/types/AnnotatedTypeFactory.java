@@ -322,7 +322,7 @@ public class AnnotatedTypeFactory {
      * which should have the "default" meaning, without flow inference.
      * TODO: describe and generalize
      */
-    public AnnotatedTypeMirror getDefaultedAnnotatedType(VariableTree tree) {
+    public AnnotatedTypeMirror getDefaultedAnnotatedType(Tree tree) {
         return null;
     }
 
