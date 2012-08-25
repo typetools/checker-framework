@@ -206,7 +206,7 @@ public class ContractsUtils {
                     "expression");
             String annotationString = AnnotationUtils.elementValueClassName(
                     metaAnno, "annotation");
-            boolean annoResult = AnnotationUtils.elementValue(metaAnno,
+            boolean annoResult = AnnotationUtils.elementValue(anno,
                     "result", Boolean.class);
             for (String expr : expressions) {
                 result.add(Pair.of(expr, Pair.of(annoResult, annotationString)));
