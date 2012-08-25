@@ -34,7 +34,6 @@ import checkers.flow.cfg.node.MethodInvocationNode;
 import checkers.flow.cfg.node.Node;
 import checkers.flow.cfg.node.NotEqualNode;
 import checkers.flow.cfg.node.TernaryExpressionNode;
-import checkers.flow.cfg.node.TypeCastNode;
 import checkers.flow.cfg.node.VariableDeclarationNode;
 import checkers.flow.util.ContractsUtils;
 import checkers.flow.util.FlowExpressionParseUtil;
@@ -547,18 +546,18 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
      * {@code @A}). However, if the inferred annotation of {@code e} is more
      * precise, we keep that one.
      */
-    @Override
-    public TransferResult<V, S> visitTypeCast(TypeCastNode n,
-            TransferInput<V, S> p) {
-        TransferResult<V, S> result = super.visitTypeCast(n, p);
-        V value = result.getResultValue();
-        V operandValue = p.getValueOfSubNode(n.getOperand());
-        // Normally we take the value of the type cast node. However, if the old
-        // flow-refined value was more precise, we keep that value.
-        V resultValue = moreSpecificValue(value, operandValue);
-        result.setResultValue(resultValue);
-        return result;
-    }
+//    @Override
+//    public TransferResult<V, S> visitTypeCast(TypeCastNode n,
+//            TransferInput<V, S> p) {
+//        TransferResult<V, S> result = super.visitTypeCast(n, p);
+//        V value = result.getResultValue();
+//        V operandValue = p.getValueOfSubNode(n.getOperand());
+//        // Normally we take the value of the type cast node. However, if the old
+//        // flow-refined value was more precise, we keep that value.
+//        V resultValue = moreSpecificValue(value, operandValue);
+//        result.setResultValue(resultValue);
+//        return result;
+//    }
 
     /**
      * Refine the operand of an instanceof check with more specific annotations
