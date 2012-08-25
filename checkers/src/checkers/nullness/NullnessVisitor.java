@@ -53,7 +53,7 @@ import com.sun.source.tree.*;
 public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
 
     /** The {@link NonNull} annotation */
-    private final AnnotationMirror NONNULL, NULLABLE, PRIMITIVE, RAW;
+    private final AnnotationMirror NONNULL, NULLABLE, LAZYNONNULL, PRIMITIVE, RAW;
     private final TypeMirror stringType;
 
     /**
@@ -66,6 +66,7 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
         super(checker, root);
         NONNULL = checker.NONNULL;
         NULLABLE = checker.NULLABLE;
+        LAZYNONNULL = checker.LAZYNONNULL;
         PRIMITIVE = checker.PRIMITIVE;
         RAW = ((NullnessAnnotatedTypeFactory)atypeFactory).RAW;
         stringType = elements.getTypeElement("java.lang.String").asType();
@@ -99,6 +100,7 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
         AnnotatedArrayType type = atypeFactory.getAnnotatedType(node);
         AnnotatedTypeMirror componentType = type.getComponentType();
         if (!componentType.hasAnnotation(NULLABLE) &&
+                !componentType.hasAnnotation(LAZYNONNULL) &&
                 !componentType.hasAnnotation(PRIMITIVE)) {
             if (!isNewArrayAllZeroDims(node)) {
                 checker.report(Result.failure("type.invalid",
