@@ -103,6 +103,18 @@ public class ArrayCreationNullable {
         objs = new Object[0];
     }
 
+    void testMultiDim() {
+        // new double[10][10] has type double @NonNull[] @Nullable[]
+        //:: error: (assignment.type.incompatible)
+        double @NonNull [] @NonNull [] daa = new double[10][10];
+        double @NonNull [] @Nullable [] daa2 = new double[10][10];
+
+        // new Object[10][10] has type @Nullable Object @NonNull[] @Nullable[]
+        //:: error: (assignment.type.incompatible)
+        @Nullable Object @NonNull [] @NonNull [] oaa = new Object[10][10];
+        @Nullable Object @NonNull [] @Nullable [] oaa2 = new Object[10][10];
+    }
+
     Object[] oa = new Object[] {new Object()};
     //:: error: (assignment.type.incompatible)
     Object[] oa2 = new Object[] {new Object(), null};
