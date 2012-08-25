@@ -13,9 +13,9 @@ import checkers.initialization.InitializationAnnotatedTypeFactory;
 import checkers.nonnull.quals.MonotonicNonNull;
 import checkers.nonnull.quals.NonNull;
 import checkers.nonnull.quals.Nullable;
-import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
+import checkers.types.GeneralAnnotatedTypeFactory;
 import checkers.types.TreeAnnotator;
 import checkers.types.TypeAnnotator;
 import checkers.util.ElementUtils;
@@ -42,6 +42,9 @@ public class NonNullAnnotatedTypeFactory
     protected final MapGetHeuristics mapGetHeuristics;
     protected final SystemGetPropertyHandler systemGetPropertyHandler;
     protected final CollectionToArrayHeuristics collectionToArrayHeuristics;
+
+    /** Factory for arbitrary qualifiers, used for declarations and "unused" qualifier. */
+    protected final GeneralAnnotatedTypeFactory generalFactory;
 
     public NonNullAnnotatedTypeFactory(AbstractNonNullChecker checker,
             CompilationUnitTree root) {
@@ -87,11 +90,10 @@ public class NonNullAnnotatedTypeFactory
                 org.netbeans.api.annotations.common.NullUnknown.class, NULLABLE);
         addAliasedAnnotation(org.jmlspecs.annotation.Nullable.class, NULLABLE);
 
-        // TODO: Tthese heuristics are just here temporarily. They all either
+        // TODO: These heuristics are just here temporarily. They all either
         // need to be replaced, or carefully checked for correctness.
-        AnnotatedTypeFactory mapGetFactory = new AnnotatedTypeFactory(
-                checker.getProcessingEnvironment(), null, root, null);
-        mapGetHeuristics = new MapGetHeuristics(env, this, mapGetFactory);
+        generalFactory = new GeneralAnnotatedTypeFactory(checker, root);
+        mapGetHeuristics = new MapGetHeuristics(env, this, generalFactory);
         systemGetPropertyHandler = new SystemGetPropertyHandler(env, this);
         // do this last, as it might use the factory again.
         this.collectionToArrayHeuristics = new CollectionToArrayHeuristics(env,

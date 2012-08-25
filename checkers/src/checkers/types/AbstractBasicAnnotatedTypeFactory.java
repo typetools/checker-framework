@@ -50,6 +50,7 @@ import checkers.util.QualifierDefaults;
 import checkers.util.QualifierPolymorphism;
 import checkers.util.TreeUtils;
 
+import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
@@ -108,7 +109,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
     // we alias a deprecated annotation to its replacement
     public AbstractBasicAnnotatedTypeFactory(Checker checker,
             CompilationUnitTree root, boolean useFlow) {
-        super(checker, root);
+        super(checker, checker.getQualifierHierarchy(), root);
         this.checker = checker;
         this.treeAnnotator = createTreeAnnotator(checker);
         this.typeAnnotator = createTypeAnnotator(checker);
@@ -471,6 +472,19 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
     }
 
     @Override
+    public AnnotatedTypeMirror getDefaultedAnnotatedType(Tree tree) {
+        AnnotatedTypeMirror res = null;
+        if (tree instanceof VariableTree) {
+            res = fromMember(tree);
+            annotateImplicit(((VariableTree) tree).getType(), res, false);
+        } else if (tree instanceof AssignmentTree) {
+            res = fromExpression(((AssignmentTree) tree).getVariable());
+            annotateImplicit((AssignmentTree) tree, res, false);
+        }
+        return res;
+    }
+
+    @Override
     public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> constructorFromUse(
             NewClassTree tree) {
         Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair = super
@@ -497,13 +511,6 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
     @Override
     protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type) {
         annotateImplicit(tree, type, this.useFlow);
-    }
-
-    @Override
-    public AnnotatedTypeMirror getDefaultedAnnotatedType(VariableTree tree) {
-        AnnotatedTypeMirror res = this.fromMember(tree);
-        this.annotateImplicit(tree.getType(), res, false);
-        return res;
     }
 
     protected void annotateImplicitWithFlow(Tree tree, AnnotatedTypeMirror type) {
@@ -540,7 +547,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
             as = flowResult.getValue(tree);
         }
         if (as != null) {
-            for (AnnotationMirror top : qualHierarchy.getTopAnnotations()) {
+            for (AnnotationMirror top : getQualifierHierarchy().getTopAnnotations()) {
                 InferredAnnotation inferredAnnotation = as.getAnnotation(top);
                 // Check that we actually inferred information.
                 if (inferredAnnotation != null) {
@@ -554,7 +561,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
                         AnnotationMirror inf = inferredAnnotation
                                 .getAnnotation();
                         if (present != null) {
-                            if (this.qualHierarchy.isSubtype(inf, present)) {
+                            if (getQualifierHierarchy().isSubtype(inf, present)) {
                                 // TODO: why is the above check needed?
                                 // Shouldn't inferred qualifiers always be
                                 // subtypes?

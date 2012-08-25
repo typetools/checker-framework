@@ -306,12 +306,6 @@ public abstract class InitializationChecker extends BaseTypeChecker {
         }
 
         @Override
-        public Set<AnnotationMirror> getAnnotations() {
-            assert false : "the set of annotations is very large and hard to compute";
-            return null;
-        }
-
-        @Override
         @SuppressWarnings({ "rawtypes", "unchecked" })
         public Set<Name> getTypeQualifiers() {
             if (typeQualifiers != null)
@@ -326,9 +320,8 @@ public abstract class InitializationChecker extends BaseTypeChecker {
                 names.add(AnnotationUtils.annotationName(anno));
             }
             // Add qualifiers from the child type system.
-            for (AnnotationMirror anno : childHierarchy.getAnnotations()) {
-                names.add(AnnotationUtils.annotationName(anno));
-            }
+            names.addAll(childHierarchy.getTypeQualifiers());
+
             typeQualifiers = names;
             return typeQualifiers;
         }
@@ -388,8 +381,12 @@ public abstract class InitializationChecker extends BaseTypeChecker {
          * Is the annotation {@code anno} part of the child type system?
          */
         protected boolean isChildAnnotation(AnnotationMirror anno) {
-            return AnnotationUtils.containsSame(
-                    childHierarchy.getAnnotations(), anno);
+            for (Name c : childHierarchy.getTypeQualifiers()) {
+                if (AnnotationUtils.areSameByName(anno, c.toString())) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         @Override
