@@ -34,7 +34,7 @@ public class NullnessSubchecker extends BaseTypeChecker {
     // TODO: This lint option should only be temporary, until all checks are implemented correctly.
     public static final boolean ADVANCEDCHECKS_DEFAULT = false;
 
-    protected AnnotationMirror NONNULL, NULLABLE, PRIMITIVE;
+    protected AnnotationMirror NONNULL, NULLABLE, LAZYNONNULL, PRIMITIVE;
 
     @Override
     public void initChecker(ProcessingEnvironment processingEnv) {
@@ -42,6 +42,7 @@ public class NullnessSubchecker extends BaseTypeChecker {
         AnnotationUtils annoFactory = AnnotationUtils.getInstance(env);
         NONNULL = annoFactory.fromClass(NonNull.class);
         NULLABLE = annoFactory.fromClass(Nullable.class);
+        LAZYNONNULL = annoFactory.fromClass(LazyNonNull.class);
         PRIMITIVE = annoFactory.fromClass(Primitive.class);
     }
 
