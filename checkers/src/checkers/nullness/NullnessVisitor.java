@@ -17,6 +17,7 @@ import checkers.nullness.quals.*;
 import checkers.quals.Unused;
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeMirror;
+import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
@@ -52,7 +53,7 @@ import com.sun.source.tree.*;
 public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
 
     /** The {@link NonNull} annotation */
-    private final AnnotationMirror NONNULL, PRIMITIVE, RAW;
+    private final AnnotationMirror NONNULL, NULLABLE, PRIMITIVE, RAW;
     private final TypeMirror stringType;
 
     /**
@@ -64,6 +65,7 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
     public NullnessVisitor(NullnessSubchecker checker, CompilationUnitTree root) {
         super(checker, root);
         NONNULL = checker.NONNULL;
+        NULLABLE = checker.NULLABLE;
         PRIMITIVE = checker.PRIMITIVE;
         RAW = ((NullnessAnnotatedTypeFactory)atypeFactory).RAW;
         stringType = elements.getTypeElement("java.lang.String").asType();
@@ -91,6 +93,44 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
         checkForNullability(node.getExpression(), "accessing.nullable");
         return super.visitArrayAccess(node, p);
     }
+
+    @Override
+    public Void visitNewArray(NewArrayTree node, Void p) {
+        AnnotatedArrayType type = atypeFactory.getAnnotatedType(node);
+        AnnotatedTypeMirror componentType = type.getComponentType();
+        if (!componentType.hasAnnotation(NULLABLE) &&
+                !componentType.hasAnnotation(PRIMITIVE)) {
+            if (!isNewArrayAllZeroDims(node)) {
+                checker.report(Result.failure("type.invalid",
+                        type.getAnnotations(), type.toString()), node);
+            }
+        }
+
+        return super.visitNewArray(node, p);
+    }
+
+    /** Determine whether all dimensions given in a new array expression
+     * have zero as length. For example "new Object[0][0];".
+     * Also true for empty dimensions, as in "new Object[] {...}".
+     */
+    /*package-visible*/ static boolean isNewArrayAllZeroDims(NewArrayTree node) {
+        boolean isAllZeros = true;
+        for (ExpressionTree dim : node.getDimensions()) {
+            if (dim instanceof LiteralTree) {
+                Object val = ((LiteralTree)dim).getValue();
+                if (!(val instanceof Number) ||
+                        !(new Integer(0).equals(((Number)val)))) {
+                    isAllZeros = false;
+                    break;
+                }
+            } else {
+                isAllZeros = false;
+                break;
+            }
+        }
+        return isAllZeros;
+    }
+
 
     /** Case 4: Check for thrown exception nullness */
     @Override
@@ -707,4 +747,12 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
         return super.isValidUse(type);
     }
 
+    /* In isValidUse we cannot distinguish between the type in an array creation,
+     * which has to be Nullable, and other array types. Therefore, we override
+     * visitNewArray.
+    @Override
+    public boolean isValidUse(AnnotatedArrayType type) {
+        return true;
+    }
+    */
 }

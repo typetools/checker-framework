@@ -29,7 +29,7 @@ class Ternary {
     }
 
     void array(boolean b) {
-        String[] s = b ? new String[5] : null;
+        String[] s = b ? new String[] {""} : null;
         //:: error: (dereference.of.nullable)
         s.toString();
     }
