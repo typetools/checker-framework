@@ -54,6 +54,12 @@ public class ArrayCreationNullable {
         (new Integer[] { 1, 2, 3 })[0].toString();
         //:: error: (dereference.of.nullable)
         (new Integer[] { 1, 2, 3, null })[0].toString();
+
+        // The assignment context is used to infer a @Nullable component type.
+        @Nullable Object [] objs4 = new Integer[] { 1, 2, 3 };
+        //:: error: (dereference.of.nullable)
+        objs4[0].toString();
+        objs4 = new Integer[] { 1, 2, 3 };
     }
 
     void testStringArray(@NonNull String @NonNull [] p) {
