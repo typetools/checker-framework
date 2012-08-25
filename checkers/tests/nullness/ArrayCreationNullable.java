@@ -97,6 +97,10 @@ public class ArrayCreationNullable {
         objs = new Object[0];
     }
 
+    Object[] oa = new Object[] {new Object()};
+    //:: error: (assignment.type.incompatible)
+    Object[] oa2 = new Object[] {new Object(), null};
+
     public static void main(String[] args) {
         ArrayCreationNullable e = new ArrayCreationNullable();
         Integer[] ints = new Integer[] { 5, 6 };

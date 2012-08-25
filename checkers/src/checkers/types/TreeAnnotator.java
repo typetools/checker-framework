@@ -241,6 +241,9 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
                         Tree t = treep.getParentPath().getLeaf();
                         while (t != context) {
                             treep = treep.getParentPath();
+                            if (treep == null) {
+                                break;
+                            }
                             t = treep.getLeaf();
                         }
                         if (treep.getLeaf() == ((AssignmentTree)context).getExpression()) {
