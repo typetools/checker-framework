@@ -16,7 +16,7 @@ class Ternary {
     }
 
     void m4(boolean b) {
-        String[] s = b ? new String[5] : null;
+        String[] s = b ? new String[] {""} : null;
     }
 
     void m5(boolean b) {
@@ -36,7 +36,7 @@ class Ternary {
     }
 
     void array(boolean b) {
-        String[] s = b ? new String[5] : null;
+        String[] s = b ? new String[] {""} : null;
     }
 
     void generic(boolean b, Generic<String> p) {
