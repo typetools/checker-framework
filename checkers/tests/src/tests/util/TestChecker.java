@@ -1,5 +1,6 @@
 package tests.util;
 
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;

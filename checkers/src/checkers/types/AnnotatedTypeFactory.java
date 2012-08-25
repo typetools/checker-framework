@@ -13,6 +13,7 @@ import javax.lang.model.type.*;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
+import checkers.basetype.BaseTypeChecker;
 /*>>>
 import checkers.javari.quals.Mutable;
 import checkers.nullness.quals.Nullable;
