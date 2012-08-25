@@ -7,6 +7,7 @@ import javax.lang.model.element.AnnotationMirror;
 import com.sun.source.tree.CompilationUnitTree;
 
 import checkers.basetype.BaseTypeChecker;
+import checkers.quals.Bottom;
 import checkers.quals.TypeQualifiers;
 import checkers.quals.Unqualified;
 import checkers.types.AnnotatedTypeFactory;
@@ -17,17 +18,17 @@ import checkers.util.GraphQualifierHierarchy;
 import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
-@TypeQualifiers( { Value.class, Odd.class, Unqualified.class } )
+@TypeQualifiers( { Value.class, Odd.class, Unqualified.class, Bottom.class } )
 public final class FlowTestChecker extends BaseTypeChecker {
 
-    protected AnnotationMirror VALUE;
+    protected AnnotationMirror VALUE, BOTTOM;
 
     @Override
     public void initChecker(ProcessingEnvironment env) {
-        super.initChecker(env);
-
         AnnotationUtils annoFactory = AnnotationUtils.getInstance(env);
         VALUE = annoFactory.fromClass(Value.class);
+        BOTTOM = annoFactory.fromClass(Bottom.class);
+        super.initChecker(env);
     }
 
     @Override
@@ -43,7 +44,7 @@ public final class FlowTestChecker extends BaseTypeChecker {
     private final class FlowQualifierHierarchy extends GraphQualifierHierarchy {
 
         public FlowQualifierHierarchy(MultiGraphFactory f) {
-            super(f, null);
+            super(f, BOTTOM);
         }
 
         @Override

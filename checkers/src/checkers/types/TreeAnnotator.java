@@ -19,6 +19,7 @@ import checkers.util.AnnotationUtils;
 import com.sun.source.tree.*;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.SimpleTreeVisitor;
+import com.sun.source.util.TreePath;
 
 
 /**
@@ -204,7 +205,10 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
 
     @Override
     public Void visitNewArray(NewArrayTree tree, AnnotatedTypeMirror type) {
-        if (tree.getType() == null) {
+        // System.out.printf("TreeAnnotator.visitNewArray(%s, %s)%n", tree, type);
+        if (tree.getInitializers() != null &&
+                tree.getInitializers().size() != 0) {
+            // We have initializers, either with or without an array type.
             Collection<AnnotationMirror> lubs = null;
 
             for (ExpressionTree init: tree.getInitializers()) {
@@ -223,12 +227,24 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
                     AnnotatedTypeMirror contextType = null;
                     if (context instanceof VariableTree) {
                         contextType = typeFactory.getDefaultedAnnotatedType((VariableTree)context);
-                    }
-                    if (context instanceof IdentifierTree) {
+                    } else if (context instanceof IdentifierTree) {
                         // Within annotations
                         contextType = typeFactory.getAnnotatedType(context);
                         if (contextType instanceof AnnotatedExecutableType) {
                             contextType = ((AnnotatedExecutableType)contextType).getReturnType();
+                        }
+                    } else if (context instanceof AssignmentTree) {
+                        // Within assignments:
+                        // ensure that the array is on the RHS of the assignment.
+                        // TODO: move something like this to TreeUtils?
+                        TreePath treep = TreePath.getPath(typeFactory.root, tree);
+                        Tree t = treep.getParentPath().getLeaf();
+                        while (t != context) {
+                            treep = treep.getParentPath();
+                            t = treep.getLeaf();
+                        }
+                        if (treep.getLeaf() == ((AssignmentTree)context).getExpression()) {
+                            contextType = typeFactory.getDefaultedAnnotatedType((AssignmentTree)context);
                         }
                     }
                     if (contextType!=null && contextType instanceof AnnotatedArrayType) {
@@ -238,10 +254,6 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
                                 if (!componentType.isAnnotatedInHierarchy(cct)) {
                                     componentType.addAnnotation(cct);
                                 }
-                            }
-
-                            if (!type.isAnnotated()) {
-                                type.addAnnotations(qualHierarchy.getBottomAnnotations());
                             }
                         } else {
                             // The type of the array initializers is incompatible with the
@@ -259,9 +271,6 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
                         if (!componentType.isAnnotatedInHierarchy(lub)) {
                             componentType.addAnnotation(lub);
                         }
-                    }
-                    if (!type.isAnnotated()) {
-                        type.addAnnotations(qualHierarchy.getBottomAnnotations());
                     }
                 }
             }
