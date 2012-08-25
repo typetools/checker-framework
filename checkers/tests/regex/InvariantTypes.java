@@ -21,8 +21,6 @@ public class InvariantTypes {
     unqm(new String[] {"a"});
     //TODOINVARR:: error: (argument.type.incompatible)
     unqm(new @Regex String[] {"a"});
-    // TODO: would we want the following to work?
-    //:: error: (argument.type.incompatible)
     rem(new String[] {"a"});
     rem(new @Regex String[] {"a"});
   }
