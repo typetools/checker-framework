@@ -2,14 +2,17 @@ package checkers.fenum;
 
 import java.util.Collections;
 
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.Tree;
+import javax.lang.model.element.AnnotationMirror;
 
 import checkers.fenum.quals.FenumTop;
 import checkers.fenum.quals.FenumUnqualified;
 import checkers.quals.DefaultLocation;
 import checkers.types.BasicAnnotatedTypeFactory;
 
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.CompoundAssignmentTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.Tree;
 
 public class FenumAnnotatedTypeFactory extends
         BasicAnnotatedTypeFactory<FenumChecker> {

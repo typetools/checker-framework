@@ -281,6 +281,10 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         return lhs.size()==valid;
     }
 
+    @Override
+    public Set<AnnotationMirror> getAnnotations() {
+        return supertypesMap.keySet();
+    }
 
     private Set<Name> typeQualifiers = null;
 
@@ -289,7 +293,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         if (typeQualifiers != null)
             return typeQualifiers;
         Set<Name> names = new HashSet<Name>();
-        for (AnnotationMirror anno: supertypesMap.keySet())
+        for (AnnotationMirror anno: getAnnotations())
             names.add(AnnotationUtils.annotationName(anno));
         typeQualifiers = names;
         return typeQualifiers;

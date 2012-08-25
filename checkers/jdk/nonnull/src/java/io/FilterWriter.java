@@ -1,0 +1,14 @@
+package java.io;
+
+import checkers.nonnull.quals.Nullable;
+
+@checkers.quals.DefaultQualifier(checkers.nonnull.quals.NonNull.class)
+
+public abstract class FilterWriter extends Writer {
+  protected FilterWriter() {}
+  public void write(int a1) throws IOException { throw new RuntimeException("skeleton method"); }
+  public void write(char[] a1, int a2, int a3) throws IOException { throw new RuntimeException("skeleton method"); }
+  public void write(String a1, int a2, int a3) throws IOException { throw new RuntimeException("skeleton method"); }
+  public void flush() throws IOException { throw new RuntimeException("skeleton method"); }
+  public void close() throws IOException { throw new RuntimeException("skeleton method"); }
+}

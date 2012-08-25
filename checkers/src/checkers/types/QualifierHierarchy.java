@@ -31,20 +31,28 @@ public abstract class QualifierHierarchy {
 
     /**
      * Return the top qualifier for the given qualifier, that is, the qualifier
-     * that is a supertype of start but no further supertypes exist. 
+     * that is a supertype of start but no further supertypes exist.
      */
     public abstract AnnotationMirror getTopAnnotation(AnnotationMirror start);
 
     /**
      * Return the bottom for the given qualifier, that is, the qualifier that is a
-     * subtype of start but no further subtypes exist. 
-     */	
+     * subtype of start but no further subtypes exist.
+     */
     public abstract AnnotationMirror getBottomAnnotation(AnnotationMirror start);
 
     /**
      * @return the bottom type qualifier in the hierarchy
      */
     public abstract Set<AnnotationMirror> getBottomAnnotations();
+
+    /**
+     * Returns the set of all type qualifiers in this type qualifier
+     * hierarchy
+     *
+     * @return the set of type qualifiers represented in this hierarchy
+     */
+    public abstract Set<AnnotationMirror> getAnnotations();
 
     /**
      * Returns the names of all type qualifiers in this type qualifier
@@ -90,7 +98,7 @@ public abstract class QualifierHierarchy {
      *
      * The two qualifiers have to be from the same qualifier hierarchy. Otherwise,
      * null will be returned.
-     * 
+     *
      * @return  the least restrictive qualifiers for both types
      */
     public abstract AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2);
@@ -100,7 +108,7 @@ public abstract class QualifierHierarchy {
      *
      * The two qualifiers have to be from the same qualifier hierarchy. Otherwise,
      * null will be returned.
-     * 
+     *
      * @param a1 First annotation
      * @param a2 Second annotation
      * @return Greatest lower bound of the two annotations
@@ -153,7 +161,7 @@ public abstract class QualifierHierarchy {
      *
      * The two qualifiers have to be from the same qualifier hierarchy. Otherwise,
      * null will be returned.
-     * 
+     *
      * @param annos1 First collection of qualifiers
      * @param annos2 Second collection of qualifiers
      * @return Greatest lower bound of the two collections of qualifiers

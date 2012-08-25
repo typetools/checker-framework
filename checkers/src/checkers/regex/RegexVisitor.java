@@ -67,7 +67,7 @@ public class RegexVisitor extends BaseTypeVisitor<RegexChecker> {
             ExpressionTree flagParam = node.getArguments().get(1);
             if (flagParam.getKind() == Kind.MEMBER_SELECT) {
                 MemberSelectTree memSelect = (MemberSelectTree) flagParam;
-                if (TreeUtils.isFieldAccess(memSelect, patternLiteral, checker.getProcessingEnvironment())) {
+                if (TreeUtils.isSpecificFieldAccess(memSelect, patternLiteral)) {
                     // This is a call to Pattern.compile with the Pattern.LITERAL
                     // flag so the first parameter doesn't need to be a
                     // @Regex String. Don't call the super method to skip checking
