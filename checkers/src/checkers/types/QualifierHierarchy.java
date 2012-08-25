@@ -194,4 +194,15 @@ public abstract class QualifierHierarchy {
         return result;
     }
 
+    public AnnotationMirror findCorrespondingAnnotation(
+            AnnotationMirror aliased, Set<AnnotationMirror> annotations) {
+        AnnotationMirror top = this.getTopAnnotation(aliased);
+        for(AnnotationMirror anno : annotations) {
+            if (this.isSubtype(anno, top)) {
+                return anno;
+            }
+        }
+        return null;
+	}
+
 }

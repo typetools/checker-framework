@@ -501,7 +501,12 @@ public class QualifierPolymorphism {
             AnnotatedTypeMirror typeSuper = findType(type, actualType);
             if (typeSuper.getKind() != TypeKind.WILDCARD)
                 return visit(typeSuper, actualType);
-            assert typeSuper.getKind() == actualType.getKind() : actualType;
+            assert typeSuper.getKind() == actualType.getKind() ||
+                    // TODO: actualType might be the capture of a wildcard;
+                    // better/different check?
+                    actualType.getKind() == TypeKind.TYPEVAR :
+                "PolyCollector: mismatched type kinds: " + actualType + " (" + actualType.getKind() +
+                ") and " + typeSuper + " (" + typeSuper.getKind() + ")";
             AnnotatedWildcardType wcType = (AnnotatedWildcardType)typeSuper;
 
             if (visited.contains(actualType.getUnderlyingType()))

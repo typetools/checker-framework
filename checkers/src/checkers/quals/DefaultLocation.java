@@ -11,8 +11,14 @@ public enum DefaultLocation {
     ALL,
 
     /** Apply default annotations to all unannotated types except the raw types
-     * of locals. */
+     * of local types (local variables, casts, and instanceof). */
     ALL_EXCEPT_LOCALS,
+
+    /** Apply default annotations to all unannotated local types (local
+     * variables, casts, and instanceof).
+     * TODO: use this instead of the programmatic way.
+     */
+    // LOCALS,
 
     /** Apply default annotations to unannotated upper bounds:  both
      * explicit ones in <tt>extends</tt> clauses, and implicit upper bounds
@@ -20,6 +26,7 @@ public enum DefaultLocation {
      * present. */
     // Especially useful for parametrized classes that provide a lot of
     // static methods with the same generic parameters as the class.
+    // TODO: Add a test case for this.
     UPPER_BOUNDS;
 
 }

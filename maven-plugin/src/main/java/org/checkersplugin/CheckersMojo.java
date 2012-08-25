@@ -8,6 +8,7 @@ import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.ArtifactResolver;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.toolchain.ToolchainManager;
 import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.cli.Commandline;
@@ -26,7 +27,12 @@ import java.io.StringReader;
 import java.io.File;
 
 /**
- * Says "Hi" to the user.
+ * A Mojo is the main goal or task for a maven project.  CheckersMojo runs the CheckerFramework compiler with the
+ * checkers specified in the plugin configuration in the pom.xml.
+ *
+ * Note: requiresDependencyResolution ensures that the dependencies required for compilation are included in the
+ * classPathElements which gets passed to the classpath of the JSR308 compiler
+ * @requiresDependencyResolution compile
  * @goal check
  */
 public class CheckersMojo extends AbstractMojo {
@@ -35,6 +41,8 @@ public class CheckersMojo extends AbstractMojo {
 	 */
 
 	/**
+     * The list of checkers to pass to the checker compiler
+     *
 	 * @parameter
 	 * @required
 	 */
@@ -42,13 +50,18 @@ public class CheckersMojo extends AbstractMojo {
 
 	/**
 	 * A list of inclusion filters for the compiler.
-	 *
+	 * When CheckersMojo scans the "${compileSourceRoot}" directory for files it will only include those files
+     * that match one of the specified inclusion patterns.  If no patterns are included then
+     * PathUtils.DEFAULT_INCLUSION_PATTERN is used
+     *
 	 * @parameter
 	 */
 	private Set<String> includes = new HashSet<String>();
 
 	/**
-	 * A list of exclusion filters for the compiler.
+	 * A list of exclusion filters for the compiler.  When CheckersMojo scans the "${compileSourceRoot}"
+     * directory for files it will only include those file that DO NOT match any of the
+     * specified exclusion patterns.
 	 *
 	 * @parameter
 	 */
@@ -62,21 +75,26 @@ public class CheckersMojo extends AbstractMojo {
 	private boolean failOnError;
 
 	/**
+     * The path to the java executable to use, default is "java"
+     * This executable is used to call the jsr308 compiler jar
 	 * @parameter
 	 */
 	private String executable;
 
 	/**
+     * Which version of the JSR308 checkers to use
 	 * @parameter default-value="1.0.6"
 	 */
 	private String checkersVersion;
 
 	/**
+     * Java runtime parameters added when running the JSR308 compiler jar
 	 * @parameter
 	 */
 	private String javaParams;
 
 	/**
+     * Javac params passed to the JSR308 compiler jar
 	 * @parameter
 	 */
 	private String javacParams;
@@ -84,7 +102,7 @@ public class CheckersMojo extends AbstractMojo {
 	/**
 	 * DEPENDENCIES
 	 */
-
+	
 	/**
 	 * The source directories containing the sources to be compiled.
 	 *
@@ -125,20 +143,6 @@ public class CheckersMojo extends AbstractMojo {
 	 */
 	private ArtifactFactory artifactFactory;
 
-//	/**
-//	 * @parameter expression="${project}"
-//	 * @readonly
-//	 * @required
-//	 */
-//	private MavenProject mavenProject;
-//
-//	/**
-//	 * @parameter expression="${plugin.artifacts}"
-//	 * @readonly
-//	 * @required
-//	 */
-//	private List pluginArtifacts;
-
 	/**
 	 * @parameter expression="${localRepository}"
 	 * @required
@@ -160,23 +164,30 @@ public class CheckersMojo extends AbstractMojo {
 	 */
 	private List<?> classpathElements;
 
+    /**
+     * Main control method for the Checker Maven Plugin.  Scans for sources, resolves classpath, and passes these
+     * arguments to the the checker compiler which is run on the command line.
+     * @throws MojoExecutionException
+     * @throws MojoFailureException
+     */
 	public void execute() throws MojoExecutionException, MojoFailureException {
-		getLog().info("Running JSR308 checkers version: " + checkersVersion);
-
+		final Log log = getLog();
+		log.info("Running JSR308 checkers version: " + checkersVersion);
+		
 		if (processors.size() == 0) {
 			throw new MojoExecutionException("At least one checker must be specified!");
 		}
 
-		String processor = StringUtils.join(processors.iterator(), ",");
+		final String processor = StringUtils.join(processors.iterator(), ",");
 
-		getLog().info("Running processor(s): " + processor);
+		log.info("Running processor(s): " + processor);
 
-		List<String> sources = PathUtils.scanForSources(compileSourceRoots, includes, excludes);
-
-		String checkersJar = PathUtils.getCheckersJar(checkersVersion, artifactFactory, artifactResolver,
+		final List<String> sources = PathUtils.scanForSources(compileSourceRoots, includes, excludes);
+		
+		final String checkersJar = PathUtils.getCheckersJar(checkersVersion, artifactFactory, artifactResolver,
 				remoteArtifactRepositories, localRepository);
 
-		Commandline cl = new Commandline();
+		final Commandline cl = new Commandline();
 
 		if (StringUtils.isEmpty(executable)) {
 			executable = "java";
@@ -184,7 +195,7 @@ public class CheckersMojo extends AbstractMojo {
 		cl.setExecutable(PathUtils.getExecutablePath(executable, toolchainManager, session));
 
 		// Building the arguments
-		List<String> arguments = new ArrayList<String>();
+		final List<String> arguments = new ArrayList<String>();
 
 		// Setting the boot class path: prepending the jar with jsr308 compiler
 		arguments.add("-Xbootclasspath/p:" + checkersJar);
@@ -221,13 +232,16 @@ public class CheckersMojo extends AbstractMojo {
 		// And executing
 		cl.addArguments(arguments.toArray(new String[arguments.size()]));
 
-		executeCommandLine(cl);
+		executeCommandLine(cl, log);
 	}
 
-	private void executeCommandLine(Commandline cl) throws MojoExecutionException, MojoFailureException {
+	private void executeCommandLine(final Commandline cl, final Log log) throws MojoExecutionException, MojoFailureException {
 		CommandLineUtils.StringStreamConsumer out = new CommandLineUtils.StringStreamConsumer();
 		CommandLineUtils.StringStreamConsumer err = new CommandLineUtils.StringStreamConsumer();
-
+		
+		log.debug("command line: " + Arrays.toString(cl.getCommandline()));
+	
+		
 		// Executing the command
 		int exitCode;
 		try {
@@ -248,17 +262,19 @@ public class CheckersMojo extends AbstractMojo {
 		// Sanity check - if the exit code is non-zero, there should be some messages
 		if (exitCode != 0 && messages.isEmpty()) {
 			throw new MojoExecutionException("Exit code from the compiler was not zero (" + exitCode +
-					"), but no messages reported. Error stream content: " + err.getOutput());
+					"), but no messages reported. Error stream content: " + err.getOutput() + 
+					" command line: " + Arrays.toString(cl.getCommandline()));
 		}
 
 		if (messages.isEmpty()) {
-			getLog().info("No errors found by the processor(s).");
+			log.info("No errors found by the processor(s).");
 		} else {
 			if (failOnError) {
 				throw new MojoFailureException(CompilationFailureException.longMessage(messages));
 			} else {
+                log.info("Run with debug logging in order to view the compiler command line");
 				for (CompilerError compilerError : messages) {
-					getLog().warn(compilerError.toString());
+					log.warn(compilerError.toString());
 				}
 			}
 		}
