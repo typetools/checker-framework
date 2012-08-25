@@ -10,7 +10,8 @@ class TestPolyAll {
    void test2() { identity((@Nullable String) null); }
 
    public static @PolyAll String[] typeArray(@PolyAll Object[] seq) {
-    @PolyAll String[] retval = new @PolyAll String[seq.length];
+    @SuppressWarnings("nullness") // ignore array initialization here. 
+    @PolyAll String[] retval = new @Nullable String[seq.length];
     for (int i = 0 ; i < seq.length ; i++) {
       if (seq[i] == null) {
         retval[i] = null;
