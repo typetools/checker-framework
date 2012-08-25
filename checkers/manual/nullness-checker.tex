@@ -398,6 +398,36 @@ More examples of the use of these annotations appear in the Javadoc for
 \code{@\refclass{nullness/quals}{AssertNonNullIfFalse}}.
 
 
+\subsection{Nullness and arrays\label{nullness-arrays}}
+
+The components of a newly created object of reference type are all
+null. Only after initialization can the array actually be considered
+to contain non-null components.
+Therefore, the following is not allowed:
+
+\begin{Verbatim}
+  @NonNull Object [] oa = new @NonNull Object[10]; // error
+\end{Verbatim}
+
+Instead, one creates a nullable or lazy-nonnull array, initializes
+each component, and then assigns the result to a non-null array:
+
+\begin{Verbatim}
+  @LazyNonNull Object [] temp = new @LazyNonNull Object[10];
+  for (int i = 0; i < temp.length; ++i) {
+    temp[i] = new Object();
+  }
+  @SuppressWarnings("nullness")
+  @NonNull Object [] oa = temp;
+\end{Verbatim}
+
+Note that the checker is currently not powerful enough to ensure that
+each array component was initialized. Therefore, the last assignment
+needs to be trusted.
+
+% TODO: explain more aspects, give more examples.
+
+
 \subsection{Inference of \code{@NonNull} and \code{@Nullable} annotations\label{nullness-inference}}
 
 It can be tedious to write annotations in your code.  Tools exist that
