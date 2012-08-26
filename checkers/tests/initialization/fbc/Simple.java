@@ -1,16 +1,19 @@
 
 import checkers.initialization.quals.*;
 import checkers.nonnull.quals.*;
+import checkers.quals.*;
 
 public class Simple {
 
     Simple f;
     @NotOnlyCommitted Simple g;
+    
+    @Pure int pure() {
+        return 1;
+    }
 
     //:: error: (commitment.fields.uninitialized)
     public Simple(String arg) {
-        // Call of pure method is still valid.
-        this.getClass();
     }
 
     void test() {
@@ -29,9 +32,6 @@ public class Simple {
     // check committed-only semantics for fields
     void test3(@Unclassified @NonNull Simple t) {
         @Committed @Nullable Simple a = t.f;
-
-        // Call of pure method is still valid.
-        t.getClass();
 
         //:: error: (assignment.type.incompatible)
         @Committed @Nullable Simple b = t.g;
