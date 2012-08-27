@@ -64,13 +64,32 @@ public final class NullnessUtils {
      * by using it in a circumstance where its argument can be null.
      * <p>
      *
+     * If the argument is an array, it is recursively checked to ensure that
+     * all elements are non-null.
+     *
      * @param ref a possibly-null reference
      * @return the argument, casted to have the type qualifier @NonNull
      */
     @SuppressWarnings("nullness")
     @AssertParametersNonNull
     public static <T extends /*@Nullable*/ Object> /*@NonNull*/ T castNonNull(T ref) {
-        assert ref != null : "misuse of castNonNull, which should never be called on a null argument";
-        return (/*@NonNull*/ T)ref;
+        assert ref != null : "Misuse of castNonNull: called with a null argument";
+        if (ref.getClass().isArray()) {
+            castNonNullArray((Object[])ref);
+        }
+        return (/*@NonNull*/ T) ref;
+    }
+
+    @SuppressWarnings("nullness")
+    @AssertParametersNonNull
+    private static <T extends /*@Nullable*/ Object> /*@NonNull*/ T /*@NonNull*/ [] castNonNullArray(T /*@NonNull*/ [] arr) {
+        assert arr != null : "Misuse of castNonNull: called with a null array argument";
+        for (int i = 0; i < arr.length; ++i) {
+            assert arr[i] != null : "Misuse of castNonNull: called with a null array element";
+            if (arr[i].getClass().isArray()) {
+                castNonNullArray((Object[])(arr[i]));
+            }
+        }
+        return (/*@NonNull*/ T[]) arr;
     }
 }
