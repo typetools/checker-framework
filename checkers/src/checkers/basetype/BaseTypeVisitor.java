@@ -1224,11 +1224,17 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
      * method invocation, and issues a "method.invocation.invalid" if the
      * invocation is invalid.
      *
-     * This implementation tests whether the receiver in the method invocation
-     * is a subtype of the method receiver type.
+     * <p>
+     * This implementation tests the following properties:
+     * <ul>
+     * <li>The receiver in the method invocation must be a subtype of the method
+     * receiver type.
+     * </ul>
      *
-     * @param method    the type of the invoked method
-     * @param node      the method invocation node
+     * @param method
+     *            the type of the invoked method
+     * @param node
+     *            the method invocation node
      * @return true iff the call of 'node' is a valid call
      */
     protected void checkMethodInvocability(AnnotatedExecutableType method,
@@ -1287,15 +1293,25 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
      * overridden method's return type, parameter types, and receiver type.
      *
      * <p>
+     * Furthermore, any contracts on the method must satisfy behavioral
+     * subtyping, that is, postconditions must be at least as strong as the
+     * postcondition on the superclass, and preconditions must be at most as
+     * strong as the condition on the superclass.
      *
+     * <p>
      * This method returns the result of the check, but also emits error
      * messages as a side effect.
      *
-     * @param overriderTree the AST node of the overriding method
-     * @param enclosingType the declared type enclosing the overrider method
-     * @param overridden the type of the overridden method
-     * @param overriddenType the declared type enclosing the overridden method
-     * @param p an optional parameter (as supplied to visitor methods)
+     * @param overriderTree
+     *            the AST node of the overriding method
+     * @param enclosingType
+     *            the declared type enclosing the overrider method
+     * @param overridden
+     *            the type of the overridden method
+     * @param overriddenType
+     *            the declared type enclosing the overridden method
+     * @param p
+     *            an optional parameter (as supplied to visitor methods)
      * @return true if the override check passed, false otherwise
      */
     protected boolean checkOverride(MethodTree overriderTree,
