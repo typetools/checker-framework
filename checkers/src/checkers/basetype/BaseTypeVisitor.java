@@ -1231,7 +1231,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
      * @param node      the method invocation node
      * @return true iff the call of 'node' is a valid call
      */
-    protected boolean checkMethodInvocability(AnnotatedExecutableType method,
+    protected void checkMethodInvocability(AnnotatedExecutableType method,
             MethodInvocationTree node) {
         AnnotatedTypeMirror methodReceiver = method.getReceiverType().getErased();
         AnnotatedTypeMirror treeReceiver = methodReceiver.getCopy(false);
@@ -1242,9 +1242,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
             checker.report(Result.failure("method.invocation.invalid",
                 TreeUtils.elementFromUse(node),
                 treeReceiver.toString(), methodReceiver.toString()), node);
-            return false;
         }
-        return true;
     }
 
     protected boolean checkConstructorInvocation(AnnotatedDeclaredType dt,

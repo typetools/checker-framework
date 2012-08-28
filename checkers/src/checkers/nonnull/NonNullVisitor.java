@@ -243,7 +243,7 @@ public class NonNullVisitor extends
     }
 
     @Override
-    protected boolean checkMethodInvocability(AnnotatedExecutableType method,
+    protected void checkMethodInvocability(AnnotatedExecutableType method,
             MethodInvocationTree node) {
         if (!TreeUtils.isSelfAccess(node)) {
             Set<AnnotationMirror> recvAnnos = atypeFactory
@@ -252,10 +252,10 @@ public class NonNullVisitor extends
             // about method invocability (we'd rather have only the
             // "dereference.of.nullable" message).
             if (recvAnnos.contains(NULLABLE) || recvAnnos.contains(MONOTONICNONNULL)) {
-                return true;
+                return;
             }
         }
-        return super.checkMethodInvocability(method, node);
+        super.checkMethodInvocability(method, node);
     }
 
     /** @return true if binary operation could cause an unboxing operation */
