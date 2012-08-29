@@ -27,8 +27,8 @@ public class FenumVisitor extends BaseTypeVisitor<FenumChecker> {
 
             AnnotatedTypeMirror lhs = atypeFactory.getAnnotatedType(node.getLeftOperand());
             AnnotatedTypeMirror rhs = atypeFactory.getAnnotatedType(node.getRightOperand());
-            if (!(checker.isSubtype(lhs, rhs)
-                  || checker.isSubtype(rhs, lhs))) {
+            if (!(checker.getTypeHierarchy().isSubtype(lhs, rhs)
+                  || checker.getTypeHierarchy().isSubtype(rhs, lhs))) {
                 checker.report(Result.failure("binary.type.incompatible", lhs, rhs), node);
             }
         }
@@ -42,7 +42,7 @@ public class FenumVisitor extends BaseTypeVisitor<FenumChecker> {
         AnnotatedTypeMirror varType = atypeFactory.getAnnotatedType(var);
         AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(expr);
 
-        if (!(checker.isSubtype(exprType, varType))) {
+        if (!(checker.getTypeHierarchy().isSubtype(exprType, varType))) {
             checker.report(Result.failure("compoundassign.type.incompatible", varType, exprType),
                            node);
         }
