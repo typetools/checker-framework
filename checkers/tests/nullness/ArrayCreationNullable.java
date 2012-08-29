@@ -103,6 +103,20 @@ public class ArrayCreationNullable {
         objs = new Object[0];
     }
 
+    /* Test case for Issue 153.
+    // toArray re-uses the passed array, if it is of appropriate size.
+    // It is only guaranteed to be non-null, if it is at most the same size.
+    void testToArray(java.util.Set<Object> nns) {
+        @NonNull Object [] nna = nns.toArray(new Object[nns.size()]);
+        // Given array is too small -> new one is created.
+        nna = nns.toArray(new Object[nns.size()-2]);
+        // Padding elements will be null.
+        //:: error: (assignment.type.incompatible)
+        nna = nns.toArray(new Object[nns.size() + 2]);
+        @Nullable Object [] nbla = nns.toArray(new Object[nns.size() + 2]);
+    }
+    */
+
     void testMultiDim() {
         // new double[10][10] has type double @NonNull[] @Nullable[]
         //:: error: (assignment.type.incompatible)
