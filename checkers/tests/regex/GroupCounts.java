@@ -4,6 +4,10 @@ import java.util.regex.Pattern;
 import checkers.regex.RegexUtil;
 import checkers.regex.quals.Regex;
 
+/*
+ * Note that this test case will fail in Eclipse, because the annotations
+ * in comments used by RegexUtils are ignored.
+ */
 public class GroupCounts {
     void testGroupCount() {
         @Regex(0) String s1 = "abc";
