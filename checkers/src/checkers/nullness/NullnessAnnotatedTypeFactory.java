@@ -95,10 +95,10 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
 
         NONNULL = checker.NONNULL;
         NULLABLE = checker.NULLABLE;
-        LAZYNONNULL = this.annotations.fromClass(LazyNonNull.class);
+        LAZYNONNULL = checker.LAZYNONNULL;
         RAW = this.annotations.fromClass(Raw.class);
         PRIMITIVE = checker.PRIMITIVE;
-        POLYNULL = this.annotations.fromClass(PolyNull.class);
+        POLYNULL = checker.POLYNULL;
         POLYALL = this.annotations.fromClass(PolyAll.class);
         UNUSED = this.annotations.fromClass(Unused.class);
 
