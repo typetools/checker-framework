@@ -1197,6 +1197,7 @@ public abstract class AnnotatedTypeMirror {
 
             if (getReceiverType() != null)
                 type.setReceiverType((AnnotatedDeclaredType)getReceiverType().substitute(mappings));
+
             type.setReturnType(getReturnType().substitute(mappings));
 
             // Throws
@@ -1616,8 +1617,9 @@ public abstract class AnnotatedTypeMirror {
                             V found = (V)possValue.getCopy(false);
                             found.addAnnotations(key.annotations);
                             return found;
-                        } else
+                        } else {
                             return possValue;
+                        }
                     }
                 }
             }
@@ -1629,7 +1631,9 @@ public abstract class AnnotatedTypeMirror {
                 Map<? extends AnnotatedTypeMirror,
                         ? extends AnnotatedTypeMirror> mappings) {
             AnnotatedTypeMirror found = mapGetHelper(mappings, this);
-            if (found != null) return found;
+            if (found != null) {
+                return found;
+            }
 
             AnnotatedTypeVariable type = getCopy(true);
             /* TODO: the above call of getCopy results in calls of
