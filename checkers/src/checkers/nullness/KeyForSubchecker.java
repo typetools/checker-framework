@@ -41,27 +41,27 @@ public class KeyForSubchecker extends BaseTypeChecker {
         return new KeyForTypeHierarchy(this, getQualifierHierarchy());
     }
 
-    @Override
-    public final boolean isSubtype(AnnotatedTypeMirror rhs, AnnotatedTypeMirror lhs) {
-        if (lhs.getKind() == TypeKind.TYPEVAR &&
-                rhs.getKind() == TypeKind.TYPEVAR) {
-            // TODO: Investigate whether there is a nicer and more proper way to
-            // get assignments between two type variables working.
-            if (lhs.getAnnotations().isEmpty()) {
-                return true;
-            }
-        }
-        // Otherwise Covariant would cause trouble.
-        if (rhs.getAnnotation(KeyForBottom.class) != null) {
-            return true;
-        }
-        return super.isSubtype(rhs, lhs);
-    }
-
     private class KeyForTypeHierarchy extends TypeHierarchy {
 
         public KeyForTypeHierarchy(KeyForSubchecker checker, QualifierHierarchy qualifierHierarchy) {
             super(checker, qualifierHierarchy);
+        }
+
+        @Override
+        public final boolean isSubtype(AnnotatedTypeMirror rhs, AnnotatedTypeMirror lhs) {
+            if (lhs.getKind() == TypeKind.TYPEVAR &&
+                    rhs.getKind() == TypeKind.TYPEVAR) {
+                // TODO: Investigate whether there is a nicer and more proper way to
+                // get assignments between two type variables working.
+                if (lhs.getAnnotations().isEmpty()) {
+                    return true;
+                }
+            }
+            // Otherwise Covariant would cause trouble.
+            if (rhs.getAnnotation(KeyForBottom.class) != null) {
+                return true;
+            }
+            return super.isSubtype(rhs, lhs);
         }
 
         @Override
@@ -106,7 +106,7 @@ public class KeyForSubchecker extends BaseTypeChecker {
                 }
 
                 if (covar) {
-                    if (!KeyForSubchecker.this.isSubtype(rhsTypeArgs.get(i), lhsTypeArgs.get(i)))
+                    if (!isSubtype(rhsTypeArgs.get(i), lhsTypeArgs.get(i)))
                         return false;
                 } else {
                     if (!isSubtypeAsTypeArgument(rhsTypeArgs.get(i), lhsTypeArgs.get(i)))
