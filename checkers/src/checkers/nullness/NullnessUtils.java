@@ -1,6 +1,8 @@
 package checkers.nullness;
 
+/*>>>
 import checkers.nullness.quals.*;
+*/
 
 /**
  * Utilities class for the Nullness Checker.
@@ -74,58 +76,77 @@ public final class NullnessUtils {
      * @return the argument, casted to have the type qualifier @NonNull
      */
     /*@AssertParametersNonNull*/
-    public static <T extends /*@Nullable*/ Object> /*@NonNull*/ T castNonNull(T ref) {
+    public static
+    <T extends /*@Nullable*/ Object>
+    /*@NonNull*/ T castNonNull(T ref) {
         assert ref != null : "Misuse of castNonNull: called with a null argument";
-        if (ref.getClass().isArray()) {
-            castNonNull((Object[])ref);
-        }
+        checkIfArray(ref);
         return (/*@NonNull*/ T) ref;
     }
 
     /*@AssertParametersNonNull*/
     public static
-    <T extends /*@Nullable*/ Object> /*@NonNull*/ T /*@NonNull*/ []
+    <T extends /*@Nullable*/ Object>
+    /*@NonNull*/ T /*@NonNull*/ []
             castNonNull(T /*@Nullable*/ [] arr) {
         return (/*@NonNull*/ T[]) castNonNullArray(arr);
     }
 
     /*@AssertParametersNonNull*/
     public static
-    <T extends /*@Nullable*/ Object> /*@NonNull*/ T /*@NonNull*/ [][]
+    <T extends /*@Nullable*/ Object>
+    /*@NonNull*/ T /*@NonNull*/ [][]
             castNonNull(T /*@Nullable*/ [] /*@Nullable*/ [] arr) {
         return (/*@NonNull*/ T[][]) castNonNullArray(arr);
     }
 
     /*@AssertParametersNonNull*/
     public static
-    <T extends /*@Nullable*/ Object> /*@NonNull*/ T /*@NonNull*/ [][][]
+    <T extends /*@Nullable*/ Object>
+    /*@NonNull*/ T /*@NonNull*/ [][][]
             castNonNull(T /*@Nullable*/ [] /*@Nullable*/ [] /*@Nullable*/ [] arr) {
         return (/*@NonNull*/ T[][][]) castNonNullArray(arr);
     }
 
     /*@AssertParametersNonNull*/
     public static
-    <T extends /*@Nullable*/ Object> /*@NonNull*/ T /*@NonNull*/ [][][][]
+    <T extends /*@Nullable*/ Object>
+    /*@NonNull*/ T /*@NonNull*/ [][][][]
             castNonNull(T /*@Nullable*/ [] /*@Nullable*/ [] /*@Nullable*/ [] /*@Nullable*/ [] arr) {
         return (/*@NonNull*/ T[][][][]) castNonNullArray(arr);
     }
 
     /*@AssertParametersNonNull*/
     public static
-    <T extends /*@Nullable*/ Object> /*@NonNull*/ T /*@NonNull*/ [][][][][]
+    <T extends /*@Nullable*/ Object>
+    /*@NonNull*/ T /*@NonNull*/ [][][][][]
             castNonNull(T /*@Nullable*/ [] /*@Nullable*/ [] /*@Nullable*/ [] /*@Nullable*/ [] /*@Nullable*/ [] arr) {
         return (/*@NonNull*/ T[][][][][]) castNonNullArray(arr);
     }
 
     /*@AssertParametersNonNull*/
-    private static <T extends /*@Nullable*/ Object> /*@NonNull*/ T /*@NonNull*/ [] castNonNullArray(T /*@Nullable*/ [] arr) {
-        assert arr != null : "Misuse of castNonNull: called with a null array argument";
+    private static
+    <T extends /*@Nullable*/ Object>
+    /*@NonNull*/ T /*@NonNull*/ [] castNonNullArray(T /*@Nullable*/ [] arr) {
+        assert arr != null : "Misuse of castNonNullArray: called with a null array argument";
         for (int i = 0; i < arr.length; ++i) {
             assert arr[i] != null : "Misuse of castNonNull: called with a null array element";
-            if (arr[i].getClass().isArray()) {
-                castNonNullArray((Object[])(arr[i]));
-            }
+            checkIfArray(arr[i]);
         }
         return (/*@NonNull*/ T[]) arr;
+    }
+
+    private static void checkIfArray(/*@NonNull*/ Object ref) {
+        assert ref != null : "Misuse of checkIfArray: called with a null argument";
+        Class<?> comp = ref.getClass().getComponentType();
+        if (comp != null) {
+            // comp is non-null for arrays, otherwise null.
+            if (comp.isPrimitive()) {
+                // Nothing to do for arrays of primitive type: primitives are
+                // never null.
+            } else {
+                castNonNullArray((Object[])ref);
+            }
+        }
     }
 }
