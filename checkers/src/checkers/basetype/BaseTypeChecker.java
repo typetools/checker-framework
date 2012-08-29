@@ -243,6 +243,12 @@ public abstract class BaseTypeChecker extends SourceChecker {
         return new TypeHierarchy(this, getQualifierHierarchy());
     }
 
+    public final TypeHierarchy getTypeHierarchy() {
+        if (typeHierarchy == null)
+            typeHierarchy = createTypeHierarchy();
+        return typeHierarchy;
+    }
+
     /**
      * Returns the appropriate visitor that type checks the compilation unit
      * according to the type system rules.
@@ -314,48 +320,6 @@ public abstract class BaseTypeChecker extends SourceChecker {
             checkerClass = checkerClass.getSuperclass();
         }
         return new BasicAnnotatedTypeFactory<BaseTypeChecker>(this, root);
-    }
-
-    // **********************************************************************
-    // Type Relationship queries
-    // **********************************************************************
-
-    /**
-     * Tests whether one annotated type is a subtype of another, with
-     * respect to the annotations on these types.
-     *
-     * Subclasses may wish to ignore annotations that are not related to the
-     * type qualifiers they check.
-     *
-     * This implementation follows the subtype rules specified in
-     * {@link TypeHierarchy}.  Its behavior is undefined for any annotations
-     * not specified by either {@link TypeQualifiers} or the result of
-     * {@link #getSupportedTypeQualifiers()}.
-     * @param sub the child type
-     * @param sup the parent type
-     *
-     * @return true iff {@code sub} is a subtype of {@code sup}
-     */
-    // Should other classes simply depend on TypeHierarchy directly?
-    public boolean isSubtype(AnnotatedTypeMirror sub, AnnotatedTypeMirror sup) {
-        return typeHierarchy.isSubtype(sub, sup);
-    }
-
-    /**
-     * Tests whether the variable accessed is an assignable variable or not,
-     * given the current scope
-     *
-     * TODO: document which parameters are nullable; e.g. receiverType is null in
-     * many cases, e.g. local variables.
-     *
-     * @param varType   the annotated variable type
-     * @param variable  tree used to access the variable
-     * @return  true iff variable is assignable in the current scope
-     */
-    public boolean isAssignable(AnnotatedTypeMirror varType,
-            AnnotatedTypeMirror receiverType, Tree variable,
-            AnnotatedTypeFactory factory) {
-        return true;
     }
 
 
