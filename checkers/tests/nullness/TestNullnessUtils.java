@@ -1,6 +1,11 @@
 import checkers.nullness.NullnessUtils;
 import checkers.nullness.quals.*;
 
+/*
+ * Test class checkers.nullness.NullnessUtils.
+ * Note that this test case will fail in Eclipse, because the annotations
+ * in comments used by NullnessUtils are ignored.
+ */
 class TestNullnessUtils {
     void testRef1(@Nullable Object o) {
         // one way to use as a cast:
@@ -20,7 +25,7 @@ class TestNullnessUtils {
 
     void testArr1(@Nullable Object @NonNull [] a) {
         // one way to use as a cast:
-        @NonNull Object [] l1 = NullnessUtils.castNonNull(a);
+        @NonNull Object [] l2 = NullnessUtils.castNonNull(a);
     }
 
     void testArr2(@Nullable Object @NonNull [] a) {
@@ -39,9 +44,9 @@ class TestNullnessUtils {
 
     void testMultiArr1(@Nullable Object @NonNull [] @Nullable [] a) {
         //:: error: (assignment.type.incompatible) :: error: (accessing.nullable)
-        @NonNull Object l1 = a[0][0];
+        @NonNull Object l3 = a[0][0];
         // one way to use as a cast:
-        @NonNull Object [] [] l2 = NullnessUtils.castNonNull(a);
+        @NonNull Object [] [] l4 = NullnessUtils.castNonNull(a);
     }
 
     void testMultiArr2(@Nullable Object @NonNull [] @Nullable [] a) {
