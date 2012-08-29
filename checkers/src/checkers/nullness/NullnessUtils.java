@@ -75,14 +75,54 @@ public final class NullnessUtils {
     public static <T extends /*@Nullable*/ Object> /*@NonNull*/ T castNonNull(T ref) {
         assert ref != null : "Misuse of castNonNull: called with a null argument";
         if (ref.getClass().isArray()) {
-            castNonNullArray((Object[])ref);
+            castNonNull((Object[])ref);
         }
         return (/*@NonNull*/ T) ref;
     }
 
     @SuppressWarnings("nullness")
     @AssertParametersNonNull
-    private static <T extends /*@Nullable*/ Object> /*@NonNull*/ T /*@NonNull*/ [] castNonNullArray(T /*@NonNull*/ [] arr) {
+    public static
+    <T extends /*@Nullable*/ Object> /*@NonNull*/ T /*@NonNull*/ []
+            castNonNull(T /*@Nullable*/ [] arr) {
+        return (/*@NonNull*/ T[]) castNonNullArray(arr);
+    }
+
+    @SuppressWarnings("nullness")
+    @AssertParametersNonNull
+    public static
+    <T extends /*@Nullable*/ Object> /*@NonNull*/ T /*@NonNull*/ [][]
+            castNonNull(T /*@Nullable*/ [] /*@Nullable*/ [] arr) {
+        return (/*@NonNull*/ T[][]) castNonNullArray(arr);
+    }
+
+    @SuppressWarnings("nullness")
+    @AssertParametersNonNull
+    public static
+    <T extends /*@Nullable*/ Object> /*@NonNull*/ T /*@NonNull*/ [][][]
+            castNonNull(T /*@Nullable*/ [] /*@Nullable*/ [] /*@Nullable*/ [] arr) {
+        return (/*@NonNull*/ T[][][]) castNonNullArray(arr);
+    }
+
+    @SuppressWarnings("nullness")
+    @AssertParametersNonNull
+    public static
+    <T extends /*@Nullable*/ Object> /*@NonNull*/ T /*@NonNull*/ [][][][]
+            castNonNull(T /*@Nullable*/ [] /*@Nullable*/ [] /*@Nullable*/ [] /*@Nullable*/ [] arr) {
+        return (/*@NonNull*/ T[][][][]) castNonNullArray(arr);
+    }
+
+    @SuppressWarnings("nullness")
+    @AssertParametersNonNull
+    public static
+    <T extends /*@Nullable*/ Object> /*@NonNull*/ T /*@NonNull*/ [][][][][]
+            castNonNull(T /*@Nullable*/ [] /*@Nullable*/ [] /*@Nullable*/ [] /*@Nullable*/ [] /*@Nullable*/ [] arr) {
+        return (/*@NonNull*/ T[][][][][]) castNonNullArray(arr);
+    }
+
+    @SuppressWarnings("nullness")
+    @AssertParametersNonNull
+    private static <T extends /*@Nullable*/ Object> /*@NonNull*/ T /*@NonNull*/ [] castNonNullArray(T /*@Nullable*/ [] arr) {
         assert arr != null : "Misuse of castNonNull: called with a null array argument";
         for (int i = 0; i < arr.length; ++i) {
             assert arr[i] != null : "Misuse of castNonNull: called with a null array element";
