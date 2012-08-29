@@ -66,7 +66,7 @@ public class DependentTypes {
     }
 
     public void handle(Tree tree, AnnotatedTypeMirror type) {
-        if (!(tree instanceof ExpressionTree))
+        if (!TreeUtils.isExpressionTree(tree))
             return;
         ExpressionTree expr = (ExpressionTree)tree;
         Element symbol = null;
