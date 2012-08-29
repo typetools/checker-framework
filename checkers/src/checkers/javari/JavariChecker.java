@@ -53,21 +53,21 @@ public class JavariChecker extends BaseTypeChecker {
     @Override
     protected TypeHierarchy createTypeHierarchy() {
         return new TypeHierarchy(this, getQualifierHierarchy()) {
+            /**
+             * Checks if one the parameters is primitive, or if a type is
+             * subtype of another. Primitive types always pass to avoid issues
+             * with boxing.
+             */
+            @Override
+            public boolean isSubtype(AnnotatedTypeMirror sub, AnnotatedTypeMirror sup) {
+                return sub.getKind().isPrimitive() || sup.getKind().isPrimitive() || super.isSubtype(sub, sup);
+            }
+
             @Override
             protected boolean isSubtypeAsTypeArgument(AnnotatedTypeMirror rhs, AnnotatedTypeMirror lhs) {
                 return lhs.hasEffectiveAnnotation(QREADONLY) || super.isSubtypeAsTypeArgument(rhs, lhs);
             }
          };
-    }
-
-    /**
-     * Checks if one the parameters is primitive, or if a type is
-     * subtype of another. Primitive types always pass to avoid issues
-     * with boxing.
-     */
-    @Override
-    public boolean isSubtype(AnnotatedTypeMirror sub, AnnotatedTypeMirror sup) {
-        return sub.getKind().isPrimitive() || sup.getKind().isPrimitive() || super.isSubtype(sub, sup);
     }
 
 }
