@@ -104,4 +104,10 @@ class GeneralQualifierHierarchy extends QualifierHierarchy {
         SourceChecker.errorAbort("GeneralQualifierHierarchy.greatestLowerBound() was called! It shouldn't be called.");
         return null;
     }
+
+    @Override
+    public AnnotationMirror getPolymorphicAnnotation(AnnotationMirror start) {
+        SourceChecker.errorAbort("GeneralQualifierHierarchy.getPolymorphicAnnotation() was called! It shouldn't be called.");
+        return null;
+    }
 }
