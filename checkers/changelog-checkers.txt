@@ -1,4 +1,4 @@
-Version 1.3.2, XX Aug 2012
+Version 1.4.0, XX Sep 2012
 
 User-visible framework improvements:
   @DefaultQualifier annotations now use a Class instead of a String,
@@ -11,10 +11,15 @@ User-visible framework improvements:
   Stub files now ignore the return type, allowing for files automatically
     generated from other formats.
   Propagate annotations from the sub-expression of a cast to its result.
+  Move isAssignable from the BaseTypeChecker to the BaseTypeVisitor; now
+    the Checker only consists of factories and logic is contained in the
+    Visitor.
+  Improved error messages.
   Maven plugin now works.
 
 Nullness Checker:
   Improve typing of array creation expressions.
+  Forbid creation of arrays with NonNull component type.
 
 Internal framework improvements:
   Enable assertion checking.
