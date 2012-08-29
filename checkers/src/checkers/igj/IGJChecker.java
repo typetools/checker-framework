@@ -2,7 +2,6 @@ package checkers.igj;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.igj.quals.*;
@@ -12,8 +11,6 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.util.*;
 import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.Tree;
 
 /**
  * A type-checker plug-in for the IGJ immutability type system that finds (and
@@ -68,48 +65,6 @@ public class IGJChecker extends BaseTypeChecker {
         ASSIGNS_FIELDS = annoFactory.fromClass(AssignsFields.class);
         BOTTOM_QUAL = annoFactory.fromClass(IGJBottom.class);
         super.initChecker(env);
-    }
-
-    // **********************************************************************
-    // IGJ specific Type Relationship
-    // **********************************************************************
-
-    /**
-     * Return true if the assignment variable is an assignable field or
-     * variable, and returns false otherwise.
-     *
-     * A field is assignable if it is
-     *
-     * 1. a static field
-     * 2. marked {@link Assignable}
-     * 3. accessed through a mutable reference
-     * 4. reassigned with an {@link AssignsFields} method and owned by 'this'
-     *
-     */
-    @Override
-    public boolean isAssignable(AnnotatedTypeMirror varType,
-            AnnotatedTypeMirror receiverType, Tree varTree,
-            AnnotatedTypeFactory factory) {
-        if (!(varTree instanceof ExpressionTree))
-            return true;
-
-        Element varElement = InternalUtils.symbol(varTree);
-        if (varTree.getKind() != Tree.Kind.ARRAY_ACCESS
-                && (varElement == null // a variable element should never be null
-                        || !varElement.getKind().isField()
-                        || ElementUtils.isStatic(varElement)
-                        || factory.getDeclAnnotation(varElement, Assignable.class) != null))
-            return true;
-
-        assert receiverType != null;
-
-        final boolean isAssignable =
-            receiverType.hasEffectiveAnnotation(MUTABLE)
-             || receiverType.hasEffectiveAnnotation(BOTTOM_QUAL)
-             || (receiverType.hasEffectiveAnnotation(ASSIGNS_FIELDS)
-                     && factory.isMostEnclosingThisDeref((ExpressionTree)varTree));
-
-        return isAssignable;
     }
 
     // **********************************************************************
