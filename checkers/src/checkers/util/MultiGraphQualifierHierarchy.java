@@ -170,6 +170,13 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
     protected final Set<AnnotationMirror> bottoms;
 
     /**
+     * Reference to the special qualifier checkers.quals.PolymorphicQualifier.
+     * It is used as a key in polyQualifiers, if the qualifier hierarchy
+     * consists of a single top and no specific qualifier was specified.
+     */
+    protected final AnnotationMirror polymorphicQualifier;
+
+    /**
      * @see MultiGraphQualifierHierarchy.MultiGraphFactory#polyQualifiers
      */
     protected final Map<AnnotationMirror, AnnotationMirror> polyQualifiers;
@@ -191,6 +198,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
 
         this.tops = findTops(fullMap);
         this.bottoms = findBottoms(fullMap);
+        this.polymorphicQualifier = f.annoFactory.fromClass(PolymorphicQualifier.class);
         this.polyQualifiers = f.polyQualifiers;
 
         addPolyRelations(f.annoFactory, this,
@@ -259,6 +267,20 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
     @Override
     public Set<AnnotationMirror> getBottomAnnotations() {
         return this.bottoms;
+    }
+
+    @Override
+    public AnnotationMirror getPolymorphicAnnotation(AnnotationMirror start) {
+        AnnotationMirror top = getTopAnnotation(start);
+        if (polyQualifiers.containsKey(top)) {
+            return polyQualifiers.get(top);
+        } else if (polyQualifiers.containsKey(polymorphicQualifier)) {
+            return polyQualifiers.get(polymorphicQualifier);
+        } else {
+        SourceChecker.errorAbort("MultiGraphQualifierHierarchy: did not find the polymorphic qualifier corresponding to qualifier " + start +
+                " all polymorphic qualifiers: " + polyQualifiers);
+        return null;
+        }
     }
 
     @Override
