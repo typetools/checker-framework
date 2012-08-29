@@ -10,7 +10,7 @@ public class InvariantTypes {
   final String[] sa7 = {"a", "b"};
 
   @Regex String[] rsa = {"a"};
-  //:: error: (type.incompatible) :: error: (assignment.type.incompatible)
+  //:: error: (array.initializer.type.incompatible) :: error: (assignment.type.incompatible)
   @Regex String[] rsaerr = {"(a"};
   String[] nrsa = {"(a"};
 
@@ -28,11 +28,11 @@ public class InvariantTypes {
   void unqcalls() {
     unqm(new String[] {"a("});
     //TODOINVARR:: error: (argument.type.incompatible)
-    //:: error: (type.incompatible)
+    //:: error: (array.initializer.type.incompatible)
     unqm(new @Regex String[] {"a("});
     //:: error: (argument.type.incompatible)
     rem(new String[] {"a("});
-    //:: error: (type.incompatible)
+    //:: error: (array.initializer.type.incompatible)
     rem(new @Regex String[] {"a("});
   }
 
