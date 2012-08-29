@@ -17,7 +17,7 @@ public class ArrayCreationNullable {
         //:: error: (assignment.type.incompatible)
         objs = new @Nullable Object [10];
         objs[0].toString();
-        //:: error: (type.invalid)
+        //:: error: (new.array.type.invalid)
         objs = new @NonNull Object [10];
         objs[0].toString();
         // Allowed.
@@ -40,7 +40,7 @@ public class ArrayCreationNullable {
         objs = new Integer[] { 1, 2, 3 };
         objs = new Object [] { new Object(), "ha" };
 
-        @NonNull Object [] objs2;// = {};
+        @NonNull Object [] objs2 = {};
         //:: error: (assignment.type.incompatible)
         objs2 = new Integer[] { 1, null, 3 };
         //:: error: (assignment.type.incompatible)
@@ -70,7 +70,7 @@ public class ArrayCreationNullable {
         //:: error: (assignment.type.incompatible)
         strs = new @Nullable String [10];
         strs[0].toString();
-        //:: error: (type.invalid)
+        //:: error: (new.array.type.invalid)
         strs = new @NonNull String [10];
         strs[0].toString();
         // Allowed.
@@ -86,7 +86,7 @@ public class ArrayCreationNullable {
         //:: error: (assignment.type.incompatible)
         ints = new @Nullable Integer [10];
         ints[0].toString();
-        //:: error: (type.invalid)
+        //:: error: (new.array.type.invalid)
         ints = new @NonNull Integer [10];
         ints[0].toString();
         // Allowed.
@@ -115,7 +115,7 @@ public class ArrayCreationNullable {
         @Nullable Object @NonNull [] @Nullable [] oaa2 = new Object[10][10];
 
         // new Object[10][10] has type @Nullable Object @NonNull[] @Nullable[]
-        //:: error: (type.invalid)
+        //:: error: (new.array.type.invalid)
         oaa2 = new Object @NonNull [10] @NonNull [10];
 
         @LazyNonNull Object @NonNull [] @LazyNonNull [] oaa3 = new @LazyNonNull Object @NonNull [10] @LazyNonNull [10];
@@ -124,6 +124,20 @@ public class ArrayCreationNullable {
         oaa3[0] = null;
         //:: error: (assignment.type.incompatible) :: error: (accessing.nullable)
         oaa3[0][0] = null;
+    }
+
+    @PolyNull Object[] testPolyNull(@PolyNull Object[] in) {
+        @PolyNull Object [] out = new @PolyNull Object [in.length];
+        for (int i = 0; i < in.length; ++i) {
+            if (in[i] == null) {
+                out[i] = null;
+            } else {
+                out[i] = in[i].getClass().toString();
+                //TODO:: error: (assignment.type.incompatible)
+                out[i] = null;
+            }
+        }
+        return out;
     }
 
     Object[] oa = new Object[] {new Object()};
