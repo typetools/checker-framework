@@ -286,7 +286,7 @@ public class AnnotatedTypeFactory {
                 type = fromMember(tree);
                 break;
             default:
-                if (tree instanceof ExpressionTree) {
+                if (TreeUtils.isExpressionTree(tree)) {
                     type = fromExpression((ExpressionTree)tree);
                 } else {
                     SourceChecker.errorAbort(
