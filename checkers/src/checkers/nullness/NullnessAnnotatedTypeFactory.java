@@ -477,10 +477,10 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
 
             if (elt.getKind() == ElementKind.CONSTRUCTOR)
                 // case 11. Add @Raw to constructors.
-                type.getReceiverType().addAnnotation(RAW);
+                type.getReceiverType().replaceAnnotation(RAW);
             else if (!ElementUtils.isStatic(elt))
                 // case 10 Add @NonNull to non-static non-constructors.
-                type.getReceiverType().addAnnotation(NONNULL);
+                type.getReceiverType().replaceAnnotation(NONNULL);
 
             return super.visitExecutable(type, p);
         }
@@ -492,7 +492,7 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
                     // Hack: Special case Void.class
                     && (type.getElement() == null || !type.getElement().getKind().isClass())
                     && !type.isAnnotated()) {
-                type.addAnnotation(NULLABLE);
+                type.replaceAnnotation(NULLABLE);
             }
 
             return super.visitDeclared(type, p);
@@ -533,7 +533,7 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
             // fixed we manually inspect enclosing catch blocks.
             // case 9. exception parameter
             if (isExceptionParameter(node))
-                type.addAnnotation(NONNULL);
+                type.replaceAnnotation(NONNULL);
 
             return super.visitIdentifier(node, type);
         }
@@ -546,7 +546,7 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
             AnnotatedExecutableType execType = (AnnotatedExecutableType)type;
             if (!execType.getReceiverType().isAnnotated()
                     && TreeUtils.containsThisConstructorInvocation(node))
-            execType.getReceiverType().addAnnotation(NONNULL);
+            execType.getReceiverType().replaceAnnotation(NONNULL);
 
             return super.visitMethod(node, type);
         }
