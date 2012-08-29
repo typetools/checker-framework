@@ -64,7 +64,7 @@ public class JavariVisitor extends BaseTypeVisitor<JavariChecker> {
     */
     @Override
     protected void checkAssignability(AnnotatedTypeMirror varType, Tree varTree) {
-        if (!(varTree instanceof ExpressionTree)) return;
+        if (!TreeUtils.isExpressionTree(varTree)) return;
         Element varElt = varType.getElement();
         if (varElt != null && atypeFactory.getDeclAnnotation(varElt, Assignable.class) != null)
             return;
