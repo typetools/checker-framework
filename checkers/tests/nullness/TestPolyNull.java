@@ -18,6 +18,8 @@ class TestPolyNull {
         retval[i] = "dummy";
       } else {
         retval[i] = seq[i].getClass().toString();
+        //TODO:: error: (assignment.type.incompatible)
+        retval[i] = null;
       }
     }
     return retval;
