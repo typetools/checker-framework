@@ -246,7 +246,7 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
                             }
                             t = treep.getLeaf();
                         }
-                        if (treep.getLeaf() == ((AssignmentTree)context).getExpression()) {
+                        if (treep!=null && treep.getLeaf() == ((AssignmentTree)context).getExpression()) {
                             contextType = typeFactory.getDefaultedAnnotatedType((AssignmentTree)context);
                         }
                     }
