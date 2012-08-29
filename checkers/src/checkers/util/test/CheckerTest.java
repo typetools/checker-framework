@@ -238,8 +238,15 @@ abstract public class CheckerTest {
 
     /**
      * Compares the result of the compiler against an array of Strings.
+     *
+     * In a checker, we treat a more specific error message as subsumed by a general one.
+     * For example, "new.array.type.invalid" is subsumed by "type.invalid".
+     * This is not the case in the test framework; the exact error key is expected.
      */
-    protected void assertDiagnostics(String msg, /*@ReadOnly*/ List</*@ReadOnly*/ Diagnostic<? extends JavaFileObject>> actual_diagnostics, List</*@ReadOnly*/ String> expected_diagnostics, String filename) {
+    protected void assertDiagnostics(String msg,
+            /*@ReadOnly*/ List</*@ReadOnly*/ Diagnostic<? extends JavaFileObject>> actual_diagnostics,
+            List</*@ReadOnly*/ String> expected_diagnostics,
+            String filename) {
         // String cs = (checkerDir == "" ? "" : checkerDir + File.separator); // "interned"
 
         List<String> expectedList = new LinkedList<String>();
@@ -256,20 +263,21 @@ abstract public class CheckerTest {
                 continue;
             boolean nomsgtext = false;
             for (String opt : this.checkerOptions) {
-            	if (opt.equals("-Anomsgtext")) {
-            		nomsgtext = true;
-            	}
+                if (opt.equals("-Anomsgtext")) {
+                    nomsgtext = true;
+                }
             }
             if (nomsgtext) {
-            	if (result.contains("\n")){
-            		result = result.substring(0, result.indexOf('\n'));
-            	}
-            	if (result.contains(".java:")) {
-            		result = result.substring(result.indexOf(".java:") + 5).trim();
-            	}
+                if (result.contains("\n")){
+                    result = result.substring(0, result.indexOf('\n'));
+                }
+                if (result.contains(".java:")) {
+                    result = result.substring(result.indexOf(".java:") + 5).trim();
+                }
             }
             resultsList.add(result);
         }
+
         List<String> foundList = new LinkedList<String>();
         foundList.addAll(resultsList);
         foundList.retainAll(expectedList);
