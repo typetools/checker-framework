@@ -25,12 +25,15 @@ class TestNullnessUtils {
 
     void testArr1(@Nullable Object @NonNull [] a) {
         // one way to use as a cast:
-        @NonNull Object [] l2 = NullnessUtils.castNonNull(a);
+        @NonNull Object [] l2 = NullnessUtils.castNonNullDeep(a);
+        // Careful, the non-deep version only casts the main modifier.
+        //:: error: (assignment.type.incompatible)
+        @NonNull Object [] l2b = NullnessUtils.castNonNull(a);
     }
 
     void testArr2(@Nullable Object @NonNull [] a) {
         // another way to use as a cast:
-        NullnessUtils.castNonNull(a)[0].toString();
+        NullnessUtils.castNonNullDeep(a)[0].toString();
     }
 
     /*
@@ -46,24 +49,24 @@ class TestNullnessUtils {
         //:: error: (assignment.type.incompatible) :: error: (accessing.nullable)
         @NonNull Object l3 = a[0][0];
         // one way to use as a cast:
-        @NonNull Object [] [] l4 = NullnessUtils.castNonNull(a);
+        @NonNull Object [] [] l4 = NullnessUtils.castNonNullDeep(a);
     }
 
     void testMultiArr2(@Nullable Object @NonNull [] @Nullable [] a) {
         // another way to use as a cast:
-        NullnessUtils.castNonNull(a)[0][0].toString();
+        NullnessUtils.castNonNullDeep(a)[0][0].toString();
     }
 
     void testMultiArr3(@Nullable Object @Nullable [] @Nullable [] @Nullable [] a) {
         //:: error: (dereference.of.nullable) :: error: (accessing.nullable)
         a[0][0][0].toString();
         // another way to use as a cast:
-        NullnessUtils.castNonNull(a)[0][0][0].toString();
+        NullnessUtils.castNonNullDeep(a)[0][0][0].toString();
     }
 
     public static void main(String[] args) {
         Object[] @Nullable [] err = new Object[10][10];
-        Object [] [] e1 = NullnessUtils.castNonNull(err);
+        Object [] [] e1 = NullnessUtils.castNonNullDeep(err);
         e1[0][0].toString();
     }
 }
