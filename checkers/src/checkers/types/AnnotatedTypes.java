@@ -1159,8 +1159,9 @@ public class AnnotatedTypes {
     public List<AnnotatedTypeMirror> expandVarArgs(AnnotatedExecutableType method,
             List<? extends ExpressionTree> args) {
         List<AnnotatedTypeMirror> parameters = method.getParameterTypes();
-        if (!method.getElement().isVarArgs())
+        if (!method.getElement().isVarArgs()) {
             return parameters;
+        }
 
         AnnotatedArrayType varargs = (AnnotatedArrayType)parameters.get(parameters.size() - 1);
 
@@ -1168,8 +1169,9 @@ public class AnnotatedTypes {
             // Check if one sent an element or an array
             AnnotatedTypeMirror lastArg = factory.getAnnotatedType(args.get(args.size() - 1));
             if (lastArg.getKind() == TypeKind.ARRAY &&
-                    getArrayDepth(varargs) == getArrayDepth((AnnotatedArrayType)lastArg))
+                    getArrayDepth(varargs) == getArrayDepth((AnnotatedArrayType)lastArg)) {
                 return parameters;
+            }
         }
 
         parameters = new ArrayList<AnnotatedTypeMirror>(parameters.subList(0, parameters.size() - 1));
