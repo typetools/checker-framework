@@ -671,12 +671,39 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(node.getExpression());
 
         if (!isSubtype) {
-            // TODO: Test type arguments and array components types
-            // The following
-            // isSubtype = checker.isSubtype(exprType, castType);
-            // would be too restrictive, as we only want to ensure the relation
-            // between annotations, not the whole type.
-            isSubtype = checker.getQualifierHierarchy().isSubtype(exprType.getEffectiveAnnotations(), castType.getEffectiveAnnotations());
+            AnnotatedTypeMirror newCastType;
+            if (castType.getKind() == TypeKind.TYPEVAR) {
+                newCastType = ((AnnotatedTypeVariable)castType).getEffectiveUpperBound();
+            } else {
+                newCastType = castType;
+            }
+            AnnotatedTypeMirror newExprType;
+            if (exprType.getKind() == TypeKind.TYPEVAR) {
+                newExprType = ((AnnotatedTypeVariable)exprType).getEffectiveUpperBound();
+            } else {
+                newExprType = exprType;
+            }
+
+            isSubtype = checker.getTypeHierarchy().isSubtype(newExprType, newCastType);
+            if (isSubtype) {
+                if (newCastType.getKind() == TypeKind.ARRAY &&
+                        newExprType.getKind() != TypeKind.ARRAY) {
+                    // Always warn if the cast contains an array, but the expression
+                    // doesn't, as in "(Object[]) o" where o is of type Object
+                    isSubtype = false;
+                } else if (newCastType.getKind() == TypeKind.DECLARED &&
+                        newExprType.getKind() == TypeKind.DECLARED) {
+                    int castSize = ((AnnotatedDeclaredType) newCastType).getTypeArguments().size();
+                    int exprSize = ((AnnotatedDeclaredType) newExprType).getTypeArguments().size();
+
+                    if (castSize != exprSize) {
+                        // Always warn if the cast and expression contain a different number of
+                        // type arguments, e.g. to catch a cast from "Object" to "List<@NonNull Object>".
+                        // TODO: the same number of arguments actually doesn't guarantee anything.
+                        isSubtype = false;
+                    }
+                }
+            }
         }
 
         if (!isSubtype) {
