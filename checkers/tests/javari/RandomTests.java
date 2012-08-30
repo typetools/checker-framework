@@ -55,6 +55,7 @@ public class RandomTests {
 
     // Casts
     public void cast() {
+        //:: warning: (cast.unsafe)
         List<String> l = (List<String>) new HashMap<String, String>();
     }
 
