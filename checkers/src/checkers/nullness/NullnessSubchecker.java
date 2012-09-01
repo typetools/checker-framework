@@ -38,6 +38,9 @@ public class NullnessSubchecker extends BaseTypeChecker {
 
     protected AnnotationMirror NONNULL, NULLABLE, LAZYNONNULL, PRIMITIVE, POLYNULL;
 
+    // The associated Rawness Checker.
+    protected RawnessSubchecker rawnesschecker;
+
     @Override
     public void initChecker() {
         super.initChecker();
@@ -47,6 +50,18 @@ public class NullnessSubchecker extends BaseTypeChecker {
         LAZYNONNULL = annoFactory.fromClass(LazyNonNull.class);
         PRIMITIVE = annoFactory.fromClass(Primitive.class);
         POLYNULL = annoFactory.fromClass(PolyNull.class);
+
+        rawnesschecker = new RawnessSubchecker();
+        rawnesschecker.init(this.getProcessingEnvironment());
+        rawnesschecker.initChecker();
+    }
+
+    @Override
+    public AnnotatedTypeFactory createFactory(CompilationUnitTree root) {
+        // typeProcess is never called on the rawnesschecker.
+        // We need to at least set the path.
+        rawnesschecker.currentPath = this.currentPath;
+        return new NullnessAnnotatedTypeFactory(this, rawnesschecker, root);
     }
 
     @Override
