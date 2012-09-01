@@ -15,7 +15,6 @@ import checkers.quals.DefaultQualifier;
 import checkers.quals.PolyAll;
 import checkers.quals.Unused;
 import checkers.types.*;
-import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.visitors.AnnotatedTypeScanner;
