@@ -418,7 +418,7 @@ public class AnnotatedTypeFactory {
      */
     public AnnotatedTypeMirror fromMember(Tree tree) {
         if (!(tree instanceof MethodTree || tree instanceof VariableTree)) {
-            SourceChecker.errorAbort("AnnotatedTypeFactory.fromMember: not a method or variable declaration");
+            SourceChecker.errorAbort("AnnotatedTypeFactory.fromMember: not a method or variable declaration: " + tree);
             return null; // dead code
         }
         if (fromTreeCache.containsKey(tree)) {
