@@ -72,9 +72,17 @@ abstract class TypeFromTree extends
         public AnnotatedTypeMirror visitArrayAccess(ArrayAccessTree node,
                 AnnotatedTypeFactory f) {
 
-            AnnotatedTypeMirror type = f.getAnnotatedType(node.getExpression());
-            assert type instanceof AnnotatedArrayType;
-            return ((AnnotatedArrayType)type).getComponentType();
+            AnnotatedTypeMirror preAssCtxt = f.visitorState.getAssignmentContext();
+            try {
+                // TODO: what other trees shouldn't maintain the context?
+                f.visitorState.setAssignmentContext(null);
+
+                AnnotatedTypeMirror type = f.getAnnotatedType(node.getExpression());
+                assert type instanceof AnnotatedArrayType;
+                return ((AnnotatedArrayType)type).getComponentType();
+            } finally {
+                f.visitorState.setAssignmentContext(preAssCtxt);
+            }
         }
 
         @Override
