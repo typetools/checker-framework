@@ -23,6 +23,7 @@ import checkers.quals.Unqualified;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.util.*;
 
+import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
@@ -72,7 +73,7 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
      * @param useFlow whether flow analysis should be performed
      */
     public BasicAnnotatedTypeFactory(Checker checker, CompilationUnitTree root, boolean useFlow) {
-        super(checker, root);
+        super(checker, checker.getQualifierHierarchy(), root);
         this.checker = checker;
         this.treeAnnotator = createTreeAnnotator(checker);
         this.typeAnnotator = createTypeAnnotator(checker);
@@ -201,7 +202,7 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
                 for (AnnotationMirror inf : inferred) {
                     AnnotationMirror present = type.getAnnotationInHierarchy(inf);
                     if (present!=null) {
-                        if (this.qualHierarchy.isSubtype(inf, present)) {
+                        if (this.getQualifierHierarchy().isSubtype(inf, present)) {
                             // TODO: why is the above check needed? Shouldn't inferred
                             // qualifiers always be subtypes?
                             type.replaceAnnotation(inf);
@@ -220,9 +221,15 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
     }
 
     @Override
-    public AnnotatedTypeMirror getDefaultedAnnotatedType(VariableTree tree) {
-        AnnotatedTypeMirror res = this.fromMember(tree);
-        this.annotateImplicit(tree.getType(), res, false);
+    public AnnotatedTypeMirror getDefaultedAnnotatedType(Tree tree) {
+        AnnotatedTypeMirror res = null;
+        if (tree instanceof VariableTree) {
+            res = this.fromMember(tree);
+            this.annotateImplicit(((VariableTree)tree).getType(), res, false);
+        } else if (tree instanceof AssignmentTree) {
+            res = this.fromExpression(((AssignmentTree) tree).getVariable());
+            this.annotateImplicit((AssignmentTree) tree, res, false);
+        }
         return res;
     }
 

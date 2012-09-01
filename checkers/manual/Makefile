@@ -38,13 +38,15 @@ manual.dvi: ${TEX_FILES} bib-update
 	latex manual.tex
 	bibtex manual
 	latex manual.tex
-	latex manual.tex
+	while grep "Rerun to get" manual.log; do latex manual.tex; done
+
 
 manual.pdf: manual.dvi bib-update
 	pdflatex manual.tex
 	bibtex manual
 	pdflatex manual.tex
-	pdflatex manual.tex
+	while grep "Rerun to get" manual.log; do pdflatex manual.tex; done
+
 
 manual.ps: manual.dvi
 	dvips -P cmz -t letter -o manual.ps manual.dvi

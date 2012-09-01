@@ -15,6 +15,7 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
 import checkers.util.AnnotationUtils;
+import checkers.util.QualifierPolymorphism;
 
 /**
  * Class to test {@link AnnotatedTypeMirror} subtype relationships.
@@ -74,10 +75,53 @@ public class TypeHierarchy {
      *
      * @return  a true iff rhs a subtype of lhs
      */
-    public final boolean isSubtype(AnnotatedTypeMirror rhs, AnnotatedTypeMirror lhs) {
+    public boolean isSubtype(AnnotatedTypeMirror rhs, AnnotatedTypeMirror lhs) {
+        rhs = handlePolyAll(rhs);
+        lhs = handlePolyAll(lhs);
+
         boolean result = isSubtypeImpl(rhs, lhs);
         this.visited.clear();
         return result;
+    }
+
+    /**
+     * Replace @PolyAll qualifiers by @PolyXXX qualifiers for each type
+     * system, for which no concrete qualifier is given.
+     * This ensures that the final type has a qualifier for each hierarchy.
+     *
+     * TODO: perform substitution also in type arguments, array components?
+     */
+    protected AnnotatedTypeMirror handlePolyAll(AnnotatedTypeMirror in) {
+        Set<AnnotationMirror> outAnnos = AnnotationUtils.createAnnotationSet();
+        Set<AnnotationMirror> inAnnos = in.getAnnotations();
+
+        boolean hasPolyAll = false;
+        for (AnnotationMirror am : inAnnos) {
+            if (QualifierPolymorphism.isPolyAll(am)) {
+                hasPolyAll = true;
+            } else {
+                outAnnos.add(am);
+            }
+        }
+
+        AnnotatedTypeMirror out;
+        if (hasPolyAll) {
+            out = in.getCopy(false);
+            out.addAnnotations(outAnnos);
+
+            // outAnnos has all annotations except PolyAll.
+            // If there was a polyall, add bottom qualifier of each missing hierarchy.
+
+            for (AnnotationMirror am : qualifierHierarchy.getTopAnnotations()) {
+                if (!out.isAnnotatedInHierarchy(am)) {
+                    out.addAnnotation(qualifierHierarchy.getPolymorphicAnnotation(am));
+                }
+            }
+        } else {
+            out = in;
+        }
+
+        return out;
     }
 
     /**
@@ -123,7 +167,7 @@ public class TypeHierarchy {
                 rhs = ((AnnotatedWildcardType)rhs).getExtendsBound();
             } else if (lhsBase.getKind() == TypeKind.TYPEVAR && rhs.getKind() != TypeKind.TYPEVAR) {
                 AnnotatedTypeVariable lhsb_atv = (AnnotatedTypeVariable)lhsBase;
-                Set<AnnotationMirror> lAnnos = lhsb_atv.getEffectiveLowerBoundAnnotations();
+                Set<AnnotationMirror> lAnnos = lhsb_atv.getEffectiveLowerBound().getAnnotations();
                 return qualifierHierarchy.isSubtype(rhs.getAnnotations(), lAnnos);
             }
         }
@@ -213,9 +257,11 @@ public class TypeHierarchy {
                 rhsSuperClass = ((AnnotatedTypeVariable) rhsSuperClass).getUpperBound();
             }
             // compare lower bound of lhs to upper bound of rhs
-            Set<AnnotationMirror> las = ((AnnotatedTypeVariable) lhsBase).getEffectiveLowerBoundAnnotations();
-            Set<AnnotationMirror> ras = ((AnnotatedTypeVariable) rhsBase).getEffectiveUpperBoundAnnotations();
-            return qualifierHierarchy.isSubtype(ras, las);
+            Set<AnnotationMirror> las = ((AnnotatedTypeVariable) lhsBase).getEffectiveLowerBound().getAnnotations();
+            Set<AnnotationMirror> ras = ((AnnotatedTypeVariable) rhsBase).getEffectiveUpperBound().getAnnotations();
+            // TODO: empty annotation sets happened for captured wildcards. Is there
+            // a nicer solution? Is this a problem somewhere?
+            return las.isEmpty() || qualifierHierarchy.isSubtype(ras, las);
         } else if ((lhsBase.getKind().isPrimitive() || lhsBase.getKind() == TypeKind.DECLARED)
                 && rhsBase.getKind().isPrimitive()) {
             // There are only the main qualifiers and they were compared above.
@@ -400,7 +446,7 @@ public class TypeHierarchy {
             }
             lhs = ((AnnotatedWildcardType)lhs).getEffectiveExtendsBound();
             if (lhs == null) return true;
-            return checker.isSubtype(rhs, lhs);
+            return isSubtype(rhs, lhs);
         }
         // End of copied code.
 
@@ -412,10 +458,6 @@ public class TypeHierarchy {
 
         // In addition, check that the full types are subtypes, to ensure that the
         // remaining qualifiers are correct.
-        // TODO: go back to the type checker and invoke isSubtype from there.
-        // Should we do this more consistently, e.g. also for type arguments?
-        // The problem is that I was overriding isSubtype in the checker, but then
-        // the behavior for arrays didn't adapt.
-        return checker.isSubtype(rhs, lhs);
+        return isSubtype(rhs, lhs);
     }
 }

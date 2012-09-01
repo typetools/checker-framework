@@ -12,13 +12,17 @@ public class Arrays {
     }
 
     public void testMutate() {
+        // Warning only with -Alint:cast:strict.
+        //TODO:: warning: (cast.unsafe)
         String @Mutable [] m = (String @Mutable [])null;
         m[3] = "m";
 
+        //TODO:: warning: (cast.unsafe)
         String @ReadOnly [] ro = (String @ReadOnly [])null;
         //:: error: (assignability.invalid)
         ro[0] = "m";
 
+        //TODO:: warning: (cast.unsafe)
         String @Immutable [] im = (String @Immutable [] )null;
         //:: error: (assignability.invalid)
         im[3] = "n";

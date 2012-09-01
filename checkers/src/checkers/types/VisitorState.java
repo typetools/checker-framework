@@ -20,7 +20,7 @@ public class VisitorState {
     /** The enclosing method tree **/
     private MethodTree mt;
 
-    private Tree assignmentcontext;
+    private AnnotatedTypeMirror assignmentcontext;
 
     /** The visitor's current tree path. */
     private TreePath path;
@@ -53,7 +53,7 @@ public class VisitorState {
         this.mt = mt;
     }
 
-    public void setAssignmentContextTree(Tree assCtxt) {
+    public void setAssignmentContext(AnnotatedTypeMirror assCtxt) {
         this.assignmentcontext = assCtxt;
     }
 
@@ -96,7 +96,7 @@ public class VisitorState {
         return this.mt;
     }
 
-    public Tree getAssignmentContextTree() {
+    public AnnotatedTypeMirror getAssignmentContext() {
         return assignmentcontext;
     }
 

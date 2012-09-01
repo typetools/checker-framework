@@ -10,7 +10,9 @@ public class Varargs {
         aVarargsMethod(s, s);
 
         moreVarargs(new @Odd String[1]);
-        //:: error: (argument.type.incompatible)
+        // The assignment context infers @Odd for the component type.
+        // With invariant array subtyping, this will fail, as the main
+        // type is a subtype.
         moreVarargs(new String @Odd [1]);
         moreVarargs(new @Odd String(), new @Odd String());
         //:: error: (argument.type.incompatible)
