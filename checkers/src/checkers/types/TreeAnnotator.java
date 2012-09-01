@@ -13,13 +13,11 @@ import checkers.quals.ImplicitFor;
 import checkers.quals.TypeQualifiers;
 import checkers.source.SourceChecker;
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
-import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.util.AnnotationUtils;
 
 import com.sun.source.tree.*;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.SimpleTreeVisitor;
-import com.sun.source.util.TreePath;
 
 
 /**
@@ -205,84 +203,62 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
 
     @Override
     public Void visitNewArray(NewArrayTree tree, AnnotatedTypeMirror type) {
+        // TODO: should we perform default action to get trees/tree kinds/...?
+        // defaultAction(tree, type);
+
         // System.out.printf("TreeAnnotator.visitNewArray(%s, %s)%n", tree, type);
+        assert type.getKind() == TypeKind.ARRAY : "TreeAnnotator.visitNewArray: should be an array type";
+        AnnotatedTypeMirror componentType = ((AnnotatedArrayType)type).getComponentType();
+
+        Collection<AnnotationMirror> prev = null;
         if (tree.getInitializers() != null &&
                 tree.getInitializers().size() != 0) {
             // We have initializers, either with or without an array type.
-            Collection<AnnotationMirror> lubs = null;
 
             for (ExpressionTree init: tree.getInitializers()) {
                 AnnotatedTypeMirror iniType = typeFactory.getAnnotatedType(init);
                 Collection<AnnotationMirror> annos = iniType.getAnnotations();
 
-                lubs = (lubs == null) ? annos : qualHierarchy.leastUpperBounds(lubs, annos);
+                prev = (prev == null) ? annos : qualHierarchy.leastUpperBounds(prev, annos);
             }
+        } else {
+            prev = componentType.getAnnotations();
+        }
 
-            assert type.getKind() == TypeKind.ARRAY;
-            if (lubs != null) {
-                AnnotatedTypeMirror componentType = ((AnnotatedArrayType)type).getComponentType();
-                Tree context = typeFactory.getVisitorState().getAssignmentContextTree();
+        assert prev != null : "TreeAnnotator.visitNewArray: violated assumption about qualifiers";
 
-                if (context!=null) {
-                    AnnotatedTypeMirror contextType = null;
-                    if (context instanceof VariableTree) {
-                        contextType = typeFactory.getDefaultedAnnotatedType((VariableTree)context);
-                    } else if (context instanceof IdentifierTree) {
-                        // Within annotations
-                        contextType = typeFactory.getAnnotatedType(context);
-                        if (contextType instanceof AnnotatedExecutableType) {
-                            contextType = ((AnnotatedExecutableType)contextType).getReturnType();
-                        }
-                    } else if (context instanceof AssignmentTree) {
-                        // Within assignments:
-                        // ensure that the array is on the RHS of the assignment.
-                        // TODO: move something like this to TreeUtils?
-                        TreePath treep = TreePath.getPath(typeFactory.root, tree);
-                        Tree t = treep.getParentPath().getLeaf();
-                        while (t != context) {
-                            treep = treep.getParentPath();
-                            if (treep == null) {
-                                break;
-                            }
-                            t = treep.getLeaf();
-                        }
-                        if (treep!=null && treep.getLeaf() == ((AssignmentTree)context).getExpression()) {
-                            contextType = typeFactory.getDefaultedAnnotatedType((AssignmentTree)context);
-                        }
-                    }
-                    if (contextType!=null && contextType instanceof AnnotatedArrayType) {
-                        AnnotatedTypeMirror contextComponentType = ((AnnotatedArrayType) contextType).getComponentType();
-                        if (this.qualHierarchy.isSubtype(lubs, contextComponentType.getAnnotations())) {
-                            for (AnnotationMirror cct : contextComponentType.getAnnotations()) {
-                                if (!componentType.isAnnotatedInHierarchy(cct)) {
-                                    componentType.addAnnotation(cct);
-                                }
-                            }
-                        } else {
-                            // The type of the array initializers is incompatible with the
-                            // context type!
-                            // Somebody else will complain.
-                            for (AnnotationMirror lub : lubs) {
-                                if (!componentType.isAnnotatedInHierarchy(lub)) {
-                                    componentType.addAnnotation(lub);
-                                }
-                            }
-                        }
-                    }
-                } else {
-                    for (AnnotationMirror lub : lubs) {
-                        if (!componentType.isAnnotatedInHierarchy(lub)) {
-                            componentType.addAnnotation(lub);
-                        }
-                    }
-                }
+        AnnotatedTypeMirror context = typeFactory.getVisitorState().getAssignmentContext();
+        Collection<AnnotationMirror> post;
+
+        if (context!=null && context instanceof AnnotatedArrayType) {
+            AnnotatedTypeMirror contextComponentType = ((AnnotatedArrayType) context).getComponentType();
+            if (prev.isEmpty() ||
+                    (!contextComponentType.getAnnotations().isEmpty() &&
+                            this.qualHierarchy.isSubtype(prev, contextComponentType.getAnnotations()))) {
+                post = contextComponentType.getAnnotations();
+            } else {
+                // The type of the array initializers is incompatible with the
+                // context type!
+                // Somebody else will complain.
+                post = prev;
+            }
+        } else {
+            // No context is available - simply use what we have.
+            post = prev;
+        }
+        for (AnnotationMirror an : post) {
+            if (!componentType.isAnnotatedInHierarchy(an)) {
+                componentType.addAnnotation(an);
             }
         }
+
         return super.visitNewArray(tree, type);
     }
 
     @Override
     public Void visitCompoundAssignment(CompoundAssignmentTree node, AnnotatedTypeMirror type) {
+        // TODO: should we perform default action to get trees/tree kinds/...?
+        // defaultAction(node, type);
         if (!type.isAnnotated()) {
             AnnotatedTypeMirror rhs = typeFactory.getAnnotatedType(node.getExpression());
             AnnotatedTypeMirror lhs = typeFactory.getAnnotatedType(node.getVariable());
@@ -294,6 +270,8 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
 
     @Override
     public Void visitBinary(BinaryTree node, AnnotatedTypeMirror type) {
+        // TODO: should we perform default action to get trees/tree kinds/...?
+        // defaultAction(node, type);
         if (!type.isAnnotated()) {
             AnnotatedTypeMirror a = typeFactory.getAnnotatedType(node.getLeftOperand());
             AnnotatedTypeMirror b = typeFactory.getAnnotatedType(node.getRightOperand());
@@ -305,6 +283,8 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
 
     @Override
     public Void visitUnary(UnaryTree node, AnnotatedTypeMirror type) {
+        // TODO: should we perform default action to get trees/tree kinds/...?
+        // defaultAction(node, type);
         if (!type.isAnnotated()) {
             AnnotatedTypeMirror exp = typeFactory.getAnnotatedType(node.getExpression());
             type.replaceAnnotations(exp.getAnnotations());
@@ -327,6 +307,8 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
 
     @Override
     public Void visitTypeCast(TypeCastTree node, AnnotatedTypeMirror type) {
+        // TODO: should we perform default action to get trees/tree kinds/...?
+        // defaultAction(node, type);
         if (!type.isAnnotated()) {
             AnnotatedTypeMirror exprType = typeFactory.getAnnotatedType(node.getExpression());
             if (type.getKind() == TypeKind.TYPEVAR ) {
