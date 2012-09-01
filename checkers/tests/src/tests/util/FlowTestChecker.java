@@ -25,11 +25,11 @@ public final class FlowTestChecker extends BaseTypeChecker {
 
     @Override
     public void initChecker() {
-        super.initChecker();
-
         AnnotationUtils annoFactory = AnnotationUtils.getInstance(processingEnv);
         VALUE = annoFactory.fromClass(Value.class);
         BOTTOM = annoFactory.fromClass(Bottom.class);
+
+        super.initChecker();
     }
 
     @Override
