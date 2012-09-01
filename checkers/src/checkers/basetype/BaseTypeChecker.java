@@ -345,6 +345,9 @@ public abstract class BaseTypeChecker extends SourceChecker {
         // Temporary option to make array subtyping invariant,
         // which will be the new default soon.
         lintSet.add("arrays:invariant");
+        // Temporary option to make casts stricter, in particular when casting
+        // to an array or generic type. This will be the new default soon.
+        lintSet.add("cast:strict");
 
         return lintSet;
     }
