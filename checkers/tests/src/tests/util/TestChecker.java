@@ -34,9 +34,9 @@ public final class TestChecker extends BaseTypeChecker {
 
     @Override
     public void initChecker() {
-        super.initChecker();
         AnnotationUtils annoFactory = AnnotationUtils.getInstance(processingEnv);
         BOTTOM = annoFactory.fromClass(Bottom.class);
+        super.initChecker();
     }
 
     @Override
