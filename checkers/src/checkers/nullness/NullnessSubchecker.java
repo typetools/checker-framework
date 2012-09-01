@@ -1,7 +1,8 @@
 package checkers.nullness;
 
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
+
+import com.sun.source.tree.CompilationUnitTree;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.nullness.quals.*;
@@ -38,9 +39,9 @@ public class NullnessSubchecker extends BaseTypeChecker {
     protected AnnotationMirror NONNULL, NULLABLE, LAZYNONNULL, PRIMITIVE, POLYNULL;
 
     @Override
-    public void initChecker(ProcessingEnvironment processingEnv) {
-        super.initChecker(processingEnv);
-        AnnotationUtils annoFactory = AnnotationUtils.getInstance(env);
+    public void initChecker() {
+        super.initChecker();
+        AnnotationUtils annoFactory = AnnotationUtils.getInstance(processingEnv);
         NONNULL = annoFactory.fromClass(NonNull.class);
         NULLABLE = annoFactory.fromClass(Nullable.class);
         LAZYNONNULL = annoFactory.fromClass(LazyNonNull.class);
