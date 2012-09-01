@@ -14,12 +14,17 @@ User-visible framework improvements:
   Move isAssignable from the BaseTypeChecker to the BaseTypeVisitor; now
     the Checker only consists of factories and logic is contained in the
     Visitor.
+  Better handling of assignment context and improved inference of
+    array creation expressions.
+  Optional stricter checking of casts to array and generic types using
+    the new -Alint=cast:strict flag.
+    This will become the default in the future.
   Improved error messages.
   Maven plugin now works.
 
 Nullness Checker:
-  Improve typing of array creation expressions.
   Forbid creation of arrays with NonNull component type.
+    Special case for "x.toArray(new C[x.size()])".
 
 Internal framework improvements:
   Enable assertion checking.
