@@ -161,8 +161,8 @@ public class QualifierPolymorphism {
      */
     public void annotate(MethodInvocationTree tree, AnnotatedExecutableType type) {
         if (polyQuals.isEmpty()) return;
-        List<AnnotatedTypeMirror> arguments = atypes.getAnnotatedTypes(tree.getArguments());
         List<AnnotatedTypeMirror> requiredArgs = atypes.expandVarArgs(type, tree.getArguments());
+        List<AnnotatedTypeMirror> arguments = atypes.getAnnotatedTypes(requiredArgs, tree.getArguments());
 
         Map<AnnotationMirror, Set<AnnotationMirror>> matchingMapping = collector.visit(arguments, requiredArgs);
         matchingMapping = collector.reduce(matchingMapping,
@@ -177,8 +177,8 @@ public class QualifierPolymorphism {
 
     public void annotate(NewClassTree tree, AnnotatedExecutableType type) {
         if (polyQuals.isEmpty()) return;
-        List<AnnotatedTypeMirror> arguments = atypes.getAnnotatedTypes(tree.getArguments());
         List<AnnotatedTypeMirror> requiredArgs = atypes.expandVarArgs(type, tree.getArguments());
+        List<AnnotatedTypeMirror> arguments = atypes.getAnnotatedTypes(requiredArgs, tree.getArguments());
 
         Map<AnnotationMirror, Set<AnnotationMirror>> matchingMapping = collector.visit(arguments, requiredArgs);
         // TODO: poly on receiver for constructors?
