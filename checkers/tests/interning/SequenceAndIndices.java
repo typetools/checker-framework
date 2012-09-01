@@ -28,7 +28,8 @@ public final class SequenceAndIndices<T extends @Interned Object> {
   @SuppressWarnings("unchecked")
   public boolean equals (Object other) {
     if (other instanceof SequenceAndIndices) {
-      //:: warning: (cast.unsafe)
+      // Warning only with -Alint:cast:strict.
+      //TODO:: warning: (cast.unsafe)
       return equals((SequenceAndIndices<T>) other); // unchecked
     } else {
       return false;
