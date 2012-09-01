@@ -17,7 +17,8 @@ class AnnotatedTypeParams3 {
             // has a different default lower bound.
             // As alternative, see safeGetAnnotation2 below, which instead changes
             // the parameter type.
-            //:: warning: (cast.unsafe)
+            // Warning only with -Alint:cast:strict.
+            //TODO:: warning: (cast.unsafe)
             annotation = f.getAnnotation( (Class<@NonNull T>) annotationClass);
         } catch (Exception e) {
             annotation = null;
