@@ -145,12 +145,6 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
     }
 
     @Override
-    protected void postInit() {
-        super.postInit();
-        flow.scan(root);
-    }
-
-    @Override
     protected Flow createFlow(NullnessSubchecker checker, CompilationUnitTree root,
             Set<AnnotationMirror> flowQuals) {
         return new NullnessFlow(checker, root, flowQuals, this);
@@ -588,25 +582,6 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
                 type.replaceAnnotation(NONNULL);
             }
             return null; // super.visitUnary(node, type);
-        }
-
-        @Override
-        public Void visitNewArray(NewArrayTree node, AnnotatedTypeMirror type) {
-            // The super method only annotates array creations with initializers,
-            // e.g. "{5, 6}" and "new Integer[] {7, 8}".
-            // If super determined these are non-null, that is correct.
-            super.visitNewArray(node, type);
-            assert type.getKind() == TypeKind.ARRAY;
-            AnnotatedTypeMirror componentType = ((AnnotatedArrayType)type).getComponentType();
-            if (!componentType.getKind().isPrimitive() &&
-                    !componentType.isAnnotatedInHierarchy(NONNULL)) {
-                if (NullnessVisitor.isNewArrayAllZeroDims(node)) {
-                    componentType.addAnnotation(NONNULL);
-                } else {
-                    componentType.addAnnotation(NULLABLE);
-                }
-            }
-            return null;
         }
     }
 
