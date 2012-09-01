@@ -299,8 +299,8 @@ public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
         AnnotatedExecutableType exType = fromUse.first;
         List<AnnotatedTypeMirror> typeargs = fromUse.second;
 
-        List<AnnotatedTypeMirror> argumentTypes = atypes.getAnnotatedTypes(tree.getArguments());
         List<AnnotatedTypeMirror> parameterTypes = atypes.expandVarArgs(exType, tree.getArguments());
+        List<AnnotatedTypeMirror> argumentTypes = atypes.getAnnotatedTypes(parameterTypes, tree.getArguments());
 
         boolean allMutable = true, allPolyRead = true, allThisMutable = true;
 
@@ -381,8 +381,9 @@ public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
 
         AnnotatedTypeMirror returnType = type.getReturnType();
 
-        List<AnnotatedTypeMirror> argumentTypes = atypes.getAnnotatedTypes(tree.getArguments());
         List<AnnotatedTypeMirror> parameterTypes = atypes.expandVarArgs(type, tree.getArguments());
+        List<AnnotatedTypeMirror> argumentTypes = atypes.getAnnotatedTypes(parameterTypes, tree.getArguments());
+
         AnnotatedTypeMirror receiverType = type.getReceiverType();
 
         boolean allMutable = true, allPolyRead = true, allThisMutable = true;
