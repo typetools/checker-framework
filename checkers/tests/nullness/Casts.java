@@ -34,7 +34,8 @@ public class Casts {
 
     void testUnsafeCastArray2(@NonNull Object x) {
         // We don't know about the component type of x -> warn
-        //:: warning: (cast.unsafe)
+        // Warning only with -Alint:cast:strict.
+        //TODO:: warning: (cast.unsafe)
         @NonNull Object[] y = (@NonNull Object[]) x;
         y[0].toString();
     }
@@ -55,9 +56,10 @@ public class Casts {
     }
 
     void testUnsafeCastList3(@NonNull Object x) {
-        //:: warning: (cast.unsafe)
+        // Warning only with -Alint:cast:strict.
+        //TODO:: warning: (cast.unsafe)
         java.util.List<@Nullable Object> y = (java.util.List<@Nullable Object>) x;
-        //:: warning: (cast.unsafe)
+        //TODO:: warning: (cast.unsafe)
         java.util.List<@NonNull Object> y2 = (java.util.ArrayList<@NonNull Object>) x;
     }
 
