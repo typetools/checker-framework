@@ -23,6 +23,7 @@ import com.sun.tools.javac.tree.JCTree;
 
 import checkers.source.*;
 import checkers.types.AnnotatedTypeFactory;
+import checkers.util.TreeUtils;
 
 /**
  * A specialized checker for testing purposes.  It compares an expression's
@@ -255,7 +256,7 @@ public class FactoryTestChecker extends SourceChecker {
 
         @Override
         public Void scan(Tree tree, Void p) {
-            if (tree instanceof ExpressionTree) {
+            if (TreeUtils.isExpressionTree(tree)) {
                 ExpressionTree expTree = (ExpressionTree) tree;
                 TreeSpec treeSpec =
                     new TreeSpec(expTree.toString().trim(),

@@ -6,11 +6,13 @@ import java.util.Arrays;
 */
 public class IdentityArrayList {
     public <T> T[] toArray(T[] a) {
+        //:: warning: (cast.unsafe)
         return (T[]) Arrays.copyOf(null, 0, a.getClass());
     }
 
     public <T> T[] toArray2(T[] a) {
         wc(null, 0, new java.util.LinkedList<T[]>());
+        //:: warning: (cast.unsafe)
         return (T[]) myCopyOf(null, 0, a.getClass());
     }
 

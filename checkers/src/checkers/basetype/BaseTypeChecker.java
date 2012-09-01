@@ -185,10 +185,18 @@ public abstract class BaseTypeChecker extends SourceChecker {
             AnnotationMirror typeQualifierAnno = annoFactory.fromClass(typeQualifier);
             assert typeQualifierAnno!=null : "Loading annotation \"" + typeQualifier + "\" failed!";
             factory.addQualifier(typeQualifierAnno);
+            // Polymorphic qualifiers can't declare their supertypes.
+            // An error is raised if one is present.
+            if (typeQualifier.getAnnotation(PolymorphicQualifier.class) != null) {
+                if (typeQualifier.getAnnotation(SubtypeOf.class) != null) {
+                    // This is currently not supported. At some point we might add
+                    // polymorphic qualifiers with upper and lower bounds.
+                    errorAbort("BaseTypeChecker: " + typeQualifier + " is polymorphic and specifies super qualifiers. " +
+                        "Remove the @checkers.quals.SubtypeOf or @checkers.quals.PolymorphicQualifier annotation from it.");
+                }
+                continue;
+            }
             if (typeQualifier.getAnnotation(SubtypeOf.class) == null) {
-                // polymorphic qualifiers don't need to declare their supertypes
-                if (typeQualifier.getAnnotation(PolymorphicQualifier.class) != null)
-                    continue;
                 errorAbort("BaseTypeChecker: " + typeQualifier + " does not specify its super qualifiers. " +
                     "Add an @checkers.quals.SubtypeOf annotation to it.");
             }
@@ -200,8 +208,6 @@ public abstract class BaseTypeChecker extends SourceChecker {
                 factory.addSubtype(typeQualifierAnno, superAnno);
             }
         }
-        // This no longer seems necessary.
-        // factory.setBottomQualifier(annoFactory.fromClass(Bottom.class));
 
         QualifierHierarchy hierarchy = factory.build();
         if (hierarchy.getTypeQualifiers().size() < 1) {
@@ -235,6 +241,12 @@ public abstract class BaseTypeChecker extends SourceChecker {
      */
     protected TypeHierarchy createTypeHierarchy() {
         return new TypeHierarchy(this, getQualifierHierarchy());
+    }
+
+    public final TypeHierarchy getTypeHierarchy() {
+        if (typeHierarchy == null)
+            typeHierarchy = createTypeHierarchy();
+        return typeHierarchy;
     }
 
     /**
@@ -310,48 +322,6 @@ public abstract class BaseTypeChecker extends SourceChecker {
         return new BasicAnnotatedTypeFactory<BaseTypeChecker>(this, root);
     }
 
-    // **********************************************************************
-    // Type Relationship queries
-    // **********************************************************************
-
-    /**
-     * Tests whether one annotated type is a subtype of another, with
-     * respect to the annotations on these types.
-     *
-     * Subclasses may wish to ignore annotations that are not related to the
-     * type qualifiers they check.
-     *
-     * This implementation follows the subtype rules specified in
-     * {@link TypeHierarchy}.  Its behavior is undefined for any annotations
-     * not specified by either {@link TypeQualifiers} or the result of
-     * {@link #getSupportedTypeQualifiers()}.
-     * @param sub the child type
-     * @param sup the parent type
-     *
-     * @return true iff {@code sub} is a subtype of {@code sup}
-     */
-    // Should other classes simply depend on TypeHierarchy directly?
-    public boolean isSubtype(AnnotatedTypeMirror sub, AnnotatedTypeMirror sup) {
-        return typeHierarchy.isSubtype(sub, sup);
-    }
-
-    /**
-     * Tests whether the variable accessed is an assignable variable or not,
-     * given the current scope
-     *
-     * TODO: document which parameters are nullable; e.g. receiverType is null in
-     * many cases, e.g. local variables.
-     *
-     * @param varType   the annotated variable type
-     * @param variable  tree used to access the variable
-     * @return  true iff variable is assignable in the current scope
-     */
-    public boolean isAssignable(AnnotatedTypeMirror varType,
-            AnnotatedTypeMirror receiverType, Tree variable,
-            AnnotatedTypeFactory factory) {
-        return true;
-    }
-
 
     // **********************************************************************
     // Misc. methods
@@ -375,6 +345,9 @@ public abstract class BaseTypeChecker extends SourceChecker {
         // Temporary option to make array subtyping invariant,
         // which will be the new default soon.
         lintSet.add("arrays:invariant");
+        // Temporary option to make casts stricter, in particular when casting
+        // to an array or generic type. This will be the new default soon.
+        lintSet.add("cast:strict");
 
         return lintSet;
     }

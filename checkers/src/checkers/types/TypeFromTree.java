@@ -72,9 +72,17 @@ abstract class TypeFromTree extends
         public AnnotatedTypeMirror visitArrayAccess(ArrayAccessTree node,
                 AnnotatedTypeFactory f) {
 
-            AnnotatedTypeMirror type = f.getAnnotatedType(node.getExpression());
-            assert type instanceof AnnotatedArrayType;
-            return ((AnnotatedArrayType)type).getComponentType();
+            AnnotatedTypeMirror preAssCtxt = f.visitorState.getAssignmentContext();
+            try {
+                // TODO: what other trees shouldn't maintain the context?
+                f.visitorState.setAssignmentContext(null);
+
+                AnnotatedTypeMirror type = f.getAnnotatedType(node.getExpression());
+                assert type instanceof AnnotatedArrayType;
+                return ((AnnotatedArrayType)type).getComponentType();
+            } finally {
+                f.visitorState.setAssignmentContext(preAssCtxt);
+            }
         }
 
         @Override
@@ -113,12 +121,31 @@ abstract class TypeFromTree extends
             if (trueType.equals(falseType))
                 return trueType;
 
+            // TODO: We would want this:
+            /*
             AnnotatedTypeMirror alub = f.type(node);
             trueType = f.atypes.asSuper(trueType, alub);
             falseType = f.atypes.asSuper(falseType, alub);
+            */
 
-            if (trueType!=null && trueType.equals(falseType))
+            // instead of:
+            AnnotatedTypeMirror alub = f.type(node);
+            AnnotatedTypeMirror assuper;
+            assuper = f.atypes.asSuper(trueType, alub);
+            if (assuper != null) {
+                trueType = assuper;
+            }
+            assuper = f.atypes.asSuper(falseType, alub);
+            if (assuper != null) {
+                falseType = assuper;
+            }
+            // however, asSuper returns null for compound types,
+            // e.g. see Ternary test case for Nullness Checker.
+            // TODO: Can we adapt asSuper to handle those correctly?
+
+            if (trueType!=null && trueType.equals(falseType)) {
                 return trueType;
+            }
 
             List<AnnotatedTypeMirror> types = new ArrayList<AnnotatedTypeMirror>();
             types.add(trueType);

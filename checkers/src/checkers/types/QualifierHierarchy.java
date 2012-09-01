@@ -47,6 +47,13 @@ public abstract class QualifierHierarchy {
     public abstract Set<AnnotationMirror> getBottomAnnotations();
 
     /**
+     * 
+     * @param start Any qualifier from the type hierarchy.
+     * @return The polymorphic qualifier for that hierarchy
+     */
+    public abstract AnnotationMirror getPolymorphicAnnotation(AnnotationMirror start);
+
+    /**
      * Returns the names of all type qualifiers in this type qualifier
      * hierarchy.
      * TODO: What is the relation to {@link checkers.basetype.BaseTypeChecker#getSupportedTypeQualifiers()}?
@@ -124,7 +131,10 @@ public abstract class QualifierHierarchy {
         if (annos1.size() == 1 && annos2.size() == 1) {
             AnnotationMirror a1 = annos1.iterator().next();
             AnnotationMirror a2 = annos2.iterator().next();
-            return Collections.singleton(leastUpperBound(a1, a2));
+            AnnotationMirror lub = leastUpperBound(a1, a2);
+            assert lub!=null : "QualifierHierarchy.leastUpperBounds: lub of " + a1 +
+                    " and " + a2 + " gives null!";
+            return Collections.singleton(lub);
         }
 
         assert annos1.size() == annos2.size() && annos1.size()!=0 :
@@ -185,5 +195,16 @@ public abstract class QualifierHierarchy {
 
         return result;
     }
+
+    public AnnotationMirror findCorrespondingAnnotation(
+            AnnotationMirror aliased, Set<AnnotationMirror> annotations) {
+        AnnotationMirror top = this.getTopAnnotation(aliased);
+        for(AnnotationMirror anno : annotations) {
+            if (this.isSubtype(anno, top)) {
+                return anno;
+            }
+        }
+        return null;
+	}
 
 }

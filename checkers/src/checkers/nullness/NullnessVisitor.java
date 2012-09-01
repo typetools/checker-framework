@@ -3,6 +3,7 @@ package checkers.nullness;
 import java.lang.annotation.Annotation;
 import java.util.*;
 
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.*;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
@@ -17,6 +18,7 @@ import checkers.nullness.quals.*;
 import checkers.quals.Unused;
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeMirror;
+import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
@@ -52,8 +54,18 @@ import com.sun.source.tree.*;
 public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
 
     /** The {@link NonNull} annotation */
-    private final AnnotationMirror NONNULL, PRIMITIVE, RAW;
+    private final AnnotationMirror NONNULL, /*NULLABLE, LAZYNONNULL,*/ PRIMITIVE, RAW;
     private final TypeMirror stringType;
+
+    /**
+     * The element for java.util.Collection.size().
+     */
+    private final ExecutableElement collectionSize;
+
+    /**
+     * The element for java.util.Collection.toArray(T).
+     */
+    private final ExecutableElement collectionToArray;
 
     /**
      * Creates a new visitor for type-checking {@link NonNull}.
@@ -64,9 +76,16 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
     public NullnessVisitor(NullnessSubchecker checker, CompilationUnitTree root) {
         super(checker, root);
         NONNULL = checker.NONNULL;
+        // NULLABLE = checker.NULLABLE;
+        // LAZYNONNULL = checker.LAZYNONNULL;
         PRIMITIVE = checker.PRIMITIVE;
         RAW = ((NullnessAnnotatedTypeFactory)atypeFactory).RAW;
         stringType = elements.getTypeElement("java.lang.String").asType();
+
+        ProcessingEnvironment env = checker.getProcessingEnvironment();
+        this.collectionSize = TreeUtils.getMethod("java.util.Collection", "size", 0, env);
+        this.collectionToArray = TreeUtils.getMethod("java.util.Collection", "toArray", 1, env);
+
         checkForAnnotatedJdk();
     }
 
@@ -90,6 +109,82 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
     public Void visitArrayAccess(ArrayAccessTree node, Void p) {
         checkForNullability(node.getExpression(), "accessing.nullable");
         return super.visitArrayAccess(node, p);
+    }
+
+    @Override
+    public Void visitNewArray(NewArrayTree node, Void p) {
+        AnnotatedArrayType type = atypeFactory.getAnnotatedType(node);
+        AnnotatedTypeMirror componentType = type.getComponentType();
+        if (componentType.hasAnnotation(NONNULL)) {
+            if (!isNewArrayAllZeroDims(node) &&
+                    !isNewArrayInToArray(node)) {
+                checker.report(Result.failure("new.array.type.invalid",
+                        componentType.getAnnotations(), type.toString()), node);
+            }
+        }
+
+        return super.visitNewArray(node, p);
+    }
+
+    /** Determine whether all dimensions given in a new array expression
+     * have zero as length. For example "new Object[0][0];".
+     * Also true for empty dimensions, as in "new Object[] {...}".
+     */
+    private static boolean isNewArrayAllZeroDims(NewArrayTree node) {
+        boolean isAllZeros = true;
+        for (ExpressionTree dim : node.getDimensions()) {
+            if (dim instanceof LiteralTree) {
+                Object val = ((LiteralTree)dim).getValue();
+                if (!(val instanceof Number) ||
+                        !(new Integer(0).equals(((Number)val)))) {
+                    isAllZeros = false;
+                    break;
+                }
+            } else {
+                isAllZeros = false;
+                break;
+            }
+        }
+        return isAllZeros;
+    }
+
+    private boolean isNewArrayInToArray(NewArrayTree node) {
+        if (node.getDimensions().size()!=1) {
+            return false;
+        }
+
+        ExpressionTree dim = node.getDimensions().get(0);
+        ProcessingEnvironment env = checker.getProcessingEnvironment();
+
+        if (!TreeUtils.isMethodInvocation(dim, collectionSize, env)) {
+            return false;
+        }
+
+        ExpressionTree rcvsize = ((MethodInvocationTree) dim).getMethodSelect();
+        if (!(rcvsize instanceof MemberSelectTree)) {
+            return false;
+        }
+        rcvsize = ((MemberSelectTree)rcvsize).getExpression();
+        if (!(rcvsize instanceof IdentifierTree)) {
+            return false;
+        }
+
+        Tree encl = getCurrentPath().getParentPath().getLeaf();
+
+        if (!TreeUtils.isMethodInvocation(encl, collectionToArray, env)) {
+            return false;
+        }
+
+        ExpressionTree rcvtoarray = ((MethodInvocationTree) encl).getMethodSelect();
+        if (!(rcvtoarray instanceof MemberSelectTree)) {
+            return false;
+        }
+        rcvtoarray = ((MemberSelectTree)rcvtoarray).getExpression();
+        if (!(rcvtoarray instanceof IdentifierTree)) {
+            return false;
+        }
+
+        return ((IdentifierTree)rcvsize).getName() == ((IdentifierTree)rcvtoarray).getName();
     }
 
     /** Case 4: Check for thrown exception nullness */
@@ -707,4 +802,12 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
         return super.isValidUse(type);
     }
 
+    /* In isValidUse we cannot distinguish between the type in an array creation,
+     * which has to be Nullable, and other array types. Therefore, we override
+     * visitNewArray.
+    @Override
+    public boolean isValidUse(AnnotatedArrayType type) {
+        return true;
+    }
+    */
 }

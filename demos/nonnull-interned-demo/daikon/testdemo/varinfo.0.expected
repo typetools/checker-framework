@@ -1,3 +1,12 @@
+src/daikon/VarInfo.java:1183: warning: "@Interned Object" may not be casted to the type "@Interned long @Interned []"
+    return (long[]) raw;
+           ^
+src/daikon/VarInfo.java:1213: warning: "@Interned Object" may not be casted to the type "@Interned double @Interned []"
+    return (double[]) raw;
+           ^
+src/daikon/VarInfo.java:1233: warning: "@Interned Object" may not be casted to the type "String @Interned []"
+    return (String[]) raw;
+           ^
 src/daikon/VarInfo.java:3589: error: incompatible types.
     vi.str_name = seq.apply_subscript (String.format ("%s..%s", begin_str,
                                       ^
@@ -14,6 +23,7 @@ src/daikon/VarInfo.java:3805: error: incompatible types.
   found   : String
   required: @Interned String
 3 errors
+3 warnings
 
 BUILD FAILED
 build.xml:9: The following error occurred while executing this line:

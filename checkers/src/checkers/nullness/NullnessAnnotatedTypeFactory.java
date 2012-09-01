@@ -15,6 +15,7 @@ import checkers.quals.DefaultQualifier;
 import checkers.quals.PolyAll;
 import checkers.quals.Unused;
 import checkers.types.*;
+import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.visitors.AnnotatedTypeScanner;
@@ -66,8 +67,11 @@ import com.sun.tools.javac.code.Attribute.TypeCompound;
 public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<NullnessSubchecker> {
 
     private final DependentTypes dependentTypes;
+
     /*package*/ final AnnotatedTypeFactory rawnessFactory;
-    private final AnnotatedTypeFactory plainFactory;
+
+    /** Factory for arbitrary qualifiers, used for declarations and "unused" qualifier. */
+    private final GeneralAnnotatedTypeFactory generalFactory;
 
     private final AnnotationCompleter completer = new AnnotationCompleter();
 
@@ -85,20 +89,17 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
             CompilationUnitTree root) {
         super(checker, root);
 
-        plainFactory = new AnnotatedTypeFactory(checker.getProcessingEnvironment(), null, root, null);
+        generalFactory = new GeneralAnnotatedTypeFactory(checker, root);
 
-        // TODO: why is this not a KeyForAnnotatedTypeFactory?
-        // What qualifiers does it insert? The qualifier hierarchy is null.
-        AnnotatedTypeFactory mapGetFactory = new AnnotatedTypeFactory(checker.getProcessingEnvironment(), null, root, null);
-        mapGetHeuristics = new MapGetHeuristics(env, this, mapGetFactory);
+        mapGetHeuristics = new MapGetHeuristics(env, this, generalFactory);
         systemGetPropertyHandler = new SystemGetPropertyHandler(env, this);
 
         NONNULL = checker.NONNULL;
         NULLABLE = checker.NULLABLE;
-        LAZYNONNULL = this.annotations.fromClass(LazyNonNull.class);
+        LAZYNONNULL = checker.LAZYNONNULL;
         RAW = this.annotations.fromClass(Raw.class);
         PRIMITIVE = checker.PRIMITIVE;
-        POLYNULL = this.annotations.fromClass(PolyNull.class);
+        POLYNULL = checker.POLYNULL;
         POLYALL = this.annotations.fromClass(PolyAll.class);
         UNUSED = this.annotations.fromClass(Unused.class);
 
@@ -131,7 +132,7 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
         defaults.addAbsoluteDefault(NONNULL, Collections.singleton(DefaultLocation.ALL_EXCEPT_LOCALS));
         defaults.setLocalVariableDefault(Collections.singleton(NULLABLE));
 
-        this.dependentTypes = new DependentTypes(checker.getProcessingEnvironment(), root);
+        this.dependentTypes = new DependentTypes(checker, root);
 
         rawnessFactory = rawnesschecker.createFactory(root);
 
@@ -139,12 +140,6 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
         this.collectionToArrayHeuristics = new CollectionToArrayHeuristics(env, this);
 
         this.postInit();
-    }
-
-    @Override
-    protected void postInit() {
-        super.postInit();
-        flow.scan(root);
     }
 
     @Override
@@ -266,7 +261,7 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
     public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> constructorFromUse(NewClassTree tree) {
         Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> fromUse = super.constructorFromUse(tree);
         AnnotatedExecutableType constructor = fromUse.first;
-        dependentTypes.handleConstructor(tree, constructor);
+        dependentTypes.handleConstructor(tree, generalFactory.getAnnotatedType(tree), constructor);
         return fromUse;
     }
 
@@ -316,7 +311,7 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
                 return false;
             }
         } else {
-            AnnotatedTypeMirror receiver = plainFactory.getReceiverType((ExpressionTree)tree);
+            AnnotatedTypeMirror receiver = generalFactory.getReceiverType((ExpressionTree)tree);
             if (receiver == null || receiver.getAnnotation(whenName) == null) {
                 return false;
             }
@@ -440,7 +435,7 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
                 type.removeAnnotation(NONNULL);
             }
 
-            assert type.isAnnotated() : type;
+            assert type.isAnnotated() : "NullnessAnnotatedTypeFactory found un-annotated type: " + type;
 
             return super.scan(type, p);
         }
@@ -474,10 +469,10 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
 
             if (elt.getKind() == ElementKind.CONSTRUCTOR)
                 // case 11. Add @Raw to constructors.
-                type.getReceiverType().addAnnotation(RAW);
+                type.getReceiverType().replaceAnnotation(RAW);
             else if (!ElementUtils.isStatic(elt))
                 // case 10 Add @NonNull to non-static non-constructors.
-                type.getReceiverType().addAnnotation(NONNULL);
+                type.getReceiverType().replaceAnnotation(NONNULL);
 
             return super.visitExecutable(type, p);
         }
@@ -489,7 +484,7 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
                     // Hack: Special case Void.class
                     && (type.getElement() == null || !type.getElement().getKind().isClass())
                     && !type.isAnnotated()) {
-                type.addAnnotation(NULLABLE);
+                type.replaceAnnotation(NULLABLE);
             }
 
             return super.visitDeclared(type, p);
@@ -530,18 +525,9 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
             // fixed we manually inspect enclosing catch blocks.
             // case 9. exception parameter
             if (isExceptionParameter(node))
-                type.addAnnotation(NONNULL);
+                type.replaceAnnotation(NONNULL);
 
             return super.visitIdentifier(node, type);
-        }
-
-        @Override
-        public Void visitTypeCast(TypeCastTree node, AnnotatedTypeMirror type) {
-            if (!type.isAnnotated()) {
-                AnnotatedTypeMirror exprType = getAnnotatedType(node.getExpression());
-                type.addAnnotations(exprType.getAnnotations());
-            }
-            return super.visitTypeCast(node, type);
         }
 
         @Override
@@ -552,7 +538,7 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
             AnnotatedExecutableType execType = (AnnotatedExecutableType)type;
             if (!execType.getReceiverType().isAnnotated()
                     && TreeUtils.containsThisConstructorInvocation(node))
-            execType.getReceiverType().addAnnotation(NONNULL);
+            execType.getReceiverType().replaceAnnotation(NONNULL);
 
             return super.visitMethod(node, type);
         }

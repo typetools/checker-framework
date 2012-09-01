@@ -19,13 +19,15 @@ public class ArrayArgs {
         test(s2);
         //:: error: (assignment.type.incompatible)
         @NonNull String[] s3 = new String[] { "hello", null, "goodbye" };
-        //:: error: (assignment.type.incompatible)
+        //:: error: (new.array.type.invalid)
         @NonNull String[] s4 = new String[3];
 
-        // TODO:  uncomment when issue 25 is fixed
-        // String[] s5 = new String[] { "hello", "goodbye" };
-        // test(s5);
-        // @NonNull String[] s6 = new String[] { "hello", "goodbye" };
-        // test(s6);
+        // TODO: when issue 25 is fixed, the following is safe
+        // and no error needs to be raised.
+        String[] s5 = new String[] { "hello", "goodbye" };
+        //:: error: (argument.type.incompatible)
+        test(s5);
+        @NonNull String[] s6 = new String[] { "hello", "goodbye" };
+        test(s6);
     }
 }
