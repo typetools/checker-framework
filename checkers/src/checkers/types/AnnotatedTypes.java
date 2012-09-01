@@ -1185,17 +1185,27 @@ public class AnnotatedTypes {
      * Return a list of the AnnotatedTypeMirror of the passed
      * expression trees, in the same order as the trees.
      *
+     * @param paramTypes The parameter types to use as assignment context
      * @param trees the AST nodes
      * @return  a list with the AnnotatedTypeMirror of each tree in trees.
      */
     public List<AnnotatedTypeMirror> getAnnotatedTypes(
-            Iterable<? extends ExpressionTree> trees) {
-        List<AnnotatedTypeMirror> types =
-            new ArrayList<AnnotatedTypeMirror>();
+            List<AnnotatedTypeMirror> paramTypes, List<? extends ExpressionTree> trees) {
+        assert paramTypes.size() == trees.size() : "AnnotatedTypes.getAnnotatedTypes: size mismatch! " +
+            "Parameter types: " + paramTypes + " Arguments: " + trees;
+        List<AnnotatedTypeMirror> types = new ArrayList<AnnotatedTypeMirror>();
+        AnnotatedTypeMirror preAssCtxt = factory.visitorState.getAssignmentContext();
 
-        for (ExpressionTree tree : trees)
-            types.add(factory.getAnnotatedType(tree));
-
+        try {
+            for (int i = 0; i < trees.size(); ++i) {
+                AnnotatedTypeMirror param = paramTypes.get(i);
+                factory.visitorState.setAssignmentContext(param);
+                ExpressionTree arg = trees.get(i);
+                types.add(factory.getAnnotatedType(arg));
+            }
+        } finally {
+            factory.visitorState.setAssignmentContext(preAssCtxt);
+        }
         return types;
     }
 
