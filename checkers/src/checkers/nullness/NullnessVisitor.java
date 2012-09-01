@@ -115,12 +115,12 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
     public Void visitNewArray(NewArrayTree node, Void p) {
         AnnotatedArrayType type = atypeFactory.getAnnotatedType(node);
         AnnotatedTypeMirror componentType = type.getComponentType();
-        if (componentType.hasAnnotation(NONNULL)) {
-            if (!isNewArrayAllZeroDims(node) &&
-                    !isNewArrayInToArray(node)) {
-                checker.report(Result.failure("new.array.type.invalid",
-                        componentType.getAnnotations(), type.toString()), node);
-            }
+        if (componentType.hasAnnotation(NONNULL) &&
+                !isNewArrayAllZeroDims(node) &&
+                !isNewArrayInToArray(node) &&
+                !checker.getLintOption("arrays:allownonnullcomponents", false)) {
+            checker.report(Result.failure("new.array.type.invalid",
+                    componentType.getAnnotations(), type.toString()), node);
         }
 
         return super.visitNewArray(node, p);
