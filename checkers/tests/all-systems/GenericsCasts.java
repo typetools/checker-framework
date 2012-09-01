@@ -11,7 +11,8 @@ class GenericsCasts {
   Data<?> forName(String p) { throw new Error(""); }
   void m() {
       // Cast from a wildcard to a normal type argument.
-      //:: warning: (cast.unsafe)
+      // Warning only with -Alint:cast:strict.
+      //TODO:: warning: (cast.unsafe)
       Data<GenericsCasts> c = (Data<GenericsCasts>) forName("HaHa!");
   }
 
@@ -25,7 +26,8 @@ class GenericsCasts {
       }
       void trouble() {
           Queue<K> queue = new Queue<K>();
-          //:: warning: (cast.unsafe)
+          // Warning only with -Alint:cast:strict.
+          //TODO:: warning: (cast.unsafe)
           Entry<K, V> e = (Entry<K, V>) queue.poll();
       }
   }
