@@ -8,7 +8,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.SupportedOptions;
 import javax.lang.model.element.AnnotationMirror;
 
@@ -35,9 +34,9 @@ public class UnitsChecker extends BaseTypeChecker {
     protected AnnotationUtils utils;
 
     @Override
-    public void initChecker(ProcessingEnvironment env) {
-        utils = AnnotationUtils.getInstance(env);
-        super.initChecker(env);
+    public void initChecker() {
+        utils = AnnotationUtils.getInstance(processingEnv);
+        super.initChecker();
     }
 
     /** Copied from BasicChecker and adapted "quals" to "units".
@@ -45,12 +44,12 @@ public class UnitsChecker extends BaseTypeChecker {
     @Override
     @SuppressWarnings("unchecked")
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        AnnotationUtils annoUtils = AnnotationUtils.getInstance(env);
+        AnnotationUtils annoUtils = AnnotationUtils.getInstance(processingEnv);
 
         Set<Class<? extends Annotation>> qualSet =
                 new HashSet<Class<? extends Annotation>>();
 
-        String qualNames = env.getOptions().get("units");
+        String qualNames = processingEnv.getOptions().get("units");
         if (qualNames == null) {
         } else {
             for (String qualName : qualNames.split(",")) {
@@ -71,7 +70,7 @@ public class UnitsChecker extends BaseTypeChecker {
         // TODO: we assume that all the standard units only use this. For absolute correctness,
         // go through each and look for a UnitsRelations annotation.
         unitsRel.put("checkers.units.UnitsRelationsDefault",
-                new UnitsRelationsDefault().init(annoUtils, env));
+                new UnitsRelationsDefault().init(annoUtils, processingEnv));
 
         // Explicitly add the Unqualified type.
         qualSet.add(Unqualified.class);
@@ -143,7 +142,7 @@ public class UnitsChecker extends BaseTypeChecker {
 
                 if (!unitsRel.containsKey(classname)) {
                     try {
-                        unitsRel.put(classname, ((UnitsRelations) theclass.newInstance()).init(annoUtils, env));
+                        unitsRel.put(classname, ((UnitsRelations) theclass.newInstance()).init(annoUtils, processingEnv));
                     } catch (InstantiationException e) {
                         // TODO
                         e.printStackTrace();
@@ -175,7 +174,7 @@ public class UnitsChecker extends BaseTypeChecker {
      */
     @Override
     public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
-        return new UnitsQualifierHierarchy(factory, AnnotationUtils.getInstance(env).fromClass(Bottom.class));
+        return new UnitsQualifierHierarchy(factory, AnnotationUtils.getInstance(processingEnv).fromClass(Bottom.class));
     }
 
     protected class UnitsQualifierHierarchy extends GraphQualifierHierarchy {
