@@ -11,7 +11,6 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.SupportedOptions;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
@@ -80,11 +79,11 @@ public class FactoryTestChecker extends SourceChecker {
     SourceChecker checker;
 
     @Override
-    public void initChecker(ProcessingEnvironment p) {
-        super.initChecker(p);
+    public void initChecker() {
+        super.initChecker();
 
         // Find factory constructor
-        String checkerClassName = env.getOptions().get("checker");
+        String checkerClassName = processingEnv.getOptions().get("checker");
         try {
             if (checkerClassName != null) {
                 Class<?> checkerClass = Class.forName(checkerClassName);

@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import checkers.nullness.quals.*;
-import checkers.source.*;
-import checkers.util.AggregateChecker;
+import checkers.source.AggregateChecker;
+import checkers.source.SourceChecker;
 
 /**
  * A typechecker plug-in for the Rawness type system qualifier that finds (and

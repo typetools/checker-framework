@@ -1,6 +1,5 @@
 package lubglb;
 
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 
 import lubglb.quals.*;
@@ -15,10 +14,10 @@ public class LubGlbChecker extends BaseTypeChecker {
     private AnnotationMirror B, C, D, E; // A and F not needed
 
     @Override
-    public void initChecker(ProcessingEnvironment env) {
-        super.initChecker(env);
+    public void initChecker() {
+        super.initChecker();
 
-        AnnotationUtils annoFactory = AnnotationUtils.getInstance(env);
+        AnnotationUtils annoFactory = AnnotationUtils.getInstance(this.processingEnv);
         // A = annoFactory.fromClass(A.class);
         B = annoFactory.fromClass(B.class);
         C = annoFactory.fromClass(C.class);

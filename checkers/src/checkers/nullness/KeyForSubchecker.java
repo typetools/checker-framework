@@ -2,7 +2,6 @@ package checkers.nullness;
 
 import java.util.List;
 
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
@@ -29,10 +28,10 @@ public class KeyForSubchecker extends BaseTypeChecker {
     protected AnnotationMirror KEYFOR;
 
     @Override
-    public void initChecker(ProcessingEnvironment env) {
-        super.initChecker(env);
+    public void initChecker() {
+        super.initChecker();
 
-        AnnotationUtils annoFactory = AnnotationUtils.getInstance(env);
+        AnnotationUtils annoFactory = AnnotationUtils.getInstance(processingEnv);
         KEYFOR = annoFactory.fromClass(KeyFor.class);
     }
 

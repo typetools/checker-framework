@@ -24,11 +24,12 @@ public final class FlowTestChecker extends BaseTypeChecker {
     protected AnnotationMirror VALUE, BOTTOM;
 
     @Override
-    public void initChecker(ProcessingEnvironment env) {
-        AnnotationUtils annoFactory = AnnotationUtils.getInstance(env);
+    public void initChecker() {
+        super.initChecker();
+
+        AnnotationUtils annoFactory = AnnotationUtils.getInstance(processingEnv);
         VALUE = annoFactory.fromClass(Value.class);
         BOTTOM = annoFactory.fromClass(Bottom.class);
-        super.initChecker(env);
     }
 
     @Override
