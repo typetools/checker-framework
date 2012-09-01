@@ -11,7 +11,7 @@ public class ArrayCreationNullable {
 
     void testObjectArray(@NonNull Object @NonNull [] p) {
         @NonNull Object @NonNull [] objs;
-        //:: error: (assignment.type.incompatible)
+        //:: error: (new.array.type.invalid)
         objs = new Object [10];
         objs[0].toString();
         //:: error: (assignment.type.incompatible)
@@ -30,7 +30,7 @@ public class ArrayCreationNullable {
         Object [] objs;
         // Even if the default qualifier is NonNull, array component
         // types must be Nullable.
-        //:: error: (assignment.type.incompatible)
+        //:: error: (new.array.type.invalid)
         objs = new Object [10];
         objs[0].toString();
     }
@@ -64,7 +64,7 @@ public class ArrayCreationNullable {
 
     void testStringArray(@NonNull String @NonNull [] p) {
         @NonNull String @NonNull [] strs;
-        //:: error: (assignment.type.incompatible)
+        //:: error: (new.array.type.invalid)
         strs = new String [10];
         strs[0].toString();
         //:: error: (assignment.type.incompatible)
@@ -80,7 +80,7 @@ public class ArrayCreationNullable {
 
     void testIntegerArray(@NonNull Integer @NonNull [] p) {
         @NonNull Integer @NonNull [] ints;
-        //:: error: (assignment.type.incompatible)
+        //:: error: (new.array.type.invalid)
         ints = new Integer [10];
         ints[0].toString();
         //:: error: (assignment.type.incompatible)
@@ -119,12 +119,12 @@ public class ArrayCreationNullable {
 
     void testMultiDim() {
         // new double[10][10] has type double @NonNull[] @Nullable[]
-        //:: error: (assignment.type.incompatible)
+        //:: error: (new.array.type.invalid)
         double @NonNull [] @NonNull [] daa = new double[10][10];
         double @NonNull [] @Nullable [] daa2 = new double[10][10];
 
         // new Object[10][10] has type @Nullable Object @NonNull[] @Nullable[]
-        //:: error: (assignment.type.incompatible)
+        //:: error: (new.array.type.invalid)
         @Nullable Object @NonNull [] @NonNull [] oaa = new Object[10][10];
         @Nullable Object @NonNull [] @Nullable [] oaa2 = new Object[10][10];
 
@@ -152,6 +152,19 @@ public class ArrayCreationNullable {
             }
         }
         return out;
+    }
+
+    void testLazyNonNull() {
+        @LazyNonNull Object @NonNull [] loa = new @LazyNonNull Object @NonNull [10];
+        loa = new Object @NonNull [10];
+        loa[0] = new Object();
+        @LazyNonNull Object @NonNull [] loa2 = new Object @NonNull [10];
+        //:: error: (dereference.of.nullable)
+        loa2[0].toString();
+    }
+
+    @LazyNonNull Object @NonNull [] testReturnContext() {
+        return new Object[10];
     }
 
     Object[] oa = new Object[] {new Object()};
