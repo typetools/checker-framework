@@ -19,16 +19,25 @@ User-visible framework improvements:
   Optional stricter checking of casts to array and generic types using
     the new -Alint=cast:strict flag.
     This will become the default in the future.
+  Classes com.sun.source.util.AbstractTypeProcessor and
+    checkers.util.AggregateChecker are now in package checkers.source.
+  SourceChecker.initChecker no longer has a ProcessingEnvironment
+    parameter. The environment can now be accessed using the standard
+    processingEnv field (instead of the previous env field).
   Improved error messages.
   Maven plugin now works.
 
 Nullness Checker:
-  Forbid creation of arrays with NonNull component type.
-    Special case for "x.toArray(new C[x.size()])".
+  Forbid creation of arrays with @NonNull component type.
+    Special case for "x.toArray(new C[x.size()])", which will correctly
+    set the array elements.
+    Flag -Alint=arrays:allownonnullcomponents can be used to relax
+    this check.
 
 Internal framework improvements:
   Enable assertion checking.
   Improve handling of annotated type variables.
+  Assignment context is now a type, not a tree.
   Fix all compiler warnings.
 
 ----------------------------------------------------------------------
