@@ -36,8 +36,9 @@ public class StubParser {
      * found on the user's real classpath.  Since the stub file may contain
      * packages that are not on the classpath, this can be OK, so default to
      * false.
+     * TODO: set based on command-line option.
      */
-    private static final boolean warnIfNotFound = false;
+    private static boolean warnIfNotFound = false;
 
     private static final boolean debugStubParser = false;
 
