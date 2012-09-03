@@ -5,7 +5,6 @@ import java.lang.reflect.Constructor;
 import java.util.*;
 
 import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.Tree;
 
 /*>>>
 import checkers.igj.quals.*;
