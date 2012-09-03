@@ -22,9 +22,10 @@ import checkers.nullness.quals.*;
  * To eliminate this dependency, you can simply copy this class into your
  * own project.
  */
-// nullness utilities
-// casts look redundant if Nullness Checker is not run
-@SuppressWarnings({"nullness", "cast"})
+// Nullness utilities are trusted regarding nullness.
+// Casts look redundant if Nullness Checker is not run.
+@SuppressWarnings({/*>>> "nullness", */
+    "cast"})
 public final class NullnessUtils {
 
     private NullnessUtils()
