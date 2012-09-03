@@ -276,9 +276,7 @@ abstract class TypeFromTree extends
             AnnotatedDeclaredType type = f.fromNewClass(node);
             // Enum constructors lead to trouble.
             // TODO: is there more to check? Can one annotate them?
-            if (isNewEnum(type) ||
-                    // This happens with the Nullness Checker. TODO.
-                    f.getQualifierHierarchy()==null) {
+            if (isNewEnum(type)) {
                 return type;
             }
             // Add annotations that are on the constructor declaration.
