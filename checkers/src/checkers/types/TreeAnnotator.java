@@ -232,9 +232,12 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
 
         if (context!=null && context instanceof AnnotatedArrayType) {
             AnnotatedTypeMirror contextComponentType = ((AnnotatedArrayType) context).getComponentType();
-            if (prev.isEmpty() ||
+            // TODO: checking conformance of component kinds is a basic sanity check
+            // It fails for array initializer expressions. Those should be handled nicer.
+            if (contextComponentType.getKind() == componentType.getKind() &&
+                    (prev.isEmpty() ||
                     (!contextComponentType.getAnnotations().isEmpty() &&
-                            this.qualHierarchy.isSubtype(prev, contextComponentType.getAnnotations()))) {
+                            this.qualHierarchy.isSubtype(prev, contextComponentType.getAnnotations())))) {
                 post = contextComponentType.getAnnotations();
             } else {
                 // The type of the array initializers is incompatible with the
