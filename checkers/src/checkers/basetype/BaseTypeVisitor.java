@@ -867,6 +867,8 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
 
     protected void checkArrayInitialization(AnnotatedTypeMirror type,
             List<? extends ExpressionTree> initializers) {
+        // TODO: set assignment context like for method arguments?
+        // Also in AbstractFlow.
         for (ExpressionTree init : initializers)
             commonAssignmentCheck(type, init, "array.initializer.type.incompatible");
     }
