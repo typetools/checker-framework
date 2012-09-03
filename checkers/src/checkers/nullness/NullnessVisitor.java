@@ -792,7 +792,7 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
     public boolean isValidUse(AnnotatedPrimitiveType type) {
         // No explicit qualifiers on primitive types
         if (type.getAnnotations().size()>1 ||
-             (type.getAnnotation(Primitive.class)==null &&
+             (!type.hasAnnotation(Primitive.class) &&
              // The element is null if the primitive type is an array component ->
              // always a reason to warn.
              (type.getElement()==null ||
