@@ -348,7 +348,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
         // to an array or generic type. This will be the new default soon.
         lintSet.add("cast:strict");
 
-        return lintSet;
+        return Collections.unmodifiableSet(lintSet);
     }
 
     /**
