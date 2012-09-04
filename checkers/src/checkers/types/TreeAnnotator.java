@@ -238,7 +238,8 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
             // TODO: better solution?
             boolean prevIsSubtype = true;
             for (AnnotationMirror am : prev) {
-                if (!this.qualHierarchy.isSubtype(am, contextComponentType.getAnnotationInHierarchy(am))) {
+                if (contextComponentType.isAnnotatedInHierarchy(am) &&
+                        !this.qualHierarchy.isSubtype(am, contextComponentType.getAnnotationInHierarchy(am))) {
                     prevIsSubtype = false;
                 }
             }
