@@ -218,7 +218,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
                 activeLint.add("-all");
         }
 
-        return activeLint;
+        return Collections.unmodifiableSet(activeLint);
     }
 
     /**
@@ -686,6 +686,60 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         }
 
         return def;
+    }
+
+    /**
+     * Set the value of the lint option with the given name.  Just
+     * as <a
+     * href="http://docs.oracle.com/javase/1.5.0/docs/tooldocs/solaris/javac.html">javac</a>
+     * uses "-Xlint:xxx" to enable and "-Xlint:-xxx" to disable option xxx,
+     * annotation-related lint options are enabled with "-Alint=xxx" and
+     * disabled with "-Alint=-xxx".
+     * This method can be used by subclasses to enforce having certain lint
+     * options enabled/disabled.
+     *
+     * @throws IllegalArgumentException if the option name is not recognized
+     *         via the {@link SupportedLintOptions} annotation or the {@link
+     *         SourceChecker#getSupportedLintOptions} method
+     * @param name the name of the lint option to set
+     * @param val the option value
+     *
+     * @see SourceChecker#getLintOption(String)
+     * @see SourceChecker#getLintOption(String,boolean)
+     */
+    protected final void setLintOption(String name, boolean val) {
+        if (!this.getSupportedLintOptions().contains(name)) {
+            errorAbort("Illegal lint option: " + name);
+        }
+
+        /* TODO: warn if the option is also provided on the command line(?)
+        boolean exists = false;
+        if (!activeLints.isEmpty()) {
+            String tofind = name;
+            while (tofind != null) {
+                if (activeLints.contains(tofind) || // direct
+                        activeLints.contains(String.format("-%s", tofind)) || // negation
+                        activeLints.contains(tofind.substring(1))) { // name was negation
+                    exists = true;
+                }
+                tofind = parentOfOption(tofind);
+            }
+        }
+
+        if (exists) {
+            // TODO: Issue warning?
+        }
+        TODO: assert that name doesn't start with '-'
+        */
+
+        Set<String> newlints = new HashSet<String>();
+        newlints.addAll(activeLints);
+        if (val) {
+            newlints.add(name);
+        } else {
+            newlints.add(String.format("-%s", name));
+        }
+        activeLints = Collections.unmodifiableSet(newlints);
     }
 
     /**
