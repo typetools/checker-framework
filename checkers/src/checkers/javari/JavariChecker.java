@@ -28,7 +28,6 @@ public class JavariChecker extends BaseTypeChecker {
      * creates a local AnnotationFactory based on the processing
      * environment, and uses it to create the protected
      * AnnotationMirrors used through this checker.
-     * @param processingEnv the processing environment to use in the local AnnotationFactory
      */
     @Override
     public void initChecker() {
