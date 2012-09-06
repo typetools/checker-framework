@@ -280,7 +280,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
      * require all overriding implementations to be aware of CheckerError.
      * 
      * @see AbstractProcessor#init(ProcessingEnvironment)
-     * @see SourceChecker#initChecker(ProcessingEnvironment)
+     * @see SourceChecker#initChecker()
      */
     @Override
     public void typeProcessingStart() {
