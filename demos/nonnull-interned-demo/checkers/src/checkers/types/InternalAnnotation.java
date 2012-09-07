@@ -162,9 +162,7 @@ public final class InternalAnnotation implements AnnotationData {
 
         Symbol s = (Symbol) element;
 
-        assert s.attributes_field != null;
-
-        for (AnnotationMirror a : s.attributes_field) {
+        for (AnnotationMirror a : s.getAnnotationMirrors()) {
             InternalAnnotation ia = new InternalAnnotation(a, env);
             @Nullable AnnotationTarget target = ia.getTarget();
             // TODO: verify for other target types
