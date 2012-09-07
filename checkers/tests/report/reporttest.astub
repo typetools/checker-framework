@@ -1,0 +1,11 @@
+import checkers.util.report.quals.*;
+
+package java.lang;
+
+class Class {
+      @ReportCall
+     Class<?> forName(String s);
+}
+
+@ReportUse
+package java.util.regex;
