@@ -1,3 +1,7 @@
+# Put user-specific changes in your own Makefile.user.
+# Make will silently continue if that file does not exist.
+-include Makefile.user
+
 # To regenerate this list, run:   latex-process-inputs -makefilelist manual.tex
 TEX_FILES = \
 manual.tex \
@@ -27,6 +31,7 @@ troubleshooting.tex
 
 all: figures-all doc manual.pdf manual.html
 
+.PHONY: figures-all
 figures-all:
 	${MAKE} -C figures all
 
