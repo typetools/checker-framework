@@ -27,4 +27,3 @@ public class GenericsBounds2<X extends @Nullable Object> {
         p1 = p2;
     }
 }
-
