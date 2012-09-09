@@ -13,4 +13,3 @@ class FieldsImplicits {
         boolean c = nonFinalField == "asdf";
     }
 }
-

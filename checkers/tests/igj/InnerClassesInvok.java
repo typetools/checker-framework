@@ -63,4 +63,3 @@ class A {
     }
     // TODO: add many more combinations with outer A being immutable, etc.
 }
-
