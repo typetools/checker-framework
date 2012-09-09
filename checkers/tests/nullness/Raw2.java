@@ -25,4 +25,3 @@ class Raw2 {
     new Raw2();
   }
 }
-
