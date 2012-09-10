@@ -1,8 +1,9 @@
-Version 1.4.0-b1, 01 Sep 2012
+Version 1.4.0, 11 Sep 2012
 
 User-visible framework improvements:
   @DefaultQualifier annotations now use a Class instead of a String,
     preventing simple typo errors.
+  @DefaultLocation extended with more constants.
   Improvements to QualifierHierarchy construction.
   TreeAnnotator propagates the least-upper-bound of the operands of
     binary/compound operations, instead of taking the default qualifier.
