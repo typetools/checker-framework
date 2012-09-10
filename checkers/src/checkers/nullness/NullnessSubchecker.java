@@ -25,9 +25,11 @@ import checkers.util.MultiGraphQualifierHierarchy;
 @TypeQualifiers({ Nullable.class, LazyNonNull.class, NonNull.class, Primitive.class,
     PolyNull.class, PolyAll.class})
 @SupportedLintOptions({"nulltest", "uninitialized", "advancedchecks",
-    // Temporary option to allow non-null array component types,
-    // which is forbidden by default.
-    "arrays:allownonnullcomponents"})
+    // Temporary option to forbid non-null array component types,
+    // which is allowed by default.
+    // Forbidding is sound and will eventually be the only possibility.
+    // Allowing is unsound but permitted until flow-sensitivity changes are made.
+    "arrays:forbidnonnullcomponents"})
 public class NullnessSubchecker extends BaseTypeChecker {
 
     // warn about uninitialized primitive and nullable fields in the constructor
