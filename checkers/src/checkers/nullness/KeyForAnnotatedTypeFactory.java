@@ -32,7 +32,7 @@ public class KeyForAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<KeyFor
     super(checker, root);
 
     AnnotationMirror UNQUALIFIED = this.annotations.fromClass(Unqualified.class);
-    this.defaults.addAbsoluteDefault(UNQUALIFIED, Collections.singleton(DefaultLocation.ALL));
+    this.defaults.addAbsoluteDefault(UNQUALIFIED, DefaultLocation.ALL);
 
     this.postInit();
   }
