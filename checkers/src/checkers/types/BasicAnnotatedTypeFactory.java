@@ -1,7 +1,6 @@
 package checkers.types;
 
 import java.lang.annotation.Annotation;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -82,10 +81,11 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
 
         this.defaults = new QualifierDefaults(this, this.annotations);
         boolean foundDefault = false;
+        // TODO: should look for a default qualifier per qualifier hierarchy.
         for (Class<? extends Annotation> qual : checker.getSupportedTypeQualifiers()) {
             if (qual.getAnnotation(DefaultQualifierInHierarchy.class) != null) {
                 defaults.addAbsoluteDefault(this.annotations.fromClass(qual),
-                        Collections.singleton(DefaultLocation.ALL));
+                        DefaultLocation.ALL);
                 foundDefault = true;
             }
         }
@@ -93,7 +93,7 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
         AnnotationMirror unqualified = this.annotations.fromClass(Unqualified.class);
         if (!foundDefault && this.isSupportedQualifier(unqualified)) {
             defaults.addAbsoluteDefault(unqualified,
-                    Collections.singleton(DefaultLocation.ALL));
+                    DefaultLocation.ALL);
         }
 
         // every subclass must call postInit!
