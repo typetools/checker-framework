@@ -31,4 +31,3 @@ public class Flow {
         assertImmutable(c);
     }
 }
-

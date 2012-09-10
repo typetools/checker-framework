@@ -10,6 +10,8 @@ import checkers.nullness.quals.*;
  *
  * To avoid the need to write the NullnessUtils class name, do:
  * <pre>import static checkers.nullness.NullnessUtils.castNonNull;</pre>
+ * or
+ * <pre>import static checkers.nullness.NullnessUtils.*;</pre>
  * <p>
  *
  * <b>Runtime Dependency</b>

@@ -261,6 +261,10 @@ hyphen (\code{-}), the warning is disabled.  For example, to disable all
 lint options except redundant casts, you can pass
 \code{-Alint=-all,cast:redundant} on the command line.
 
+Only the last \code{-Alint} option is used; all previous \code{-Alint}
+options are silently ignored.
+
+
 \subsection{No \code{-processor} command-line option\label{no-processor}}
 
 You can also compile parts of your code without use of the
