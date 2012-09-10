@@ -7,4 +7,3 @@ class ArrayInitializers {
 
     public static final @Interned String [] STATIC_ARRAY = { STATIC_FIELD, OTHER_FIELD };
 }
-

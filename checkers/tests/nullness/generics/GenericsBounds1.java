@@ -25,4 +25,3 @@ public class GenericsBounds1<X extends @Nullable Object> {
         g2.add(null);
     }
 }
-
