@@ -800,7 +800,8 @@ public class AnnotatedTypeFactory {
 
         AnnotatedDeclaredType methodReceiver = getCurrentMethodReceiver(tree);
         if (methodReceiver != null &&
-                !(methodReceiver.getAnnotations().size()==1 && methodReceiver.getAnnotation(Unqualified.class)!=null)) {
+                !(methodReceiver.getAnnotations().size() == 1 &&
+                  methodReceiver.getAnnotation(Unqualified.class) != null)) {
             // TODO: this only takes the main annotations. What about other annotations?
             type.clearAnnotations();
             type.addAnnotations(methodReceiver.getAnnotations());
@@ -877,7 +878,7 @@ public class AnnotatedTypeFactory {
         }
         ExpressionTree recv = TreeUtils.getReceiverTree(tree);
 
-        if (recv==null) {
+        if (recv == null) {
             Element element = TreeUtils.elementFromUse(tree);
 
             if (!ElementUtils.hasReceiver(element)) {
@@ -930,7 +931,8 @@ public class AnnotatedTypeFactory {
         AnnotatedDeclaredType type = getCurrentClassType(tree);
         AnnotatedDeclaredType methodReceiver = getCurrentMethodReceiver(tree);
         if (methodReceiver != null &&
-                !(methodReceiver.getAnnotations().size()==1 && methodReceiver.getAnnotation(Unqualified.class)!=null)) {
+                !(methodReceiver.getAnnotations().size() == 1 &&
+                  methodReceiver.getAnnotation(Unqualified.class)!=null)) {
             type.clearAnnotations();
             type.addAnnotations(methodReceiver.getAnnotations());
         }
@@ -994,7 +996,7 @@ public class AnnotatedTypeFactory {
             return getImplicitReceiverType(expression);
         }
 
-        if (receiver!=null) {
+        if (receiver != null) {
             return getAnnotatedType(receiver);
         } else {
             // E.g. local variables
@@ -1040,7 +1042,7 @@ public class AnnotatedTypeFactory {
 
         if (!typeVarMapping.isEmpty()) {
             for ( AnnotatedTypeVariable tv : methodType.getTypeVariables()) {
-                if (typeVarMapping.get(tv)==null) {
+                if (typeVarMapping.get(tv) == null) {
                     System.err.println("Detected a mismatch between the declared method" +
                             " type variables and the inferred method type arguments. Something is going wrong!");
                     System.err.println("Method type variables: " + methodType.getTypeVariables());
@@ -1249,7 +1251,8 @@ public class AnnotatedTypeFactory {
      * Returns an aliased type of the current one
      */
     public AnnotationMirror aliasedAnnotation(AnnotationMirror a) {
-        if (a==null) return null;
+        if (a == null)
+            return null;
         TypeElement elem = (TypeElement) a.getAnnotationType().asElement();
         String qualName = elem.getQualifiedName().toString();
         return aliases.get(qualName);
@@ -1533,7 +1536,8 @@ public class AnnotatedTypeFactory {
      * @return true if the type is a valid annotated type, false otherwise
      */
     static final boolean validAnnotatedType(AnnotatedTypeMirror type) {
-        if (type == null) return false;
+        if (type == null)
+            return false;
         if (type.getUnderlyingType() == null)
             return true; // e.g., for receiver types
         return validType(type.getUnderlyingType());
@@ -1548,7 +1552,8 @@ public class AnnotatedTypeFactory {
      *         otherwise
      */
     private static final boolean validType(TypeMirror type) {
-        if (type == null) return false;
+        if (type == null)
+            return false;
         switch (type.getKind()) {
             case ERROR:
             case OTHER:
@@ -1612,7 +1617,7 @@ public class AnnotatedTypeFactory {
 
         {
             StubFiles sfanno = resourceClass.getAnnotation(StubFiles.class);
-            if (sfanno!=null) {
+            if (sfanno != null) {
                 String[] sfarr = sfanno.value();
                 stubFiles = "";
                 for (String sf : sfarr) {
@@ -1637,7 +1642,7 @@ public class AnnotatedTypeFactory {
                 if (base != null)
                     stubPath = base + "/" + stubPath;
                 List<File> stubs = StubUtil.allStubFiles(stubPath);
-                if (stubs.size()==0) {
+                if (stubs.size() == 0) {
                     InputStream in = null;
                     if (resourceClass != null)
                         in = resourceClass.getResourceAsStream(stubPath);
