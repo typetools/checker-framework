@@ -1,7 +1,5 @@
 package checkers.fenum;
 
-import java.util.Collections;
-
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
 
@@ -23,9 +21,8 @@ public class FenumAnnotatedTypeFactory extends
     // null literal.
     treeAnnotator.addTreeKind(Tree.Kind.NULL_LITERAL, checker.BOTTOM);
 
-    defaults.addAbsoluteDefault( this.annotations.fromClass(FenumUnqualified.class),
-                                 Collections.singleton(DefaultLocation.ALL_EXCEPT_LOCALS));
-    defaults.setLocalVariableDefault(Collections.singleton(annotations.fromClass(FenumTop.class)));
+    defaults.addAbsoluteDefault(annotations.fromClass(FenumTop.class), DefaultLocation.LOCALS);
+    defaults.addAbsoluteDefault(annotations.fromClass(FenumUnqualified.class), DefaultLocation.OTHERWISE);
 
     this.postInit();
     // flow.setDebug(System.err);
