@@ -1,6 +1,5 @@
 package checkers.nullness;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -128,8 +127,8 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
         // TODO: Add an alias for the Pure JML annotation. It's not a type qualifier, I think adding
         // it above does not work.
 
-        defaults.addAbsoluteDefault(NONNULL, Collections.singleton(DefaultLocation.ALL_EXCEPT_LOCALS));
-        defaults.setLocalVariableDefault(Collections.singleton(NULLABLE));
+        defaults.addAbsoluteDefault(NULLABLE, DefaultLocation.LOCALS);
+        defaults.addAbsoluteDefault(NONNULL, DefaultLocation.OTHERWISE);
 
         this.dependentTypes = new DependentTypes(checker, root);
 
@@ -228,7 +227,7 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
         for (AnnotatedTypeMirror supertype : supertypes) {
             typeAnnotator.visit(supertype);
             if (supertype.getKind() == TypeKind.DECLARED)
-                defaults.annotateTypeElement((TypeElement)((AnnotatedDeclaredType)supertype).getUnderlyingType().asElement(), supertype);
+                defaults.annotate((TypeElement)((AnnotatedDeclaredType)supertype).getUnderlyingType().asElement(), supertype);
             completer.visit(supertype);
         }
         // Apply supertype operations last.
