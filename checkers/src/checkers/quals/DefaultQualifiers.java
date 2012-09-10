@@ -24,6 +24,7 @@ import java.lang.annotation.*;
  *
  * @see DefaultQualifier
  */
+// TODO: use repeating annotations (will make source depend on Java 8).
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({CONSTRUCTOR, METHOD, FIELD, LOCAL_VARIABLE, PARAMETER, TYPE})
