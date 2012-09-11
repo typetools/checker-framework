@@ -118,7 +118,7 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
         if (componentType.hasAnnotation(NONNULL) &&
                 !isNewArrayAllZeroDims(node) &&
                 !isNewArrayInToArray(node) &&
-                checker.getLintOption("arrays:forbidnonnullcomponents", true)) {
+                checker.getLintOption("arrays:forbidnonnullcomponents", false)) {
             checker.report(Result.failure("new.array.type.invalid",
                     componentType.getAnnotations(), type.toString()), node);
         }
