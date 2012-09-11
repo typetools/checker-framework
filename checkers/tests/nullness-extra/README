@@ -1,0 +1,5 @@
+This directory contains test cases that do not fit into
+our usual testing framework because they depend on multiple
+compilation units being compiled together.
+TODO: how can we integrate such tests?
+TODO: add a Makefile and integrate with the main testing targets.
