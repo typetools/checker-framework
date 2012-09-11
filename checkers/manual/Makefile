@@ -40,6 +40,8 @@ doc:
 
 manual.dvi: ${TEX_FILES} bib-update
 	$(MAKE) -C figures
+	# Debugging output
+	echo TEXINPUTS = $TEXINPUTS
 	latex manual.tex
 	bibtex manual
 	latex manual.tex
