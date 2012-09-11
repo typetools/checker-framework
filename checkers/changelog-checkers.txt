@@ -25,6 +25,7 @@ User-visible framework improvements:
   SourceChecker.initChecker no longer has a ProcessingEnvironment
     parameter. The environment can now be accessed using the standard
     processingEnv field (instead of the previous env field).
+  Issue a warning if an unsupported -Alint option is provided.
   Improved error messages.
   Maven plugin now works.
 
