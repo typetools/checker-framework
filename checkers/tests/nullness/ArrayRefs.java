@@ -16,8 +16,14 @@ public class ArrayRefs {
 
     public static void test2() {
         Object a = new Object();
-        Arrays.<Object>asList (new Object[] {a});
+        takeNNList(Arrays.<Object>asList(new Object[] {a}));
+        takeNNList(Arrays.asList(new Object[] {a}));
+        takeNNList(Arrays.asList(a, a, a));
+        //:: error: (argument.type.incompatible)
+        takeNNList(Arrays.asList(a, a, null));
     }
+
+    static void takeNNList(List<Object> p) {}
 
     <T> void test(T[] a) {
         test(a);
