@@ -45,6 +45,32 @@ class TestNullnessUtils {
     }
     */
 
+    // TODO:
+    // // Flow should refine @LazyNonNull component types to @NonNull.
+    // // This is a prerequisite for issue 154 (or for workarounds to issue 154).
+    // void testArr4(@NonNull Object @NonNull [] nno1, @LazyNonNull Object @NonNull [] lnno1) {
+    //     @LazyNonNull Object [] lnno2;
+    //     @NonNull Object [] nno2;
+    //     nno2 = nno1;
+    //     lnno2 = lnno1;
+    //     lnno2 = nno1;
+    //     //:: error: (assignment.type.incompatible)
+    //     nno2 = lnno1;
+    //     lnno2 = NullnessUtils.castNonNullDeep(nno1);
+    //     nno2 = NullnessUtils.castNonNullDeep(lnno1);
+    //     lnno2 = NullnessUtils.castNonNullDeep(nno1);
+    //     nno2 = NullnessUtils.castNonNullDeep(lnno1);
+    // }
+
+    // TODO:
+    // // Flow should refine @LazyNonNull component types to @NonNull.
+    // // This is a prerequisite for issue 154 (or for workarounds to issue 154).
+    // void testArr5(@LazyNonNull Object @NonNull [] a) {
+    //     @LazyNonNull Object [] l5 = NullnessUtils.castNonNullDeep(a);
+    //     @NonNull Object [] l6 = l5;
+    //     @NonNull Object [] l7 = NullnessUtils.castNonNullDeep(a);
+    // }
+
     void testMultiArr1(@Nullable Object @NonNull [] @Nullable [] a) {
         //:: error: (assignment.type.incompatible) :: error: (accessing.nullable)
         @NonNull Object l3 = a[0][0];
