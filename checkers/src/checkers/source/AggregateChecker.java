@@ -2,15 +2,14 @@ package checkers.source;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.SourceVersion;
 import javax.lang.model.element.TypeElement;
 
+import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
@@ -28,7 +27,7 @@ import com.sun.tools.javac.util.Log;
  * {@link #getSupportedCheckers()} to indicate the classes of the checkers
  * to be bundled.
  */
-public abstract class AggregateChecker extends AbstractTypeProcessor {
+public abstract class AggregateChecker extends SourceChecker {
 
     protected List<SourceChecker> checkers;
 
@@ -64,6 +63,9 @@ public abstract class AggregateChecker extends AbstractTypeProcessor {
     public void typeProcessingStart() {
         super.typeProcessingStart();
         for (SourceChecker checker : checkers) {
+            // Each checker should "support" all possible lint options - otherwise
+            // subchecker A would complain about an lint option for subchecker B.
+            checker.setSupportedLintOptions(this.getSupportedLintOptions());
             checker.typeProcessingStart();
         }
     }
@@ -107,12 +109,17 @@ public abstract class AggregateChecker extends AbstractTypeProcessor {
     }
 
     @Override
-    public final Set<String> getSupportedAnnotationTypes() {
-        return Collections.singleton("*");
+    public final Set<String> getSupportedLintOptions() {
+        Set<String> lints = new HashSet<String>();
+        for (SourceChecker checker : checkers) {
+            lints.addAll(checker.getSupportedLintOptions());
+        }
+        return lints;
     }
 
     @Override
-    public final SourceVersion getSupportedSourceVersion() {
-        return SourceVersion.RELEASE_8;
+    protected SourceVisitor<?, ?> createSourceVisitor(CompilationUnitTree root) {
+        errorAbort("AggregateChecker.createSourceVisitor should never be called!");
+        return null;
     }
 }
