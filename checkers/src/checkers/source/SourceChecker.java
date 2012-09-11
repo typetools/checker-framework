@@ -205,6 +205,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         return getSkipPattern("skipDefs", options);
     }
 
+    // TODO: do we want this?
+    // Cache the keys that we already warned about to prevent repetitions.
+    // private Set<String> warnedOnLint = new HashSet<String>();
+
     private Set<String> createActiveLints(Map<String, String> options) {
         if (!options.containsKey("lint"))
             return Collections.emptySet();
@@ -219,9 +223,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
             if (!this.getSupportedLintOptions().contains(s) &&
                     !(s.charAt(0) == '-' && this.getSupportedLintOptions().contains(s.substring(1))) &&
                     !s.equals("all") &&
-                    !s.equals("none")) {
+                    !s.equals("none") /*&&
+                    !warnedOnLint.contains(s)*/) {
                 this.messager.printMessage(javax.tools.Diagnostic.Kind.WARNING,
-                        "Unsupported lint option: " + s + "; All options: " + this.getSupportedLintOptions() + " checker: " + this.getClass());
+                        "Unsupported lint option: " + s + "; All options: " + this.getSupportedLintOptions());
+                // warnedOnLint.add(s);
             }
 
             activeLint.add(s);
