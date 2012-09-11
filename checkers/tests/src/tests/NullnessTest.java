@@ -13,10 +13,11 @@ import checkers.util.test.ParameterizedCheckerTest;
 public class NullnessTest extends ParameterizedCheckerTest {
 
     public NullnessTest(File testFile) {
-        // TODO: remove advancedchecks option once its no longer needed
+        // TODO: remove advancedchecks option once it's no longer needed.
+        // TODO: remove arrays:forbidnonnullcomponents option once it's no longer needed.
         super(testFile, checkers.nullness.NullnessChecker.class.getName(),
-                "nullness", "-Anomsgtext", "-Alint=uninitialized",
-                "-Alint=advancedchecks");
+                "nullness", "-Anomsgtext", "-Alint=advancedchecks,arrays:forbidnonnullcomponents"
+              );
     }
 
     @Parameters
