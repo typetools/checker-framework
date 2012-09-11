@@ -104,6 +104,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
      */
     private Pattern skipDefsPattern;
 
+    /** The supported lint options */
+    private Set<String> supportedLints;
+
     /** The chosen lint options that have been enabled by programmer */
     private Set<String> activeLints;
 
@@ -213,6 +216,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
 
         Set<String> activeLint = new HashSet<String>();
         for (String s : lintString.split(",")) {
+            if (!this.getSupportedLintOptions().contains(s) &&
+                    !s.equals("all") &&
+                    !s.equals("none")) {
+                this.messager.printMessage(javax.tools.Diagnostic.Kind.WARNING,
+                        "Unsupported lint option: " + s + "; All options: " + this.getSupportedLintOptions() + " checker: " + this.getClass());
+            }
+
             activeLint.add(s);
             if (s.equals("none"))
                 activeLint.add("-all");
@@ -769,6 +779,16 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
      *         this checker
      */
     public Set<String> getSupportedLintOptions() {
+        if (supportedLints == null) {
+            supportedLints = createSupportedLintOptions();
+        }
+        return supportedLints;
+    }
+
+    /**
+     * Compute the set of supported lint options.
+     */
+    protected Set<String> createSupportedLintOptions() {
         /*@Nullable*/ SupportedLintOptions sl =
             this.getClass().getAnnotation(SupportedLintOptions.class);
 
@@ -784,6 +804,17 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
             lintSet.add(s);
         return Collections.</*@NonNull*/ String>unmodifiableSet(lintSet);
 
+    }
+
+    /**
+     * Set the supported lint options.
+     * Use of this method should be limited to the AggregateChecker,
+     * who needs to set the lint options to the union of all subcheckers.
+     * Also, e.g. the NullnessSubchecker/RawnessSubchecker need to
+     * use this method, as one is created by the other.
+     */
+    protected void setSupportedLintOptions(Set<String> newlints) {
+        supportedLints = newlints;
     }
 
     /*
