@@ -120,7 +120,7 @@ public abstract class AbstractTypeProcessor extends AbstractProcessor {
         Context ctx = ((JavacProcessingEnvironment) processingEnv).getContext();
         JavaCompiler compiler = JavaCompiler.instance(ctx);
         compiler.shouldStopPolicyAtMost = CompileState.max(compiler.shouldStopPolicyAtMost,
-						     CompileState.FLOW);
+                                                           CompileState.FLOW);
     }
 
     /**
