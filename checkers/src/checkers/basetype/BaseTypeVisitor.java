@@ -543,7 +543,16 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
 
             AnnotatedTypeMirror expected = annoTypes.get(at.getVariable().toString());
             AnnotatedTypeMirror preAssCtxt = visitorState.getAssignmentContext();
-            visitorState.setAssignmentContext(atypeFactory.getAnnotatedType(at.getVariable()));
+
+            {
+                // Determine and set the new assignment context.
+                ExpressionTree var = at.getVariable();
+                assert var instanceof IdentifierTree : "Expected IdentifierTree as context. Found: " + var;
+                AnnotatedTypeMirror meth = atypeFactory.getAnnotatedType(var);
+                assert meth instanceof AnnotatedExecutableType : "Expected AnnotatedExecutableType as context. Found: " + meth;
+                AnnotatedTypeMirror newctx = ((AnnotatedExecutableType)meth).getReturnType();
+                visitorState.setAssignmentContext(newctx);
+            }
 
             try {
                 AnnotatedTypeMirror actual = atypeFactory.getAnnotatedType(at.getExpression());
