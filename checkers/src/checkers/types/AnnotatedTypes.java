@@ -540,7 +540,7 @@ public class AnnotatedTypes {
      *   this method or constructor invocation.
      */
     public Map<AnnotatedTypeVariable, AnnotatedTypeMirror>
-    findTypeArguments(ExpressionTree expr) {
+    findTypeArguments(final ExpressionTree expr) {
         Map<AnnotatedTypeVariable, AnnotatedTypeMirror> typeArguments =
             new HashMap<AnnotatedTypeVariable, AnnotatedTypeMirror>();
 
@@ -578,7 +578,7 @@ public class AnnotatedTypes {
             }
             return typeArguments;
         } else {
-            return inferTypeArguments(expr);
+            return inferTypeArguments(expr, elt);
         }
     }
 
@@ -590,6 +590,7 @@ public class AnnotatedTypes {
      *
      * @param expr the method or constructor invocation tree; the passed argument
      *   has to be a subtype of MethodInvocationTree or NewClassTree.
+     * @param elt the element corresponding to the tree. 
      * @return the mapping of the type variables to type arguments for
      *   this method or constructor invocation.
      */
@@ -599,7 +600,7 @@ public class AnnotatedTypes {
     // <T> void test(T arg1, T arg2)
     // in such cases, T is inferred to be '? extends T.upperBound'
     private Map<AnnotatedTypeVariable, AnnotatedTypeMirror>
-    inferTypeArguments(ExpressionTree expr) {
+    inferTypeArguments(final ExpressionTree expr, final ExecutableElement elt) {
         //
         // The basic algorithm used here, for each type variable:
         // 1. Find the un-annotated  least upper bound for the type variable
@@ -610,16 +611,6 @@ public class AnnotatedTypes {
         // 4. if not within an assignment context, then bind it to the extend bound.
         Map<AnnotatedTypeVariable, AnnotatedTypeMirror> typeArguments =
             new HashMap<AnnotatedTypeVariable, AnnotatedTypeMirror>();
-
-        ExecutableElement elt;
-        if (expr instanceof MethodInvocationTree ||
-                expr instanceof NewClassTree) {
-            elt = (ExecutableElement) TreeUtils.elementFromUse(expr);
-        } else {
-            // This case should never happen.
-            SourceChecker.errorAbort("AnnotatedTypes.findTypeArguments: unexpected tree: " + expr);
-            elt = null;
-        }
 
         // Find the un-annotated type
         // TODO: WMD thinks it would be better to (also?) determine the assignment context,
