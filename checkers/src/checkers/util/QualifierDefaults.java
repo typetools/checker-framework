@@ -32,8 +32,40 @@ public class QualifierDefaults {
     private final AnnotatedTypeFactory factory;
     private final AnnotationUtils annoFactory;
 
-    private final List<Pair<AnnotationMirror, ? extends Set<DefaultLocation>>> absoluteDefaults =
-            new LinkedList<Pair<AnnotationMirror, ? extends Set<DefaultLocation>>>();
+    @SuppressWarnings("serial")
+    private static class AMLocTreeSet extends TreeSet<Pair<AnnotationMirror, DefaultLocation>> {
+        public AMLocTreeSet() {
+            super(new AMLocComparator());
+        }
+
+        static class AMLocComparator implements Comparator<Pair<AnnotationMirror, DefaultLocation>> {
+            @Override
+            public int compare(Pair<AnnotationMirror, DefaultLocation> o1,
+                    Pair<AnnotationMirror, DefaultLocation> o2) {
+                int snd = o1.second.compareTo(o2.second);
+                if (snd == 0) {
+                    return AnnotationUtils.annotationOrdering().compare(o1.first, o2.first);
+                } else {
+                    return snd;
+                }
+            }
+        }
+
+        // Cannot wrap into unmodifiable set :-(
+        // TODO cleaner solution?
+        public static final AMLocTreeSet EMPTY_SET = new AMLocTreeSet();
+    }
+
+    /** Defaults that apply, if nothing else applies. */
+    private final AMLocTreeSet absoluteDefaults = new AMLocTreeSet();
+
+    /** Defaults that apply for a certain Element.
+     * On the one hand this is used for caching (an earlier name for the field was
+     * "qualifierCache". It can also be used by type systems to set defaults for
+     * certain Elements.
+     */
+    private final Map<Element, AMLocTreeSet> elementDefaults =
+            new IdentityHashMap<Element, AMLocTreeSet>();
 
     /**
      * @param factory the factory for this checker
@@ -45,28 +77,41 @@ public class QualifierDefaults {
     }
 
     /**
-     * Sets the default annotation.  A programmer may override this by
-     * writing the @DefaultQualifier annotation.
+     * Sets the default annotations.  A programmer may override this by
+     * writing the @DefaultQualifier annotation on an element.
      */
-    public void addAbsoluteDefault(AnnotationMirror absoluteDefaultAnno, Set<DefaultLocation> locations) {
-        for (Pair<AnnotationMirror, ? extends Set<DefaultLocation>> def : absoluteDefaults) {
+    public void addAbsoluteDefault(AnnotationMirror absoluteDefaultAnno, DefaultLocation location) {
+        checkDuplicates(absoluteDefaults, absoluteDefaultAnno, location);
+        absoluteDefaults.add(Pair.of(absoluteDefaultAnno, location));
+    }
+
+	/**
+     * Sets the default annotations for a certain Element.
+     */
+    public void addElementDefault(Element elem, AnnotationMirror elementDefaultAnno, DefaultLocation location) {
+        AMLocTreeSet prevset = elementDefaults.get(elem);
+        if (prevset != null) {
+            checkDuplicates(prevset, elementDefaultAnno, location);
+        } else {
+            prevset = new AMLocTreeSet();
+        }
+        prevset.add(Pair.of(elementDefaultAnno, location));
+        elementDefaults.put(elem, prevset);
+    }
+
+    private void checkDuplicates(Set<Pair<AnnotationMirror, DefaultLocation>> prevset,
+            AnnotationMirror newanno, DefaultLocation newloc) {
+        for (Pair<AnnotationMirror, DefaultLocation> def : prevset) {
             AnnotationMirror anno = def.first;
             QualifierHierarchy qh = factory.getQualifierHierarchy();
-            if (!absoluteDefaultAnno.equals(anno) &&
-                    qh.isSubtype(absoluteDefaultAnno, qh.getTopAnnotation(anno))) {
-                SourceChecker.errorAbort("Only one qualifier from a hierarchy can be the default! Existing: "
-                        + absoluteDefaults + " and new: " + absoluteDefaultAnno);
+            if (!newanno.equals(anno) &&
+                    qh.isSubtype(newanno, qh.getTopAnnotation(anno))) {
+                if (newloc == def.second) {
+                    SourceChecker.errorAbort("Only one qualifier from a hierarchy can be the default! Existing: "
+                            + prevset + " and new: " + newanno);
+                }
             }
         }
-        absoluteDefaults.add(Pair.of(absoluteDefaultAnno, new HashSet<DefaultLocation>(locations)));
-    }
-
-    public void setLocalVariableDefault(Set<AnnotationMirror> localannos) {
-        localVarDefaultAnnos = localannos;
-    }
-
-    public void annotateTypeElement(TypeElement elt, AnnotatedTypeMirror type) {
-        applyDefaults(elt, type);
     }
 
     /**
@@ -112,7 +157,7 @@ public class QualifierDefaults {
             case VARIABLE:
                 VariableTree vtree = (VariableTree)t;
                 ExpressionTree vtreeInit = vtree.getInitializer();
-                if (vtreeInit!=null && prev==vtreeInit) {
+                if (vtreeInit != null && prev == vtreeInit) {
                     Element elt = TreeUtils.elementFromDeclaration((VariableTree)t);
                     DefaultQualifier d = elt.getAnnotation(DefaultQualifier.class);
                     DefaultQualifiers ds = elt.getAnnotation(DefaultQualifiers.class);
@@ -190,45 +235,104 @@ public class QualifierDefaults {
             applyDefaults(elt, type);
     }
 
-    private final Map<Element, List<DefaultQualifier>> qualifierCache =
-        new IdentityHashMap<Element, List<DefaultQualifier>>();
+    private Set<Pair<AnnotationMirror, DefaultLocation>> fromDefaultQualifier(DefaultQualifier dq) {
+        // TODO: I want to simply write d.value(), but that doesn't work.
+        // It works in other places, e.g. see handling of @SubtypeOf.
+        // The hack below should probably be added to:
+        // Class<? extends Annotation> cls = AnnotationUtils.parseTypeValue(dq, "value");
+        Class<? extends Annotation> cls;
+        try {
+            cls = dq.value();
+        } catch( MirroredTypeException mte ) {
+            try {
+                @SuppressWarnings("unchecked")
+                Class<? extends Annotation> clscast = (Class<? extends Annotation>) Class.forName(mte.getTypeMirror().toString());
+                cls = clscast;
+            } catch (ClassNotFoundException e) {
+                SourceChecker.errorAbort("Could not load qualifier: " + e.getMessage(), e);
+                cls = null;
+            }
+        }
 
-    /** The default annotation for local variables.
-     */
-    // Static to allow access from static inner class; TODO: improve?
-    private static Set<AnnotationMirror> localVarDefaultAnnos;
+        AnnotationMirror anno = annoFactory.fromClass(cls);
 
-    private List<DefaultQualifier> defaultsAt(final Element elt) {
-        if (elt == null)
-            return Collections.emptyList();
+        if (anno == null) {
+            return null;
+        }
 
-        if (qualifierCache.containsKey(elt))
-            return qualifierCache.get(elt);
+        if (!factory.isSupportedQualifier(anno)) {
+            anno = factory.aliasedAnnotation(anno);
+        }
 
-        List<DefaultQualifier> qualifiers = new ArrayList<DefaultQualifier>();
+        if (factory.isSupportedQualifier(anno)) {
+            EnumSet<DefaultLocation> locations = EnumSet.of(dq.locations()[0], dq.locations());
+            Set<Pair<AnnotationMirror, DefaultLocation>> ret = new HashSet<Pair<AnnotationMirror, DefaultLocation>>(locations.size());
+            for (DefaultLocation loc : locations) {
+                ret.add(Pair.of(anno, loc));
+            }
+            return ret;
+        } else {
+            return null;
+        }
+    }
 
-        DefaultQualifier d = elt.getAnnotation(DefaultQualifier.class);
-        if (d != null)
-            qualifiers.add(d);
+    private AMLocTreeSet defaultsAt(final Element elt) {
+        if (elt == null) {
+            return AMLocTreeSet.EMPTY_SET;
+        }
 
-        DefaultQualifiers ds = elt.getAnnotation(DefaultQualifiers.class);
-        if (ds != null)
-            qualifiers.addAll(Arrays.asList(ds.value()));
+        if (elementDefaults.containsKey(elt)) {
+            return elementDefaults.get(elt);
+        }
+
+        AMLocTreeSet qualifiers = null;
+
+        {
+            DefaultQualifier d = elt.getAnnotation(DefaultQualifier.class);
+
+            if (d != null) {
+                qualifiers = new AMLocTreeSet();
+                Set<Pair<AnnotationMirror, DefaultLocation>> p = fromDefaultQualifier(d);
+
+                if (p != null) {
+                    qualifiers.addAll(p);
+                }
+            }
+        }
+
+        {
+            DefaultQualifiers ds = elt.getAnnotation(DefaultQualifiers.class);
+            if (ds != null) {
+                if (qualifiers == null) {
+                    qualifiers = new AMLocTreeSet();
+                }
+                for (DefaultQualifier d : ds.value()) {
+                    Set<Pair<AnnotationMirror, DefaultLocation>> p = fromDefaultQualifier(d);
+                    if (p != null) {
+                        qualifiers.addAll(p);
+                    }
+                }
+            }
+        }
 
         Element parent;
         if (elt.getKind() == ElementKind.PACKAGE)
-            parent = ((Symbol)elt).owner;
+            parent = ((Symbol) elt).owner;
         else
             parent = elt.getEnclosingElement();
 
-        List<DefaultQualifier> parentDefaults = defaultsAt(parent);
-        if (qualifiers.isEmpty())
+        AMLocTreeSet parentDefaults = defaultsAt(parent);
+        if (qualifiers == null || qualifiers.isEmpty())
             qualifiers = parentDefaults;
         else
             qualifiers.addAll(parentDefaults);
 
-        qualifierCache.put(elt, qualifiers);
-        return qualifiers;
+        if (qualifiers != null && !qualifiers.isEmpty()) {
+            elementDefaults.put(elt, qualifiers);
+            return qualifiers;
+        } else {
+            return AMLocTreeSet.EMPTY_SET;
+        }
     }
 
     /**
@@ -242,147 +346,140 @@ public class QualifierDefaults {
      * @param type the type to which defaults will be applied
      */
     private void applyDefaults(final Element annotationScope, final AnnotatedTypeMirror type) {
+        AMLocTreeSet defaults = defaultsAt(annotationScope);
 
-        List<DefaultQualifier> defaults = defaultsAt(annotationScope);
-        for (DefaultQualifier dq : defaults)
-            applyDefault(annotationScope, dq, type);
+        for (Pair<AnnotationMirror, DefaultLocation> def : defaults) {
+            new DefaultApplier(annotationScope, def.second, type).scan(type, def.first);
+        }
 
-        for (Pair<AnnotationMirror, ? extends Set<DefaultLocation>> def : absoluteDefaults) {
+        for (Pair<AnnotationMirror, DefaultLocation> def : absoluteDefaults) {
             new DefaultApplier(annotationScope, def.second, type).scan(type, def.first);
         }
     }
 
-    private void applyDefault(Element annotationScope, DefaultQualifier d, AnnotatedTypeMirror type) {
-        // TODO: I want to simply write d.value(), but that doesn't work.
-        // It works in other places, e.g. see handling of @SubtypeOf.
-        // The hack below should probably be added to:
-        // Class<? extends Annotation> cls = AnnotationUtils.parseTypeValue(d, "value");
-        Class<? extends Annotation> cls;
-        try {
-            cls = d.value();
-        } catch( MirroredTypeException mte ) {
-            try {
-                @SuppressWarnings("unchecked")
-                Class<? extends Annotation> clscast = (Class<? extends Annotation>) Class.forName(mte.getTypeMirror().toString());
-                cls = clscast;
-            } catch (ClassNotFoundException e) {
-                SourceChecker.errorAbort("Could not load qualifier: " + e.getMessage(), e);
-                cls = null;
-            }
-        }
-
-        AnnotationMirror anno = annoFactory.fromClass(cls);
-        if (anno == null)
-            return;
-        if (!factory.isSupportedQualifier(anno)) {
-            anno = factory.aliasedAnnotation(anno);
-        }
-
-        if (factory.isSupportedQualifier(anno)) {
-            new DefaultApplier(annotationScope, d.locations(), type).scan(type, anno);
-        }
-    }
-
-    private static class DefaultApplier
+    public static class DefaultApplier
     extends AnnotatedTypeScanner<Void, AnnotationMirror> {
         private final Element elt;
-        private final Collection<DefaultLocation> locations;
+        private final DefaultLocation location;
         private final AnnotatedTypeMirror type;
 
-        public DefaultApplier(Element elt, DefaultLocation[] locations, AnnotatedTypeMirror type) {
-            this(elt, Arrays.asList(locations), type);
-        }
-
-        public DefaultApplier(Element elt, Collection<DefaultLocation> locations, AnnotatedTypeMirror type) {
+        public DefaultApplier(Element elt, DefaultLocation location, AnnotatedTypeMirror type) {
             this.elt = elt;
-            this.locations = locations; /* no need to copy locations */
+            this.location = location;
             this.type = type;
         }
 
         @Override
-        public Void scan(AnnotatedTypeMirror t,
-                AnnotationMirror p) {
+        public Void scan(AnnotatedTypeMirror t, AnnotationMirror qual) {
 
             if (t == null || t.getKind() == TypeKind.NONE)
                 return null;
 
             // Skip type variables, but continue to scan their bounds.
-            if (t.getKind() == TypeKind.WILDCARD
-                    || t.getKind() == TypeKind.TYPEVAR)
-                return super.scan(t, p);
+            // TODO: Do we want a special DefaultLocation to specify these?
+            // I wouldn't want them included in ALL or OTHERWISE, though.
+            if (t.getKind() == TypeKind.WILDCARD ||
+                    t.getKind() == TypeKind.TYPEVAR)
+                return super.scan(t, qual);
 
-            // Skip annotating this type if:
-            // - the default is "all except (the raw types of) locals"
-            // - we are applying defaults to a local
-            // - and the type is a raw type
-            if (elt.getKind() == ElementKind.LOCAL_VARIABLE
-                    && locations.contains(DefaultLocation.ALL_EXCEPT_LOCALS)
-                    && t == type) {
-
-                if (localVarDefaultAnnos != null) {
-                    for (AnnotationMirror anno : localVarDefaultAnnos) {
-                        if (!t.isAnnotatedInHierarchy(anno)) {
-                            t.addAnnotation(anno);
-                        }
+            switch (location) {
+            case LOCALS: {
+                if (elt.getKind() == ElementKind.LOCAL_VARIABLE &&
+                        t == type) {
+                    // TODO: how do we determine that we are in a cast or instanceof type?
+                    doApply(t, qual);
+                }
+                break;
+            }
+            case PARAMETERS: {
+                if ( elt.getKind() == ElementKind.PARAMETER &&
+                        t == type) {
+                    doApply(t, qual);
+                } else if (elt.getKind() == ElementKind.METHOD &&
+                        t.getKind() == TypeKind.EXECUTABLE &&
+                        t == type) {
+                    for ( AnnotatedTypeMirror atm : ((AnnotatedExecutableType)t).getParameterTypes()) {
+                        doApply(atm, qual);
                     }
                 }
-
-                return super.scan(t, p);
+                break;
+            }
+            case RETURNS: {
+                if (elt.getKind() == ElementKind.METHOD &&
+                        t.getKind() == TypeKind.EXECUTABLE &&
+                        t == type) {
+                    doApply(((AnnotatedExecutableType)t).getReturnType(), qual);
+                }
+                break;
+            }
+            case UPPER_BOUNDS: {
+                if (this.isTypeVarExtends) {
+                    doApply(t, qual);
+                }
+                break;
+            }
+            case OTHERWISE:
+            case ALL: {
+                // TODO: forbid ALL if anything else was given.
+                doApply(t, qual);
+                break;
+            }
+            default: {
+                SourceChecker.errorAbort("QualifierDefaults.DefaultApplier: unhandled location: " + location);
+                return null;
+            }
             }
 
-            if (locations.contains(DefaultLocation.UPPER_BOUNDS)
-                && locations.size() == 1
-                && !this.isTypeVarExtends) {
-                return super.scan(t, p);
-            }
+            return super.scan(t, qual);
+        }
 
+        private static void doApply(AnnotatedTypeMirror type, AnnotationMirror qual) {
             // Add the default annotation, but only if no other
             // annotation is present.
-            if (!t.isAnnotatedInHierarchy(p))
-                t.addAnnotation(p);
+            if (!type.isAnnotatedInHierarchy(qual))
+                type.addAnnotation(qual);
 
             /* Anonymous types, e.g. intersection types, list the types
              * in the direct supertypes. Make sure to apply the default there too.
              * Use the direct supertypes field to prevent an infinite recursion
              * with the IGJATF.postDirectSuperTypes. TODO: investigate better way.
              */
-            if (TypesUtils.isAnonymousType(t.getUnderlyingType())) {
-                List<AnnotatedDeclaredType> sups = ((AnnotatedDeclaredType)t).directSuperTypesField();
+            if (TypesUtils.isAnonymousType(type.getUnderlyingType())) {
+                List<AnnotatedDeclaredType> sups = ((AnnotatedDeclaredType)type).directSuperTypesField();
                 if (sups!=null) {
                     for (AnnotatedTypeMirror sup : sups) {
-                        if (!sup.isAnnotatedInHierarchy(p)) {
-                            sup.addAnnotation(p);
+                        if (!sup.isAnnotatedInHierarchy(qual)) {
+                            sup.addAnnotation(qual);
                         }
                     }
                 }
             }
-
-            return super.scan(t, p);
         }
 
         @Override
-        public Void visitDeclared(AnnotatedDeclaredType type, AnnotationMirror p) {
+        public Void visitDeclared(AnnotatedDeclaredType type, AnnotationMirror qual) {
             // TODO: should this logic be in AnnotatedTypeScanner?
             if (TypesUtils.isAnonymousType(type.getUnderlyingType())) {
                 for(AnnotatedDeclaredType adt : type.directSuperTypes()) {
-                    scan(adt, p);
+                    scan(adt, qual);
                 }
             }
-            return super.visitDeclared(type, p);
+            return super.visitDeclared(type, qual);
         }
 
         private boolean isTypeVarExtends = false;
+
         @Override
-        public Void visitTypeVariable(AnnotatedTypeVariable type, AnnotationMirror p) {
+        public Void visitTypeVariable(AnnotatedTypeVariable type, AnnotationMirror qual) {
             if (visitedNodes.containsKey(type)) {
                 return visitedNodes.get(type);
             }
-            Void r = scan(type.getLowerBoundField(), p);
+            Void r = scan(type.getLowerBoundField(), qual);
             visitedNodes.put(type, r);
             boolean prevIsTypeVarExtends = isTypeVarExtends;
             isTypeVarExtends = true;
             try {
-                r = scanAndReduce(type.getUpperBoundField(), p, r);
+                r = scanAndReduce(type.getUpperBoundField(), qual, r);
             } finally {
                 isTypeVarExtends = prevIsTypeVarExtends;
             }
@@ -391,7 +488,7 @@ public class QualifierDefaults {
         }
 
         @Override
-        public Void visitWildcard(AnnotatedWildcardType type, AnnotationMirror p) {
+        public Void visitWildcard(AnnotatedWildcardType type, AnnotationMirror qual) {
             if (visitedNodes.containsKey(type)) {
                 return visitedNodes.get(type);
             }
@@ -399,12 +496,12 @@ public class QualifierDefaults {
             boolean prevIsTypeVarExtends = isTypeVarExtends;
             isTypeVarExtends = true;
             try {
-                r = scan(type.getExtendsBound(), p);
+                r = scan(type.getExtendsBound(), qual);
             } finally {
                 isTypeVarExtends = prevIsTypeVarExtends;
             }
             visitedNodes.put(type, r);
-            r = scanAndReduce(type.getSuperBound(), p, r);
+            r = scanAndReduce(type.getSuperBound(), qual, r);
             visitedNodes.put(type, r);
             return r;
         }

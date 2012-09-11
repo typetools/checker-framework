@@ -275,10 +275,14 @@ ${build.version} of the 'javac.jar' library."/>
         </junit>
     </target>
 
-    <target name="all-tests" depends="jar,jdk.jar,build-tests"
-      description="Run tests for all checkers">
+    <target name="all-tests" depends="jar,jdk.jar,all-tests-nojdk"
+      description="Run tests for all checkers"/>
 
-      <antcall target="nullness-extra-tests"/>
+    <target name="all-tests-nojdk" depends="jar,build-tests"
+      description="Run tests for all checkers, WITHOUT updating jdk.jar">
+      <!-- TODO: for all -nojdk targets:
+           check whether jdk.jar exists and create if not. -->
+      <antcall target="nullness-extra-tests-nojdk"/>
 
       <!-- Copied from -run-tests target -->
       <mkdir dir="${build.reports}"/>
@@ -333,6 +337,9 @@ ${build.version} of the 'javac.jar' library."/>
       description="Run tests for the Fenum Checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.FenumTest"/>
+        </antcall>
+        <antcall target="-run-tests">
+            <param name="param" value="tests.FenumSwingTest"/>
         </antcall>
     </target>
 
@@ -406,7 +413,10 @@ ${build.version} of the 'javac.jar' library."/>
     <!-- Differs from other targets in that it is defined via a Makefile and
        is not run via the "-run-tests" Antfile target, as other tests are. -->
     <target name="nullness-extra-tests" depends="bindist,build-tests"
-      description="Run extra tests for the Nullness checker">
+      description="Run extra tests for the Nullness checker"/>
+
+    <target name="nullness-extra-tests-nojdk" depends="bindist-nojdk,build-tests"
+      description="Run extra tests for the Nullness checker, WITHOUT updating jdk.jar">
       <exec executable="chmod">
         <arg line="+x ${basedir}/binary/javac"/>
       </exec>
