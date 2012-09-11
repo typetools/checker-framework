@@ -57,8 +57,7 @@ public class NullnessSubchecker extends BaseTypeChecker {
         POLYNULL = annoFactory.fromClass(PolyNull.class);
 
         rawnesschecker = new RawnessSubchecker();
-        rawnesschecker.init(this.getProcessingEnvironment());
-        rawnesschecker.initChecker();
+        rawnesschecker.initChecker(this);
     }
 
     @Override
