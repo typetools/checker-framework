@@ -179,8 +179,7 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
     }
 
     @Override
-    protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type,
-                boolean iUseFlow) {
+    protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type) {
         treeAnnotator.visit(tree, type);
         typeAnnotator.visit(type);
         // case 6: apply default
@@ -191,13 +190,14 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
         }
         substituteUnused(tree, type);
 
-        if (iUseFlow) {
+        if (useFlow) {
             final Set<AnnotationMirror> inferred = flow.test(tree);
             if (inferred != null) {
                 // case 7: flow analysis
                 type.replaceAnnotations(inferred);
             }
         }
+
         dependentTypes.handle(tree, type);
         completer.visit(type);
     }
