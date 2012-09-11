@@ -22,12 +22,10 @@ import checkers.quals.Unqualified;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.util.*;
 
-import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.VariableTree;
 
 /**
  * A factory that extends {@link AnnotatedTypeFactory} to optionally use
@@ -188,15 +186,14 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
             }
     }
 
-    protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type,
-            boolean iUseFlow) {
+    protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type) {
         assert root != null : "root needs to be set when used on trees";
         treeAnnotator.visit(tree, type);
         Element elt = InternalUtils.symbol(tree);
         typeAnnotator.visit(type, elt != null ? elt.getKind() : ElementKind.OTHER);
         defaults.annotate(tree, type);
 
-        if (iUseFlow) {
+        if (useFlow) {
             final Set<AnnotationMirror> inferred = flow.test(tree);
             if (inferred != null) {
                 for (AnnotationMirror inf : inferred) {
@@ -213,24 +210,6 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
                 }
             }
         }
-    }
-
-    @Override
-    protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type) {
-        annotateImplicit(tree, type, this.useFlow);
-    }
-
-    @Override
-    public AnnotatedTypeMirror getDefaultedAnnotatedType(Tree tree) {
-        AnnotatedTypeMirror res = null;
-        if (tree instanceof VariableTree) {
-            res = this.fromMember(tree);
-            this.annotateImplicit(((VariableTree)tree).getType(), res, false);
-        } else if (tree instanceof AssignmentTree) {
-            res = this.fromExpression(((AssignmentTree) tree).getVariable());
-            this.annotateImplicit((AssignmentTree) tree, res, false);
-        }
-        return res;
     }
 
     @Override
