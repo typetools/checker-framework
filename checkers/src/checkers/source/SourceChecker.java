@@ -217,6 +217,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         Set<String> activeLint = new HashSet<String>();
         for (String s : lintString.split(",")) {
             if (!this.getSupportedLintOptions().contains(s) &&
+                    !(s.charAt(0) == '-' && this.getSupportedLintOptions().contains(s.substring(1))) &&
                     !s.equals("all") &&
                     !s.equals("none")) {
                 this.messager.printMessage(javax.tools.Diagnostic.Kind.WARNING,
