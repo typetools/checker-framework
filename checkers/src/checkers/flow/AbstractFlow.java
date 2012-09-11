@@ -15,7 +15,6 @@ import checkers.basetype.BaseTypeChecker;
 import checkers.source.SourceChecker;
 import checkers.types.*;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.util.AnnotationUtils;
 import checkers.util.ElementUtils;
 import checkers.util.Pair;
@@ -901,12 +900,7 @@ implements Flow {
 
         ExecutableElement method = TreeUtils.elementFromUse(node);
 
-        // scan(node.getArguments(), p);
-        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair = factory.methodFromUse(node);
-        AnnotatedExecutableType invokedMethod = mfuPair.first;
-        List<AnnotatedTypeMirror> params =
-                atypes.expandVarArgs(invokedMethod, node.getArguments());
-        checkArguments(params, node.getArguments());
+        scan(node.getArguments(), p);
 
         if (method.getSimpleName().contentEquals("exit")
                 && method.getEnclosingElement().getSimpleName().contentEquals("System"))
@@ -924,6 +918,18 @@ implements Flow {
         return null;
     }
 
+    /* TODO: Instead of the "scan(node.getArguments(), p);" I had the following:
+     * 
+    Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair = factory.methodFromUse(node);
+    AnnotatedExecutableType invokedMethod = mfuPair.first;
+    List<AnnotatedTypeMirror> params =
+            atypes.expandVarArgs(invokedMethod, node.getArguments());
+    checkArguments(params, node.getArguments());
+
+    and the helper method below. The point was to have the right assignment context
+    set. Is this not covered by a test case? With it, we run into problems with the order
+    of phases and test ArrayRefs fails.
+
     protected void checkArguments(List<? extends AnnotatedTypeMirror> requiredArgs,
             List<? extends ExpressionTree> passedArgs) {
         assert requiredArgs.size() == passedArgs.size() : "mismatch between required args (" + requiredArgs +
@@ -939,6 +945,7 @@ implements Flow {
             visitorState.setAssignmentContext(preAssCtxt);
         }
     }
+    */
 
     /**
      * Clear whatever part of the state that gets invalidated by
