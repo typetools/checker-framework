@@ -137,7 +137,7 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
 
     @Override
     public Void defaultAction(Tree tree, AnnotatedTypeMirror type) {
-        if (tree==null || type==null) return null;
+        if (tree == null || type == null) return null;
 
         // If this tree's kind is in treeKinds, annotate the type.
         // If this tree's class or any of its interfaces are in treeClasses,
@@ -186,7 +186,7 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
             String string = (String) tree.getValue();
             for (Pattern pattern : stringPatterns.keySet()) {
                 if (pattern.matcher(string).matches()) {
-                    if (res==null) {
+                    if (res == null) {
                         res = stringPatterns.get(pattern);
                     } else {
                         Set<AnnotationMirror> newres = stringPatterns.get(pattern);
@@ -194,7 +194,7 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
                     }
                 }
             }
-            if (res!=null) {
+            if (res != null) {
                 type.addAnnotations(res);
             }
         }
@@ -230,7 +230,7 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
         AnnotatedTypeMirror context = typeFactory.getVisitorState().getAssignmentContext();
         Collection<AnnotationMirror> post;
 
-        if (context!=null && context instanceof AnnotatedArrayType) {
+        if (context != null && context instanceof AnnotatedArrayType) {
             AnnotatedTypeMirror contextComponentType = ((AnnotatedArrayType) context).getComponentType();
             // Only compare the qualifiers that existed in the array type
             // Defaulting wasn't performed yet, so prev might have fewer qualifiers than
