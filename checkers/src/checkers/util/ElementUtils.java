@@ -11,6 +11,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import javax.lang.model.util.Elements;
 
 /**
  * A Utility class for analyzing {@code Element}s
@@ -40,6 +41,7 @@ public class ElementUtils {
     /**
      * Returns the innermost package element enclosing the given element.
      * The same effect as {@link javax.lang.model.util.Elements#getPackageOf(Element)}.
+     * Returns the element itself if it is a package.
      *
      * @param elem the enclosed element of a package
      * @return the innermost package element
@@ -47,11 +49,35 @@ public class ElementUtils {
      */
     public static PackageElement enclosingPackage(final Element elem) {
         Element result = elem;
-        while (result != null && result.getKind()!=ElementKind.PACKAGE) {
+        while (result != null && result.getKind() != ElementKind.PACKAGE) {
             /*@Nullable*/ Element encl = result.getEnclosingElement();
             result = encl;
         }
         return (PackageElement) result;
+    }
+
+    /**
+     * Returns the "parent" package element for the given package element.
+     * For package "A.B" it gives "A".
+     * For package "A" it gives the default package.
+     * For the default package it returns null;
+     *
+     * Note that packages are not enclosed within each other, we have to manually climb
+     * the namespaces. Calling "enclosingPackage" on a package element returns the
+     * package element itself again. 
+     *
+     * @param elem the package to start from
+     * @return the parent package element
+     *
+     */
+    public static PackageElement parentPackage(final Elements e, final PackageElement elem) {
+        String fqnstart = elem.getQualifiedName().toString();
+        String fqn = fqnstart;
+        if (fqn != null && !fqn.isEmpty() && fqn.contains(".")) {
+            fqn = fqn.substring(0, fqn.lastIndexOf('.'));
+            return e.getPackageElement(fqn);
+        }
+        return null;
     }
 
     /**
