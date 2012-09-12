@@ -267,6 +267,19 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
         return super.visitSwitch(node, p);
     }
 
+    @Override
+    public Void visitNewClass(NewClassTree node, Void p) {
+        AnnotatedDeclaredType type = atypeFactory.getAnnotatedType(node);
+        if (!type.hasAnnotation(NONNULL)) {
+            // The type is not non-null => error
+            checker.report(Result.failure("new.class.type.invalid", type.getAnnotations()), node);
+            // Note that other consistency checks are made by isValid.
+        }
+        // TODO: It might be nicer to introduce a framework-level
+        // isValidNewClassType or some such.
+        return super.visitNewClass(node, p);
+    }
+
     protected void checkForRedundantTests(BinaryTree node) {
         if (isInAssert) return;
 
