@@ -1,43 +1,44 @@
 Version 1.4.0, 11 Sep 2012
 
 User-visible framework improvements:
-  @DefaultQualifier annotations now use a Class instead of a String,
-    preventing simple typo errors.
-  @DefaultLocation extended with more constants.
-  Improvements to QualifierHierarchy construction.
-  TreeAnnotator propagates the least-upper-bound of the operands of
-    binary/compound operations, instead of taking the default qualifier.
-  Simplify AnnotatedTypeFactory constructors.
-  Add a GeneralAnnotatedTypeFactory that supports multiple type systems.
+  Defaulting:
+    @DefaultQualifier annotations now use a Class instead of a String,
+      preventing simple typo errors.
+    @DefaultLocation extended with more constants.
+    TreeAnnotator propagates the least-upper-bound of the operands of
+      binary/compound operations, instead of taking the default qualifier.
   Stub files now ignore the return type, allowing for files automatically
     generated from other formats.
-  Propagate annotations from the sub-expression of a cast to its result.
-  Move isAssignable from the BaseTypeChecker to the BaseTypeVisitor; now
-    the Checker only consists of factories and logic is contained in the
-    Visitor.
-  Better handling of assignment context and improved inference of
-    array creation expressions.
+  Type factories and type hierarchies:
+    Simplify AnnotatedTypeFactory constructors.
+    Add a GeneralAnnotatedTypeFactory that supports multiple type systems.
+    Improvements to QualifierHierarchy construction.
+  Type-checking improvements:
+    Propagate annotations from the sub-expression of a cast to its result.
+    Better handling of assignment context and improved inference of
+      array creation expressions.
   Optional stricter checking of casts to array and generic types using
     the new -Alint=cast:strict flag.
     This will become the default in the future.
-  Classes com.sun.source.util.AbstractTypeProcessor and
-    checkers.util.AggregateChecker are now in package checkers.source.
-  SourceChecker.initChecker no longer has a ProcessingEnvironment
-    parameter. The environment can now be accessed using the standard
-    processingEnv field (instead of the previous env field).
-  Issue a warning if an unsupported -Alint option is provided.
-  Improved error messages.
+  Code reorganization:
+    SourceChecker.initChecker no longer has a ProcessingEnvironment
+      parameter. The environment can now be accessed using the standard
+      processingEnv field (instead of the previous env field).
+    Classes com.sun.source.util.AbstractTypeProcessor and
+      checkers.util.AggregateChecker are now in package checkers.source.
+    Move isAssignable from the BaseTypeChecker to the BaseTypeVisitor; now
+      the Checker only consists of factories and logic is contained in the
+      Visitor.
+  Warning and error messages:
+    Issue a warning if an unsupported -Alint option is provided.
+    Improved error messages.
   Maven plugin now works.
 
 Nullness Checker:
   Only allow creation of (implicitly) non-null objects.
-  Optionally forbid creation of arrays with @NonNull component type.
-    Flag -Alint=arrays:forbidnonnullcomponents can be used to enable
-    this check. Forbidding is sound and will eventually be the only
-    possibility. Allowing is unsound but permitted until flow-sensitivity
-    changes are made.
-    Special case for "x.toArray(new C[x.size()])", which will correctly
-    set the array elements.
+  Optionally forbid creation of arrays with @NonNull component type,
+    when flag -Alint=arrays:forbidnonnullcomponents is supplied.
+    This will become the default in the future.
 
 Internal framework improvements:
   Enable assertion checking.
