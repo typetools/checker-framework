@@ -30,11 +30,14 @@ User-visible framework improvements:
   Maven plugin now works.
 
 Nullness Checker:
-  Forbid creation of arrays with @NonNull component type.
+  Only allow creation of (implicitly) non-null objects.
+  Optionally forbid creation of arrays with @NonNull component type.
+    Flag -Alint=arrays:forbidnonnullcomponents can be used to enable
+    this check. Forbidding is sound and will eventually be the only
+    possibility. Allowing is unsound but permitted until flow-sensitivity
+    changes are made.
     Special case for "x.toArray(new C[x.size()])", which will correctly
     set the array elements.
-    Flag -Alint=arrays:allownonnullcomponents can be used to relax
-    this check.
 
 Internal framework improvements:
   Enable assertion checking.
