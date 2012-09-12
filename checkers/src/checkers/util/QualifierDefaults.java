@@ -434,6 +434,13 @@ public class QualifierDefaults {
         }
 
         private static void doApply(AnnotatedTypeMirror type, AnnotationMirror qual) {
+            // Never apply default qualifiers to type variables or wildcards.
+            // TODO: add a special DefaultLocation for them?
+            // Note duplication with check above. Improve this.
+            if (type.getKind() == TypeKind.WILDCARD ||
+                    type.getKind() == TypeKind.TYPEVAR)
+                return;
+
             // Add the default annotation, but only if no other
             // annotation is present.
             if (!type.isAnnotatedInHierarchy(qual))
