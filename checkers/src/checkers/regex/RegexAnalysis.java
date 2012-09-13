@@ -8,11 +8,10 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.VariableElement;
 
 import checkers.flow.analysis.checkers.CFAbstractAnalysis;
-import checkers.flow.analysis.checkers.CFAbstractValue;
+import checkers.flow.analysis.checkers.CFAbstractValue.InferredAnnotation;
 import checkers.flow.analysis.checkers.CFAnalysis;
 import checkers.flow.analysis.checkers.CFStore;
 import checkers.flow.analysis.checkers.CFValue;
-import checkers.flow.analysis.checkers.CFAbstractValue.InferredAnnotation;
 import checkers.util.Pair;
 
 public class RegexAnalysis extends
