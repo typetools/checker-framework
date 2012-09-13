@@ -49,6 +49,7 @@ public class RegexUtil {
    * Returns true if the argument is a syntactically valid regular
    * expression with at least the given number of groups.
    */
+  /*>>>
   @SuppressWarnings("regex")    // RegexUtil
   /*@checkers.quals.Pure*/
   public static boolean isRegex(String s, int groups) {
@@ -65,6 +66,7 @@ public class RegexUtil {
    * Returns true if the argument is a syntactically valid regular
    * expression.
    */
+  /*>>>
   @SuppressWarnings("regex")    // RegexUtil
   /*@checkers.quals.Pure*/
   public static boolean isRegex(char c) {
@@ -76,6 +78,7 @@ public class RegexUtil {
    * expression. Otherwise returns a string describing why the argument is
    * not a regex.
    */
+  /*>>>
   @SuppressWarnings("regex")    // RegexUtil
   /*@checkers.quals.Pure*/
   public static /*@Nullable*/ String regexError(String s) {
@@ -87,6 +90,7 @@ public class RegexUtil {
    * expression with at least the given number of groups. Otherwise returns
    * a string describing why the argument is not a regex.
    */
+  /*>>>
   @SuppressWarnings("regex")    // RegexUtil
   /*@checkers.quals.Pure*/
   public static /*@Nullable*/ String regexError(String s, int groups) {
@@ -107,6 +111,7 @@ public class RegexUtil {
    * expression. Otherwise returns a PatternSyntaxException describing
    * why the argument is not a regex.
    */
+  /*>>>
   @SuppressWarnings("regex")    // RegexUtil
   /*@checkers.quals.Pure*/
   public static /*@Nullable*/ PatternSyntaxException regexException(String s) {
@@ -118,6 +123,7 @@ public class RegexUtil {
    * expression with at least the given number of groups. Otherwise returns a
    * PatternSyntaxException describing why the argument is not a regex.
    */
+  /*>>>
   @SuppressWarnings("regex")    // RegexUtil
   /*@checkers.quals.Pure*/
   public static /*@Nullable*/ PatternSyntaxException regexException(String s, int groups) {
@@ -149,6 +155,7 @@ public class RegexUtil {
    * purpose of this method is to suppress Regex Checker warnings. Once the the
    * Regex Checker supports flow-sensitivity, it should be very rarely needed.
    */
+  /*>>>
   @SuppressWarnings("regex")    // RegexUtil
   /*@checkers.quals.Pure*/
   public static /*@Regex*/ String asRegex(String s, int groups) {

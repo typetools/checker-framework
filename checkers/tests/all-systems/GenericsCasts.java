@@ -3,15 +3,17 @@ import java.util.*;
 // Clone of oigj/GenericsCasts
 class GenericsCasts {
   // Cast from a raw type to a generic type
-  List<Object>[] o = (List<Object>[]) new List[5];
+  List<Object>[] o = (List<Object>[]) new List[] { new ArrayList() };
+
+  class Data<T> {}
 
   // Use our own dummy method as to avoid a complaint from the Signature Checker
-  Class<?> forName(String p) { throw new Error(""); }
+  Data<?> forName(String p) { throw new Error(""); }
   void m() {
-      // This warning unfortunately doesn't show up for all type systems.
-      // Otherwise, this test case should be applicable to other systems.
       // Cast from a wildcard to a normal type argument.
-      Class<GenericsCasts> c = (Class<GenericsCasts>) forName("HaHa!");
+      // Warning only with -Alint:cast:strict.
+      //TODO:: warning: (cast.unsafe)
+      Data<GenericsCasts> c = (Data<GenericsCasts>) forName("HaHa!");
   }
 
   // Casts from something with one type argument to two type arguments
@@ -24,6 +26,8 @@ class GenericsCasts {
       }
       void trouble() {
           Queue<K> queue = new Queue<K>();
+          // Warning only with -Alint:cast:strict.
+          //TODO:: warning: (cast.unsafe)
           Entry<K, V> e = (Entry<K, V>) queue.poll();
       }
   }

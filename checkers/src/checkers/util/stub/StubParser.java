@@ -36,8 +36,9 @@ public class StubParser {
      * found on the user's real classpath.  Since the stub file may contain
      * packages that are not on the classpath, this can be OK, so default to
      * false.
+     * TODO: set based on command-line option.
      */
-    private static final boolean warnIfNotFound = false;
+    private static boolean warnIfNotFound = false;
 
     private static final boolean debugStubParser = false;
 
@@ -561,6 +562,10 @@ public class StubParser {
 
     public VariableElement findElement(TypeElement typeElt, VariableDeclarator variable) {
         final String fieldName = variable.getId().getName();
+        return findFieldElement(typeElt, fieldName);
+    }
+
+    public VariableElement findFieldElement(TypeElement typeElt, String fieldName) {
         for (VariableElement field : ElementFilter.fieldsIn(typeElt.getEnclosedElements())) {
             // field.getSimpleName() is a CharSequence, not a String
             if (fieldName.equals(field.getSimpleName().toString())) {
@@ -741,6 +746,11 @@ public class StubParser {
             FieldAccessExpr faexpr = (FieldAccessExpr) expr;
             VariableElement elem = findVariableElement(faexpr);
 
+            if (elem == null) {
+                // A warning was already issued by findVariableElement;
+                return;
+            }
+
             ExecutableElement var = builder.findElement(name);
             TypeMirror expected = var.getReturnType();
             if (expected.getKind() == TypeKind.DECLARED) {
@@ -808,14 +818,12 @@ public class StubParser {
 
     private VariableElement findVariableElement(FieldAccessExpr faexpr) {
         TypeElement rcvElt = elements.getTypeElement(faexpr.getScope().toString());
-        if (rcvElt==null) {
-            SourceChecker.errorAbort("StubParser: unknown annotation attribute receiver: " + faexpr);
+        if (rcvElt == null) {
+            if (warnIfNotFound || debugStubParser)
+                stubWarning("Type " + faexpr.getScope().toString() + " not found");
+            return null;
         }
-        VariableElement elem = TreeUtils.getField(faexpr.getScope().toString(), faexpr.getField().toString() , env);
 
-        if (elem==null) {
-            SourceChecker.errorAbort("StubParser: unknown annotation attribute field access: " + faexpr);
-        }
-        return elem;
+        return findFieldElement(rcvElt, faexpr.getField());
     }
 }

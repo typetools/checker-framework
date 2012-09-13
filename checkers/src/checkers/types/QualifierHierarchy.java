@@ -47,6 +47,13 @@ public abstract class QualifierHierarchy {
     public abstract Set<AnnotationMirror> getBottomAnnotations();
 
     /**
+     * 
+     * @param start Any qualifier from the type hierarchy.
+     * @return The polymorphic qualifier for that hierarchy
+     */
+    public abstract AnnotationMirror getPolymorphicAnnotation(AnnotationMirror start);
+
+    /**
      * Returns the names of all type qualifiers in this type qualifier
      * hierarchy.
      * TODO: What is the relation to {@link checkers.basetype.BaseTypeChecker#getSupportedTypeQualifiers()}?
@@ -124,12 +131,17 @@ public abstract class QualifierHierarchy {
         if (annos1.size() == 1 && annos2.size() == 1) {
             AnnotationMirror a1 = annos1.iterator().next();
             AnnotationMirror a2 = annos2.iterator().next();
-            return Collections.singleton(leastUpperBound(a1, a2));
+            AnnotationMirror lub = leastUpperBound(a1, a2);
+            assert lub!=null : "QualifierHierarchy.leastUpperBounds: lub of " + a1 +
+                    " and " + a2 + " gives null!";
+            return Collections.singleton(lub);
         }
 
-        assert annos1.size() == annos2.size() && annos1.size()!=0 :
-            "QualifierHierarchy.leastUpperBounds: tried to determine LUB with empty sets or sets of different sizes!\n" +
+        assert annos1.size() == annos2.size() :
+            "QualifierHierarchy.leastUpperBounds: tried to determine LUB with sets of different sizes!\n" +
                     "    Set 1: " + annos1 + " Set 2: " + annos2;
+        assert annos1.size()!=0 :
+            "QualifierHierarchy.leastUpperBounds: tried to determine LUB with empty sets!";
 
         Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
         for (AnnotationMirror a1 : annos1) {

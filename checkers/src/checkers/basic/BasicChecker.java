@@ -38,7 +38,7 @@ public final class BasicChecker extends BaseTypeChecker {
     @Override @SuppressWarnings("unchecked")
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
 
-        String qualNames = env.getOptions().get("quals");
+        String qualNames = processingEnv.getOptions().get("quals");
         if (qualNames == null) {
             errorAbort("BasicChecker: missing required option: -Aquals");
         }

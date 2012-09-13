@@ -19,7 +19,7 @@ public class ArrayArgs {
         test(s2);
         //:: error: (assignment.type.incompatible)
         @NonNull String[] s3 = new String[] { "hello", null, "goodbye" };
-        //:: error: (assignment.type.incompatible)
+        //:: error: (new.array.type.invalid)
         @NonNull String[] s4 = new String[3];
 
         // TODO: when issue 25 is fixed, the following is safe

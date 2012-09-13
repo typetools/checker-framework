@@ -55,6 +55,8 @@ public class RandomTests {
 
     // Casts
     public void cast() {
+        // Warning only with -Alint:cast:strict.
+        //TODO:: warning: (cast.unsafe)
         List<String> l = (List<String>) new HashMap<String, String>();
     }
 

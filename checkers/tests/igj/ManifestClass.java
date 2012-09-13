@@ -19,4 +19,3 @@ class ManifestClass {
     public void method1() { }
     public void method2() { method1(); }
 }
-

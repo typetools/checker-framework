@@ -1,6 +1,5 @@
 package checkers.lock;
 
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 
 import checkers.basetype.BaseTypeChecker;
@@ -24,12 +23,12 @@ public class LockChecker extends BaseTypeChecker {
     protected AnnotationMirror GUARDEDBY, UNQUALIFIED;
 
     @Override
-    public void initChecker(ProcessingEnvironment env) {
-        AnnotationUtils annoFactory = AnnotationUtils.getInstance(env);
+    public void initChecker() {
+        AnnotationUtils annoFactory = AnnotationUtils.getInstance(processingEnv);
         GUARDEDBY = annoFactory.fromClass(GuardedBy.class);
         UNQUALIFIED = annoFactory.fromClass(Unqualified.class);
 
-        super.initChecker(env);
+        super.initChecker();
     }
 
     @Override

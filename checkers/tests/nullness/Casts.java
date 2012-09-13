@@ -26,6 +26,46 @@ public class Casts {
         y.toString();
     }
 
+    void testUnsafeCastArray1(@Nullable Object[] x) {
+        // Warning only with -Alint:cast:strict.
+        //TODO:: warning: (cast.unsafe)
+        @NonNull Object[] y = (@NonNull Object[]) x;
+        y[0].toString();
+    }
+
+    void testUnsafeCastArray2(@NonNull Object x) {
+        // We don't know about the component type of x -> warn
+        // Warning only with -Alint:cast:strict.
+        //TODO:: warning: (cast.unsafe)
+        @NonNull Object[] y = (@NonNull Object[]) x;
+        y[0].toString();
+    }
+
+    void testUnsafeCastList1(java.util.ArrayList<@Nullable Object> x) {
+        // Warning only with -Alint:cast:strict.
+        //TODO:: warning: (cast.unsafe)
+        java.util.List<@NonNull Object> y = (java.util.List<@NonNull Object>) x;
+        y.get(0).toString();
+        //TODO:: warning: (cast.unsafe)
+        java.util.List<@NonNull Object> y2 = (java.util.ArrayList<@NonNull Object>) x;
+        java.util.List<@Nullable Object> y3 = (java.util.List<@Nullable Object>) x;
+    }
+
+    void testUnsafeCastList2(java.util.List<@Nullable Object> x) {
+        java.util.List<@Nullable Object> y = (java.util.ArrayList<@Nullable Object>) x;
+        // Warning only with -Alint:cast:strict.
+        //TODO:: warning: (cast.unsafe)
+        java.util.List<@NonNull Object> y2 = (java.util.ArrayList<@NonNull Object>) x;
+    }
+
+    void testUnsafeCastList3(@NonNull Object x) {
+        // Warning only with -Alint:cast:strict.
+        //TODO:: warning: (cast.unsafe)
+        java.util.List<@Nullable Object> y = (java.util.List<@Nullable Object>) x;
+        //TODO:: warning: (cast.unsafe)
+        java.util.List<@NonNull Object> y2 = (java.util.ArrayList<@NonNull Object>) x;
+    }
+
     void testSuppression(@Nullable Object x) {
         //:: error: (assignment.type.incompatible)
         @NonNull String s1 = (String) x;

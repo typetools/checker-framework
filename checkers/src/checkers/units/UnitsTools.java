@@ -24,7 +24,9 @@ import checkers.units.quals.s;
 /**
  * Utility methods to generate annotated types and to convert between them.
  */
+/*>>>
 @SuppressWarnings("units")
+*/
 // TODO: add fromTo methods for all useful unit combinations.
 public class UnitsTools {
     // Lengths

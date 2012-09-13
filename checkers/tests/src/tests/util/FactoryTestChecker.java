@@ -11,7 +11,6 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.SupportedOptions;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
@@ -24,6 +23,7 @@ import com.sun.tools.javac.tree.JCTree;
 
 import checkers.source.*;
 import checkers.types.AnnotatedTypeFactory;
+import checkers.util.TreeUtils;
 
 /**
  * A specialized checker for testing purposes.  It compares an expression's
@@ -79,11 +79,11 @@ public class FactoryTestChecker extends SourceChecker {
     SourceChecker checker;
 
     @Override
-    public void initChecker(ProcessingEnvironment p) {
-        super.initChecker(p);
+    public void initChecker() {
+        super.initChecker();
 
         // Find factory constructor
-        String checkerClassName = env.getOptions().get("checker");
+        String checkerClassName = processingEnv.getOptions().get("checker");
         try {
             if (checkerClassName != null) {
                 Class<?> checkerClass = Class.forName(checkerClassName);
@@ -256,7 +256,7 @@ public class FactoryTestChecker extends SourceChecker {
 
         @Override
         public Void scan(Tree tree, Void p) {
-            if (tree instanceof ExpressionTree) {
+            if (TreeUtils.isExpressionTree(tree)) {
                 ExpressionTree expTree = (ExpressionTree) tree;
                 TreeSpec treeSpec =
                     new TreeSpec(expTree.toString().trim(),
@@ -265,8 +265,10 @@ public class FactoryTestChecker extends SourceChecker {
                     String actualType = canonizeTypeString(atypeFactory.getAnnotatedType(expTree).toString());
                     String expectedType = expected.get(treeSpec);
                     if (!actualType.equals(expectedType)) {
+                        /*>>>
                         // The key is added above using a setProperty call, which is not supported by the CompilerMessageChecker
                         @SuppressWarnings("compilermessages")
+                        */
                         Result res = Result.failure("type.unexpected", tree.toString(), actualType, expectedType);
                         FactoryTestChecker.this.report(res, tree);
                     }

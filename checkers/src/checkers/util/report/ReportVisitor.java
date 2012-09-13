@@ -51,7 +51,7 @@ public class ReportVisitor extends BaseTypeVisitor<ReportChecker> {
 
     @Override
     public Void scan(Tree tree, Void p) {
-        if (tree!=null && treeKinds!=null) {
+        if (tree != null && treeKinds != null) {
             for (String tk : treeKinds) {
                 if (tree.getKind().toString().equals(tk)) {
                     checker.report(Result.failure("Tree.Kind." + tk), tree);
@@ -71,7 +71,7 @@ public class ReportVisitor extends BaseTypeVisitor<ReportChecker> {
      */
     private void checkReportUse(Tree node, Element member) {
         Element loop = member;
-        while (loop!=null) {
+        while (loop != null) {
             boolean report = this.atypeFactory.getDeclAnnotation(loop, ReportUse.class) != null;
             if (report) {
                 checker.report(Result.failure("usage", node,
@@ -80,17 +80,8 @@ public class ReportVisitor extends BaseTypeVisitor<ReportChecker> {
                 break;
             } else {
                 if (loop.getKind() == ElementKind.PACKAGE) {
-                    // Packages are not enclosed within each other, we have to manually climb
-                    // the namespaces.
-                    // TODO: put something like this into ElementUtils.
-                    String fqnstart = ((PackageElement)loop).getQualifiedName().toString();
-                    String fqn = fqnstart;
-                    if (fqn!=null && !fqn.isEmpty() && fqn.contains(".")) {
-                        // We already tested the first package, so strip it off first.
-                        fqn = fqn.substring(0, fqn.lastIndexOf('.'));
-                        loop = this.elements.getPackageElement(fqn);
-                        continue;
-                    }
+                    loop = ElementUtils.parentPackage(elements, (PackageElement)loop);
+                    continue;
                 }
             }
             // Package will always be the last iteration.
@@ -271,7 +262,7 @@ public class ReportVisitor extends BaseTypeVisitor<ReportChecker> {
 
     @Override
     public Void visitModifiers(ModifiersTree node, Void p) {
-        if (node!=null && modifiers!=null) {
+        if (node != null && modifiers != null) {
             for (Modifier hasmod : node.getFlags()) {
                 for (String searchmod : modifiers) {
                     if (hasmod.toString().equals(searchmod)) {
