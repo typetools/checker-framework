@@ -1,4 +1,4 @@
-package checkers.flow.analysis.checkers;
+package checkers.regex;
 
 import java.util.Collections;
 
@@ -10,6 +10,9 @@ import checkers.flow.analysis.FlowExpressions.Receiver;
 import checkers.flow.analysis.RegularTransferResult;
 import checkers.flow.analysis.TransferInput;
 import checkers.flow.analysis.TransferResult;
+import checkers.flow.analysis.checkers.CFAbstractTransfer;
+import checkers.flow.analysis.checkers.CFStore;
+import checkers.flow.analysis.checkers.CFValue;
 import checkers.flow.cfg.node.ClassNameNode;
 import checkers.flow.cfg.node.IntegerLiteralNode;
 import checkers.flow.cfg.node.MethodAccessNode;
@@ -18,7 +21,6 @@ import checkers.flow.cfg.node.Node;
 import checkers.flow.util.FlowExpressionParseUtil;
 import checkers.flow.util.FlowExpressionParseUtil.FlowExpressionContext;
 import checkers.flow.util.FlowExpressionParseUtil.FlowExpressionParseException;
-import checkers.regex.RegexAnnotatedTypeFactory;
 import checkers.regex.quals.Regex;
 
 public class RegexTransfer extends
@@ -32,8 +34,10 @@ public class RegexTransfer extends
         this.analysis = analysis;
     }
 
+    @Override
     public TransferResult<CFValue, CFStore> visitMethodInvocation(
             MethodInvocationNode n, TransferInput<CFValue, CFStore> in) {
+        RegexAnnotatedTypeFactory factory = (RegexAnnotatedTypeFactory) analysis.getFactory();
         TransferResult<CFValue, CFStore> result = super.visitMethodInvocation(
                 n, in);
 
@@ -54,23 +58,23 @@ public class RegexTransfer extends
                     ConditionalTransferResult<CFValue, CFStore> newResult = new ConditionalTransferResult<>(
                             result.getResultValue(), thenStore, elseStore);
                     FlowExpressionContext context = FlowExpressionParseUtil
-                            .buildFlowExprContextForUse(n, analysis.getFactory());
+                            .buildFlowExprContextForUse(n, factory);
                     try {
                         Receiver firstParam = FlowExpressionParseUtil.parse(
                                 "#1", context,
-                                analysis.factory.getPath(n.getTree()));
+                                factory.getPath(n.getTree()));
                         // add annotation with correct group count (if possible,
                         // regex annotation without count otherwise)
                         Node count = n.getArgument(1);
                         if (count instanceof IntegerLiteralNode) {
                             IntegerLiteralNode iln = (IntegerLiteralNode) count;
                             Integer groupCount = iln.getValue();
-                            RegexAnnotatedTypeFactory f = (RegexAnnotatedTypeFactory) analysis.factory;
+                            RegexAnnotatedTypeFactory f = (RegexAnnotatedTypeFactory) factory;
                             AnnotationMirror regexAnnotation = f
                                     .createRegexAnnotation(groupCount);
                             thenStore.insertValue(firstParam, regexAnnotation);
                         } else {
-                            AnnotationMirror regexAnnotation = analysis.factory
+                            AnnotationMirror regexAnnotation = factory
                                     .annotationFromClass(Regex.class);
                             thenStore.insertValue(firstParam, regexAnnotation);
                         }
@@ -91,10 +95,9 @@ public class RegexTransfer extends
                     if (count instanceof IntegerLiteralNode) {
                         IntegerLiteralNode iln = (IntegerLiteralNode) count;
                         Integer groupCount = iln.getValue();
-                        RegexAnnotatedTypeFactory f = (RegexAnnotatedTypeFactory) analysis.factory;
-                        regexAnnotation = f.createRegexAnnotation(groupCount);
+                        regexAnnotation = factory.createRegexAnnotation(groupCount);
                     } else {
-                        regexAnnotation = analysis.factory
+                        regexAnnotation = factory
                                 .annotationFromClass(Regex.class);
                     }
                     CFValue newResultValue = analysis

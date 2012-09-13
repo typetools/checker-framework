@@ -9,8 +9,6 @@ import javax.lang.model.element.VariableElement;
 import checkers.basetype.BaseTypeChecker;
 import checkers.flow.analysis.checkers.CFStore;
 import checkers.flow.analysis.checkers.CFValue;
-import checkers.flow.analysis.checkers.RegexAnalysis;
-import checkers.flow.analysis.checkers.RegexTransfer;
 import checkers.regex.quals.PartialRegex;
 import checkers.regex.quals.PolyRegex;
 import checkers.regex.quals.Regex;
