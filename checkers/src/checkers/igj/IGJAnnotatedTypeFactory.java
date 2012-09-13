@@ -1,6 +1,5 @@
 package checkers.igj;
 
-import java.lang.annotation.Annotation;
 import java.util.*;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -124,16 +123,6 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
         // it above does not work. Also see NullnessAnnotatedTypeFactory.
 
         this.postInit();
-    }
-
-    @Override
-    protected Set<AnnotationMirror> createFlowQualifiers(IGJChecker checker) {
-        Set<AnnotationMirror> flowQuals = AnnotationUtils.createAnnotationSet();
-        for (Class<? extends Annotation> cl : checker.getSupportedTypeQualifiers()) {
-            if (!I.class.equals(cl))
-                flowQuals.add(annotations.fromClass(cl));
-        }
-        return flowQuals;
     }
 
     @Override
