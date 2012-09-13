@@ -38,14 +38,13 @@ public abstract class AbstractNonNullChecker extends InitializationChecker {
     }
 
     @Override
-    public void initChecker(ProcessingEnvironment processingEnv) {
+    public void initChecker() {
         AnnotationUtils annoFactory = AnnotationUtils
                 .getInstance(processingEnv);
         NONNULL = annoFactory.fromClass(NonNull.class);
         NULLABLE = annoFactory.fromClass(Nullable.class);
         MONOTONICNONNULL = annoFactory.fromClass(MonotonicNonNull.class);
-
-        super.initChecker(processingEnv);
+        super.initChecker();
     }
 
     @Override

@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import checkers.nullness.KeyForSubchecker;
+import checkers.source.AggregateChecker;
 import checkers.source.SourceChecker;
-import checkers.util.AggregateChecker;
 
 public class NonNullRawnessChecker extends AggregateChecker {
 
