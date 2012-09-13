@@ -26,7 +26,6 @@ import checkers.nullness.quals.*;
 */
 
 import com.sun.source.tree.*;
-import com.sun.source.util.AbstractTypeProcessor;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.processing.JavacMessager;
@@ -287,7 +286,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
     public final synchronized void init(ProcessingEnvironment processingEnv) {
         try {
             super.init(processingEnv);
-            initChecker(processingEnv);
+            initChecker();
             if (this.env == null) {
                 errorInInit = true;
                 // Set the messager first, as it wasn't initialized
@@ -314,7 +313,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
      *
      * @see AbstractProcessor#init(ProcessingEnvironment)
      */
-    public void initChecker(ProcessingEnvironment processingEnv) {
+    public void initChecker() {
         this.env = processingEnv;
 
         this.skipUsesPattern = getSkipUsesPattern(processingEnv.getOptions());

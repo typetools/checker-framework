@@ -2,7 +2,6 @@ package checkers.types;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
@@ -117,13 +116,16 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
         this.poly = new QualifierPolymorphism(checker, this);
 
         this.defaults = new QualifierDefaults(this, this.annotations);
+        for (AnnotationMirror a : checker.getQualifierHierarchy().getTopAnnotations()) {
+            defaults.addAbsoluteDefault(a, DefaultLocation.LOCALS);
+        }
         boolean foundDefault = false;
+        // TODO: should look for a default qualifier per qualifier hierarchy.
         for (Class<? extends Annotation> qual : checker
                 .getSupportedTypeQualifiers()) {
             if (qual.getAnnotation(DefaultQualifierInHierarchy.class) != null) {
                 defaults.addAbsoluteDefault(this.annotations.fromClass(qual),
-                        Collections
-                                .singleton(DefaultLocation.ALL_EXCEPT_LOCALS));
+                        DefaultLocation.OTHERWISE);
                 foundDefault = true;
             }
         }
@@ -132,7 +134,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
                 .fromClass(Unqualified.class);
         if (!foundDefault && this.isSupportedQualifier(unqualified)) {
             defaults.addAbsoluteDefault(unqualified,
-                    Collections.singleton(DefaultLocation.ALL_EXCEPT_LOCALS));
+                    DefaultLocation.OTHERWISE);
         }
 
         // Add common aliases.

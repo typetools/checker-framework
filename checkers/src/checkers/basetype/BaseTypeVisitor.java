@@ -13,7 +13,6 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
@@ -63,6 +62,7 @@ import checkers.util.TypesUtils;
 
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
@@ -822,7 +822,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
             TreeUtils.enclosingMethod(getCurrentPath());
 
         AnnotatedExecutableType methodType = atypeFactory.getAnnotatedType(enclosingMethod);
-            AnnotatedTypeMirror ret = methodType.getReturnType(); 
+            AnnotatedTypeMirror ret = methodType.getReturnType();
             visitorState.setAssignmentContext(ret);
 
             commonAssignmentCheck(ret, node.getExpression(),
@@ -902,25 +902,31 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
             }
 
             try {
-            AnnotatedTypeMirror actual = atypeFactory.getAnnotatedType(at.getExpression());
-            if (expected.getKind() != TypeKind.ARRAY) {
-                // Expected is not an array -> direct comparison.
-                commonAssignmentCheck(expected, actual, at.getExpression(),
-                        "annotation.type.incompatible");
-            } else {
-                if (actual.getKind() == TypeKind.ARRAY) {
-                    // Both actual and expected are arrays.
+                AnnotatedTypeMirror actual = atypeFactory.getAnnotatedType(at
+                        .getExpression());
+                if (expected.getKind() != TypeKind.ARRAY) {
+                    // Expected is not an array -> direct comparison.
                     commonAssignmentCheck(expected, actual, at.getExpression(),
                             "annotation.type.incompatible");
                 } else {
-                    // The declaration is an array type, but just a single element is given.
-                    commonAssignmentCheck(((AnnotatedArrayType)expected).getComponentType(),
-                            actual, at.getExpression(),
-                            "annotation.type.incompatible");
+                    if (actual.getKind() == TypeKind.ARRAY) {
+                        // Both actual and expected are arrays.
+                        commonAssignmentCheck(expected, actual,
+                                at.getExpression(),
+                                "annotation.type.incompatible");
+                    } else {
+                        // The declaration is an array type, but just a single
+                        // element is given.
+                        commonAssignmentCheck(
+                                ((AnnotatedArrayType) expected)
+                                        .getComponentType(),
+                                actual, at.getExpression(),
+                                "annotation.type.incompatible");
+                    }
                 }
-            }
             } finally {
                 visitorState.setAssignmentContext(preAssCtxt);
+            }
         }
         return null;
     }
@@ -1108,6 +1114,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
         return super.visitInstanceOf(node, p);
     }
 
+    @Override
     public Void visitArrayAccess(ArrayAccessTree node, Void p) {
         AnnotatedTypeMirror preAssCtxt = visitorState.getAssignmentContext();
         try {
@@ -1997,16 +2004,6 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
     // **********************************************************************
     // Random helper methods
     // **********************************************************************
-
-    /**
-     * @param node the method invocation to check
-     * @return true if this is a super call to the {@link Enum} constructor
-     */
-    private static boolean isEnumSuper(MethodInvocationTree node) {
-        ExecutableElement ex = TreeUtils.elementFromUse(node);
-        Name name = ElementUtils.getQualifiedClassName(ex);
-        return "java.lang.Enum".contentEquals(name);
-    }
 
     /**
      * Tests whether the expression should not be checked because of the tree

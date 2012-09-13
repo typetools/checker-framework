@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Name;
 import javax.lang.model.type.TypeMirror;
@@ -44,7 +43,7 @@ public abstract class InitializationChecker extends BaseTypeChecker {
     }
 
     @Override
-    public void initChecker(ProcessingEnvironment processingEnv) {
+    public void initChecker() {
         AnnotationUtils annoFactory = AnnotationUtils
                 .getInstance(processingEnv);
         if (useFbc) {
@@ -56,7 +55,7 @@ public abstract class InitializationChecker extends BaseTypeChecker {
         }
         FBCBOTTOM = annoFactory.fromClass(FBCBottom.class);
 
-        super.initChecker(processingEnv);
+        super.initChecker();
     }
 
     public Set<Class<? extends Annotation>> getCommitmentAnnotations() {
@@ -474,6 +473,12 @@ public abstract class InitializationChecker extends BaseTypeChecker {
         public AnnotationMirror greatestLowerBound(AnnotationMirror anno1,
                 AnnotationMirror anno2) {
             assert false : "This code is not needed for this type system so far.";
+            return null;
+        }
+
+        @Override
+        public AnnotationMirror getPolymorphicAnnotation(AnnotationMirror start) {
+            SourceChecker.errorAbort("InitializationQualifierHierarchy: no polymorphic annotation available");
             return null;
         }
 
