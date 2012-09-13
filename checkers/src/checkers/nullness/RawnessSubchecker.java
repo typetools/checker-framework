@@ -30,7 +30,6 @@ public class RawnessSubchecker extends BaseTypeChecker {
 
     public void initChecker(NullnessSubchecker nnsc) {
         this.init(nnsc.getProcessingEnvironment());
-        this.setSupportedLintOptions(nnsc.getSupportedLintOptions());
         this.initChecker();
     }
 }
