@@ -540,7 +540,7 @@ public class AnnotatedTypes {
      *   this method or constructor invocation.
      */
     public Map<AnnotatedTypeVariable, AnnotatedTypeMirror>
-    findTypeArguments(ExpressionTree expr) {
+    findTypeArguments(final ExpressionTree expr) {
         Map<AnnotatedTypeVariable, AnnotatedTypeMirror> typeArguments =
             new HashMap<AnnotatedTypeVariable, AnnotatedTypeMirror>();
 
@@ -578,7 +578,7 @@ public class AnnotatedTypes {
             }
             return typeArguments;
         } else {
-            return inferTypeArguments(expr);
+            return inferTypeArguments(expr, elt);
         }
     }
 
@@ -590,6 +590,7 @@ public class AnnotatedTypes {
      *
      * @param expr the method or constructor invocation tree; the passed argument
      *   has to be a subtype of MethodInvocationTree or NewClassTree.
+     * @param elt the element corresponding to the tree. 
      * @return the mapping of the type variables to type arguments for
      *   this method or constructor invocation.
      */
@@ -599,7 +600,7 @@ public class AnnotatedTypes {
     // <T> void test(T arg1, T arg2)
     // in such cases, T is inferred to be '? extends T.upperBound'
     private Map<AnnotatedTypeVariable, AnnotatedTypeMirror>
-    inferTypeArguments(ExpressionTree expr) {
+    inferTypeArguments(final ExpressionTree expr, final ExecutableElement elt) {
         //
         // The basic algorithm used here, for each type variable:
         // 1. Find the un-annotated  least upper bound for the type variable
@@ -610,16 +611,6 @@ public class AnnotatedTypes {
         // 4. if not within an assignment context, then bind it to the extend bound.
         Map<AnnotatedTypeVariable, AnnotatedTypeMirror> typeArguments =
             new HashMap<AnnotatedTypeVariable, AnnotatedTypeMirror>();
-
-        ExecutableElement elt;
-        if (expr instanceof MethodInvocationTree ||
-                expr instanceof NewClassTree) {
-            elt = (ExecutableElement) TreeUtils.elementFromUse(expr);
-        } else {
-            // This case should never happen.
-            SourceChecker.errorAbort("AnnotatedTypes.findTypeArguments: unexpected tree: " + expr);
-            elt = null;
-        }
 
         // Find the un-annotated type
         // TODO: WMD thinks it would be better to (also?) determine the assignment context,
@@ -1093,7 +1084,7 @@ public class AnnotatedTypes {
 
         // Remove a previously existing unqualified annotation on the type.
         alub.removeUnqualified();
-        alub.addAnnotations(unification);
+        alub.replaceAnnotations(unification);
 
         if (alub.getKind() == TypeKind.DECLARED) {
             AnnotatedDeclaredType adt = (AnnotatedDeclaredType) alub;
@@ -1159,8 +1150,9 @@ public class AnnotatedTypes {
     public List<AnnotatedTypeMirror> expandVarArgs(AnnotatedExecutableType method,
             List<? extends ExpressionTree> args) {
         List<AnnotatedTypeMirror> parameters = method.getParameterTypes();
-        if (!method.getElement().isVarArgs())
+        if (!method.getElement().isVarArgs()) {
             return parameters;
+        }
 
         AnnotatedArrayType varargs = (AnnotatedArrayType)parameters.get(parameters.size() - 1);
 
@@ -1168,8 +1160,9 @@ public class AnnotatedTypes {
             // Check if one sent an element or an array
             AnnotatedTypeMirror lastArg = factory.getAnnotatedType(args.get(args.size() - 1));
             if (lastArg.getKind() == TypeKind.ARRAY &&
-                    getArrayDepth(varargs) == getArrayDepth((AnnotatedArrayType)lastArg))
+                    getArrayDepth(varargs) == getArrayDepth((AnnotatedArrayType)lastArg)) {
                 return parameters;
+            }
         }
 
         parameters = new ArrayList<AnnotatedTypeMirror>(parameters.subList(0, parameters.size() - 1));
@@ -1183,17 +1176,27 @@ public class AnnotatedTypes {
      * Return a list of the AnnotatedTypeMirror of the passed
      * expression trees, in the same order as the trees.
      *
+     * @param paramTypes The parameter types to use as assignment context
      * @param trees the AST nodes
      * @return  a list with the AnnotatedTypeMirror of each tree in trees.
      */
     public List<AnnotatedTypeMirror> getAnnotatedTypes(
-            Iterable<? extends ExpressionTree> trees) {
-        List<AnnotatedTypeMirror> types =
-            new ArrayList<AnnotatedTypeMirror>();
+            List<AnnotatedTypeMirror> paramTypes, List<? extends ExpressionTree> trees) {
+        assert paramTypes.size() == trees.size() : "AnnotatedTypes.getAnnotatedTypes: size mismatch! " +
+            "Parameter types: " + paramTypes + " Arguments: " + trees;
+        List<AnnotatedTypeMirror> types = new ArrayList<AnnotatedTypeMirror>();
+        AnnotatedTypeMirror preAssCtxt = factory.visitorState.getAssignmentContext();
 
-        for (ExpressionTree tree : trees)
-            types.add(factory.getAnnotatedType(tree));
-
+        try {
+            for (int i = 0; i < trees.size(); ++i) {
+                AnnotatedTypeMirror param = paramTypes.get(i);
+                factory.visitorState.setAssignmentContext(param);
+                ExpressionTree arg = trees.get(i);
+                types.add(factory.getAnnotatedType(arg));
+            }
+        } finally {
+            factory.visitorState.setAssignmentContext(preAssCtxt);
+        }
         return types;
     }
 

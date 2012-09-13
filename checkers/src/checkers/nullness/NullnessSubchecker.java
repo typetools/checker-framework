@@ -1,7 +1,8 @@
 package checkers.nullness;
 
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
+
+import com.sun.source.tree.CompilationUnitTree;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.nullness.quals.*;
@@ -10,6 +11,7 @@ import checkers.quals.PolyAll;
 import checkers.source.*;
 import checkers.types.*;
 import checkers.util.AnnotationUtils;
+import checkers.util.MultiGraphQualifierHierarchy;
 
 /**
  * A typechecker plug-in for the Nullness type system qualifier that finds (and
@@ -22,7 +24,12 @@ import checkers.util.AnnotationUtils;
  */
 @TypeQualifiers({ Nullable.class, LazyNonNull.class, NonNull.class, Primitive.class,
     PolyNull.class, PolyAll.class})
-@SupportedLintOptions({"nulltest", "uninitialized", "advancedchecks"})
+@SupportedLintOptions({"nulltest", "uninitialized", "advancedchecks",
+    // Temporary option to forbid non-null array component types,
+    // which is allowed by default.
+    // Forbidding is sound and will eventually be the only possibility.
+    // Allowing is unsound but permitted until flow-sensitivity changes are made.
+    "arrays:forbidnonnullcomponents"})
 public class NullnessSubchecker extends BaseTypeChecker {
 
     // warn about uninitialized primitive and nullable fields in the constructor
@@ -34,16 +41,31 @@ public class NullnessSubchecker extends BaseTypeChecker {
     // TODO: This lint option should only be temporary, until all checks are implemented correctly.
     public static final boolean ADVANCEDCHECKS_DEFAULT = false;
 
-    protected AnnotationMirror NONNULL, NULLABLE, LAZYNONNULL, PRIMITIVE;
+    protected AnnotationMirror NONNULL, NULLABLE, LAZYNONNULL, PRIMITIVE, POLYNULL;
+
+    // The associated Rawness Checker.
+    protected RawnessSubchecker rawnesschecker;
 
     @Override
-    public void initChecker(ProcessingEnvironment processingEnv) {
-        super.initChecker(processingEnv);
-        AnnotationUtils annoFactory = AnnotationUtils.getInstance(env);
+    public void initChecker() {
+        super.initChecker();
+        AnnotationUtils annoFactory = AnnotationUtils.getInstance(processingEnv);
         NONNULL = annoFactory.fromClass(NonNull.class);
         NULLABLE = annoFactory.fromClass(Nullable.class);
         LAZYNONNULL = annoFactory.fromClass(LazyNonNull.class);
         PRIMITIVE = annoFactory.fromClass(Primitive.class);
+        POLYNULL = annoFactory.fromClass(PolyNull.class);
+
+        rawnesschecker = new RawnessSubchecker();
+        rawnesschecker.initChecker(this);
+    }
+
+    @Override
+    public AnnotatedTypeFactory createFactory(CompilationUnitTree root) {
+        // typeProcess is never called on the rawnesschecker.
+        // We need to at least set the path.
+        rawnesschecker.currentPath = this.currentPath;
+        return new NullnessAnnotatedTypeFactory(this, rawnesschecker, root);
     }
 
     @Override
@@ -70,36 +92,50 @@ public class NullnessSubchecker extends BaseTypeChecker {
 
     }
 
-    /*
-     * TODO: it's ugly that this method cannot be in the TypeHierarchy, as these methods
-     * are final there. Try to refactor this.
-     */
-    @Override
-    public boolean isSubtype(AnnotatedTypeMirror sub, AnnotatedTypeMirror sup) {
-        // @Primitive and @NonNull are interchangeable
-        if (sub.getEffectiveAnnotations().contains(PRIMITIVE) &&
-                sup.getEffectiveAnnotations().contains(NONNULL)) {
-            return true;
-        }
-        return super.isSubtype(sub, sup);
-    }
-
-    /*
-     * TODO: actually use the MultiGraphQH and incorporate rawness.
     @Override
     protected MultiGraphQualifierHierarchy.MultiGraphFactory createQualifierHierarchyFactory() {
         return new MultiGraphQualifierHierarchy.MultiGraphFactory(this);
     }
 
     @Override
-    protected QualifierHierarchy createQualifierHierarchy() {
-        return new NullnessQualifierHierarchy((MultiGraphQualifierHierarchy)super.createQualifierHierarchy());
+    public QualifierHierarchy createQualifierHierarchy(MultiGraphQualifierHierarchy.MultiGraphFactory factory) {
+        return new NullnessQualifierHierarchy(factory);
     }
 
     private final class NullnessQualifierHierarchy extends MultiGraphQualifierHierarchy {
-        public NullnessQualifierHierarchy(MultiGraphQualifierHierarchy hierarchy) {
-            super(hierarchy);
+        public NullnessQualifierHierarchy(MultiGraphQualifierHierarchy.MultiGraphFactory factory) {
+            super(factory);
+        }
+
+        @Override
+        public boolean isSubtype(AnnotationMirror sub, AnnotationMirror sup) {
+            // @Primitive and @NonNull are interchangeable, mostly.
+            if (AnnotationUtils.areSame(sub, PRIMITIVE) &&
+                    AnnotationUtils.areSame(sup, PRIMITIVE)) {
+                return true;
+            }
+            if (AnnotationUtils.areSame(sub, PRIMITIVE)) {
+                return this.isSubtype(NONNULL, sup);
+            }
+            if (AnnotationUtils.areSame(sup, PRIMITIVE)) {
+                return this.isSubtype(sub, NONNULL);
+            }
+            return super.isSubtype(sub, sup);
+        }
+
+        @Override
+        public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
+            if (AnnotationUtils.areSame(a1, PRIMITIVE) &&
+                    AnnotationUtils.areSame(a2, PRIMITIVE)) {
+                return PRIMITIVE;
+            }
+            if (AnnotationUtils.areSame(a1, PRIMITIVE)) {
+                return this.leastUpperBound(NONNULL, a2);
+            }
+            if (AnnotationUtils.areSame(a2, PRIMITIVE)) {
+                return this.leastUpperBound(a1, NONNULL);
+            }
+            return super.leastUpperBound(a1, a2);
         }
     }
-    */
 }

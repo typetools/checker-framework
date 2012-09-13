@@ -34,10 +34,10 @@ public final class TestChecker extends BaseTypeChecker {
     protected AnnotationMirror BOTTOM;
 
     @Override
-    public void initChecker(ProcessingEnvironment env) {
-        AnnotationUtils annoFactory = AnnotationUtils.getInstance(env);
+    public void initChecker() {
+        AnnotationUtils annoFactory = AnnotationUtils.getInstance(processingEnv);
         BOTTOM = annoFactory.fromClass(Bottom.class);
-        super.initChecker(env);
+        super.initChecker();
     }
 
     @Override

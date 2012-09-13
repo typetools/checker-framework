@@ -29,7 +29,7 @@ public class UnitsVisitor extends BaseTypeVisitor<UnitsChecker> {
         Kind kind = node.getKind();
 
         if ( (kind == Kind.PLUS_ASSIGNMENT || kind == Kind.MINUS_ASSIGNMENT) &&
-                !checker.isSubtype(exprType, varType)) {
+                !checker.getTypeHierarchy().isSubtype(exprType, varType)) {
             checker.report(Result.failure("compoundassign.type.incompatible",
                     varType, exprType), node);
         }

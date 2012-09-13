@@ -393,8 +393,9 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
         Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair = super.methodFromUse(tree);
         AnnotatedExecutableType type = mfuPair.first;
 
-        List<AnnotatedTypeMirror> arguments = atypes.getAnnotatedTypes(tree.getArguments());
         List<AnnotatedTypeMirror> requiredArgs = atypes.expandVarArgs(type, tree.getArguments());
+        List<AnnotatedTypeMirror> arguments = atypes.getAnnotatedTypes(requiredArgs, tree.getArguments());
+
         ImmutabilityTemplateCollector collector = new ImmutabilityTemplateCollector();
         Map<String, AnnotationMirror> matchingMapping = collector.visit(arguments, requiredArgs);
         if (!matchingMapping.isEmpty())

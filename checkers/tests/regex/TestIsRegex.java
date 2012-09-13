@@ -123,4 +123,3 @@ class TestIsRegex {
         return b ? null : RegexUtil.asRegex(s, 2);
     }
 }
-

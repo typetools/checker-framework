@@ -25,4 +25,3 @@ public class Uninit12 {
   }
 
 }
-

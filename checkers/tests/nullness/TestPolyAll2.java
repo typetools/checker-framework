@@ -31,4 +31,3 @@ class TestPolyAll2 {
     return true;
   }
 }
-

@@ -14,4 +14,3 @@ class UpperBounds<T extends Date> {
         @Mutable Date d = l.instance;
     }
 }
-

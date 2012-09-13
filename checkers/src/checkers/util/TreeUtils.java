@@ -778,4 +778,15 @@ public final class TreeUtils {
     public static boolean isExpressionTree(Tree tree) {
         return tree instanceof ExpressionTree;
     }
+
+    /**
+     * @param node the method invocation to check
+     * @return true if this is a super call to the {@link Enum} constructor
+     */
+    public static boolean isEnumSuper(MethodInvocationTree node) {
+        ExecutableElement ex = TreeUtils.elementFromUse(node);
+        Name name = ElementUtils.getQualifiedClassName(ex);
+        return "java.lang.Enum".contentEquals(name);
+    }
+
 }

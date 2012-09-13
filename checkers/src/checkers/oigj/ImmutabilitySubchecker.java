@@ -1,10 +1,6 @@
 package checkers.oigj;
 
-import java.util.Collections;
-
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.oigj.quals.*;
@@ -12,10 +8,6 @@ import checkers.quals.TypeQualifiers;
 import checkers.types.*;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.util.AnnotationUtils;
-import checkers.util.InternalUtils;
-
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.Tree;
 
 @TypeQualifiers({ ReadOnly.class, Mutable.class, Immutable.class, I.class,
     AssignsFields.class, OIGJMutabilityBottom.class })
@@ -25,15 +17,15 @@ public class ImmutabilitySubchecker extends BaseTypeChecker {
     protected AnnotationMirror READONLY, MUTABLE, IMMUTABLE, I, ASSIGNS_FIELDS, BOTTOM_QUAL;
 
     @Override
-    public void initChecker(ProcessingEnvironment env) {
-        AnnotationUtils annoFactory = AnnotationUtils.getInstance(env);
+    public void initChecker() {
+        AnnotationUtils annoFactory = AnnotationUtils.getInstance(processingEnv);
         READONLY = annoFactory.fromClass(ReadOnly.class);
         MUTABLE = annoFactory.fromClass(Mutable.class);
         IMMUTABLE = annoFactory.fromClass(Immutable.class);
         I = annoFactory.fromClass(I.class);
         ASSIGNS_FIELDS = annoFactory.fromClass(AssignsFields.class);
         BOTTOM_QUAL = annoFactory.fromClass(OIGJMutabilityBottom.class);
-        super.initChecker(env);
+        super.initChecker();
     }
 
     //
@@ -74,37 +66,6 @@ public class ImmutabilitySubchecker extends BaseTypeChecker {
             }
             return true;
         }
-    }
-
-    //
-    // OIGJ Rule 2. Field assignment
-    // Field assignment o.f = ... is legal  iff
-    //   (i) I(o) <= AssignsFields or f is annotated as @Assignable, and
-    //   (ii) o = this or the type of f does not contain the owner Dominator
-    //        or Modifier
-    //
-    @Override
-    public boolean isAssignable(AnnotatedTypeMirror varType,
-                                AnnotatedTypeMirror receiverType, Tree varTree,
-                                AnnotatedTypeFactory factory) {
-        if (!(varTree instanceof ExpressionTree))
-            return true;
-
-        Element varElement = InternalUtils.symbol(varTree);
-        if (varElement != null && factory.getDeclAnnotation(varElement, Assignable.class) != null)
-            return true;
-
-        if (receiverType==null) {
-            // Happens e.g. for local variable, which doesn't have a receiver.
-            return true;
-        }
-
-        if (getQualifierHierarchy().isSubtype(
-                receiverType.getAnnotations(),
-                Collections.singleton(ASSIGNS_FIELDS)))
-            return true;
-
-        return false;
     }
 
 }

@@ -1,6 +1,5 @@
 package checkers.nullness;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -15,7 +14,6 @@ import checkers.quals.DefaultQualifier;
 import checkers.quals.PolyAll;
 import checkers.quals.Unused;
 import checkers.types.*;
-import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.visitors.AnnotatedTypeScanner;
@@ -85,6 +83,7 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
 
     /** Creates a {@link NullnessAnnotatedTypeFactory}. */
     public NullnessAnnotatedTypeFactory(NullnessSubchecker checker,
+            RawnessSubchecker rawnesschecker,
             CompilationUnitTree root) {
         super(checker, root);
 
@@ -95,10 +94,10 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
 
         NONNULL = checker.NONNULL;
         NULLABLE = checker.NULLABLE;
-        LAZYNONNULL = this.annotations.fromClass(LazyNonNull.class);
+        LAZYNONNULL = checker.LAZYNONNULL;
         RAW = this.annotations.fromClass(Raw.class);
         PRIMITIVE = checker.PRIMITIVE;
-        POLYNULL = this.annotations.fromClass(PolyNull.class);
+        POLYNULL = checker.POLYNULL;
         POLYALL = this.annotations.fromClass(PolyAll.class);
         UNUSED = this.annotations.fromClass(Unused.class);
 
@@ -128,15 +127,12 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
         // TODO: Add an alias for the Pure JML annotation. It's not a type qualifier, I think adding
         // it above does not work.
 
-        defaults.addAbsoluteDefault(NONNULL, Collections.singleton(DefaultLocation.ALL_EXCEPT_LOCALS));
-        defaults.setLocalVariableDefault(Collections.singleton(NULLABLE));
+        defaults.addAbsoluteDefault(NULLABLE, DefaultLocation.LOCALS);
+        defaults.addAbsoluteDefault(NONNULL, DefaultLocation.OTHERWISE);
 
         this.dependentTypes = new DependentTypes(checker, root);
 
-        RawnessSubchecker rawness = new RawnessSubchecker();
-        rawness.currentPath = checker.currentPath;
-        rawness.init(checker.getProcessingEnvironment());
-        rawnessFactory = rawness.createFactory(root);
+        rawnessFactory = rawnesschecker.createFactory(root);
 
         // do this last, as it might use the factory again.
         this.collectionToArrayHeuristics = new CollectionToArrayHeuristics(env, this);
@@ -169,8 +165,7 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
     }
 
     @Override
-    protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type,
-                boolean iUseFlow) {
+    protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type) {
         treeAnnotator.visit(tree, type);
         typeAnnotator.visit(type);
         // case 6: apply default
@@ -181,13 +176,14 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
         }
         substituteUnused(tree, type);
 
-        if (iUseFlow) {
+        if (useFlow) {
             final Set<AnnotationMirror> inferred = null;
             if (inferred != null) {
                 // case 7: flow analysis
                 type.replaceAnnotations(inferred);
             }
         }
+
         dependentTypes.handle(tree, type);
         completer.visit(type);
     }
@@ -217,7 +213,7 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
         for (AnnotatedTypeMirror supertype : supertypes) {
             typeAnnotator.visit(supertype);
             if (supertype.getKind() == TypeKind.DECLARED)
-                defaults.annotateTypeElement((TypeElement)((AnnotatedDeclaredType)supertype).getUnderlyingType().asElement(), supertype);
+                defaults.annotate((TypeElement)((AnnotatedDeclaredType)supertype).getUnderlyingType().asElement(), supertype);
             completer.visit(supertype);
         }
         // Apply supertype operations last.
@@ -456,10 +452,10 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
 
             if (elt.getKind() == ElementKind.CONSTRUCTOR)
                 // case 11. Add @Raw to constructors.
-                type.getReceiverType().addAnnotation(RAW);
+                type.getReceiverType().replaceAnnotation(RAW);
             else if (!ElementUtils.isStatic(elt))
                 // case 10 Add @NonNull to non-static non-constructors.
-                type.getReceiverType().addAnnotation(NONNULL);
+                type.getReceiverType().replaceAnnotation(NONNULL);
 
             return super.visitExecutable(type, p);
         }
@@ -471,7 +467,7 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
                     // Hack: Special case Void.class
                     && (type.getElement() == null || !type.getElement().getKind().isClass())
                     && !type.isAnnotated()) {
-                type.addAnnotation(NULLABLE);
+                type.replaceAnnotation(NULLABLE);
             }
 
             return super.visitDeclared(type, p);
@@ -512,7 +508,7 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
             // fixed we manually inspect enclosing catch blocks.
             // case 9. exception parameter
             if (isExceptionParameter(node))
-                type.addAnnotation(NONNULL);
+                type.replaceAnnotation(NONNULL);
 
             return super.visitIdentifier(node, type);
         }
@@ -525,7 +521,7 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
             AnnotatedExecutableType execType = (AnnotatedExecutableType)type;
             if (!execType.getReceiverType().isAnnotated()
                     && TreeUtils.containsThisConstructorInvocation(node))
-            execType.getReceiverType().addAnnotation(NONNULL);
+            execType.getReceiverType().replaceAnnotation(NONNULL);
 
             return super.visitMethod(node, type);
         }
@@ -568,25 +564,6 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
             }
             return null; // super.visitUnary(node, type);
         }
-
-        @Override
-        public Void visitNewArray(NewArrayTree node, AnnotatedTypeMirror type) {
-            // The super method only annotates array creations with initializers,
-            // e.g. "{5, 6}" and "new Integer[] {7, 8}".
-            // If super determined these are non-null, that is correct.
-            super.visitNewArray(node, type);
-            assert type.getKind() == TypeKind.ARRAY;
-            AnnotatedTypeMirror componentType = ((AnnotatedArrayType)type).getComponentType();
-            if (!componentType.getKind().isPrimitive() &&
-                    !componentType.isAnnotatedInHierarchy(NONNULL)) {
-                if (NullnessVisitor.isNewArrayAllZeroDims(node)) {
-                    componentType.addAnnotation(NONNULL);
-                } else {
-                    componentType.addAnnotation(NULLABLE);
                 }
-            }
-            return null;
-        }
-    }
 
 }

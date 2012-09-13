@@ -72,9 +72,17 @@ abstract class TypeFromTree extends
         public AnnotatedTypeMirror visitArrayAccess(ArrayAccessTree node,
                 AnnotatedTypeFactory f) {
 
-            AnnotatedTypeMirror type = f.getAnnotatedType(node.getExpression());
-            assert type instanceof AnnotatedArrayType;
-            return ((AnnotatedArrayType)type).getComponentType();
+            AnnotatedTypeMirror preAssCtxt = f.visitorState.getAssignmentContext();
+            try {
+                // TODO: what other trees shouldn't maintain the context?
+                f.visitorState.setAssignmentContext(null);
+
+                AnnotatedTypeMirror type = f.getAnnotatedType(node.getExpression());
+                assert type instanceof AnnotatedArrayType;
+                return ((AnnotatedArrayType)type).getComponentType();
+            } finally {
+                f.visitorState.setAssignmentContext(preAssCtxt);
+            }
         }
 
         @Override
@@ -268,9 +276,7 @@ abstract class TypeFromTree extends
             AnnotatedDeclaredType type = f.fromNewClass(node);
             // Enum constructors lead to trouble.
             // TODO: is there more to check? Can one annotate them?
-            if (isNewEnum(type) ||
-                    // This happens with the Nullness Checker. TODO.
-                    f.getQualifierHierarchy()==null) {
+            if (isNewEnum(type)) {
                 return type;
             }
             // Add annotations that are on the constructor declaration.
