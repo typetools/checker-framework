@@ -347,17 +347,17 @@ can do:
 </pre>
 <p>
 (which puts the Checker Framework distribution at
-http://www.cs.washington.edu/homes/mernst/jsr308test/checker-framework/current/checkers-manual.html),
+http://homes.cs.washington.edu/~mernst/jsr308test/checker-framework/current/checkers-manual.html),
 and then run a <em>second</em> time with
 </p>
 <pre>
-    python -m release -Dsanitycheck.dry.url=http://www.cs.washington.edu/homes/mernst/jsr308test/checker-framework/releases/1.1.1
+    python -m release -Dsanitycheck.dry.url=http://homes.cs.washington.edu/~mernst/jsr308test/checker-framework/releases/1.1.1
 </pre>
 <p>
 (It would be possible to just run the sanitycheck target directly:
 </p>
 <pre>
-ant -f release.xml -Dsanitycheck.dry.url=http://www.cs.washington.edu/homes/mernst/jsr308test/checker-framework/releases/1.1.1 -Drelease.ver=1.1.1 sanitycheck
+ant -f release.xml -Dsanitycheck.dry.url=http://homes.cs.washington.edu/~mernst/jsr308test/checker-framework/releases/1.1.1 -Drelease.ver=1.1.1 sanitycheck
 </pre>
 <p>
 but that
@@ -492,7 +492,7 @@ as follows:</p>
 <code>~/www/jsr308test</code></li>
 <li><code>sanitycheck.dry.url</code>: the URL to access the <code>releases</code>
 directory of your site copy, e.g.,
-<code>http://www.cs.washington.edu/homes/${USER}/jsr308test/releases</code></li>
+<code>http://homes.cs.washington.edu/~${USER}/jsr308test/releases</code></li>
 </ul>
 
 <p>(You'll do a dry-run of the release to your site copy, and will only
@@ -534,7 +534,7 @@ Framework short installation instructions by executing these commands:</p>
 <pre>
 cd
 wget -nv -N ${JSR308_WEB}/Makefile-jsr308-install
-JSR308_WEB=http://www.cs.washington.edu/homes/REAL-USER-NAME/jsr308test/checker-framework/current \
+JSR308_WEB=http://homes.cs.washington.edu/~REAL-USER-NAME/jsr308test/checker-framework/current \
     make -f Makefile-jsr308-install
 </pre>
 

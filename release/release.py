@@ -265,7 +265,7 @@ class Usage(Exception):
 # "USER = os.getlogin()" does not work; see http://bugs.python.org/issue584566
 # Another alternative is: USER = os.getenv('USER')
 USER = pwd.getpwuid(os.geteuid())[0]
-DRY_RUN_LINK_HTTP = "http://www.cs.washington.edu/homes/%s/jsr308test/jsr308/" % USER
+DRY_RUN_LINK_HTTP = "http://homes.cs.washington.edu/~%s/jsr308test/jsr308/" % USER
 DRY_PATH = os.path.join(os.environ['HOME'], 'www', 'jsr308test')
 DRY_RUN_LINK_FILE = "file://%s/jsr308/" % DRY_PATH
 DRY_RUN_LINK = DRY_RUN_LINK_HTTP
