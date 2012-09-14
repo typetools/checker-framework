@@ -51,8 +51,8 @@ public class NonNullTransfer extends InitializationTransfer<NonNullTransfer> {
     /** Annotations of the non-null type system. */
     protected final AnnotationMirror NONNULL;
 
-    public NonNullTransfer(NonNullAnalysis analysis, AbstractNonNullChecker checker) {
-        super(analysis, checker);
+    public NonNullTransfer(NonNullAnalysis analysis) {
+        super(analysis);
         this.analysis = analysis;
         NONNULL = analysis.getFactory().annotationFromClass(NonNull.class);
     }
