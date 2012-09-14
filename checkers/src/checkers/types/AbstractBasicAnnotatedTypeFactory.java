@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -193,9 +194,42 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
         return new TypeAnnotator(checker);
     }
 
+    /**
+     * Returns the appropriate flow analysis class that is used for the dataflow
+     * analysis.
+     *
+     * <p>
+     * This implementation uses the checker naming convention to create the
+     * appropriate analysis. If no transfer function is found, it returns an
+     * instance of {@link CFAnalysis}.
+     *
+     * <p>
+     * Subclasses have to override this method to create the appropriate
+     * analysis if they do not follow the checker naming convention.
+     */
     @SuppressWarnings({ "unchecked", "rawtypes" })
     protected FlowAnalysis createFlowAnalysis(Checker checker,
             List<Pair<VariableElement, Value>> fieldValues) {
+
+        // Try to reflectively load the visitor.
+        Class<?> checkerClass = checker.getClass();
+
+        while (checkerClass != BaseTypeChecker.class) {
+            final String classToLoad = checkerClass.getName()
+                    .replace("Checker", "Analysis")
+                    .replace("Subchecker", "Analysis");
+            FlowAnalysis result = BaseTypeChecker.invokeConstructorFor(
+                    classToLoad, new Class<?>[] { this.getClass(),
+                            ProcessingEnvironment.class, checkerClass,
+                            List.class }, new Object[] { this, env, checker,
+                            fieldValues });
+            if (result != null)
+                return result;
+            checkerClass = checkerClass.getSuperclass();
+        }
+
+        // If an analysis couldn't be loaded reflectively, return the
+        // default.
         return (FlowAnalysis) new CFAnalysis(
                 (AbstractBasicAnnotatedTypeFactory) this, env, checker,
                 (List) fieldValues);
@@ -218,16 +252,15 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
     public TransferFunction createFlowTransferFunction(FlowAnalysis analysis) {
 
         // Try to reflectively load the visitor.
-        Class<?> checkerClass = this.getClass();
+        Class<?> checkerClass = checker.getClass();
 
         while (checkerClass != BaseTypeChecker.class) {
             final String classToLoad = checkerClass.getName()
                     .replace("Checker", "Transfer")
                     .replace("Subchecker", "Transfer");
             TransferFunction result = BaseTypeChecker.invokeConstructorFor(
-                    classToLoad, new Class<?>[] { checkerClass,
-                            CompilationUnitTree.class }, new Object[] { this,
-                            root });
+                    classToLoad, new Class<?>[] { analysis.getClass() },
+                    new Object[] { analysis });
             if (result != null)
                 return result;
             checkerClass = checkerClass.getSuperclass();
