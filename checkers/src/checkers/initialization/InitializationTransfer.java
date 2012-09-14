@@ -71,10 +71,9 @@ public class InitializationTransfer<T extends InitializationTransfer<T>>
     protected final InitializationChecker checker;
 
     public InitializationTransfer(
-            CFAbstractAnalysis<CFValue, InitializationStore, T> analysis,
-            InitializationChecker checker) {
+            CFAbstractAnalysis<CFValue, InitializationStore, T> analysis) {
         super(analysis);
-        this.checker = checker;
+        this.checker = (InitializationChecker) analysis.getFactory().getChecker();
     }
 
     @Override

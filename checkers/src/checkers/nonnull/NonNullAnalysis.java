@@ -30,11 +30,6 @@ public class NonNullAnalysis extends
     }
 
     @Override
-    public NonNullTransfer createTransferFunction() {
-        return new NonNullTransfer(this, (AbstractNonNullChecker) checker);
-    }
-
-    @Override
     public InitializationStore createEmptyStore(boolean sequentialSemantics) {
         return new InitializationStore(this, sequentialSemantics);
     }
