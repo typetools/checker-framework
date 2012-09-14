@@ -1,0 +1,287 @@
+===========================================================================
+
+Build your own type system for fun and profit
+
+Are you tired of null pointer exceptions, unintended side effects, SQL
+injections, concurrency errors, mistaken equality tests, and other run-time
+errors that appear during testing or in the field?
+
+This talk will tell you about easy-to-use tools that guarantee the absence
+of these and many other important errors.  You will also learn how to
+create a new tool that detects and prevents other run-time errors --
+whatever errors are important in your own project.  The tools are easy to
+use and can be applied to as much or as little of your codebase as you feel
+appropriate.  You can use them today, but Java 8's type annotations add
+syntactic support for them.
+
+===========================================================================
+
+The presentation will describe the theory and practice of pluggable type-checking with concrete examples.  It will show real bugs that have been discovered and show the effort that is required.  It will give a way of thinking about what problems are amenable to this approach and what problems are not.  It will tie this to the type annotations feature that will appear in Java 8.  It will describe a practical toolset that attendees can start using today, even before Java 8 is released.
+
+Are you tired of null pointer exceptions, unintended side effects, SQL
+injections, concurrency errors, mistaken equality tests, and other run-time
+errors that appear during testing or in the field?
+
+This talk will tell you about easy-to-use tools that guarantee the absence
+of these and many other important errors.  You will also learn how to
+create a new tool that detects and prevents other run-time errors --
+whatever errors are important in your own project.  The tools are easy to
+use and can be applied to as much or as little of your codebase as you feel
+appropriate.  You can use them today, but Java 8's type annotations add
+syntactic support for them.
+
+The new tools work by creating a pluggable type system.  A pluggable type
+system augments the built-in type system of Java, enabling better
+compile-time guarantees.  We will explain what a pluggable type system is,
+how to use it, and even how to create your own.  Building upon the Checker
+Framework (http://types.cs.washington.edu/checker-framework/), you can
+create a simple pluggable type-checker in 2 minutes, and you can enhance it
+thereafter.
+
+The pluggable types are easy to use, even for novices.  They are much less
+verbose than generics, and they actually reduce the size of your code by
+replacing English text in Javadoc by terse, formally-verified annotations.
+They have found hundreds of bugs in over 3 million lines of well-tested
+open source code, including from Oracle, Google, Apache, etc.  In addition
+to finding bugs, they encourage better software design.
+
+===========================================================================
+
+Objective 1:
+Learn how a compiler can detect and prevent run-time errors, beyond the built-in Java type system.
+
+Objective 2:
+Learn how to express domain-specific design properties formally, and guarantee their correctness.
+
+Objective 3:
+Learn about practical open-source tools for code quality.
+
+
+===========================================================================
+
+Michael D. Ernst is the specification co-lead for Java's Type Annotations feature ("JSR 308"), which was awarded the ``most innovative JSR'' award in 2007.  Ernst was honored as a ``Java Rock Star'' for a crowd-pleasing JavaOne presentation.
+
+Ernst is also an Associate Professor in the Computer Science & Engineering department at the University of Washington.  His research aims to make software more reliable, more secure, and easier (and more fun!) to produce. His primary technical interests are in software engineering and related areas, including programming languages, type theory, security, program analysis, bug prediction, testing, and verification. Ernst's research combines strong theoretical foundations with realistic experimentation, with an eye to changing the way that software developers work.
+
+Dr. Ernst was previously a tenured professor at MIT, and before that a researcher at Microsoft Research.
+
+More information is available at his homepage: http://homes.cs.washington.edu/~mernst/.
+
+===========================================================================
+
+Home
+Program
+Exhibit/Sponsor
+Network
+Tools
+Register
+Package Type
+Super Saver
+Oct 22 - Mar 30
+JavaOne
+$1,395
+Register
+JavaOne Government
+$1,195
+Register
+* Cutoff is 11:00 p.m. (Pacific Time)
+
+Compare All Passes And Benefits
+Home   Call for Papers   Submission Information
+San Francisco
+Welcome to the JavaOne 2012
+Call for Papers
+If you have an interesting presentation idea for JavaOne 2012, we want to hear from you! The Call for Papers is open now through April 9, so don't delay. To help ensure successful submission, please take the time to review the General Information, Submission Information, Content Program Policies, and Tips and Guidelines pages.
+
+Note that the JavaOne tool will time you out after 15 minutes of inactivity (based on the oldest inactive tool window). Browsers supported: IE8 and 9, FF 3.6 and higher, Chrome 15.x, Safari 5.1
+
+Submit Now!
+
+GENERAL INFORMATIONSUBMISSION INFORMATIONPROGRAM POLICIESTIPS AND GUIDELINES
+Submission Information
+An Oracle.com user account is required to submit a paper. If you do not have an account already, you will be prompted to create one before submitting. Once you create your account, you'll be taken to the login page for the Call for Papers portal. If at any time you forget your user name and password, simply select the "Retrieve/Forgot Password or Username" option.
+
+Notes
+
+Every time you log into the Call for Papers portal, you will see all papers you have submitted during the 2012 Call for Papers time frame.
+While Call for Papers is open, you may go back and edit your previously submitted sessions.
+At any point while submitting a session, you may stop and save your submission to complete at a later time. If you stop and save before your submission is complete (before all mandatory fields are answered), your submission will be given a status of "partial." You can go back and edit this session while Call for Papers is open.
+Don't forget to save after each new submission or submission update.
+Take note of your confirmation number after each submission. If you have any questions or concerns, you will want to include that confirmation number.
+We will not accept any late submissions.
+Session Descriptor Fields
+
+* Indicates a mandatory field
+
+Title*: Maximum character limit is 80 characters, including spaces (approximately 12 to 17 words).
+
+Abstract*: Maximum character limit is 750 characters, including spaces.
+
+Presentation Summary*: For evaluation only, this is an additional description of your proposal to help the reviewers better understand your submission.
+
+Primary Track*: Identify the content area that best describes the topic. Click here to see Primary Tracks and descriptions.
+
+Secondary Track: Associate an additional track to describe the topic. Click here to see Secondary Tracks and descriptions.
+
+Takeaways*: Identify the top three takeaways for someone attending your proposed session. This is an open text field that will be visible to attendees. Character limit is 100 characters, including spaces, for each takeaway.
+
+Tags: Select from a predefined list of tags or create new tags to describe the topic. Maximum of five tags.
+
+Session Type*: Describes the format in which the topic will be delivered.
+
+Conference Session: A 60-minute session presented by Oracle, customers, partners, developers, and/or user group members.
+Panel: A 60-minute session presented in a panel format by multiple speakers consisting of Oracle, customers, partners, developers, and/or user group members.
+Hands-on Lab (HOL): A 60-minute or two-hour hands-on, interactive lab session.
+Birds of a Feather (BOF): A 45-minute session that allows a closer interaction with the speakers and attendees focusing on a particular aspect of Java technology.
+Community Keynote: New for this year! A 60-minute keynote session showcasing an innovative and imaginative application of Java that demonstrates your cleverness and vision and that can spark the imagination of the larger Java community.
+Tutorials: New for this year! A 2- hour interactive session where the presenter shows attendees a live "How to" tutorial.
+
+Session Category*: Describes the type of information to be presented. You will be asked to select one of the following session categories:
+
+Best Practices
+Case Study
+Product/Strategy Roadmap
+Other
+
+Experience Level*: Describes the knowledge level of content. Choose from the following:
+
+Introductory
+Intermediate
+Advanced
+
+Attendee roles*: This field describes the attendee roles toward which the session is geared. You may select a maximum of two roles:
+
+Architect
+Database Administrator
+Enterprise Developer
+Mobile Developer
+Embedded Device/Systems Developer
+OS and Library Developer
+Desktop Developer
+Game Developer
+User Interface Developer
+Executive Management (C-Level, President, Executive Vice President, Senior Vice President, or Vice President)
+Teacher/Professor
+IT Manager
+Quality Assurance/Testing Engineer
+Student
+Web Designer
+
+Add Video: Add a link to a video that provides more information or background on your topic. This may be made available to attendees.
+
+Adding Participants
+
+Each submission must have at least one speaker assigned in order to be considered.
+
+Session Roles
+
+Submitter Role:
+
+The person submitting the session will be designated as the submitter for that session. This role is used strictly to track the session submitter. The submitter is not the speaker of the session unless he or she assigns himself or herself a speaker role.
+The submitter will receive confirmation for the entered session but will not receive the speaker invitation and communications after that point.
+The submitter must assign at least one speaker to each session he or she enters.
+The submitter will have the option to click a button and add himself or herself as a speaker.
+
+Speaker Role:
+
+Session presenter
+Receives all speaker communications
+
+Session Type Speaker Limit:
+
+Conference sessions, Tutorials and Birds of a Feather (BOF) sessions:
+Maximum of 3 Oracle speakers
+Maximum of 2 non-Oracle speakers
+Can consist of any combination as long as it does not exceed 3 speakers in total
+Panels:
+Maximum of 5 Oracle speakers
+Maximum of 4 non-Oracle speakers
+Can consist of any combination as long as it does not exceed 5 speakers in total
+Hands-on Labs (HOLs); Maximum of eight (8) speakers
+Community Keynote; Maximum of two (2) speakers
+General Session Questions
+
+In this section, you will be asked a few questions about your session.
+
+Review Your Session Information
+
+In this section, you will be asked to review all the submitted information for accuracy. If you notice any incorrect or missing information, you may go back and edit. If everything looks correct, click the finish button to complete your submission. This will bring you to the confirmation page with options for your next steps.
+
+ 
+
+    
+    
+Save $600 on 2012!
+Register between now and March 30, 2012 for JavaOne 2012 and save $600!
+
+Register Now for JavaOne 2012
+    
+    
+The JavaOne Call for Papers—open NOW through April 9th.
+Java technology and platform experts should submit presentation abstracts for consideration. Find out all you need to know. Don’t wait!
+
+Submit your paper now!
+
+
+Quick Links
+Rock Star Wall of Fame
+Program Committee
+Duke's Choice Awards
+Duke Images
+Forums
+Java @ Oracle Technology Network Website
+Java.net
+Java Magazine
+Java User Group Site
+JavaOne Conference on Twitter
+Follow Us on Twitter
+
+pvdevoor Just submitted my idea for a B-O-F talk at #JavaOne 2012. subject : The Social Developer . Now I'll just cross my fingers :)
+8 hours ago · reply · retweet · favorite
+
+Sharat_Chander Deadline approaching on Apr 9! Time to get your #JavaOne SF 2012 CFP submissions in: bit.ly/ykHygo #Java #JavaFX #GlassFish #NetBeans
+2 hours ago · reply · retweet · favorite
+
+soujava RT @Sharat_Chander: Deadline approaching on Apr 9! Time to get your #JavaOne SF 2012 CFP submissions in: bit.ly/ykHygo #Java #JavaFX #GlassFish #NetBeans
+2 hours ago · reply · retweet · favorite
+
+Sharat_Chander Register soon! #JavaOne Hyderabad early-bird registration ends on April 2nd. Save INR 1080. oracle.com/javaone/in-en/…
+yesterday · reply · retweet · favorite
+
+Join the conversation
+Follow JavaOne
+ 
+ 
+
+About JavaOne
+
+Location
+Event Sustainability
+Contact Information
+Watch JavaOne
+Global Events
+JavaOne and Oracle Develop India
+JavaOne Latin America
+JavaOne and Oracle Develop Russia (English)
+JavaOne and Oracle Develop Russia (Russian)
+JavaOne Tokyo
+Tools To Manage Your Experience
+
+Virtual Collateral Rack
+ 
+
+Oracle OpenWorld
+Oracle.com
+Oracle Technology Network
+Java Magazine
+Connect
+
+Twitter
+Facebook
+LinkedIn
+Groups
+Blog
+
+
+
+ Legal NoticesTerms of UsePrivacy
