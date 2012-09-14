@@ -65,7 +65,7 @@ Ernst is also an Associate Professor in the Computer Science & Engineering depar
 
 Dr. Ernst was previously a tenured professor at MIT, and before that a researcher at Microsoft Research.
 
-More information is available at his homepage: http://www.cs.washington.edu/homes/mernst/.
+More information is available at his homepage: http://homes.cs.washington.edu/~mernst/.
 
 ===========================================================================
 
