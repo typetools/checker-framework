@@ -2,25 +2,33 @@ package checkers.basetype;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
-import com.sun.source.tree.CompilationUnitTree;
+import javax.annotation.processing.AbstractProcessor;
+import javax.lang.model.element.AnnotationMirror;
 
-/*>>>
-import checkers.igj.quals.*;
-*/
 import checkers.quals.MonotonicAnnotation;
 import checkers.quals.PolymorphicQualifier;
 import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifiers;
 import checkers.source.SourceChecker;
 import checkers.source.SourceVisitor;
-import checkers.types.*;
-import checkers.util.*;
+import checkers.types.AnnotatedTypeFactory;
+import checkers.types.BasicAnnotatedTypeFactory;
+import checkers.types.QualifierHierarchy;
+import checkers.types.TypeHierarchy;
+import checkers.util.AnnotationUtils;
+import checkers.util.GraphQualifierHierarchy;
+import checkers.util.MultiGraphQualifierHierarchy;
 import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 
-import javax.lang.model.element.AnnotationMirror;
-import javax.annotation.processing.*;
+import com.sun.source.tree.CompilationUnitTree;
+/*>>>
+import checkers.igj.quals.*;
+*/
 
 /**
  * An abstract {@link SourceChecker} that provides a simple {@link
