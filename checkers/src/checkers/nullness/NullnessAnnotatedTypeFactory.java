@@ -141,20 +141,6 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
     }
 
     @Override
-    protected Flow createFlow(NullnessSubchecker checker, CompilationUnitTree root,
-            Set<AnnotationMirror> flowQuals) {
-        return new NullnessFlow(checker, root, flowQuals, this);
-    }
-
-    @Override
-    protected Set<AnnotationMirror> createFlowQualifiers(NullnessSubchecker checker) {
-        Set<AnnotationMirror> flowQuals = AnnotationUtils.createAnnotationSet();
-        flowQuals.add(NONNULL);
-        flowQuals.add(PRIMITIVE);
-        return flowQuals;
-    }
-
-    @Override
     protected TreeAnnotator createTreeAnnotator(NullnessSubchecker checker) {
         return new NonNullTreeAnnotator(checker);
     }
@@ -191,7 +177,7 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
         substituteUnused(tree, type);
 
         if (useFlow) {
-            final Set<AnnotationMirror> inferred = flow.test(tree);
+            final Set<AnnotationMirror> inferred = null;
             if (inferred != null) {
                 // case 7: flow analysis
                 type.replaceAnnotations(inferred);
@@ -264,8 +250,7 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
     }
 
     public Set<VariableElement> initializedAfter(MethodTree node) {
-        return ((NullnessFlow)flow).initializedFieldsAfter(
-                TreeUtils.elementFromDeclaration(node));
+        return null;
     }
 
     // called for side effect; return value is always ignored.
@@ -341,7 +326,7 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
         // class or interface identifiers.
         if (tree instanceof IdentifierTree) {
 
-            Element elt = TreeUtils.elementFromUse((IdentifierTree) tree);
+            Element elt = TreeUtils.elementFromUse(tree);
             if (elt == null || !elt.getKind().isField())
                 return false;
 
@@ -579,6 +564,6 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
             }
             return null; // super.visitUnary(node, type);
         }
-    }
+                }
 
 }

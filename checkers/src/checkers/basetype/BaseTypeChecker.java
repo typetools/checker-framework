@@ -9,6 +9,7 @@ import com.sun.source.tree.CompilationUnitTree;
 /*>>>
 import checkers.igj.quals.*;
 */
+import checkers.quals.MonotonicAnnotation;
 import checkers.quals.PolymorphicQualifier;
 import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifiers;
@@ -82,6 +83,9 @@ public abstract class BaseTypeChecker extends SourceChecker {
     /** To cache the supported type qualifiers. */
     private Set<Class<? extends Annotation>> supportedQuals;
 
+    /** To cache the supported monotonic type qualifiers. */
+    private Set<Class<? extends Annotation>> supportedMonotonicQuals;
+
     /** To represent the supported qualifiers and their hierarchy. */
     private QualifierHierarchy qualHierarchy;
 
@@ -145,6 +149,27 @@ public abstract class BaseTypeChecker extends SourceChecker {
         return supportedQuals;
     }
 
+    /**
+     * Returns an immutable set of the <em>monotonic</em> type qualifiers supported by this
+     * checker.
+     *
+     * @return the monotonic type qualifiers supported this processor, or an empty
+     * set if none
+     * @see MonotonicAnnotation
+     */
+    public final Set<Class<? extends Annotation>> getSupportedMonotonicTypeQualifiers() {
+        if (supportedMonotonicQuals == null) {
+            supportedMonotonicQuals = new HashSet<>();
+            for (Class<? extends Annotation> anno : getSupportedTypeQualifiers()) {
+                MonotonicAnnotation mono = anno.getAnnotation(MonotonicAnnotation.class);
+                if (mono != null) {
+                    supportedMonotonicQuals.add(anno);
+                }
+            }
+        }
+        return supportedMonotonicQuals;
+    }
+
     /** Factory method to easily change what Factory is used to
      * create a QualifierHierarchy.
      */
@@ -176,11 +201,26 @@ public abstract class BaseTypeChecker extends SourceChecker {
      * @return an annotation relation tree representing the supported qualifiers
      */
     protected QualifierHierarchy createQualifierHierarchy() {
-        AnnotationUtils annoFactory = AnnotationUtils.getInstance(processingEnv);
-
+        Set<Class<? extends Annotation>> supportedTypeQualifiers = getSupportedTypeQualifiers();
+        AnnotationUtils annoFactory = AnnotationUtils.getInstance(env);
         MultiGraphQualifierHierarchy.MultiGraphFactory factory = this.createQualifierHierarchyFactory();
 
-        for (Class<? extends Annotation> typeQualifier : getSupportedTypeQualifiers()) {
+        return createQualifierHierarchy(supportedTypeQualifiers, annoFactory, factory);
+    }
+
+    /**
+     * Returns the type qualifier hierarchy graph for a given set of type qualifiers and a factory.
+     *
+     * The implementation builds the type qualifier hierarchy for the
+     * {@code supportedTypeQualifiers}.  The current implementation returns an
+     * instance of {@code GraphQualifierHierarchy}.
+     *
+     * @return an annotation relation tree representing the supported qualifiers
+     */
+    protected static QualifierHierarchy createQualifierHierarchy(
+            Set<Class<? extends Annotation>> supportedTypeQualifiers,
+            AnnotationUtils annoFactory, MultiGraphFactory factory) {
+        for (Class<? extends Annotation> typeQualifier : supportedTypeQualifiers) {
             AnnotationMirror typeQualifierAnno = annoFactory.fromClass(typeQualifier);
             assert typeQualifierAnno!=null : "Loading annotation \"" + typeQualifier + "\" failed!";
             factory.addQualifier(typeQualifierAnno);
@@ -325,6 +365,16 @@ public abstract class BaseTypeChecker extends SourceChecker {
     // **********************************************************************
     // Misc. methods
     // **********************************************************************
+
+    /** Returns true iff {@code anno} is supported by this checker. */
+    public boolean isSupportedAnnotation(AnnotationMirror anno) {
+        for (Class<? extends Annotation> c : getSupportedTypeQualifiers()) {
+            if (AnnotationUtils.areSameByClass(anno, c)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     /**
      * Specify 'flow' and 'cast' as supported lint options for all Type checkers.

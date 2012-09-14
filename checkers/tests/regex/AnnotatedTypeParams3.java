@@ -1,5 +1,8 @@
 import java.lang.reflect.*;
 import java.lang.annotation.Annotation;
+
+import org.junit.Ignore;
+
 import checkers.regex.quals.Regex;
 
 class AnnotatedTypeParams3 {

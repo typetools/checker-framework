@@ -76,8 +76,7 @@ public class LinearVisitor extends BaseTypeVisitor<LinearChecker> {
      */
     // Premature optimization:  Don't check method invocability
     @Override
-    protected boolean checkMethodInvocability(AnnotatedExecutableType method,
+    protected void checkMethodInvocability(AnnotatedExecutableType method,
             MethodInvocationTree node) {
-        return true;
     }
 }

@@ -78,8 +78,10 @@ public final class TestUtilities {
      * directory
      */
     public static List<File> enclosedJavaTestFiles(File directory) {
+        if (!directory.exists())
+            throw new IllegalArgumentException("directory does not exist: " + directory);
         if (!directory.isDirectory())
-            throw new IllegalArgumentException("file not directory: " + directory);
+            throw new IllegalArgumentException("found file instead of directory: " + directory);
 
         List<File> javaFiles = new ArrayList<File>();
 
@@ -95,8 +97,10 @@ public final class TestUtilities {
      * Returns all the java files that are descendants of the given directory
      */
     public static List<File> deeplyEnclosedJavaTestFiles(File directory) {
+        if (!directory.exists())
+            throw new IllegalArgumentException("directory does not exist: " + directory);
         if (!directory.isDirectory())
-            throw new IllegalArgumentException("file not directory: " + directory);
+            throw new IllegalArgumentException("found file instead of directory: " + directory);
 
         List<File> javaFiles = new ArrayList<File>();
 
