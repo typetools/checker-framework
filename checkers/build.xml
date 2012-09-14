@@ -433,7 +433,7 @@ ${build.version} of the 'javac.jar' library."/>
       description="Run extra tests for the Non-Null checker"/>
 
     <target name="nonnull-extra-tests-nojdk" depends="bindist-nojdk,build-tests"
-      description="Run extra tests for the Nonnull checker, WITHOUT updating jdk.jar">
+      description="Run extra tests for the Non-Null checker, WITHOUT updating jdk.jar">
       <exec executable="chmod">
         <arg line="+x ${basedir}/binary/javac"/>
       </exec>
