@@ -95,7 +95,12 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
     /**
      * @return The transfer function to be used by the analysis.
      */
-    public abstract T createTransferFunction();
+    @SuppressWarnings("unchecked")
+    public T createTransferFunction() {
+        @SuppressWarnings("rawtypes")
+        AbstractBasicAnnotatedTypeFactory f = factory;
+        return (T) f.createFlowTransferFunction(this);
+    }
 
     /**
      * @return An empty store of the appropriate type.
