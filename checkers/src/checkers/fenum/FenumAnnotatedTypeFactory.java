@@ -1,13 +1,12 @@
 package checkers.fenum;
 
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.Tree;
-
 import checkers.fenum.quals.FenumTop;
 import checkers.fenum.quals.FenumUnqualified;
 import checkers.quals.DefaultLocation;
 import checkers.types.BasicAnnotatedTypeFactory;
 
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.Tree;
 
 public class FenumAnnotatedTypeFactory extends
         BasicAnnotatedTypeFactory<FenumChecker> {

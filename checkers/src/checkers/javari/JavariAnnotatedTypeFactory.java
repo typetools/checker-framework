@@ -60,7 +60,7 @@ import com.sun.source.util.SimpleTreeVisitor;
  * In all other cases, the {@link Mutable} annotation is inserted by default.
  * </ul>
  */
-public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
+public class JavariAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<JavariChecker> {
 
     /** Adds annotations from tree context before type resolution. */
     private final JavariTreePreAnnotator treePre;
@@ -80,7 +80,7 @@ public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
      */
     public JavariAnnotatedTypeFactory(JavariChecker checker,
         CompilationUnitTree root) {
-        super(checker, checker.getQualifierHierarchy(), root);
+        super(checker, root);
         this.treePre = new JavariTreePreAnnotator();
         this.typePost = new JavariTypePostAnnotator();
         this.READONLY = checker.READONLY;

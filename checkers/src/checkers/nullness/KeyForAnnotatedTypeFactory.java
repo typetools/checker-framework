@@ -29,7 +29,7 @@ public class KeyForAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<KeyFor
 
   public KeyForAnnotatedTypeFactory(KeyForSubchecker checker,
                                     CompilationUnitTree root) {
-    super(checker, root);
+    super(checker, root, false);
 
     AnnotationMirror UNQUALIFIED = this.annotations.fromClass(Unqualified.class);
     this.defaults.addAbsoluteDefault(UNQUALIFIED, DefaultLocation.ALL);
