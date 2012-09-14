@@ -8,6 +8,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.VariableElement;
 
 import checkers.basetype.BaseTypeChecker;
+import checkers.flow.analysis.checkers.CFValue;
 import checkers.initialization.InitializationAnnotatedTypeFactory;
 import checkers.nonnull.quals.MonotonicNonNull;
 import checkers.nonnull.quals.NonNull;
@@ -100,6 +101,18 @@ public class NonNullAnnotatedTypeFactory
 
         postInit();
     }
+
+    @Override
+    protected NonNullAnalysis createFlowAnalysis(
+            AbstractNonNullChecker checker,
+            List<Pair<VariableElement, CFValue>> fieldValues) {
+        return new NonNullAnalysis(this, env, checker, fieldValues);
+    }
+
+    @Override
+    public NonNullTransfer createFlowTransferFunction(NonNullAnalysis analysis) {
+        return new NonNullTransfer(analysis);
+    };
 
     @Override
     public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> methodFromUse(
