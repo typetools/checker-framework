@@ -27,7 +27,11 @@ import checkers.flow.analysis.checkers.CFAbstractStore;
 import checkers.flow.analysis.checkers.CFAbstractTransfer;
 import checkers.flow.analysis.checkers.CFAbstractValue;
 import checkers.flow.analysis.checkers.CFAbstractValue.InferredAnnotation;
+import checkers.flow.analysis.checkers.CFAnalysis;
 import checkers.flow.analysis.checkers.CFCFGBuilder;
+import checkers.flow.analysis.checkers.CFStore;
+import checkers.flow.analysis.checkers.CFTransfer;
+import checkers.flow.analysis.checkers.CFValue;
 import checkers.flow.cfg.CFGBuilder;
 import checkers.flow.cfg.ControlFlowGraph;
 import checkers.flow.cfg.UnderlyingAST;
@@ -189,8 +193,51 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
         return new TypeAnnotator(checker);
     }
 
-    abstract protected FlowAnalysis createFlowAnalysis(Checker checker,
-            List<Pair<VariableElement, Value>> fieldValues);
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    protected FlowAnalysis createFlowAnalysis(Checker checker,
+            List<Pair<VariableElement, Value>> fieldValues) {
+        return (FlowAnalysis) new CFAnalysis(
+                (AbstractBasicAnnotatedTypeFactory) this, env, checker,
+                (List) fieldValues);
+    }
+
+    /**
+     * Returns the appropriate transfer function that is used for the dataflow
+     * analysis.
+     *
+     * <p>
+     * This implementation uses the checker naming convention to create the
+     * appropriate transfer function. If no transfer function is found, it
+     * returns an instance of {@link CFTransfer}.
+     *
+     * <p>
+     * Subclasses have to override this method to create the appropriate
+     * transfer function if they do not follow the checker naming convention.
+     */
+    @SuppressWarnings("unchecked")
+    public TransferFunction createFlowTransferFunction(FlowAnalysis analysis) {
+
+        // Try to reflectively load the visitor.
+        Class<?> checkerClass = this.getClass();
+
+        while (checkerClass != BaseTypeChecker.class) {
+            final String classToLoad = checkerClass.getName()
+                    .replace("Checker", "Transfer")
+                    .replace("Subchecker", "Transfer");
+            TransferFunction result = BaseTypeChecker.invokeConstructorFor(
+                    classToLoad, new Class<?>[] { checkerClass,
+                            CompilationUnitTree.class }, new Object[] { this,
+                            root });
+            if (result != null)
+                return result;
+            checkerClass = checkerClass.getSuperclass();
+        }
+
+        // If a transfer function couldn't be loaded reflectively, return the
+        // default.
+        return (TransferFunction) new CFTransfer(
+                (CFAbstractAnalysis<CFValue, CFStore, CFTransfer>) analysis);
+    }
 
     // **********************************************************************
     // Factory Methods for the appropriate annotator classes
