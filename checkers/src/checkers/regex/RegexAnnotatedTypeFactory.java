@@ -1,10 +1,7 @@
 package checkers.regex;
 
-import java.util.List;
-
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.VariableElement;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.flow.analysis.checkers.CFStore;
@@ -17,7 +14,6 @@ import checkers.types.AbstractBasicAnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.TreeAnnotator;
 import checkers.util.AnnotationUtils;
-import checkers.util.Pair;
 import checkers.util.TreeUtils;
 
 import com.sun.source.tree.BinaryTree;
@@ -95,7 +91,7 @@ public class RegexAnnotatedTypeFactory extends AbstractBasicAnnotatedTypeFactory
             "checkers.regex.RegexUtil",
             "plume.RegexUtil",
             "daikon.util.RegexUtil" };
-    
+
     /** The {@code @Regex} annotation. */
     private final AnnotationMirror REGEX;
 
@@ -108,18 +104,12 @@ public class RegexAnnotatedTypeFactory extends AbstractBasicAnnotatedTypeFactory
         REGEX = annotations.fromClass(Regex.class);
         this.postInit();
     }
-    
-    @Override
-    protected RegexAnalysis createFlowAnalysis(RegexChecker checker,
-            List<Pair<VariableElement, CFValue>> fieldValues) {
-        return new RegexAnalysis(this, getEnv(), checker, fieldValues);
-    }
 
     @Override
     public TreeAnnotator createTreeAnnotator(RegexChecker checker) {
         return new RegexTreeAnnotator(checker);
     }
-    
+
     /**
      * Returns a new Regex annotation with the given group count.
      */

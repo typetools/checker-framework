@@ -36,11 +36,6 @@ public class CFAnalysis extends
     }
 
     @Override
-    public CFTransfer createTransferFunction() {
-        return new CFTransfer(this);
-    }
-
-    @Override
     public CFStore createEmptyStore(boolean sequentialSemantics) {
         return new CFStore(this, sequentialSemantics);
     }

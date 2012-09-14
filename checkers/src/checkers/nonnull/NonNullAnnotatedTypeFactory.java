@@ -8,7 +8,6 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.VariableElement;
 
 import checkers.basetype.BaseTypeChecker;
-import checkers.flow.analysis.checkers.CFValue;
 import checkers.initialization.InitializationAnnotatedTypeFactory;
 import checkers.nonnull.quals.MonotonicNonNull;
 import checkers.nonnull.quals.NonNull;
@@ -124,13 +123,6 @@ public class NonNullAnnotatedTypeFactory
         systemGetPropertyHandler.handle(tree, method);
         collectionToArrayHeuristics.handle(tree, method);
         return mfuPair;
-    }
-
-    @Override
-    protected NonNullAnalysis createFlowAnalysis(
-            AbstractNonNullChecker checker,
-            List<Pair<VariableElement, CFValue>> fieldValues) {
-        return new NonNullAnalysis(this, env, checker, fieldValues);
     }
 
     protected AnnotatedTypeMirror getDeclaredAndDefaultedAnnotatedType(Tree tree) {
