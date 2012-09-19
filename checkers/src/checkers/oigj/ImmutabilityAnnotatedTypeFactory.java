@@ -407,8 +407,8 @@ public class ImmutabilityAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<
         Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair = super.methodFromUse(tree);
         AnnotatedExecutableType type = mfuPair.first;
 
-        List<AnnotatedTypeMirror> requiredArgs = atypes.expandVarArgs(type, tree.getArguments());
-        List<AnnotatedTypeMirror> arguments = atypes.getAnnotatedTypes(requiredArgs, tree.getArguments());
+        List<AnnotatedTypeMirror> requiredArgs = AnnotatedTypes.expandVarArgs(this, type, tree.getArguments());
+        List<AnnotatedTypeMirror> arguments = AnnotatedTypes.getAnnotatedTypes(this, requiredArgs, tree.getArguments());
 
         ImmutabilityTemplateCollector collector = new ImmutabilityTemplateCollector();
         Map<String, AnnotationMirror> matchingMapping = collector.visit(arguments, requiredArgs);
@@ -424,7 +424,7 @@ public class ImmutabilityAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<
             public Void visitDeclared(AnnotatedDeclaredType type, Void p) {
                 if (type.hasEffectiveAnnotation(I)) {
                     AnnotationMirror anno =
-                        type.getAnnotation(I.class.getCanonicalName());
+                        type.getAnnotation(I.class);
                     if (!mapping.containsValue(anno)) {
                         type.removeAnnotation(I);
                         type.addAnnotation(BOTTOM_QUAL);
@@ -488,7 +488,7 @@ public class ImmutabilityAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<
                 Map<String, AnnotationMirror> p) {
             if (type.hasEffectiveAnnotation(I)) {
                 String immutableString =
-                    AnnotationUtils.parseStringValue(elements, getImmutabilityAnnotation(type),
+                    AnnotationUtils.parseStringValue(getImmutabilityAnnotation(type),
                             IMMUTABILITY_KEY);
                 if (p.containsKey(immutableString)) {
                     type.removeAnnotation(I);
@@ -520,7 +520,7 @@ public class ImmutabilityAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<
                 for (String key : r2.keySet()) {
                     if (!result.containsKey(key))
                         result.put(key, r2.get(key));
-                    else if (!AnnotationUtils.areSame(elements, result.get(key), r2.get(key)))
+                    else if (!AnnotationUtils.areSame(result.get(key), r2.get(key)))
                         result.put(key, READONLY);
                 }
             }
@@ -566,7 +566,7 @@ public class ImmutabilityAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<
                 return Collections.emptyMap();
 
             assert actualType.getKind() == type.getKind();
-            type = (AnnotatedDeclaredType)atypes.asSuper(type, actualType);
+            type = (AnnotatedDeclaredType)AnnotatedTypes.asSuper(types, ImmutabilityAnnotatedTypeFactory.this, type, actualType);
             if (type == null)
                 return Collections.emptyMap();
             AnnotatedDeclaredType dcType = (AnnotatedDeclaredType)actualType;
@@ -576,7 +576,7 @@ public class ImmutabilityAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<
 
             if (dcType.hasEffectiveAnnotation(I)) {
                 String immutableString =
-                    AnnotationUtils.parseStringValue(elements, getImmutabilityAnnotation(dcType),
+                    AnnotationUtils.parseStringValue(getImmutabilityAnnotation(dcType),
                             IMMUTABILITY_KEY);
                 AnnotationMirror immutability = getImmutabilityAnnotation(type);
                 // TODO: Assertion fails some times
@@ -596,7 +596,7 @@ public class ImmutabilityAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<
             if (actualType == null)
                 return visit(type.getComponentType(), null);
             if (actualType.getKind() == TypeKind.DECLARED)
-                return visit(atypes.asSuper(type, actualType), actualType);
+                return visit(AnnotatedTypes.asSuper(types, ImmutabilityAnnotatedTypeFactory.this, type, actualType), actualType);
 
             if (actualType.getKind() == TypeKind.TYPEVAR) {
                 if (typeVar.contains(actualType.getUnderlyingType()))
@@ -619,7 +619,7 @@ public class ImmutabilityAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<
 
             if (arType.hasEffectiveAnnotation(I)) {
                 String immutableString =
-                    AnnotationUtils.parseStringValue(elements, getImmutabilityAnnotation(arType),
+                    AnnotationUtils.parseStringValue(getImmutabilityAnnotation(arType),
                             IMMUTABILITY_KEY);
                 AnnotationMirror immutability = getImmutabilityAnnotation(type);
                 // Assertion failes some times
@@ -684,7 +684,7 @@ public class ImmutabilityAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<
         }
 
         private AnnotatedTypeMirror findType(AnnotatedTypeMirror type, AnnotatedTypeMirror actualType) {
-            AnnotatedTypeMirror result = atypes.asSuper(type, actualType);
+            AnnotatedTypeMirror result = AnnotatedTypes.asSuper(types, ImmutabilityAnnotatedTypeFactory.this, type, actualType);
             // result shouldn't be null, will test this hypothesis later
             // assert result != null;
             return (result != null ? result : type);
@@ -703,7 +703,7 @@ public class ImmutabilityAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<
         // this one ensures that it returns @I
         //
         if (type.hasEffectiveAnnotation(I))
-            return type.getAnnotation(I.class.getCanonicalName());
+            return type.getAnnotation(I.class);
         return type.getAnnotations().iterator().next();
     }
 
