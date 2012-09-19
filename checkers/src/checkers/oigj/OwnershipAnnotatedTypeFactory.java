@@ -27,7 +27,7 @@ public class OwnershipAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Own
     private class OwnershipTypeAnnotator extends TypeAnnotator {
 
         public OwnershipTypeAnnotator(OwnershipSubchecker checker) {
-            super(checker);
+            super(checker, OwnershipAnnotatedTypeFactory.this);
         }
 
         public Void visitDeclared(AnnotatedDeclaredType type, ElementKind p) {
