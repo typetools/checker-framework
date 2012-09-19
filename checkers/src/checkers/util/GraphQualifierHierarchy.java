@@ -30,7 +30,7 @@ public class GraphQualifierHierarchy extends MultiGraphQualifierHierarchy {
             Set<AnnotationMirror> tops, Set<AnnotationMirror> bottoms,
             Object... args) {
         // Careful, when this method is called, a field this.bottom would not be set yet.
-        if (args!=null && args[0]!=null) {
+        if (args != null && args[0] != null) {
             AnnotationMirror thebottom = (AnnotationMirror) args[0];
             // A special bottom qualifier was provided; go through the existing
             // bottom qualifiers and tie them all to this bottom qualifier.
