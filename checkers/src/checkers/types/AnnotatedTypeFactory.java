@@ -79,9 +79,6 @@ public class AnnotatedTypeFactory {
     /** Utility class for working with {@link TypeMirror}s. */
     protected final Types types;
 
-    /** Utility class for manipulating annotated types. */
-    protected final AnnotatedTypes atypes;
-
     /** The state of the visitor. **/
     final protected VisitorState visitorState;
 
@@ -153,7 +150,6 @@ public class AnnotatedTypeFactory {
         this.trees = Trees.instance(processingEnv);
         this.elements = processingEnv.getElementUtils();
         this.types = processingEnv.getTypeUtils();
-        this.atypes = new AnnotatedTypes(processingEnv, this);
         this.visitorState = new VisitorState();
         this.qualHierarchy = qualHierarchy;
         if (qualHierarchy == null) {
@@ -475,7 +471,7 @@ public class AnnotatedTypeFactory {
                         upperBound = ((AnnotatedTypeVariable)upperBound).getEffectiveUpperBound();
 
                     WildcardType wc = processingEnv.getTypeUtils().getWildcardType(upperBound.getUnderlyingType(), null);
-                    AnnotatedWildcardType wctype = (AnnotatedWildcardType) AnnotatedTypeMirror.createType(wc, processingEnv, this);
+                    AnnotatedWildcardType wctype = (AnnotatedWildcardType) AnnotatedTypeMirror.createType(wc, this);
                     wctype.setElement(typeParam.getElement());
                     wctype.setExtendsBound(upperBound);
                     wctype.addAnnotations(typeParam.getAnnotations());
@@ -928,7 +924,7 @@ public class AnnotatedTypeFactory {
         AnnotatedDeclaredType methodReceiver = getCurrentMethodReceiver(tree);
         if (methodReceiver != null &&
                 !(methodReceiver.getAnnotations().size() == 1 &&
-                  methodReceiver.getAnnotation(Unqualified.class)!=null)) {
+                  methodReceiver.hasAnnotation(Unqualified.class))) {
             type.clearAnnotations();
             type.addAnnotations(methodReceiver.getAnnotations());
         }
@@ -1030,11 +1026,11 @@ public class AnnotatedTypeFactory {
     public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> methodFromUse(MethodInvocationTree tree) {
         ExecutableElement methodElt = TreeUtils.elementFromUse(tree);
         AnnotatedTypeMirror receiverType = getReceiverType(tree);
-        AnnotatedExecutableType methodType = atypes.asMemberOf(receiverType, methodElt);
+        AnnotatedExecutableType methodType = AnnotatedTypes.asMemberOf(types, this, receiverType, methodElt);
         List<AnnotatedTypeMirror> typeargs = new LinkedList<AnnotatedTypeMirror>();
 
         Map<AnnotatedTypeVariable, AnnotatedTypeMirror> typeVarMapping =
-            atypes.findTypeArguments(tree);
+            AnnotatedTypes.findTypeArguments(processingEnv, this, tree);
 
         if (!typeVarMapping.isEmpty()) {
             for ( AnnotatedTypeVariable tv : methodType.getTypeVariables()) {
@@ -1071,7 +1067,7 @@ public class AnnotatedTypeFactory {
         ExecutableElement ctor = InternalUtils.constructor(tree);
         AnnotatedTypeMirror type = fromNewClass(tree);
         annotateImplicit(tree.getIdentifier(), type);
-        AnnotatedExecutableType con = atypes.asMemberOf(type, ctor);
+        AnnotatedExecutableType con = AnnotatedTypes.asMemberOf(types, this, type, ctor);
         if (tree.getArguments().size() == con.getParameterTypes().size() + 1
             && isSyntheticArgument(tree.getArguments().get(0))) {
             // happens for anonymous constructors of inner classes
@@ -1084,7 +1080,7 @@ public class AnnotatedTypeFactory {
         List<AnnotatedTypeMirror> typeargs = new LinkedList<AnnotatedTypeMirror>();
 
         Map<AnnotatedTypeVariable, AnnotatedTypeMirror> typeVarMapping =
-            atypes.findTypeArguments(tree);
+            AnnotatedTypes.findTypeArguments(processingEnv, this, tree);
 
         if (!typeVarMapping.isEmpty()) {
             for ( AnnotatedTypeVariable tv : con.getTypeVariables()) {
@@ -1143,7 +1139,7 @@ public class AnnotatedTypeFactory {
         PrimitiveType primitiveType =
             types.unboxedType(type.getUnderlyingType());
         AnnotatedPrimitiveType pt = (AnnotatedPrimitiveType)
-            AnnotatedTypeMirror.createType(primitiveType, processingEnv, this);
+            AnnotatedTypeMirror.createType(primitiveType, this);
         pt.addAnnotations(type.getAnnotations());
         return pt;
     }
@@ -1263,7 +1259,7 @@ public class AnnotatedTypeFactory {
      * underlying type
      */
     public final AnnotatedTypeMirror toAnnotatedType(TypeMirror t) {
-        return AnnotatedTypeMirror.createType(t, processingEnv, this);
+        return AnnotatedTypeMirror.createType(t, this);
     }
 
     /**
@@ -1291,37 +1287,6 @@ public class AnnotatedTypeFactory {
         assert validType(t) : "Invalid type " + t + " for node " + t;
 
         return toAnnotatedType(t);
-    }
-
-    /**
-     * Returns the type qualifiers that are least upper bound for c1 and c2
-     * qualifiers.
-     *
-     * In most cases, this is simply the intersection of the collections.
-     * However, if a type system specifies more than one type qualifier,
-     * this needs to return the least restrictive type qualifiers.
-     *
-     * Examples:
-     * For NonNull, unify('Nullable', 'NonNull') ==> Nullable
-     * For IGJ, unify('Immutable', 'Mutable') ==> ReadOnly
-     *
-     * Delegates the call to
-     * {@link QualifierHierarchy#leastUpperBounds(Collection, Collection)}.
-     *
-     * @param c1    type qualifiers for the first type
-     * @param c2    type qualifiers for the second type
-     * @return  the least restrictive qualifiers for both types
-     */
-    protected Collection<AnnotationMirror> unify(Collection<AnnotationMirror> c1,
-            Collection<AnnotationMirror> c2) {
-        if (qualHierarchy == null) {
-            // return the intersection
-            Set<AnnotationMirror> intersection = AnnotationUtils.createAnnotationSet();
-            intersection.addAll(c1);
-            intersection.retainAll(c2);
-            return intersection;
-        }
-        return qualHierarchy.leastUpperBounds(c1, c2);
     }
 
     public QualifierHierarchy getQualifierHierarchy() {
