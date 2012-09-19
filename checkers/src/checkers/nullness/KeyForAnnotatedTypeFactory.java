@@ -31,7 +31,7 @@ public class KeyForAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<KeyFor
                                     CompilationUnitTree root) {
     super(checker, root);
 
-    AnnotationMirror UNQUALIFIED = this.annotations.fromClass(Unqualified.class);
+    AnnotationMirror UNQUALIFIED = AnnotationUtils.fromClass(elements, Unqualified.class);
     this.defaults.addAbsoluteDefault(UNQUALIFIED, DefaultLocation.ALL);
 
     this.postInit();
@@ -141,7 +141,7 @@ public class KeyForAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<KeyFor
     if (inType.getAnnotation(KeyFor.class) != null) {
       AnnotationMirror anno = inType.getAnnotation(KeyFor.class);
 
-      List<String> inMaps = AnnotationUtils.parseStringArrayValue(anno, "value");
+      List<String> inMaps = AnnotationUtils.parseStringArrayValue(elements, anno, "value");
       List<String> outMaps = new ArrayList<String>();
 
       String receiver = receiver(call);
@@ -167,7 +167,7 @@ public class KeyForAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<KeyFor
         // are more cases to copy.
       }
 
-      AnnotationBuilder builder = new AnnotationBuilder(env, KeyFor.class);
+      AnnotationBuilder builder = new AnnotationBuilder(processingEnv, KeyFor.class);
       builder.setValue("value", outMaps);
       AnnotationMirror newAnno =  builder.build();
 
