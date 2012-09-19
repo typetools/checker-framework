@@ -125,7 +125,7 @@ public class FenumChecker extends BaseTypeChecker {
         public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
             if (AnnotationUtils.areSameIgnoringValues(lhs, FENUM) &&
                     AnnotationUtils.areSameIgnoringValues(rhs, FENUM)) {
-                return AnnotationUtils.areSame(elements, lhs, rhs);
+                return AnnotationUtils.areSame(lhs, rhs);
             }
             // Ignore annotation values to ensure that annotation is in supertype map.
             if (AnnotationUtils.areSameIgnoringValues(lhs, FENUM)) {
