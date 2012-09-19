@@ -1,6 +1,12 @@
 package checkers.types;
 
-import java.util.*;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeKind;
@@ -12,6 +18,7 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
+import checkers.util.AnnotatedTypes;
 import checkers.util.AnnotationUtils;
 import checkers.util.InternalUtils;
 import checkers.util.TreeUtils;
@@ -559,7 +566,7 @@ abstract class TypeFromTree extends
                 AnnotatedDeclaredType upperBound = (AnnotatedDeclaredType)result.getUpperBound();
                 assert TypesUtils.isAnonymousType(upperBound.getUnderlyingType());
 
-                List<AnnotatedDeclaredType> superBounds = new ArrayList<AnnotatedDeclaredType>();
+                List<AnnotatedDeclaredType> superBounds = new ArrayList<AnnotatedDeclaredType>(bounds.size());
                 for (AnnotatedTypeMirror b : bounds) {
                     superBounds.add((AnnotatedDeclaredType)b);
                 }
