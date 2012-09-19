@@ -1224,12 +1224,15 @@ public class AnnotatedTypeFactory {
     /**
      * Determines whether the given annotation is a part of the type system
      * under which this type factory operates.
+     * Null is never a supported qualifier; the parameter is nullable to
+     * allow the result of aliasedAnnotation to be passed in directly.
      *
      * @param a any annotation
      * @return true if that annotation is part of the type system under which
      *         this type factory operates, false otherwise
      */
-    public boolean isSupportedQualifier(AnnotationMirror a) {
+    public boolean isSupportedQualifier(/*@Nullable*/ AnnotationMirror a) {
+        if (a == null) return false;
         Name name = AnnotationUtils.annotationName(a);
         return this.qualHierarchy.getTypeQualifiers().contains(name);
     }
@@ -1245,10 +1248,11 @@ public class AnnotatedTypeFactory {
      * the method returns null.
      *
      * Returns an aliased type of the current one
+     * 
+     * @param a the qualifier to check for an alias
+     * @return the alias or null if none exists
      */
-    public AnnotationMirror aliasedAnnotation(AnnotationMirror a) {
-        if (a == null)
-            return null;
+    public /*@Nullable*/ AnnotationMirror aliasedAnnotation(AnnotationMirror a) {
         TypeElement elem = (TypeElement) a.getAnnotationType().asElement();
         String qualName = elem.getQualifiedName().toString();
         return aliases.get(qualName);

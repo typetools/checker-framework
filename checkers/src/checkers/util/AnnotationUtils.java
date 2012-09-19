@@ -411,10 +411,9 @@ public class AnnotationUtils {
     // **********************************************************************
 
     /**
-     * @return the fully-qualified name of an annotation as a String
+     * @return the fully-qualified name of an annotation as a Name
      */
-    public static final /*@Nullable*/ Name annotationName(/*@Nullable*/ AnnotationMirror annotation) {
-        if (annotation == null) return null;
+    public static final Name annotationName(AnnotationMirror annotation) {
         final DeclaredType annoType = annotation.getAnnotationType();
         final TypeElement elm = (TypeElement) annoType.asElement();
         return elm.getQualifiedName();
