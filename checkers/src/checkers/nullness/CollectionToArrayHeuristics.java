@@ -66,7 +66,6 @@ import com.sun.source.tree.Tree;
 public class CollectionToArrayHeuristics {
     private final ProcessingEnvironment processingEnv;
     private final NullnessAnnotatedTypeFactory atypeFactory;
-    private final AnnotatedTypes atypes;
 
     private final ExecutableElement collectionToArrayObject;
     private final ExecutableElement collectionToArrayE;
@@ -77,7 +76,6 @@ public class CollectionToArrayHeuristics {
             NullnessAnnotatedTypeFactory factory) {
         this.processingEnv = env;
         this.atypeFactory = factory;
-        this.atypes = new AnnotatedTypes(env, factory);
 
         this.collectionToArrayObject = TreeUtils.getMethod("java.util.Collection", "toArray", 0, env);
         this.collectionToArrayE = TreeUtils.getMethod("java.util.Collection", "toArray", 1, env);
@@ -172,7 +170,7 @@ public class CollectionToArrayHeuristics {
     private boolean isNonNullReceiver(MethodInvocationTree tree) {
         // check receiver
         AnnotatedTypeMirror receiver = atypeFactory.getReceiverType(tree);
-        AnnotatedDeclaredType collection = (AnnotatedDeclaredType)atypes.asSuper(receiver, collectionType);
+        AnnotatedDeclaredType collection = (AnnotatedDeclaredType) AnnotatedTypes.asSuper(processingEnv.getTypeUtils(), atypeFactory, receiver, collectionType);
         assert collection != null;
 
         if (collection.getTypeArguments().isEmpty()
