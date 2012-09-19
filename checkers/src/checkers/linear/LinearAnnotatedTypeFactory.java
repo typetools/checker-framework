@@ -31,9 +31,15 @@ import checkers.util.TreeUtils;
  */
 public class LinearAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<LinearChecker> {
 
+    private final AnnotationMirror LINEAR, UNUSABLE;
+
     public LinearAnnotatedTypeFactory(LinearChecker checker,
             CompilationUnitTree root) {
         super(checker, root);
+
+        LINEAR = AnnotationUtils.fromClass(elements, Linear.class);
+        UNUSABLE = AnnotationUtils.fromClass(elements, Unusable.class);
+
         this.postInit();
     }
 
@@ -62,15 +68,10 @@ public class LinearAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Linear
      * an {@link IdentifierTree}.
      *
      */
-    private static class LinearFlow extends DefaultFlow<DefaultFlowState> {
-        private final AnnotationMirror LINEAR, UNUSABLE;
-
+    private class LinearFlow extends DefaultFlow<DefaultFlowState> {
         public LinearFlow(BaseTypeChecker checker, CompilationUnitTree root,
                 Set<AnnotationMirror> annotations, AnnotatedTypeFactory factory) {
             super(checker, root, annotations, factory);
-
-            LINEAR = AnnotationUtils.fromClass(elements, Linear.class);
-            UNUSABLE = AnnotationUtils.fromClass(elements, Unusable.class);
         }
 
         /**
