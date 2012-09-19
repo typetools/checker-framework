@@ -131,7 +131,7 @@ public class DefaultFlow<ST extends DefaultFlowState> extends AbstractFlow<ST> {
             AnnotationMirror annotationRoot = annoRelations.getTopAnnotation(annotation);
             // Propagate/clear the annotation if it's annotated or an annotation
             // had been inferred previously.
-            if (AnnotationUtils.containsSame(elements, typeAnnos, annotation) && !eltTypeAnnos.isEmpty()
+            if (AnnotationUtils.containsSame(typeAnnos, annotation) && !eltTypeAnnos.isEmpty()
                     && annoRelations.isSubtype(typeAnnos, eltTypeAnnos)) {
                 // to ensure that there is always just one annotation set, we
                 // first clear the annotation that was previously used (if in the same hierarchy)
@@ -151,7 +151,7 @@ public class DefaultFlow<ST extends DefaultFlowState> extends AbstractFlow<ST> {
         Set<AnnotationMirror> remainder = AnnotationUtils.createAnnotationSet();
         // Find all of the annotations in typeAnnos that are not included in flowState.annotations.
         for (AnnotationMirror anno : typeAnnos) {
-            if (!AnnotationUtils.containsSame(elements, this.flowState.annotations, anno)) {
+            if (!AnnotationUtils.containsSame(this.flowState.annotations, anno)) {
                 remainder.add(anno);
             }
         }
