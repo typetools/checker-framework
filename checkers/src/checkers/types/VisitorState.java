@@ -4,6 +4,7 @@ import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
 
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import checkers.util.AnnotatedTypes;
 
 /**
  * Represents the state of a visitor.  Stores the relevant information to find
