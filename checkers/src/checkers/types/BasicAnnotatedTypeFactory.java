@@ -112,7 +112,7 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
          */
         Set<AnnotationMirror> flowQuals = createFlowQualifiers(checker);
         this.flow = useFlow ? createFlow(checker, root, flowQuals) : null;
-        if (flow!=null) {
+        if (flow != null) {
             flow.scan(root);
         }
     }
@@ -198,7 +198,7 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
             if (inferred != null) {
                 for (AnnotationMirror inf : inferred) {
                     AnnotationMirror present = type.getAnnotationInHierarchy(inf);
-                    if (present!=null) {
+                    if (present != null) {
                         if (this.getQualifierHierarchy().isSubtype(inf, present)) {
                             // TODO: why is the above check needed? Shouldn't inferred
                             // qualifiers always be subtypes?
