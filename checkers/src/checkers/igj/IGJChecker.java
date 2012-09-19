@@ -114,7 +114,7 @@ public class IGJChecker extends BaseTypeChecker {
         public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
             if (AnnotationUtils.areSameIgnoringValues(lhs, I) &&
                     AnnotationUtils.areSameIgnoringValues(rhs, I)) {
-                return AnnotationUtils.areSame(elements, lhs, rhs);
+                return AnnotationUtils.areSame(lhs, rhs);
             }
             // Ignore annotation values to ensure that annotation is in supertype map.
             if (AnnotationUtils.areSameIgnoringValues(lhs, I)) {
@@ -123,8 +123,8 @@ public class IGJChecker extends BaseTypeChecker {
             if (AnnotationUtils.areSameIgnoringValues(rhs, I)) {
                 rhs = I;
             }
-            return (AnnotationUtils.areSame(elements, rhs, BOTTOM_QUAL)
-                    || AnnotationUtils.areSame(elements, lhs, BOTTOM_QUAL)
+            return (AnnotationUtils.areSame(rhs, BOTTOM_QUAL)
+                    || AnnotationUtils.areSame(lhs, BOTTOM_QUAL)
                     || super.isSubtype(rhs, lhs));
         }
     }
