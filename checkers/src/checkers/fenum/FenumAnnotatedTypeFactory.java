@@ -7,6 +7,7 @@ import checkers.fenum.quals.FenumTop;
 import checkers.fenum.quals.FenumUnqualified;
 import checkers.quals.DefaultLocation;
 import checkers.types.BasicAnnotatedTypeFactory;
+import checkers.util.AnnotationUtils;
 
 
 public class FenumAnnotatedTypeFactory extends
@@ -21,8 +22,8 @@ public class FenumAnnotatedTypeFactory extends
     // null literal.
     treeAnnotator.addTreeKind(Tree.Kind.NULL_LITERAL, checker.BOTTOM);
 
-    defaults.addAbsoluteDefault(annotations.fromClass(FenumTop.class), DefaultLocation.LOCALS);
-    defaults.addAbsoluteDefault(annotations.fromClass(FenumUnqualified.class), DefaultLocation.OTHERWISE);
+    defaults.addAbsoluteDefault(AnnotationUtils.fromClass(elements, FenumTop.class), DefaultLocation.LOCALS);
+    defaults.addAbsoluteDefault(AnnotationUtils.fromClass(elements, FenumUnqualified.class), DefaultLocation.OTHERWISE);
 
     this.postInit();
     // flow.setDebug(System.err);
