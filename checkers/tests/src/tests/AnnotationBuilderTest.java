@@ -253,7 +253,7 @@ public class AnnotationBuilderTest {
 
     @Test
     public void testAnnoAsArgPositive() {
-        AnnotationMirror anno = AnnotationUtils.getInstance(env).fromClass(MyAnno.class);
+        AnnotationMirror anno = AnnotationUtils.fromClass(env.getElementUtils(), MyAnno.class);
         AnnotationBuilder builder = new AnnotationBuilder(env, ContainingAnno.class);
         builder.setValue("value", anno);
         assertEquals("@tests.AnnotationBuilderTest.ContainingAnno(@tests.AnnotationBuilderTest.MyAnno)", builder.build().toString());
@@ -261,7 +261,7 @@ public class AnnotationBuilderTest {
 
     @Test(expected = SourceChecker.CheckerError.class)
     public void testAnnoAsArgNegative() {
-        AnnotationMirror anno = AnnotationUtils.getInstance(env).fromClass(Anno.class);
+        AnnotationMirror anno = AnnotationUtils.fromClass(env.getElementUtils(), Anno.class);
         AnnotationBuilder builder = new AnnotationBuilder(env, ContainingAnno.class);
         builder.setValue("value", anno);
     }
