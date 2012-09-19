@@ -479,10 +479,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         assert messages != null : "null messages";
 
         if (args != null) {
-            // look whether we can expand the arguments, too.
             for (int i = 0; i < args.length; ++i) {
-                args[i] = (args[i] == null) ? null :
-                    messages.getProperty(args[i].toString(), args[i].toString());
+                if (args[i] == null)
+                    continue;
+
+                // look whether we can expand the arguments, too.
+                args[i] = messages.getProperty(args[i].toString(), args[i].toString());
             }
         }
 
