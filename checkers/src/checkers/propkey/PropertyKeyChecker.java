@@ -12,6 +12,7 @@ import java.util.ResourceBundle;
 import java.util.Set;
 
 import javax.annotation.processing.SupportedOptions;
+import javax.lang.model.util.Elements;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.quals.Bottom;
@@ -167,7 +168,8 @@ public class PropertyKeyChecker extends BaseTypeChecker {
 
     @Override
     public GraphQualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
-        return new GraphQualifierHierarchy(factory, AnnotationUtils.getInstance(processingEnv).fromClass(Bottom.class));
+        Elements elements = processingEnv.getElementUtils();
+        return new GraphQualifierHierarchy(factory, AnnotationUtils.fromClass(elements, Bottom.class));
     }
 
 }
