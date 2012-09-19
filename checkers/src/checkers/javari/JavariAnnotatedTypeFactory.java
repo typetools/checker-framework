@@ -1,6 +1,7 @@
 package checkers.javari;
 
-import java.util.*;
+import java.util.Iterator;
+import java.util.List;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -9,7 +10,8 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 
 import checkers.javari.quals.*;
-import checkers.types.*;
+import checkers.types.AnnotatedTypeFactory;
+import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -18,9 +20,20 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
 import checkers.types.visitors.AnnotatedTypeScanner;
 import checkers.types.visitors.SimpleAnnotatedTypeScanner;
-import checkers.util.*;
+import checkers.util.AnnotatedTypes;
+import checkers.util.InternalUtils;
+import checkers.util.Pair;
+import checkers.util.TreeUtils;
+import checkers.util.TypesUtils;
 
-import com.sun.source.tree.*;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.util.SimpleTreeVisitor;
 
 /**
@@ -144,7 +157,7 @@ public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
      * @param type the type obtained from {@code tree}
      */
     @Override
-    protected void annotateImplicit(Tree tree, /*@Mutable*/ AnnotatedTypeMirror type) {
+    public void annotateImplicit(Tree tree, /*@Mutable*/ AnnotatedTypeMirror type) {
 
         // primitives are all the same
         if (type.getKind().isPrimitive()
@@ -216,7 +229,7 @@ public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
      * @param type the type obtained from {@code elt}
      */
     @Override
-    protected void annotateImplicit(Element element, /*@Mutable*/ AnnotatedTypeMirror type) {
+    public void annotateImplicit(Element element, /*@Mutable*/ AnnotatedTypeMirror type) {
         if (element.getKind().isClass() || element.getKind().isInterface()) {
             if (!hasImmutabilityAnnotation(type))
                 type.addAnnotation(MUTABLE);
