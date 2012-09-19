@@ -1,6 +1,7 @@
 package checkers.nullness;
 
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.util.Elements;
 
 import com.sun.source.tree.CompilationUnitTree;
 
@@ -49,12 +50,13 @@ public class NullnessSubchecker extends BaseTypeChecker {
     @Override
     public void initChecker() {
         super.initChecker();
-        AnnotationUtils annoFactory = AnnotationUtils.getInstance(processingEnv);
-        NONNULL = annoFactory.fromClass(NonNull.class);
-        NULLABLE = annoFactory.fromClass(Nullable.class);
-        LAZYNONNULL = annoFactory.fromClass(LazyNonNull.class);
-        PRIMITIVE = annoFactory.fromClass(Primitive.class);
-        POLYNULL = annoFactory.fromClass(PolyNull.class);
+
+        Elements elements = processingEnv.getElementUtils();
+        NONNULL = AnnotationUtils.fromClass(elements, NonNull.class);
+        NULLABLE = AnnotationUtils.fromClass(elements, Nullable.class);
+        LAZYNONNULL = AnnotationUtils.fromClass(elements, LazyNonNull.class);
+        PRIMITIVE = AnnotationUtils.fromClass(elements, Primitive.class);
+        POLYNULL = AnnotationUtils.fromClass(elements, PolyNull.class);
 
         rawnesschecker = new RawnessSubchecker();
         rawnesschecker.initChecker(this);
@@ -110,14 +112,14 @@ public class NullnessSubchecker extends BaseTypeChecker {
         @Override
         public boolean isSubtype(AnnotationMirror sub, AnnotationMirror sup) {
             // @Primitive and @NonNull are interchangeable, mostly.
-            if (AnnotationUtils.areSame(sub, PRIMITIVE) &&
-                    AnnotationUtils.areSame(sup, PRIMITIVE)) {
+            if (AnnotationUtils.areSame(elements, sub, PRIMITIVE) &&
+                    AnnotationUtils.areSame(elements, sup, PRIMITIVE)) {
                 return true;
             }
-            if (AnnotationUtils.areSame(sub, PRIMITIVE)) {
+            if (AnnotationUtils.areSame(elements, sub, PRIMITIVE)) {
                 return this.isSubtype(NONNULL, sup);
             }
-            if (AnnotationUtils.areSame(sup, PRIMITIVE)) {
+            if (AnnotationUtils.areSame(elements, sup, PRIMITIVE)) {
                 return this.isSubtype(sub, NONNULL);
             }
             return super.isSubtype(sub, sup);
@@ -125,14 +127,14 @@ public class NullnessSubchecker extends BaseTypeChecker {
 
         @Override
         public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
-            if (AnnotationUtils.areSame(a1, PRIMITIVE) &&
-                    AnnotationUtils.areSame(a2, PRIMITIVE)) {
+            if (AnnotationUtils.areSame(elements, a1, PRIMITIVE) &&
+                    AnnotationUtils.areSame(elements, a2, PRIMITIVE)) {
                 return PRIMITIVE;
             }
-            if (AnnotationUtils.areSame(a1, PRIMITIVE)) {
+            if (AnnotationUtils.areSame(elements, a1, PRIMITIVE)) {
                 return this.leastUpperBound(NONNULL, a2);
             }
-            if (AnnotationUtils.areSame(a2, PRIMITIVE)) {
+            if (AnnotationUtils.areSame(elements, a2, PRIMITIVE)) {
                 return this.leastUpperBound(a1, NONNULL);
             }
             return super.leastUpperBound(a1, a2);

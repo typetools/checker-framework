@@ -31,8 +31,7 @@ public class KeyForSubchecker extends BaseTypeChecker {
     public void initChecker() {
         super.initChecker();
 
-        AnnotationUtils annoFactory = AnnotationUtils.getInstance(processingEnv);
-        KEYFOR = annoFactory.fromClass(KeyFor.class);
+        KEYFOR = AnnotationUtils.fromClass(processingEnv.getElementUtils(), KeyFor.class);
     }
 
     @Override
@@ -134,7 +133,7 @@ public class KeyForSubchecker extends BaseTypeChecker {
                     AnnotationUtils.areSameIgnoringValues(rhs, KEYFOR)) {
                 // If they are both KeyFor annotations, they have to be equal.
                 // TODO: or one a subset of the maps of the other? Ordering of maps?
-                return AnnotationUtils.areSame(lhs, rhs);
+                return AnnotationUtils.areSame(elements, lhs, rhs);
             }
             // Ignore annotation values to ensure that annotation is in supertype map.
             if (AnnotationUtils.areSameIgnoringValues(lhs, KEYFOR)) {

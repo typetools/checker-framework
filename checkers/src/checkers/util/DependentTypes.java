@@ -2,6 +2,7 @@ package checkers.util;
 
 import javax.lang.model.element.*;
 import javax.lang.model.type.*;
+import javax.lang.model.util.Elements;
 
 import com.sun.source.tree.*;
 import com.sun.tools.javac.code.Symbol;
@@ -14,39 +15,39 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.GeneralAnnotatedTypeFactory;
 
 public class DependentTypes {
-    private final GeneralAnnotatedTypeFactory factory;
-    private final AnnotationUtils annoUtils;
+    private final Elements elements;
+    private final GeneralAnnotatedTypeFactory atypeFactory;
 
     public DependentTypes(SourceChecker checker, CompilationUnitTree root) {
-        this.factory = new GeneralAnnotatedTypeFactory(checker, root);
-        this.annoUtils = AnnotationUtils.getInstance(checker.getProcessingEnvironment());
+        this.elements = checker.getProcessingEnvironment().getElementUtils();
+        this.atypeFactory = new GeneralAnnotatedTypeFactory(checker, root);
     }
 
-    AnnotationMirror getResult(Dependent anno) {
+    private AnnotationMirror getResult(Dependent anno) {
         try {
             anno.result();
         } catch (MirroredTypeException exp) {
             // TODO: find nicer way to access Class annotation attributes.
             Name valName = TypesUtils.getQualifiedName((DeclaredType)exp.getTypeMirror());
-            return annoUtils.fromName(valName);
+            return AnnotationUtils.fromName(elements, valName);
         }
         assert false : "shouldn't be here";
         return null;
     }
 
-    AnnotationMirror getWhen(Dependent anno) {
+    private AnnotationMirror getWhen(Dependent anno) {
         try {
             anno.when();
         } catch (MirroredTypeException exp) {
             // TODO: find nicer way to access Class annotation attributes.
             Name valName = TypesUtils.getQualifiedName((DeclaredType)exp.getTypeMirror());
-            return annoUtils.fromName(valName);
+            return AnnotationUtils.fromName(elements, valName);
         }
         assert false : "shouldn't be here";
         return null;
     }
 
-    private Dependent findDependent(Element element) {
+    private static Dependent findDependent(Element element) {
         return (Dependent) JavacElements.getAnnotation(((Symbol) element).typeAnnotations, Dependent.class);
     }
 
@@ -81,7 +82,7 @@ public class DependentTypes {
             return;
 
         // FIXME: handle this case
-        AnnotatedTypeMirror receiver = factory.getReceiverType(expr);
+        AnnotatedTypeMirror receiver = atypeFactory.getReceiverType(expr);
         if (receiver != null)
             doSubsitution(symbol, type, receiver);
     }

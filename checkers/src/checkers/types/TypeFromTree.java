@@ -299,7 +299,7 @@ abstract class TypeFromTree extends
                         !type.isAnnotatedInHierarchy(cta)) {
                     for (AnnotationMirror fromDecl : decret) {
                         if (f.isSupportedQualifier(fromDecl) &&
-                                AnnotationUtils.areSame(f.getQualifierHierarchy().getTopAnnotation(cta),
+                                AnnotationUtils.areSame(f.elements, f.getQualifierHierarchy().getTopAnnotation(cta),
                                 f.getQualifierHierarchy().getTopAnnotation(fromDecl))) {
                             type.addAnnotation(cta);
                             break;
@@ -533,7 +533,7 @@ abstract class TypeFromTree extends
             List<AnnotatedTypeMirror> bounds = new LinkedList<AnnotatedTypeMirror>();
             for (Tree t : node.getBounds()) {
                 AnnotatedTypeMirror bound;
-                if (visitedBounds.containsKey(t) && f == visitedBounds.get(t).typeFactory) {
+                if (visitedBounds.containsKey(t) && f == visitedBounds.get(t).atypeFactory) {
                     bound = visitedBounds.get(t);
                 } else {
                     visitedBounds.put(t, f.type(t));

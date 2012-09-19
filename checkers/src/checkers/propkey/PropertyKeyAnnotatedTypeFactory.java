@@ -17,6 +17,7 @@ import checkers.quals.Bottom;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.types.TreeAnnotator;
+import checkers.util.AnnotationUtils;
 
 /**
  * This AnnotatedTypeFactory adds PropertyKey annotations to String literals
@@ -36,7 +37,7 @@ public class PropertyKeyAnnotatedTypeFactory<Checker extends PropertyKeyChecker>
 
         // Reuse the framework Bottom annotation and make it the default for the
         // null literal.
-        AnnotationMirror BOTTOM = this.annotations.fromClass(Bottom.class);
+        AnnotationMirror BOTTOM = AnnotationUtils.fromClass(elements, Bottom.class);
         this.treeAnnotator.addTreeKind(Tree.Kind.NULL_LITERAL, BOTTOM);
 
         this.postInit();
