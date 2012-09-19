@@ -14,11 +14,22 @@ import checkers.quals.DefaultLocation;
 import checkers.quals.DefaultQualifier;
 import checkers.quals.PolyAll;
 import checkers.quals.Unused;
-import checkers.types.*;
+import checkers.types.AnnotatedTypeFactory;
+import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
+import checkers.types.BasicAnnotatedTypeFactory;
+import checkers.types.GeneralAnnotatedTypeFactory;
+import checkers.types.TreeAnnotator;
+import checkers.types.TypeAnnotator;
 import checkers.types.visitors.AnnotatedTypeScanner;
-import checkers.util.*;
+import checkers.util.AnnotationUtils;
+import checkers.util.DependentTypes;
+import checkers.util.ElementUtils;
+import checkers.util.InternalUtils;
+import checkers.util.Pair;
+import checkers.util.TreeUtils;
+import checkers.util.TypesUtils;
 
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
@@ -166,7 +177,7 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
     }
 
     @Override
-    protected void annotateImplicit(Element elt, AnnotatedTypeMirror type) {
+    public void annotateImplicit(Element elt, AnnotatedTypeMirror type) {
         // For example, the "System" in "System.out" is always non-null.
         annotateIfStatic(elt, type);
 
@@ -180,7 +191,7 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
     }
 
     @Override
-    protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type) {
+    public void annotateImplicit(Tree tree, AnnotatedTypeMirror type) {
         treeAnnotator.visit(tree, type);
         typeAnnotator.visit(type);
         // case 6: apply default
