@@ -21,10 +21,14 @@ import checkers.quals.StubFiles;
 import checkers.quals.Unqualified;
 import checkers.source.SourceChecker;
 import checkers.types.AnnotatedTypeMirror.*;
-import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.TypeFromTree;
 import checkers.types.visitors.AnnotatedTypeScanner;
-import checkers.util.*;
+import checkers.util.AnnotatedTypes;
+import checkers.util.AnnotationUtils;
+import checkers.util.ElementUtils;
+import checkers.util.InternalUtils;
+import checkers.util.Pair;
+import checkers.util.TreeUtils;
 import checkers.util.stub.StubParser;
 import checkers.util.stub.StubUtil;
 
@@ -521,7 +525,7 @@ public class AnnotatedTypeFactory {
      * @param tree an AST node
      * @param type the type obtained from {@code tree}
      */
-    protected void annotateImplicit(Tree tree, /*@Mutable*/ AnnotatedTypeMirror type) {
+    public void annotateImplicit(Tree tree, /*@Mutable*/ AnnotatedTypeMirror type) {
         // Pass.
     }
 
@@ -533,7 +537,7 @@ public class AnnotatedTypeFactory {
      * @param elt an element
      * @param type the type obtained from {@code elt}
      */
-    protected void annotateImplicit(Element elt, /*@Mutable*/ AnnotatedTypeMirror type) {
+    public void annotateImplicit(Element elt, /*@Mutable*/ AnnotatedTypeMirror type) {
         // Pass.
     }
 
@@ -575,7 +579,7 @@ public class AnnotatedTypeFactory {
      * @param owner the annotated type of the receiver of the accessing tree
      * @param element   the element of the field or method
      */
-    protected void postAsMemberOf(AnnotatedTypeMirror type,
+    public void postAsMemberOf(AnnotatedTypeMirror type,
             AnnotatedTypeMirror owner, Element element) {
         annotateImplicit(element, type);
     }
@@ -1268,10 +1272,13 @@ public class AnnotatedTypeFactory {
      * {@link AnnotatedTypeMirror}, but does not add any annotations to the
      * result.
      *
+     * Most users will want to use getAnnotatedType instead; this method
+     * is mostly for internal use.
+     *
      * @param node
      * @return the type of {@code node}, without any annotations
      */
-    /*package-scope*/ AnnotatedTypeMirror type(Tree node) {
+    public AnnotatedTypeMirror type(Tree node) {
 
         // Attempt to obtain the type via JCTree.
         if (((JCTree)node).type != null) {
@@ -1669,6 +1676,29 @@ public class AnnotatedTypeFactory {
     private boolean sameAnnotation(AnnotationMirror am, String aname) {
         Name amname = AnnotationUtils.annotationName(am);
         return amname.toString().equals(aname);
+    }
+
+    /**
+     * This method is a hack to use when a method type argument
+     * could not be inferred automatically.
+     * The only use should be:
+     * checkers.util.AnnotatedTypes.inferTypeArguments(ProcessingEnvironment, AnnotatedTypeFactory, ExpressionTree, ExecutableElement)
+     *
+     * The main point for introducing this method was to better separate
+     * AnnotatetTypes from the classes in this package.
+     */
+    public AnnotatedTypeMirror getUninferredMethodTypeArgument(
+            AnnotatedTypeVariable typeVar) {
+        AnnotatedTypeMirror upperBound = typeVar.getEffectiveUpperBound();
+        while (upperBound.getKind() == TypeKind.TYPEVAR)
+            upperBound = ((AnnotatedTypeVariable)upperBound).getEffectiveUpperBound();
+        WildcardType wc = types.getWildcardType(upperBound.getUnderlyingType(), null);
+        AnnotatedWildcardType wctype = (AnnotatedWildcardType) AnnotatedTypeMirror.createType(wc, this);
+        wctype.setElement(typeVar.getElement());
+        wctype.setExtendsBound(upperBound);
+        wctype.addAnnotations(typeVar.getAnnotations());
+        wctype.setMethodTypeArgHack();
+        return wctype;
     }
 
     /*
