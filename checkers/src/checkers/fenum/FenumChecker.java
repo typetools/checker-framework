@@ -8,6 +8,7 @@ import java.util.Set;
 
 import javax.annotation.processing.SupportedOptions;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.util.Elements;
 
 import checkers.fenum.quals.FenumTop;
 import checkers.fenum.quals.Fenum;
@@ -43,9 +44,9 @@ public class FenumChecker extends BaseTypeChecker {
 
     @Override
     public void initChecker() {
-        AnnotationUtils utils = AnnotationUtils.getInstance(processingEnv);
-        BOTTOM = utils.fromClass(Bottom.class);
-        FENUM = utils.fromClass(Fenum.class);
+        Elements elements = processingEnv.getElementUtils();
+        BOTTOM = AnnotationUtils.fromClass(elements, Bottom.class);
+        FENUM = AnnotationUtils.fromClass(elements, Fenum.class);
         super.initChecker();
     }
 
@@ -124,7 +125,7 @@ public class FenumChecker extends BaseTypeChecker {
         public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
             if (AnnotationUtils.areSameIgnoringValues(lhs, FENUM) &&
                     AnnotationUtils.areSameIgnoringValues(rhs, FENUM)) {
-                return AnnotationUtils.areSame(lhs, rhs);
+                return AnnotationUtils.areSame(elements, lhs, rhs);
             }
             // Ignore annotation values to ensure that annotation is in supertype map.
             if (AnnotationUtils.areSameIgnoringValues(lhs, FENUM)) {
