@@ -1,6 +1,7 @@
 package checkers.igj;
 
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.util.Elements;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.igj.quals.*;
@@ -56,13 +57,13 @@ public class IGJChecker extends BaseTypeChecker {
 
     @Override
     public void initChecker() {
-        AnnotationUtils annoFactory = AnnotationUtils.getInstance(processingEnv);
-        READONLY = annoFactory.fromClass(ReadOnly.class);
-        MUTABLE = annoFactory.fromClass(Mutable.class);
-        IMMUTABLE = annoFactory.fromClass(Immutable.class);
-        I = annoFactory.fromClass(I.class);
-        ASSIGNS_FIELDS = annoFactory.fromClass(AssignsFields.class);
-        BOTTOM_QUAL = annoFactory.fromClass(IGJBottom.class);
+        Elements elements = processingEnv.getElementUtils();
+        READONLY = AnnotationUtils.fromClass(elements, ReadOnly.class);
+        MUTABLE = AnnotationUtils.fromClass(elements, Mutable.class);
+        IMMUTABLE = AnnotationUtils.fromClass(elements, Immutable.class);
+        I = AnnotationUtils.fromClass(elements, I.class);
+        ASSIGNS_FIELDS = AnnotationUtils.fromClass(elements, AssignsFields.class);
+        BOTTOM_QUAL = AnnotationUtils.fromClass(elements, IGJBottom.class);
         super.initChecker();
     }
 
@@ -113,7 +114,7 @@ public class IGJChecker extends BaseTypeChecker {
         public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
             if (AnnotationUtils.areSameIgnoringValues(lhs, I) &&
                     AnnotationUtils.areSameIgnoringValues(rhs, I)) {
-                return AnnotationUtils.areSame(lhs, rhs);
+                return AnnotationUtils.areSame(elements, lhs, rhs);
             }
             // Ignore annotation values to ensure that annotation is in supertype map.
             if (AnnotationUtils.areSameIgnoringValues(lhs, I)) {
@@ -122,8 +123,8 @@ public class IGJChecker extends BaseTypeChecker {
             if (AnnotationUtils.areSameIgnoringValues(rhs, I)) {
                 rhs = I;
             }
-            return (AnnotationUtils.areSame(rhs, BOTTOM_QUAL)
-                    || AnnotationUtils.areSame(lhs, BOTTOM_QUAL)
+            return (AnnotationUtils.areSame(elements, rhs, BOTTOM_QUAL)
+                    || AnnotationUtils.areSame(elements, lhs, BOTTOM_QUAL)
                     || super.isSubtype(rhs, lhs));
         }
     }

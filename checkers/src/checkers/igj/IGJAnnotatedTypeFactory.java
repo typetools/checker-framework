@@ -131,7 +131,7 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
         Set<AnnotationMirror> flowQuals = AnnotationUtils.createAnnotationSet();
         for (Class<? extends Annotation> cl : checker.getSupportedTypeQualifiers()) {
             if (!I.class.equals(cl))
-                flowQuals.add(annotations.fromClass(cl));
+                flowQuals.add(AnnotationUtils.fromClass(elements, cl));
         }
         return flowQuals;
     }
@@ -155,7 +155,7 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
      */
     private class IGJTypePostAnnotator extends TypeAnnotator {
         public IGJTypePostAnnotator(IGJChecker checker) {
-            super(checker);
+            super(checker, IGJAnnotatedTypeFactory.this);
         }
 
         /**
@@ -485,7 +485,7 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
                 Map<String, AnnotationMirror> p) {
             if (type.hasAnnotationRelaxed(I)) {
                 String immutableString =
-                    AnnotationUtils.parseStringValue(getImmutabilityAnnotation(type),
+                    AnnotationUtils.parseStringValue(elements, getImmutabilityAnnotation(type),
                             IMMUTABILITY_KEY);
                 if (p.containsKey(immutableString)) {
                     type.removeAnnotation(I);
@@ -517,7 +517,7 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
                 for (String key : r2.keySet()) {
                     if (!result.containsKey(key))
                         result.put(key, r2.get(key));
-                    else if (!AnnotationUtils.areSame(result.get(key), r2.get(key)))
+                    else if (!AnnotationUtils.areSame(elements, result.get(key), r2.get(key)))
                         result.put(key, READONLY);
                 }
             }
@@ -573,7 +573,7 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
 
             if (dcType.hasAnnotationRelaxed(I)) {
                 String immutableString =
-                    AnnotationUtils.parseStringValue(getImmutabilityAnnotation(dcType),
+                    AnnotationUtils.parseStringValue(elements, getImmutabilityAnnotation(dcType),
                             IMMUTABILITY_KEY);
                 AnnotationMirror immutability = getImmutabilityAnnotation(type);
                 // TODO: Assertion fails some times
@@ -616,7 +616,7 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
 
             if (arType.hasAnnotationRelaxed(I)) {
                 String immutableString =
-                    AnnotationUtils.parseStringValue(getImmutabilityAnnotation(arType),
+                    AnnotationUtils.parseStringValue(elements, getImmutabilityAnnotation(arType),
                             IMMUTABILITY_KEY);
                 AnnotationMirror immutability = getImmutabilityAnnotation(type);
                 // Assertion failes some times
