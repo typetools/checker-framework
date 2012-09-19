@@ -137,7 +137,7 @@ public class UnitsChecker extends BaseTypeChecker {
             if (ama.getAnnotationType().toString().equals(UnitsRelations.class.getCanonicalName())) {
                 @SuppressWarnings("unchecked")
                 Class<? extends UnitsRelations> theclass = (Class<? extends UnitsRelations>)
-                    AnnotationUtils.parseTypeValue(elements, ama, "value");
+                    AnnotationUtils.parseTypeValue(ama, "value");
                 String classname = theclass.getCanonicalName();
 
                 if (!unitsRel.containsKey(classname)) {
@@ -187,7 +187,7 @@ public class UnitsChecker extends BaseTypeChecker {
         @Override
         public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
             if (AnnotationUtils.areSameIgnoringValues(lhs, rhs)) {
-                return AnnotationUtils.areSame(elements, lhs, rhs);
+                return AnnotationUtils.areSame(lhs, rhs);
             }
             lhs = stripValues(lhs);
             rhs = stripValues(rhs);
