@@ -19,6 +19,7 @@ import checkers.util.*;
 import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.util.Elements;
 import javax.annotation.processing.*;
 
 /**
@@ -176,12 +177,11 @@ public abstract class BaseTypeChecker extends SourceChecker {
      * @return an annotation relation tree representing the supported qualifiers
      */
     protected QualifierHierarchy createQualifierHierarchy() {
-        AnnotationUtils annoFactory = AnnotationUtils.getInstance(processingEnv);
-
         MultiGraphQualifierHierarchy.MultiGraphFactory factory = this.createQualifierHierarchyFactory();
+        Elements elements = processingEnv.getElementUtils();
 
         for (Class<? extends Annotation> typeQualifier : getSupportedTypeQualifiers()) {
-            AnnotationMirror typeQualifierAnno = annoFactory.fromClass(typeQualifier);
+            AnnotationMirror typeQualifierAnno = AnnotationUtils.fromClass(elements, typeQualifier);
             assert typeQualifierAnno!=null : "Loading annotation \"" + typeQualifier + "\" failed!";
             factory.addQualifier(typeQualifierAnno);
             // Polymorphic qualifiers can't declare their supertypes.
@@ -203,7 +203,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
                 typeQualifier.getAnnotation(SubtypeOf.class).value();
             for (Class<? extends Annotation> superQualifier : superQualifiers) {
                 AnnotationMirror superAnno = null;
-                superAnno = annoFactory.fromClass(superQualifier);
+                superAnno = AnnotationUtils.fromClass(elements, superQualifier);
                 factory.addSubtype(typeQualifierAnno, superAnno);
             }
         }
