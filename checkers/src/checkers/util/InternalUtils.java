@@ -25,9 +25,8 @@ import com.sun.tools.javac.tree.JCTree.*;
  */
 public class InternalUtils {
 
-    private InternalUtils() {
-        // Cannot be instantiated.
-    }
+    // Class cannot be instantiated.
+    private InternalUtils() { throw new AssertionError("Class InternalUtils cannot be instantiated."); }
 
     /**
      * Gets the {@link Element} ("symbol") for the given Tree API node.
