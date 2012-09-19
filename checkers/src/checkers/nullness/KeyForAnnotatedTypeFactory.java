@@ -138,10 +138,10 @@ public class KeyForAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<KeyFor
     // System.out.println("input type: " + inType);
     AnnotatedTypeMirror outType = inType.getCopy(true);
 
-    if (inType.getAnnotation(KeyFor.class) != null) {
-      AnnotationMirror anno = inType.getAnnotation(KeyFor.class);
+    AnnotationMirror anno = inType.getAnnotation(KeyFor.class);
+    if (anno != null) {
 
-      List<String> inMaps = AnnotationUtils.parseStringArrayValue(elements, anno, "value");
+      List<String> inMaps = AnnotationUtils.parseStringArrayValue(anno, "value");
       List<String> outMaps = new ArrayList<String>();
 
       String receiver = receiver(call);

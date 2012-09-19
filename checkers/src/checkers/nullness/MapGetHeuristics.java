@@ -136,7 +136,7 @@ import com.sun.source.util.TreePath;
         if (anno == null)
             return false;
 
-        List<String> maps = AnnotationUtils.parseStringArrayValue(processingEnv.getElementUtils(), anno, "value");
+        List<String> maps = AnnotationUtils.parseStringArrayValue(anno, "value");
 
         return maps.contains(mapName);
     }
@@ -149,7 +149,7 @@ import com.sun.source.util.TreePath;
         if (anno == null)
             return false;
 
-        List<String> maps = AnnotationUtils.parseStringArrayValue(processingEnv.getElementUtils(), anno, "value");
+        List<String> maps = AnnotationUtils.parseStringArrayValue(anno, "value");
         for (String map: maps) {
             Element elt = resolver.findVariable(map, path);
             if (elt.equals(mapElement) &&

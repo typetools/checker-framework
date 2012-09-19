@@ -56,7 +56,7 @@ public class KeyForSubchecker extends BaseTypeChecker {
                 }
             }
             // Otherwise Covariant would cause trouble.
-            if (rhs.getAnnotation(KeyForBottom.class) != null) {
+            if (rhs.hasAnnotation(KeyForBottom.class)) {
                 return true;
             }
             return super.isSubtype(rhs, lhs);
@@ -133,7 +133,7 @@ public class KeyForSubchecker extends BaseTypeChecker {
                     AnnotationUtils.areSameIgnoringValues(rhs, KEYFOR)) {
                 // If they are both KeyFor annotations, they have to be equal.
                 // TODO: or one a subset of the maps of the other? Ordering of maps?
-                return AnnotationUtils.areSame(elements, lhs, rhs);
+                return AnnotationUtils.areSame(lhs, rhs);
             }
             // Ignore annotation values to ensure that annotation is in supertype map.
             if (AnnotationUtils.areSameIgnoringValues(lhs, KEYFOR)) {
