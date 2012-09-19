@@ -20,7 +20,11 @@ import checkers.quals.DefaultQualifierInHierarchy;
 import checkers.quals.ImplicitFor;
 import checkers.quals.Unqualified;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
-import checkers.util.*;
+import checkers.util.AnnotationUtils;
+import checkers.util.InternalUtils;
+import checkers.util.Pair;
+import checkers.util.QualifierDefaults;
+import checkers.util.QualifierPolymorphism;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -186,7 +190,7 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
             }
     }
 
-    protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type) {
+    public void annotateImplicit(Tree tree, AnnotatedTypeMirror type) {
         assert root != null : "root needs to be set when used on trees";
         treeAnnotator.visit(tree, type);
         Element elt = InternalUtils.symbol(tree);
@@ -213,7 +217,7 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
     }
 
     @Override
-    protected void annotateImplicit(Element elt, AnnotatedTypeMirror type) {
+    public void annotateImplicit(Element elt, AnnotatedTypeMirror type) {
         typeAnnotator.visit(type, elt.getKind());
         defaults.annotate(elt, type);
     }
