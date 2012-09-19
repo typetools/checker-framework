@@ -1,10 +1,31 @@
 package checkers.types;
 
 import java.lang.annotation.Annotation;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import javax.lang.model.element.*;
-import javax.lang.model.type.*;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ExecutableType;
+import javax.lang.model.type.NoType;
+import javax.lang.model.type.NullType;
+import javax.lang.model.type.PrimitiveType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
+import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
@@ -15,6 +36,7 @@ import checkers.source.SourceChecker;
 import checkers.types.visitors.AnnotatedTypeScanner;
 import checkers.types.visitors.AnnotatedTypeVisitor;
 import checkers.types.visitors.SimpleAnnotatedTypeVisitor;
+import checkers.util.AnnotatedTypes;
 import checkers.util.AnnotationUtils;
 import checkers.util.ElementUtils;
 import checkers.util.TreeUtils;
@@ -988,13 +1010,13 @@ public abstract class AnnotatedTypeMirror {
         }
 
         final private List<AnnotatedTypeMirror> paramTypes =
-            new LinkedList<AnnotatedTypeMirror>();
+            new ArrayList<AnnotatedTypeMirror>();
         private AnnotatedDeclaredType receiverType;
         private AnnotatedTypeMirror returnType;
         final private List<AnnotatedTypeMirror> throwsTypes =
-            new LinkedList<AnnotatedTypeMirror>();
+            new ArrayList<AnnotatedTypeMirror>();
         final private List<AnnotatedTypeVariable> typeVarTypes =
-            new LinkedList<AnnotatedTypeVariable>();
+            new ArrayList<AnnotatedTypeVariable>();
 
         /**
          * @return true if this type represents a varargs method
@@ -2039,10 +2061,10 @@ public abstract class AnnotatedTypeMirror {
         // argument inference (in AnnotatedTypes) is done
         // correctly.
         private boolean methodTypeArgHack = false;
-        public void setMethodTypeArgHack() {
+        /* package-scope */ void setMethodTypeArgHack() {
             methodTypeArgHack = true;
         }
-        public boolean isMethodTypeArgHack() {
+        /* package-scope */ boolean isMethodTypeArgHack() {
             return methodTypeArgHack;
         }
     }
