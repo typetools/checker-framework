@@ -91,7 +91,7 @@ public class LockAnnotatedTypeFactory
         if (!type.hasAnnotationRelaxed(GUARDED_BY) || isMostEnclosingThisDeref(expr))
             return;
 
-        AnnotationMirror guardedBy = type.getAnnotation(GuardedBy.class.getCanonicalName());
+        AnnotationMirror guardedBy = type.getAnnotation(GuardedBy.class);
         if (!"this".equals(elementValue(guardedBy, "value", String.class)))
             return;
         ExpressionTree receiver = receiver(expr);
@@ -113,7 +113,7 @@ public class LockAnnotatedTypeFactory
         if (!type.hasAnnotationRelaxed(GUARDED_BY))
             return;
 
-        AnnotationMirror guardedBy = type.getAnnotation(GuardedBy.class.getCanonicalName());
+        AnnotationMirror guardedBy = type.getAnnotation(GuardedBy.class);
         if (!"itself".equals(elementValue(guardedBy, "value", String.class)))
             return;
 
@@ -122,9 +122,17 @@ public class LockAnnotatedTypeFactory
         type.addAnnotation(newAnno);
     }
 
+    // TODO: Aliasing is not handled nicely by getAnnotation.
+    // It would be nicer if we only needed to write one class here and
+    // aliases were resolved internally.
+    protected boolean hasGuardedBy(AnnotatedTypeMirror t) {
+        return t.hasAnnotation(checkers.lock.quals.GuardedBy.class) ||
+               t.hasAnnotation(net.jcip.annotations.GuardedBy.class);
+    }
+
     @Override
     protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type) {
-        if (!LockVisitor.hasGuardedBy(type)) {
+        if (!hasGuardedBy(type)) {
             /* TODO: I added STRING_LITERAL to the list of types that should get defaulted.
              * This resulted in Flow inference to infer Unqualified for strings, which is a
              * subtype of guardedby. This broke the Constructors test case.
@@ -143,7 +151,7 @@ public class LockAnnotatedTypeFactory
         if (TypesUtils.isDeclaredOfName(a.getAnnotationType(),
                 net.jcip.annotations.GuardedBy.class.getCanonicalName())) {
             AnnotationBuilder builder = new AnnotationBuilder(processingEnv, GuardedBy.class);
-            builder.setValue("value", AnnotationUtils.parseStringValue(elements, a, "value"));
+            builder.setValue("value", AnnotationUtils.parseStringValue(a, "value"));
             return builder.build();
         } else {
             return super.aliasedAnnotation(a);
