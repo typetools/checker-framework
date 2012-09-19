@@ -84,7 +84,7 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
             boolean res;
             AnnotationMirror theQual = AnnotationUtils.fromClass(typeFactory.elements, qual);
             for (Class<? extends Tree> treeClass : implicit.treeClasses()) {
-                res = AnnotationUtils.updateMappingToMutableSet(typeFactory.elements, qualHierarchy, treeClasses, treeClass, theQual);
+                res = AnnotationUtils.updateMappingToMutableSet(qualHierarchy, treeClasses, treeClass, theQual);
                 if (!res) {
                     SourceChecker.errorAbort("TreeAnnotator: invalid update of treeClasses " +
                             treeClasses + " at " + treeClass + " with " + theQual);
@@ -92,7 +92,7 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
             }
 
             for (Tree.Kind treeKind : implicit.trees()) {
-                res = AnnotationUtils.updateMappingToMutableSet(typeFactory.elements, qualHierarchy, treeKinds, treeKind, theQual);
+                res = AnnotationUtils.updateMappingToMutableSet(qualHierarchy, treeKinds, treeKind, theQual);
                 if (!res) {
                     SourceChecker.errorAbort("TreeAnnotator: invalid update of treeKinds " +
                             treeKinds + " at " + treeKind + " with " + theQual);
@@ -100,7 +100,7 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
             }
 
             for (String pattern : implicit.stringPatterns()) {
-                res = AnnotationUtils.updateMappingToMutableSet(typeFactory.elements, qualHierarchy, stringPatterns, Pattern.compile(pattern), theQual);
+                res = AnnotationUtils.updateMappingToMutableSet(qualHierarchy, stringPatterns, Pattern.compile(pattern), theQual);
                 if (!res) {
                     SourceChecker.errorAbort("TreeAnnotator: invalid update of stringPatterns " +
                             stringPatterns + " at " + pattern + " with " + theQual);
@@ -110,7 +110,7 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
     }
 
     public void addTreeClass(Class<? extends Tree> treeClass, AnnotationMirror theQual) {
-        boolean res = AnnotationUtils.updateMappingToMutableSet(atypeFactory.elements, qualHierarchy, treeClasses, treeClass, theQual);
+        boolean res = AnnotationUtils.updateMappingToMutableSet(qualHierarchy, treeClasses, treeClass, theQual);
         if (!res) {
             SourceChecker.errorAbort("TreeAnnotator: invalid update of map " +
                     treeClasses + " at " + treeClass + " with " +theQual);
@@ -118,7 +118,7 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
     }
 
     public void addTreeKind(Tree.Kind treeKind, AnnotationMirror theQual) {
-        boolean res = AnnotationUtils.updateMappingToMutableSet(atypeFactory.elements, qualHierarchy, treeKinds, treeKind, theQual);
+        boolean res = AnnotationUtils.updateMappingToMutableSet(qualHierarchy, treeKinds, treeKind, theQual);
         if (!res) {
             SourceChecker.errorAbort("TreeAnnotator: invalid update of treeKinds " +
                     treeKinds + " at " + treeKind + " with " + theQual);
@@ -126,7 +126,7 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
     }
 
     public void addStringPattern(String pattern, AnnotationMirror theQual) {
-        boolean res = AnnotationUtils.updateMappingToMutableSet(atypeFactory.elements, qualHierarchy, stringPatterns, Pattern.compile(pattern), theQual);
+        boolean res = AnnotationUtils.updateMappingToMutableSet(qualHierarchy, stringPatterns, Pattern.compile(pattern), theQual);
         if (!res) {
             SourceChecker.errorAbort("TreeAnnotator: invalid update of stringPatterns " +
                     stringPatterns + " at " + pattern + " with " + theQual);
