@@ -141,7 +141,7 @@ public class AnnotationUtils {
      * @return the value of {@code fieldName} in {@code ad} as determined by
      *         {@code parser}, with type {@code R}
      */
-    private static <R> /*@Nullable*/ R parseAnnotationValue(Elements elements, AbstractAnnotationValueParser<R> parser,
+    private static <R> /*@Nullable*/ R parseAnnotationValue(AbstractAnnotationValueParser<R> parser,
             AnnotationMirror ad, String fieldName) {
 
         Map<? extends ExecutableElement, ? extends AnnotationValue> values =
@@ -173,8 +173,8 @@ public class AnnotationUtils {
      * @param enumType the type of the enum
      * @return the enum constant value of the given field
      */
-    public static <R extends Enum<R>> /*@Nullable*/ R parseEnumConstantValue(Elements elements, AnnotationMirror ad, String field, Class<R> enumType) {
-        return parseAnnotationValue(elements, new EnumConstantValueParser<R>(enumType), ad, field);
+    public static <R extends Enum<R>> /*@Nullable*/ R parseEnumConstantValue(AnnotationMirror ad, String field, Class<R> enumType) {
+        return parseAnnotationValue(new EnumConstantValueParser<R>(enumType), ad, field);
     }
 
     /**
@@ -184,8 +184,8 @@ public class AnnotationUtils {
      * @param enumType the type of the enum
      * @return the enum constant values of the given field
      */
-    public static <R extends Enum<R>> /*@Nullable*/ Set<R> parseEnumConstantArrayValue(Elements elements, AnnotationMirror ad, String field, Class<R> enumType) {
-        return parseAnnotationValue(elements, new EnumConstantArrayValueParser<R>(enumType), ad, field);
+    public static <R extends Enum<R>> /*@Nullable*/ Set<R> parseEnumConstantArrayValue(AnnotationMirror ad, String field, Class<R> enumType) {
+        return parseAnnotationValue(new EnumConstantArrayValueParser<R>(enumType), ad, field);
     }
 
     /**
@@ -193,8 +193,8 @@ public class AnnotationUtils {
      * @param field the name of the field to parse
      * @return the String value of the given field
      */
-    public static /*@Nullable*/ String parseStringValue(Elements elements, AnnotationMirror ad, String field) {
-        return parseAnnotationValue(elements, new StringValueParser(), ad, field);
+    public static /*@Nullable*/ String parseStringValue(AnnotationMirror ad, String field) {
+        return parseAnnotationValue(new StringValueParser(), ad, field);
     }
 
     /**
@@ -202,8 +202,8 @@ public class AnnotationUtils {
      * @param field the name of the field to parse
      * @return the String values of the given field
      */
-    public static /*@Nullable*/ List<String> parseStringArrayValue(Elements elements, AnnotationMirror ad, String field) {
-        return AnnotationUtils.parseAnnotationValue(elements, new StringArrayValueParser(), ad, field);
+    public static /*@Nullable*/ List<String> parseStringArrayValue(AnnotationMirror ad, String field) {
+        return AnnotationUtils.parseAnnotationValue(new StringArrayValueParser(), ad, field);
     }
 
     /**
@@ -211,8 +211,8 @@ public class AnnotationUtils {
      * @param field the name of the field to parse
      * @return the Class<?> value of the given field
      */
-    public static /*@Nullable*/ Class<?> parseTypeValue(Elements elements, AnnotationMirror ad, String field) {
-        return parseAnnotationValue(elements, new TypeValueParser(), ad, field);
+    public static /*@Nullable*/ Class<?> parseTypeValue(AnnotationMirror ad, String field) {
+        return parseAnnotationValue(new TypeValueParser(), ad, field);
     }
 
 
@@ -400,7 +400,7 @@ public class AnnotationUtils {
      *
      * @return true iff a1 and a2 are the same annotation
      */
-    public static boolean areSame(Elements elements, /*@Nullable*/ AnnotationMirror a1, /*@Nullable*/ AnnotationMirror a2) {
+    public static boolean areSame(/*@Nullable*/ AnnotationMirror a1, /*@Nullable*/ AnnotationMirror a2) {
         if (a1 != null && a2 != null) {
             if (!annotationName(a1).equals(annotationName(a2))) {
                 return false;
@@ -431,11 +431,11 @@ public class AnnotationUtils {
      *
      * @return true iff c1 and c2 contain the same annotations
      */
-    public static boolean areSame(Elements elements, Collection<AnnotationMirror> c1, Collection<AnnotationMirror> c2) {
+    public static boolean areSame(Collection<AnnotationMirror> c1, Collection<AnnotationMirror> c2) {
         if (c1.size() != c2.size())
             return false;
         if (c1.size() == 1)
-            return areSame(elements, c1.iterator().next(), c2.iterator().next());
+            return areSame(c1.iterator().next(), c2.iterator().next());
 
         Set<AnnotationMirror> s1 = createAnnotationSet();
         Set<AnnotationMirror> s2 = createAnnotationSet();
@@ -449,7 +449,7 @@ public class AnnotationUtils {
         while (iter1.hasNext()) {
             AnnotationMirror anno1 = iter1.next();
             AnnotationMirror anno2 = iter2.next();
-            if (!areSame(elements, anno1, anno2))
+            if (!areSame(anno1, anno2))
                 return false;
         }
         return true;
@@ -462,9 +462,9 @@ public class AnnotationUtils {
      *
      * @return true iff c contains anno, according to areSame.
      */
-    public static boolean containsSame(Elements elements, Collection<AnnotationMirror> c, AnnotationMirror anno) {
+    public static boolean containsSame(Collection<AnnotationMirror> c, AnnotationMirror anno) {
         for(AnnotationMirror an : c) {
-            if(AnnotationUtils.areSame(elements, an, anno)) {
+            if(AnnotationUtils.areSame(an, anno)) {
                 return true;
             }
         }
@@ -1035,7 +1035,7 @@ public class AnnotationUtils {
      * type (as it would return a list of {@link AnnotationValue}s). Use
      * {@code elementValueArray} instead.
      */
-    public static <T> T elementValueWithDefaults(Elements elements, AnnotationMirror anno,
+    public static <T> T elementValueWithDefaults(AnnotationMirror anno,
             CharSequence name, Class<T> expectedType) {
         Map<? extends ExecutableElement, ? extends AnnotationValue> valmap = getElementValuesWithDefaults(anno);
         for (ExecutableElement elem : valmap.keySet()) {
@@ -1078,9 +1078,9 @@ public class AnnotationUtils {
      * expected to have type {@code expectedType}.
      */
     @SuppressWarnings("unchecked")
-    public static <T> List<T> elementValueArrayWithDefaults(Elements elements,
+    public static <T> List<T> elementValueArrayWithDefaults(
             AnnotationMirror anno, CharSequence name) {
-        List<AnnotationValue> la = elementValueWithDefaults(elements, anno, name, List.class);
+        List<AnnotationValue> la = elementValueWithDefaults(anno, name, List.class);
         List<T> result = new ArrayList<T>(la.size());
         for (AnnotationValue a : la) {
             result.add((T) a.getValue());
@@ -1094,10 +1094,10 @@ public class AnnotationUtils {
      * where the attribute has an array type and the elements are {@code Enum}s.
      * One element of the result is expected to have type {@code expectedType}.
      */
-    public static <T extends Enum<T>> List<T> elementValueEnumArrayWithDefaults(Elements elements,
+    public static <T extends Enum<T>> List<T> elementValueEnumArrayWithDefaults(
             AnnotationMirror anno, CharSequence name, Class<T> t) {
         @SuppressWarnings("unchecked")
-        List<AnnotationValue> la = elementValueWithDefaults(elements, anno, name, List.class);
+        List<AnnotationValue> la = elementValueWithDefaults(anno, name, List.class);
         List<T> result = new ArrayList<T>(la.size());
         for (AnnotationValue a : la) {
             T value = Enum.valueOf(t, a.getValue().toString());
@@ -1139,8 +1139,7 @@ public class AnnotationUtils {
      * @param newQual The value to add.
      * @return Whether there was a qualifier hierarchy collision.
      */
-    public static <T> boolean updateMappingToMutableSet(Elements elements,
-            QualifierHierarchy qualHierarchy,
+    public static <T> boolean updateMappingToMutableSet(QualifierHierarchy qualHierarchy,
             Map<T, Set<AnnotationMirror>> map,
             T key, AnnotationMirror newQual) {
 
@@ -1151,7 +1150,7 @@ public class AnnotationUtils {
         } else {
             Set<AnnotationMirror> prevs = map.get(key);
             for (AnnotationMirror p : prevs) {
-                if (AnnotationUtils.areSame(elements, qualHierarchy.getTopAnnotation(p),
+                if (AnnotationUtils.areSame(qualHierarchy.getTopAnnotation(p),
                         qualHierarchy.getTopAnnotation(newQual))) {
                     return false;
                 }
