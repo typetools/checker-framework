@@ -8,7 +8,6 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
-import javax.lang.model.util.Elements;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -57,9 +56,6 @@ public class TypeHierarchy {
     /** The type checker to use. */
     protected final BaseTypeChecker checker;
 
-    /** The element utilities to use. */
-    protected final Elements elements;
-
     /**
      * Constructs an instance of {@code TypeHierarchy} for the type system
      * whose qualifiers represented in qualifierHierarchy.
@@ -71,7 +67,6 @@ public class TypeHierarchy {
         this.qualifierHierarchy = qualifierHierarchy;
         this.visited = new HashSet<Element>();
         this.checker = checker;
-        this.elements = checker.getProcessingEnvironment().getElementUtils();
     }
 
     /**
@@ -182,7 +177,8 @@ public class TypeHierarchy {
                     ((AnnotatedWildcardType)lhsBase).getEffectiveExtendsBound());
         }
 
-        AnnotatedTypeMirror rhsBase = rhs.atypeFactory.atypes.asSuper(rhs, lhsBase);
+        // TODO: direct access to rhs.atypeFactory is ugly.
+        AnnotatedTypeMirror rhsBase = AnnotatedTypes.asSuper(checker.getProcessingEnvironment().getTypeUtils(), rhs.atypeFactory, rhs, lhsBase);
 
         // FIXME: the following line should be removed, but erasure code is buggy
         // related to bug tests/framework/OverrideCrash
@@ -227,7 +223,7 @@ public class TypeHierarchy {
                         lhsBase.getAnnotations().isEmpty()) {
                     for (AnnotationMirror bot : qualifierHierarchy.getBottomAnnotations()) {
                         for(AnnotationMirror rhsAnno : rhsBase.getAnnotations()) {
-                            if (!AnnotationUtils.areSame(elements, bot, rhsAnno)) {
+                            if (!AnnotationUtils.areSame(bot, rhsAnno)) {
                                 return false;
                             }
                         }
@@ -408,7 +404,7 @@ public class TypeHierarchy {
         Set<AnnotationMirror> las = lhs.getAnnotations();
         Set<AnnotationMirror> ras = rhs.getAnnotations();
 
-        if (!AnnotationUtils.areSame(elements, las, ras))
+        if (!AnnotationUtils.areSame(las, ras))
             return false;
 
         if (lhs.getKind() == TypeKind.DECLARED && rhs.getKind() == TypeKind.DECLARED)
@@ -457,7 +453,7 @@ public class TypeHierarchy {
 
         // The main array component annotations must be equal.
         if (checker.getLintOption("arrays:invariant", false) &&
-                !AnnotationUtils.areSame(elements, lhs.getAnnotations(), rhs.getAnnotations())) {
+                !AnnotationUtils.areSame(lhs.getAnnotations(), rhs.getAnnotations())) {
             return false;
         }
 
