@@ -233,30 +233,6 @@ public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
     }
 
     /**
-     * Returns a singleton collection with the most restrictive immutability
-     * annotation that is a supertype of the annotations on both collections.
-     */
-    @Override
-    public Collection<AnnotationMirror> unify(Collection<AnnotationMirror> c1,
-            Collection<AnnotationMirror> c2) {
-        Map<String, AnnotationMirror> ann =
-            new HashMap<String, AnnotationMirror>();
-        for (AnnotationMirror anno : c1)
-            ann.put(AnnotationUtils.annotationName(anno).toString(), anno);
-        for (AnnotationMirror anno : c2)
-            ann.put(AnnotationUtils.annotationName(anno).toString(), anno);
-
-        if (ann.containsKey(QReadOnly.class.getCanonicalName()))
-            return Collections.singleton(QREADONLY);
-        else if (ann.containsKey(ReadOnly.class.getCanonicalName()))
-            return Collections.singleton(READONLY);
-        else if (ann.containsKey(PolyRead.class.getCanonicalName()))
-            return Collections.singleton(POLYREAD);
-        else
-            return Collections.singleton(MUTABLE);
-    }
-
-    /**
      * Determines the type of the constructed object based on the
      * parameters passed to the constructor. The new object has the
      * same mutability as the annotation marked on the constructor
@@ -299,8 +275,8 @@ public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
         AnnotatedExecutableType exType = fromUse.first;
         List<AnnotatedTypeMirror> typeargs = fromUse.second;
 
-        List<AnnotatedTypeMirror> parameterTypes = atypes.expandVarArgs(exType, tree.getArguments());
-        List<AnnotatedTypeMirror> argumentTypes = atypes.getAnnotatedTypes(parameterTypes, tree.getArguments());
+        List<AnnotatedTypeMirror> parameterTypes = AnnotatedTypes.expandVarArgs(this, exType, tree.getArguments());
+        List<AnnotatedTypeMirror> argumentTypes = AnnotatedTypes.getAnnotatedTypes(this, parameterTypes, tree.getArguments());
 
         boolean allMutable = true, allPolyRead = true, allThisMutable = true;
 
@@ -381,8 +357,8 @@ public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
 
         AnnotatedTypeMirror returnType = type.getReturnType();
 
-        List<AnnotatedTypeMirror> parameterTypes = atypes.expandVarArgs(type, tree.getArguments());
-        List<AnnotatedTypeMirror> argumentTypes = atypes.getAnnotatedTypes(parameterTypes, tree.getArguments());
+        List<AnnotatedTypeMirror> parameterTypes = AnnotatedTypes.expandVarArgs(this, type, tree.getArguments());
+        List<AnnotatedTypeMirror> argumentTypes = AnnotatedTypes.getAnnotatedTypes(this, parameterTypes, tree.getArguments());
 
         AnnotatedTypeMirror receiverType = type.getReceiverType();
 
