@@ -36,7 +36,7 @@ public class KeyForVisitor extends BaseTypeVisitor<KeyForSubchecker> {
         public Void visitDeclared(AnnotatedDeclaredType type, Tree p) {
             AnnotationMirror kf = type.getAnnotation(KeyFor.class);
             if (kf!=null) {
-                List<String> maps = AnnotationUtils.parseStringArrayValue(kf, "value");
+                List<String> maps = AnnotationUtils.parseStringArrayValue(elements, kf, "value");
 
                 boolean inStatic = false;
                 if (p.getKind() == Kind.VARIABLE) {
