@@ -53,7 +53,7 @@ public final class FlowTestChecker extends BaseTypeChecker {
         public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
             if (AnnotationUtils.areSameIgnoringValues(lhs, VALUE) &&
                     AnnotationUtils.areSameIgnoringValues(rhs, VALUE)) {
-                return AnnotationUtils.areSame(elements, lhs, rhs);
+                return AnnotationUtils.areSame(lhs, rhs);
             }
             if (AnnotationUtils.areSameIgnoringValues(lhs, VALUE)) {
                 lhs = VALUE;
