@@ -14,6 +14,7 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
+import checkers.util.AnnotatedTypes;
 import checkers.util.AnnotationUtils;
 import checkers.util.QualifierPolymorphism;
 
