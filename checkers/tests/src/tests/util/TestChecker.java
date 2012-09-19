@@ -3,6 +3,7 @@ package tests.util;
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.util.Elements;
 
 import com.sun.source.tree.CompilationUnitTree;
 
@@ -34,8 +35,8 @@ public final class TestChecker extends BaseTypeChecker {
 
     @Override
     public void initChecker() {
-        AnnotationUtils annoFactory = AnnotationUtils.getInstance(processingEnv);
-        BOTTOM = annoFactory.fromClass(Bottom.class);
+        Elements elements = processingEnv.getElementUtils();
+        BOTTOM = AnnotationUtils.fromClass(elements, Bottom.class);
         super.initChecker();
     }
 
