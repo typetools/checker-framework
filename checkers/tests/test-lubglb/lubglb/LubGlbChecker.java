@@ -1,6 +1,7 @@
 package lubglb;
 
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.util.Elements;
 
 import lubglb.quals.*;
 import checkers.basetype.BaseTypeChecker;
@@ -17,13 +18,14 @@ public class LubGlbChecker extends BaseTypeChecker {
     public void initChecker() {
         super.initChecker();
 
-        AnnotationUtils annoFactory = AnnotationUtils.getInstance(this.processingEnv);
-        // A = annoFactory.fromClass(A.class);
-        B = annoFactory.fromClass(B.class);
-        C = annoFactory.fromClass(C.class);
-        D = annoFactory.fromClass(D.class);
-        E = annoFactory.fromClass(E.class);
-        // F = annoFactory.fromClass(F.class);
+        Elements elements = processingEnv.getElementUtils();
+
+        // A = AnnotationUtils.fromClass(elements, A.class);
+        B = AnnotationUtils.fromClass(elements, B.class);
+        C = AnnotationUtils.fromClass(elements, C.class);
+        D = AnnotationUtils.fromClass(elements, D.class);
+        E = AnnotationUtils.fromClass(elements, E.class);
+        // F = AnnotationUtils.fromClass(elements, F.class);
 
         QualifierHierarchy qh = this.getQualifierHierarchy();
 

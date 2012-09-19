@@ -3,6 +3,7 @@ package tests.util;
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.util.Elements;
 
 import com.sun.source.tree.CompilationUnitTree;
 
@@ -25,9 +26,9 @@ public final class FlowTestChecker extends BaseTypeChecker {
 
     @Override
     public void initChecker() {
-        AnnotationUtils annoFactory = AnnotationUtils.getInstance(processingEnv);
-        VALUE = annoFactory.fromClass(Value.class);
-        BOTTOM = annoFactory.fromClass(Bottom.class);
+        Elements elements = processingEnv.getElementUtils();
+        VALUE = AnnotationUtils.fromClass(elements, Value.class);
+        BOTTOM = AnnotationUtils.fromClass(elements, Bottom.class);
 
         super.initChecker();
     }
@@ -52,7 +53,7 @@ public final class FlowTestChecker extends BaseTypeChecker {
         public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
             if (AnnotationUtils.areSameIgnoringValues(lhs, VALUE) &&
                     AnnotationUtils.areSameIgnoringValues(rhs, VALUE)) {
-                return AnnotationUtils.areSame(lhs, rhs);
+                return AnnotationUtils.areSame(elements, lhs, rhs);
             }
             if (AnnotationUtils.areSameIgnoringValues(lhs, VALUE)) {
                 lhs = VALUE;
