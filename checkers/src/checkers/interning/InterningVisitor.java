@@ -16,6 +16,7 @@ import checkers.interning.quals.Interned;
 import checkers.interning.quals.UsesObjectEquals;
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeMirror;
+import checkers.util.AnnotationUtils;
 import checkers.util.Heuristics;
 import checkers.util.InternalUtils;
 import checkers.util.TreeUtils;
@@ -50,7 +51,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningChecker> {
      */
     public InterningVisitor(InterningChecker checker, CompilationUnitTree root) {
         super(checker, root);
-        this.INTERNED = annoFactory.fromClass(Interned.class);
+        this.INTERNED = AnnotationUtils.fromClass(elements, Interned.class);
         typeToCheck = checker.typeToCheck();
     }
 

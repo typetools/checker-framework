@@ -8,6 +8,7 @@ import checkers.quals.DefaultQualifier;
 import checkers.quals.ImplicitFor;
 import checkers.quals.Unqualified;
 import checkers.types.*;
+import checkers.util.AnnotationUtils;
 import checkers.util.TreeUtils;
 import checkers.util.ElementUtils;
 import static checkers.types.AnnotatedTypeMirror.*;
@@ -49,8 +50,8 @@ public class InterningAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Int
     public InterningAnnotatedTypeFactory(InterningChecker checker,
         CompilationUnitTree root) {
         super(checker, root);
-        this.INTERNED = annotations.fromClass(Interned.class);
-        this.UNQUALIFIED = annotations.fromClass(Unqualified.class);
+        this.INTERNED = AnnotationUtils.fromClass(elements, Interned.class);
+        this.UNQUALIFIED = AnnotationUtils.fromClass(elements, Unqualified.class);
 
         // If you update the following, also update ../../../manual/interning-checker.tex .
         addAliasedAnnotation(com.sun.istack.Interned.class, INTERNED);
@@ -116,7 +117,7 @@ public class InterningAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Int
 
         /** Creates an {@link InterningTypeAnnotator} for the given checker. */
         InterningTypeAnnotator(BaseTypeChecker checker) {
-            super(checker);
+            super(checker, InterningAnnotatedTypeFactory.this);
         }
 
         @Override

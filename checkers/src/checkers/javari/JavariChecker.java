@@ -1,6 +1,7 @@
 package checkers.javari;
 
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.util.Elements;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.javari.quals.*;
@@ -31,13 +32,13 @@ public class JavariChecker extends BaseTypeChecker {
      */
     @Override
     public void initChecker() {
-        AnnotationUtils annoFactory = AnnotationUtils.getInstance(processingEnv);
-        this.READONLY = annoFactory.fromClass(ReadOnly.class);
-        this.THISMUTABLE = annoFactory.fromClass(ThisMutable.class);
-        this.MUTABLE = annoFactory.fromClass(Mutable.class);
-        this.POLYREAD = annoFactory.fromClass(PolyRead.class);
-        this.QREADONLY = annoFactory.fromClass(QReadOnly.class);
-        this.ASSIGNABLE = annoFactory.fromClass(Assignable.class);
+        Elements elements = processingEnv.getElementUtils();
+        this.READONLY = AnnotationUtils.fromClass(elements, ReadOnly.class);
+        this.THISMUTABLE = AnnotationUtils.fromClass(elements, ThisMutable.class);
+        this.MUTABLE = AnnotationUtils.fromClass(elements, Mutable.class);
+        this.POLYREAD = AnnotationUtils.fromClass(elements, PolyRead.class);
+        this.QREADONLY = AnnotationUtils.fromClass(elements, QReadOnly.class);
+        this.ASSIGNABLE = AnnotationUtils.fromClass(elements, Assignable.class);
         super.initChecker();
     }
 
