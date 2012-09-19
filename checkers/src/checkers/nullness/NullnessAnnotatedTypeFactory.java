@@ -5,6 +5,7 @@ import java.util.Set;
 
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.util.Elements;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.flow.Flow;
@@ -310,7 +311,8 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
             }
         } else {
             AnnotatedTypeMirror receiver = generalFactory.getReceiverType((ExpressionTree)tree);
-            if (receiver == null || receiver.getAnnotation(whenName) == null) {
+            Elements elements = processingEnv.getElementUtils();
+            if (receiver == null || !receiver.hasAnnotation(elements.getName(whenName))) {
                 return false;
             }
         }

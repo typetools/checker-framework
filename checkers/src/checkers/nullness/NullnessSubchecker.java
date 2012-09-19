@@ -112,14 +112,14 @@ public class NullnessSubchecker extends BaseTypeChecker {
         @Override
         public boolean isSubtype(AnnotationMirror sub, AnnotationMirror sup) {
             // @Primitive and @NonNull are interchangeable, mostly.
-            if (AnnotationUtils.areSame(elements, sub, PRIMITIVE) &&
-                    AnnotationUtils.areSame(elements, sup, PRIMITIVE)) {
+            if (AnnotationUtils.areSame(sub, PRIMITIVE) &&
+                    AnnotationUtils.areSame(sup, PRIMITIVE)) {
                 return true;
             }
-            if (AnnotationUtils.areSame(elements, sub, PRIMITIVE)) {
+            if (AnnotationUtils.areSame(sub, PRIMITIVE)) {
                 return this.isSubtype(NONNULL, sup);
             }
-            if (AnnotationUtils.areSame(elements, sup, PRIMITIVE)) {
+            if (AnnotationUtils.areSame(sup, PRIMITIVE)) {
                 return this.isSubtype(sub, NONNULL);
             }
             return super.isSubtype(sub, sup);
@@ -127,14 +127,14 @@ public class NullnessSubchecker extends BaseTypeChecker {
 
         @Override
         public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
-            if (AnnotationUtils.areSame(elements, a1, PRIMITIVE) &&
-                    AnnotationUtils.areSame(elements, a2, PRIMITIVE)) {
+            if (AnnotationUtils.areSame(a1, PRIMITIVE) &&
+                    AnnotationUtils.areSame(a2, PRIMITIVE)) {
                 return PRIMITIVE;
             }
-            if (AnnotationUtils.areSame(elements, a1, PRIMITIVE)) {
+            if (AnnotationUtils.areSame(a1, PRIMITIVE)) {
                 return this.leastUpperBound(NONNULL, a2);
             }
-            if (AnnotationUtils.areSame(elements, a2, PRIMITIVE)) {
+            if (AnnotationUtils.areSame(a2, PRIMITIVE)) {
                 return this.leastUpperBound(a1, NONNULL);
             }
             return super.leastUpperBound(a1, a2);
