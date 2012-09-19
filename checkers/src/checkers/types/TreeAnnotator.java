@@ -54,7 +54,7 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
     private final Map<Pattern, Set<AnnotationMirror>> stringPatterns;
 
     private final QualifierHierarchy qualHierarchy;
-    private final AnnotatedTypeFactory typeFactory;
+    private final AnnotatedTypeFactory atypeFactory;
 
     /**
      * Creates a {@link TypeAnnotator} from the given checker, using that checker's
@@ -69,9 +69,7 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
         this.treeClasses = new HashMap<Class<?>, Set<AnnotationMirror>>();
         this.stringPatterns = new IdentityHashMap<Pattern, Set<AnnotationMirror>>();
         this.qualHierarchy = checker.getQualifierHierarchy();
-        this.typeFactory = typeFactory;
-
-        AnnotationUtils annoFactory = AnnotationUtils.getInstance(checker.getProcessingEnvironment());
+        this.atypeFactory = typeFactory;
 
         // Get type qualifiers from the checker.
         Set<Class<? extends Annotation>> quals = checker.getSupportedTypeQualifiers();
@@ -84,9 +82,9 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
                 continue;
 
             boolean res;
-            AnnotationMirror theQual = annoFactory.fromClass(qual);
+            AnnotationMirror theQual = AnnotationUtils.fromClass(typeFactory.elements, qual);
             for (Class<? extends Tree> treeClass : implicit.treeClasses()) {
-                res = AnnotationUtils.updateMappingToMutableSet(qualHierarchy, treeClasses, treeClass, theQual);
+                res = AnnotationUtils.updateMappingToMutableSet(typeFactory.elements, qualHierarchy, treeClasses, treeClass, theQual);
                 if (!res) {
                     SourceChecker.errorAbort("TreeAnnotator: invalid update of treeClasses " +
                             treeClasses + " at " + treeClass + " with " + theQual);
@@ -94,7 +92,7 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
             }
 
             for (Tree.Kind treeKind : implicit.trees()) {
-                res = AnnotationUtils.updateMappingToMutableSet(qualHierarchy, treeKinds, treeKind, theQual);
+                res = AnnotationUtils.updateMappingToMutableSet(typeFactory.elements, qualHierarchy, treeKinds, treeKind, theQual);
                 if (!res) {
                     SourceChecker.errorAbort("TreeAnnotator: invalid update of treeKinds " +
                             treeKinds + " at " + treeKind + " with " + theQual);
@@ -102,7 +100,7 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
             }
 
             for (String pattern : implicit.stringPatterns()) {
-                res = AnnotationUtils.updateMappingToMutableSet(qualHierarchy, stringPatterns, Pattern.compile(pattern), theQual);
+                res = AnnotationUtils.updateMappingToMutableSet(typeFactory.elements, qualHierarchy, stringPatterns, Pattern.compile(pattern), theQual);
                 if (!res) {
                     SourceChecker.errorAbort("TreeAnnotator: invalid update of stringPatterns " +
                             stringPatterns + " at " + pattern + " with " + theQual);
@@ -112,7 +110,7 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
     }
 
     public void addTreeClass(Class<? extends Tree> treeClass, AnnotationMirror theQual) {
-        boolean res = AnnotationUtils.updateMappingToMutableSet(qualHierarchy, treeClasses, treeClass, theQual);
+        boolean res = AnnotationUtils.updateMappingToMutableSet(atypeFactory.elements, qualHierarchy, treeClasses, treeClass, theQual);
         if (!res) {
             SourceChecker.errorAbort("TreeAnnotator: invalid update of map " +
                     treeClasses + " at " + treeClass + " with " +theQual);
@@ -120,7 +118,7 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
     }
 
     public void addTreeKind(Tree.Kind treeKind, AnnotationMirror theQual) {
-        boolean res = AnnotationUtils.updateMappingToMutableSet(qualHierarchy, treeKinds, treeKind, theQual);
+        boolean res = AnnotationUtils.updateMappingToMutableSet(atypeFactory.elements, qualHierarchy, treeKinds, treeKind, theQual);
         if (!res) {
             SourceChecker.errorAbort("TreeAnnotator: invalid update of treeKinds " +
                     treeKinds + " at " + treeKind + " with " + theQual);
@@ -128,7 +126,7 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
     }
 
     public void addStringPattern(String pattern, AnnotationMirror theQual) {
-        boolean res = AnnotationUtils.updateMappingToMutableSet(qualHierarchy, stringPatterns, Pattern.compile(pattern), theQual);
+        boolean res = AnnotationUtils.updateMappingToMutableSet(atypeFactory.elements, qualHierarchy, stringPatterns, Pattern.compile(pattern), theQual);
         if (!res) {
             SourceChecker.errorAbort("TreeAnnotator: invalid update of stringPatterns " +
                     stringPatterns + " at " + pattern + " with " + theQual);
@@ -216,7 +214,7 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
             // We have initializers, either with or without an array type.
 
             for (ExpressionTree init: tree.getInitializers()) {
-                AnnotatedTypeMirror iniType = typeFactory.getAnnotatedType(init);
+                AnnotatedTypeMirror iniType = atypeFactory.getAnnotatedType(init);
                 Collection<AnnotationMirror> annos = iniType.getAnnotations();
 
                 prev = (prev == null) ? annos : qualHierarchy.leastUpperBounds(prev, annos);
@@ -227,7 +225,7 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
 
         assert prev != null : "TreeAnnotator.visitNewArray: violated assumption about qualifiers";
 
-        AnnotatedTypeMirror context = typeFactory.getVisitorState().getAssignmentContext();
+        AnnotatedTypeMirror context = atypeFactory.getVisitorState().getAssignmentContext();
         Collection<AnnotationMirror> post;
 
         if (context != null && context instanceof AnnotatedArrayType) {
@@ -274,8 +272,8 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
         // TODO: should we perform default action to get trees/tree kinds/...?
         // defaultAction(node, type);
         if (!type.isAnnotated()) {
-            AnnotatedTypeMirror rhs = typeFactory.getAnnotatedType(node.getExpression());
-            AnnotatedTypeMirror lhs = typeFactory.getAnnotatedType(node.getVariable());
+            AnnotatedTypeMirror rhs = atypeFactory.getAnnotatedType(node.getExpression());
+            AnnotatedTypeMirror lhs = atypeFactory.getAnnotatedType(node.getVariable());
             Set<AnnotationMirror> lubs = qualHierarchy.leastUpperBounds(rhs.getAnnotations(), lhs.getAnnotations());
             type.replaceAnnotations(lubs);
         }
@@ -287,8 +285,8 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
         // TODO: should we perform default action to get trees/tree kinds/...?
         // defaultAction(node, type);
         if (!type.isAnnotated()) {
-            AnnotatedTypeMirror a = typeFactory.getAnnotatedType(node.getLeftOperand());
-            AnnotatedTypeMirror b = typeFactory.getAnnotatedType(node.getRightOperand());
+            AnnotatedTypeMirror a = atypeFactory.getAnnotatedType(node.getLeftOperand());
+            AnnotatedTypeMirror b = atypeFactory.getAnnotatedType(node.getRightOperand());
             Set<AnnotationMirror> lubs = qualHierarchy.leastUpperBounds(a.getEffectiveAnnotations(), b.getEffectiveAnnotations());
             type.replaceAnnotations(lubs);
         }
@@ -300,7 +298,7 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
         // TODO: should we perform default action to get trees/tree kinds/...?
         // defaultAction(node, type);
         if (!type.isAnnotated()) {
-            AnnotatedTypeMirror exp = typeFactory.getAnnotatedType(node.getExpression());
+            AnnotatedTypeMirror exp = atypeFactory.getAnnotatedType(node.getExpression());
             type.replaceAnnotations(exp.getAnnotations());
         }
         return super.visitUnary(node, type);
@@ -324,7 +322,7 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
         // TODO: should we perform default action to get trees/tree kinds/...?
         // defaultAction(node, type);
         if (!type.isAnnotated()) {
-            AnnotatedTypeMirror exprType = typeFactory.getAnnotatedType(node.getExpression());
+            AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(node.getExpression());
             if (type.getKind() == TypeKind.TYPEVAR ) {
                 if (exprType.getKind() == TypeKind.TYPEVAR) {
                     // If both types are type variables, take the direct annotations.
