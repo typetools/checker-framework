@@ -1,19 +1,36 @@
-package checkers.types;
+package checkers.util;
 
 import static javax.lang.model.util.ElementFilter.methodsIn;
 
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.*;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
 import checkers.quals.TypeQualifier;
 import checkers.source.SourceChecker;
+import checkers.types.AnnotatedTypeFactory;
+import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -21,11 +38,6 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
 import checkers.types.visitors.SimpleAnnotatedTypeVisitor;
-import checkers.util.AnnotationUtils;
-import checkers.util.ElementUtils;
-import checkers.util.InternalUtils;
-import checkers.util.TreeUtils;
-import checkers.util.TypesUtils;
 /*>>>
 import checkers.nullness.quals.*;
 */
@@ -39,7 +51,7 @@ import com.sun.source.util.TreePath;
  */
 public class AnnotatedTypes {
     // Class cannot be instantiated.
-    private AnnotatedTypes() {}
+    private AnnotatedTypes() { throw new AssertionError("Class AnnotatedTypes cannot be instantiated.");}
 
     /**
      * Returns the most specific base type of {@code t} whose erasure type
@@ -569,6 +581,8 @@ public class AnnotatedTypes {
         } else if (expr instanceof NewClassTree) {
             targs = ((NewClassTree) expr).getTypeArguments();
         } else {
+            // This case should never happen.
+            SourceChecker.errorAbort("AnnotatedTypes.findTypeArguments: unexpected tree: " + expr);
             targs = null;
         }
 
@@ -648,9 +662,8 @@ public class AnnotatedTypes {
 
             if (argument == null) {
                 // Using assignment context
-                assert atypeFactory.root != null : "root needs to be set when used on trees";
                 AnnotatedTypeMirror assigned =
-                    assignedTo(types, atypeFactory, TreePath.getPath(atypeFactory.root, expr));
+                    assignedTo(types, atypeFactory, atypeFactory.getPath(expr));
                 if (assigned != null) {
                     AnnotatedTypeMirror rettype = methodType.getReturnType();
                     returnTypeBase = asSuper(types, atypeFactory, rettype, assigned);
@@ -683,21 +696,12 @@ public class AnnotatedTypes {
             }
 
             if (argument == null) {
-                AnnotatedTypeMirror upperBound = typeVar.getEffectiveUpperBound();
-                while (upperBound.getKind() == TypeKind.TYPEVAR)
-                    upperBound = ((AnnotatedTypeVariable)upperBound).getEffectiveUpperBound();
-                WildcardType wc = types.getWildcardType(upperBound.getUnderlyingType(), null);
-                AnnotatedWildcardType wctype = (AnnotatedWildcardType) AnnotatedTypeMirror.createType(wc, atypeFactory);
-                wctype.setElement(typeVar.getElement());
-                wctype.setExtendsBound(upperBound);
-                wctype.addAnnotations(typeVar.getAnnotations());
-                wctype.setMethodTypeArgHack();
-
-                argument = wctype;
+                argument = atypeFactory.getUninferredMethodTypeArgument(typeVar);
             }
 
-            if (argument != null)
+            if (argument != null) {
                 typeArguments.put(typeVar, argument);
+            }
         }
 
         return typeArguments;
@@ -1063,10 +1067,10 @@ public class AnnotatedTypes {
             alub = ((AnnotatedTypeVariable)alub).getUpperBound();
         }
 
-        if (visited.contains(alub.actualType)) {
+        if (visited.contains(alub.getUnderlyingType())) {
             return;
         }
-        visited.add(alub.actualType);
+        visited.add(alub.getUnderlyingType());
 
         for (int i = 0; i < types.length; ++i) {
             if (!(types[i].getAnnotations().isEmpty() ||
@@ -1211,17 +1215,17 @@ public class AnnotatedTypes {
         assert paramTypes.size() == trees.size() : "AnnotatedTypes.getAnnotatedTypes: size mismatch! " +
             "Parameter types: " + paramTypes + " Arguments: " + trees;
         List<AnnotatedTypeMirror> types = new ArrayList<AnnotatedTypeMirror>();
-        AnnotatedTypeMirror preAssCtxt = atypeFactory.visitorState.getAssignmentContext();
+        AnnotatedTypeMirror preAssCtxt = atypeFactory.getVisitorState().getAssignmentContext();
 
         try {
             for (int i = 0; i < trees.size(); ++i) {
                 AnnotatedTypeMirror param = paramTypes.get(i);
-                atypeFactory.visitorState.setAssignmentContext(param);
+                atypeFactory.getVisitorState().setAssignmentContext(param);
                 ExpressionTree arg = trees.get(i);
                 types.add(atypeFactory.getAnnotatedType(arg));
             }
         } finally {
-            atypeFactory.visitorState.setAssignmentContext(preAssCtxt);
+            atypeFactory.getVisitorState().setAssignmentContext(preAssCtxt);
         }
         return types;
     }
