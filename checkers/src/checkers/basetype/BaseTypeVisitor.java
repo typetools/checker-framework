@@ -94,9 +94,6 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
     /** For obtaining line numbers in -Ashowchecks debugging output. */
     private final SourcePositions positions;
 
-    /** utilities class for annotated types **/
-    protected final AnnotatedTypes annoTypes;
-
     /** For storing visitor state**/
     protected final VisitorState visitorState;
 
@@ -112,8 +109,6 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         ProcessingEnvironment env = checker.getProcessingEnvironment();
         this.options = env.getOptions();
         this.positions = trees.getSourcePositions();
-        this.annoTypes =
-            new AnnotatedTypes(checker.getProcessingEnvironment(), atypeFactory);
         this.visitorState = atypeFactory.getVisitorState();
     }
 
@@ -226,11 +221,11 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
 
             // Find which method this overrides!
             Map<AnnotatedDeclaredType, ExecutableElement> overriddenMethods =
-                    annoTypes.overriddenMethods(methodElement);
+                    AnnotatedTypes.overriddenMethods(elements, atypeFactory, methodElement);
             for (Map.Entry<AnnotatedDeclaredType, ExecutableElement> pair: overriddenMethods.entrySet()) {
                 AnnotatedDeclaredType overriddenType = pair.getKey();
                 AnnotatedExecutableType overriddenMethod =
-                        annoTypes.asMemberOf(overriddenType, pair.getValue());
+                        AnnotatedTypes.asMemberOf(types, atypeFactory, overriddenType, pair.getValue());
                 checkOverride(node, enclosingType, overriddenMethod, overriddenType, p);
             }
             return super.visitMethod(node, p);
@@ -300,7 +295,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         AnnotatedTypeMirror iterableType =
             atypeFactory.getAnnotatedType(node.getExpression());
         AnnotatedTypeMirror iteratedType =
-            annoTypes.getIteratedType(iterableType);
+            AnnotatedTypes.getIteratedType(checker.getProcessingEnvironment(), atypeFactory, iterableType);
         boolean valid = validateTypeOf(node.getVariable());
         if (valid) {
             commonAssignmentCheck(var, iteratedType, node.getExpression(),
@@ -339,7 +334,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
                 typeargs, node.getTypeArguments());
 
         List<AnnotatedTypeMirror> params =
-            annoTypes.expandVarArgs(invokedMethod, node.getArguments());
+            AnnotatedTypes.expandVarArgs(atypeFactory, invokedMethod, node.getArguments());
         checkArguments(params, node.getArguments());
 
         if (isVectorCopyInto(invokedMethod)) {
@@ -402,7 +397,8 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
 
         AnnotatedTypeMirror receiver = atypeFactory.getReceiverType(node);
         AnnotatedDeclaredType receiverAsVector =
-            (AnnotatedDeclaredType)annoTypes.asSuper(receiver, vectorType);
+            (AnnotatedDeclaredType) AnnotatedTypes.asSuper(checker.getProcessingEnvironment().getTypeUtils(), atypeFactory,
+                    receiver, vectorType);
         if (receiverAsVector == null || receiverAsVector.getTypeArguments().isEmpty())
             return;
 
@@ -434,7 +430,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
 
         List<? extends ExpressionTree> passedArguments = node.getArguments();
         List<AnnotatedTypeMirror> params =
-            annoTypes.expandVarArgs(constructor, passedArguments);
+            AnnotatedTypes.expandVarArgs(atypeFactory, constructor, passedArguments);
 
         checkArguments(params, passedArguments);
 
@@ -668,7 +664,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         AnnotatedTypeMirror castType = atypeFactory.getAnnotatedType(node);
         AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(node.getExpression());
 
-        if (annoTypes.areSame(castType, exprType)) {
+        if (AnnotatedTypes.areSame(castType, exprType)) {
             checker.report(Result.warning("cast.redundant", castType), node);
         }
     }
@@ -688,7 +684,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
             AnnotatedDeclaredType castDeclared = (AnnotatedDeclaredType)castType;
             AnnotatedDeclaredType elementType =
                 atypeFactory.fromElement((TypeElement)castDeclared.getUnderlyingType().asElement());
-            if (AnnotationUtils.areSame(elements, castDeclared.getAnnotations(), elementType.getAnnotations())) {
+            if (AnnotationUtils.areSame(castDeclared.getAnnotations(), elementType.getAnnotations())) {
                 isSubtype = true;
             }
         }
@@ -1227,7 +1223,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
             return true;
 
         String when = AnnotationUtils.elementValueClassName(unused, "when");
-        if (receiver.getAnnotation(when) == null)
+        if (receiver.getAnnotation(elements.getName(when)) == null)
             return true;
 
         Tree tree = this.enclosingStatement(accessTree);
