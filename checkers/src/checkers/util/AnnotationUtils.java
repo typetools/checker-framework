@@ -11,12 +11,40 @@ import com.sun.tools.javac.code.Type;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Inherited;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.*;
-import javax.lang.model.type.*;
-import javax.lang.model.util.*;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
+import javax.lang.model.element.AnnotationValueVisitor;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.PrimitiveType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
+import javax.lang.model.util.Elements;
+import javax.lang.model.util.SimpleAnnotationValueVisitor6;
+import javax.lang.model.util.Types;
 
 /**
  * A utility class for working with annotations.
@@ -24,7 +52,7 @@ import javax.lang.model.util.*;
 public class AnnotationUtils {
 
     // Class cannot be instantiated.
-    private AnnotationUtils() {}
+    private AnnotationUtils() { throw new AssertionError("Class AnnotationUtils cannot be instantiated."); }
 
     // **********************************************************************
     // Factory Methods to create instances of AnnotationMirror
@@ -39,6 +67,7 @@ public class AnnotationUtils {
      * fully-qualified name.  getElementValues on the result returns an
      * empty map.
      *
+     * @param elements the element utilities to use
      * @param name the name of the annotation to create
      * @return an {@link AnnotationMirror} of type {@code} name
      */
@@ -77,6 +106,7 @@ public class AnnotationUtils {
      * Creates an {@link AnnotationMirror} given by a particular annotation
      * class.
      *
+     * @param elements the element utilities to use
      * @param clazz the annotation class
      * @return an {@link AnnotationMirror} of type given type
      */
@@ -88,6 +118,7 @@ public class AnnotationUtils {
      * A utility method that converts a {@link CharSequence} (usually a {@link
      * String}) into a {@link TypeMirror} named thereby.
      *
+     * @param elements the element utilities to use
      * @param name the name of a type
      * @return the {@link TypeMirror} corresponding to that name
      */
@@ -653,7 +684,7 @@ public class AnnotationUtils {
 
         public AnnotationBuilder setValue(CharSequence elementName, List<? extends Object> values) {
             assertNotBuilt();
-            List<AnnotationValue> value = new ArrayList<AnnotationValue>();
+            List<AnnotationValue> value = new ArrayList<AnnotationValue>(values.size());
             ExecutableElement var = findElement(elementName);
             TypeMirror expectedType = var.getReturnType();
             if (expectedType.getKind() != TypeKind.ARRAY) {
@@ -786,7 +817,7 @@ public class AnnotationUtils {
                 return null; // dead code
             }
 
-            List<AnnotationValue> res = new ArrayList<AnnotationValue>();
+            List<AnnotationValue> res = new ArrayList<AnnotationValue>(values.length);
             for (Enum<?> ev : values) {
                 checkSubtype(expectedType, ev);
                 enumElt = findEnumElement(ev);
@@ -821,7 +852,7 @@ public class AnnotationUtils {
                 return null; // dead code
             }
 
-            List<AnnotationValue> res = new ArrayList<AnnotationValue>();
+            List<AnnotationValue> res = new ArrayList<AnnotationValue>(values.length);
             for (VariableElement ev : values) {
                 checkSubtype(expectedType, ev);
                 // Is there a better way to distinguish between enums and
