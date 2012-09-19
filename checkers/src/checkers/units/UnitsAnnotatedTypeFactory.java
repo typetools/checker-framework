@@ -64,8 +64,8 @@ public class UnitsAnnotatedTypeFactory extends
             if (aa.getAnnotationType().toString().equals(UnitsMultiple.class.getCanonicalName())) {
                 @SuppressWarnings("unchecked")
                 Class<? extends Annotation> theclass = (Class<? extends Annotation>)
-                                                    AnnotationUtils.parseTypeValue(elements, aa, "quantity");
-                Prefix prefix = AnnotationUtils.parseEnumConstantValue(elements, aa, "prefix", Prefix.class);
+                                                    AnnotationUtils.parseTypeValue(aa, "quantity");
+                Prefix prefix = AnnotationUtils.parseEnumConstantValue(aa, "prefix", Prefix.class);
                 AnnotationBuilder builder = new AnnotationBuilder(processingEnv, theclass);
                 builder.setValue("value", prefix);
                 AnnotationMirror res = builder.build();
