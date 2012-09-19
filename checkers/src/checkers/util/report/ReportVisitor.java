@@ -13,6 +13,7 @@ import javax.lang.model.element.TypeElement;
 import checkers.basetype.BaseTypeVisitor;
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import checkers.types.AnnotatedTypes;
 import checkers.util.ElementUtils;
 import checkers.util.TreeUtils;
 import checkers.util.report.quals.*;
@@ -122,7 +123,7 @@ public class ReportVisitor extends BaseTypeVisitor<ReportChecker> {
 
         // Check all overridden methods.
         Map<AnnotatedDeclaredType, ExecutableElement> overriddenMethods =
-            annoTypes.overriddenMethods(method);
+            AnnotatedTypes.overriddenMethods(elements, atypeFactory, method);
         for (Map.Entry<AnnotatedDeclaredType, ExecutableElement> pair: overriddenMethods.entrySet()) {
             // AnnotatedDeclaredType overriddenType = pair.getKey();
             ExecutableElement exe = pair.getValue();
@@ -150,7 +151,7 @@ public class ReportVisitor extends BaseTypeVisitor<ReportChecker> {
         if (!report) {
             // Find all methods that are overridden by the called method
             Map<AnnotatedDeclaredType, ExecutableElement> overriddenMethods =
-                    annoTypes.overriddenMethods(method);
+                    AnnotatedTypes.overriddenMethods(elements, atypeFactory, method);
             for (Map.Entry<AnnotatedDeclaredType, ExecutableElement> pair: overriddenMethods.entrySet()) {
                 // AnnotatedDeclaredType overriddenType = pair.getKey();
                 ExecutableElement exe = pair.getValue();
