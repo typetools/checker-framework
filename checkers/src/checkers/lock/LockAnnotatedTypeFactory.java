@@ -39,7 +39,7 @@ public class LockAnnotatedTypeFactory
     public LockAnnotatedTypeFactory(LockChecker checker,
             CompilationUnitTree root) {
         super(checker, root);
-        GUARDED_BY = annotations.fromClass(GuardedBy.class);
+        GUARDED_BY = AnnotationUtils.fromClass(elements, GuardedBy.class);
         this.postInit();
     }
 
@@ -66,7 +66,7 @@ public class LockAnnotatedTypeFactory
 
     private AnnotationMirror createGuarded(String lock) {
         AnnotationUtils.AnnotationBuilder builder =
-            new AnnotationUtils.AnnotationBuilder(env, GuardedBy.class.getCanonicalName());
+            new AnnotationUtils.AnnotationBuilder(processingEnv, GuardedBy.class.getCanonicalName());
         builder.setValue("value", lock);
         return builder.build();
     }
@@ -142,8 +142,8 @@ public class LockAnnotatedTypeFactory
     public AnnotationMirror aliasedAnnotation(AnnotationMirror a) {
         if (TypesUtils.isDeclaredOfName(a.getAnnotationType(),
                 net.jcip.annotations.GuardedBy.class.getCanonicalName())) {
-            AnnotationBuilder builder = new AnnotationBuilder(env, GuardedBy.class);
-            builder.setValue("value", AnnotationUtils.parseStringValue(a, "value"));
+            AnnotationBuilder builder = new AnnotationBuilder(processingEnv, GuardedBy.class);
+            builder.setValue("value", AnnotationUtils.parseStringValue(elements, a, "value"));
             return builder.build();
         } else {
             return super.aliasedAnnotation(a);
