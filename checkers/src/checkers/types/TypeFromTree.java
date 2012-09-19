@@ -131,11 +131,11 @@ abstract class TypeFromTree extends
             // instead of:
             AnnotatedTypeMirror alub = f.type(node);
             AnnotatedTypeMirror assuper;
-            assuper = f.atypes.asSuper(trueType, alub);
+            assuper = AnnotatedTypes.asSuper(f.types, f, trueType, alub);
             if (assuper != null) {
                 trueType = assuper;
             }
-            assuper = f.atypes.asSuper(falseType, alub);
+            assuper = AnnotatedTypes.asSuper(f.types, f, falseType, alub);
             if (assuper != null) {
                 falseType = assuper;
             }
@@ -150,7 +150,7 @@ abstract class TypeFromTree extends
             List<AnnotatedTypeMirror> types = new ArrayList<AnnotatedTypeMirror>();
             types.add(trueType);
             types.add(falseType);
-            f.atypes.annotateAsLub(alub, types);
+            AnnotatedTypes.annotateAsLub(f.processingEnv, f, alub, types);
 
             return alub;
         }
@@ -167,7 +167,7 @@ abstract class TypeFromTree extends
             Element elt = TreeUtils.elementFromUse(node);
             AnnotatedTypeMirror selfType = f.getImplicitReceiverType(node);
             if (selfType != null) {
-                return f.atypes.asMemberOf(selfType, elt);
+                return AnnotatedTypes.asMemberOf(f.types, f, selfType, elt);
             }
 
             return f.getAnnotatedType(elt);
@@ -202,7 +202,7 @@ abstract class TypeFromTree extends
                 // We need the original t with the implicit annotations
                 AnnotatedTypeMirror t = f.getAnnotatedType(node.getExpression());
                 if (t instanceof AnnotatedDeclaredType)
-                    return f.atypes.asMemberOf(t, elt);
+                    return AnnotatedTypes.asMemberOf(f.types, f, t, elt);
             }
 
             return f.fromElement(elt);
@@ -299,7 +299,7 @@ abstract class TypeFromTree extends
                         !type.isAnnotatedInHierarchy(cta)) {
                     for (AnnotationMirror fromDecl : decret) {
                         if (f.isSupportedQualifier(fromDecl) &&
-                                AnnotationUtils.areSame(f.elements, f.getQualifierHierarchy().getTopAnnotation(cta),
+                                AnnotationUtils.areSame(f.getQualifierHierarchy().getTopAnnotation(cta),
                                 f.getQualifierHierarchy().getTopAnnotation(fromDecl))) {
                             type.addAnnotation(cta);
                             break;
