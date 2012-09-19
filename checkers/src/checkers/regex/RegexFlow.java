@@ -82,7 +82,7 @@ public class RegexFlow extends DefaultFlow<DefaultFlowState> {
                 DefaultFlowState s1 = pos ? flowState_whenTrue : flowState_whenFalse;
                 DefaultFlowState s2 = pos ? flowState_whenFalse : flowState_whenTrue;
 
-                AnnotationMirror recnt = ((RegexAnnotatedTypeFactory)this.factory).createRegexAnnotation(cnt);
+                AnnotationMirror recnt = ((RegexAnnotatedTypeFactory) this.atypeFactory).createRegexAnnotation(cnt);
                 s1.annos.clearInAll(idx);
                 s1.annos.set(recnt, idx);
                 s1.getAnnotations().add(recnt);
