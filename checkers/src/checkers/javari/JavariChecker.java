@@ -1,5 +1,11 @@
 package checkers.javari;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Elements;
 
@@ -8,8 +14,11 @@ import checkers.javari.quals.*;
 import checkers.quals.PolyAll;
 import checkers.quals.TypeQualifiers;
 import checkers.types.AnnotatedTypeMirror;
+import checkers.types.QualifierHierarchy;
 import checkers.types.TypeHierarchy;
 import checkers.util.AnnotationUtils;
+import checkers.util.GraphQualifierHierarchy;
+import checkers.util.MultiGraphQualifierHierarchy;
 
 /**
  * An annotation processor that checks a program's use of the Javari
@@ -40,6 +49,42 @@ public class JavariChecker extends BaseTypeChecker {
         this.QREADONLY = AnnotationUtils.fromClass(elements, QReadOnly.class);
         this.ASSIGNABLE = AnnotationUtils.fromClass(elements, Assignable.class);
         super.initChecker();
+    }
+
+    @Override
+    public QualifierHierarchy createQualifierHierarchy(MultiGraphQualifierHierarchy.MultiGraphFactory factory) {
+        return new JavariQualifierHierarchy(factory);
+    }
+
+    private final class JavariQualifierHierarchy extends GraphQualifierHierarchy {
+
+        public JavariQualifierHierarchy(MultiGraphQualifierHierarchy.MultiGraphFactory factory) {
+            super(factory, MUTABLE);
+        }
+
+        /**
+         * Returns a singleton collection with the most restrictive immutability
+         * annotation that is a supertype of the annotations on both collections.
+         */
+        @Override
+        public Set<AnnotationMirror> leastUpperBounds(Collection<AnnotationMirror> c1,
+                Collection<AnnotationMirror> c2) {
+            Map<String, AnnotationMirror> ann =
+                new HashMap<String, AnnotationMirror>();
+            for (AnnotationMirror anno : c1)
+                ann.put(AnnotationUtils.annotationName(anno).toString(), anno);
+            for (AnnotationMirror anno : c2)
+                ann.put(AnnotationUtils.annotationName(anno).toString(), anno);
+
+            if (ann.containsKey(QReadOnly.class.getCanonicalName()))
+                return Collections.singleton(QREADONLY);
+            else if (ann.containsKey(ReadOnly.class.getCanonicalName()))
+                return Collections.singleton(READONLY);
+            else if (ann.containsKey(PolyRead.class.getCanonicalName()))
+                return Collections.singleton(POLYREAD);
+            else
+                return Collections.singleton(MUTABLE);
+        }
     }
 
     /**
