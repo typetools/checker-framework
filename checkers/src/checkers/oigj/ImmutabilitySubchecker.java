@@ -1,6 +1,7 @@
 package checkers.oigj;
 
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.util.Elements;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.oigj.quals.*;
@@ -18,13 +19,13 @@ public class ImmutabilitySubchecker extends BaseTypeChecker {
 
     @Override
     public void initChecker() {
-        AnnotationUtils annoFactory = AnnotationUtils.getInstance(processingEnv);
-        READONLY = annoFactory.fromClass(ReadOnly.class);
-        MUTABLE = annoFactory.fromClass(Mutable.class);
-        IMMUTABLE = annoFactory.fromClass(Immutable.class);
-        I = annoFactory.fromClass(I.class);
-        ASSIGNS_FIELDS = annoFactory.fromClass(AssignsFields.class);
-        BOTTOM_QUAL = annoFactory.fromClass(OIGJMutabilityBottom.class);
+        Elements elements = processingEnv.getElementUtils();
+        READONLY = AnnotationUtils.fromClass(elements, ReadOnly.class);
+        MUTABLE = AnnotationUtils.fromClass(elements, Mutable.class);
+        IMMUTABLE = AnnotationUtils.fromClass(elements, Immutable.class);
+        I = AnnotationUtils.fromClass(elements, I.class);
+        ASSIGNS_FIELDS = AnnotationUtils.fromClass(elements, AssignsFields.class);
+        BOTTOM_QUAL = AnnotationUtils.fromClass(elements, OIGJMutabilityBottom.class);
         super.initChecker();
     }
 
