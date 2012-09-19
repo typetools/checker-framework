@@ -13,7 +13,7 @@ import javax.lang.model.element.TypeElement;
 import checkers.basetype.BaseTypeVisitor;
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import checkers.types.AnnotatedTypes;
+import checkers.util.AnnotatedTypes;
 import checkers.util.ElementUtils;
 import checkers.util.TreeUtils;
 import checkers.util.report.quals.*;
