@@ -3,7 +3,6 @@ package checkers.types;
 import java.lang.annotation.Annotation;
 import java.util.*;
 
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.*;
 import javax.lang.model.type.*;
 import javax.lang.model.util.Elements;
@@ -26,8 +25,6 @@ import checkers.nullness.quals.NonNull;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.Tree;
-import com.sun.tools.javac.code.Symbol;
-import com.sun.tools.javac.code.Attribute.TypeCompound;
 
 /**
  * Represents an annotated type in the Java programming language.
@@ -46,7 +43,6 @@ import com.sun.tools.javac.code.Attribute.TypeCompound;
  * use a visitor or use the result of the {@link #getKind()} method.
  *
  * @see TypeMirror
- * @since 1.6
  */
 public abstract class AnnotatedTypeMirror {
 
@@ -60,7 +56,7 @@ public abstract class AnnotatedTypeMirror {
      * @return [to document]
      */
     public static AnnotatedTypeMirror createType(TypeMirror type,
-            ProcessingEnvironment env, AnnotatedTypeFactory atypeFactory) {
+        AnnotatedTypeFactory atypeFactory) {
         if (type == null)
             return null;
         if (replacer == null)
@@ -68,39 +64,32 @@ public abstract class AnnotatedTypeMirror {
 
         switch (type.getKind()) {
             case ARRAY:
-                return new AnnotatedArrayType((ArrayType)type, env, atypeFactory);
+                return new AnnotatedArrayType((ArrayType) type, atypeFactory);
             case DECLARED:
-                return new AnnotatedDeclaredType((DeclaredType)type, env, atypeFactory);
+                return new AnnotatedDeclaredType((DeclaredType) type, atypeFactory);
             case ERROR:
                 SourceChecker.errorAbort("AnnotatedTypeMirror.createType: input should type-check already! Found error type: " + type);
                 return null; // dead code
             case EXECUTABLE:
-                return new AnnotatedExecutableType((ExecutableType)type, env, atypeFactory);
+                return new AnnotatedExecutableType((ExecutableType) type, atypeFactory);
             case VOID:
             case PACKAGE:
             case NONE:
-                return new AnnotatedNoType((NoType)type, env, atypeFactory);
+                return new AnnotatedNoType((NoType) type, atypeFactory);
             case NULL:
-                return new AnnotatedNullType((NullType)type, env, atypeFactory);
+                return new AnnotatedNullType((NullType) type, atypeFactory);
             case TYPEVAR:
-                return new AnnotatedTypeVariable((TypeVariable)type, env, atypeFactory);
+                return new AnnotatedTypeVariable((TypeVariable) type, atypeFactory);
             case WILDCARD:
-                return new AnnotatedWildcardType((WildcardType)type, env, atypeFactory);
+                return new AnnotatedWildcardType((WildcardType) type, atypeFactory);
             default:
                 if (type.getKind().isPrimitive()) {
-                    return new AnnotatedPrimitiveType((PrimitiveType)type, env, atypeFactory);
+                    return new AnnotatedPrimitiveType((PrimitiveType) type, atypeFactory);
                 }
                 SourceChecker.errorAbort("AnnotatedTypeMirror.createType: unidentified type " + type);
                 return null; // dead code
         }
     }
-
-    public List<? extends AnnotatedTypeMirror> directSuperTypes() {
-        return directSuperTypes(this);
-    }
-
-    /** Processing Environment of the current round **/
-    protected final ProcessingEnvironment processingEnv;
 
     /** The factory to use for lazily creating annotated types. */
     protected final AnnotatedTypeFactory atypeFactory;
@@ -128,23 +117,23 @@ public abstract class AnnotatedTypeMirror {
     // TODO: use this to cache the result once computed? For generic types?
     // protected final Set<AnnotationMirror> explicitannotations = AnnotationUtils.createAnnotationSet();
 
-    private static int uidCounter = 0;
-    public int uid;
+    // If unique IDs are helpful, add these and the commented lines that use them.
+    // private static int uidCounter = 0;
+    // public int uid;
 
     /**
      * Constructor for AnnotatedTypeMirror.
      *
      * @param type  the underlying type
-     * @param env   Processing Environment
-     * @param typeFactory TODO
+     * @param typeFactory used to create further types and to access
+     *     global information (Types, Elements, ...)
      */
-    private AnnotatedTypeMirror(TypeMirror type, ProcessingEnvironment env,
+    private AnnotatedTypeMirror(TypeMirror type,
             AnnotatedTypeFactory atypeFactory) {
         this.actualType = type;
-        this.processingEnv = env;
         assert atypeFactory != null;
         this.atypeFactory = atypeFactory;
-        uid = ++uidCounter;
+        // uid = ++uidCounter;
     }
 
     @Override
@@ -153,7 +142,7 @@ public abstract class AnnotatedTypeMirror {
             return false;
         AnnotatedTypeMirror t = (AnnotatedTypeMirror) o;
         if (atypeFactory.types.isSameType(this.actualType, t.actualType)
-                && AnnotationUtils.areSame(atypeFactory.elements, getAnnotations(), t.getAnnotations()))
+                && AnnotationUtils.areSame(getAnnotations(), t.getAnnotations()))
             return true;
         return false;
     }
@@ -289,19 +278,6 @@ public abstract class AnnotatedTypeMirror {
      * @param annotationName
      * @return the annotation mirror for annotationName
      */
-    public AnnotationMirror getAnnotation(String annotationName) {
-        assert annotationName != null : "Null annotationName in getAnnotation";
-        Name name = processingEnv.getElementUtils().getName(annotationName);
-        return getAnnotation(name);
-    }
-
-    /**
-     * Returns the actual annotation mirror used to annotate this type,
-     * whose name equals the passed annotationName if one exists, null otherwise.
-     *
-     * @param annotationName
-     * @return the annotation mirror for annotationName
-     */
     public AnnotationMirror getAnnotation(Name annotationName) {
         assert annotationName != null : "Null annotationName in getAnnotation";
         for (AnnotationMirror anno : getAnnotations())
@@ -318,7 +294,7 @@ public abstract class AnnotatedTypeMirror {
      * @return the annotation mirror for anno
      */
     public AnnotationMirror getAnnotation(Class<? extends Annotation> anno) {
-        return getAnnotation(anno.getCanonicalName());
+        return getAnnotation(atypeFactory.elements.getName(anno.getCanonicalName()));
     }
 
     /**
@@ -336,10 +312,10 @@ public abstract class AnnotatedTypeMirror {
             return AnnotationUtils.createAnnotationSet();
         } else {
             Set<AnnotationMirror> explicitAnnotations = AnnotationUtils.createAnnotationSet();
-            List<TypeCompound> typeAnnotations = ((Symbol) this.element).typeAnnotations;
+            List<com.sun.tools.javac.code.Attribute.TypeCompound> typeAnnotations = ((com.sun.tools.javac.code.Symbol) this.element).typeAnnotations;
             // TODO: should we instead try to go to the Checker and use getSupportedTypeQualifiers()?
             Set<Name> validAnnotations = atypeFactory.getQualifierHierarchy().getTypeQualifiers();
-            for (TypeCompound explicitAnno : typeAnnotations) {
+            for (com.sun.tools.javac.code.Attribute.TypeCompound explicitAnno : typeAnnotations) {
                 for (Name validAnno : validAnnotations) {
                     if (explicitAnno.getAnnotationType().toString().equals(validAnno.toString())) {
                         explicitAnnotations.add(explicitAnno);
@@ -366,8 +342,34 @@ public abstract class AnnotatedTypeMirror {
      * @see #hasAnnotationRelaxed(AnnotationMirror)
      */
     public boolean hasAnnotation(AnnotationMirror a) {
-        return AnnotationUtils.containsSame(atypeFactory.elements, getAnnotations(), a);
+        return AnnotationUtils.containsSame(getAnnotations(), a);
     }
+
+    /**
+     * Determines whether this type contains the given annotation.
+     *
+     * @param a the annotation name to check for
+     * @return true iff the type contains the annotation {@code a}
+     *
+     * @see #hasAnnotationRelaxed(AnnotationMirror)
+     */
+    public boolean hasAnnotation(Name a) {
+        return getAnnotation(a) != null;
+    }
+
+    /**
+     * Determines whether this type contains an annotation with the same
+     * annotation type as a particular annotation. This method does not
+     * consider an annotation's values.
+     *
+     * @param a the class of annotation to check for
+     * @return true iff the type contains an annotation with the same type as
+     * the annotation given by {@code a}
+     */
+    public boolean hasAnnotation(Class<? extends Annotation> a) {
+        return getAnnotation(a) != null;
+    }
+    // TODO: do we need an "effective" version of the above hasAnnotation?
 
     /**
      * A version of hasAnnotation that considers annotations on the
@@ -376,7 +378,7 @@ public abstract class AnnotatedTypeMirror {
      * @see #hasAnnotation(AnnotationMirror)
      */
     public boolean hasEffectiveAnnotation(AnnotationMirror a) {
-        return AnnotationUtils.containsSame(atypeFactory.elements, getEffectiveAnnotations(), a);
+        return AnnotationUtils.containsSame(getEffectiveAnnotations(), a);
     }
 
     /**
@@ -396,7 +398,7 @@ public abstract class AnnotatedTypeMirror {
      * @see #hasExplicitAnnotationRelaxed(AnnotationMirror)
      */
     public boolean hasExplicitAnnotation(AnnotationMirror a) {
-        return AnnotationUtils.containsSame(atypeFactory.elements, getExplicitAnnotations(), a);
+        return AnnotationUtils.containsSame(getExplicitAnnotations(), a);
     }
 
     /**
@@ -435,20 +437,6 @@ public abstract class AnnotatedTypeMirror {
     public boolean hasExplicitAnnotationRelaxed(AnnotationMirror a) {
         return AnnotationUtils.containsSameIgnoringValues(getExplicitAnnotations(), a);
     }
-
-    /**
-     * Determines whether this type contains an annotation with the same
-     * annotation type as a particular annotation. This method does not
-     * consider an annotation's values.
-     *
-     * @param a the class of annotation to check for
-     * @return true iff the type contains an annotation with the same type as
-     * the annotation given by {@code a}
-     */
-    public boolean hasAnnotation(Class<? extends Annotation> a) {
-        return getAnnotation(a) != null;
-    }
-    // TODO: do we need an "effective" version of the above hasAnnotation?
 
     /**
      * Determines whether this type contains an explictly written annotation
@@ -606,7 +594,7 @@ public abstract class AnnotatedTypeMirror {
     }
 
     // A Helper method to print annotations separated with a space
-    protected final static String formatAnnotationString(ProcessingEnvironment env,
+    protected final static String formatAnnotationString(
             Collection<? extends AnnotationMirror> lst,
             boolean printInvisible) {
         StringBuilder sb = new StringBuilder();
@@ -636,7 +624,9 @@ public abstract class AnnotatedTypeMirror {
 
     @Override
     public final String toString() {
-        return toString(processingEnv.getOptions().containsKey("printAllQualifiers"));
+        // Also see
+        // checkers.basetype.BaseTypeVisitor.commonAssignmentCheck(AnnotatedTypeMirror, AnnotatedTypeMirror, Tree, String)
+        return toString(atypeFactory.processingEnv.getOptions().containsKey("printAllQualifiers"));
     }
 
     /**
@@ -647,12 +637,12 @@ public abstract class AnnotatedTypeMirror {
      * @return A string representation of the current type containing all qualifiers.
      */
     public String toString(boolean invisible) {
-        return formatAnnotationString(processingEnv, getAnnotations(), invisible)
+        return formatAnnotationString(getAnnotations(), invisible)
                 + this.actualType;
     }
 
     public String toStringDebug() {
-        return toString(true) + " " + getClass().getSimpleName() + "#" + uid;
+        return toString(true) + " " + getClass().getSimpleName(); // + "#" + uid;
     }
 
     /**
@@ -757,12 +747,11 @@ public abstract class AnnotatedTypeMirror {
          * Constructor for this type
          *
          * @param type  underlying kind of this type
-         * @param env   the processing environment
          * @param atypeFactory TODO
          */
         private AnnotatedDeclaredType(DeclaredType type,
-                ProcessingEnvironment env, AnnotatedTypeFactory atypeFactory) {
-            super(type, env, atypeFactory);
+                AnnotatedTypeFactory atypeFactory) {
+            super(type, atypeFactory);
             this.actualType = type;
             DeclaredType elem = (DeclaredType)((TypeElement)type.asElement()).asType();
             isGeneric = !elem.getTypeArguments().isEmpty();
@@ -775,7 +764,7 @@ public abstract class AnnotatedTypeMirror {
             final Element typeElt = this.getUnderlyingType().asElement();
             String smpl = typeElt.getSimpleName().toString();
             if (!smpl.isEmpty()) {
-                sb.append(formatAnnotationString(processingEnv, getAnnotations(), printInvisible));
+                sb.append(formatAnnotationString(getAnnotations(), printInvisible));
                 sb.append(smpl);
             } else {
                 // The simple name is empty for multiple upper bounds.
@@ -838,7 +827,7 @@ public abstract class AnnotatedTypeMirror {
                 typeArgs = new ArrayList<AnnotatedTypeMirror>();
                 if (!actualType.getTypeArguments().isEmpty()) { // lazy init
                     for (TypeMirror t : actualType.getTypeArguments())
-                        typeArgs.add(createType(t, processingEnv, atypeFactory));
+                        typeArgs.add(createType(t, atypeFactory));
                 }
                 typeArgs = Collections.unmodifiableList(typeArgs);
             }
@@ -900,7 +889,7 @@ public abstract class AnnotatedTypeMirror {
         @Override
         public AnnotatedDeclaredType getCopy(boolean copyAnnotations) {
             AnnotatedDeclaredType type =
-                new AnnotatedDeclaredType(this.getUnderlyingType(), this.processingEnv, this.atypeFactory);
+                new AnnotatedDeclaredType(getUnderlyingType(), atypeFactory);
             copyFields(type, copyAnnotations);
 
             type.setTypeArguments(getTypeArguments());
@@ -938,11 +927,12 @@ public abstract class AnnotatedTypeMirror {
             // 1. |G<T_1, ..., T_n>| = |G|
             // 2. |T.C| = |T|.C
             if (!getTypeArguments().isEmpty()) {
+                Types types = atypeFactory.types;
                 // Handle case 1.
                 AnnotatedDeclaredType rType =
                     (AnnotatedDeclaredType)AnnotatedTypeMirror.createType(
-                            processingEnv.getTypeUtils().erasure(actualType),
-                            processingEnv, atypeFactory);
+                            types.erasure(actualType),
+                            atypeFactory);
                 rType.addAnnotations(getAnnotations());
                 rType.setElement(element);
                 rType.setTypeArguments(Collections.<AnnotatedTypeMirror> emptyList());
@@ -992,8 +982,8 @@ public abstract class AnnotatedTypeMirror {
         private final ExecutableType actualType;
 
         private AnnotatedExecutableType(ExecutableType type,
-                ProcessingEnvironment env, AnnotatedTypeFactory factory) {
-            super(type, env, factory);
+                AnnotatedTypeFactory factory) {
+            super(type, factory);
             this.actualType = type;
         }
 
@@ -1042,7 +1032,7 @@ public abstract class AnnotatedTypeMirror {
             if (paramTypes.isEmpty()
                     && !actualType.getParameterTypes().isEmpty()) { // lazy init
                 for (TypeMirror t : actualType.getParameterTypes())
-                    paramTypes.add(createType(t, processingEnv, atypeFactory));
+                    paramTypes.add(createType(t, atypeFactory));
             }
             return Collections.unmodifiableList(paramTypes);
         }
@@ -1062,7 +1052,7 @@ public abstract class AnnotatedTypeMirror {
             if (returnType == null
                     && actualType.getReturnType() != null) // lazy init
                 returnType = createType(
-                        actualType.getReturnType(), processingEnv, atypeFactory);
+                        actualType.getReturnType(), atypeFactory);
             return returnType;
         }
 
@@ -1080,7 +1070,7 @@ public abstract class AnnotatedTypeMirror {
         public AnnotatedDeclaredType getReceiverType() {
             if (receiverType == null) {
                 TypeElement encl = ElementUtils.enclosingClass(getElement());
-                AnnotatedTypeMirror type = createType(encl.asType(), processingEnv, atypeFactory);
+                AnnotatedTypeMirror type = createType(encl.asType(), atypeFactory);
                 assert type instanceof AnnotatedDeclaredType;
                 receiverType = (AnnotatedDeclaredType)type;
             }
@@ -1105,7 +1095,7 @@ public abstract class AnnotatedTypeMirror {
             if (throwsTypes.isEmpty()
                     && !actualType.getThrownTypes().isEmpty()) { // lazy init
                 for (TypeMirror t : actualType.getThrownTypes())
-                    throwsTypes.add(createType(t, processingEnv, atypeFactory));
+                    throwsTypes.add(createType(t, atypeFactory));
             }
             return Collections.unmodifiableList(throwsTypes);
         }
@@ -1128,7 +1118,7 @@ public abstract class AnnotatedTypeMirror {
                     && !actualType.getTypeVariables().isEmpty()) { // lazy init
                 for (TypeMirror t : actualType.getTypeVariables()) {
                     typeVarTypes.add((AnnotatedTypeVariable)createType(
-                            t, processingEnv, atypeFactory));
+                            t, atypeFactory));
                 }
             }
             return Collections.unmodifiableList(typeVarTypes);
@@ -1137,7 +1127,7 @@ public abstract class AnnotatedTypeMirror {
         @Override
         public AnnotatedExecutableType getCopy(boolean copyAnnotations) {
             AnnotatedExecutableType type =
-                new AnnotatedExecutableType(getUnderlyingType(), processingEnv, atypeFactory);
+                new AnnotatedExecutableType(getUnderlyingType(), atypeFactory);
             copyFields(type, copyAnnotations);
             type.setParameterTypes(getParameterTypes());
             type.setReceiverType(getReceiverType());
@@ -1155,10 +1145,11 @@ public abstract class AnnotatedTypeMirror {
 
         @Override
         public AnnotatedExecutableType getErased() {
+            Types types = atypeFactory.types;
             AnnotatedExecutableType type =
                 new AnnotatedExecutableType(
-                        (ExecutableType) processingEnv.getTypeUtils().erasure(getUnderlyingType()),
-                        processingEnv, atypeFactory);
+                        (ExecutableType) types.erasure(getUnderlyingType()),
+                        atypeFactory);
             copyFields(type, true);
             type.setParameterTypes(erasureList(getParameterTypes()));
             type.setReceiverType(getReceiverType().getErased());
@@ -1252,8 +1243,8 @@ public abstract class AnnotatedTypeMirror {
         private final ArrayType actualType;
 
         private AnnotatedArrayType(ArrayType type,
-                ProcessingEnvironment env, AnnotatedTypeFactory factory) {
-            super(type, env, factory);
+                AnnotatedTypeFactory factory) {
+            super(type, factory);
             this.actualType = type;
         }
 
@@ -1287,14 +1278,14 @@ public abstract class AnnotatedTypeMirror {
         public AnnotatedTypeMirror getComponentType() {
             if (componentType == null) // lazy init
                 setComponentType(createType(
-                        actualType.getComponentType(), processingEnv, atypeFactory));
+                        actualType.getComponentType(), atypeFactory));
             return componentType;
         }
 
 
         @Override
         public AnnotatedArrayType getCopy(boolean copyAnnotations) {
-            AnnotatedArrayType type = new AnnotatedArrayType(actualType, processingEnv, atypeFactory);
+            AnnotatedArrayType type = new AnnotatedArrayType(actualType, atypeFactory);
             copyFields(type, copyAnnotations);
             type.setComponentType(getComponentType());
             return type;
@@ -1331,7 +1322,7 @@ public abstract class AnnotatedTypeMirror {
                 component = array.getComponentType();
                 if (array.getAnnotations().size() > 0) {
                     sb.append(' ');
-                    sb.append(formatAnnotationString(processingEnv, array.getAnnotations(), printInvisible));
+                    sb.append(formatAnnotationString(array.getAnnotations(), printInvisible));
                 }
                 sb.append("[]");
                 if (!(component instanceof AnnotatedArrayType)) {
@@ -1363,8 +1354,8 @@ public abstract class AnnotatedTypeMirror {
         private final TypeVariable actualType;
 
         private AnnotatedTypeVariable(TypeVariable type,
-                ProcessingEnvironment env, AnnotatedTypeFactory factory) {
-            super(type, env, factory);
+                AnnotatedTypeFactory factory) {
+            super(type, factory);
             this.actualType = type;
         }
 
@@ -1416,7 +1407,7 @@ public abstract class AnnotatedTypeMirror {
          */
         public AnnotatedTypeMirror getLowerBound() {
             if (lowerBound == null && actualType.getLowerBound() != null) { // lazy init
-                setLowerBound(createType(actualType.getLowerBound(), processingEnv, atypeFactory));
+                setLowerBound(createType(actualType.getLowerBound(), atypeFactory));
             }
             if (lowerBound != null) {
                 fixupBoundAnnotations();
@@ -1529,7 +1520,7 @@ public abstract class AnnotatedTypeMirror {
          */
         public AnnotatedTypeMirror getUpperBound() {
             if (upperBound == null && actualType.getUpperBound() != null) { // lazy init
-                setUpperBound(createType(actualType.getUpperBound(), processingEnv, atypeFactory));
+                setUpperBound(createType(actualType.getUpperBound(), atypeFactory));
             }
             if (upperBound != null) {
                 fixupBoundAnnotations();
@@ -1562,7 +1553,7 @@ public abstract class AnnotatedTypeMirror {
         @Override
         public AnnotatedTypeVariable getCopy(boolean copyAnnotations) {
             AnnotatedTypeVariable type =
-                new AnnotatedTypeVariable(actualType, processingEnv, atypeFactory);
+                new AnnotatedTypeVariable(actualType, atypeFactory);
             copyFields(type, copyAnnotations);
             if (!inUpperBounds && getUpperBound().isAnnotated()) {
                 inUpperBounds = true;
@@ -1595,7 +1586,7 @@ public abstract class AnnotatedTypeMirror {
          */
 
         private static <K extends AnnotatedTypeMirror, V extends AnnotatedTypeMirror>
-        V mapGetHelper(Elements elements, Map<K, V> mappings, AnnotatedTypeVariable key) {
+        V mapGetHelper(Map<K, V> mappings, AnnotatedTypeVariable key) {
             for (Map.Entry<K, V> entry : mappings.entrySet()) {
                 K possible = entry.getKey();
                 V possValue = entry.getValue();
@@ -1606,7 +1597,7 @@ public abstract class AnnotatedTypeMirror {
                     if (key.getUnderlyingType().asElement().equals(oElt)) {
                         // Not identical AnnotatedTypeMirrors, but they wrap the same TypeMirror.
                         if (!key.annotations.isEmpty()
-                                && !AnnotationUtils.areSame(elements, key.annotations, other.annotations)) {
+                                && !AnnotationUtils.areSame(key.annotations, other.annotations)) {
                             // An annotated type variable use means to override
                             // any annotations on the actual type argument.
                             @SuppressWarnings("unchecked")
@@ -1626,7 +1617,7 @@ public abstract class AnnotatedTypeMirror {
         public AnnotatedTypeMirror substitute(
                 Map<? extends AnnotatedTypeMirror,
                         ? extends AnnotatedTypeMirror> mappings) {
-            AnnotatedTypeMirror found = mapGetHelper(atypeFactory.elements, mappings, this);
+            AnnotatedTypeMirror found = mapGetHelper(mappings, this);
             if (found != null) {
                 return found;
             }
@@ -1660,7 +1651,7 @@ public abstract class AnnotatedTypeMirror {
         @Override
         public String toString(boolean printInvisible) {
             StringBuilder sb = new StringBuilder();
-            sb.append(formatAnnotationString(processingEnv, annotations, printInvisible));
+            sb.append(formatAnnotationString(annotations, printInvisible));
             sb.append(actualType);
             if (!isPrintingBound) {
                 try {
@@ -1716,8 +1707,8 @@ public abstract class AnnotatedTypeMirror {
 
         private final NoType actualType;
 
-        private AnnotatedNoType(NoType type, ProcessingEnvironment env, AnnotatedTypeFactory factory) {
-            super(type, env, factory);
+        private AnnotatedNoType(NoType type, AnnotatedTypeFactory factory) {
+            super(type, factory);
             this.actualType = type;
         }
 
@@ -1737,7 +1728,7 @@ public abstract class AnnotatedTypeMirror {
 
         @Override
         public AnnotatedNoType getCopy(boolean copyAnnotations) {
-            AnnotatedNoType type = new AnnotatedNoType(actualType, processingEnv, atypeFactory);
+            AnnotatedNoType type = new AnnotatedNoType(actualType, atypeFactory);
             copyFields(type, copyAnnotations);
             return type;
         }
@@ -1759,8 +1750,8 @@ public abstract class AnnotatedTypeMirror {
 
         private final NullType actualType;
 
-        private AnnotatedNullType(NullType type, ProcessingEnvironment env, AnnotatedTypeFactory factory) {
-            super(type, env, factory);
+        private AnnotatedNullType(NullType type, AnnotatedTypeFactory factory) {
+            super(type, factory);
             this.actualType = type;
         }
 
@@ -1777,7 +1768,7 @@ public abstract class AnnotatedTypeMirror {
         @Override
         public AnnotatedNullType getCopy(boolean copyAnnotations) {
 
-            AnnotatedNullType type = new AnnotatedNullType(actualType, processingEnv, atypeFactory);
+            AnnotatedNullType type = new AnnotatedNullType(actualType, atypeFactory);
             copyFields(type, copyAnnotations);
             return type;
         }
@@ -1793,7 +1784,7 @@ public abstract class AnnotatedTypeMirror {
         @Override
         public String toString(boolean printInvisible) {
             if (printInvisible) {
-                return formatAnnotationString(processingEnv, getAnnotations(), printInvisible) + "null";
+                return formatAnnotationString(getAnnotations(), printInvisible) + "null";
             } else {
                 return "null";
             }
@@ -1811,8 +1802,8 @@ public abstract class AnnotatedTypeMirror {
         private final PrimitiveType actualType;
 
         private AnnotatedPrimitiveType(PrimitiveType type,
-                ProcessingEnvironment env, AnnotatedTypeFactory factory) {
-            super(type, env, factory);
+                AnnotatedTypeFactory factory) {
+            super(type, factory);
             this.actualType = type;
         }
 
@@ -1829,7 +1820,7 @@ public abstract class AnnotatedTypeMirror {
         @Override
         public AnnotatedPrimitiveType getCopy(boolean copyAnnotations) {
             AnnotatedPrimitiveType type =
-                new AnnotatedPrimitiveType(actualType, processingEnv, atypeFactory);
+                new AnnotatedPrimitiveType(actualType, atypeFactory);
             copyFields(type, copyAnnotations);
             return type;
         }
@@ -1864,8 +1855,8 @@ public abstract class AnnotatedTypeMirror {
 
         private final WildcardType actualType;
 
-        private AnnotatedWildcardType(WildcardType type, ProcessingEnvironment env, AnnotatedTypeFactory factory) {
-            super(type, env, factory);
+        private AnnotatedWildcardType(WildcardType type, AnnotatedTypeFactory factory) {
+            super(type, factory);
             this.actualType = type;
         }
 
@@ -1890,8 +1881,7 @@ public abstract class AnnotatedTypeMirror {
             if (superBound == null
                     && actualType.getSuperBound() != null) {
                 // lazy init
-                setSuperBound(createType(
-                        actualType.getSuperBound(), processingEnv, atypeFactory));
+                setSuperBound(createType(actualType.getSuperBound(), atypeFactory));
             }
             return this.superBound;
         }
@@ -1920,8 +1910,9 @@ public abstract class AnnotatedTypeMirror {
         }
 
         /**
-         * @return the lower bound of this wildcard. If no lower bound is
-         * explicitly declared, {@code null} is returned.
+         * @return the upper bound of this wildcard. If no upper bound is
+         * explicitly declared, the upper bound of the type variable to which
+         * the wildcard is bound is used.
          */
         public AnnotatedTypeMirror getExtendsBound() {
             if (extendsBound == null) {
@@ -1930,10 +1921,10 @@ public abstract class AnnotatedTypeMirror {
                 if (superType == null) {
                     // Take the upper bound of the type variable the wildcard is bound to.
                     com.sun.tools.javac.code.Type.WildcardType wct = (com.sun.tools.javac.code.Type.WildcardType) actualType;
-                    com.sun.tools.javac.util.Context ctx = ((com.sun.tools.javac.processing.JavacProcessingEnvironment) processingEnv).getContext();
+                    com.sun.tools.javac.util.Context ctx = ((com.sun.tools.javac.processing.JavacProcessingEnvironment) atypeFactory.processingEnv).getContext();
                     superType = com.sun.tools.javac.code.Types.instance(ctx).upperBound(wct);
                 }
-                setExtendsBound(createType(superType, processingEnv, atypeFactory));
+                setExtendsBound(createType(superType, atypeFactory));
             }
             return this.extendsBound;
         }
@@ -1980,7 +1971,7 @@ public abstract class AnnotatedTypeMirror {
 
         @Override
         public AnnotatedWildcardType getCopy(boolean copyAnnotations) {
-            AnnotatedWildcardType type = new AnnotatedWildcardType(actualType, processingEnv, atypeFactory);
+            AnnotatedWildcardType type = new AnnotatedWildcardType(actualType, atypeFactory);
             copyFields(type, copyAnnotations);
 
             type.setExtendsBound(getExtendsBound());
@@ -2024,7 +2015,7 @@ public abstract class AnnotatedTypeMirror {
         @Override
         public String toString(boolean printInvisible) {
             StringBuilder sb = new StringBuilder();
-            sb.append(formatAnnotationString(processingEnv, annotations, printInvisible));
+            sb.append(formatAnnotationString(annotations, printInvisible));
             sb.append("?");
             if (!isPrintingBound) {
                 try {
@@ -2054,6 +2045,11 @@ public abstract class AnnotatedTypeMirror {
         public boolean isMethodTypeArgHack() {
             return methodTypeArgHack;
         }
+    }
+
+
+    public List<? extends AnnotatedTypeMirror> directSuperTypes() {
+        return directSuperTypes(this);
     }
 
     // Version of method below for declared types
