@@ -3,9 +3,11 @@ package checkers.util;
 import java.lang.annotation.Annotation;
 import java.util.*;
 
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.*;
 import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.util.Elements;
 
 import checkers.quals.*;
 import checkers.source.SourceChecker;
@@ -29,8 +31,8 @@ public class QualifierDefaults {
     // TODO apply from package elements also
     // TODO try to remove some dependencies (e.g. on factory)
 
-    private final AnnotatedTypeFactory factory;
-    private final AnnotationUtils annoFactory;
+    private final Elements elements;
+    private final AnnotatedTypeFactory atypeFactory;
 
     @SuppressWarnings("serial")
     private static class AMLocTreeSet extends TreeSet<Pair<AnnotationMirror, DefaultLocation>> {
@@ -71,9 +73,9 @@ public class QualifierDefaults {
      * @param factory the factory for this checker
      * @param annoFactory an annotation factory, used to get annotations by name
      */
-    public QualifierDefaults(AnnotatedTypeFactory factory, AnnotationUtils annoFactory) {
-        this.factory = factory;
-        this.annoFactory = annoFactory;
+    public QualifierDefaults(ProcessingEnvironment env, AnnotatedTypeFactory atypeFactory) {
+        this.elements = env.getElementUtils();
+        this.atypeFactory = atypeFactory;
     }
 
     /**
@@ -103,7 +105,7 @@ public class QualifierDefaults {
             AnnotationMirror newanno, DefaultLocation newloc) {
         for (Pair<AnnotationMirror, DefaultLocation> def : prevset) {
             AnnotationMirror anno = def.first;
-            QualifierHierarchy qh = factory.getQualifierHierarchy();
+            QualifierHierarchy qh = atypeFactory.getQualifierHierarchy();
             if (!newanno.equals(anno) &&
                     qh.isSubtype(newanno, qh.getTopAnnotation(anno))) {
                 if (newloc == def.second) {
@@ -147,7 +149,7 @@ public class QualifierDefaults {
      * @return the nearest enclosing element for a tree
      */
     private Element nearestEnclosingExceptLocal(Tree tree) {
-        TreePath path = factory.getPath(tree);
+        TreePath path = atypeFactory.getPath(tree);
         if (path == null) return InternalUtils.symbol(tree);
 
         Tree prev = null;
@@ -254,17 +256,17 @@ public class QualifierDefaults {
             }
         }
 
-        AnnotationMirror anno = annoFactory.fromClass(cls);
+        AnnotationMirror anno = AnnotationUtils.fromClass(elements, cls);
 
         if (anno == null) {
             return null;
         }
 
-        if (!factory.isSupportedQualifier(anno)) {
-            anno = factory.aliasedAnnotation(anno);
+        if (!atypeFactory.isSupportedQualifier(anno)) {
+            anno = atypeFactory.aliasedAnnotation(anno);
         }
 
-        if (factory.isSupportedQualifier(anno)) {
+        if (atypeFactory.isSupportedQualifier(anno)) {
             EnumSet<DefaultLocation> locations = EnumSet.of(dq.locations()[0], dq.locations());
             Set<Pair<AnnotationMirror, DefaultLocation>> ret = new HashSet<Pair<AnnotationMirror, DefaultLocation>>(locations.size());
             for (DefaultLocation loc : locations) {

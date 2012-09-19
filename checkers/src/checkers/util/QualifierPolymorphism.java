@@ -8,6 +8,7 @@ import javax.lang.model.element.*;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
+import javax.lang.model.util.Elements;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.quals.PolyAll;
@@ -38,8 +39,7 @@ import com.sun.source.tree.*;
  */
 public class QualifierPolymorphism {
 
-    private final AnnotatedTypeFactory factory;
-    private final AnnotationUtils annoFactory;
+    private final AnnotatedTypeFactory atypeFactory;
     private final AnnotatedTypes atypes;
 
     private final Completer completer;
@@ -68,17 +68,17 @@ public class QualifierPolymorphism {
      * @param factory the factory for the current checker
      */
     public QualifierPolymorphism(BaseTypeChecker checker, AnnotatedTypeFactory factory) {
-        this.factory = factory;
+        this.atypeFactory = factory;
 
         final ProcessingEnvironment env = checker.getProcessingEnvironment();
+        Elements elements = env.getElementUtils();
         this.atypes = new AnnotatedTypes(env, factory);
-        this.annoFactory = AnnotationUtils.getInstance(env);
-        POLYALL = this.annoFactory.fromClass(PolyAll.class);
+        POLYALL = AnnotationUtils.fromClass(elements, PolyAll.class);
         this.qualhierarchy = checker.getQualifierHierarchy();
 
         Map<AnnotationMirror, AnnotationMirror> polys = new HashMap<AnnotationMirror, AnnotationMirror>();
         for (Class<? extends Annotation> a : checker.getSupportedTypeQualifiers()) {
-            final AnnotationMirror aam = annoFactory.fromClass(a);
+            final AnnotationMirror aam = AnnotationUtils.fromClass(elements, a);
             if (isPolyAll(aam)) {
                 polys.put(null, aam);
                 continue;
@@ -87,7 +87,7 @@ public class QualifierPolymorphism {
                 if (aa.getAnnotationType().toString().equals(PolymorphicQualifier.class.getCanonicalName())) {
                     @SuppressWarnings("unchecked")
                     Class<? extends Annotation> plval = (Class<? extends Annotation>)
-                                                        AnnotationUtils.parseTypeValue(aa, "value");
+                                                        AnnotationUtils.parseTypeValue(elements, aa, "value");
                     AnnotationMirror ttreetop;
                     if (PolymorphicQualifier.class.equals(plval)) {
                         Set<AnnotationMirror> tops = qualhierarchy.getTopAnnotations();
@@ -98,7 +98,7 @@ public class QualifierPolymorphism {
                         }
                         ttreetop = tops.iterator().next();
                     } else {
-                        AnnotationMirror ttree = annoFactory.fromClass(plval);
+                        AnnotationMirror ttree = AnnotationUtils.fromClass(elements, plval);
                         ttreetop = qualhierarchy.getTopAnnotation(ttree);
                     }
                     if (polys.containsKey(ttreetop)) {
@@ -141,14 +141,14 @@ public class QualifierPolymorphism {
     // Returns null if the qualifier is not polymorphic.
     // Returns the (given) top of the type hierarchy, in which it is polymorphic, otherwise.
     // The top qualifier is given by the programmer, so must be normalized to ensure its the real top.
-    public static Class<? extends Annotation> getPolymorphicQualifierTop(AnnotationMirror qual) {
+    public static Class<? extends Annotation> getPolymorphicQualifierTop(Elements elements, AnnotationMirror qual) {
         AnnotationMirror poly = getPolymorphicQualifier(qual);
 
         // System.out.println("poly: " + poly + " pq: " + PolymorphicQualifier.class.getCanonicalName());
         if (poly == null)
             return null;
         @SuppressWarnings("unchecked")
-        Class<? extends Annotation> ret = (Class<? extends Annotation>) AnnotationUtils.parseTypeValue(poly, "value");
+        Class<? extends Annotation> ret = (Class<? extends Annotation>) AnnotationUtils.parseTypeValue(elements, poly, "value");
         return ret;
     }
 
@@ -166,7 +166,7 @@ public class QualifierPolymorphism {
 
         Map<AnnotationMirror, Set<AnnotationMirror>> matchingMapping = collector.visit(arguments, requiredArgs);
         matchingMapping = collector.reduce(matchingMapping,
-                collector.visit(factory.getReceiverType(tree), type.getReceiverType()));
+                collector.visit(atypeFactory.getReceiverType(tree), type.getReceiverType()));
 
         if (matchingMapping != null && !matchingMapping.isEmpty()) {
             replacer.visit(type, matchingMapping);
