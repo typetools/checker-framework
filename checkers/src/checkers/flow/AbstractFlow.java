@@ -3,14 +3,12 @@ package checkers.flow;
 import java.io.PrintStream;
 import java.util.*;
 
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.Elements;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.source.SourceChecker;
@@ -83,12 +81,6 @@ implements Flow {
     /** Utility class for determining annotated types. */
     protected final AnnotatedTypeFactory atypeFactory;
 
-    /** Utility class for operations on annotated types. */
-    protected final AnnotatedTypes atypes;
-
-    /** Utility class for operations on elements. */
-    protected final Elements elements;
-
     /** Stores the results of the analysis (source location to qualifier). */
     protected final Map<Tree, Set<AnnotationMirror>> flowResults;
 
@@ -152,7 +144,6 @@ implements Flow {
             Set<AnnotationMirror> annotations, AnnotatedTypeFactory factory) {
 
         this.checker = checker;
-        ProcessingEnvironment env = checker.getProcessingEnvironment();
         this.root = root;
 
         if (factory == null) {
@@ -161,8 +152,6 @@ implements Flow {
             this.atypeFactory = factory;
         }
 
-        this.atypes = new AnnotatedTypes(env, factory);
-        this.elements = env.getElementUtils();
         this.visitorState = this.atypeFactory.getVisitorState();
         this.flowResults = new IdentityHashMap<Tree, Set<AnnotationMirror>>();
         this.tryBits = new LinkedList<ST>();
@@ -237,7 +226,7 @@ implements Flow {
             return;
         }
 
-        if (AnnotationUtils.containsSame(elements, set, anno)) {
+        if (AnnotationUtils.containsSame(set, anno)) {
             // Careful, remove ignores annotation argument. Do your own check first.
             set.remove(anno);
         }
@@ -809,7 +798,7 @@ implements Flow {
         scanExpr(expr);
 
         AnnotatedTypeMirror rhs = atypeFactory.getAnnotatedType(expr);
-        AnnotatedTypeMirror iter = atypes.getIteratedType(rhs);
+        AnnotatedTypeMirror iter = AnnotatedTypes.getIteratedType(checker.getProcessingEnvironment(), atypeFactory, rhs);
 
         if (iter != null) {
             propagateFromType(var, iter);
