@@ -108,12 +108,12 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
             CompilationUnitTree root) {
         super(checker, root);
 
-        patternCompile = TreeUtils.getMethod("java.util.regex.Pattern", "compile", 1, env);
-        partialRegexValue = TreeUtils.getMethod("checkers.regex.quals.PartialRegex", "value", 0, env);
+        patternCompile = TreeUtils.getMethod("java.util.regex.Pattern", "compile", 1, processingEnv);
+        partialRegexValue = TreeUtils.getMethod("checkers.regex.quals.PartialRegex", "value", 0, processingEnv);
         asRegexes = new ArrayList<ExecutableElement>();
         for (String clazz : asRegexClasses) {
             try {
-                asRegexes.add(TreeUtils.getMethod(clazz, "asRegex", 2, env));
+                asRegexes.add(TreeUtils.getMethod(clazz, "asRegex", 2, processingEnv));
             } catch (Exception e) {
                 // The class couldn't be loaded so it must not be on the
                 // classpath, just skip it.
@@ -129,7 +129,7 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
      */
     /*default*/ AnnotationMirror createRegexAnnotation(int groupCount) {
         AnnotationUtils.AnnotationBuilder builder =
-            new AnnotationUtils.AnnotationBuilder(env, Regex.class.getCanonicalName());
+            new AnnotationUtils.AnnotationBuilder(processingEnv, Regex.class.getCanonicalName());
         builder.setValue("value", groupCount);
         return builder.build();
     }
@@ -256,13 +256,15 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
         @Override
         public Void visitMethodInvocation(MethodInvocationTree tree, AnnotatedTypeMirror type) {
             // TODO: Also get this to work with 2 argument Pattern.compile.
-            if (TreeUtils.isMethodInvocation(tree, patternCompile, env)) {
+            if (TreeUtils.isMethodInvocation(tree, patternCompile, processingEnv)) {
                 AnnotationMirror anno = getAnnotatedType(tree.getArguments().get(0)).getAnnotation(Regex.class);
-                int groupCount = checker.getGroupCount(anno);
-                // Remove current @Regex annotation...
-                type.removeAnnotation(Regex.class);
-                // ...and add a new one with the correct group count value.
-                type.addAnnotation(createRegexAnnotation(groupCount));
+                if (anno != null) {
+                    int groupCount = checker.getGroupCount(anno);
+                    // Remove current @Regex annotation...
+                    type.removeAnnotation(Regex.class);
+                    // ...and add a new one with the correct group count value.
+                    type.addAnnotation(createRegexAnnotation(groupCount));
+                }
             } else if (isAsRegex(tree)) {
                 ExpressionTree groupArg = tree.getArguments().get(1);
                 if (groupArg.getKind() == Kind.INT_LITERAL) {
@@ -281,7 +283,7 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
          */
         private boolean isAsRegex(MethodInvocationTree tree) {
             for (ExecutableElement asRegex : asRegexes) {
-                if (TreeUtils.isMethodInvocation(tree, asRegex, env)) {
+                if (TreeUtils.isMethodInvocation(tree, asRegex, processingEnv)) {
                     return true;
                 }
             }
@@ -294,7 +296,7 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
          */
         private AnnotationMirror createPartialRegexAnnotation(String partial) {
             AnnotationUtils.AnnotationBuilder builder =
-                new AnnotationUtils.AnnotationBuilder(env, PartialRegex.class.getCanonicalName());
+                new AnnotationUtils.AnnotationBuilder(processingEnv, PartialRegex.class.getCanonicalName());
             builder.setValue("value", partial);
             return builder.build();
         }

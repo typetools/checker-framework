@@ -1,6 +1,5 @@
 package checkers.util;
 
-import checkers.quals.*;
 /*>>>
 import checkers.nullness.quals.*;
 */
@@ -8,8 +7,6 @@ import checkers.source.SourceChecker;
 import checkers.types.QualifierHierarchy;
 import checkers.util.AnnotationUtils;
 
-import com.sun.source.tree.*;
-import com.sun.source.util.*;
 import com.sun.tools.javac.code.Type;
 
 import java.lang.annotation.Annotation;
@@ -26,45 +23,16 @@ import javax.lang.model.util.*;
  */
 public class AnnotationUtils {
 
-    private static AnnotationUtils instance;
-    public static AnnotationUtils getInstance(ProcessingEnvironment env) {
-        if (instance == null || instance.env != env) {
-            instance = new AnnotationUtils(env);
-        }
-
-        return instance;
-    }
-
-    private final ProcessingEnvironment env;
-    private final Elements elements;
-    private final Trees trees;
-
-    private AnnotationUtils(ProcessingEnvironment env) {
-        this.env = env;
-        this.elements = env.getElementUtils();
-        /*@Nullable*/ Trees trees = Trees.instance(env);
-        assert trees != null; /*nninvariant*/
-        this.trees = trees;
-    }
+    // Class cannot be instantiated.
+    private AnnotationUtils() {}
 
     // **********************************************************************
     // Factory Methods to create instances of AnnotationMirror
     // **********************************************************************
 
     /** Caching for annotation creation. */
-    private static final Map<String, AnnotationMirror> annotationsFromNames
-        = new HashMap<String, AnnotationMirror>();
-
-    /**
-     * Creates an {@link AnnotationMirror} given by a particular
-     * fully-qualified name.
-     *
-     * @param name the name of the annotation to create
-     * @return an {@link AnnotationMirror} of type {@code} name
-     */
-    public AnnotationMirror fromName(CharSequence name) {
-        return fromName(name.toString());
-    }
+    private static final Map<CharSequence, AnnotationMirror> annotationsFromNames
+        = new HashMap<CharSequence, AnnotationMirror>();
 
     /**
      * Creates an {@link AnnotationMirror} given by a particular
@@ -74,10 +42,10 @@ public class AnnotationUtils {
      * @param name the name of the annotation to create
      * @return an {@link AnnotationMirror} of type {@code} name
      */
-    public AnnotationMirror fromName(String name) {
+    public static AnnotationMirror fromName(Elements elements, CharSequence name) {
         if (annotationsFromNames.containsKey(name))
             return annotationsFromNames.get(name);
-        final DeclaredType annoType = typeFromName(name);
+        final DeclaredType annoType = typeFromName(elements, name);
         if (annoType == null)
             return null;
         if (annoType.asElement().getKind() != ElementKind.ANNOTATION_TYPE) {
@@ -112,8 +80,8 @@ public class AnnotationUtils {
      * @param clazz the annotation class
      * @return an {@link AnnotationMirror} of type given type
      */
-    public AnnotationMirror fromClass(Class<? extends Annotation> clazz) {
-        return fromName(clazz.getCanonicalName());
+    public static AnnotationMirror fromClass(Elements elements, Class<? extends Annotation> clazz) {
+        return fromName(elements, clazz.getCanonicalName());
     }
 
     /**
@@ -123,105 +91,13 @@ public class AnnotationUtils {
      * @param name the name of a type
      * @return the {@link TypeMirror} corresponding to that name
      */
-    private DeclaredType typeFromName(CharSequence name) {
-
+    private static DeclaredType typeFromName(Elements elements, CharSequence name) {
         /*@Nullable*/ TypeElement typeElt = elements.getTypeElement(name);
         if (typeElt == null)
             return null;
 
-        return (DeclaredType)typeElt.asType();
+        return (DeclaredType) typeElt.asType();
     }
-
-    // **********************************************************************
-    // Query methods to find default locations for default annotations
-    // **********************************************************************
-
-    /**
-     * Finds default annotations starting at the leaf of the given tree path by
-     * inspecting enclosing variable, method, and class declarations for
-     * {@link DefaultQualifier} annotations.
-     *
-     * @param path the tree path from which to start searching
-     * @return a mapping from annotations (as {@link TypeElement}s) to the
-     *         {@link DefaultLocation}s for those annotations
-     *
-     * @see #findDefaultLocations(Element)
-     */
-    public Map<TypeElement, Set<DefaultLocation>> findDefaultLocations(TreePath path) {
-
-        // Attempt to find a starting search point. If the tree itself has an
-        // element, start there. Otherwise, try the enclosing method and
-        // enclosing class.
-        /*@Nullable*/ Element typeElt = trees.getElement(path);
-
-        // FIXME: eventually replace this with Scope
-        if (typeElt == null) {
-            /*@Nullable*/ MethodTree method = TreeUtils.enclosingMethod(path);
-            if (method != null) typeElt = InternalUtils.symbol(method);
-        }
-        if (typeElt == null) {
-            /*@Nullable*/ ClassTree cls = TreeUtils.enclosingClass(path);
-            if (cls != null) typeElt = InternalUtils.symbol(cls);
-        }
-
-        if (typeElt == null) {
-            SourceChecker.errorAbort("no element or enclosing element");
-            return null; // dead code
-        }
-
-        return findDefaultLocations(typeElt);
-    }
-
-    /**
-     * Finds default annotations starting at the given element, inspecting the
-     * element and its enclosing method and class declarations for
-     * {@link DefaultQualifier} annotations.
-     *
-     * @param elt the element from which to start searching
-     * @return a mapping from annotations (as {@link TypeElement}s) to the
-     *         {@link DefaultLocation}s for those annotations
-     *
-     * @see #findDefaultLocations(TreePath)
-     */
-    public Map<TypeElement, Set<DefaultLocation>> findDefaultLocations(Element elt) {
-
-        /*@Nullable*/ TypeElement defaultElt =
-            elements.getTypeElement("checkers.quals.DefaultQualifier");
-        assert defaultElt != null : "couldn't get element for @DefaultQualifier";
-
-        Map<TypeElement, Set</*@NonNull*/ DefaultLocation>> locations
-            = new HashMap<TypeElement, Set<DefaultLocation>>();
-
-        List<? extends AnnotationMirror> annos = elt.getAnnotationMirrors();
-        for (AnnotationMirror a : annos) {
-
-            if (!defaultElt.equals(a.getAnnotationType().asElement()))
-                continue;
-
-            /*@Nullable*/ String name = parseStringValue(a, "value");
-            /*@Nullable*/ TypeElement aElt = elements.getTypeElement(name);
-            if (aElt == null) {
-                SourceChecker.errorAbort("illegal annotation name: " + name);
-                return null; // dead code
-            }
-
-            /*@Nullable*/ Set<DefaultLocation> locs =
-                parseEnumConstantArrayValue(a, "types",
-                        DefaultLocation.class);
-
-            if (!locations.containsKey(aElt))
-                locations.put(aElt, new HashSet<DefaultLocation>());
-            if (locs == null) continue; /*nnbug*/
-            locations.get(aElt).addAll(locs);
-        }
-
-        /*@Nullable*/ Element encl = elt.getEnclosingElement();
-        if (encl != null)
-            locations.putAll(findDefaultLocations(encl));
-
-        return Collections.</*@NonNull*/ TypeElement, /*@NonNull*/ Set<DefaultLocation>>unmodifiableMap(locations);
-    }
-
 
     // **********************************************************************
     // Parsers for annotations values
@@ -229,17 +105,18 @@ public class AnnotationUtils {
 
     /**
      * Returns the values of an annotation's elements, including defaults.
-     * TODO: Also see JavacElements.getElementValuesWithDefaults: that version is javac
-     * specific, but could/should be replaced with this implementation.
+     * The method with the same name in JavacElements cannot be used directly,
+     * because it included a cast to Attribute.Compound, which doesn't hold
+     * for annotations generated by the Checker Framework.
      *
      * @see AnnotationMirror#getElementValues()
+     * @see JavacElements#getElementValuesWithDefaults(AnnotationMirror)
+     *
      * @param ad  annotation to examine
      * @return the values of the annotation's elements, including defaults
      */
     public static Map<? extends ExecutableElement, ? extends AnnotationValue>
     getElementValuesWithDefaults(AnnotationMirror ad) {
-        if (ad == null)
-            return Collections.emptyMap();
         Map<ExecutableElement, AnnotationValue> valMap
             = new HashMap<ExecutableElement, AnnotationValue>();
         if (ad.getElementValues() != null)
@@ -264,7 +141,7 @@ public class AnnotationUtils {
      * @return the value of {@code fieldName} in {@code ad} as determined by
      *         {@code parser}, with type {@code R}
      */
-    private static <R> /*@Nullable*/ R parseAnnotationValue(AbstractAnnotationValueParser<R> parser,
+    private static <R> /*@Nullable*/ R parseAnnotationValue(Elements elements, AbstractAnnotationValueParser<R> parser,
             AnnotationMirror ad, String fieldName) {
 
         Map<? extends ExecutableElement, ? extends AnnotationValue> values =
@@ -296,8 +173,8 @@ public class AnnotationUtils {
      * @param enumType the type of the enum
      * @return the enum constant value of the given field
      */
-    public static <R extends Enum<R>> /*@Nullable*/ R parseEnumConstantValue(AnnotationMirror ad, String field, Class<R> enumType) {
-        return parseAnnotationValue(new EnumConstantValueParser<R>(enumType), ad, field);
+    public static <R extends Enum<R>> /*@Nullable*/ R parseEnumConstantValue(Elements elements, AnnotationMirror ad, String field, Class<R> enumType) {
+        return parseAnnotationValue(elements, new EnumConstantValueParser<R>(enumType), ad, field);
     }
 
     /**
@@ -307,8 +184,8 @@ public class AnnotationUtils {
      * @param enumType the type of the enum
      * @return the enum constant values of the given field
      */
-    public static <R extends Enum<R>> /*@Nullable*/ Set<R> parseEnumConstantArrayValue(AnnotationMirror ad, String field, Class<R> enumType) {
-        return parseAnnotationValue(new EnumConstantArrayValueParser<R>(enumType), ad, field);
+    public static <R extends Enum<R>> /*@Nullable*/ Set<R> parseEnumConstantArrayValue(Elements elements, AnnotationMirror ad, String field, Class<R> enumType) {
+        return parseAnnotationValue(elements, new EnumConstantArrayValueParser<R>(enumType), ad, field);
     }
 
     /**
@@ -316,8 +193,8 @@ public class AnnotationUtils {
      * @param field the name of the field to parse
      * @return the String value of the given field
      */
-    public static /*@Nullable*/ String parseStringValue(AnnotationMirror ad, String field) {
-        return parseAnnotationValue(new StringValueParser(), ad, field);
+    public static /*@Nullable*/ String parseStringValue(Elements elements, AnnotationMirror ad, String field) {
+        return parseAnnotationValue(elements, new StringValueParser(), ad, field);
     }
 
     /**
@@ -325,8 +202,8 @@ public class AnnotationUtils {
      * @param field the name of the field to parse
      * @return the String values of the given field
      */
-    public static /*@Nullable*/ List<String> parseStringArrayValue(AnnotationMirror ad, String field) {
-        return AnnotationUtils.<List</*@NonNull*/ String>>parseAnnotationValue(new StringArrayValueParser(), ad, field);
+    public static /*@Nullable*/ List<String> parseStringArrayValue(Elements elements, AnnotationMirror ad, String field) {
+        return AnnotationUtils.parseAnnotationValue(elements, new StringArrayValueParser(), ad, field);
     }
 
     /**
@@ -334,8 +211,8 @@ public class AnnotationUtils {
      * @param field the name of the field to parse
      * @return the Class<?> value of the given field
      */
-    public static /*@Nullable*/ Class<?> parseTypeValue(AnnotationMirror ad, String field) {
-        return parseAnnotationValue(new TypeValueParser(), ad, field);
+    public static /*@Nullable*/ Class<?> parseTypeValue(Elements elements, AnnotationMirror ad, String field) {
+        return parseAnnotationValue(elements, new TypeValueParser(), ad, field);
     }
 
 
@@ -523,7 +400,7 @@ public class AnnotationUtils {
      *
      * @return true iff a1 and a2 are the same annotation
      */
-    public static boolean areSame(/*@Nullable*/ AnnotationMirror a1, /*@Nullable*/ AnnotationMirror a2) {
+    public static boolean areSame(Elements elements, /*@Nullable*/ AnnotationMirror a1, /*@Nullable*/ AnnotationMirror a2) {
         if (a1 != null && a2 != null) {
             if (!annotationName(a1).equals(annotationName(a2))) {
                 return false;
@@ -554,11 +431,11 @@ public class AnnotationUtils {
      *
      * @return true iff c1 and c2 contain the same annotations
      */
-    public static boolean areSame(Collection<AnnotationMirror> c1, Collection<AnnotationMirror> c2) {
+    public static boolean areSame(Elements elements, Collection<AnnotationMirror> c1, Collection<AnnotationMirror> c2) {
         if (c1.size() != c2.size())
             return false;
         if (c1.size() == 1)
-            return areSame(c1.iterator().next(), c2.iterator().next());
+            return areSame(elements, c1.iterator().next(), c2.iterator().next());
 
         Set<AnnotationMirror> s1 = createAnnotationSet();
         Set<AnnotationMirror> s2 = createAnnotationSet();
@@ -572,7 +449,7 @@ public class AnnotationUtils {
         while (iter1.hasNext()) {
             AnnotationMirror anno1 = iter1.next();
             AnnotationMirror anno2 = iter2.next();
-            if (!areSame(anno1, anno2))
+            if (!areSame(elements, anno1, anno2))
                 return false;
         }
         return true;
@@ -585,9 +462,9 @@ public class AnnotationUtils {
      *
      * @return true iff c contains anno, according to areSame.
      */
-    public static boolean containsSame(Collection<AnnotationMirror> c, AnnotationMirror anno) {
+    public static boolean containsSame(Elements elements, Collection<AnnotationMirror> c, AnnotationMirror anno) {
         for(AnnotationMirror an : c) {
-            if(AnnotationUtils.areSame(an, anno)) {
+            if(AnnotationUtils.areSame(elements, an, anno)) {
                 return true;
             }
         }
@@ -1156,19 +1033,14 @@ public class AnnotationUtils {
      * <p>
      * <em>Note</em>: The method does not work well for attributes of an array
      * type (as it would return a list of {@link AnnotationValue}s). Use
-     * {@code elementValueArray} instead. instead.
+     * {@code elementValueArray} instead.
      */
-    public static <T> T elementValueWithDefaults(AnnotationMirror anno,
+    public static <T> T elementValueWithDefaults(Elements elements, AnnotationMirror anno,
             CharSequence name, Class<T> expectedType) {
-        for (ExecutableElement elem : getElementValuesWithDefaults(anno)
-                .keySet()) {
+        Map<? extends ExecutableElement, ? extends AnnotationValue> valmap = getElementValuesWithDefaults(anno);
+        for (ExecutableElement elem : valmap.keySet()) {
             if (elem.getSimpleName().contentEquals(name)) {
-                AnnotationValue val = anno.getElementValues().get(elem);
-                if (val == null) {
-                    AnnotationValue defaultValue = elem.getDefaultValue();
-                    Object value = defaultValue.getValue();
-                    return expectedType.cast(value);
-                }
+                AnnotationValue val = valmap.get(elem);
                 return expectedType.cast(val.getValue());
             }
         }
@@ -1206,9 +1078,9 @@ public class AnnotationUtils {
      * expected to have type {@code expectedType}.
      */
     @SuppressWarnings("unchecked")
-    public static <T> List<T> elementValueArrayWithDefaults(
+    public static <T> List<T> elementValueArrayWithDefaults(Elements elements,
             AnnotationMirror anno, CharSequence name) {
-        List<AnnotationValue> la = elementValueWithDefaults(anno, name, List.class);
+        List<AnnotationValue> la = elementValueWithDefaults(elements, anno, name, List.class);
         List<T> result = new ArrayList<T>(la.size());
         for (AnnotationValue a : la) {
             result.add((T) a.getValue());
@@ -1222,10 +1094,10 @@ public class AnnotationUtils {
      * where the attribute has an array type and the elements are {@code Enum}s.
      * One element of the result is expected to have type {@code expectedType}.
      */
-    public static <T extends Enum<T>> List<T> elementValueEnumArrayWithDefaults(
+    public static <T extends Enum<T>> List<T> elementValueEnumArrayWithDefaults(Elements elements,
             AnnotationMirror anno, CharSequence name, Class<T> t) {
         @SuppressWarnings("unchecked")
-        List<AnnotationValue> la = elementValueWithDefaults(anno, name, List.class);
+        List<AnnotationValue> la = elementValueWithDefaults(elements, anno, name, List.class);
         List<T> result = new ArrayList<T>(la.size());
         for (AnnotationValue a : la) {
             T value = Enum.valueOf(t, a.getValue().toString());
@@ -1267,7 +1139,8 @@ public class AnnotationUtils {
      * @param newQual The value to add.
      * @return Whether there was a qualifier hierarchy collision.
      */
-    public static <T> boolean updateMappingToMutableSet(QualifierHierarchy qualHierarchy,
+    public static <T> boolean updateMappingToMutableSet(Elements elements,
+            QualifierHierarchy qualHierarchy,
             Map<T, Set<AnnotationMirror>> map,
             T key, AnnotationMirror newQual) {
 
@@ -1278,7 +1151,7 @@ public class AnnotationUtils {
         } else {
             Set<AnnotationMirror> prevs = map.get(key);
             for (AnnotationMirror p : prevs) {
-                if (AnnotationUtils.areSame(qualHierarchy.getTopAnnotation(p),
+                if (AnnotationUtils.areSame(elements, qualHierarchy.getTopAnnotation(p),
                         qualHierarchy.getTopAnnotation(newQual))) {
                     return false;
                 }

@@ -53,7 +53,7 @@ public class DefaultFlow<ST extends DefaultFlowState> extends AbstractFlow<ST> {
         int idx = this.flowState.vars.size();
         this.flowState.vars.add(var);
 
-        AnnotatedTypeMirror type = factory.getAnnotatedType(tree);
+        AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(tree);
         assert type != null : "no type from tree: " + tree;
 
         if (debug != null) {
@@ -89,10 +89,10 @@ public class DefaultFlow<ST extends DefaultFlowState> extends AbstractFlow<ST> {
         // Get the element for the left-hand side.
         Element elt = InternalUtils.symbol(lhs);
         assert elt != null : "no symbol found for " + lhs;
-        AnnotatedTypeMirror eltType = factory.getAnnotatedType(elt);
+        AnnotatedTypeMirror eltType = atypeFactory.getAnnotatedType(elt);
 
         // Get the annotated type of the right-hand side.
-        AnnotatedTypeMirror type = factory.getAnnotatedType(rhs);
+        AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(rhs);
         if (TreeUtils.skipParens(rhs).getKind() == Tree.Kind.ARRAY_ACCESS) {
             propagateFromType(lhs, type);
             return;
@@ -131,7 +131,7 @@ public class DefaultFlow<ST extends DefaultFlowState> extends AbstractFlow<ST> {
             AnnotationMirror annotationRoot = annoRelations.getTopAnnotation(annotation);
             // Propagate/clear the annotation if it's annotated or an annotation
             // had been inferred previously.
-            if (AnnotationUtils.containsSame(typeAnnos, annotation) && !eltTypeAnnos.isEmpty()
+            if (AnnotationUtils.containsSame(elements, typeAnnos, annotation) && !eltTypeAnnos.isEmpty()
                     && annoRelations.isSubtype(typeAnnos, eltTypeAnnos)) {
                 // to ensure that there is always just one annotation set, we
                 // first clear the annotation that was previously used (if in the same hierarchy)
@@ -151,7 +151,7 @@ public class DefaultFlow<ST extends DefaultFlowState> extends AbstractFlow<ST> {
         Set<AnnotationMirror> remainder = AnnotationUtils.createAnnotationSet();
         // Find all of the annotations in typeAnnos that are not included in flowState.annotations.
         for (AnnotationMirror anno : typeAnnos) {
-            if (!AnnotationUtils.containsSame(this.flowState.annotations, anno)) {
+            if (!AnnotationUtils.containsSame(elements, this.flowState.annotations, anno)) {
                 remainder.add(anno);
             }
         }
@@ -256,7 +256,7 @@ public class DefaultFlow<ST extends DefaultFlowState> extends AbstractFlow<ST> {
         final String methodPackage = ElementUtils.enclosingPackage(method).getQualifiedName().toString();
         boolean isJDKMethod = methodPackage.startsWith("java")
                 || methodPackage.startsWith("com.sun");
-        boolean isPure = factory.getDeclAnnotation(method, Pure.class) != null;
+        boolean isPure = atypeFactory.getDeclAnnotation(method, Pure.class) != null;
         if (!isPure) {
             for (int i = 0; i < this.flowState.vars.size(); i++) {
                 Element var = this.flowState.vars.get(i);

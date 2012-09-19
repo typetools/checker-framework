@@ -88,9 +88,6 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
     /** The checker corresponding to this visitor. */
     protected final Checker checker;
 
-    /** The annotation factory to use for creating annotations. */
-    protected final AnnotationUtils annoFactory;
-
     /** The options that were provided to the checker using this visitor. */
     protected final Map<String, String> options;
 
@@ -113,7 +110,6 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         this.checker = checker;
 
         ProcessingEnvironment env = checker.getProcessingEnvironment();
-        this.annoFactory = AnnotationUtils.getInstance(env);
         this.options = env.getOptions();
         this.positions = trees.getSourcePositions();
         this.annoTypes =
@@ -692,7 +688,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
             AnnotatedDeclaredType castDeclared = (AnnotatedDeclaredType)castType;
             AnnotatedDeclaredType elementType =
                 atypeFactory.fromElement((TypeElement)castDeclared.getUnderlyingType().asElement());
-            if (AnnotationUtils.areSame(castDeclared.getAnnotations(), elementType.getAnnotations())) {
+            if (AnnotationUtils.areSame(elements, castDeclared.getAnnotations(), elementType.getAnnotations())) {
                 isSubtype = true;
             }
         }

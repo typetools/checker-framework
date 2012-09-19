@@ -17,7 +17,6 @@ import checkers.types.AnnotatedTypeMirror.*;
 import checkers.util.AnnotationUtils;
 import checkers.util.ElementUtils;
 import checkers.util.AnnotationUtils.AnnotationBuilder;
-import checkers.util.TreeUtils;
 
 import japa.parser.JavaParser;
 import japa.parser.ast.*;
@@ -46,9 +45,8 @@ public class StubParser {
     private final String filename;
 
     private final IndexUnit index;
-    private final ProcessingEnvironment env;
+    private final ProcessingEnvironment processingEnv;
     private final AnnotatedTypeFactory atypeFactory;
-    private final AnnotationUtils annoUtils;
     private final Elements elements;
 
     /**
@@ -69,8 +67,7 @@ public class StubParser {
         }
         this.index = parsedindex;
         this.atypeFactory = factory;
-        this.env = env;
-        this.annoUtils = AnnotationUtils.getInstance(env);
+        this.processingEnv = env;
         this.elements = env.getElementUtils();
         supportedAnnotations = getSupportedAnnotations();
         if (supportedAnnotations.isEmpty()) {
@@ -88,7 +85,7 @@ public class StubParser {
 
         for (TypeElement typeElm : ElementFilter.typesIn(pkg.getEnclosedElements())) {
             if (typeElm.getKind() == ElementKind.ANNOTATION_TYPE) {
-                AnnotationMirror anno = annoUtils.fromName(typeElm.getQualifiedName());
+                AnnotationMirror anno = AnnotationUtils.fromName(elements, typeElm.getQualifiedName());
                 putNew(r, typeElm.getSimpleName().toString(), anno);
             }
         }
@@ -112,7 +109,7 @@ public class StubParser {
                 if (importDecl.isAsterisk()) {
                     putAllNew(result, annosInPackage(imported));
                 } else {
-                    AnnotationMirror anno = annoUtils.fromName(imported);
+                    AnnotationMirror anno = AnnotationUtils.fromName(elements, imported);
                     if (anno != null ) {
                         Element annoElt = anno.getAnnotationType().asElement();
                         putNew(result, annoElt.getSimpleName().toString(), anno);
@@ -429,7 +426,7 @@ public class StubParser {
         if (annotations == null)
             return;
         for (AnnotationExpr annotation : annotations) {
-            AnnotationMirror annoMirror = getAnnotation(annotation, supportedAnnotations, env);
+            AnnotationMirror annoMirror = getAnnotation(annotation, supportedAnnotations, processingEnv);
             if (annoMirror != null)
                 type.addAnnotation(annoMirror);
         }
@@ -440,7 +437,7 @@ public class StubParser {
             return;
         Set<AnnotationMirror> annos = AnnotationUtils.createAnnotationSet();
         for (AnnotationExpr annotation : annotations) {
-            AnnotationMirror annoMirror = getAnnotation(annotation, supportedAnnotations, env);
+            AnnotationMirror annoMirror = getAnnotation(annotation, supportedAnnotations, processingEnv);
             if (annoMirror != null)
                 annos.add(annoMirror);
         }

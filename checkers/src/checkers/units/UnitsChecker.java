@@ -10,6 +10,7 @@ import java.util.Set;
 
 import javax.annotation.processing.SupportedOptions;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.util.Elements;
 
 import checkers.quals.Bottom;
 import checkers.quals.Unqualified;
@@ -28,15 +29,16 @@ import checkers.basetype.BaseTypeChecker;
 @SupportedOptions( { "units" } )
 public class UnitsChecker extends BaseTypeChecker {
 
+    protected Elements elements;
+
     // Map from canonical class name to the corresponding UnitsRelations instance.
     // We use the string to prevent instantiating the UnitsRelations multiple times.
     protected Map<String, UnitsRelations> unitsRel = new HashMap<String, UnitsRelations>();
-    protected AnnotationUtils utils;
 
     @Override
     public void initChecker() {
-        utils = AnnotationUtils.getInstance(processingEnv);
         super.initChecker();
+        elements = processingEnv.getElementUtils();
     }
 
     /** Copied from BasicChecker and adapted "quals" to "units".
@@ -44,8 +46,6 @@ public class UnitsChecker extends BaseTypeChecker {
     @Override
     @SuppressWarnings("unchecked")
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        AnnotationUtils annoUtils = AnnotationUtils.getInstance(processingEnv);
-
         Set<Class<? extends Annotation>> qualSet =
                 new HashSet<Class<? extends Annotation>>();
 
@@ -58,7 +58,7 @@ public class UnitsChecker extends BaseTypeChecker {
                             (Class<? extends Annotation>) Class.forName(qualName);
 
                     qualSet.add(q);
-                    addUnitsRelations(annoUtils, q);
+                    addUnitsRelations(q);
                 } catch (ClassNotFoundException e) {
                     messager.printMessage(javax.tools.Diagnostic.Kind.WARNING,
                     		"Could not find class for unit: " + qualName + ". Ignoring unit.");
@@ -70,7 +70,7 @@ public class UnitsChecker extends BaseTypeChecker {
         // TODO: we assume that all the standard units only use this. For absolute correctness,
         // go through each and look for a UnitsRelations annotation.
         unitsRel.put("checkers.units.UnitsRelationsDefault",
-                new UnitsRelationsDefault().init(annoUtils, processingEnv));
+                new UnitsRelationsDefault().init(processingEnv));
 
         // Explicitly add the Unqualified type.
         qualSet.add(Unqualified.class);
@@ -130,19 +130,19 @@ public class UnitsChecker extends BaseTypeChecker {
      * @param annoUtils The AnnotationUtils instance to use.
      * @param qual The qualifier to investigate.
      */
-    private void addUnitsRelations(AnnotationUtils annoUtils, Class<? extends Annotation> qual) {
-        AnnotationMirror am = annoUtils.fromClass(qual);
+    private void addUnitsRelations(Class<? extends Annotation> qual) {
+        AnnotationMirror am = AnnotationUtils.fromClass(elements, qual);
 
         for (AnnotationMirror ama : am.getAnnotationType().asElement().getAnnotationMirrors() ) {
             if (ama.getAnnotationType().toString().equals(UnitsRelations.class.getCanonicalName())) {
                 @SuppressWarnings("unchecked")
                 Class<? extends UnitsRelations> theclass = (Class<? extends UnitsRelations>)
-                    AnnotationUtils.parseTypeValue(ama, "value");
+                    AnnotationUtils.parseTypeValue(elements, ama, "value");
                 String classname = theclass.getCanonicalName();
 
                 if (!unitsRel.containsKey(classname)) {
                     try {
-                        unitsRel.put(classname, ((UnitsRelations) theclass.newInstance()).init(annoUtils, processingEnv));
+                        unitsRel.put(classname, ((UnitsRelations) theclass.newInstance()).init(processingEnv));
                     } catch (InstantiationException e) {
                         // TODO
                         e.printStackTrace();
@@ -174,7 +174,7 @@ public class UnitsChecker extends BaseTypeChecker {
      */
     @Override
     public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
-        return new UnitsQualifierHierarchy(factory, AnnotationUtils.getInstance(processingEnv).fromClass(Bottom.class));
+        return new UnitsQualifierHierarchy(factory, AnnotationUtils.fromClass(elements, Bottom.class));
     }
 
     protected class UnitsQualifierHierarchy extends GraphQualifierHierarchy {
@@ -187,7 +187,7 @@ public class UnitsChecker extends BaseTypeChecker {
         @Override
         public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
             if (AnnotationUtils.areSameIgnoringValues(lhs, rhs)) {
-                return AnnotationUtils.areSame(lhs, rhs);
+                return AnnotationUtils.areSame(elements, lhs, rhs);
             }
             lhs = stripValues(lhs);
             rhs = stripValues(rhs);
@@ -197,6 +197,6 @@ public class UnitsChecker extends BaseTypeChecker {
     }
 
     private AnnotationMirror stripValues(AnnotationMirror anno) {
-        return utils.fromName(anno.getAnnotationType().toString());
+        return AnnotationUtils.fromName(elements, anno.getAnnotationType().toString());
     }
 }

@@ -44,10 +44,8 @@ public class UnitsAnnotatedTypeFactory extends
         // use true for flow inference
         super(checker, root, false);
 
-        AnnotationUtils annoUtils = AnnotationUtils.getInstance(env);
-
-        mixedUnits = annoUtils.fromClass(MixedUnits.class);
-        AnnotationMirror BOTTOM = this.annotations.fromClass(Bottom.class);
+        mixedUnits = AnnotationUtils.fromClass(elements, MixedUnits.class);
+        AnnotationMirror BOTTOM = AnnotationUtils.fromClass(elements, Bottom.class);
         this.treeAnnotator.addTreeKind(Tree.Kind.NULL_LITERAL, BOTTOM);
 
         this.postInit();
@@ -66,9 +64,9 @@ public class UnitsAnnotatedTypeFactory extends
             if (aa.getAnnotationType().toString().equals(UnitsMultiple.class.getCanonicalName())) {
                 @SuppressWarnings("unchecked")
                 Class<? extends Annotation> theclass = (Class<? extends Annotation>)
-                                                    AnnotationUtils.parseTypeValue(aa, "quantity");
-                Prefix prefix = AnnotationUtils.parseEnumConstantValue(aa, "prefix", Prefix.class);
-                AnnotationBuilder builder = new AnnotationBuilder(env, theclass);
+                                                    AnnotationUtils.parseTypeValue(elements, aa, "quantity");
+                Prefix prefix = AnnotationUtils.parseEnumConstantValue(elements, aa, "prefix", Prefix.class);
+                AnnotationBuilder builder = new AnnotationBuilder(processingEnv, theclass);
                 builder.setValue("value", prefix);
                 AnnotationMirror res = builder.build();
                 aliasMap.put(aname, res);
