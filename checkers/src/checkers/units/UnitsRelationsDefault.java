@@ -2,6 +2,7 @@ package checkers.units;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.util.Elements;
 
 import checkers.types.AnnotatedTypeMirror;
 import checkers.units.quals.Prefix;
@@ -24,8 +25,10 @@ public class UnitsRelationsDefault implements UnitsRelations {
     protected AnnotationMirror m, km, m2, km2, s, h, mPERs, kmPERh;
 
     @Override
-    public UnitsRelations init(AnnotationUtils annos, ProcessingEnvironment env) {
+    public UnitsRelations init(ProcessingEnvironment env) {
         AnnotationBuilder builder = new AnnotationBuilder(env, m.class);
+        Elements elements = env.getElementUtils();
+
         builder.setValue("value", Prefix.one);
         m = builder.build();
 
@@ -33,16 +36,16 @@ public class UnitsRelationsDefault implements UnitsRelations {
         builder.setValue("value", Prefix.kilo);
         km = builder.build();
 
-        m2 = annos.fromClass(m2.class);
-        km2 = annos.fromClass(km2.class);
+        m2 = AnnotationUtils.fromClass(elements, m2.class);
+        km2 = AnnotationUtils.fromClass(elements, km2.class);
 
         builder = new AnnotationBuilder(env, s.class);
         builder.setValue("value", Prefix.one);
         s = builder.build();
-        h = annos.fromClass(h.class);
+        h = AnnotationUtils.fromClass(elements, h.class);
 
-        mPERs = annos.fromClass(mPERs.class);
-        kmPERh = annos.fromClass(kmPERh.class);
+        mPERs = AnnotationUtils.fromClass(elements, mPERs.class);
+        kmPERh = AnnotationUtils.fromClass(elements, kmPERh.class);
 
         return this;
     }

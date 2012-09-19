@@ -69,9 +69,8 @@ public class LinearAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Linear
                 Set<AnnotationMirror> annotations, AnnotatedTypeFactory factory) {
             super(checker, root, annotations, factory);
 
-            AnnotationUtils annoFactory = AnnotationUtils.getInstance(checker.getProcessingEnvironment());
-            LINEAR = annoFactory.fromClass(Linear.class);
-            UNUSABLE = annoFactory.fromClass(Unusable.class);
+            LINEAR = AnnotationUtils.fromClass(elements, Linear.class);
+            UNUSABLE = AnnotationUtils.fromClass(elements, Unusable.class);
         }
 
         /**

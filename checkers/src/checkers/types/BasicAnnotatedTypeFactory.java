@@ -77,18 +77,18 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
         this.useFlow = useFlow;
         this.poly = new QualifierPolymorphism(checker, this);
 
-        this.defaults = new QualifierDefaults(this, this.annotations);
+        this.defaults = new QualifierDefaults(processingEnv, this);
         boolean foundDefault = false;
         // TODO: should look for a default qualifier per qualifier hierarchy.
         for (Class<? extends Annotation> qual : checker.getSupportedTypeQualifiers()) {
             if (qual.getAnnotation(DefaultQualifierInHierarchy.class) != null) {
-                defaults.addAbsoluteDefault(this.annotations.fromClass(qual),
+                defaults.addAbsoluteDefault(AnnotationUtils.fromClass(elements, qual),
                         DefaultLocation.ALL);
                 foundDefault = true;
             }
         }
 
-        AnnotationMirror unqualified = this.annotations.fromClass(Unqualified.class);
+        AnnotationMirror unqualified = AnnotationUtils.fromClass(elements, Unqualified.class);
         if (!foundDefault && this.isSupportedQualifier(unqualified)) {
             defaults.addAbsoluteDefault(unqualified,
                     DefaultLocation.ALL);
@@ -152,7 +152,7 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
      * @return a type annotator
      */
     protected TypeAnnotator createTypeAnnotator(Checker checker) {
-        return new TypeAnnotator(checker);
+        return new TypeAnnotator(checker, this);
     }
 
     /**
@@ -244,7 +244,7 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
     protected Set<AnnotationMirror> createFlowQualifiers(Checker checker) {
         Set<AnnotationMirror> flowQuals = AnnotationUtils.createAnnotationSet();
         for (Class<? extends Annotation> cl : checker.getSupportedTypeQualifiers()) {
-            flowQuals.add(annotations.fromClass(cl));
+            flowQuals.add(AnnotationUtils.fromClass(elements, cl));
         }
         return flowQuals;
     }

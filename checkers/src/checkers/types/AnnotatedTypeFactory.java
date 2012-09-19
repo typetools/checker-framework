@@ -71,10 +71,7 @@ public class AnnotatedTypeFactory {
     protected final /*@Nullable*/ CompilationUnitTree root;
 
     /** The processing environment to use for accessing compiler internals. */
-    protected final ProcessingEnvironment env;
-
-    /** The factory to use for creating annotations. */
-    protected final AnnotationUtils annotations;
+    protected final ProcessingEnvironment processingEnv;
 
     /** Utility class for working with {@link Element}s. */
     protected final Elements elements;
@@ -150,14 +147,13 @@ public class AnnotatedTypeFactory {
             QualifierHierarchy qualHierarchy,
             /*@Nullable*/ CompilationUnitTree root) {
         uid = ++uidCounter;
-        this.env = checker.getProcessingEnvironment();
+        this.processingEnv = checker.getProcessingEnvironment();
         this.root = root;
         this.resourceClass = checker.getClass();
-        this.trees = Trees.instance(env);
-        this.annotations = AnnotationUtils.getInstance(env);
-        this.elements = env.getElementUtils();
-        this.types = env.getTypeUtils();
-        this.atypes = new AnnotatedTypes(env, this);
+        this.trees = Trees.instance(processingEnv);
+        this.elements = processingEnv.getElementUtils();
+        this.types = processingEnv.getTypeUtils();
+        this.atypes = new AnnotatedTypes(processingEnv, this);
         this.visitorState = new VisitorState();
         this.qualHierarchy = qualHierarchy;
         if (qualHierarchy == null) {
@@ -478,8 +474,8 @@ public class AnnotatedTypeFactory {
                     while (upperBound.getKind() == TypeKind.TYPEVAR)
                         upperBound = ((AnnotatedTypeVariable)upperBound).getEffectiveUpperBound();
 
-                    WildcardType wc = env.getTypeUtils().getWildcardType(upperBound.getUnderlyingType(), null);
-                    AnnotatedWildcardType wctype = (AnnotatedWildcardType) AnnotatedTypeMirror.createType(wc, env, this);
+                    WildcardType wc = processingEnv.getTypeUtils().getWildcardType(upperBound.getUnderlyingType(), null);
+                    AnnotatedWildcardType wctype = (AnnotatedWildcardType) AnnotatedTypeMirror.createType(wc, processingEnv, this);
                     wctype.setElement(typeParam.getElement());
                     wctype.setExtendsBound(upperBound);
                     wctype.addAnnotations(typeParam.getAnnotations());
@@ -1147,7 +1143,7 @@ public class AnnotatedTypeFactory {
         PrimitiveType primitiveType =
             types.unboxedType(type.getUnderlyingType());
         AnnotatedPrimitiveType pt = (AnnotatedPrimitiveType)
-            AnnotatedTypeMirror.createType(primitiveType, env, this);
+            AnnotatedTypeMirror.createType(primitiveType, processingEnv, this);
         pt.addAnnotations(type.getAnnotations());
         return pt;
     }
@@ -1267,7 +1263,7 @@ public class AnnotatedTypeFactory {
      * underlying type
      */
     public final AnnotatedTypeMirror toAnnotatedType(TypeMirror t) {
-        return AnnotatedTypeMirror.createType(t, env, this);
+        return AnnotatedTypeMirror.createType(t, processingEnv, this);
     }
 
     /**
@@ -1590,12 +1586,12 @@ public class AnnotatedTypeFactory {
         Map<String, Set<AnnotationMirror>> indexDeclAnnos
             = new HashMap<String, Set<AnnotationMirror>>();
 
-        if (!env.getOptions().containsKey("ignorejdkastub")) {
+        if (!processingEnv.getOptions().containsKey("ignorejdkastub")) {
             InputStream in = null;
             if (resourceClass != null)
                 in = resourceClass.getResourceAsStream("jdk.astub");
             if (in != null) {
-                StubParser stubParser = new StubParser("jdk.astub", in, this, env);
+                StubParser stubParser = new StubParser("jdk.astub", in, this, processingEnv);
                 stubParser.parse(indexTypes, indexDeclAnnos);
             }
         }
@@ -1603,7 +1599,7 @@ public class AnnotatedTypeFactory {
         String allstubFiles = "";
         String stubFiles;
 
-        stubFiles = env.getOptions().get("stubs");
+        stubFiles = processingEnv.getOptions().get("stubs");
         if (stubFiles != null)
             allstubFiles += File.pathSeparator + stubFiles;
 
@@ -1647,7 +1643,7 @@ public class AnnotatedTypeFactory {
                     if (resourceClass != null)
                         in = resourceClass.getResourceAsStream(stubPath);
                     if (in != null) {
-                        StubParser stubParser = new StubParser(stubPath, in, this, env);
+                        StubParser stubParser = new StubParser(stubPath, in, this, processingEnv);
                         stubParser.parse(indexTypes, indexDeclAnnos);
                         // We could handle the stubPath -> continue.
                         continue;
@@ -1658,7 +1654,7 @@ public class AnnotatedTypeFactory {
 
                 for (File f : stubs) {
                     InputStream stubStream = new FileInputStream(f);
-                    StubParser stubParser = new StubParser(f.getAbsolutePath(), stubStream, this, env);
+                    StubParser stubParser = new StubParser(f.getAbsolutePath(), stubStream, this, processingEnv);
                     stubParser.parse(indexTypes, indexDeclAnnos);
                 }
             } catch (FileNotFoundException e) {

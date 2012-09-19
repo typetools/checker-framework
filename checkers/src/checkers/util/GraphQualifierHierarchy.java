@@ -24,8 +24,7 @@ public class GraphQualifierHierarchy extends MultiGraphQualifierHierarchy {
     // private final AnnotationMirror bottom;
 
     @Override
-    protected void finish(AnnotationUtils annoFactory,
-            QualifierHierarchy qualHierarchy,
+    protected void finish(QualifierHierarchy qualHierarchy,
             Map<AnnotationMirror, Set<AnnotationMirror>> fullMap,
             Map<AnnotationMirror, AnnotationMirror> polyQualifiers,
             Set<AnnotationMirror> tops, Set<AnnotationMirror> bottoms,

@@ -89,17 +89,17 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
 
         generalFactory = new GeneralAnnotatedTypeFactory(checker, root);
 
-        mapGetHeuristics = new MapGetHeuristics(env, this, generalFactory);
-        systemGetPropertyHandler = new SystemGetPropertyHandler(env, this);
+        mapGetHeuristics = new MapGetHeuristics(processingEnv, this, generalFactory);
+        systemGetPropertyHandler = new SystemGetPropertyHandler(processingEnv, this);
 
         NONNULL = checker.NONNULL;
         NULLABLE = checker.NULLABLE;
         LAZYNONNULL = checker.LAZYNONNULL;
-        RAW = this.annotations.fromClass(Raw.class);
+        RAW = AnnotationUtils.fromClass(elements, Raw.class);
         PRIMITIVE = checker.PRIMITIVE;
         POLYNULL = checker.POLYNULL;
-        POLYALL = this.annotations.fromClass(PolyAll.class);
-        UNUSED = this.annotations.fromClass(Unused.class);
+        POLYALL = AnnotationUtils.fromClass(elements, PolyAll.class);
+        UNUSED = AnnotationUtils.fromClass(elements, Unused.class);
 
         // If you update the following, also update ../../../manual/nullness-checker.tex .
         // aliases for nonnull
@@ -135,7 +135,7 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
         rawnessFactory = rawnesschecker.createFactory(root);
 
         // do this last, as it might use the factory again.
-        this.collectionToArrayHeuristics = new CollectionToArrayHeuristics(env, this);
+        this.collectionToArrayHeuristics = new CollectionToArrayHeuristics(processingEnv, this);
 
         this.postInit();
     }
@@ -447,7 +447,7 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
 
         /** Creates a {@link NonNullTypeAnnotator} for the given checker. */
         NonNullTypeAnnotator(BaseTypeChecker checker) {
-            super(checker);
+            super(checker, NullnessAnnotatedTypeFactory.this);
         }
 
         /**
