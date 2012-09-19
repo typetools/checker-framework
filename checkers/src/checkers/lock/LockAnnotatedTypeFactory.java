@@ -131,7 +131,7 @@ public class LockAnnotatedTypeFactory
     }
 
     @Override
-    protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type) {
+    public void annotateImplicit(Tree tree, AnnotatedTypeMirror type) {
         if (!hasGuardedBy(type)) {
             /* TODO: I added STRING_LITERAL to the list of types that should get defaulted.
              * This resulted in Flow inference to infer Unqualified for strings, which is a
