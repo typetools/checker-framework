@@ -1,8 +1,7 @@
 package checkers.types;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.util.*;
@@ -30,6 +29,7 @@ import checkers.util.InternalUtils;
 import checkers.util.Pair;
 import checkers.util.TreeUtils;
 import checkers.util.stub.StubParser;
+import checkers.util.stub.StubResource;
 import checkers.util.stub.StubUtil;
 
 import com.sun.source.tree.*;
@@ -1607,34 +1607,35 @@ public class AnnotatedTypeFactory {
 
         String[] stubArray = allstubFiles.split(File.pathSeparator);
         for (String stubPath : stubArray) {
-            if (stubPath==null || stubPath.isEmpty()) continue;
-            try {
-                // Handle case when running in jtreg
-                String base = System.getProperty("test.src");
-                if (base != null)
-                    stubPath = base + "/" + stubPath;
-                List<File> stubs = StubUtil.allStubFiles(stubPath);
-                if (stubs.size() == 0) {
-                    InputStream in = null;
-                    if (resourceClass != null)
-                        in = resourceClass.getResourceAsStream(stubPath);
-                    if (in != null) {
-                        StubParser stubParser = new StubParser(stubPath, in, this, processingEnv);
-                        stubParser.parse(indexTypes, indexDeclAnnos);
-                        // We could handle the stubPath -> continue.
-                        continue;
-                    }
-                    // We couldn't handle the stubPath -> error message.
-                    System.err.println("Did not find stub file or files within directory: " + stubPath);
-                }
-
-                for (File f : stubs) {
-                    InputStream stubStream = new FileInputStream(f);
-                    StubParser stubParser = new StubParser(f.getAbsolutePath(), stubStream, this, processingEnv);
+            if (stubPath == null || stubPath.isEmpty()) continue;
+            // Handle case when running in jtreg
+            String base = System.getProperty("test.src");
+            if (base != null)
+                stubPath = base + "/" + stubPath;
+            List<StubResource> stubs = StubUtil.allStubFiles(stubPath);
+            if (stubs.size() == 0) {
+                InputStream in = null;
+                if (resourceClass != null)
+                    in = resourceClass.getResourceAsStream(stubPath);
+                if (in != null) {
+                    StubParser stubParser = new StubParser(stubPath, in, this, processingEnv);
                     stubParser.parse(indexTypes, indexDeclAnnos);
+                    // We could handle the stubPath -> continue.
+                    continue;
                 }
-            } catch (FileNotFoundException e) {
-                System.err.println("Couldn't find stub file named: " + stubPath);
+                // We couldn't handle the stubPath -> error message.
+                System.err.println("Did not find stub file or files within directory: " + stubPath);
+            }
+            for (StubResource resource : stubs) {
+                InputStream stubStream;
+                try {
+                    stubStream = resource.getInputStream();
+                } catch (IOException e) {
+                    System.err.println("Could not read stub resource: " + resource.getDescription());
+                    continue;
+                }
+                StubParser stubParser = new StubParser(resource.getDescription(), stubStream, this, processingEnv);
+                stubParser.parse(indexTypes, indexDeclAnnos);
             }
         }
 

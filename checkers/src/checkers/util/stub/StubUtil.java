@@ -8,9 +8,13 @@ import japa.parser.ast.type.*;
 import japa.parser.ast.visitor.SimpleVoidVisitor;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 import javax.lang.model.element.*;
 import javax.lang.model.type.ArrayType;
@@ -286,26 +290,46 @@ public class StubUtil {
         }
     }
 
-    public static List<File> allStubFiles(String stub) {
-        List<File> files = new ArrayList<File>();
+    public static List<StubResource> allStubFiles(String stub) {
+        List<StubResource> resources = new ArrayList<StubResource>();
         File stubFile = new File(stub);
-        allStubFiles(stubFile, files);
-        return files;
+        allStubFiles(stubFile, resources);
+        return resources;
     }
 
     private static boolean isStub(File f) {
-        return f.isFile() && f.getName().endsWith(".astub");
+        return f.isFile() && isStub(f.getName());
     }
 
-    private static void allStubFiles(File stub, List<File> files) {
-        if (isStub(stub))
-            files.add(stub);
-        else if (stub.isDirectory()) {
+    private static boolean isStub(String path) {
+        return path.endsWith(".astub");
+    }
+
+    private static boolean isJar(File f) {
+        return f.isFile() && f.getName().endsWith(".jar");
+    }
+
+    private static void allStubFiles(File stub, List<StubResource> resources) {
+        if (isStub(stub)) {
+            resources.add(new FileStubResource(stub));
+        } else if (isJar(stub)) {
+            JarFile file;
+            try {
+                file = new JarFile(stub);
+            } catch (IOException e) {
+                System.err.println("StubUtil: could not process JAR file: " + stub);
+                return;
+            }
+            Enumeration<JarEntry> entries = file.entries();
+            while (entries.hasMoreElements()) {
+                JarEntry entry = entries.nextElement();
+                if (isStub(entry.getName())) {
+                    resources.add(new JarEntryStubResource(file, entry));
+                }
+            }
+        } else if (stub.isDirectory()) {
             for (File enclosed : stub.listFiles()) {
-                if (isStub(enclosed))
-                    files.add(enclosed);
-                else if (enclosed.isDirectory())
-                    allStubFiles(enclosed, files);
+                allStubFiles(enclosed, resources);
             }
         }
     }
