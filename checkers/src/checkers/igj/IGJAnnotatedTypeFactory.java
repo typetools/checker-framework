@@ -485,8 +485,8 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
                 Map<String, AnnotationMirror> p) {
             if (type.hasAnnotationRelaxed(I)) {
                 String immutableString =
-                    AnnotationUtils.parseStringValue(getImmutabilityAnnotation(type),
-                            IMMUTABILITY_KEY);
+                    AnnotationUtils.getElementValue(getImmutabilityAnnotation(type),
+                            IMMUTABILITY_KEY, String.class, true);
                 if (p.containsKey(immutableString)) {
                     type.removeAnnotation(I);
                     type.addAnnotation(p.get(immutableString));
@@ -573,8 +573,8 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
 
             if (dcType.hasAnnotationRelaxed(I)) {
                 String immutableString =
-                    AnnotationUtils.parseStringValue(getImmutabilityAnnotation(dcType),
-                            IMMUTABILITY_KEY);
+                    AnnotationUtils.getElementValue(getImmutabilityAnnotation(dcType),
+                            IMMUTABILITY_KEY, String.class, true);
                 AnnotationMirror immutability = getImmutabilityAnnotation(type);
                 // TODO: Assertion fails some times
                 // assert immutability != null;
@@ -616,10 +616,10 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
 
             if (arType.hasAnnotationRelaxed(I)) {
                 String immutableString =
-                    AnnotationUtils.parseStringValue(getImmutabilityAnnotation(arType),
-                            IMMUTABILITY_KEY);
+                    AnnotationUtils.getElementValue(getImmutabilityAnnotation(arType),
+                            IMMUTABILITY_KEY, String.class, true);
                 AnnotationMirror immutability = getImmutabilityAnnotation(type);
-                // Assertion failes some times
+                // Assertion fails some times
                 assert immutability != null;
                 if (!type.hasEffectiveAnnotation(ASSIGNS_FIELDS))
                     result.put(immutableString, immutability);
