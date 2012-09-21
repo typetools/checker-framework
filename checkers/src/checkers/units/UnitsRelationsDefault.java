@@ -13,8 +13,8 @@ import checkers.units.quals.m;
 import checkers.units.quals.m2;
 import checkers.units.quals.mPERs;
 import checkers.units.quals.s;
+import checkers.util.AnnotationBuilder;
 import checkers.util.AnnotationUtils;
-import checkers.util.AnnotationUtils.AnnotationBuilder;
 
 /**
  * Default relations between SI units.
