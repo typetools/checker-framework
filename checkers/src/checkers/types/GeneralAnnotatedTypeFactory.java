@@ -17,6 +17,7 @@ public class GeneralAnnotatedTypeFactory extends AnnotatedTypeFactory {
 
     public GeneralAnnotatedTypeFactory(SourceChecker checker, CompilationUnitTree root) {
         super(checker, new GeneralQualifierHierarchy(), root);
+        postInit();
     }
 
     /** Return true to support any qualifier.
