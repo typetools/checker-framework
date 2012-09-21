@@ -14,9 +14,9 @@ import checkers.source.SourceChecker;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.*;
+import checkers.util.AnnotationBuilder;
 import checkers.util.AnnotationUtils;
 import checkers.util.ElementUtils;
-import checkers.util.AnnotationUtils.AnnotationBuilder;
 
 import japa.parser.JavaParser;
 import japa.parser.ast.*;
@@ -626,8 +626,7 @@ public class StubParser {
                 // Not a supported qualifier -> ignore
                 return null;
             }
-            AnnotationUtils.AnnotationBuilder builder =
-                    new AnnotationUtils.AnnotationBuilder(env, annoMirror);
+            AnnotationBuilder builder = new AnnotationBuilder(env, annoMirror);
             List<MemberValuePair> pairs = nrmanno.getPairs();
             if (pairs!=null) {
                 for (MemberValuePair mvp : pairs) {
@@ -645,8 +644,7 @@ public class StubParser {
                 // Not a supported qualifier -> ignore
                 return null;
             }
-            AnnotationUtils.AnnotationBuilder builder =
-                    new AnnotationUtils.AnnotationBuilder(env, annoMirror);
+            AnnotationBuilder builder = new AnnotationBuilder(env, annoMirror);
             Expression valexpr = sglanno.getMemberValue();
             handleExpr(builder, "value", valexpr);
             return builder.build();
