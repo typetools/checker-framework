@@ -426,6 +426,23 @@ public class AnnotationUtils {
         return ct.asElement().getQualifiedName();
     }
 
+    /**
+     * Get the Class that is referenced by attribute 'name'.
+     * This method uses Class.forName to tr to load the class. It returns
+     * null if the class wasn't found.
+     */
+    public static Class<?> getElementValueClass(AnnotationMirror anno, CharSequence name,
+            boolean useDefaults) {
+        Name cn = getElementValueClassName(anno, name, useDefaults);
+        try {
+            Class<?> cls =  Class.forName(cn.toString());
+            return cls;
+        } catch (ClassNotFoundException e) {
+            SourceChecker.errorAbort("Could not load class '" + cn + "' for field '" + name +
+                    "' in annotation " + anno);
+            return null; // dead code
+        }
+    }
 
     /**
      * Update a mapping from some key to a set of AnnotationMirrors.
