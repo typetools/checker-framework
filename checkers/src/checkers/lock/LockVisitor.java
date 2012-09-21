@@ -185,11 +185,11 @@ public class LockVisitor extends BaseTypeVisitor<LockChecker> {
         List<String> locks = new ArrayList<String>();
 
         if (holding != null) {
-            List<String> holdingValue = AnnotationUtils.elementValueArray(holding, "value");
+            List<String> holdingValue = AnnotationUtils.getElementValueArray(holding, "value", String.class, false);
             locks.addAll(holdingValue);
         }
         if (guardedBy != null) {
-            String guardedByValue = AnnotationUtils.elementValue(guardedBy, "value", String.class);
+            String guardedByValue = AnnotationUtils.getElementValue(guardedBy, "value", String.class, false);
             locks.add(guardedByValue);
         }
 
