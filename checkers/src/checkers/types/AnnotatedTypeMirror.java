@@ -553,11 +553,20 @@ public abstract class AnnotatedTypeMirror {
         // TODO: however, this also means that if we are annotated with "@I(1)" and
         // remove "@I(2)" it will be removed. Is this what we want?
         // It's currently necessary for the IGJ and Lock Checkers.
-        return annotations.remove(getAnnotation(AnnotationUtils.annotationName(a)));
+        AnnotationMirror anno = getAnnotation(AnnotationUtils.annotationName(a));
+        if (anno != null) {
+            return annotations.remove(anno);
+        } else {
+            return false;
+        }
     }
 
     public boolean removeAnnotation(Class<? extends Annotation> a) {
-        return removeAnnotation(AnnotationUtils.fromClass(atypeFactory.elements, a));
+        AnnotationMirror anno = AnnotationUtils.fromClass(atypeFactory.elements, a);
+        if (anno == null || !atypeFactory.isSupportedQualifier(anno)) {
+            SourceChecker.errorAbort("AnnotatedTypeMirror.removeAnnotation called with un-supported class: " + a);
+        }
+        return removeAnnotation(anno);
     }
 
     /**
@@ -572,15 +581,6 @@ public abstract class AnnotatedTypeMirror {
             return this.removeAnnotation(prev);
         }
         return false;
-    }
-
-    /**
-     * Remove an Unqualified annotation if it exists. This might be a good thing
-     * to do before adding a new annotation to a type.
-     */
-    public void removeUnqualified() {
-        // TODO: optimize this?
-        removeAnnotation(Unqualified.class);
     }
 
     /**
