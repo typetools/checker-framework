@@ -15,6 +15,7 @@ import checkers.regex.quals.Regex;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.types.TreeAnnotator;
+import checkers.util.AnnotationBuilder;
 import checkers.util.AnnotationUtils;
 import checkers.util.TreeUtils;
 
@@ -128,8 +129,8 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
      * Returns a new Regex annotation with the given group count.
      */
     /*default*/ AnnotationMirror createRegexAnnotation(int groupCount) {
-        AnnotationUtils.AnnotationBuilder builder =
-            new AnnotationUtils.AnnotationBuilder(processingEnv, Regex.class.getCanonicalName());
+        AnnotationBuilder builder =
+            new AnnotationBuilder(processingEnv, Regex.class.getCanonicalName());
         builder.setValue("value", groupCount);
         return builder.build();
     }
@@ -295,8 +296,8 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
          * expression.
          */
         private AnnotationMirror createPartialRegexAnnotation(String partial) {
-            AnnotationUtils.AnnotationBuilder builder =
-                new AnnotationUtils.AnnotationBuilder(processingEnv, PartialRegex.class.getCanonicalName());
+            AnnotationBuilder builder =
+                new AnnotationBuilder(processingEnv, PartialRegex.class.getCanonicalName());
             builder.setValue("value", partial);
             return builder.build();
         }

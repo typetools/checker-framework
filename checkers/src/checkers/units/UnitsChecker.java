@@ -137,7 +137,7 @@ public class UnitsChecker extends BaseTypeChecker {
             if (ama.getAnnotationType().toString().equals(UnitsRelations.class.getCanonicalName())) {
                 @SuppressWarnings("unchecked")
                 Class<? extends UnitsRelations> theclass = (Class<? extends UnitsRelations>)
-                    AnnotationUtils.parseTypeValue(ama, "value");
+                    AnnotationUtils.getElementValueClass(ama, "value", true);
                 String classname = theclass.getCanonicalName();
 
                 if (!unitsRel.containsKey(classname)) {
