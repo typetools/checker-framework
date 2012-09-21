@@ -4,8 +4,8 @@ import java.lang.annotation.Annotation;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.util.Elements;
 
 import checkers.basetype.BaseTypeVisitor;
 import checkers.initialization.InitializationChecker;
@@ -39,11 +39,10 @@ public abstract class AbstractNonNullChecker extends InitializationChecker {
 
     @Override
     public void initChecker() {
-        AnnotationUtils annoFactory = AnnotationUtils
-                .getInstance(processingEnv);
-        NONNULL = annoFactory.fromClass(NonNull.class);
-        NULLABLE = annoFactory.fromClass(Nullable.class);
-        MONOTONICNONNULL = annoFactory.fromClass(MonotonicNonNull.class);
+        Elements elements = processingEnv.getElementUtils();
+        NONNULL = AnnotationUtils.fromClass(elements, NonNull.class);
+        NULLABLE = AnnotationUtils.fromClass(elements, Nullable.class);
+        MONOTONICNONNULL = AnnotationUtils.fromClass(elements, MonotonicNonNull.class);
         super.initChecker();
     }
 
@@ -90,7 +89,6 @@ public abstract class AbstractNonNullChecker extends InitializationChecker {
         supportedTypeQualifiers.add(NonNull.class);
         supportedTypeQualifiers.add(Nullable.class);
         supportedTypeQualifiers.add(MonotonicNonNull.class);
-        return createQualifierHierarchy(supportedTypeQualifiers,
-                AnnotationUtils.getInstance(env), factory);
+        return createQualifierHierarchy(factory);
     }
 }

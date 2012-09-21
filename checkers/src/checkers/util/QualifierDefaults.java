@@ -73,8 +73,8 @@ public class QualifierDefaults {
      * @param factory the factory for this checker
      * @param annoFactory an annotation factory, used to get annotations by name
      */
-    public QualifierDefaults(ProcessingEnvironment env, AnnotatedTypeFactory atypeFactory) {
-        this.elements = env.getElementUtils();
+    public QualifierDefaults(Elements elements, AnnotatedTypeFactory atypeFactory) {
+        this.elements = elements;
         this.atypeFactory = atypeFactory;
     }
 

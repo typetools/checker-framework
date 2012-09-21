@@ -8,6 +8,7 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Name;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
 import checkers.basetype.BaseTypeChecker;
@@ -21,6 +22,7 @@ import checkers.initialization.quals.Unclassified;
 import checkers.source.SourceChecker;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.QualifierHierarchy;
+import checkers.util.AnnotationBuilder;
 import checkers.util.AnnotationUtils;
 
 import com.sun.source.tree.ClassTree;
@@ -44,16 +46,16 @@ public abstract class InitializationChecker extends BaseTypeChecker {
 
     @Override
     public void initChecker() {
-        AnnotationUtils annoFactory = AnnotationUtils
-                .getInstance(processingEnv);
+        Elements elements = processingEnv.getElementUtils();
+
         if (useFbc) {
-            COMMITTED = annoFactory.fromClass(Committed.class);
-            FREE = annoFactory.fromClass(Free.class);
-            NOT_ONLY_COMMITTED = annoFactory.fromClass(NotOnlyCommitted.class);
+            COMMITTED = AnnotationUtils.fromClass(elements, Committed.class);
+            FREE = AnnotationUtils.fromClass(elements, Free.class);
+            NOT_ONLY_COMMITTED = AnnotationUtils.fromClass(elements, NotOnlyCommitted.class);
         } else {
-            COMMITTED = annoFactory.fromClass(NonRaw.class);
+            COMMITTED = AnnotationUtils.fromClass(elements, NonRaw.class);
         }
-        FBCBOTTOM = annoFactory.fromClass(FBCBottom.class);
+        FBCBOTTOM = AnnotationUtils.fromClass(elements, FBCBottom.class);
 
         super.initChecker();
     }
@@ -121,8 +123,7 @@ public abstract class InitializationChecker extends BaseTypeChecker {
     public AnnotationMirror createFreeAnnotation(TypeMirror typeFrame) {
         assert typeFrame != null;
         assert useFbc : "The rawness type system does not have a @Free annotation.";
-        AnnotationUtils.AnnotationBuilder builder = new AnnotationUtils.AnnotationBuilder(
-                env, Free.class.getCanonicalName());
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, Free.class);
         builder.setValue("value", typeFrame);
         return builder.build();
     }
@@ -133,8 +134,7 @@ public abstract class InitializationChecker extends BaseTypeChecker {
     public AnnotationMirror createFreeAnnotation(Class<?> typeFrame) {
         assert typeFrame != null;
         assert useFbc : "The rawness type system does not have a @Free annotation.";
-        AnnotationUtils.AnnotationBuilder builder = new AnnotationUtils.AnnotationBuilder(
-                env, Free.class.getCanonicalName());
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, Free.class);
         builder.setValue("value", typeFrame);
         return builder.build();
     }
@@ -144,9 +144,8 @@ public abstract class InitializationChecker extends BaseTypeChecker {
      */
     public AnnotationMirror createUnclassifiedAnnotation(Class<?> typeFrame) {
         assert typeFrame != null;
-        Class<?> clazz = useFbc ? Unclassified.class : Raw.class;
-        AnnotationUtils.AnnotationBuilder builder = new AnnotationUtils.AnnotationBuilder(
-                env, clazz.getCanonicalName());
+        Class<? extends Annotation> clazz = useFbc ? Unclassified.class : Raw.class;
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, clazz);
         builder.setValue("value", typeFrame);
         return builder.build();
     }
@@ -156,9 +155,8 @@ public abstract class InitializationChecker extends BaseTypeChecker {
      */
     public AnnotationMirror createUnclassifiedAnnotation(TypeMirror typeFrame) {
         assert typeFrame != null;
-        Class<?> clazz = useFbc ? Unclassified.class : Raw.class;
-        AnnotationUtils.AnnotationBuilder builder = new AnnotationUtils.AnnotationBuilder(
-                env, clazz.getCanonicalName());
+        Class<? extends Annotation> clazz = useFbc ? Unclassified.class : Raw.class;
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, clazz);
         builder.setValue("value", typeFrame);
         return builder.build();
     }
@@ -168,8 +166,8 @@ public abstract class InitializationChecker extends BaseTypeChecker {
      * be {@link Free} or {@link Unclassified}.
      */
     public TypeMirror getTypeFrameFromAnnotation(AnnotationMirror annotation) {
-        TypeMirror name = AnnotationUtils.elementValueWithDefaults(annotation,
-                "value", TypeMirror.class);
+        TypeMirror name = AnnotationUtils.getElementValue(annotation,
+                "value", TypeMirror.class, true);
         return name;
     }
 
@@ -254,19 +252,17 @@ public abstract class InitializationChecker extends BaseTypeChecker {
         protected Set<AnnotationMirror> bottoms;
         protected Set<Name> typeQualifiers;
         protected QualifierHierarchy childHierarchy = getChildQualifierHierarchy();
-        protected Types types = env.getTypeUtils();
+        protected Types types = processingEnv.getTypeUtils();
 
         public InitializationQualifierHierarchy() {
             super();
-
-            AnnotationUtils annoFactory = AnnotationUtils.getInstance(env);
 
             tops = new HashSet<>();
             tops.add(createUnclassifiedAnnotation(Object.class));
             tops.addAll(childHierarchy.getTopAnnotations());
 
             bottoms = new HashSet<>();
-            bottoms.add(annoFactory.fromClass(FBCBottom.class));
+            bottoms.add(AnnotationUtils.fromClass(processingEnv.getElementUtils(), FBCBottom.class));
             bottoms.addAll(childHierarchy.getBottomAnnotations());
         }
 
@@ -314,8 +310,8 @@ public abstract class InitializationChecker extends BaseTypeChecker {
             clazzes.addAll(getCommitmentAnnotations());
             // Add qualifiers from the initialization type system.
             for (Class<?> clazz : clazzes) {
-                AnnotationMirror anno = AnnotationUtils.getInstance(env)
-                        .fromClass((Class) clazz);
+                Elements elements = processingEnv.getElementUtils();
+                AnnotationMirror anno = AnnotationUtils.fromClass(elements, (Class) clazz);
                 names.add(AnnotationUtils.annotationName(anno));
             }
             // Add qualifiers from the child type system.
@@ -466,7 +462,8 @@ public abstract class InitializationChecker extends BaseTypeChecker {
                 return a;
             }
             assert false : "not fully implemented yet";
-            return AnnotationUtils.getInstance(env).typeFromClass(Object.class);
+            return AnnotationUtils.typeFromClass(processingEnv.getTypeUtils(),
+                    processingEnv.getElementUtils(), Object.class);
         }
 
         @Override

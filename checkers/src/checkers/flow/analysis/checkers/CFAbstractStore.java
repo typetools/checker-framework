@@ -8,6 +8,7 @@ import java.util.Map.Entry;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 
@@ -126,11 +127,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      */
     static int i;
     public void updateForMethodCall(MethodInvocationNode n,
-            AnnotatedTypeFactory factory, V val) {
+            AnnotatedTypeFactory atypeFactory, V val) {
         ExecutableElement method = n.getTarget().getMethod();
 
         // case 1: remove information if necessary
-        if (!PurityUtils.isSideEffectFree(factory, method)) {
+        if (!PurityUtils.isSideEffectFree(atypeFactory, method)) {
             // update field values
             Map<FlowExpressions.FieldAccess, V> newFieldValues = new HashMap<>();
             for (Entry<FlowExpressions.FieldAccess, V> e : fieldValues
@@ -139,17 +140,16 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                 V otherVal = e.getValue();
 
                 // case 3:
-                List<Pair<AnnotationMirror, AnnotationMirror>> fieldAnnotations = factory
+                List<Pair<AnnotationMirror, AnnotationMirror>> fieldAnnotations = atypeFactory
                         .getAnnotationWithMetaAnnotation(
                                 fieldAccess.getField(),
                                 MonotonicAnnotation.class);
                 V newOtherVal = null;
                 for (Pair<AnnotationMirror, AnnotationMirror> fieldAnnotation : fieldAnnotations) {
                     AnnotationMirror monotonicAnnotation = fieldAnnotation.second;
-                    String annotation = AnnotationUtils.elementValueClassName(
-                            monotonicAnnotation, "value");
-                    AnnotationMirror target = factory
-                            .annotationFromName(annotation);
+                    Name annotation = AnnotationUtils.getElementValueClassName(
+                            monotonicAnnotation, "value", false);
+                    AnnotationMirror target = AnnotationUtils.fromName(atypeFactory.getElementUtils(), annotation);
                     InferredAnnotation anno = otherVal
                             .getAnnotationInHierarchy(target);
                     // Make sure the 'target' annotation is present.

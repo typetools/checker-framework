@@ -48,6 +48,7 @@ import checkers.quals.Pure;
 import checkers.quals.Unqualified;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
+import checkers.util.AnnotationUtils;
 import checkers.util.InternalUtils;
 import checkers.util.Pair;
 import checkers.util.QualifierDefaults;
@@ -120,7 +121,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
         this.useFlow = useFlow;
         this.poly = new QualifierPolymorphism(checker, this);
 
-        this.defaults = new QualifierDefaults(this, this.annotations);
+        this.defaults = new QualifierDefaults(elements, this);
         for (AnnotationMirror a : checker.getQualifierHierarchy().getTopAnnotations()) {
             defaults.addAbsoluteDefault(a, DefaultLocation.LOCALS);
         }
@@ -129,14 +130,13 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
         for (Class<? extends Annotation> qual : checker
                 .getSupportedTypeQualifiers()) {
             if (qual.getAnnotation(DefaultQualifierInHierarchy.class) != null) {
-                defaults.addAbsoluteDefault(this.annotations.fromClass(qual),
+                defaults.addAbsoluteDefault(AnnotationUtils.fromClass(elements, qual),
                         DefaultLocation.OTHERWISE);
                 foundDefault = true;
             }
         }
 
-        AnnotationMirror unqualified = this.annotations
-                .fromClass(Unqualified.class);
+        AnnotationMirror unqualified = AnnotationUtils.fromClass(elements, Unqualified.class);
         if (!foundDefault && this.isSupportedQualifier(unqualified)) {
             defaults.addAbsoluteDefault(unqualified,
                     DefaultLocation.OTHERWISE);
@@ -145,7 +145,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
         // Add common aliases.
         addAliasedDeclAnnotation(Pure.class,
                 checkers.nullness.quals.Pure.class,
-                annotations.fromClass(Pure.class));
+                AnnotationUtils.fromClass(elements, Pure.class));
 
         // every subclass must call postInit!
         if (this.getClass().equals(BasicAnnotatedTypeFactory.class)) {
@@ -191,7 +191,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
      * @return a type annotator
      */
     protected TypeAnnotator createTypeAnnotator(Checker checker) {
-        return new TypeAnnotator(checker);
+        return new TypeAnnotator(checker, this);
     }
 
     /**
@@ -221,7 +221,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
             FlowAnalysis result = BaseTypeChecker.invokeConstructorFor(
                     classToLoad, new Class<?>[] { this.getClass(),
                             ProcessingEnvironment.class, checkerClass,
-                            List.class }, new Object[] { this, env, checker,
+                            List.class }, new Object[] { this, processingEnv, checker,
                             fieldValues });
             if (result != null)
                 return result;
@@ -231,7 +231,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
         // If an analysis couldn't be loaded reflectively, return the
         // default.
         return (FlowAnalysis) new CFAnalysis(
-                (AbstractBasicAnnotatedTypeFactory) this, env, checker,
+                (AbstractBasicAnnotatedTypeFactory) this, processingEnv, checker,
                 (List) fieldValues);
     }
 
@@ -507,7 +507,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
     protected void analyze(Queue<ClassTree> queue, UnderlyingAST ast,
             List<Pair<VariableElement, Value>> fieldValues) {
         CFGBuilder builder = new CFCFGBuilder(checker);
-        ControlFlowGraph cfg = builder.run(this, root, env, ast);
+        ControlFlowGraph cfg = builder.run(this, root, processingEnv, ast);
         FlowAnalysis newAnalysis = createFlowAnalysis(getChecker(), fieldValues);
         analyses.addFirst(newAnalysis);
         analyses.getFirst().performAnalysis(cfg);
@@ -527,8 +527,8 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
                     .getReturnStatementStores());
         }
 
-        if (env.getOptions().containsKey("flowdotdir")) {
-            String dotfilename = env.getOptions().get("flowdotdir") + "/"
+        if (processingEnv.getOptions().containsKey("flowdotdir")) {
+            String dotfilename = processingEnv.getOptions().get("flowdotdir") + "/"
                     + dotOutputFileName(ast) + ".dot";
             // make path safe for Windows
             dotfilename = dotfilename.replace("<", ".").replace(">", ".");
@@ -591,7 +591,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
     }
 
     @Override
-    protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type) {
+    public void annotateImplicit(Tree tree, AnnotatedTypeMirror type) {
         annotateImplicit(tree, type, this.useFlow);
     }
 
@@ -659,7 +659,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
     }
 
     @Override
-    protected void annotateImplicit(Element elt, AnnotatedTypeMirror type) {
+    public void annotateImplicit(Element elt, AnnotatedTypeMirror type) {
         typeAnnotator.visit(type, elt.getKind());
         defaults.annotate(elt, type);
     }

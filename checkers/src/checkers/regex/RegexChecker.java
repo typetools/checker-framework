@@ -3,6 +3,8 @@ package checkers.regex;
 import java.util.regex.Pattern;
 
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.util.Elements;
 
 import checkers.basetype.BaseTypeChecker;
@@ -17,6 +19,7 @@ import checkers.types.QualifierHierarchy;
 import checkers.util.AnnotationUtils;
 import checkers.util.GraphQualifierHierarchy;
 import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import checkers.util.TreeUtils;
 
 /**
  * A type-checker plug-in for the {@link Regex} qualifier that finds
@@ -27,6 +30,7 @@ import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 public class RegexChecker extends BaseTypeChecker {
 
     protected AnnotationMirror REGEX, REGEXBOTTOM, PARTIALREGEX;
+    protected ExecutableElement regexValueElement;
 
     // TODO use? private TypeMirror[] legalReferenceTypes;
 
@@ -38,6 +42,7 @@ public class RegexChecker extends BaseTypeChecker {
         REGEX = AnnotationUtils.fromClass(elements, Regex.class);
         REGEXBOTTOM = AnnotationUtils.fromClass(elements, RegexBottom.class);
         PARTIALREGEX = AnnotationUtils.fromClass(elements, PartialRegex.class);
+        regexValueElement = TreeUtils.getMethod("checkers.regex.quals.Regex", "value", 0, processingEnv);
 
         /*
         legalReferenceTypes = new TypeMirror[] {
