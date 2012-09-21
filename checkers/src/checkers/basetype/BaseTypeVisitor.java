@@ -1222,8 +1222,8 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         if (unused == null)
             return true;
 
-        String when = AnnotationUtils.elementValueClassName(unused, "when");
-        if (receiver.getAnnotation(elements.getName(when)) == null)
+        Name when = AnnotationUtils.getElementValueClassName(unused, "when", false);
+        if (receiver.getAnnotation(when) == null)
             return true;
 
         Tree tree = this.enclosingStatement(accessTree);
