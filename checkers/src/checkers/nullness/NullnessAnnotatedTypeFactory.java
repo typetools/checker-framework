@@ -295,7 +295,7 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
             return false;
         }
 
-        String whenName = AnnotationUtils.elementValueClassName(unused, "when");
+        Name whenName = AnnotationUtils.getElementValueClassName(unused, "when", false);
         MethodTree method = TreeUtils.enclosingMethod(this.getPath(tree));
         if (TreeUtils.isConstructor(method)) {
             /* TODO: this is messy and should be cleaned up.
@@ -312,7 +312,7 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
             }
             boolean matched = false;
             for (TypeCompound anno :  retannos) {
-                if (anno.getAnnotationType().toString().equals(whenName)) {
+                if (anno.getAnnotationType().toString().equals(whenName.toString())) {
                     matched = true;
                     break;
                 }
