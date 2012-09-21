@@ -1,7 +1,5 @@
 package checkers.lock;
 
-import static checkers.util.AnnotationUtils.elementValue;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -12,8 +10,8 @@ import checkers.lock.quals.GuardedBy;
 import checkers.quals.Unqualified;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.BasicAnnotatedTypeFactory;
+import checkers.util.AnnotationBuilder;
 import checkers.util.AnnotationUtils;
-import checkers.util.AnnotationUtils.AnnotationBuilder;
 import checkers.util.TreeUtils;
 import checkers.util.TypesUtils;
 
@@ -57,7 +55,7 @@ public class LockAnnotatedTypeFactory
             return;
         }
 
-        String lock = elementValue(guarded, "value", String.class);
+        String lock = AnnotationUtils.getElementValue(guarded, "value", String.class, false);
         if (heldLocks.contains(lock)) {
             type.clearAnnotations();
             type.addAnnotation(Unqualified.class);
@@ -65,8 +63,8 @@ public class LockAnnotatedTypeFactory
     }
 
     private AnnotationMirror createGuarded(String lock) {
-        AnnotationUtils.AnnotationBuilder builder =
-            new AnnotationUtils.AnnotationBuilder(processingEnv, GuardedBy.class.getCanonicalName());
+        AnnotationBuilder builder =
+            new AnnotationBuilder(processingEnv, GuardedBy.class.getCanonicalName());
         builder.setValue("value", lock);
         return builder.build();
     }
@@ -92,7 +90,7 @@ public class LockAnnotatedTypeFactory
             return;
 
         AnnotationMirror guardedBy = type.getAnnotation(GuardedBy.class);
-        if (!"this".equals(elementValue(guardedBy, "value", String.class)))
+        if (!"this".equals(AnnotationUtils.getElementValue(guardedBy, "value", String.class, false)))
             return;
         ExpressionTree receiver = receiver(expr);
         assert receiver != null;
@@ -114,7 +112,7 @@ public class LockAnnotatedTypeFactory
             return;
 
         AnnotationMirror guardedBy = type.getAnnotation(GuardedBy.class);
-        if (!"itself".equals(elementValue(guardedBy, "value", String.class)))
+        if (!"itself".equals(AnnotationUtils.getElementValue(guardedBy, "value", String.class, false)))
             return;
 
         AnnotationMirror newAnno = createGuarded(expr.toString());
@@ -151,7 +149,7 @@ public class LockAnnotatedTypeFactory
         if (TypesUtils.isDeclaredOfName(a.getAnnotationType(),
                 net.jcip.annotations.GuardedBy.class.getCanonicalName())) {
             AnnotationBuilder builder = new AnnotationBuilder(processingEnv, GuardedBy.class);
-            builder.setValue("value", AnnotationUtils.parseStringValue(a, "value"));
+            builder.setValue("value", AnnotationUtils.getElementValue(a, "value", String.class, false));
             return builder.build();
         } else {
             return super.aliasedAnnotation(a);
