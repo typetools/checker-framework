@@ -1,12 +1,12 @@
 package checkers.util;
 
 import javax.lang.model.element.*;
-import javax.lang.model.type.*;
 import javax.lang.model.util.Elements;
 
 import com.sun.source.tree.*;
+import com.sun.tools.javac.code.Attribute.TypeCompound;
 import com.sun.tools.javac.code.Symbol;
-import com.sun.tools.javac.model.JavacElements;
+import com.sun.tools.javac.util.List;
 
 import checkers.quals.Dependent;
 import checkers.source.SourceChecker;
@@ -23,36 +23,29 @@ public class DependentTypes {
         this.atypeFactory = new GeneralAnnotatedTypeFactory(checker, root);
     }
 
-    private AnnotationMirror getResult(Dependent anno) {
-        try {
-            anno.result();
-        } catch (MirroredTypeException exp) {
-            // TODO: find nicer way to access Class annotation attributes.
-            Name valName = TypesUtils.getQualifiedName((DeclaredType)exp.getTypeMirror());
-            return AnnotationUtils.fromName(elements, valName);
-        }
-        assert false : "shouldn't be here";
-        return null;
+    private AnnotationMirror getResult(AnnotationMirror anno) {
+        Name valName = AnnotationUtils.getElementValueClassName(anno, "result", false);
+        return AnnotationUtils.fromName(elements, valName);
     }
 
-    private AnnotationMirror getWhen(Dependent anno) {
-        try {
-            anno.when();
-        } catch (MirroredTypeException exp) {
-            // TODO: find nicer way to access Class annotation attributes.
-            Name valName = TypesUtils.getQualifiedName((DeclaredType)exp.getTypeMirror());
-            return AnnotationUtils.fromName(elements, valName);
-        }
-        assert false : "shouldn't be here";
-        return null;
+    private AnnotationMirror getWhen(AnnotationMirror anno) {
+        Name valName = AnnotationUtils.getElementValueClassName(anno, "when", false);
+        return AnnotationUtils.fromName(elements, valName);
     }
 
-    private static Dependent findDependent(Element element) {
-        return (Dependent) JavacElements.getAnnotation(((Symbol) element).typeAnnotations, Dependent.class);
+    private AnnotationMirror findDependent(Element element) {
+        // TODO: does this work with a .astub file?
+        List<TypeCompound> tas = ((Symbol) element).typeAnnotations;
+        for (TypeCompound ta : tas) {
+            if (ta.getAnnotationType().toString().equals(Dependent.class.getCanonicalName())) {
+                return ta;
+            }
+        }
+        return null;
     }
 
     public void doSubsitution(Element symbol, AnnotatedTypeMirror type, AnnotatedTypeMirror receiver) {
-        Dependent dependentInfo = findDependent(symbol);
+        AnnotationMirror dependentInfo = findDependent(symbol);
         if (dependentInfo == null)
             return;
 
