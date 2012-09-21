@@ -21,8 +21,8 @@ import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
+import checkers.util.AnnotationBuilder;
 import checkers.util.AnnotationUtils;
-import checkers.util.AnnotationUtils.AnnotationBuilder;
 import checkers.util.Pair;
 
 public class KeyForAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<KeyForSubchecker> {
@@ -141,7 +141,7 @@ public class KeyForAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<KeyFor
     AnnotationMirror anno = inType.getAnnotation(KeyFor.class);
     if (anno != null) {
 
-      List<String> inMaps = AnnotationUtils.parseStringArrayValue(anno, "value");
+      List<String> inMaps = AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
       List<String> outMaps = new ArrayList<String>();
 
       String receiver = receiver(call);
