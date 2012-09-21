@@ -1,7 +1,6 @@
 package checkers.igj;
 
 import java.lang.annotation.Annotation;
-import java.util.*;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -14,7 +13,6 @@ import checkers.igj.quals.I;
 import checkers.igj.quals.Immutable;
 import checkers.igj.quals.Mutable;
 import checkers.igj.quals.ReadOnly;
-import checkers.types.*;
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -22,9 +20,6 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
 import checkers.types.visitors.AnnotatedTypeScanner;
 import checkers.types.visitors.SimpleAnnotatedTypeVisitor;
-import checkers.util.*;
-
-import com.sun.source.tree.*;
 
 /**
  * Adds implicit and default IGJ annotations, only if the user does not
@@ -124,16 +119,6 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
         // it above does not work. Also see NullnessAnnotatedTypeFactory.
 
         this.postInit();
-    }
-
-    @Override
-    protected Set<AnnotationMirror> createFlowQualifiers(IGJChecker checker) {
-        Set<AnnotationMirror> flowQuals = AnnotationUtils.createAnnotationSet();
-        for (Class<? extends Annotation> cl : checker.getSupportedTypeQualifiers()) {
-            if (!I.class.equals(cl))
-                flowQuals.add(AnnotationUtils.fromClass(elements, cl));
-        }
-        return flowQuals;
     }
 
     @Override

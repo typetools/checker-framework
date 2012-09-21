@@ -1,6 +1,6 @@
 ## This file, checkers/scripts/Makefile.jdk, is linked from
 ## each subdirectory of checkers/jdk/ .  For example,
-## checkers/jdk/nullness/Makefile is a symbolic link to this file.
+## checkers/jdk/nonnull/Makefile is a symbolic link to this file.
 
 
 # Variables

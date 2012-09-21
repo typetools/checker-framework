@@ -170,9 +170,8 @@ public class LockVisitor extends BaseTypeVisitor<LockChecker> {
     }
 
     @Override
-    protected boolean checkMethodInvocability(AnnotatedExecutableType method,
+    protected void checkMethodInvocability(AnnotatedExecutableType method,
             MethodInvocationTree node) {
-        return true;
     }
 
     protected List<String> methodHolding(ExecutableElement element) {
