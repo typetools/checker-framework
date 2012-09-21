@@ -4,7 +4,6 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 
 import checkers.types.AnnotatedTypeMirror;
-import checkers.util.AnnotationUtils;
 
 /**
  * Interface that is used to specify the relation between units.
@@ -13,11 +12,10 @@ public interface UnitsRelations {
     /**
      * Initialize the object. Needs to be called before any other method.
      *
-     * @param annos The AnnotationUtils to use.
      * @param env The ProcessingEnvironment to use.
      * @return A reference to "this".
      */
-    UnitsRelations init(AnnotationUtils annos, ProcessingEnvironment env);
+    UnitsRelations init(ProcessingEnvironment env);
 
     /**
      * Called for the multiplication of type p1 and p2.

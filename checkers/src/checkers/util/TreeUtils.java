@@ -32,8 +32,8 @@ import com.sun.tools.javac.tree.JCTree;
 // TODO: This class needs significant restructuring
 public final class TreeUtils {
 
-    // Cannot be instantiated
-    private TreeUtils() { throw new AssertionError("un-initializable class"); }
+    // Class cannot be instantiated.
+    private TreeUtils() { throw new AssertionError("Class TreeUtils cannot be instantiated."); }
 
     /**
      * Checks if the provided method is a constructor method or no.

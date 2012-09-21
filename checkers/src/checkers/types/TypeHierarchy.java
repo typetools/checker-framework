@@ -14,6 +14,7 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
+import checkers.util.AnnotatedTypes;
 import checkers.util.AnnotationUtils;
 import checkers.util.QualifierPolymorphism;
 
@@ -177,7 +178,8 @@ public class TypeHierarchy {
                     ((AnnotatedWildcardType)lhsBase).getEffectiveExtendsBound());
         }
 
-        AnnotatedTypeMirror rhsBase = rhs.typeFactory.atypes.asSuper(rhs, lhsBase);
+        // TODO: direct access to rhs.atypeFactory is ugly.
+        AnnotatedTypeMirror rhsBase = AnnotatedTypes.asSuper(checker.getProcessingEnvironment().getTypeUtils(), rhs.atypeFactory, rhs, lhsBase);
 
         // FIXME: the following line should be removed, but erasure code is buggy
         // related to bug tests/framework/OverrideCrash

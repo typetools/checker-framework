@@ -1,3 +1,17 @@
+Version 1.4.1, 2x Sep 2012
+
+User-visible framework improvements:
+  Make AnnotationUtils and AnnotatedTypes utility classes without state.
+    Instead, provide the necessary parameters for particular methods.
+  Make class AnnotationBuild independent of AnnotationUtils.
+  Remove the ProcessingEnvironment from AnnotatedTypeMirror, which was
+    hardly used and can be replaced easily.
+  Used more consistent naming for a few more fields.
+  Moved AnnotatedTypes from package checkers.types to checkers.utils.
+    this required making a few methods in AnnotatedTypeFactory public,
+    which might require changes in downstream code.
+
+----------------------------------------------------------------------
 Version 1.4.0, 11 Sep 2012
 
 User-visible framework improvements:

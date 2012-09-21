@@ -15,8 +15,8 @@ import checkers.types.TreeAnnotator;
 import checkers.units.quals.MixedUnits;
 import checkers.units.quals.Prefix;
 import checkers.units.quals.UnitsMultiple;
+import checkers.util.AnnotationBuilder;
 import checkers.util.AnnotationUtils;
-import checkers.util.AnnotationUtils.AnnotationBuilder;
 
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompilationUnitTree;
@@ -44,10 +44,8 @@ public class UnitsAnnotatedTypeFactory extends
         // use true for flow inference
         super(checker, root, false);
 
-        AnnotationUtils annoUtils = AnnotationUtils.getInstance(env);
-
-        mixedUnits = annoUtils.fromClass(MixedUnits.class);
-        AnnotationMirror BOTTOM = this.annotations.fromClass(Bottom.class);
+        mixedUnits = AnnotationUtils.fromClass(elements, MixedUnits.class);
+        AnnotationMirror BOTTOM = AnnotationUtils.fromClass(elements, Bottom.class);
         this.treeAnnotator.addTreeKind(Tree.Kind.NULL_LITERAL, BOTTOM);
 
         this.postInit();
@@ -66,9 +64,9 @@ public class UnitsAnnotatedTypeFactory extends
             if (aa.getAnnotationType().toString().equals(UnitsMultiple.class.getCanonicalName())) {
                 @SuppressWarnings("unchecked")
                 Class<? extends Annotation> theclass = (Class<? extends Annotation>)
-                                                    AnnotationUtils.parseTypeValue(aa, "quantity");
-                Prefix prefix = AnnotationUtils.parseEnumConstantValue(aa, "prefix", Prefix.class);
-                AnnotationBuilder builder = new AnnotationBuilder(env, theclass);
+                                                    AnnotationUtils.getElementValueClass(aa, "quantity", true);
+                Prefix prefix = AnnotationUtils.getElementValueEnum(aa, "prefix", Prefix.class, true);
+                AnnotationBuilder builder = new AnnotationBuilder(processingEnv, theclass);
                 builder.setValue("value", prefix);
                 AnnotationMirror res = builder.build();
                 aliasMap.put(aname, res);

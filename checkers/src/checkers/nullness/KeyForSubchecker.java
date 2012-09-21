@@ -31,8 +31,7 @@ public class KeyForSubchecker extends BaseTypeChecker {
     public void initChecker() {
         super.initChecker();
 
-        AnnotationUtils annoFactory = AnnotationUtils.getInstance(processingEnv);
-        KEYFOR = annoFactory.fromClass(KeyFor.class);
+        KEYFOR = AnnotationUtils.fromClass(processingEnv.getElementUtils(), KeyFor.class);
     }
 
     @Override
@@ -57,7 +56,7 @@ public class KeyForSubchecker extends BaseTypeChecker {
                 }
             }
             // Otherwise Covariant would cause trouble.
-            if (rhs.getAnnotation(KeyForBottom.class) != null) {
+            if (rhs.hasAnnotation(KeyForBottom.class)) {
                 return true;
             }
             return super.isSubtype(rhs, lhs);

@@ -23,8 +23,8 @@ import com.sun.source.tree.*;
  */
 /*package-scope*/ class SystemGetPropertyHandler {
 
-    private final ProcessingEnvironment env;
-    private final NullnessAnnotatedTypeFactory factory;
+    private final ProcessingEnvironment processingEnv;
+    private final NullnessAnnotatedTypeFactory atypeFactory;
 
     private final ExecutableElement systemGetProperty;
 
@@ -65,14 +65,14 @@ import com.sun.source.tree.*;
 
     public SystemGetPropertyHandler(ProcessingEnvironment env,
             NullnessAnnotatedTypeFactory factory) {
-        this.env = env;
-        this.factory = factory;
+        this.processingEnv = env;
+        this.atypeFactory = factory;
 
         systemGetProperty = TreeUtils.getMethod("java.lang.System", "getProperty", 1, env);
     }
 
     public void handle(MethodInvocationTree tree, AnnotatedExecutableType method) {
-        if (TreeUtils.isMethodInvocation(tree, systemGetProperty, env)) {
+        if (TreeUtils.isMethodInvocation(tree, systemGetProperty, processingEnv)) {
             List<? extends ExpressionTree> args = tree.getArguments();
             assert args.size() == 1;
             ExpressionTree arg = args.get(0);
@@ -80,7 +80,7 @@ import com.sun.source.tree.*;
                 String literal = (String) ((LiteralTree) arg).getValue();
                 if (systemProperties.contains(literal)) {
                     AnnotatedTypeMirror type = method.getReturnType();
-                    type.replaceAnnotation(factory.NONNULL);
+                    type.replaceAnnotation(atypeFactory.NONNULL);
                 }
             }
         }

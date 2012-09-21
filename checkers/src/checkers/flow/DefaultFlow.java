@@ -53,7 +53,7 @@ public class DefaultFlow<ST extends DefaultFlowState> extends AbstractFlow<ST> {
         int idx = this.flowState.vars.size();
         this.flowState.vars.add(var);
 
-        AnnotatedTypeMirror type = factory.getAnnotatedType(tree);
+        AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(tree);
         assert type != null : "no type from tree: " + tree;
 
         if (debug != null) {
@@ -89,10 +89,10 @@ public class DefaultFlow<ST extends DefaultFlowState> extends AbstractFlow<ST> {
         // Get the element for the left-hand side.
         Element elt = InternalUtils.symbol(lhs);
         assert elt != null : "no symbol found for " + lhs;
-        AnnotatedTypeMirror eltType = factory.getAnnotatedType(elt);
+        AnnotatedTypeMirror eltType = atypeFactory.getAnnotatedType(elt);
 
         // Get the annotated type of the right-hand side.
-        AnnotatedTypeMirror type = factory.getAnnotatedType(rhs);
+        AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(rhs);
         if (TreeUtils.skipParens(rhs).getKind() == Tree.Kind.ARRAY_ACCESS) {
             propagateFromType(lhs, type);
             return;
@@ -256,7 +256,7 @@ public class DefaultFlow<ST extends DefaultFlowState> extends AbstractFlow<ST> {
         final String methodPackage = ElementUtils.enclosingPackage(method).getQualifiedName().toString();
         boolean isJDKMethod = methodPackage.startsWith("java")
                 || methodPackage.startsWith("com.sun");
-        boolean isPure = factory.getDeclAnnotation(method, Pure.class) != null;
+        boolean isPure = atypeFactory.getDeclAnnotation(method, Pure.class) != null;
         if (!isPure) {
             for (int i = 0; i < this.flowState.vars.size(); i++) {
                 Element var = this.flowState.vars.get(i);

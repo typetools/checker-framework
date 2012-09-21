@@ -437,7 +437,7 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
             AnnotationMirror nnAfter =
                 atypeFactory.getDeclAnnotation(TreeUtils.elementFromUse(node), AssertNonNullAfter.class);
             if (nnAfter != null) {
-                List<String> nnAfterValue = AnnotationUtils.elementValueArray(nnAfter, "value");
+                List<String> nnAfterValue = AnnotationUtils.getElementValueArray(nnAfter, "value", String.class, false);
                 Set<VariableElement> elts =
                     ElementUtils.findFieldsInType(
                         TreeUtils.elementFromDeclaration(TreeUtils.enclosingClass(getCurrentPath())),
@@ -568,10 +568,10 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
         if (unused == null)
             return false;
 
-        String when = AnnotationUtils.elementValueClassName(unused, "when");
+        Name when = AnnotationUtils.getElementValueClassName(unused, "when", false);
         for (AnnotationMirror anno : annos) {
             Name annoName = ((TypeElement)anno.getAnnotationType().asElement()).getQualifiedName();
-            if (annoName.toString().equals(when)) {
+            if (annoName.contentEquals(when)) {
                 return true;
             }
         }
@@ -688,8 +688,8 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
                         overriderTree);
                 result = false;
             } else {
-                List<String> overriddenValue = AnnotationUtils.elementValueArray(overriddenAnno, "value");
-                List<String> overriderValue = AnnotationUtils.elementValueArray(overriderAnno, "value");
+                List<String> overriddenValue = AnnotationUtils.getElementValueArray(overriddenAnno, "value", String.class, false);
+                List<String> overriderValue = AnnotationUtils.getElementValueArray(overriderAnno, "value", String.class, false);
 
                 for (String f : overriddenValue) {
                     // The overrider may have additional fields, but all fields from the
@@ -732,8 +732,8 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
                         overriderTree);
                 result = false;
             } else {
-                List<String> overriddenValue = AnnotationUtils.elementValueArray(overriddenAnno, "value");
-                List<String> overriderValue = AnnotationUtils.elementValueArray(overriderAnno, "value");
+                List<String> overriddenValue = AnnotationUtils.getElementValueArray(overriddenAnno, "value", String.class, false);
+                List<String> overriderValue = AnnotationUtils.getElementValueArray(overriderAnno, "value", String.class, false);
 
                 for (String f : overriderValue) {
                     // The overridden method may have additional fields, but all fields from the

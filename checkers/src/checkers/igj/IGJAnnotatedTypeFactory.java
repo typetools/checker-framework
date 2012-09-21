@@ -1,6 +1,6 @@
 package checkers.igj;
 
-import java.util.*;
+import java.lang.annotation.Annotation;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -13,7 +13,6 @@ import checkers.igj.quals.I;
 import checkers.igj.quals.Immutable;
 import checkers.igj.quals.Mutable;
 import checkers.igj.quals.ReadOnly;
-import checkers.types.*;
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -21,9 +20,6 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
 import checkers.types.visitors.AnnotatedTypeScanner;
 import checkers.types.visitors.SimpleAnnotatedTypeVisitor;
-import checkers.util.*;
-
-import com.sun.source.tree.*;
 
 /**
  * Adds implicit and default IGJ annotations, only if the user does not
@@ -144,7 +140,7 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
      */
     private class IGJTypePostAnnotator extends TypeAnnotator {
         public IGJTypePostAnnotator(IGJChecker checker) {
-            super(checker);
+            super(checker, IGJAnnotatedTypeFactory.this);
         }
 
         /**
@@ -393,8 +389,8 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
         Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair = super.methodFromUse(tree);
         AnnotatedExecutableType type = mfuPair.first;
 
-        List<AnnotatedTypeMirror> requiredArgs = atypes.expandVarArgs(type, tree.getArguments());
-        List<AnnotatedTypeMirror> arguments = atypes.getAnnotatedTypes(requiredArgs, tree.getArguments());
+        List<AnnotatedTypeMirror> requiredArgs = AnnotatedTypes.expandVarArgs(this, type, tree.getArguments());
+        List<AnnotatedTypeMirror> arguments = AnnotatedTypes.getAnnotatedTypes(this, requiredArgs, tree.getArguments());
 
         ImmutabilityTemplateCollector collector = new ImmutabilityTemplateCollector();
         Map<String, AnnotationMirror> matchingMapping = collector.visit(arguments, requiredArgs);
@@ -410,7 +406,7 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
             public Void visitDeclared(AnnotatedDeclaredType type, Void p) {
                 if (type.hasAnnotationRelaxed(I)) {
                     AnnotationMirror anno =
-                        type.getAnnotation(I.class.getCanonicalName());
+                        type.getAnnotation(I.class);
                     if (!mapping.containsValue(anno)) {
                         type.removeAnnotation(I);
                         type.addAnnotation(BOTTOM_QUAL);
@@ -474,8 +470,8 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
                 Map<String, AnnotationMirror> p) {
             if (type.hasAnnotationRelaxed(I)) {
                 String immutableString =
-                    AnnotationUtils.parseStringValue(getImmutabilityAnnotation(type),
-                            IMMUTABILITY_KEY);
+                    AnnotationUtils.getElementValue(getImmutabilityAnnotation(type),
+                            IMMUTABILITY_KEY, String.class, true);
                 if (p.containsKey(immutableString)) {
                     type.removeAnnotation(I);
                     type.addAnnotation(p.get(immutableString));
@@ -552,7 +548,7 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
                 return Collections.emptyMap();
 
             assert actualType.getKind() == type.getKind();
-            type = (AnnotatedDeclaredType)atypes.asSuper(type, actualType);
+            type = (AnnotatedDeclaredType) AnnotatedTypes.asSuper(types, IGJAnnotatedTypeFactory.this, type, actualType);
             if (type == null)
                 return Collections.emptyMap();
             AnnotatedDeclaredType dcType = (AnnotatedDeclaredType)actualType;
@@ -562,8 +558,8 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
 
             if (dcType.hasAnnotationRelaxed(I)) {
                 String immutableString =
-                    AnnotationUtils.parseStringValue(getImmutabilityAnnotation(dcType),
-                            IMMUTABILITY_KEY);
+                    AnnotationUtils.getElementValue(getImmutabilityAnnotation(dcType),
+                            IMMUTABILITY_KEY, String.class, true);
                 AnnotationMirror immutability = getImmutabilityAnnotation(type);
                 // TODO: Assertion fails some times
                 // assert immutability != null;
@@ -582,7 +578,7 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
             if (actualType == null)
                 return visit(type.getComponentType(), null);
             if (actualType.getKind() == TypeKind.DECLARED)
-                return visit(atypes.asSuper(type, actualType), actualType);
+                return visit(AnnotatedTypes.asSuper(types, IGJAnnotatedTypeFactory.this, type, actualType), actualType);
 
             if (actualType.getKind() == TypeKind.TYPEVAR) {
                 if (typeVar.contains(actualType.getUnderlyingType()))
@@ -605,10 +601,10 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
 
             if (arType.hasAnnotationRelaxed(I)) {
                 String immutableString =
-                    AnnotationUtils.parseStringValue(getImmutabilityAnnotation(arType),
-                            IMMUTABILITY_KEY);
+                    AnnotationUtils.getElementValue(getImmutabilityAnnotation(arType),
+                            IMMUTABILITY_KEY, String.class, true);
                 AnnotationMirror immutability = getImmutabilityAnnotation(type);
-                // Assertion failes some times
+                // Assertion fails some times
                 assert immutability != null;
                 if (!type.hasEffectiveAnnotation(ASSIGNS_FIELDS))
                     result.put(immutableString, immutability);
@@ -670,7 +666,7 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
         }
 
         private AnnotatedTypeMirror findType(AnnotatedTypeMirror type, AnnotatedTypeMirror actualType) {
-            AnnotatedTypeMirror result = atypes.asSuper(type, actualType);
+            AnnotatedTypeMirror result = AnnotatedTypes.asSuper(types, IGJAnnotatedTypeFactory.this, type, actualType);
             // result shouldn't be null, will test this hypothesis later
             // assert result != null;
             return (result != null ? result : type);
@@ -689,7 +685,7 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
         // this one ensures that it returns @I
         //
         if (type.hasAnnotationRelaxed(I))
-            return type.getAnnotation(I.class.getCanonicalName());
+            return type.getAnnotation(I.class);
         if (hasImmutabilityAnnotation(type)) {
             return type.getAnnotations().iterator().next();
         } else {

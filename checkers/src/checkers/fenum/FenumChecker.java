@@ -8,6 +8,7 @@ import java.util.Set;
 
 import javax.annotation.processing.SupportedOptions;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.util.Elements;
 
 import checkers.fenum.quals.FenumTop;
 import checkers.fenum.quals.Fenum;
@@ -43,9 +44,9 @@ public class FenumChecker extends BaseTypeChecker {
 
     @Override
     public void initChecker() {
-        AnnotationUtils utils = AnnotationUtils.getInstance(processingEnv);
-        BOTTOM = utils.fromClass(Bottom.class);
-        FENUM = utils.fromClass(Fenum.class);
+        Elements elements = processingEnv.getElementUtils();
+        BOTTOM = AnnotationUtils.fromClass(elements, Bottom.class);
+        FENUM = AnnotationUtils.fromClass(elements, Fenum.class);
         super.initChecker();
     }
 

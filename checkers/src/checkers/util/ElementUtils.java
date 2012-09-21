@@ -14,13 +14,12 @@ import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 
 /**
- * A Utility class for analyzing {@code Element}s
- *
+ * A Utility class for analyzing {@code Element}s.
  */
 public class ElementUtils {
 
-    // Cannot be instantiated
-    private ElementUtils() { throw new AssertionError("un-initializable class"); }
+    // Class cannot be instantiated.
+    private ElementUtils() { throw new AssertionError("Class ElementUtils cannot be instantiated."); }
 
     /**
      * Returns the innermost type element enclosing the given element
