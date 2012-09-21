@@ -351,7 +351,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         List<String> asserts;
         AnnotationMirror anno = atypeFactory.getDeclAnnotation(method, AssertNonNullIfTrue.class);
         if (anno != null) {
-            List<String> annitValue = AnnotationUtils.elementValueArray(anno, "value");
+            List<String> annitValue = AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
             asserts = substitutePatternsCall(methodInvok, annitValue);
         } else {
             asserts = Collections.emptyList();
@@ -379,7 +379,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         List<String> asserts;
         AnnotationMirror anno = atypeFactory.getDeclAnnotation(method, AssertNonNullAfter.class);
         if (anno != null) {
-            List<String> annaValue = AnnotationUtils.elementValueArray(anno, "value");
+            List<String> annaValue = AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
             asserts = substitutePatternsCall(methodInvok, annaValue);
         } else {
             asserts = Collections.emptyList();
@@ -400,7 +400,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         List<String> asserts;
         AnnotationMirror anno = atypeFactory.getDeclAnnotation(method, AssertNonNullIfFalse.class);
         if (anno != null) {
-            List<String> annifValue = AnnotationUtils.elementValueArray(anno, "value");
+            List<String> annifValue = AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
             asserts = substitutePatternsCall(methodInvok, annifValue);
         } else {
             asserts = Collections.emptyList();
@@ -421,7 +421,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         List<String> asserts;
         AnnotationMirror anno = atypeFactory.getDeclAnnotation(method, AssertNonNullIfFalse.class);
         if (anno != null) {
-            List<String> annifValue = AnnotationUtils.elementValueArray(anno, "value");
+            List<String> annifValue = AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
             asserts = substitutePatternsCall(methodInvok, annifValue);
         } else {
             asserts = Collections.emptyList();
@@ -717,7 +717,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
 
             AnnotationMirror anno = atypeFactory.getDeclAnnotation(elem, NonNullOnEntry.class);
             if (anno != null) {
-                List<String> fields = AnnotationUtils.elementValueArray(anno, "value");
+                List<String> fields = AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
                 Pair<List<String>, List<VariableElement>> fieldsList =
                         validateNonNullOnEntry(path, myFieldElems, fields);
                 this.flowState.nnExprs.addAll(fieldsList.first);
@@ -787,7 +787,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
     // Also see checkNonNullOnEntry for comparison
     private void checkAssertNonNullAfter(MethodTree meth, ExecutableElement methElem) {
         AnnotationMirror anno = atypeFactory.getDeclAnnotation(methElem, AssertNonNullAfter.class);
-        List<String> annoValues = AnnotationUtils.elementValueArray(anno, "value");
+        List<String> annoValues = AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
         TreePath path = TreePath.getPath(TreeUtils.pathTillClass(getCurrentPath()), meth);
         ClassTree cls = TreeUtils.enclosingClass(atypeFactory.getPath(meth));
 
@@ -833,7 +833,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
      */
     private void checkAssertNonNullIfTrue(MethodTree meth, ExecutableElement methElem, ReturnTree ret) {
         AnnotationMirror anno = atypeFactory.getDeclAnnotation(methElem, AssertNonNullIfTrue.class);
-        List<String> annoValues = AnnotationUtils.elementValueArray(anno, "value");
+        List<String> annoValues = AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
         checkAssertNonNullIfXXX(meth, methElem, ret, annoValues, true);
     }
 
@@ -846,7 +846,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
      */
     private void checkAssertNonNullIfFalse(MethodTree meth, ExecutableElement methElem, ReturnTree ret) {
         AnnotationMirror anno = atypeFactory.getDeclAnnotation(methElem, AssertNonNullIfFalse.class);
-        List<String> annoValues = AnnotationUtils.elementValueArray(anno, "value");
+        List<String> annoValues = AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
         checkAssertNonNullIfXXX(meth, methElem, ret, annoValues, false);
     }
 
@@ -1055,7 +1055,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
                 recvImmediateFields = ElementFilter.fieldsIn(recvElem.getEnclosedElements());
             }
             AnnotationMirror nnoe = atypeFactory.getDeclAnnotation(method, NonNullOnEntry.class);
-            List<String> nnoeExprs = AnnotationUtils.elementValueArray(nnoe, "value");
+            List<String> nnoeExprs = AnnotationUtils.getElementValueArray(nnoe, "value", String.class, false);
 
             for (String nnoeExpr : nnoeExprs) {
                 // TODO: use this instead of the below.
