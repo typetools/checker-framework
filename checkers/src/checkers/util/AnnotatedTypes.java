@@ -1111,7 +1111,6 @@ public class AnnotatedTypes {
         }
 
         // Remove a previously existing unqualified annotation on the type.
-        alub.removeUnqualified();
         alub.replaceAnnotations(unification);
 
         if (alub.getKind() == TypeKind.DECLARED) {
