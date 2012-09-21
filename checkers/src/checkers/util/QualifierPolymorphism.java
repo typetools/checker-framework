@@ -88,11 +88,9 @@ public class QualifierPolymorphism {
             }
             for (AnnotationMirror aa : aam.getAnnotationType().asElement().getAnnotationMirrors() ) {
                 if (aa.getAnnotationType().toString().equals(PolymorphicQualifier.class.getCanonicalName())) {
-                    @SuppressWarnings("unchecked")
-                    Class<? extends Annotation> plval = (Class<? extends Annotation>)
-                                                        AnnotationUtils.parseTypeValue(aa, "value");
+                    Name plval = AnnotationUtils.getElementValueClassName(aa, "value", true);
                     AnnotationMirror ttreetop;
-                    if (PolymorphicQualifier.class.equals(plval)) {
+                    if (PolymorphicQualifier.class.getCanonicalName().contentEquals(plval)) {
                         Set<AnnotationMirror> tops = qualhierarchy.getTopAnnotations();
                         if (tops.size() != 1) {
                             SourceChecker.errorAbort(
@@ -101,7 +99,7 @@ public class QualifierPolymorphism {
                         }
                         ttreetop = tops.iterator().next();
                     } else {
-                        AnnotationMirror ttree = AnnotationUtils.fromClass(elements, plval);
+                        AnnotationMirror ttree = AnnotationUtils.fromName(elements, plval);
                         ttreetop = qualhierarchy.getTopAnnotation(ttree);
                     }
                     if (polys.containsKey(ttreetop)) {
@@ -151,7 +149,7 @@ public class QualifierPolymorphism {
         if (poly == null)
             return null;
         @SuppressWarnings("unchecked")
-        Class<? extends Annotation> ret = (Class<? extends Annotation>) AnnotationUtils.parseTypeValue(poly, "value");
+        Class<? extends Annotation> ret = (Class<? extends Annotation>) AnnotationUtils.getElementValueClass(poly, "value", true);
         return ret;
     }
 
