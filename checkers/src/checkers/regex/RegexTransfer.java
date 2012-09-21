@@ -22,6 +22,7 @@ import checkers.flow.util.FlowExpressionParseUtil;
 import checkers.flow.util.FlowExpressionParseUtil.FlowExpressionContext;
 import checkers.flow.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import checkers.regex.quals.Regex;
+import checkers.util.AnnotationUtils;
 
 public class RegexTransfer extends
         CFAbstractTransfer<CFValue, CFStore, RegexTransfer> {
@@ -74,8 +75,7 @@ public class RegexTransfer extends
                                     .createRegexAnnotation(groupCount);
                             thenStore.insertValue(firstParam, regexAnnotation);
                         } else {
-                            AnnotationMirror regexAnnotation = factory
-                                    .annotationFromClass(Regex.class);
+                            AnnotationMirror regexAnnotation = AnnotationUtils.fromClass(factory.getElementUtils(), Regex.class);
                             thenStore.insertValue(firstParam, regexAnnotation);
                         }
                     } catch (FlowExpressionParseException e) {
@@ -97,8 +97,7 @@ public class RegexTransfer extends
                         Integer groupCount = iln.getValue();
                         regexAnnotation = factory.createRegexAnnotation(groupCount);
                     } else {
-                        regexAnnotation = factory
-                                .annotationFromClass(Regex.class);
+                        regexAnnotation = AnnotationUtils.fromClass(factory.getElementUtils(), Regex.class);
                     }
                     CFValue newResultValue = analysis
                             .createAbstractValue(Collections

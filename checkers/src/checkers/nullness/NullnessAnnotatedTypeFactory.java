@@ -8,7 +8,6 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Elements;
 
 import checkers.basetype.BaseTypeChecker;
-import checkers.flow.Flow;
 import checkers.nullness.quals.*;
 import checkers.quals.DefaultLocation;
 import checkers.quals.DefaultQualifier;

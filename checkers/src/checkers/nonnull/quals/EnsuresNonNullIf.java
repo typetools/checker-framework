@@ -7,7 +7,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import checkers.quals.ConditionalPostconditionAnnotation;
-import checkers.quals.PostconditionAnnotation;
 
 /**
  * A conditional postcondition annotation to indicate that a method ensures

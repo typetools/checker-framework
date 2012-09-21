@@ -65,9 +65,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
     // and maybe have an interface for all the methods for which it's safe
     // to override
 
-    /** Provides access to compiler helpers/internals. */
-    protected ProcessingEnvironment env;
-
     /** file name of the localized messages */
     private static final String MSGS_FILE = "messages.properties";
 
@@ -107,6 +104,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
      */
     private Pattern skipDefsPattern;
 
+    /** The supported lint options */
+    private Set<String> supportedLints;
+
     /** The chosen lint options that have been enabled by programmer */
     private Set<String> activeLints;
 
@@ -118,7 +118,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
      *         checker
      */
     public ProcessingEnvironment getProcessingEnvironment() {
-        return this.env;
+        return this.processingEnv;
+    }
+
+    /* This method is package visible only to allow the AggregateChecker. */
+    /* package-visible */
+    void setProcessingEnvironment(ProcessingEnvironment env) {
+        this.processingEnv = env;
     }
 
     /**
@@ -199,6 +205,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         return getSkipPattern("skipDefs", options);
     }
 
+    // TODO: do we want this?
+    // Cache the keys that we already warned about to prevent repetitions.
+    // private Set<String> warnedOnLint = new HashSet<String>();
+
     private Set<String> createActiveLints(Map<String, String> options) {
         if (!options.containsKey("lint"))
             return Collections.emptySet();
@@ -210,12 +220,22 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
 
         Set<String> activeLint = new HashSet<String>();
         for (String s : lintString.split(",")) {
+            if (!this.getSupportedLintOptions().contains(s) &&
+                    !(s.charAt(0) == '-' && this.getSupportedLintOptions().contains(s.substring(1))) &&
+                    !s.equals("all") &&
+                    !s.equals("none") /*&&
+                    !warnedOnLint.contains(s)*/) {
+                this.messager.printMessage(javax.tools.Diagnostic.Kind.WARNING,
+                        "Unsupported lint option: " + s + "; All options: " + this.getSupportedLintOptions());
+                // warnedOnLint.add(s);
+            }
+
             activeLint.add(s);
             if (s.equals("none"))
                 activeLint.add("-all");
         }
 
-        return activeLint;
+        return Collections.unmodifiableSet(activeLint);
     }
 
     /**
@@ -247,8 +267,10 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
 
     private void logCheckerError(CheckerError ce) {
         StringBuilder msg = new StringBuilder(ce.getMessage());
-        if (processingEnv.getOptions().containsKey("printErrorStack") &&
-                ce.getCause()!=null) {
+        if ((processingEnv == null ||
+                processingEnv.getOptions() == null ||
+                processingEnv.getOptions().containsKey("printErrorStack")) &&
+                ce.getCause() != null) {
             msg.append("\nException: " +
                             ce.getCause().toString() + ": " + formatStackTrace(ce.getCause().getStackTrace()));
             Throwable cause = ce.getCause().getCause();
@@ -259,17 +281,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
                 cause = cause.getCause();
             }
         }
-        this.messager.printMessage(javax.tools.Diagnostic.Kind.ERROR, msg);
+        if (this.messager != null) {
+            this.messager.printMessage(javax.tools.Diagnostic.Kind.ERROR, msg);
+        } else {
+            System.err.println("Exception before having a messager set up: " + msg);
+        }
     }
-
-    /**
-     * Remember whether a CheckerError occurred during
-     * the initChecker call.
-     * We do not want to throw an exception in "init" and therefore
-     * use this field to remember whether something happened and then
-     * in "typeProcess" we abort.
-     */
-    private boolean errorInInit = false;
 
     /**
      * {@inheritDoc}
@@ -280,29 +297,23 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
      * require all overriding implementations to be aware of CheckerError.
      *
      * @see AbstractProcessor#init(ProcessingEnvironment)
-     * @see SourceChecker#initChecker(ProcessingEnvironment)
+     * @see SourceChecker#initChecker()
      */
     @Override
-    public final synchronized void init(ProcessingEnvironment processingEnv) {
+    public void typeProcessingStart() {
         try {
-            super.init(processingEnv);
+            super.typeProcessingStart();
             initChecker();
-            if (this.env == null) {
-                errorInInit = true;
-                // Set the messager first, as it wasn't initialized
-                messager = processingEnv.getMessager();
+            if (this.messager == null) {
+                messager = (JavacMessager) processingEnv.getMessager();
                 messager.printMessage(
                         javax.tools.Diagnostic.Kind.WARNING,
                         "You have forgotten to call super.initChecker in your "
                                 + "subclass of SourceChecker! Please ensure your checker is properly initialized.");
             }
         } catch (CheckerError ce) {
-            errorInInit = true;
-            if (messager == null) messager = (JavacMessager) processingEnv.getMessager();
             logCheckerError(ce);
         } catch (Throwable t) {
-            errorInInit = true;
-            if (messager == null) messager = (JavacMessager) processingEnv.getMessager();
             logCheckerError(new CheckerError("SourceChecker.init: unexpected Throwable (" +
                     t.getClass().getSimpleName() + "); message: " + t.getMessage(), t));
         }
@@ -314,8 +325,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
      * @see AbstractProcessor#init(ProcessingEnvironment)
      */
     public void initChecker() {
-        this.env = processingEnv;
-
         this.skipUsesPattern = getSkipUsesPattern(processingEnv.getOptions());
         this.skipDefsPattern = getSkipDefsPattern(processingEnv.getOptions());
 
@@ -338,7 +347,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
     // The number of errors at the last exit of the type processor.
     // At entry to the type processor we check whether the current error count is
     // higher and then don't process the file, as it contains some Java errors.
-    private int errsOnLastExit = 0;
+    // Needs to be package-visible to allow access from AggregateChecker.
+    /* package-visible */
+    int errsOnLastExit = 0;
 
     /**
      * Type-check the code with Java specifications and then runs the Checker
@@ -348,29 +359,25 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
      */
     @Override
     public void typeProcess(TypeElement e, TreePath p) {
-        if(e==null) {
+        if (e == null) {
             messager.printMessage(javax.tools.Diagnostic.Kind.ERROR,
                     "Refusing to process empty TypeElement");
             return;
         }
-        if(p==null) {
+        if (p == null) {
             messager.printMessage(javax.tools.Diagnostic.Kind.ERROR,
                     "Refusing to process empty TreePath in TypeElement: " + e);
             return;
         }
-        if(errorInInit) {
-            // Nothing to do, message output already.
-            return;
-        }
 
-        com.sun.tools.javac.code.Source source = com.sun.tools.javac.code.Source.instance(((com.sun.tools.javac.processing.JavacProcessingEnvironment) env).getContext());
+        Context context = ((JavacProcessingEnvironment)processingEnv).getContext();
+        com.sun.tools.javac.code.Source source = com.sun.tools.javac.code.Source.instance(context);
         if ((! warnedAboutSourceLevel) && (! source.allowTypeAnnotations())) {
             messager.printMessage(javax.tools.Diagnostic.Kind.WARNING,
                                   "-source " + source.name + " does not support type annotations");
             warnedAboutSourceLevel = true;
         }
 
-        Context context = ((JavacProcessingEnvironment)processingEnv).getContext();
         Log log = Log.instance(context);
         if (log.nerrors > this.errsOnLastExit) {
             this.errsOnLastExit = log.nerrors;
@@ -488,11 +495,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
 
         final String defaultFormat = String.format("(%s)", msgKey);
         String fmtString;
-        if (this.env.getOptions() != null /*nnbug*/
-                && this.env.getOptions().containsKey("nomsgtext"))
+        if (this.processingEnv.getOptions() != null /*nnbug*/
+                && this.processingEnv.getOptions().containsKey("nomsgtext")) {
             fmtString = defaultFormat;
-        else
+        } else {
             fmtString = fullMessageOf(msgKey, defaultFormat);
+        }
         String messageText = String.format(fmtString, args);
 
         // Replace '\n' with the proper line separator
@@ -502,7 +510,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         if (source instanceof Element)
             messager.printMessage(kind, messageText, (Element) source);
         else if (source instanceof Tree)
-            Trees.instance(env).printMessage(kind, messageText, (Tree) source,
+            Trees.instance(processingEnv).printMessage(kind, messageText, (Tree) source,
                     currentRoot);
         else
             SourceChecker.errorAbort("invalid position source: "
@@ -700,6 +708,60 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
     }
 
     /**
+     * Set the value of the lint option with the given name.  Just
+     * as <a
+     * href="http://docs.oracle.com/javase/1.5.0/docs/tooldocs/solaris/javac.html">javac</a>
+     * uses "-Xlint:xxx" to enable and "-Xlint:-xxx" to disable option xxx,
+     * annotation-related lint options are enabled with "-Alint=xxx" and
+     * disabled with "-Alint=-xxx".
+     * This method can be used by subclasses to enforce having certain lint
+     * options enabled/disabled.
+     *
+     * @throws IllegalArgumentException if the option name is not recognized
+     *         via the {@link SupportedLintOptions} annotation or the {@link
+     *         SourceChecker#getSupportedLintOptions} method
+     * @param name the name of the lint option to set
+     * @param val the option value
+     *
+     * @see SourceChecker#getLintOption(String)
+     * @see SourceChecker#getLintOption(String,boolean)
+     */
+    protected final void setLintOption(String name, boolean val) {
+        if (!this.getSupportedLintOptions().contains(name)) {
+            errorAbort("Illegal lint option: " + name);
+        }
+
+        /* TODO: warn if the option is also provided on the command line(?)
+        boolean exists = false;
+        if (!activeLints.isEmpty()) {
+            String tofind = name;
+            while (tofind != null) {
+                if (activeLints.contains(tofind) || // direct
+                        activeLints.contains(String.format("-%s", tofind)) || // negation
+                        activeLints.contains(tofind.substring(1))) { // name was negation
+                    exists = true;
+                }
+                tofind = parentOfOption(tofind);
+            }
+        }
+
+        if (exists) {
+            // TODO: Issue warning?
+        }
+        TODO: assert that name doesn't start with '-'
+        */
+
+        Set<String> newlints = new HashSet<String>();
+        newlints.addAll(activeLints);
+        if (val) {
+            newlints.add(name);
+        } else {
+            newlints.add(String.format("-%s", name));
+        }
+        activeLints = Collections.unmodifiableSet(newlints);
+    }
+
+    /**
      * Helper method to find the parent of a lint key.  The lint hierarchy
      * level is donated by a colon ':'.  'all' is the root for all hierarchy.
      *
@@ -726,6 +788,16 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
      *         this checker
      */
     public Set<String> getSupportedLintOptions() {
+        if (supportedLints == null) {
+            supportedLints = createSupportedLintOptions();
+        }
+        return supportedLints;
+    }
+
+    /**
+     * Compute the set of supported lint options.
+     */
+    protected Set<String> createSupportedLintOptions() {
         /*@Nullable*/ SupportedLintOptions sl =
             this.getClass().getAnnotation(SupportedLintOptions.class);
 
@@ -741,6 +813,17 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
             lintSet.add(s);
         return Collections.</*@NonNull*/ String>unmodifiableSet(lintSet);
 
+    }
+
+    /**
+     * Set the supported lint options.
+     * Use of this method should be limited to the AggregateChecker,
+     * who needs to set the lint options to the union of all subcheckers.
+     * Also, e.g. the NullnessSubchecker/RawnessSubchecker need to
+     * use this method, as one is created by the other.
+     */
+    protected void setSupportedLintOptions(Set<String> newlints) {
+        supportedLints = newlints;
     }
 
     /*

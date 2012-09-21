@@ -35,6 +35,6 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker>
     @Override
     protected CFAnalysis createFlowAnalysis(Checker checker,
             List<Pair<VariableElement, CFValue>> fieldValues) {
-        return new CFAnalysis(this, getEnv(), checker, fieldValues);
+        return new CFAnalysis(this, processingEnv, checker, fieldValues);
     }
 }

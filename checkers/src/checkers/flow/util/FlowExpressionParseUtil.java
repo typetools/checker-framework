@@ -97,7 +97,7 @@ public class FlowExpressionParseUtil {
         Matcher methodMatcher = methodPattern.matcher(s);
         Matcher dotMatcher = dotPattern.matcher(s);
 
-        ProcessingEnvironment env = context.factory.getEnv();
+        ProcessingEnvironment env = context.atypeFactory.getProcessingEnv();
 
         // this literal
         if (selfMatcher.matches() && allowSelf) {
@@ -169,7 +169,7 @@ public class FlowExpressionParseUtil {
         public final TypeMirror receiverType;
         public final Receiver receiver;
         public final List<Receiver> arguments;
-        public final AnnotatedTypeFactory factory;
+        public final AnnotatedTypeFactory atypeFactory;
 
         public FlowExpressionContext(TypeMirror receiverType,
                 Receiver receiver, List<Receiver> arguments,
@@ -178,7 +178,7 @@ public class FlowExpressionParseUtil {
             this.receiverType = receiverType;
             this.receiver = receiver;
             this.arguments = arguments;
-            this.factory = factory;
+            this.atypeFactory = factory;
         }
 
         /**
@@ -187,7 +187,7 @@ public class FlowExpressionParseUtil {
          */
         public FlowExpressionContext changeReceiver(Receiver receiver) {
             return new FlowExpressionContext(receiver.getType(), receiver,
-                    arguments, factory);
+                    arguments, atypeFactory);
         }
     }
 

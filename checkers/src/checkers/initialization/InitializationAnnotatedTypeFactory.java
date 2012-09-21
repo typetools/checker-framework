@@ -103,7 +103,7 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
      *
      */
     @Override
-    protected void postAsMemberOf(AnnotatedTypeMirror type,
+    public void postAsMemberOf(AnnotatedTypeMirror type,
             AnnotatedTypeMirror owner, Element element) {
         super.postAsMemberOf(type, owner, element);
 
@@ -252,7 +252,7 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
 
     protected class CommitmentTypeAnnotator extends TypeAnnotator {
         public CommitmentTypeAnnotator(BaseTypeChecker checker) {
-            super(checker);
+            super(checker, InitializationAnnotatedTypeFactory.this);
         }
 
         @Override

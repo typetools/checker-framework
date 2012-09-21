@@ -79,9 +79,8 @@ public class PurityUtils {
         if (purityAnnotation == null) {
             return Collections.emptyList();
         }
-        List<Pure.Kind> kinds = AnnotationUtils
-                .elementValueEnumArrayWithDefaults(purityAnnotation, "value",
-                        Pure.Kind.class);
+        List<Pure.Kind> kinds = AnnotationUtils.getElementValueEnumArray(purityAnnotation, "value",
+                        Pure.Kind.class, true);
         return kinds;
     }
 

@@ -41,6 +41,7 @@ import checkers.flow.util.FlowExpressionParseUtil.FlowExpressionContext;
 import checkers.flow.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
+import checkers.util.AnnotationUtils;
 import checkers.util.ElementUtils;
 import checkers.util.InternalUtils;
 import checkers.util.Pair;
@@ -76,7 +77,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
 
     public CFAbstractTransfer(CFAbstractAnalysis<V, S, T> analysis) {
         this.analysis = analysis;
-        this.sequentialSemantics = !analysis.factory.getEnv().getOptions()
+        this.sequentialSemantics = !analysis.atypeFactory.getProcessingEnv().getOptions()
                 .containsKey("concurrentSemantics");
     }
 
@@ -86,7 +87,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
      */
     protected V getValueFromFactory(Tree tree) {
         analysis.setCurrentTree(tree);
-        AnnotatedTypeMirror at = analysis.factory.getAnnotatedType(tree);
+        AnnotatedTypeMirror at = analysis.atypeFactory.getAnnotatedType(tree);
         analysis.setCurrentTree(null);
         return analysis.createAbstractValue(at.getAnnotations());
     }
@@ -98,7 +99,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
      */
     protected V getEffectiveValueFromFactory(Tree tree) {
         analysis.setCurrentTree(tree);
-        AnnotatedTypeMirror at = analysis.factory.getAnnotatedType(tree);
+        AnnotatedTypeMirror at = analysis.atypeFactory.getAnnotatedType(tree);
         analysis.setCurrentTree(null);
         return analysis.createAbstractValue(at.getEffectiveAnnotations());
     }
@@ -158,15 +159,14 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
     protected void addInformationFromPreconditions(S info,
             AnnotatedTypeFactory factory, CFGMethod method,
             MethodTree methodTree, ExecutableElement methodElement) {
-        ContractsUtils contracts = ContractsUtils.getInstance(analysis.factory);
+        ContractsUtils contracts = ContractsUtils.getInstance(analysis.atypeFactory);
         FlowExpressionContext flowExprContext = null;
         Set<Pair<String, String>> preconditions = contracts
                 .getPreconditions(methodElement);
 
         for (Pair<String, String> p : preconditions) {
             String expression = p.first;
-            AnnotationMirror annotation = analysis.getFactory()
-                    .annotationFromName(p.second);
+            AnnotationMirror annotation = AnnotationUtils.fromName(analysis.getFactory().getElementUtils(), p.second);
 
             // Only check if the postcondition concerns this checker
             if (!analysis.getFactory().getChecker()
@@ -186,7 +186,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
                 // be optimized to store the result the first time.
                 // (same for other annotations)
                 expr = FlowExpressionParseUtil.parse(expression,
-                        flowExprContext, analysis.factory.getPath(methodTree));
+                        flowExprContext, analysis.atypeFactory.getPath(methodTree));
                 info.insertValue(expr, annotation);
             } catch (FlowExpressionParseException e) {
                 // report errors here
@@ -437,7 +437,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
         V storeValue = store.getValue(n);
         V resValue = moreSpecificValue(factoryValue, storeValue);
 
-        store.updateForMethodCall(n, analysis.factory, resValue);
+        store.updateForMethodCall(n, analysis.atypeFactory, resValue);
 
         // add new information based on postcondition
         processPostconditions(n, store, method, tree);
@@ -457,7 +457,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
      */
     protected void processPostconditions(MethodInvocationNode n, S store,
             ExecutableElement methodElement, Tree tree) {
-        ContractsUtils contracts = ContractsUtils.getInstance(analysis.factory);
+        ContractsUtils contracts = ContractsUtils.getInstance(analysis.atypeFactory);
         Set<Pair<String, String>> postconditions = contracts
                 .getPostconditions(methodElement);
 
@@ -465,8 +465,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
 
         for (Pair<String, String> p : postconditions) {
             String expression = p.first;
-            AnnotationMirror anno = analysis.factory
-                    .annotationFromName(p.second);
+            AnnotationMirror anno = AnnotationUtils.fromName(analysis.getFactory().getElementUtils(), p.second);
 
             // Only check if the postcondition concerns this checker
             if (!analysis.getFactory().getChecker().isSupportedAnnotation(anno)) {
@@ -480,7 +479,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
             try {
                 FlowExpressions.Receiver r = FlowExpressionParseUtil.parse(
                         expression, flowExprContext,
-                        analysis.factory.getPath(tree));
+                        analysis.atypeFactory.getPath(tree));
                 store.insertValue(r, anno);
             } catch (FlowExpressionParseException e) {
                 // these errors are reported at the declaration, ignore here
@@ -495,7 +494,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
      */
     protected void processConditionalPostconditions(MethodInvocationNode n,
             ExecutableElement methodElement, Tree tree, S thenStore, S elseStore) {
-        ContractsUtils contracts = ContractsUtils.getInstance(analysis.factory);
+        ContractsUtils contracts = ContractsUtils.getInstance(analysis.atypeFactory);
         Set<Pair<String, Pair<Boolean, String>>> conditionalPostconditions = contracts
                 .getConditionalPostconditions(methodElement);
 
@@ -503,8 +502,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
 
         for (Pair<String, Pair<Boolean, String>> p : conditionalPostconditions) {
             String expression = p.first;
-            AnnotationMirror anno = analysis.factory
-                    .annotationFromName(p.second.second);
+            AnnotationMirror anno = AnnotationUtils.fromName(analysis.getFactory().getElementUtils(), p.second.second);
             boolean result = p.second.first;
 
             // Only check if the postcondition concerns this checker
@@ -519,7 +517,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
             try {
                 FlowExpressions.Receiver r = FlowExpressionParseUtil.parse(
                         expression, flowExprContext,
-                        analysis.factory.getPath(tree));
+                        analysis.atypeFactory.getPath(tree));
                 if (result) {
                     thenStore.insertValue(r, anno);
                 } else {

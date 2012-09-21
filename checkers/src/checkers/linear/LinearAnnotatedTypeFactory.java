@@ -10,7 +10,6 @@ import com.sun.source.tree.*;
 import checkers.basetype.BaseTypeChecker;
 import checkers.flow.DefaultFlow;
 import checkers.flow.DefaultFlowState;
-import checkers.flow.Flow;
 import checkers.linear.quals.*;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
