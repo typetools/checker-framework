@@ -4,8 +4,8 @@ import static org.junit.Assert.*;
 import checkers.igj.quals.I;
 import checkers.nullness.quals.NonNull;
 import checkers.source.SourceChecker;
+import checkers.util.AnnotationBuilder;
 import checkers.util.AnnotationUtils;
-import checkers.util.AnnotationUtils.AnnotationBuilder;
 
 import java.util.Collections;
 
