@@ -3,6 +3,7 @@ package checkers.regex;
 import java.util.regex.Pattern;
 
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.util.Elements;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.quals.PolyAll;
@@ -25,16 +26,18 @@ import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
     Unqualified.class, PolyRegex.class, PolyAll.class })
 public class RegexChecker extends BaseTypeChecker {
 
-    protected AnnotationMirror REGEX, PARTIALREGEX;
+    protected AnnotationMirror REGEX, REGEXBOTTOM, PARTIALREGEX;
+
     // TODO use? private TypeMirror[] legalReferenceTypes;
 
     @Override
     public void initChecker() {
         super.initChecker();
 
-        AnnotationUtils annoFactory = AnnotationUtils.getInstance(processingEnv);
-        REGEX = annoFactory.fromClass(Regex.class);
-        PARTIALREGEX = annoFactory.fromClass(PartialRegex.class);
+        Elements elements = processingEnv.getElementUtils();
+        REGEX = AnnotationUtils.fromClass(elements, Regex.class);
+        REGEXBOTTOM = AnnotationUtils.fromClass(elements, RegexBottom.class);
+        PARTIALREGEX = AnnotationUtils.fromClass(elements, PartialRegex.class);
 
         /*
         legalReferenceTypes = new TypeMirror[] {
@@ -54,7 +57,7 @@ public class RegexChecker extends BaseTypeChecker {
 
     @Override
     public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
-        return new RegexQualifierHierarchy(factory, AnnotationUtils.getInstance(processingEnv).fromClass(RegexBottom.class));
+        return new RegexQualifierHierarchy(factory, REGEXBOTTOM);
     }
 
     /**
@@ -100,7 +103,7 @@ public class RegexChecker extends BaseTypeChecker {
          * Gets the value out of a regex annotation.
          */
         private int getRegexValue(AnnotationMirror anno) {
-            return AnnotationUtils.elementValueWithDefaults(anno, "value", Integer.class);
+            return (Integer) AnnotationUtils.getElementValuesWithDefaults(anno).get(regexValueElement).getValue();
         }
     }
 
@@ -109,11 +112,12 @@ public class RegexChecker extends BaseTypeChecker {
      * there's a problem getting the group count value.
      */
     public int getGroupCount(AnnotationMirror anno) {
+        AnnotationValue groupCountValue = AnnotationUtils.getElementValuesWithDefaults(anno).get(regexValueElement);
         // If group count value is null then there's no Regex annotation
         // on the parameter so set the group count to 0. This would happen
         // if a non-regex string is passed to Pattern.compile but warnings
         // are suppressed.
-        return anno == null ? 0 : AnnotationUtils.elementValueWithDefaults(anno, "value", Integer.class);
+        return (groupCountValue == null) ? 0 : (Integer) groupCountValue.getValue();
     }
 
     /**

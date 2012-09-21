@@ -1,6 +1,7 @@
 package checkers.nullness;
 
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.util.Elements;
 
 import com.sun.source.tree.CompilationUnitTree;
 
@@ -49,12 +50,13 @@ public class NullnessSubchecker extends BaseTypeChecker {
     @Override
     public void initChecker() {
         super.initChecker();
-        AnnotationUtils annoFactory = AnnotationUtils.getInstance(processingEnv);
-        NONNULL = annoFactory.fromClass(NonNull.class);
-        NULLABLE = annoFactory.fromClass(Nullable.class);
-        LAZYNONNULL = annoFactory.fromClass(LazyNonNull.class);
-        PRIMITIVE = annoFactory.fromClass(Primitive.class);
-        POLYNULL = annoFactory.fromClass(PolyNull.class);
+
+        Elements elements = processingEnv.getElementUtils();
+        NONNULL = AnnotationUtils.fromClass(elements, NonNull.class);
+        NULLABLE = AnnotationUtils.fromClass(elements, Nullable.class);
+        LAZYNONNULL = AnnotationUtils.fromClass(elements, LazyNonNull.class);
+        PRIMITIVE = AnnotationUtils.fromClass(elements, Primitive.class);
+        POLYNULL = AnnotationUtils.fromClass(elements, PolyNull.class);
 
         rawnesschecker = new RawnessSubchecker();
         rawnesschecker.initChecker(this);

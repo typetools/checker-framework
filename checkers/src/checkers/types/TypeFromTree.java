@@ -1,6 +1,12 @@
 package checkers.types;
 
-import java.util.*;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeKind;
@@ -12,6 +18,7 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
+import checkers.util.AnnotatedTypes;
 import checkers.util.AnnotationUtils;
 import checkers.util.InternalUtils;
 import checkers.util.TreeUtils;
@@ -131,11 +138,11 @@ abstract class TypeFromTree extends
             // instead of:
             AnnotatedTypeMirror alub = f.type(node);
             AnnotatedTypeMirror assuper;
-            assuper = f.atypes.asSuper(trueType, alub);
+            assuper = AnnotatedTypes.asSuper(f.types, f, trueType, alub);
             if (assuper != null) {
                 trueType = assuper;
             }
-            assuper = f.atypes.asSuper(falseType, alub);
+            assuper = AnnotatedTypes.asSuper(f.types, f, falseType, alub);
             if (assuper != null) {
                 falseType = assuper;
             }
@@ -150,7 +157,7 @@ abstract class TypeFromTree extends
             List<AnnotatedTypeMirror> types = new ArrayList<AnnotatedTypeMirror>();
             types.add(trueType);
             types.add(falseType);
-            f.atypes.annotateAsLub(alub, types);
+            AnnotatedTypes.annotateAsLub(f.processingEnv, f, alub, types);
 
             return alub;
         }
@@ -167,7 +174,7 @@ abstract class TypeFromTree extends
             Element elt = TreeUtils.elementFromUse(node);
             AnnotatedTypeMirror selfType = f.getImplicitReceiverType(node);
             if (selfType != null) {
-                return f.atypes.asMemberOf(selfType, elt);
+                return AnnotatedTypes.asMemberOf(f.types, f, selfType, elt);
             }
 
             return f.getAnnotatedType(elt);
@@ -202,7 +209,7 @@ abstract class TypeFromTree extends
                 // We need the original t with the implicit annotations
                 AnnotatedTypeMirror t = f.getAnnotatedType(node.getExpression());
                 if (t instanceof AnnotatedDeclaredType)
-                    return f.atypes.asMemberOf(t, elt);
+                    return AnnotatedTypes.asMemberOf(f.types, f, t, elt);
             }
 
             return f.fromElement(elt);
@@ -533,7 +540,7 @@ abstract class TypeFromTree extends
             List<AnnotatedTypeMirror> bounds = new LinkedList<AnnotatedTypeMirror>();
             for (Tree t : node.getBounds()) {
                 AnnotatedTypeMirror bound;
-                if (visitedBounds.containsKey(t) && f == visitedBounds.get(t).typeFactory) {
+                if (visitedBounds.containsKey(t) && f == visitedBounds.get(t).atypeFactory) {
                     bound = visitedBounds.get(t);
                 } else {
                     visitedBounds.put(t, f.type(t));
@@ -559,7 +566,7 @@ abstract class TypeFromTree extends
                 AnnotatedDeclaredType upperBound = (AnnotatedDeclaredType)result.getUpperBound();
                 assert TypesUtils.isAnonymousType(upperBound.getUnderlyingType());
 
-                List<AnnotatedDeclaredType> superBounds = new ArrayList<AnnotatedDeclaredType>();
+                List<AnnotatedDeclaredType> superBounds = new ArrayList<AnnotatedDeclaredType>(bounds.size());
                 for (AnnotatedTypeMirror b : bounds) {
                     superBounds.add((AnnotatedDeclaredType)b);
                 }

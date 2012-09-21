@@ -4,6 +4,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.util.Elements;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.quals.Bottom;
@@ -26,9 +27,9 @@ public final class FlowTestChecker extends BaseTypeChecker {
 
     @Override
     public void initChecker() {
-        AnnotationUtils annoFactory = AnnotationUtils.getInstance(processingEnv);
-        VALUE = annoFactory.fromClass(Value.class);
-        BOTTOM = annoFactory.fromClass(Bottom.class);
+        Elements elements = processingEnv.getElementUtils();
+        VALUE = AnnotationUtils.fromClass(elements, Value.class);
+        BOTTOM = AnnotationUtils.fromClass(elements, Bottom.class);
 
         super.initChecker();
     }

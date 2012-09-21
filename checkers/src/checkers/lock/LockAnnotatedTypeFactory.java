@@ -1,7 +1,5 @@
 package checkers.lock;
 
-import static checkers.util.AnnotationUtils.elementValue;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -12,8 +10,8 @@ import checkers.lock.quals.GuardedBy;
 import checkers.quals.Unqualified;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.BasicAnnotatedTypeFactory;
+import checkers.util.AnnotationBuilder;
 import checkers.util.AnnotationUtils;
-import checkers.util.AnnotationUtils.AnnotationBuilder;
 import checkers.util.TreeUtils;
 import checkers.util.TypesUtils;
 
@@ -39,7 +37,7 @@ public class LockAnnotatedTypeFactory
     public LockAnnotatedTypeFactory(LockChecker checker,
             CompilationUnitTree root) {
         super(checker, root);
-        GUARDED_BY = annotations.fromClass(GuardedBy.class);
+        GUARDED_BY = AnnotationUtils.fromClass(elements, GuardedBy.class);
         this.postInit();
     }
 
@@ -57,7 +55,7 @@ public class LockAnnotatedTypeFactory
             return;
         }
 
-        String lock = elementValue(guarded, "value", String.class);
+        String lock = AnnotationUtils.getElementValue(guarded, "value", String.class, false);
         if (heldLocks.contains(lock)) {
             type.clearAnnotations();
             type.addAnnotation(Unqualified.class);
@@ -65,8 +63,8 @@ public class LockAnnotatedTypeFactory
     }
 
     private AnnotationMirror createGuarded(String lock) {
-        AnnotationUtils.AnnotationBuilder builder =
-            new AnnotationUtils.AnnotationBuilder(env, GuardedBy.class.getCanonicalName());
+        AnnotationBuilder builder =
+            new AnnotationBuilder(processingEnv, GuardedBy.class.getCanonicalName());
         builder.setValue("value", lock);
         return builder.build();
     }
@@ -91,8 +89,8 @@ public class LockAnnotatedTypeFactory
         if (!type.hasAnnotationRelaxed(GUARDED_BY) || isMostEnclosingThisDeref(expr))
             return;
 
-        AnnotationMirror guardedBy = type.getAnnotation(GuardedBy.class.getCanonicalName());
-        if (!"this".equals(elementValue(guardedBy, "value", String.class)))
+        AnnotationMirror guardedBy = type.getAnnotation(GuardedBy.class);
+        if (!"this".equals(AnnotationUtils.getElementValue(guardedBy, "value", String.class, false)))
             return;
         ExpressionTree receiver = receiver(expr);
         assert receiver != null;
@@ -113,8 +111,8 @@ public class LockAnnotatedTypeFactory
         if (!type.hasAnnotationRelaxed(GUARDED_BY))
             return;
 
-        AnnotationMirror guardedBy = type.getAnnotation(GuardedBy.class.getCanonicalName());
-        if (!"itself".equals(elementValue(guardedBy, "value", String.class)))
+        AnnotationMirror guardedBy = type.getAnnotation(GuardedBy.class);
+        if (!"itself".equals(AnnotationUtils.getElementValue(guardedBy, "value", String.class, false)))
             return;
 
         AnnotationMirror newAnno = createGuarded(expr.toString());
@@ -122,9 +120,17 @@ public class LockAnnotatedTypeFactory
         type.addAnnotation(newAnno);
     }
 
+    // TODO: Aliasing is not handled nicely by getAnnotation.
+    // It would be nicer if we only needed to write one class here and
+    // aliases were resolved internally.
+    protected boolean hasGuardedBy(AnnotatedTypeMirror t) {
+        return t.hasAnnotation(checkers.lock.quals.GuardedBy.class) ||
+               t.hasAnnotation(net.jcip.annotations.GuardedBy.class);
+    }
+
     @Override
-    protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type) {
-        if (!LockVisitor.hasGuardedBy(type)) {
+    public void annotateImplicit(Tree tree, AnnotatedTypeMirror type) {
+        if (!hasGuardedBy(type)) {
             /* TODO: I added STRING_LITERAL to the list of types that should get defaulted.
              * This resulted in Flow inference to infer Unqualified for strings, which is a
              * subtype of guardedby. This broke the Constructors test case.
@@ -142,8 +148,8 @@ public class LockAnnotatedTypeFactory
     public AnnotationMirror aliasedAnnotation(AnnotationMirror a) {
         if (TypesUtils.isDeclaredOfName(a.getAnnotationType(),
                 net.jcip.annotations.GuardedBy.class.getCanonicalName())) {
-            AnnotationBuilder builder = new AnnotationBuilder(env, GuardedBy.class);
-            builder.setValue("value", AnnotationUtils.parseStringValue(a, "value"));
+            AnnotationBuilder builder = new AnnotationBuilder(processingEnv, GuardedBy.class);
+            builder.setValue("value", AnnotationUtils.getElementValue(a, "value", String.class, false));
             return builder.build();
         } else {
             return super.aliasedAnnotation(a);

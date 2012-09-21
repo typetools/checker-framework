@@ -49,12 +49,10 @@ public class TypeAnnotator extends AnnotatedTypeScanner<Void, ElementKind> {
      *
      * @param checker the type checker to which this annotator belongs
      */
-    public TypeAnnotator(BaseTypeChecker checker) {
+    public TypeAnnotator(BaseTypeChecker checker, AnnotatedTypeFactory atypeFactory) {
 
         this.typeKinds = new EnumMap<TypeKind, AnnotationMirror>(TypeKind.class);
         this.typeClasses = new HashMap<Class<?>, AnnotationMirror>();
-
-        AnnotationUtils annoFactory = AnnotationUtils.getInstance(checker.getProcessingEnvironment());
 
         // Get type qualifiers from the checker.
         Set<Class<? extends Annotation>> quals = checker.getSupportedTypeQualifiers();
@@ -65,7 +63,7 @@ public class TypeAnnotator extends AnnotatedTypeScanner<Void, ElementKind> {
             ImplicitFor implicit = qual.getAnnotation(ImplicitFor.class);
             if (implicit == null) continue;
 
-            AnnotationMirror theQual = annoFactory.fromClass(qual);
+            AnnotationMirror theQual = AnnotationUtils.fromClass(atypeFactory.elements, qual);
             for (Class<? extends AnnotatedTypeMirror> typeClass : implicit.typeClasses())
                 typeClasses.put(typeClass, theQual);
 

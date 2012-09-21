@@ -1,6 +1,7 @@
 package checkers.javari;
 
-import java.util.*;
+import java.util.Iterator;
+import java.util.List;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -9,7 +10,8 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 
 import checkers.javari.quals.*;
-import checkers.types.*;
+import checkers.types.AnnotatedTypeFactory;
+import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -18,9 +20,20 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
 import checkers.types.visitors.AnnotatedTypeScanner;
 import checkers.types.visitors.SimpleAnnotatedTypeScanner;
-import checkers.util.*;
+import checkers.util.AnnotatedTypes;
+import checkers.util.InternalUtils;
+import checkers.util.Pair;
+import checkers.util.TreeUtils;
+import checkers.util.TypesUtils;
 
-import com.sun.source.tree.*;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.util.SimpleTreeVisitor;
 
 /**
@@ -144,7 +157,7 @@ public class JavariAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Javari
      * @param type the type obtained from {@code tree}
      */
     @Override
-    protected void annotateImplicit(Tree tree, /*@Mutable*/ AnnotatedTypeMirror type) {
+    public void annotateImplicit(Tree tree, /*@Mutable*/ AnnotatedTypeMirror type) {
 
         // primitives are all the same
         if (type.getKind().isPrimitive()
@@ -216,7 +229,7 @@ public class JavariAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Javari
      * @param type the type obtained from {@code elt}
      */
     @Override
-    protected void annotateImplicit(Element element, /*@Mutable*/ AnnotatedTypeMirror type) {
+    public void annotateImplicit(Element element, /*@Mutable*/ AnnotatedTypeMirror type) {
         if (element.getKind().isClass() || element.getKind().isInterface()) {
             if (!hasImmutabilityAnnotation(type))
                 type.addAnnotation(MUTABLE);
@@ -230,30 +243,6 @@ public class JavariAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Javari
         super.postDirectSuperTypes(type, supertypes);
         for (AnnotatedTypeMirror supertype : supertypes)
             typePost.visit(supertype, ElementKind.OTHER);
-    }
-
-    /**
-     * Returns a singleton collection with the most restrictive immutability
-     * annotation that is a supertype of the annotations on both collections.
-     */
-    @Override
-    public Collection<AnnotationMirror> unify(Collection<AnnotationMirror> c1,
-            Collection<AnnotationMirror> c2) {
-        Map<String, AnnotationMirror> ann =
-            new HashMap<String, AnnotationMirror>();
-        for (AnnotationMirror anno : c1)
-            ann.put(AnnotationUtils.annotationName(anno).toString(), anno);
-        for (AnnotationMirror anno : c2)
-            ann.put(AnnotationUtils.annotationName(anno).toString(), anno);
-
-        if (ann.containsKey(QReadOnly.class.getCanonicalName()))
-            return Collections.singleton(QREADONLY);
-        else if (ann.containsKey(ReadOnly.class.getCanonicalName()))
-            return Collections.singleton(READONLY);
-        else if (ann.containsKey(PolyRead.class.getCanonicalName()))
-            return Collections.singleton(POLYREAD);
-        else
-            return Collections.singleton(MUTABLE);
     }
 
     /**
@@ -299,8 +288,8 @@ public class JavariAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Javari
         AnnotatedExecutableType exType = fromUse.first;
         List<AnnotatedTypeMirror> typeargs = fromUse.second;
 
-        List<AnnotatedTypeMirror> parameterTypes = atypes.expandVarArgs(exType, tree.getArguments());
-        List<AnnotatedTypeMirror> argumentTypes = atypes.getAnnotatedTypes(parameterTypes, tree.getArguments());
+        List<AnnotatedTypeMirror> parameterTypes = AnnotatedTypes.expandVarArgs(this, exType, tree.getArguments());
+        List<AnnotatedTypeMirror> argumentTypes = AnnotatedTypes.getAnnotatedTypes(this, parameterTypes, tree.getArguments());
 
         boolean allMutable = true, allPolyRead = true, allThisMutable = true;
 
@@ -381,8 +370,8 @@ public class JavariAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Javari
 
         AnnotatedTypeMirror returnType = type.getReturnType();
 
-        List<AnnotatedTypeMirror> parameterTypes = atypes.expandVarArgs(type, tree.getArguments());
-        List<AnnotatedTypeMirror> argumentTypes = atypes.getAnnotatedTypes(parameterTypes, tree.getArguments());
+        List<AnnotatedTypeMirror> parameterTypes = AnnotatedTypes.expandVarArgs(this, type, tree.getArguments());
+        List<AnnotatedTypeMirror> argumentTypes = AnnotatedTypes.getAnnotatedTypes(this, parameterTypes, tree.getArguments());
 
         AnnotatedTypeMirror receiverType = type.getReceiverType();
 

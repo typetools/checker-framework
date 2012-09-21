@@ -10,8 +10,8 @@ import javax.lang.model.type.*;
 // TODO: This class needs significant restructuring
 public final class TypesUtils {
 
-    // Cannot be instantiated
-    private TypesUtils() { throw new AssertionError("un-initializable class"); }
+    // Class cannot be instantiated
+    private TypesUtils() { throw new AssertionError("Class TypesUtils cannot be instantiated."); }
 
     /**
      * Gets the fully qualified name for a provided type.  It returns an empty

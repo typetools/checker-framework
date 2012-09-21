@@ -1,9 +1,15 @@
 package checkers.flow;
 
 import java.io.PrintStream;
-import java.util.*;
+import java.util.Collection;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -13,8 +19,13 @@ import javax.lang.model.type.TypeMirror;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.source.SourceChecker;
-import checkers.types.*;
+import checkers.types.AnnotatedTypeFactory;
+import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import checkers.types.GeneralAnnotatedTypeFactory;
+import checkers.types.QualifierHierarchy;
+import checkers.types.VisitorState;
+import checkers.util.AnnotatedTypes;
 import checkers.util.AnnotationUtils;
 import checkers.util.ElementUtils;
 import checkers.util.Pair;
@@ -23,7 +34,36 @@ import checkers.util.TreeUtils;
 import checkers.nullness.quals.*;
 */
 
-import com.sun.source.tree.*;
+import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.ArrayAccessTree;
+import com.sun.source.tree.AssertTree;
+import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.BreakTree;
+import com.sun.source.tree.CatchTree;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.CompoundAssignmentTree;
+import com.sun.source.tree.ConditionalExpressionTree;
+import com.sun.source.tree.ContinueTree;
+import com.sun.source.tree.DoWhileLoopTree;
+import com.sun.source.tree.EnhancedForLoopTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.ForLoopTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.IfTree;
+import com.sun.source.tree.ImportTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ReturnTree;
+import com.sun.source.tree.StatementTree;
+import com.sun.source.tree.ThrowTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.TryTree;
+import com.sun.source.tree.TypeCastTree;
+import com.sun.source.tree.VariableTree;
+import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 
@@ -80,10 +120,7 @@ implements Flow {
     protected final CompilationUnitTree root;
 
     /** Utility class for determining annotated types. */
-    protected final AnnotatedTypeFactory factory;
-
-    /** Utility class for operations on annotated types. */
-    protected final AnnotatedTypes atypes;
+    protected final AnnotatedTypeFactory atypeFactory;
 
     /** Stores the results of the analysis (source location to qualifier). */
     protected final Map<Tree, Set<AnnotationMirror>> flowResults;
@@ -148,17 +185,15 @@ implements Flow {
             Set<AnnotationMirror> annotations, AnnotatedTypeFactory factory) {
 
         this.checker = checker;
-        ProcessingEnvironment env = checker.getProcessingEnvironment();
         this.root = root;
 
         if (factory == null) {
-            this.factory = new GeneralAnnotatedTypeFactory(checker, root);
+            this.atypeFactory = new GeneralAnnotatedTypeFactory(checker, root);
         } else {
-            this.factory = factory;
+            this.atypeFactory = factory;
         }
 
-        this.atypes = new AnnotatedTypes(env, factory);
-        this.visitorState = this.factory.getVisitorState();
+        this.visitorState = this.atypeFactory.getVisitorState();
         this.flowResults = new IdentityHashMap<Tree, Set<AnnotationMirror>>();
         this.tryBits = new LinkedList<ST>();
         this.annoRelations = checker.getQualifierHierarchy();
@@ -224,7 +259,7 @@ implements Flow {
         flowResults.put(tree, set);
     }
 
-    public static void removeFlowResult(Map<Tree, Set<AnnotationMirror>> flowResults, Tree tree, AnnotationMirror anno) {
+    protected void removeFlowResult(Map<Tree, Set<AnnotationMirror>> flowResults, Tree tree, AnnotationMirror anno) {
         Set<AnnotationMirror> set = AnnotationUtils.createAnnotationSet();
         if (flowResults.containsKey(tree)) {
             set.addAll(flowResults.get(tree));
@@ -420,7 +455,7 @@ implements Flow {
         AnnotatedDeclaredType preAMT = visitorState.getMethodReceiver();
         MethodTree preMT = visitorState.getMethodTree();
 
-        visitorState.setClassType(factory.getAnnotatedType(node));
+        visitorState.setClassType(atypeFactory.getAnnotatedType(node));
         visitorState.setClassTree(node);
         visitorState.setMethodReceiver(null);
         visitorState.setMethodTree(null);
@@ -456,10 +491,10 @@ implements Flow {
     @Override
     public Void visitTypeCast(TypeCastTree node, Void p) {
         super.visitTypeCast(node, p);
-        AnnotatedTypeMirror nodeType = factory.fromTypeTree(node.getType());
+        AnnotatedTypeMirror nodeType = atypeFactory.fromTypeTree(node.getType());
         if (nodeType.isAnnotated())
             return null;
-        AnnotatedTypeMirror t = factory.getAnnotatedType(node.getExpression());
+        AnnotatedTypeMirror t = atypeFactory.getAnnotatedType(node.getExpression());
 
         if ((nodeType.getKind() == TypeKind.TYPEVAR ||
                 nodeType.getKind() == TypeKind.WILDCARD) &&
@@ -504,18 +539,18 @@ implements Flow {
         if (init != null) {
             scanExpr(init);
             VariableElement elem = TreeUtils.elementFromDeclaration(node);
-            AnnotatedTypeMirror type = factory.fromMember(node);
+            AnnotatedTypeMirror type = atypeFactory.fromMember(node);
             if (!isNonFinalField(elem) && !type.isAnnotated()) {
                 // Set the assignment context for array component type inference.
                 // Note that flow is performed before the BaseTypeVisitor could set this
                 // information.
                 AnnotatedTypeMirror preAssCtxt = visitorState.getAssignmentContext();
-                factory.getVisitorState().setAssignmentContext(factory.getAnnotatedType(node));
+                atypeFactory.getVisitorState().setAssignmentContext(atypeFactory.getAnnotatedType(node));
                 try {
                     propagate(node, init);
                     recordBits(getCurrentPath());
                 } finally {
-                    factory.getVisitorState().setAssignmentContext(preAssCtxt);
+                    atypeFactory.getVisitorState().setAssignmentContext(preAssCtxt);
                 }
             }
         }
@@ -529,8 +564,8 @@ implements Flow {
         AnnotatedTypeMirror preAssCtxt = visitorState.getAssignmentContext();
 
         try {
-            AnnotatedTypeMirror type = factory.getAnnotatedType(var);
-            factory.getVisitorState().setAssignmentContext(type);
+            AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(var);
+            atypeFactory.getVisitorState().setAssignmentContext(type);
             if (!(var instanceof IdentifierTree))
                 scanExpr(var);
             scanExpr(expr);
@@ -538,7 +573,7 @@ implements Flow {
             if (var instanceof IdentifierTree)
                 this.scan(var, p);
         } finally {
-            factory.getVisitorState().setAssignmentContext(preAssCtxt);
+            atypeFactory.getVisitorState().setAssignmentContext(preAssCtxt);
         }
 
         return null;
@@ -803,8 +838,8 @@ implements Flow {
         ExpressionTree expr = node.getExpression();
         scanExpr(expr);
 
-        AnnotatedTypeMirror rhs = factory.getAnnotatedType(expr);
-        AnnotatedTypeMirror iter = atypes.getIteratedType(rhs);
+        AnnotatedTypeMirror rhs = atypeFactory.getAnnotatedType(expr);
+        AnnotatedTypeMirror iter = AnnotatedTypes.getIteratedType(checker.getProcessingEnvironment(), atypeFactory, rhs);
 
         if (iter != null) {
             propagateFromType(var, iter);
@@ -845,7 +880,7 @@ implements Flow {
         if (node.getExpression() != null) {
             AnnotatedTypeMirror preAssCtxt = visitorState.getAssignmentContext();
             try {
-                AnnotatedTypeMirror ret = factory.getAnnotatedType(visitorState.getMethodTree().getReturnType());
+                AnnotatedTypeMirror ret = atypeFactory.getAnnotatedType(visitorState.getMethodTree().getReturnType());
                 visitorState.setAssignmentContext(ret);
                 scanExpr(node.getExpression());
             } finally {
@@ -976,7 +1011,7 @@ implements Flow {
         AnnotatedDeclaredType preMRT = visitorState.getMethodReceiver();
         MethodTree preMT = visitorState.getMethodTree();
         visitorState.setMethodReceiver(
-                factory.getAnnotatedType(node).getReceiverType());
+                atypeFactory.getAnnotatedType(node).getReceiverType());
         visitorState.setMethodTree(node);
 
         // Intraprocedural, so save and restore bits.
@@ -1034,7 +1069,7 @@ implements Flow {
             return annotatedVarDefs.get(key);
         }
 
-        boolean result = factory.getAnnotatedType(var).hasAnnotation(annotation);
+        boolean result = atypeFactory.getAnnotatedType(var).hasAnnotation(annotation);
         annotatedVarDefs.put(key, result);
         return result;
     }

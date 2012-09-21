@@ -7,7 +7,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.annotation.processing.AbstractProcessor;
 import javax.lang.model.element.AnnotationMirror;
 
 import checkers.quals.MonotonicAnnotation;
@@ -210,8 +209,8 @@ public abstract class BaseTypeChecker extends SourceChecker {
      */
     protected QualifierHierarchy createQualifierHierarchy() {
         Set<Class<? extends Annotation>> supportedTypeQualifiers = getSupportedTypeQualifiers();
-        AnnotationUtils annoFactory = AnnotationUtils.getInstance(env);
         MultiGraphQualifierHierarchy.MultiGraphFactory factory = this.createQualifierHierarchyFactory();
+        Elements elements = processingEnv.getElementUtils();
 
         return createQualifierHierarchy(supportedTypeQualifiers, annoFactory, factory);
     }
@@ -251,7 +250,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
                 typeQualifier.getAnnotation(SubtypeOf.class).value();
             for (Class<? extends Annotation> superQualifier : superQualifiers) {
                 AnnotationMirror superAnno = null;
-                superAnno = annoFactory.fromClass(superQualifier);
+                superAnno = AnnotationUtils.fromClass(elements, superQualifier);
                 factory.addSubtype(typeQualifierAnno, superAnno);
             }
         }

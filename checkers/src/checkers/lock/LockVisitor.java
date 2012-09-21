@@ -42,7 +42,7 @@ public class LockVisitor extends BaseTypeVisitor<LockChecker> {
     @Override
     public Void visitIdentifier(IdentifierTree node, Void p) {
         AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(node);
-        if (hasGuardedBy(type)) {
+        if (atypeFactory.hasGuardedBy(type)) {
             checker.report(Result.failure("unguarded.access", node, type), node);
         }
         return super.visitIdentifier(node, p);
@@ -51,18 +51,10 @@ public class LockVisitor extends BaseTypeVisitor<LockChecker> {
     @Override
     public Void visitMemberSelect(MemberSelectTree node, Void p) {
         AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(node);
-        if (hasGuardedBy(type)) {
+        if (atypeFactory.hasGuardedBy(type)) {
             checker.report(Result.failure("unguarded.access", node, type), node);
         }
         return super.visitMemberSelect(node, p);
-    }
-
-    // TODO: Aliasing is not handled nicely by getAnnotation.
-    // It would be nicer if we only needed to write one class here and
-    // aliases were resolved internally.
-    protected static boolean hasGuardedBy(AnnotatedTypeMirror t) {
-        return t.getAnnotation(checkers.lock.quals.GuardedBy.class)!=null ||
-               t.getAnnotation(net.jcip.annotations.GuardedBy.class)!=null;
     }
 
     private <T> List<T> append(List<T> lst, T o) {
@@ -192,11 +184,11 @@ public class LockVisitor extends BaseTypeVisitor<LockChecker> {
         List<String> locks = new ArrayList<String>();
 
         if (holding != null) {
-            List<String> holdingValue = AnnotationUtils.elementValueArray(holding, "value");
+            List<String> holdingValue = AnnotationUtils.getElementValueArray(holding, "value", String.class, false);
             locks.addAll(holdingValue);
         }
         if (guardedBy != null) {
-            String guardedByValue = AnnotationUtils.elementValue(guardedBy, "value", String.class);
+            String guardedByValue = AnnotationUtils.getElementValue(guardedBy, "value", String.class, false);
             locks.add(guardedByValue);
         }
 

@@ -5,6 +5,7 @@ import java.util.Set;
 
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.util.Elements;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.flow.Flow;
@@ -13,11 +14,22 @@ import checkers.quals.DefaultLocation;
 import checkers.quals.DefaultQualifier;
 import checkers.quals.PolyAll;
 import checkers.quals.Unused;
-import checkers.types.*;
+import checkers.types.AnnotatedTypeFactory;
+import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
+import checkers.types.BasicAnnotatedTypeFactory;
+import checkers.types.GeneralAnnotatedTypeFactory;
+import checkers.types.TreeAnnotator;
+import checkers.types.TypeAnnotator;
 import checkers.types.visitors.AnnotatedTypeScanner;
-import checkers.util.*;
+import checkers.util.AnnotationUtils;
+import checkers.util.DependentTypes;
+import checkers.util.ElementUtils;
+import checkers.util.InternalUtils;
+import checkers.util.Pair;
+import checkers.util.TreeUtils;
+import checkers.util.TypesUtils;
 
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
@@ -89,17 +101,17 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
 
         generalFactory = new GeneralAnnotatedTypeFactory(checker, root);
 
-        mapGetHeuristics = new MapGetHeuristics(env, this, generalFactory);
-        systemGetPropertyHandler = new SystemGetPropertyHandler(env, this);
+        mapGetHeuristics = new MapGetHeuristics(processingEnv, this, generalFactory);
+        systemGetPropertyHandler = new SystemGetPropertyHandler(processingEnv, this);
 
         NONNULL = checker.NONNULL;
         NULLABLE = checker.NULLABLE;
         LAZYNONNULL = checker.LAZYNONNULL;
-        RAW = this.annotations.fromClass(Raw.class);
+        RAW = AnnotationUtils.fromClass(elements, Raw.class);
         PRIMITIVE = checker.PRIMITIVE;
         POLYNULL = checker.POLYNULL;
-        POLYALL = this.annotations.fromClass(PolyAll.class);
-        UNUSED = this.annotations.fromClass(Unused.class);
+        POLYALL = AnnotationUtils.fromClass(elements, PolyAll.class);
+        UNUSED = AnnotationUtils.fromClass(elements, Unused.class);
 
         // If you update the following, also update ../../../manual/nullness-checker.tex .
         // aliases for nonnull
@@ -135,7 +147,7 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
         rawnessFactory = rawnesschecker.createFactory(root);
 
         // do this last, as it might use the factory again.
-        this.collectionToArrayHeuristics = new CollectionToArrayHeuristics(env, this);
+        this.collectionToArrayHeuristics = new CollectionToArrayHeuristics(processingEnv, this);
 
         this.postInit();
     }
@@ -151,7 +163,7 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
     }
 
     @Override
-    protected void annotateImplicit(Element elt, AnnotatedTypeMirror type) {
+    public void annotateImplicit(Element elt, AnnotatedTypeMirror type) {
         // For example, the "System" in "System.out" is always non-null.
         annotateIfStatic(elt, type);
 
@@ -165,7 +177,7 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
     }
 
     @Override
-    protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type) {
+    public void annotateImplicit(Tree tree, AnnotatedTypeMirror type) {
         treeAnnotator.visit(tree, type);
         typeAnnotator.visit(type);
         // case 6: apply default
@@ -268,7 +280,7 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
             return false;
         }
 
-        String whenName = AnnotationUtils.elementValueClassName(unused, "when");
+        Name whenName = AnnotationUtils.getElementValueClassName(unused, "when", false);
         MethodTree method = TreeUtils.enclosingMethod(this.getPath(tree));
         if (TreeUtils.isConstructor(method)) {
             /* TODO: this is messy and should be cleaned up.
@@ -285,7 +297,7 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
             }
             boolean matched = false;
             for (TypeCompound anno :  retannos) {
-                if (anno.getAnnotationType().toString().equals(whenName)) {
+                if (anno.getAnnotationType().toString().equals(whenName.toString())) {
                     matched = true;
                     break;
                 }
@@ -295,7 +307,8 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
             }
         } else {
             AnnotatedTypeMirror receiver = generalFactory.getReceiverType((ExpressionTree)tree);
-            if (receiver == null || receiver.getAnnotation(whenName) == null) {
+            Elements elements = processingEnv.getElementUtils();
+            if (receiver == null || !receiver.hasAnnotation(elements.getName(whenName))) {
                 return false;
             }
         }
@@ -432,7 +445,7 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
 
         /** Creates a {@link NonNullTypeAnnotator} for the given checker. */
         NonNullTypeAnnotator(BaseTypeChecker checker) {
-            super(checker);
+            super(checker, NullnessAnnotatedTypeFactory.this);
         }
 
         /**

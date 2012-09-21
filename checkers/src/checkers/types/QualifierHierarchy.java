@@ -1,7 +1,6 @@
 package checkers.types;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -128,26 +127,17 @@ public abstract class QualifierHierarchy {
      */
     public Set<AnnotationMirror>
     leastUpperBounds(Collection<AnnotationMirror> annos1, Collection<AnnotationMirror> annos2) {
-        if (annos1.size() == 1 && annos2.size() == 1) {
-            AnnotationMirror a1 = annos1.iterator().next();
-            AnnotationMirror a2 = annos2.iterator().next();
-            AnnotationMirror lub = leastUpperBound(a1, a2);
-            assert lub!=null : "QualifierHierarchy.leastUpperBounds: lub of " + a1 +
-                    " and " + a2 + " gives null!";
-            return Collections.singleton(lub);
-        }
-
         assert annos1.size() == annos2.size() :
             "QualifierHierarchy.leastUpperBounds: tried to determine LUB with sets of different sizes!\n" +
                     "    Set 1: " + annos1 + " Set 2: " + annos2;
-        assert annos1.size()!=0 :
+        assert annos1.size() != 0 :
             "QualifierHierarchy.leastUpperBounds: tried to determine LUB with empty sets!";
 
         Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
         for (AnnotationMirror a1 : annos1) {
             for (AnnotationMirror a2 : annos2) {
                 AnnotationMirror lub = leastUpperBound(a1, a2);
-                if (lub!=null) {
+                if (lub != null) {
                     result.add(lub);
                 }
             }
@@ -172,21 +162,17 @@ public abstract class QualifierHierarchy {
      */
     public Set<AnnotationMirror>
     greatestLowerBounds(Collection<AnnotationMirror> annos1, Collection<AnnotationMirror> annos2) {
-        if (annos1.size() == 1 && annos2.size() == 1) {
-            AnnotationMirror a1 = annos1.iterator().next();
-            AnnotationMirror a2 = annos2.iterator().next();
-            return Collections.singleton(greatestLowerBound(a1, a2));
-        }
-
-        assert annos1.size() == annos2.size() && !annos1.isEmpty() :
-            "QualifierHierarchy.greatestLowerBounds: tried to determine GLB with empty sets or sets of different sizes!\n" +
+        assert annos1.size() == annos2.size() :
+            "QualifierHierarchy.greatestLowerBounds: tried to determine GLB with sets of different sizes!\n" +
                     "    Set 1: " + annos1 + " Set 2: " + annos2;
+        assert annos1.size() != 0 :
+            "QualifierHierarchy.greatestLowerBounds: tried to determine GLB with empty sets!";
 
         Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
         for (AnnotationMirror a1 : annos1) {
             for (AnnotationMirror a2 : annos2) {
                 AnnotationMirror glb = greatestLowerBound(a1, a2);
-                if (glb!=null) {
+                if (glb != null) {
                     result.add(glb);
                 }
             }

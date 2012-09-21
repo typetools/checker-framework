@@ -21,8 +21,8 @@ import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
+import checkers.util.AnnotationBuilder;
 import checkers.util.AnnotationUtils;
-import checkers.util.AnnotationUtils.AnnotationBuilder;
 import checkers.util.Pair;
 
 public class KeyForAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<KeyForSubchecker> {
@@ -31,7 +31,7 @@ public class KeyForAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<KeyFor
                                     CompilationUnitTree root) {
     super(checker, root, false);
 
-    AnnotationMirror UNQUALIFIED = this.annotations.fromClass(Unqualified.class);
+    AnnotationMirror UNQUALIFIED = AnnotationUtils.fromClass(elements, Unqualified.class);
     this.defaults.addAbsoluteDefault(UNQUALIFIED, DefaultLocation.ALL);
 
     this.postInit();
@@ -138,10 +138,10 @@ public class KeyForAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<KeyFor
     // System.out.println("input type: " + inType);
     AnnotatedTypeMirror outType = inType.getCopy(true);
 
-    if (inType.getAnnotation(KeyFor.class) != null) {
-      AnnotationMirror anno = inType.getAnnotation(KeyFor.class);
+    AnnotationMirror anno = inType.getAnnotation(KeyFor.class);
+    if (anno != null) {
 
-      List<String> inMaps = AnnotationUtils.parseStringArrayValue(anno, "value");
+      List<String> inMaps = AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
       List<String> outMaps = new ArrayList<String>();
 
       String receiver = receiver(call);
@@ -167,7 +167,7 @@ public class KeyForAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<KeyFor
         // are more cases to copy.
       }
 
-      AnnotationBuilder builder = new AnnotationBuilder(env, KeyFor.class);
+      AnnotationBuilder builder = new AnnotationBuilder(processingEnv, KeyFor.class);
       builder.setValue("value", outMaps);
       AnnotationMirror newAnno =  builder.build();
 
