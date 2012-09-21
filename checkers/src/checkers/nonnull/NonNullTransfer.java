@@ -24,6 +24,7 @@ import checkers.initialization.InitializationTransfer;
 import checkers.nonnull.quals.NonNull;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
+import checkers.util.AnnotationUtils;
 import checkers.util.TreeUtils;
 
 import com.sun.source.tree.ExpressionTree;
@@ -54,7 +55,7 @@ public class NonNullTransfer extends InitializationTransfer<NonNullTransfer> {
     public NonNullTransfer(NonNullAnalysis analysis) {
         super(analysis);
         this.analysis = analysis;
-        NONNULL = analysis.getFactory().annotationFromClass(NonNull.class);
+        NONNULL = AnnotationUtils.fromClass(analysis.getFactory().getElementUtils(), NonNull.class);
     }
 
     /**

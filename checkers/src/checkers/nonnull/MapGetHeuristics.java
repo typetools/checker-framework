@@ -82,8 +82,8 @@ import com.sun.source.util.TreePath;
  */
 /*package-scope*/ class MapGetHeuristics {
 
-    private final ProcessingEnvironment env;
-    private final NonNullAnnotatedTypeFactory factory;
+    private final ProcessingEnvironment processingEnv;
+    private final NonNullAnnotatedTypeFactory atypeFactory;
     private final AnnotatedTypeFactory keyForFactory;
     private final Resolver2 resolver;
 
@@ -95,8 +95,8 @@ import com.sun.source.util.TreePath;
     public MapGetHeuristics(ProcessingEnvironment env,
             NonNullAnnotatedTypeFactory factory,
             AnnotatedTypeFactory keyForFactory) {
-        this.env = env;
-        this.factory = factory;
+        this.processingEnv = env;
+        this.atypeFactory = factory;
         this.keyForFactory = keyForFactory;
         this.resolver = new Resolver2(env);
 
@@ -108,12 +108,12 @@ import com.sun.source.util.TreePath;
 
     public void handle(TreePath path, AnnotatedExecutableType method) {
         MethodInvocationTree tree = (MethodInvocationTree)path.getLeaf();
-        if (TreeUtils.isMethodInvocation(tree, mapGet, env)) {
+        if (TreeUtils.isMethodInvocation(tree, mapGet, processingEnv)) {
             AnnotatedTypeMirror type = method.getReturnType();
             if (!isSuppressable(path)) {
-                type.replaceAnnotation(factory.NULLABLE);
+                type.replaceAnnotation(atypeFactory.NULLABLE);
             } else {
-                type.replaceAnnotation(factory.NONNULL);
+                type.replaceAnnotation(atypeFactory.NONNULL);
             }
         }
     }
@@ -156,7 +156,7 @@ import com.sun.source.util.TreePath;
         if (anno == null)
             return false;
 
-        List<String> maps = AnnotationUtils.parseStringArrayValue(anno, "value");
+        List<String> maps = AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
 
         return maps.contains(mapName);
     }
@@ -169,7 +169,7 @@ import com.sun.source.util.TreePath;
         if (anno == null)
             return false;
 
-        List<String> maps = AnnotationUtils.parseStringArrayValue(anno, "value");
+        List<String> maps = AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
         for (String map: maps) {
             Element elt = resolver.findVariable(map, path);
             if (elt.equals(mapElement) &&
@@ -189,7 +189,7 @@ import com.sun.source.util.TreePath;
     private boolean isSiteRequired(ExpressionTree node, Element elt) {
         boolean r = ElementUtils.isStatic(elt) ||
             !elt.getKind().isField() ||
-            factory.isMostEnclosingThisDeref(node);
+            atypeFactory.isMostEnclosingThisDeref(node);
         return !r;
     }
 
@@ -221,7 +221,7 @@ import com.sun.source.util.TreePath;
             }
 
             @Override public Boolean visitMethodInvocation(MethodInvocationTree tree, Void p) {
-                return (TreeUtils.isMethodInvocation(tree, mapKeySet, env) && map.equals(getSite(tree)));
+                return (TreeUtils.isMethodInvocation(tree, mapKeySet, processingEnv) && map.equals(getSite(tree)));
             }
         }));
     }
@@ -305,7 +305,7 @@ import com.sun.source.util.TreePath;
      * @return  true if key is in the map
      */
     private boolean isKeyInMap(IdentifierTree keyTree, VariableElement map) {
-        TreePath path = factory.getPath(keyTree);
+        TreePath path = atypeFactory.getPath(keyTree);
         Element key = TreeUtils.elementFromUse(keyTree);
 
         return keyInMatcher(key, map).match(path);
@@ -313,14 +313,14 @@ import com.sun.source.util.TreePath;
 
     private Element getSite(MethodInvocationTree tree) {
         AnnotatedDeclaredType type =
-            (AnnotatedDeclaredType)factory.getReceiverType(tree);
+            (AnnotatedDeclaredType)atypeFactory.getReceiverType(tree);
         return type.getElement();
     }
 
     private boolean isInvocationOfContains(Element key, VariableElement map, ExpressionTree tree) {
         if (TreeUtils.skipParens(tree) instanceof MethodInvocationTree) {
             MethodInvocationTree invok = (MethodInvocationTree)TreeUtils.skipParens(tree);
-            if (TreeUtils.isMethodInvocation(invok, mapContains, env)) {
+            if (TreeUtils.isMethodInvocation(invok, mapContains, processingEnv)) {
                 Element containsArgument = InternalUtils.symbol(invok.getArguments().get(0));
                 if (key.equals(containsArgument) && map.equals(getSite(invok)))
                     return true;
@@ -332,7 +332,7 @@ import com.sun.source.util.TreePath;
     private boolean isInvocationOfPut(Element key, VariableElement map, ExpressionTree tree) {
         if (TreeUtils.skipParens(tree) instanceof MethodInvocationTree) {
             MethodInvocationTree invok = (MethodInvocationTree)TreeUtils.skipParens(tree);
-            if (TreeUtils.isMethodInvocation(invok, mapPut, env)) {
+            if (TreeUtils.isMethodInvocation(invok, mapPut, processingEnv)) {
                 Element containsArgument = InternalUtils.symbol(invok.getArguments().get(0));
                 if (key.equals(containsArgument) && map.equals(getSite(invok)))
                     return true;
@@ -368,7 +368,7 @@ import com.sun.source.util.TreePath;
         Tree right = TreeUtils.skipParens(((BinaryTree)tree).getLeftOperand());
         if (right instanceof MethodInvocationTree) {
             MethodInvocationTree invok = (MethodInvocationTree)right;
-            if (TreeUtils.isMethodInvocation(invok, mapGet, env)) {
+            if (TreeUtils.isMethodInvocation(invok, mapGet, processingEnv)) {
                 Element containsArgument = InternalUtils.symbol(invok.getArguments().get(0));
                 if (key.equals(containsArgument) && map.equals(getSite(invok)))
                     return true;

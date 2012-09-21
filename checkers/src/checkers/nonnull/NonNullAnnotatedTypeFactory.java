@@ -18,6 +18,7 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.GeneralAnnotatedTypeFactory;
 import checkers.types.TreeAnnotator;
 import checkers.types.TypeAnnotator;
+import checkers.util.AnnotationUtils;
 import checkers.util.ElementUtils;
 import checkers.util.Pair;
 import checkers.util.TreeUtils;
@@ -50,15 +51,15 @@ public class NonNullAnnotatedTypeFactory
             CompilationUnitTree root) {
         super(checker, root);
 
-        NONNULL = this.annotations.fromClass(NonNull.class);
-        NULLABLE = this.annotations.fromClass(Nullable.class);
+        NONNULL = AnnotationUtils.fromClass(elements, NonNull.class);
+        NULLABLE = AnnotationUtils.fromClass(elements, Nullable.class);
 
         // aliases with checkers.nullness.quals qualifiers
         addAliasedAnnotation(checkers.nullness.quals.NonNull.class, NONNULL);
         addAliasedAnnotation(checkers.nullness.quals.Nullable.class, NULLABLE);
 
         addAliasedAnnotation(checkers.nullness.quals.LazyNonNull.class,
-                annotations.fromClass(MonotonicNonNull.class));
+                AnnotationUtils.fromClass(elements, MonotonicNonNull.class));
 
         // aliases borrowed from NullnessAnnotatedTypeFactory
         addAliasedAnnotation(com.sun.istack.NotNull.class, NONNULL);
@@ -93,10 +94,10 @@ public class NonNullAnnotatedTypeFactory
         // TODO: These heuristics are just here temporarily. They all either
         // need to be replaced, or carefully checked for correctness.
         generalFactory = new GeneralAnnotatedTypeFactory(checker, root);
-        mapGetHeuristics = new MapGetHeuristics(env, this, generalFactory);
-        systemGetPropertyHandler = new SystemGetPropertyHandler(env, this);
+        mapGetHeuristics = new MapGetHeuristics(processingEnv, this, generalFactory);
+        systemGetPropertyHandler = new SystemGetPropertyHandler(processingEnv, this);
         // do this last, as it might use the factory again.
-        this.collectionToArrayHeuristics = new CollectionToArrayHeuristics(env,
+        this.collectionToArrayHeuristics = new CollectionToArrayHeuristics(processingEnv,
                 this);
 
         postInit();
@@ -106,7 +107,7 @@ public class NonNullAnnotatedTypeFactory
     protected NonNullAnalysis createFlowAnalysis(
             AbstractNonNullChecker checker,
             List<Pair<VariableElement, CFValue>> fieldValues) {
-        return new NonNullAnalysis(this, env, checker, fieldValues);
+        return new NonNullAnalysis(this, processingEnv, checker, fieldValues);
     }
 
     @Override

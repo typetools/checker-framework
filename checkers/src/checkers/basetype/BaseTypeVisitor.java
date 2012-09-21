@@ -13,9 +13,11 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
+import javax.tools.Diagnostic.Kind;
 
 import checkers.basetype.PurityChecker.PurityResult;
 import checkers.flow.analysis.FlowExpressions;
@@ -45,9 +47,9 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
-import checkers.types.AnnotatedTypes;
 import checkers.types.VisitorState;
 import checkers.types.visitors.AnnotatedTypeScanner;
+import checkers.util.AnnotatedTypes;
 import checkers.util.AnnotationUtils;
 import checkers.util.ElementUtils;
 import checkers.util.InternalUtils;
@@ -278,7 +280,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
 
             // check method purity if needed
             boolean hasPurityAnnotation = PurityUtils.hasPurityAnnotation(atypeFactory, node);
-            boolean checkPurityAlways = atypeFactory.getEnv().getOptions().containsKey("suggestPureMethods");
+            boolean checkPurityAlways = checker.getProcessingEnvironment().getOptions().containsKey("suggestPureMethods");
             if (hasPurityAnnotation || checkPurityAlways) {
                 // check "no" purity
                 List<checkers.quals.Pure.Kind> kinds = PurityUtils
@@ -327,7 +329,6 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                 typeValidator.visit(methodType.getReturnType(), node.getReturnType());
             }
 
-            ExecutableElement methodElement = TreeUtils.elementFromDeclaration(node);
             AnnotatedDeclaredType enclosingType =
                     (AnnotatedDeclaredType)atypeFactory.getAnnotatedType(
                             methodElement.getEnclosingElement());
@@ -366,7 +367,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
 
         for (Pair<String, String> p : postconditions) {
             String expression = p.first;
-            AnnotationMirror annotation = atypeFactory.annotationFromName(p.second);
+            AnnotationMirror annotation = AnnotationUtils.fromName(elements, p.second);
 
             // Only check if the postcondition concerns this checker
             if (!checker.isSupportedAnnotation(annotation)) {
@@ -426,7 +427,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
         for (Pair<String, Pair<Boolean, String>> p : conditionalPostconditions) {
             String expression = p.first;
             boolean result = p.second.first;
-            AnnotationMirror annotation = atypeFactory.annotationFromName(p.second.second);
+            AnnotationMirror annotation = AnnotationUtils.fromName(elements, p.second.second);
 
             // Only check if the postcondition concerns this checker
             if (!checker.isSupportedAnnotation(annotation)) {
@@ -657,7 +658,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
 
         for (Pair<String, String> p : preconditions) {
             String expression = p.first;
-            AnnotationMirror anno = atypeFactory.annotationFromName(p.second);
+            AnnotationMirror anno = AnnotationUtils.fromName(elements, p.second);
 
             // Only check if the precondition concerns this checker
             if (!checker.isSupportedAnnotation(anno)) {

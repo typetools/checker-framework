@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.util.Elements;
 
 import checkers.quals.MonotonicAnnotation;
 import checkers.quals.PolymorphicQualifier;
@@ -210,9 +211,9 @@ public abstract class BaseTypeChecker extends SourceChecker {
     protected QualifierHierarchy createQualifierHierarchy() {
         Set<Class<? extends Annotation>> supportedTypeQualifiers = getSupportedTypeQualifiers();
         MultiGraphQualifierHierarchy.MultiGraphFactory factory = this.createQualifierHierarchyFactory();
-        Elements elements = processingEnv.getElementUtils();
 
-        return createQualifierHierarchy(supportedTypeQualifiers, annoFactory, factory);
+        Elements elements = processingEnv.getElementUtils();
+        return createQualifierHierarchy(elements, supportedTypeQualifiers, factory);
     }
 
     /**
@@ -225,11 +226,13 @@ public abstract class BaseTypeChecker extends SourceChecker {
      * @return an annotation relation tree representing the supported qualifiers
      */
     protected static QualifierHierarchy createQualifierHierarchy(
+            Elements elements,
             Set<Class<? extends Annotation>> supportedTypeQualifiers,
-            AnnotationUtils annoFactory, MultiGraphFactory factory) {
+            MultiGraphFactory factory) {
+
         for (Class<? extends Annotation> typeQualifier : supportedTypeQualifiers) {
-            AnnotationMirror typeQualifierAnno = annoFactory.fromClass(typeQualifier);
-            assert typeQualifierAnno!=null : "Loading annotation \"" + typeQualifier + "\" failed!";
+            AnnotationMirror typeQualifierAnno = AnnotationUtils.fromClass(elements, typeQualifier);
+            assert typeQualifierAnno != null : "Loading annotation \"" + typeQualifier + "\" failed!";
             factory.addQualifier(typeQualifierAnno);
             // Polymorphic qualifiers can't declare their supertypes.
             // An error is raised if one is present.

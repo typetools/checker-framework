@@ -1611,7 +1611,7 @@ public class AnnotatedTypeFactory {
         // stub file for type-system independent annotations
         InputStream input = BaseTypeChecker.class.getResourceAsStream("flow.astub");
         if (input != null) {
-            StubParser stubParser = new StubParser("flow.astub", input, this, env);
+            StubParser stubParser = new StubParser("flow.astub", input, this, processingEnv);
             stubParser.parse(indexTypes, indexDeclAnnos);
         }
 
@@ -1870,5 +1870,12 @@ public class AnnotatedTypeFactory {
         wctype.addAnnotations(typeVar.getAnnotations());
         wctype.setMethodTypeArgHack();
         return wctype;
+    }
+ 
+    public Elements getElementUtils() {
+        return this.elements;
+    }
+    public ProcessingEnvironment getProcessingEnv() {
+        return this.processingEnv;
     }
 }

@@ -55,7 +55,7 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
     /**
      * A type factory that can provide static type annotations for AST Trees.
      */
-    protected final AbstractBasicAnnotatedTypeFactory<? extends BaseTypeChecker, V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory;
+    protected final AbstractBasicAnnotatedTypeFactory<? extends BaseTypeChecker, V, S, T, ? extends CFAbstractAnalysis<V, S, T>> atypeFactory;
 
     /**
      * A checker used to do error reporting.
@@ -69,7 +69,7 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
             ProcessingEnvironment env, Checker checker) {
         super(env);
         qualifierHierarchy = factory.getQualifierHierarchy();
-        this.factory = factory;
+        this.atypeFactory = factory;
         this.checker = checker;
         transferFunction = createTransferFunction();
         Set<AnnotationMirror> topAnnotations = factory.getQualifierHierarchy()
@@ -98,7 +98,7 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
     @SuppressWarnings("unchecked")
     public T createTransferFunction() {
         @SuppressWarnings("rawtypes")
-        AbstractBasicAnnotatedTypeFactory f = factory;
+        AbstractBasicAnnotatedTypeFactory f = atypeFactory;
         return (T) f.createFlowTransferFunction(this);
     }
 
@@ -130,7 +130,7 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
     }
 
     public AbstractBasicAnnotatedTypeFactory<? extends BaseTypeChecker, V, S, T, ? extends CFAbstractAnalysis<V, S, T>> getFactory() {
-        return factory;
+        return atypeFactory;
     }
 
     /**

@@ -64,7 +64,7 @@ public class ContractsUtils {
                 methodElement, RequiresAnnotations.class);
         if (requiresAnnotations != null) {
             List<AnnotationMirror> annotations = AnnotationUtils
-                    .elementValueArray(requiresAnnotations, "value");
+                    .getElementValueArray(requiresAnnotations, "value", AnnotationMirror.class, false);
             for (AnnotationMirror a : annotations) {
                 result.addAll(getPrecondition(a));
             }
@@ -78,10 +78,10 @@ public class ContractsUtils {
         for (Pair<AnnotationMirror, AnnotationMirror> r : declAnnotations) {
             AnnotationMirror anno = r.first;
             AnnotationMirror metaAnno = r.second;
-            List<String> expressions = AnnotationUtils.elementValueArray(anno,
-                    "value");
-            String annotationString = AnnotationUtils.elementValueClassName(
-                    metaAnno, "annotation");
+            List<String> expressions = AnnotationUtils.getElementValueArray(anno,
+                    "value", String.class, false);
+            String annotationString = AnnotationUtils.getElementValueClassName(
+                    metaAnno, "annotation", false).toString();
             for (String expr : expressions) {
                 result.add(Pair.of(expr, annotationString));
             }
@@ -99,10 +99,10 @@ public class ContractsUtils {
             return Collections.emptySet();
         }
         Set<Pair<String, String>> result = new HashSet<>();
-        List<String> expressions = AnnotationUtils.elementValueArray(
-                requiresAnnotation, "expression");
-        String annotation = AnnotationUtils.elementValueClassName(
-                requiresAnnotation, "annotation");
+        List<String> expressions = AnnotationUtils.getElementValueArray(
+                requiresAnnotation, "expression", String.class, false);
+        String annotation = AnnotationUtils.getElementValueClassName(
+                requiresAnnotation, "annotation", false).toString();
         for (String expr : expressions) {
             result.add(Pair.of(expr, annotation));
         }
@@ -126,7 +126,7 @@ public class ContractsUtils {
                 methodElement, EnsuresAnnotations.class);
         if (ensuresAnnotations != null) {
             List<AnnotationMirror> annotations = AnnotationUtils
-                    .elementValueArray(ensuresAnnotations, "value");
+                    .getElementValueArray(ensuresAnnotations, "value", AnnotationMirror.class, false);
             for (AnnotationMirror a : annotations) {
                 result.addAll(getPostcondition(a));
             }
@@ -140,10 +140,10 @@ public class ContractsUtils {
         for (Pair<AnnotationMirror, AnnotationMirror> r : declAnnotations) {
             AnnotationMirror anno = r.first;
             AnnotationMirror metaAnno = r.second;
-            List<String> expressions = AnnotationUtils.elementValueArray(anno,
-                    "value");
-            String annotationString = AnnotationUtils.elementValueClassName(
-                    metaAnno, "annotation");
+            List<String> expressions = AnnotationUtils.getElementValueArray(anno,
+                    "value", String.class, false);
+            String annotationString = AnnotationUtils.getElementValueClassName(
+                    metaAnno, "annotation", false).toString();
             for (String expr : expressions) {
                 result.add(Pair.of(expr, annotationString));
             }
@@ -161,10 +161,10 @@ public class ContractsUtils {
             return Collections.emptySet();
         }
         Set<Pair<String, String>> result = new HashSet<>();
-        List<String> expressions = AnnotationUtils.elementValueArray(
-                ensuresAnnotation, "expression");
-        String annotation = AnnotationUtils.elementValueClassName(
-                ensuresAnnotation, "annotation");
+        List<String> expressions = AnnotationUtils.getElementValueArray(
+                ensuresAnnotation, "expression", String.class, false);
+        String annotation = AnnotationUtils.getElementValueClassName(
+                ensuresAnnotation, "annotation", false).toString();
         for (String expr : expressions) {
             result.add(Pair.of(expr, annotation));
         }
@@ -188,7 +188,7 @@ public class ContractsUtils {
                 methodElement, EnsuresAnnotationsIf.class);
         if (ensuresAnnotationsIf != null) {
             List<AnnotationMirror> annotations = AnnotationUtils
-                    .elementValueArray(ensuresAnnotationsIf, "value");
+                    .getElementValueArray(ensuresAnnotationsIf, "value", AnnotationMirror.class, false);
             for (AnnotationMirror a : annotations) {
                 result.addAll(getConditionalPostcondition(a));
             }
@@ -202,12 +202,12 @@ public class ContractsUtils {
         for (Pair<AnnotationMirror, AnnotationMirror> r : declAnnotations) {
             AnnotationMirror anno = r.first;
             AnnotationMirror metaAnno = r.second;
-            List<String> expressions = AnnotationUtils.elementValueArray(anno,
-                    "expression");
-            String annotationString = AnnotationUtils.elementValueClassName(
-                    metaAnno, "annotation");
-            boolean annoResult = AnnotationUtils.elementValue(anno,
-                    "result", Boolean.class);
+            List<String> expressions = AnnotationUtils.getElementValueArray(anno,
+                    "expression", String.class, false);
+            String annotationString = AnnotationUtils.getElementValueClassName(
+                    metaAnno, "annotation", false).toString();
+            boolean annoResult = AnnotationUtils.getElementValue(anno,
+                    "result", Boolean.class, false);
             for (String expr : expressions) {
                 result.add(Pair.of(expr, Pair.of(annoResult, annotationString)));
             }
@@ -226,12 +226,12 @@ public class ContractsUtils {
             return Collections.emptySet();
         }
         Set<Pair<String, Pair<Boolean, String>>> result = new HashSet<>();
-        List<String> expressions = AnnotationUtils.elementValueArray(
-                ensuresAnnotationIf, "expression");
-        String annotation = AnnotationUtils.elementValueClassName(
-                ensuresAnnotationIf, "annotation");
-        boolean annoResult = AnnotationUtils.elementValue(ensuresAnnotationIf,
-                "result", Boolean.class);
+        List<String> expressions = AnnotationUtils.getElementValueArray(
+                ensuresAnnotationIf, "expression", String.class, false);
+        String annotation = AnnotationUtils.getElementValueClassName(
+                ensuresAnnotationIf, "annotation", false).toString();
+        boolean annoResult = AnnotationUtils.getElementValue(ensuresAnnotationIf,
+                "result", Boolean.class, false);
         for (String expr : expressions) {
             result.add(Pair.of(expr, Pair.of(annoResult, annotation)));
         }

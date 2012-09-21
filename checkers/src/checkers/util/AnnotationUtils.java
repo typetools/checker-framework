@@ -30,9 +30,11 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 
 /**
  * A utility class for working with annotations.
@@ -521,18 +523,18 @@ public class AnnotationUtils {
     /**
      * Returns the {@link TypeMirror} for a given {@link Class}.
      */
-    public TypeMirror typeFromClass(Class<?> clazz) {
+    public static TypeMirror typeFromClass(Types types, Elements elements, Class<?> clazz) {
         if (clazz == void.class) {
-            return env.getTypeUtils().getNoType(TypeKind.VOID);
+            return types.getNoType(TypeKind.VOID);
         } else if (clazz.isPrimitive()) {
             String primitiveName = clazz.getName().toUpperCase();
             TypeKind primitiveKind = TypeKind.valueOf(primitiveName);
-            return env.getTypeUtils().getPrimitiveType(primitiveKind);
+            return types.getPrimitiveType(primitiveKind);
         } else if (clazz.isArray()) {
-            TypeMirror componentType = typeFromClass(clazz.getComponentType());
-            return env.getTypeUtils().getArrayType(componentType);
+            TypeMirror componentType = typeFromClass(types, elements, clazz.getComponentType());
+            return types.getArrayType(componentType);
         } else {
-            TypeElement element = env.getElementUtils().getTypeElement(clazz.getCanonicalName());
+            TypeElement element = elements.getTypeElement(clazz.getCanonicalName());
             if (element == null) {
                 SourceChecker.errorAbort("Unrecognized class: " + clazz);
                 return null; // dead code
