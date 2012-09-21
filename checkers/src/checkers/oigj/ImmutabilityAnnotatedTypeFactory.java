@@ -488,8 +488,8 @@ public class ImmutabilityAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<
                 Map<String, AnnotationMirror> p) {
             if (type.hasEffectiveAnnotation(I)) {
                 String immutableString =
-                    AnnotationUtils.parseStringValue(getImmutabilityAnnotation(type),
-                            IMMUTABILITY_KEY);
+                    AnnotationUtils.getElementValue(getImmutabilityAnnotation(type),
+                            IMMUTABILITY_KEY, String.class, true);
                 if (p.containsKey(immutableString)) {
                     type.removeAnnotation(I);
                     type.addAnnotation(p.get(immutableString));
@@ -576,8 +576,8 @@ public class ImmutabilityAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<
 
             if (dcType.hasEffectiveAnnotation(I)) {
                 String immutableString =
-                    AnnotationUtils.parseStringValue(getImmutabilityAnnotation(dcType),
-                            IMMUTABILITY_KEY);
+                    AnnotationUtils.getElementValue(getImmutabilityAnnotation(dcType),
+                            IMMUTABILITY_KEY, String.class, true);
                 AnnotationMirror immutability = getImmutabilityAnnotation(type);
                 // TODO: Assertion fails some times
                 // assert immutability != null;
@@ -619,8 +619,8 @@ public class ImmutabilityAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<
 
             if (arType.hasEffectiveAnnotation(I)) {
                 String immutableString =
-                    AnnotationUtils.parseStringValue(getImmutabilityAnnotation(arType),
-                            IMMUTABILITY_KEY);
+                    AnnotationUtils.getElementValue(getImmutabilityAnnotation(arType),
+                            IMMUTABILITY_KEY, String.class, true);
                 AnnotationMirror immutability = getImmutabilityAnnotation(type);
                 // Assertion failes some times
                 assert immutability != null;
