@@ -2,6 +2,7 @@ package checkers.flow.analysis.checkers;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
 import checkers.basetype.BaseTypeChecker;
@@ -66,26 +67,17 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
                         .getUnderlyingType());
         AnnotatedTypeMirror lubAnnotatedType = AnnotatedTypeMirror.createType(
                 lubType, factory);
-        for (AnnotationMirror top : analysis.qualifierHierarchy.getTopAnnotations()) {
-            AnnotationMirror lub = leastUpperBound(getType().getAnnotationInHierarchy(top), other.getType().getAnnotationInHierarchy(top));
-            if (lub != null) {
-                lubAnnotatedType.addAnnotation(lub);
-            }
+        QualifierHierarchy qualifierHierarchy = analysis.qualifierHierarchy;
+        if (lubAnnotatedType.getKind() == TypeKind.TYPEVAR) {
+            lubAnnotatedType.addAnnotations(qualifierHierarchy
+                    .leastUpperBoundsTypeVariable(getType().getAnnotations(),
+                            other.getType().getAnnotations()));
+        } else {
+            lubAnnotatedType.addAnnotations(qualifierHierarchy
+                    .leastUpperBounds(getType().getAnnotations(),
+                            other.getType().getAnnotations()));
         }
         return analysis.createAbstractValue(lubAnnotatedType);
-    }
-
-    /**
-     * Computes and returns the least upper bound of two annotations (where one
-     * of them can be null to indicate [] (only valid for type variables).
-     */
-    private AnnotationMirror leastUpperBound(AnnotationMirror a,
-            AnnotationMirror b) {
-        if (a == null || b == null) {
-            return null;
-        } else {
-            return analysis.qualifierHierarchy.leastUpperBound(a, b);
-        }
     }
 
     /**
@@ -100,56 +92,6 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
         }
         return typeHierarchy.isSubtype(type, other.getType());
     }
-
-    /**
-     * Returns whether {@code a} is a subtype of {@code b}, where it is assumed
-     * that both {@code a} and {@code b} are part of the hierarchy identified by
-     * {@code topIndex}.
-     *
-     * <p>
-     * If one of the arguments is {@code null}, then it is assumed that 'top'
-     * (from that hierarchy) is meant.
-     *
-     * <p>
-     * Arguments can be {@link NoInferredAnnotation}, which can occur for
-     * generics. In that case, subtyping is handled as follows, where we use
-     * {@code []} to denote {@link NoInferredAnnotation}:
-     * <ul>
-     * <li>{@code [] <: []},
-     * <li>{@code [] <: @A} for an annotation {@code A} if an only if {@code A}
-     * is 'top' from this hierarchy,
-     * <li>{@code false} otherwise.
-     * </ul>
-     */
-    // protected boolean isSubtype(int topIndex, InferredAnnotation a,
-    // InferredAnnotation b) {
-    // Set<AnnotationMirror> as;
-    // Set<AnnotationMirror> bs;
-    // AnnotationMirror top = tops[topIndex];
-    // Set<AnnotationMirror> topSet = Collections.singleton(top);
-    // if (b == null) {
-    // // null is top
-    // bs = topSet;
-    // } else {
-    // bs = b.getAnnotations();
-    // }
-    // if (a == null) {
-    // // null is top
-    // as = topSet;
-    // } else {
-    // as = a.getAnnotations();
-    // }
-    // if (bs.isEmpty()) {
-    // // [] is a supertype of any qualifier, and [] <: []
-    // return true;
-    // }
-    // if (as.isEmpty()) {
-    // // [] is a subtype of no qualifier (only [])
-    // return false;
-    // }
-    // assert as.size() == 1 && bs.size() == 1;
-    // return analysis.qualifierHierarchy.isSubtype(as, bs);
-    // }
 
     /**
      * Returns the more specific version of two values {@code this} and
