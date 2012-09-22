@@ -11,9 +11,7 @@ import javax.lang.model.element.*;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic.Kind;
-/*>>>
-import checkers.compilermsgs.quals.CompilerMessageKey;
-*/
+
 import checkers.igj.quals.Immutable;
 import checkers.igj.quals.ReadOnly;
 import checkers.nullness.NullnessChecker;
@@ -36,6 +34,10 @@ import checkers.util.ElementUtils;
 import checkers.util.InternalUtils;
 import checkers.util.Pair;
 import checkers.util.TreeUtils;
+
+/*>>>
+import checkers.compilermsgs.quals.CompilerMessageKey;
+*/
 
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
