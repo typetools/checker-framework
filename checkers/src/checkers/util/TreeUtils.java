@@ -10,6 +10,7 @@ import checkers.source.SourceChecker;
 import checkers.types.AnnotatedTypeMirror;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
@@ -23,6 +24,7 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
+import com.sun.tools.javac.tree.JCTree;
 
 /**
  * A utility class made for helping to analyze a given {@code Tree}.
@@ -74,6 +76,54 @@ public final class TreeUtils {
         return false;
     }
 
+    /**
+     * Returns true if the tree is a tree that 'looks like' either an access
+     * of a field or an invocation of a method that are owned by the same
+     * accessing instance.
+     *
+     * It would only return true if the access tree is of the form:
+     * <pre>
+     *   field
+     *   this.field
+     *
+     *   method()
+     *   this.method()
+     * </pre>
+     *
+     * It does not perform any semantical check to differentiate between
+     * fields and local variables; local methods or imported static methods.
+     *
+     * @param tree  expression tree representing an access to object member
+     * @return {@code true} iff the member is a member of {@code this} instance
+     */
+    public static boolean isSelfAccess(final ExpressionTree tree) {
+        ExpressionTree tr = TreeUtils.skipParens(tree);
+        // If method invocation check the method select
+        if (tr.getKind() == Tree.Kind.ARRAY_ACCESS)
+            return false;
+
+        if (tree.getKind() == Tree.Kind.METHOD_INVOCATION) {
+            tr = ((MethodInvocationTree)tree).getMethodSelect();
+        }
+        tr = TreeUtils.skipParens(tr);
+        if (tr.getKind() == Tree.Kind.TYPE_CAST)
+            tr = ((TypeCastTree)tr).getExpression();
+        tr = TreeUtils.skipParens(tr);
+
+        if (tr.getKind() == Tree.Kind.IDENTIFIER)
+            return true;
+
+        if (tr.getKind() == Tree.Kind.MEMBER_SELECT) {
+            tr = ((MemberSelectTree)tr).getExpression();
+            if (tr.getKind() == Tree.Kind.IDENTIFIER) {
+                Name ident = ((IdentifierTree)tr).getName();
+                return ident.contentEquals("this") ||
+                        ident.contentEquals("super");
+            }
+        }
+
+        return false;
+    }
 
     /**
      * Gets the first enclosing tree in path, of the specified kind.
@@ -577,15 +627,128 @@ public final class TreeUtils {
     }
 
     /**
-     * Returns true if the given tree represents an access of the given VariableElement.
+     * Determine whether <code>tree</code> is a field access expressions, such
+     * as
+     *
+     * <pre>
+     *   <em>f</em>
+     *   <em>obj</em> . <em>f</em>
+     * </pre>
+     *
+     * @return true iff if tree is a field access expression (implicit or
+     *         explicit).
      */
-    public static boolean isFieldAccess(Tree tree, VariableElement var, ProcessingEnvironment env) {
-        if (!(tree instanceof MemberSelectTree)) {
+    public static boolean isFieldAccess(Tree tree) {
+        if (tree.getKind().equals(Tree.Kind.MEMBER_SELECT)) {
+            // explicit field access
+            MemberSelectTree memberSelect = (MemberSelectTree) tree;
+            Element el = TreeUtils.elementFromUse(memberSelect);
+            return el.getKind().isField();
+        } else if (tree.getKind().equals(Tree.Kind.IDENTIFIER)) {
+            // implicit field access
+            IdentifierTree ident = (IdentifierTree) tree;
+            Element el = TreeUtils.elementFromUse(ident);
+            return el.getKind().isField()
+                    && !ident.getName().contentEquals("this");
+        }
+        return false;
+    }
+
+    /**
+     * Compute the name of the field that the field access <code>tree</code>
+     * accesses. Requires <code>tree</code> to be a field access, as determined
+     * by <code>isFieldAccess</code>.
+     *
+     * @return The name of the field accessed by <code>tree</code>.
+     */
+    public static String getFieldName(Tree tree) {
+        assert isFieldAccess(tree);
+        if (tree.getKind().equals(Tree.Kind.MEMBER_SELECT)) {
+            MemberSelectTree mtree = (MemberSelectTree) tree;
+            return mtree.getIdentifier().toString();
+        } else {
+            IdentifierTree itree = (IdentifierTree) tree;
+            return itree.getName().toString();
+        }
+    }
+
+    /**
+     * Determine whether <code>tree</code> refers to a method element, such
+     * as
+     *
+     * <pre>
+     *   <em>m</em>(...)
+     *   <em>obj</em> . <em>m</em>(...)
+     * </pre>
+     *
+     * @return true iff if tree is a method access expression (implicit or
+     *         explicit).
+     */
+    public static boolean isMethodAccess(Tree tree) {
+        if (tree.getKind().equals(Tree.Kind.MEMBER_SELECT)) {
+            // explicit method access
+            MemberSelectTree memberSelect = (MemberSelectTree) tree;
+            Element el = TreeUtils.elementFromUse(memberSelect);
+            return el.getKind() == ElementKind.METHOD;
+        } else if (tree.getKind().equals(Tree.Kind.IDENTIFIER)) {
+            // implicit method access
+            IdentifierTree ident = (IdentifierTree) tree;
+            // The field "super" and "this" are also legal methods
+            if (ident.getName().contentEquals("super")
+                    || ident.getName().contentEquals("this")) {
+                return true;
+            }
+            Element el = TreeUtils.elementFromUse(ident);
+            return el.getKind() == ElementKind.METHOD;
+        }
+        return false;
+    }
+
+    /**
+     * Compute the name of the method that the method access <code>tree</code>
+     * accesses. Requires <code>tree</code> to be a method access, as determined
+     * by <code>isMethodAccess</code>.
+     *
+     * @return The name of the method accessed by <code>tree</code>.
+     */
+    public static String getMethodName(Tree tree) {
+        assert isMethodAccess(tree);
+        if (tree.getKind().equals(Tree.Kind.MEMBER_SELECT)) {
+            MemberSelectTree mtree = (MemberSelectTree) tree;
+            return mtree.getIdentifier().toString();
+        } else {
+            IdentifierTree itree = (IdentifierTree) tree;
+            return itree.getName().toString();
+        }
+    }
+
+    /**
+     * @return {@code true} if and only if {@code tree} can have a type
+     *         annotation.
+     *
+     * TODO: is this implementation precise enough? E.g. does
+     * a .class literal work correctly?
+     */
+    public static boolean canHaveTypeAnnotation(Tree tree) {
+        return ((JCTree) tree).type != null;
+    }
+
+    /**
+     * Returns true if and only if the given {@code tree} represents a field
+     * access of the given {@link VariableElement}.
+     */
+    public static boolean isSpecificFieldAccess(Tree tree, VariableElement var) {
+        if (tree instanceof MemberSelectTree) {
+            MemberSelectTree memSel = (MemberSelectTree) tree;
+            Element field = TreeUtils.elementFromUse(memSel);
+            return field.equals(var);
+        } else if (tree instanceof IdentifierTree) {
+            IdentifierTree idTree = (IdentifierTree) tree;
+            Element field = TreeUtils.elementFromUse(idTree);
+            return field.equals(var);
+        } else {
             return false;
         }
-        MemberSelectTree memSel = (MemberSelectTree) tree;
-        Element field = TreeUtils.elementFromUse(memSel);
-        return field.equals(var);
     }
 
     /**
