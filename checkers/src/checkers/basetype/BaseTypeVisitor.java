@@ -94,7 +94,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
     /** For obtaining line numbers in -Ashowchecks debugging output. */
     private final SourcePositions positions;
 
-    /** For storing visitor state**/
+    /** For storing visitor state. **/
     protected final VisitorState visitorState;
 
     /**
@@ -154,12 +154,12 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
              * looses a main modifier.
              */
             Tree ext = node.getExtendsClause();
-            if (ext!=null) {
+            if (ext != null) {
                 validateTypeOf(ext);
             }
 
             List<? extends Tree> impls = node.getImplementsClause();
-            if (impls!=null) {
+            if (impls != null) {
                 for (Tree im : impls) {
                     validateTypeOf(im);
                 }
@@ -185,7 +185,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
      * m2 only if:
      * <ul>
      *  <li> m1 return type is a subtype of m2 </li>
-     *  <li> m1 receiver type is a supertype of m2 <li>
+     *  <li> m1 receiver type is a supertype of m2 </li>
      *  <li> m1 parameters are supertypes of corresponding m2 parameters </li>
      * </ul>
      *
@@ -244,7 +244,6 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
     // **********************************************************************
     // Assignment checkers and pseudo-assignments
     // **********************************************************************
-
 
     @Override
     public Void visitVariable(VariableTree node, Void p) {
@@ -362,7 +361,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
     protected boolean isVectorCopyInto(AnnotatedExecutableType method) {
         ExecutableElement elt = method.getElement();
         if (elt.getSimpleName().contentEquals("copyInto")
-            && elt.getParameters().size() == 1)
+                && elt.getParameters().size() == 1)
             return true;
 
         return false;
@@ -416,7 +415,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
      * <ul>
      *  <li> passed arguments are subtypes of corresponding c parameters </li>
      *  <li> if c is generic, passed type arguments are subtypes
-     *      of c type variables <li>
+     *      of c type variables </li>
      * </ul>
      */
     @Override
@@ -516,7 +515,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
             // Ensure that we never ask for the annotated type of an annotation, because
             // we don't have a type for annotations.
             if (at.getExpression().getKind() == Tree.Kind.ANNOTATION) {
-                visitAnnotation((AnnotationTree)at.getExpression(), p);
+                visitAnnotation((AnnotationTree) at.getExpression(), p);
                 continue;
             }
             if (at.getExpression().getKind() == Tree.Kind.NEW_ARRAY) {
@@ -524,7 +523,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
                 boolean isAnno = false;
                 for (ExpressionTree init : nat.getInitializers()) {
                     if (init.getKind() == Tree.Kind.ANNOTATION) {
-                        visitAnnotation((AnnotationTree)init, p);
+                        visitAnnotation((AnnotationTree) init, p);
                         isAnno = true;
                     }
                 }
@@ -548,18 +547,18 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
 
             try {
                 AnnotatedTypeMirror actual = atypeFactory.getAnnotatedType(at.getExpression());
-                if (expected.getKind()!=TypeKind.ARRAY) {
+                if (expected.getKind() != TypeKind.ARRAY) {
                     // Expected is not an array -> direct comparison.
                     commonAssignmentCheck(expected, actual, at.getExpression(),
                             "annotation.type.incompatible");
                 } else {
-                    if (actual.getKind()==TypeKind.ARRAY) {
+                    if (actual.getKind() == TypeKind.ARRAY) {
                         // Both actual and expected are arrays.
                         commonAssignmentCheck(expected, actual, at.getExpression(),
                                 "annotation.type.incompatible");
                     } else {
                         // The declaration is an array type, but just a single element is given.
-                        commonAssignmentCheck(((AnnotatedArrayType)expected).getComponentType(),
+                        commonAssignmentCheck(((AnnotatedArrayType) expected).getComponentType(),
                                 actual, at.getExpression(),
                                 "annotation.type.incompatible");
                     }
@@ -625,7 +624,8 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         boolean valid = validateTypeOf(node);
         if (valid && node.getType() != null && node.getInitializers() != null) {
             AnnotatedArrayType arrayType = atypeFactory.getAnnotatedType(node);
-            checkArrayInitialization(arrayType.getComponentType(), node.getInitializers());
+            checkArrayInitialization(arrayType.getComponentType(),
+                    node.getInitializers());
         }
 
         return super.visitNewArray(node, p);
@@ -753,6 +753,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         return super.visitInstanceOf(node, p);
     }
 
+    @Override
     public Void visitArrayAccess(ArrayAccessTree node, Void p) {
         AnnotatedTypeMirror preAssCtxt = visitorState.getAssignmentContext();
         try {
@@ -776,7 +777,8 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
      *
      * @param varTree the AST node for the variable
      * @param valueExp the AST node for the value
-     * @param errorKey the error message to use if the check fails
+     * @param errorKey the error message to use if the check fails (must be a
+     *        compiler message key, see {@link CompilerMessageKey})
      */
     protected void commonAssignmentCheck(Tree varTree, ExpressionTree valueExp, /*@CompilerMessageKey*/ String errorKey) {
         AnnotatedTypeMirror var = atypeFactory.getAnnotatedType(varTree);
@@ -792,7 +794,8 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
      *
      * @param varType the annotated type of the variable
      * @param valueExp the AST node for the value
-     * @param errorKey the error message to use if the check fails
+     * @param errorKey the error message to use if the check fails (must be a
+     *        compiler message key, see {@link CompilerMessageKey})
      */
     protected void commonAssignmentCheck(AnnotatedTypeMirror varType,
             ExpressionTree valueExp, /*@CompilerMessageKey*/ String errorKey) {
@@ -800,9 +803,9 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
             return;
         if (varType.getKind() == TypeKind.ARRAY
                 && valueExp instanceof NewArrayTree
-                && ((NewArrayTree)valueExp).getType() == null) {
-            AnnotatedTypeMirror compType = ((AnnotatedArrayType)varType).getComponentType();
-            NewArrayTree arrayTree = (NewArrayTree)valueExp;
+                && ((NewArrayTree) valueExp).getType() == null) {
+            AnnotatedTypeMirror compType = ((AnnotatedArrayType) varType).getComponentType();
+            NewArrayTree arrayTree = (NewArrayTree) valueExp;
             assert arrayTree.getInitializers() != null : "array initializers are not expected to be null in: " + valueExp;
             checkArrayInitialization(compType, arrayTree.getInitializers());
         }
@@ -819,13 +822,15 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
      * @param varType the annotated type of the variable
      * @param valueType the annotated type of the value
      * @param valueTree the location to use when reporting the error message
-     * @param errorKey the error message to use if the check fails
+     * @param errorKey the error message to use if the check fails (must be a
+     *        compiler message key, see {@link CompilerMessageKey})
      */
     protected void commonAssignmentCheck(AnnotatedTypeMirror varType,
             AnnotatedTypeMirror valueType, Tree valueTree, /*@CompilerMessageKey*/ String errorKey) {
 
         String valueTypeString = valueType.toString();
         String varTypeString = varType.toString();
+
         // If both types as strings are the same, try outputting
         // the type including also invisible qualifiers.
         // This usually means there is a mistake in type defaulting.
@@ -840,7 +845,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
             System.out.printf(
                     " %s (line %3d): %s %s%n     actual: %s %s%n   expected: %s %s%n",
                     "About to test whether actual is a subtype of expected",
-                    (root.getLineMap()!=null ? root.getLineMap().getLineNumber(valuePos) : -1),
+                    (root.getLineMap() != null ? root.getLineMap().getLineNumber(valuePos) : -1),
                     valueTree.getKind(), valueTree,
                     valueType.getKind(), valueTypeString,
                     varType.getKind(), varTypeString);
@@ -853,7 +858,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
             System.out.printf(
                     " %s (line %3d): %s %s%n     actual: %s %s%n   expected: %s %s%n",
                     (success ? "success: actual is subtype of expected" : "FAILURE: actual is not subtype of expected"),
-                    (root.getLineMap()!=null ? root.getLineMap().getLineNumber(valuePos) : -1),
+                    (root.getLineMap() != null ? root.getLineMap().getLineNumber(valuePos) : -1),
                     valueTree.getKind(), valueTree,
                     valueType.getKind(), valueTypeString,
                     varType.getKind(), varTypeString);
@@ -894,7 +899,8 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         //         toptree, typevars, typeargs, typeargTrees);
 
         // If there are no type variables, do nothing.
-        if (typevars.isEmpty()) return;
+        if (typevars.isEmpty())
+            return;
 
         assert typevars.size() == typeargs.size() :
             "BaseTypeVisitor.checkTypeArguments: mismatch between type arguments: " +
@@ -909,17 +915,17 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
             AnnotatedTypeMirror typearg = argIter.next();
 
             // TODO skip wildcards for now to prevent a crash
-            if (typearg.getKind() == TypeKind.WILDCARD) continue;
+            if (typearg.getKind() == TypeKind.WILDCARD)
+                continue;
 
-            if (typeVar.getEffectiveUpperBound() != null)  {
+            if (typeVar.getEffectiveUpperBound() != null) {
                 if (typeargTrees == null || typeargTrees.isEmpty()) {
                     // The type arguments were inferred and we mark the whole method.
                     // The inference fails if we provide invalid arguments,
                     // therefore issue an error for the arguments.
                     // I hope this is less confusing for users.
-                    commonAssignmentCheck(typeVar.getEffectiveUpperBound(), typearg,
-                            toptree,
-                            "type.argument.type.incompatible");
+                    commonAssignmentCheck(typeVar.getEffectiveUpperBound(),
+                            typearg, toptree, "type.argument.type.incompatible");
                 } else {
                     commonAssignmentCheck(typeVar.getEffectiveUpperBound(), typearg,
                             typeargTrees.get(typeargs.indexOf(typearg)),
@@ -927,7 +933,8 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
                 }
             }
 
-            // Should we compare lower bounds instead of the annotations on the type variables?
+            // Should we compare lower bounds instead of the annotations on the
+            // type variables?
             if (!typeVar.getAnnotations().isEmpty()) {
                 if (!typearg.getAnnotations().equals(typeVar.getAnnotations())) {
                     if (typeargTrees == null || typeargTrees.isEmpty()) {
@@ -956,9 +963,8 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
      *
      * @param method    the type of the invoked method
      * @param node      the method invocation node
-     * @return true iff the call of 'node' is a valid call
      */
-    protected boolean checkMethodInvocability(AnnotatedExecutableType method,
+    protected void checkMethodInvocability(AnnotatedExecutableType method,
             MethodInvocationTree node) {
         AnnotatedTypeMirror methodReceiver = method.getReceiverType().getErased();
         AnnotatedTypeMirror treeReceiver = methodReceiver.getCopy(false);
@@ -969,9 +975,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
             checker.report(Result.failure("method.invocation.invalid",
                 TreeUtils.elementFromUse(node),
                 treeReceiver.toString(), methodReceiver.toString()), node);
-            return false;
         }
-        return true;
     }
 
     protected boolean checkConstructorInvocation(AnnotatedDeclaredType dt,
@@ -1024,15 +1028,19 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
      * overridden method's return type, parameter types, and receiver type.
      *
      * <p>
-     *
      * This method returns the result of the check, but also emits error
      * messages as a side effect.
      *
-     * @param overriderTree the AST node of the overriding method
-     * @param enclosingType the declared type enclosing the overrider method
-     * @param overridden the type of the overridden method
-     * @param overriddenType the declared type enclosing the overridden method
-     * @param p an optional parameter (as supplied to visitor methods)
+     * @param overriderTree
+     *            the AST node of the overriding method
+     * @param enclosingType
+     *            the declared type enclosing the overrider method
+     * @param overridden
+     *            the type of the overridden method
+     * @param overriddenType
+     *            the declared type enclosing the overridden method
+     * @param p
+     *            an optional parameter (as supplied to visitor methods)
      * @return true if the override check passed, false otherwise
      */
     protected boolean checkOverride(MethodTree overriderTree,
@@ -1051,7 +1059,8 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
 
         boolean result = true;
 
-        if (overrider.getTypeVariables().isEmpty() && !overridden.getTypeVariables().isEmpty()) {
+        if (overrider.getTypeVariables().isEmpty()
+                && !overridden.getTypeVariables().isEmpty()) {
             overridden = overridden.getErased();
         }
         String overriderMeth = overrider.getElement().toString();
@@ -1062,13 +1071,13 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         // Check the return value.
         if ((overrider.getReturnType().getKind() != TypeKind.VOID)) {
             boolean success = checker.getTypeHierarchy().isSubtype(overrider.getReturnType(),
-                overridden.getReturnType());
+                    overridden.getReturnType());
             if (options.containsKey("showchecks")) {
                 long valuePos = positions.getStartPosition(root, overriderTree.getReturnType());
                 System.out.printf(
                         " %s (line %3d):%n     overrider: %s %s (return type %s)%n   overridden: %s %s (return type %s)%n",
                         (success ? "success: overriding return type is subtype of overridden" : "FAILURE: overriding return type is not subtype of overridden"),
-                        (root.getLineMap()!=null ? root.getLineMap().getLineNumber(valuePos) : -1),
+                        (root.getLineMap() != null ? root.getLineMap().getLineNumber(valuePos) : -1),
                         overriderMeth, overriderTyp, overrider.getReturnType().toString(),
                         overriddenMeth, overriddenTyp, overridden.getReturnType().toString());
             }
@@ -1096,7 +1105,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
                 System.out.printf(
                         " %s (line %3d):%n     overrider: %s %s (parameter %d type %s)%n   overridden: %s %s (parameter %d type %s)%n",
                         (success ? "success: overridden parameter type is subtype of overriding" : "FAILURE: overridden parameter type is not subtype of overriding"),
-                        (root.getLineMap()!=null ? root.getLineMap().getLineNumber(valuePos) : -1),
+                        (root.getLineMap() != null ? root.getLineMap().getLineNumber(valuePos) : -1),
                         overriderMeth, overriderTyp, i, overriderParams.get(i).toString(),
                         overriddenMeth, overriddenTyp, i, overriddenParams.get(i).toString());
             }
@@ -1172,7 +1181,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         assert path.getLeaf().getKind() == Tree.Kind.IDENTIFIER :
             "expected identifier, found: " + path.getLeaf();
         if (path.getParentPath().getLeaf().getKind() == Tree.Kind.MEMBER_SELECT)
-            return (MemberSelectTree)path.getParentPath().getLeaf();
+            return (MemberSelectTree) path.getParentPath().getLeaf();
         else
             return null;
     }
@@ -1363,7 +1372,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
             ParameterizedTypeTree typeargtree = p.first;
             type = p.second;
 
-            if (typeargtree!=null) {
+            if (typeargtree != null) {
                 // We have a ParameterizedTypeTree -> visit it.
 
                 visitParameterizedType(type, typeargtree);
@@ -1410,11 +1419,11 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
 
             switch (tree.getKind()) {
             case VARIABLE:
-                Tree lt = ((VariableTree)tree).getType();
+                Tree lt = ((VariableTree) tree).getType();
                 if (lt instanceof ParameterizedTypeTree) {
                     typeargtree = (ParameterizedTypeTree) lt;
                 } else {
-                  //   System.out.println("Found a: " + lt);
+                    // System.out.println("Found a: " + lt);
                 }
                 break;
             case PARAMETERIZED_TYPE:
@@ -1423,7 +1432,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
             case NEW_CLASS:
                 NewClassTree nct = (NewClassTree) tree;
                 ExpressionTree nctid = nct.getIdentifier();
-                if (nctid.getKind()==Tree.Kind.PARAMETERIZED_TYPE) {
+                if (nctid.getKind() == Tree.Kind.PARAMETERIZED_TYPE) {
                     typeargtree = (ParameterizedTypeTree) nctid;
                     /*
                      * This is quite tricky... for anonymous class instantiations,
@@ -1465,7 +1474,6 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
 
             return Pair.of(typeargtree, type);
         }
-
 
         @Override
         public Void visitPrimitive(AnnotatedPrimitiveType type, Tree tree) {
@@ -1551,7 +1559,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
                     upper.replaceAnnotations(onVar);
                 }
 
-                if (type.getLowerBoundField()!=null) {
+                if (type.getLowerBoundField() != null) {
                     AnnotatedTypeMirror lower = type.getLowerBoundField();
                     for (AnnotationMirror aOnVar : onVar) {
                         if (lower.isAnnotatedInHierarchy(aOnVar) &&
@@ -1649,7 +1657,6 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         return checker.shouldSkipUses(elm);
     }
 
-
     // **********************************************************************
     // Overriding to avoid visit part of the tree
     // **********************************************************************
@@ -1666,11 +1673,9 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         return r;
     }
 
-
     // **********************************************************************
     // Check that the annotated JDK is being used.
     // **********************************************************************
-
 
     private static boolean checkedJDK = false;
 
@@ -1710,8 +1715,8 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
                 boolean foundNN = false;
                 for (com.sun.tools.javac.code.Attribute.TypeCompound tc :
                         ((com.sun.tools.javac.code.Symbol)m).typeAnnotations) {
-                    if ( tc.position.type==com.sun.tools.javac.code.TargetType.METHOD_PARAMETER &&
-                            tc.position.parameter_index==0 &&
+                    if ( tc.position.type == com.sun.tools.javac.code.TargetType.METHOD_PARAMETER &&
+                            tc.position.parameter_index == 0 &&
                             tc.type.toString().equals(checkers.nullness.quals.Nullable.class.getName()) ) {
                         foundNN = true;
                     }
