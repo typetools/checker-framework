@@ -1,17 +1,14 @@
 package checkers.nonnull;
 
 import java.util.List;
-import java.util.Set;
 
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.VariableElement;
 
 import checkers.flow.analysis.checkers.CFAbstractAnalysis;
-import checkers.flow.analysis.checkers.CFAnalysis;
 import checkers.flow.analysis.checkers.CFValue;
-import checkers.flow.analysis.checkers.CFAbstractValue.InferredAnnotation;
 import checkers.initialization.InitializationStore;
+import checkers.types.AnnotatedTypeMirror;
 import checkers.util.Pair;
 
 /**
@@ -40,13 +37,7 @@ public class NonNullAnalysis extends
     }
 
     @Override
-    public/* @Nullable */CFValue createAbstractValue(
-            Set<AnnotationMirror> annotations) {
-        return CFAnalysis.defaultCreateAbstractValue(annotations, this);
-    }
-
-    @Override
-    public CFValue createAbstractValue(InferredAnnotation[] annotations) {
-        return CFAnalysis.defaultCreateAbstractValue(annotations, this);
+    public CFValue createAbstractValue(AnnotatedTypeMirror type) {
+        return new CFValue(this, type);
     }
 }
