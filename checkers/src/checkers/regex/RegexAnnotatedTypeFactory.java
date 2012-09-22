@@ -128,7 +128,7 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
     /**
      * Returns a new Regex annotation with the given group count.
      */
-    /*default*/ AnnotationMirror createRegexAnnotation(int groupCount) {
+    /*package-scope*/ AnnotationMirror createRegexAnnotation(int groupCount) {
         AnnotationBuilder builder =
             new AnnotationBuilder(processingEnv, Regex.class.getCanonicalName());
         builder.setValue("value", groupCount);
