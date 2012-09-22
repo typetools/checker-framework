@@ -11,6 +11,7 @@ import checkers.source.SourceChecker;
 
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 
 import com.sun.source.tree.*;
 import com.sun.source.util.*;
@@ -189,5 +190,12 @@ public class InternalUtils {
 
     public static TypeMirror typeOf(Tree tree) {
         return ((JCTree)tree).type;
+    }
+
+    /**
+     * Returns whether a TypeVariable represents a captured type.
+     */
+    public static boolean isCaptured(TypeVariable typeVar) {
+        return ((Type.TypeVar) typeVar).isCaptured();
     }
 }
