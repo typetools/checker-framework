@@ -98,15 +98,15 @@ public class InterningAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Int
         @Override
         public Void visitBinary(BinaryTree node, AnnotatedTypeMirror type) {
             if (TreeUtils.isCompileTimeString(node)) {
-                type.addAnnotation(INTERNED);
+                type.replaceAnnotation(INTERNED);
             } else if (TreeUtils.isStringConcatenation(node)) {
-                type.addAnnotation(UNQUALIFIED);
+                type.replaceAnnotation(UNQUALIFIED);
             } else if ((type.getKind().isPrimitive()) ||
                     node.getKind() == Tree.Kind.EQUAL_TO ||
                     node.getKind() == Tree.Kind.NOT_EQUAL_TO) {
-                type.addAnnotation(INTERNED);
+                type.replaceAnnotation(INTERNED);
             } else {
-                type.addAnnotation(UNQUALIFIED);
+                type.replaceAnnotation(UNQUALIFIED);
             }
             return super.visitBinary(node, type);
         }
@@ -115,7 +115,7 @@ public class InterningAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Int
          */
         @Override
         public Void visitCompoundAssignment(CompoundAssignmentTree node, AnnotatedTypeMirror type) {
-          type.addAnnotation(UNQUALIFIED);
+          type.replaceAnnotation(UNQUALIFIED);
           return super.visitCompoundAssignment(node, type);
         }
     }
@@ -137,7 +137,7 @@ public class InterningAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Int
             Element elt = t.getUnderlyingType().asElement();
             assert elt != null;
             if (elt.getKind() == ElementKind.ENUM) {
-                t.addAnnotation(INTERNED);
+                t.replaceAnnotation(INTERNED);
             }
 
             return super.visitDeclared(t, p);
@@ -147,7 +147,7 @@ public class InterningAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Int
     @Override
     public AnnotatedPrimitiveType getUnboxedType(AnnotatedDeclaredType type) {
         AnnotatedPrimitiveType primitive = super.getUnboxedType(type);
-        primitive.addAnnotation(INTERNED);
+        primitive.replaceAnnotation(INTERNED);
         return primitive;
     }
 }
