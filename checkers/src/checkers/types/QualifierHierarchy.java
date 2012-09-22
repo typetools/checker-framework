@@ -46,7 +46,7 @@ public abstract class QualifierHierarchy {
     public abstract Set<AnnotationMirror> getBottomAnnotations();
 
     /**
-     * 
+     *
      * @param start Any qualifier from the type hierarchy.
      * @return The polymorphic qualifier for that hierarchy
      */
@@ -70,6 +70,11 @@ public abstract class QualifierHierarchy {
      * type qualifier hierarchy.  This checks only the qualifiers, not the
      * Java type.
      *
+     * <p>
+     * This method works even if the underlying Java type is a type variable.
+     * In that case, a 'null' AnnnotationMirror and the empty set represent a meaningful
+     * value (namely, no annotation).
+     *
      * @return true iff anno1 is a sub qualifier of anno2
      */
     public abstract boolean isSubtype(AnnotationMirror anno1, AnnotationMirror anno2);
@@ -79,12 +84,13 @@ public abstract class QualifierHierarchy {
      * of some annotation in rhs.
      * lhs and rhs contain only the annotations, not the Java type.
      *
+     * <p>
+     * This method works even if the underlying Java type is a type variable.
+     * In that case, a 'null' AnnnotationMirror and the empty set represent a meaningful
+     * value (namely, no annotation).
+     *
      * @return true iff an annotation in lhs is a super of one in rhs
      **/
-    // This method requires more revision.
-    // The only case were rhs and lhs have more than one qualifier is in IGJ
-    // where the type of 'this' is '@AssignsFields @I FOO'.  Subtyping for
-    // this case, requires subtyping with respect to one qualifier only.
     public abstract boolean isSubtype(Collection<AnnotationMirror> rhs, Collection<AnnotationMirror> lhs);
 
     /**
@@ -97,6 +103,11 @@ public abstract class QualifierHierarchy {
      * The two qualifiers have to be from the same qualifier hierarchy. Otherwise,
      * null will be returned.
      *
+     * <p>
+     * This method works even if the underlying Java type is a type variable.
+     * In that case, a 'null' AnnnotationMirror and the empty set represent a meaningful
+     * value (namely, no annotation).
+     *
      * @return  the least restrictive qualifiers for both types
      */
     public abstract AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2);
@@ -106,6 +117,11 @@ public abstract class QualifierHierarchy {
      *
      * The two qualifiers have to be from the same qualifier hierarchy. Otherwise,
      * null will be returned.
+     *
+     * <p>
+     * This method works even if the underlying Java type is a type variable.
+     * In that case, a 'null' AnnnotationMirror and the empty set represent a meaningful
+     * value (namely, no annotation).
      *
      * @param a1 First annotation
      * @param a2 Second annotation
@@ -121,7 +137,11 @@ public abstract class QualifierHierarchy {
      * This is necessary for determining the type of a conditional
      * expression (<tt>?:</tt>), where the type of the expression is the
      * least upper bound of the true and false clauses.
+     *
      * <p>
+     * This method works even if the underlying Java type is a type variable.
+     * In that case, a 'null' AnnnotationMirror and the empty set represent a meaningful
+     * value (namely, no annotation).
      *
      * @return the least upper bound of annos1 and annos2
      */
@@ -156,12 +176,160 @@ public abstract class QualifierHierarchy {
      * The two qualifiers have to be from the same qualifier hierarchy. Otherwise,
      * null will be returned.
      *
+     * <p>
+     * This method works even if the underlying Java type is a type variable.
+     * In that case, a 'null' AnnnotationMirror and the empty set represent a meaningful
+     * value (namely, no annotation).
+     *
      * @param annos1 First collection of qualifiers
      * @param annos2 Second collection of qualifiers
      * @return Greatest lower bound of the two collections of qualifiers
      */
     public Set<AnnotationMirror>
     greatestLowerBounds(Collection<AnnotationMirror> annos1, Collection<AnnotationMirror> annos2) {
+        assert annos1.size() == annos2.size() :
+            "QualifierHierarchy.greatestLowerBounds: tried to determine GLB with sets of different sizes!\n" +
+                    "    Set 1: " + annos1 + " Set 2: " + annos2;
+        assert annos1.size() != 0 :
+            "QualifierHierarchy.greatestLowerBounds: tried to determine GLB with empty sets!";
+
+        Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
+        for (AnnotationMirror a1 : annos1) {
+            for (AnnotationMirror a2 : annos2) {
+                AnnotationMirror glb = greatestLowerBound(a1, a2);
+                if (glb != null) {
+                    result.add(glb);
+                }
+            }
+        }
+
+        assert result.size() == annos1.size() : "QualifierHierarchy.greatestLowerBounds: resulting set has incorrect number of annotations!\n" +
+                "    Set 1: " + annos1 + " Set 2: " + annos2 + " LUB: " + result;
+
+        return result;
+    }
+
+    /**
+     * Tests whether anno1 is a sub-qualifier of anno2, according to the
+     * type qualifier hierarchy.  This checks only the qualifiers, not the
+     * Java type.
+     *
+     * <p>
+     * This method works even if the underlying Java type is a type variable.
+     * In that case, a 'null' AnnnotationMirror and the empty set represent a meaningful
+     * value (namely, no annotation).
+     *
+     * @return true iff anno1 is a sub qualifier of anno2
+     */
+    public abstract boolean isSubtypeTypeVariable(AnnotationMirror anno1, AnnotationMirror anno2);
+
+    /**
+     * Tests whether there is any annotation in lhs that is a super qualifier
+     * of some annotation in rhs.
+     * lhs and rhs contain only the annotations, not the Java type.
+     *
+     * @return true iff an annotation in lhs is a super of one in rhs
+     **/
+    // This method requires more revision.
+    // The only case were rhs and lhs have more than one qualifier is in IGJ
+    // where the type of 'this' is '@AssignsFields @I FOO'.  Subtyping for
+    // this case, requires subtyping with respect to one qualifier only.
+    public abstract boolean isSubtypeTypeVariable(Collection<AnnotationMirror> rhs, Collection<AnnotationMirror> lhs);
+
+    /**
+     * Returns the  least upper bound for the qualifiers a1 and a2.
+     *
+     * Examples:
+     * For NonNull, leastUpperBound('Nullable', 'NonNull') ==> Nullable
+     * For IGJ,     leastUpperBound('Immutable', 'Mutable') ==> ReadOnly
+     *
+     * The two qualifiers have to be from the same qualifier hierarchy. Otherwise,
+     * null will be returned.
+     *
+     * <p>
+     * This method works even if the underlying Java type is a type variable.
+     * In that case, a 'null' AnnnotationMirror and the empty set represent a meaningful
+     * value (namely, no annotation).
+     *
+     * @return  the least restrictive qualifiers for both types
+     */
+    public abstract AnnotationMirror leastUpperBoundTypeVariable(AnnotationMirror a1, AnnotationMirror a2);
+
+    /**
+     * Returns the greatest lower bound for the qualifiers a1 and a2.
+     *
+     * The two qualifiers have to be from the same qualifier hierarchy. Otherwise,
+     * null will be returned.
+     *
+     * <p>
+     * This method works even if the underlying Java type is a type variable.
+     * In that case, a 'null' AnnnotationMirror and the empty set represent a meaningful
+     * value (namely, no annotation).
+     *
+     * @param a1 First annotation
+     * @param a2 Second annotation
+     * @return Greatest lower bound of the two annotations
+     */
+    public abstract AnnotationMirror greatestLowerBoundTypeVariable(AnnotationMirror a1, AnnotationMirror a2);
+
+    /**
+     * Returns the type qualifiers that are the least upper bound of
+     * the qualifiers in annos1 and annos2.
+     * <p>
+     *
+     * This is necessary for determining the type of a conditional
+     * expression (<tt>?:</tt>), where the type of the expression is the
+     * least upper bound of the true and false clauses.
+     *
+     * <p>
+     * This method works even if the underlying Java type is a type variable.
+     * In that case, a 'null' AnnnotationMirror and the empty set represent a meaningful
+     * value (namely, no annotation).
+     *
+     * @return the least upper bound of annos1 and annos2
+     */
+    public Set<AnnotationMirror>
+    leastUpperBoundsTypeVariable(Collection<AnnotationMirror> annos1, Collection<AnnotationMirror> annos2) {
+        assert annos1.size() == annos2.size() :
+            "QualifierHierarchy.leastUpperBounds: tried to determine LUB with sets of different sizes!\n" +
+                    "    Set 1: " + annos1 + " Set 2: " + annos2;
+        assert annos1.size() != 0 :
+            "QualifierHierarchy.leastUpperBounds: tried to determine LUB with empty sets!";
+
+        Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
+        for (AnnotationMirror a1 : annos1) {
+            for (AnnotationMirror a2 : annos2) {
+                AnnotationMirror lub = leastUpperBound(a1, a2);
+                if (lub != null) {
+                    result.add(lub);
+                }
+            }
+        }
+
+        assert result.size() == annos1.size() : "QualifierHierarchy.leastUpperBounds: resulting set has incorrect number of annotations!\n" +
+                "    Set 1: " + annos1 + " Set 2: " + annos2 + " LUB: " + result;
+
+        return result;
+    }
+
+    /**
+     * Returns the type qualifiers that are the greatest lower bound of
+     * the qualifiers in annos1 and annos2.
+     *
+     * The two qualifiers have to be from the same qualifier hierarchy. Otherwise,
+     * null will be returned.
+     *
+     * <p>
+     * This method works even if the underlying Java type is a type variable.
+     * In that case, a 'null' AnnnotationMirror and the empty set represent a meaningful
+     * value (namely, no annotation).
+     *
+     * @param annos1 First collection of qualifiers
+     * @param annos2 Second collection of qualifiers
+     * @return Greatest lower bound of the two collections of qualifiers
+     */
+    public Set<AnnotationMirror>
+    greatestLowerBoundsTypeVariable(Collection<AnnotationMirror> annos1, Collection<AnnotationMirror> annos2) {
         assert annos1.size() == annos2.size() :
             "QualifierHierarchy.greatestLowerBounds: tried to determine GLB with sets of different sizes!\n" +
                     "    Set 1: " + annos1 + " Set 2: " + annos2;
