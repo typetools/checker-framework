@@ -8,9 +8,9 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.util.Elements;
 
 import checkers.basetype.BaseTypeChecker;
+import checkers.quals.PolyAll;
 import checkers.quals.TypeQualifiers;
 import checkers.quals.Unqualified;
-import checkers.quals.PolyAll;
 import checkers.regex.quals.PartialRegex;
 import checkers.regex.quals.PolyRegex;
 import checkers.regex.quals.Regex;
@@ -31,6 +31,7 @@ public class RegexChecker extends BaseTypeChecker {
 
     protected AnnotationMirror REGEX, REGEXBOTTOM, PARTIALREGEX;
     protected ExecutableElement regexValueElement;
+
     // TODO use? private TypeMirror[] legalReferenceTypes;
 
     @Override
