@@ -581,7 +581,7 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
 
     /** Special casing NonNull and Raw method calls */
     @Override
-    protected boolean checkMethodInvocability(AnnotatedExecutableType method,
+    protected void checkMethodInvocability(AnnotatedExecutableType method,
             MethodInvocationTree node) {
         if (atypeFactory.isMostEnclosingThisDeref(node)) {
             // An alternate approach would be to let the rawness checker
@@ -598,12 +598,10 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
                         checker.report(Result.failure("method.invocation.invalid.rawness",
                                                       TreeUtils.elementFromUse(node),
                                                       nonInitializedFields.first), node);
-                        return false;
                     } else if (! nonInitializedFields.second.isEmpty()) {
                         checker.report(Result.warning("method.invocation.invalid.rawness",
                                                       TreeUtils.elementFromUse(node),
                                                       nonInitializedFields.second), node);
-                        return false;
                     }
                 }
             }
@@ -611,11 +609,10 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
 
         // Claim that methods with a @NonNull receiver are invokable so that
         // visitMemberSelect issues dereference errors instead.
-        if (method.getReceiverType().hasEffectiveAnnotation(NONNULL)) {
-            return true;
+        // That is, don't call the super implementation for them.
+        if (!method.getReceiverType().hasEffectiveAnnotation(NONNULL)) {
+            super.checkMethodInvocability(method, node);
         }
-
-        return super.checkMethodInvocability(method, node);
     }
 
     /**
