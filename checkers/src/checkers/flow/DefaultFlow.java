@@ -6,7 +6,7 @@ import javax.lang.model.element.*;
 import javax.lang.model.type.TypeKind;
 
 import checkers.basetype.BaseTypeChecker;
-import checkers.nullness.quals.Pure;
+import checkers.quals.Pure;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.util.AnnotationUtils;

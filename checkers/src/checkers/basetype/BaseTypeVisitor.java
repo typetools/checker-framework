@@ -1312,16 +1312,11 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
      * method invocation, and issues a "method.invocation.invalid" if the
      * invocation is invalid.
      *
-     * <p>
-     * This implementation tests the following properties:
-     * <ul>
-     * <li>The receiver in the method invocation must be a subtype of the method
-     * receiver type.
-     * </ul>
+     * This implementation tests whether the receiver in the method invocation
+     * is a subtype of the method receiver type.
      *
      * @param method    the type of the invoked method
      * @param node      the method invocation node
-     * @return true iff the call of 'node' is a valid call
      */
     protected void checkMethodInvocability(AnnotatedExecutableType method,
             MethodInvocationTree node) {
