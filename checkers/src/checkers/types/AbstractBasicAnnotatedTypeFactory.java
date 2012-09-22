@@ -633,7 +633,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
                     .getTopAnnotations()) {
                 AnnotationMirror inferredAnnotation = inferred
                         .getAnnotationInHierarchy(top);
-                if (inferredAnnotation != null) {
+                if (inferredAnnotation == null) {
                     // We inferred "no annotation" for this hierarchy.
                     type.removeAnnotationInHierarchy(top);
                 } else {
