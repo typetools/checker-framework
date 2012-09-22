@@ -58,6 +58,12 @@ import checkers.util.PurityUtils;
 import checkers.util.TreeUtils;
 import checkers.util.TypesUtils;
 
+/*>>>
+import checkers.basetype.PurityChecker.PurityResult;
+import checkers.compilermsgs.quals.CompilerMessageKey;
+import checkers.nonnull.quals.Nullable;
+*/
+
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
@@ -87,11 +93,6 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeInfo;
-/*>>>
-import checkers.basetype.PurityChecker.PurityResult;
-import checkers.compilermsgs.quals.CompilerMessageKey;
-import checkers.nonnull.quals.Nullable;
-*/
 
 /**
  * A {@link SourceVisitor} that performs assignment and pseudo-assignment
