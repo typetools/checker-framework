@@ -24,6 +24,7 @@ import checkers.types.AnnotatedTypeMirror;
 import checkers.types.QualifierHierarchy;
 import checkers.util.AnnotationBuilder;
 import checkers.util.AnnotationUtils;
+import checkers.util.MultiGraphQualifierHierarchy;
 import checkers.util.TypesUtils;
 
 import com.sun.source.tree.ClassTree;
@@ -247,7 +248,7 @@ public abstract class InitializationChecker extends BaseTypeChecker {
      * hierarchy also includes the child type system, whose hierarchy is
      * provided through {@link #getChildQualifierHierarchy()}.
      */
-    protected class InitializationQualifierHierarchy extends QualifierHierarchy {
+    protected class InitializationQualifierHierarchy extends MultiGraphQualifierHierarchy {
 
         protected Set<AnnotationMirror> tops;
         protected Set<AnnotationMirror> bottoms;
