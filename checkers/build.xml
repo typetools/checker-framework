@@ -364,6 +364,13 @@ ${build.version} of the 'javac.jar' library."/>
         </antcall>
     </target>
 
+    <target name="lock-tests" depends="jar,build-tests"
+      description="Run tests for the Lock checker">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.LockTest"/>
+        </antcall>
+    </target>
+
     <target name="igj-tests" depends="jar,build-tests"
       description="Run tests for the IGJ checker">
         <antcall target="-run-tests">
