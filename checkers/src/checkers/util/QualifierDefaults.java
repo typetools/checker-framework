@@ -3,7 +3,6 @@ package checkers.util;
 import java.lang.annotation.Annotation;
 import java.util.*;
 
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.*;
 import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.type.TypeKind;
@@ -73,8 +72,8 @@ public class QualifierDefaults {
      * @param factory the factory for this checker
      * @param annoFactory an annotation factory, used to get annotations by name
      */
-    public QualifierDefaults(ProcessingEnvironment env, AnnotatedTypeFactory atypeFactory) {
-        this.elements = env.getElementUtils();
+    public QualifierDefaults(Elements elements, AnnotatedTypeFactory atypeFactory) {
+        this.elements = elements;
         this.atypeFactory = atypeFactory;
     }
 
