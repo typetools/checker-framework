@@ -12,6 +12,7 @@ import javax.lang.model.type.*;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
+import checkers.basetype.BaseTypeChecker;
 /*>>>
 import checkers.javari.quals.Mutable;
 import checkers.nullness.quals.Nullable;
@@ -31,6 +32,7 @@ import checkers.util.TreeUtils;
 import checkers.util.stub.StubParser;
 import checkers.util.stub.StubResource;
 import checkers.util.stub.StubUtil;
+import checkers.util.trees.DetachedVarSymbol;
 
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
@@ -128,7 +130,7 @@ public class AnnotatedTypeFactory {
      * class names (canonical names) for annotations with the same meaning
      * (i.e., aliases), as well as the annotation mirror that should be used.
      */
-    private final Map<String, Pair<AnnotationMirror, Set<String>>> declAliases = new HashMap<String, Pair<AnnotationMirror, Set<String>>>();
+    private final Map<String, Pair<AnnotationMirror, Set<String>>> declAliases = new HashMap<>();
 
 	/** Unique ID counter; for debugging purposes. */
     private static int uidCounter = 0;
@@ -203,7 +205,8 @@ public class AnnotatedTypeFactory {
     // **********************************************************************
 
     /** Should results be cached? Disable for better debugging. */
-    private final static boolean SHOULD_CACHE = true;
+    protected static boolean SHOULD_CACHE = true;
+    protected boolean shouldCache = SHOULD_CACHE;
 
     /** Size of LRU cache. */
     private final static int CACHE_SIZE = 300;
@@ -311,7 +314,7 @@ public class AnnotatedTypeFactory {
         case ANNOTATION_TYPE:
         case METHOD:
         // case VARIABLE:
-            if (SHOULD_CACHE)
+            if (shouldCache)
                 treeCache.put(tree, AnnotatedTypes.deepCopy(type));
         }
         // System.out.println("AnnotatedTypeFactory::getAnnotatedType(Tree) result: " + type);
@@ -394,7 +397,7 @@ public class AnnotatedTypeFactory {
         // Caching is disabled if indexTypes == null, because calls to this
         // method before the stub files are fully read can return incorrect
         // results.
-        if (SHOULD_CACHE && indexTypes != null)
+        if (shouldCache && indexTypes != null)
             elementCache.put(elt, AnnotatedTypes.deepCopy(type));
         return type;
     }
@@ -430,7 +433,7 @@ public class AnnotatedTypeFactory {
         AnnotatedTypeMirror result = fromTreeWithVisitor(
                 TypeFromTree.TypeFromMemberINSTANCE, tree);
         annotateInheritedFromClass(result);
-        if (SHOULD_CACHE)
+        if (shouldCache)
             fromTreeCache.put(tree, AnnotatedTypes.deepCopy(result));
         return result;
     }
@@ -447,7 +450,7 @@ public class AnnotatedTypeFactory {
         AnnotatedTypeMirror result = fromTreeWithVisitor(
                 TypeFromTree.TypeFromExpressionINSTANCE, tree);
         annotateInheritedFromClass(result);
-        if (SHOULD_CACHE)
+        if (shouldCache)
             fromTreeCache.put(tree, AnnotatedTypes.deepCopy(result));
         return result;
     }
@@ -495,7 +498,7 @@ public class AnnotatedTypeFactory {
             }
         }
         annotateInheritedFromClass(result);
-        if (SHOULD_CACHE)
+        if (shouldCache)
             fromTreeCache.put(tree, AnnotatedTypes.deepCopy(result));
         return result;
     }
@@ -1277,7 +1280,7 @@ public class AnnotatedTypeFactory {
             Class<? extends Annotation> alias, AnnotationMirror annotationToUse) {
         String aliasName = alias.getCanonicalName();
         String annotationName = annotation.getCanonicalName();
-        Set<String> set = new HashSet<String>();
+        Set<String> set = new HashSet<>();
         if (declAliases.containsKey(annotationName)) {
             set.addAll(declAliases.get(annotationName).second);
         }
@@ -1345,6 +1348,11 @@ public class AnnotatedTypeFactory {
             return elementToTreeCache.get(elt);
         }
 
+        // Check for new declarations, outside of the AST.
+        if (elt instanceof DetachedVarSymbol) {
+            return ((DetachedVarSymbol) elt).getDeclaration();
+        }
+
         // TODO: handle type parameter declarations?
         Tree fromElt;
         // Prevent calling declarationFor on elements we know we don't have
@@ -1365,7 +1373,7 @@ public class AnnotatedTypeFactory {
             fromElt = TreeInfo.declarationFor((Symbol)elt, (JCTree)root);
             break;
         }
-        if (SHOULD_CACHE)
+        if (shouldCache)
             elementToTreeCache.put(elt, fromElt);
         return fromElt;
     }
@@ -1600,6 +1608,13 @@ public class AnnotatedTypeFactory {
             }
         }
 
+        // stub file for type-system independent annotations
+        InputStream input = BaseTypeChecker.class.getResourceAsStream("flow.astub");
+        if (input != null) {
+            StubParser stubParser = new StubParser("flow.astub", input, this, processingEnv);
+            stubParser.parse(indexTypes, indexDeclAnnos);
+        }
+
         String allstubFiles = "";
         String stubFiles;
 
@@ -1769,8 +1784,8 @@ public class AnnotatedTypeFactory {
      */
     public List<Pair<AnnotationMirror, AnnotationMirror>> getDeclAnnotationWithMetaAnnotation(
             Element element, Class<? extends Annotation> metaAnnotation) {
-        List<Pair<AnnotationMirror, AnnotationMirror>> result = new ArrayList<Pair<AnnotationMirror, AnnotationMirror>>();
-        List<AnnotationMirror> annotationMirrors = new ArrayList<AnnotationMirror>();
+        List<Pair<AnnotationMirror, AnnotationMirror>> result = new ArrayList<>();
+        List<AnnotationMirror> annotationMirrors = new ArrayList<>();
 
         // Consider real annotations.
         annotationMirrors.addAll(element.getAnnotationMirrors());
@@ -1810,8 +1825,8 @@ public class AnnotatedTypeFactory {
      */
     public List<Pair<AnnotationMirror, AnnotationMirror>> getAnnotationWithMetaAnnotation(
             Element element, Class<? extends Annotation> metaAnnotation) {
-        List<Pair<AnnotationMirror, AnnotationMirror>> result = new ArrayList<Pair<AnnotationMirror, AnnotationMirror>>();
-        List<AnnotationMirror> annotationMirrors = new ArrayList<AnnotationMirror>();
+        List<Pair<AnnotationMirror, AnnotationMirror>> result = new ArrayList<>();
+        List<AnnotationMirror> annotationMirrors = new ArrayList<>();
 
         // Consider real annotations.
         annotationMirrors.addAll(getAnnotatedType(element).getAnnotations());
