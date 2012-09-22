@@ -60,19 +60,18 @@ public final class TypesUtils {
     public static boolean isString(TypeMirror type) {
         return isDeclaredOfName(type, "java.lang.String");
     }
-    
+
     /**
-	 * Checks if the type represents a boolean type, that is either boolean
-	 * (primitive type) or java.lang.Boolean.
-	 * 
-	 * @param type
-	 *            the type
-	 * @return true iff type represents a boolean type
-	 */
-	public static boolean isBooleanType(TypeMirror type) {
-		return isDeclaredOfName(type, "java.lang.Boolean")
-				|| type.getKind().equals(TypeKind.BOOLEAN);
-	}
+     * Checks if the type represents a boolean type, that is either boolean
+     * (primitive type) or java.lang.Boolean.
+     *
+     * @param type the type to test
+     * @return true iff type represents a boolean type
+     */
+    public static boolean isBooleanType(TypeMirror type) {
+        return isDeclaredOfName(type, "java.lang.Boolean")
+                || type.getKind().equals(TypeKind.BOOLEAN);
+    }
 
     /**
      * Check if the type represent a declared type of the given qualified name

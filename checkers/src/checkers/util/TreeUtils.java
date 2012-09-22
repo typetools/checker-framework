@@ -75,10 +75,10 @@ public final class TreeUtils {
 
         return false;
     }
-    
+
     /**
      * Returns true if the tree is a tree that 'looks like' either an access
-     * of a field or an invokation of a method that are owned by the same
+     * of a field or an invocation of a method that are owned by the same
      * accessing instance.
      *
      * It would only return true if the access tree is of the form:
@@ -124,7 +124,6 @@ public final class TreeUtils {
 
         return false;
     }
-
 
     /**
      * Gets the first enclosing tree in path, of the specified kind.
@@ -630,12 +629,12 @@ public final class TreeUtils {
     /**
      * Determine whether <code>tree</code> is a field access expressions, such
      * as
-     * 
+     *
      * <pre>
      *   <em>f</em>
      *   <em>obj</em> . <em>f</em>
      * </pre>
-     * 
+     *
      * @return true iff if tree is a field access expression (implicit or
      *         explicit).
      */
@@ -659,7 +658,7 @@ public final class TreeUtils {
      * Compute the name of the field that the field access <code>tree</code>
      * accesses. Requires <code>tree</code> to be a field access, as determined
      * by <code>isFieldAccess</code>.
-     * 
+     *
      * @return The name of the field accessed by <code>tree</code>.
      */
     public static String getFieldName(Tree tree) {
@@ -676,12 +675,12 @@ public final class TreeUtils {
     /**
      * Determine whether <code>tree</code> refers to a method element, such
      * as
-     * 
+     *
      * <pre>
      *   <em>m</em>(...)
      *   <em>obj</em> . <em>m</em>(...)
      * </pre>
-     * 
+     *
      * @return true iff if tree is a method access expression (implicit or
      *         explicit).
      */
@@ -709,7 +708,7 @@ public final class TreeUtils {
      * Compute the name of the method that the method access <code>tree</code>
      * accesses. Requires <code>tree</code> to be a method access, as determined
      * by <code>isMethodAccess</code>.
-     * 
+     *
      * @return The name of the method accessed by <code>tree</code>.
      */
     public static String getMethodName(Tree tree) {
@@ -726,11 +725,14 @@ public final class TreeUtils {
     /**
      * @return {@code true} if and only if {@code tree} can have a type
      *         annotation.
+     *
+     * TODO: is this implementation precise enough? E.g. does
+     * a .class literal work correctly?
      */
     public static boolean canHaveTypeAnnotation(Tree tree) {
         return ((JCTree) tree).type != null;
     }
-    
+
     /**
      * Returns true if and only if the given {@code tree} represents a field
      * access of the given {@link VariableElement}.

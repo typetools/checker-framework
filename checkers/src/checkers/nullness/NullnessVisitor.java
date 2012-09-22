@@ -611,11 +611,10 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
 
         // Claim that methods with a @NonNull receiver are invokable so that
         // visitMemberSelect issues dereference errors instead.
-        if (method.getReceiverType().hasEffectiveAnnotation(NONNULL)) {
-            return;
+        // That is, don't call the super implementation for them.
+        if (!method.getReceiverType().hasEffectiveAnnotation(NONNULL)) {
+            super.checkMethodInvocability(method, node);
         }
-
-        super.checkMethodInvocability(method, node);
     }
 
     /**

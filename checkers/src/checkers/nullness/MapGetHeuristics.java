@@ -1,26 +1,46 @@
 package checkers.nullness;
 
-import static checkers.util.Heuristics.Matchers.*;
+import static checkers.util.Heuristics.Matchers.ofKind;
+import static checkers.util.Heuristics.Matchers.or;
+import static checkers.util.Heuristics.Matchers.preceededBy;
+import static checkers.util.Heuristics.Matchers.whenTrue;
+import static checkers.util.Heuristics.Matchers.withIn;
 
 import java.util.List;
 
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.*;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
 
 import checkers.nullness.quals.KeyFor;
-
+import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
-import checkers.types.AnnotatedTypeFactory;
 import checkers.util.AnnotationUtils;
-import checkers.util.Heuristics.Matcher;
 import checkers.util.ElementUtils;
+import checkers.util.Heuristics.Matcher;
 import checkers.util.InternalUtils;
 import checkers.util.TreeUtils;
 import checkers.util.Resolver;
 
-import com.sun.source.tree.*;
+import com.sun.source.tree.AssertTree;
+import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.ConditionalExpressionTree;
+import com.sun.source.tree.EnhancedForLoopTree;
+import com.sun.source.tree.ExpressionStatementTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.IfTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.ReturnTree;
+import com.sun.source.tree.StatementTree;
+import com.sun.source.tree.ThrowTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.UnaryTree;
 import com.sun.source.util.TreePath;
 
 /**
