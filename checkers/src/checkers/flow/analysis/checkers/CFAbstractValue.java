@@ -1,13 +1,17 @@
 package checkers.flow.analysis.checkers;
 
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeMirror;
 
+import checkers.basetype.BaseTypeChecker;
 import checkers.flow.analysis.AbstractValue;
 import checkers.flow.util.HashCodeUtils;
+import checkers.types.AbstractBasicAnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.QualifierHierarchy;
 import checkers.types.TypeHierarchy;
-import checkers.util.AnnotatedTypes;
+import checkers.util.InternalUtils;
 
 /**
  * An implementation of an abstract value used by the Checker Framework dataflow
@@ -54,13 +58,34 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
             V v = (V) this;
             return v;
         }
-        analysis.getFactory().getQualifierHierarchy();
-        AnnotatedTypeMirror lubType = AnnotatedTypes.asSuper(analysis
-                .getFactory().getProcessingEnv().getTypeUtils(),
-                analysis.getFactory(), this.getType(), other.getType());
-        assert lubType != null : "Unable to compute LUB for " + getType().toString(true)
-                + " and " + other.getType().toString(true) + ".";
-        return analysis.createAbstractValue(lubType);
+        AbstractBasicAnnotatedTypeFactory<? extends BaseTypeChecker, V, ?, ?, ?> factory = analysis
+                .getFactory();
+        ProcessingEnvironment processingEnv = factory.getProcessingEnv();
+        TypeMirror lubType = InternalUtils.leastUpperBound(processingEnv,
+                getType().getUnderlyingType(), other.getType()
+                        .getUnderlyingType());
+        AnnotatedTypeMirror lubAnnotatedType = AnnotatedTypeMirror.createType(
+                lubType, factory);
+        for (AnnotationMirror top : analysis.qualifierHierarchy.getTopAnnotations()) {
+            AnnotationMirror lub = leastUpperBound(getType().getAnnotationInHierarchy(top), other.getType().getAnnotationInHierarchy(top));
+            if (lub != null) {
+                lubAnnotatedType.addAnnotation(lub);
+            }
+        }
+        return analysis.createAbstractValue(lubAnnotatedType);
+    }
+
+    /**
+     * Computes and returns the least upper bound of two annotations (where one
+     * of them can be null to indicate [] (only valid for type variables).
+     */
+    private AnnotationMirror leastUpperBound(AnnotationMirror a,
+            AnnotationMirror b) {
+        if (a == null || b == null) {
+            return null;
+        } else {
+            return analysis.qualifierHierarchy.leastUpperBound(a, b);
+        }
     }
 
     /**
