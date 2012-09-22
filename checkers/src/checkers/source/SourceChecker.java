@@ -254,7 +254,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
     /**
      * Log an error message and abort processing.
      * Call this method instead of raising an exception.
-     * 
+     *
      * @param msg The error message to log.
      */
     public static void errorAbort(String msg) {
@@ -295,7 +295,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
      * Instead use initChecker.
      * This allows us to handle CheckerError only here and doesn't
      * require all overriding implementations to be aware of CheckerError.
-     * 
+     *
      * @see AbstractProcessor#init(ProcessingEnvironment)
      * @see SourceChecker#initChecker()
      */
@@ -321,7 +321,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
 
     /**
      * Initialize the checker.
-     * 
+     *
      * @see AbstractProcessor#init(ProcessingEnvironment)
      */
     public void initChecker() {
