@@ -1223,7 +1223,7 @@ public abstract class AnnotatedTypeMirror {
                 List<AnnotatedTypeVariable> mtvs = new ArrayList<AnnotatedTypeVariable>();
                 for (AnnotatedTypeVariable t : getTypeVariables()) {
                     // Substitute upper and lower bound of the type variable.
-                    AnnotatedTypeVariable newtv = (AnnotatedTypeVariable) AnnotatedTypes.deepCopy(t);
+                    AnnotatedTypeVariable newtv = AnnotatedTypes.deepCopy(t);
                     AnnotatedTypeMirror bnd = newtv.getUpperBoundField();
                     if (bnd != null) {
                         bnd = bnd.substitute(mappings);
@@ -2068,7 +2068,6 @@ public abstract class AnnotatedTypeMirror {
             return methodTypeArgHack;
         }
     }
-
 
     public List<? extends AnnotatedTypeMirror> directSuperTypes() {
         return directSuperTypes(this);
