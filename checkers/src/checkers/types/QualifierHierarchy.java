@@ -305,7 +305,7 @@ public abstract class QualifierHierarchy {
                 }
             }
             AnnotationMirror t = leastUpperBoundTypeVariable(anno1ForTop, anno2ForTop);
-            if (result != null) {
+            if (t != null) {
                 result.add(t);
             }
         }
@@ -345,7 +345,7 @@ public abstract class QualifierHierarchy {
                 }
             }
             AnnotationMirror t = greatestLowerBoundTypeVariable(anno1ForTop, anno2ForTop);
-            if (result != null) {
+            if (t != null) {
                 result.add(t);
             }
         }
