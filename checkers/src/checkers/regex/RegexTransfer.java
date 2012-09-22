@@ -99,9 +99,7 @@ public class RegexTransfer extends
                     } else {
                         regexAnnotation = AnnotationUtils.fromClass(factory.getElementUtils(), Regex.class);
                     }
-                    CFValue newResultValue = analysis
-                            .createAbstractValue(Collections
-                                    .singleton(regexAnnotation));
+                    CFValue newResultValue = analysis.createSingleAnnotationValue(regexAnnotation);
                     return new RegularTransferResult<>(newResultValue,
                             result.getRegularStore());
                 }

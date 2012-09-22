@@ -25,8 +25,6 @@ import checkers.flow.analysis.TransferInput;
 import checkers.flow.analysis.TransferResult;
 import checkers.flow.analysis.checkers.CFAbstractAnalysis;
 import checkers.flow.analysis.checkers.CFAbstractTransfer;
-import checkers.flow.analysis.checkers.CFAbstractValue;
-import checkers.flow.analysis.checkers.CFAbstractValue.InferredAnnotation;
 import checkers.flow.analysis.checkers.CFValue;
 import checkers.flow.cfg.UnderlyingAST;
 import checkers.flow.cfg.node.AssignmentNode;
@@ -211,10 +209,8 @@ public class InitializationTransfer<T extends InitializationTransfer<T>>
             // Only if the field has the 'invariant' annotation.
             if (fieldAnno.hasAnnotation(checker.getFieldInvariantAnnotation())) {
                 AnnotationMirror inv = checker.getFieldInvariantAnnotation();
-                InferredAnnotation[] annotations = CFAbstractValue
-                        .createInferredAnnotationArray(analysis, inv);
                 CFValue refinedResultValue = analysis
-                        .createAbstractValue(annotations);
+                        .createSingleAnnotationValue(inv);
                 CFValue oldResultValue = result.getResultValue();
                 result.setResultValue(refinedResultValue.mostSpecific(
                         oldResultValue, null));
