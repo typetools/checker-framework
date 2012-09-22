@@ -16,7 +16,6 @@ import checkers.flow.analysis.FlowExpressions;
 import checkers.flow.analysis.FlowExpressions.PureMethodCall;
 import checkers.flow.analysis.FlowExpressions.Receiver;
 import checkers.flow.analysis.Store;
-import checkers.flow.analysis.checkers.CFAbstractValue.InferredAnnotation;
 import checkers.flow.cfg.node.FieldAccessNode;
 import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.MethodInvocationNode;
@@ -150,16 +149,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                     Name annotation = AnnotationUtils.getElementValueClassName(
                             monotonicAnnotation, "value", false);
                     AnnotationMirror target = AnnotationUtils.fromName(atypeFactory.getElementUtils(), annotation);
-                    InferredAnnotation anno = otherVal
-                            .getAnnotationInHierarchy(target);
+                    AnnotationMirror anno = otherVal.getType().getAnnotationInHierarchy(target);
                     // Make sure the 'target' annotation is present.
-                    if (!anno.isNoInferredAnnotation()
-                            && AnnotationUtils.areSame(anno.getAnnotation(),
-                                    target)) {
-                        newOtherVal = analysis.createAbstractValue(
-                                CFAbstractValue.createInferredAnnotationArray(
-                                        analysis, target)).mostSpecific(
-                                newOtherVal, null);
+                    if (anno != null && AnnotationUtils.areSame(anno, target)) {
+                        newOtherVal = analysis.createSingleAnnotationValue(
+                                target).mostSpecific(newOtherVal, null);
                     }
                 }
                 if (newOtherVal != null) {
@@ -206,10 +200,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * information is preserved.
      */
     public void insertValue(FlowExpressions.Receiver r, AnnotationMirror a) {
-        InferredAnnotation[] annotations = CFAbstractValue
-                .createInferredAnnotationArray(analysis, a);
-        V value = analysis.createAbstractValue(annotations);
-        insertValue(r, value);
+        insertValue(r, analysis.createSingleAnnotationValue(a));
     }
 
     /**

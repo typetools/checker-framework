@@ -20,11 +20,11 @@ import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic.Kind;
 
 import checkers.basetype.PurityChecker.PurityResult;
+import checkers.compilermsgs.quals.CompilerMessageKey;
 import checkers.flow.analysis.FlowExpressions;
 import checkers.flow.analysis.TransferResult;
 import checkers.flow.analysis.checkers.CFAbstractStore;
 import checkers.flow.analysis.checkers.CFAbstractValue;
-import checkers.flow.analysis.checkers.CFAbstractValue.InferredAnnotation;
 import checkers.flow.cfg.node.BooleanLiteralNode;
 import checkers.flow.cfg.node.MethodInvocationNode;
 import checkers.flow.cfg.node.Node;
@@ -33,6 +33,9 @@ import checkers.flow.util.ContractsUtils;
 import checkers.flow.util.FlowExpressionParseUtil;
 import checkers.flow.util.FlowExpressionParseUtil.FlowExpressionContext;
 import checkers.flow.util.FlowExpressionParseUtil.FlowExpressionParseException;
+import checkers.igj.quals.Immutable;
+import checkers.igj.quals.ReadOnly;
+import checkers.nonnull.NonNullFbcChecker;
 import checkers.quals.DefaultQualifier;
 import checkers.quals.Pure;
 import checkers.quals.Unused;
@@ -57,12 +60,6 @@ import checkers.util.Pair;
 import checkers.util.PurityUtils;
 import checkers.util.TreeUtils;
 import checkers.util.TypesUtils;
-
-/*>>>
-import checkers.basetype.PurityChecker.PurityResult;
-import checkers.compilermsgs.quals.CompilerMessageKey;
-import checkers.nonnull.quals.Nullable;
-*/
 
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
@@ -93,6 +90,11 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeInfo;
+/*>>>
+import checkers.basetype.PurityChecker.PurityResult;
+import checkers.compilermsgs.quals.CompilerMessageKey;
+import checkers.nonnull.quals.Nullable;
+*/
 
 /**
  * A {@link SourceVisitor} that performs assignment and pseudo-assignment
@@ -397,12 +399,9 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                     // check anything
                 } else {
                     CFAbstractValue<?> value = exitStore.getValue(expr);
-                    InferredAnnotation inferredAnno = value == null ? null
-                            : value.getAnnotationInHierarchy(annotation);
+                    AnnotationMirror inferredAnno = value.getType().getAnnotationInHierarchy(annotation);
                     if (inferredAnno == null
-                            || inferredAnno.isNoInferredAnnotation()
-                            || !AnnotationUtils.areSame(
-                                    inferredAnno.getAnnotation(), annotation)) {
+                            || atypeFactory.getQualifierHierarchy().isSubtype(inferredAnno, annotation)) {
                         checker.report(
                                 Result.failure("contracts.postcondition.not.satisfied"),
                                 node);
@@ -487,12 +486,9 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                     // match 'result'. at the moment, this means the result
                     // is a boolean literal
                     if (retVal == null || retVal == result) {
-                        InferredAnnotation inferredAnno = value == null ? null
-                                : value.getAnnotationInHierarchy(annotation);
+                        AnnotationMirror inferredAnno = value.getType().getAnnotationInHierarchy(annotation);
                         if (inferredAnno == null
-                                || inferredAnno.isNoInferredAnnotation()
-                                || !AnnotationUtils.areSame(
-                                        inferredAnno.getAnnotation(), annotation)) {
+                                || atypeFactory.getQualifierHierarchy().isSubtype(inferredAnno, annotation)) {
                             checker.report(
                                     Result.failure("contracts.conditional.postcondition.not.satisfied"),
                                     returnStmt.getTree());
@@ -679,14 +675,12 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
 
                 CFAbstractStore<?, ?> store = atypeFactory.getStoreBefore(tree);
                 CFAbstractValue<?> value = store.getValue(expr);
-                InferredAnnotation inferredAnno = value == null ? null : value
-                        .getAnnotationInHierarchy(anno);
+
+                AnnotationMirror inferredAnno = value.getType().getAnnotationInHierarchy(anno);
                 if (inferredAnno == null
-                        || inferredAnno.isNoInferredAnnotation()
-                        || !AnnotationUtils.areSame(
-                                inferredAnno.getAnnotation(), anno)) {
-                    checker.report(Result
-                            .failure("contracts.precondition.not.satisfied"),
+                        || atypeFactory.getQualifierHierarchy().isSubtype(inferredAnno, anno)) {
+                    checker.report(
+                            Result.failure("contracts.precondition.not.satisfied"),
                             tree);
                 }
             } catch (FlowExpressionParseException e) {
@@ -810,7 +804,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                     TreeUtils.enclosingMethod(getCurrentPath());
 
             AnnotatedExecutableType methodType = atypeFactory.getAnnotatedType(enclosingMethod);
-            AnnotatedTypeMirror ret = methodType.getReturnType(); 
+            AnnotatedTypeMirror ret = methodType.getReturnType();
             visitorState.setAssignmentContext(ret);
 
             commonAssignmentCheck(ret, node.getExpression(),

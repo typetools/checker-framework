@@ -27,7 +27,6 @@ import checkers.flow.analysis.checkers.CFAbstractAnalysis;
 import checkers.flow.analysis.checkers.CFAbstractStore;
 import checkers.flow.analysis.checkers.CFAbstractTransfer;
 import checkers.flow.analysis.checkers.CFAbstractValue;
-import checkers.flow.analysis.checkers.CFAbstractValue.InferredAnnotation;
 import checkers.flow.analysis.checkers.CFAnalysis;
 import checkers.flow.analysis.checkers.CFCFGBuilder;
 import checkers.flow.analysis.checkers.CFStore;
@@ -629,29 +628,28 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
             as = flowResult.getValue(tree);
         }
         if (as != null) {
-            for (AnnotationMirror top : getQualifierHierarchy().getTopAnnotations()) {
-                InferredAnnotation inferredAnnotation = as.getAnnotation(top);
-                // Check that we actually inferred information.
+            AnnotatedTypeMirror inferred = as.getType();
+            for (AnnotationMirror top : getQualifierHierarchy()
+                    .getTopAnnotations()) {
+                AnnotationMirror inferredAnnotation = inferred
+                        .getAnnotationInHierarchy(top);
                 if (inferredAnnotation != null) {
-                    if (inferredAnnotation.isNoInferredAnnotation()) {
-                        // We inferred "no annotation" for this hierarchy.
-                        type.removeAnnotationInHierarchy(top);
-                    } else {
-                        // We inferred an annotation.
-                        AnnotationMirror present = type
-                                .getAnnotationInHierarchy(top);
-                        AnnotationMirror inf = inferredAnnotation
-                                .getAnnotation();
-                        if (present != null) {
-                            if (getQualifierHierarchy().isSubtype(inf, present)) {
-                                // TODO: why is the above check needed?
-                                // Shouldn't inferred qualifiers always be
-                                // subtypes?
-                                type.replaceAnnotation(inf);
-                            }
-                        } else {
-                            type.addAnnotation(inf);
+                    // We inferred "no annotation" for this hierarchy.
+                    type.removeAnnotationInHierarchy(top);
+                } else {
+                    // We inferred an annotation.
+                    AnnotationMirror present = type
+                            .getAnnotationInHierarchy(top);
+                    if (present != null) {
+                        if (getQualifierHierarchy().isSubtype(
+                                inferredAnnotation, present)) {
+                            // TODO: why is the above check needed?
+                            // Shouldn't inferred qualifiers always be
+                            // subtypes?
+                            type.replaceAnnotation(inferredAnnotation);
                         }
+                    } else {
+                        type.addAnnotation(inferredAnnotation);
                     }
                 }
             }
