@@ -58,6 +58,18 @@ public final class TypesUtils {
     }
 
     /**
+     * Checks if the type represents a boolean type, that is either boolean
+     * (primitive type) or java.lang.Boolean.
+     *
+     * @param type the type to test
+     * @return true iff type represents a boolean type
+     */
+    public static boolean isBooleanType(TypeMirror type) {
+        return isDeclaredOfName(type, "java.lang.Boolean")
+                || type.getKind().equals(TypeKind.BOOLEAN);
+    }
+
+    /**
      * Check if the type represent a declared type of the given qualified name
      *
      * @param type the type
@@ -107,5 +119,157 @@ public final class TypesUtils {
             type = elem.getSuperclass();
         }
         return false;
+    }
+
+    /**
+     * Returns true iff the argument is a primitive type.
+     *
+     * @return  whether the argument is a primitive type
+     */
+    public static boolean isPrimitive(TypeMirror type) {
+        switch (type.getKind()) {
+        case BOOLEAN:
+        case BYTE:
+        case CHAR:
+        case DOUBLE:
+        case FLOAT:
+        case INT:
+        case LONG:
+        case SHORT:
+            return true;
+        default:
+            return false;
+        }
+    }
+
+    /**
+     * Returns true iff the arguments are both the same primitive types.
+     *
+     * @return  whether the arguments are the same primitive types
+     */
+    public static boolean areSamePrimitiveTypes(TypeMirror left, TypeMirror right) {
+        if (!isPrimitive(left) || !isPrimitive(right)) {
+            return false;
+        }
+
+        return (left.getKind() == right.getKind());
+    }
+
+    /**
+     * Returns true iff the argument is a primitive numeric type.
+     *
+     * @return  whether the argument is a primitive numeric type
+     */
+    public static boolean isNumeric(TypeMirror type) {
+        switch (type.getKind()) {
+        case BYTE:
+        case CHAR:
+        case DOUBLE:
+        case FLOAT:
+        case INT:
+        case LONG:
+        case SHORT:
+            return true;
+        default:
+            return false;
+        }
+    }
+
+    /**
+     * Returns true iff the argument is an integral type.
+     *
+     * @return  whether the argument is an integral type
+     */
+    public static boolean isIntegral(TypeMirror type) {
+        switch (type.getKind()) {
+        case BYTE:
+        case CHAR:
+        case INT:
+        case LONG:
+        case SHORT:
+            return true;
+        default:
+            return false;
+        }
+    }
+
+    /**
+     * Returns true iff the argument is a floating point type.
+     *
+     * @return  whether the argument is a floating point type
+     */
+    public static boolean isFloating(TypeMirror type) {
+        switch (type.getKind()) {
+        case DOUBLE:
+        case FLOAT:
+            return true;
+        default:
+            return false;
+        }
+    }
+
+    /**
+     * Returns the widened numeric type for an arithmetic operation
+     * performed on a value of the left type and the right type.
+     * Defined in JLS 5.6.2.  We return a {@link TypeKind} because
+     * creating a {@link TypeMirror} requires a {@link Types} object
+     * from the {@link ProcessingEnvironment}.
+     *
+     * @return  the result of widening numeric conversion, or NONE when
+     *          the conversion cannot be performed
+     */
+    public static TypeKind widenedNumericType(TypeMirror left, TypeMirror right) {
+        if (!isNumeric(left) || !isNumeric(right)) {
+            return TypeKind.NONE;
+        }
+
+        TypeKind leftKind = left.getKind();
+        TypeKind rightKind = right.getKind();
+
+        if (leftKind == TypeKind.DOUBLE || rightKind == TypeKind.DOUBLE) {
+            return TypeKind.DOUBLE;
+        }
+
+        if (leftKind == TypeKind.FLOAT || rightKind == TypeKind.FLOAT) {
+            return TypeKind.FLOAT;
+        }
+
+        if (leftKind == TypeKind.LONG || rightKind == TypeKind.LONG) {
+            return TypeKind.LONG;
+        }
+
+        return TypeKind.INT;
+    }
+
+    /**
+     * If the argument is a bounded TypeVariable or WildcardType,
+     * return its non-variable, non-wildcard upper bound.  Otherwise,
+     * return the type itself.
+     *
+     * @param type  a type
+     * @return  the non-variable, non-wildcard upper bound of a type,
+     *    if it has one, or itself if it has no bounds
+     */
+    public static TypeMirror upperBound(TypeMirror type) {
+        do {
+            if (type instanceof TypeVariable) {
+                TypeVariable tvar = (TypeVariable) type;
+                if (tvar.getUpperBound() != null) {
+                    type = tvar.getUpperBound();
+                } else {
+                    break;
+                }
+            } else if (type instanceof WildcardType) {
+                WildcardType wc = (WildcardType) type;
+                if (wc.getExtendsBound() != null) {
+                    type = wc.getExtendsBound();
+                } else {
+                    break;
+                }
+            } else {
+                break;
+            }
+        } while (true);
+        return type;
     }
 }
