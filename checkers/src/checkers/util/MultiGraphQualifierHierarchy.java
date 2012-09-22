@@ -338,7 +338,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
             AnnotationMirror lhsForTop = null;
             for (AnnotationMirror lhsAnno : lhs) {
                 if (isSubtype(lhsAnno, top)) {
-                    rhsForTop = lhsAnno;
+                    lhsForTop = lhsAnno;
                 }
             }
             if (!isSubtypeTypeVariable(rhsForTop, lhsForTop)) {
