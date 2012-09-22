@@ -1698,8 +1698,7 @@ public class AnnotatedTypeFactory {
             Class<? extends Annotation> anno) {
         String annoName = anno.getCanonicalName();
         String eltName = ElementUtils.getVerboseName(elt);
-        List<? extends AnnotationMirror> annotationMirrors = elt
-                .getAnnotationMirrors();
+        List<? extends AnnotationMirror> annotationMirrors = elt.getAnnotationMirrors();
         return getDeclAnnotation(eltName, annoName, annotationMirrors, true);
     }
 
@@ -1871,10 +1870,15 @@ public class AnnotatedTypeFactory {
         wctype.setMethodTypeArgHack();
         return wctype;
     }
- 
+
+    /** Accessor for the element utilities.
+     */ 
     public Elements getElementUtils() {
         return this.elements;
     }
+
+    /** Accessor for the processing environment.
+     */
     public ProcessingEnvironment getProcessingEnv() {
         return this.processingEnv;
     }

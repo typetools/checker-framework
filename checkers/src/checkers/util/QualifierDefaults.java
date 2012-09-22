@@ -3,7 +3,6 @@ package checkers.util;
 import java.lang.annotation.Annotation;
 import java.util.*;
 
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.*;
 import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.type.TypeKind;

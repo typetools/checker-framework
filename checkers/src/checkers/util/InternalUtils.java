@@ -196,6 +196,6 @@ public class InternalUtils {
      * Returns whether a TypeVariable represents a captured type.
      */
     public static boolean isCaptured(TypeVariable typeVar) {
-        return ((Type.TypeVar)typeVar).isCaptured();
+        return ((Type.TypeVar) typeVar).isCaptured();
     }
 }
