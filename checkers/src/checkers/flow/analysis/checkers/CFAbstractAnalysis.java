@@ -9,6 +9,8 @@ import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Elements;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.flow.analysis.Analysis;
@@ -136,8 +138,21 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
         }
     }
 
-    public V createSingleAnnotationValue(
-            AnnotationMirror target) {
-        return null;
+    /**
+     * Returns an abstract value containing an annotated type with the
+     * annotation {@code anno}, and 'top' for all other hierarchies. The
+     * underlying type is {@link Object}.
+     */
+    public V createSingleAnnotationValue(AnnotationMirror anno) {
+        Elements elementUtils = getFactory().getProcessingEnv()
+                .getElementUtils();
+        TypeMirror underlyingType = elementUtils.getTypeElement(
+                "java.lang.Object").asType();
+        AnnotatedTypeMirror type = AnnotatedTypeMirror.createType(
+                underlyingType, atypeFactory);
+        type.addAnnotations(getFactory().getQualifierHierarchy()
+                .getTopAnnotations());
+        type.replaceAnnotation(anno);
+        return createAbstractValue(type);
     }
 }
