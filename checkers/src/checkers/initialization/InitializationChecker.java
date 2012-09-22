@@ -24,6 +24,7 @@ import checkers.types.AnnotatedTypeMirror;
 import checkers.types.QualifierHierarchy;
 import checkers.util.AnnotationBuilder;
 import checkers.util.AnnotationUtils;
+import checkers.util.TypesUtils;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.Tree;
@@ -462,7 +463,7 @@ public abstract class InitializationChecker extends BaseTypeChecker {
                 return a;
             }
             assert false : "not fully implemented yet";
-            return AnnotationUtils.typeFromClass(processingEnv.getTypeUtils(),
+            return TypesUtils.typeFromClass(processingEnv.getTypeUtils(),
                     processingEnv.getElementUtils(), Object.class);
         }
 

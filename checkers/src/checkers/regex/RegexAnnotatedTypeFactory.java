@@ -235,15 +235,17 @@ public class RegexAnnotatedTypeFactory extends AbstractBasicAnnotatedTypeFactory
             if (TreeUtils.isMethodInvocation(tree, patternCompile, processingEnv)) {
                 ExpressionTree arg0 = tree.getArguments().get(0);
                 AnnotationMirror regexAnno = getAnnotatedType(arg0).getAnnotation(Regex.class);
-                AnnotationMirror bottomAnno = getAnnotatedType(arg0).getAnnotation(RegexBottom.class);
-                int groupCount = checker.getGroupCount(regexAnno);
-                // Remove current @Regex annotation...
-                type.removeAnnotationInHierarchy(REGEX);
-                // ...and add a new one with the correct group count value.
-                if (bottomAnno != null) {
-                    type.addAnnotation(RegexBottom.class);
-                } else {
-                    type.addAnnotation(createRegexAnnotation(groupCount));
+                if (regexAnno != null) {
+                    AnnotationMirror bottomAnno = getAnnotatedType(arg0).getAnnotation(RegexBottom.class);
+                    int groupCount = checker.getGroupCount(regexAnno);
+                    // Remove current @Regex annotation...
+                    type.removeAnnotationInHierarchy(REGEX);
+                    // ...and add a new one with the correct group count value.
+                    if (bottomAnno != null) {
+                        type.addAnnotation(RegexBottom.class);
+                    } else {
+                        type.addAnnotation(createRegexAnnotation(groupCount));
+                    }
                 }
             }
             return super.visitMethodInvocation(tree, type);

@@ -2467,7 +2467,7 @@ public class CFGBuilder {
                 Node target = scan(tree.getVariable(), p);
                 Node value = scan(tree.getExpression(), p);
 
-                TypeMirror exprType = InternalUtils.typeOf(tree);
+                // TypeMirror exprType = InternalUtils.typeOf(tree);
                 TypeMirror leftType = InternalUtils.typeOf(tree.getVariable());
                 TypeMirror rightType = InternalUtils.typeOf(tree.getExpression());
 
@@ -2605,7 +2605,7 @@ public class CFGBuilder {
                 Node left = scan(tree.getLeftOperand(), p);
                 Node right = scan(tree.getRightOperand(), p);
 
-                TypeMirror exprType = InternalUtils.typeOf(tree);
+                // TypeMirror exprType = InternalUtils.typeOf(tree);
                 TypeMirror leftType = InternalUtils.typeOf(tree.getLeftOperand());
                 TypeMirror rightType = InternalUtils.typeOf(tree.getRightOperand());
 
