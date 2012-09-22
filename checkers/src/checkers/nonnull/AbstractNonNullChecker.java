@@ -89,6 +89,6 @@ public abstract class AbstractNonNullChecker extends InitializationChecker {
         supportedTypeQualifiers.add(NonNull.class);
         supportedTypeQualifiers.add(Nullable.class);
         supportedTypeQualifiers.add(MonotonicNonNull.class);
-        return createQualifierHierarchy(factory);
+        return createQualifierHierarchy(processingEnv.getElementUtils(), supportedTypeQualifiers, factory);
     }
 }
