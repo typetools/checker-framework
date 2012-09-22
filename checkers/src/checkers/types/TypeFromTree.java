@@ -598,15 +598,20 @@ abstract class TypeFromTree extends
                 return null; // dead code
             }
 
-            TypeParameterElement tpe = (TypeParameterElement)
-                    ((TypeVariable)type.getUnderlyingType()).asElement();
+            TypeVariable typeVar = (TypeVariable)type.getUnderlyingType();
+            TypeParameterElement tpe = (TypeParameterElement)typeVar.asElement();
             Element elt = tpe.getGenericElement();
             if (elt instanceof TypeElement) {
                 TypeElement typeElt = (TypeElement)elt;
                 int idx = typeElt.getTypeParameters().indexOf(tpe);
-                ClassTree cls = (ClassTree)f.declarationFromElement(typeElt);
-                AnnotatedTypeMirror result = visit(cls.getTypeParameters().get(idx), f);
-                return result;
+                ClassTree cls = (ClassTree) f.declarationFromElement(typeElt);
+                if (cls != null) {
+                    AnnotatedTypeMirror result = visit(cls.getTypeParameters().get(idx), f);
+                    return result;
+                } else {
+                    // We already have all info from the element -> nothing to do.
+                    return type;
+                }
             } else if (elt instanceof ExecutableElement) {
                 ExecutableElement exElt = (ExecutableElement)elt;
                 int idx = exElt.getTypeParameters().indexOf(tpe);
@@ -614,8 +619,14 @@ abstract class TypeFromTree extends
                 AnnotatedTypeMirror result = visit(meth.getTypeParameters().get(idx), f);
                 return result;
             } else {
-                SourceChecker.errorAbort("TypeFromTree.forTypeVariable: not a supported element: " + elt);
-                return null; // dead code
+                // Captured types can have a generic element (owner) that is
+                // not an element at all, namely Symtab.noSymbol.
+                if (InternalUtils.isCaptured(typeVar)) {
+                    return type;
+                } else {
+                    SourceChecker.errorAbort("TypeFromTree.forTypeVariable: not a supported element: " + elt);
+                    return null; // dead code
+                }
             }
         }
 
