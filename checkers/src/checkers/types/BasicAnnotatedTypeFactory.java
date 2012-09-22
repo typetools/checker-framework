@@ -81,7 +81,7 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
         this.useFlow = useFlow;
         this.poly = new QualifierPolymorphism(checker, this);
 
-        this.defaults = new QualifierDefaults(processingEnv, this);
+        this.defaults = new QualifierDefaults(elements, this);
         boolean foundDefault = false;
         // TODO: should look for a default qualifier per qualifier hierarchy.
         for (Class<? extends Annotation> qual : checker.getSupportedTypeQualifiers()) {
