@@ -17,7 +17,7 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
-import javax.tools.Diagnostic.Kind;
+import javax.tools.Diagnostic;
 
 import checkers.basetype.PurityChecker.PurityResult;
 import checkers.compilermsgs.quals.CompilerMessageKey;
@@ -401,7 +401,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                     CFAbstractValue<?> value = exitStore.getValue(expr);
                     AnnotationMirror inferredAnno = value.getType().getAnnotationInHierarchy(annotation);
                     if (inferredAnno == null
-                            || atypeFactory.getQualifierHierarchy().isSubtype(inferredAnno, annotation)) {
+                            || !atypeFactory.getQualifierHierarchy().isSubtype(inferredAnno, annotation)) {
                         checker.report(
                                 Result.failure("contracts.postcondition.not.satisfied"),
                                 node);
@@ -488,7 +488,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                     if (retVal == null || retVal == result) {
                         AnnotationMirror inferredAnno = value.getType().getAnnotationInHierarchy(annotation);
                         if (inferredAnno == null
-                                || atypeFactory.getQualifierHierarchy().isSubtype(inferredAnno, annotation)) {
+                                || !atypeFactory.getQualifierHierarchy().isSubtype(inferredAnno, annotation)) {
                             checker.report(
                                     Result.failure("contracts.conditional.postcondition.not.satisfied"),
                                     returnStmt.getTree());
@@ -678,7 +678,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
 
                 AnnotationMirror inferredAnno = value.getType().getAnnotationInHierarchy(anno);
                 if (inferredAnno == null
-                        || atypeFactory.getQualifierHierarchy().isSubtype(inferredAnno, anno)) {
+                        || !atypeFactory.getQualifierHierarchy().isSubtype(inferredAnno, anno)) {
                     checker.report(
                             Result.failure("contracts.precondition.not.satisfied"),
                             tree);
@@ -2083,7 +2083,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                 }
 
                 if (!foundNN) {
-                    checker.getProcessingEnvironment().getMessager().printMessage(Kind.WARNING,
+                    checker.getProcessingEnvironment().getMessager().printMessage(Diagnostic.Kind.WARNING,
                         "You do not seem to be using the distributed annotated JDK.  To fix the" +
                         System.getProperty("line.separator") +
                         "problem, supply this argument (first, fill in the \"...\") when you run javac:" +
