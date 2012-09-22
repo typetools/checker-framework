@@ -434,7 +434,7 @@ ${build.version} of the 'javac.jar' library."/>
       <exec executable="chmod">
         <arg line="+x ${basedir}/binary/javac"/>
       </exec>
-      <exec executable="make" failonerror="true">
+      <exec executable="make" failonerror="${halt.on.test.failure}">
         <env key="JAVAC" value="${basedir}/binary/javac"/>
         <arg line="-C tests/nullness-extra/"/>
       </exec>
