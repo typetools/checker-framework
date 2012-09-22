@@ -1688,8 +1688,8 @@ public class AnnotatedTypeFactory {
     }
 
     /**
-     * Returns the actual annotation mirror used to annotate this type,
-     * whose name equals the passed annotationName if one exists, null otherwise.
+     * Returns the actual annotation mirror used to annotate this element,
+     * whose name equals the passed annotation class, if one exists, or null otherwise.
      *
      * @param anno annotation class
      * @return the annotation mirror for anno
@@ -1747,8 +1747,11 @@ public class AnnotatedTypeFactory {
     }
 
     /**
-     * Returns all of the actual annotation mirrors used to annotate this type
+     * Returns all of the actual annotation mirrors used to annotate this element
      * (includes stub files).
+     *
+     * @param element
+     *            The element for which to determine annotations.
      */
     public Set<AnnotationMirror> getDeclAnnotations(Element elt) {
         Set<AnnotationMirror> results = new HashSet<AnnotationMirror>();
@@ -1772,7 +1775,7 @@ public class AnnotatedTypeFactory {
      * with class {@code metaAnnotation}.
      *
      * @param element
-     *            The element at which to look for annotations.
+     *            The element for which to determine annotations.
      * @param metaAnnotation
      *            The meta annotation that needs to be present.
      * @return A list of pairs {@code (anno, metaAnno)} where {@code anno} is
