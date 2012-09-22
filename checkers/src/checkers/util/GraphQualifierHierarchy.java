@@ -75,6 +75,12 @@ public class GraphQualifierHierarchy extends MultiGraphQualifierHierarchy {
         if (lhs.isEmpty() || rhs.isEmpty()) {
             SourceChecker.errorAbort("GraphQualifierHierarchy: Empty annotations in lhs: " + lhs + " or rhs: " + rhs);
         }
+        if (lhs.size() > 1) {
+            SourceChecker.errorAbort("GraphQualifierHierarchy: Type with more than one annotation found: " + lhs);
+        }
+        if (rhs.size() > 1) {
+            SourceChecker.errorAbort("GraphQualifierHierarchy: Type with more than one annotation found: " + rhs);
+        }
         for (AnnotationMirror lhsAnno : lhs) {
             for (AnnotationMirror rhsAnno : rhs) {
                 if (isSubtype(rhsAnno, lhsAnno)) {
