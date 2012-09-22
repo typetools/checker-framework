@@ -399,7 +399,7 @@ abstract class TypeFromTree extends
                 AnnotatedTypeFactory f) {
 
             AnnotatedTypeMirror result = f.fromTypeTree(node.getType());
-            // I would like to use this line: 
+            // I would like to use this line:
             // AnnotatedTypeMirror result = f.toAnnotatedType(elt.asType());
             // Instead of the above, but the typeAnnotations are not filled into
             // the VarSymbol of a local variable :-(
