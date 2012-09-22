@@ -36,6 +36,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
         this.analysis = analysis;
         this.type = type;
         this.typeHierarchy = analysis.getTypeHierarchy();
+        assert type != null;
     }
 
     public AnnotatedTypeMirror getType() {
@@ -54,9 +55,12 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
             return v;
         }
         analysis.getFactory().getQualifierHierarchy();
-        return analysis.createAbstractValue(AnnotatedTypes.asSuper(analysis
+        AnnotatedTypeMirror lubType = AnnotatedTypes.asSuper(analysis
                 .getFactory().getProcessingEnv().getTypeUtils(),
-                analysis.getFactory(), this.getType(), other.getType()));
+                analysis.getFactory(), this.getType(), other.getType());
+        assert lubType != null : "Unable to compute LUB for " + getType().toString(true)
+                + " and " + other.getType().toString(true) + ".";
+        return analysis.createAbstractValue(lubType);
     }
 
     /**
@@ -147,10 +151,10 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
                 type.getUnderlyingType(), analysis.getFactory());
         QualifierHierarchy qualHierarchy = analysis.getFactory()
                 .getQualifierHierarchy();
+        AnnotatedTypeMirror otherType = other.getType();
         for (AnnotationMirror top : qualHierarchy.getTopAnnotations()) {
             AnnotationMirror aAnno = getType().getAnnotationInHierarchy(top);
-            AnnotationMirror bAnno = other.getType().getAnnotationInHierarchy(
-                    top);
+            AnnotationMirror bAnno = otherType.getAnnotationInHierarchy(top);
 
             if (qualHierarchy.isSubtype(aAnno, bAnno)) {
                 result.addAnnotation(aAnno);
