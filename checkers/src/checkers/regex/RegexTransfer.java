@@ -1,7 +1,5 @@
 package checkers.regex;
 
-import java.util.Collections;
-
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 
