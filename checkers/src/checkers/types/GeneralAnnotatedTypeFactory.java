@@ -7,6 +7,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Name;
 
 import checkers.source.SourceChecker;
+
 import com.sun.source.tree.CompilationUnitTree;
 
 /**
@@ -23,6 +24,7 @@ public class GeneralAnnotatedTypeFactory extends AnnotatedTypeFactory {
     /** Return true to support any qualifier.
       * No handling of aliases.
       */
+    @Override
     public boolean isSupportedQualifier(AnnotationMirror a) {
         return true;
     }
