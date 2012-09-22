@@ -85,9 +85,24 @@ class GeneralQualifierHierarchy extends QualifierHierarchy {
 
     // Not needed - raises error.
     @Override
+    public boolean isSubtypeTypeVariable(AnnotationMirror anno1, AnnotationMirror anno2) {
+        SourceChecker.errorAbort("GeneralQualifierHierarchy.isSubtypeTypeVariable() was called! It shouldn't be called.");
+        return false;
+    }
+
+    // Not needed - raises error.
+    @Override
     public boolean isSubtype(Collection<AnnotationMirror> rhs,
             Collection<AnnotationMirror> lhs) {
         SourceChecker.errorAbort("GeneralQualifierHierarchy.isSubtype() was called! It shouldn't be called.");
+        return false;
+    }
+
+    // Not needed - raises error.
+    @Override
+    public boolean isSubtypeTypeVariable(Collection<AnnotationMirror> rhs,
+            Collection<AnnotationMirror> lhs) {
+        SourceChecker.errorAbort("GeneralQualifierHierarchy.isSubtypeTypeVariable() was called! It shouldn't be called.");
         return false;
     }
 
@@ -101,9 +116,25 @@ class GeneralQualifierHierarchy extends QualifierHierarchy {
 
     // Not needed - raises error.
     @Override
+    public AnnotationMirror leastUpperBoundTypeVariable(AnnotationMirror a1,
+            AnnotationMirror a2) {
+        SourceChecker.errorAbort("GeneralQualifierHierarchy.leastUpperBoundTypeVariable() was called! It shouldn't be called.");
+        return null;
+    }
+
+    // Not needed - raises error.
+    @Override
     public AnnotationMirror greatestLowerBound(AnnotationMirror a1,
             AnnotationMirror a2) {
         SourceChecker.errorAbort("GeneralQualifierHierarchy.greatestLowerBound() was called! It shouldn't be called.");
+        return null;
+    }
+
+    // Not needed - raises error.
+    @Override
+    public AnnotationMirror greatestLowerBoundTypeVariable(AnnotationMirror a1,
+            AnnotationMirror a2) {
+        SourceChecker.errorAbort("GeneralQualifierHierarchy.greatestLowerBoundTypeVariable() was called! It shouldn't be called.");
         return null;
     }
 
