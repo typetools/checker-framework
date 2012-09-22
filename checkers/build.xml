@@ -371,6 +371,13 @@ ${build.version} of the 'javac.jar' library."/>
         </antcall>
     </target>
 
+    <target name="oigj-tests" depends="jar,build-tests"
+      description="Run tests for the OIGJ checker">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.OIGJTest"/>
+        </antcall>
+    </target>
+
     <target name="javari-tests" depends="jar,build-tests"
       description="Run tests for the Javari checker">
         <antcall target="-run-tests">
