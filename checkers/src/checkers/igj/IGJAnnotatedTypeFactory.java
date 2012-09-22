@@ -1,7 +1,13 @@
 package checkers.igj;
 
 import java.lang.annotation.Annotation;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -10,21 +16,34 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeVariable;
 
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.TypeCastTree;
+
 import checkers.igj.quals.I;
 import checkers.igj.quals.Immutable;
 import checkers.igj.quals.Mutable;
 import checkers.igj.quals.ReadOnly;
-import checkers.types.*;
+import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
+import checkers.types.BasicAnnotatedTypeFactory;
+import checkers.types.TreeAnnotator;
+import checkers.types.TypeAnnotator;
 import checkers.types.visitors.AnnotatedTypeScanner;
 import checkers.types.visitors.SimpleAnnotatedTypeVisitor;
-import checkers.util.*;
-
-import com.sun.source.tree.*;
+import checkers.util.AnnotatedTypes;
+import checkers.util.AnnotationUtils;
+import checkers.util.ElementUtils;
+import checkers.util.Pair;
+import checkers.util.TreeUtils;
+import checkers.util.TypesUtils;
 
 /**
  * Adds implicit and default IGJ annotations, only if the user does not
