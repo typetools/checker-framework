@@ -1,11 +1,14 @@
 package checkers.igj;
 
+import java.util.Collection;
+
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Elements;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.igj.quals.*;
 import checkers.quals.TypeQualifiers;
+import checkers.source.SourceChecker;
 import checkers.types.*;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.util.*;
@@ -127,6 +130,26 @@ public class IGJChecker extends BaseTypeChecker {
                     || AnnotationUtils.areSame(lhs, BOTTOM_QUAL)
                     || super.isSubtype(rhs, lhs));
         }
+
+        @Override
+        public boolean isSubtype(Collection<AnnotationMirror> rhs, Collection<AnnotationMirror> lhs) {
+            if (lhs.isEmpty() || rhs.isEmpty()) {
+                SourceChecker.errorAbort("GraphQualifierHierarchy: Empty annotations in lhs: " + lhs + " or rhs: " + rhs);
+            }
+            // TODO: sometimes there are multiple mutability annotations in a type and
+            // the check in the superclass that the sets contain exactly one annotation
+            // fails. I replaced "addAnnotation" calls with "replaceAnnotation" calls,
+            // but then other test cases fail. Some love needed here.
+            for (AnnotationMirror lhsAnno : lhs) {
+                for (AnnotationMirror rhsAnno : rhs) {
+                    if (isSubtype(rhsAnno, lhsAnno)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
     }
 
     /**
