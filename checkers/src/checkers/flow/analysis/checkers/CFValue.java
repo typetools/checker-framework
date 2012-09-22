@@ -1,5 +1,7 @@
 package checkers.flow.analysis.checkers;
 
+import checkers.types.AnnotatedTypeMirror;
+
 
 /**
  * The default abstract value used in the Checker Framework.
@@ -10,8 +12,8 @@ package checkers.flow.analysis.checkers;
 public class CFValue extends CFAbstractValue<CFValue> {
 
     public CFValue(CFAbstractAnalysis<CFValue, ?, ?> analysis,
-            InferredAnnotation[] annotations) {
-        super(analysis, annotations);
+            AnnotatedTypeMirror type) {
+        super(analysis, type);
     }
 
 }
