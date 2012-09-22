@@ -5,6 +5,7 @@ import javax.lang.model.element.AnnotationMirror;
 import checkers.flow.analysis.AbstractValue;
 import checkers.flow.util.HashCodeUtils;
 import checkers.types.AnnotatedTypeMirror;
+import checkers.types.QualifierHierarchy;
 import checkers.types.TypeHierarchy;
 import checkers.util.AnnotatedTypes;
 
@@ -53,7 +54,9 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
             return v;
         }
         analysis.getFactory().getQualifierHierarchy();
-        return analysis.createAbstractValue(AnnotatedTypes.asSuper(analysis.getFactory().getProcessingEnv().getTypeUtils(), analysis.getFactory(), this.getType(), other.getType()));
+        return analysis.createAbstractValue(AnnotatedTypes.asSuper(analysis
+                .getFactory().getProcessingEnv().getTypeUtils(),
+                analysis.getFactory(), this.getType(), other.getType()));
     }
 
     /**
@@ -89,35 +92,35 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
      * <li>{@code false} otherwise.
      * </ul>
      */
-//    protected boolean isSubtype(int topIndex, InferredAnnotation a,
-//            InferredAnnotation b) {
-//        Set<AnnotationMirror> as;
-//        Set<AnnotationMirror> bs;
-//        AnnotationMirror top = tops[topIndex];
-//        Set<AnnotationMirror> topSet = Collections.singleton(top);
-//        if (b == null) {
-//            // null is top
-//            bs = topSet;
-//        } else {
-//            bs = b.getAnnotations();
-//        }
-//        if (a == null) {
-//            // null is top
-//            as = topSet;
-//        } else {
-//            as = a.getAnnotations();
-//        }
-//        if (bs.isEmpty()) {
-//            // [] is a supertype of any qualifier, and [] <: []
-//            return true;
-//        }
-//        if (as.isEmpty()) {
-//            // [] is a subtype of no qualifier (only [])
-//            return false;
-//        }
-//        assert as.size() == 1 && bs.size() == 1;
-//        return analysis.qualifierHierarchy.isSubtype(as, bs);
-//    }
+    // protected boolean isSubtype(int topIndex, InferredAnnotation a,
+    // InferredAnnotation b) {
+    // Set<AnnotationMirror> as;
+    // Set<AnnotationMirror> bs;
+    // AnnotationMirror top = tops[topIndex];
+    // Set<AnnotationMirror> topSet = Collections.singleton(top);
+    // if (b == null) {
+    // // null is top
+    // bs = topSet;
+    // } else {
+    // bs = b.getAnnotations();
+    // }
+    // if (a == null) {
+    // // null is top
+    // as = topSet;
+    // } else {
+    // as = a.getAnnotations();
+    // }
+    // if (bs.isEmpty()) {
+    // // [] is a supertype of any qualifier, and [] <: []
+    // return true;
+    // }
+    // if (as.isEmpty()) {
+    // // [] is a subtype of no qualifier (only [])
+    // return false;
+    // }
+    // assert as.size() == 1 && bs.size() == 1;
+    // return analysis.qualifierHierarchy.isSubtype(as, bs);
+    // }
 
     /**
      * Returns the more specific version of two values {@code this} and
@@ -138,28 +141,33 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
             V v = (V) this;
             return v;
         }
-        /*InferredAnnotation[] resultAnnotations = new InferredAnnotation[tops.length];
-        for (int i = 0; i < tops.length; i++) {
-            InferredAnnotation aAnno = annotations[i];
-            InferredAnnotation bAnno = other.annotations[i];
+        // Create new full type (with the same underlying type), and then add
+        // the appropriate annotations.
+        AnnotatedTypeMirror result = AnnotatedTypeMirror.createType(
+                type.getUnderlyingType(), analysis.getFactory());
+        QualifierHierarchy qualHierarchy = analysis.getFactory()
+                .getQualifierHierarchy();
+        for (AnnotationMirror top : qualHierarchy.getTopAnnotations()) {
+            AnnotationMirror aAnno = getType().getAnnotationInHierarchy(top);
+            AnnotationMirror bAnno = other.getType().getAnnotationInHierarchy(
+                    top);
 
-            if (isSubtype(i, aAnno, bAnno)) {
-                resultAnnotations[i] = aAnno;
-            } else if (isSubtype(i, bAnno, aAnno)) {
-                resultAnnotations[i] = bAnno;
+            if (qualHierarchy.isSubtype(aAnno, bAnno)) {
+                result.addAnnotation(aAnno);
+            } else if (qualHierarchy.isSubtype(bAnno, aAnno)) {
+                result.addAnnotation(bAnno);
             } else {
                 if (backup == null) {
                     assert false : "Neither of the two values is more specific: "
                             + this + ", " + other + ".";
                 } else {
-                    resultAnnotations[i] = backup.annotations[i];
+                    result.addAnnotation(backup.getType()
+                            .getAnnotationInHierarchy(top));
                 }
             }
-        }*/
-        assert false;
-        return (V) this;
+        }
+        return analysis.createAbstractValue(result);
     }
-
 
     @Override
     public boolean equals(Object obj) {
