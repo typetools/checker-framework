@@ -225,6 +225,17 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         // System.out.println("MGH: " + this);
     }
 
+    // HACK: empty constructor used by InitializationQualifierHierarchy to reuse implementation of some methods.
+    public MultiGraphQualifierHierarchy() {
+        tops = null;
+        supertypesGraph = null;
+        supertypesMap = null;
+        polymorphicQualifier = null;
+        polyQualifiers = null;
+        elements = null;
+        bottoms = null;
+    }
+
     /**
      * Method to finalize the qualifier hierarchy before it becomes unmodifiable.
      * The parameters pass all fields and allow modification.
@@ -315,6 +326,28 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         return lhs.size() == valid;
     }
 
+    @Override
+    public boolean isSubtypeTypeVariable(Collection<AnnotationMirror> rhs, Collection<AnnotationMirror> lhs) {
+        for (AnnotationMirror top : getTopAnnotations()) {
+            AnnotationMirror rhsForTop = null;
+            for (AnnotationMirror rhsAnno : rhs) {
+                if (isSubtype(rhsAnno, top)) {
+                    rhsForTop = rhsAnno;
+                }
+            }
+            AnnotationMirror lhsForTop = null;
+            for (AnnotationMirror lhsAnno : lhs) {
+                if (isSubtype(lhsAnno, top)) {
+                    rhsForTop = lhsAnno;
+                }
+            }
+            if (!isSubtypeTypeVariable(rhsForTop, lhsForTop)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     private Set<Name> typeQualifiers = null;
 
     @Override
@@ -350,6 +383,14 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         return lubs.get(pair);
     }
 
+    @Override
+    public AnnotationMirror leastUpperBoundTypeVariable(AnnotationMirror a1, AnnotationMirror a2) {
+        if (a1 == null || a2 == null) {
+            // [] is a supertype of any qualifier, and [] <: []
+            return null;
+        }
+        return leastUpperBound(a1, a2);
+    }
 
     // For caching results of glbs
     private Map<AnnotationPair, AnnotationMirror> glbs = null;
@@ -363,6 +404,19 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         }
         AnnotationPair pair = new AnnotationPair(a1, a2);
         return glbs.get(pair);
+    }
+
+    @Override
+    public AnnotationMirror greatestLowerBoundTypeVariable(AnnotationMirror a1, AnnotationMirror a2) {
+        if (a1 == null) {
+            // [] is a supertype of any qualifier, and [] <: []
+            return a2;
+        }
+        if (a2 == null) {
+            // [] is a supertype of any qualifier, and [] <: []
+            return a1;
+        }
+        return greatestLowerBound(a1, a2);
     }
 
     /**
@@ -392,6 +446,19 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
             return AnnotationUtils.areSame(anno1, anno2);
         Set<AnnotationMirror> supermap1 = this.supertypesMap.get(anno1);
         return AnnotationUtils.containsSame(supermap1, anno2);
+    }
+
+    @Override
+    public boolean isSubtypeTypeVariable(AnnotationMirror a, AnnotationMirror b) {
+        if (b == null) {
+            // [] is a supertype of any qualifier, and [] <: []
+            return true;
+        }
+        if (a == null) {
+            // [] is a subtype of no qualifier (only [])
+            return false;
+        }
+        return isSubtype(a, b);
     }
 
     private final void checkAnnoInGraph(AnnotationMirror a) {
