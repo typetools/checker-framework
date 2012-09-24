@@ -107,12 +107,12 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
             AnnotatedTypeMirror owner, Element element) {
         super.postAsMemberOf(type, owner, element);
 
-        if (!HACK_DONT_CALL_POST_AS_MEMBER) {
-            if (element.getKind().isField()) {
-                Collection<? extends AnnotationMirror> declaredFieldAnnotations = getDeclAnnotations(element);
-                computeFieldAccessType(type, declaredFieldAnnotations, owner);
-            }
-        }
+//        if (!HACK_DONT_CALL_POST_AS_MEMBER) {
+//            if (element.getKind().isField()) {
+//                Collection<? extends AnnotationMirror> declaredFieldAnnotations = getDeclAnnotations(element);
+//                computeFieldAccessType(type, declaredFieldAnnotations, owner);
+//            }
+//        }
     }
 
     @Override
