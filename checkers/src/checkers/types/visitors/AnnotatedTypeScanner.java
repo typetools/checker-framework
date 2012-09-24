@@ -122,7 +122,12 @@ public class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor<R, P> {
 
     @Override
     public R visitDeclared(AnnotatedDeclaredType type, P p) {
+        if (visitedNodes.containsKey(type)) {
+            return visitedNodes.get(type);
+        }
+        visitedNodes.put(type, null);
         R r = scan(type.getTypeArguments(), p);
+
         /*
          * TODO: Would it be good to do the following here? I only do this in
          * QualifierDefaults now, but maybe more general would be better?
