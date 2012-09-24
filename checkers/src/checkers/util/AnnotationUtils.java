@@ -235,6 +235,29 @@ public class AnnotationUtils {
     }
 
     /**
+     * Returns the annotation from hierarchy identified by its 'top' annotation
+     * from a set of annotations.
+     *
+     * @param qualHierarchy
+     *            The {@link QualifierHierarchy} for subtyping tests.
+     * @param annos
+     *            The set of annotations.
+     * @param top
+     *            The top annotation of the hierarchy to consider.
+     */
+    public static AnnotationMirror getAnnotationInHierarchy(
+            QualifierHierarchy qualHierarchy,
+            Collection<AnnotationMirror> annos, AnnotationMirror top) {
+        AnnotationMirror annoInHierarchy = null;
+        for (AnnotationMirror rhsAnno : annos) {
+            if (qualHierarchy.isSubtype(rhsAnno, top)) {
+                annoInHierarchy = rhsAnno;
+            }
+        }
+        return annoInHierarchy;
+    }
+
+    /**
      * Checks that the collection contains the annotation ignoring values.
      * Using Collection.contains does not always work, because it
      * does not use areSameIgnoringValues for comparison.
@@ -344,13 +367,13 @@ public class AnnotationUtils {
      * <em>Note 1</em>: The method does not work well for attributes of an array
      * type (as it would return a list of {@link AnnotationValue}s). Use
      * {@code getElementValueArray} instead.
-     * 
+     *
      * <p>
      * <em>Note 2</em>: The method does not work for attributes of an enum type,
      * as the AnnotationValue is a VarSymbol and would be cast to the enum type,
      * which doesn't work. Use {@code getElementValueEnum} instead.
-     * 
-     * 
+     *
+     *
      * @param anno the annotation to disassemble
      * @param name the name of the attribute to access
      * @param expectedType the expected type used to cast the return type
