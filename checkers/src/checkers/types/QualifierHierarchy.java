@@ -25,6 +25,14 @@ public abstract class QualifierHierarchy {
     // **********************************************************************
 
     /**
+     * Returns the width of this hierarchy, i.e. the expected number of
+     * annotations on any valid type.
+     */
+    public int getWidth() {
+        return getTopAnnotations().size();
+    }
+
+    /**
      * @return  the top (ultimate super) type qualifiers in the type system
      */
     public abstract Set<AnnotationMirror> getTopAnnotations();
