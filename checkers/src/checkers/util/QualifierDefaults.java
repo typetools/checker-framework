@@ -504,12 +504,12 @@ public class QualifierDefaults {
             boolean prevIsTypeVarExtends = isTypeVarExtends;
             isTypeVarExtends = true;
             try {
-                r = scan(type.getExtendsBound(), qual);
+                r = scan(type.getExtendsBoundField(), qual);
             } finally {
                 isTypeVarExtends = prevIsTypeVarExtends;
             }
             visitedNodes.put(type, r);
-            r = scanAndReduce(type.getSuperBound(), qual, r);
+            r = scanAndReduce(type.getSuperBoundField(), qual, r);
             visitedNodes.put(type, r);
             return r;
         }
