@@ -1,13 +1,9 @@
-// Test case for Issue 138:
-// http://code.google.com/p/checker-framework/issues/detail?id=138
+// Test case for Issue 139:
+// http://code.google.com/p/checker-framework/issues/detail?id=139
 abstract class GenericTest8 {
     interface A<S> {}
 
     void foo1(A<?> a) {
-        // TODO: this call should not fail, I believe. The test case
-        // ensures that the compiler doesn't crash;
-        // this error is not desired.
-        //:: error: (argument.type.incompatible)
         foo2(a);
     }
 
