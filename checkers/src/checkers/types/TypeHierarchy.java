@@ -1,12 +1,12 @@
 package checkers.types;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeVariable;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -15,6 +15,7 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
 import checkers.util.AnnotatedTypes;
 import checkers.util.AnnotationUtils;
+import checkers.util.InternalUtils;
 import checkers.util.QualifierPolymorphism;
 
 /**
@@ -371,6 +372,12 @@ public class TypeHierarchy {
      * @return  true if the types have the same annotations
      */
     protected boolean isSubtypeAsTypeArgument(AnnotatedTypeMirror rhs, AnnotatedTypeMirror lhs) {
+        /*
+        System.out.printf("isSubtypeAsTypeArgument(rhs: %s (%s, %s), lhs: %s (%s, %s))%n",
+                rhs, rhs.getKind(), rhs.getClass(),
+                lhs, lhs.getKind(), lhs.getClass());
+         */
+
         if (lhs.getKind() == TypeKind.WILDCARD && rhs.getKind() != TypeKind.WILDCARD) {
             if (visited.contains(lhs))
                 return true;
@@ -399,6 +406,13 @@ public class TypeHierarchy {
 
             AnnotatedTypeMirror rhsbnd = ((AnnotatedWildcardType)rhs).getEffectiveExtendsBound();
             AnnotatedTypeMirror lhsbnd = ((AnnotatedWildcardType)lhs).getEffectiveExtendsBound();
+
+            if (lhsbnd.getKind() == TypeKind.TYPEVAR &&
+                    InternalUtils.isCaptured((TypeVariable) lhsbnd.getUnderlyingType())) {
+                // TODO: is this step sound? It makes framework/GenericTest8 pass and breaks
+                // no existing tests.
+                lhsbnd = ((AnnotatedTypeVariable) lhsbnd).getEffectiveUpperBound();
+            }
 
             if (visited.contains(rhsbnd))
                 return true;
