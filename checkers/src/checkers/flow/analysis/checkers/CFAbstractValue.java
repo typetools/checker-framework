@@ -117,9 +117,17 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
             AnnotationMirror bAnno = otherType.getAnnotationInHierarchy(top);
 
             if (qualHierarchy.isSubtype(getType(), aAnno, bAnno)) {
-                result.addAnnotation(aAnno);
+                if (aAnno == null) {
+                    result.removeAnnotationInHierarchy(top);
+                } else {
+                    result.addAnnotation(aAnno);
+                }
             } else if (qualHierarchy.isSubtype(getType(), bAnno, aAnno)) {
-                result.addAnnotation(bAnno);
+                if (bAnno == null) {
+                    result.removeAnnotationInHierarchy(top);
+                } else {
+                    result.addAnnotation(bAnno);
+                }
             } else {
                 if (backup == null) {
                     assert false : "Neither of the two values is more specific: "
