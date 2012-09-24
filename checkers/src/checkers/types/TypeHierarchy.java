@@ -151,14 +151,14 @@ public class TypeHierarchy {
                     return true;
                 }
                 if (wildcard.isAnnotated()
-                        && qualifierHierarchy.isSubtype(lhs, rhs.getEffectiveAnnotations(), wildcard.getAnnotations())) {
+                        && qualifierHierarchy.isSubtype(lhs, rhs, rhs.getEffectiveAnnotations(), wildcard.getAnnotations())) {
                     return true;
                 } else {
                     Set<AnnotationMirror> bnd = wildcard.getEffectiveAnnotations();
                     Set<AnnotationMirror> bot = Collections.singleton(qualifierHierarchy.getBottomAnnotation(bnd.iterator().next()));
                     if (!wildcard.isMethodTypeArgHack() &&
-                            (!qualifierHierarchy.isSubtype(lhs, bnd, bot) ||
-                            !qualifierHierarchy.isSubtype(lhs, rhs.getEffectiveAnnotations(), bot))) {
+                            (!qualifierHierarchy.isSubtype(lhs, rhs, bnd, bot) ||
+                            !qualifierHierarchy.isSubtype(lhs, rhs, rhs.getEffectiveAnnotations(), bot))) {
                         return false;
                     }
                 }
@@ -169,7 +169,7 @@ public class TypeHierarchy {
             } else if (lhsBase.getKind() == TypeKind.TYPEVAR && rhs.getKind() != TypeKind.TYPEVAR) {
                 AnnotatedTypeVariable lhsb_atv = (AnnotatedTypeVariable)lhsBase;
                 Set<AnnotationMirror> lAnnos = lhsb_atv.getEffectiveLowerBound().getAnnotations();
-                return qualifierHierarchy.isSubtype(lhs, rhs.getAnnotations(), lAnnos);
+                return qualifierHierarchy.isSubtype(lhs, rhs, rhs.getAnnotations(), lAnnos);
             }
         }
 

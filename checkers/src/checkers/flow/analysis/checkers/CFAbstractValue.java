@@ -77,7 +77,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
                 lubType, factory);
         QualifierHierarchy qualifierHierarchy = analysis.qualifierHierarchy;
         lubAnnotatedType.addAnnotations(qualifierHierarchy
-                .leastUpperBounds(getType(), getType().getAnnotations(),
+                .leastUpperBounds(getType(), other.getType(), getType().getAnnotations(),
                         other.getType().getAnnotations()));
         return analysis.createAbstractValue(lubAnnotatedType);
     }
@@ -125,13 +125,13 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
             AnnotationMirror aAnno = getType().getAnnotationInHierarchy(top);
             AnnotationMirror bAnno = otherType.getAnnotationInHierarchy(top);
 
-            if (qualHierarchy.isSubtype(getType(), aAnno, bAnno)) {
+            if (qualHierarchy.isSubtype(getType(), otherType, aAnno, bAnno)) {
                 if (aAnno == null) {
                     result.removeAnnotationInHierarchy(top);
                 } else {
                     result.addAnnotation(aAnno);
                 }
-            } else if (qualHierarchy.isSubtype(getType(), bAnno, aAnno)) {
+            } else if (qualHierarchy.isSubtype(getType(), otherType, bAnno, aAnno)) {
                 if (bAnno == null) {
                     result.removeAnnotationInHierarchy(top);
                 } else {
