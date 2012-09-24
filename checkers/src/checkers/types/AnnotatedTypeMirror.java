@@ -922,15 +922,19 @@ public abstract class AnnotatedTypeMirror {
         @Override
         public AnnotatedTypeMirror substitute(
                 Map<? extends AnnotatedTypeMirror,
-                    ? extends AnnotatedTypeMirror> mapping) {
-            if (mapping.containsKey(this))
-                return mapping.get(this);
+                    ? extends AnnotatedTypeMirror> mappings) {
+            if (mappings.containsKey(this))
+                return mappings.get(this);
 
             AnnotatedDeclaredType type = getCopy(true);
 
+            Map<AnnotatedTypeMirror, AnnotatedTypeMirror> newMappings =
+                    new HashMap<AnnotatedTypeMirror, AnnotatedTypeMirror>(mappings);
+            newMappings.put(this, type);
+
             List<AnnotatedTypeMirror> typeArgs = new ArrayList<AnnotatedTypeMirror>();
             for (AnnotatedTypeMirror t : getTypeArguments())
-                typeArgs.add(t.substitute(mapping));
+                typeArgs.add(t.substitute(newMappings));
             type.setTypeArguments(typeArgs);
 
             if (TypesUtils.isAnonymousType(actualType)
@@ -938,7 +942,7 @@ public abstract class AnnotatedTypeMirror {
                 // watch need to copy upper bound as well
                 List<AnnotatedDeclaredType> supertypes = new ArrayList<AnnotatedDeclaredType>();
                 for (AnnotatedDeclaredType t : directSuperTypes())
-                    supertypes.add((AnnotatedDeclaredType)t.substitute(mapping));
+                    supertypes.add((AnnotatedDeclaredType)t.substitute(newMappings));
                 type.setDirectSuperTypes(supertypes);
             }
             return type;
