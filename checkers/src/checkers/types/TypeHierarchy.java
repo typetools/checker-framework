@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
 
 import checkers.basetype.BaseTypeChecker;
@@ -52,7 +51,7 @@ public class TypeHierarchy {
     private final QualifierHierarchy qualifierHierarchy;
 
     /** Prevent infinite loops in cases of recursive type bound */
-    protected final Set<Element> visited;
+    protected final Set<AnnotatedTypeMirror> visited;
 
     /** The type checker to use. */
     protected final BaseTypeChecker checker;
@@ -66,7 +65,7 @@ public class TypeHierarchy {
      */
     public TypeHierarchy(BaseTypeChecker checker, QualifierHierarchy qualifierHierarchy) {
         this.qualifierHierarchy = qualifierHierarchy;
-        this.visited = new HashSet<Element>();
+        this.visited = new HashSet<AnnotatedTypeMirror>();
         this.checker = checker;
     }
 
@@ -139,7 +138,7 @@ public class TypeHierarchy {
         */
         // If we already checked this type (in case of a recursive type bound)
         // return true.  If it's not a subtype, we wouldn't have gotten here again.
-        if (visited.contains(lhs.getElement()))
+        if (visited.contains(lhs))
             return true;
         AnnotatedTypeMirror lhsBase = lhs;
         while (lhsBase.getKind() != rhs.getKind()
@@ -163,7 +162,7 @@ public class TypeHierarchy {
                     }
                 }
                 lhsBase = ((AnnotatedWildcardType)lhsBase).getExtendsBound();
-                visited.add(lhsBase.getElement());
+                visited.add(lhsBase);
             } else if (rhs.getKind() == TypeKind.WILDCARD) {
                 rhs = ((AnnotatedWildcardType)rhs).getExtendsBound();
             } else if (lhsBase.getKind() == TypeKind.TYPEVAR && rhs.getKind() != TypeKind.TYPEVAR) {
@@ -174,7 +173,7 @@ public class TypeHierarchy {
         }
 
         if (lhsBase.getKind() == TypeKind.WILDCARD && rhs.getKind() == TypeKind.WILDCARD) {
-            return isSubtype(((AnnotatedWildcardType)rhs).getEffectiveExtendsBound(),
+            return isSubtypeImpl(((AnnotatedWildcardType)rhs).getEffectiveExtendsBound(),
                     ((AnnotatedWildcardType)lhsBase).getEffectiveExtendsBound());
         }
 
@@ -369,34 +368,53 @@ public class TypeHierarchy {
      */
     protected boolean isSubtypeAsTypeArgument(AnnotatedTypeMirror rhs, AnnotatedTypeMirror lhs) {
         if (lhs.getKind() == TypeKind.WILDCARD && rhs.getKind() != TypeKind.WILDCARD) {
-            if (visited.contains(lhs.getElement()))
+            if (visited.contains(lhs))
                 return true;
+            visited.add(lhs);
 
-            visited.add(lhs.getElement());
             if(!lhs.getAnnotations().isEmpty()) {
                 if (!lhs.getAnnotations().equals(rhs.getEffectiveAnnotations())) {
                     return false;
                 }
             }
             lhs = ((AnnotatedWildcardType)lhs).getEffectiveExtendsBound();
-            if (lhs == null) return true;
+            if (lhs == null)
+                return true;
+
+            if (visited.contains(lhs))
+                return true;
+            visited.add(lhs);
+
             return isSubtypeImpl(rhs, lhs);
         }
 
         if (lhs.getKind() == TypeKind.WILDCARD && rhs.getKind() == TypeKind.WILDCARD) {
+            if (visited.contains(rhs))
+                return true;
+            visited.add(rhs);
+
             AnnotatedTypeMirror rhsbnd = ((AnnotatedWildcardType)rhs).getEffectiveExtendsBound();
             AnnotatedTypeMirror lhsbnd = ((AnnotatedWildcardType)lhs).getEffectiveExtendsBound();
-            return isSubtype(rhsbnd, lhsbnd);
+
+            if (visited.contains(rhsbnd))
+                return true;
+            visited.add(rhsbnd);
+
+            return isSubtypeImpl(rhsbnd, lhsbnd);
         }
 
         if (lhs.getKind() == TypeKind.TYPEVAR && rhs.getKind() != TypeKind.TYPEVAR) {
-            if (visited.contains(lhs.getElement())) return true;
-            visited.add(lhs.getElement());
+            if (visited.contains(lhs))
+                return true;
+            visited.add(lhs);
+
             // TODO: the following two lines were added to make tests/nullness/MethodTypeVars2 pass.
             // Is this correct or just a quick fix?
-            if (visited.contains(((AnnotatedTypeVariable)lhs).getUpperBound().getElement())) return true;
-            visited.add(((AnnotatedTypeVariable)lhs).getUpperBound().getElement());
-            return isSubtype(rhs, ((AnnotatedTypeVariable)lhs).getUpperBound());
+            if (visited.contains(((AnnotatedTypeVariable)lhs).getUpperBound()))
+                return true;
+            visited.add(((AnnotatedTypeVariable)lhs).getUpperBound());
+
+            return isSubtypeImpl(rhs, ((AnnotatedTypeVariable)lhs).getUpperBound());
         }
 
         // Do not ask for the effective annotations here, as that would confuse
@@ -437,18 +455,20 @@ public class TypeHierarchy {
         // TODO: I think this can only happen from the method type variable introduction
         // of wildcards. If we change that (in AnnotatedTypes.inferTypeArguments)
         if (lhs.getKind() == TypeKind.WILDCARD && rhs.getKind() != TypeKind.WILDCARD) {
-            if (visited.contains(lhs.getElement()))
+            if (visited.contains(lhs))
                 return true;
+            visited.add(lhs);
 
-            visited.add(lhs.getElement());
             if(!lhs.getAnnotations().isEmpty()) {
                 if (!lhs.getAnnotations().equals(rhs.getEffectiveAnnotations())) {
                     return false;
                 }
             }
             lhs = ((AnnotatedWildcardType)lhs).getEffectiveExtendsBound();
-            if (lhs == null) return true;
-            return isSubtype(rhs, lhs);
+            if (lhs == null)
+                return true;
+
+            return isSubtypeImpl(rhs, lhs);
         }
         // End of copied code.
 
@@ -460,6 +480,6 @@ public class TypeHierarchy {
 
         // In addition, check that the full types are subtypes, to ensure that the
         // remaining qualifiers are correct.
-        return isSubtype(rhs, lhs);
+        return isSubtypeImpl(rhs, lhs);
     }
 }
