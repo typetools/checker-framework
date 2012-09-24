@@ -151,14 +151,14 @@ public class TypeHierarchy {
                     return true;
                 }
                 if (wildcard.isAnnotated()
-                        && qualifierHierarchy.isSubtype(rhs.getEffectiveAnnotations(), wildcard.getAnnotations())) {
+                        && qualifierHierarchy.isSubtype(lhs, rhs.getEffectiveAnnotations(), wildcard.getAnnotations())) {
                     return true;
                 } else {
                     Set<AnnotationMirror> bnd = wildcard.getEffectiveAnnotations();
                     Set<AnnotationMirror> bot = Collections.singleton(qualifierHierarchy.getBottomAnnotation(bnd.iterator().next()));
                     if (!wildcard.isMethodTypeArgHack() &&
-                            (!qualifierHierarchy.isSubtype(bnd, bot) ||
-                            !qualifierHierarchy.isSubtype(rhs.getEffectiveAnnotations(), bot))) {
+                            (!qualifierHierarchy.isSubtype(lhs, bnd, bot) ||
+                            !qualifierHierarchy.isSubtype(lhs, rhs.getEffectiveAnnotations(), bot))) {
                         return false;
                     }
                 }
@@ -169,7 +169,7 @@ public class TypeHierarchy {
             } else if (lhsBase.getKind() == TypeKind.TYPEVAR && rhs.getKind() != TypeKind.TYPEVAR) {
                 AnnotatedTypeVariable lhsb_atv = (AnnotatedTypeVariable)lhsBase;
                 Set<AnnotationMirror> lAnnos = lhsb_atv.getEffectiveLowerBound().getAnnotations();
-                return qualifierHierarchy.isSubtype(rhs.getAnnotations(), lAnnos);
+                return qualifierHierarchy.isSubtype(lhs, rhs.getAnnotations(), lAnnos);
             }
         }
 
@@ -188,7 +188,7 @@ public class TypeHierarchy {
         // System.out.printf("lhsBase=%s (%s), rhsBase=%s (%s)%n",
         //        lhsBase, lhsBase.getClass(), rhsBase, rhsBase.getClass());
 
-        if (!qualifierHierarchy.canHaveEmptyAnnotationSet(lhsBase)) {
+        if (!QualifierHierarchy.canHaveEmptyAnnotationSet(lhsBase)) {
             Set<AnnotationMirror> lhsAnnos = lhsBase.getEffectiveAnnotations();
             Set<AnnotationMirror> rhsAnnos = rhsBase.getEffectiveAnnotations();
 
