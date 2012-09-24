@@ -270,13 +270,13 @@ public abstract class QualifierHierarchy {
         for (AnnotationMirror top : getTopAnnotations()) {
             AnnotationMirror anno1ForTop = null;
             for (AnnotationMirror anno1 : annos1) {
-                if (isSubtype(anno1, top)) {
+                if (isSubtypeTypeVariable(anno1, top)) {
                     anno1ForTop = anno1;
                 }
             }
             AnnotationMirror anno2ForTop = null;
             for (AnnotationMirror anno2 : annos2) {
-                if (isSubtype(anno2, top)) {
+                if (isSubtypeTypeVariable(anno2, top)) {
                     anno2ForTop = anno2;
                 }
             }
@@ -310,13 +310,13 @@ public abstract class QualifierHierarchy {
         for (AnnotationMirror top : getTopAnnotations()) {
             AnnotationMirror anno1ForTop = null;
             for (AnnotationMirror anno1 : annos1) {
-                if (isSubtype(anno1, top)) {
+                if (isSubtypeTypeVariable(anno1, top)) {
                     anno1ForTop = anno1;
                 }
             }
             AnnotationMirror anno2ForTop = null;
             for (AnnotationMirror anno2 : annos2) {
-                if (isSubtype(anno2, top)) {
+                if (isSubtypeTypeVariable(anno2, top)) {
                     anno2ForTop = anno2;
                 }
             }
