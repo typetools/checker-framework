@@ -188,12 +188,7 @@ public class TypeHierarchy {
         // System.out.printf("lhsBase=%s (%s), rhsBase=%s (%s)%n",
         //        lhsBase, lhsBase.getClass(), rhsBase, rhsBase.getClass());
 
-        if (qualifierHierarchy.canHaveEmptyAnnotationSet(lhsBase)) {
-            if (!qualifierHierarchy.isSubtypeTypeVariable(
-                    rhsBase.getAnnotations(), lhsBase.getAnnotations())) {
-                return false;
-            }
-        } else {
+        if (!qualifierHierarchy.canHaveEmptyAnnotationSet(lhsBase)) {
             Set<AnnotationMirror> lhsAnnos = lhsBase.getEffectiveAnnotations();
             Set<AnnotationMirror> rhsAnnos = rhsBase.getEffectiveAnnotations();
 
