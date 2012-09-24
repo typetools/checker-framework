@@ -5,7 +5,14 @@ import checkers.quals.*;
 
 public class VoidUse {
 
-  private Class<?> main_class = Void.TYPE;
+  // Void is treated as Nullable, therefore also Class<Void>
+  // is Nullable. Should this fail? The upper bound of the
+  // wildcard is implicitly Nullable (because of the bound in
+  // Class), therefore it passes.
+  //TODO:: error: (assignment.type.incompatible)
+  private Class<?> main_class1 = Void.TYPE;
+
+  private Class<? extends @Nullable Object> main_class2 = Void.TYPE;
 
   public Void voidReturn(Void p) {
       voidReturn(null);
