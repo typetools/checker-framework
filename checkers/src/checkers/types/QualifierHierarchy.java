@@ -70,11 +70,6 @@ public abstract class QualifierHierarchy {
      * type qualifier hierarchy.  This checks only the qualifiers, not the
      * Java type.
      *
-     * <p>
-     * This method works even if the underlying Java type is a type variable.
-     * In that case, a 'null' AnnnotationMirror and the empty set represent a meaningful
-     * value (namely, no annotation).
-     *
      * @return true iff anno1 is a sub qualifier of anno2
      */
     public abstract boolean isSubtype(AnnotationMirror anno1, AnnotationMirror anno2);
@@ -83,11 +78,6 @@ public abstract class QualifierHierarchy {
      * Tests whether there is any annotation in lhs that is a super qualifier
      * of some annotation in rhs.
      * lhs and rhs contain only the annotations, not the Java type.
-     *
-     * <p>
-     * This method works even if the underlying Java type is a type variable.
-     * In that case, a 'null' AnnnotationMirror and the empty set represent a meaningful
-     * value (namely, no annotation).
      *
      * @return true iff an annotation in lhs is a super of one in rhs
      **/
@@ -103,11 +93,6 @@ public abstract class QualifierHierarchy {
      * The two qualifiers have to be from the same qualifier hierarchy. Otherwise,
      * null will be returned.
      *
-     * <p>
-     * This method works even if the underlying Java type is a type variable.
-     * In that case, a 'null' AnnnotationMirror and the empty set represent a meaningful
-     * value (namely, no annotation).
-     *
      * @return  the least restrictive qualifiers for both types
      */
     public abstract AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2);
@@ -117,11 +102,6 @@ public abstract class QualifierHierarchy {
      *
      * The two qualifiers have to be from the same qualifier hierarchy. Otherwise,
      * null will be returned.
-     *
-     * <p>
-     * This method works even if the underlying Java type is a type variable.
-     * In that case, a 'null' AnnnotationMirror and the empty set represent a meaningful
-     * value (namely, no annotation).
      *
      * @param a1 First annotation
      * @param a2 Second annotation
@@ -137,11 +117,6 @@ public abstract class QualifierHierarchy {
      * This is necessary for determining the type of a conditional
      * expression (<tt>?:</tt>), where the type of the expression is the
      * least upper bound of the true and false clauses.
-     *
-     * <p>
-     * This method works even if the underlying Java type is a type variable.
-     * In that case, a 'null' AnnnotationMirror and the empty set represent a meaningful
-     * value (namely, no annotation).
      *
      * @return the least upper bound of annos1 and annos2
      */
@@ -175,11 +150,6 @@ public abstract class QualifierHierarchy {
      *
      * The two qualifiers have to be from the same qualifier hierarchy. Otherwise,
      * null will be returned.
-     *
-     * <p>
-     * This method works even if the underlying Java type is a type variable.
-     * In that case, a 'null' AnnnotationMirror and the empty set represent a meaningful
-     * value (namely, no annotation).
      *
      * @param annos1 First collection of qualifiers
      * @param annos2 Second collection of qualifiers
@@ -227,6 +197,11 @@ public abstract class QualifierHierarchy {
      * Tests whether there is any annotation in lhs that is a super qualifier
      * of some annotation in rhs.
      * lhs and rhs contain only the annotations, not the Java type.
+     *
+     * <p>
+     * This method works even if the underlying Java type is a type variable.
+     * In that case, a 'null' AnnnotationMirror and the empty set represent a meaningful
+     * value (namely, no annotation).
      *
      * @return true iff an annotation in lhs is a super of one in rhs
      **/
