@@ -41,6 +41,15 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
         this.type = type;
         this.typeHierarchy = analysis.getTypeHierarchy();
         assert type != null;
+        QualifierHierarchy qualifierHierarchy = analysis.getFactory().getQualifierHierarchy();
+        int width = qualifierHierarchy.getWidth();
+        if (!QualifierHierarchy.canHaveEmptyAnnotationSet(type)) {
+            assert width == type.getAnnotations().size() : "Encountered type with an invalid number of annotations ("
+                    + type.getAnnotations().size()
+                    + ", should be "
+                    + width
+                    + "): " + type;
+        }
     }
 
     public AnnotatedTypeMirror getType() {
