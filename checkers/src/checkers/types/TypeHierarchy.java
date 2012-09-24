@@ -410,7 +410,8 @@ public class TypeHierarchy {
             if (lhsbnd.getKind() == TypeKind.TYPEVAR &&
                     InternalUtils.isCaptured((TypeVariable) lhsbnd.getUnderlyingType())) {
                 // TODO: is this step sound? It makes framework/GenericTest8 pass and breaks
-                // no existing tests.
+                // no existing tests. It should be sound because if it's the wrong captured
+                // type, the underlying Java type would have raised an error.
                 lhsbnd = ((AnnotatedTypeVariable) lhsbnd).getEffectiveUpperBound();
             }
 
