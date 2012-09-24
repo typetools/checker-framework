@@ -154,8 +154,12 @@ public class TypeHierarchy {
                     return true;
                 } else {
                     Set<AnnotationMirror> bnd = wildcard.getEffectiveAnnotations();
-                    Set<AnnotationMirror> bot = Collections.singleton(qualifierHierarchy.getBottomAnnotation(bnd.iterator().next()));
+                    Set<AnnotationMirror> bot = AnnotationUtils.createAnnotationSet();
+                    for (AnnotationMirror bndi : bnd) {
+                        bot.add(qualifierHierarchy.getBottomAnnotation(bndi));
+                    }
                     if (!wildcard.isMethodTypeArgHack() &&
+                            (!bnd.isEmpty() && bnd.size() == bot.size()) &&
                             (!qualifierHierarchy.isSubtype(bnd, bot) ||
                             !qualifierHierarchy.isSubtype(rhs.getEffectiveAnnotations(), bot))) {
                         return false;
