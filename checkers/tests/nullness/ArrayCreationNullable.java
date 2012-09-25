@@ -167,7 +167,14 @@ public class ArrayCreationNullable {
         return new Object[10];
     }
 
-    Object[] oa = new Object[] {new Object()};
+    //:: error: (new.array.type.invalid)
+    @NonNull Object @NonNull [] oa0 = new Object [10];
+
+    // OK
+    @LazyNonNull Object @NonNull [] loa0 = new @LazyNonNull Object @NonNull [10];
+
+    Object[] oa1 = new Object[] {new Object()};
+
     //:: error: (assignment.type.incompatible)
     Object[] oa2 = new Object[] {new Object(), null};
 
