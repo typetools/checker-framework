@@ -24,8 +24,8 @@ import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.VariableTree;
 
 // TODO/later: documentation
-public class InitializationVisitor<Checker extends InitializationChecker> extends
-        BaseTypeVisitor<Checker> {
+public class InitializationVisitor<Checker extends InitializationChecker>
+        extends BaseTypeVisitor<Checker> {
 
     // Error message keys
     private static final String COMMITMENT_INVALID_CAST = "commitment.invalid.cast";
@@ -80,6 +80,27 @@ public class InitializationVisitor<Checker extends InitializationChecker> extend
                 checker.report(Result.failure(err, varTree), varTree);
                 return; // prevent issuing another errow about subtyping
             }
+            // for field access on the current object, make sure that we don't allow
+            // invalid assignments. that is, even though reading this.f in a
+            // constructor yields @Nullable (or similar for other typesystems), it
+            // is not allowed to write @Nullable to a @NonNull field.
+            // This is done by first getting the type as usual (var), and then
+            // again not using the postAsMember method (which takes care of
+            // transforming the type of o.f for a free receiver to @Nullable)
+            // (var2). Then, we take the child annotation from var2 and use it
+            // for var.
+            AnnotatedTypeMirror var = atypeFactory.getAnnotatedType(lhs);
+            boolean old = factory.HACK_DONT_CALL_POST_AS_MEMBER;
+            factory.HACK_DONT_CALL_POST_AS_MEMBER = true;
+            boolean old2 = factory.shouldReadCache;
+            factory.shouldReadCache = false;
+            AnnotatedTypeMirror var2 = atypeFactory.getAnnotatedType(lhs);
+            factory.HACK_DONT_CALL_POST_AS_MEMBER = old;
+            factory.shouldReadCache = old2;
+            var.replaceAnnotation(var2.getAnnotationInHierarchy(checker.getFieldInvariantAnnotation()));
+            checkAssignability(var, varTree);
+            commonAssignmentCheck(var, valueExp, errorKey);
+            return;
         }
         super.commonAssignmentCheck(varTree, valueExp, errorKey);
     }
