@@ -1452,6 +1452,11 @@ public class AnnotatedTypeFactory {
         return null; // dead code
     }
 
+    private Map<Tree, TreePath> pathHack = new HashMap<Tree, TreePath>();
+    public final void setPathHack(Tree node, TreePath use) {
+        pathHack.put(node, use);
+    }
+
     /**
      * Gets the path for the given {@link Tree} under the current root by
      * checking from the visitor's current path, and only using
@@ -1468,6 +1473,11 @@ public class AnnotatedTypeFactory {
         assert root != null : "root needs to be set when used on trees";
 
         if (node == null) return null;
+
+        if (pathHack.containsKey(node)) {
+            return pathHack.get(node);
+        }
+
         TreePath currentPath = visitorState.getPath();
         if (currentPath == null)
             return TreePath.getPath(root, node);
