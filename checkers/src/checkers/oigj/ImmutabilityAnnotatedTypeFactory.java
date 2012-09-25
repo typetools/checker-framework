@@ -1,6 +1,5 @@
 package checkers.oigj;
 
-import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -137,16 +136,6 @@ public class ImmutabilityAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<
         ASSIGNS_FIELDS = checker.ASSIGNS_FIELDS;
 
         this.postInit();
-    }
-
-    @Override
-    protected Set<AnnotationMirror> createFlowQualifiers(ImmutabilitySubchecker checker) {
-        Set<AnnotationMirror> flowQuals = AnnotationUtils.createAnnotationSet();
-        for (Class<? extends Annotation> cl : checker.getSupportedTypeQualifiers()) {
-            if (!I.class.equals(cl))
-                flowQuals.add(AnnotationUtils.fromClass(elements, cl));
-        }
-        return flowQuals;
     }
 
     @Override

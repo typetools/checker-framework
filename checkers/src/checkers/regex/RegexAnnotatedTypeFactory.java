@@ -1,19 +1,17 @@
 package checkers.regex;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 
 import checkers.basetype.BaseTypeChecker;
-import checkers.flow.Flow;
+import checkers.flow.analysis.checkers.CFStore;
+import checkers.flow.analysis.checkers.CFValue;
 import checkers.regex.quals.PartialRegex;
 import checkers.regex.quals.PolyRegex;
 import checkers.regex.quals.Regex;
+import checkers.regex.quals.RegexBottom;
+import checkers.types.AbstractBasicAnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
-import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.types.TreeAnnotator;
 import checkers.util.AnnotationBuilder;
 import checkers.util.AnnotationUtils;
@@ -26,7 +24,6 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 
 /**
  * Adds {@link Regex} to the type of tree, in the following cases:
@@ -68,7 +65,7 @@ import com.sun.source.tree.Tree.Kind;
  * Also, adds {@link PolyRegex} to the type of String/char concatenation of
  * a Regex and a PolyRegex or two PolyRegexs.
  */
-public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexChecker> {
+public class RegexAnnotatedTypeFactory extends AbstractBasicAnnotatedTypeFactory<RegexChecker, CFValue, CFStore, RegexTransfer, RegexAnalysis> {
 
     /**
      * The Pattern.compile method.
@@ -91,19 +88,13 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
      *
      * @see RegexUtil#asRegex(String, int)
      */
-    /*default*/ static final String[] asRegexClasses = new String[] {
+    /*package-scope*/ static final String[] regexUtilClasses = new String[] {
             "checkers.regex.RegexUtil",
             "plume.RegexUtil",
             "daikon.util.RegexUtil" };
 
-    /**
-     * A list of all of the ExecutableElements for the class names in
-     * asRegexClasses.
-     *
-     * @see #asRegexClasses
-     * @see RegexUtil#asRegex(String, int)
-     */
-    private final List<ExecutableElement> asRegexes;
+    /** The {@code @Regex} annotation. */
+    private final AnnotationMirror REGEX;
 
     public RegexAnnotatedTypeFactory(RegexChecker checker,
             CompilationUnitTree root) {
@@ -111,18 +102,13 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
 
         patternCompile = TreeUtils.getMethod("java.util.regex.Pattern", "compile", 1, processingEnv);
         partialRegexValue = TreeUtils.getMethod("checkers.regex.quals.PartialRegex", "value", 0, processingEnv);
-        asRegexes = new ArrayList<ExecutableElement>();
-        for (String clazz : asRegexClasses) {
-            try {
-                asRegexes.add(TreeUtils.getMethod(clazz, "asRegex", 2, processingEnv));
-            } catch (Exception e) {
-                // The class couldn't be loaded so it must not be on the
-                // classpath, just skip it.
-                continue;
-            }
-        }
-
+        REGEX = AnnotationUtils.fromClass(elements, Regex.class);
         this.postInit();
+    }
+
+    @Override
+    public TreeAnnotator createTreeAnnotator(RegexChecker checker) {
+        return new RegexTreeAnnotator(checker);
     }
 
     /**
@@ -133,17 +119,6 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
             new AnnotationBuilder(processingEnv, Regex.class.getCanonicalName());
         builder.setValue("value", groupCount);
         return builder.build();
-    }
-
-    @Override
-    public Flow createFlow(RegexChecker checker, CompilationUnitTree tree,
-            Set<AnnotationMirror> flowQuals) {
-        return new RegexFlow(checker, tree, flowQuals, this);
-    }
-
-    @Override
-    public TreeAnnotator createTreeAnnotator(RegexChecker checker) {
-        return new RegexTreeAnnotator(checker);
     }
 
     private class RegexTreeAnnotator extends TreeAnnotator {
@@ -200,7 +175,7 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
                     int lGroupCount = checker.getGroupCount(lExpr.getAnnotation(Regex.class));
                     int rGroupCount = checker.getGroupCount(rExpr.getAnnotation(Regex.class));
                     // Remove current @Regex annotation...
-                    type.removeAnnotation(Regex.class);
+                    type.removeAnnotationInHierarchy(REGEX);
                     // ...and add a new one with the correct group count value.
                     type.addAnnotation(createRegexAnnotation(lGroupCount + rGroupCount));
                 } else if (lExprPoly && rExprPoly
@@ -241,7 +216,7 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
                 if (lhs.hasAnnotation(Regex.class) && rhs.hasAnnotation(Regex.class)) {
                     int lCount = checker.getGroupCount(lhs.getAnnotation(Regex.class));
                     int rCount = checker.getGroupCount(rhs.getAnnotation(Regex.class));
-                    type.removeAnnotation(Regex.class);
+                    type.removeAnnotationInHierarchy(REGEX);
                     type.addAnnotation(createRegexAnnotation(lCount + rCount));
                 }
             }
@@ -258,37 +233,19 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
         public Void visitMethodInvocation(MethodInvocationTree tree, AnnotatedTypeMirror type) {
             // TODO: Also get this to work with 2 argument Pattern.compile.
             if (TreeUtils.isMethodInvocation(tree, patternCompile, processingEnv)) {
-                AnnotationMirror anno = getAnnotatedType(tree.getArguments().get(0)).getAnnotation(Regex.class);
-                if (anno != null) {
-                    int groupCount = checker.getGroupCount(anno);
+                ExpressionTree arg0 = tree.getArguments().get(0);
+                AnnotationMirror regexAnno = getAnnotatedType(arg0).getAnnotation(Regex.class);
+                AnnotationMirror bottomAnno = getAnnotatedType(arg0).getAnnotation(RegexBottom.class);
+                if (regexAnno != null) {
+                    int groupCount = checker.getGroupCount(regexAnno);
                     // Remove current @Regex annotation...
-                    type.removeAnnotation(Regex.class);
                     // ...and add a new one with the correct group count value.
-                    type.addAnnotation(createRegexAnnotation(groupCount));
-                }
-            } else if (isAsRegex(tree)) {
-                ExpressionTree groupArg = tree.getArguments().get(1);
-                if (groupArg.getKind() == Kind.INT_LITERAL) {
-                    LiteralTree literal = (LiteralTree) groupArg;
-                    int paramGroups = (Integer) literal.getValue();
-                    type.removeAnnotation(Regex.class);
-                    type.addAnnotation(createRegexAnnotation(paramGroups));
+                    type.replaceAnnotation(createRegexAnnotation(groupCount));
+                } else if (bottomAnno != null) {
+                    type.replaceAnnotation(AnnotationUtils.fromClass(elements, RegexBottom.class));
                 }
             }
             return super.visitMethodInvocation(tree, type);
-        }
-
-        /**
-         * Returns true if the given MethodInvocationTree represents a call to
-         * an asRegex method in one of the classes in asRegexClasses.
-         */
-        private boolean isAsRegex(MethodInvocationTree tree) {
-            for (ExecutableElement asRegex : asRegexes) {
-                if (TreeUtils.isMethodInvocation(tree, asRegex, processingEnv)) {
-                    return true;
-                }
-            }
-            return false;
         }
 
         /**
