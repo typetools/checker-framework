@@ -1,11 +1,9 @@
 package tests.util;
 
-import javax.annotation.processing.*;
+import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Elements;
-
-import com.sun.source.tree.CompilationUnitTree;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.quals.Bottom;
@@ -18,17 +16,19 @@ import checkers.util.AnnotationUtils;
 import checkers.util.GraphQualifierHierarchy;
 import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 
+import com.sun.source.tree.CompilationUnitTree;
+
 /**
- * A simple checker used for testing the Checker Framework.  It treats the
- * {@code @Odd} and {@code @Even} annotations as a subtype-style qualifiers with no special
- * semantics.
+ * A simple checker used for testing the Checker Framework. It treats the
+ * {@code @Odd} and {@code @Even} annotations as a subtype-style qualifiers with
+ * no special semantics.
  *
  * <p>
- *
  * This checker should only be used for testing the framework.
  */
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
-@TypeQualifiers( { Odd.class, Even.class, Unqualified.class, Bottom.class } )
+@TypeQualifiers({ Odd.class, MonotonicOdd.class, Even.class, Unqualified.class,
+        Bottom.class })
 public final class TestChecker extends BaseTypeChecker {
 
     protected AnnotationMirror BOTTOM;

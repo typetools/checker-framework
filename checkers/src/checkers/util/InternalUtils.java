@@ -4,20 +4,45 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/*>>>
-import checkers.nullness.quals.*;
-*/
-import checkers.source.SourceChecker;
-
-import javax.lang.model.element.*;
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 
-import com.sun.source.tree.*;
-import com.sun.source.util.*;
-import com.sun.tools.javac.code.*;
-import com.sun.tools.javac.tree.*;
-import com.sun.tools.javac.tree.JCTree.*;
+import checkers.source.SourceChecker;
+
+import com.sun.source.tree.AnnotatedTypeTree;
+import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.ArrayAccessTree;
+import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.TypeParameterTree;
+import com.sun.source.util.TreePath;
+import com.sun.tools.javac.code.Flags;
+import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.code.Types;
+import com.sun.tools.javac.processing.JavacProcessingEnvironment;
+import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.JCTree.JCAnnotatedType;
+import com.sun.tools.javac.tree.JCTree.JCExpressionStatement;
+import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
+import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
+import com.sun.tools.javac.tree.JCTree.JCNewArray;
+import com.sun.tools.javac.tree.JCTree.JCNewClass;
+import com.sun.tools.javac.tree.JCTree.JCTypeAnnotation;
+import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
+import com.sun.tools.javac.tree.TreeInfo;
+/*>>>
+import checkers.nullness.quals.*;
+*/
 
 /**
  * Static utility methods used by annotation abstractions in this package. Some
@@ -197,5 +222,35 @@ public class InternalUtils {
      */
     public static boolean isCaptured(TypeVariable typeVar) {
         return ((Type.TypeVar) typeVar).isCaptured();
+    }
+
+    /**
+     * Returns the least upper bound of two {@link TypeMirror}s.
+     *
+     * @param processingEnv
+     *            The {@link ProcessingEnvironment} to be used.
+     * @param t1
+     *            A {@link TypeMirror}.
+     * @param t2
+     *            A {@link TypeMirror}.
+     * @return The least upper bound of {@code t1} and {@code t2}.
+     */
+    public static TypeMirror leastUpperBound(ProcessingEnvironment processingEnv,
+            TypeMirror t1, TypeMirror t2) {
+        JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) processingEnv;
+        Types types = Types.instance(javacEnv.getContext());
+        // Special case for primitives: they must be equal, otherwise there is no LUB.
+        if (TypesUtils.isPrimitive(t1) || TypesUtils.isPrimitive(t2)) {
+            assert TypesUtils.areSamePrimitiveTypes(t1, t2);
+            return t1;
+        }
+        // Handle the 'null' type manually (not done by types.lub).
+        if (t1.getKind() == TypeKind.NULL) {
+            return t2;
+        }
+        if (t2.getKind() == TypeKind.NULL) {
+            return t1;
+        }
+        return types.lub((Type) t1, (Type) t2);
     }
 }
