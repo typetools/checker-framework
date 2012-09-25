@@ -3295,6 +3295,7 @@ public class CFGBuilder {
 
                 LiteralTree zero =
                     treeBuilder.buildLiteral(new Integer(0));
+                factory.setPathHack(zero, factory.getPath(tree));
 
                 VariableTree indexVariable =
                     treeBuilder.buildVariableDecl(intType,
@@ -3328,6 +3329,8 @@ public class CFGBuilder {
 
                 BinaryTree lessThan =
                     treeBuilder.buildLessThan(indexUse1, lengthSelect);
+                factory.setPathHack(lessThan, factory.getPath(tree));
+
                 extendWithNode(new LessThanNode(lessThan, indexNode1, lengthAccessNode));
                 extendWithExtendedNode(new ConditionalJump(loopEntry, loopExit));
 
