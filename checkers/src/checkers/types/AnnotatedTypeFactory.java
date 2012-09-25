@@ -208,6 +208,10 @@ public class AnnotatedTypeFactory {
     protected static boolean SHOULD_CACHE = true;
     protected boolean shouldCache = SHOULD_CACHE;
 
+    /** Should the cached result be used, or should it be freshly computed? */
+    protected static boolean SHOULD_READ_CACHE = true;
+    public boolean shouldReadCache = SHOULD_READ_CACHE;
+
     /** Size of LRU cache. */
     private final static int CACHE_SIZE = 300;
 
@@ -276,7 +280,7 @@ public class AnnotatedTypeFactory {
             SourceChecker.errorAbort("AnnotatedTypeFactory.getAnnotatedType: null tree");
             return null; // dead code
         }
-        if (treeCache.containsKey(tree))
+        if (treeCache.containsKey(tree) && shouldReadCache)
             return AnnotatedTypes.deepCopy(treeCache.get(tree));
 
         AnnotatedTypeMirror type;
@@ -361,7 +365,7 @@ public class AnnotatedTypeFactory {
      * @return the annotated type of the element
      */
     public AnnotatedTypeMirror fromElement(Element elt) {
-        if (elementCache.containsKey(elt)) {
+        if (elementCache.containsKey(elt) && shouldReadCache) {
             return AnnotatedTypes.deepCopy(elementCache.get(elt));
         }
         if (elt.getKind() == ElementKind.PACKAGE)
@@ -427,7 +431,7 @@ public class AnnotatedTypeFactory {
             SourceChecker.errorAbort("AnnotatedTypeFactory.fromMember: not a method or variable declaration: " + tree);
             return null; // dead code
         }
-        if (fromTreeCache.containsKey(tree)) {
+        if (fromTreeCache.containsKey(tree) && shouldReadCache) {
             return AnnotatedTypes.deepCopy(fromTreeCache.get(tree));
         }
         AnnotatedTypeMirror result = fromTreeWithVisitor(
@@ -445,7 +449,7 @@ public class AnnotatedTypeFactory {
      * @return the annotated type of the expression
      */
     public AnnotatedTypeMirror fromExpression(ExpressionTree tree) {
-        if (fromTreeCache.containsKey(tree))
+        if (fromTreeCache.containsKey(tree) && shouldReadCache)
             return AnnotatedTypes.deepCopy(fromTreeCache.get(tree));
         AnnotatedTypeMirror result = fromTreeWithVisitor(
                 TypeFromTree.TypeFromExpressionINSTANCE, tree);
@@ -463,7 +467,7 @@ public class AnnotatedTypeFactory {
      * @return the annotated type of the type in the AST
      */
     public AnnotatedTypeMirror fromTypeTree(Tree tree) {
-        if (fromTreeCache.containsKey(tree))
+        if (fromTreeCache.containsKey(tree) && shouldReadCache)
             return AnnotatedTypes.deepCopy(fromTreeCache.get(tree));
 
         AnnotatedTypeMirror result = fromTreeWithVisitor(
@@ -1258,7 +1262,7 @@ public class AnnotatedTypeFactory {
      * the method returns null.
      *
      * Returns an aliased type of the current one
-     * 
+     *
      * @param a the qualifier to check for an alias
      * @return the alias or null if none exists
      */
@@ -1344,7 +1348,7 @@ public class AnnotatedTypeFactory {
         // if root is null, we cannot find any declaration
         if (root == null)
             return null;
-        if (elementToTreeCache.containsKey(elt)) {
+        if (elementToTreeCache.containsKey(elt) && shouldReadCache) {
             return elementToTreeCache.get(elt);
         }
 
@@ -1452,7 +1456,7 @@ public class AnnotatedTypeFactory {
         return null; // dead code
     }
 
-    private Map<Tree, TreePath> pathHack = new HashMap<Tree, TreePath>();
+    private final Map<Tree, TreePath> pathHack = new HashMap<Tree, TreePath>();
     public final void setPathHack(Tree node, TreePath use) {
         pathHack.put(node, use);
     }
@@ -1885,7 +1889,7 @@ public class AnnotatedTypeFactory {
     }
 
     /** Accessor for the element utilities.
-     */ 
+     */
     public Elements getElementUtils() {
         return this.elements;
     }
