@@ -770,7 +770,32 @@ is not yet fully initialized --- that is, not all its \<@NonNull> fields have be
 assigned.  Rawness is mostly relevant within the constructor, or for
 references to \code{this} that escape the constructor (say, by being stored
 in a field or passed to a method before initialization is complete).  
-Use of rawness annotations in rare in most code.
+Use of rawness annotations is rare in most code.
+
+The most common use for the \<@Raw> annotation is for a helper routine that
+is called by constructor.  For example:
+
+\begin{Verbatim}
+  class MyClass {
+    ... // declare fields
+
+    public MyClass(String arg1) {
+      this.field1 = arg1;
+      init_other_fields();
+    }
+
+    // A helper routine that initializes all the fields other than field1
+    private void init_other_fields(@Raw MyClass this) {
+      ...
+    }
+  }
+\end{Verbatim}
+
+For compatibility with Java 7 and earlier, you can write the receiver
+parameter in comments (see Section~\ref{annotations-in-comments}):
+\begin{Verbatim}
+    private void init_other_fields(/*>>> @Raw MyClass this*/) {
+\end{Verbatim}
 
 % Most readers can
 % skip this section on first reading; you can return to it once you have
@@ -1128,6 +1153,16 @@ You can suppress warnings related to partially-initialized objects with
 When the \code{-Alint=uninitialized} command-line option is provided, then
 an object is considered raw until \emph{all} its fields are assigned, not
 just the \code{@NonNull} ones.  See Section~\ref{lint-uninitialized}.
+
+
+\paragraph{Use of method annotations}
+
+A method with a raw receiver often assumes that a few fields (but not all
+of them) are non-null, and sometimes sets some more fields to non-null
+values.  To express these concepts, use the
+\code{@\refclass{nullness/quals}{NonNullOnEntry}} and
+\code{@\refclass{nullness/quals}{AssertNonNullAfter}} method annotations;
+see Section~\ref{nullness-non-qualifiers}.
 
 
 % Should we change the terminology?
@@ -1650,4 +1685,5 @@ tool like the Checker Framework.)
 % LocalWords:  AssertParametersNonNull nonnull AssertNonNullAfter ReadOnly arg
 % LocalWords:  keySet getField keyfor param TypeName containsValue indexOf nraA
 % LocalWords:  lastIndexOf deref getProperty getProperties classliteral MyClass
-% LocalWords:  typeofthis nraB nrbB rO nroO nroB
+% LocalWords:  typeofthis nraB nrbB rO nroO nroB 5cm IGJ containsKey enum
+%  LocalWords:  JUnit's 5in field1 field2 superclasses Foo C1 C2 2in 75in
