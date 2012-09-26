@@ -36,7 +36,8 @@ public class RegexTransfer extends
     @Override
     public TransferResult<CFValue, CFStore> visitMethodInvocation(
             MethodInvocationNode n, TransferInput<CFValue, CFStore> in) {
-        RegexAnnotatedTypeFactory factory = (RegexAnnotatedTypeFactory) analysis.getFactory();
+        RegexAnnotatedTypeFactory factory = (RegexAnnotatedTypeFactory) analysis
+                .getFactory();
         TransferResult<CFValue, CFStore> result = super.visitMethodInvocation(
                 n, in);
 
@@ -60,8 +61,7 @@ public class RegexTransfer extends
                             .buildFlowExprContextForUse(n, factory);
                     try {
                         Receiver firstParam = FlowExpressionParseUtil.parse(
-                                "#1", context,
-                                factory.getPath(n.getTree()));
+                                "#1", context, factory.getPath(n.getTree()));
                         // add annotation with correct group count (if possible,
                         // regex annotation without count otherwise)
                         Node count = n.getArgument(1);
@@ -73,7 +73,9 @@ public class RegexTransfer extends
                                     .createRegexAnnotation(groupCount);
                             thenStore.insertValue(firstParam, regexAnnotation);
                         } else {
-                            AnnotationMirror regexAnnotation = AnnotationUtils.fromClass(factory.getElementUtils(), Regex.class);
+                            AnnotationMirror regexAnnotation = AnnotationUtils
+                                    .fromClass(factory.getElementUtils(),
+                                            Regex.class);
                             thenStore.insertValue(firstParam, regexAnnotation);
                         }
                     } catch (FlowExpressionParseException e) {
@@ -93,11 +95,16 @@ public class RegexTransfer extends
                     if (count instanceof IntegerLiteralNode) {
                         IntegerLiteralNode iln = (IntegerLiteralNode) count;
                         Integer groupCount = iln.getValue();
-                        regexAnnotation = factory.createRegexAnnotation(groupCount);
+                        regexAnnotation = factory
+                                .createRegexAnnotation(groupCount);
                     } else {
-                        regexAnnotation = AnnotationUtils.fromClass(factory.getElementUtils(), Regex.class);
+                        regexAnnotation = AnnotationUtils.fromClass(
+                                factory.getElementUtils(), Regex.class);
                     }
-                    CFValue newResultValue = analysis.createSingleAnnotationValue(regexAnnotation);
+                    CFValue newResultValue = analysis
+                            .createSingleAnnotationValue(regexAnnotation,
+                                    result.getResultValue().getType()
+                                            .getUnderlyingType());
                     return new RegularTransferResult<>(newResultValue,
                             result.getRegularStore());
                 }
