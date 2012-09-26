@@ -2,8 +2,10 @@ package checkers.nonnull;
 
 import java.util.Set;
 
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeMirror;
 
 import checkers.compilermsgs.quals.CompilerMessageKey;
@@ -11,6 +13,7 @@ import checkers.initialization.InitializationVisitor;
 import checkers.nonnull.quals.NonNull;
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeMirror;
+import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.util.InternalUtils;
 import checkers.util.TreeUtils;
@@ -22,9 +25,12 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.IfTree;
+import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
@@ -50,6 +56,16 @@ public class NonNullVisitor extends
     private final AnnotationMirror NONNULL, NULLABLE, MONOTONICNONNULL;
     private final TypeMirror stringType;
 
+    /**
+     * The element for java.util.Collection.size().
+     */
+    private final ExecutableElement collectionSize;
+
+    /**
+     * The element for java.util.Collection.toArray(T).
+     */
+    private final ExecutableElement collectionToArray;
+
     public NonNullVisitor(AbstractNonNullChecker checker,
             CompilationUnitTree root) {
         super(checker, root);
@@ -58,6 +74,11 @@ public class NonNullVisitor extends
         NULLABLE = checker.NULLABLE;
         MONOTONICNONNULL = checker.MONOTONICNONNULL;
         stringType = elements.getTypeElement("java.lang.String").asType();
+
+        ProcessingEnvironment env = checker.getProcessingEnvironment();
+        this.collectionSize = TreeUtils.getMethod("java.util.Collection", "size", 0, env);
+        this.collectionToArray = TreeUtils.getMethod("java.util.Collection", "toArray", 1, env);
+
         checkForAnnotatedJdk();
     }
 
@@ -127,6 +148,81 @@ public class NonNullVisitor extends
     public Void visitArrayAccess(ArrayAccessTree node, Void p) {
         checkForNullability(node.getExpression(), ACCESSING_NULLABLE);
         return super.visitArrayAccess(node, p);
+    }
+
+    @Override
+    public Void visitNewArray(NewArrayTree node, Void p) {
+        AnnotatedArrayType type = atypeFactory.getAnnotatedType(node);
+        AnnotatedTypeMirror componentType = type.getComponentType();
+        if (componentType.hasAnnotation(NONNULL) &&
+                !isNewArrayAllZeroDims(node) &&
+                !isNewArrayInToArray(node)) {
+            checker.report(Result.failure("new.array.type.invalid",
+                    componentType.getAnnotations(), type.toString()), node);
+        }
+
+        return super.visitNewArray(node, p);
+    }
+
+    /** Determine whether all dimensions given in a new array expression
+     * have zero as length. For example "new Object[0][0];".
+     * Also true for empty dimensions, as in "new Object[] {...}".
+     */
+    private static boolean isNewArrayAllZeroDims(NewArrayTree node) {
+        boolean isAllZeros = true;
+        for (ExpressionTree dim : node.getDimensions()) {
+            if (dim instanceof LiteralTree) {
+                Object val = ((LiteralTree)dim).getValue();
+                if (!(val instanceof Number) ||
+                        !(new Integer(0).equals(((Number)val)))) {
+                    isAllZeros = false;
+                    break;
+                }
+            } else {
+                isAllZeros = false;
+                break;
+            }
+        }
+        return isAllZeros;
+    }
+
+    private boolean isNewArrayInToArray(NewArrayTree node) {
+        if (node.getDimensions().size()!=1) {
+            return false;
+        }
+
+        ExpressionTree dim = node.getDimensions().get(0);
+        ProcessingEnvironment env = checker.getProcessingEnvironment();
+
+        if (!TreeUtils.isMethodInvocation(dim, collectionSize, env)) {
+            return false;
+        }
+
+        ExpressionTree rcvsize = ((MethodInvocationTree) dim).getMethodSelect();
+        if (!(rcvsize instanceof MemberSelectTree)) {
+            return false;
+        }
+        rcvsize = ((MemberSelectTree)rcvsize).getExpression();
+        if (!(rcvsize instanceof IdentifierTree)) {
+            return false;
+        }
+
+        Tree encl = getCurrentPath().getParentPath().getLeaf();
+
+        if (!TreeUtils.isMethodInvocation(encl, collectionToArray, env)) {
+            return false;
+        }
+
+        ExpressionTree rcvtoarray = ((MethodInvocationTree) encl).getMethodSelect();
+        if (!(rcvtoarray instanceof MemberSelectTree)) {
+            return false;
+        }
+        rcvtoarray = ((MemberSelectTree)rcvtoarray).getExpression();
+        if (!(rcvtoarray instanceof IdentifierTree)) {
+            return false;
+        }
+
+        return ((IdentifierTree)rcvsize).getName() == ((IdentifierTree)rcvtoarray).getName();
     }
 
     /** Case 4: Check for thrown exception nullness */
