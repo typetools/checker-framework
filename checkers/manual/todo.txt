@@ -1,0 +1,105 @@
+
+The following items most likely need to be updated or added to the checker manual:
+- Explain the command line parameter -Adotflowdir (probably find a better name first).
+- Explain the command line parameter -AsuggestPureMethods.
+- Explain the generic pre- and postcondition annotations: @EnsuresAnnotation/@EnsuresAnnotations, @EnsuresAnnotationIf/@EnsuresAnnotationsIf and @RequiresAnnotation/@RequiresAnnotations.
+- Explain the meta-annotations @PreconditionAnnotation, @ConditionalPostconditionAnnotation and @PostconditionAnnotation.
+- Explain the new annotation @TerminatesExecution.
+- Explain the new defaulting for local variables (including our decision on casts and instanceof).
+- Update the new purity annotation @Pure (with the two version for determinitic methods and side-effect free methods).  It is now available for all type-systems, not just nullness.
+- Document @Covariant annotation
+- Document -AconcurrentSemantics command-line option; also note it in caveats about what the checker guarantees
+- Document -AassumeAssertionsAreEnabled and -AassumeAssertionsAreDisabled.
+- Update the documentation on how to suppress warnings using assert statements: The string @AssumeAssertion(warningkey) must be present anywhere in the detail message of the assert statement.
+- Document the lint option strictMonotonicNonNullInit for NonNullChecker (disallow null initializations for @MonoNonNull fields)
+
+===========================================================================
+
+The remainder of this file is to-do issues with a description that is
+longer than one line.
+
+===========================================================================
+
+"NNEL" default becomes "top for locals, casts, and instanceof"
+The top qualifier should only be added to top-level type variables,
+because those will get suitably refined by flow.
+For type variables in other positions, e.g. as type argument in your
+example, we should not add default qualifiers.
+
+===========================================================================
+
+Discuss that the Checker Framework is stricter than Java, in the sense that
+it treats arrays invariantly rather than covariantly.  Explain the rationale
+
+> This is due to Java's covariant array types.  In fact, this problem is not
+> unique to the Checker Framework, but you can write a variant of your code
+> in standard Java that compiles and type-checks, but does not work at
+> run-time:
+> 
+>   String[] strs = new String[] {""};
+>   Object[] tmp = strs;
+>   tmp[0] = new Object();
+>   String regexp = strs[0];
+> 
+> This code type-checks, but throws an ArrayStoreException at runtime. For
+> the Checker Framework, I think it is reasonable to adapt the same covariant
+> semantics, which is why your example type-checks.
+
+As Stefan points out, the standard Java type system has a hole, which Java
+patches via run-time checks.  The Checker Framework takes a stricter
+position, rejecting any unsafe array operation.  (Or, at least, it is
+supposed to!)  There are two reasons for this, one philosophical and one
+practical:
+ * We would like our type system to be sound, which means that we want a
+   guarantee of no errors at run time.  Java's type system does not do
+   this:  there is only a guarantee that the JVM won't be corrupted, not
+   that your program will run without run-time exceptions.
+ * The Checker Framework does not add any run-time checking, and so it
+   would be undesirable to mimic a feature that is sound only in the
+   presence of run-time checking.
+
+-----
+An example issue with un-annotated code, for the Regex Checker:
+
+String[] sa = {"hi"};
+
+We infer that "hi" is a "@Regex String" and therefore the RHS has type
+"@Regex String[]". With invariant subtyping, the assignment is now
+invalid.
+The solution is to change the declared type to:
+
+@Regex String[] sa = ...;
+
+Explain this issue in the manual.
+
+===========================================================================
+
+Concurrency:
+
+Add FAQ about:
+
+> How do different approaches handle concurrency?
+
+The Checker Framework currently ignores it.  In the future, we plan to add
+a concurrent mode to our toolset, but we expect this will dramatically
+reduce the usefulness of the tool for sequential code.  So, for the moment
+we are focused on sequential code.
+
+[Mention the concurrency checker and the effect on flow-sensitivity.]
+
+See email thread:
+Reality check: how to protect access to @Nullable fields?
+
+Also add a mention to:
+2.3  What the checker guarantees
+
+Note that putting data in a local variable doesn't fix the problem, just
+masks it from one particular checker.  This is bad style!
+
+===========================================================================
+
+Explain relationship between XXXChecker and XXXAnnotatedTypeFactory:
+if the Checker is a subtype of BaseTypeChecker, the ATF has to be a
+subtype of AbstractBasicATF, because BaseTypeVisitor assumes that.
+
+Can we find better naming for Basic vs. Base classes?
