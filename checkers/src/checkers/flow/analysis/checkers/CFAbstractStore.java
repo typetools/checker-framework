@@ -125,6 +125,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * {@code val} in the store.
      */
     static int i;
+
     public void updateForMethodCall(MethodInvocationNode n,
             AnnotatedTypeFactory atypeFactory, V val) {
         ExecutableElement method = n.getTarget().getMethod();
@@ -148,12 +149,16 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                     AnnotationMirror monotonicAnnotation = fieldAnnotation.second;
                     Name annotation = AnnotationUtils.getElementValueClassName(
                             monotonicAnnotation, "value", false);
-                    AnnotationMirror target = AnnotationUtils.fromName(atypeFactory.getElementUtils(), annotation);
-                    AnnotationMirror anno = otherVal.getType().getAnnotationInHierarchy(target);
+                    AnnotationMirror target = AnnotationUtils.fromName(
+                            atypeFactory.getElementUtils(), annotation);
+                    AnnotationMirror anno = otherVal.getType()
+                            .getAnnotationInHierarchy(target);
                     // Make sure the 'target' annotation is present.
                     if (anno != null && AnnotationUtils.areSame(anno, target)) {
                         newOtherVal = analysis.createSingleAnnotationValue(
-                                target).mostSpecific(newOtherVal, null);
+                                target,
+                                newOtherVal.getType().getUnderlyingType())
+                                .mostSpecific(newOtherVal, null);
                     }
                 }
                 if (newOtherVal != null) {
@@ -200,7 +205,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * information is preserved.
      */
     public void insertValue(FlowExpressions.Receiver r, AnnotationMirror a) {
-        insertValue(r, analysis.createSingleAnnotationValue(a));
+        insertValue(r, analysis.createSingleAnnotationValue(a, r.getType()));
     }
 
     /**
@@ -245,7 +250,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         if (r instanceof FlowExpressions.LocalVariable) {
             Element localVar = ((FlowExpressions.LocalVariable) r).getElement();
             V oldValue = localVariableValues.get(localVar);
-            localVariableValues.put(localVar, value.mostSpecific(oldValue, null));
+            localVariableValues.put(localVar,
+                    value.mostSpecific(oldValue, null));
         } else if (r instanceof FlowExpressions.FieldAccess) {
             FlowExpressions.FieldAccess fieldAcc = (FlowExpressions.FieldAccess) r;
             // Only store information about final fields (where the receiver is
