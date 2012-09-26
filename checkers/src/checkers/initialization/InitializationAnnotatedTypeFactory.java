@@ -132,7 +132,7 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
             if (areAllFieldsCommittedOnly(enclosingClass)) {
                 InitializationStore store = getStoreBefore(tree);
                 if (store != null) {
-                    if (getUninitializedInvariantFields(store, path).size() == 0) {
+                    if (getUninitializedInvariantFields(store, path, false).size() == 0) {
                         if (useFbc) {
                             annotation = checker
                                     .createFreeAnnotation(classType);
@@ -192,14 +192,14 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
      * and are not yet initialized in a given store.
      */
     public Set<VariableTree> getUninitializedInvariantFields(
-            InitializationStore store, TreePath path) {
+            InitializationStore store, TreePath path, boolean isStatic) {
         ClassTree currentClass = TreeUtils.enclosingClass(path);
         Set<VariableTree> fields = InitializationChecker
                 .getAllFields(currentClass);
         Set<VariableTree> violatingFields = new HashSet<>();
         AnnotationMirror invariant = checker.getFieldInvariantAnnotation();
         for (VariableTree field : fields) {
-            if (!ElementUtils.isStatic(TreeUtils.elementFromDeclaration(field))) {
+            if (ElementUtils.isStatic(TreeUtils.elementFromDeclaration(field)) == isStatic) {
                 // Does this field need to satisfy the invariant?
                 if (getAnnotatedType(field).hasAnnotation(invariant)) {
                     // Has the field been initialized?

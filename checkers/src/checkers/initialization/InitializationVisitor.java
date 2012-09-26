@@ -16,6 +16,8 @@ import checkers.util.AnnotationUtils;
 import checkers.util.ElementUtils;
 import checkers.util.TreeUtils;
 
+import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
@@ -80,9 +82,11 @@ public class InitializationVisitor<Checker extends InitializationChecker>
                 checker.report(Result.failure(err, varTree), varTree);
                 return; // prevent issuing another errow about subtyping
             }
-            // for field access on the current object, make sure that we don't allow
+            // for field access on the current object, make sure that we don't
+            // allow
             // invalid assignments. that is, even though reading this.f in a
-            // constructor yields @Nullable (or similar for other typesystems), it
+            // constructor yields @Nullable (or similar for other typesystems),
+            // it
             // is not allowed to write @Nullable to a @NonNull field.
             // This is done by first getting the type as usual (var), and then
             // again not using the postAsMember method (which takes care of
@@ -97,7 +101,8 @@ public class InitializationVisitor<Checker extends InitializationChecker>
             AnnotatedTypeMirror var2 = atypeFactory.getAnnotatedType(lhs);
             factory.HACK_DONT_CALL_POST_AS_MEMBER = old;
             factory.shouldReadCache = old2;
-            var.replaceAnnotation(var2.getAnnotationInHierarchy(checker.getFieldInvariantAnnotation()));
+            var.replaceAnnotation(var2.getAnnotationInHierarchy(checker
+                    .getFieldInvariantAnnotation()));
             checkAssignability(var, varTree);
             commonAssignmentCheck(var, valueExp, errorKey);
             return;
@@ -171,6 +176,51 @@ public class InitializationVisitor<Checker extends InitializationChecker>
     }
 
     @Override
+    public Void visitBlock(BlockTree node, Void p) {
+        ClassTree enclosingClass = TreeUtils.enclosingClass(getCurrentPath());
+        // Is this a initializer block?
+        if (enclosingClass.getMembers().contains(node)) {
+            if (node.isStatic()) {
+                boolean isStatic = true;
+                InitializationStore store = factory.getRegularExitStore(node);
+                // Check that all static fields are initialized.
+                checkFieldsInitialized(node, isStatic, store);
+            }
+        }
+        return super.visitBlock(node, p);
+    }
+
+    @Override
+    public Void visitClass(ClassTree node, Void p) {
+        Void result = super.visitClass(node, p);
+
+        // Is there a static initializer block?
+        boolean hasStaticInitializer = false;
+        for (Tree t : node.getMembers()) {
+            switch (t.getKind()) {
+            case BLOCK:
+                if (((BlockTree) t).isStatic()) {
+                    hasStaticInitializer = true;
+                }
+                break;
+
+            default:
+                break;
+            }
+        }
+
+        // Warn about uninitialized static fields if there is no static
+        // initializer (otherwise, errors are reported there).
+        if (!hasStaticInitializer) {
+            boolean isStatic = true;
+            InitializationStore store = factory.getEmptyStore();
+            checkFieldsInitialized(node, isStatic, store);
+        }
+
+        return result;
+    }
+
+    @Override
     public Void visitMethod(MethodTree node, Void p) {
         if (TreeUtils.isConstructor(node)) {
             Collection<? extends AnnotationMirror> returnTypeAnnotations = getExplicitReturnTypeAnnotations(node);
@@ -189,30 +239,39 @@ public class InitializationVisitor<Checker extends InitializationChecker>
 
             // Check that all fields have been initialized at the end of the
             // constructor.
+            boolean isStatic = false;
             InitializationStore store = factory.getRegularExitStore(node);
-            // If the store is null, then the constructor cannot terminate
-            // successfully
-            if (store != null) {
-                Set<VariableTree> violatingFields = factory
-                        .getUninitializedInvariantFields(store,
-                                getCurrentPath());
-                if (!violatingFields.isEmpty()) {
-                    StringBuilder fieldsString = new StringBuilder();
-                    boolean first = true;
-                    for (VariableTree f : violatingFields) {
-                        if (!first) {
-                            fieldsString.append(", ");
-                        }
-                        first = false;
-                        fieldsString.append(f.getName());
-                    }
-                    checker.report(Result.failure(
-                            COMMITMENT_FIELDS_UNINITIALIZED, fieldsString),
-                            node);
-                }
-            }
+            checkFieldsInitialized(node, isStatic, store);
         }
         return super.visitMethod(node, p);
+    }
+
+    /**
+     * Checks that all fields (all static fields if {@code staticFields} is
+     * true) are initialized in the given store.
+     */
+    protected void checkFieldsInitialized(Tree blockNode, boolean staticFields,
+            InitializationStore store) {
+        // If the store is null, then the constructor cannot terminate
+        // successfully
+        if (store != null) {
+            Set<VariableTree> violatingFields = factory
+                    .getUninitializedInvariantFields(store, getCurrentPath(),
+                            staticFields);
+            if (!violatingFields.isEmpty()) {
+                StringBuilder fieldsString = new StringBuilder();
+                boolean first = true;
+                for (VariableTree f : violatingFields) {
+                    if (!first) {
+                        fieldsString.append(", ");
+                    }
+                    first = false;
+                    fieldsString.append(f.getName());
+                }
+                checker.report(Result.failure(COMMITMENT_FIELDS_UNINITIALIZED,
+                        fieldsString), blockNode);
+            }
+        }
     }
 
     public Set<AnnotationMirror> getExplicitReturnTypeAnnotations(

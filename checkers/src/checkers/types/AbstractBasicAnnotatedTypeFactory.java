@@ -98,6 +98,9 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
     /** Should use flow analysis? */
     protected boolean useFlow;
 
+    /** An empty store. */
+    private Store emptyStore;
+
     /**
      * Creates a type factory for checking the given compilation unit with
      * respect to the given annotation.
@@ -312,10 +315,10 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
     protected AnalysisResult<Value, Store> flowResult = null;
 
     /**
-     * A mapping from methods to their regular exit store (used to check
+     * A mapping from methods (or other code blocks) to their regular exit store (used to check
      * postconditions).
      */
-    protected IdentityHashMap<MethodTree, Store> regularExitStores = null;
+    protected IdentityHashMap<Tree, Store> regularExitStores = null;
 
     /**
      * A mapping from methods to their a list with all return statements and the
@@ -330,12 +333,14 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
     protected IdentityHashMap<MethodInvocationTree, Store> methodInvocationStores = null;
 
     /**
+     * Returns the regular exit store for a method or another code block (such as static initializers).
+     *
      * @return The regular exit store, or {@code null}, if there is no such
      *         store (because the method cannot exit through the regular exit
      *         block).
      */
-    public/* @Nullable */Store getRegularExitStore(MethodTree methodTree) {
-        return regularExitStores.get(methodTree);
+    public/* @Nullable */Store getRegularExitStore(Tree t) {
+        return regularExitStores.get(t);
     }
 
     /**
@@ -508,6 +513,10 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
         CFGBuilder builder = new CFCFGBuilder(checker);
         ControlFlowGraph cfg = builder.run(this, root, processingEnv, ast);
         FlowAnalysis newAnalysis = createFlowAnalysis(getChecker(), fieldValues);
+        if (emptyStore == null) {
+            emptyStore = newAnalysis.createEmptyStore(!getProcessingEnv()
+                    .getOptions().containsKey("concurrentSemantics"));
+        }
         analyses.addFirst(newAnalysis);
         analyses.getFirst().performAnalysis(cfg);
         AnalysisResult<Value, Store> result = analyses.getFirst().getResult();
@@ -524,6 +533,12 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
             }
             returnStatementStores.put(method, analyses.getFirst()
                     .getReturnStatementStores());
+        } else if (ast.getKind() == UnderlyingAST.Kind.ARBITRARY_CODE) {
+            CFGStatement block = (CFGStatement) ast;
+            Store regularExitStore = analyses.getFirst().getRegularExitStore();
+            if (regularExitStore != null) {
+                regularExitStores.put(block.getCode(), regularExitStore);
+            }
         }
 
         if (processingEnv.getOptions().containsKey("flowdotdir")) {
@@ -674,5 +689,13 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
 
     public Checker getChecker() {
         return checker;
+    }
+
+    public Store getEmptyStore() {
+        return emptyStore;
+    }
+
+    public void setEmptyStore(Store emptyStore) {
+        this.emptyStore = emptyStore;
     }
 }
