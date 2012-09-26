@@ -399,7 +399,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                     // check anything
                 } else {
                     CFAbstractValue<?> value = exitStore.getValue(expr);
-                    AnnotationMirror inferredAnno = value.getType().getAnnotationInHierarchy(annotation);
+                    AnnotationMirror inferredAnno = value == null ? null : value.getType().getAnnotationInHierarchy(annotation);
                     if (inferredAnno == null
                             || !atypeFactory.getQualifierHierarchy().isSubtype(inferredAnno, annotation)) {
                         checker.report(
@@ -486,7 +486,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                     // match 'result'. at the moment, this means the result
                     // is a boolean literal
                     if (retVal == null || retVal == result) {
-                        AnnotationMirror inferredAnno = value.getType().getAnnotationInHierarchy(annotation);
+                        AnnotationMirror inferredAnno = value == null ? null : value.getType().getAnnotationInHierarchy(annotation);
                         if (inferredAnno == null
                                 || !atypeFactory.getQualifierHierarchy().isSubtype(inferredAnno, annotation)) {
                             checker.report(
@@ -676,7 +676,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                 CFAbstractStore<?, ?> store = atypeFactory.getStoreBefore(tree);
                 CFAbstractValue<?> value = store.getValue(expr);
 
-                AnnotationMirror inferredAnno = value.getType().getAnnotationInHierarchy(anno);
+                AnnotationMirror inferredAnno = value == null ? null : value.getType().getAnnotationInHierarchy(anno);
                 if (inferredAnno == null
                         || !atypeFactory.getQualifierHierarchy().isSubtype(inferredAnno, anno)) {
                     checker.report(
