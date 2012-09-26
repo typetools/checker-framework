@@ -157,7 +157,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                     if (anno != null && AnnotationUtils.areSame(anno, target)) {
                         newOtherVal = analysis.createSingleAnnotationValue(
                                 target,
-                                newOtherVal.getType().getUnderlyingType())
+                                otherVal.getType().getUnderlyingType())
                                 .mostSpecific(newOtherVal, null);
                     }
                 }
