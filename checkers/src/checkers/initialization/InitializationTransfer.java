@@ -71,7 +71,8 @@ public class InitializationTransfer<T extends InitializationTransfer<T>>
     public InitializationTransfer(
             CFAbstractAnalysis<CFValue, InitializationStore, T> analysis) {
         super(analysis);
-        this.checker = (InitializationChecker) analysis.getFactory().getChecker();
+        this.checker = (InitializationChecker) analysis.getFactory()
+                .getChecker();
     }
 
     @Override
@@ -209,9 +210,10 @@ public class InitializationTransfer<T extends InitializationTransfer<T>>
             // Only if the field has the 'invariant' annotation.
             if (fieldAnno.hasAnnotation(checker.getFieldInvariantAnnotation())) {
                 AnnotationMirror inv = checker.getFieldInvariantAnnotation();
-                CFValue refinedResultValue = analysis
-                        .createSingleAnnotationValue(inv);
                 CFValue oldResultValue = result.getResultValue();
+                CFValue refinedResultValue = analysis
+                        .createSingleAnnotationValue(inv, oldResultValue
+                                .getType().getUnderlyingType());
                 result.setResultValue(refinedResultValue.mostSpecific(
                         oldResultValue, null));
             }
