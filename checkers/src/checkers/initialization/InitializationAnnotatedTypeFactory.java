@@ -26,6 +26,7 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.TreeAnnotator;
 import checkers.types.TypeAnnotator;
 import checkers.util.AnnotationUtils;
+import checkers.util.ElementUtils;
 import checkers.util.TreeUtils;
 
 import com.sun.source.tree.ClassTree;
@@ -187,8 +188,8 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
     }
 
     /**
-     * Returns the set of fields that have the invariant annotation and are not
-     * yet initialized in a given store.
+     * Returns the set of (non-static) fields that have the invariant annotation
+     * and are not yet initialized in a given store.
      */
     public Set<VariableTree> getUninitializedInvariantFields(
             InitializationStore store, TreePath path) {
@@ -198,12 +199,14 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
         Set<VariableTree> violatingFields = new HashSet<>();
         AnnotationMirror invariant = checker.getFieldInvariantAnnotation();
         for (VariableTree field : fields) {
-            // Does this field need to satisfy the invariant?
-            if (getAnnotatedType(field).hasAnnotation(invariant)) {
-                // Has the field been initialized?
-                if (!store.isFieldInitialized(TreeUtils
-                        .elementFromDeclaration(field))) {
-                    violatingFields.add(field);
+            if (!ElementUtils.isStatic(TreeUtils.elementFromDeclaration(field))) {
+                // Does this field need to satisfy the invariant?
+                if (getAnnotatedType(field).hasAnnotation(invariant)) {
+                    // Has the field been initialized?
+                    if (!store.isFieldInitialized(TreeUtils
+                            .elementFromDeclaration(field))) {
+                        violatingFields.add(field);
+                    }
                 }
             }
         }
