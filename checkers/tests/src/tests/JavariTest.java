@@ -51,6 +51,8 @@ public class JavariTest extends ParameterizedCheckerTest {
                 o.toString().equals("tests/all-systems/TypeVars.java") ||
                 o.toString().equals("tests/all-systems/RawTypes.java") ||
                 o.toString().equals("tests/all-systems/ForEach.java") ||
+                o.toString().equals("tests/all-systems/WildcardSuper.java") ||
+                o.toString().equals("tests/all-systems/GenericTest11full.java") ||
                 o.toString().equals("tests/all-systems/MethodTypeVars.java");
     }
 }

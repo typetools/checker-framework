@@ -1008,20 +1008,20 @@ public class AnnotatedTypes {
         } else {
             List<AnnotatedTypeMirror> subtypes = new ArrayList<AnnotatedTypeMirror>(types.size());
 
-            for (AnnotatedTypeMirror type : types) {
-                if (type == null) {
-                    continue;
-                }
-                if (type.getKind() == TypeKind.WILDCARD &&
-                        ((AnnotatedWildcardType)type).getSuperBound() != null) {
-                    type = ((AnnotatedWildcardType)type).getSuperBound();
-                }
-                if (type.getKind() == TypeKind.WILDCARD) {
-                    subtypes.add(deepCopy(lub));
-                } else if (asSuper(typeutils, atypeFactory, type, lub) == null) {
-                    subtypes.add(deepCopy(lub));
-                } else {
-                    subtypes.add(asSuper(typeutils, atypeFactory, type, lub));
+            // TODO: This code needs some more serious thought.
+            if (lub.getKind() == TypeKind.WILDCARD) {
+                subtypes.add(deepCopy(lub));
+            } else { 
+                for (AnnotatedTypeMirror type : types) {
+                    if (type == null) {
+                        continue;
+                    }
+                    AnnotatedTypeMirror ass = asSuper(typeutils, atypeFactory, type, lub);
+                    if (ass == null) {
+                        subtypes.add(deepCopy(type));
+                    } else {
+                        subtypes.add(ass);
+                    }
                 }
             }
             if (subtypes.size() > 0) {
