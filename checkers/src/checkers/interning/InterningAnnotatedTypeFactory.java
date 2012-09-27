@@ -66,6 +66,9 @@ public class InterningAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Int
         // If you update the following, also update ../../../manual/interning-checker.tex .
         addAliasedAnnotation(com.sun.istack.Interned.class, INTERNED);
 
+        // The null literal is interned -> make Void interned also.
+        typeAnnotator.addTypeName(java.lang.Void.class, INTERNED);
+
         this.postInit();
     }
 
