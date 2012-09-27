@@ -247,7 +247,7 @@ public class InternalUtils {
         }
         // Special case for primitives: they must be equal, otherwise there is no LUB.
         if (TypesUtils.isPrimitive(t1) || TypesUtils.isPrimitive(t2)) {
-            assert TypesUtils.areSamePrimitiveTypes(t1, t2);
+            assert TypesUtils.areSamePrimitiveTypes(t1, t2) : "tried to get LUB of " + t1 + " and " + t2 + ".";
             return t1;
         }
         // Handle the 'null' type manually (not done by types.lub).
