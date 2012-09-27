@@ -63,13 +63,14 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
      *
      * @param checker the type checker to which this annotator belongs
      */
-    public TreeAnnotator(BaseTypeChecker checker, AnnotatedTypeFactory typeFactory) {
+    public TreeAnnotator(BaseTypeChecker checker, AnnotatedTypeFactory atypeFactory) {
 
         this.treeKinds = new EnumMap<Kind, Set<AnnotationMirror>>(Kind.class);
         this.treeClasses = new HashMap<Class<?>, Set<AnnotationMirror>>();
         this.stringPatterns = new IdentityHashMap<Pattern, Set<AnnotationMirror>>();
+
         this.qualHierarchy = checker.getQualifierHierarchy();
-        this.atypeFactory = typeFactory;
+        this.atypeFactory = atypeFactory;
 
         // Get type qualifiers from the checker.
         Set<Class<? extends Annotation>> quals = checker.getSupportedTypeQualifiers();
@@ -81,30 +82,17 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
             if (implicit == null)
                 continue;
 
-            boolean res;
-            AnnotationMirror theQual = AnnotationUtils.fromClass(typeFactory.elements, qual);
+            AnnotationMirror theQual = AnnotationUtils.fromClass(atypeFactory.elements, qual);
             for (Class<? extends Tree> treeClass : implicit.treeClasses()) {
-                res = AnnotationUtils.updateMappingToMutableSet(qualHierarchy, treeClasses, treeClass, theQual);
-                if (!res) {
-                    SourceChecker.errorAbort("TreeAnnotator: invalid update of treeClasses " +
-                            treeClasses + " at " + treeClass + " with " + theQual);
-                }
+                addTreeClass(treeClass, theQual);
             }
 
             for (Tree.Kind treeKind : implicit.trees()) {
-                res = AnnotationUtils.updateMappingToMutableSet(qualHierarchy, treeKinds, treeKind, theQual);
-                if (!res) {
-                    SourceChecker.errorAbort("TreeAnnotator: invalid update of treeKinds " +
-                            treeKinds + " at " + treeKind + " with " + theQual);
-                }
+                addTreeKind(treeKind, theQual);
             }
 
             for (String pattern : implicit.stringPatterns()) {
-                res = AnnotationUtils.updateMappingToMutableSet(qualHierarchy, stringPatterns, Pattern.compile(pattern), theQual);
-                if (!res) {
-                    SourceChecker.errorAbort("TreeAnnotator: invalid update of stringPatterns " +
-                            stringPatterns + " at " + pattern + " with " + theQual);
-                }
+                addStringPattern(pattern, theQual);
             }
         }
     }
