@@ -33,16 +33,16 @@ public class ClassNameNode extends Node {
     protected final/* @Nullable */Node parent;
 
     public ClassNameNode(IdentifierTree tree) {
+        super(InternalUtils.typeOf(tree));
         assert tree.getKind() == Tree.Kind.IDENTIFIER;
         this.tree = tree;
-        this.type = InternalUtils.typeOf(tree);
         this.element = TreeUtils.elementFromUse(tree);
         this.parent = null;
     }
 
     public ClassNameNode(MemberSelectTree tree, Node parent) {
+        super(InternalUtils.typeOf(tree));
         this.tree = tree;
-        this.type = InternalUtils.typeOf(tree);
         this.element = TreeUtils.elementFromUse(tree);
         this.parent = parent;
     }

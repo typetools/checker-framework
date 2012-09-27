@@ -3,6 +3,9 @@ package checkers.flow.cfg.node;
 import java.util.Collection;
 import java.util.Collections;
 
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.util.Types;
+
 import checkers.flow.util.HashCodeUtils;
 
 import com.sun.source.tree.Tree;
@@ -24,7 +27,8 @@ public class MarkerNode extends Node {
     protected/* @Nullable */Tree tree;
     protected String message;
 
-    public MarkerNode(/* @Nullable */Tree tree, String message) {
+    public MarkerNode(/* @Nullable */Tree tree, String message, Types types) {
+        super(types.getNoType(TypeKind.NONE));
         this.tree = tree;
         this.message = message;
     }

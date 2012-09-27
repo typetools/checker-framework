@@ -29,9 +29,9 @@ public class PrefixDecrementNode extends Node {
     protected Node operand;
 
     public PrefixDecrementNode(Tree tree, Node operand) {
+        super(operand.getType());
         assert tree.getKind() == Kind.PREFIX_DECREMENT;
         this.tree = tree;
-        this.type = operand.getType();
         this.operand = operand;
     }
 

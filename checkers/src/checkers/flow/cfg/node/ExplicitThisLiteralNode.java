@@ -21,10 +21,10 @@ public class ExplicitThisLiteralNode extends ThisLiteralNode {
     protected Tree tree;
 
     public ExplicitThisLiteralNode(Tree t) {
+        super(InternalUtils.typeOf(t));
         assert t instanceof IdentifierTree
                 && ((IdentifierTree) t).getName().contentEquals("this");
         tree = t;
-        type = InternalUtils.typeOf(tree);
     }
 
     @Override

@@ -24,9 +24,9 @@ public class TypeCastNode extends Node {
     protected Node operand;
 
     public TypeCastNode(Tree tree, Node operand, TypeMirror type) {
+        super(type);
         this.tree = tree;
         this.operand = operand;
-        this.type = type;
     }
 
     public Node getOperand() {

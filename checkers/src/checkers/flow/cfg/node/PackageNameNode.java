@@ -36,15 +36,15 @@ public class PackageNameNode extends Node {
     protected final/* @Nullable */PackageNameNode parent;
 
     public PackageNameNode(IdentifierTree tree) {
+        super(InternalUtils.typeOf(tree));
         this.tree = tree;
-        this.type = InternalUtils.typeOf(tree);
         this.element = TreeUtils.elementFromUse(tree);
         this.parent = null;
     }
 
     public PackageNameNode(MemberSelectTree tree, PackageNameNode parent) {
+        super(InternalUtils.typeOf(tree));
         this.tree = tree;
-        this.type = InternalUtils.typeOf(tree);
         this.element = TreeUtils.elementFromUse(tree);
         this.parent = parent;
     }

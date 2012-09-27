@@ -27,9 +27,9 @@ public class FloatingDivisionNode extends Node {
     protected Node right;
 
     public FloatingDivisionNode(Tree tree, Node left, Node right) {
+        super(InternalUtils.typeOf(tree));
         assert tree.getKind() == Kind.DIVIDE;
         this.tree = tree;
-        this.type = InternalUtils.typeOf(tree);
         this.left = left;
         this.right = right;
     }

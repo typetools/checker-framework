@@ -33,12 +33,8 @@ public class MethodInvocationNode extends Node {
 
     public MethodInvocationNode(MethodInvocationTree tree,
             MethodAccessNode target, List<Node> arguments, TreePath treePath) {
+        super(tree != null ? InternalUtils.typeOf(tree) : target.getMethod().getReturnType());
         this.tree = tree;
-        if (tree != null) {
-            this.type = InternalUtils.typeOf(tree);
-        } else {
-            this.type = target.getMethod().getReturnType();
-        }
         this.target = target;
         this.arguments = arguments;
         this.treePath = treePath;

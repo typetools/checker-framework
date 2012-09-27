@@ -31,9 +31,9 @@ public class ParameterizedTypeNode extends Node {
     protected Tree tree;
 
     public ParameterizedTypeNode(Tree t) {
+        super(InternalUtils.typeOf(t));
         assert t instanceof ParameterizedTypeTree;
         tree = t;
-        type = InternalUtils.typeOf(tree);
     }
 
     @Override

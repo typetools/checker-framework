@@ -27,9 +27,9 @@ public class LeftShiftNode extends Node {
     protected Node right;
 
     public LeftShiftNode(Tree tree, Node left, Node right) {
+        super(InternalUtils.typeOf(tree));
         assert tree.getKind() == Kind.LEFT_SHIFT;
         this.tree = tree;
-        this.type = InternalUtils.typeOf(tree);
         this.left = left;
         this.right = right;
     }

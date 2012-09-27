@@ -3,8 +3,6 @@ package checkers.flow.cfg.node;
 import java.util.Collection;
 import java.util.Collections;
 
-import checkers.util.InternalUtils;
-
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.Tree;
 
@@ -23,10 +21,9 @@ public class IntegerLiteralNode extends ValueLiteralNode {
     int value;
 
     public IntegerLiteralNode(LiteralTree t) {
+        super(t);
         assert t.getKind().equals(Tree.Kind.INT_LITERAL);
-        tree = t;
         value = (Integer) tree.getValue();
-        type = InternalUtils.typeOf(tree);
     }
 
     @Override

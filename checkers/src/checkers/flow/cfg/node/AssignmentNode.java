@@ -32,13 +32,13 @@ public class AssignmentNode extends Node {
     protected Node rhs;
 
     public AssignmentNode(Tree tree, Node target, Node expression) {
+        super(InternalUtils.typeOf(tree));
         assert tree instanceof AssignmentTree || tree instanceof VariableTree
                 || tree instanceof CompoundAssignmentTree;
         assert target instanceof FieldAccessNode
                 || target instanceof LocalVariableNode
                 || target instanceof ArrayAccessNode;
         this.tree = tree;
-        this.type = InternalUtils.typeOf(tree);
         this.lhs = target;
         this.rhs = expression;
     }

@@ -26,9 +26,9 @@ public class ConditionalOrNode extends Node {
     protected Node rhs;
 
     public ConditionalOrNode(BinaryTree tree, Node lhs, Node rhs) {
+        super(InternalUtils.typeOf(tree));
         assert tree.getKind().equals(Kind.CONDITIONAL_OR);
         this.tree = tree;
-        this.type = InternalUtils.typeOf(tree);
         this.lhs = lhs;
         this.rhs = rhs;
     }

@@ -27,9 +27,9 @@ public class NotEqualNode extends Node {
     protected Node right;
 
     public NotEqualNode(Tree tree, Node left, Node right) {
+        super(InternalUtils.typeOf(tree));
         assert tree.getKind() == Kind.NOT_EQUAL_TO;
         this.tree = tree;
-        this.type = InternalUtils.typeOf(tree);
         this.left = left;
         this.right = right;
     }

@@ -26,9 +26,9 @@ public class BitwiseComplementNode extends Node {
     protected Node operand;
 
     public BitwiseComplementNode(Tree tree, Node operand) {
+        super(InternalUtils.typeOf(tree));
         assert tree.getKind() == Kind.BITWISE_COMPLEMENT;
         this.tree = tree;
-        this.type = InternalUtils.typeOf(tree);
         this.operand = operand;
     }
 

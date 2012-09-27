@@ -24,8 +24,8 @@ public class ArrayTypeNode extends Node {
     protected final ArrayTypeTree tree;
 
     public ArrayTypeNode(ArrayTypeTree tree) {
+        super(InternalUtils.typeOf(tree));
         this.tree = tree;
-        this.type = InternalUtils.typeOf(tree);
     }
 
     @Override

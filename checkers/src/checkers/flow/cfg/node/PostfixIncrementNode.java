@@ -31,9 +31,9 @@ public class PostfixIncrementNode extends Node {
     protected Node operand;
 
     public PostfixIncrementNode(Tree tree, Node operand) {
+        super(operand.getType());
         assert tree.getKind() == Kind.POSTFIX_INCREMENT;
         this.tree = tree;
-        this.type = operand.getType();
         this.operand = operand;
     }
 
