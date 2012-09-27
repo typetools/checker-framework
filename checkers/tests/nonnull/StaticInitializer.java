@@ -27,3 +27,11 @@ class Initializer2 {
 class Initializer3 {
     public static String a = "";
 }
+
+class Initializer4 {
+    public static String a = "";
+    public static String b;
+    static {
+        b = "";
+    }
+}
