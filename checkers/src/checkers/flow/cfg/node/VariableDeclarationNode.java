@@ -30,9 +30,9 @@ public class VariableDeclarationNode extends Node {
     // TODO: make modifier accessible
 
     public VariableDeclarationNode(VariableTree t) {
+        super(InternalUtils.typeOf(t));
         tree = t;
         name = tree.getName().toString();
-        type = InternalUtils.typeOf(tree);
     }
 
     public String getName() {

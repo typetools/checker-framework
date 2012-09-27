@@ -28,10 +28,10 @@ public class NarrowingConversionNode extends Node {
     protected Node operand;
 
     public NarrowingConversionNode(Tree tree, Node operand, TypeMirror type) {
+        super(type);
         assert TypesUtils.isPrimitive(type) : "non-primitive type in narrowing conversion";
         this.tree = tree;
         this.operand = operand;
-        this.type = type;
     }
 
     public Node getOperand() {

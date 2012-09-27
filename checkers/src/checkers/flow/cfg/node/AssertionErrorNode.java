@@ -3,8 +3,9 @@ package checkers.flow.cfg.node;
 import java.util.Collection;
 import java.util.LinkedList;
 
+import javax.lang.model.type.TypeMirror;
+
 import checkers.flow.util.HashCodeUtils;
-import checkers.util.InternalUtils;
 
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
@@ -26,12 +27,12 @@ public class AssertionErrorNode extends Node {
     protected Node condition;
     protected Node detail;
 
-    public AssertionErrorNode(Tree tree, Node condition, Node detail) {
-        assert tree.getKind() == Kind.ASSERT;
-        this.tree = tree;
+    public AssertionErrorNode(Tree tree, Node condition, Node detail, TypeMirror type) {
         // TODO: Find out the correct "type" for statements.
         // Is it TypeKind.NONE?
-        this.type = InternalUtils.typeOf(tree);
+        super(type);
+        assert tree.getKind() == Kind.ASSERT;
+        this.tree = tree;
         this.condition = condition;
         this.detail = detail;
     }

@@ -30,8 +30,8 @@ public class ObjectCreationNode extends Node {
     public ObjectCreationNode(NewClassTree tree,
             Node constructor,
             List<Node> arguments) {
+        super(InternalUtils.typeOf(tree));
         this.tree = tree;
-        this.type = InternalUtils.typeOf(tree);
         this.constructor = constructor;
         this.arguments = arguments;
     }

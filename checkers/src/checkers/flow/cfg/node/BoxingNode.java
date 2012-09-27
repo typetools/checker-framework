@@ -7,6 +7,7 @@ import javax.lang.model.type.TypeMirror;
 
 import checkers.flow.util.HashCodeUtils;
 import checkers.nullness.quals.NonNull;
+import checkers.util.InternalUtils;
 
 import com.sun.source.tree.Tree;
 
@@ -32,9 +33,9 @@ public class BoxingNode extends Node {
     protected Node operand;
 
     public BoxingNode(Tree tree, Node operand, TypeMirror type) {
+        super(type);
         this.tree = tree;
         this.operand = operand;
-        this.type = type;
     }
 
     public Node getOperand() {

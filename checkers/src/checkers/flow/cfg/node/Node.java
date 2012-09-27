@@ -51,7 +51,12 @@ public abstract class Node {
      * the type of the {@link Tree}. Otherwise, it is the type is set by the
      * {@link CFGBuilder}.
      */
-    protected TypeMirror type;
+    protected final TypeMirror type;
+    
+    public Node(TypeMirror type) {
+        assert type != null;
+        this.type = type;
+    }
 
     /**
      * @return The basic block this node belongs to (or {@code null} if it

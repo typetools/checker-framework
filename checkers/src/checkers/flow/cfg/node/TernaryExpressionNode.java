@@ -29,9 +29,9 @@ public class TernaryExpressionNode extends Node {
 
     public TernaryExpressionNode(ConditionalExpressionTree tree, Node condition,
             Node thenOperand, Node elseOperand) {
+        super(InternalUtils.typeOf(tree));
         assert tree.getKind().equals(Kind.CONDITIONAL_EXPRESSION);
         this.tree = tree;
-        this.type = InternalUtils.typeOf(tree);
         this.condition = condition;
         this.thenOperand = thenOperand;
         this.elseOperand = elseOperand;

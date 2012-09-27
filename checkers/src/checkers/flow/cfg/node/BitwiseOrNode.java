@@ -27,9 +27,9 @@ public class BitwiseOrNode extends Node {
     protected Node right;
 
     public BitwiseOrNode(Tree tree, Node left, Node right) {
+        super(InternalUtils.typeOf(tree));
         assert tree.getKind() == Kind.OR;
         this.tree = tree;
-        this.type = InternalUtils.typeOf(tree);
         this.left = left;
         this.right = right;
     }

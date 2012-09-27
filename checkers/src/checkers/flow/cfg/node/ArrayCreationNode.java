@@ -35,8 +35,8 @@ public class ArrayCreationNode extends Node {
             TypeMirror type,
             List<Node> dimensions,
             List<Node> initializers) {
+        super(type);
         this.tree = tree;
-        this.type = type;
         this.dimensions = dimensions;
         this.initializers = initializers;
     }

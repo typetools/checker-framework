@@ -38,9 +38,9 @@ public class StringConversionNode extends Node {
     // the caller to pass in a TypeMirror instead of creating one
     // through the javax.lang.model.type.Types interface.
     public StringConversionNode(Tree tree, Node operand, TypeMirror type) {
+        super(type);
         this.tree = tree;
         this.operand = operand;
-        this.type = type;
     }
 
     public Node getOperand() {

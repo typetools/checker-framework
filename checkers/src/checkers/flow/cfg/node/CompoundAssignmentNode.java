@@ -26,8 +26,8 @@ public abstract class CompoundAssignmentNode extends Node {
     protected Node right;
 
     public CompoundAssignmentNode(Tree tree, Node left, Node right) {
+        super(InternalUtils.typeOf(tree));
         this.tree = tree;
-        this.type = InternalUtils.typeOf(tree);
         this.left = left;
         this.right = right;
     }

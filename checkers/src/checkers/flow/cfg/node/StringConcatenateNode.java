@@ -27,9 +27,9 @@ public class StringConcatenateNode extends Node {
     protected Node right;
 
     public StringConcatenateNode(Tree tree, Node left, Node right) {
+        super(InternalUtils.typeOf(tree));
         assert tree.getKind() == Kind.PLUS;
         this.tree = tree;
-        this.type = InternalUtils.typeOf(tree);
         this.left = left;
         this.right = right;
     }

@@ -13,7 +13,7 @@ import com.sun.source.tree.Tree;
 public class ImplicitThisLiteralNode extends ThisLiteralNode {
 
     public ImplicitThisLiteralNode(TypeMirror type) {
-        this.type = type;
+        super(type);
     }
 
     @Override

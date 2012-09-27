@@ -27,9 +27,9 @@ public class SignedRightShiftNode extends Node {
     protected Node right;
 
     public SignedRightShiftNode(Tree tree, Node left, Node right) {
+        super(InternalUtils.typeOf(tree));
         assert tree.getKind() == Kind.RIGHT_SHIFT;
         this.tree = tree;
-        this.type = InternalUtils.typeOf(tree);
         this.left = left;
         this.right = right;
     }

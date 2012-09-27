@@ -3,7 +3,11 @@ package checkers.flow.cfg.node;
 import java.util.Collection;
 import java.util.Collections;
 
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.util.Types;
+
 import checkers.flow.util.HashCodeUtils;
+import checkers.util.InternalUtils;
 
 import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
@@ -25,7 +29,8 @@ public class ThrowNode extends Node {
     protected Node expression;
 
     public ThrowNode(ThrowTree tree,
-            Node expression) {
+            Node expression, Types types) {
+        super(tree == null ? types.getNoType(TypeKind.NONE) : InternalUtils.typeOf(tree));
         this.tree = tree;
         this.expression = expression;
     }

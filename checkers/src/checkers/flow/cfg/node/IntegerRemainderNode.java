@@ -27,9 +27,9 @@ public class IntegerRemainderNode extends Node {
     protected Node right;
 
     public IntegerRemainderNode(Tree tree, Node left, Node right) {
+        super(InternalUtils.typeOf(tree));
         assert tree.getKind() == Kind.REMAINDER;
         this.tree = tree;
-        this.type = InternalUtils.typeOf(tree);
         this.left = left;
         this.right = right;
     }

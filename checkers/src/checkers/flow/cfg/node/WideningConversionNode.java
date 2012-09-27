@@ -28,10 +28,10 @@ public class WideningConversionNode extends Node {
     protected Node operand;
 
     public WideningConversionNode(Tree tree, Node operand, TypeMirror type) {
+        super(type);
         assert TypesUtils.isPrimitive(type) : "non-primitive type in widening conversion";
         this.tree = tree;
         this.operand = operand;
-        this.type = type;
     }
 
     public Node getOperand() {

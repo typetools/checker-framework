@@ -27,9 +27,9 @@ public class GreaterThanNode extends Node {
     protected Node right;
 
     public GreaterThanNode(Tree tree, Node left, Node right) {
+        super(InternalUtils.typeOf(tree));
         assert tree.getKind() == Kind.GREATER_THAN;
         this.tree = tree;
-        this.type = InternalUtils.typeOf(tree);
         this.left = left;
         this.right = right;
     }
