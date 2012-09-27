@@ -545,7 +545,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
             String dotfilename = processingEnv.getOptions().get("flowdotdir") + "/"
                     + dotOutputFileName(ast) + ".dot";
             // make path safe for Windows
-            dotfilename = dotfilename.replace("<", ".").replace(">", ".");
+            dotfilename = dotfilename.replace("<", "_").replace(">", "");
             System.err.println("Output to DOT file: " + dotfilename);
             analyses.getFirst().outputToDotFile(dotfilename);
         }
