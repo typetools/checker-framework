@@ -23,3 +23,7 @@ class Initializer2 {
     public static String a;
     public static String b;
 }
+
+class Initializer3 {
+    public static String a = "";
+}
