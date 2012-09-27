@@ -27,6 +27,7 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.tree.Tree.Kind;
 
 // TODO/later: documentation
 public class InitializationVisitor<Checker extends InitializationChecker>
@@ -214,7 +215,7 @@ public class InitializationVisitor<Checker extends InitializationChecker>
 
         // Warn about uninitialized static fields if there is no static
         // initializer (otherwise, errors are reported there).
-        if (!hasStaticInitializer) {
+        if (!hasStaticInitializer && node.getKind() == Kind.CLASS) {
             boolean isStatic = true;
             InitializationStore store = factory.getEmptyStore();
             // Add field values for fields with an initializer.
