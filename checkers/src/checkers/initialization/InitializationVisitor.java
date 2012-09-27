@@ -187,6 +187,11 @@ public class InitializationVisitor<Checker extends InitializationChecker>
             if (node.isStatic()) {
                 boolean isStatic = true;
                 InitializationStore store = factory.getRegularExitStore(node);
+                // Add field values for fields with an initializer.
+                for (Pair<VariableElement, CFValue> t : store.getAnalysis()
+                        .getFieldValues()) {
+                    store.addInitializedField(t.first);
+                }
                 // Check that all static fields are initialized.
                 checkFieldsInitialized(node, isStatic, store);
             }
