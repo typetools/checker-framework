@@ -158,7 +158,8 @@ public class NonNullVisitor extends
         if (componentType.hasAnnotation(NONNULL) &&
                 !isNewArrayAllZeroDims(node) &&
                 !isNewArrayInToArray(node) &&
-                !TypesUtils.isPrimitive(componentType.getUnderlyingType())) {
+                !TypesUtils.isPrimitive(componentType.getUnderlyingType()) &&
+                checker.getLintOption("arrays:forbidnonnullcomponents", false)) {
             checker.report(Result.failure("new.array.type.invalid",
                     componentType.getAnnotations(), type.toString()), node);
         }
