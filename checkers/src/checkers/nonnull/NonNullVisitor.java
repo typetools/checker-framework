@@ -17,6 +17,7 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.util.InternalUtils;
 import checkers.util.TreeUtils;
+import checkers.util.TypesUtils;
 
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.AssertTree;
@@ -156,7 +157,8 @@ public class NonNullVisitor extends
         AnnotatedTypeMirror componentType = type.getComponentType();
         if (componentType.hasAnnotation(NONNULL) &&
                 !isNewArrayAllZeroDims(node) &&
-                !isNewArrayInToArray(node)) {
+                !isNewArrayInToArray(node) &&
+                !TypesUtils.isPrimitive(componentType.getUnderlyingType())) {
             checker.report(Result.failure("new.array.type.invalid",
                     componentType.getAnnotations(), type.toString()), node);
         }
@@ -174,7 +176,7 @@ public class NonNullVisitor extends
             if (dim instanceof LiteralTree) {
                 Object val = ((LiteralTree)dim).getValue();
                 if (!(val instanceof Number) ||
-                        !(new Integer(0).equals(((Number)val)))) {
+                        !(new Integer(0).equals(val))) {
                     isAllZeros = false;
                     break;
                 }
