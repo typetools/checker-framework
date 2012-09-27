@@ -6,14 +6,17 @@ import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.VariableElement;
 
 import checkers.basetype.BaseTypeVisitor;
+import checkers.flow.analysis.checkers.CFValue;
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.util.AnnotationUtils;
 import checkers.util.ElementUtils;
+import checkers.util.Pair;
 import checkers.util.TreeUtils;
 
 import com.sun.source.tree.BlockTree;
@@ -214,6 +217,11 @@ public class InitializationVisitor<Checker extends InitializationChecker>
         if (!hasStaticInitializer) {
             boolean isStatic = true;
             InitializationStore store = factory.getEmptyStore();
+            // Add field values for fields with an initializer.
+            for (Pair<VariableElement, CFValue> t : store.getAnalysis()
+                    .getFieldValues()) {
+                store.addInitializedField(t.first);
+            }
             checkFieldsInitialized(node, isStatic, store);
         }
 
