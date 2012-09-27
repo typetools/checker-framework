@@ -29,7 +29,6 @@ import checkers.util.ElementUtils;
 import checkers.util.InternalUtils;
 import checkers.util.Pair;
 import checkers.util.TreeUtils;
-import checkers.util.TypesUtils;
 
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
@@ -486,19 +485,6 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
                 type.getReceiverType().replaceAnnotation(NONNULL);
 
             return super.visitExecutable(type, p);
-        }
-
-        @Override
-        public Void visitDeclared(AnnotatedDeclaredType type, ElementKind p) {
-            // case 13: type of Void is nullable
-            if (TypesUtils.isDeclaredOfName(type.getUnderlyingType(), "java.lang.Void")
-                    // Hack: Special case Void.class
-                    && (type.getElement() == null || !type.getElement().getKind().isClass())
-                    && !type.isAnnotated()) {
-                type.replaceAnnotation(NULLABLE);
-            }
-
-            return super.visitDeclared(type, p);
         }
     }
 

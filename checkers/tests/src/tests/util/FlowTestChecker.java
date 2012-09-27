@@ -35,7 +35,16 @@ public final class FlowTestChecker extends BaseTypeChecker {
 
     @Override
     public AnnotatedTypeFactory createFactory(CompilationUnitTree tree) {
-        return new BasicAnnotatedTypeFactory<FlowTestChecker>(this, tree, true);
+        return new FlowAnnotatedTypeFactory(this, tree);
+    }
+
+    private class FlowAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<FlowTestChecker> {
+        public FlowAnnotatedTypeFactory(FlowTestChecker checker, CompilationUnitTree root) {
+            super(checker, root, true);
+            AnnotationMirror ODD = AnnotationUtils.fromClass(elements, Odd.class);
+            this.typeAnnotator.addTypeName(java.lang.Void.class, ODD);
+            this.postInit();
+        }
     }
 
     @Override

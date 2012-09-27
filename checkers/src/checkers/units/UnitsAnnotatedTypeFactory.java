@@ -47,6 +47,7 @@ public class UnitsAnnotatedTypeFactory extends
         mixedUnits = AnnotationUtils.fromClass(elements, MixedUnits.class);
         AnnotationMirror BOTTOM = AnnotationUtils.fromClass(elements, Bottom.class);
         this.treeAnnotator.addTreeKind(Tree.Kind.NULL_LITERAL, BOTTOM);
+        this.typeAnnotator.addTypeName(java.lang.Void.class, BOTTOM);
 
         this.postInit();
     }
