@@ -241,6 +241,10 @@ public class InternalUtils {
             TypeMirror t1, TypeMirror t2) {
         JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) processingEnv;
         Types types = Types.instance(javacEnv.getContext());
+        if (types.isSameType((Type) t1, (Type) t2)) {
+            // Special case if the two types are equal.
+            return t1;
+        }
         // Special case for primitives: they must be equal, otherwise there is no LUB.
         if (TypesUtils.isPrimitive(t1) || TypesUtils.isPrimitive(t2)) {
             assert TypesUtils.areSamePrimitiveTypes(t1, t2);
