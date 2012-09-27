@@ -7,7 +7,6 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Types;
 
 import checkers.flow.util.HashCodeUtils;
-import checkers.util.InternalUtils;
 
 import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
@@ -30,7 +29,7 @@ public class ThrowNode extends Node {
 
     public ThrowNode(ThrowTree tree,
             Node expression, Types types) {
-        super(tree == null ? types.getNoType(TypeKind.NONE) : InternalUtils.typeOf(tree));
+        super(types.getNoType(TypeKind.NONE));
         this.tree = tree;
         this.expression = expression;
     }
