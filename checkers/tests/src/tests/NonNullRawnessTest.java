@@ -14,13 +14,14 @@ import checkers.util.test.ParameterizedCheckerTest;
 public class NonNullRawnessTest extends ParameterizedCheckerTest {
 
     public NonNullRawnessTest(File testFile) {
+        // TODO: remove arrays:forbidnonnullcomponents option once it's no longer needed.
         super(testFile, checkers.nonnull.NonNullRawnessChecker.class.getName(),
-                "nonnull", "-Anomsgtext");
+                "nonnull", "-Anomsgtext", "-Alint=arrays:forbidnonnullcomponents");
     }
 
     @Parameters
     public static Collection<Object[]> data() {
-        return testFiles("nonnull", "nonnull2", "initialization/rawness");
+        return testFiles("nonnull", "nonnull2");
     }
 
 }

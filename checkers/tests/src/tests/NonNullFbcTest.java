@@ -14,8 +14,9 @@ import checkers.util.test.ParameterizedCheckerTest;
 public class NonNullFbcTest extends ParameterizedCheckerTest {
 
     public NonNullFbcTest(File testFile) {
+        // TODO: remove arrays:forbidnonnullcomponents option once it's no longer needed.
         super(testFile, checkers.nonnull.NonNullFbcChecker.class.getName(),
-                "nonnull", "-Anomsgtext");
+                "nonnull", "-Anomsgtext", "-Alint=arrays:forbidnonnullcomponents");
     }
 
     @Parameters
