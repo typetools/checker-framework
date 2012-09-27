@@ -26,9 +26,9 @@ public class NumericalPlusNode extends Node {
     protected Node operand;
 
     public NumericalPlusNode(Tree tree, Node operand) {
+        super(InternalUtils.typeOf(tree));
         assert tree.getKind() == Kind.UNARY_PLUS;
         this.tree = tree;
-        this.type = InternalUtils.typeOf(tree);
         this.operand = operand;
     }
 

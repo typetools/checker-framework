@@ -27,9 +27,9 @@ public class NumericalSubtractionNode extends Node {
     protected Node right;
 
     public NumericalSubtractionNode(Tree tree, Node left, Node right) {
+        super(InternalUtils.typeOf(tree));
         assert tree.getKind() == Kind.MINUS;
         this.tree = tree;
-        this.type = InternalUtils.typeOf(tree);
         this.left = left;
         this.right = right;
     }

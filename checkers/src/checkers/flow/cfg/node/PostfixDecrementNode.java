@@ -29,9 +29,9 @@ public class PostfixDecrementNode extends Node {
     protected Node operand;
 
     public PostfixDecrementNode(Tree tree, Node operand) {
+        super(operand.getType());
         assert tree.getKind() == Kind.POSTFIX_DECREMENT;
         this.tree = tree;
-        this.type = operand.getType();
         this.operand = operand;
     }
 

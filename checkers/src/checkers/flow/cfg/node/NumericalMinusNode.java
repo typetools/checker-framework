@@ -26,9 +26,9 @@ public class NumericalMinusNode extends Node {
     protected Node operand;
 
     public NumericalMinusNode(Tree tree, Node operand) {
+        super(InternalUtils.typeOf(tree));
         assert tree.getKind() == Kind.UNARY_MINUS;
         this.tree = tree;
-        this.type = InternalUtils.typeOf(tree);
         this.operand = operand;
     }
 

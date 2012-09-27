@@ -25,9 +25,9 @@ public class ReturnNode extends Node {
     protected/* @Nullable */Node result;
 
     public ReturnNode(ReturnTree t, /* @Nullable */Node result) {
-        tree = t;
-        type = InternalUtils.typeOf(tree);
+        super(InternalUtils.typeOf(t));
         this.result = result;
+        tree = t;
     }
 
     public Node getResult() {

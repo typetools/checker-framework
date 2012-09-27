@@ -2274,13 +2274,13 @@ public class CFGBuilder {
             if (tree.getDetail() != null) {
                 detail = scan(tree.getDetail(), null);
             }
-            AssertionErrorNode assertNode = new AssertionErrorNode(tree,
-                    condition, detail);
-            extendWithNode(assertNode);
             TypeElement assertException = elements
                     .getTypeElement("java.lang.AssertionError");
+            AssertionErrorNode assertNode = new AssertionErrorNode(tree,
+                    condition, detail, assertException.asType());
+            extendWithNode(assertNode);
             NodeWithExceptionsHolder exNode = extendWithNodeWithException(
-                    new ThrowNode(null, assertNode), assertException.asType());
+                    new ThrowNode(null, assertNode, env.getTypeUtils()), assertException.asType());
             exNode.setTerminatesExecution(true);
 
             // then branch (nothing happens)
@@ -3736,8 +3736,8 @@ public class CFGBuilder {
         @Override
         public Node visitSwitch(SwitchTree tree, Void p) {
             switchExpr = unbox(scan(tree.getExpression(), p));
-
-            extendWithNode(new MarkerNode(tree, "start of switch statement"));
+            
+            extendWithNode(new MarkerNode(tree, "start of switch statement", env.getTypeUtils()));
 
             Label oldBreakTargetL = breakTargetL;
             breakTargetL = new Label();
@@ -3759,11 +3759,11 @@ public class CFGBuilder {
 
             scan(tree.getExpression(), p);
 
-            extendWithNode(new MarkerNode(tree, "start of synchronized block"));
+            extendWithNode(new MarkerNode(tree, "start of synchronized block", env.getTypeUtils()));
 
             scan(tree.getBlock(), p);
 
-            extendWithNode(new MarkerNode(tree, "end of synchronized block"));
+            extendWithNode(new MarkerNode(tree, "end of synchronized block", env.getTypeUtils()));
 
             return null;
         }
@@ -3772,7 +3772,7 @@ public class CFGBuilder {
         public Node visitThrow(ThrowTree tree, Void p) {
             Node expression = scan(tree.getExpression(), p);
             TypeMirror exception = expression.getType();
-            ThrowNode throwsNode = new ThrowNode(tree, expression);
+            ThrowNode throwsNode = new ThrowNode(tree, expression, env.getTypeUtils());
             NodeWithExceptionsHolder exNode = extendWithNodeWithException(
                     throwsNode, exception);
             exNode.setTerminatesExecution(true);
@@ -3790,7 +3790,7 @@ public class CFGBuilder {
             List<? extends CatchTree> catches = tree.getCatches();
             BlockTree finallyBlock = tree.getFinallyBlock();
 
-            extendWithNode(new MarkerNode(tree, "start of try statement"));
+            extendWithNode(new MarkerNode(tree, "start of try statement", env.getTypeUtils()));
 
             // TODO: Handle try-with-resources blocks.
             // List<? extends Tree> resources = tree.getResources();
@@ -3838,7 +3838,7 @@ public class CFGBuilder {
 
                 TypeMirror throwableType =
                     elements.getTypeElement("java.lang.Throwable").asType();
-                extendWithNodeWithException(new MarkerNode(tree, "end of finally block"),
+                extendWithNodeWithException(new MarkerNode(tree, "end of finally block", env.getTypeUtils()),
                                             throwableType);
             }
 

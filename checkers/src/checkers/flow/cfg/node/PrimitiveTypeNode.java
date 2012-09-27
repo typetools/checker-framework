@@ -24,8 +24,8 @@ public class PrimitiveTypeNode extends Node {
     protected final PrimitiveTypeTree tree;
 
     public PrimitiveTypeNode(PrimitiveTypeTree tree) {
+        super(InternalUtils.typeOf(tree));
         this.tree = tree;
-        this.type = InternalUtils.typeOf(tree);
     }
 
     @Override

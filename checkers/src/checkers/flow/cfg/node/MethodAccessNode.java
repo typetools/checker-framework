@@ -31,9 +31,9 @@ public class MethodAccessNode extends Node {
     // TODO: add method to get modifiers (static, access level, ..)
 
     public MethodAccessNode(ExpressionTree tree, Node receiver) {
+        super(InternalUtils.typeOf(tree));
         assert TreeUtils.isMethodAccess(tree);
         this.tree = tree;
-        this.type = InternalUtils.typeOf(tree);
         this.method = (ExecutableElement) TreeUtils.elementFromUse(tree);
         this.receiver = receiver;
     }

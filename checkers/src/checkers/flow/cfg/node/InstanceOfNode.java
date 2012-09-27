@@ -33,10 +33,10 @@ public class InstanceOfNode extends Node {
     protected final InstanceOfTree tree;
 
     public InstanceOfNode(Tree tree, Node operand, TypeMirror refType, Types types) {
+        super(types.getPrimitiveType(TypeKind.BOOLEAN));
         assert tree.getKind() == Tree.Kind.INSTANCE_OF;
         this.tree = (InstanceOfTree) tree;
         this.operand = operand;
-        this.type = types.getPrimitiveType(TypeKind.BOOLEAN);
         this.refType = refType;
     }
 

@@ -29,9 +29,9 @@ public class PrefixIncrementNode extends Node {
     protected Node operand;
 
     public PrefixIncrementNode(Tree tree, Node operand) {
+        super(operand.getType());
         assert tree.getKind() == Kind.PREFIX_INCREMENT;
         this.tree = tree;
-        this.type = operand.getType();
         this.operand = operand;
     }
 

@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 import checkers.flow.util.HashCodeUtils;
+import checkers.util.InternalUtils;
 
 import com.sun.source.tree.LiteralTree;
 
@@ -29,12 +30,17 @@ import checkers.nonnull.quals.Nullable;
  */
 public abstract class ValueLiteralNode extends Node {
 
-    protected LiteralTree tree;
+    protected final LiteralTree tree;
 
     /**
      * @return The value of the literal.
      */
     abstract public /*@Nullable*/ Object getValue();
+    
+    public ValueLiteralNode(LiteralTree tree) {
+        super(InternalUtils.typeOf(tree));
+        this.tree = tree;
+    }
 
     @Override
     public LiteralTree getTree() {

@@ -29,9 +29,9 @@ public class LessThanNode extends Node {
     protected Node right;
 
     public LessThanNode(Tree tree, Node left, Node right) {
+        super(InternalUtils.typeOf(tree));
         assert tree.getKind() == Kind.LESS_THAN;
         this.tree = tree;
-        this.type = InternalUtils.typeOf(tree);
         this.left = left;
         this.right = right;
     }

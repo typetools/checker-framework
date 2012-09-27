@@ -25,10 +25,10 @@ public class SuperNode extends Node {
     protected Tree tree;
 
     public SuperNode(Tree t) {
+        super(InternalUtils.typeOf(t));
         assert t instanceof IdentifierTree
                 && ((IdentifierTree) t).getName().equals("super");
         tree = t;
-        type = InternalUtils.typeOf(tree);
     }
 
     @Override

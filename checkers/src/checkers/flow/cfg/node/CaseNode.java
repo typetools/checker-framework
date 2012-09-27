@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 
 import checkers.flow.util.HashCodeUtils;
+import checkers.util.InternalUtils;
 
 import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.Tree.Kind;
@@ -28,6 +29,7 @@ public class CaseNode extends Node {
     protected Node caseExpr;
 
     public CaseNode(CaseTree tree, Node switchExpr, Node caseExpr) {
+        super(InternalUtils.typeOf(tree));
         assert tree.getKind().equals(Kind.CASE);
         this.tree = tree;
         this.switchExpr = switchExpr;

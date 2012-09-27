@@ -27,9 +27,9 @@ public class NumericalMultiplicationNode extends Node {
     protected Node right;
 
     public NumericalMultiplicationNode(Tree tree, Node left, Node right) {
+        super(InternalUtils.typeOf(tree));
         assert tree.getKind() == Kind.MULTIPLY;
         this.tree = tree;
-        this.type = InternalUtils.typeOf(tree);
         this.left = left;
         this.right = right;
     }

@@ -32,9 +32,9 @@ public class FieldAccessNode extends Node {
     // TODO: add method to get modifiers (static, access level, ..)
 
     public FieldAccessNode(Tree tree, Node receiver) {
+        super(InternalUtils.typeOf(tree));
         assert TreeUtils.isFieldAccess(tree);
         this.tree = tree;
-        this.type = InternalUtils.typeOf(tree);
         this.receiver = receiver;
         this.field = TreeUtils.getFieldName(tree);
     }

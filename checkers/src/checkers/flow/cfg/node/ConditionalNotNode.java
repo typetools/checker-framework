@@ -26,9 +26,9 @@ public class ConditionalNotNode extends Node {
     protected Node operand;
 
     public ConditionalNotNode(UnaryTree tree, Node operand) {
+        super(InternalUtils.typeOf(tree));
         assert tree.getKind().equals(Kind.LOGICAL_COMPLEMENT);
         this.tree = tree;
-        this.type = InternalUtils.typeOf(tree);
         this.operand = operand;
     }
 

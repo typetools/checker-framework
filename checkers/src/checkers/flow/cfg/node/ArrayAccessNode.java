@@ -30,9 +30,9 @@ public class ArrayAccessNode extends Node {
     protected Node index;
 
     public ArrayAccessNode(Tree t, Node array, Node index) {
+        super(InternalUtils.typeOf(t));
         assert t instanceof ArrayAccessTree;
         this.tree = t;
-        this.type = InternalUtils.typeOf(tree);
         this.array = array;
         this.index = index;
     }

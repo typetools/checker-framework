@@ -26,9 +26,9 @@ public class EqualToNode extends Node {
     protected Node rhs;
 
     public EqualToNode(BinaryTree tree, Node lhs, Node rhs) {
+        super(InternalUtils.typeOf(tree));
         assert tree.getKind().equals(Kind.EQUAL_TO);
         this.tree = tree;
-        this.type = InternalUtils.typeOf(tree);
         this.lhs = lhs;
         this.rhs = rhs;
     }
