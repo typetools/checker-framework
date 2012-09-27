@@ -84,4 +84,8 @@ public class InitializationStore extends CFAbstractStore<CFValue, Initialization
     public Map<FieldAccess, CFValue> getFieldValues() {
         return fieldValues;
     }
+
+    public CFAbstractAnalysis<CFValue, InitializationStore, ?> getAnalysis() {
+        return analysis;
+    }
 }
