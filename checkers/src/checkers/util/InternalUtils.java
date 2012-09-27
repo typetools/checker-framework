@@ -238,17 +238,23 @@ public class InternalUtils {
      * @return The least upper bound of {@code t1} and {@code t2}.
      */
     public static TypeMirror leastUpperBound(ProcessingEnvironment processingEnv,
-            TypeMirror t1, TypeMirror t2) {
+            TypeMirror tm1, TypeMirror tm2) {
+        Type t1 = (Type) tm1;
+        Type t2 = (Type) tm2;
         JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) processingEnv;
         Types types = Types.instance(javacEnv.getContext());
-        if (types.isSameType((Type) t1, (Type) t2)) {
+        if (types.isSameType(t1, t2)) {
             // Special case if the two types are equal.
             return t1;
         }
-        // Special case for primitives: they must be equal, otherwise there is no LUB.
+        // Special case for primitives.
         if (TypesUtils.isPrimitive(t1) || TypesUtils.isPrimitive(t2)) {
-            assert TypesUtils.areSamePrimitiveTypes(t1, t2) : "tried to get LUB of " + t1 + " and " + t2 + ".";
-            return t1;
+            if (types.isAssignable(t1, t2)) {
+                return t2;
+            } else {
+                assert types.isAssignable(t2, t1);
+                return t1;
+            }
         }
         // Handle the 'null' type manually (not done by types.lub).
         if (t1.getKind() == TypeKind.NULL) {
@@ -259,7 +265,7 @@ public class InternalUtils {
         }
         if (t1.getKind() == TypeKind.WILDCARD) {
             WildcardType wc1 = (WildcardType)t1;
-            TypeMirror bound = wc1.getExtendsBound();
+            Type bound = (Type) wc1.getExtendsBound();
             if (bound == null) {
                 // Implicit upper bound of java.lang.Object
                 Elements elements = processingEnv.getElementUtils();
@@ -269,7 +275,7 @@ public class InternalUtils {
         }
         if (t2.getKind() == TypeKind.WILDCARD) {
             WildcardType wc2 = (WildcardType)t2;
-            TypeMirror bound = wc2.getExtendsBound();
+            Type bound = (Type) wc2.getExtendsBound();
             if (bound == null) {
                 // Implicit upper bound of java.lang.Object
                 Elements elements = processingEnv.getElementUtils();
@@ -277,6 +283,6 @@ public class InternalUtils {
             }
             t2 = bound;
         }
-        return types.lub((Type) t1, (Type) t2);
+        return types.lub(t1, t2);
     }
 }
