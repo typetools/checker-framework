@@ -6,14 +6,17 @@ import java.util.*;
 import com.sun.source.tree.Tree;
 
 import javax.lang.model.element.*;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.quals.ImplicitFor;
 import checkers.quals.TypeQualifiers;
+import checkers.source.SourceChecker;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.visitors.AnnotatedTypeScanner;
 import checkers.util.AnnotationUtils;
+import checkers.util.TypesUtils;
 
 /**
  * Adds annotations to a type based on the contents of a type. By default, this
@@ -39,8 +42,12 @@ import checkers.util.AnnotationUtils;
 public class TypeAnnotator extends AnnotatedTypeScanner<Void, ElementKind> {
 
     // TODO: like in TreeAnnotator, these should be maps to Set<AM>.
-    private final Map<TypeKind, AnnotationMirror> typeKinds;
-    private final Map<Class<?>, AnnotationMirror> typeClasses;
+    private final Map<TypeKind, Set<AnnotationMirror>> typeKinds;
+    private final Map<Class<? extends AnnotatedTypeMirror>, Set<AnnotationMirror>> typeClasses;
+    private final Map<String, Set<AnnotationMirror>> typeNames;
+
+    private final QualifierHierarchy qualHierarchy;
+    // private final AnnotatedTypeFactory atypeFactory;
 
     /**
      * Creates a {@link TypeAnnotator} from the given checker, using that checker's
@@ -51,8 +58,12 @@ public class TypeAnnotator extends AnnotatedTypeScanner<Void, ElementKind> {
      */
     public TypeAnnotator(BaseTypeChecker checker, AnnotatedTypeFactory atypeFactory) {
 
-        this.typeKinds = new EnumMap<TypeKind, AnnotationMirror>(TypeKind.class);
-        this.typeClasses = new HashMap<Class<?>, AnnotationMirror>();
+        this.typeKinds = new EnumMap<TypeKind, Set<AnnotationMirror>>(TypeKind.class);
+        this.typeClasses = new HashMap<Class<? extends AnnotatedTypeMirror>, Set<AnnotationMirror>>();
+        this.typeNames = new IdentityHashMap<String, Set<AnnotationMirror>>();
+
+        this.qualHierarchy = checker.getQualifierHierarchy();
+        // this.atypeFactory = atypeFactory;
 
         // Get type qualifiers from the checker.
         Set<Class<? extends Annotation>> quals = checker.getSupportedTypeQualifiers();
@@ -64,13 +75,43 @@ public class TypeAnnotator extends AnnotatedTypeScanner<Void, ElementKind> {
             if (implicit == null) continue;
 
             AnnotationMirror theQual = AnnotationUtils.fromClass(atypeFactory.elements, qual);
-            for (Class<? extends AnnotatedTypeMirror> typeClass : implicit.typeClasses())
-                typeClasses.put(typeClass, theQual);
+            for (TypeKind typeKind : implicit.types()) {
+                addTypeKind(typeKind, theQual);
+            }
 
-            for (TypeKind typeKind : implicit.types())
-                typeKinds.put(typeKind, theQual);
+            for (Class<? extends AnnotatedTypeMirror> typeClass : implicit.typeClasses()) {
+                addTypeClass(typeClass, theQual);
+            }
+
+            for (Class<?> typeName : implicit.typeNames()) {
+                addTypeName(typeName, theQual);
+            }
         }
+    }
 
+    public void addTypeKind(TypeKind typeKind, AnnotationMirror theQual) {
+        boolean res = AnnotationUtils.updateMappingToMutableSet(qualHierarchy, typeKinds, typeKind, theQual);
+        if (!res) {
+            SourceChecker.errorAbort("TypeAnnotator: invalid update of typeKinds " +
+                    typeKinds + " at " + typeKind + " with " + theQual);
+        }
+    }
+
+    public void addTypeClass(Class<? extends AnnotatedTypeMirror> typeClass, AnnotationMirror theQual) {
+        boolean res = AnnotationUtils.updateMappingToMutableSet(qualHierarchy, typeClasses, typeClass, theQual);
+        if (!res) {
+            SourceChecker.errorAbort("TypeAnnotator: invalid update of typeClasses " +
+                    typeClasses + " at " + typeClass + " with " + theQual);
+        }
+    }
+
+    public void addTypeName(Class<?> typeName, AnnotationMirror theQual) {
+        String typeNameString = typeName.getCanonicalName().intern();
+        boolean res = AnnotationUtils.updateMappingToMutableSet(qualHierarchy, typeNames, typeNameString, theQual);
+        if (!res) {
+            SourceChecker.errorAbort("TypeAnnotator: invalid update of typeNames " +
+                    typeNames + " at " + typeName + " with " + theQual);
+        }
     }
 
     @Override
@@ -79,20 +120,44 @@ public class TypeAnnotator extends AnnotatedTypeScanner<Void, ElementKind> {
         if (type == null) // on bounds, etc.
             return super.scan(type, p);
 
+        // If the type's fully-qualified name is in the appropriate map, annotate
+        // the type. Do this before looking at kind or class, as this information
+        // is more specific.
+
+        String qname = null;
+        if (type.getKind() == TypeKind.DECLARED) {
+            qname = TypesUtils.getQualifiedName((DeclaredType)type.getUnderlyingType()).toString();
+        } else if (type.getKind().isPrimitive()) {
+            qname = type.getUnderlyingType().toString();
+        }
+        qname = (qname == null) ? null : qname.intern();
+        if (qname != null && typeNames.containsKey(qname)) {
+            Set<AnnotationMirror> fnd = typeNames.get(qname);
+            for (AnnotationMirror f : fnd) {
+                if (!type.isAnnotatedInHierarchy(f)) {
+                    type.addAnnotation(f);
+                }
+            }
+        }
+
         // If the type's kind or class is in the appropriate map, annotate the
         // type.
 
         if (typeKinds.containsKey(type.getKind())) {
-            AnnotationMirror fnd = typeKinds.get(type.getKind());
-            if (!type.isAnnotatedInHierarchy(fnd)) {
-                type.addAnnotation(fnd);
+            Set<AnnotationMirror> fnd = typeKinds.get(type.getKind()); 
+            for (AnnotationMirror f : fnd) {
+                if (!type.isAnnotatedInHierarchy(f)) {
+                    type.addAnnotation(f);
+                }
             }
         } else if (!typeClasses.isEmpty()) {
             Class<? extends AnnotatedTypeMirror> t = type.getClass();
             if (typeClasses.containsKey(t)) {
-                AnnotationMirror fnd = typeClasses.get(t);
-                if (!type.isAnnotatedInHierarchy(fnd)) {
-                    type.addAnnotation(fnd);
+                Set<AnnotationMirror> fnd = typeClasses.get(t);
+                for (AnnotationMirror f : fnd) {
+                    if (!type.isAnnotatedInHierarchy(f)) {
+                        type.addAnnotation(f);
+                    }
                 }
             }
         }
