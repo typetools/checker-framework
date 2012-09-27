@@ -22,6 +22,7 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
         trees = { Kind.NULL_LITERAL, Kind.CLASS, Kind.ENUM,
                 Kind.INTERFACE, Kind.ANNOTATION_TYPE,
                 Kind.NEW_ARRAY },
-        typeClasses = { AnnotatedPrimitiveType.class }
+        typeClasses = { AnnotatedPrimitiveType.class },
+        typeNames = {java.lang.Void.class}
 )
 @interface OIGJMutabilityBottom { }
