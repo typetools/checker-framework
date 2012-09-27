@@ -20,6 +20,7 @@ public class FenumAnnotatedTypeFactory extends
     // Reuse the framework Bottom annotation and make it the default for the
     // null literal.
     treeAnnotator.addTreeKind(Tree.Kind.NULL_LITERAL, checker.BOTTOM);
+    typeAnnotator.addTypeName(java.lang.Void.class, checker.BOTTOM);
 
     defaults.addAbsoluteDefault(AnnotationUtils.fromClass(elements, FenumTop.class), DefaultLocation.LOCALS);
     defaults.addAbsoluteDefault(AnnotationUtils.fromClass(elements, FenumUnqualified.class), DefaultLocation.OTHERWISE);

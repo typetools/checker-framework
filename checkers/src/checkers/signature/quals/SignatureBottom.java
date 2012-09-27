@@ -17,5 +17,6 @@ import com.sun.source.tree.Tree;
     MethodDescriptor.class
     })
 @Target( {} )
-@ImplicitFor(trees={Tree.Kind.NULL_LITERAL})
+@ImplicitFor(trees = {Tree.Kind.NULL_LITERAL},
+  typeNames = {java.lang.Void.class})
 public @interface SignatureBottom {}
