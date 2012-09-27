@@ -95,6 +95,11 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
      */
     protected Tree currentTree;
 
+    /**
+     * The current store when the analysis is running.
+     */
+    protected TransferInput<A, S> currentStore;
+
     public Tree getCurrentTree() {
         return currentTree;
     }
@@ -155,22 +160,22 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
 
                 // apply transfer function to contents
                 TransferInput<A, S> storeBefore = getStoreBefore(rb);
-                TransferInput<A, S> store = storeBefore.copy();
+                currentStore = storeBefore.copy();
                 TransferResult<A, S> transferResult = null;
                 for (Node n : rb.getContents()) {
-                    transferResult = callTransferFunction(n, store);
+                    transferResult = callTransferFunction(n, currentStore);
                     A val = transferResult.getResultValue();
                     if (val != null) {
                         nodeValues.put(n, val);
                     }
-                    store = new TransferInput<>(n, this, transferResult);
+                    currentStore = new TransferInput<>(n, this, transferResult);
                 }
                 // loop will run at least one, making transferResult non-null
 
                 // propagate store to successors
                 Block succ = rb.getSuccessor();
                 assert succ != null : "regular basic block without non-exceptional successor unexpected";
-                addStoreBefore(succ, store);
+                addStoreBefore(succ, currentStore);
                 break;
             }
 
@@ -179,10 +184,10 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
 
                 // apply transfer function to content
                 TransferInput<A, S> storeBefore = getStoreBefore(eb);
-                TransferInput<A, S> store = storeBefore.copy();
+                currentStore = storeBefore.copy();
                 Node node = eb.getNode();
                 TransferResult<A, S> transferResult = callTransferFunction(
-                        node, store);
+                        node, currentStore);
                 A val = transferResult.getResultValue();
                 if (val != null) {
                     nodeValues.put(node, val);
@@ -191,8 +196,8 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
                 // propagate store to successor
                 Block succ = eb.getSuccessor();
                 if (succ != null) {
-                    store = new TransferInput<>(node, this, transferResult);
-                    addStoreBefore(succ, store);
+                    currentStore = new TransferInput<>(node, this, transferResult);
+                    addStoreBefore(succ, currentStore);
                 }
 
                 // propagate store to exceptional successors

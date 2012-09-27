@@ -15,9 +15,9 @@ import com.sun.source.tree.Tree;
  * An {@link AnalysisResult} represents the result of a dataflow analysis by
  * providing the abstract values given a node or a tree. Note that it does not
  * keep track of custom results computed by some analysis.
- * 
+ *
  * @author Stefan Heule
- * 
+ *
  * @param <A>
  *            type of the abstract value that is tracked.
  */
@@ -120,7 +120,7 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
      * store at the location of {@code node}. If {@code before} is true, then
      * the store immediately before the {@link Node} {@code node} is returned.
      * Otherwise, the store after {@code node} is returned.
-     * 
+     *
      * <p>
      * If the given {@link Node} cannot be reached (in the control flow graph),
      * then {@code null} is returned.
@@ -146,6 +146,11 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
         Analysis<A, S, ?> analysis = transferInput.analysis;
         Node oldCurrentNode = analysis.currentNode;
 
+        if (analysis.isRunning) {
+            assert block == analysis.currentNode.getBlock();
+            return analysis.currentStore.getRegularStore();
+        }
+        analysis.isRunning = true;
         try {
             switch (block.getType()) {
             case REGULAR_BLOCK: {
@@ -196,6 +201,7 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
             return null;
         } finally {
             analysis.currentNode = oldCurrentNode;
+            analysis.isRunning = false;
         }
     }
 }
