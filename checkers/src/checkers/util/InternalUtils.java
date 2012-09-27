@@ -11,6 +11,8 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
+import javax.lang.model.type.WildcardType;
+import javax.lang.model.util.Elements;
 
 import checkers.source.SourceChecker;
 
@@ -250,6 +252,26 @@ public class InternalUtils {
         }
         if (t2.getKind() == TypeKind.NULL) {
             return t1;
+        }
+        if (t1.getKind() == TypeKind.WILDCARD) {
+            WildcardType wc1 = (WildcardType)t1;
+            TypeMirror bound = wc1.getExtendsBound();
+            if (bound == null) {
+                // Implicit upper bound of java.lang.Object
+                Elements elements = processingEnv.getElementUtils();
+                bound = elements.getTypeElement("java.lang.Object").asType();
+            }
+            return leastUpperBound(processingEnv, bound, t2);
+        }
+        if (t2.getKind() == TypeKind.WILDCARD) {
+            WildcardType wc2 = (WildcardType)t2;
+            TypeMirror bound = wc2.getExtendsBound();
+            if (bound == null) {
+                // Implicit upper bound of java.lang.Object
+                Elements elements = processingEnv.getElementUtils();
+                bound = elements.getTypeElement("java.lang.Object").asType();
+            }
+            return leastUpperBound(processingEnv, t1, bound);
         }
         return types.lub((Type) t1, (Type) t2);
     }
