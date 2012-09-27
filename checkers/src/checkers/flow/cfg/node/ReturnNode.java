@@ -3,8 +3,10 @@ package checkers.flow.cfg.node;
 import java.util.Collection;
 import java.util.Collections;
 
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.util.Types;
+
 import checkers.flow.util.HashCodeUtils;
-import checkers.util.InternalUtils;
 
 import com.sun.source.tree.ReturnTree;
 
@@ -24,8 +26,8 @@ public class ReturnNode extends Node {
     protected ReturnTree tree;
     protected/* @Nullable */Node result;
 
-    public ReturnNode(ReturnTree t, /* @Nullable */Node result) {
-        super(InternalUtils.typeOf(t));
+    public ReturnNode(ReturnTree t, /* @Nullable */Node result, Types types) {
+        super(types.getNoType(TypeKind.NONE));
         this.result = result;
         tree = t;
     }

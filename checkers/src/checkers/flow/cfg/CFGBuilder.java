@@ -3682,7 +3682,7 @@ public class CFGBuilder {
             ReturnNode result = null;
             if (ret != null) {
                 Node node = scan(ret, p);
-                result = new ReturnNode(tree, node);
+                result = new ReturnNode(tree, node, env.getTypeUtils());
                 returnNodes.add(result);
                 extendWithNode(result);
             }
