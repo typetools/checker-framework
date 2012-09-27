@@ -97,6 +97,7 @@ public class FlowExpressions {
         protected final TypeMirror type;
 
         public Receiver(TypeMirror type) {
+            assert type != null;
             this.type = type;
         }
 
