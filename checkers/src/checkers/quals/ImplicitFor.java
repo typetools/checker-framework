@@ -49,10 +49,18 @@ public @interface ImplicitFor {
     TypeKind[] types() default {};
 
     /**
-     * @return {@link Class}es of types for which an annotation should be
-     *         implicitly added
+     * @return {@link Class}es (subtypes of {@link AnnotatedTypeMirror}) of types
+     *         for which an annotation should be implicitly added
      */
     Class<? extends AnnotatedTypeMirror>[] typeClasses() default {};
+
+    /**
+     * @return {@link Class}es (in the actual program) for which an annotation
+     *         should be implicitly added.
+     *         For example, "java.lang.Void.class" should receive the same annotation
+     *         as the null literal.
+     */
+    Class<?>[] typeNames() default {};
 
     /**
      * @return Regular expressions of string literals, the types of which
