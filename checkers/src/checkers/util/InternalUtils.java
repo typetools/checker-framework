@@ -255,24 +255,25 @@ public class InternalUtils {
         }
         if (t1.getKind() == TypeKind.WILDCARD) {
             WildcardType wc1 = (WildcardType)t1;
-            TypeMirror bound = wc1.getExtendsBound();
-            if (bound == null) {
-                // Implicit upper bound of java.lang.Object
-                Elements elements = processingEnv.getElementUtils();
-                bound = elements.getTypeElement("java.lang.Object").asType();
-            }
-            return leastUpperBound(processingEnv, bound, t2);
+            t1 = refineBound(processingEnv, wc1.getExtendsBound());;
         }
         if (t2.getKind() == TypeKind.WILDCARD) {
             WildcardType wc2 = (WildcardType)t2;
-            TypeMirror bound = wc2.getExtendsBound();
-            if (bound == null) {
-                // Implicit upper bound of java.lang.Object
-                Elements elements = processingEnv.getElementUtils();
-                bound = elements.getTypeElement("java.lang.Object").asType();
-            }
-            return leastUpperBound(processingEnv, t1, bound);
+            t2 = refineBound(processingEnv, wc2.getExtendsBound());;
         }
         return types.lub((Type) t1, (Type) t2);
+    }
+
+    /**
+     * Returns {@code bound} if {@code bound != null}, and {@code Object} otherwise.
+     */
+    private static TypeMirror refineBound(ProcessingEnvironment processingEnv,
+            TypeMirror bound) {
+        if (bound == null) {
+            // Implicit upper bound of java.lang.Object
+            Elements elements = processingEnv.getElementUtils();
+            bound = elements.getTypeElement("java.lang.Object").asType();
+        }
+        return bound;
     }
 }
