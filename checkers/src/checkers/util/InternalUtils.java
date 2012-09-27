@@ -259,11 +259,11 @@ public class InternalUtils {
         }
         if (t1.getKind() == TypeKind.WILDCARD) {
             WildcardType wc1 = (WildcardType)t1;
-            t1 = refineBound(processingEnv, wc1.getExtendsBound());;
+            t1 = refineBound(processingEnv, wc1.getExtendsBound());
         }
         if (t2.getKind() == TypeKind.WILDCARD) {
             WildcardType wc2 = (WildcardType)t2;
-            t2 = refineBound(processingEnv, wc2.getExtendsBound());;
+            t2 = refineBound(processingEnv, wc2.getExtendsBound());
         }
         return types.lub((Type) t1, (Type) t2);
     }
