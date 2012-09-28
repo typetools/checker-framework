@@ -296,10 +296,14 @@ public class AnnotatedTypes {
         if (ElementUtils.isStatic(elem))
             return atypeFactory.getAnnotatedType(elem);
 
-        // For Type Variable, operate on the upper
+        // For type variables and wildcards, operate on the upper bound
         if (t.getKind() == TypeKind.TYPEVAR &&
                 ((AnnotatedTypeVariable)t).getUpperBound() != null)
-            return asMemberOf(types, atypeFactory, ((AnnotatedTypeVariable) t).getUpperBound(),
+            return asMemberOf(types, atypeFactory, ((AnnotatedTypeVariable) t).getEffectiveUpperBound(),
+                    elem);
+        if (t.getKind() == TypeKind.WILDCARD &&
+                ((AnnotatedWildcardType)t).getExtendsBound() != null)
+            return asMemberOf(types, atypeFactory, ((AnnotatedWildcardType) t).getEffectiveExtendsBound(),
                     elem);
 
         if (t.getKind() == TypeKind.ARRAY
