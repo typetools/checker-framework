@@ -164,8 +164,9 @@ public class AnnotatedTypes {
             for (AnnotatedDeclaredType st : type.directSuperTypes()) {
                 if (st.getKind() == TypeKind.DECLARED) {
                     AnnotatedDeclaredType x = (AnnotatedDeclaredType) asSuper(types, atypeFactory, st, p);
-                    if (x != null)
+                    if (x != null) {
                         return x;
+                    }
                 }
             }
 
@@ -337,7 +338,7 @@ public class AnnotatedTypes {
         }
 
         // TODO: Potential bug if Raw type is used
-        if (ElementUtils.isStatic(elem) || !ownerGeneric)
+        if (!ownerGeneric)
             return elemType;
 
         AnnotatedDeclaredType ownerType = atypeFactory.getAnnotatedType(owner);
