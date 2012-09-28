@@ -1708,12 +1708,16 @@ public class AnnotatedTypeFactory {
         Pair<AnnotationMirror, Set<String>> aliases = checkAliases ? declAliases.get(annoName) : null;
 
         // First look in the stub files.
-        Set<AnnotationMirror> stubAnnos = indexDeclAnnos.get(eltName);
+        if (indexDeclAnnos != null) {
+            // The field might still null if this method gets called from the
+            // StubParser. TODO: better solution?
+            Set<AnnotationMirror> stubAnnos = indexDeclAnnos.get(eltName);
 
-        if (stubAnnos != null) {
-            for (AnnotationMirror am : stubAnnos) {
-                if (AnnotationUtils.areSameByName(am, annoName)) {
-                    return am;
+            if (stubAnnos != null) {
+                for (AnnotationMirror am : stubAnnos) {
+                    if (AnnotationUtils.areSameByName(am, annoName)) {
+                        return am;
+                    }
                 }
             }
         }
