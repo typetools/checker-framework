@@ -105,7 +105,7 @@ public class InitializationVisitor<Checker extends InitializationChecker>
             AnnotatedTypeMirror var2 = atypeFactory.getAnnotatedType(lhs);
             factory.HACK_DONT_CALL_POST_AS_MEMBER = old;
             factory.shouldReadCache = old2;
-            var.replaceAnnotation(var2.getAnnotationInHierarchy(checker
+            var.replaceAnnotation(var2.getEffectiveAnnotationInHierarchy(checker
                     .getFieldInvariantAnnotation()));
             checkAssignability(var, varTree);
             commonAssignmentCheck(var, valueExp, errorKey);

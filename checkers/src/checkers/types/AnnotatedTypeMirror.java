@@ -272,6 +272,33 @@ public abstract class AnnotatedTypeMirror {
     }
 
     /**
+     * Returns an annotation from the given sub-hierarchy, if such
+     * an annotation is present on this type or on its extends bounds;
+     * otherwise returns null.
+     *
+     * It doesn't account for annotations in deep types (type arguments,
+     * array components, etc).
+     *
+     * @param p The qualifier hierarchy to check for.
+     * @return An annotation from the same hierarchy as p if present.
+     */
+    public AnnotationMirror getEffectiveAnnotationInHierarchy(AnnotationMirror p) {
+        AnnotationMirror aliased = p;
+        if (!atypeFactory.isSupportedQualifier(aliased)) {
+            aliased = atypeFactory.aliasedAnnotation(p);
+        }
+        if (atypeFactory.isSupportedQualifier(aliased)) {
+            QualifierHierarchy qualHier = this.atypeFactory.getQualifierHierarchy();
+            AnnotationMirror anno = qualHier.findCorrespondingAnnotation(aliased,
+                    getEffectiveAnnotations());
+            if (anno != null) {
+                return anno;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Returns the annotations on this type.
      *
      * It does not include annotations in deep types (type arguments, array
