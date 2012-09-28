@@ -1,6 +1,8 @@
-Version 1.4.1, 2x Sep 2012
+Version 1.4.1, 29 Sep 2012
 
 User-visible framework improvements:
+  Support stub files contained in .jar files.
+  Support aliasing for declaration annotations.
   Make AnnotationUtils and AnnotatedTypes utility classes without state.
     Instead, provide the necessary parameters for particular methods.
   Make class AnnotationBuild independent of AnnotationUtils.
@@ -10,6 +12,10 @@ User-visible framework improvements:
   Moved AnnotatedTypes from package checkers.types to checkers.utils.
     this required making a few methods in AnnotatedTypeFactory public,
     which might require changes in downstream code.
+
+Internal framework improvements:
+  Fixed Issues 136, 139, 142, 156.
+  Bug fixes and documentation improvements.
 
 ----------------------------------------------------------------------
 Version 1.4.0, 11 Sep 2012
