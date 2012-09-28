@@ -3,9 +3,10 @@ package checkers.flow.cfg.node;
 import java.util.Collection;
 import java.util.LinkedList;
 
-import checkers.flow.util.HashCodeUtils;
-import checkers.util.InternalUtils;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.util.Types;
 
+import checkers.flow.util.HashCodeUtils;
 import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.Tree.Kind;
 
@@ -13,14 +14,14 @@ import com.sun.source.tree.Tree.Kind;
  * A node for a case in a switch statement.  Although
  * a case has no abstract value, it can imply facts about
  * the abstract values of its operands.
- * 
+ *
  * <pre>
  *   case <em>constant</em>:
  * </pre>
- * 
+ *
  * @author Stefan Heule
  * @author Charlie Garrett
- * 
+ *
  */
 public class CaseNode extends Node {
 
@@ -28,8 +29,8 @@ public class CaseNode extends Node {
     protected Node switchExpr;
     protected Node caseExpr;
 
-    public CaseNode(CaseTree tree, Node switchExpr, Node caseExpr) {
-        super(InternalUtils.typeOf(tree));
+    public CaseNode(CaseTree tree, Node switchExpr, Node caseExpr, Types types) {
+        super(types.getNoType(TypeKind.NONE));
         assert tree.getKind().equals(Kind.CASE);
         this.tree = tree;
         this.switchExpr = switchExpr;

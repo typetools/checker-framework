@@ -2969,7 +2969,7 @@ public class CFGBuilder {
                 Label nextCaseL = new Label();
 
                 Node expr = scan(exprTree, p);
-                CaseNode test = new CaseNode(tree, switchExpr, expr);
+                CaseNode test = new CaseNode(tree, switchExpr, expr, env.getTypeUtils());
                 extendWithNode(test);
                 extendWithExtendedNode(new ConditionalJump(thisBlockL,
                         nextCaseL));
@@ -3736,7 +3736,7 @@ public class CFGBuilder {
         @Override
         public Node visitSwitch(SwitchTree tree, Void p) {
             switchExpr = unbox(scan(tree.getExpression(), p));
-            
+
             extendWithNode(new MarkerNode(tree, "start of switch statement", env.getTypeUtils()));
 
             Label oldBreakTargetL = breakTargetL;
