@@ -135,8 +135,8 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
         addAliasedAnnotation(org.netbeans.api.annotations.common.NullUnknown.class, NULLABLE);
         addAliasedAnnotation(org.jmlspecs.annotation.Nullable.class, NULLABLE);
 
-        // TODO: Add an alias for the Pure JML annotation. It's not a type qualifier, I think adding
-        // it above does not work.
+        addAliasedDeclAnnotation(checkers.nullness.quals.Pure.class, org.jmlspecs.annotation.Pure.class,
+                AnnotationUtils.fromClass(elements, checkers.nullness.quals.Pure.class));
 
         defaults.addAbsoluteDefault(NULLABLE, DefaultLocation.LOCALS);
         defaults.addAbsoluteDefault(NONNULL, DefaultLocation.OTHERWISE);
@@ -177,15 +177,11 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
 
     @Override
     public void annotateImplicit(Element elt, AnnotatedTypeMirror type) {
-        // For example, the "System" in "System.out" is always non-null.
-        annotateIfStatic(elt, type);
-
         typeAnnotator.visit(type);
 
         // case 6: apply default
         defaults.annotate(elt, type);
-        if (elt instanceof TypeElement)
-            type.clearAnnotations();
+
         completer.visit(type);
     }
 
@@ -230,19 +226,6 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
             dt.replaceAnnotation(NONNULL);
         }
         return dt;
-    }
-
-    @Override
-    protected void postDirectSuperTypes(AnnotatedTypeMirror type,
-            List<? extends AnnotatedTypeMirror> supertypes) {
-        for (AnnotatedTypeMirror supertype : supertypes) {
-            typeAnnotator.visit(supertype);
-            if (supertype.getKind() == TypeKind.DECLARED)
-                defaults.annotate((TypeElement)((AnnotatedDeclaredType)supertype).getUnderlyingType().asElement(), supertype);
-            completer.visit(supertype);
-        }
-        // Apply supertype operations last.
-        super.postDirectSuperTypes(type, supertypes);
     }
 
     @Override
