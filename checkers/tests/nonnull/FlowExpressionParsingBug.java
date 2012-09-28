@@ -10,6 +10,9 @@ public abstract class FlowExpressionParsingBug {
 
     @RequiresNonNull("menuBar")
     public void addFavorite() {
-        
+    }
+    
+    @RequiresNonNull("this.menuBar")
+    public void addFavorite1() {
     }
 }
