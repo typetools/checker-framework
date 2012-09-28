@@ -653,14 +653,6 @@ There are some limitations to the guarantee.
   that therefore may violate the property being checked.
 
 \item
-  Your code should pass the Java compiler without errors or warnings.  In
-  particular, your code should use generic types, with no uses of raw types.
-  (For example, your code should use \code{List<...>} as
-  opposed to \code{List}.)
-  Misuse of generics, including casting away generic types, can cause other
-  errors to be missed.
-
-\item
   The Checker Framework does not yet support annotations on intersection
   types (see
   \ahref{\jlsintersectiontypesurl}{JLS \S4.9}).  As a result, checkers cannot provide guarantees about
