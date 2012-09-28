@@ -153,8 +153,8 @@ run the pluggable checker.  There is no way to force users to do so, so you
 may want to retain dynamic checks or use other mechanisms to detect errors.
 
 There are other circumstances in which a static type-checker may fail to
-detect a possible type error.  In Java, these include arrays, casts, raw
-types, reflection, separate compilation (bytecodes from unverified sources),
+detect a possible type error.  In Java, these include arrays, casts,
+reflection, separate compilation (bytecodes from unverified sources),
 native code, etc.  (For details, see section~\ref{checker-guarantees}.)
 Java uses dynamic checks for most of these, so that the
 type error cannot cause a security vulnerability or a crash.  The pluggable
