@@ -2,6 +2,7 @@ package checkers.flow.analysis.checkers;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
 import checkers.basetype.BaseTypeChecker;
@@ -41,7 +42,8 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
         this.type = type;
         this.typeHierarchy = analysis.getTypeHierarchy();
         assert type != null;
-        QualifierHierarchy qualifierHierarchy = analysis.getFactory().getQualifierHierarchy();
+        QualifierHierarchy qualifierHierarchy = analysis.getFactory()
+                .getQualifierHierarchy();
         int width = qualifierHierarchy.getWidth();
         if (!QualifierHierarchy.canHaveEmptyAnnotationSet(type)) {
             assert width == type.getAnnotations().size() : "Encountered type with an invalid number of annotations ("
@@ -76,9 +78,10 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
         AnnotatedTypeMirror lubAnnotatedType = AnnotatedTypeMirror.createType(
                 lubType, factory);
         QualifierHierarchy qualifierHierarchy = analysis.qualifierHierarchy;
-        lubAnnotatedType.addAnnotations(qualifierHierarchy
-                .leastUpperBounds(getType(), other.getType(), getType().getEffectiveAnnotations(),
-                        other.getType().getEffectiveAnnotations()));
+        lubAnnotatedType.addAnnotations(qualifierHierarchy.leastUpperBounds(
+                getType(), other.getType(),
+                getType().getEffectiveAnnotations(), other.getType()
+                        .getEffectiveAnnotations()));
         return analysis.createAbstractValue(lubAnnotatedType);
     }
 
@@ -116,14 +119,25 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
         }
         // Create new full type (with the same underlying type), and then add
         // the appropriate annotations.
+        TypeMirror underlyingType = InternalUtils.leastUpperBound(analysis
+                .getEnv(), getType().getUnderlyingType(), other.getType()
+                .getUnderlyingType());
         AnnotatedTypeMirror result = AnnotatedTypeMirror.createType(
-                type.getUnderlyingType(), analysis.getFactory());
+                underlyingType, analysis.getFactory());
         QualifierHierarchy qualHierarchy = analysis.getFactory()
                 .getQualifierHierarchy();
         AnnotatedTypeMirror otherType = other.getType();
+
+        boolean canContainEmpty = underlyingType.getKind() == TypeKind.TYPEVAR
+                || underlyingType.getKind() == TypeKind.WILDCARD;
+
         for (AnnotationMirror top : qualHierarchy.getTopAnnotations()) {
-            AnnotationMirror aAnno = getType().getAnnotationInHierarchy(top);
-            AnnotationMirror bAnno = otherType.getAnnotationInHierarchy(top);
+            AnnotationMirror aAnno = canContainEmpty ? getType()
+                    .getAnnotationInHierarchy(top) : getType()
+                    .getEffectiveAnnotationInHierarchy(top);
+            AnnotationMirror bAnno = canContainEmpty ? otherType
+                    .getAnnotationInHierarchy(top) : otherType
+                    .getEffectiveAnnotationInHierarchy(top);
 
             if (qualHierarchy.isSubtype(getType(), otherType, aAnno, bAnno)) {
                 if (aAnno == null) {
@@ -131,7 +145,8 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
                 } else {
                     result.addAnnotation(aAnno);
                 }
-            } else if (qualHierarchy.isSubtype(getType(), otherType, bAnno, aAnno)) {
+            } else if (qualHierarchy.isSubtype(getType(), otherType, bAnno,
+                    aAnno)) {
                 if (bAnno == null) {
                     result.removeAnnotationInHierarchy(top);
                 } else {
