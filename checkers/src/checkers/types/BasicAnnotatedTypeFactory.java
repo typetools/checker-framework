@@ -181,13 +181,12 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
     protected void postDirectSuperTypes(AnnotatedTypeMirror type,
             List<? extends AnnotatedTypeMirror> supertypes) {
         super.postDirectSuperTypes(type, supertypes);
-        if (type.getKind() == TypeKind.DECLARED)
+        if (type.getKind() == TypeKind.DECLARED) {
             for (AnnotatedTypeMirror supertype : supertypes) {
-                // FIXME: Recursive initialization for defaults fields
-                if (defaults != null) {
-                    defaults.annotate(((DeclaredType)supertype.getUnderlyingType()).asElement(), supertype);
-                }
+                Element elt = ((DeclaredType) supertype.getUnderlyingType()).asElement();
+                annotateImplicit(elt, supertype);
             }
+        }
     }
 
     public void annotateImplicit(Tree tree, AnnotatedTypeMirror type) {
