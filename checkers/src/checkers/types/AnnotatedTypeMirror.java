@@ -893,8 +893,6 @@ public abstract class AnnotatedTypeMirror {
             if (supertypes == null) {
                 supertypes = directSuperTypes(this);
             }
-            // TODO: the overridden version directly returns the
-            // result of directSuperTypes.
             return Collections.unmodifiableList(supertypes);
         }
 
@@ -1248,13 +1246,32 @@ public abstract class AnnotatedTypeMirror {
 
         @Override
         public String toString(boolean printInvisible) {
-            // TODO: pass printInvisible to all components
-            boolean noParams = getParameterTypes().isEmpty();
-            return (getTypeVariables().isEmpty() ? "" : "<" + getTypeVariables() + "> ")
-                + getReturnType()
-                + " (" + getReceiverType() + " this"
-                + (noParams ? "" : ", " + getParameterTypes()) + ")"
-                + (getThrownTypes().isEmpty() ? "" : " throws " + getThrownTypes());
+            StringBuilder sb = new StringBuilder();
+            if (!getTypeVariables().isEmpty()) {
+                sb.append('<');
+                for (AnnotatedTypeVariable atv : getTypeVariables()) {
+                    sb.append(atv.toString(printInvisible));
+                }
+                sb.append("> ");
+            }
+            sb.append(getReturnType().toString(printInvisible));
+            sb.append(" (");
+            sb.append(getReceiverType().toString(printInvisible));
+            sb.append(" this");
+            if (!getParameterTypes().isEmpty()) {
+                sb.append(", ");
+                for (AnnotatedTypeMirror atm : getParameterTypes()) {
+                    sb.append(atm.toString(printInvisible));
+                }
+            }
+            sb.append(')');
+            if (!getThrownTypes().isEmpty()) {
+                sb.append(" throws ");
+                for (AnnotatedTypeMirror atm : getThrownTypes()) {
+                    sb.append(atm.toString(printInvisible));
+                }
+            }
+            return sb.toString();
         }
     }
 
