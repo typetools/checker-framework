@@ -39,7 +39,7 @@ import com.sun.source.util.TreePath;
 public class FlowExpressionParseUtil {
 
     /** Regular expression for an identifier */
-    protected static final String identifierRegex = "[a-z_$][a-z_$0-9]*";
+    protected static final String identifierRegex = "[a-zA-Z_$][a-zA-Z_$0-9]*";
     /** Matches a parameter */
     protected static final Pattern parameterPattern = Pattern
             .compile("^#([1-9]+[0-9]*)$");
