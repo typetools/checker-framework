@@ -1998,10 +1998,30 @@ public abstract class AnnotatedTypeMirror {
          */
         public Set<AnnotationMirror> getEffectiveExtendsBoundAnnotations() {
             Set<AnnotationMirror> result = annotations;
+            // If there are no annotations, return the upper bound.
             if (result.isEmpty()) {
                 AnnotatedTypeMirror ub = getExtendsBound();
                 if (ub != null) {
-                    result = ub.getEffectiveAnnotations();
+                    return ub.getEffectiveAnnotations();
+                } else {
+                    return Collections.unmodifiableSet(result);
+                }
+            }
+            result = AnnotationUtils.createAnnotationSet();
+            result.addAll(annotations);
+            Set<AnnotationMirror> boundAnnotations = Collections.emptySet();
+            AnnotatedTypeMirror ub = getExtendsBound();
+            if (ub != null) {
+                boundAnnotations = ub.getEffectiveAnnotations();
+            }
+            // Add all the annotation from the the upper bound, for which there
+            // isn't already another annotation in the set from the same
+            // hierarchy.
+            for (AnnotationMirror boundAnnotation : boundAnnotations) {
+                QualifierHierarchy qualHierarchy = atypeFactory.qualHierarchy;
+                AnnotationMirror top = qualHierarchy.getTopAnnotation(boundAnnotation);
+                if (AnnotationUtils.getAnnotationInHierarchy(qualHierarchy, result, top) == null) {
+                    result.add(boundAnnotation);
                 }
             }
             return Collections.unmodifiableSet(result);
