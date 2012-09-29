@@ -7,6 +7,7 @@ import org.apache.maven.plugin.CompilationFailureException;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.ArtifactResolver;
 import org.apache.maven.artifact.factory.ArtifactFactory;
+import org.apache.maven.project.MavenProject;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.toolchain.ToolchainManager;
@@ -99,6 +100,12 @@ public class CheckersMojo extends AbstractMojo {
 	 */
 	private String javacParams;
 
+    /**
+     * Whether to skip execution
+     * @parameter expression="${checkers.skip}" default-value="false"
+     */
+     private boolean skip;
+
 	/**
 	 * DEPENDENCIES
 	 */
@@ -122,7 +129,14 @@ public class CheckersMojo extends AbstractMojo {
 	 */
 	private MavenSession session;
 
-	/**
+    /**
+     * @parameter expression="${project}"
+     * @readonly
+     * @required
+     */
+    private MavenProject project;
+
+    /**
 	 * @component
 	 * @required
 	 * @readonly
@@ -172,6 +186,15 @@ public class CheckersMojo extends AbstractMojo {
      */
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		final Log log = getLog();
+
+        if (skip) {
+        	log.info("Execution is skipped");
+        	return;
+        } else if ("pom".equals(project.getPackaging())) {
+        	log.info("Execution is skipped for project with packaging 'pom'");
+        	return;
+        }
+
 		log.info("Running JSR308 checkers version: " + checkersVersion);
 		
 		if (processors.size() == 0) {
