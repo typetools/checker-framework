@@ -2,6 +2,10 @@ package checkers.util;
 
 import javax.lang.model.element.*;
 import javax.lang.model.type.*;
+import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
+
+import checkers.source.SourceChecker;
 
 /**
  * A utility class that helps with {@link TypeMirror}s.
@@ -271,5 +275,28 @@ public final class TypesUtils {
             }
         } while (true);
         return type;
+    }
+
+    /**
+     * Returns the {@link TypeMirror} for a given {@link Class}.
+     */
+    public static TypeMirror typeFromClass(Types types, Elements elements, Class<?> clazz) {
+        if (clazz == void.class) {
+            return types.getNoType(TypeKind.VOID);
+        } else if (clazz.isPrimitive()) {
+            String primitiveName = clazz.getName().toUpperCase();
+            TypeKind primitiveKind = TypeKind.valueOf(primitiveName);
+            return types.getPrimitiveType(primitiveKind);
+        } else if (clazz.isArray()) {
+            TypeMirror componentType = typeFromClass(types, elements, clazz.getComponentType());
+            return types.getArrayType(componentType);
+        } else {
+            TypeElement element = elements.getTypeElement(clazz.getCanonicalName());
+            if (element == null) {
+                SourceChecker.errorAbort("Unrecognized class: " + clazz);
+                return null; // dead code
+            }
+            return element.asType();
+        }
     }
 }

@@ -1,11 +1,9 @@
 package tests.util;
 
-import javax.annotation.processing.*;
+import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Elements;
-
-import com.sun.source.tree.CompilationUnitTree;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.quals.Bottom;
@@ -18,8 +16,10 @@ import checkers.util.AnnotationUtils;
 import checkers.util.GraphQualifierHierarchy;
 import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 
+import com.sun.source.tree.CompilationUnitTree;
+
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
-@TypeQualifiers( { Value.class, Odd.class, Unqualified.class, Bottom.class } )
+@TypeQualifiers( { Value.class, Odd.class, MonotonicOdd.class, Unqualified.class, Bottom.class } )
 public final class FlowTestChecker extends BaseTypeChecker {
 
     protected AnnotationMirror VALUE, BOTTOM;
