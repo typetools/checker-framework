@@ -42,7 +42,16 @@ public final class TestChecker extends BaseTypeChecker {
 
     @Override
     public AnnotatedTypeFactory createFactory(CompilationUnitTree tree) {
-        return new BasicAnnotatedTypeFactory<TestChecker>(this, tree, false);
+        return new FrameworkTestAnnotatedTypeFactory(this, tree);
+    }
+
+    private class FrameworkTestAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<TestChecker> {
+        public FrameworkTestAnnotatedTypeFactory(TestChecker checker, CompilationUnitTree root) {
+            super(checker, root, true);
+            AnnotationMirror ODD = AnnotationUtils.fromClass(elements, Odd.class);
+            this.typeAnnotator.addTypeName(java.lang.Void.class, ODD);
+            this.postInit();
+        }
     }
 
     @Override
