@@ -1465,9 +1465,9 @@ public class AnnotatedTypeFactory {
         return null; // dead code
     }
 
-    private final Map<Tree, TreePath> pathHack = new HashMap<Tree, TreePath>();
-    public final void setPathHack(Tree node, TreePath use) {
-        pathHack.put(node, use);
+    private final Map<Tree, Element> pathHack = new HashMap<>();
+    public final void setPathHack(Tree node, Element enclosing) {
+        pathHack.put(node, enclosing);
     }
 
     /**
@@ -1486,10 +1486,6 @@ public class AnnotatedTypeFactory {
         assert root != null : "root needs to be set when used on trees";
 
         if (node == null) return null;
-
-        if (pathHack.containsKey(node)) {
-            return pathHack.get(node);
-        }
 
         TreePath currentPath = visitorState.getPath();
         if (currentPath == null)
@@ -1535,6 +1531,23 @@ public class AnnotatedTypeFactory {
 
         // OK, we give up. Do a full scan.
         return TreePath.getPath(root, node);
+    }
+
+    /**
+     * Gets the {@link Element} representing the declaration of the
+     * method enclosing a tree node. This feature is used to record
+     * the enclosing methods of {@link Tree}s that are created
+     * internally by the checker.
+     *
+     * TODO: Find a better way to store information about enclosing
+     * Trees.
+     *
+     * @param node the {@link Tree} to get the enclosing method for
+     * @return the method {@link Element} enclosing the argument, or
+     * null if none has been recorded
+     */
+    public final Element getEnclosingMethod(Tree node) {
+        return pathHack.get(node);
     }
 
     /**
