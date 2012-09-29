@@ -12,6 +12,7 @@ import javax.lang.model.type.*;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
+import checkers.basetype.BaseTypeChecker;
 /*>>>
 import checkers.javari.quals.Mutable;
 import checkers.nullness.quals.Nullable;
@@ -31,6 +32,7 @@ import checkers.util.TreeUtils;
 import checkers.util.stub.StubParser;
 import checkers.util.stub.StubResource;
 import checkers.util.stub.StubUtil;
+import checkers.util.trees.DetachedVarSymbol;
 
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
@@ -128,7 +130,7 @@ public class AnnotatedTypeFactory {
      * class names (canonical names) for annotations with the same meaning
      * (i.e., aliases), as well as the annotation mirror that should be used.
      */
-    private final Map<String, Pair<AnnotationMirror, Set<String>>> declAliases = new HashMap<String, Pair<AnnotationMirror, Set<String>>>();
+    private final Map<String, Pair<AnnotationMirror, Set<String>>> declAliases = new HashMap<>();
 
 	/** Unique ID counter; for debugging purposes. */
     private static int uidCounter = 0;
@@ -203,7 +205,12 @@ public class AnnotatedTypeFactory {
     // **********************************************************************
 
     /** Should results be cached? Disable for better debugging. */
-    private final static boolean SHOULD_CACHE = true;
+    protected static boolean SHOULD_CACHE = true;
+    protected boolean shouldCache = SHOULD_CACHE;
+
+    /** Should the cached result be used, or should it be freshly computed? */
+    protected static boolean SHOULD_READ_CACHE = true;
+    public boolean shouldReadCache = SHOULD_READ_CACHE;
 
     /** Size of LRU cache. */
     private final static int CACHE_SIZE = 300;
@@ -273,7 +280,7 @@ public class AnnotatedTypeFactory {
             SourceChecker.errorAbort("AnnotatedTypeFactory.getAnnotatedType: null tree");
             return null; // dead code
         }
-        if (treeCache.containsKey(tree))
+        if (treeCache.containsKey(tree) && shouldReadCache)
             return AnnotatedTypes.deepCopy(treeCache.get(tree));
 
         AnnotatedTypeMirror type;
@@ -311,7 +318,7 @@ public class AnnotatedTypeFactory {
         case ANNOTATION_TYPE:
         case METHOD:
         // case VARIABLE:
-            if (SHOULD_CACHE)
+            if (shouldCache)
                 treeCache.put(tree, AnnotatedTypes.deepCopy(type));
         }
         // System.out.println("AnnotatedTypeFactory::getAnnotatedType(Tree) result: " + type);
@@ -358,7 +365,7 @@ public class AnnotatedTypeFactory {
      * @return the annotated type of the element
      */
     public AnnotatedTypeMirror fromElement(Element elt) {
-        if (elementCache.containsKey(elt)) {
+        if (elementCache.containsKey(elt) && shouldReadCache) {
             return AnnotatedTypes.deepCopy(elementCache.get(elt));
         }
         if (elt.getKind() == ElementKind.PACKAGE)
@@ -394,7 +401,7 @@ public class AnnotatedTypeFactory {
         // Caching is disabled if indexTypes == null, because calls to this
         // method before the stub files are fully read can return incorrect
         // results.
-        if (SHOULD_CACHE && indexTypes != null)
+        if (shouldCache && indexTypes != null)
             elementCache.put(elt, AnnotatedTypes.deepCopy(type));
         return type;
     }
@@ -424,13 +431,13 @@ public class AnnotatedTypeFactory {
             SourceChecker.errorAbort("AnnotatedTypeFactory.fromMember: not a method or variable declaration: " + tree);
             return null; // dead code
         }
-        if (fromTreeCache.containsKey(tree)) {
+        if (fromTreeCache.containsKey(tree) && shouldReadCache) {
             return AnnotatedTypes.deepCopy(fromTreeCache.get(tree));
         }
         AnnotatedTypeMirror result = fromTreeWithVisitor(
                 TypeFromTree.TypeFromMemberINSTANCE, tree);
         annotateInheritedFromClass(result);
-        if (SHOULD_CACHE)
+        if (shouldCache)
             fromTreeCache.put(tree, AnnotatedTypes.deepCopy(result));
         return result;
     }
@@ -442,12 +449,12 @@ public class AnnotatedTypeFactory {
      * @return the annotated type of the expression
      */
     public AnnotatedTypeMirror fromExpression(ExpressionTree tree) {
-        if (fromTreeCache.containsKey(tree))
+        if (fromTreeCache.containsKey(tree) && shouldReadCache)
             return AnnotatedTypes.deepCopy(fromTreeCache.get(tree));
         AnnotatedTypeMirror result = fromTreeWithVisitor(
                 TypeFromTree.TypeFromExpressionINSTANCE, tree);
         annotateInheritedFromClass(result);
-        if (SHOULD_CACHE)
+        if (shouldCache)
             fromTreeCache.put(tree, AnnotatedTypes.deepCopy(result));
         return result;
     }
@@ -460,7 +467,7 @@ public class AnnotatedTypeFactory {
      * @return the annotated type of the type in the AST
      */
     public AnnotatedTypeMirror fromTypeTree(Tree tree) {
-        if (fromTreeCache.containsKey(tree))
+        if (fromTreeCache.containsKey(tree) && shouldReadCache)
             return AnnotatedTypes.deepCopy(fromTreeCache.get(tree));
 
         AnnotatedTypeMirror result = fromTreeWithVisitor(
@@ -495,7 +502,7 @@ public class AnnotatedTypeFactory {
             }
         }
         annotateInheritedFromClass(result);
-        if (SHOULD_CACHE)
+        if (shouldCache)
             fromTreeCache.put(tree, AnnotatedTypes.deepCopy(result));
         return result;
     }
@@ -1264,7 +1271,7 @@ public class AnnotatedTypeFactory {
      * the method returns null.
      *
      * Returns an aliased type of the current one
-     * 
+     *
      * @param a the qualifier to check for an alias
      * @return the alias or null if none exists
      */
@@ -1286,7 +1293,7 @@ public class AnnotatedTypeFactory {
             Class<? extends Annotation> alias, AnnotationMirror annotationToUse) {
         String aliasName = alias.getCanonicalName();
         String annotationName = annotation.getCanonicalName();
-        Set<String> set = new HashSet<String>();
+        Set<String> set = new HashSet<>();
         if (declAliases.containsKey(annotationName)) {
             set.addAll(declAliases.get(annotationName).second);
         }
@@ -1350,8 +1357,13 @@ public class AnnotatedTypeFactory {
         // if root is null, we cannot find any declaration
         if (root == null)
             return null;
-        if (elementToTreeCache.containsKey(elt)) {
+        if (elementToTreeCache.containsKey(elt) && shouldReadCache) {
             return elementToTreeCache.get(elt);
+        }
+
+        // Check for new declarations, outside of the AST.
+        if (elt instanceof DetachedVarSymbol) {
+            return ((DetachedVarSymbol) elt).getDeclaration();
         }
 
         // TODO: handle type parameter declarations?
@@ -1374,7 +1386,7 @@ public class AnnotatedTypeFactory {
             fromElt = TreeInfo.declarationFor((Symbol)elt, (JCTree)root);
             break;
         }
-        if (SHOULD_CACHE)
+        if (shouldCache)
             elementToTreeCache.put(elt, fromElt);
         return fromElt;
     }
@@ -1453,6 +1465,11 @@ public class AnnotatedTypeFactory {
         return null; // dead code
     }
 
+    private final Map<Tree, TreePath> pathHack = new HashMap<Tree, TreePath>();
+    public final void setPathHack(Tree node, TreePath use) {
+        pathHack.put(node, use);
+    }
+
     /**
      * Gets the path for the given {@link Tree} under the current root by
      * checking from the visitor's current path, and only using
@@ -1469,6 +1486,11 @@ public class AnnotatedTypeFactory {
         assert root != null : "root needs to be set when used on trees";
 
         if (node == null) return null;
+
+        if (pathHack.containsKey(node)) {
+            return pathHack.get(node);
+        }
+
         TreePath currentPath = visitorState.getPath();
         if (currentPath == null)
             return TreePath.getPath(root, node);
@@ -1607,6 +1629,13 @@ public class AnnotatedTypeFactory {
                 StubParser stubParser = new StubParser("jdk.astub", in, this, processingEnv);
                 stubParser.parse(indexTypes, indexDeclAnnos);
             }
+        }
+
+        // stub file for type-system independent annotations
+        InputStream input = BaseTypeChecker.class.getResourceAsStream("flow.astub");
+        if (input != null) {
+            StubParser stubParser = new StubParser("flow.astub", input, this, processingEnv);
+            stubParser.parse(indexTypes, indexDeclAnnos);
         }
 
         String allstubFiles = "";
@@ -1782,8 +1811,8 @@ public class AnnotatedTypeFactory {
      */
     public List<Pair<AnnotationMirror, AnnotationMirror>> getDeclAnnotationWithMetaAnnotation(
             Element element, Class<? extends Annotation> metaAnnotation) {
-        List<Pair<AnnotationMirror, AnnotationMirror>> result = new ArrayList<Pair<AnnotationMirror, AnnotationMirror>>();
-        List<AnnotationMirror> annotationMirrors = new ArrayList<AnnotationMirror>();
+        List<Pair<AnnotationMirror, AnnotationMirror>> result = new ArrayList<>();
+        List<AnnotationMirror> annotationMirrors = new ArrayList<>();
 
         // Consider real annotations.
         annotationMirrors.addAll(element.getAnnotationMirrors());
@@ -1823,8 +1852,8 @@ public class AnnotatedTypeFactory {
      */
     public List<Pair<AnnotationMirror, AnnotationMirror>> getAnnotationWithMetaAnnotation(
             Element element, Class<? extends Annotation> metaAnnotation) {
-        List<Pair<AnnotationMirror, AnnotationMirror>> result = new ArrayList<Pair<AnnotationMirror, AnnotationMirror>>();
-        List<AnnotationMirror> annotationMirrors = new ArrayList<AnnotationMirror>();
+        List<Pair<AnnotationMirror, AnnotationMirror>> result = new ArrayList<>();
+        List<AnnotationMirror> annotationMirrors = new ArrayList<>();
 
         // Consider real annotations.
         annotationMirrors.addAll(getAnnotatedType(element).getAnnotations());
@@ -1873,7 +1902,7 @@ public class AnnotatedTypeFactory {
     }
 
     /** Accessor for the element utilities.
-     */ 
+     */
     public Elements getElementUtils() {
         return this.elements;
     }

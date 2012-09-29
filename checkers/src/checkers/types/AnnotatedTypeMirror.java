@@ -272,6 +272,33 @@ public abstract class AnnotatedTypeMirror {
     }
 
     /**
+     * Returns an annotation from the given sub-hierarchy, if such
+     * an annotation is present on this type or on its extends bounds;
+     * otherwise returns null.
+     *
+     * It doesn't account for annotations in deep types (type arguments,
+     * array components, etc).
+     *
+     * @param p The qualifier hierarchy to check for.
+     * @return An annotation from the same hierarchy as p if present.
+     */
+    public AnnotationMirror getEffectiveAnnotationInHierarchy(AnnotationMirror p) {
+        AnnotationMirror aliased = p;
+        if (!atypeFactory.isSupportedQualifier(aliased)) {
+            aliased = atypeFactory.aliasedAnnotation(p);
+        }
+        if (atypeFactory.isSupportedQualifier(aliased)) {
+            QualifierHierarchy qualHier = this.atypeFactory.getQualifierHierarchy();
+            AnnotationMirror anno = qualHier.findCorrespondingAnnotation(aliased,
+                    getEffectiveAnnotations());
+            if (anno != null) {
+                return anno;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Returns the annotations on this type.
      *
      * It does not include annotations in deep types (type arguments, array
@@ -1988,10 +2015,30 @@ public abstract class AnnotatedTypeMirror {
          */
         public Set<AnnotationMirror> getEffectiveExtendsBoundAnnotations() {
             Set<AnnotationMirror> result = annotations;
+            // If there are no annotations, return the upper bound.
             if (result.isEmpty()) {
                 AnnotatedTypeMirror ub = getExtendsBound();
                 if (ub != null) {
-                    result = ub.getEffectiveAnnotations();
+                    return ub.getEffectiveAnnotations();
+                } else {
+                    return Collections.unmodifiableSet(result);
+                }
+            }
+            result = AnnotationUtils.createAnnotationSet();
+            result.addAll(annotations);
+            Set<AnnotationMirror> boundAnnotations = Collections.emptySet();
+            AnnotatedTypeMirror ub = getExtendsBound();
+            if (ub != null) {
+                boundAnnotations = ub.getEffectiveAnnotations();
+            }
+            // Add all the annotation from the the upper bound, for which there
+            // isn't already another annotation in the set from the same
+            // hierarchy.
+            for (AnnotationMirror boundAnnotation : boundAnnotations) {
+                QualifierHierarchy qualHierarchy = atypeFactory.qualHierarchy;
+                AnnotationMirror top = qualHierarchy.getTopAnnotation(boundAnnotation);
+                if (AnnotationUtils.getAnnotationInHierarchy(qualHierarchy, result, top) == null) {
+                    result.add(boundAnnotation);
                 }
             }
             return Collections.unmodifiableSet(result);
