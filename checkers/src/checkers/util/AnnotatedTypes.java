@@ -164,8 +164,9 @@ public class AnnotatedTypes {
             for (AnnotatedDeclaredType st : type.directSuperTypes()) {
                 if (st.getKind() == TypeKind.DECLARED) {
                     AnnotatedDeclaredType x = (AnnotatedDeclaredType) asSuper(types, atypeFactory, st, p);
-                    if (x != null)
+                    if (x != null) {
                         return x;
+                    }
                 }
             }
 
@@ -295,10 +296,14 @@ public class AnnotatedTypes {
         if (ElementUtils.isStatic(elem))
             return atypeFactory.getAnnotatedType(elem);
 
-        // For Type Variable, operate on the upper
+        // For type variables and wildcards, operate on the upper bound
         if (t.getKind() == TypeKind.TYPEVAR &&
                 ((AnnotatedTypeVariable)t).getUpperBound() != null)
-            return asMemberOf(types, atypeFactory, ((AnnotatedTypeVariable) t).getUpperBound(),
+            return asMemberOf(types, atypeFactory, ((AnnotatedTypeVariable) t).getEffectiveUpperBound(),
+                    elem);
+        if (t.getKind() == TypeKind.WILDCARD &&
+                ((AnnotatedWildcardType)t).getExtendsBound() != null)
+            return asMemberOf(types, atypeFactory, ((AnnotatedWildcardType) t).getEffectiveExtendsBound(),
                     elem);
 
         if (t.getKind() == TypeKind.ARRAY
@@ -337,7 +342,7 @@ public class AnnotatedTypes {
         }
 
         // TODO: Potential bug if Raw type is used
-        if (ElementUtils.isStatic(elem) || !ownerGeneric)
+        if (!ownerGeneric)
             return elemType;
 
         AnnotatedDeclaredType ownerType = atypeFactory.getAnnotatedType(owner);
@@ -1008,20 +1013,20 @@ public class AnnotatedTypes {
         } else {
             List<AnnotatedTypeMirror> subtypes = new ArrayList<AnnotatedTypeMirror>(types.size());
 
-            for (AnnotatedTypeMirror type : types) {
-                if (type == null) {
-                    continue;
-                }
-                if (type.getKind() == TypeKind.WILDCARD &&
-                        ((AnnotatedWildcardType)type).getSuperBound() != null) {
-                    type = ((AnnotatedWildcardType)type).getSuperBound();
-                }
-                if (type.getKind() == TypeKind.WILDCARD) {
-                    subtypes.add(deepCopy(lub));
-                } else if (asSuper(typeutils, atypeFactory, type, lub) == null) {
-                    subtypes.add(deepCopy(lub));
-                } else {
-                    subtypes.add(asSuper(typeutils, atypeFactory, type, lub));
+            // TODO: This code needs some more serious thought.
+            if (lub.getKind() == TypeKind.WILDCARD) {
+                subtypes.add(deepCopy(lub));
+            } else { 
+                for (AnnotatedTypeMirror type : types) {
+                    if (type == null) {
+                        continue;
+                    }
+                    AnnotatedTypeMirror ass = asSuper(typeutils, atypeFactory, type, lub);
+                    if (ass == null) {
+                        subtypes.add(deepCopy(type));
+                    } else {
+                        subtypes.add(ass);
+                    }
                 }
             }
             if (subtypes.size() > 0) {
