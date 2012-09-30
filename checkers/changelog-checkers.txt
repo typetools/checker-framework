@@ -7,7 +7,7 @@ User-visible framework improvements:
 Code refactoring:
   Make AnnotationUtils and AnnotatedTypes into stateless utility classes.
     Instead, provide the necessary parameters for particular methods.
-  Make class AnnotationBuild independent of AnnotationUtils.
+  Make class AnnotationBuilder independent of AnnotationUtils.
   Remove the ProcessingEnvironment from AnnotatedTypeMirror, which was
     hardly used and can be replaced easily.
   Used more consistent naming for a few more fields.
