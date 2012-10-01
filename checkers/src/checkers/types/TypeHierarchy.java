@@ -238,8 +238,8 @@ public class TypeHierarchy {
                     }
                     if(curLhsAnno != null &&
                             curRhsAnno == null) {
-                        if (qualifierHierarchy.isSubtype(((AnnotatedTypeVariable)rhsBase).getEffectiveUpperBound().getAnnotations(),
-                                lhsBase.getAnnotations())) {
+                        if (qualifierHierarchy.isSubtype(((AnnotatedTypeVariable)rhsBase).getEffectiveUpperBound().getAnnotationInHierarchy(top),
+                                curLhsAnno)) {
                             // The annotations on the upper bound of the RHS are below the annotation on the LHS -> good
                             good++; continue;
                         } else {
