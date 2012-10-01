@@ -3,6 +3,9 @@ package checkers.flow.cfg.node;
 import java.util.Collection;
 import java.util.LinkedList;
 
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.util.Types;
+
 import checkers.flow.util.HashCodeUtils;
 import checkers.util.InternalUtils;
 
@@ -28,8 +31,8 @@ public class CaseNode extends Node {
     protected Node switchExpr;
     protected Node caseExpr;
 
-    public CaseNode(CaseTree tree, Node switchExpr, Node caseExpr) {
-        super(InternalUtils.typeOf(tree));
+    public CaseNode(CaseTree tree, Node switchExpr, Node caseExpr, Types types) {
+        super(types.getNoType(TypeKind.NONE));
         assert tree.getKind().equals(Kind.CASE);
         this.tree = tree;
         this.switchExpr = switchExpr;
