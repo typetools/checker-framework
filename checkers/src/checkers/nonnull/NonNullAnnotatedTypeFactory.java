@@ -1,6 +1,8 @@
 package checkers.nonnull;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -10,6 +12,7 @@ import javax.lang.model.element.VariableElement;
 import checkers.basetype.BaseTypeChecker;
 import checkers.flow.analysis.checkers.CFValue;
 import checkers.initialization.InitializationAnnotatedTypeFactory;
+import checkers.initialization.InitializationStore;
 import checkers.nonnull.quals.MonotonicNonNull;
 import checkers.nonnull.quals.NonNull;
 import checkers.nonnull.quals.Nullable;
@@ -22,6 +25,7 @@ import checkers.util.AnnotationUtils;
 import checkers.util.ElementUtils;
 import checkers.util.Pair;
 import checkers.util.TreeUtils;
+import checkers.util.TypesUtils;
 
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompilationUnitTree;
@@ -31,6 +35,7 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 
 public class NonNullAnnotatedTypeFactory
@@ -101,6 +106,22 @@ public class NonNullAnnotatedTypeFactory
                 this);
 
         postInit();
+    }
+
+    @Override
+    public Set<VariableTree> getUninitializedInvariantFields(
+            InitializationStore store, TreePath path, boolean isStatic) {
+        Set<VariableTree> candidates = super.getUninitializedInvariantFields(store, path, isStatic);
+        Set<VariableTree> result = new HashSet<>();
+        for (VariableTree c : candidates) {
+            AnnotatedTypeMirror type = getAnnotatedType(c);
+            boolean isPrimitive = TypesUtils.isPrimitive(type.getUnderlyingType());
+            if (!isPrimitive) {
+                // primitives do not need to be initialized
+                result.add(c);
+            }
+        }
+        return result;
     }
 
     @Override
