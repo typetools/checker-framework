@@ -49,3 +49,9 @@ public class FlowInitialization {
         f = "";
     }
 }
+
+class Primitives {
+    boolean b;
+    int t;
+    char c;
+}
