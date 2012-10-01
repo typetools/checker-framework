@@ -3,8 +3,7 @@ Version 1.4.1, 29 Sep 2012
 User-visible framework improvements:
   Support stub files contained in .jar files.
   Support aliasing for declaration annotations.
-  Added another fix to the maven plugin and updated the plugin 
-   repository to use the latest software.
+  Updated the Maven plugin.
 
 Code refactoring:
   Make AnnotationUtils and AnnotatedTypes into stateless utility classes.
