@@ -824,7 +824,7 @@ public abstract class AnnotatedTypeMirror {
                 // TODO: Should multiple bounds be represented more directly?
                 // See MultiBoundTypeVar.java for an example.
                 assert TypesUtils.isAnonymousType(this.getUnderlyingType());
-                formatConjunctiveSuperTypes(sb);
+                formatConjunctiveSuperTypes(sb, printInvisible);
             }
             if (!this.getTypeArguments().isEmpty()) {
                 sb.append("<");
@@ -832,7 +832,7 @@ public abstract class AnnotatedTypeMirror {
                 boolean isFirst = true;
                 for (AnnotatedTypeMirror typeArg : getTypeArguments()) {
                     if (!isFirst) sb.append(", ");
-                    sb.append(typeArg);
+                    sb.append(typeArg.toString(printInvisible));
                     isFirst = false;
                 }
                 sb.append(">");
@@ -840,7 +840,7 @@ public abstract class AnnotatedTypeMirror {
             return sb.toString();
         }
 
-        private void formatConjunctiveSuperTypes(StringBuilder sb) {
+        private void formatConjunctiveSuperTypes(StringBuilder sb, boolean printInvisible) {
             // Prevent an infinite recursion that might happen when calling toString
             // within deepCopy, caused by postAsSuper in (at least) the IGJ checker.
             // if (this.supertypes == null) { return; }
@@ -848,7 +848,7 @@ public abstract class AnnotatedTypeMirror {
             boolean isFirst = true;
             for(AnnotatedDeclaredType adt : this.directSuperTypes()) {
                 if (!isFirst) sb.append(" & ");
-                sb.append(adt);
+                sb.append(adt.toString(printInvisible));
                 isFirst = false;
             }
         }
@@ -920,8 +920,6 @@ public abstract class AnnotatedTypeMirror {
             if (supertypes == null) {
                 supertypes = directSuperTypes(this);
             }
-            // TODO: the overridden version directly returns the
-            // result of directSuperTypes.
             return Collections.unmodifiableList(supertypes);
         }
 
@@ -1275,13 +1273,32 @@ public abstract class AnnotatedTypeMirror {
 
         @Override
         public String toString(boolean printInvisible) {
-            // TODO: pass printInvisible to all components
-            boolean noParams = getParameterTypes().isEmpty();
-            return (getTypeVariables().isEmpty() ? "" : "<" + getTypeVariables() + "> ")
-                + getReturnType()
-                + " (" + getReceiverType() + " this"
-                + (noParams ? "" : ", " + getParameterTypes()) + ")"
-                + (getThrownTypes().isEmpty() ? "" : " throws " + getThrownTypes());
+            StringBuilder sb = new StringBuilder();
+            if (!getTypeVariables().isEmpty()) {
+                sb.append('<');
+                for (AnnotatedTypeVariable atv : getTypeVariables()) {
+                    sb.append(atv.toString(printInvisible));
+                }
+                sb.append("> ");
+            }
+            sb.append(getReturnType().toString(printInvisible));
+            sb.append(" (");
+            sb.append(getReceiverType().toString(printInvisible));
+            sb.append(" this");
+            if (!getParameterTypes().isEmpty()) {
+                sb.append(", ");
+                for (AnnotatedTypeMirror atm : getParameterTypes()) {
+                    sb.append(atm.toString(printInvisible));
+                }
+            }
+            sb.append(')');
+            if (!getThrownTypes().isEmpty()) {
+                sb.append(" throws ");
+                for (AnnotatedTypeMirror atm : getThrownTypes()) {
+                    sb.append(atm.toString(printInvisible));
+                }
+            }
+            return sb.toString();
         }
     }
 
@@ -1711,13 +1728,13 @@ public abstract class AnnotatedTypeMirror {
                     isPrintingBound = true;
                     if (getLowerBoundField() != null && getLowerBoundField().getKind() != TypeKind.NULL) {
                         sb.append(" super ");
-                        sb.append(getLowerBoundField());
+                        sb.append(getLowerBoundField().toString(printInvisible));
                     }
                     // If the upper bound annotation is not the default, perhaps
                     // print the upper bound even if its kind is TypeKind.NULL.
                     if (getUpperBoundField() != null && getUpperBoundField().getKind() != TypeKind.NULL) {
                         sb.append(" extends ");
-                        sb.append(getUpperBoundField());
+                        sb.append(getUpperBoundField().toString(printInvisible));
                     }
                 } finally {
                     isPrintingBound = false;
@@ -2095,11 +2112,11 @@ public abstract class AnnotatedTypeMirror {
                     isPrintingBound = true;
                     if (getSuperBoundField() != null && getSuperBoundField().getKind() != TypeKind.NULL) {
                         sb.append(" super ");
-                        sb.append(getSuperBoundField());
+                        sb.append(getSuperBoundField().toString(printInvisible));
                     }
                     if (getExtendsBoundField() != null && getExtendsBoundField().getKind() != TypeKind.NONE) {
                         sb.append(" extends ");
-                        sb.append(getExtendsBoundField());
+                        sb.append(getExtendsBoundField().toString(printInvisible));
                     }
                 } finally {
                     isPrintingBound = false;
