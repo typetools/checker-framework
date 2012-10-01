@@ -2884,7 +2884,7 @@ public class CFGBuilder {
                 }
             }
             default:
-                assert false : "unexpected binary tree";
+                assert false : "unexpected binary tree: " + kind;
                 break;
 
             /*
@@ -2969,7 +2969,7 @@ public class CFGBuilder {
                 Label nextCaseL = new Label();
 
                 Node expr = scan(exprTree, p);
-                CaseNode test = new CaseNode(tree, switchExpr, expr);
+                CaseNode test = new CaseNode(tree, switchExpr, expr, env.getTypeUtils());
                 extendWithNode(test);
                 extendWithExtendedNode(new ConditionalJump(thisBlockL,
                         nextCaseL));
@@ -4015,7 +4015,7 @@ public class CFGBuilder {
             }
 
             default:
-                assert false : "Unknown kind of unary expression";
+                assert false : "Unknown kind of unary expression: " + kind;
             }
 
             conditionalMode = outerConditionalMode;
