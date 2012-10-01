@@ -61,7 +61,7 @@ public class FenumVisitor extends BaseTypeVisitor<FenumChecker> {
                 AnnotatedTypeMirror caseType = atypeFactory.getAnnotatedType(realCaseExpr);
 
                 this.commonAssignmentCheck(exprType, caseType, caseExpr,
-                        "switch.type.incompatible");
+                        "switch.type.incompatible", false);
             }
         }
         return super.visitSwitch(node, p);

@@ -586,7 +586,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
         boolean valid = validateTypeOf(node.getVariable());
         if (valid) {
             commonAssignmentCheck(var, iteratedType, node.getExpression(),
-                    "enhancedfor.type.incompatible");
+                    "enhancedfor.type.incompatible", false);
         }
         return super.visitEnhancedForLoop(node, p);
     }
@@ -743,7 +743,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                 passedAsArray.getComponentType(),
                 receiverAsVector.getTypeArguments().get(0),
                 node.getArguments().get(0),
-                "vector.copyinto.type.incompatible");
+                "vector.copyinto.type.incompatible", false);
     }
 
     /**
@@ -808,7 +808,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
             visitorState.setAssignmentContext(ret);
 
             commonAssignmentCheck(ret, node.getExpression(),
-                    "return.type.incompatible");
+                    "return.type.incompatible", false);
 
             return super.visitReturn(node, p);
         } finally {
@@ -888,17 +888,17 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                 if (expected.getKind() != TypeKind.ARRAY) {
                     // Expected is not an array -> direct comparison.
                     commonAssignmentCheck(expected, actual, at.getExpression(),
-                            "annotation.type.incompatible");
+                            "annotation.type.incompatible", false);
                 } else {
                     if (actual.getKind() == TypeKind.ARRAY) {
                         // Both actual and expected are arrays.
                         commonAssignmentCheck(expected, actual, at.getExpression(),
-                                "annotation.type.incompatible");
+                                "annotation.type.incompatible", false);
                     } else {
                         // The declaration is an array type, but just a single element is given.
                         commonAssignmentCheck(((AnnotatedArrayType) expected).getComponentType(),
                                 actual, at.getExpression(),
-                                "annotation.type.incompatible");
+                                "annotation.type.incompatible", false);
                     }
                 }
             } finally {
@@ -917,8 +917,8 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
     @Override
     public Void visitConditionalExpression(ConditionalExpressionTree node, Void p) {
         AnnotatedTypeMirror cond = atypeFactory.getAnnotatedType(node);
-        this.commonAssignmentCheck(cond, node.getTrueExpression(), "conditional.type.incompatible");
-        this.commonAssignmentCheck(cond, node.getFalseExpression(), "conditional.type.incompatible");
+        this.commonAssignmentCheck(cond, node.getTrueExpression(), "conditional.type.incompatible", false);
+        this.commonAssignmentCheck(cond, node.getFalseExpression(), "conditional.type.incompatible", false);
         return super.visitConditionalExpression(node, p);
     }
 
@@ -1122,7 +1122,15 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
         AnnotatedTypeMirror var = atypeFactory.getAnnotatedType(varTree);
         assert var != null : "no variable found for tree: " + varTree;
         checkAssignability(var, varTree);
-        commonAssignmentCheck(var, valueExp, errorKey);
+        boolean isLocalVariableAssignment = false;
+        if (varTree instanceof AssignmentTree) {
+            Tree rhs = ((AssignmentTree) varTree).getVariable();
+            isLocalVariableAssignment = rhs instanceof IdentifierTree && !TreeUtils.isFieldAccess(rhs);
+        }
+        if (varTree instanceof VariableTree) {
+            isLocalVariableAssignment = TreeUtils.enclosingMethod(getCurrentPath()) != null;
+        }
+        commonAssignmentCheck(var, valueExp, errorKey, isLocalVariableAssignment);
     }
 
     /**
@@ -1134,9 +1142,11 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
      * @param valueExp the AST node for the value
      * @param errorKey the error message to use if the check fails (must be a
      *        compiler message key, see {@link CompilerMessageKey})
+     * @param isLocalVariableAssignement Are we dealing with an assigment and
+     *        is the lhs a local variable?
      */
     protected void commonAssignmentCheck(AnnotatedTypeMirror varType,
-            ExpressionTree valueExp, /*@CompilerMessageKey*/ String errorKey) {
+            ExpressionTree valueExp, /*@CompilerMessageKey*/ String errorKey, boolean isLocalVariableAssignement) {
         if (shouldSkipUses(valueExp))
             return;
         if (varType.getKind() == TypeKind.ARRAY
@@ -1149,7 +1159,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
         }
         AnnotatedTypeMirror valueType = atypeFactory.getAnnotatedType(valueExp);
         assert valueType != null : "null type for expression: " + valueExp;
-        commonAssignmentCheck(varType, valueType, valueExp, errorKey);
+        commonAssignmentCheck(varType, valueType, valueExp, errorKey, isLocalVariableAssignement);
     }
 
     /**
@@ -1162,9 +1172,11 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
      * @param valueTree the location to use when reporting the error message
      * @param errorKey the error message to use if the check fails (must be a
      *        compiler message key, see {@link CompilerMessageKey})
+     * @param isLocalVariableAssignement Are we dealing with an assigment and
+     *        is the lhs a local variable?
      */
     protected void commonAssignmentCheck(AnnotatedTypeMirror varType,
-            AnnotatedTypeMirror valueType, Tree valueTree, /*@CompilerMessageKey*/ String errorKey) {
+            AnnotatedTypeMirror valueType, Tree valueTree, /*@CompilerMessageKey*/ String errorKey, boolean isLocalVariableAssignement) {
 
         String valueTypeString = valueType.toString();
         String varTypeString = varType.toString();
@@ -1176,6 +1188,13 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
         if (valueTypeString.equals(varTypeString)) {
             valueTypeString = valueType.toString(true);
             varTypeString = varType.toString(true);
+        }
+
+        if (isLocalVariableAssignement && varType.getKind() == TypeKind.TYPEVAR
+                && varType.getAnnotations().isEmpty()) {
+            // If we have an unbound local variable that is a type variable,
+            // then we allow the assignment.
+            return;
         }
 
         if (options.containsKey("showchecks")) {
@@ -1225,7 +1244,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
         // TODO: set assignment context like for method arguments?
         // Also in AbstractFlow.
         for (ExpressionTree init : initializers)
-            commonAssignmentCheck(type, init, "array.initializer.type.incompatible");
+            commonAssignmentCheck(type, init, "array.initializer.type.incompatible", false);
     }
 
     /**
@@ -1274,11 +1293,11 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                     // therefore issue an error for the arguments.
                     // I hope this is less confusing for users.
                     commonAssignmentCheck(typeVar.getEffectiveUpperBound(),
-                            typearg, toptree, "type.argument.type.incompatible");
+                            typearg, toptree, "type.argument.type.incompatible", false);
                 } else {
                     commonAssignmentCheck(typeVar.getEffectiveUpperBound(), typearg,
                             typeargTrees.get(typeargs.indexOf(typearg)),
-                            "type.argument.type.incompatible");
+                            "type.argument.type.incompatible", false);
                 }
             }
 
@@ -1362,7 +1381,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                 visitorState.setAssignmentContext(requiredArgs.get(i));
                 commonAssignmentCheck(requiredArgs.get(i),
                         passedArgs.get(i),
-                        "argument.type.incompatible");
+                        "argument.type.incompatible", false);
                 // Also descend into the argument within the correct assignment context.
                 scan(passedArgs.get(i), null);
             }
