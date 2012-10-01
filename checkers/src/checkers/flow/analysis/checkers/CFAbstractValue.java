@@ -96,7 +96,6 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
         lubAnnotatedType.addAnnotations(qualifierHierarchy.leastUpperBounds(
                 getType(), other.getType(), annos1, annos2));
 
-        System.out.println(type + " - " + other.getType() + " -> " + lubAnnotatedType);
         return analysis.createAbstractValue(lubAnnotatedType);
     }
 
