@@ -15,5 +15,6 @@ import checkers.quals.*;
 @TypeQualifier
 @InvisibleQualifier
 @SubtypeOf(KeyFor.class)
-@ImplicitFor(trees={Tree.Kind.NULL_LITERAL})
+@ImplicitFor(trees = {Tree.Kind.NULL_LITERAL},
+  typeNames = {java.lang.Void.class})
 public @interface KeyForBottom {}

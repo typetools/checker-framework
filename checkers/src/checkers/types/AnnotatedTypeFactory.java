@@ -1038,6 +1038,10 @@ public class AnnotatedTypeFactory {
      * {@link checkers.basetype.BaseTypeVisitor#checkTypeArguments(Tree, List, List, List)}
      * for the checks of type argument well-formedness.
      *
+     * Note that "this" and "super" constructor invocations are also handled by this
+     * method. Method {@link constructorFromUse} is only used for a constructor invocation
+     * in a "new" expression.
+     *
      * @param tree the method invocation tree
      * @return the method type being invoked with tree and the (inferred) type arguments
      */
@@ -1077,6 +1081,10 @@ public class AnnotatedTypeFactory {
      * TODO: Should the result of getAnnotatedType be the return type
      *   from the AnnotatedExecutableType computed here?
      *
+     * Note that "this" and "super" constructor invocations are handled by
+     * method {@link methodFromUse}. This method only handles constructor invocations
+     * in a "new" expression.
+     *
      * @param tree the constructor invocation tree
      * @return the annotated type of the invoked constructor (as an executable
      *         type) and the (inferred) type arguments
@@ -1086,6 +1094,7 @@ public class AnnotatedTypeFactory {
         AnnotatedTypeMirror type = fromNewClass(tree);
         annotateImplicit(tree.getIdentifier(), type);
         AnnotatedExecutableType con = AnnotatedTypes.asMemberOf(types, this, type, ctor);
+
         if (tree.getArguments().size() == con.getParameterTypes().size() + 1
             && isSyntheticArgument(tree.getArguments().get(0))) {
             // happens for anonymous constructors of inner classes
@@ -1456,9 +1465,9 @@ public class AnnotatedTypeFactory {
         return null; // dead code
     }
 
-    private final Map<Tree, TreePath> pathHack = new HashMap<Tree, TreePath>();
-    public final void setPathHack(Tree node, TreePath use) {
-        pathHack.put(node, use);
+    private final Map<Tree, Element> pathHack = new HashMap<>();
+    public final void setPathHack(Tree node, Element enclosing) {
+        pathHack.put(node, enclosing);
     }
 
     /**
@@ -1477,10 +1486,6 @@ public class AnnotatedTypeFactory {
         assert root != null : "root needs to be set when used on trees";
 
         if (node == null) return null;
-
-        if (pathHack.containsKey(node)) {
-            return pathHack.get(node);
-        }
 
         TreePath currentPath = visitorState.getPath();
         if (currentPath == null)
@@ -1526,6 +1531,23 @@ public class AnnotatedTypeFactory {
 
         // OK, we give up. Do a full scan.
         return TreePath.getPath(root, node);
+    }
+
+    /**
+     * Gets the {@link Element} representing the declaration of the
+     * method enclosing a tree node. This feature is used to record
+     * the enclosing methods of {@link Tree}s that are created
+     * internally by the checker.
+     *
+     * TODO: Find a better way to store information about enclosing
+     * Trees.
+     *
+     * @param node the {@link Tree} to get the enclosing method for
+     * @return the method {@link Element} enclosing the argument, or
+     * null if none has been recorded
+     */
+    public final Element getEnclosingMethod(Tree node) {
+        return pathHack.get(node);
     }
 
     /**
@@ -1728,12 +1750,16 @@ public class AnnotatedTypeFactory {
         Pair<AnnotationMirror, Set<String>> aliases = checkAliases ? declAliases.get(annoName) : null;
 
         // First look in the stub files.
-        Set<AnnotationMirror> stubAnnos = indexDeclAnnos.get(eltName);
+        if (indexDeclAnnos != null) {
+            // The field might still null if this method gets called from the
+            // StubParser. TODO: better solution?
+            Set<AnnotationMirror> stubAnnos = indexDeclAnnos.get(eltName);
 
-        if (stubAnnos != null) {
-            for (AnnotationMirror am : stubAnnos) {
-                if (AnnotationUtils.areSameByName(am, annoName)) {
-                    return am;
+            if (stubAnnos != null) {
+                for (AnnotationMirror am : stubAnnos) {
+                    if (AnnotationUtils.areSameByName(am, annoName)) {
+                        return am;
+                    }
                 }
             }
         }

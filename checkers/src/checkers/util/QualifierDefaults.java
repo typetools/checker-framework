@@ -149,7 +149,14 @@ public class QualifierDefaults {
      */
     private Element nearestEnclosingExceptLocal(Tree tree) {
         TreePath path = atypeFactory.getPath(tree);
-        if (path == null) return InternalUtils.symbol(tree);
+        if (path == null) {
+            Element method = atypeFactory.getEnclosingMethod(tree);
+            if (method != null) {
+                return method;
+            } else {
+                return InternalUtils.symbol(tree);
+            }
+        }
 
         Tree prev = null;
 
