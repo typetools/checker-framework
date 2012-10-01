@@ -28,7 +28,6 @@ import checkers.util.ElementUtils;
 import checkers.util.InternalUtils;
 import checkers.util.Pair;
 import checkers.util.TreeUtils;
-import checkers.util.TypesUtils;
 
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
@@ -135,8 +134,8 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
         addAliasedAnnotation(org.netbeans.api.annotations.common.NullUnknown.class, NULLABLE);
         addAliasedAnnotation(org.jmlspecs.annotation.Nullable.class, NULLABLE);
 
-        // TODO: Add an alias for the Pure JML annotation. It's not a type qualifier, I think adding
-        // it above does not work.
+        addAliasedDeclAnnotation(checkers.nullness.quals.Pure.class, org.jmlspecs.annotation.Pure.class,
+                AnnotationUtils.fromClass(elements, checkers.nullness.quals.Pure.class));
 
         defaults.addAbsoluteDefault(NULLABLE, DefaultLocation.LOCALS);
         defaults.addAbsoluteDefault(NONNULL, DefaultLocation.OTHERWISE);
@@ -163,15 +162,11 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
 
     @Override
     public void annotateImplicit(Element elt, AnnotatedTypeMirror type) {
-        // For example, the "System" in "System.out" is always non-null.
-        annotateIfStatic(elt, type);
-
         typeAnnotator.visit(type);
 
         // case 6: apply default
         defaults.annotate(elt, type);
-        if (elt instanceof TypeElement)
-            type.clearAnnotations();
+
         completer.visit(type);
     }
 
@@ -216,19 +211,6 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
             dt.replaceAnnotation(NONNULL);
         }
         return dt;
-    }
-
-    @Override
-    protected void postDirectSuperTypes(AnnotatedTypeMirror type,
-            List<? extends AnnotatedTypeMirror> supertypes) {
-        for (AnnotatedTypeMirror supertype : supertypes) {
-            typeAnnotator.visit(supertype);
-            if (supertype.getKind() == TypeKind.DECLARED)
-                defaults.annotate((TypeElement)((AnnotatedDeclaredType)supertype).getUnderlyingType().asElement(), supertype);
-            completer.visit(supertype);
-        }
-        // Apply supertype operations last.
-        super.postDirectSuperTypes(type, supertypes);
     }
 
     @Override
@@ -470,19 +452,6 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
                 type.getReceiverType().replaceAnnotation(NONNULL);
 
             return super.visitExecutable(type, p);
-        }
-
-        @Override
-        public Void visitDeclared(AnnotatedDeclaredType type, ElementKind p) {
-            // case 13: type of Void is nullable
-            if (TypesUtils.isDeclaredOfName(type.getUnderlyingType(), "java.lang.Void")
-                    // Hack: Special case Void.class
-                    && (type.getElement() == null || !type.getElement().getKind().isClass())
-                    && !type.isAnnotated()) {
-                type.replaceAnnotation(NULLABLE);
-            }
-
-            return super.visitDeclared(type, p);
         }
     }
 
