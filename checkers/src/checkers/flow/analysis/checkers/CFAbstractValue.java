@@ -83,9 +83,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
 
         Set<AnnotationMirror> annos1;
         Set<AnnotationMirror> annos2;
-        if (QualifierHierarchy.canHaveEmptyAnnotationSet(getType())
-                && QualifierHierarchy
-                        .canHaveEmptyAnnotationSet(other.getType())) {
+        if (QualifierHierarchy.canHaveEmptyAnnotationSet(lubAnnotatedType)) {
             annos1 = getType().getAnnotations();
             annos2 = other.getType().getAnnotations();
         } else {
