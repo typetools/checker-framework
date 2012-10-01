@@ -2292,7 +2292,14 @@ public class CFGBuilder {
 
             // see JLS 15.26.1
 
-            assert !conditionalMode;
+            // Assignments are legal expressions, so they may appear in
+            // conditional mode.
+            ConditionalJump cjump = null;
+            if (conditionalMode) {
+                cjump = new ConditionalJump(thenTargetL, elseTargetL);
+            }
+            boolean outerConditionalMode = conditionalMode;
+            conditionalMode = false;
 
             AssignmentNode assignmentNode;
             ExpressionTree variable = tree.getVariable();
@@ -2337,6 +2344,13 @@ public class CFGBuilder {
                 assignmentNode = translateAssignment(tree, target,
                         tree.getExpression());
             }
+
+            conditionalMode = outerConditionalMode;
+
+            if (conditionalMode) {
+                extendWithExtendedNode(cjump);
+            }
+
             return assignmentNode;
         }
 
