@@ -108,7 +108,7 @@ public class InitializationVisitor<Checker extends InitializationChecker>
             var.replaceAnnotation(var2.getEffectiveAnnotationInHierarchy(checker
                     .getFieldInvariantAnnotation()));
             checkAssignability(var, varTree);
-            commonAssignmentCheck(var, valueExp, errorKey);
+            commonAssignmentCheck(var, valueExp, errorKey, false);
             return;
         }
         super.commonAssignmentCheck(varTree, valueExp, errorKey);
