@@ -1,5 +1,7 @@
 package checkers.flow.analysis.checkers;
 
+import java.util.Set;
+
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
@@ -78,10 +80,23 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
         AnnotatedTypeMirror lubAnnotatedType = AnnotatedTypeMirror.createType(
                 lubType, factory);
         QualifierHierarchy qualifierHierarchy = analysis.qualifierHierarchy;
+
+        Set<AnnotationMirror> annos1;
+        Set<AnnotationMirror> annos2;
+        if (QualifierHierarchy.canHaveEmptyAnnotationSet(getType())
+                && QualifierHierarchy
+                        .canHaveEmptyAnnotationSet(other.getType())) {
+            annos1 = getType().getAnnotations();
+            annos2 = other.getType().getAnnotations();
+        } else {
+            annos1 = getType().getEffectiveAnnotations();
+            annos2 = other.getType().getEffectiveAnnotations();
+        }
+
         lubAnnotatedType.addAnnotations(qualifierHierarchy.leastUpperBounds(
-                getType(), other.getType(),
-                getType().getEffectiveAnnotations(), other.getType()
-                        .getEffectiveAnnotations()));
+                getType(), other.getType(), annos1, annos2));
+
+        System.out.println(type + " - " + other.getType() + " -> " + lubAnnotatedType);
         return analysis.createAbstractValue(lubAnnotatedType);
     }
 
