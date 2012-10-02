@@ -792,7 +792,7 @@ public class AnnotatedTypeFactory {
             return null;
         }
 
-        if ("this".contentEquals(receiver.toString())) {
+        if (this.isExplicitThisDereference(receiver)) {
             // TODO: also "super"?
             return this.getSelfType(tree);
         }
@@ -1000,12 +1000,11 @@ public class AnnotatedTypeFactory {
      * @return  the type of the receiver of this expression
      */
     public final AnnotatedTypeMirror getReceiverType(ExpressionTree expression) {
-        ExpressionTree receiver = TreeUtils.getReceiverTree(expression);
-
         if (this.isAnyEnclosingThisDeref(expression)) {
             return getImplicitReceiverType(expression);
         }
 
+        ExpressionTree receiver = TreeUtils.getReceiverTree(expression);
         if (receiver != null) {
             return getAnnotatedType(receiver);
         } else {

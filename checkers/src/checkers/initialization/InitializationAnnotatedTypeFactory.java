@@ -122,7 +122,13 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
         TreePath path = getPath(tree);
         MethodTree enclosingMethod = TreeUtils.enclosingMethod(path);
         // Set the correct type for 'this' inside of constructors.
-        if (enclosingMethod != null && TreeUtils.isConstructor(enclosingMethod)) {
+        while (enclosingMethod != null) {
+            if (!TreeUtils.isConstructor(enclosingMethod)) {
+                // See whether any other enclosing method is a constructor.
+                path = path.getParentPath();
+                enclosingMethod = TreeUtils.enclosingMethod(path);
+                continue;
+            }
             ClassTree enclosingClass = TreeUtils.enclosingClass(path);
             Type classType = ((JCTree) enclosingClass).type;
             AnnotationMirror annotation = null;
@@ -134,11 +140,9 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
                 if (store != null) {
                     if (getUninitializedInvariantFields(store, path, false).size() == 0) {
                         if (useFbc) {
-                            annotation = checker
-                                    .createFreeAnnotation(classType);
+                            annotation = checker.createFreeAnnotation(classType);
                         } else {
-                            annotation = checker
-                                    .createUnclassifiedAnnotation(classType);
+                            annotation = checker.createUnclassifiedAnnotation(classType);
                         }
                         selfType.replaceAnnotation(annotation);
                     }
@@ -149,6 +153,10 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
                 annotation = getFreeOrRawAnnotationOfSuperType(classType);
             }
             selfType.replaceAnnotation(annotation);
+            // Found a constructor -> done.
+            // TODO: should we look whether this constructor is
+            // enclosed within another constructor?
+            break;
         }
         return selfType;
     }
