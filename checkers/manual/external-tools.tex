@@ -255,6 +255,11 @@ Set the \code{jsr308javac} property:
 \end{smaller}
 %END LATEX
 
+(Note: the classes in \<checkers.jar> are
+actually  read from \<jsr308-all.jar> due to the \<-Xbootclasspath> flag.
+Eventually, it may be possible to remove one of these flags.)
+
+
 \item Duplicate the compilation target, then modify it slightly as
 indicated in this example:
 
