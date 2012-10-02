@@ -426,7 +426,9 @@ public abstract class AnnotatedTypeMirror {
      * @see #hasAnnotation(Class)
      */
     public boolean hasEffectiveAnnotation(Class<? extends Annotation> a) {
-        return hasEffectiveAnnotation(AnnotationUtils.fromClass(atypeFactory.elements, a));
+        return AnnotationUtils.containsSameIgnoringValues(
+                getEffectiveAnnotations(),
+                AnnotationUtils.fromClass(atypeFactory.elements, a));
     }
 
     /**
