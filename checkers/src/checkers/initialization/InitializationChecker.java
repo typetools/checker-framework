@@ -212,7 +212,7 @@ public abstract class InitializationChecker extends BaseTypeChecker {
      * returns false if {@code useFbc} is false.
      */
     public boolean isFree(AnnotatedTypeMirror anno) {
-        return useFbc && anno.hasAnnotation(Free.class);
+        return useFbc && anno.hasEffectiveAnnotation(Free.class);
     }
 
     /**
@@ -223,14 +223,14 @@ public abstract class InitializationChecker extends BaseTypeChecker {
     public boolean isUnclassified(AnnotatedTypeMirror anno) {
         Class<? extends Annotation> clazz = useFbc ? Unclassified.class
                 : Raw.class;
-        return anno.hasAnnotation(clazz);
+        return anno.hasEffectiveAnnotation(clazz);
     }
 
     /**
      * Does {@code anno} have the annotation {@link FBCBottom}?
      */
     public boolean isFbcBottom(AnnotatedTypeMirror anno) {
-        return anno.hasAnnotation(FBCBottom.class);
+        return anno.hasEffectiveAnnotation(FBCBottom.class);
     }
 
     /**
@@ -240,7 +240,7 @@ public abstract class InitializationChecker extends BaseTypeChecker {
     public boolean isCommitted(AnnotatedTypeMirror anno) {
         Class<? extends Annotation> clazz = useFbc ? Committed.class
                 : NonRaw.class;
-        return anno.hasAnnotation(clazz);
+        return anno.hasEffectiveAnnotation(clazz);
     }
 
     /**
