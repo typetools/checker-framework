@@ -418,7 +418,16 @@ public abstract class AnnotatedTypeMirror {
     public boolean hasAnnotation(Class<? extends Annotation> a) {
         return getAnnotation(a) != null;
     }
-    // TODO: do we need an "effective" version of the above hasAnnotation?
+
+    /**
+     * A version of hasAnnotation that considers annotations on the
+     * upper bound of wildcards and type variables.
+     *
+     * @see #hasAnnotation(Class)
+     */
+    public boolean hasEffectiveAnnotation(Class<? extends Annotation> a) {
+        return hasEffectiveAnnotation(AnnotationUtils.fromClass(atypeFactory.elements, a));
+    }
 
     /**
      * A version of hasAnnotation that considers annotations on the
