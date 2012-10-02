@@ -8,7 +8,7 @@ public class ThisLiteral {
                 @Free ThisLiteral l1 = ThisLiteral.this;
                 //:: error: (assignment.type.incompatible)
                 @Committed ThisLiteral l2 = ThisLiteral.this;
-                
+
                 //:: error: (method.invocation.invalid)
                 ThisLiteral.this.foo();
                 //:: error: (method.invocation.invalid)
@@ -16,6 +16,6 @@ public class ThisLiteral {
             }
         };
     }
-    
+
     void foo() {}
 }
