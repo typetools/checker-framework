@@ -54,7 +54,8 @@ import checkers.quals.TypeQualifier;
  * @author Petr Hejl
  */
 @Documented
-@Target({ElementType.FIELD, ElementType.PARAMETER, ElementType.LOCAL_VARIABLE})
+@Target({ElementType.FIELD, ElementType.PARAMETER, ElementType.LOCAL_VARIABLE,
+         ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
 @Retention(RetentionPolicy.CLASS)
 //@javax.annotation.Nonnull(when=javax.annotation.meta.When.MAYBE)
 //@javax.annotation.meta.TypeQualifierNickname
