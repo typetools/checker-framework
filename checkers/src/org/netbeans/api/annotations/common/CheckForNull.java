@@ -54,7 +54,7 @@ import checkers.quals.TypeQualifier;
  * @author Petr Hejl
  */
 @Documented
-@Target({ElementType.METHOD})
+@Target({ElementType.METHOD, ElementType.TYPE_USE})
 @Retention(RetentionPolicy.CLASS)
 //@javax.annotation.Nonnull(when=javax.annotation.meta.When.MAYBE)
 //@javax.annotation.meta.TypeQualifierNickname
