@@ -1,3 +1,10 @@
+Version 1.4.2, ?? Oct 2012
+
+New foreign annotations that are supported by the Checker Framework:
+  org.eclipse.jdt.annotation.Nullable
+  org.eclipse.jdt.annotation.NonNull
+
+----------------------------------------------------------------------
 Version 1.4.1, 29 Sep 2012
 
 User-visible framework improvements:
