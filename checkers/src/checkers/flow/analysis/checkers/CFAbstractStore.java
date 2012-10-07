@@ -4,8 +4,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
-
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -120,8 +118,6 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * final).
      * <li>Furthermore, if the field has a monotonic annotation, then its
      * information can also be kept.
-     * <li>If the declared annotations for a field are the same as the ones in
-     * the store, then the abstract value for that field is kept.
      * </ol>
      *
      * Furthermore, if the method is deterministic, we store its result
@@ -139,16 +135,6 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                     .entrySet()) {
                 FlowExpressions.FieldAccess fieldAccess = e.getKey();
                 V otherVal = e.getValue();
-
-                // case 4:
-                Set<AnnotationMirror> declaredAnnos = atypeFactory
-                        .getAnnotatedType(fieldAccess.getField())
-                        .getAnnotations();
-                if (AnnotationUtils.areSame(declaredAnnos, otherVal.getType()
-                        .getAnnotations())) {
-                    newFieldValues.put(fieldAccess, otherVal);
-                    continue;
-                }
 
                 // case 3:
                 List<Pair<AnnotationMirror, AnnotationMirror>> fieldAnnotations = atypeFactory
