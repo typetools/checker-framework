@@ -67,8 +67,9 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
         return super.getAnnotatedType(tree);
     }
 
-    // left in because it may be useful in the future for determining if you can
-    // safely apply class frame types
+    /**
+     * Are all fields committed-only?
+     */
     protected boolean areAllFieldsCommittedOnly(ClassTree classTree) {
         if (!useFbc) {
             // In the rawness type system, no fields can store not fully
