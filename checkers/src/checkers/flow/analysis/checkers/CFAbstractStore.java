@@ -127,8 +127,6 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * Furthermore, if the method is deterministic, we store its result
      * {@code val} in the store.
      */
-    static int i;
-
     public void updateForMethodCall(MethodInvocationNode n,
             AnnotatedTypeFactory atypeFactory, V val) {
         ExecutableElement method = n.getTarget().getMethod();
