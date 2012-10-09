@@ -147,7 +147,6 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
         Node oldCurrentNode = analysis.currentNode;
 
         if (analysis.isRunning) {
-            assert block == analysis.currentNode.getBlock();
             return analysis.currentStore.getRegularStore();
         }
         analysis.isRunning = true;
