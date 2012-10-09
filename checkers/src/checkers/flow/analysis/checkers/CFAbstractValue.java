@@ -110,12 +110,17 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
         } else if (lubAnnotatedType.getKind() == TypeKind.TYPEVAR) {
             AnnotatedTypeVariable tLubAnnotatedType = (AnnotatedTypeVariable) lubAnnotatedType;
             AnnotatedTypeMirror upperBound = tLubAnnotatedType.getUpperBound();
-            upperBound.clearAnnotations();
             Collection<AnnotationMirror> upperBound1 = getUpperBound(getType());
             Collection<AnnotationMirror> upperBound2 = getUpperBound(other
                     .getType());
-            upperBound.addAnnotations(qualifierHierarchy.leastUpperBounds(
-                    upperBound1, upperBound2));
+
+            // TODO: how is it possible that uppBound1 or 2 does not have any
+            // annotations?
+            if (upperBound1.size() != 0 && upperBound2.size() != 0) {
+                upperBound.clearAnnotations();
+                upperBound.addAnnotations(qualifierHierarchy.leastUpperBounds(
+                        upperBound1, upperBound2));
+            }
         }
 
         return analysis.createAbstractValue(lubAnnotatedType);
