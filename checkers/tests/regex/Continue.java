@@ -48,4 +48,13 @@ class Continue {
     }
     Pattern.compile(s);
   }
+
+  void twoReturns(String s) {
+    if (s == null) {
+      return;
+    } else if (!RegexUtil.isRegex(s)) {
+      return;
+    }
+    Pattern.compile(s);
+  }
 }
