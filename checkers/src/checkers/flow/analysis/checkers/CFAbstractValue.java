@@ -1,5 +1,6 @@
 package checkers.flow.analysis.checkers;
 
+import java.util.Collection;
 import java.util.Set;
 
 import javax.annotation.processing.ProcessingEnvironment;
@@ -12,6 +13,8 @@ import checkers.flow.analysis.AbstractValue;
 import checkers.flow.util.HashCodeUtils;
 import checkers.types.AbstractBasicAnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
+import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
 import checkers.types.QualifierHierarchy;
 import checkers.types.TypeHierarchy;
 import checkers.util.InternalUtils;
@@ -94,7 +97,35 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
         lubAnnotatedType.addAnnotations(qualifierHierarchy.leastUpperBounds(
                 getType(), other.getType(), annos1, annos2));
 
+        if (lubAnnotatedType.getKind() == TypeKind.WILDCARD) {
+            AnnotatedWildcardType wLubAnnotatedType = (AnnotatedWildcardType) lubAnnotatedType;
+            AnnotatedTypeMirror extendsBound = wLubAnnotatedType.getExtendsBound();
+            extendsBound.clearAnnotations();
+            Collection<AnnotationMirror> extendsBound1 = getUpperBound(getType());
+            Collection<AnnotationMirror> extendsBound2 = getUpperBound(other.getType());
+            extendsBound.addAnnotations(qualifierHierarchy.leastUpperBounds(extendsBound1, extendsBound2));
+        } else if (lubAnnotatedType.getKind() == TypeKind.TYPEVAR) {
+            AnnotatedTypeVariable tLubAnnotatedType = (AnnotatedTypeVariable) lubAnnotatedType;
+            AnnotatedTypeMirror upperBound = tLubAnnotatedType.getUpperBound();
+            upperBound.clearAnnotations();
+            Collection<AnnotationMirror> upperBound1 = getUpperBound(getType());
+            Collection<AnnotationMirror> upperBound2 = getUpperBound(other.getType());
+            upperBound.addAnnotations(qualifierHierarchy.leastUpperBounds(upperBound1, upperBound2));
+        }
+
         return analysis.createAbstractValue(lubAnnotatedType);
+    }
+
+    /**
+     * Returns the annotations on the upper bound of type {@code t}.
+     */
+    private Collection<AnnotationMirror> getUpperBound(AnnotatedTypeMirror t) {
+        if (t.getKind() == TypeKind.WILDCARD) {
+            return ((AnnotatedWildcardType) t).getExtendsBound().getEffectiveAnnotations();
+        } else if (t.getKind() == TypeKind.TYPEVAR) {
+            return ((AnnotatedTypeVariable) t).getUpperBound().getEffectiveAnnotations();
+        }
+        return t.getEffectiveAnnotations();
     }
 
     /**
