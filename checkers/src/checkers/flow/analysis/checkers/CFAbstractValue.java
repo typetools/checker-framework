@@ -99,18 +99,23 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
 
         if (lubAnnotatedType.getKind() == TypeKind.WILDCARD) {
             AnnotatedWildcardType wLubAnnotatedType = (AnnotatedWildcardType) lubAnnotatedType;
-            AnnotatedTypeMirror extendsBound = wLubAnnotatedType.getExtendsBound();
+            AnnotatedTypeMirror extendsBound = wLubAnnotatedType
+                    .getExtendsBound();
             extendsBound.clearAnnotations();
             Collection<AnnotationMirror> extendsBound1 = getUpperBound(getType());
-            Collection<AnnotationMirror> extendsBound2 = getUpperBound(other.getType());
-            extendsBound.addAnnotations(qualifierHierarchy.leastUpperBounds(extendsBound1, extendsBound2));
+            Collection<AnnotationMirror> extendsBound2 = getUpperBound(other
+                    .getType());
+            extendsBound.addAnnotations(qualifierHierarchy.leastUpperBounds(
+                    extendsBound1, extendsBound2));
         } else if (lubAnnotatedType.getKind() == TypeKind.TYPEVAR) {
             AnnotatedTypeVariable tLubAnnotatedType = (AnnotatedTypeVariable) lubAnnotatedType;
             AnnotatedTypeMirror upperBound = tLubAnnotatedType.getUpperBound();
             upperBound.clearAnnotations();
             Collection<AnnotationMirror> upperBound1 = getUpperBound(getType());
-            Collection<AnnotationMirror> upperBound2 = getUpperBound(other.getType());
-            upperBound.addAnnotations(qualifierHierarchy.leastUpperBounds(upperBound1, upperBound2));
+            Collection<AnnotationMirror> upperBound2 = getUpperBound(other
+                    .getType());
+            upperBound.addAnnotations(qualifierHierarchy.leastUpperBounds(
+                    upperBound1, upperBound2));
         }
 
         return analysis.createAbstractValue(lubAnnotatedType);
@@ -121,9 +126,17 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
      */
     private Collection<AnnotationMirror> getUpperBound(AnnotatedTypeMirror t) {
         if (t.getKind() == TypeKind.WILDCARD) {
-            return ((AnnotatedWildcardType) t).getExtendsBound().getEffectiveAnnotations();
+            AnnotatedTypeMirror extendsBound = ((AnnotatedWildcardType) t)
+                    .getExtendsBound();
+            if (extendsBound != null) {
+                return extendsBound.getEffectiveAnnotations();
+            }
         } else if (t.getKind() == TypeKind.TYPEVAR) {
-            return ((AnnotatedTypeVariable) t).getUpperBound().getEffectiveAnnotations();
+            AnnotatedTypeMirror upperBound = ((AnnotatedTypeVariable) t)
+                    .getUpperBound();
+            if (upperBound != null) {
+                return upperBound.getEffectiveAnnotations();
+            }
         }
         return t.getEffectiveAnnotations();
     }
