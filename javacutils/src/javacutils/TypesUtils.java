@@ -1,11 +1,9 @@
-package checkers.util;
+package javacutils;
 
 import javax.lang.model.element.*;
 import javax.lang.model.type.*;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
-
-import checkers.source.SourceChecker;
 
 /**
  * A utility class that helps with {@link TypeMirror}s.
@@ -293,7 +291,7 @@ public final class TypesUtils {
         } else {
             TypeElement element = elements.getTypeElement(clazz.getCanonicalName());
             if (element == null) {
-                SourceChecker.errorAbort("Unrecognized class: " + clazz);
+                ErrorReporter.errorAbort("Unrecognized class: " + clazz);
                 return null; // dead code
             }
             return element.asType();

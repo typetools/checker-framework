@@ -329,8 +329,8 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
     @Override
     public boolean isSubtypeTypeVariable(Collection<AnnotationMirror> rhs, Collection<AnnotationMirror> lhs) {
         for (AnnotationMirror top : getTopAnnotations()) {
-            AnnotationMirror rhsForTop = AnnotationUtils.getAnnotationInHierarchy(this, rhs, top);
-            AnnotationMirror lhsForTop = AnnotationUtils.getAnnotationInHierarchy(this, lhs, top);
+            AnnotationMirror rhsForTop = getAnnotationInHierarchy(rhs, top);
+            AnnotationMirror lhsForTop = getAnnotationInHierarchy(lhs, top);
             if (!isSubtypeTypeVariable(rhsForTop, lhsForTop)) {
                 return false;
             }

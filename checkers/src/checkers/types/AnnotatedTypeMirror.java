@@ -2048,7 +2048,7 @@ public abstract class AnnotatedTypeMirror {
             for (AnnotationMirror boundAnnotation : boundAnnotations) {
                 QualifierHierarchy qualHierarchy = atypeFactory.qualHierarchy;
                 AnnotationMirror top = qualHierarchy.getTopAnnotation(boundAnnotation);
-                if (AnnotationUtils.getAnnotationInHierarchy(qualHierarchy, result, top) == null) {
+                if (qualHierarchy.getAnnotationInHierarchy(result, top) == null) {
                     result.add(boundAnnotation);
                 }
             }
