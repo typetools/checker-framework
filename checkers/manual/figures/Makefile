@@ -1,3 +1,9 @@
+# Put user-specific changes in your own Makefile.user.
+# Make will silently continue if that file does not exist.
+-include Makefile.user
+
+DIA?=dia
+
 EPSFILES = fenum.eps igj.eps interning.eps javari.eps nullness.eps nullness-and-raw.eps regex.eps signature-types.eps
 PDFFILES = fenum.pdf igj.pdf interning.pdf javari.pdf nullness.pdf nullness-and-raw.pdf regex.pdf signature-types.pdf
 PNGFILES = fenum.png igj.png interning.png javari.png nullness.png nullness-and-raw.png regex.png signature-types.png
@@ -8,13 +14,13 @@ png-copy: ${PNGFILES}
 	cp -pf ${PNGFILES} ..
 
 %.eps : %.dia
-	dia -t eps $<
+	$(DIA) -t eps $<
 
 %.pdf : %.eps
 	epstopdf $<
 
 %.png : %.dia
-	dia -t png $<
+	$(DIA) -t png $<
 
 # Direct dia translation overlays the "R" and "e" in "ReadOnly".
 igj.png: igj.pdf
