@@ -37,6 +37,26 @@ public class RegexUtil {
    * at the current depth in the call stack. By using a checked
    * PatternSyntaxException the error must be handled up the call stack where
    * a better error message can be reported.
+   * <p>
+   *
+   * Typical usage is:
+   * <pre>
+   * void myMethod(...) throws CheckedPatternSyntaxException {
+   *   ...
+   *   if (! isRegex(myString)) {
+   *     throw new CheckedPatternSyntaxException(...);
+   *   }
+   *   ... Pattern.compile(myString) ...
+   * </pre>
+   * 
+   * Simply calling <tt>Pattern.compile</tt> would have a similar effect,
+   * in that <tt>PatternSyntaxException</tt> would be thrown at run time if
+   * <tt>myString</tt> is not a regular expression.  There are two problems
+   * with such an approach.  First, a client of <tt>myMethod</tt> might
+   * forget to handle the exception, since <tt>PatternSyntaxException</tt>
+   * is not checked.  Also, the Regex Checker would issue a warning about
+   * the call to <tt>Pattern.compile</tt> that might throw an exception.
+   * The above usage pattern avoids both problems.
    *
    * @see PatternSyntaxException
    */
