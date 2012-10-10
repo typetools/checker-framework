@@ -7,9 +7,10 @@ import javax.lang.model.element.VariableElement;
 
 import javacutils.Pair;
 
-import checkers.flow.analysis.checkers.CFAbstractAnalysis;
-import checkers.flow.analysis.checkers.CFStore;
-import checkers.flow.analysis.checkers.CFValue;
+import dataflow.analysis.checkers.CFAbstractAnalysis;
+import dataflow.analysis.checkers.CFStore;
+import dataflow.analysis.checkers.CFValue;
+
 import checkers.types.AnnotatedTypeMirror;
 
 public class RegexAnalysis extends

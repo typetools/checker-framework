@@ -13,15 +13,16 @@ import javacutils.InternalUtils;
 import javacutils.Resolver;
 import javacutils.TreeUtils;
 
-import checkers.flow.analysis.FlowExpressions;
-import checkers.flow.analysis.FlowExpressions.FieldAccess;
-import checkers.flow.analysis.FlowExpressions.PureMethodCall;
-import checkers.flow.analysis.FlowExpressions.Receiver;
-import checkers.flow.analysis.FlowExpressions.ThisReference;
-import checkers.flow.cfg.node.ImplicitThisLiteralNode;
-import checkers.flow.cfg.node.LocalVariableNode;
-import checkers.flow.cfg.node.MethodInvocationNode;
-import checkers.flow.cfg.node.Node;
+import dataflow.analysis.FlowExpressions;
+import dataflow.analysis.FlowExpressions.FieldAccess;
+import dataflow.analysis.FlowExpressions.PureMethodCall;
+import dataflow.analysis.FlowExpressions.Receiver;
+import dataflow.analysis.FlowExpressions.ThisReference;
+import dataflow.cfg.node.ImplicitThisLiteralNode;
+import dataflow.cfg.node.LocalVariableNode;
+import dataflow.cfg.node.MethodInvocationNode;
+import dataflow.cfg.node.Node;
+
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeFactory;
 

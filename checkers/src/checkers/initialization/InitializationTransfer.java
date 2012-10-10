@@ -17,24 +17,25 @@ import javax.lang.model.util.ElementFilter;
 
 import javacutils.TreeUtils;
 
-import checkers.flow.analysis.ConditionalTransferResult;
-import checkers.flow.analysis.FlowExpressions;
-import checkers.flow.analysis.FlowExpressions.FieldAccess;
-import checkers.flow.analysis.FlowExpressions.Receiver;
-import checkers.flow.analysis.FlowExpressions.ThisReference;
-import checkers.flow.analysis.RegularTransferResult;
-import checkers.flow.analysis.TransferInput;
-import checkers.flow.analysis.TransferResult;
-import checkers.flow.analysis.checkers.CFAbstractAnalysis;
-import checkers.flow.analysis.checkers.CFAbstractTransfer;
-import checkers.flow.analysis.checkers.CFValue;
-import checkers.flow.cfg.UnderlyingAST;
-import checkers.flow.cfg.node.AssignmentNode;
-import checkers.flow.cfg.node.FieldAccessNode;
-import checkers.flow.cfg.node.LocalVariableNode;
-import checkers.flow.cfg.node.MethodInvocationNode;
-import checkers.flow.cfg.node.Node;
-import checkers.flow.cfg.node.ThisLiteralNode;
+import dataflow.analysis.ConditionalTransferResult;
+import dataflow.analysis.FlowExpressions;
+import dataflow.analysis.FlowExpressions.FieldAccess;
+import dataflow.analysis.FlowExpressions.Receiver;
+import dataflow.analysis.FlowExpressions.ThisReference;
+import dataflow.analysis.RegularTransferResult;
+import dataflow.analysis.TransferInput;
+import dataflow.analysis.TransferResult;
+import dataflow.analysis.checkers.CFAbstractAnalysis;
+import dataflow.analysis.checkers.CFAbstractTransfer;
+import dataflow.analysis.checkers.CFValue;
+import dataflow.cfg.UnderlyingAST;
+import dataflow.cfg.node.AssignmentNode;
+import dataflow.cfg.node.FieldAccessNode;
+import dataflow.cfg.node.LocalVariableNode;
+import dataflow.cfg.node.MethodInvocationNode;
+import dataflow.cfg.node.Node;
+import dataflow.cfg.node.ThisLiteralNode;
+
 import checkers.types.AnnotatedTypeMirror;
 
 import com.sun.source.tree.ClassTree;
