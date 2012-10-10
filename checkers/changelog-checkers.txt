@@ -1,5 +1,8 @@
 Version 1.4.2, ?? Oct 2012
 
+Regex Checker:
+  New CheckedPatternSyntaxException added to RegexUtil.
+
 New foreign annotations that are supported by the Checker Framework:
   org.eclipse.jdt.annotation.Nullable
   org.eclipse.jdt.annotation.NonNull
