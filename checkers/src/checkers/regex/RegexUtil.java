@@ -96,7 +96,7 @@ public class RegexUtil {
      * @return The full detail message
      */
     public String getMessage() {
-        return pse.getMessage();
+      return pse.getMessage();
     }
 
     /**
