@@ -19,7 +19,9 @@
     <property name="checkers-quals.jar.file" value="checkers-quals.jar"/>
     <property name="dist.doc" value="doc"/>
     <property name="javaparser.loc" value="../javaparser"/>
+    <property name="javacutils.loc" value="../javacutils"/>
     <property name="checkers.rel.jp" value="../checkers"/>
+    <property name="checkers.rel.javacutils" value="../checkers"/>
     <property name="build.jtreg.dir" value="${build}/jtreg"/>
 
     <property name="tmpdir" value="${java.io.tmpdir}/${user.name}/${ant.project.name}" />
@@ -58,6 +60,10 @@
         <available property="jp.project"
                    file="${javaparser.loc}/build.xml"/>
         <antcall target="-prep-jp-compile"/>
+
+        <available property="javacutils.project"
+                   file="${javacutils.loc}/build.xml"/>
+        <antcall target="-prep-javacutils-compile"/>
     </target>
 
     <target name="-prep-jp-compile" if="jp.project"
@@ -65,6 +71,15 @@
       <ant dir="${javaparser.loc}">
         <property name="dist.file"
                   value="${checkers.rel.jp}/${javaparser.lib}"/>
+        <target name="dist"/>
+      </ant>
+    </target>
+
+    <target name="-prep-javacutils-compile" if="javacutils.project"
+            description="compile javacutils utilities project if available">
+      <ant dir="${javacutils.loc}">
+        <property name="dist.file"
+                  value="${checkers.rel.javacutils}/${javacutils.lib}"/>
         <target name="dist"/>
       </ant>
     </target>
@@ -102,18 +117,21 @@
           <srcfiles refid="src.astub.files"/>
         </uptodate>
         <uptodate property="javaparser.lib.uptodate" targetfile="${build}" srcfile="${javaparser.lib}"/>
+        <uptodate property="javacutils.lib.uptodate" targetfile="${build}" srcfile="${javacutils.lib}"/>
 
         <condition property="build.uptodate">
           <and>
             <isset property="src.files.uptodate"/>
             <isset property="src.astub.files.uptodate"/>
             <isset property="javaparser.lib.uptodate"/>
+            <isset property="javacutils.lib.uptodate"/>
           </and>
         </condition>
         <!--
         <echo message="src.files.uptodate: ${src.files.uptodate}"/>
         <echo message="src.astub.files.uptodate: ${src.astub.files.uptodate}"/>
         <echo message="javaparser.lib.uptodate: ${javaparser.lib.uptodate}"/>
+        <echo message="javacutils.lib.uptodate: ${javacutils.lib.uptodate}"/>
         <echo message="build.uptodate: ${build.uptodate}"/>
         -->
     </target>
@@ -141,7 +159,7 @@ ${build.version} of the 'javac.jar' library."/>
         </pathconvert>
         <java fork="true"
               failonerror="true"
-              classpath="${compiler.lib}:${annotation-utils.lib}:${javaparser.lib}:${jna.lib}:${tests.junit}"
+              classpath="${compiler.lib}:${annotation-utils.lib}:${javaparser.lib}:${javacutils.lib}:${jna.lib}:${tests.junit}"
               classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${compiler.lib}"/>
             <arg value="-g"/>
@@ -601,7 +619,7 @@ ${build.version} of the 'javac.jar' library."/>
 
         <java fork="true"
               failonerror="true"
-              classpath="${compiler.lib}:${annotation-utils.lib}:${javaparser.lib}:${jna.lib}:${checkers.jar.file}"
+              classpath="${compiler.lib}:${annotation-utils.lib}:${javaparser.lib}:${javacutils.lib}:${jna.lib}:${checkers.jar.file}"
               classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${compiler.lib}"/>
             <arg value="-g"/>

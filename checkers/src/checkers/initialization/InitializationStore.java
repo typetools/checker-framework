@@ -8,6 +8,8 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 
+import javacutils.AnnotationUtils;
+
 import checkers.flow.analysis.FlowExpressions;
 import checkers.flow.analysis.FlowExpressions.FieldAccess;
 import checkers.flow.analysis.checkers.CFAbstractAnalysis;
@@ -15,7 +17,6 @@ import checkers.flow.analysis.checkers.CFAbstractStore;
 import checkers.flow.analysis.checkers.CFValue;
 import checkers.flow.cfg.node.MethodInvocationNode;
 import checkers.types.AnnotatedTypeFactory;
-import checkers.util.AnnotationUtils;
 
 /**
  * A store that extends {@code CFAbstractStore} and additionally tracks which

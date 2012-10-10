@@ -5,11 +5,12 @@ import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.VariableElement;
 
+import javacutils.Pair;
+
 import checkers.flow.analysis.checkers.CFAbstractAnalysis;
 import checkers.flow.analysis.checkers.CFValue;
 import checkers.initialization.InitializationStore;
 import checkers.types.AnnotatedTypeMirror;
-import checkers.util.Pair;
 
 /**
  * The analysis class for the non-null type system (serves as factory for the

@@ -25,6 +25,8 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Types;
 
+import javacutils.TypesUtils;
+
 import checkers.source.SourceChecker;
 
 /**

@@ -12,6 +12,14 @@ import javax.lang.model.type.*;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
+import javacutils.AnnotationProvider;
+import javacutils.AnnotationUtils;
+import javacutils.ElementUtils;
+import javacutils.InternalUtils;
+import javacutils.Pair;
+import javacutils.TreeUtils;
+import javacutils.trees.DetachedVarSymbol;
+
 import checkers.basetype.BaseTypeChecker;
 /*>>>
 import checkers.javari.quals.Mutable;
@@ -24,15 +32,9 @@ import checkers.types.AnnotatedTypeMirror.*;
 import checkers.types.TypeFromTree;
 import checkers.types.visitors.AnnotatedTypeScanner;
 import checkers.util.AnnotatedTypes;
-import checkers.util.AnnotationUtils;
-import checkers.util.ElementUtils;
-import checkers.util.InternalUtils;
-import checkers.util.Pair;
-import checkers.util.TreeUtils;
 import checkers.util.stub.StubParser;
 import checkers.util.stub.StubResource;
 import checkers.util.stub.StubUtil;
-import checkers.util.trees.DetachedVarSymbol;
 
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
@@ -66,7 +68,7 @@ import com.sun.tools.javac.tree.TreeInfo;
  *
  * @checker.framework.manual #writing-a-checker How to write a checker plug-in
  */
-public class AnnotatedTypeFactory {
+public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /** The {@link Trees} instance to use for tree node path finding. */
     protected final Trees trees;

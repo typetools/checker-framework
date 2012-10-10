@@ -5,6 +5,9 @@ import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 
+import javacutils.AnnotationUtils;
+import javacutils.TreeUtils;
+
 import checkers.flow.analysis.ConditionalTransferResult;
 import checkers.flow.analysis.FlowExpressions;
 import checkers.flow.analysis.FlowExpressions.Receiver;
@@ -24,8 +27,6 @@ import checkers.initialization.InitializationTransfer;
 import checkers.nonnull.quals.NonNull;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
-import checkers.util.AnnotationUtils;
-import checkers.util.TreeUtils;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;

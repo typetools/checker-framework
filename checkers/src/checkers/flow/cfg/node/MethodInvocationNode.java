@@ -4,8 +4,9 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
+import javacutils.InternalUtils;
+
 import checkers.flow.util.HashCodeUtils;
-import checkers.util.InternalUtils;
 
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.util.TreePath;

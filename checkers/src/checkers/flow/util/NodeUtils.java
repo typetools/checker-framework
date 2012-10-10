@@ -1,8 +1,9 @@
 package checkers.flow.util;
 
+import javacutils.TypesUtils;
+
 import checkers.flow.cfg.node.ConditionalOrNode;
 import checkers.flow.cfg.node.Node;
-import checkers.util.TypesUtils;
 
 import com.sun.source.tree.Tree;
 import com.sun.tools.javac.code.Type;

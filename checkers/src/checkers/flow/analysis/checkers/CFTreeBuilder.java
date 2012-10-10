@@ -63,7 +63,7 @@ import com.sun.tools.javac.util.Pair;
  * the pieces of a desugared enhanced for loop.
  */
 
-public class CFTreeBuilder extends {
+public class CFTreeBuilder extends TreeBuilder {
 
     public CFTreeBuilder(ProcessingEnvironment env) {
         super(env);

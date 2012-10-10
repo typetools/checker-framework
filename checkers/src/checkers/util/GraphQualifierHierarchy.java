@@ -6,6 +6,8 @@ import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 
+import javacutils.AnnotationUtils;
+
 import checkers.source.SourceChecker;
 import checkers.types.QualifierHierarchy;
 

@@ -7,6 +7,9 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeMirror;
 
+import javacutils.ElementUtils;
+import javacutils.TreeUtils;
+
 import checkers.flow.analysis.checkers.CFAbstractStore;
 import checkers.flow.cfg.node.ClassNameNode;
 import checkers.flow.cfg.node.FieldAccessNode;
@@ -17,9 +20,7 @@ import checkers.flow.cfg.node.ThisLiteralNode;
 import checkers.flow.cfg.node.ValueLiteralNode;
 import checkers.flow.util.HashCodeUtils;
 import checkers.types.AnnotatedTypeFactory;
-import checkers.util.ElementUtils;
 import checkers.util.PurityUtils;
-import checkers.util.TreeUtils;
 
 /**
  * Collection of classes and helper functions to represent Java expressions

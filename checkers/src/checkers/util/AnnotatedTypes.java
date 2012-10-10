@@ -27,6 +27,12 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
+import javacutils.AnnotationUtils;
+import javacutils.ElementUtils;
+import javacutils.InternalUtils;
+import javacutils.TreeUtils;
+import javacutils.TypesUtils;
+
 import checkers.quals.TypeQualifier;
 import checkers.source.SourceChecker;
 import checkers.types.AnnotatedTypeFactory;

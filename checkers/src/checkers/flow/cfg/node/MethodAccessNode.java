@@ -5,9 +5,10 @@ import java.util.Collections;
 
 import javax.lang.model.element.ExecutableElement;
 
+import javacutils.InternalUtils;
+import javacutils.TreeUtils;
+
 import checkers.flow.util.HashCodeUtils;
-import checkers.util.InternalUtils;
-import checkers.util.TreeUtils;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
