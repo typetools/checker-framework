@@ -27,6 +27,13 @@ import javax.lang.model.type.UnionType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
+import javacutils.ElementUtils;
+import javacutils.InternalUtils;
+import javacutils.Pair;
+import javacutils.TreeUtils;
+import javacutils.TypesUtils;
+
+import checkers.flow.analysis.checkers.CFTreeBuilder;
 import checkers.flow.cfg.CFGBuilder.ExtendedNode.ExtendedNodeType;
 import checkers.flow.cfg.UnderlyingAST.CFGMethod;
 import checkers.flow.cfg.block.Block;
@@ -124,12 +131,6 @@ import checkers.flow.cfg.node.VariableDeclarationNode;
 import checkers.flow.cfg.node.WideningConversionNode;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
-import checkers.util.ElementUtils;
-import checkers.util.InternalUtils;
-import checkers.util.Pair;
-import checkers.util.TreeUtils;
-import checkers.util.TypesUtils;
-import checkers.util.trees.TreeBuilder;
 
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
@@ -1331,7 +1332,7 @@ public class CFGBuilder {
         protected Elements elements;
         protected Types types;
         protected Trees trees;
-        protected TreeBuilder treeBuilder;
+        protected CFTreeBuilder treeBuilder;
 
         /**
          * Annotated type factory used to get flow-insensitive annotations
@@ -1450,7 +1451,7 @@ public class CFGBuilder {
             elements = env.getElementUtils();
             types = env.getTypeUtils();
             trees = Trees.instance(env);
-            treeBuilder = new TreeBuilder(env);
+            treeBuilder = new CFTreeBuilder(env);
 
             // start in regular mode
             conditionalMode = false;

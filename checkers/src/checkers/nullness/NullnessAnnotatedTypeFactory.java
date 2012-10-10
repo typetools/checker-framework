@@ -7,6 +7,12 @@ import javax.lang.model.element.*;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Elements;
 
+import javacutils.AnnotationUtils;
+import javacutils.ElementUtils;
+import javacutils.InternalUtils;
+import javacutils.Pair;
+import javacutils.TreeUtils;
+
 import checkers.basetype.BaseTypeChecker;
 import checkers.nullness.quals.*;
 import checkers.quals.DefaultLocation;
@@ -22,12 +28,7 @@ import checkers.types.GeneralAnnotatedTypeFactory;
 import checkers.types.TreeAnnotator;
 import checkers.types.TypeAnnotator;
 import checkers.types.visitors.AnnotatedTypeScanner;
-import checkers.util.AnnotationUtils;
 import checkers.util.DependentTypes;
-import checkers.util.ElementUtils;
-import checkers.util.InternalUtils;
-import checkers.util.Pair;
-import checkers.util.TreeUtils;
 
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;

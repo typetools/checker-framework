@@ -11,6 +11,9 @@ import javax.lang.model.element.Name;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 
+import javacutils.AnnotationUtils;
+import javacutils.Pair;
+
 import checkers.flow.analysis.FlowExpressions;
 import checkers.flow.analysis.FlowExpressions.PureMethodCall;
 import checkers.flow.analysis.FlowExpressions.Receiver;
@@ -21,8 +24,6 @@ import checkers.flow.cfg.node.MethodInvocationNode;
 import checkers.flow.cfg.node.Node;
 import checkers.quals.MonotonicAnnotation;
 import checkers.types.AnnotatedTypeFactory;
-import checkers.util.AnnotationUtils;
-import checkers.util.Pair;
 import checkers.util.PurityUtils;
 
 /**

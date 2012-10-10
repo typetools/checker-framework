@@ -4,9 +4,10 @@ import java.util.*;
 
 import javax.lang.model.element.AnnotationMirror;
 
+import javacutils.AnnotationUtils;
+
 import checkers.source.SourceChecker;
 import checkers.types.QualifierHierarchy;
-import checkers.util.AnnotationUtils;
 
 /**
  * Maintains multiple gen-kill sets, "keyed" by a value. For instance, the

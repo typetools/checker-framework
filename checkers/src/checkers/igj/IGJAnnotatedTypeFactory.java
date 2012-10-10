@@ -22,6 +22,12 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
 
+import javacutils.AnnotationUtils;
+import javacutils.ElementUtils;
+import javacutils.Pair;
+import javacutils.TreeUtils;
+import javacutils.TypesUtils;
+
 import checkers.igj.quals.I;
 import checkers.igj.quals.Immutable;
 import checkers.igj.quals.Mutable;
@@ -38,11 +44,6 @@ import checkers.types.TypeAnnotator;
 import checkers.types.visitors.AnnotatedTypeScanner;
 import checkers.types.visitors.SimpleAnnotatedTypeVisitor;
 import checkers.util.AnnotatedTypes;
-import checkers.util.AnnotationUtils;
-import checkers.util.ElementUtils;
-import checkers.util.Pair;
-import checkers.util.TreeUtils;
-import checkers.util.TypesUtils;
 
 /**
  * Adds implicit and default IGJ annotations, only if the user does not

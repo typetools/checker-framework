@@ -8,6 +8,9 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 
+import javacutils.AnnotationUtils;
+import javacutils.Pair;
+
 import checkers.quals.ConditionalPostconditionAnnotation;
 import checkers.quals.EnsuresAnnotation;
 import checkers.quals.EnsuresAnnotationIf;
@@ -18,8 +21,6 @@ import checkers.quals.PreconditionAnnotation;
 import checkers.quals.RequiresAnnotation;
 import checkers.quals.RequiresAnnotations;
 import checkers.types.AbstractBasicAnnotatedTypeFactory;
-import checkers.util.AnnotationUtils;
-import checkers.util.Pair;
 
 /**
  * A utility class to handle pre- and postconditions.

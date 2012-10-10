@@ -8,6 +8,8 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
+import javacutils.InternalUtils;
+
 import checkers.basetype.BaseTypeChecker;
 import checkers.flow.analysis.AbstractValue;
 import checkers.flow.util.HashCodeUtils;
@@ -17,7 +19,6 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
 import checkers.types.QualifierHierarchy;
 import checkers.types.TypeHierarchy;
-import checkers.util.InternalUtils;
 
 /**
  * An implementation of an abstract value used by the Checker Framework dataflow

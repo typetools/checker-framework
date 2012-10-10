@@ -19,6 +19,13 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic;
 
+import javacutils.AnnotationUtils;
+import javacutils.ElementUtils;
+import javacutils.InternalUtils;
+import javacutils.Pair;
+import javacutils.TreeUtils;
+import javacutils.TypesUtils;
+
 import checkers.basetype.PurityChecker.PurityResult;
 import checkers.compilermsgs.quals.CompilerMessageKey;
 import checkers.flow.analysis.FlowExpressions;
@@ -53,13 +60,7 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
 import checkers.types.VisitorState;
 import checkers.types.visitors.AnnotatedTypeScanner;
 import checkers.util.AnnotatedTypes;
-import checkers.util.AnnotationUtils;
-import checkers.util.ElementUtils;
-import checkers.util.InternalUtils;
-import checkers.util.Pair;
 import checkers.util.PurityUtils;
-import checkers.util.TreeUtils;
-import checkers.util.TypesUtils;
 
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;

@@ -10,13 +10,14 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 
+import javacutils.AnnotationUtils;
+import javacutils.ElementUtils;
+
 import checkers.source.SourceChecker;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.*;
 import checkers.util.AnnotationBuilder;
-import checkers.util.AnnotationUtils;
-import checkers.util.ElementUtils;
 
 import japa.parser.JavaParser;
 import japa.parser.ast.*;

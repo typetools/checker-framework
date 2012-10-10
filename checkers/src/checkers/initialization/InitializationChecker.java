@@ -11,6 +11,9 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
+import javacutils.AnnotationUtils;
+import javacutils.TypesUtils;
+
 import checkers.basetype.BaseTypeChecker;
 import checkers.initialization.quals.Committed;
 import checkers.initialization.quals.FBCBottom;
@@ -23,9 +26,7 @@ import checkers.source.SourceChecker;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.QualifierHierarchy;
 import checkers.util.AnnotationBuilder;
-import checkers.util.AnnotationUtils;
 import checkers.util.MultiGraphQualifierHierarchy;
-import checkers.util.TypesUtils;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.Tree;

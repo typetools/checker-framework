@@ -5,6 +5,8 @@ import java.util.Collection;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Elements;
 
+import javacutils.AnnotationUtils;
+
 import checkers.basetype.BaseTypeChecker;
 import checkers.igj.quals.*;
 import checkers.quals.TypeQualifiers;

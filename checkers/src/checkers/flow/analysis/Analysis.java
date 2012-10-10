@@ -11,6 +11,8 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 
+import javacutils.Pair;
+
 import checkers.flow.cfg.ControlFlowGraph;
 import checkers.flow.cfg.UnderlyingAST;
 import checkers.flow.cfg.UnderlyingAST.CFGMethod;
@@ -24,7 +26,6 @@ import checkers.flow.cfg.block.SpecialBlock;
 import checkers.flow.cfg.node.LocalVariableNode;
 import checkers.flow.cfg.node.Node;
 import checkers.flow.cfg.node.ReturnNode;
-import checkers.util.Pair;
 
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;

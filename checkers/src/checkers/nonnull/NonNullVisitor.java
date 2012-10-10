@@ -8,6 +8,10 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeMirror;
 
+import javacutils.InternalUtils;
+import javacutils.TreeUtils;
+import javacutils.TypesUtils;
+
 import checkers.compilermsgs.quals.CompilerMessageKey;
 import checkers.initialization.InitializationVisitor;
 import checkers.nonnull.quals.NonNull;
@@ -15,9 +19,6 @@ import checkers.source.Result;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
-import checkers.util.InternalUtils;
-import checkers.util.TreeUtils;
-import checkers.util.TypesUtils;
 
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.AssertTree;

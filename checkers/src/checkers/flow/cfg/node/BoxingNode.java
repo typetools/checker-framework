@@ -5,9 +5,10 @@ import java.util.Collections;
 
 import javax.lang.model.type.TypeMirror;
 
+import javacutils.InternalUtils;
+
 import checkers.flow.util.HashCodeUtils;
 import checkers.nullness.quals.NonNull;
-import checkers.util.InternalUtils;
 
 import com.sun.source.tree.Tree;
 

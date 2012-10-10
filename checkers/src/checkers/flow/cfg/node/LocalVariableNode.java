@@ -5,9 +5,10 @@ import java.util.Collections;
 
 import javax.lang.model.element.Element;
 
+import javacutils.InternalUtils;
+import javacutils.TreeUtils;
+
 import checkers.flow.util.HashCodeUtils;
-import checkers.util.InternalUtils;
-import checkers.util.TreeUtils;
 
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.Tree;

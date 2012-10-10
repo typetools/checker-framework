@@ -10,6 +10,12 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 
+import javacutils.AnnotationUtils;
+import javacutils.ElementUtils;
+import javacutils.InternalUtils;
+import javacutils.TreeUtils;
+import javacutils.Pair;
+
 import checkers.basetype.BaseTypeVisitor;
 /*>>>
 import checkers.compilermsgs.quals.CompilerMessageKey;
@@ -22,12 +28,7 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
-import checkers.util.AnnotationUtils;
-import checkers.util.ElementUtils;
-import checkers.util.InternalUtils;
 import checkers.util.QualifierPolymorphism;
-import checkers.util.TreeUtils;
-import checkers.util.Pair;
 
 import com.sun.source.tree.*;
 

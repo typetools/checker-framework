@@ -10,6 +10,8 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Elements;
 
+import javacutils.AnnotationUtils;
+
 import checkers.quals.MonotonicAnnotation;
 import checkers.quals.PolymorphicQualifier;
 import checkers.quals.SubtypeOf;
@@ -20,7 +22,6 @@ import checkers.types.AnnotatedTypeFactory;
 import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.types.QualifierHierarchy;
 import checkers.types.TypeHierarchy;
-import checkers.util.AnnotationUtils;
 import checkers.util.GraphQualifierHierarchy;
 import checkers.util.MultiGraphQualifierHierarchy;
 import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
