@@ -11,6 +11,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Elements;
 
 import javacutils.AnnotationUtils;
+import javacutils.ErrorReporter;
 
 import checkers.quals.MonotonicAnnotation;
 import checkers.quals.PolymorphicQualifier;
@@ -241,13 +242,13 @@ public abstract class BaseTypeChecker extends SourceChecker {
                 if (typeQualifier.getAnnotation(SubtypeOf.class) != null) {
                     // This is currently not supported. At some point we might add
                     // polymorphic qualifiers with upper and lower bounds.
-                    errorAbort("BaseTypeChecker: " + typeQualifier + " is polymorphic and specifies super qualifiers. " +
+                    ErrorReporter.errorAbort("BaseTypeChecker: " + typeQualifier + " is polymorphic and specifies super qualifiers. " +
                         "Remove the @checkers.quals.SubtypeOf or @checkers.quals.PolymorphicQualifier annotation from it.");
                 }
                 continue;
             }
             if (typeQualifier.getAnnotation(SubtypeOf.class) == null) {
-                errorAbort("BaseTypeChecker: " + typeQualifier + " does not specify its super qualifiers. " +
+                ErrorReporter.errorAbort("BaseTypeChecker: " + typeQualifier + " does not specify its super qualifiers. " +
                     "Add an @checkers.quals.SubtypeOf annotation to it.");
             }
             Class<? extends Annotation>[] superQualifiers =
@@ -261,7 +262,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
 
         QualifierHierarchy hierarchy = factory.build();
         if (hierarchy.getTypeQualifiers().size() < 1) {
-            errorAbort("BaseTypeChecker: invalid qualifier hierarchy: hierarchy requires at least one annotation: " + hierarchy.getTypeQualifiers());
+            ErrorReporter.errorAbort("BaseTypeChecker: invalid qualifier hierarchy: hierarchy requires at least one annotation: " + hierarchy.getTypeQualifiers());
         }
 
         return hierarchy;
@@ -445,7 +446,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
             Constructor<T> ctor = cls.getConstructor(paramTypes);
             return ctor.newInstance(args);
         } catch (Throwable t) {
-            SourceChecker.errorAbort("Unexpected " + t.getClass().getSimpleName() + " for " +
+            ErrorReporter.errorAbort("Unexpected " + t.getClass().getSimpleName() + " for " +
                     "class name " + name +
                     " when invoking the constructor; parameter types: " + Arrays.toString(paramTypes),
                     // + " and args: " + Arrays.toString(args),

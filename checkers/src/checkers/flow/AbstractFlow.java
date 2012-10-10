@@ -19,6 +19,7 @@ import javax.lang.model.type.TypeMirror;
 
 import javacutils.AnnotationUtils;
 import javacutils.ElementUtils;
+import javacutils.ErrorReporter;
 import javacutils.Pair;
 import javacutils.TreeUtils;
 
@@ -845,7 +846,7 @@ implements Flow {
         if (iter != null) {
             propagateFromType(var, iter);
         } else {
-            SourceChecker.errorAbort("AbstractFlow.visitEnahncedForLoop: could not determine iterated type!");
+            ErrorReporter.errorAbort("AbstractFlow.visitEnahncedForLoop: could not determine iterated type!");
         }
 
         ST stEntry = copyState(flowState);

@@ -12,8 +12,8 @@ import javax.lang.model.util.Elements;
 
 import javacutils.AnnotationUtils;
 import javacutils.ElementUtils;
+import javacutils.ErrorReporter;
 
-import checkers.source.SourceChecker;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.*;
@@ -63,7 +63,7 @@ public class StubParser {
         try {
             parsedindex = JavaParser.parse(inputStream);
         } catch (Exception e) {
-            SourceChecker.errorAbort("StubParser: exception from JavaParser.parse", e);
+            ErrorReporter.errorAbort("StubParser: exception from JavaParser.parse", e);
             parsedindex = null; // dead code, but needed for def. assignment checks
         }
         this.index = parsedindex;
@@ -588,7 +588,7 @@ public class StubParser {
         if (m.containsKey(key)) {
             // TODO: instead of failing, can we try merging the information from
             // multiple stub files?
-            SourceChecker.errorAbort("StubParser: key is already in map: " + LINE_SEPARATOR
+            ErrorReporter.errorAbort("StubParser: key is already in map: " + LINE_SEPARATOR
                             + "  " + key + " => " + m.get(key) + LINE_SEPARATOR
                             + "while adding: " + LINE_SEPARATOR
                             + "  " + key + " => " + value);
@@ -628,7 +628,7 @@ public class StubParser {
             if (into.isAnnotatedInHierarchy(afrom) &&
                     !AnnotationUtils.areSame(into.getAnnotationInHierarchy(afrom), afrom)) {
                 // TODO: raise error on the caller, this message might not help in debugging.
-                SourceChecker.errorAbort("StubParser: key is already in map: " + LINE_SEPARATOR
+                ErrorReporter.errorAbort("StubParser: key is already in map: " + LINE_SEPARATOR
                         + " existing: " + into + " new: " + from);
                 return; // dead code
             } else {
@@ -730,7 +730,7 @@ public class StubParser {
             handleExpr(builder, "value", valexpr);
             return builder.build();
         } else {
-            SourceChecker.errorAbort("StubParser: unknown annotation type: " + annotation);
+            ErrorReporter.errorAbort("StubParser: unknown annotation type: " + annotation);
             annoMirror = null; // dead code
         }
         return annoMirror;
@@ -764,7 +764,7 @@ public class StubParser {
                     builder.setValue(name, arr);
                 }
             } else {
-                SourceChecker.errorAbort("StubParser: unhandled annotation attribute type: " + faexpr + " and expected: " + expected);
+                ErrorReporter.errorAbort("StubParser: unhandled annotation attribute type: " + faexpr + " and expected: " + expected);
             }
         } else if (expr instanceof StringLiteralExpr) {
             StringLiteralExpr slexpr = (StringLiteralExpr) expr;
@@ -776,13 +776,13 @@ public class StubParser {
                 String[] arr = { slexpr.getValue() };
                 builder.setValue(name, arr);
             } else {
-                SourceChecker.errorAbort("StubParser: unhandled annotation attribute type: " + slexpr + " and expected: " + expected);
+                ErrorReporter.errorAbort("StubParser: unhandled annotation attribute type: " + slexpr + " and expected: " + expected);
             }
         } else if (expr instanceof ArrayInitializerExpr) {
             ExecutableElement var = builder.findElement(name);
             TypeMirror expected = var.getReturnType();
             if (expected.getKind() != TypeKind.ARRAY) {
-                SourceChecker.errorAbort("StubParser: unhandled annotation attribute type: " + expr + " and expected: " + expected);
+                ErrorReporter.errorAbort("StubParser: unhandled annotation attribute type: " + expr + " and expected: " + expected);
             }
 
             ArrayInitializerExpr aiexpr = (ArrayInitializerExpr) expr;
@@ -802,13 +802,13 @@ public class StubParser {
                 } else if (anaiexpr instanceof StringLiteralExpr) {
                     elemarr[i] = ((StringLiteralExpr) anaiexpr).getValue();
                 } else {
-                    SourceChecker.errorAbort("StubParser: unhandled annotation attribute type: " + anaiexpr);
+                    ErrorReporter.errorAbort("StubParser: unhandled annotation attribute type: " + anaiexpr);
                 }
             }
 
             builder.setValue(name, elemarr);
         } else {
-            SourceChecker.errorAbort("StubParser: unhandled annotation attribute type: " + expr + " class: " + expr.getClass());
+            ErrorReporter.errorAbort("StubParser: unhandled annotation attribute type: " + expr + " class: " + expr.getClass());
         }
     }
 
