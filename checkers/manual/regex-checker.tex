@@ -193,9 +193,6 @@ if (! RegexUtil.isRegex(regex)) {
    throw new RuntimeException("Error parsing regex " + regex, RegexUtil.regexException(regex));
    // or: System.out.println("Error parsing regex \"" + regex + "\": " + RegexUtil.regexError(regex));
 }
-// The following line suppresses a Regex Checker warning and is only necessary until the 
-// Regex Checker supports flow-sensitivity, after which time it can be removed from the code.
-regex = RegexUtil.asRegex(regex);   // @SuppressWarnings("regex") // flow-sensitivity
 Pattern p = Pattern.compile(regex);
 \end{Verbatim}
 %BEGIN LATEX
@@ -216,7 +213,7 @@ expression, then you can use the
 warning.
 
 You can think of this method 
-is a cast:  it returns its argument unchanged, but with the type
+as a cast:  it returns its argument unchanged, but with the type
 \code{@Regex String} if it is a valid regular expression.  It throws an
 Error if its argument is not a valid regular expression, but you should
 only use it when you are sure it will not throw an error.
@@ -226,10 +223,8 @@ method that takes a capturing group parameter. This method works the same as
 described above, but returns a \code{@Regex String} with the parameter on the
 annotation set to the value of the capturing group parameter passed to the method.
 
-This method is
-mainly a workaround until the Regex Checker supports flow-sensitivity (see
-Section~\ref{type-refinement}) and should be used rarely once the Regex
-Checker supports flow-sensitivity.
+The use case shown in Figure~\ref{fig:regex-util-example} should support most cases
+so the \<asRegex> method should be used rarely.
 
 
 
