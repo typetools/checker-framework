@@ -13,8 +13,8 @@ public class ErrorReporter {
     /**
      * Register a handler to customize error reporting.
      */
-    public void setHandler(ErrorHandler handler) {
-        this.handler = handler;
+    public static void setHandler(ErrorHandler h) {
+        handler = h;
     }
     
     /**

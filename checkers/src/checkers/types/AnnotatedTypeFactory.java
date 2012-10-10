@@ -15,6 +15,7 @@ import javax.lang.model.util.Types;
 import javacutils.AnnotationProvider;
 import javacutils.AnnotationUtils;
 import javacutils.ElementUtils;
+import javacutils.ErrorReporter;
 import javacutils.InternalUtils;
 import javacutils.Pair;
 import javacutils.TreeUtils;
@@ -168,7 +169,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         this.visitorState = new VisitorState();
         this.qualHierarchy = qualHierarchy;
         if (qualHierarchy == null) {
-            SourceChecker.errorAbort("AnnotatedTypeFactory with null qualifier hierarchy not supported.");
+            ErrorReporter.errorAbort("AnnotatedTypeFactory with null qualifier hierarchy not supported.");
         }
         this.indexTypes = null; // will be set by postInit()
         this.indexDeclAnnos = null; // will be set by postInit()
@@ -243,7 +244,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     public AnnotatedTypeMirror getAnnotatedType(Element elt) {
         if (elt == null) {
-            SourceChecker.errorAbort("AnnotatedTypeFactory.getAnnotatedType: null element");
+            ErrorReporter.errorAbort("AnnotatedTypeFactory.getAnnotatedType: null element");
             return null; // dead code
         }
         AnnotatedTypeMirror type = fromElement(elt);
@@ -279,7 +280,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // I wish I could make this method protected
     public AnnotatedTypeMirror getAnnotatedType(Tree tree) {
         if (tree == null) {
-            SourceChecker.errorAbort("AnnotatedTypeFactory.getAnnotatedType: null tree");
+            ErrorReporter.errorAbort("AnnotatedTypeFactory.getAnnotatedType: null tree");
             return null; // dead code
         }
         if (treeCache.containsKey(tree) && shouldReadCache)
@@ -301,7 +302,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 if (TreeUtils.isExpressionTree(tree)) {
                     type = fromExpression((ExpressionTree)tree);
                 } else {
-                    SourceChecker.errorAbort(
+                    ErrorReporter.errorAbort(
                         "AnnotatedTypeFactory.getAnnotatedType: query of annotated type for tree " + tree.getKind());
                     type = null; // dead code
                 }
@@ -346,7 +347,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     public AnnotatedTypeMirror getAnnotatedTypeFromTypeTree(Tree tree) {
         if (tree == null) {
-            SourceChecker.errorAbort("AnnotatedTypeFactory.getAnnotatedTypeFromTypeTree: null tree");
+            ErrorReporter.errorAbort("AnnotatedTypeFactory.getAnnotatedTypeFromTypeTree: null tree");
             return null; // dead code
         }
         AnnotatedTypeMirror type = fromTypeTree(tree);
@@ -395,7 +396,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         } else if (decl.getKind() == Tree.Kind.TYPE_PARAMETER) {
             type = fromTypeTree(decl);
         } else {
-            SourceChecker.errorAbort("AnnotatedTypeFactory.fromElement: cannot be here! decl: " + decl.getKind() +
+            ErrorReporter.errorAbort("AnnotatedTypeFactory.fromElement: cannot be here! decl: " + decl.getKind() +
                     " elt: " + elt, null);
             type = null; // dead code
         }
@@ -430,7 +431,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     public AnnotatedTypeMirror fromMember(Tree tree) {
         if (!(tree instanceof MethodTree || tree instanceof VariableTree)) {
-            SourceChecker.errorAbort("AnnotatedTypeFactory.fromMember: not a method or variable declaration: " + tree);
+            ErrorReporter.errorAbort("AnnotatedTypeFactory.fromMember: not a method or variable declaration: " + tree);
             return null; // dead code
         }
         if (fromTreeCache.containsKey(tree) && shouldReadCache) {
@@ -520,9 +521,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     private AnnotatedTypeMirror fromTreeWithVisitor(TypeFromTree converter, Tree tree) {
         if (tree == null)
-            SourceChecker.errorAbort("AnnotatedTypeFactory.fromTreeWithVisitor: null tree");
+            ErrorReporter.errorAbort("AnnotatedTypeFactory.fromTreeWithVisitor: null tree");
         if (converter == null)
-            SourceChecker.errorAbort("AnnotatedTypeFactory.fromTreeWithVisitor: null visitor");
+            ErrorReporter.errorAbort("AnnotatedTypeFactory.fromTreeWithVisitor: null visitor");
         AnnotatedTypeMirror result = converter.visit(tree, this);
         checkRep(result);
         return result;
@@ -780,7 +781,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 }
                 TypeElement typeElt = ElementUtils.enclosingClass(element);
                 if (typeElt == null) {
-                    SourceChecker.errorAbort("AnnotatedTypeFactory.getImplicitReceiver: enclosingClass()==null for element: " + element);
+                    ErrorReporter.errorAbort("AnnotatedTypeFactory.getImplicitReceiver: enclosingClass()==null for element: " + element);
                 }
                 // TODO: method receiver annotations on outer this
                 return getEnclosingType(typeElt, tree);
@@ -801,7 +802,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         TypeElement typeElt = ElementUtils.enclosingClass(rcvelem);
         if (typeElt == null) {
-            SourceChecker.errorAbort("AnnotatedTypeFactory.getImplicitReceiver: enclosingClass()==null for element: " + rcvelem);
+            ErrorReporter.errorAbort("AnnotatedTypeFactory.getImplicitReceiver: enclosingClass()==null for element: " + rcvelem);
         }
 
         AnnotatedDeclaredType type = getAnnotatedType(typeElt);
@@ -1062,7 +1063,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                             " type variables and the inferred method type arguments. Something is going wrong!");
                     System.err.println("Method type variables: " + methodType.getTypeVariables());
                     System.err.println("Inferred method type arguments: " + typeVarMapping);
-                    SourceChecker.errorAbort("AnnotatedTypeFactory.methodFromUse: mismatch between declared method type variables and the inferred method type arguments!");
+                    ErrorReporter.errorAbort("AnnotatedTypeFactory.methodFromUse: mismatch between declared method type variables and the inferred method type arguments!");
                 }
                 typeargs.add(typeVarMapping.get(tv));
             }
@@ -1452,7 +1453,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         TreePath path = getPath(tree);
         if (path == null) {
-            SourceChecker.errorAbort(String.format("AnnotatedTypeFactory.getMostInnerClassOrMethod: getPath(tree)=>null%n  TreePath.getPath(root, tree)=>%s\n  for tree (%s) = %s%n  root=%s",
+            ErrorReporter.errorAbort(String.format("AnnotatedTypeFactory.getMostInnerClassOrMethod: getPath(tree)=>null%n  TreePath.getPath(root, tree)=>%s\n  for tree (%s) = %s%n  root=%s",
                                                    TreePath.getPath(root, tree), tree.getClass(), tree, root));
         }
         for (Tree pathTree : path) {
@@ -1462,7 +1463,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 return TreeUtils.elementFromDeclaration((ClassTree)pathTree);
         }
 
-        SourceChecker.errorAbort("AnnotatedTypeFactory.getMostInnerClassOrMethod: cannot be here!");
+        ErrorReporter.errorAbort("AnnotatedTypeFactory.getMostInnerClassOrMethod: cannot be here!");
         return null; // dead code
     }
 
@@ -1627,7 +1628,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /** Sets indexTypes and indexDeclAnnos by side effect, just before returning. */
     private void buildIndexTypes() {
         if (this.indexTypes != null || this.indexDeclAnnos != null) {
-            SourceChecker.errorAbort("AnnotatedTypeFactory.buildIndexTypes called more than once");
+            ErrorReporter.errorAbort("AnnotatedTypeFactory.buildIndexTypes called more than once");
         }
 
         Map<Element, AnnotatedTypeMirror> indexTypes

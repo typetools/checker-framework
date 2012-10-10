@@ -29,12 +29,12 @@ import javax.lang.model.util.Types;
 
 import javacutils.AnnotationUtils;
 import javacutils.ElementUtils;
+import javacutils.ErrorReporter;
 import javacutils.InternalUtils;
 import javacutils.TreeUtils;
 import javacutils.TypesUtils;
 
 import checkers.quals.TypeQualifier;
-import checkers.source.SourceChecker;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -438,7 +438,7 @@ public class AnnotatedTypes {
                     ((AnnotatedTypeVariable) iterableType).getEffectiveUpperBound());
 
         if (iterableType.getKind() != TypeKind.DECLARED) {
-            SourceChecker.errorAbort("AnnotatedTypes.getIteratedType: not iterable type: " + iterableType);
+            ErrorReporter.errorAbort("AnnotatedTypes.getIteratedType: not iterable type: " + iterableType);
             return null; // dead code
         }
 
@@ -446,7 +446,7 @@ public class AnnotatedTypes {
         AnnotatedDeclaredType iterableElmType = atypeFactory.getAnnotatedType(iterableElement);
         AnnotatedDeclaredType dt = (AnnotatedDeclaredType) asSuper(processingEnv.getTypeUtils(), atypeFactory, iterableType, iterableElmType);
         if (dt == null) {
-            SourceChecker.errorAbort("AnnotatedTypes.getIteratedType: not iterable type: " + iterableType);
+            ErrorReporter.errorAbort("AnnotatedTypes.getIteratedType: not iterable type: " + iterableType);
             return null; // dead code
         } else if (dt.getTypeArguments().isEmpty()) {
             TypeElement e = processingEnv.getElementUtils().getTypeElement("java.lang.Object");
@@ -578,7 +578,7 @@ public class AnnotatedTypes {
             elt = (ExecutableElement) TreeUtils.elementFromUse(expr);
         } else {
             // This case should never happen.
-            SourceChecker.errorAbort("AnnotatedTypes.findTypeArguments: unexpected tree: " + expr);
+            ErrorReporter.errorAbort("AnnotatedTypes.findTypeArguments: unexpected tree: " + expr);
             elt = null;
         }
 
@@ -593,7 +593,7 @@ public class AnnotatedTypes {
             targs = ((NewClassTree) expr).getTypeArguments();
         } else {
             // This case should never happen.
-            SourceChecker.errorAbort("AnnotatedTypes.findTypeArguments: unexpected tree: " + expr);
+            ErrorReporter.errorAbort("AnnotatedTypes.findTypeArguments: unexpected tree: " + expr);
             targs = null;
         }
 
@@ -956,7 +956,7 @@ public class AnnotatedTypes {
             return atypeFactory.getAnnotatedType((VariableTree)assignmentContext);
         }
 
-        SourceChecker.errorAbort("AnnotatedTypes.assignedTo: shouldn't be here!");
+        ErrorReporter.errorAbort("AnnotatedTypes.assignedTo: shouldn't be here!");
         return null; // dead code
     }
 
