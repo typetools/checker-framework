@@ -184,11 +184,14 @@ provide a more detailed error message) you can throw a
 \refclass{regex}{RegexUtil.CheckedPatternSyntaxException}. This exception is
 functionally the same as a
 \sunjavadoc{java/util/regex/PatternSyntaxException.html}{Pattern\-Syntax\-Exception}
-except it is checked to guarantee that the error will be handled up the call stack.
+except it is checked to guarantee that the error will be handled up the
+call stack.  For more details, see the Javadoc for
+\refclass{regex}{RegexUtil.CheckedPatternSyntaxException}.
 
-A potential disadvantage of using these methods is that your code becomes
+A potential disadvantage of using the \<RegexUtil> class is that your code becomes
 dependent on the Checker Framework at run time as well as at compile time.
-You can avoid this by copying the \<RegexUtil> class into
+You can avoid this by adding the Checker Framework to your project, or by
+copying the \<RegexUtil> class into
 your own code.
 
 \begin{figure}
