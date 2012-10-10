@@ -1,4 +1,4 @@
-package checkers.flow.analysis;
+package dataflow.analysis;
 
 import java.util.Map;
 

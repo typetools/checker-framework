@@ -1,4 +1,4 @@
-package checkers.flow.cfg;
+package dataflow.cfg;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -13,17 +13,17 @@ import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import javax.xml.ws.Holder;
 
+import javacutils.BasicTypeProcessor;
 import javacutils.TreeUtils;
 
-import checkers.flow.analysis.AbstractValue;
-import checkers.flow.analysis.Analysis;
-import checkers.flow.analysis.Store;
-import checkers.flow.analysis.TransferFunction;
-import checkers.source.SourceChecker;
-import checkers.source.SourceVisitor;
+import dataflow.analysis.AbstractValue;
+import dataflow.analysis.Analysis;
+import dataflow.analysis.Store;
+import dataflow.analysis.TransferFunction;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.util.TreePathScanner;
 import com.sun.tools.javac.file.JavacFileManager;
 import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.util.Context;
@@ -146,11 +146,7 @@ public class JavaSource2CFGDOT {
             System.exit(1);
         }
 
-        // TODO: In general, CFG building will require type
-        // information, which will require an AnnotatedTypeFactory and
-        // a ProcessingEnvironment in place of the null argument
-        // below.  Can we supply an environment for this example?
-        ControlFlowGraph cfg = CFGBuilder.build(null, r, null, m, null);
+        ControlFlowGraph cfg = CFGBuilder.build(r, null, m, null);
         if (analysis != null) {
             analysis.performAnalysis(cfg);
         }
@@ -205,12 +201,12 @@ public class JavaSource2CFGDOT {
             String file, final String method, String clas) {
         final Holder<MethodTree> m = new Holder<>();
         final Holder<CompilationUnitTree> c = new Holder<>();
-        SourceChecker sourceChecker = new SourceChecker() {
+        BasicTypeProcessor typeProcessor = new BasicTypeProcessor() {
             @Override
-            protected SourceVisitor<?, ?> createSourceVisitor(
+            protected TreePathScanner<?, ?> createTreePathScanner(
                     CompilationUnitTree root) {
                 c.value = root;
-                return new SourceVisitor<Void, Void>(this, root) {
+                return new TreePathScanner<Void, Void>() {
                     @Override
                     public Void visitMethod(MethodTree node, Void p) {
                         ExecutableElement el = TreeUtils
@@ -248,7 +244,7 @@ public class JavaSource2CFGDOT {
                 public void write(int b) throws IOException {
                 }
             }));
-            javac.compile(List.of(l), List.of(clas), List.of(sourceChecker));
+            javac.compile(List.of(l), List.of(clas), List.of(typeProcessor));
         } catch (Throwable e) {
             // ok
         } finally {

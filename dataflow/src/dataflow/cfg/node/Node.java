@@ -1,12 +1,12 @@
-package checkers.flow.cfg.node;
+package dataflow.cfg.node;
 
 import java.util.Collection;
 import java.util.LinkedList;
 
 import javax.lang.model.type.TypeMirror;
 
-import checkers.flow.cfg.CFGBuilder;
-import checkers.flow.cfg.block.Block;
+import dataflow.cfg.CFGBuilder;
+import dataflow.cfg.block.Block;
 
 import com.sun.source.tree.Tree;
 

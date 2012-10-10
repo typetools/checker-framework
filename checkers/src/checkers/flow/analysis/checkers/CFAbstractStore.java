@@ -661,10 +661,16 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         return toDOToutput().replace("\\n", "\n");
     }
 
+    @Override
+    public boolean hasDOToutput() {
+        return true;
+    }
+
     /**
      * @return DOT representation of the store (may contain control characters
      *         such as "\n").
      */
+    @Override
     public String toDOToutput() {
         StringBuilder result = new StringBuilder(this.getClass()
                 .getCanonicalName() + " (\\n");

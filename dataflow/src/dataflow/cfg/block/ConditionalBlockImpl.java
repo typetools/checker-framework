@@ -1,4 +1,4 @@
-package checkers.flow.cfg.block;
+package dataflow.cfg.block;
 
 /**
  * Implementation of a conditional basic block.

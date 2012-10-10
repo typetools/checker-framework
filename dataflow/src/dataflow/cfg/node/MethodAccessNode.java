@@ -1,4 +1,4 @@
-package checkers.flow.cfg.node;
+package dataflow.cfg.node;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -8,7 +8,7 @@ import javax.lang.model.element.ExecutableElement;
 import javacutils.InternalUtils;
 import javacutils.TreeUtils;
 
-import checkers.flow.util.HashCodeUtils;
+import dataflow.util.HashCodeUtils;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;

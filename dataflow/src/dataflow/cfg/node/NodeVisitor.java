@@ -1,4 +1,4 @@
-package checkers.flow.cfg.node;
+package dataflow.cfg.node;
 
 /**
  * A visitor for a {@link Node} tree.

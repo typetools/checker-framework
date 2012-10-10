@@ -1,4 +1,4 @@
-package checkers.flow.cfg.node;
+package dataflow.cfg.node;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -7,7 +7,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 
-import checkers.flow.util.HashCodeUtils;
+import dataflow.util.HashCodeUtils;
 
 import com.sun.source.tree.InstanceOfTree;
 import com.sun.source.tree.Tree;

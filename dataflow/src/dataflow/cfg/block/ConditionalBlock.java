@@ -1,6 +1,6 @@
-package checkers.flow.cfg.block;
+package dataflow.cfg.block;
 
-import checkers.flow.cfg.node.Node;
+import dataflow.cfg.node.Node;
 
 /**
  * Represents a conditional basic block that contains exactly one boolean

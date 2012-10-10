@@ -1,11 +1,11 @@
-package checkers.flow.analysis;
+package dataflow.analysis;
 
 import java.util.List;
 
-import checkers.flow.cfg.UnderlyingAST;
-import checkers.flow.cfg.node.LocalVariableNode;
-import checkers.flow.cfg.node.Node;
-import checkers.flow.cfg.node.NodeVisitor;
+import dataflow.cfg.UnderlyingAST;
+import dataflow.cfg.node.LocalVariableNode;
+import dataflow.cfg.node.Node;
+import dataflow.cfg.node.NodeVisitor;
 
 /**
  * Interface of a transfer function for the abstract interpretation used for the

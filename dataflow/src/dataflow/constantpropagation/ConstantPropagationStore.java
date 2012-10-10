@@ -1,14 +1,15 @@
-package checkers.flow.constantpropagation;
+package dataflow.constantpropagation;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import checkers.flow.analysis.Store;
-import checkers.flow.cfg.node.IntegerLiteralNode;
-import checkers.flow.cfg.node.LocalVariableNode;
-import checkers.flow.cfg.node.Node;
-import checkers.flow.constantpropagation.Constant.Type;
+import dataflow.analysis.FlowExpressions;
+import dataflow.analysis.Store;
+import dataflow.cfg.node.IntegerLiteralNode;
+import dataflow.cfg.node.LocalVariableNode;
+import dataflow.cfg.node.Node;
+import dataflow.constantpropagation.Constant.Type;
 
 public class ConstantPropagationStore implements
         Store<ConstantPropagationStore> {
@@ -143,6 +144,22 @@ public class ConstantPropagationStore implements
             }
         }
         return smallerContents.toString();
+    }
+
+    @Override
+    public boolean canAlias(FlowExpressions.Receiver a,
+                            FlowExpressions.Receiver b) {
+        return true;
+    }
+
+    @Override
+    public boolean hasDOToutput() {
+        return false;
+    }
+
+    @Override
+    public String toDOToutput() {
+        return "";
     }
 
 }

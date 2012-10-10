@@ -1,4 +1,4 @@
-package checkers.flow.cfg.block;
+package dataflow.cfg.block;
 
 /**
  * A basic block that has at exactly one non-exceptional successor.

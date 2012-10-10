@@ -1,4 +1,4 @@
-package checkers.flow.cfg.node;
+package dataflow.cfg.node;
 
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;

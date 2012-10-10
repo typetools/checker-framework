@@ -1,4 +1,4 @@
-package checkers.flow.cfg.node;
+package dataflow.cfg.node;
 
 /**
  * A default implementation of the node visitor interface. The class introduces

@@ -1,4 +1,4 @@
-package checkers.flow.cfg;
+package dataflow.cfg;
 
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;

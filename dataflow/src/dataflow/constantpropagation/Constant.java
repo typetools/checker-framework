@@ -1,6 +1,6 @@
-package checkers.flow.constantpropagation;
+package dataflow.constantpropagation;
 
-import checkers.flow.analysis.AbstractValue;
+import dataflow.analysis.AbstractValue;
 
 public class Constant implements AbstractValue<Constant> {
 

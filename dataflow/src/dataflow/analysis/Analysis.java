@@ -1,4 +1,4 @@
-package checkers.flow.analysis;
+package dataflow.analysis;
 
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
@@ -13,19 +13,19 @@ import javax.lang.model.util.Types;
 
 import javacutils.Pair;
 
-import checkers.flow.cfg.ControlFlowGraph;
-import checkers.flow.cfg.UnderlyingAST;
-import checkers.flow.cfg.UnderlyingAST.CFGMethod;
-import checkers.flow.cfg.UnderlyingAST.Kind;
-import checkers.flow.cfg.block.Block;
-import checkers.flow.cfg.block.ConditionalBlock;
-import checkers.flow.cfg.block.ExceptionBlock;
-import checkers.flow.cfg.block.RegularBlock;
-import checkers.flow.cfg.block.SingleSuccessorBlock;
-import checkers.flow.cfg.block.SpecialBlock;
-import checkers.flow.cfg.node.LocalVariableNode;
-import checkers.flow.cfg.node.Node;
-import checkers.flow.cfg.node.ReturnNode;
+import dataflow.cfg.ControlFlowGraph;
+import dataflow.cfg.UnderlyingAST;
+import dataflow.cfg.UnderlyingAST.CFGMethod;
+import dataflow.cfg.UnderlyingAST.Kind;
+import dataflow.cfg.block.Block;
+import dataflow.cfg.block.ConditionalBlock;
+import dataflow.cfg.block.ExceptionBlock;
+import dataflow.cfg.block.RegularBlock;
+import dataflow.cfg.block.SingleSuccessorBlock;
+import dataflow.cfg.block.SpecialBlock;
+import dataflow.cfg.node.LocalVariableNode;
+import dataflow.cfg.node.Node;
+import dataflow.cfg.node.ReturnNode;
 
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;

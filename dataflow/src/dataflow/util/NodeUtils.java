@@ -1,9 +1,9 @@
-package checkers.flow.util;
+package dataflow.util;
 
 import javacutils.TypesUtils;
 
-import checkers.flow.cfg.node.ConditionalOrNode;
-import checkers.flow.cfg.node.Node;
+import dataflow.cfg.node.ConditionalOrNode;
+import dataflow.cfg.node.Node;
 
 import com.sun.source.tree.Tree;
 import com.sun.tools.javac.code.Type;

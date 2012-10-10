@@ -1,19 +1,19 @@
-package checkers.flow.constantpropagation;
+package dataflow.constantpropagation;
 
 import java.util.List;
 
-import checkers.flow.analysis.ConditionalTransferResult;
-import checkers.flow.analysis.RegularTransferResult;
-import checkers.flow.analysis.TransferFunction;
-import checkers.flow.analysis.TransferInput;
-import checkers.flow.analysis.TransferResult;
-import checkers.flow.cfg.UnderlyingAST;
-import checkers.flow.cfg.node.AbstractNodeVisitor;
-import checkers.flow.cfg.node.AssignmentNode;
-import checkers.flow.cfg.node.EqualToNode;
-import checkers.flow.cfg.node.IntegerLiteralNode;
-import checkers.flow.cfg.node.LocalVariableNode;
-import checkers.flow.cfg.node.Node;
+import dataflow.analysis.ConditionalTransferResult;
+import dataflow.analysis.RegularTransferResult;
+import dataflow.analysis.TransferFunction;
+import dataflow.analysis.TransferInput;
+import dataflow.analysis.TransferResult;
+import dataflow.cfg.UnderlyingAST;
+import dataflow.cfg.node.AbstractNodeVisitor;
+import dataflow.cfg.node.AssignmentNode;
+import dataflow.cfg.node.EqualToNode;
+import dataflow.cfg.node.IntegerLiteralNode;
+import dataflow.cfg.node.LocalVariableNode;
+import dataflow.cfg.node.Node;
 
 public class ConstantPropagationTransfer
         extends
