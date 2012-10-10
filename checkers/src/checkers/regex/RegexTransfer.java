@@ -5,22 +5,23 @@ import javax.lang.model.element.ExecutableElement;
 
 import javacutils.AnnotationUtils;
 
-import checkers.flow.analysis.ConditionalTransferResult;
-import checkers.flow.analysis.FlowExpressions.Receiver;
-import checkers.flow.analysis.RegularTransferResult;
-import checkers.flow.analysis.TransferInput;
-import checkers.flow.analysis.TransferResult;
-import checkers.flow.analysis.checkers.CFAbstractTransfer;
-import checkers.flow.analysis.checkers.CFStore;
-import checkers.flow.analysis.checkers.CFValue;
-import checkers.flow.cfg.node.ClassNameNode;
-import checkers.flow.cfg.node.IntegerLiteralNode;
-import checkers.flow.cfg.node.MethodAccessNode;
-import checkers.flow.cfg.node.MethodInvocationNode;
-import checkers.flow.cfg.node.Node;
-import checkers.flow.util.FlowExpressionParseUtil;
-import checkers.flow.util.FlowExpressionParseUtil.FlowExpressionContext;
-import checkers.flow.util.FlowExpressionParseUtil.FlowExpressionParseException;
+import dataflow.analysis.ConditionalTransferResult;
+import dataflow.analysis.FlowExpressions.Receiver;
+import dataflow.analysis.RegularTransferResult;
+import dataflow.analysis.TransferInput;
+import dataflow.analysis.TransferResult;
+import dataflow.analysis.checkers.CFAbstractTransfer;
+import dataflow.analysis.checkers.CFStore;
+import dataflow.analysis.checkers.CFValue;
+import dataflow.cfg.node.ClassNameNode;
+import dataflow.cfg.node.IntegerLiteralNode;
+import dataflow.cfg.node.MethodAccessNode;
+import dataflow.cfg.node.MethodInvocationNode;
+import dataflow.cfg.node.Node;
+
+import checkers.util.FlowExpressionParseUtil;
+import checkers.util.FlowExpressionParseUtil.FlowExpressionContext;
+import checkers.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import checkers.regex.quals.Regex;
 
 public class RegexTransfer extends

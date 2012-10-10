@@ -17,9 +17,10 @@ import javacutils.AnnotationUtils;
 import javacutils.ElementUtils;
 import javacutils.TreeUtils;
 
+import dataflow.analysis.checkers.CFAbstractAnalysis;
+import dataflow.analysis.checkers.CFValue;
+
 import checkers.basetype.BaseTypeChecker;
-import checkers.flow.analysis.checkers.CFAbstractAnalysis;
-import checkers.flow.analysis.checkers.CFValue;
 import checkers.initialization.quals.Free;
 import checkers.initialization.quals.NotOnlyCommitted;
 import checkers.initialization.quals.Unclassified;

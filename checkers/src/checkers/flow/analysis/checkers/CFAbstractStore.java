@@ -14,14 +14,15 @@ import javax.lang.model.util.Types;
 import javacutils.AnnotationUtils;
 import javacutils.Pair;
 
-import checkers.flow.analysis.FlowExpressions;
-import checkers.flow.analysis.FlowExpressions.PureMethodCall;
-import checkers.flow.analysis.FlowExpressions.Receiver;
-import checkers.flow.analysis.Store;
-import checkers.flow.cfg.node.FieldAccessNode;
-import checkers.flow.cfg.node.LocalVariableNode;
-import checkers.flow.cfg.node.MethodInvocationNode;
-import checkers.flow.cfg.node.Node;
+import dataflow.analysis.FlowExpressions;
+import dataflow.analysis.FlowExpressions.PureMethodCall;
+import dataflow.analysis.FlowExpressions.Receiver;
+import dataflow.analysis.Store;
+import dataflow.cfg.node.FieldAccessNode;
+import dataflow.cfg.node.LocalVariableNode;
+import dataflow.cfg.node.MethodInvocationNode;
+import dataflow.cfg.node.Node;
+
 import checkers.quals.MonotonicAnnotation;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.util.PurityUtils;

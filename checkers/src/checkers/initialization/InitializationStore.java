@@ -10,12 +10,13 @@ import javax.lang.model.element.Element;
 
 import javacutils.AnnotationUtils;
 
-import checkers.flow.analysis.FlowExpressions;
-import checkers.flow.analysis.FlowExpressions.FieldAccess;
-import checkers.flow.analysis.checkers.CFAbstractAnalysis;
-import checkers.flow.analysis.checkers.CFAbstractStore;
-import checkers.flow.analysis.checkers.CFValue;
-import checkers.flow.cfg.node.MethodInvocationNode;
+import dataflow.analysis.FlowExpressions;
+import dataflow.analysis.FlowExpressions.FieldAccess;
+import dataflow.analysis.checkers.CFAbstractAnalysis;
+import dataflow.analysis.checkers.CFAbstractStore;
+import dataflow.analysis.checkers.CFValue;
+import dataflow.cfg.node.MethodInvocationNode;
+
 import checkers.types.AnnotatedTypeFactory;
 
 /**

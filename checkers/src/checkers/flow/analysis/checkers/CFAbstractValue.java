@@ -10,9 +10,10 @@ import javax.lang.model.type.TypeMirror;
 
 import javacutils.InternalUtils;
 
+import dataflow.analysis.AbstractValue;
+import dataflow.util.HashCodeUtils;
+
 import checkers.basetype.BaseTypeChecker;
-import checkers.flow.analysis.AbstractValue;
-import checkers.flow.util.HashCodeUtils;
 import checkers.types.AbstractBasicAnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;

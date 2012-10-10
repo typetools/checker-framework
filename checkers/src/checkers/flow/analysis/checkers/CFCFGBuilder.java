@@ -9,11 +9,12 @@ import javax.lang.model.element.Element;
 import javacutils.ErrorReporter;
 import javacutils.InternalUtils;
 
+import dataflow.cfg.CFGBuilder;
+import dataflow.cfg.ControlFlowGraph;
+import dataflow.cfg.UnderlyingAST;
+import dataflow.cfg.node.MethodInvocationNode;
+
 import checkers.basetype.BaseTypeChecker;
-import checkers.flow.cfg.CFGBuilder;
-import checkers.flow.cfg.ControlFlowGraph;
-import checkers.flow.cfg.UnderlyingAST;
-import checkers.flow.cfg.node.MethodInvocationNode;
 import checkers.quals.TerminatesExecution;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
