@@ -259,7 +259,7 @@ ${build.version} of the 'javac.jar' library."/>
         </pathconvert>
         <java fork="true"
               failonerror="true"
-              classpath="${compiler.lib}:${tests.junit}:${build}"
+              classpath="${compiler.lib}:${tests.junit}:${build}:${javacutils.lib}"
               classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${compiler.lib}"/>
             <arg value="-g"/>
@@ -285,6 +285,7 @@ ${build.version} of the 'javac.jar' library."/>
                 <pathelement path="${build.tests}"/>
                 <pathelement path="${tests.junit}"/>
                 <pathelement path="${build}"/>
+                <pathelement path="${javacutils.lib}"/>
             </classpath>
             <formatter type="xml"/>
             <formatter type="brief" usefile="false"/>
@@ -317,6 +318,7 @@ ${build.version} of the 'javac.jar' library."/>
               <pathelement path="${build.tests}"/>
               <pathelement path="${tests.junit}"/>
               <pathelement path="${build}"/>
+              <pathelement path="${javacutils.lib}"/>
           </classpath>
           <formatter type="xml"/>
           <formatter type="brief" usefile="false"/>

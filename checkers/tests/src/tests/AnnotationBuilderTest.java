@@ -1,11 +1,13 @@
 package tests;
 
 import static org.junit.Assert.*;
+
+import javacutils.AnnotationUtils;
+
 import checkers.igj.quals.I;
 import checkers.nullness.quals.NonNull;
 import checkers.source.SourceChecker;
 import checkers.util.AnnotationBuilder;
-import checkers.util.AnnotationUtils;
 
 import java.util.Collections;
 
