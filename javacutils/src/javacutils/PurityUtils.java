@@ -1,4 +1,4 @@
-package dataflow.util;
+package javacutils;
 
 import java.util.Collections;
 import java.util.List;
@@ -7,10 +7,6 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 
 import com.sun.source.tree.MethodTree;
-
-import javacutils.AnnotationProvider;
-import javacutils.AnnotationUtils;
-import javacutils.InternalUtils;
 
 import checkers.quals.Pure;
 import checkers.quals.Pure.Kind;
@@ -82,9 +78,8 @@ public class PurityUtils {
         if (purityAnnotation == null) {
             return Collections.emptyList();
         }
-        List<Pure.Kind> kinds = AnnotationUtils
-                .elementValueEnumArrayWithDefaults(purityAnnotation, "value",
-                        Pure.Kind.class);
+        List<Pure.Kind> kinds = AnnotationUtils.getElementValueEnumArray(purityAnnotation, "value",
+                        Pure.Kind.class, true);
         return kinds;
     }
 

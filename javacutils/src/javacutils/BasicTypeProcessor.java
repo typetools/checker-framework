@@ -1,4 +1,4 @@
-package dataflow.util;
+package javacutils;
 
 import javax.lang.model.element.TypeElement;
 
