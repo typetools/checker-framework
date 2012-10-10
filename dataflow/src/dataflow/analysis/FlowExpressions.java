@@ -1,4 +1,4 @@
-package checkers.flow.analysis;
+package dataflow.analysis;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,20 +7,19 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeMirror;
 
+import javacutils.AnnotationProvider;
 import javacutils.ElementUtils;
+import javacutils.PurityUtils;
 import javacutils.TreeUtils;
 
-import checkers.flow.analysis.checkers.CFAbstractStore;
-import checkers.flow.cfg.node.ClassNameNode;
-import checkers.flow.cfg.node.FieldAccessNode;
-import checkers.flow.cfg.node.LocalVariableNode;
-import checkers.flow.cfg.node.MethodInvocationNode;
-import checkers.flow.cfg.node.Node;
-import checkers.flow.cfg.node.ThisLiteralNode;
-import checkers.flow.cfg.node.ValueLiteralNode;
-import checkers.flow.util.HashCodeUtils;
-import checkers.types.AnnotatedTypeFactory;
-import checkers.util.PurityUtils;
+import dataflow.cfg.node.ClassNameNode;
+import dataflow.cfg.node.FieldAccessNode;
+import dataflow.cfg.node.LocalVariableNode;
+import dataflow.cfg.node.MethodInvocationNode;
+import dataflow.cfg.node.Node;
+import dataflow.cfg.node.ThisLiteralNode;
+import dataflow.cfg.node.ValueLiteralNode;
+import dataflow.util.HashCodeUtils;
 
 /**
  * Collection of classes and helper functions to represent Java expressions
@@ -44,10 +43,10 @@ public class FlowExpressions {
      *         {@link FieldAccessNode}. Can contain {@link Unknown} as receiver.
      */
     public static FieldAccess internalReprOfFieldAccess(
-            AnnotatedTypeFactory factory, FieldAccessNode node) {
+            AnnotationProvider provider, FieldAccessNode node) {
         Receiver receiver;
         Node receiverNode = node.getReceiver();
-        receiver = internalReprOf(factory, receiverNode);
+        receiver = internalReprOf(provider, receiverNode);
         return new FieldAccess(receiver, node);
     }
 
@@ -55,11 +54,11 @@ public class FlowExpressions {
      * @return The internal representation (as {@link Receiver}) of any
      *         {@link Node}. Might contain {@link Unknown}.
      */
-    public static Receiver internalReprOf(AnnotatedTypeFactory factory,
+    public static Receiver internalReprOf(AnnotationProvider provider,
             Node receiverNode) {
         Receiver receiver = null;
         if (receiverNode instanceof FieldAccessNode) {
-            receiver = internalReprOfFieldAccess(factory,
+            receiver = internalReprOfFieldAccess(provider,
                     (FieldAccessNode) receiverNode);
         } else if (receiverNode instanceof ThisLiteralNode) {
             receiver = new ThisReference(receiverNode.getType());
@@ -76,12 +75,12 @@ public class FlowExpressions {
             MethodInvocationNode mn = (MethodInvocationNode) receiverNode;
             ExecutableElement invokedMethod = TreeUtils.elementFromUse(mn
                     .getTree());
-            if (PurityUtils.isDeterministic(factory, invokedMethod)) {
+            if (PurityUtils.isDeterministic(provider, invokedMethod)) {
                 List<Receiver> parameters = new ArrayList<>();
                 for (Node p : mn.getArguments()) {
-                    parameters.add(internalReprOf(factory, p));
+                    parameters.add(internalReprOf(provider, p));
                 }
-                Receiver methodReceiver = internalReprOf(factory, mn
+                Receiver methodReceiver = internalReprOf(provider, mn
                         .getTarget().getReceiver());
                 receiver = new PureMethodCall(mn.getType(), invokedMethod,
                         methodReceiver, parameters);
@@ -149,7 +148,7 @@ public class FlowExpressions {
          *   "?".containsAliasOf("a") == true // ? is Unknown, and a can be anything
          * </pre>
          */
-        public boolean containsAliasOf(CFAbstractStore<?, ?> store,
+        public boolean containsAliasOf(Store<?> store,
                 Receiver other) {
             return this.equals(other) || store.canAlias(this, other);
         }
@@ -200,7 +199,7 @@ public class FlowExpressions {
         }
 
         @Override
-        public boolean containsAliasOf(CFAbstractStore<?, ?> store,
+        public boolean containsAliasOf(Store<?> store,
                 Receiver other) {
             return super.containsAliasOf(store, other)
                     || receiver.containsAliasOf(store, other);
@@ -347,7 +346,7 @@ public class FlowExpressions {
         }
 
         @Override
-        public boolean containsAliasOf(CFAbstractStore<?, ?> store,
+        public boolean containsAliasOf(Store<?> store,
                 Receiver other) {
             return true;
         }
@@ -528,7 +527,7 @@ public class FlowExpressions {
         }
 
         @Override
-        public boolean containsAliasOf(CFAbstractStore<?, ?> store,
+        public boolean containsAliasOf(Store<?> store,
                 Receiver other) {
             if (receiver.containsAliasOf(store, other)) {
                 return true;

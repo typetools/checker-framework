@@ -1,13 +1,13 @@
-package checkers.flow.analysis;
+package dataflow.analysis;
 
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import checkers.flow.cfg.block.Block;
-import checkers.flow.cfg.block.ExceptionBlock;
-import checkers.flow.cfg.block.RegularBlock;
-import checkers.flow.cfg.node.Node;
+import dataflow.cfg.block.Block;
+import dataflow.cfg.block.ExceptionBlock;
+import dataflow.cfg.block.RegularBlock;
+import dataflow.cfg.node.Node;
 
 import com.sun.source.tree.Tree;
 

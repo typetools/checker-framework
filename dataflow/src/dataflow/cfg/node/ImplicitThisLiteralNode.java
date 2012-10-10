@@ -1,4 +1,4 @@
-package checkers.flow.cfg.node;
+package dataflow.cfg.node;
 
 import javax.lang.model.type.TypeMirror;
 

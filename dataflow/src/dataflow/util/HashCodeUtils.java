@@ -1,4 +1,4 @@
-package checkers.flow.util;
+package dataflow.util;
 
 /**
  * Utility class to implement the {@code hashCode} method.

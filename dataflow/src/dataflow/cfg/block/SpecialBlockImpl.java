@@ -1,4 +1,4 @@
-package checkers.flow.cfg.block;
+package dataflow.cfg.block;
 
 public class SpecialBlockImpl extends SingleSuccessorBlockImpl implements
         SpecialBlock {

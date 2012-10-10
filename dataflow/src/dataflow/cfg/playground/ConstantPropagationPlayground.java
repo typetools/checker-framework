@@ -1,10 +1,10 @@
-package checkers.flow.cfg.playground;
+package dataflow.cfg.playground;
 
-import checkers.flow.analysis.Analysis;
-import checkers.flow.cfg.JavaSource2CFGDOT;
-import checkers.flow.constantpropagation.Constant;
-import checkers.flow.constantpropagation.ConstantPropagationStore;
-import checkers.flow.constantpropagation.ConstantPropagationTransfer;
+import dataflow.analysis.Analysis;
+import dataflow.cfg.JavaSource2CFGDOT;
+import dataflow.constantpropagation.Constant;
+import dataflow.constantpropagation.ConstantPropagationStore;
+import dataflow.constantpropagation.ConstantPropagationTransfer;
 
 public class ConstantPropagationPlayground {
 

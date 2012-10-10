@@ -1,4 +1,4 @@
-package checkers.flow.analysis;
+package dataflow.analysis;
 
 /**
  * A store is used to keep track of the information that the dataflow analysis
@@ -32,4 +32,18 @@ public interface Store<S extends Store<S>> {
      * </ul>
      */
     S leastUpperBound(S other);
+
+    /**
+     * Can the objects {@code a} and {@code b} be aliases? Returns a
+     * conservative answer (i.e., returns {@code true} if not enough information
+     * is available to determine aliasing).
+     */
+    boolean canAlias(FlowExpressions.Receiver a,
+                     FlowExpressions.Receiver b);
+
+    /** @return Whether the Store supports DOT graph output. */
+    boolean hasDOToutput();
+
+    /** @return The store encoded as a DOT graph for visualization. */
+    String toDOToutput();
 }

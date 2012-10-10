@@ -1,4 +1,4 @@
-package checkers.flow.cfg.block;
+package dataflow.cfg.block;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -6,7 +6,7 @@ import java.util.Map;
 
 import javax.lang.model.type.TypeMirror;
 
-import checkers.flow.cfg.node.Node;
+import dataflow.cfg.node.Node;
 
 /**
  * Base class of the {@link Block} implementation hierarchy.

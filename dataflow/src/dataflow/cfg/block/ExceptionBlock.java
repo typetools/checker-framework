@@ -1,10 +1,10 @@
-package checkers.flow.cfg.block;
+package dataflow.cfg.block;
 
 import java.util.Map;
 
 import javax.lang.model.type.TypeMirror;
 
-import checkers.flow.cfg.node.Node;
+import dataflow.cfg.node.Node;
 
 /**
  * Represents a basic block that contains exactly one {@link Node} which can

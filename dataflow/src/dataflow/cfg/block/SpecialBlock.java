@@ -1,4 +1,4 @@
-package checkers.flow.cfg.block;
+package dataflow.cfg.block;
 
 /**
  * Represents a special basic block; i.e., one of the following:

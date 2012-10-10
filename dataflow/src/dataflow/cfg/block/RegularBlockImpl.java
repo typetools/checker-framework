@@ -1,10 +1,10 @@
-package checkers.flow.cfg.block;
+package dataflow.cfg.block;
 
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
-import checkers.flow.cfg.node.Node;
+import dataflow.cfg.node.Node;
 
 /**
  * Implementation of a regular basic block.

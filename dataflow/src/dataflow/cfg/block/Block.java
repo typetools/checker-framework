@@ -1,4 +1,4 @@
-package checkers.flow.cfg.block;
+package dataflow.cfg.block;
 
 /**
  * Represents a basic block in a control flow graph.
