@@ -178,6 +178,14 @@ methods return a \<String> error message and \<Pattern\-Syntax\-Exception>,
 respectively, detailing why the given String is not a syntactically valid
 regular expression with at least the given number of capturing groups.
 
+If you detect that a \<String> is not a valid regular expression but would like
+to report the error higher up the call stack (potentially where you can
+provide a more detailed error message) you can throw a
+\refclass{regex}{RegexUtil.CheckedPatternSyntaxException}. This exception is
+functionally the same as a
+\sunjavadoc{java/util/regex/PatternSyntaxException.html}{Pattern\-Syntax\-Exception}
+except it is checked to guarantee that the error will be handled up the call stack.
+
 A potential disadvantage of using these methods is that your code becomes
 dependent on the Checker Framework at run time as well as at compile time.
 You can avoid this by copying the \<RegexUtil> class into
