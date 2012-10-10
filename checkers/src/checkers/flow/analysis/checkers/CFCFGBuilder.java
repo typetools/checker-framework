@@ -6,6 +6,7 @@ import java.util.LinkedList;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 
+import javacutils.ErrorReporter;
 import javacutils.InternalUtils;
 
 import checkers.basetype.BaseTypeChecker;
@@ -38,7 +39,7 @@ public class CFCFGBuilder extends CFGBuilder {
                 .getProcessingEnvironment().getOptions()
                 .containsKey("assumeAssertionsAreDisabled"));
         if (assumeAssertionsEnabled && assumeAssertionsDisabled) {
-            BaseTypeChecker
+            ErrorReporter
                     .errorAbort("Assertions cannot be assumed to be enabled and disabled at the same time.");
         }
         this.checker = checker;
