@@ -1,4 +1,4 @@
-package checkers.util;
+package javacutils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,8 +13,6 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Elements;
-
-import checkers.source.SourceChecker;
 
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
@@ -68,12 +66,12 @@ public class InternalUtils {
      */
     public static /*@Nullable*/ Element symbol(/*@Nullable*/ Tree tree) {
         if (tree == null) {
-            SourceChecker.errorAbort("InternalUtils.symbol: tree is null");
+            ErrorReporter.errorAbort("InternalUtils.symbol: tree is null");
             return null; // dead code
         }
 
         if (!(tree instanceof JCTree)) {
-            SourceChecker.errorAbort("InternalUtils.symbol: tree is not a valid Javac tree");
+            ErrorReporter.errorAbort("InternalUtils.symbol: tree is not a valid Javac tree");
             return null; // dead code
         }
 
@@ -151,7 +149,7 @@ public class InternalUtils {
     public static ExecutableElement constructor(NewClassTree tree) {
 
         if (!(tree instanceof JCTree.JCNewClass)) {
-            SourceChecker.errorAbort("InternalUtils.constructor: not a javac internal tree");
+            ErrorReporter.errorAbort("InternalUtils.constructor: not a javac internal tree");
             return null; // dead code
         }
 

@@ -1,4 +1,4 @@
-package checkers.util;
+package javacutils;
 
 import java.util.*;
 
