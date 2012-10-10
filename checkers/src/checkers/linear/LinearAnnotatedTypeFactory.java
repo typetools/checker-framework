@@ -7,6 +7,9 @@ import javax.lang.model.element.Element;
 
 import com.sun.source.tree.*;
 
+import javacutils.AnnotationUtils;
+import javacutils.TreeUtils;
+
 import checkers.basetype.BaseTypeChecker;
 import checkers.flow.DefaultFlow;
 import checkers.flow.DefaultFlowState;
@@ -14,8 +17,6 @@ import checkers.linear.quals.*;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.BasicAnnotatedTypeFactory;
-import checkers.util.AnnotationUtils;
-import checkers.util.TreeUtils;
 
 /**
  * Adds {@link Unusable} qualifier to a type if it represents:

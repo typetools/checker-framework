@@ -1,6 +1,6 @@
 package checkers.flow.cfg.node;
 
-import checkers.util.InternalUtils;
+import javacutils.InternalUtils;
 
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.Tree;

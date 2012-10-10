@@ -6,6 +6,8 @@ import java.util.LinkedList;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 
+import javacutils.InternalUtils;
+
 import checkers.basetype.BaseTypeChecker;
 import checkers.flow.cfg.CFGBuilder;
 import checkers.flow.cfg.ControlFlowGraph;
@@ -13,7 +15,6 @@ import checkers.flow.cfg.UnderlyingAST;
 import checkers.flow.cfg.node.MethodInvocationNode;
 import checkers.quals.TerminatesExecution;
 import checkers.types.AnnotatedTypeFactory;
-import checkers.util.InternalUtils;
 
 import com.sun.source.tree.AssertTree;
 import com.sun.source.tree.CompilationUnitTree;

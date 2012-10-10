@@ -4,12 +4,13 @@ import java.util.List;
 
 import javax.lang.model.element.VariableElement;
 
+import javacutils.Pair;
+
 import checkers.basetype.BaseTypeChecker;
 import checkers.flow.analysis.checkers.CFAnalysis;
 import checkers.flow.analysis.checkers.CFStore;
 import checkers.flow.analysis.checkers.CFTransfer;
 import checkers.flow.analysis.checkers.CFValue;
-import checkers.util.Pair;
 
 import com.sun.source.tree.CompilationUnitTree;
 

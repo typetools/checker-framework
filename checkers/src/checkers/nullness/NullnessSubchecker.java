@@ -5,13 +5,14 @@ import javax.lang.model.util.Elements;
 
 import com.sun.source.tree.CompilationUnitTree;
 
+import javacutils.AnnotationUtils;
+
 import checkers.basetype.BaseTypeChecker;
 import checkers.nullness.quals.*;
 import checkers.quals.TypeQualifiers;
 import checkers.quals.PolyAll;
 import checkers.source.*;
 import checkers.types.*;
-import checkers.util.AnnotationUtils;
 import checkers.util.MultiGraphQualifierHierarchy;
 
 /**

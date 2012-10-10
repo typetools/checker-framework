@@ -6,6 +6,9 @@ import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 
+import javacutils.AnnotationUtils;
+import javacutils.InternalUtils;
+
 import com.sun.source.tree.MethodTree;
 
 import checkers.quals.Pure;

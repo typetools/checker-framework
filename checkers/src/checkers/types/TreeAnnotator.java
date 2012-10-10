@@ -8,12 +8,13 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
 
+import javacutils.AnnotationUtils;
+
 import checkers.basetype.BaseTypeChecker;
 import checkers.quals.ImplicitFor;
 import checkers.quals.TypeQualifiers;
 import checkers.source.SourceChecker;
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
-import checkers.util.AnnotationUtils;
 
 import com.sun.source.tree.*;
 import com.sun.source.tree.Tree.Kind;
@@ -98,7 +99,7 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
     }
 
     public void addTreeClass(Class<? extends Tree> treeClass, AnnotationMirror theQual) {
-        boolean res = AnnotationUtils.updateMappingToMutableSet(qualHierarchy, treeClasses, treeClass, theQual);
+        boolean res = qualHierarchy.updateMappingToMutableSet(treeClasses, treeClass, theQual);
         if (!res) {
             SourceChecker.errorAbort("TreeAnnotator: invalid update of map " +
                     treeClasses + " at " + treeClass + " with " +theQual);
@@ -106,7 +107,7 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
     }
 
     public void addTreeKind(Tree.Kind treeKind, AnnotationMirror theQual) {
-        boolean res = AnnotationUtils.updateMappingToMutableSet(qualHierarchy, treeKinds, treeKind, theQual);
+        boolean res = qualHierarchy.updateMappingToMutableSet(treeKinds, treeKind, theQual);
         if (!res) {
             SourceChecker.errorAbort("TreeAnnotator: invalid update of treeKinds " +
                     treeKinds + " at " + treeKind + " with " + theQual);
@@ -114,7 +115,7 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
     }
 
     public void addStringPattern(String pattern, AnnotationMirror theQual) {
-        boolean res = AnnotationUtils.updateMappingToMutableSet(qualHierarchy, stringPatterns, Pattern.compile(pattern), theQual);
+        boolean res = qualHierarchy.updateMappingToMutableSet(stringPatterns, Pattern.compile(pattern), theQual);
         if (!res) {
             SourceChecker.errorAbort("TreeAnnotator: invalid update of stringPatterns " +
                     stringPatterns + " at " + pattern + " with " + theQual);

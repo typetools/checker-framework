@@ -3,6 +3,8 @@ package checkers.regex;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 
+import javacutils.AnnotationUtils;
+
 import checkers.flow.analysis.ConditionalTransferResult;
 import checkers.flow.analysis.FlowExpressions.Receiver;
 import checkers.flow.analysis.RegularTransferResult;
@@ -20,7 +22,6 @@ import checkers.flow.util.FlowExpressionParseUtil;
 import checkers.flow.util.FlowExpressionParseUtil.FlowExpressionContext;
 import checkers.flow.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import checkers.regex.quals.Regex;
-import checkers.util.AnnotationUtils;
 
 public class RegexTransfer extends
         CFAbstractTransfer<CFValue, CFStore, RegexTransfer> {

@@ -20,6 +20,11 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 
+import javacutils.AnnotationUtils;
+import javacutils.InternalUtils;
+import javacutils.Pair;
+import javacutils.TreeUtils;
+
 import checkers.basetype.BaseTypeChecker;
 import checkers.flow.analysis.AnalysisResult;
 import checkers.flow.analysis.TransferResult;
@@ -47,12 +52,8 @@ import checkers.quals.Pure;
 import checkers.quals.Unqualified;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
-import checkers.util.AnnotationUtils;
-import checkers.util.InternalUtils;
-import checkers.util.Pair;
 import checkers.util.QualifierDefaults;
 import checkers.util.QualifierPolymorphism;
-import checkers.util.TreeUtils;
 
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BlockTree;

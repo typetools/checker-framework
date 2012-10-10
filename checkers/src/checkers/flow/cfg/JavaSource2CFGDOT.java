@@ -13,13 +13,14 @@ import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import javax.xml.ws.Holder;
 
+import javacutils.TreeUtils;
+
 import checkers.flow.analysis.AbstractValue;
 import checkers.flow.analysis.Analysis;
 import checkers.flow.analysis.Store;
 import checkers.flow.analysis.TransferFunction;
 import checkers.source.SourceChecker;
 import checkers.source.SourceVisitor;
-import checkers.util.TreeUtils;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;

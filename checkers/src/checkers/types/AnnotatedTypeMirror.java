@@ -37,10 +37,10 @@ import checkers.types.visitors.AnnotatedTypeScanner;
 import checkers.types.visitors.AnnotatedTypeVisitor;
 import checkers.types.visitors.SimpleAnnotatedTypeVisitor;
 import checkers.util.AnnotatedTypes;
-import checkers.util.AnnotationUtils;
-import checkers.util.ElementUtils;
-import checkers.util.TreeUtils;
-import checkers.util.TypesUtils;
+import javacutils.AnnotationUtils;
+import javacutils.ElementUtils;
+import javacutils.TreeUtils;
+import javacutils.TypesUtils;
 /*>>>
 import checkers.nullness.quals.NonNull;
 */

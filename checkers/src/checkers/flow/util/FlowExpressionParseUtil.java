@@ -9,6 +9,10 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
 
+import javacutils.InternalUtils;
+import javacutils.Resolver;
+import javacutils.TreeUtils;
+
 import checkers.flow.analysis.FlowExpressions;
 import checkers.flow.analysis.FlowExpressions.FieldAccess;
 import checkers.flow.analysis.FlowExpressions.PureMethodCall;
@@ -20,9 +24,6 @@ import checkers.flow.cfg.node.MethodInvocationNode;
 import checkers.flow.cfg.node.Node;
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeFactory;
-import checkers.util.InternalUtils;
-import checkers.util.Resolver;
-import checkers.util.TreeUtils;
 
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;

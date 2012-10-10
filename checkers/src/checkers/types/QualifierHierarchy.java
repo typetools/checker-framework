@@ -1,13 +1,14 @@
 package checkers.types;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Name;
 import javax.lang.model.type.TypeKind;
 
-import checkers.util.AnnotationUtils;
+import javacutils.AnnotationUtils;
 
 /**
  * Represents a type qualifier hierarchy.
@@ -543,7 +544,7 @@ public abstract class QualifierHierarchy {
      * @param newQual The value to add.
      * @return Whether there was a qualifier hierarchy collision.
      */
-    public static <T> boolean updateMappingToMutableSet(
+    public <T> boolean updateMappingToMutableSet(
             Map<T, Set<AnnotationMirror>> map,
             T key, AnnotationMirror newQual) {
 
