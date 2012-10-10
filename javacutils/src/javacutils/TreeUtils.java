@@ -1,4 +1,4 @@
-package checkers.util;
+package javacutils;
 
 import java.util.EnumSet;
 import java.util.Set;
@@ -6,8 +6,6 @@ import java.util.Set;
 /*>>>
 import checkers.nullness.quals.*;
 */
-import checkers.source.SourceChecker;
-import checkers.types.AnnotatedTypeMirror;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -409,7 +407,7 @@ public final class TreeUtils {
             return ((IdentifierTree)expr).getName();
         else if (expr.getKind() == Tree.Kind.MEMBER_SELECT)
             return ((MemberSelectTree)expr).getIdentifier();
-        SourceChecker.errorAbort("TreeUtils.methodName: cannot be here: " + node);
+        ErrorReporter.errorAbort("TreeUtils.methodName: cannot be here: " + node);
         return null; // dead code
     }
 
@@ -622,7 +620,7 @@ public final class TreeUtils {
                     && exec.getParameters().size() == params)
                 return exec;
         }
-        SourceChecker.errorAbort("TreeUtils.getMethod: shouldn't be here!");
+        ErrorReporter.errorAbort("TreeUtils.getMethod: shouldn't be here!");
         return null; // dead code
     }
 
@@ -766,7 +764,7 @@ public final class TreeUtils {
                 return var;
             }
         }
-        SourceChecker.errorAbort("TreeUtils.getField: shouldn't be here!");
+        ErrorReporter.errorAbort("TreeUtils.getField: shouldn't be here!");
         return null; // dead code
     }
 

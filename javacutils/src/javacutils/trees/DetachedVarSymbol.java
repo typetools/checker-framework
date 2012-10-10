@@ -1,4 +1,4 @@
-package checkers.util.trees;
+package javacutils.trees;
 
 import com.sun.source.tree.VariableTree;
 

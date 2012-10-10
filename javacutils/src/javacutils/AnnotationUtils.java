@@ -1,10 +1,8 @@
-package checkers.util;
+package javacutils;
 
 /*>>>
 import checkers.nullness.quals.*;
 */
-import checkers.source.SourceChecker;
-import checkers.types.QualifierHierarchy;
 
 import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.code.Type;
@@ -66,7 +64,7 @@ public class AnnotationUtils {
         if (annoType == null)
             return null;
         if (annoType.asElement().getKind() != ElementKind.ANNOTATION_TYPE) {
-            SourceChecker.errorAbort(annoType + " is not an annotation");
+            ErrorReporter.errorAbort(annoType + " is not an annotation");
             return null; // dead code
         }
         AnnotationMirror result = new AnnotationMirror() {
@@ -235,29 +233,6 @@ public class AnnotationUtils {
     }
 
     /**
-     * Returns the annotation from hierarchy identified by its 'top' annotation
-     * from a set of annotations.
-     *
-     * @param qualHierarchy
-     *            The {@link QualifierHierarchy} for subtyping tests.
-     * @param annos
-     *            The set of annotations.
-     * @param top
-     *            The top annotation of the hierarchy to consider.
-     */
-    public static AnnotationMirror getAnnotationInHierarchy(
-            QualifierHierarchy qualHierarchy,
-            Collection<AnnotationMirror> annos, AnnotationMirror top) {
-        AnnotationMirror annoInHierarchy = null;
-        for (AnnotationMirror rhsAnno : annos) {
-            if (qualHierarchy.isSubtype(rhsAnno, top)) {
-                annoInHierarchy = rhsAnno;
-            }
-        }
-        return annoInHierarchy;
-    }
-
-    /**
      * Checks that the collection contains the annotation ignoring values.
      * Using Collection.contains does not always work, because it
      * does not use areSameIgnoringValues for comparison.
@@ -394,7 +369,7 @@ public class AnnotationUtils {
                 return expectedType.cast(val.getValue());
             }
         }
-        SourceChecker.errorAbort("No element with name \'" + name + "\' in annotation " + anno);
+        ErrorReporter.errorAbort("No element with name \'" + name + "\' in annotation " + anno);
         return null; // dead code
     }
 
@@ -479,48 +454,10 @@ public class AnnotationUtils {
             Class<?> cls =  Class.forName(cn.toString());
             return cls;
         } catch (ClassNotFoundException e) {
-            SourceChecker.errorAbort("Could not load class '" + cn + "' for field '" + name +
+            ErrorReporter.errorAbort("Could not load class '" + cn + "' for field '" + name +
                     "' in annotation " + anno);
             return null; // dead code
         }
-    }
-
-    /**
-     * Update a mapping from some key to a set of AnnotationMirrors.
-     * If the key already exists in the mapping and the new qualifier
-     * is in the same qualifier hierarchy as any of the existing qualifiers,
-     * do nothing and return false.
-     * If the key already exists in the mapping and the new qualifier
-     * is not in the same qualifier hierarchy as any of the existing qualifiers,
-     * add the qualifier to the existing set and return true.
-     * If the key does not exist in the mapping, add the new qualifier as a
-     * singleton set and return true.
-     *
-     * @param map The mapping to modify.
-     * @param key The key to update.
-     * @param newQual The value to add.
-     * @return Whether there was a qualifier hierarchy collision.
-     */
-    public static <T> boolean updateMappingToMutableSet(QualifierHierarchy qualHierarchy,
-            Map<T, Set<AnnotationMirror>> map,
-            T key, AnnotationMirror newQual) {
-
-        if (!map.containsKey(key)) {
-            Set<AnnotationMirror> set = AnnotationUtils.createAnnotationSet();
-            set.add(newQual);
-            map.put(key, set);
-        } else {
-            Set<AnnotationMirror> prevs = map.get(key);
-            for (AnnotationMirror p : prevs) {
-                if (AnnotationUtils.areSame(qualHierarchy.getTopAnnotation(p),
-                        qualHierarchy.getTopAnnotation(newQual))) {
-                    return false;
-                }
-            }
-            prevs.add(newQual);
-            map.put(key, prevs);
-        }
-        return true;
     }
 
     /**

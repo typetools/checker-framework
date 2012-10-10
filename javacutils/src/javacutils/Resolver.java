@@ -1,4 +1,4 @@
-package checkers.util;
+package javacutils;
 
 import static com.sun.tools.javac.code.Kinds.VAR;
 

@@ -1,4 +1,4 @@
-package checkers.util.trees;
+package javacutils.trees;
 
 import java.util.StringTokenizer;
 

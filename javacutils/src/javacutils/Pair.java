@@ -1,4 +1,4 @@
-package checkers.util;
+package javacutils;
 
 /**
  * Simple pair class for multiple returns.
