@@ -3,6 +3,10 @@ asmx.jar
   checkers.util.stub.Skeleton
   I would like to get rid of this dependency and Skeleton.
 
+javacutils.jar
+  This file is not in the repository. It is rebuild from the
+  CF/javacutils project.
+
 javaparser.jar
   This file is not in the repository. It is rebuilt from the
   CF/javaparser project.
