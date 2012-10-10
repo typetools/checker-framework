@@ -1,4 +1,4 @@
-package checkers.flow.cfg.block;
+package dataflow.cfg.block;
 
 import java.util.Collections;
 import java.util.HashSet;

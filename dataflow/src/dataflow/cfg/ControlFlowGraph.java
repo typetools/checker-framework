@@ -1,4 +1,4 @@
-package checkers.flow.cfg;
+package dataflow.cfg;
 
 import java.util.HashSet;
 import java.util.IdentityHashMap;
@@ -7,15 +7,15 @@ import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 
-import checkers.flow.cfg.block.Block;
-import checkers.flow.cfg.block.Block.BlockType;
-import checkers.flow.cfg.block.ConditionalBlock;
-import checkers.flow.cfg.block.ExceptionBlock;
-import checkers.flow.cfg.block.SingleSuccessorBlock;
-import checkers.flow.cfg.block.SpecialBlock;
-import checkers.flow.cfg.block.SpecialBlockImpl;
-import checkers.flow.cfg.node.Node;
-import checkers.flow.cfg.node.ReturnNode;
+import dataflow.cfg.block.Block;
+import dataflow.cfg.block.Block.BlockType;
+import dataflow.cfg.block.ConditionalBlock;
+import dataflow.cfg.block.ExceptionBlock;
+import dataflow.cfg.block.SingleSuccessorBlock;
+import dataflow.cfg.block.SpecialBlock;
+import dataflow.cfg.block.SpecialBlockImpl;
+import dataflow.cfg.node.Node;
+import dataflow.cfg.node.ReturnNode;
 
 import com.sun.source.tree.Tree;
 

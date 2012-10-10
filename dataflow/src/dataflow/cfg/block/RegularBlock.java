@@ -1,8 +1,8 @@
-package checkers.flow.cfg.block;
+package dataflow.cfg.block;
 
 import java.util.List;
 
-import checkers.flow.cfg.node.Node;
+import dataflow.cfg.node.Node;
 
 /**
  * A regular basic block that contains a sequence of {@link Node}s.

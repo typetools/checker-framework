@@ -1,4 +1,4 @@
-package checkers.flow.cfg;
+package dataflow.cfg;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,105 +32,103 @@ import javacutils.InternalUtils;
 import javacutils.Pair;
 import javacutils.TreeUtils;
 import javacutils.TypesUtils;
+import javacutils.trees.TreeBuilder;
 
-import checkers.flow.analysis.checkers.CFTreeBuilder;
-import checkers.flow.cfg.CFGBuilder.ExtendedNode.ExtendedNodeType;
-import checkers.flow.cfg.UnderlyingAST.CFGMethod;
-import checkers.flow.cfg.block.Block;
-import checkers.flow.cfg.block.Block.BlockType;
-import checkers.flow.cfg.block.BlockImpl;
-import checkers.flow.cfg.block.ConditionalBlockImpl;
-import checkers.flow.cfg.block.ExceptionBlockImpl;
-import checkers.flow.cfg.block.RegularBlockImpl;
-import checkers.flow.cfg.block.SingleSuccessorBlockImpl;
-import checkers.flow.cfg.block.SpecialBlock.SpecialBlockType;
-import checkers.flow.cfg.block.SpecialBlockImpl;
-import checkers.flow.cfg.node.ArrayAccessNode;
-import checkers.flow.cfg.node.ArrayCreationNode;
-import checkers.flow.cfg.node.ArrayTypeNode;
-import checkers.flow.cfg.node.AssertionErrorNode;
-import checkers.flow.cfg.node.AssignmentNode;
-import checkers.flow.cfg.node.BitwiseAndAssignmentNode;
-import checkers.flow.cfg.node.BitwiseAndNode;
-import checkers.flow.cfg.node.BitwiseComplementNode;
-import checkers.flow.cfg.node.BitwiseOrAssignmentNode;
-import checkers.flow.cfg.node.BitwiseOrNode;
-import checkers.flow.cfg.node.BitwiseXorAssignmentNode;
-import checkers.flow.cfg.node.BitwiseXorNode;
-import checkers.flow.cfg.node.BooleanLiteralNode;
-import checkers.flow.cfg.node.BoxingNode;
-import checkers.flow.cfg.node.CaseNode;
-import checkers.flow.cfg.node.CharacterLiteralNode;
-import checkers.flow.cfg.node.ClassNameNode;
-import checkers.flow.cfg.node.ConditionalAndNode;
-import checkers.flow.cfg.node.ConditionalNotNode;
-import checkers.flow.cfg.node.ConditionalOrNode;
-import checkers.flow.cfg.node.DoubleLiteralNode;
-import checkers.flow.cfg.node.EqualToNode;
-import checkers.flow.cfg.node.ExplicitThisLiteralNode;
-import checkers.flow.cfg.node.FieldAccessNode;
-import checkers.flow.cfg.node.FloatLiteralNode;
-import checkers.flow.cfg.node.FloatingDivisionAssignmentNode;
-import checkers.flow.cfg.node.FloatingDivisionNode;
-import checkers.flow.cfg.node.FloatingRemainderAssignmentNode;
-import checkers.flow.cfg.node.FloatingRemainderNode;
-import checkers.flow.cfg.node.GreaterThanNode;
-import checkers.flow.cfg.node.GreaterThanOrEqualNode;
-import checkers.flow.cfg.node.ImplicitThisLiteralNode;
-import checkers.flow.cfg.node.InstanceOfNode;
-import checkers.flow.cfg.node.IntegerDivisionAssignmentNode;
-import checkers.flow.cfg.node.IntegerDivisionNode;
-import checkers.flow.cfg.node.IntegerLiteralNode;
-import checkers.flow.cfg.node.IntegerRemainderAssignmentNode;
-import checkers.flow.cfg.node.IntegerRemainderNode;
-import checkers.flow.cfg.node.LeftShiftAssignmentNode;
-import checkers.flow.cfg.node.LeftShiftNode;
-import checkers.flow.cfg.node.LessThanNode;
-import checkers.flow.cfg.node.LessThanOrEqualNode;
-import checkers.flow.cfg.node.LocalVariableNode;
-import checkers.flow.cfg.node.LongLiteralNode;
-import checkers.flow.cfg.node.MarkerNode;
-import checkers.flow.cfg.node.MethodAccessNode;
-import checkers.flow.cfg.node.MethodInvocationNode;
-import checkers.flow.cfg.node.NarrowingConversionNode;
-import checkers.flow.cfg.node.Node;
-import checkers.flow.cfg.node.NotEqualNode;
-import checkers.flow.cfg.node.NullLiteralNode;
-import checkers.flow.cfg.node.NumericalAdditionAssignmentNode;
-import checkers.flow.cfg.node.NumericalAdditionNode;
-import checkers.flow.cfg.node.NumericalMinusNode;
-import checkers.flow.cfg.node.NumericalMultiplicationAssignmentNode;
-import checkers.flow.cfg.node.NumericalMultiplicationNode;
-import checkers.flow.cfg.node.NumericalPlusNode;
-import checkers.flow.cfg.node.NumericalSubtractionAssignmentNode;
-import checkers.flow.cfg.node.NumericalSubtractionNode;
-import checkers.flow.cfg.node.ObjectCreationNode;
-import checkers.flow.cfg.node.PackageNameNode;
-import checkers.flow.cfg.node.ParameterizedTypeNode;
-import checkers.flow.cfg.node.PostfixDecrementNode;
-import checkers.flow.cfg.node.PostfixIncrementNode;
-import checkers.flow.cfg.node.PrefixDecrementNode;
-import checkers.flow.cfg.node.PrefixIncrementNode;
-import checkers.flow.cfg.node.PrimitiveTypeNode;
-import checkers.flow.cfg.node.ReturnNode;
-import checkers.flow.cfg.node.SignedRightShiftAssignmentNode;
-import checkers.flow.cfg.node.SignedRightShiftNode;
-import checkers.flow.cfg.node.StringConcatenateAssignmentNode;
-import checkers.flow.cfg.node.StringConcatenateNode;
-import checkers.flow.cfg.node.StringConversionNode;
-import checkers.flow.cfg.node.StringLiteralNode;
-import checkers.flow.cfg.node.TernaryExpressionNode;
-import checkers.flow.cfg.node.ThisLiteralNode;
-import checkers.flow.cfg.node.ThrowNode;
-import checkers.flow.cfg.node.TypeCastNode;
-import checkers.flow.cfg.node.UnboxingNode;
-import checkers.flow.cfg.node.UnsignedRightShiftAssignmentNode;
-import checkers.flow.cfg.node.UnsignedRightShiftNode;
-import checkers.flow.cfg.node.ValueLiteralNode;
-import checkers.flow.cfg.node.VariableDeclarationNode;
-import checkers.flow.cfg.node.WideningConversionNode;
-import checkers.types.AnnotatedTypeFactory;
-import checkers.types.AnnotatedTypeMirror;
+import dataflow.cfg.CFGBuilder.ExtendedNode.ExtendedNodeType;
+import dataflow.cfg.UnderlyingAST.CFGMethod;
+import dataflow.cfg.block.Block;
+import dataflow.cfg.block.Block.BlockType;
+import dataflow.cfg.block.BlockImpl;
+import dataflow.cfg.block.ConditionalBlockImpl;
+import dataflow.cfg.block.ExceptionBlockImpl;
+import dataflow.cfg.block.RegularBlockImpl;
+import dataflow.cfg.block.SingleSuccessorBlockImpl;
+import dataflow.cfg.block.SpecialBlock.SpecialBlockType;
+import dataflow.cfg.block.SpecialBlockImpl;
+import dataflow.cfg.node.ArrayAccessNode;
+import dataflow.cfg.node.ArrayCreationNode;
+import dataflow.cfg.node.ArrayTypeNode;
+import dataflow.cfg.node.AssertionErrorNode;
+import dataflow.cfg.node.AssignmentNode;
+import dataflow.cfg.node.BitwiseAndAssignmentNode;
+import dataflow.cfg.node.BitwiseAndNode;
+import dataflow.cfg.node.BitwiseComplementNode;
+import dataflow.cfg.node.BitwiseOrAssignmentNode;
+import dataflow.cfg.node.BitwiseOrNode;
+import dataflow.cfg.node.BitwiseXorAssignmentNode;
+import dataflow.cfg.node.BitwiseXorNode;
+import dataflow.cfg.node.BooleanLiteralNode;
+import dataflow.cfg.node.BoxingNode;
+import dataflow.cfg.node.CaseNode;
+import dataflow.cfg.node.CharacterLiteralNode;
+import dataflow.cfg.node.ClassNameNode;
+import dataflow.cfg.node.ConditionalAndNode;
+import dataflow.cfg.node.ConditionalNotNode;
+import dataflow.cfg.node.ConditionalOrNode;
+import dataflow.cfg.node.DoubleLiteralNode;
+import dataflow.cfg.node.EqualToNode;
+import dataflow.cfg.node.ExplicitThisLiteralNode;
+import dataflow.cfg.node.FieldAccessNode;
+import dataflow.cfg.node.FloatLiteralNode;
+import dataflow.cfg.node.FloatingDivisionAssignmentNode;
+import dataflow.cfg.node.FloatingDivisionNode;
+import dataflow.cfg.node.FloatingRemainderAssignmentNode;
+import dataflow.cfg.node.FloatingRemainderNode;
+import dataflow.cfg.node.GreaterThanNode;
+import dataflow.cfg.node.GreaterThanOrEqualNode;
+import dataflow.cfg.node.ImplicitThisLiteralNode;
+import dataflow.cfg.node.InstanceOfNode;
+import dataflow.cfg.node.IntegerDivisionAssignmentNode;
+import dataflow.cfg.node.IntegerDivisionNode;
+import dataflow.cfg.node.IntegerLiteralNode;
+import dataflow.cfg.node.IntegerRemainderAssignmentNode;
+import dataflow.cfg.node.IntegerRemainderNode;
+import dataflow.cfg.node.LeftShiftAssignmentNode;
+import dataflow.cfg.node.LeftShiftNode;
+import dataflow.cfg.node.LessThanNode;
+import dataflow.cfg.node.LessThanOrEqualNode;
+import dataflow.cfg.node.LocalVariableNode;
+import dataflow.cfg.node.LongLiteralNode;
+import dataflow.cfg.node.MarkerNode;
+import dataflow.cfg.node.MethodAccessNode;
+import dataflow.cfg.node.MethodInvocationNode;
+import dataflow.cfg.node.NarrowingConversionNode;
+import dataflow.cfg.node.Node;
+import dataflow.cfg.node.NotEqualNode;
+import dataflow.cfg.node.NullLiteralNode;
+import dataflow.cfg.node.NumericalAdditionAssignmentNode;
+import dataflow.cfg.node.NumericalAdditionNode;
+import dataflow.cfg.node.NumericalMinusNode;
+import dataflow.cfg.node.NumericalMultiplicationAssignmentNode;
+import dataflow.cfg.node.NumericalMultiplicationNode;
+import dataflow.cfg.node.NumericalPlusNode;
+import dataflow.cfg.node.NumericalSubtractionAssignmentNode;
+import dataflow.cfg.node.NumericalSubtractionNode;
+import dataflow.cfg.node.ObjectCreationNode;
+import dataflow.cfg.node.PackageNameNode;
+import dataflow.cfg.node.ParameterizedTypeNode;
+import dataflow.cfg.node.PostfixDecrementNode;
+import dataflow.cfg.node.PostfixIncrementNode;
+import dataflow.cfg.node.PrefixDecrementNode;
+import dataflow.cfg.node.PrefixIncrementNode;
+import dataflow.cfg.node.PrimitiveTypeNode;
+import dataflow.cfg.node.ReturnNode;
+import dataflow.cfg.node.SignedRightShiftAssignmentNode;
+import dataflow.cfg.node.SignedRightShiftNode;
+import dataflow.cfg.node.StringConcatenateAssignmentNode;
+import dataflow.cfg.node.StringConcatenateNode;
+import dataflow.cfg.node.StringConversionNode;
+import dataflow.cfg.node.StringLiteralNode;
+import dataflow.cfg.node.TernaryExpressionNode;
+import dataflow.cfg.node.ThisLiteralNode;
+import dataflow.cfg.node.ThrowNode;
+import dataflow.cfg.node.TypeCastNode;
+import dataflow.cfg.node.UnboxingNode;
+import dataflow.cfg.node.UnsignedRightShiftAssignmentNode;
+import dataflow.cfg.node.UnsignedRightShiftNode;
+import dataflow.cfg.node.ValueLiteralNode;
+import dataflow.cfg.node.VariableDeclarationNode;
+import dataflow.cfg.node.WideningConversionNode;
 
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
@@ -247,48 +245,49 @@ public class CFGBuilder {
     /**
      * Build the control flow graph of some code.
      */
-    public static ControlFlowGraph build(AnnotatedTypeFactory factory,
+    public static ControlFlowGraph build(
             CompilationUnitTree root, ProcessingEnvironment env,
             UnderlyingAST underlyingAST, boolean assumeAssertionsEnabled, boolean assumeAssertionsDisabled) {
-        return new CFGBuilder(assumeAssertionsEnabled, assumeAssertionsDisabled).run(factory, root, env, underlyingAST);
+        return new CFGBuilder(assumeAssertionsEnabled, assumeAssertionsDisabled).run(root, env, underlyingAST);
     }
 
     /**
      * Build the control flow graph of a method.
      */
-    public static ControlFlowGraph build(AnnotatedTypeFactory factory,
+    public static ControlFlowGraph build(
             CompilationUnitTree root, ProcessingEnvironment env,
             MethodTree tree, Tree classTree, boolean assumeAssertionsEnabled, boolean assumeAssertionsDisabled) {
-        return new CFGBuilder(assumeAssertionsEnabled, assumeAssertionsDisabled).run(factory, root, env, tree, classTree);
+        return new CFGBuilder(assumeAssertionsEnabled, assumeAssertionsDisabled).run(root, env, tree, classTree);
     }
 
     /**
      * Build the control flow graph of some code.
      */
-    public static ControlFlowGraph build(AnnotatedTypeFactory factory,
+    public static ControlFlowGraph build(
             CompilationUnitTree root, ProcessingEnvironment env,
             UnderlyingAST underlyingAST) {
-        return new CFGBuilder(false, false).run(factory, root, env, underlyingAST);
+        return new CFGBuilder(false, false).run(root, env, underlyingAST);
     }
 
     /**
      * Build the control flow graph of a method.
      */
-    public static ControlFlowGraph build(AnnotatedTypeFactory factory,
+    public static ControlFlowGraph build(
             CompilationUnitTree root, ProcessingEnvironment env,
             MethodTree tree, Tree classTree) {
-        return new CFGBuilder(false, false).run(factory, root, env, tree, classTree);
+        return new CFGBuilder(false, false).run(root, env, tree, classTree);
     }
 
     /**
      * Build the control flow graph of some code.
      */
-    public ControlFlowGraph run(AnnotatedTypeFactory factory,
+    public ControlFlowGraph run(
             CompilationUnitTree root, ProcessingEnvironment env,
             UnderlyingAST underlyingAST) {
         declaredClasses = new LinkedList<>();
+        TreeBuilder builder = new TreeBuilder(env);
         PhaseOneResult phase1result = new CFGTranslationPhaseOne().process(
-                factory, root, env, underlyingAST, exceptionalExitLabel);
+                root, env, underlyingAST, exceptionalExitLabel, builder);
         ControlFlowGraph phase2result = new CFGTranslationPhaseTwo()
                 .process(phase1result);
         ControlFlowGraph phase3result = CFGTranslationPhaseThree
@@ -299,11 +298,11 @@ public class CFGBuilder {
     /**
      * Build the control flow graph of a method.
      */
-    public ControlFlowGraph run(AnnotatedTypeFactory factory,
+    public ControlFlowGraph run(
             CompilationUnitTree root, ProcessingEnvironment env,
             MethodTree tree, Tree classTree) {
         UnderlyingAST underlyingAST = new CFGMethod(tree, classTree);
-        return run(factory, root, env, underlyingAST);
+        return run(root, env, underlyingAST);
     }
 
     /* --------------------------------------------------------- */
@@ -1332,13 +1331,7 @@ public class CFGBuilder {
         protected Elements elements;
         protected Types types;
         protected Trees trees;
-        protected CFTreeBuilder treeBuilder;
-
-        /**
-         * Annotated type factory used to get flow-insensitive annotations
-         * during CFG construction.
-         */
-        protected AnnotatedTypeFactory factory;
+        protected TreeBuilder treeBuilder;
 
         /**
          * The translation starts in regular mode, that is
@@ -1431,27 +1424,29 @@ public class CFGBuilder {
         /**
          * Performs the actual work of phase one.
          *
-         * @param factory
-         *            factory for flow-insensitive type annotations
          * @param root
          *            compilation unit tree containing the method
          * @param env
          *            annotation processing environment containing type
          *            utilities
-         * @param t
-         *            A method (identified by its AST element).
+         * @param underlyingAST
+         *            the AST for which the CFG is to be built
+         * @param exceptionalExitLabel
+         *            the label for exceptional exits from the CFG
+         * @param treeBuilder
+         *            builder for new AST nodes
          * @return The result of phase one.
          */
-        public PhaseOneResult process(AnnotatedTypeFactory factory,
+        public PhaseOneResult process(
                 CompilationUnitTree root, ProcessingEnvironment env,
-                UnderlyingAST underlyingAST, Label exceptionalExitLabel) {
-            this.factory = factory;
+                UnderlyingAST underlyingAST, Label exceptionalExitLabel,
+                TreeBuilder treeBuilder) {
             this.env = env;
             this.tryStack = new TryStack(exceptionalExitLabel);
+            this.treeBuilder = treeBuilder;
             elements = env.getElementUtils();
             types = env.getTypeUtils();
             trees = Trees.instance(env);
-            treeBuilder = new CFTreeBuilder(env);
 
             // start in regular mode
             conditionalMode = false;
@@ -3142,288 +3137,11 @@ public class CFGBuilder {
             return scan(tree.getExpression(), p);
         }
 
+        // TODO(Charlie): Desugar for loops based on unannotated types for CF-independent
+        // uses.
         @Override
         public Node visitEnhancedForLoop(EnhancedForLoopTree tree, Void p) {
-            // see JLS 14.14.2
-            assert !conditionalMode;
-
-            Name parentLabel = getLabel(getCurrentPath());
-
-            Label conditionStart = new Label();
-            Label loopEntry = new Label();
-            Label loopExit = new Label();
-
-            // If the loop is a labeled statement, then its continue
-            // target is identical for continues with no label and
-            // continues with the loop's label.
-            Label updateStart;
-            if (parentLabel != null) {
-                updateStart = continueLabels.get(parentLabel);
-            } else {
-                updateStart = new Label();
-            }
-
-            Label oldBreakTargetL = breakTargetL;
-            breakTargetL = loopExit;
-
-            Label oldContinueTargetL = continueTargetL;
-            continueTargetL = updateStart;
-
-            // Distinguish loops over Iterables from loops over arrays.
-
-            TypeElement iterableElement = elements.getTypeElement("java.lang.Iterable");
-            TypeMirror iterableType = types.erasure(iterableElement.asType());
-
-            VariableTree variable = tree.getVariable();
-            VariableElement variableElement =
-                TreeUtils.elementFromDeclaration(variable);
-            ExpressionTree expression = tree.getExpression();
-            StatementTree statement = tree.getStatement();
-
-            TypeMirror exprType = InternalUtils.typeOf(expression);
-
-            // Find enclosing method tree.
-            MethodTree enclosingMethod = TreeUtils
-                    .enclosingMethod(getCurrentPath());
-            Element methodElement = TreeUtils
-                    .elementFromDeclaration(enclosingMethod);
-
-            if (types.isSubtype(exprType, iterableType)) {
-                // Take the upper bound of a type variable or wildcard
-                exprType = TypesUtils.upperBound(exprType);
-
-                assert (exprType instanceof DeclaredType) : "an Iterable must be a DeclaredType";
-                DeclaredType declaredExprType = (DeclaredType) exprType;
-                declaredExprType.getTypeArguments();
-
-                MemberSelectTree iteratorSelect =
-                    treeBuilder.buildIteratorMethodAccess(expression);
-                factory.setPathHack(iteratorSelect, methodElement);
-
-                MethodInvocationTree iteratorCall =
-                    treeBuilder.buildMethodInvocation(iteratorSelect);
-                factory.setPathHack(iteratorCall, methodElement);
-
-                AnnotatedTypeMirror annotatedIteratorType =
-                    factory.getAnnotatedType(iteratorCall);
-
-                Tree annotatedIteratorTypeTree =
-                    treeBuilder.buildAnnotatedType(annotatedIteratorType);
-                factory.setPathHack(annotatedIteratorTypeTree, methodElement);
-
-                // Declare and initialize a new, unique iterator variable
-                VariableTree iteratorVariable =
-                    treeBuilder.buildVariableDecl(annotatedIteratorTypeTree,
-                                                  uniqueName("iter"),
-                                                  variableElement.getEnclosingElement(),
-                                                  iteratorCall);
-                factory.setPathHack(iteratorVariable, methodElement);
-
-                extendWithNode(new VariableDeclarationNode(iteratorVariable));
-
-                Node expressionNode = scan(expression, p);
-
-                MethodAccessNode iteratorAccessNode =
-                    extendWithNode(new MethodAccessNode(iteratorSelect, expressionNode));
-                MethodInvocationNode iteratorCallNode =
-                    extendWithNode(new MethodInvocationNode(iteratorCall, iteratorAccessNode,
-                                                            Collections.<Node>emptyList(), getCurrentPath()));
-
-                translateAssignment(iteratorVariable,
-                                    new LocalVariableNode(iteratorVariable),
-                                    iteratorCallNode);
-
-                // Test the loop ending condition
-                addLabelForNextNode(conditionStart);
-                IdentifierTree iteratorUse1 =
-                    treeBuilder.buildVariableUse(iteratorVariable);
-                factory.setPathHack(iteratorUse1, methodElement);
-
-                LocalVariableNode iteratorReceiverNode =
-                    extendWithNode(new LocalVariableNode(iteratorUse1));
-
-                MemberSelectTree hasNextSelect =
-                    treeBuilder.buildHasNextMethodAccess(iteratorUse1);
-                factory.setPathHack(hasNextSelect, methodElement);
-
-                MethodAccessNode hasNextAccessNode =
-                    extendWithNode(new MethodAccessNode(hasNextSelect, iteratorReceiverNode));
-
-                MethodInvocationTree hasNextCall =
-                    treeBuilder.buildMethodInvocation(hasNextSelect);
-                factory.setPathHack(hasNextCall, methodElement);
-
-                extendWithNode(new MethodInvocationNode(hasNextCall, hasNextAccessNode,
-                                                        Collections.<Node>emptyList(), getCurrentPath()));
-                extendWithExtendedNode(new ConditionalJump(loopEntry, loopExit));
-
-                // Loop body, starting with declaration of the loop iteration variable
-                addLabelForNextNode(loopEntry);
-                extendWithNode(new VariableDeclarationNode(variable));
-
-                IdentifierTree iteratorUse2 =
-                    treeBuilder.buildVariableUse(iteratorVariable);
-                factory.setPathHack(iteratorUse2, methodElement);
-
-                LocalVariableNode iteratorReceiverNode2 =
-                    extendWithNode(new LocalVariableNode(iteratorUse2));
-
-                MemberSelectTree nextSelect =
-                    treeBuilder.buildNextMethodAccess(iteratorUse2);
-                factory.setPathHack(nextSelect, methodElement);
-
-                MethodAccessNode nextAccessNode =
-                    extendWithNode(new MethodAccessNode(nextSelect, iteratorReceiverNode2));
-
-                MethodInvocationTree nextCall =
-                    treeBuilder.buildMethodInvocation(nextSelect);
-                factory.setPathHack(nextCall, methodElement);
-
-                extendWithNode(new MethodInvocationNode(nextCall, nextAccessNode,
-                    Collections.<Node>emptyList(), getCurrentPath()));
-
-                translateAssignment(variable,
-                                    new LocalVariableNode(variable),
-                                    nextCall);
-
-                if (statement != null) {
-                    scan(statement, p);
-                }
-
-                // Loop back edge
-                addLabelForNextNode(updateStart);
-                extendWithExtendedNode(new UnconditionalJump(conditionStart));
-
-            } else {
-                // TODO: Shift any labels after the initialization of the
-                // temporary array variable.
-
-                AnnotatedTypeMirror annotatedArrayType =
-                    factory.getAnnotatedType(expression);
-
-                assert (annotatedArrayType instanceof AnnotatedTypeMirror.AnnotatedArrayType) :
-                    "ArrayType must be represented by AnnotatedArrayType";
-
-                Tree annotatedArrayTypeTree =
-                    treeBuilder.buildAnnotatedType(annotatedArrayType);
-                factory.setPathHack(annotatedArrayTypeTree, methodElement);
-
-                // Declare and initialize a temporary array variable
-                VariableTree arrayVariable =
-                    treeBuilder.buildVariableDecl(annotatedArrayTypeTree,
-                                                  uniqueName("array"),
-                                                  variableElement.getEnclosingElement(),
-                                                  expression);
-                factory.setPathHack(arrayVariable, methodElement);
-
-                extendWithNode(new VariableDeclarationNode(arrayVariable));
-                Node expressionNode = scan(expression, p);
-
-                translateAssignment(arrayVariable,
-                                    new LocalVariableNode(arrayVariable),
-                                    expressionNode);
-
-                // Declare and initialize the loop index variable
-                TypeMirror intType = types.getPrimitiveType(TypeKind.INT);
-
-                LiteralTree zero =
-                    treeBuilder.buildLiteral(new Integer(0));
-                factory.setPathHack(zero, methodElement);
-
-                VariableTree indexVariable =
-                    treeBuilder.buildVariableDecl(intType,
-                                                  uniqueName("index"),
-                                                  variableElement.getEnclosingElement(),
-                                                  zero);
-                factory.setPathHack(indexVariable, methodElement);
-                extendWithNode(new VariableDeclarationNode(indexVariable));
-                IntegerLiteralNode zeroNode =
-                    extendWithNode(new IntegerLiteralNode(zero));
-
-                translateAssignment(indexVariable,
-                                    new LocalVariableNode(indexVariable),
-                                    zeroNode);
-
-                // Compare index to array length
-                addLabelForNextNode(conditionStart);
-                IdentifierTree indexUse1 =
-                    treeBuilder.buildVariableUse(indexVariable);
-                factory.setPathHack(indexUse1, methodElement);
-                LocalVariableNode indexNode1 =
-                    extendWithNode(new LocalVariableNode(indexUse1));
-
-                IdentifierTree arrayUse1 =
-                    treeBuilder.buildVariableUse(arrayVariable);
-                factory.setPathHack(arrayUse1, methodElement);
-                LocalVariableNode arrayNode1 =
-                    extendWithNode(new LocalVariableNode(arrayUse1));
-
-                MemberSelectTree lengthSelect =
-                    treeBuilder.buildArrayLengthAccess(arrayUse1);
-                factory.setPathHack(lengthSelect, methodElement);
-                FieldAccessNode lengthAccessNode =
-                    extendWithNode(new FieldAccessNode(lengthSelect, arrayNode1));
-
-                BinaryTree lessThan =
-                    treeBuilder.buildLessThan(indexUse1, lengthSelect);
-                factory.setPathHack(lessThan, methodElement);
-
-                extendWithNode(new LessThanNode(lessThan, indexNode1, lengthAccessNode));
-                extendWithExtendedNode(new ConditionalJump(loopEntry, loopExit));
-
-                // Loop body, starting with declaration of the loop iteration variable
-                addLabelForNextNode(loopEntry);
-                extendWithNode(new VariableDeclarationNode(variable));
-
-                IdentifierTree arrayUse2 =
-                    treeBuilder.buildVariableUse(arrayVariable);
-                factory.setPathHack(arrayUse2, methodElement);
-                LocalVariableNode arrayNode2 =
-                    extendWithNode(new LocalVariableNode(arrayUse2));
-
-                IdentifierTree indexUse2 =
-                    treeBuilder.buildVariableUse(indexVariable);
-                factory.setPathHack(indexUse2, methodElement);
-                LocalVariableNode indexNode2 =
-                    extendWithNode(new LocalVariableNode(indexUse2));
-
-                ArrayAccessTree arrayAccess =
-                    treeBuilder.buildArrayAccess(arrayUse2, indexUse2);
-                factory.setPathHack(arrayAccess, methodElement);
-                ArrayAccessNode arrayAccessNode =
-                    extendWithNode(new ArrayAccessNode(arrayAccess, arrayNode2,
-                                                       indexNode2));
-                translateAssignment(variable,
-                                    new LocalVariableNode(variable),
-                                    arrayAccessNode);
-
-                if (statement != null) {
-                    scan(statement, p);
-                }
-
-                // Loop back edge
-                addLabelForNextNode(updateStart);
-
-                IdentifierTree indexUse3 =
-                    treeBuilder.buildVariableUse(indexVariable);
-                factory.setPathHack(indexUse3, methodElement);
-                LocalVariableNode indexNode3 =
-                    extendWithNode(new LocalVariableNode(indexUse3));
-
-                UnaryTree postfixIncrement =
-                    treeBuilder.buildPostfixIncrement(indexUse3);
-                factory.setPathHack(postfixIncrement, methodElement);
-                extendWithNode(new PostfixIncrementNode(postfixIncrement,
-                                                            indexNode3));
-                extendWithExtendedNode(new UnconditionalJump(conditionStart));
-            }
-
-            // Loop exit
-            addLabelForNextNode(loopExit);
-
-            breakTargetL = oldBreakTargetL;
-            continueTargetL = oldContinueTargetL;
-
+            assert false : "EnhancedForLoopTree is not implemented in base CFGBuilder yet";
             return null;
         }
 

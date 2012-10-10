@@ -1,4 +1,4 @@
-package checkers.flow.cfg;
+package dataflow.cfg;
 
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -9,19 +9,19 @@ import java.util.Set;
 
 import javax.lang.model.type.TypeMirror;
 
-import checkers.flow.analysis.AbstractValue;
-import checkers.flow.analysis.Analysis;
-import checkers.flow.analysis.Store;
-import checkers.flow.analysis.TransferFunction;
-import checkers.flow.analysis.TransferInput;
-import checkers.flow.cfg.block.Block;
-import checkers.flow.cfg.block.Block.BlockType;
-import checkers.flow.cfg.block.ConditionalBlock;
-import checkers.flow.cfg.block.ExceptionBlock;
-import checkers.flow.cfg.block.RegularBlock;
-import checkers.flow.cfg.block.SingleSuccessorBlock;
-import checkers.flow.cfg.block.SpecialBlock;
-import checkers.flow.cfg.node.Node;
+import dataflow.analysis.AbstractValue;
+import dataflow.analysis.Analysis;
+import dataflow.analysis.Store;
+import dataflow.analysis.TransferFunction;
+import dataflow.analysis.TransferInput;
+import dataflow.cfg.block.Block;
+import dataflow.cfg.block.Block.BlockType;
+import dataflow.cfg.block.ConditionalBlock;
+import dataflow.cfg.block.ExceptionBlock;
+import dataflow.cfg.block.RegularBlock;
+import dataflow.cfg.block.SingleSuccessorBlock;
+import dataflow.cfg.block.SpecialBlock;
+import dataflow.cfg.node.Node;
 
 /**
  * Generate a graph description in the DOT language of a control graph.

@@ -1,4 +1,4 @@
-package checkers.flow.analysis;
+package dataflow.analysis;
 
 /**
  * An abstract value used in the dataflow analysis.
