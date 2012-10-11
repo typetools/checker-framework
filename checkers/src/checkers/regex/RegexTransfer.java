@@ -33,6 +33,9 @@ public class RegexTransfer extends
         this.analysis = analysis;
     }
 
+    // TODO: These are special cases for isRegex(String, int) and asRegex(String, int).
+    // They should be replaced by adding an @EnsuresAnnotationIf annotation that supports
+    // specifying attributes.
     @Override
     public TransferResult<CFValue, CFStore> visitMethodInvocation(
             MethodInvocationNode n, TransferInput<CFValue, CFStore> in) {
@@ -48,69 +51,74 @@ public class RegexTransfer extends
         if (receiver instanceof ClassNameNode) {
             ClassNameNode cn = (ClassNameNode) receiver;
             String receiverName = cn.getElement().toString();
-            for (String clazz : RegexAnnotatedTypeFactory.regexUtilClasses) {
-                // RegexUtil.isRegex(s, groups) method
-                if (receiverName.equals(clazz)
-                        && method.toString().equals(
-                                "isRegex(java.lang.String,int)")) {
-                    CFStore thenStore = result.getRegularStore();
-                    CFStore elseStore = thenStore.copy();
-                    ConditionalTransferResult<CFValue, CFStore> newResult = new ConditionalTransferResult<>(
-                            result.getResultValue(), thenStore, elseStore);
-                    FlowExpressionContext context = FlowExpressionParseUtil
-                            .buildFlowExprContextForUse(n, factory);
-                    try {
-                        Receiver firstParam = FlowExpressionParseUtil.parse(
-                                "#1", context, factory.getPath(n.getTree()));
-                        // add annotation with correct group count (if possible,
-                        // regex annotation without count otherwise)
-                        Node count = n.getArgument(1);
-                        if (count instanceof IntegerLiteralNode) {
-                            IntegerLiteralNode iln = (IntegerLiteralNode) count;
-                            Integer groupCount = iln.getValue();
-                            RegexAnnotatedTypeFactory f = (RegexAnnotatedTypeFactory) factory;
-                            AnnotationMirror regexAnnotation = f
-                                    .createRegexAnnotation(groupCount);
-                            thenStore.insertValue(firstParam, regexAnnotation);
-                        } else {
-                            AnnotationMirror regexAnnotation = AnnotationUtils
-                                    .fromClass(factory.getElementUtils(),
-                                            Regex.class);
-                            thenStore.insertValue(firstParam, regexAnnotation);
-                        }
-                    } catch (FlowExpressionParseException e) {
-                        assert false;
-                    }
-                    return newResult;
-                }
-
-                // RegexUtil.asRegex(s, groups) method
-                if (receiverName.equals(clazz)
-                        && method.toString().equals(
-                                "asRegex(java.lang.String,int)")) {
+            // RegexUtil.isRegex(s, groups) method
+            if (isRegexUtil(receiverName)
+                    && method.toString().equals(
+                            "isRegex(java.lang.String,int)")) {
+                CFStore thenStore = result.getRegularStore();
+                CFStore elseStore = thenStore.copy();
+                ConditionalTransferResult<CFValue, CFStore> newResult = new ConditionalTransferResult<>(
+                        result.getResultValue(), thenStore, elseStore);
+                FlowExpressionContext context = FlowExpressionParseUtil
+                        .buildFlowExprContextForUse(n, factory);
+                try {
+                    Receiver firstParam = FlowExpressionParseUtil.parse(
+                            "#1", context, factory.getPath(n.getTree()));
                     // add annotation with correct group count (if possible,
                     // regex annotation without count otherwise)
-                    AnnotationMirror regexAnnotation;
                     Node count = n.getArgument(1);
                     if (count instanceof IntegerLiteralNode) {
                         IntegerLiteralNode iln = (IntegerLiteralNode) count;
                         Integer groupCount = iln.getValue();
-                        regexAnnotation = factory
+                        RegexAnnotatedTypeFactory f = (RegexAnnotatedTypeFactory) factory;
+                        AnnotationMirror regexAnnotation = f
                                 .createRegexAnnotation(groupCount);
+                        thenStore.insertValue(firstParam, regexAnnotation);
                     } else {
-                        regexAnnotation = AnnotationUtils.fromClass(
-                                factory.getElementUtils(), Regex.class);
+                        AnnotationMirror regexAnnotation = AnnotationUtils
+                                .fromClass(factory.getElementUtils(),
+                                        Regex.class);
+                        thenStore.insertValue(firstParam, regexAnnotation);
                     }
-                    CFValue newResultValue = analysis
-                            .createSingleAnnotationValue(regexAnnotation,
-                                    result.getResultValue().getType()
-                                            .getUnderlyingType());
-                    return new RegularTransferResult<>(newResultValue,
-                            result.getRegularStore());
+                } catch (FlowExpressionParseException e) {
+                    assert false;
                 }
+                return newResult;
+            }
+
+            // RegexUtil.asRegex(s, groups) method
+            if (isRegexUtil(receiverName)
+                    && method.toString().equals(
+                            "asRegex(java.lang.String,int)")) {
+                // add annotation with correct group count (if possible,
+                // regex annotation without count otherwise)
+                AnnotationMirror regexAnnotation;
+                Node count = n.getArgument(1);
+                if (count instanceof IntegerLiteralNode) {
+                    IntegerLiteralNode iln = (IntegerLiteralNode) count;
+                    Integer groupCount = iln.getValue();
+                    regexAnnotation = factory
+                            .createRegexAnnotation(groupCount);
+                } else {
+                    regexAnnotation = AnnotationUtils.fromClass(
+                            factory.getElementUtils(), Regex.class);
+                }
+                CFValue newResultValue = analysis
+                        .createSingleAnnotationValue(regexAnnotation,
+                                result.getResultValue().getType()
+                                        .getUnderlyingType());
+                return new RegularTransferResult<>(newResultValue,
+                        result.getRegularStore());
             }
         }
 
         return result;
     };
+
+    /**
+     * Returns true if the given receiver is a class named "RegexUtil".
+     */
+    private boolean isRegexUtil(String receiver) {
+        return receiver.equals("RegexUtil") || receiver.endsWith(".RegexUtil");
+    }
 }
