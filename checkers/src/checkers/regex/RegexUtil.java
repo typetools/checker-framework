@@ -48,7 +48,7 @@ public class RegexUtil {
    *   }
    *   ... Pattern.compile(myString) ...
    * </pre>
-   * 
+   *
    * Simply calling <tt>Pattern.compile</tt> would have a similar effect,
    * in that <tt>PatternSyntaxException</tt> would be thrown at run time if
    * <tt>myString</tt> is not a regular expression.  There are two problems
