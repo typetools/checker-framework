@@ -4,7 +4,6 @@ import javax.lang.model.element.TypeElement;
 
 import com.sun.source.tree.CompilationUnitTree;
 
-import com.sun.source.util.AbstractTypeProcessor;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 
