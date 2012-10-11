@@ -187,6 +187,8 @@ ${build.version} of the 'javac.jar' library."/>
             <arg line="-version"/>
         </java>
         <unjar src="${javaparser.lib}" dest="${build}" />
+        <unjar src="${javacutils.lib}" dest="${build}" />
+        <unjar src="${dataflow.lib}" dest="${build}" />
         <!--
         Touch doesn't work on a directory, so can't do:
            <touch file="${build}"/>
@@ -730,8 +732,6 @@ ${build.version} of the 'javac.jar' library."/>
         <unjar src="${checkers.lib}" dest="${temp.dir}"/>
         <unjar src="${javac.lib}" dest="${temp.dir}"/>
         <unjar src="${jna.lib}" dest="${temp.dir}"/>
-        <unjar src="${javacutils.lib}" dest="${temp.dir}"/>
-        <unjar src="${dataflow.lib}" dest="${temp.dir}"/>
         <copy file="jdk/jdk.jar" todir="${temp.dir}"/>
         <jar destfile="${bindist.file}" basedir="${temp.dir}">
             <manifest>
