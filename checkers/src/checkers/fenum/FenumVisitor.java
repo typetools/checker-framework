@@ -1,11 +1,12 @@
 package checkers.fenum;
 
+import javacutils.TreeUtils;
+
 import checkers.basetype.BaseTypeVisitor;
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
-import checkers.util.TreeUtils;
 
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CaseTree;

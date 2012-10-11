@@ -5,11 +5,12 @@ import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.VariableElement;
 
+import javacutils.Pair;
+
 import checkers.flow.analysis.checkers.CFAbstractAnalysis;
 import checkers.flow.analysis.checkers.CFStore;
 import checkers.flow.analysis.checkers.CFValue;
 import checkers.types.AnnotatedTypeMirror;
-import checkers.util.Pair;
 
 public class RegexAnalysis extends
         CFAbstractAnalysis<CFValue, CFStore, RegexTransfer> {

@@ -12,17 +12,18 @@ import javax.lang.model.element.*;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeVariable;
 
-import checkers.source.SourceChecker;
+import javacutils.AnnotationUtils;
+import javacutils.ErrorReporter;
+import javacutils.InternalUtils;
+import javacutils.TreeUtils;
+import javacutils.TypesUtils;
+
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
 import checkers.util.AnnotatedTypes;
-import checkers.util.AnnotationUtils;
-import checkers.util.InternalUtils;
-import checkers.util.TreeUtils;
-import checkers.util.TypesUtils;
 
 import com.sun.source.tree.*;
 import com.sun.source.util.SimpleTreeVisitor;
@@ -41,10 +42,10 @@ abstract class TypeFromTree extends
     @Override
     public AnnotatedTypeMirror defaultAction(Tree node, AnnotatedTypeFactory f) {
         if (node == null) {
-            SourceChecker.errorAbort("TypeFromTree.defaultAction: null tree");
+            ErrorReporter.errorAbort("TypeFromTree.defaultAction: null tree");
             return null; // dead code
         }
-        SourceChecker.errorAbort("TypeFromTree.defaultAction: conversion undefined for tree type " + node.getKind());
+        ErrorReporter.errorAbort("TypeFromTree.defaultAction: conversion undefined for tree type " + node.getKind());
         return null; // dead code
     }
 
@@ -594,7 +595,7 @@ abstract class TypeFromTree extends
         private AnnotatedTypeMirror forTypeVariable(AnnotatedTypeMirror type,
                 AnnotatedTypeFactory f) {
             if (type.getKind() != TypeKind.TYPEVAR) {
-                SourceChecker.errorAbort("TypeFromTree.forTypeVariable: should only be called on type variables");
+                ErrorReporter.errorAbort("TypeFromTree.forTypeVariable: should only be called on type variables");
                 return null; // dead code
             }
 
@@ -624,7 +625,7 @@ abstract class TypeFromTree extends
                 if (InternalUtils.isCaptured(typeVar)) {
                     return type;
                 } else {
-                    SourceChecker.errorAbort("TypeFromTree.forTypeVariable: not a supported element: " + elt);
+                    ErrorReporter.errorAbort("TypeFromTree.forTypeVariable: not a supported element: " + elt);
                     return null; // dead code
                 }
             }

@@ -5,10 +5,11 @@ import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.VariableElement;
 
+import javacutils.Pair;
+
 import checkers.basetype.BaseTypeChecker;
 import checkers.types.AbstractBasicAnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
-import checkers.util.Pair;
 
 /**
  * The default dataflow analysis used in the Checker Framework.

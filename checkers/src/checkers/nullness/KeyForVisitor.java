@@ -5,11 +5,12 @@ import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Modifier;
 
+import javacutils.AnnotationUtils;
+
 import checkers.basetype.BaseTypeVisitor;
 import checkers.nullness.quals.KeyFor;
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import checkers.util.AnnotationUtils;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ModifiersTree;

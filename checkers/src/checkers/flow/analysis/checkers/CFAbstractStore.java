@@ -11,19 +11,21 @@ import javax.lang.model.element.Name;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 
-import checkers.flow.analysis.FlowExpressions;
-import checkers.flow.analysis.FlowExpressions.PureMethodCall;
-import checkers.flow.analysis.FlowExpressions.Receiver;
-import checkers.flow.analysis.Store;
-import checkers.flow.cfg.node.FieldAccessNode;
-import checkers.flow.cfg.node.LocalVariableNode;
-import checkers.flow.cfg.node.MethodInvocationNode;
-import checkers.flow.cfg.node.Node;
+import javacutils.AnnotationUtils;
+import javacutils.Pair;
+import javacutils.PurityUtils;
+
+import dataflow.analysis.FlowExpressions;
+import dataflow.analysis.FlowExpressions.PureMethodCall;
+import dataflow.analysis.FlowExpressions.Receiver;
+import dataflow.analysis.Store;
+import dataflow.cfg.node.FieldAccessNode;
+import dataflow.cfg.node.LocalVariableNode;
+import dataflow.cfg.node.MethodInvocationNode;
+import dataflow.cfg.node.Node;
+
 import checkers.quals.MonotonicAnnotation;
 import checkers.types.AnnotatedTypeFactory;
-import checkers.util.AnnotationUtils;
-import checkers.util.Pair;
-import checkers.util.PurityUtils;
 
 /**
  * A store for the checker framework analysis tracks the annotations of memory
@@ -660,10 +662,16 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         return toDOToutput().replace("\\n", "\n");
     }
 
+    @Override
+    public boolean hasDOToutput() {
+        return true;
+    }
+
     /**
      * @return DOT representation of the store (may contain control characters
      *         such as "\n").
      */
+    @Override
     public String toDOToutput() {
         StringBuilder result = new StringBuilder(this.getClass()
                 .getCanonicalName() + " (\\n");

@@ -19,7 +19,11 @@
     <property name="checkers-quals.jar.file" value="checkers-quals.jar"/>
     <property name="dist.doc" value="doc"/>
     <property name="javaparser.loc" value="../javaparser"/>
+    <property name="javacutils.loc" value="../javacutils"/>
+    <property name="dataflow.loc" value="../dataflow"/>
     <property name="checkers.rel.jp" value="../checkers"/>
+    <property name="checkers.rel.javacutils" value="../checkers"/>
+    <property name="checkers.rel.dataflow" value="../checkers"/>
     <property name="build.jtreg.dir" value="${build}/jtreg"/>
 
     <property name="tmpdir" value="${java.io.tmpdir}/${user.name}/${ant.project.name}" />
@@ -58,6 +62,14 @@
         <available property="jp.project"
                    file="${javaparser.loc}/build.xml"/>
         <antcall target="-prep-jp-compile"/>
+
+        <available property="javacutils.project"
+                   file="${javacutils.loc}/build.xml"/>
+        <antcall target="-prep-javacutils-compile"/>
+
+        <available property="dataflow.project"
+                   file="${dataflow.loc}/build.xml"/>
+        <antcall target="-prep-dataflow-compile"/>
     </target>
 
     <target name="-prep-jp-compile" if="jp.project"
@@ -65,6 +77,24 @@
       <ant dir="${javaparser.loc}">
         <property name="dist.file"
                   value="${checkers.rel.jp}/${javaparser.lib}"/>
+        <target name="dist"/>
+      </ant>
+    </target>
+
+    <target name="-prep-javacutils-compile" if="javacutils.project"
+            description="compile javacutils utilities project if available">
+      <ant dir="${javacutils.loc}">
+        <property name="dist.file"
+                  value="${checkers.rel.javacutils}/${javacutils.lib}"/>
+        <target name="dist"/>
+      </ant>
+    </target>
+
+    <target name="-prep-dataflow-compile" if="dataflow.project"
+            description="compile dataflow utilities project if available">
+      <ant dir="${dataflow.loc}">
+        <property name="dist.file"
+                  value="${checkers.rel.dataflow}/${dataflow.lib}"/>
         <target name="dist"/>
       </ant>
     </target>
@@ -102,18 +132,24 @@
           <srcfiles refid="src.astub.files"/>
         </uptodate>
         <uptodate property="javaparser.lib.uptodate" targetfile="${build}" srcfile="${javaparser.lib}"/>
+        <uptodate property="javacutils.lib.uptodate" targetfile="${build}" srcfile="${javacutils.lib}"/>
+        <uptodate property="dataflow.lib.uptodate" targetfile="${build}" srcfile="${dataflow.lib}"/>
 
         <condition property="build.uptodate">
           <and>
             <isset property="src.files.uptodate"/>
             <isset property="src.astub.files.uptodate"/>
             <isset property="javaparser.lib.uptodate"/>
+            <isset property="javacutils.lib.uptodate"/>
+            <isset property="dataflow.lib.uptodate"/>
           </and>
         </condition>
         <!--
         <echo message="src.files.uptodate: ${src.files.uptodate}"/>
         <echo message="src.astub.files.uptodate: ${src.astub.files.uptodate}"/>
         <echo message="javaparser.lib.uptodate: ${javaparser.lib.uptodate}"/>
+        <echo message="javacutils.lib.uptodate: ${javacutils.lib.uptodate}"/>
+        <echo message="dataflow.lib.uptodate: ${dataflow.lib.uptodate}"/>
         <echo message="build.uptodate: ${build.uptodate}"/>
         -->
     </target>
@@ -141,7 +177,7 @@ ${build.version} of the 'javac.jar' library."/>
         </pathconvert>
         <java fork="true"
               failonerror="true"
-              classpath="${compiler.lib}:${annotation-utils.lib}:${javaparser.lib}:${jna.lib}:${tests.junit}"
+              classpath="${compiler.lib}:${annotation-utils.lib}:${javaparser.lib}:${javacutils.lib}:${dataflow.lib}:${jna.lib}:${tests.junit}"
               classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${compiler.lib}"/>
             <arg value="-g"/>
@@ -151,6 +187,8 @@ ${build.version} of the 'javac.jar' library."/>
             <arg line="-version"/>
         </java>
         <unjar src="${javaparser.lib}" dest="${build}" />
+        <unjar src="${javacutils.lib}" dest="${build}" />
+        <unjar src="${dataflow.lib}" dest="${build}" />
         <!--
         Touch doesn't work on a directory, so can't do:
            <touch file="${build}"/>
@@ -241,7 +279,7 @@ ${build.version} of the 'javac.jar' library."/>
         </pathconvert>
         <java fork="true"
               failonerror="true"
-              classpath="${compiler.lib}:${tests.junit}:${build}"
+              classpath="${compiler.lib}:${tests.junit}:${build}:${javacutils.lib}:${dataflow.lib}"
               classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${compiler.lib}"/>
             <arg value="-g"/>
@@ -267,6 +305,8 @@ ${build.version} of the 'javac.jar' library."/>
                 <pathelement path="${build.tests}"/>
                 <pathelement path="${tests.junit}"/>
                 <pathelement path="${build}"/>
+                <pathelement path="${javacutils.lib}"/>
+                <pathelement path="${dataflow.lib}"/>
             </classpath>
             <formatter type="xml"/>
             <formatter type="brief" usefile="false"/>
@@ -299,6 +339,8 @@ ${build.version} of the 'javac.jar' library."/>
               <pathelement path="${build.tests}"/>
               <pathelement path="${tests.junit}"/>
               <pathelement path="${build}"/>
+              <pathelement path="${javacutils.lib}"/>
+              <pathelement path="${dataflow.lib}"/>
           </classpath>
           <formatter type="xml"/>
           <formatter type="brief" usefile="false"/>
@@ -601,7 +643,7 @@ ${build.version} of the 'javac.jar' library."/>
 
         <java fork="true"
               failonerror="true"
-              classpath="${compiler.lib}:${annotation-utils.lib}:${javaparser.lib}:${jna.lib}:${checkers.jar.file}"
+              classpath="${compiler.lib}:${annotation-utils.lib}:${javaparser.lib}:${javacutils.lib}:${dataflow.lib}:${jna.lib}:${checkers.jar.file}"
               classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${compiler.lib}"/>
             <arg value="-g"/>

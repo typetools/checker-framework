@@ -8,12 +8,18 @@ import javax.lang.model.element.*;
 import javax.lang.model.type.*;
 import javax.lang.model.util.ElementFilter;
 
+import javacutils.AnnotationUtils;
+import javacutils.ElementUtils;
+import javacutils.ErrorReporter;
+import javacutils.Pair;
+import javacutils.Resolver;
+import javacutils.TreeUtils;
+
 import checkers.flow.DefaultFlow;
 import checkers.flow.Flow;
 import checkers.flow.FlowState;
 import checkers.nullness.quals.*;
 import checkers.source.Result;
-import checkers.source.SourceChecker;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -215,7 +221,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
             return "";
         else if (sel.getKind() == Tree.Kind.MEMBER_SELECT)
             return ((MemberSelectTree)sel).getExpression().toString() + ".";
-        SourceChecker.errorAbort("NullnessFlow.receiver: cannot be here");
+        ErrorReporter.errorAbort("NullnessFlow.receiver: cannot be here");
         return null; // dead code
     }
 

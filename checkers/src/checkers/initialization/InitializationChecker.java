@@ -11,6 +11,10 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
+import javacutils.AnnotationUtils;
+import javacutils.ErrorReporter;
+import javacutils.TypesUtils;
+
 import checkers.basetype.BaseTypeChecker;
 import checkers.initialization.quals.Committed;
 import checkers.initialization.quals.FBCBottom;
@@ -19,13 +23,10 @@ import checkers.initialization.quals.NonRaw;
 import checkers.initialization.quals.NotOnlyCommitted;
 import checkers.initialization.quals.Raw;
 import checkers.initialization.quals.Unclassified;
-import checkers.source.SourceChecker;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.QualifierHierarchy;
 import checkers.util.AnnotationBuilder;
-import checkers.util.AnnotationUtils;
 import checkers.util.MultiGraphQualifierHierarchy;
-import checkers.util.TypesUtils;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.Tree;
@@ -389,10 +390,10 @@ public abstract class InitializationChecker extends BaseTypeChecker {
         @Override
         public boolean isSubtype(Collection<AnnotationMirror> rhs, Collection<AnnotationMirror> lhs) {
             if (lhs.isEmpty() || rhs.isEmpty()) {
-                SourceChecker.errorAbort("InitializationQualifierHierarchy: empty annotations in lhs: " + lhs + " or rhs: " + rhs);
+                ErrorReporter.errorAbort("InitializationQualifierHierarchy: empty annotations in lhs: " + lhs + " or rhs: " + rhs);
             }
             if (lhs.size() != rhs.size()) {
-                SourceChecker.errorAbort("InitializationQualifierHierarchy: mismatched number of annotations in lhs: " + lhs + " and rhs: " + rhs);
+                ErrorReporter.errorAbort("InitializationQualifierHierarchy: mismatched number of annotations in lhs: " + lhs + " and rhs: " + rhs);
             }
             int valid = 0;
             for (AnnotationMirror lhsAnno : lhs) {
@@ -477,7 +478,7 @@ public abstract class InitializationChecker extends BaseTypeChecker {
 
         @Override
         public AnnotationMirror getPolymorphicAnnotation(AnnotationMirror start) {
-            SourceChecker.errorAbort("InitializationQualifierHierarchy: no polymorphic annotation available");
+            ErrorReporter.errorAbort("InitializationQualifierHierarchy: no polymorphic annotation available");
             return null;
         }
 
