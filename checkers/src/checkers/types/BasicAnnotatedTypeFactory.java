@@ -6,12 +6,11 @@ import javax.lang.model.element.VariableElement;
 
 import javacutils.Pair;
 
-import dataflow.analysis.checkers.CFAnalysis;
-import dataflow.analysis.checkers.CFStore;
-import dataflow.analysis.checkers.CFTransfer;
-import dataflow.analysis.checkers.CFValue;
-
 import checkers.basetype.BaseTypeChecker;
+import checkers.flow.analysis.checkers.CFAnalysis;
+import checkers.flow.analysis.checkers.CFStore;
+import checkers.flow.analysis.checkers.CFTransfer;
+import checkers.flow.analysis.checkers.CFValue;
 
 import com.sun.source.tree.CompilationUnitTree;
 

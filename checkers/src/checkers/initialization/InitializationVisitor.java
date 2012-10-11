@@ -13,9 +13,8 @@ import javacutils.ElementUtils;
 import javacutils.Pair;
 import javacutils.TreeUtils;
 
-import dataflow.analysis.checkers.CFValue;
-
 import checkers.basetype.BaseTypeVisitor;
+import checkers.flow.analysis.checkers.CFValue;
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;

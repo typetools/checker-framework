@@ -23,13 +23,12 @@ import javacutils.AnnotationUtils;
 import javacutils.ElementUtils;
 import javacutils.InternalUtils;
 import javacutils.Pair;
+import javacutils.PurityUtils;
 import javacutils.TreeUtils;
 import javacutils.TypesUtils;
 
 import dataflow.analysis.FlowExpressions;
 import dataflow.analysis.TransferResult;
-import dataflow.analysis.checkers.CFAbstractStore;
-import dataflow.analysis.checkers.CFAbstractValue;
 import dataflow.cfg.node.BooleanLiteralNode;
 import dataflow.cfg.node.MethodInvocationNode;
 import dataflow.cfg.node.Node;
@@ -37,6 +36,8 @@ import dataflow.cfg.node.ReturnNode;
 
 import checkers.basetype.PurityChecker.PurityResult;
 import checkers.compilermsgs.quals.CompilerMessageKey;
+import checkers.flow.analysis.checkers.CFAbstractStore;
+import checkers.flow.analysis.checkers.CFAbstractValue;
 import checkers.util.ContractsUtils;
 import checkers.util.FlowExpressionParseUtil;
 import checkers.util.FlowExpressionParseUtil.FlowExpressionContext;
@@ -61,7 +62,6 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
 import checkers.types.VisitorState;
 import checkers.types.visitors.AnnotatedTypeScanner;
 import checkers.util.AnnotatedTypes;
-import checkers.util.PurityUtils;
 
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;

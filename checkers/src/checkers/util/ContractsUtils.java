@@ -1,4 +1,4 @@
-package checkers.flow.util;
+package checkers.util;
 
 import java.util.Collections;
 import java.util.HashSet;
