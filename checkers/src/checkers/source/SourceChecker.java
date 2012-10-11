@@ -12,13 +12,17 @@ import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
 import javax.tools.Diagnostic.Kind;
 
+import javacutils.AbstractTypeProcessor;
+import javacutils.ElementUtils;
+import javacutils.ErrorHandler;
+import javacutils.ErrorReporter;
+import javacutils.InternalUtils;
+import javacutils.TreeUtils;
+
 import checkers.basetype.BaseTypeChecker;
 import checkers.quals.TypeQualifiers;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.GeneralAnnotatedTypeFactory;
-import checkers.util.ElementUtils;
-import checkers.util.InternalUtils;
-import checkers.util.TreeUtils;
 
 /*>>>
 import checkers.compilermsgs.quals.CompilerMessageKey;
@@ -59,7 +63,7 @@ import com.sun.tools.javac.util.Log;
  * {@link AbstractProcessor} (or even this class) as the Checker Framework is
  * not designed for such checkers.
  */
-public abstract class SourceChecker extends AbstractTypeProcessor {
+public abstract class SourceChecker extends AbstractTypeProcessor implements ErrorHandler {
 
     // TODO checkers should export themselves through a separate interface,
     // and maybe have an interface for all the methods for which it's safe
@@ -257,11 +261,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
      *
      * @param msg The error message to log.
      */
-    public static void errorAbort(String msg) {
+    public void errorAbort(String msg) {
         throw new CheckerError(msg, new Throwable());
     }
 
-    public static void errorAbort(String msg, Throwable cause) {
+    public void errorAbort(String msg, Throwable cause) {
         throw new CheckerError(msg, cause);
     }
 
@@ -513,7 +517,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
             Trees.instance(processingEnv).printMessage(kind, messageText, (Tree) source,
                     currentRoot);
         else
-            SourceChecker.errorAbort("invalid position source: "
+            ErrorReporter.errorAbort("invalid position source: "
                     + source.getClass().getName());
     }
 
@@ -688,7 +692,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
     public final boolean getLintOption(String name, boolean def) {
 
         if (!this.getSupportedLintOptions().contains(name)) {
-            errorAbort("Illegal lint option: " + name);
+            ErrorReporter.errorAbort("Illegal lint option: " + name);
         }
 
         if (activeLints.isEmpty())
@@ -728,7 +732,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
      */
     protected final void setLintOption(String name, boolean val) {
         if (!this.getSupportedLintOptions().contains(name)) {
-            errorAbort("Illegal lint option: " + name);
+            ErrorReporter.errorAbort("Illegal lint option: " + name);
         }
 
         /* TODO: warn if the option is also provided on the command line(?)
@@ -890,7 +894,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         SupportedAnnotationTypes supported = this.getClass().getAnnotation(
                 SupportedAnnotationTypes.class);
         if (supported != null)
-            errorAbort("@SupportedAnnotationTypes should not be written on any checker;"
+            ErrorReporter.errorAbort("@SupportedAnnotationTypes should not be written on any checker;"
                             + " supported annotation types are inherited from SourceChecker.");
         return Collections.singleton("*");
     }

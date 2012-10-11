@@ -1,13 +1,14 @@
 package checkers.types;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Name;
 import javax.lang.model.type.TypeKind;
 
-import checkers.util.AnnotationUtils;
+import javacutils.AnnotationUtils;
 
 /**
  * Represents a type qualifier hierarchy.
@@ -507,4 +508,61 @@ public abstract class QualifierHierarchy {
         return null;
 	}
 
+    /**
+     * Returns the annotation from the hierarchy identified by its 'top' annotation
+     * from a set of annotations, using this QualifierHierarchy for subtype tests.
+     *
+     * @param annos
+     *            The set of annotations.
+     * @param top
+     *            The top annotation of the hierarchy to consider.
+     */
+    public AnnotationMirror getAnnotationInHierarchy(
+            Collection<AnnotationMirror> annos, AnnotationMirror top) {
+        AnnotationMirror annoInHierarchy = null;
+        for (AnnotationMirror rhsAnno : annos) {
+            if (isSubtype(rhsAnno, top)) {
+                annoInHierarchy = rhsAnno;
+            }
+        }
+        return annoInHierarchy;
+    }
+
+    /**
+     * Update a mapping from some key to a set of AnnotationMirrors.
+     * If the key already exists in the mapping and the new qualifier
+     * is in the same qualifier hierarchy as any of the existing qualifiers,
+     * do nothing and return false.
+     * If the key already exists in the mapping and the new qualifier
+     * is not in the same qualifier hierarchy as any of the existing qualifiers,
+     * add the qualifier to the existing set and return true.
+     * If the key does not exist in the mapping, add the new qualifier as a
+     * singleton set and return true.
+     *
+     * @param map The mapping to modify.
+     * @param key The key to update.
+     * @param newQual The value to add.
+     * @return Whether there was a qualifier hierarchy collision.
+     */
+    public <T> boolean updateMappingToMutableSet(
+            Map<T, Set<AnnotationMirror>> map,
+            T key, AnnotationMirror newQual) {
+
+        if (!map.containsKey(key)) {
+            Set<AnnotationMirror> set = AnnotationUtils.createAnnotationSet();
+            set.add(newQual);
+            map.put(key, set);
+        } else {
+            Set<AnnotationMirror> prevs = map.get(key);
+            for (AnnotationMirror p : prevs) {
+                if (AnnotationUtils.areSame(getTopAnnotation(p),
+                        getTopAnnotation(newQual))) {
+                    return false;
+                }
+            }
+            prevs.add(newQual);
+            map.put(key, prevs);
+        }
+        return true;
+    }
 }

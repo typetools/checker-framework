@@ -11,15 +11,17 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 
+import javacutils.Pair;
+
+import dataflow.analysis.Analysis;
+import dataflow.cfg.CFGDOTVisualizer;
+
 import checkers.basetype.BaseTypeChecker;
-import checkers.flow.analysis.Analysis;
-import checkers.flow.cfg.CFGDOTVisualizer;
 import checkers.types.AbstractBasicAnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.QualifierHierarchy;
 import checkers.types.TypeHierarchy;
-import checkers.util.Pair;
 
 /**
  * {@link CFAbstractAnalysis} is an extensible dataflow analysis for the Checker

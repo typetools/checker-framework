@@ -20,9 +20,22 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 
+import javacutils.AnnotationUtils;
+import javacutils.InternalUtils;
+import javacutils.Pair;
+import javacutils.TreeUtils;
+
+import dataflow.analysis.AnalysisResult;
+import dataflow.analysis.TransferResult;
+import dataflow.cfg.CFGBuilder;
+import dataflow.cfg.ControlFlowGraph;
+import dataflow.cfg.UnderlyingAST;
+import dataflow.cfg.UnderlyingAST.CFGMethod;
+import dataflow.cfg.UnderlyingAST.CFGStatement;
+import dataflow.cfg.node.Node;
+import dataflow.cfg.node.ReturnNode;
+
 import checkers.basetype.BaseTypeChecker;
-import checkers.flow.analysis.AnalysisResult;
-import checkers.flow.analysis.TransferResult;
 import checkers.flow.analysis.checkers.CFAbstractAnalysis;
 import checkers.flow.analysis.checkers.CFAbstractStore;
 import checkers.flow.analysis.checkers.CFAbstractTransfer;
@@ -32,13 +45,6 @@ import checkers.flow.analysis.checkers.CFCFGBuilder;
 import checkers.flow.analysis.checkers.CFStore;
 import checkers.flow.analysis.checkers.CFTransfer;
 import checkers.flow.analysis.checkers.CFValue;
-import checkers.flow.cfg.CFGBuilder;
-import checkers.flow.cfg.ControlFlowGraph;
-import checkers.flow.cfg.UnderlyingAST;
-import checkers.flow.cfg.UnderlyingAST.CFGMethod;
-import checkers.flow.cfg.UnderlyingAST.CFGStatement;
-import checkers.flow.cfg.node.Node;
-import checkers.flow.cfg.node.ReturnNode;
 import checkers.quals.DefaultLocation;
 import checkers.quals.DefaultQualifier;
 import checkers.quals.DefaultQualifierInHierarchy;
@@ -47,12 +53,8 @@ import checkers.quals.Pure;
 import checkers.quals.Unqualified;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
-import checkers.util.AnnotationUtils;
-import checkers.util.InternalUtils;
-import checkers.util.Pair;
 import checkers.util.QualifierDefaults;
 import checkers.util.QualifierPolymorphism;
-import checkers.util.TreeUtils;
 
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BlockTree;
@@ -508,8 +510,8 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
      */
     protected void analyze(Queue<ClassTree> queue, UnderlyingAST ast,
             List<Pair<VariableElement, Value>> fieldValues) {
-        CFGBuilder builder = new CFCFGBuilder(checker);
-        ControlFlowGraph cfg = builder.run(this, root, processingEnv, ast);
+        CFGBuilder builder = new CFCFGBuilder(checker, this);
+        ControlFlowGraph cfg = builder.run(root, processingEnv, ast);
         FlowAnalysis newAnalysis = createFlowAnalysis(getChecker(), fieldValues);
         if (emptyStore == null) {
             emptyStore = newAnalysis.createEmptyStore(!getProcessingEnv()

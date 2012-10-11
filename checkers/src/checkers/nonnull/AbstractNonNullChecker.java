@@ -7,6 +7,8 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Elements;
 
+import javacutils.AnnotationUtils;
+
 import checkers.basetype.BaseTypeVisitor;
 import checkers.initialization.InitializationChecker;
 import checkers.nonnull.quals.MonotonicNonNull;
@@ -14,7 +16,6 @@ import checkers.nonnull.quals.NonNull;
 import checkers.nonnull.quals.Nullable;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.QualifierHierarchy;
-import checkers.util.AnnotationUtils;
 import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 
 import com.sun.source.tree.CompilationUnitTree;

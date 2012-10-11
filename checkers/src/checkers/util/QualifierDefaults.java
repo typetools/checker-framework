@@ -8,8 +8,14 @@ import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Elements;
 
+import javacutils.AnnotationUtils;
+import javacutils.ErrorReporter;
+import javacutils.InternalUtils;
+import javacutils.Pair;
+import javacutils.TreeUtils;
+import javacutils.TypesUtils;
+
 import checkers.quals.*;
-import checkers.source.SourceChecker;
 import checkers.types.*;
 import checkers.types.AnnotatedTypeMirror.*;
 import checkers.types.visitors.AnnotatedTypeScanner;
@@ -108,7 +114,7 @@ public class QualifierDefaults {
             if (!newanno.equals(anno) &&
                     qh.isSubtype(newanno, qh.getTopAnnotation(anno))) {
                 if (newloc == def.second) {
-                    SourceChecker.errorAbort("Only one qualifier from a hierarchy can be the default! Existing: "
+                    ErrorReporter.errorAbort("Only one qualifier from a hierarchy can be the default! Existing: "
                             + prevset + " and new: " + newanno);
                 }
             }
@@ -257,7 +263,7 @@ public class QualifierDefaults {
                 Class<? extends Annotation> clscast = (Class<? extends Annotation>) Class.forName(mte.getTypeMirror().toString());
                 cls = clscast;
             } catch (ClassNotFoundException e) {
-                SourceChecker.errorAbort("Could not load qualifier: " + e.getMessage(), e);
+                ErrorReporter.errorAbort("Could not load qualifier: " + e.getMessage(), e);
                 cls = null;
             }
         }
@@ -433,7 +439,7 @@ public class QualifierDefaults {
                 break;
             }
             default: {
-                SourceChecker.errorAbort("QualifierDefaults.DefaultApplier: unhandled location: " + location);
+                ErrorReporter.errorAbort("QualifierDefaults.DefaultApplier: unhandled location: " + location);
                 return null;
             }
             }

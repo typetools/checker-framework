@@ -5,27 +5,29 @@ import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 
-import checkers.flow.analysis.ConditionalTransferResult;
-import checkers.flow.analysis.FlowExpressions;
-import checkers.flow.analysis.FlowExpressions.Receiver;
-import checkers.flow.analysis.TransferInput;
-import checkers.flow.analysis.TransferResult;
+import javacutils.AnnotationUtils;
+import javacutils.TreeUtils;
+
+import dataflow.analysis.ConditionalTransferResult;
+import dataflow.analysis.FlowExpressions;
+import dataflow.analysis.FlowExpressions.Receiver;
+import dataflow.analysis.TransferInput;
+import dataflow.analysis.TransferResult;
+import dataflow.cfg.node.ArrayAccessNode;
+import dataflow.cfg.node.FieldAccessNode;
+import dataflow.cfg.node.MethodAccessNode;
+import dataflow.cfg.node.MethodInvocationNode;
+import dataflow.cfg.node.Node;
+import dataflow.cfg.node.NullLiteralNode;
+import dataflow.cfg.node.ThrowNode;
+
 import checkers.flow.analysis.checkers.CFAbstractStore;
 import checkers.flow.analysis.checkers.CFValue;
-import checkers.flow.cfg.node.ArrayAccessNode;
-import checkers.flow.cfg.node.FieldAccessNode;
-import checkers.flow.cfg.node.MethodAccessNode;
-import checkers.flow.cfg.node.MethodInvocationNode;
-import checkers.flow.cfg.node.Node;
-import checkers.flow.cfg.node.NullLiteralNode;
-import checkers.flow.cfg.node.ThrowNode;
 import checkers.initialization.InitializationStore;
 import checkers.initialization.InitializationTransfer;
 import checkers.nonnull.quals.NonNull;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
-import checkers.util.AnnotationUtils;
-import checkers.util.TreeUtils;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;

@@ -8,7 +8,7 @@ import java.lang.reflect.Method;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 
-import checkers.source.SourceChecker;
+import javacutils.ErrorReporter;
 
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
@@ -65,7 +65,7 @@ public class Resolver2 {
                     Env.class, Type.class, Name.class, int.class);
             fiit.setAccessible(true);
         } catch (Exception e) {
-            SourceChecker.errorAbort("Compiler 'Resolve' class doesn't contain required 'findXXX' method", e);
+            ErrorReporter.errorAbort("Compiler 'Resolve' class doesn't contain required 'findXXX' method", e);
             // Need the local fi, fiip, fmt, and fiit variables to keep def assignment happy
         }
         this.FIND_IDENT = fi;
@@ -147,11 +147,11 @@ public class Resolver2 {
         try {
             return (Symbol)method.invoke(resolve, args);
         } catch (IllegalAccessException e) {
-            SourceChecker.errorAbort("Resolver.wrapInvocation: unexpected Reflection error", e);
+            ErrorReporter.errorAbort("Resolver.wrapInvocation: unexpected Reflection error", e);
         } catch (IllegalArgumentException e) {
-            SourceChecker.errorAbort("Resolver.wrapInvocation: unexpected Reflection error", e);
+            ErrorReporter.errorAbort("Resolver.wrapInvocation: unexpected Reflection error", e);
         } catch (InvocationTargetException e) {
-            SourceChecker.errorAbort("Resolver.wrapInvocation: unexpected Reflection error", e);
+            ErrorReporter.errorAbort("Resolver.wrapInvocation: unexpected Reflection error", e);
         }
         return null; // dead code
     }
