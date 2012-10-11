@@ -12,11 +12,11 @@ import javacutils.AnnotationUtils;
 
 import dataflow.analysis.FlowExpressions;
 import dataflow.analysis.FlowExpressions.FieldAccess;
-import dataflow.analysis.checkers.CFAbstractAnalysis;
-import dataflow.analysis.checkers.CFAbstractStore;
-import dataflow.analysis.checkers.CFValue;
 import dataflow.cfg.node.MethodInvocationNode;
 
+import checkers.flow.analysis.checkers.CFAbstractAnalysis;
+import checkers.flow.analysis.checkers.CFAbstractStore;
+import checkers.flow.analysis.checkers.CFValue;
 import checkers.types.AnnotatedTypeFactory;
 
 /**

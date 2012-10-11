@@ -27,15 +27,6 @@ import javacutils.TreeUtils;
 
 import dataflow.analysis.AnalysisResult;
 import dataflow.analysis.TransferResult;
-import dataflow.analysis.checkers.CFAbstractAnalysis;
-import dataflow.analysis.checkers.CFAbstractStore;
-import dataflow.analysis.checkers.CFAbstractTransfer;
-import dataflow.analysis.checkers.CFAbstractValue;
-import dataflow.analysis.checkers.CFAnalysis;
-import dataflow.analysis.checkers.CFCFGBuilder;
-import dataflow.analysis.checkers.CFStore;
-import dataflow.analysis.checkers.CFTransfer;
-import dataflow.analysis.checkers.CFValue;
 import dataflow.cfg.CFGBuilder;
 import dataflow.cfg.ControlFlowGraph;
 import dataflow.cfg.UnderlyingAST;
@@ -45,6 +36,15 @@ import dataflow.cfg.node.Node;
 import dataflow.cfg.node.ReturnNode;
 
 import checkers.basetype.BaseTypeChecker;
+import checkers.flow.analysis.checkers.CFAbstractAnalysis;
+import checkers.flow.analysis.checkers.CFAbstractStore;
+import checkers.flow.analysis.checkers.CFAbstractTransfer;
+import checkers.flow.analysis.checkers.CFAbstractValue;
+import checkers.flow.analysis.checkers.CFAnalysis;
+import checkers.flow.analysis.checkers.CFCFGBuilder;
+import checkers.flow.analysis.checkers.CFStore;
+import checkers.flow.analysis.checkers.CFTransfer;
+import checkers.flow.analysis.checkers.CFValue;
 import checkers.quals.DefaultLocation;
 import checkers.quals.DefaultQualifier;
 import checkers.quals.DefaultQualifierInHierarchy;
@@ -510,8 +510,8 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
      */
     protected void analyze(Queue<ClassTree> queue, UnderlyingAST ast,
             List<Pair<VariableElement, Value>> fieldValues) {
-        CFGBuilder builder = new CFCFGBuilder(checker);
-        ControlFlowGraph cfg = builder.run(this, root, processingEnv, ast);
+        CFGBuilder builder = new CFCFGBuilder(checker, this);
+        ControlFlowGraph cfg = builder.run(root, processingEnv, ast);
         FlowAnalysis newAnalysis = createFlowAnalysis(getChecker(), fieldValues);
         if (emptyStore == null) {
             emptyStore = newAnalysis.createEmptyStore(!getProcessingEnv()

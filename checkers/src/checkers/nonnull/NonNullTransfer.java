@@ -13,8 +13,6 @@ import dataflow.analysis.FlowExpressions;
 import dataflow.analysis.FlowExpressions.Receiver;
 import dataflow.analysis.TransferInput;
 import dataflow.analysis.TransferResult;
-import dataflow.analysis.checkers.CFAbstractStore;
-import dataflow.analysis.checkers.CFValue;
 import dataflow.cfg.node.ArrayAccessNode;
 import dataflow.cfg.node.FieldAccessNode;
 import dataflow.cfg.node.MethodAccessNode;
@@ -23,6 +21,8 @@ import dataflow.cfg.node.Node;
 import dataflow.cfg.node.NullLiteralNode;
 import dataflow.cfg.node.ThrowNode;
 
+import checkers.flow.analysis.checkers.CFAbstractStore;
+import checkers.flow.analysis.checkers.CFValue;
 import checkers.initialization.InitializationStore;
 import checkers.initialization.InitializationTransfer;
 import checkers.nonnull.quals.NonNull;

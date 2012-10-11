@@ -1,18 +1,37 @@
 package checkers.flow.analysis.checkers;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.Name;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 
 import javacutils.ErrorReporter;
 import javacutils.InternalUtils;
+import javacutils.TreeUtils;
+import javacutils.TypesUtils;
+import javacutils.trees.TreeBuilder;
 
 import dataflow.cfg.CFGBuilder;
 import dataflow.cfg.ControlFlowGraph;
 import dataflow.cfg.UnderlyingAST;
+import dataflow.cfg.node.ArrayAccessNode;
+import dataflow.cfg.node.FieldAccessNode;
+import dataflow.cfg.node.IntegerLiteralNode;
+import dataflow.cfg.node.LessThanNode;
+import dataflow.cfg.node.LocalVariableNode;
+import dataflow.cfg.node.MethodAccessNode;
 import dataflow.cfg.node.MethodInvocationNode;
+import dataflow.cfg.node.Node;
+import dataflow.cfg.node.PostfixIncrementNode;
+import dataflow.cfg.node.VariableDeclarationNode;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.quals.TerminatesExecution;
@@ -29,6 +48,7 @@ import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
@@ -183,7 +203,7 @@ public class CFCFGBuilder extends CFGBuilder {
                     factory.getAnnotatedType(iteratorCall);
 
                 Tree annotatedIteratorTypeTree =
-                    treeBuilder.buildAnnotatedType(annotatedIteratorType);
+                    ((CFTreeBuilder)treeBuilder).buildAnnotatedType(annotatedIteratorType);
                 factory.setPathHack(annotatedIteratorTypeTree, methodElement);
 
                 // Declare and initialize a new, unique iterator variable
@@ -280,7 +300,7 @@ public class CFCFGBuilder extends CFGBuilder {
                     "ArrayType must be represented by AnnotatedArrayType";
 
                 Tree annotatedArrayTypeTree =
-                    treeBuilder.buildAnnotatedType(annotatedArrayType);
+                    ((CFTreeBuilder)treeBuilder).buildAnnotatedType(annotatedArrayType);
                 factory.setPathHack(annotatedArrayTypeTree, methodElement);
 
                 // Declare and initialize a temporary array variable

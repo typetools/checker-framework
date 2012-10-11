@@ -1,4 +1,4 @@
-package checkers.flow.util;
+package checkers.util;
 
 import java.util.ArrayList;
 import java.util.List;
