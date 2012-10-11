@@ -71,7 +71,7 @@ ${line.separator}${line.separator}
 Check that the 'compiler.lib' property in 'build.properties' points to version
 ${build.version} of the 'javac.jar' library."/>
 
-        <pathconvert pathsep=" " property="src.files.spaceseparated">
+        <pathconvert pathsep=" " property="src.files.spaceseparated_jc">
             <path>
                 <fileset dir="${src}">
                     <include name="**/*.java"/>
@@ -87,7 +87,7 @@ ${build.version} of the 'javac.jar' library."/>
             <arg value="-g"/>
             <arg line="-sourcepath ${src}"/>
             <arg line="-d ${build}"/>
-            <arg line="${src.files.spaceseparated}"/>
+            <arg line="${src.files.spaceseparated_jc}"/>
             <arg line="-version"/>
         </java>
         <!--
