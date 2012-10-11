@@ -7,9 +7,8 @@ import javax.lang.model.element.VariableElement;
 
 import javacutils.Pair;
 
-import dataflow.analysis.checkers.CFAbstractAnalysis;
-import dataflow.analysis.checkers.CFValue;
-
+import checkers.flow.analysis.checkers.CFAbstractAnalysis;
+import checkers.flow.analysis.checkers.CFValue;
 import checkers.initialization.InitializationStore;
 import checkers.types.AnnotatedTypeMirror;
 

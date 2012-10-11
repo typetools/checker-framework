@@ -13,6 +13,7 @@ import javax.lang.model.util.Types;
 
 import javacutils.AnnotationUtils;
 import javacutils.Pair;
+import javacutils.PurityUtils;
 
 import dataflow.analysis.FlowExpressions;
 import dataflow.analysis.FlowExpressions.PureMethodCall;
@@ -25,7 +26,6 @@ import dataflow.cfg.node.Node;
 
 import checkers.quals.MonotonicAnnotation;
 import checkers.types.AnnotatedTypeFactory;
-import checkers.util.PurityUtils;
 
 /**
  * A store for the checker framework analysis tracks the annotations of memory

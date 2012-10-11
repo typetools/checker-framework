@@ -25,9 +25,6 @@ import dataflow.analysis.FlowExpressions.ThisReference;
 import dataflow.analysis.RegularTransferResult;
 import dataflow.analysis.TransferInput;
 import dataflow.analysis.TransferResult;
-import dataflow.analysis.checkers.CFAbstractAnalysis;
-import dataflow.analysis.checkers.CFAbstractTransfer;
-import dataflow.analysis.checkers.CFValue;
 import dataflow.cfg.UnderlyingAST;
 import dataflow.cfg.node.AssignmentNode;
 import dataflow.cfg.node.FieldAccessNode;
@@ -36,6 +33,9 @@ import dataflow.cfg.node.MethodInvocationNode;
 import dataflow.cfg.node.Node;
 import dataflow.cfg.node.ThisLiteralNode;
 
+import checkers.flow.analysis.checkers.CFAbstractAnalysis;
+import checkers.flow.analysis.checkers.CFAbstractTransfer;
+import checkers.flow.analysis.checkers.CFValue;
 import checkers.types.AnnotatedTypeMirror;
 
 import com.sun.source.tree.ClassTree;

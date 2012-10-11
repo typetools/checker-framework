@@ -6,10 +6,9 @@ import javax.lang.model.element.ExecutableElement;
 import javacutils.AnnotationUtils;
 import javacutils.TreeUtils;
 
-import dataflow.analysis.checkers.CFStore;
-import dataflow.analysis.checkers.CFValue;
-
 import checkers.basetype.BaseTypeChecker;
+import checkers.flow.analysis.checkers.CFStore;
+import checkers.flow.analysis.checkers.CFValue;
 import checkers.regex.quals.PartialRegex;
 import checkers.regex.quals.PolyRegex;
 import checkers.regex.quals.Regex;

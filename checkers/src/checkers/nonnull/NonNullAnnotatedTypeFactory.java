@@ -15,9 +15,8 @@ import javacutils.Pair;
 import javacutils.TreeUtils;
 import javacutils.TypesUtils;
 
-import dataflow.analysis.checkers.CFValue;
-
 import checkers.basetype.BaseTypeChecker;
+import checkers.flow.analysis.checkers.CFValue;
 import checkers.initialization.InitializationAnnotatedTypeFactory;
 import checkers.initialization.InitializationStore;
 import checkers.nonnull.quals.MonotonicNonNull;

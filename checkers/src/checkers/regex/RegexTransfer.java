@@ -10,15 +10,15 @@ import dataflow.analysis.FlowExpressions.Receiver;
 import dataflow.analysis.RegularTransferResult;
 import dataflow.analysis.TransferInput;
 import dataflow.analysis.TransferResult;
-import dataflow.analysis.checkers.CFAbstractTransfer;
-import dataflow.analysis.checkers.CFStore;
-import dataflow.analysis.checkers.CFValue;
 import dataflow.cfg.node.ClassNameNode;
 import dataflow.cfg.node.IntegerLiteralNode;
 import dataflow.cfg.node.MethodAccessNode;
 import dataflow.cfg.node.MethodInvocationNode;
 import dataflow.cfg.node.Node;
 
+import checkers.flow.analysis.checkers.CFAbstractTransfer;
+import checkers.flow.analysis.checkers.CFStore;
+import checkers.flow.analysis.checkers.CFValue;
 import checkers.util.FlowExpressionParseUtil;
 import checkers.util.FlowExpressionParseUtil.FlowExpressionContext;
 import checkers.util.FlowExpressionParseUtil.FlowExpressionParseException;

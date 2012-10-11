@@ -8,13 +8,13 @@ import java.util.List;
 import javax.lang.model.element.Element;
 
 import javacutils.InternalUtils;
+import javacutils.PurityUtils;
 import javacutils.TreeUtils;
 
 import checkers.quals.Pure;
 import checkers.quals.Pure.Kind;
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeFactory;
-import checkers.util.PurityUtils;
 
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
