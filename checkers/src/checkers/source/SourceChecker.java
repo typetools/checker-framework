@@ -12,6 +12,7 @@ import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
 import javax.tools.Diagnostic.Kind;
 
+import javacutils.AbstractTypeProcessor;
 import javacutils.ElementUtils;
 import javacutils.ErrorHandler;
 import javacutils.ErrorReporter;
