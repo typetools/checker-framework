@@ -1,0 +1,102 @@
+How to run the tests for the Checker Framework
+==============================================
+
+  # Warning: this may rebuild the JDK
+  ant -e -find build.xml all-tests
+
+Other ant targets also exist to run a subset of the tests, without
+rebuilding the JDK; for example,
+  ant -e -find build.xml nullness-tests
+
+To run an individual test (check one source code file), do something like:
+
+cd $CHECKERS/tests/nullness
+(cd $CHECKERS && ant -e jar) && javac -processor checkers.nullness.NullnessChecker -Xbootclasspath/p:$CHECKERS/jdk/jdk.jar AssertNonNullTest.java
+
+
+How to write test cases for the Checker Framework
+=================================================
+
+This document describes how to write tests for the Checker Framework.  The
+document is useful for Checker Framework maintainers, checker writers, and
+bug submitters.  Users of the framework and checkers should read the manual
+instead; see file ../manual/manual.html .
+
+The testing framework for the Checker Framework is built on top of JUnit.
+However, its tests are more like end-to-end integration tests than unit
+tests.
+
+A checker test case has two parts:
+  1. the Java class to be compiled, and
+  2. a set of expected errors.
+
+Both parts can be expressed in one file that is stored in the folder
+corresponding to the checker name, such as
+checker-framework/checkers/tests/nullness/.
+
+
+Writing new tests for an existing checker
+=========================================
+
+Suppose that you want to add a test for the Nullness Checker, with the
+following Java class:
+
+class MyNullnessTest {
+  void method() {
+    Object nullable = null;
+    nullable.toString();   // should emit error
+  }
+}
+
+The Nullness Checker should report an error for the dereference in line 4.
+The non-localized message key for such an error is
+'dereference.of.nullable'.  You could learn that by reading the Javadoc (or
+the source code) for checkers.nullness.NullnessVisitor, or by creating the
+test and observing the failure.
+
+To indicate the expected failure, insert the line
+  //:: (<error-message-key>)
+directly preceding the expected error line.
+If multiple errors are expected on a single line, duplicate everthing
+except the "//" comment characters, as in
+  //:: (<error-message-key1>) :: (<error-message-key2>)
+
+So the final test case would be:
+
+class MyNullnessTest {
+  void method() {
+    Object nullable = null;
+    //:: (dereference.of.nullable)
+    nullable.toString();   // should emit error
+  }
+}
+
+The file may appear anywhere in or under checkers/tests/nullness/.  (You may
+find it useful to use separate subfolders, such as
+nullness/tests/nullness/dereference/.)  Each checker should have its own
+folder under checkers/tests, such as checkers/tests/igj/,
+checkers/tests/interning/, etc.
+
+You may wish to supply different command-line arguments (flags) to the
+checker for certain test cases -- for instance, to check an optional
+command-line argument that should not be enabled for every test.  To do
+this:
+ * create a top-level test directory, such as
+   checkers/tests/nullness-uninit, for the test cases
+ * create a top-level JUnit test, such as:
+   checkers/tests/src/tests/NullnessUninitializedTest.java
+ * change checkers/build.xml to run those tests
+
+
+Writing tests for new checkers
+==============================
+
+Essentially, just copy an existing checker, analogously to creating a new
+test directory for testing different command-line arguments, as described
+above.
+
+
+Annotated JDK
+=============
+
+The tests run with the annotated JDK.  Keep this in mind when writing tests.
