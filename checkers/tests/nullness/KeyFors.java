@@ -44,17 +44,22 @@ public class KeyFors {
         @NonNull String value = container.map.get(key);
     }
 
+    /** Returns a sorted version of m.keySet(). */
     public static
     <K extends Comparable<? super K>,V> Collection<@KeyFor("#1") K>
     sortedKeySet(Map<K,V> m) {
         throw new RuntimeException();
     }
 
+    static HashMap<Integer,Object> call_hashmap = new HashMap<Integer,Object>();
+
     public void testForLoop(HashMap<String, String> lastMap) {
         // TODO: support Flow for KeyFor
         Collection<@KeyFor("lastMap") String> sorted = sortedKeySet(lastMap);
         for (@KeyFor("lastMap") String key : sorted) {
             @NonNull String al = lastMap.get(key);
+        }
+        for (@KeyFor("call_hashmap") Integer i : sortedKeySet(call_hashmap)) {
         }
     }
     
