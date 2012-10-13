@@ -12,6 +12,27 @@ Support new foreign annotations:
 
 New FAQ: "What is a receiver?"
 
+Make annotations use 1-based numbering for formal parameters:
+  Previously, due to a bug the annotations used 0-based numbering.
+  This change means that you need to rewrite annotations in the following ways:
+    @KeyFor("#3")  =>  @KeyFor("#4")
+    @AssertNonNullIfTrue("#0")  =>  @AssertNonNullIfTrue("#1")
+    @AssertNonNullIfTrue({"#0", "#1"})  =>  @AssertNonNullIfTrue({"#1", "#2"})
+    @AssertNonNullAfter("get(#2)")  =>  @AssertNonNullAfter("get(#3)")
+  This command:
+    find . -type f -print | xargs perl -pi -e 's/("#)([0-9])(")/$1.($2+1).$3/eg'
+  handles the first two cases, which account for most uses.  You would need
+  to handle any annotations like the last two cases in a different way,
+  such as by running
+    grep -r -n -E '\("[^"]+#[0-9][^A-Za-z]|\("#[0-9][^"]' .
+  and making manual changes to the matching lines.  (It is possible to
+  provide a command that handles all cases, but it would be more likely to
+  make undesired changes.)
+  Whenever making automated changes, it is wise to save a copy of your
+  codebase, then compare it to the modified version so you can undo any
+  undesired changes.  Also, avoid running the automated command over version
+  control files such as your .hg, .git, .svn, or CVS directory.
+
 ----------------------------------------------------------------------
 Version 1.4.1, 29 Sep 2012
 

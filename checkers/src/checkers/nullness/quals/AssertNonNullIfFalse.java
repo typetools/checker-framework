@@ -21,7 +21,7 @@ import checkers.nullness.NullnessChecker;
  *
  * Another example is this method:
  * <pre><code>   // Returns whether the line is blank (or null).
- *   &#064;AssertNonNullIfFalse("#0")
+ *   &#064;AssertNonNullIfFalse("#1")
  *   private static boolean isBlank(@Nullable String line) {
  *     return (line == null) || line.trim().equals("");
  *   }</code></pre>
