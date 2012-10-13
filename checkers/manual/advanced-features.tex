@@ -476,7 +476,7 @@ The expression is a subset of legal Java expressions:
   class name.
 \item
   a field of any expression.  For example:  \<next>,
-  \<this.next>, \<\#0.next>, \<myLocalVar.next>.
+  \<this.next>, \<\#1.next>, \<myLocalVar.next>.
 \item a method invocation on any expression.
   The method must be pure and have no formal parameters.  For example:
   \<myClass.getPackage()>, \<myClass.getSuperclass()>,
@@ -497,7 +497,7 @@ shadowing definition of \<next>.
 \textbf{Limitation:}  Currently, only one level of field access can be
 checked; the checker cannot handle, for example, \code{"this.field1.field2"}.
 
-(A side note:  The formal parameter syntax \<\#0> may seem less convenient
+(A side note:  The formal parameter syntax \<\#1> may seem less convenient
 than writing the formal parameter name.  This syntax is necessary because
 in the \<.class> file, no parameter name information is available.  Running
 the compiler without a checker should create legal annotations in the

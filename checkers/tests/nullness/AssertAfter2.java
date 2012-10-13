@@ -12,8 +12,8 @@ public class AssertAfter2 {
       this.childMap = childMap;
     }
 
-    //:: warning: (nullness.parse.error)
-    @AssertNonNullAfter("childMap.get(#0)") public void addNode( T n ) {
+    @SuppressWarnings("assert.postcondition.not.satisfied")
+    @AssertNonNullAfter("childMap.get(#1)") public void addNode( T n ) {
       // body omitted, not relevant to test case
     }
 
@@ -56,10 +56,11 @@ public class AssertAfter2 {
 
     MultiParam thing;
 
+    @SuppressWarnings("assert.postcondition.not.satisfied")
     // TODO: doc: spaces important
     // TODO: doc: no explicit this!
-    //:: warning: (nullness.parse.error)
-    @AssertNonNullAfter("get(#0, #1, #2)") void add( Object o1, Object o2, Object o3 ) {
+    @AssertNonNullAfter("get(#1, #2, #3)")
+    void add( Object o1, Object o2, Object o3 ) {
       // body omitted, not relevant to test case
     }
 
