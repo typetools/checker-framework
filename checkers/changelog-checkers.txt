@@ -1,11 +1,16 @@
 Version 1.4.2, ?? Oct 2012
 
-Regex Checker:
-  New CheckedPatternSyntaxException added to RegexUtil.
+External tool support:
+  Eclipse plug-in now works properly, due to many fixes
 
-New foreign annotations that are supported by the Checker Framework:
+Regex Checker:
+  New CheckedPatternSyntaxException added to RegexUtil
+
+Support new foreign annotations:
   org.eclipse.jdt.annotation.Nullable
   org.eclipse.jdt.annotation.NonNull
+
+New FAQ: "What is a receiver?"
 
 Make annotations use 1-based numbering for formal parameters:
   Previously, due to a bug the annotations used 0-based numbering.
