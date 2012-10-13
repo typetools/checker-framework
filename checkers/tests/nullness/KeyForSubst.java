@@ -9,20 +9,20 @@ public class KeyForSubst {
     }
     */
 
-    @KeyFor("#0") String getMain(Object m) {
+    @KeyFor("#1") String getMain(Object m) {
         throw new RuntimeException();
     }
 
-    List<@KeyFor("#0") String> getDeep(Object m) {
+    List<@KeyFor("#1") String> getDeep(Object m) {
         throw new RuntimeException();
     }
 
-    @KeyFor("#0") List<@KeyFor("#1") String> getBoth(Object l, Object m) {
+    @KeyFor("#1") List<@KeyFor("#2") String> getBoth(Object l, Object m) {
         throw new RuntimeException();
     }
 
     // OK, I think the annotation on the index is overdoing it, but it works.
-    @KeyFor("#0") String @KeyFor("#1")[] getArray(Object l, Object m) {
+    @KeyFor("#1") String @KeyFor("#2")[] getArray(Object l, Object m) {
         throw new RuntimeException();
     }
 

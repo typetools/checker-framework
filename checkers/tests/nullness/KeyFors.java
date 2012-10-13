@@ -44,9 +44,8 @@ public class KeyFors {
         @NonNull String value = container.map.get(key);
     }
 
-    // Should this be '@KeyFor("#0")', or '@KeyFor("m")'?
     public static
-    <K extends Comparable<? super K>,V> Collection<@KeyFor("#0") K>
+    <K extends Comparable<? super K>,V> Collection<@KeyFor("#1") K>
     sortedKeySet(Map<K,V> m) {
         throw new RuntimeException();
     }
