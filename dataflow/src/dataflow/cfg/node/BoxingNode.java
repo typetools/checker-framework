@@ -5,28 +5,26 @@ import java.util.Collections;
 
 import javax.lang.model.type.TypeMirror;
 
-import javacutils.InternalUtils;
-
 import dataflow.util.HashCodeUtils;
-import checkers.nullness.quals.NonNull;
 
 import com.sun.source.tree.Tree;
 
 /**
  * A node for the boxing conversion operation. See JLS 5.1.7 for the definition
  * of boxing.
- * 
+ *
  * A {@link BoxingNode} does not correspond to any tree node in the parsed AST.
  * It is introduced when a value of primitive type appears in a context that
  * requires a reference.
- * 
+ *
  * Boxing can fail with an {@link OutOfMemoryError}, but that is not something
  * we consider in our dataflow analyses. Boxing of primitive types always yields
- * a {@link NonNull} reference, however, boxing of null values yields null.
- * 
+ * a {@link checkers.nonnull.quals.NonNull NonNull} reference, however, boxing
+ * of null values yields null.
+ *
  * @author Stefan Heule
  * @author Charlie Garrett
- * 
+ *
  */
 public class BoxingNode extends Node {
 
