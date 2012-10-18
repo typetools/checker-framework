@@ -14,8 +14,6 @@ tags
 .DS_Store
 # Eclipse files
 .metadata
-.classpath
-.project
 .externalToolBuilders
 .settings
 dot_files
