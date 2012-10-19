@@ -3,7 +3,7 @@ import checkers.nullness.quals.*;
 public class AssertParameterNullness {
 
     /** True iff both sequences are non-null and have the same length. */
-    @AssertNonNullIfTrue({"#0", "#1"})
+    @AssertNonNullIfTrue({"#1", "#2"})
     /* pure */ public static boolean sameLength(boolean @Nullable [] seq1, boolean @Nullable [] seq2) {
         return ((seq1 != null)
                 && (seq2 != null)

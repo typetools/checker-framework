@@ -59,43 +59,43 @@ public class AssertIfChecked {
     return value==null && unknown;
   }
 
-  @AssertNonNullIfTrue("#0")
+  @AssertNonNullIfTrue("#1")
   boolean testParam(@Nullable Object param) {
     return param!=null;
   }
 
 
-  @AssertNonNullIfTrue("#0")
+  @AssertNonNullIfTrue("#1")
   boolean testLitTTgood1(@Nullable Object param) {
     if (param==null) return false;
     return true;
   }
 
-  @AssertNonNullIfTrue("#0")
+  @AssertNonNullIfTrue("#1")
   boolean testLitTTbad1(@Nullable Object param) {
     //:: error: (assertiftrue.postcondition.not.satisfied)
     return true;
   }
 
-  @AssertNonNullIfFalse("#0")
+  @AssertNonNullIfFalse("#1")
   boolean testLitFFgood1(@Nullable Object param) {
     return true;
   }
 
-  @AssertNonNullIfFalse("#0")
+  @AssertNonNullIfFalse("#1")
   boolean testLitFFgood2(@Nullable Object param) {
     if (param==null) return true;
     return false;
   }
 
-  @AssertNonNullIfFalse("#0")
+  @AssertNonNullIfFalse("#1")
   boolean testLitFFbad1(@Nullable Object param) {
     //:: error: (assertiffalse.postcondition.not.satisfied)
     if (param==null) return false;
     return true;
   }
 
-  @AssertNonNullIfFalse("#0")
+  @AssertNonNullIfFalse("#1")
   boolean testLitFFbad2(@Nullable Object param) {
     //:: error: (assertiffalse.postcondition.not.satisfied)
     return false;
@@ -121,7 +121,7 @@ public class AssertIfChecked {
    * AssertNonNullIfTrue is correctly added to the assumptions after a check.
    */
 
-  /*@AssertNonNullIfTrue({"#0", "#1"}) */
+  /*@AssertNonNullIfTrue({"#1", "#2"}) */
   /* pure */ public static boolean sameLength(boolean /*@Nullable */[] seq1,
           boolean /*@Nullable */[] seq2) {
       return ((seq1 != null) && (seq2 != null) && seq1.length == seq2.length);

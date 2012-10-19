@@ -264,7 +264,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
      * @param annoValues The annotation values to substitute.
      * @return The substituted annotation values.
      */
-    private static List<String> substitutePatternsCall(MethodInvocationTree methodInvok, List<String> annoValues) {
+    private List<String> substitutePatternsCall(MethodInvocationTree methodInvok, List<String> annoValues) {
         String receiver = receiver(methodInvok);
 
         List<? extends ExpressionTree> argExps = methodInvok.getArguments();
@@ -286,39 +286,34 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
      * @param annoValues The annotation values to substitute.
      * @return The substituted annotation values.
      */
-    private static List<String> substitutePatternsGeneric(Tree node, String receiver,
+    private List<String> substitutePatternsGeneric(Tree node, String receiver,
             List<String> argparams, List<String> annoValues) {
         List<String> asserts = new ArrayList<String>();
 
         fields: for (String s : annoValues) {
             if (parameterPtn.matcher(s).matches()) {
-                // exactly one parameter index, e.g. "#0"
+                // exactly one parameter index, e.g. "#1"
                 int param = Integer.valueOf(s.substring(1));
-                if (param < argparams.size()) {
-                    asserts.add(argparams.get(param).toString());
-                } else {
-                    //if (DO_ADVANCED_CHECKS) {
-                        // checker.report(Result.failure("param.index.nullness.parse.error", s), node);
-                        System.err.println(Result.failure("param.index.nullness.parse.error", s));
-                    // }
+                if (param <= 0 || param > argparams.size()) {
+                    // The failure should already have been reported, when
+                    // the method declaration was processed.
+                    // checker.report(Result.failure("param.index.nullness.parse.error", s), node);
                     continue;
                 }
+                asserts.add(argparams.get(param-1).toString());
             } else if (parameterPtn.matcher(s).find()) {
                 // parameter pattern(s) within the string
                 Matcher matcher = parameterPtn.matcher(s);
                 StringBuffer sb = new StringBuffer();
                 while (matcher.find()) {
                     int param = Integer.valueOf(matcher.group(1));
-                    if (param < argparams.size()) {
-                        String rep = argparams.get(param).toString();
-                        matcher.appendReplacement(sb, rep);
-                    } else {
-                        // if (DO_ADVANCED_CHECKS) {
-                            // checker.report(Result.failure("param.index.nullness.parse.error", s), node);
-                            System.err.println(Result.failure("param.index.nullness.parse.error", s));
-                        // }
+                    if (param <= 0 || param > argparams.size()) {
+                        // The failure should already have been reported,
+                        // when the method declaration was processed.
                         continue fields;
                     }
+                    String rep = argparams.get(param-1).toString();
+                    matcher.appendReplacement(sb, rep);
                 }
                 matcher.appendTail(sb);
 
@@ -793,16 +788,24 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
     // Also see checkNonNullOnEntry for comparison
     private void checkAssertNonNullAfter(MethodTree meth, ExecutableElement methElem) {
         AnnotationMirror anno = atypeFactory.getDeclAnnotation(methElem, AssertNonNullAfter.class);
+        java.lang.annotation.Annotation a = null;
+        try {
+            a = methElem.getAnnotation(AssertNonNullAfter.class);
+        } catch (Exception e) {
+            e.printStackTrace(System.err);
+        }
         List<String> annoValues = AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
         TreePath path = TreePath.getPath(TreeUtils.pathTillClass(getCurrentPath()), meth);
         ClassTree cls = TreeUtils.enclosingClass(atypeFactory.getPath(meth));
 
         for (String annoVal : annoValues) {
 
-            if (parameterPtn.matcher(annoVal).find()) {
-                if (DO_ADVANCED_CHECKS
-                        && !checker.shouldSkipDefs(cls, meth)) {
-                    checker.report(Result.warning("nullness.parse.error", annoVal), meth);
+            Matcher paramIndexMatcher = parameterPtn.matcher(annoVal);
+            while (paramIndexMatcher.find()) {
+                int param = Integer.valueOf(paramIndexMatcher.group(1));
+                if (param <= 0 || param > meth.getParameters().size()) {
+                    Tree atree = atypeFactory.getDeclAnnotationTree(meth, AssertNonNullAfter.class);
+                    checker.report(Result.warning("param.index.nullness.parse.error", paramIndexMatcher.group(), meth.getParameters().size()), atree);
                 }
                 continue;
             }

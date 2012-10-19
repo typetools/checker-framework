@@ -12,7 +12,7 @@ import checkers.nullness.NullnessChecker;
  *
  * <b>Method parameters:</b>
  * A common example is that the <tt>equals</tt> method is annotated as follows:
- * <pre><code>   @AssertNonNullIfTrue("#0")
+ * <pre><code>   @AssertNonNullIfTrue("#1")
  *   public boolean equals(@Nullable Object obj) { ... }</code></pre>
  * because, if <tt>equals</tt> returns true, then the first (#0) argument to
  * <tt>equals</tt> was not null.

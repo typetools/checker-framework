@@ -18,6 +18,8 @@ tags
 .settings
 dot_files
 
+Makefile.user
+
 # build files
 bin
 build
