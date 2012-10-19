@@ -1,5 +1,9 @@
 package checkers.util;
 
+import static com.sun.tools.javac.code.TypeTags.ARRAY;
+import static com.sun.tools.javac.code.TypeTags.CLASS;
+import static com.sun.tools.javac.code.TypeTags.TYPEVAR;
+import static com.sun.tools.javac.util.ListBuffer.lb;
 import static javax.lang.model.util.ElementFilter.methodsIn;
 
 import java.util.ArrayDeque;
@@ -50,6 +54,10 @@ import checkers.nullness.quals.*;
 
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
+import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.code.Type.ArrayType;
+import com.sun.tools.javac.util.Assert;
+import com.sun.tools.javac.util.ListBuffer;
 
 /**
  * Utility methods for operating on {@code AnnotatedTypeMirror}. This
@@ -620,7 +628,7 @@ public class AnnotatedTypes {
      *
      * @param expr the method or constructor invocation tree; the passed argument
      *   has to be a subtype of MethodInvocationTree or NewClassTree.
-     * @param elt the element corresponding to the tree. 
+     * @param elt the element corresponding to the tree.
      * @return the mapping of the type variables to type arguments for
      *   this method or constructor invocation.
      */
@@ -953,7 +961,7 @@ public class AnnotatedTypes {
             MethodTree method = TreeUtils.enclosingMethod(path);
             return (atypeFactory.getAnnotatedType(method)).getReturnType();
         } else if (assignmentContext instanceof VariableTree) {
-            return atypeFactory.getAnnotatedType((VariableTree)assignmentContext);
+            return atypeFactory.getAnnotatedType(assignmentContext);
         }
 
         ErrorReporter.errorAbort("AnnotatedTypes.assignedTo: shouldn't be here!");
@@ -1022,7 +1030,7 @@ public class AnnotatedTypes {
             // TODO: This code needs some more serious thought.
             if (lub.getKind() == TypeKind.WILDCARD) {
                 subtypes.add(deepCopy(lub));
-            } else { 
+            } else {
                 for (AnnotatedTypeMirror type : types) {
                     if (type == null) {
                         continue;
@@ -1350,5 +1358,138 @@ public class AnnotatedTypes {
         }
         return false;
     }
+
+    /**
+     * Return the least upper bound of pair of types.  if the lub does
+     * not exist return null.
+     */
+    public Type lub(Type t1, Type t2) {
+        return lub(List.of(t1, t2));
+    }
+
+    /**
+     * Return the least upper bound (lub) of set of types.  If the lub
+     * does not exist return the type of null (bottom).
+     */
+    public Type lub(List<Type> ts) {
+        final int ARRAY_BOUND = 1;
+        final int CLASS_BOUND = 2;
+        int boundkind = 0;
+        for (Type t : ts) {
+            switch (t.tag) {
+            case CLASS:
+                boundkind |= CLASS_BOUND;
+                break;
+            case ARRAY:
+                boundkind |= ARRAY_BOUND;
+                break;
+            case  TYPEVAR:
+                do {
+                    t = t.getUpperBound();
+                } while (t.tag == TYPEVAR);
+                if (t.tag == ARRAY) {
+                    boundkind |= ARRAY_BOUND;
+                } else {
+                    boundkind |= CLASS_BOUND;
+                }
+                break;
+            default:
+                if (t.isPrimitive())
+                    return syms.errType;
+            }
+        }
+        switch (boundkind) {
+        case 0:
+            return syms.botType;
+
+        case ARRAY_BOUND:
+            // calculate lub(A[], B[])
+            List<Type> elements = Type.map(ts, elemTypeFun);
+            for (Type t : elements) {
+                if (t.isPrimitive()) {
+                    // if a primitive type is found, then return
+                    // arraySuperType unless all the types are the
+                    // same
+                    Type first = ts.head;
+                    for (Type s : ts.tail) {
+                        if (!isSameType(first, s)) {
+                             // lub(int[], B[]) is Cloneable & Serializable
+                            return arraySuperType();
+                        }
+                    }
+                    // all the array types are the same, return one
+                    // lub(int[], int[]) is int[]
+                    return first;
+                }
+            }
+            // lub(A[], B[]) is lub(A, B)[]
+            return new ArrayType(lub(elements), syms.arrayClass);
+
+        case CLASS_BOUND:
+            // calculate lub(A, B)
+            while (ts.head.tag != CLASS && ts.head.tag != TYPEVAR)
+                ts = ts.tail;
+            Assert.check(!ts.isEmpty());
+            //step 1 - compute erased candidate set (EC)
+            List<Type> cl = erasedSupertypes(ts.head);
+            for (Type t : ts.tail) {
+                if (t.tag == CLASS || t.tag == TYPEVAR)
+                    cl = intersect(cl, erasedSupertypes(t));
+            }
+            //step 2 - compute minimal erased candidate set (MEC)
+            List<Type> mec = closureMin(cl);
+            //step 3 - for each element G in MEC, compute lci(Inv(G))
+            List<Type> candidates = List.nil();
+            for (Type erasedSupertype : mec) {
+                List<Type> lci = List.of(asSuper(ts.head, erasedSupertype.tsym));
+                for (Type t : ts) {
+                    lci = intersect(lci, List.of(asSuper(t, erasedSupertype.tsym)));
+                }
+                candidates = candidates.appendList(lci);
+            }
+            //step 4 - let MEC be { G1, G2 ... Gn }, then we have that
+            //lub = lci(Inv(G1)) & lci(Inv(G2)) & ... & lci(Inv(Gn))
+            return compoundMin(candidates);
+
+        default:
+            // calculate lub(A, B[])
+            List<Type> classes = List.of(arraySuperType());
+            for (Type t : ts) {
+                if (t.tag != ARRAY) // Filter out any arrays
+                    classes = classes.prepend(t);
+            }
+            // lub(A, B[]) is lub(A, arraySuperType)
+            return lub(classes);
+        }
+    }
+    // where
+        List<Type> erasedSupertypes(Type t) {
+            ListBuffer<Type> buf = lb();
+            for (Type sup : closure(t)) {
+                if (sup.tag == TYPEVAR) {
+                    buf.append(sup);
+                } else {
+                    buf.append(erasure(sup));
+                }
+            }
+            return buf.toList();
+        }
+
+        private Type arraySuperType = null;
+        private Type arraySuperType() {
+            // initialized lazily to avoid problems during compiler startup
+            if (arraySuperType == null) {
+                synchronized (this) {
+                    if (arraySuperType == null) {
+                        // JLS 10.8: all arrays implement Cloneable and Serializable.
+                        arraySuperType = makeCompoundType(List.of(syms.serializableType,
+                                                                  syms.cloneableType),
+                                                          syms.objectType);
+                    }
+                }
+            }
+            return arraySuperType;
+        }
+    // </editor-fold>
 
 }
