@@ -17,6 +17,12 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
+import javacutils.AnnotationUtils;
+import javacutils.ElementUtils;
+import javacutils.ErrorReporter;
+import javacutils.Pair;
+import javacutils.TreeUtils;
+
 import checkers.basetype.BaseTypeChecker;
 import checkers.source.SourceChecker;
 import checkers.types.AnnotatedTypeFactory;
@@ -26,10 +32,6 @@ import checkers.types.GeneralAnnotatedTypeFactory;
 import checkers.types.QualifierHierarchy;
 import checkers.types.VisitorState;
 import checkers.util.AnnotatedTypes;
-import checkers.util.AnnotationUtils;
-import checkers.util.ElementUtils;
-import checkers.util.Pair;
-import checkers.util.TreeUtils;
 /*>>>
 import checkers.nullness.quals.*;
 */
@@ -844,7 +846,7 @@ implements Flow {
         if (iter != null) {
             propagateFromType(var, iter);
         } else {
-            SourceChecker.errorAbort("AbstractFlow.visitEnahncedForLoop: could not determine iterated type!");
+            ErrorReporter.errorAbort("AbstractFlow.visitEnahncedForLoop: could not determine iterated type!");
         }
 
         ST stEntry = copyState(flowState);

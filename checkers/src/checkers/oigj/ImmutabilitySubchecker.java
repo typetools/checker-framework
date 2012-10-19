@@ -5,13 +5,14 @@ import java.util.Collection;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Elements;
 
+import javacutils.AnnotationUtils;
+import javacutils.ErrorReporter;
+
 import checkers.basetype.BaseTypeChecker;
 import checkers.oigj.quals.*;
 import checkers.quals.TypeQualifiers;
-import checkers.source.SourceChecker;
 import checkers.types.*;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import checkers.util.AnnotationUtils;
 import checkers.util.GraphQualifierHierarchy;
 import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 
@@ -87,7 +88,7 @@ public class ImmutabilitySubchecker extends BaseTypeChecker {
         @Override
         public boolean isSubtype(Collection<AnnotationMirror> rhs, Collection<AnnotationMirror> lhs) {
             if (lhs.isEmpty() || rhs.isEmpty()) {
-                SourceChecker.errorAbort("GraphQualifierHierarchy: Empty annotations in lhs: " + lhs + " or rhs: " + rhs);
+                ErrorReporter.errorAbort("GraphQualifierHierarchy: Empty annotations in lhs: " + lhs + " or rhs: " + rhs);
             }
             // TODO: sometimes there are multiple mutability annotations in a type and
             // the check in the superclass that the sets contain exactly one annotation
