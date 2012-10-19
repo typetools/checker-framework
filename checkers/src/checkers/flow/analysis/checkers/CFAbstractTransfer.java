@@ -130,8 +130,9 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
                 if (ElementUtils.isFinal(element) || isConstructor) {
                     TypeMirror type = InternalUtils.typeOf(method
                             .getClassTree());
+                    TypeMirror elemType = ElementUtils.getType(element);
                     Receiver field = new FieldAccess(new ThisReference(type),
-                            type, element);
+                            elemType, element);
                     info.insertValue(field, value);
                 }
             }
