@@ -5,14 +5,15 @@ import java.util.Set;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeKind;
 
+import javacutils.AnnotationUtils;
+import javacutils.ElementUtils;
+import javacutils.InternalUtils;
+import javacutils.TreeUtils;
+
 import checkers.basetype.BaseTypeChecker;
-import checkers.nullness.quals.Pure;
+import checkers.quals.Pure;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
-import checkers.util.AnnotationUtils;
-import checkers.util.ElementUtils;
-import checkers.util.InternalUtils;
-import checkers.util.TreeUtils;
 /*>>>
 import checkers.nullness.quals.*;
 */

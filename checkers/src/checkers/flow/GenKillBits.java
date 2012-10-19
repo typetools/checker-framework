@@ -4,9 +4,10 @@ import java.util.*;
 
 import javax.lang.model.element.AnnotationMirror;
 
-import checkers.source.SourceChecker;
+import javacutils.AnnotationUtils;
+import javacutils.ErrorReporter;
+
 import checkers.types.QualifierHierarchy;
-import checkers.util.AnnotationUtils;
 
 /**
  * Maintains multiple gen-kill sets, "keyed" by a value. For instance, the
@@ -52,7 +53,7 @@ public class GenKillBits<K> {
     bitsets = new HashMap<K, BitSet>(keys.size());
     for (K key : keys) {
       if (key==null) {
-        SourceChecker.errorAbort("GenKillBits(keys): No null keys allowed!");
+        ErrorReporter.errorAbort("GenKillBits(keys): No null keys allowed!");
       }
       bitsets.put(key, new BitSet());
     }
@@ -73,7 +74,7 @@ public class GenKillBits<K> {
     bitsets = new HashMap<K, BitSet>(other.bitsets);
     for (K key : bitsets.keySet()) {
       if (key==null) {
-        SourceChecker.errorAbort("GenKillBits(other): No null keys allowed!");
+        ErrorReporter.errorAbort("GenKillBits(other): No null keys allowed!");
       }
       BitSet newbits = (BitSet) bitsets.get(key).clone();
       bitsets.put(key, newbits);
@@ -89,7 +90,7 @@ public class GenKillBits<K> {
    */
   public void set(K key, int index) {
     if (key==null) {
-      SourceChecker.errorAbort("GenKillBits.set: No null keys allowed!");
+      ErrorReporter.errorAbort("GenKillBits.set: No null keys allowed!");
     }
     if (!bitsets.containsKey(key)) {
       bitsets.put(key, new BitSet());

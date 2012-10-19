@@ -4,11 +4,12 @@ import javax.lang.model.element.ElementKind;
 
 import com.sun.source.tree.CompilationUnitTree;
 
+import javacutils.TypesUtils;
+
 import checkers.oigj.quals.*;
 import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.types.TypeAnnotator;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import checkers.util.TypesUtils;
 
 public class OwnershipAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<OwnershipSubchecker> {
 

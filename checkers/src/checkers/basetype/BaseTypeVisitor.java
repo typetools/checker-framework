@@ -1,24 +1,57 @@
 package checkers.basetype;
 
+import java.lang.annotation.Annotation;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.*;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
-import javax.tools.Diagnostic.Kind;
+import javax.tools.Diagnostic;
 
+import javacutils.AnnotationUtils;
+import javacutils.ElementUtils;
+import javacutils.InternalUtils;
+import javacutils.Pair;
+import javacutils.PurityUtils;
+import javacutils.TreeUtils;
+import javacutils.TypesUtils;
+
+import dataflow.analysis.FlowExpressions;
+import dataflow.analysis.TransferResult;
+import dataflow.cfg.node.BooleanLiteralNode;
+import dataflow.cfg.node.MethodInvocationNode;
+import dataflow.cfg.node.Node;
+import dataflow.cfg.node.ReturnNode;
+
+import checkers.basetype.PurityChecker.PurityResult;
+import checkers.compilermsgs.quals.CompilerMessageKey;
+import checkers.flow.analysis.checkers.CFAbstractStore;
+import checkers.flow.analysis.checkers.CFAbstractValue;
+import checkers.util.ContractsUtils;
+import checkers.util.FlowExpressionParseUtil;
+import checkers.util.FlowExpressionParseUtil.FlowExpressionContext;
+import checkers.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import checkers.igj.quals.Immutable;
 import checkers.igj.quals.ReadOnly;
-import checkers.nullness.NullnessChecker;
+import checkers.nonnull.NonNullFbcChecker;
 import checkers.quals.DefaultQualifier;
+import checkers.quals.Pure;
 import checkers.quals.Unused;
 import checkers.source.Result;
 import checkers.source.SourceVisitor;
+import checkers.types.AbstractBasicAnnotatedTypeFactory;
+import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -29,15 +62,6 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
 import checkers.types.VisitorState;
 import checkers.types.visitors.AnnotatedTypeScanner;
 import checkers.util.AnnotatedTypes;
-import checkers.util.AnnotationUtils;
-import checkers.util.ElementUtils;
-import checkers.util.InternalUtils;
-import checkers.util.Pair;
-import checkers.util.TreeUtils;
-
-/*>>>
-import checkers.compilermsgs.quals.CompilerMessageKey;
-*/
 
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
@@ -68,6 +92,11 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeInfo;
+/*>>>
+import checkers.basetype.PurityChecker.PurityResult;
+import checkers.compilermsgs.quals.CompilerMessageKey;
+import checkers.nonnull.quals.Nullable;
+*/
 
 /**
  * A {@link SourceVisitor} that performs assignment and pseudo-assignment
@@ -87,8 +116,8 @@ import com.sun.tools.javac.tree.TreeInfo;
  *
  * Note that since this implementation only performs assignment and
  * pseudo-assignment checking, other rules for custom type systems must be added
- * in subclasses (e.g., dereference checking in the {@link NullnessChecker} is
- * implemented in the {@link NullnessChecker}'s
+ * in subclasses (e.g., dereference checking in the {@link NonNullFbcChecker} is
+ * implemented in the {@link NonNullFbcChecker}'s
  * {@link TreeScanner#visitMemberSelect} method).
  *
  * <p>
@@ -118,8 +147,8 @@ import com.sun.tools.javac.tree.TreeInfo;
  * TODO: missing assignment context:
  * - array initializer expressions should have the component type as context
  */
-public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisitor<Void, Void> {
-
+public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
+        SourceVisitor<Void, Void> {
     /** The checker corresponding to this visitor. */
     protected final Checker checker;
 
@@ -132,6 +161,12 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
     /** For storing visitor state. **/
     protected final VisitorState visitorState;
 
+    /** An instance of the {@link ContractUtils} helper class. */
+    protected final ContractsUtils contractsUtils;
+
+    /** The annoated-type factory (with a more specific type than super.atypeFactory). */
+    protected final AbstractBasicAnnotatedTypeFactory<?, ?, ?, ?, ?> atypeFactory;
+
     /**
      * @param checker the typechecker associated with this visitor (for
      *        callbacks to {@link BaseTypeChecker#isSubtype})
@@ -141,6 +176,9 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         super(checker, root);
         this.checker = checker;
 
+        assert super.atypeFactory instanceof AbstractBasicAnnotatedTypeFactory;
+        atypeFactory = (AbstractBasicAnnotatedTypeFactory<?, ?, ?, ?, ?>) super.atypeFactory;
+        contractsUtils = ContractsUtils.getInstance(atypeFactory);
         ProcessingEnvironment env = checker.getProcessingEnvironment();
         this.options = env.getOptions();
         this.positions = trees.getSourcePositions();
@@ -235,6 +273,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         MethodTree preMT = visitorState.getMethodTree();
         visitorState.setMethodReceiver(methodType.getReceiverType());
         visitorState.setMethodTree(node);
+        ExecutableElement methodElement = TreeUtils.elementFromDeclaration(node);
 
         try {
             Element elt = InternalUtils.symbol(node);
@@ -244,12 +283,57 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
                 return null;
             }
 
+            // check method purity if needed
+            boolean hasPurityAnnotation = PurityUtils.hasPurityAnnotation(atypeFactory, node);
+            boolean checkPurityAlways = checker.getProcessingEnvironment().getOptions().containsKey("suggestPureMethods");
+            if (hasPurityAnnotation || checkPurityAlways) {
+                // check "no" purity
+                List<checkers.quals.Pure.Kind> kinds = PurityUtils
+                        .getPurityKinds(atypeFactory, node);
+                if (kinds.isEmpty() && hasPurityAnnotation) {
+                    checker.report(
+                            Result.warning("pure.annotation.with.emtpy.kind"),
+                            node);
+                }
+                if (TreeUtils.isConstructor(node)) {
+                    // constructors cannot be deterministic
+                    if (kinds.contains(Pure.Kind.DETERMINISTIC) && hasPurityAnnotation) {
+                        checker.report(
+                                Result.failure("pure.determinstic.constructor"),
+                                node);
+                    }
+                } else {
+                    // check return type
+                    if (node.getReturnType().toString().equals("void") && hasPurityAnnotation) {
+                        checker.report(Result.warning("pure.void.method"), node);
+                    }
+                }
+                // Report errors if necessary.
+                PurityResult r = PurityChecker.checkPurity(node.getBody(), atypeFactory);
+                if (!r.isPure(kinds)) {
+                    r.reportErrors(checker, node, kinds);
+                }
+                // Issue a warning if the method is pure, but not annotated as such (if the feature is activated).
+                if (checkPurityAlways) {
+                    Collection<Pure.Kind> additionalKinds = new HashSet<>(
+                            r.getTypes());
+                    additionalKinds.removeAll(kinds);
+                    if (TreeUtils.isConstructor(node)) {
+                        additionalKinds.remove(Pure.Kind.DETERMINISTIC);
+                    }
+                    if (additionalKinds.size() > 0) {
+                        checker.report(Result.warning("pure.more.pure",
+                                node.getName(), additionalKinds.toString()),
+                                node);
+                    }
+                }
+            }
+
             // constructor return types are null
             if (node.getReturnType() != null) {
                 typeValidator.visit(methodType.getReturnType(), node.getReturnType());
             }
 
-            ExecutableElement methodElement = TreeUtils.elementFromDeclaration(node);
             AnnotatedDeclaredType enclosingType =
                     (AnnotatedDeclaredType)atypeFactory.getAnnotatedType(
                             methodElement.getEnclosingElement());
@@ -265,8 +349,179 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
             }
             return super.visitMethod(node, p);
         } finally {
+
+            // check postcondition annotations
+            checkPostconditions(node, methodElement);
+
+            // check conditional method postcondition
+            checkConditionalPostconditions(node, methodElement);
+
             visitorState.setMethodReceiver(preMRT);
             visitorState.setMethodTree(preMT);
+        }
+    }
+
+    /**
+     * Checks all (non-conditional) postcondition on the method {@code node}
+     * with element {@code methodElement}.
+     */
+    protected void checkPostconditions(MethodTree node,
+            ExecutableElement methodElement) {
+        FlowExpressionContext flowExprContext = null;
+        Set<Pair<String, String>> postconditions = contractsUtils.getPostconditions(methodElement);
+
+        for (Pair<String, String> p : postconditions) {
+            String expression = p.first;
+            AnnotationMirror annotation = AnnotationUtils.fromName(elements, p.second);
+
+            // Only check if the postcondition concerns this checker
+            if (!checker.isSupportedAnnotation(annotation)) {
+                continue;
+            }
+            if (flowExprContext == null) {
+                flowExprContext = FlowExpressionParseUtil
+                        .buildFlowExprContextForDeclaration(node,
+                                getCurrentPath(), atypeFactory);
+            }
+
+            FlowExpressions.Receiver expr = null;
+            try {
+                // TODO: currently, these expressions are parsed at the
+                // declaration (i.e. here) and for every use. this could be
+                // optimized to store the result the first time. (same for
+                // other annotations)
+                expr = FlowExpressionParseUtil.parse(expression,
+                        flowExprContext, getCurrentPath());
+                checkFlowExprParameters(node, expression);
+
+                CFAbstractStore<?, ?> exitStore = atypeFactory.getRegularExitStore(node);
+                if (exitStore == null) {
+                    // if there is no regular exitStore, then the method
+                    // cannot reach the regular exit and there is no need to
+                    // check anything
+                } else {
+                    CFAbstractValue<?> value = exitStore.getValue(expr);
+                    AnnotationMirror inferredAnno = value == null ? null : value.getType().getAnnotationInHierarchy(annotation);
+                    if (inferredAnno == null
+                            || !atypeFactory.getQualifierHierarchy().isSubtype(inferredAnno, annotation)) {
+                        checker.report(
+                                Result.failure("contracts.postcondition.not.satisfied"),
+                                node);
+                    }
+                }
+
+            } catch (FlowExpressionParseException e) {
+                // report errors here
+                checker.report(e.getResult(), node);
+            }
+        }
+    }
+
+    /**
+     * Checks all conditional postcondition on the method {@code node} with
+     * element {@code methodElement}.
+     */
+    protected void checkConditionalPostconditions(MethodTree node,
+            ExecutableElement methodElement) {
+        FlowExpressionContext flowExprContext = null;
+        Set<Pair<String, Pair<Boolean, String>>> conditionalPostconditions = contractsUtils.getConditionalPostconditions(methodElement);
+
+        for (Pair<String, Pair<Boolean, String>> p : conditionalPostconditions) {
+            String expression = p.first;
+            boolean result = p.second.first;
+            AnnotationMirror annotation = AnnotationUtils.fromName(elements, p.second.second);
+
+            // Only check if the postcondition concerns this checker
+            if (!checker.isSupportedAnnotation(annotation)) {
+                continue;
+            }
+            if (flowExprContext == null) {
+                flowExprContext = FlowExpressionParseUtil
+                        .buildFlowExprContextForDeclaration(node,
+                                getCurrentPath(), atypeFactory);
+            }
+
+            FlowExpressions.Receiver expr = null;
+            try {
+                // TODO: currently, these expressions are parsed at the
+                // declaration (i.e. here) and for every use. this could be
+                // optimized to store the result the first time. (same for
+                // other annotations)
+                expr = FlowExpressionParseUtil.parse(expression,
+                        flowExprContext, getCurrentPath());
+                checkFlowExprParameters(node, expression);
+
+             // check return type of method
+                boolean booleanReturnType = TypesUtils
+                        .isBooleanType(InternalUtils.typeOf(node
+                                .getReturnType()));
+                if (!booleanReturnType) {
+                    checker.report(
+                            Result.failure("contracts.conditional.postcondition.invalid.returntype"),
+                            node);
+                    // No reason to go ahead with further checking. The
+                    // annotation is invalid.
+                    continue;
+                }
+
+                List<?> returnStatements = atypeFactory.getReturnStatementStores(node);
+                for (Object rt : returnStatements) {
+                    @SuppressWarnings("unchecked")
+                    Pair<ReturnNode, TransferResult<? extends CFAbstractValue<?>, ? extends CFAbstractStore<?, ?>>> r = (Pair<ReturnNode, TransferResult<? extends CFAbstractValue<?>, ? extends CFAbstractStore<?, ?>>>) rt;
+                    ReturnNode returnStmt = r.first;
+                    if (r.second == null) {
+                        // Unreachable return statements have no stores, but there
+                        // is no need to check them.
+                        continue;
+                    }
+                    Node retValNode = returnStmt.getResult();
+                    Boolean retVal = retValNode instanceof BooleanLiteralNode ? ((BooleanLiteralNode) retValNode)
+                            .getValue() : null;
+                    CFAbstractStore<?, ?> exitStore;
+                    if (result) {
+                        exitStore = r.second.getThenStore();
+                    } else {
+                        exitStore = r.second.getElseStore();
+                    }
+                    CFAbstractValue<?> value = exitStore.getValue(expr);
+                    // don't check if return statement certainly does not
+                    // match 'result'. at the moment, this means the result
+                    // is a boolean literal
+                    if (retVal == null || retVal == result) {
+                        AnnotationMirror inferredAnno = value == null ? null : value.getType().getAnnotationInHierarchy(annotation);
+                        if (inferredAnno == null
+                                || !atypeFactory.getQualifierHierarchy().isSubtype(inferredAnno, annotation)) {
+                            checker.report(
+                                    Result.failure("contracts.conditional.postcondition.not.satisfied"),
+                                    returnStmt.getTree());
+                        }
+                    }
+                }
+
+            } catch (FlowExpressionParseException e) {
+                // report errors here
+                checker.report(e.getResult(), node);
+            }
+        }
+    }
+
+    /**
+     * Check that the parameters used in {@code stringExpr} are final for method
+     * {@code method}.
+     */
+    protected void checkFlowExprParameters(MethodTree method, String stringExpr) {
+        // check that all parameters used in the expression are
+        // final, so that they cannot be modified
+        List<Integer> parameterIndices = FlowExpressionParseUtil
+                .parameterIndices(stringExpr);
+        for (Integer idx : parameterIndices) {
+            VariableTree parameter = method.getParameters().get(idx - 1);
+            Element element = TreeUtils.elementFromDeclaration(parameter);
+            if (!ElementUtils.isFinal(element)) {
+                checker.report(
+                        Result.failure("flowexpr.parameter.not.final", "#"
+                                + idx, stringExpr), method);
+            }
         }
     }
 
@@ -333,7 +588,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         boolean valid = validateTypeOf(node.getVariable());
         if (valid) {
             commonAssignmentCheck(var, iteratedType, node.getExpression(),
-                    "enhancedfor.type.incompatible");
+                    "enhancedfor.type.incompatible", false);
         }
         return super.visitEnhancedForLoop(node, p);
     }
@@ -375,10 +630,14 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
             typeCheckVectorCopyIntoArgument(node, params);
         }
 
-        if (!ElementUtils.isStatic(invokedMethod.getElement())
+        ExecutableElement invokedMethodElement = invokedMethod.getElement();
+        if (!ElementUtils.isStatic(invokedMethodElement)
             && !TreeUtils.isSuperCall(node)) {
             checkMethodInvocability(invokedMethod, node);
         }
+
+        // check precondition annotations
+        checkPreconditions(node, invokedMethodElement);
 
         // Do not call super, as that would observe the arguments without
         // a set assignment context.
@@ -386,9 +645,55 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         return null; // super.visitMethodInvocation(node, p);
     }
 
+    /**
+     * Checks all the preconditions of the method invocation {@code tree} with
+     * element {@code invokedMethodElement}.
+     */
+    protected void checkPreconditions(MethodInvocationTree tree,
+            ExecutableElement invokedMethodElement) {
+        Set<Pair<String, String>> preconditions = contractsUtils
+                .getPreconditions(invokedMethodElement);
+        FlowExpressionContext flowExprContext = null;
+
+        for (Pair<String, String> p : preconditions) {
+            String expression = p.first;
+            AnnotationMirror anno = AnnotationUtils.fromName(elements, p.second);
+
+            // Only check if the precondition concerns this checker
+            if (!checker.isSupportedAnnotation(anno)) {
+                return;
+            }
+            if (flowExprContext == null) {
+                Node nodeNode = atypeFactory.getNodeForTree(tree);
+                flowExprContext = FlowExpressionParseUtil
+                        .buildFlowExprContextForUse(
+                                (MethodInvocationNode) nodeNode, atypeFactory);
+            }
+
+            FlowExpressions.Receiver expr = null;
+            try {
+                expr = FlowExpressionParseUtil.parse(expression,
+                        flowExprContext, getCurrentPath());
+
+                CFAbstractStore<?, ?> store = atypeFactory.getStoreBefore(tree);
+                CFAbstractValue<?> value = store.getValue(expr);
+
+                AnnotationMirror inferredAnno = value == null ? null : value.getType().getAnnotationInHierarchy(anno);
+                if (inferredAnno == null
+                        || !atypeFactory.getQualifierHierarchy().isSubtype(inferredAnno, anno)) {
+                    checker.report(
+                            Result.failure("contracts.precondition.not.satisfied"),
+                            tree);
+                }
+            } catch (FlowExpressionParseException e) {
+                // errors are reported at declaration site
+            }
+        }
+    }
+
     // Handle case Vector.copyInto()
     private final AnnotatedDeclaredType vectorType =
-        atypeFactory.fromElement(elements.getTypeElement("java.util.Vector"));
+        super.atypeFactory.fromElement(elements.getTypeElement("java.util.Vector"));
 
     /**
      * Returns true if the method symbol represents {@code Vector.copyInto}
@@ -440,7 +745,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
                 passedAsArray.getComponentType(),
                 receiverAsVector.getTypeArguments().get(0),
                 node.getArguments().get(0),
-                "vector.copyinto.type.incompatible");
+                "vector.copyinto.type.incompatible", false);
     }
 
     /**
@@ -501,11 +806,11 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
                     TreeUtils.enclosingMethod(getCurrentPath());
 
             AnnotatedExecutableType methodType = atypeFactory.getAnnotatedType(enclosingMethod);
-            AnnotatedTypeMirror ret = methodType.getReturnType(); 
+            AnnotatedTypeMirror ret = methodType.getReturnType();
             visitorState.setAssignmentContext(ret);
 
             commonAssignmentCheck(ret, node.getExpression(),
-                    "return.type.incompatible");
+                    "return.type.incompatible", false);
 
             return super.visitReturn(node, p);
         } finally {
@@ -585,17 +890,17 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
                 if (expected.getKind() != TypeKind.ARRAY) {
                     // Expected is not an array -> direct comparison.
                     commonAssignmentCheck(expected, actual, at.getExpression(),
-                            "annotation.type.incompatible");
+                            "annotation.type.incompatible", false);
                 } else {
                     if (actual.getKind() == TypeKind.ARRAY) {
                         // Both actual and expected are arrays.
                         commonAssignmentCheck(expected, actual, at.getExpression(),
-                                "annotation.type.incompatible");
+                                "annotation.type.incompatible", false);
                     } else {
                         // The declaration is an array type, but just a single element is given.
                         commonAssignmentCheck(((AnnotatedArrayType) expected).getComponentType(),
                                 actual, at.getExpression(),
-                                "annotation.type.incompatible");
+                                "annotation.type.incompatible", false);
                     }
                 }
             } finally {
@@ -614,8 +919,8 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
     @Override
     public Void visitConditionalExpression(ConditionalExpressionTree node, Void p) {
         AnnotatedTypeMirror cond = atypeFactory.getAnnotatedType(node);
-        this.commonAssignmentCheck(cond, node.getTrueExpression(), "conditional.type.incompatible");
-        this.commonAssignmentCheck(cond, node.getFalseExpression(), "conditional.type.incompatible");
+        this.commonAssignmentCheck(cond, node.getTrueExpression(), "conditional.type.incompatible", false);
+        this.commonAssignmentCheck(cond, node.getFalseExpression(), "conditional.type.incompatible", false);
         return super.visitConditionalExpression(node, p);
     }
 
@@ -819,7 +1124,15 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         AnnotatedTypeMirror var = atypeFactory.getAnnotatedType(varTree);
         assert var != null : "no variable found for tree: " + varTree;
         checkAssignability(var, varTree);
-        commonAssignmentCheck(var, valueExp, errorKey);
+        boolean isLocalVariableAssignment = false;
+        if (varTree instanceof AssignmentTree) {
+            Tree rhs = ((AssignmentTree) varTree).getVariable();
+            isLocalVariableAssignment = rhs instanceof IdentifierTree && !TreeUtils.isFieldAccess(rhs);
+        }
+        if (varTree instanceof VariableTree) {
+            isLocalVariableAssignment = TreeUtils.enclosingMethod(getCurrentPath()) != null;
+        }
+        commonAssignmentCheck(var, valueExp, errorKey, isLocalVariableAssignment);
     }
 
     /**
@@ -831,9 +1144,11 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
      * @param valueExp the AST node for the value
      * @param errorKey the error message to use if the check fails (must be a
      *        compiler message key, see {@link CompilerMessageKey})
+     * @param isLocalVariableAssignement Are we dealing with an assigment and
+     *        is the lhs a local variable?
      */
     protected void commonAssignmentCheck(AnnotatedTypeMirror varType,
-            ExpressionTree valueExp, /*@CompilerMessageKey*/ String errorKey) {
+            ExpressionTree valueExp, /*@CompilerMessageKey*/ String errorKey, boolean isLocalVariableAssignement) {
         if (shouldSkipUses(valueExp))
             return;
         if (varType.getKind() == TypeKind.ARRAY
@@ -846,7 +1161,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         }
         AnnotatedTypeMirror valueType = atypeFactory.getAnnotatedType(valueExp);
         assert valueType != null : "null type for expression: " + valueExp;
-        commonAssignmentCheck(varType, valueType, valueExp, errorKey);
+        commonAssignmentCheck(varType, valueType, valueExp, errorKey, isLocalVariableAssignement);
     }
 
     /**
@@ -859,9 +1174,11 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
      * @param valueTree the location to use when reporting the error message
      * @param errorKey the error message to use if the check fails (must be a
      *        compiler message key, see {@link CompilerMessageKey})
+     * @param isLocalVariableAssignement Are we dealing with an assigment and
+     *        is the lhs a local variable?
      */
     protected void commonAssignmentCheck(AnnotatedTypeMirror varType,
-            AnnotatedTypeMirror valueType, Tree valueTree, /*@CompilerMessageKey*/ String errorKey) {
+            AnnotatedTypeMirror valueType, Tree valueTree, /*@CompilerMessageKey*/ String errorKey, boolean isLocalVariableAssignement) {
 
         String valueTypeString = valueType.toString();
         String varTypeString = varType.toString();
@@ -873,6 +1190,13 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         if (valueTypeString.equals(varTypeString)) {
             valueTypeString = valueType.toString(true);
             varTypeString = varType.toString(true);
+        }
+
+        if (isLocalVariableAssignement && varType.getKind() == TypeKind.TYPEVAR
+                && varType.getAnnotations().isEmpty()) {
+            // If we have an unbound local variable that is a type variable,
+            // then we allow the assignment.
+            return;
         }
 
         if (options.containsKey("showchecks")) {
@@ -887,6 +1211,17 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         }
 
         boolean success = checker.getTypeHierarchy().isSubtype(valueType, varType);
+
+        // TODO: integrate with subtype test.
+        if (success) {
+            for (Class<? extends Annotation> mono : checker.getSupportedMonotonicTypeQualifiers()) {
+                if (valueType.hasAnnotation(mono) && varType.hasAnnotation(mono)) {
+                    checker.report(Result.failure("monotonic.type.incompatible",
+                            mono.getCanonicalName(), mono.getCanonicalName(), valueType.toString()), valueTree);
+                    return;
+                }
+            }
+        }
 
         if (options.containsKey("showchecks")) {
             long valuePos = positions.getStartPosition(root, valueTree);
@@ -911,7 +1246,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         // TODO: set assignment context like for method arguments?
         // Also in AbstractFlow.
         for (ExpressionTree init : initializers)
-            commonAssignmentCheck(type, init, "array.initializer.type.incompatible");
+            commonAssignmentCheck(type, init, "array.initializer.type.incompatible", false);
     }
 
     /**
@@ -960,11 +1295,11 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
                     // therefore issue an error for the arguments.
                     // I hope this is less confusing for users.
                     commonAssignmentCheck(typeVar.getEffectiveUpperBound(),
-                            typearg, toptree, "type.argument.type.incompatible");
+                            typearg, toptree, "type.argument.type.incompatible", false);
                 } else {
                     commonAssignmentCheck(typeVar.getEffectiveUpperBound(), typearg,
                             typeargTrees.get(typeargs.indexOf(typearg)),
-                            "type.argument.type.incompatible");
+                            "type.argument.type.incompatible", false);
                 }
             }
 
@@ -1048,7 +1383,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
                 visitorState.setAssignmentContext(requiredArgs.get(i));
                 commonAssignmentCheck(requiredArgs.get(i),
                         passedArgs.get(i),
-                        "argument.type.incompatible");
+                        "argument.type.incompatible", false);
                 // Also descend into the argument within the correct assignment context.
                 scan(passedArgs.get(i), null);
             }
@@ -1061,6 +1396,12 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
      * Checks that an overriding method's return type, parameter types, and
      * receiver type are correct with respect to the annotations on the
      * overridden method's return type, parameter types, and receiver type.
+     *
+     * <p>
+     * Furthermore, any contracts on the method must satisfy behavioral
+     * subtyping, that is, postconditions must be at least as strong as the
+     * postcondition on the superclass, and preconditions must be at most as
+     * strong as the condition on the superclass.
      *
      * <p>
      * This method returns the result of the check, but also emits error
@@ -1173,6 +1514,11 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
                     overriderTree);
             result = false;
         }
+
+        // Check postconditions
+        // Is this a TODO?
+
+
         return result;
     }
 
@@ -1752,13 +2098,13 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
                         ((com.sun.tools.javac.code.Symbol)m).typeAnnotations) {
                     if ( tc.position.type == com.sun.tools.javac.code.TargetType.METHOD_PARAMETER &&
                             tc.position.parameter_index == 0 &&
-                            tc.type.toString().equals(checkers.nullness.quals.Nullable.class.getName()) ) {
+                            tc.type.toString().equals(checkers.nonnull.quals.Nullable.class.getName()) ) {
                         foundNN = true;
                     }
                 }
 
                 if (!foundNN) {
-                    checker.getProcessingEnvironment().getMessager().printMessage(Kind.WARNING,
+                    checker.getProcessingEnvironment().getMessager().printMessage(Diagnostic.Kind.WARNING,
                         "You do not seem to be using the distributed annotated JDK.  To fix the" +
                         System.getProperty("line.separator") +
                         "problem, supply this argument (first, fill in the \"...\") when you run javac:" +

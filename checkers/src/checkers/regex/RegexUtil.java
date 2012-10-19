@@ -3,6 +3,9 @@ package checkers.regex;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import checkers.quals.EnsuresAnnotationIf;
+import checkers.regex.quals.Regex;
+
 /*>>>
 import checkers.nullness.quals.*;
 import checkers.regex.quals.*;
@@ -137,6 +140,7 @@ public class RegexUtil {
    * Returns true if the argument is a syntactically valid regular
    * expression.
    */
+  @EnsuresAnnotationIf(result=true, expression="#1", annotation=Regex.class)
   public static boolean isRegex(String s) {
     return isRegex(s, 0);
   }
@@ -147,8 +151,7 @@ public class RegexUtil {
    */
   /*>>>
   @SuppressWarnings("regex")    // RegexUtil
-  */
-  /*@Pure*/
+  /*@checkers.quals.Pure*/
   public static boolean isRegex(String s, int groups) {
     Pattern p;
     try {
@@ -165,8 +168,7 @@ public class RegexUtil {
    */
   /*>>>
   @SuppressWarnings("regex")    // RegexUtil
-  */
-  /*@Pure*/
+  /*@checkers.quals.Pure*/
   public static boolean isRegex(char c) {
     return isRegex(Character.toString(c));
   }
@@ -178,8 +180,7 @@ public class RegexUtil {
    */
   /*>>>
   @SuppressWarnings("regex")    // RegexUtil
-  */
-  /*@Pure*/
+  /*@checkers.quals.Pure*/
   public static /*@Nullable*/ String regexError(String s) {
     return regexError(s, 0);
   }
@@ -191,8 +192,7 @@ public class RegexUtil {
    */
   /*>>>
   @SuppressWarnings("regex")    // RegexUtil
-  */
-  /*@Pure*/
+  /*@checkers.quals.Pure*/
   public static /*@Nullable*/ String regexError(String s, int groups) {
     try {
       Pattern p = Pattern.compile(s);
@@ -213,8 +213,7 @@ public class RegexUtil {
    */
   /*>>>
   @SuppressWarnings("regex")    // RegexUtil
-  */
-  /*@Pure*/
+  /*@checkers.quals.Pure*/
   public static /*@Nullable*/ PatternSyntaxException regexException(String s) {
     return regexException(s, 0);
   }
@@ -226,8 +225,7 @@ public class RegexUtil {
    */
   /*>>>
   @SuppressWarnings("regex")    // RegexUtil
-  */
-  /*@Pure*/
+  /*@checkers.quals.Pure*/
   public static /*@Nullable*/ PatternSyntaxException regexException(String s, int groups) {
     try {
       Pattern p = Pattern.compile(s);
@@ -259,8 +257,7 @@ public class RegexUtil {
    */
   /*>>>
   @SuppressWarnings("regex")    // RegexUtil
-  */
-  /*@Pure*/
+  /*@checkers.quals.Pure*/
   public static /*@Regex*/ String asRegex(String s, int groups) {
     try {
       Pattern p = Pattern.compile(s);

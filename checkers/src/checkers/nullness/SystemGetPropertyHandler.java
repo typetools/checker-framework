@@ -6,9 +6,10 @@ import java.util.Arrays;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.*;
 
+import javacutils.TreeUtils;
+
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
-import checkers.util.TreeUtils;
 
 import com.sun.source.tree.*;
 
