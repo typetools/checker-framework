@@ -1360,16 +1360,16 @@ public class AnnotatedTypes {
     }
 
     /**
-     * Return the least upper bound of pair of types.  if the lub does
-     * not exist return null.
+     * Return the least upper bound of pair of types. if the lub does not exist
+     * return null.
      */
     public Type lub(Type t1, Type t2) {
         return lub(List.of(t1, t2));
     }
 
     /**
-     * Return the least upper bound (lub) of set of types.  If the lub
-     * does not exist return the type of null (bottom).
+     * Return the least upper bound (lub) of set of types. If the lub does not
+     * exist return the type of null (bottom).
      */
     public Type lub(List<Type> ts) {
         final int ARRAY_BOUND = 1;
@@ -1383,7 +1383,7 @@ public class AnnotatedTypes {
             case ARRAY:
                 boundkind |= ARRAY_BOUND;
                 break;
-            case  TYPEVAR:
+            case TYPEVAR:
                 do {
                     t = t.getUpperBound();
                 } while (t.tag == TYPEVAR);
@@ -1413,7 +1413,7 @@ public class AnnotatedTypes {
                     Type first = ts.head;
                     for (Type s : ts.tail) {
                         if (!isSameType(first, s)) {
-                             // lub(int[], B[]) is Cloneable & Serializable
+                            // lub(int[], B[]) is Cloneable & Serializable
                             return arraySuperType();
                         }
                     }
@@ -1430,25 +1430,27 @@ public class AnnotatedTypes {
             while (ts.head.tag != CLASS && ts.head.tag != TYPEVAR)
                 ts = ts.tail;
             Assert.check(!ts.isEmpty());
-            //step 1 - compute erased candidate set (EC)
+            // step 1 - compute erased candidate set (EC)
             List<Type> cl = erasedSupertypes(ts.head);
             for (Type t : ts.tail) {
                 if (t.tag == CLASS || t.tag == TYPEVAR)
                     cl = intersect(cl, erasedSupertypes(t));
             }
-            //step 2 - compute minimal erased candidate set (MEC)
+            // step 2 - compute minimal erased candidate set (MEC)
             List<Type> mec = closureMin(cl);
-            //step 3 - for each element G in MEC, compute lci(Inv(G))
+            // step 3 - for each element G in MEC, compute lci(Inv(G))
             List<Type> candidates = List.nil();
             for (Type erasedSupertype : mec) {
-                List<Type> lci = List.of(asSuper(ts.head, erasedSupertype.tsym));
+                List<Type> lci = List
+                        .of(asSuper(ts.head, erasedSupertype.tsym));
                 for (Type t : ts) {
-                    lci = intersect(lci, List.of(asSuper(t, erasedSupertype.tsym)));
+                    lci = intersect(lci,
+                            List.of(asSuper(t, erasedSupertype.tsym)));
                 }
                 candidates = candidates.appendList(lci);
             }
-            //step 4 - let MEC be { G1, G2 ... Gn }, then we have that
-            //lub = lci(Inv(G1)) & lci(Inv(G2)) & ... & lci(Inv(Gn))
+            // step 4 - let MEC be { G1, G2 ... Gn }, then we have that
+            // lub = lci(Inv(G1)) & lci(Inv(G2)) & ... & lci(Inv(Gn))
             return compoundMin(candidates);
 
         default:
@@ -1462,34 +1464,35 @@ public class AnnotatedTypes {
             return lub(classes);
         }
     }
-    // where
-        List<Type> erasedSupertypes(Type t) {
-            ListBuffer<Type> buf = lb();
-            for (Type sup : closure(t)) {
-                if (sup.tag == TYPEVAR) {
-                    buf.append(sup);
-                } else {
-                    buf.append(erasure(sup));
-                }
-            }
-            return buf.toList();
-        }
 
-        private Type arraySuperType = null;
-        private Type arraySuperType() {
-            // initialized lazily to avoid problems during compiler startup
-            if (arraySuperType == null) {
-                synchronized (this) {
-                    if (arraySuperType == null) {
-                        // JLS 10.8: all arrays implement Cloneable and Serializable.
-                        arraySuperType = makeCompoundType(List.of(syms.serializableType,
-                                                                  syms.cloneableType),
-                                                          syms.objectType);
-                    }
+    List<Type> erasedSupertypes(Type t) {
+        ListBuffer<Type> buf = lb();
+        for (Type sup : closure(t)) {
+            if (sup.tag == TYPEVAR) {
+                buf.append(sup);
+            } else {
+                buf.append(erasure(sup));
+            }
+        }
+        return buf.toList();
+    }
+
+    private Type arraySuperType = null;
+
+    private Type arraySuperType() {
+        // initialized lazily to avoid problems during compiler startup
+        if (arraySuperType == null) {
+            synchronized (this) {
+                if (arraySuperType == null) {
+                    // JLS 10.8: all arrays implement Cloneable and
+                    // Serializable.
+                    arraySuperType = makeCompoundType(
+                            List.of(syms.serializableType, syms.cloneableType),
+                            syms.objectType);
                 }
             }
-            return arraySuperType;
         }
-    // </editor-fold>
+        return arraySuperType;
+    }
 
 }
