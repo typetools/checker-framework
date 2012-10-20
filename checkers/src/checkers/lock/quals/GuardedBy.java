@@ -50,6 +50,7 @@ import checkers.quals.TypeQualifier;
  *
  * @see Holding
  */
+@Documented
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 @TypeQualifier
