@@ -1,12 +1,11 @@
 package org.jmlspecs.annotation;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Documented;
-/** Defines the 'immutable' JML annotation (not currently standard) */
+import java.lang.annotation.*;
+import checkers.quals.TypeQualifier;
 
-@Retention(RetentionPolicy.RUNTIME)
 @Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@TypeQualifier
 public @interface Immutable {
-
 }
