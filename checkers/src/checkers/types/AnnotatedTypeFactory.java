@@ -1254,8 +1254,8 @@ public class AnnotatedTypeFactory {
     }
 
     /** Add the annotation clazz as an alias for the annotation type. */
-    protected void addAliasedAnnotation(Class<?> clazz, AnnotationMirror type) {
-        aliases.put(clazz.getCanonicalName(), type);
+    protected void addAliasedAnnotation(Class<?> alias, AnnotationMirror type) {
+        aliases.put(alias.getCanonicalName(), type);
     }
 
     /**
