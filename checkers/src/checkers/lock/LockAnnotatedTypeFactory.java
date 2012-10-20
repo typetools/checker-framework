@@ -38,6 +38,9 @@ public class LockAnnotatedTypeFactory
             CompilationUnitTree root) {
         super(checker, root);
         GUARDED_BY = AnnotationUtils.fromClass(elements, GuardedBy.class);
+
+        addAliasedAnnotation(net.jcip.annotations.GuardedBy.class, GUARDED_BY);
+
         this.postInit();
     }
 
