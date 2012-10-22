@@ -1,8 +1,3 @@
-asmx.jar
-  This jar is currently only used by
-  checkers.util.stub.Skeleton
-  I would like to get rid of this dependency and Skeleton.
-
 javaparser.jar
   This file is not in the repository. It is rebuilt from the
   CF/javaparser project.
