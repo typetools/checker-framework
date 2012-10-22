@@ -11,7 +11,8 @@ import checkers.regex.quals.*;
 // This class should be kept in sync with plume.RegexUtil .
 
 /**
- * Utility methods for regular expressions.
+ * Utility methods for regular expressions, most notably for testing whether
+ * a string is a regular expression.
  * <p>
  *
  * For an example of intended use, see section <a
