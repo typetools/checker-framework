@@ -1439,9 +1439,10 @@ powerful analysis that can warn you about more null pointer errors in your
 code.
 
 If your code is already annotated with a different nullness
-annotation, you can reuse that effort by converting them to the Checker
-Framework's nullness annotations.  Perform the refactoring described in
-Figure~\ref{fig:nullness-refactoring}.
+annotation, you can reuse that effort.  The Checker Framework comes with
+cleanroom re-implementations of annotations from other tools.  It treats
+them exactly as if you had written the corresponding annotation from the
+Nullness Checker, as described in Figure~\ref{fig:nullness-refactoring}.
 
 
 % These lists should be kept in sync with NullnessAnnotatedTypeFactory.java .
@@ -1490,7 +1491,7 @@ $\Rightarrow$
 %BEGIN LATEX
 \vspace{-1.5\baselineskip}
 %END LATEX
-\caption{Refactoring for converting other nullness annotations to the
+\caption{Correspondence betwee other nullness annotations and the
   Checker Framework's annotations.}
 \label{fig:nullness-refactoring}
 \end{figure}
