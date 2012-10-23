@@ -1,0 +1,66 @@
+Checker Framework Eclipse Plugin
+
+Included below are the development instructions for the checker framework eclipse plugin.
+For general user instructions, see the homepage at:
+http://types.cs.washington.edu/checker-framework/eclipse
+
+
+Prerequisites: checkers.jar, checkers-quals.jar, jsr308-all.jar, javac.jar, and jdk.jar.  Some of these are redundant (and will be removed in the future).
+These are all available from the checker-framework and jsr308 projects
+respectively. For instructions on building these, see the documentation for
+the Checker Framework and jsr308 (section 25.3).
+
+You must put the above libraries in the lib folder (create one if missing)
+in the checker-plugin folder.
+
+==== Debugging/Running the plugin ====
+
+Since the plugin requires all the jars in the lib directory to be on the class path, if it's installed via the update-site (discussed below) then the plugin jar will be extracted into the plugins directory.  Unfortunately, this leads to a slightly different directory layout then the project directory (the bin/classes/checkers dir becomes a top level dir).  This means that the classpath used when the plugin is run as an actual plugin is different then the one needed to run the plugin from the eclipse project.  So (for now anyways), you must copy the bin/classes/checkers to checker-framework-eclipse-plugin if you want to run the plugin using the following instructions:
+  
+open the checker-framework-eclipse-plugin project in Eclipse. Click on the
+plugin.xml and use the "run" action in Eclipse, which should open a dialog
+where you can select "Run as Eclipse Application" or "Debug as Eclipse Application".
+
+==== Packaging the feature ====
+
+To build the Eclipse feature after making changes to the source code, you
+just need to open the update-site project in Eclipse. Open site.xml to
+edit the update-site data. Remove the currently registered feature and click
+the add button to add the current version (only required if the version
+was updated).  Then click the "build all" button to have Eclipse build
+the jar files for the update-site.  
+
+This will create a working update site. You can upload this to a web server
+to let users install the plugin from Eclipse's plugin installation process.
+
+NOTE:As the plugin should be released simultaneously with the checker-framework), the version should be updated every release as the files included in the plugin include the checker-framework project jars. 
+
+
+==== For UW's website ====
+
+The checker plugin is uploaded to folder named:
+  /cse/www2/types/checker-framework/checker-plugin/update-site-foo
+where foo is a descriptive string (the current date works)
+
+Update the symbolic link in the checker-plugin folder on the server to link
+  update-site -> update-site-foo
+
+This completes the process needed to upload a new update site in general.
+
+If the checker framework/JSR308 jars were updated, upload those to the
+lib folder in the checker-plugin folder mentioned above.
+
+The checker-plugin folder on the server and its descendant folders/files should
+be set to permissions 775.
+
+==== Miscellaneous Dev Notes ====
+
+The following notes outline small small things that disproportionally slowed me down
+
+You probably want to download the RCP version if you want to be sure there will be no missing development plugins (though I got it working in 4.2 without doing this).
+
+Eclipse likes to cache everything.  Even if you told eclipse to uninstall the plugin it will hold it in it's plugin directory for later and merely remove the feature from the installation.  This means, if you don't bump the version number when you are testing a version of the plugin then it will use the old version it has cached rather than downloading the new version from the update site.  Futhermore, even if you delete the plugin folder from the plugin directory it keeps a record in artifact.xml of the plugin's existence and will throw an exception when you try to download the plugin again if you do not remove that record.  Finally, sometimes, even if I deleted the feature, plugin, and edited the artifact.xml the menu extensions for the old plugin would still appear using the new plugin.  Therefore, my suggested workflow is to just keep a "GOLD" copy of eclipse that does not have the plugin installed in it.  And every time you have a new plugin version to work with (after you have tested it just using your development environment) do one last test on a clean version of eclipse with no plugin installed.
+
+Note that in Eclipse 3.7 I ran into a problem where, when I checked "Unpack this jar", the output plugin.xml remained unchanged.  You must manually set unpack=true.
+
+When generating the update site it would be wise to tell the Eclipse IDE to clean the plugin and update site first.
