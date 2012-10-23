@@ -1,6 +1,6 @@
-The Checker Framework is licensed under the GNU General Public License
-(GPL), version 2, with the classpath exception.  The text of this license
-appears below.
+The Checker Framework is licensed under the GNU General Public License,
+version 2 (GPL2), with the classpath exception.  The text of this license
+appears below.  This is the same license used for OpenJDK.
 
 A few parts of the Checker Framework have more permissive licenses.
 
@@ -10,6 +10,16 @@ A few parts of the Checker Framework have more permissive licenses.
    MIT License.  This is the checkers-quals.jar file and all the files that
    appear in it:  every file in a quals/ directory, plus NullnessUtils.java
    and RegexUtil.java.
+
+ * The Maven plugin is dual-licensed (you may use whichever you prefer)
+   under GPL2 and the Apache License, version 2.0 (Apache2).  The text of
+   Apache2 appears in file maven-plugin/LICENSE.txt.  Maven itself uses
+   Apache2.
+
+ * The Eclipse plugin is dual-licensed (you may use whichever you prefer)
+   under GPL2 and the Eclipse Public License Version 1.0 (EPL).  EPL
+   appears http://www.eclipse.org/org/documents/epl-v10.php.  Eclipse
+   itself uses EPL.
 
 Some external libraries that are included with the Checker Framework have
 different licenses.
@@ -27,7 +37,7 @@ different licenses.
 
 The Checker Framework includes annotations for several libraries, in
 directory checkers/jdk/.  The only one that uses a different license than
-the GPL is Google Guava, which uses the Apache License, version 2.0.
+the GPL is Google Guava, which uses Apache2.
 
 ===========================================================================
 
