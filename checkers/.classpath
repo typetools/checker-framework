@@ -7,7 +7,7 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/javaparser"/>
 	<classpathentry kind="lib" path="tests/junit-4.7.jar"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/jsr308-langtools"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.launching.macosx.MacOSXType/Java SE 7"/>
 	<classpathentry kind="lib" path="lib/jna.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/dataflow"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/javacutils"/>
