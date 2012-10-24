@@ -3,6 +3,6 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/jsr308-langtools"/>
-	<classpathentry kind="lib" path="../../annotation-tools/annotation-file-utilities/annotation-file-utilities.jar"/>
+	<classpathentry kind="lib" path="/annotation-file-utilities/annotation-file-utilities.jar"/>
 	<classpathentry kind="output" path="build"/>
 </classpath>
