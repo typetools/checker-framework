@@ -150,8 +150,12 @@ public class KeyForAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<KeyFor
       for (String inMapName : inMaps) {
         if (parameterPtn.matcher(inMapName).matches()) {
           int param = Integer.valueOf(inMapName.substring(1));
-          if (param < call.getArguments().size()) {
-            String res = call.getArguments().get(param).toString();
+          if (param <= 0 || param > call.getArguments().size()) {
+            // The failure should already have been reported, when the
+            // method declaration was processed.
+            // checker.report(Result.failure("param.index.nullness.parse.error", inMapName), call);
+          } else {
+            String res = call.getArguments().get(param-1).toString();
             outMaps.add(res);
           }
         } else if (inMapName.equals("this")) {

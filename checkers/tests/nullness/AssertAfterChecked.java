@@ -71,8 +71,8 @@ public class AssertAfterChecked {
   }
 
   class TestParams {
-    //:: warning: (nullness.parse.error)
-    @AssertNonNullAfter("get(#0)") void init(TestParams p) {
+    //:: error: (assert.postcondition.not.satisfied)
+    @AssertNonNullAfter("get(#1)") void init(TestParams p) {
 
     }
 

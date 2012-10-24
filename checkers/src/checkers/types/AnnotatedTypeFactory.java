@@ -1725,6 +1725,22 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return;
     }
 
+    public Tree getDeclAnnotationTree(MethodTree meth,
+            Class<? extends Annotation> anno) {
+        String annoName = anno.getCanonicalName();
+        // String eltName = ElementUtils.getVerboseName(elt);
+        List<? extends AnnotationTree> atrees = meth.getModifiers().getAnnotations();
+        for (AnnotationTree atree : atrees) {
+            Tree atype = atree.getAnnotationType();
+            // TODO: totally wrong to use string test
+            if (anno.toString().endsWith(atype.toString())) {
+                return atype;
+            }
+        }
+        return null;
+    }
+
+
     /**
      * Returns the actual annotation mirror used to annotate this element,
      * whose name equals the passed annotation class, if one exists, or null otherwise.
@@ -1751,7 +1767,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         Pair<AnnotationMirror, Set<String>> aliases = checkAliases ? declAliases.get(annoName) : null;
 
-        // First look in the stub files.
+        // 1. Look in the stub files.
         if (indexDeclAnnos != null) {
             // The field might still null if this method gets called from the
             // StubParser. TODO: better solution?
@@ -1766,14 +1782,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             }
         }
 
-        // Then look at the real annotations.
+        // 2. Look at the real annotations.
         for (AnnotationMirror am : annotationMirrors) {
             if (AnnotationUtils.areSameByName(am, annoName)) {
                 return am;
             }
         }
 
-        // Look through aliases.
+        // 3. Look through aliases.
         if (aliases != null) {
             for (String alias : aliases.second) {
                 AnnotationMirror declAnnotation = getDeclAnnotation(eltName,
@@ -1784,7 +1800,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             }
         }
 
-        // Not found in either location
+        // Not found in any of the three locations
         return null;
     }
 

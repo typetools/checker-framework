@@ -377,7 +377,8 @@ to require that the receiver has a certain property is to use a type
 annotation on the receiver of the method.  (Slightly more formally, the
 property being checked is compatibility between the annotation on the type
 of the formal parameter receiver and the annotation on the type of the
-actual receiver.)
+actual receiver.)  If you do not know what ``receiver'' means, see the next
+question.
 
 
 Another example of a type-and-declaration annotation that represents poor
@@ -388,6 +389,51 @@ expressiveness, the Lock Checker (see Chapter~\ref{lock-checker}) uses the
 \<@Holding> annotation for one of these meanings, rather than overloading
 \<@GuardedBy> with two distinct meanings.
 
+
+
+\section{What is a ``receiver''?\label{faq-receiver}}
+
+The \emph{receiver} of a method is the \<this> formal parameter, sometimes
+also called the ``current object''.  Within the method declaration, \<this>
+is used to refer to the receiver.  At a method call, the receiver is
+written before the method name.
+
+The method \<compareTo> takes \emph{two} formal parameters.  At a call site
+like \<x.compareTo(y)>, the two arguments are \<x> and \<y>.  It is
+desirable to be able to annotate the types of both of the formal
+parameters, and doing so is supported by both Java's type annotations
+syntax and by the Checker Framework.
+
+A type annotation on the receiver is treated exactly like a type annotation
+on any other formal parameter.  At each call site, the type of the argument
+must be a consistent with (a subtype of or equal to) the declaration of the
+corresponding formal parameter.  If not, the type-checker issues a warning.
+
+Here is an example.  Suppose that \<@A Object> is a supertype of \<@B
+Object> in the following declaration:
+
+\begin{Verbatim}
+  class MyClass {
+    void requiresA(@A MyClass this) { ... }
+    void requiresB(@B MyClass this) { ... }
+  }
+\end{Verbatim}
+
+\noindent
+Then the behavior of four different invocations is as follows:
+
+\begin{Verbatim}
+  @A MyClass myA = ...;
+  @B MyClass myB = ...;
+
+  myA.requiresA()    // OK
+  myA.requiresB()    // compile-time error
+  myB.requiresA()    // OK
+  myB.requiresB()    // OK
+\end{Verbatim}
+
+The invocation \<myA.requiresB()> does not type-check because the actual
+argument's type is not a subtype of the formal parameter's type.
 
 
 \section{What is the meaning of array annotations such as \<@NonNull Object @Nullable []>?\label{faq-array-syntax-meaning}}
@@ -583,3 +629,4 @@ type annotations, which are part of Java 8.  See the
 % LocalWords:  IGJ toolset AbstractCollection ConcurrentHashMap NullnessUtils
 % LocalWords:  castNonNull createWidget backporting JCIP's GuardedBy Awarns PMD
 % LocalWords:  ElementType nullness bytecodes Jlint Hashtable SuppressWarnings
+%  LocalWords:  RegexUtil compareTo myA requiresB nullable java

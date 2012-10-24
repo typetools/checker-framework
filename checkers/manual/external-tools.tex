@@ -74,7 +74,7 @@ different shell, you may need to slightly adjust the commands.
 The output of the last command should be:
 
 \begin{Verbatim}
-  javac 1.7.0-jsr308-1.4.0
+  javac 1.7.0-jsr308-1.4.2
 \end{Verbatim}
 
 
@@ -101,7 +101,7 @@ verify that the installation works.  From the command line, run:
 The output should be:
 
 \begin{Verbatim}
-  javac 1.7.0-jsr308-1.4.0
+  javac 1.7.0-jsr308-1.4.2
 \end{Verbatim}
 
 \end{enumerate}
@@ -142,7 +142,7 @@ the new \code{javac} compiler.
 The output should be:
 
 \begin{Verbatim}
-  javac 1.7.0-jsr308-1.4.0
+  javac 1.7.0-jsr308-1.4.2
 \end{Verbatim}
 
 \end{enumerate}
@@ -210,7 +210,7 @@ Now, verify that the installation works.  From the command line, run:
 The output should be:
 
 \begin{Verbatim}
-  javac 1.7.0-jsr308-1.4.0
+  javac 1.7.0-jsr308-1.4.2
 \end{Verbatim}
 
 \end{enumerate}
@@ -254,6 +254,11 @@ Set the \code{jsr308javac} property:
 %BEGIN LATEX
 \end{smaller}
 %END LATEX
+
+(Note: the classes in \<checkers.jar> are
+actually  read from \<jsr308-all.jar> due to the \<-Xbootclasspath> flag.
+Eventually, it may be possible to remove one of these flags.)
+
 
 \item Duplicate the compilation target, then modify it slightly as
 indicated in this example:
@@ -365,7 +370,7 @@ have to declared as a dependency:
         <dependency>
             <groupId>types.checkers</groupId>
             <artifactId>checkers-quals</artifactId>
-            <version>1.1.1</version>
+            <version>1.4.0</version>
         </dependency>
 
         <!-- other dependencies -->
@@ -380,7 +385,7 @@ have to declared as a dependency:
             <plugin>
                 <groupId>types.checkers</groupId>
                 <artifactId>checkersplugin</artifactId>
-                <version>0.1</version>
+                <version>0.2</version>
                 <executions>
                     <execution>
                         <!-- run the checkers after compilation; this can also be any later phase -->
@@ -416,7 +421,7 @@ have to declared as a dependency:
                     <javacParams>-Alint</javacParams>
                     <!-- additional parameters to pass to the forked JVM -->
                     <javaParams>-Xdebug</javaParams>
-                    <!-- versions of checkers to use; defaults to the current newest version: 1.0.6 -->
+                    <!-- versions of checkers to use; defaults to the current newest version: 1.4.0 -->
                     <checkersVersion>0.8.8</checkersVersion>
                 </configuration>
             </plugin>

@@ -106,33 +106,74 @@ the Basic Checker, for which you use the annotation name; see
 Section~\ref{basic-using}).
 
 A \code{@\sunjavadoc{java/lang/SuppressWarnings.html}{SuppressWarnings}}
-annotation may be placed on program elements such as a local
+annotation may be placed on program declarations such as a local
 variable declaration, a method, or a class.  It suppresses all warnings
 related to the given checker, for that program element.
+\<@SuppressWarnings> is a declaration annotation, and it cannot be used on
+statements, expressions, or types.
 
 For instance, one common use is
 to suppress warnings at a cast that you know is safe.  Here is an example
-that uses the Tainting Checker (Section~\ref{tainting-checker}):
+that uses the Tainting Checker (Section~\ref{tainting-checker}); assume
+that \<expr> has type \<@Tainted String>:
 
 \begin{Verbatim}
-  @SuppressWarnings("tainting")
-  String myvar = (@Untainted String) expr;  // expr has type: @Tainted String
+  @SuppressWarnings("tainting") // Explain why the suppression is sound.
+  @Untainted String myvar = expr;
 \end{Verbatim}
 
-It is good practice to suppress warnings in the
-smallest possible scope.  For example, if a particular expression causes a
+\noindent
+It would have been illegal to write
+
+\begin{Verbatim}
+  @Untainted String myvar;
+  @SuppressWarnings("tainting") // Explain why the suppression is sound.
+  myvar = expr;
+\end{Verbatim}
+
+\noindent
+because Java does not permit annotations (such as \<@SuppressWarnings> on
+assignments or other statements or expressions.
+
+
+\subsubsection{Good practices when suppressing warnings}
+
+\paragraph{Suppress warnings in the smallest possible scope}
+
+If a particular expression causes a
 false positive warning, you should extract that expression into a local variable
 and place a \code{@SuppressWarnings} annotation on the variable
-declaration.
-As another example, if you have annotated the signatures but not the bodies
-of the methods in a class or package, put a \code{@SuppressWarnings}
-annotation on the class declaration or on the package's
-\code{package-info.java} file.
+declaration, rather than suppressing warnings for a larger expression or an
+entire method body.
+
+%% I'm not sure how this is related to the smallest possible scope.
+% As another example, if you have annotated the signatures but not the bodies
+% of the methods in a class or package, put a \code{@SuppressWarnings}
+% annotation on the class declaration or on the package's
+% \code{package-info.java} file.
+
+\paragraph{Justify why the warning is a false positive}
+
+An \<@SuppressWarnings> annotation asserts that the code is actually
+correct, even though the type system is unable to prove that the code is
+correct.
+
+Whenever you write a \<@SuppressWarnings> annotation, you should also
+write, typically on the same line or on the previous line, a code comment
+explaining why the code is actually correct.  In some cases you might also
+justify why the code cannot be rewritten in a simpler way that would be
+amenable to type-checking.
+
+This documentation will help you and others to understand the reason for
+the \<@SuppressWarnings> annotation.  It will also help if you decide to
+audit your code to verify all the warning suppressions.
+
+\paragraph{Use a specific argument to \code{@SuppressWarnings}}
 
 \label{compiler-message-keys}
 
-Another good practice is to use the most specific possible argument to
-\code{@SuppressWarnings}.  The string can be of the form \emph{checkername} or
+The \<@SuppressWarnings> argument string can be of the form
+\emph{checkername} or
 or \emph{checkername:messagekey}.  The \emph{checkername} part is as
 described above.  The \emph{messagekey} part suppresses only
 errors/warnings relating to the given message key.  For example,
@@ -144,7 +185,7 @@ Thus, the above example could have been written as:
 \begin{Verbatim}
   @SuppressWarnings("tainting")              // suppresses all tainting-related warnings
   @SuppressWarnings("tainting:cast.unsafe")  // suppresses tainting warnings about unsafe casts
-  @SuppressWarnings("tainting:cast")         // suppresses tainting warnings about casts 
+  @SuppressWarnings("tainting:cast")         // suppresses tainting warnings about casts
 \end{Verbatim}
 
 \noindent
@@ -358,8 +399,10 @@ written in a comment that is formatted as ``\code{/*>>>}\ldots\code{*/}'',
 with the first three characters of the comment being greater-than signs. As
 with annotations in comments, the commented code is ignored by ordinary
 compilers but is treated like ordinary code by the UW Type Annotations
-compiler.  This mechanism is intended only to support writing import
-statements and the new receiver (``this'') syntax, as in
+compiler.
+
+This mechanism is intended for two purposes.
+First, it supports the receiver (\<this> parameter) syntax, as in
 
 \begin{Verbatim}
 public boolean getResult(/*>>> @ReadOnly MyClass this*/) { ... }
@@ -368,9 +411,27 @@ public boolean getResult(/*>>> @ReadOnly MyClass this, */ String argument) { ...
 
 \noindent
 for a method that does not modify its receiver.
-It can also be used for adding multiple annotations inside one comment.
 
-It would be possible to abuse this mechanism to inject code only when using
+Second, it can be used for import statements:
+
+\begin{Verbatim}
+/*>>>
+import checkers.nullness.quals.*;
+import checkers.regex.quals.*;
+*/
+\end{Verbatim}
+
+\noindent
+Such a use avoids dependences on qualifiers.  It also eliminates Eclipse
+warnings about unused import statements, if all uses of the imported
+qualifier are themselves in comments and thus invisible to Eclipse.
+
+A third use is for adding multiple annotations inside one
+comment.  However, it is better style to write multiple annotations each
+inside its own comment, as in \</*@NonNull*/ /*@Interned*/ String s;>.
+
+It would be possible to abuse the \code{/*>>>...*/} mechanism to inject
+code only when using
 the Type Annotations compiler.  Doing so is not a sanctioned use of the
 mechanism.
 
@@ -462,7 +523,7 @@ This Unix command removes
 the comment characters, for all Java files in the current
 working directory or any subdirectory.
 
-// TODO: This doesn't handle the >>> comments.  I should adapt it to do so.
+[TODO: This doesn't handle the >>> comments.  Adapt it to do so.]
 
 \begin{Verbatim}
    find . -type f -name '*.java' -print \
@@ -517,4 +578,5 @@ comments.
 % LocalWords:  unselect checkbox classpath Djsr bak Nullness nullness java lang
 % LocalWords:  checkername util myref nulltest html ESC buildfile mynifty Fenum
 % LocalWords:  MyNiftyChecker messagekey basetype uncommenting Anomsgtext '
-% LocalWords:  AskipDefs mypackage jsr308 Djsr308 Makefile PLXCOMP
+% LocalWords:  AskipDefs mypackage jsr308 Djsr308 Makefile PLXCOMP expr '
+%  LocalWords:  TODO

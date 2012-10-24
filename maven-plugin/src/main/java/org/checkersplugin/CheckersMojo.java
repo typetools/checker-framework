@@ -7,6 +7,7 @@ import org.apache.maven.plugin.CompilationFailureException;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.ArtifactResolver;
 import org.apache.maven.artifact.factory.ArtifactFactory;
+import org.apache.maven.project.MavenProject;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.toolchain.ToolchainManager;
@@ -36,133 +37,146 @@ import java.io.File;
  * @goal check
  */
 public class CheckersMojo extends AbstractMojo {
-	/**
-	 * PARAMETERS
-	 */
+    /**
+     * PARAMETERS
+     */
 
-	/**
+    /**
      * The list of checkers to pass to the checker compiler
      *
-	 * @parameter
-	 * @required
-	 */
-	private List<String> processors = new ArrayList<String>();
+     * @parameter
+     * @required
+     */
+    private List<String> processors = new ArrayList<String>();
 
-	/**
-	 * A list of inclusion filters for the compiler.
-	 * When CheckersMojo scans the "${compileSourceRoot}" directory for files it will only include those files
+    /**
+     * A list of inclusion filters for the compiler.
+     * When CheckersMojo scans the "${compileSourceRoot}" directory for files it will only include those files
      * that match one of the specified inclusion patterns.  If no patterns are included then
      * PathUtils.DEFAULT_INCLUSION_PATTERN is used
      *
-	 * @parameter
-	 */
-	private Set<String> includes = new HashSet<String>();
+     * @parameter
+     */
+    private Set<String> includes = new HashSet<String>();
 
-	/**
-	 * A list of exclusion filters for the compiler.  When CheckersMojo scans the "${compileSourceRoot}"
+    /**
+     * A list of exclusion filters for the compiler.  When CheckersMojo scans the "${compileSourceRoot}"
      * directory for files it will only include those file that DO NOT match any of the
      * specified exclusion patterns.
-	 *
-	 * @parameter
-	 */
-	private Set<String> excludes = new HashSet<String>();
+     *
+     * @parameter
+     */
+    private Set<String> excludes = new HashSet<String>();
 
-	/**
-	 * Should the build fail on a checker compile error.
-	 *
-	 * @parameter default-value="true"
-	 */
-	private boolean failOnError;
+    /**
+     * Should the build fail on a checker compile error.
+     *
+     * @parameter default-value="true"
+     */
+    private boolean failOnError;
 
-	/**
+    /**
      * The path to the java executable to use, default is "java"
      * This executable is used to call the jsr308 compiler jar
-	 * @parameter
-	 */
-	private String executable;
+     * @parameter
+     */
+    private String executable;
 
-	/**
+    /**
      * Which version of the JSR308 checkers to use
-	 * @parameter default-value="1.0.6"
-	 */
-	private String checkersVersion;
+     * @parameter default-value="1.4.0"
+     */
+    private String checkersVersion;
 
-	/**
+    /**
      * Java runtime parameters added when running the JSR308 compiler jar
-	 * @parameter
-	 */
-	private String javaParams;
+     * @parameter
+     */
+    private String javaParams;
 
-	/**
+    /**
      * Javac params passed to the JSR308 compiler jar
-	 * @parameter
-	 */
-	private String javacParams;
+     * @parameter
+     */
+    private String javacParams;
 
-	/**
-	 * DEPENDENCIES
-	 */
-	
-	/**
-	 * The source directories containing the sources to be compiled.
-	 *
-	 * @parameter expression="${project.compileSourceRoots}"
-	 * @required
-	 * @readonly
-	 */
-	private List<String> compileSourceRoots;
+    /**
+     * Whether to skip execution
+     * @parameter expression="${checkers.skip}" default-value="false"
+     */
+     private boolean skip;
 
-	/**
-	 * The current build session instance. This is used for
-	 * toolchain manager API calls.
-	 *
-	 * @parameter expression="${session}"
-	 * @required
-	 * @readonly
-	 */
-	private MavenSession session;
+    /**
+     * DEPENDENCIES
+     */
+    
+    /**
+     * The source directories containing the sources to be compiled.
+     *
+     * @parameter expression="${project.compileSourceRoots}"
+     * @required
+     * @readonly
+     */
+    private List<String> compileSourceRoots;
 
-	/**
-	 * @component
-	 * @required
-	 * @readonly
-	 */
-	private ToolchainManager toolchainManager;
+    /**
+     * The current build session instance. This is used for
+     * toolchain manager API calls.
+     *
+     * @parameter expression="${session}"
+     * @required
+     * @readonly
+     */
+    private MavenSession session;
 
-	/**
-	 * @component role="org.apache.maven.artifact.resolver.ArtifactResolver"
-	 * @required
-	 * @readonly
-	 */
-	private ArtifactResolver artifactResolver;
+    /**
+     * @parameter expression="${project}"
+     * @readonly
+     * @required
+     */
+    private MavenProject project;
 
-	/**
-	 * @component role="org.apache.maven.artifact.factory.ArtifactFactory"
-	 * @required
-	 * @readonly
-	 */
-	private ArtifactFactory artifactFactory;
+    /**
+     * @component
+     * @required
+     * @readonly
+     */
+    private ToolchainManager toolchainManager;
 
-	/**
-	 * @parameter expression="${localRepository}"
-	 * @required
-	 * @readonly
-	 */
-	private ArtifactRepository localRepository;
+    /**
+     * @component role="org.apache.maven.artifact.resolver.ArtifactResolver"
+     * @required
+     * @readonly
+     */
+    private ArtifactResolver artifactResolver;
 
-	/**
-	 * @parameter expression="${project.remoteArtifactRepositories}"
-	 * @required
-	 * @readonly
-	 */
-	private List<?> remoteArtifactRepositories;
+    /**
+     * @component role="org.apache.maven.artifact.factory.ArtifactFactory"
+     * @required
+     * @readonly
+     */
+    private ArtifactFactory artifactFactory;
 
-	/**
-	 * @parameter expression="${project.compileClasspathElements}"
-	 * @required
-	 * @readonly
-	 */
-	private List<?> classpathElements;
+    /**
+     * @parameter expression="${localRepository}"
+     * @required
+     * @readonly
+     */
+    private ArtifactRepository localRepository;
+
+    /**
+     * @parameter expression="${project.remoteArtifactRepositories}"
+     * @required
+     * @readonly
+     */
+    private List<?> remoteArtifactRepositories;
+
+    /**
+     * @parameter expression="${project.compileClasspathElements}"
+     * @required
+     * @readonly
+     */
+    private List<?> classpathElements;
 
     /**
      * Main control method for the Checker Maven Plugin.  Scans for sources, resolves classpath, and passes these
@@ -170,113 +184,122 @@ public class CheckersMojo extends AbstractMojo {
      * @throws MojoExecutionException
      * @throws MojoFailureException
      */
-	public void execute() throws MojoExecutionException, MojoFailureException {
-		final Log log = getLog();
-		log.info("Running JSR308 checkers version: " + checkersVersion);
-		
-		if (processors.size() == 0) {
-			throw new MojoExecutionException("At least one checker must be specified!");
-		}
+    public void execute() throws MojoExecutionException, MojoFailureException {
+        final Log log = getLog();
 
-		final String processor = StringUtils.join(processors.iterator(), ",");
+        if (skip) {
+            log.info("Execution is skipped");
+            return;
+        } else if ("pom".equals(project.getPackaging())) {
+            log.info("Execution is skipped for project with packaging 'pom'");
+            return;
+        }
 
-		log.info("Running processor(s): " + processor);
+        log.info("Running JSR308 checkers version: " + checkersVersion);
+        
+        if (processors.size() == 0) {
+            throw new MojoExecutionException("At least one checker must be specified!");
+        }
 
-		final List<String> sources = PathUtils.scanForSources(compileSourceRoots, includes, excludes);
-		
-		final String checkersJar = PathUtils.getCheckersJar(checkersVersion, artifactFactory, artifactResolver,
-				remoteArtifactRepositories, localRepository);
+        final String processor = StringUtils.join(processors.iterator(), ",");
 
-		final Commandline cl = new Commandline();
+        log.info("Running processor(s): " + processor);
 
-		if (StringUtils.isEmpty(executable)) {
-			executable = "java";
-		}
-		cl.setExecutable(PathUtils.getExecutablePath(executable, toolchainManager, session));
+        final List<String> sources = PathUtils.scanForSources(compileSourceRoots, includes, excludes);
+        
+        final String checkersJar = PathUtils.getCheckersJar(checkersVersion, artifactFactory, artifactResolver,
+                remoteArtifactRepositories, localRepository);
 
-		// Building the arguments
-		final List<String> arguments = new ArrayList<String>();
+        final Commandline cl = new Commandline();
 
-		// Setting the boot class path: prepending the jar with jsr308 compiler
-		arguments.add("-Xbootclasspath/p:" + checkersJar);
-		// Javac currently assumes that assertions are enabled in the launcher
-		arguments.add("-ea:com.sun.tools");
-		// Optionally adding user-specified java parameters
-		if (!StringUtils.isEmpty(javaParams)) {
-			arguments.addAll(Arrays.asList(javaParams.split(" ")));
-		}
-		// Running the compile process - main class of this jar 
-		arguments.add("-jar");
-		arguments.add(checkersJar);
+        if (StringUtils.isEmpty(executable)) {
+            executable = "java";
+        }
+        cl.setExecutable(PathUtils.getExecutablePath(executable, toolchainManager, session));
 
-		// Now the arguments for the jar main class - that is, the compiler
+        // Building the arguments
+        final List<String> arguments = new ArrayList<String>();
 
-		// Setting the name of the processor
-		arguments.add("-processor");
-		arguments.add(processor);
-		// Running only the annotation processor, without compiling
-		arguments.add("-proc:only");
-		// Setting the classpath
-		arguments.add("-classpath" );
-		arguments.add(StringUtils.join(classpathElements.iterator(), File.pathSeparator));
-		// Setting the source dir path
-		arguments.add("-sourcepath");
-		arguments.add(StringUtils.join(compileSourceRoots.iterator(), File.pathSeparator));
-		// Optionally adding user-specified javac parameters
-		if (!StringUtils.isEmpty(javacParams)) {
-			arguments.addAll(Arrays.asList(javacParams.split(" ")));
-		}
-		// Now the source files
-		arguments.addAll(sources);
+        // Setting the boot class path: prepending the jar with jsr308 compiler
+        arguments.add("-Xbootclasspath/p:" + checkersJar);
+        // Javac currently assumes that assertions are enabled in the launcher
+        arguments.add("-ea:com.sun.tools");
+        // Optionally adding user-specified java parameters
+        if (!StringUtils.isEmpty(javaParams)) {
+            arguments.addAll(Arrays.asList(javaParams.split(" ")));
+        }
+        // Running the compile process - main class of this jar 
+        arguments.add("-jar");
+        arguments.add(checkersJar);
 
-		// And executing
-		cl.addArguments(arguments.toArray(new String[arguments.size()]));
+        // Now the arguments for the jar main class - that is, the compiler
 
-		executeCommandLine(cl, log);
-	}
+        // Setting the name of the processor
+        arguments.add("-processor");
+        arguments.add(processor);
+        // Running only the annotation processor, without compiling
+        arguments.add("-proc:only");
+        // Setting the classpath
+        arguments.add("-classpath" );
+        arguments.add(StringUtils.join(classpathElements.iterator(), File.pathSeparator));
+        // Setting the source dir path
+        arguments.add("-sourcepath");
+        arguments.add(StringUtils.join(compileSourceRoots.iterator(), File.pathSeparator));
+        // Optionally adding user-specified javac parameters
+        if (!StringUtils.isEmpty(javacParams)) {
+            arguments.addAll(Arrays.asList(javacParams.split(" ")));
+        }
+        // Now the source files
+        arguments.addAll(sources);
 
-	private void executeCommandLine(final Commandline cl, final Log log) throws MojoExecutionException, MojoFailureException {
-		CommandLineUtils.StringStreamConsumer out = new CommandLineUtils.StringStreamConsumer();
-		CommandLineUtils.StringStreamConsumer err = new CommandLineUtils.StringStreamConsumer();
-		
-		log.debug("command line: " + Arrays.toString(cl.getCommandline()));
-	
-		
-		// Executing the command
-		int exitCode;
-		try {
-			exitCode = CommandLineUtils.executeCommandLine(cl, out, err);
-		} catch (CommandLineException e) {
-			throw new MojoExecutionException("Unable to execute checkers, executable: " + executable +
-					", command line: " + Arrays.toString(cl.getCommandline()), e);
-		}
+        // And executing
+        cl.addArguments(arguments.toArray(new String[arguments.size()]));
 
-		// Parsing the messages from the compiler
-		List<CompilerError> messages;
-		try {
-			messages = JavacCompilerUtil.parseModernStream( new BufferedReader( new StringReader( err.getOutput() ) ) );
-		} catch (IOException e) {
-			throw new MojoExecutionException("Unable to parse messages.", e);
-		}
+        executeCommandLine(cl, log);
+    }
 
-		// Sanity check - if the exit code is non-zero, there should be some messages
-		if (exitCode != 0 && messages.isEmpty()) {
-			throw new MojoExecutionException("Exit code from the compiler was not zero (" + exitCode +
-					"), but no messages reported. Error stream content: " + err.getOutput() + 
-					" command line: " + Arrays.toString(cl.getCommandline()));
-		}
+    private void executeCommandLine(final Commandline cl, final Log log) throws MojoExecutionException, MojoFailureException {
+        CommandLineUtils.StringStreamConsumer out = new CommandLineUtils.StringStreamConsumer();
+        CommandLineUtils.StringStreamConsumer err = new CommandLineUtils.StringStreamConsumer();
+        
+        log.debug("command line: " + Arrays.toString(cl.getCommandline()));
+    
+        
+        // Executing the command
+        int exitCode;
+        try {
+            exitCode = CommandLineUtils.executeCommandLine(cl, out, err);
+        } catch (CommandLineException e) {
+            throw new MojoExecutionException("Unable to execute checkers, executable: " + executable +
+                    ", command line: " + Arrays.toString(cl.getCommandline()), e);
+        }
 
-		if (messages.isEmpty()) {
-			log.info("No errors found by the processor(s).");
-		} else {
-			if (failOnError) {
-				throw new MojoFailureException(CompilationFailureException.longMessage(messages));
-			} else {
+        // Parsing the messages from the compiler
+        List<CompilerError> messages;
+        try {
+            messages = JavacCompilerUtil.parseModernStream( new BufferedReader( new StringReader( err.getOutput() ) ) );
+        } catch (IOException e) {
+            throw new MojoExecutionException("Unable to parse messages.", e);
+        }
+
+        // Sanity check - if the exit code is non-zero, there should be some messages
+        if (exitCode != 0 && messages.isEmpty()) {
+            throw new MojoExecutionException("Exit code from the compiler was not zero (" + exitCode +
+                    "), but no messages reported. Error stream content: " + err.getOutput() + 
+                    " command line: " + Arrays.toString(cl.getCommandline()));
+        }
+
+        if (messages.isEmpty()) {
+            log.info("No errors found by the processor(s).");
+        } else {
+            if (failOnError) {
+                throw new MojoFailureException(CompilationFailureException.longMessage(messages));
+            } else {
                 log.info("Run with debug logging in order to view the compiler command line");
-				for (CompilerError compilerError : messages) {
-					log.warn(compilerError.toString());
-				}
-			}
-		}
-	}
+                for (CompilerError compilerError : messages) {
+                    log.warn(compilerError.toString());
+                }
+            }
+        }
+    }
 }

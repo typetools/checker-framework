@@ -12,9 +12,9 @@ import java.io.IOException;
  * @author Adam Warski (adam at warski dot org)
  */
 public class JavacCompilerUtil extends JavacCompiler {
-	@SuppressWarnings({"unchecked"})
-	public static List<CompilerError> parseModernStream(BufferedReader input)
+    @SuppressWarnings({"unchecked"})
+    public static List<CompilerError> parseModernStream(BufferedReader input)
         throws IOException {
-		return JavacCompiler.parseModernStream(input);
-	}
+        return JavacCompiler.parseModernStream(input);
+    }
 }

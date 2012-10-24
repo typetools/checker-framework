@@ -164,7 +164,7 @@ public class NonNullMapValue {
   }
 
   interface MyMap<K, V> extends Map<K, V> {
-    //TODO: @AssertGenericNullnessIfTrue("get(#0)")
+    //TODO: @AssertGenericNullnessIfTrue("get(#1)")
     public abstract boolean containsKey(@Nullable Object a1);
     
     // We get an override warning, because we do not use the annotated JDK in the
@@ -205,7 +205,7 @@ public class NonNullMapValue {
     // then get returns a nullable value.  We really want to say that if
     // containsKey returns non-null, then get returns V rather than
     // @Nullable V, but I don't know how to say that.
-    @AssertNonNullIfTrue("get(#0)")
+    @AssertNonNullIfTrue("get(#1)")
     public abstract boolean containsKey(@Nullable Object a1);
     public abstract @Pure @Nullable V get(@Nullable Object a1);
   }
