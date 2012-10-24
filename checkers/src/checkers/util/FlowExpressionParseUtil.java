@@ -48,8 +48,11 @@ public class FlowExpressionParseUtil {
     /** Finds all parameters */
     protected static final Pattern parametersPattern = Pattern
             .compile("#([1-9]+[0-9]*)");
-    /** Matches the self reference */
-    protected static final Pattern selfPattern = Pattern.compile("^(this|#0)$");
+    /**
+     * Matches the self reference. In the future we could allow "#0" as a
+     * synonym for "this".
+     */
+    protected static final Pattern selfPattern = Pattern.compile("^(this)$");
     /** Matches an identifier */
     protected static final Pattern identifierPattern = Pattern.compile("^"
             + identifierRegex + "$");
@@ -108,7 +111,8 @@ public class FlowExpressionParseUtil {
             // field access
             try {
                 Resolver resolver = new Resolver(env);
-                Element fieldElem = resolver.findField(s, context.receiverType, path);
+                Element fieldElem = resolver.findField(s, context.receiverType,
+                        path);
                 return new FieldAccess(context.receiver, context.receiverType,
                         fieldElem);
             } catch (Throwable t) {
@@ -139,7 +143,8 @@ public class FlowExpressionParseUtil {
             }
             try {
                 Resolver resolver = new Resolver(env);
-                Element methodElement = resolver.findMethod(methodName, context.receiverType, path);
+                Element methodElement = resolver.findMethod(methodName,
+                        context.receiverType, path);
                 List<Receiver> parameters = new ArrayList<>();
                 return new PureMethodCall(context.receiverType, methodElement,
                         context.receiver, parameters);
