@@ -1,8 +1,17 @@
 package checkers.util;
 
+import static com.sun.tools.javac.code.Flags.ABSTRACT;
+import static com.sun.tools.javac.code.Flags.ACYCLIC;
+import static com.sun.tools.javac.code.Flags.COMPOUND;
+import static com.sun.tools.javac.code.Flags.INTERFACE;
+import static com.sun.tools.javac.code.Flags.PUBLIC;
+import static com.sun.tools.javac.code.Flags.SYNTHETIC;
 import static com.sun.tools.javac.code.TypeTags.ARRAY;
 import static com.sun.tools.javac.code.TypeTags.CLASS;
+import static com.sun.tools.javac.code.TypeTags.ERROR;
+import static com.sun.tools.javac.code.TypeTags.FORALL;
 import static com.sun.tools.javac.code.TypeTags.TYPEVAR;
+import static com.sun.tools.javac.code.TypeTags.WILDCARD;
 import static com.sun.tools.javac.util.ListBuffer.lb;
 import static javax.lang.model.util.ElementFilter.methodsIn;
 
@@ -47,6 +56,7 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
+import checkers.types.QualifierHierarchy;
 import checkers.types.visitors.SimpleAnnotatedTypeVisitor;
 /*>>>
 import checkers.nullness.quals.*;
@@ -54,9 +64,16 @@ import checkers.nullness.quals.*;
 
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
+import com.sun.tools.javac.code.Scope;
+import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Type.ArrayType;
+import com.sun.tools.javac.code.Type.ClassType;
+import com.sun.tools.javac.code.Type.ForAll;
+import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Assert;
+import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.ListBuffer;
 
 /**
@@ -1360,24 +1377,47 @@ public class AnnotatedTypes {
     }
 
     /**
+     * The element type of an array.
+     */
+    public AnnotatedTypeMirror elemtype(AnnotatedTypeMirror t) {
+        switch (t.getKind()) {
+        case WILDCARD:
+            return elemtype(((AnnotatedWildcardType) t).getExtendsBound());
+        case ARRAY:
+            return ((AnnotatedArrayType) t).getComponentType();
+        case ERROR:
+            return t;
+        default:
+            return null;
+        }
+    }
+
+    /**
      * Return the least upper bound of pair of types. if the lub does not exist
      * return null.
      */
-    public Type lub(Type t1, Type t2) {
-        return lub(List.of(t1, t2));
+    public AnnotatedTypeMirror lub(AnnotatedTypeMirror t1, AnnotatedTypeMirror t2, AnnotatedTypeFactory factory) {
+        List<AnnotatedTypeMirror> types = new LinkedList<>();
+        types.add(t1);
+        types.add(t2);
+        return lub(com.sun.tools.javac.util.List.of(t1, t2), factory);
     }
 
     /**
      * Return the least upper bound (lub) of set of types. If the lub does not
      * exist return the type of null (bottom).
      */
-    public Type lub(List<Type> ts) {
+    public AnnotatedTypeMirror lub(com.sun.tools.javac.util.List<AnnotatedTypeMirror> ts, AnnotatedTypeFactory factory) {
+        JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) factory.getProcessingEnv();
+        Context context = javacEnv.getContext();
+        Symtab sym = Symtab.instance(context);
+        com.sun.tools.javac.code.Types types = com.sun.tools.javac.code.Types.instance(context);
         final int ARRAY_BOUND = 1;
         final int CLASS_BOUND = 2;
         int boundkind = 0;
-        for (Type t : ts) {
-            switch (t.tag) {
-            case CLASS:
+        for (AnnotatedTypeMirror t : ts) {
+            switch (t.getKind()) {
+            case DECLARED:
                 boundkind |= CLASS_BOUND;
                 break;
             case ARRAY:
@@ -1385,87 +1425,121 @@ public class AnnotatedTypes {
                 break;
             case TYPEVAR:
                 do {
-                    t = t.getUpperBound();
-                } while (t.tag == TYPEVAR);
-                if (t.tag == ARRAY) {
+                    AnnotatedTypeVariable at = (AnnotatedTypeVariable) t;
+                    t = at.getUpperBound();
+                } while (t.getKind() == TypeKind.TYPEVAR);
+                if (t.getKind() == TypeKind.ARRAY) {
                     boundkind |= ARRAY_BOUND;
                 } else {
                     boundkind |= CLASS_BOUND;
                 }
                 break;
             default:
-                if (t.isPrimitive())
-                    return syms.errType;
+                if (TypesUtils.isPrimitive(t.getUnderlyingType()))
+                    // was: return syms.errType;
+                    // TODO: is there an error type?
+                    return null;
             }
         }
         switch (boundkind) {
         case 0:
-            return syms.botType;
+            //was: return syms.botType;
+            AnnotatedTypeMirror bottom = AnnotatedTypeMirror.createType(sym.botType, factory);
+            bottom.clearAnnotations();
+            bottom.addAnnotations(factory.getQualifierHierarchy().getBottomAnnotations());
+            return bottom;
 
         case ARRAY_BOUND:
             // calculate lub(A[], B[])
-            List<Type> elements = Type.map(ts, elemTypeFun);
-            for (Type t : elements) {
-                if (t.isPrimitive()) {
+            com.sun.tools.javac.util.List<AnnotatedTypeMirror> elements = com.sun.tools.javac.util.List.nil();
+            for (AnnotatedTypeMirror t : ts) {
+                elements = elements.append(elemtype(t));
+            }
+            for (AnnotatedTypeMirror t : elements) {
+                if (TypesUtils.isPrimitive(t.getUnderlyingType())) {
                     // if a primitive type is found, then return
                     // arraySuperType unless all the types are the
                     // same
-                    Type first = ts.head;
-                    for (Type s : ts.tail) {
-                        if (!isSameType(first, s)) {
+                    AnnotatedTypeMirror first = ts.head;
+                    for (AnnotatedTypeMirror s : ts.tail) {
+                        if (!types.isSameType((Type) first.getUnderlyingType(), (Type) s.getUnderlyingType())) {
                             // lub(int[], B[]) is Cloneable & Serializable
                             return arraySuperType();
                         }
                     }
                     // all the array types are the same, return one
                     // lub(int[], int[]) is int[]
-                    return first;
+                    // For the Checker Framework, we also need to compute the LUB on the annotations.
+                    AnnotatedTypeMirror result = AnnotatedTypeMirror.createType(first.getUnderlyingType(), factory);
+                    result.clearAnnotations();
+                    result.addAnnotations(lubAnnotations(elements, factory));
+                    return result;
                 }
             }
             // lub(A[], B[]) is lub(A, B)[]
-            return new ArrayType(lub(elements), syms.arrayClass);
+            // Checker Framework: we also need to take the lub of the annotations on the array.
+            AnnotatedTypeMirror elemLub = lub(elements, factory);
+            ArrayType underlyingType = new ArrayType((Type) elemLub.getUnderlyingType(), sym.arrayClass);
+            AnnotatedTypeMirror result = AnnotatedTypeMirror.createType(underlyingType, factory);
+            Set<AnnotationMirror> lubAnnotations = lubAnnotations(ts, factory);
+            result.clearAnnotations();
+            result.addAnnotations(lubAnnotations);
+            return result;
 
         case CLASS_BOUND:
             // calculate lub(A, B)
-            while (ts.head.tag != CLASS && ts.head.tag != TYPEVAR)
+            while (ts.head.getKind() != TypeKind.DECLARED && ts.head.getKind() != TypeKind.TYPEVAR)
                 ts = ts.tail;
             Assert.check(!ts.isEmpty());
-            // step 1 - compute erased candidate set (EC)
-            List<Type> cl = erasedSupertypes(ts.head);
-            for (Type t : ts.tail) {
-                if (t.tag == CLASS || t.tag == TYPEVAR)
+            //step 1 - compute erased candidate set (EC)
+            com.sun.tools.javac.util.List<Type> cl = erasedSupertypes(ts.head);
+            for (AnnotatedTypeMirror t : ts.tail) {
+                if (t.getKind() == TypeKind.DECLARED || t.getKind() == TypeKind.TYPEVAR)
                     cl = intersect(cl, erasedSupertypes(t));
             }
-            // step 2 - compute minimal erased candidate set (MEC)
-            List<Type> mec = closureMin(cl);
-            // step 3 - for each element G in MEC, compute lci(Inv(G))
-            List<Type> candidates = List.nil();
+            //step 2 - compute minimal erased candidate set (MEC)
+            com.sun.tools.javac.util.List<Type> mec = closureMin(cl);
+            //step 3 - for each element G in MEC, compute lci(Inv(G))
+            com.sun.tools.javac.util.List<Type> candidates = com.sun.tools.javac.util.List.nil();
             for (Type erasedSupertype : mec) {
-                List<Type> lci = List
-                        .of(asSuper(ts.head, erasedSupertype.tsym));
-                for (Type t : ts) {
-                    lci = intersect(lci,
-                            List.of(asSuper(t, erasedSupertype.tsym)));
+                com.sun.tools.javac.util.List<Type> lci = com.sun.tools.javac.util.List.of(asSuper(ts.head, erasedSupertype.tsym));
+                for (AnnotatedTypeMirror t : ts) {
+                    lci = intersect(lci, com.sun.tools.javac.util.List.of(asSuper(t, erasedSupertype.tsym)));
                 }
                 candidates = candidates.appendList(lci);
             }
-            // step 4 - let MEC be { G1, G2 ... Gn }, then we have that
-            // lub = lci(Inv(G1)) & lci(Inv(G2)) & ... & lci(Inv(Gn))
+            //step 4 - let MEC be { G1, G2 ... Gn }, then we have that
+            //lub = lci(Inv(G1)) & lci(Inv(G2)) & ... & lci(Inv(Gn))
             return compoundMin(candidates);
 
         default:
             // calculate lub(A, B[])
-            List<Type> classes = List.of(arraySuperType());
-            for (Type t : ts) {
-                if (t.tag != ARRAY) // Filter out any arrays
-                    classes = classes.prepend(t);
+            List<AnnotatedTypeMirror> classes = Collections.singletonList(arraySuperType());
+            for (AnnotatedTypeMirror t : ts) {
+                if (t.getKind() != TypeKind.ARRAY) // Filter out any arrays
+                    classes.add(t);
             }
             // lub(A, B[]) is lub(A, arraySuperType)
-            return lub(classes);
+            return lub(classes, factory);
         }
     }
 
-    List<Type> erasedSupertypes(Type t) {
+    /**
+     * Returns the LUB of the effective annotations on all elements of ts.
+     */
+    private Set<AnnotationMirror> lubAnnotations(List<AnnotatedTypeMirror> ts, AnnotatedTypeFactory factory) {
+        QualifierHierarchy qualifierHierarchy = factory.getQualifierHierarchy();
+        Set<AnnotationMirror> result = new HashSet<>();
+        AnnotatedTypeMirror first = ts.get(0);
+        result.addAll(first.getEffectiveAnnotations());
+        for (int i = 1; i < ts.size(); i++) {
+            AnnotatedTypeMirror s = ts.get(i);
+            result = qualifierHierarchy.leastUpperBounds(result, s.getEffectiveAnnotations());
+        }
+        return result;
+    }
+
+    com.sun.tools.javac.util.List<Type> erasedSupertypes(AnnotatedTypeMirror t) {
         ListBuffer<Type> buf = lb();
         for (Type sup : closure(t)) {
             if (sup.tag == TYPEVAR) {
@@ -1477,9 +1551,9 @@ public class AnnotatedTypes {
         return buf.toList();
     }
 
-    private Type arraySuperType = null;
+    private AnnotatedTypeMirror arraySuperType = null;
 
-    private Type arraySuperType() {
+    private AnnotatedTypeMirror arraySuperType(Symtab sym) {
         // initialized lazily to avoid problems during compiler startup
         if (arraySuperType == null) {
             synchronized (this) {
@@ -1487,12 +1561,97 @@ public class AnnotatedTypes {
                     // JLS 10.8: all arrays implement Cloneable and
                     // Serializable.
                     arraySuperType = makeCompoundType(
-                            List.of(syms.serializableType, syms.cloneableType),
-                            syms.objectType);
+                            com.sun.tools.javac.util.List.of(sym.serializableType, sym.cloneableType),
+                            sym.objectType);
                 }
             }
         }
         return arraySuperType;
+    }
+
+    /**
+     * Intersect two closures
+     */
+    public com.sun.tools.javac.util.List<Type> intersect(com.sun.tools.javac.util.List<Type> cl1, com.sun.tools.javac.util.List<Type> cl2) {
+        if (cl1 == cl2)
+            return cl1;
+        if (cl1.isEmpty() || cl2.isEmpty())
+            return com.sun.tools.javac.util.List.nil();
+        if (cl1.head.tsym.precedes(cl2.head.tsym, this))
+            return intersect(cl1.tail, cl2);
+        if (cl2.head.tsym.precedes(cl1.head.tsym, this))
+            return intersect(cl1, cl2.tail);
+        if (isSameType(cl1.head, cl2.head))
+            return intersect(cl1.tail, cl2.tail).prepend(cl1.head);
+        if (cl1.head.tsym == cl2.head.tsym &&
+            cl1.head.tag == CLASS && cl2.head.tag == CLASS) {
+            if (cl1.head.isParameterized() && cl2.head.isParameterized()) {
+                Type merge = merge(cl1.head,cl2.head);
+                return intersect(cl1.tail, cl2.tail).prepend(merge);
+            }
+            if (cl1.head.isRaw() || cl2.head.isRaw())
+                return intersect(cl1.tail, cl2.tail).prepend(erasure(cl1.head));
+        }
+        return intersect(cl1.tail, cl2.tail);
+    }
+
+    /**
+     * Make a compound type from non-empty list of types
+     *
+     * @param bounds            the types from which the compound type is formed
+     * @param supertype         is objectType if all bounds are interfaces,
+     *                          null otherwise.
+     */
+    public Type makeCompoundType(List<Type> bounds,
+                                 Type supertype) {
+        ClassSymbol bc =
+            new ClassSymbol(ABSTRACT|PUBLIC|SYNTHETIC|COMPOUND|ACYCLIC,
+                            Type.moreInfo
+                                ? names.fromString(bounds.toString())
+                                : names.empty,
+                            syms.noSymbol);
+        if (bounds.head.tag == TYPEVAR)
+            // error condition, recover
+                bc.erasure_field = syms.objectType;
+            else
+                bc.erasure_field = erasure(bounds.head);
+            bc.members_field = new Scope(bc);
+        ClassType bt = (ClassType)bc.type;
+        bt.allparams_field = List.nil();
+        if (supertype != null) {
+            bt.supertype_field = supertype;
+            bt.interfaces_field = bounds;
+        } else {
+            bt.supertype_field = bounds.head;
+            bt.interfaces_field = bounds.tail;
+        }
+        Assert.check(bt.supertype_field.tsym.completer != null
+                || !bt.supertype_field.isInterface(),
+            bt.supertype_field);
+        return bt;
+    }
+
+    /**
+     * Same as {@link #makeCompoundType(List,Type)}, except that the
+     * second parameter is computed directly. Note that this might
+     * cause a symbol completion.  Hence, this version of
+     * makeCompoundType may not be called during a classfile read.
+     */
+    public Type makeCompoundType(List<Type> bounds) {
+        Type supertype = (bounds.head.tsym.flags() & INTERFACE) != 0 ?
+            supertype(bounds.head) : null;
+        return makeCompoundType(bounds, supertype);
+    }
+
+    /**
+     * A convenience wrapper for {@link #makeCompoundType(List)}; the
+     * arguments are converted to a list and passed to the other
+     * method.  Note that this might cause a symbol completion.
+     * Hence, this version of makeCompoundType may not be called
+     * during a classfile read.
+     */
+    public Type makeCompoundType(Type bound1, Type bound2) {
+        return makeCompoundType(List.of(bound1, bound2));
     }
 
 }
