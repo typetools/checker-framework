@@ -1464,7 +1464,7 @@ public class AnnotatedTypes {
                     for (AnnotatedTypeMirror s : ts.tail) {
                         if (!types.isSameType((Type) first.getUnderlyingType(), (Type) s.getUnderlyingType())) {
                             // lub(int[], B[]) is Cloneable & Serializable
-                            return arraySuperType();
+                            return arraySuperType(types, sym, factory);
                         }
                     }
                     // all the array types are the same, return one
@@ -1492,17 +1492,17 @@ public class AnnotatedTypes {
                 ts = ts.tail;
             Assert.check(!ts.isEmpty());
             //step 1 - compute erased candidate set (EC)
-            com.sun.tools.javac.util.List<Type> cl = erasedSupertypes(ts.head);
+            com.sun.tools.javac.util.List<AnnotatedTypeMirror> cl = erasedSupertypes(ts.head);
             for (AnnotatedTypeMirror t : ts.tail) {
                 if (t.getKind() == TypeKind.DECLARED || t.getKind() == TypeKind.TYPEVAR)
                     cl = intersect(cl, erasedSupertypes(t));
             }
             //step 2 - compute minimal erased candidate set (MEC)
-            com.sun.tools.javac.util.List<Type> mec = closureMin(cl);
+            com.sun.tools.javac.util.List<AnnotatedTypeMirror> mec = closureMin(cl);
             //step 3 - for each element G in MEC, compute lci(Inv(G))
-            com.sun.tools.javac.util.List<Type> candidates = com.sun.tools.javac.util.List.nil();
-            for (Type erasedSupertype : mec) {
-                com.sun.tools.javac.util.List<Type> lci = com.sun.tools.javac.util.List.of(asSuper(ts.head, erasedSupertype.tsym));
+            com.sun.tools.javac.util.List<AnnotatedTypeMirror> candidates = com.sun.tools.javac.util.List.nil();
+            for (AnnotatedTypeMirror erasedSupertype : mec) {
+                com.sun.tools.javac.util.List<AnnotatedTypeMirror> lci = com.sun.tools.javac.util.List.of(asSuper(ts.head, erasedSupertype.tsym));
                 for (AnnotatedTypeMirror t : ts) {
                     lci = intersect(lci, com.sun.tools.javac.util.List.of(asSuper(t, erasedSupertype.tsym)));
                 }
@@ -1514,7 +1514,7 @@ public class AnnotatedTypes {
 
         default:
             // calculate lub(A, B[])
-            List<AnnotatedTypeMirror> classes = Collections.singletonList(arraySuperType());
+            com.sun.tools.javac.util.List<AnnotatedTypeMirror> classes = com.sun.tools.javac.util.List.of(arraySuperType(types, sym, factory));
             for (AnnotatedTypeMirror t : ts) {
                 if (t.getKind() != TypeKind.ARRAY) // Filter out any arrays
                     classes.add(t);
@@ -1539,10 +1539,10 @@ public class AnnotatedTypes {
         return result;
     }
 
-    com.sun.tools.javac.util.List<Type> erasedSupertypes(AnnotatedTypeMirror t) {
-        ListBuffer<Type> buf = lb();
-        for (Type sup : closure(t)) {
-            if (sup.tag == TYPEVAR) {
+    com.sun.tools.javac.util.List<AnnotatedTypeMirror> erasedSupertypes(AnnotatedTypeMirror t) {
+        ListBuffer<AnnotatedTypeMirror> buf = lb();
+        for (AnnotatedTypeMirror sup : closure(t)) {
+            if (sup.getKind() == TypeKind.TYPEVAR) {
                 buf.append(sup);
             } else {
                 buf.append(erasure(sup));
@@ -1551,18 +1551,24 @@ public class AnnotatedTypes {
         return buf.toList();
     }
 
+    private AnnotatedTypeMirror erasure(AnnotatedTypeMirror t) {
+        return t.getErased();
+    }
+
     private AnnotatedTypeMirror arraySuperType = null;
 
-    private AnnotatedTypeMirror arraySuperType(Symtab sym) {
+    private AnnotatedTypeMirror arraySuperType(com.sun.tools.javac.code.Types types, Symtab sym, AnnotatedTypeFactory factory) {
         // initialized lazily to avoid problems during compiler startup
         if (arraySuperType == null) {
             synchronized (this) {
                 if (arraySuperType == null) {
                     // JLS 10.8: all arrays implement Cloneable and
                     // Serializable.
-                    arraySuperType = makeCompoundType(
+                    Type unannotatedType = types.makeCompoundType(
                             com.sun.tools.javac.util.List.of(sym.serializableType, sym.cloneableType),
                             sym.objectType);
+                    // TODO: what annotations should the arraySyperType have?
+                    arraySuperType = AnnotatedTypeMirror.createType(unannotatedType, factory);
                 }
             }
         }
@@ -1570,9 +1576,74 @@ public class AnnotatedTypes {
     }
 
     /**
+     * A cache for closures.
+     *
+     * <p>A closure is a list of all the supertypes and interfaces of
+     * a class or interface type, ordered by ClassSymbol.precedes
+     * (that is, subclasses come first, arbitrary but fixed
+     * otherwise).
+     */
+    private final Map<AnnotatedTypeMirror,com.sun.tools.javac.util.List<AnnotatedTypeMirror>> closureCache = new HashMap<>();
+
+    /**
+     * Returns the closure of a class or interface type.
+     */
+    public com.sun.tools.javac.util.List<AnnotatedTypeMirror> closure(AnnotatedTypeMirror t) {
+        com.sun.tools.javac.util.List<AnnotatedTypeMirror> cl = closureCache.get(t);
+        if (cl == null) {
+            AnnotatedTypeMirror st = supertype(t);
+            if (!t.isCompound()) {
+                if (st.tag == CLASS) {
+                    cl = insert(closure(st), t);
+                } else if (st.tag == TYPEVAR) {
+                    cl = closure(st).prepend(t);
+                } else {
+                    cl = List.of(t);
+                }
+            } else {
+                cl = closure(supertype(t));
+            }
+            for (com.sun.tools.javac.util.List<Type> l = interfaces(t); l.nonEmpty(); l = l.tail)
+                cl = union(cl, closure(l.head));
+            closureCache.put(t, cl);
+        }
+        return cl;
+    }
+
+    /**
+     * Insert a type in a closure
+     */
+    public com.sun.tools.javac.util.List<AnnotatedTypeMirror> insert(com.sun.tools.javac.util.List<AnnotatedTypeMirror> cl, AnnotatedTypeMirror t) {
+        if (cl.isEmpty() || t.tsym.precedes(cl.head.tsym, this)) {
+            return cl.prepend(t);
+        } else if (cl.head.tsym.precedes(t.tsym, this)) {
+            return insert(cl.tail, t).prepend(cl.head);
+        } else {
+            return cl;
+        }
+    }
+
+    /**
+     * Form the union of two closures
+     */
+    public com.sun.tools.javac.util.List<AnnotatedTypeMirror> union(com.sun.tools.javac.util.List<AnnotatedTypeMirror> cl1, com.sun.tools.javac.util.List<AnnotatedTypeMirror> cl2) {
+        if (cl1.isEmpty()) {
+            return cl2;
+        } else if (cl2.isEmpty()) {
+            return cl1;
+        } else if (cl1.head.tsym.precedes(cl2.head.tsym, this)) {
+            return union(cl1.tail, cl2).prepend(cl1.head);
+        } else if (cl2.head.tsym.precedes(cl1.head.tsym, this)) {
+            return union(cl1, cl2.tail).prepend(cl2.head);
+        } else {
+            return union(cl1.tail, cl2.tail).prepend(cl1.head);
+        }
+    }
+
+    /**
      * Intersect two closures
      */
-    public com.sun.tools.javac.util.List<Type> intersect(com.sun.tools.javac.util.List<Type> cl1, com.sun.tools.javac.util.List<Type> cl2) {
+    public com.sun.tools.javac.util.List<AnnotatedTypeMirror> intersect(com.sun.tools.javac.util.List<AnnotatedTypeMirror> cl1, com.sun.tools.javac.util.List<AnnotatedTypeMirror> cl2) {
         if (cl1 == cl2)
             return cl1;
         if (cl1.isEmpty() || cl2.isEmpty())
@@ -1594,59 +1665,4 @@ public class AnnotatedTypes {
         }
         return intersect(cl1.tail, cl2.tail);
     }
-
-    /**
-     * Make a compound type from non-empty list of types
-     *
-     * @param bounds
-     *            the types from which the compound type is formed
-     * @param supertype
-     *            is objectType if all bounds are interfaces, null otherwise.
-     */
-    public Type makeCompoundType(List<Type> bounds, Type supertype) {
-        ClassSymbol bc = new ClassSymbol(ABSTRACT | PUBLIC | SYNTHETIC
-                | COMPOUND | ACYCLIC, Type.moreInfo ? names.fromString(bounds
-                .toString()) : names.empty, syms.noSymbol);
-        if (bounds.head.tag == TYPEVAR)
-            // error condition, recover
-            bc.erasure_field = syms.objectType;
-        else
-            bc.erasure_field = erasure(bounds.head);
-        bc.members_field = new Scope(bc);
-        ClassType bt = (ClassType) bc.type;
-        bt.allparams_field = List.nil();
-        if (supertype != null) {
-            bt.supertype_field = supertype;
-            bt.interfaces_field = bounds;
-        } else {
-            bt.supertype_field = bounds.head;
-            bt.interfaces_field = bounds.tail;
-        }
-        Assert.check(bt.supertype_field.tsym.completer != null
-                || !bt.supertype_field.isInterface(), bt.supertype_field);
-        return bt;
-    }
-
-    /**
-     * Same as {@link #makeCompoundType(List,Type)}, except that the second
-     * parameter is computed directly. Note that this might cause a symbol
-     * completion. Hence, this version of makeCompoundType may not be called
-     * during a classfile read.
-     */
-    public Type makeCompoundType(List<Type> bounds) {
-        Type supertype = (bounds.head.tsym.flags() & INTERFACE) != 0 ? supertype(bounds.head)
-                : null;
-        return makeCompoundType(bounds, supertype);
-    }
-
-    /**
-     * A convenience wrapper for {@link #makeCompoundType(List)}; the arguments
-     * are converted to a list and passed to the other method. Note that this
-     * might cause a symbol completion. Hence, this version of makeCompoundType
-     * may not be called during a classfile read.
-     */
-    public Type makeCompoundType(Type bound1, Type bound2) {
-        return makeCompoundType(List.of(bound1, bound2));
-    }
-
 }
