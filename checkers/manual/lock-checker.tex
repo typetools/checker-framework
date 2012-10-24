@@ -29,7 +29,7 @@ other is a method annotation.
 \item[\code{@\refclass{lock/quals}{GuardedBy}}]
   indicates a type whose value may be accessed only when the given lock is
   held.  See the \ahref{doc/checkers/lock/quals/GuardedBy.html}{GuardedBy
-    Javadoc} for an explanation of the argument.  The lock
+    Javadoc} for an explanation of the argument and other details.  The lock
   acquisition and the value access may be arbitrarily far in the future;
   or, if the value is never accessed, the lock never need be held.
 
@@ -62,7 +62,10 @@ A return value may be annotated with \code{@GuardedBy}:
   }
 \end{Verbatim}
 
-A parameter may be annotated with \code{@GuardedBy}:
+A parameter may be annotated with \code{@GuardedBy}, which indicates that
+the method body must acquire the lock before accessing the parameter.  A
+client may pass a non-\code{@GuardedBy} reference as an argument, since it
+is legal to access such a reference after the lock is acquired.
 
 \begin{Verbatim}
   void helper1(@GuardedBy("MyClass.myLock") Object a) {
@@ -76,6 +79,7 @@ A parameter may be annotated with \code{@GuardedBy}:
     b.toString(); // OK: the lock is held
   }
   void helper3(Object c) {
+    helper1(c); // OK: passing a subtype in place of a the @GuardedBy supertype
     c.toString(); // OK: no lock constraints
   }
   void helper4(@GuardedBy("MyClass.myLock") Object d) {
