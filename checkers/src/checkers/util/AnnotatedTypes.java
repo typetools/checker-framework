@@ -1598,25 +1598,22 @@ public class AnnotatedTypes {
     /**
      * Make a compound type from non-empty list of types
      *
-     * @param bounds            the types from which the compound type is formed
-     * @param supertype         is objectType if all bounds are interfaces,
-     *                          null otherwise.
+     * @param bounds
+     *            the types from which the compound type is formed
+     * @param supertype
+     *            is objectType if all bounds are interfaces, null otherwise.
      */
-    public Type makeCompoundType(List<Type> bounds,
-                                 Type supertype) {
-        ClassSymbol bc =
-            new ClassSymbol(ABSTRACT|PUBLIC|SYNTHETIC|COMPOUND|ACYCLIC,
-                            Type.moreInfo
-                                ? names.fromString(bounds.toString())
-                                : names.empty,
-                            syms.noSymbol);
+    public Type makeCompoundType(List<Type> bounds, Type supertype) {
+        ClassSymbol bc = new ClassSymbol(ABSTRACT | PUBLIC | SYNTHETIC
+                | COMPOUND | ACYCLIC, Type.moreInfo ? names.fromString(bounds
+                .toString()) : names.empty, syms.noSymbol);
         if (bounds.head.tag == TYPEVAR)
             // error condition, recover
-                bc.erasure_field = syms.objectType;
-            else
-                bc.erasure_field = erasure(bounds.head);
-            bc.members_field = new Scope(bc);
-        ClassType bt = (ClassType)bc.type;
+            bc.erasure_field = syms.objectType;
+        else
+            bc.erasure_field = erasure(bounds.head);
+        bc.members_field = new Scope(bc);
+        ClassType bt = (ClassType) bc.type;
         bt.allparams_field = List.nil();
         if (supertype != null) {
             bt.supertype_field = supertype;
@@ -1626,29 +1623,27 @@ public class AnnotatedTypes {
             bt.interfaces_field = bounds.tail;
         }
         Assert.check(bt.supertype_field.tsym.completer != null
-                || !bt.supertype_field.isInterface(),
-            bt.supertype_field);
+                || !bt.supertype_field.isInterface(), bt.supertype_field);
         return bt;
     }
 
     /**
-     * Same as {@link #makeCompoundType(List,Type)}, except that the
-     * second parameter is computed directly. Note that this might
-     * cause a symbol completion.  Hence, this version of
-     * makeCompoundType may not be called during a classfile read.
+     * Same as {@link #makeCompoundType(List,Type)}, except that the second
+     * parameter is computed directly. Note that this might cause a symbol
+     * completion. Hence, this version of makeCompoundType may not be called
+     * during a classfile read.
      */
     public Type makeCompoundType(List<Type> bounds) {
-        Type supertype = (bounds.head.tsym.flags() & INTERFACE) != 0 ?
-            supertype(bounds.head) : null;
+        Type supertype = (bounds.head.tsym.flags() & INTERFACE) != 0 ? supertype(bounds.head)
+                : null;
         return makeCompoundType(bounds, supertype);
     }
 
     /**
-     * A convenience wrapper for {@link #makeCompoundType(List)}; the
-     * arguments are converted to a list and passed to the other
-     * method.  Note that this might cause a symbol completion.
-     * Hence, this version of makeCompoundType may not be called
-     * during a classfile read.
+     * A convenience wrapper for {@link #makeCompoundType(List)}; the arguments
+     * are converted to a list and passed to the other method. Note that this
+     * might cause a symbol completion. Hence, this version of makeCompoundType
+     * may not be called during a classfile read.
      */
     public Type makeCompoundType(Type bound1, Type bound2) {
         return makeCompoundType(List.of(bound1, bound2));
