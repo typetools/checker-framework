@@ -1598,7 +1598,7 @@ public class AnnotatedTypes {
                 } else if (st.tag == TYPEVAR) {
                     cl = closure(st).prepend(t);
                 } else {
-                    cl = List.of(t);
+                    cl = com.sun.tools.javac.util.List.of(t);
                 }
             } else {
                 cl = closure(supertype(t));
@@ -1608,6 +1608,11 @@ public class AnnotatedTypes {
             closureCache.put(t, cl);
         }
         return cl;
+    }
+
+    private AnnotatedTypeMirror supertype(AnnotatedTypeMirror t) {
+        // TODO Auto-generated method stub
+        return null;
     }
 
     /**
