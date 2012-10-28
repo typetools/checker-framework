@@ -1264,7 +1264,7 @@ public class AnnotatedTypeFactory {
      * the method returns null.
      *
      * Returns an aliased type of the current one
-     * 
+     *
      * @param a the qualifier to check for an alias
      * @return the alias or null if none exists
      */
@@ -1681,21 +1681,25 @@ public class AnnotatedTypeFactory {
         return;
     }
 
-    public Tree getDeclAnnotationTree(MethodTree meth,
+    /**
+     * Find the declaration annotation in method meth that
+     * has type anno and return the annotation tree.
+     *
+     * @param meth the method tree to query
+     * @param anno the annotation class to look for
+     * @return the AnnotationTree for anno in meth
+     */
+    public AnnotationTree getDeclAnnotationTree(MethodTree meth,
             Class<? extends Annotation> anno) {
-        String annoName = anno.getCanonicalName();
-        // String eltName = ElementUtils.getVerboseName(elt);
         List<? extends AnnotationTree> atrees = meth.getModifiers().getAnnotations();
         for (AnnotationTree atree : atrees) {
-            Tree atype = atree.getAnnotationType();
-            // TODO: totally wrong to use string test
-            if (anno.toString().endsWith(atype.toString())) {
-                return atype;
+            TypeMirror atype = InternalUtils.typeOf(atree);
+            if (anno.getCanonicalName().equals(atype.toString())) {
+                return atree;
             }
         }
         return null;
     }
-
 
     /**
      * Returns the actual annotation mirror used to annotate this element,
@@ -1889,7 +1893,7 @@ public class AnnotatedTypeFactory {
     }
 
     /** Accessor for the element utilities.
-     */ 
+     */
     public Elements getElementUtils() {
         return this.elements;
     }
