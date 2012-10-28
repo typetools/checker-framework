@@ -15,7 +15,6 @@ import com.sun.source.tree.Tree;
 import checkers.nullness.quals.KeyFor;
 import checkers.quals.DefaultLocation;
 import checkers.quals.Unqualified;
-import checkers.source.Result;
 import checkers.source.SourceChecker;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.BasicAnnotatedTypeFactory;
