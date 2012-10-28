@@ -1,4 +1,4 @@
-package checkers.quals;
+package dataflow.quals;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;

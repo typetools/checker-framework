@@ -23,7 +23,6 @@ import javacutils.AnnotationUtils;
 import javacutils.ElementUtils;
 import javacutils.InternalUtils;
 import javacutils.Pair;
-import javacutils.PurityUtils;
 import javacutils.TreeUtils;
 import javacutils.TypesUtils;
 
@@ -33,6 +32,8 @@ import dataflow.cfg.node.BooleanLiteralNode;
 import dataflow.cfg.node.MethodInvocationNode;
 import dataflow.cfg.node.Node;
 import dataflow.cfg.node.ReturnNode;
+import dataflow.quals.Pure;
+import dataflow.util.PurityUtils;
 
 import checkers.basetype.PurityChecker.PurityResult;
 import checkers.compilermsgs.quals.CompilerMessageKey;
@@ -46,7 +47,6 @@ import checkers.igj.quals.Immutable;
 import checkers.igj.quals.ReadOnly;
 import checkers.nonnull.NonNullFbcChecker;
 import checkers.quals.DefaultQualifier;
-import checkers.quals.Pure;
 import checkers.quals.Unused;
 import checkers.source.Result;
 import checkers.source.SourceVisitor;
@@ -288,7 +288,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
             boolean checkPurityAlways = checker.getProcessingEnvironment().getOptions().containsKey("suggestPureMethods");
             if (hasPurityAnnotation || checkPurityAlways) {
                 // check "no" purity
-                List<checkers.quals.Pure.Kind> kinds = PurityUtils
+                List<dataflow.quals.Pure.Kind> kinds = PurityUtils
                         .getPurityKinds(atypeFactory, node);
                 if (kinds.isEmpty() && hasPurityAnnotation) {
                     checker.report(

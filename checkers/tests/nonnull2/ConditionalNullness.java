@@ -1,5 +1,5 @@
+import dataflow.quals.Pure;
 import checkers.nonnull.quals.EnsuresNonNullIf;
-import checkers.quals.Pure;
 import checkers.nullness.quals.*;
 import java.util.*;
 public class ConditionalNullness {
