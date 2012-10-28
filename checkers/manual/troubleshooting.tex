@@ -477,6 +477,7 @@ Compile the Type Annotations javac compiler and the javap tool:
   cd $JSR308/jsr308-langtools/make
   ant clean build-javac build-javap
 \end{Verbatim}
+% $ to unconfuse Emacs LaTeX mode
 
 \item
  Add the \<jsr308-langtools/dist/bin> directory to the front of your PATH environment variable.
@@ -485,6 +486,11 @@ Compile the Type Annotations javac compiler and the javap tool:
 \begin{Verbatim}
   export PATH=$JSR308/jsr308-langtools/dist/bin:${PATH}
 \end{Verbatim}
+
+You may wish to later put the Checker Framework \<javac> even earlier on
+your path.  The Checker Framework's \<javac> ensures that the Checker
+Framework is on your classpath and bootclasspath, but is otherwise
+identical to the Type Annotations compiler.
 
 \end{enumerate}
 

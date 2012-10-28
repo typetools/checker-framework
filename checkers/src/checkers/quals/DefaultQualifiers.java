@@ -7,6 +7,7 @@ import java.lang.annotation.*;
 /**
  * Specifies the annotations to be included in a type without having to provide
  * them explicitly.
+ * <p>
  *
  * This annotation permits specifying multiple default qualifiers for more
  * than one type system.  It is necessary because Java forbids multiple

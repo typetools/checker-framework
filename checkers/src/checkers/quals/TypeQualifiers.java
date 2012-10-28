@@ -47,7 +47,7 @@ import checkers.types.AnnotatedTypeMirror;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target ( { ElementType.TYPE } )
+@Target( { ElementType.TYPE } )
 public @interface TypeQualifiers {
     /** The type qualifier annotations supported by the annotated {@code Checker}.
      * The checker may also support other, non-type-qualifier, annotations. */
