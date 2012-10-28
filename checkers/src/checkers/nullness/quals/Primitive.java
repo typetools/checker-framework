@@ -12,9 +12,12 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import com.sun.source.tree.Tree;
 
 /**
- * {@code @Primitive} is a type annotation internally used for primitive types.
+ * {@code @Primitive} is a type annotation to indicate primitive types.
+ * <p>
  *
- * This annotation is not written in source code and only internally used.
+ * This annotation may not be written in source code; it is an
+ * implementation detail of the checker.
+ * <p>
  *
  * This annotation is associated with the {@link NullnessChecker}.
  *
@@ -24,8 +27,7 @@ import com.sun.source.tree.Tree;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-// This qualifier is internal and cannot be explicitly written
-@Target({})
+@Target({}) // empty target prevents programmers from writing this in a program
 @TypeQualifier
 @InvisibleQualifier
 /*

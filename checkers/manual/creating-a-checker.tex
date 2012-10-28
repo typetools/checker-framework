@@ -20,7 +20,7 @@ type checker:
 \begin{Verbatim}
 @TypeQualifier
 @SubtypeOf(Unqualified.class)
-@Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface Encrypted {}
 \end{Verbatim}
 
@@ -180,7 +180,7 @@ For example:
 \begin{Verbatim}
   // Define an annotation for the @NonNull type qualifier.
   @TypeQualifier
-  @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
+  @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
   public @interface NonNull { }
 \end{Verbatim}
 
@@ -223,7 +223,7 @@ hierarchy.
 
   \begin{Verbatim}
     @TypeQualifier
-    @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
+    @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
     @SubtypeOf( { Nullable.class } )
     public @interface NonNull { }
   \end{Verbatim}
@@ -260,7 +260,7 @@ hierarchy.
 
   \begin{Verbatim}
     @TypeQualifier
-    @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
+    @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
     @SubtypeOf( { } )
     public @interface Nullable { }
   \end{Verbatim}
@@ -275,7 +275,7 @@ hierarchy.
 
   \begin{Verbatim}
     @TypeQualifier
-    @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
+    @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
     @PolymorphicQualifier
     public @interface PolyNull { }
   \end{Verbatim}
@@ -411,7 +411,7 @@ Section~\ref{encrypted-example} lacks an explicit top qualifier:
 \begin{Verbatim}
   @TypeQualifier
   @SubtypeOf(Unqualified.class)
-  @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
+  @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
   public @interface Encrypted {}
 \end{Verbatim}
 
@@ -501,14 +501,14 @@ type qualifiers:
       Tree.Kind.BOOLEAN_LITERAL, Tree.Kind.CHAR_LITERAL, Tree.Kind.DOUBLE_LITERAL, Tree.Kind.FLOAT_LITERAL,
       Tree.Kind.INT_LITERAL, Tree.Kind.LONG_LITERAL, Tree.Kind.STRING_LITERAL
     })
-  @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
+  @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
   public @interface NonNull {  }
 
 
   @TypeQualifier
   @SubtypeOf({})
   @ImplicitFor(trees={Tree.Kind.NULL_LITERAL})
-  @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
+  @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
   public @interface Nullable { }
 \end{Verbatim}
 %BEGIN LATEX

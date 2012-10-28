@@ -12,9 +12,10 @@ import java.lang.annotation.Target;
  * {@link checkers.types.TreeAnnotator#addTreeKind(com.sun.source.tree.Tree.Kind, javax.lang.model.element.AnnotationMirror)} to
  * add implicit annotations and needs to manually add the bottom qualifier to the
  * qualifier hierarchy.
- *
  * <p>
- * Programmers cannot write this qualifier in source code.
+ *
+ * This annotation may not be written in source code; it is an
+ * implementation detail of the checker.
  * 
  * @see checkers.types.QualifierHierarchy#getBottomAnnotations()
  */
