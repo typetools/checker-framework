@@ -1,4 +1,4 @@
-import checkers.quals.*;
+import dataflow.quals.*;
 
 package java.lang;
 

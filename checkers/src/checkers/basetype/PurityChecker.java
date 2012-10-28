@@ -8,11 +8,12 @@ import java.util.List;
 import javax.lang.model.element.Element;
 
 import javacutils.InternalUtils;
-import javacutils.PurityUtils;
 import javacutils.TreeUtils;
 
-import checkers.quals.Pure;
-import checkers.quals.Pure.Kind;
+import dataflow.quals.Pure;
+import dataflow.quals.Pure.Kind;
+import dataflow.util.PurityUtils;
+
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeFactory;
 
@@ -73,7 +74,7 @@ import com.sun.source.tree.WildcardTree;
 import com.sun.tools.javac.tree.TreeScanner;
 
 /**
- * A visitor that checks the purity (as defined by {@link checkers.quals.Pure})
+ * A visitor that checks the purity (as defined by {@link dataflow.quals.Pure})
  * of a statement or expression.
  * 
  * @see The annotation {@link Pure} for more details on what is checked and the

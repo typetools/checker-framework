@@ -1,4 +1,4 @@
-package javacutils;
+package dataflow.util;
 
 import java.util.Collections;
 import java.util.List;
@@ -6,10 +6,14 @@ import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 
+import javacutils.AnnotationProvider;
+import javacutils.AnnotationUtils;
+import javacutils.InternalUtils;
+
 import com.sun.source.tree.MethodTree;
 
-import checkers.quals.Pure;
-import checkers.quals.Pure.Kind;
+import dataflow.quals.Pure;
+import dataflow.quals.Pure.Kind;
 
 /**
  * An utility class for working with the {@link Pure} annotation.

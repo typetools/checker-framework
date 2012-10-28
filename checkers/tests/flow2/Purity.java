@@ -3,7 +3,8 @@ import checkers.util.test.*;
 import java.util.*;
 import checkers.quals.*;
 import tests.util.*;
-import checkers.quals.Pure.Kind;
+import dataflow.quals.Pure;
+import dataflow.quals.Pure.Kind;
 
 // various tests for the @Pure annotation
 class Purity {
