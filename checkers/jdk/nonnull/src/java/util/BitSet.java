@@ -1,5 +1,6 @@
 package java.util;
-import checkers.quals.Pure;
+import dataflow.quals.Pure;
+
 import checkers.nonnull.quals.Nullable;
 
 public class BitSet implements Cloneable, java.io.Serializable {

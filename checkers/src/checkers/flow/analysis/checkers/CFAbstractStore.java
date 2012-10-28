@@ -13,7 +13,6 @@ import javax.lang.model.util.Types;
 
 import javacutils.AnnotationUtils;
 import javacutils.Pair;
-import javacutils.PurityUtils;
 
 import dataflow.analysis.FlowExpressions;
 import dataflow.analysis.FlowExpressions.PureMethodCall;
@@ -23,6 +22,7 @@ import dataflow.cfg.node.FieldAccessNode;
 import dataflow.cfg.node.LocalVariableNode;
 import dataflow.cfg.node.MethodInvocationNode;
 import dataflow.cfg.node.Node;
+import dataflow.util.PurityUtils;
 
 import checkers.quals.MonotonicAnnotation;
 import checkers.types.AnnotatedTypeFactory;

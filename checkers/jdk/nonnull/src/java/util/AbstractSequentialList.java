@@ -1,5 +1,6 @@
 package java.util;
-import checkers.quals.Pure;
+import dataflow.quals.Pure;
+
 import checkers.nonnull.quals.Nullable;
 
 // Subclasses of this interface/class may opt to prohibit null elements

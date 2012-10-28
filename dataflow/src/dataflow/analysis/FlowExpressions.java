@@ -9,7 +9,6 @@ import javax.lang.model.type.TypeMirror;
 
 import javacutils.AnnotationProvider;
 import javacutils.ElementUtils;
-import javacutils.PurityUtils;
 import javacutils.TreeUtils;
 
 import dataflow.cfg.node.ClassNameNode;
@@ -20,6 +19,7 @@ import dataflow.cfg.node.Node;
 import dataflow.cfg.node.ThisLiteralNode;
 import dataflow.cfg.node.ValueLiteralNode;
 import dataflow.util.HashCodeUtils;
+import dataflow.util.PurityUtils;
 
 /**
  * Collection of classes and helper functions to represent Java expressions
