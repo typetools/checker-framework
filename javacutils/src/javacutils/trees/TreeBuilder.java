@@ -1,14 +1,10 @@
 package javacutils.trees;
 
-import java.util.Map;
-import java.util.Set;
+import javacutils.InternalUtils;
+import javacutils.TypesUtils;
 
 import javax.annotation.processing.ProcessingEnvironment;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
@@ -16,13 +12,9 @@ import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
-
-import javacutils.InternalUtils;
-import javacutils.TypesUtils;
 
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.BinaryTree;
@@ -36,7 +28,6 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
-
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
@@ -45,9 +36,7 @@ import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeInfo;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Context;
-import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Names;
-import com.sun.tools.javac.util.Pair;
 
 /**
  * The TreeBuilder permits the creation of new AST Trees using the
@@ -104,7 +93,7 @@ public class TreeBuilder {
         assert iteratorMethod != null : "no iterator method declared for expression type";
 
         Type.MethodType methodType = (Type.MethodType)iteratorMethod.asType();
-        Symbol.TypeSymbol methodClass = (Symbol.TypeSymbol)methodType.asElement();
+        Symbol.TypeSymbol methodClass = methodType.asElement();
         DeclaredType iteratorType = (DeclaredType)methodType.getReturnType();
         TypeMirror elementType;
 
@@ -171,7 +160,7 @@ public class TreeBuilder {
             (JCTree.JCFieldAccess)
             maker.Select((JCTree.JCExpression)iteratorExpr,
                          hasNextMethod);
-        hasNextAccess.setType((Type.MethodType)hasNextMethod.asType());
+        hasNextAccess.setType(hasNextMethod.asType());
 
         return hasNextAccess;
     }
@@ -206,7 +195,7 @@ public class TreeBuilder {
         assert nextMethod != null : "no next method declared for expression type";
 
         Type.MethodType methodType = (Type.MethodType)nextMethod.asType();
-        Symbol.TypeSymbol methodClass = (Symbol.TypeSymbol)methodType.asElement();
+        Symbol.TypeSymbol methodClass = methodType.asElement();
         Type elementType;
 
         if (exprType.getTypeArguments().size() > 0) {
