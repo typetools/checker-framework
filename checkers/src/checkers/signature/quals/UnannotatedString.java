@@ -9,10 +9,12 @@ import checkers.quals.TypeQualifier;
 /**
  * Top qualifier in the type hierarchy.
  * <p>
- * Not to be written by the programmer, only used internally.
+ *
+ * This annotation may not be written in source code; it is an
+ * implementation detail of the checker.
  */
 @DefaultQualifierInHierarchy
 @TypeQualifier
 @SubtypeOf({})
-@Target({})
+@Target({}) // empty target prevents programmers from writing this in a program
 public @interface UnannotatedString {}

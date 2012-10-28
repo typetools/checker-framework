@@ -9,7 +9,7 @@ import checkers.quals.Unqualified;
 
 @TypeQualifier
 @SubtypeOf(Unqualified.class)
-@Target(ElementType.TYPE_USE)
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface Value {
     int value() default 0;
 }

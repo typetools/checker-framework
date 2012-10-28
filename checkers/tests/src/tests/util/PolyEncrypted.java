@@ -7,5 +7,5 @@ import checkers.quals.*;
 
 @PolymorphicQualifier
 @TypeQualifier
-@Target(ElementType.TYPE_USE)
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface PolyEncrypted {}

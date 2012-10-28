@@ -48,7 +48,7 @@ import checkers.quals.TypeQualifier;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE_USE)
+@Target(ElementType.TYPE_USE) // not applicable to ElementType.TYPE_PARAMETER
 @TypeQualifier
 @SubtypeOf(Nullable.class)
 public @interface LazyNonNull {}

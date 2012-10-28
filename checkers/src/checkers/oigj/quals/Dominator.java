@@ -8,7 +8,7 @@ import checkers.quals.TypeQualifier;
 
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({FIELD, LOCAL_VARIABLE, METHOD, PARAMETER, TYPE})
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @TypeQualifier
 @SubtypeOf(World.class)
 public @interface Dominator {}
