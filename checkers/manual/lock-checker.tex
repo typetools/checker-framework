@@ -208,6 +208,22 @@ meanings of the two annotations.
 % when the method was called.
 
 
+\subsection{Possible extensions\label{lock-extensions}}
+
+The Lock Checker validates some uses of locks, but not all.  It would be
+possible to enrich it with additional annotations.  This would increase the
+programmer annotation burden, but would provide additional guarantees.
+
+Lock ordering:  Specify that one lock must be acquired before or after
+another, or specify a global ordering for all locks.  This would prevent
+deadlock.
+
+Not-holding:  Specify that a method must not be called if any of the listed
+locks are held.
+
+These features are supported by 
+\ahref{http://clang.llvm.org/docs/LanguageExtensions.html#threadsafety}{Clang's thread-safety annotations}.
+
 
 % LocalWords:  quals GuardedBy JCIP putfield getfield invokevirtual
-% LocalWords:  invokeinterface
+% LocalWords:  invokeinterface threadsafety Clang's
