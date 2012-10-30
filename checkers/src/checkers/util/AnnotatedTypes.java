@@ -620,7 +620,7 @@ public class AnnotatedTypes {
      *
      * @param expr the method or constructor invocation tree; the passed argument
      *   has to be a subtype of MethodInvocationTree or NewClassTree.
-     * @param elt the element corresponding to the tree. 
+     * @param elt the element corresponding to the tree.
      * @return the mapping of the type variables to type arguments for
      *   this method or constructor invocation.
      */
@@ -953,7 +953,7 @@ public class AnnotatedTypes {
             MethodTree method = TreeUtils.enclosingMethod(path);
             return (atypeFactory.getAnnotatedType(method)).getReturnType();
         } else if (assignmentContext instanceof VariableTree) {
-            return atypeFactory.getAnnotatedType((VariableTree)assignmentContext);
+            return atypeFactory.getAnnotatedType(assignmentContext);
         }
 
         ErrorReporter.errorAbort("AnnotatedTypes.assignedTo: shouldn't be here!");
@@ -1022,7 +1022,7 @@ public class AnnotatedTypes {
             // TODO: This code needs some more serious thought.
             if (lub.getKind() == TypeKind.WILDCARD) {
                 subtypes.add(deepCopy(lub));
-            } else { 
+            } else {
                 for (AnnotatedTypeMirror type : types) {
                     if (type == null) {
                         continue;
