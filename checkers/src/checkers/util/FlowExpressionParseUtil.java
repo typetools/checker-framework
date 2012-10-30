@@ -9,6 +9,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
 
+import javacutils.ElementUtils;
 import javacutils.InternalUtils;
 import javacutils.Resolver;
 import javacutils.TreeUtils;
@@ -113,7 +114,7 @@ public class FlowExpressionParseUtil {
                 Resolver resolver = new Resolver(env);
                 Element fieldElem = resolver.findField(s, context.receiverType,
                         path);
-                return new FieldAccess(context.receiver, context.receiverType,
+                return new FieldAccess(context.receiver, ElementUtils.getType(fieldElem),
                         fieldElem);
             } catch (Throwable t) {
                 throw new FlowExpressionParseException(Result.failure(
