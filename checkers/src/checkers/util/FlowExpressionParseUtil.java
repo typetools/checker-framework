@@ -147,7 +147,7 @@ public class FlowExpressionParseUtil {
                 Element methodElement = resolver.findMethod(methodName,
                         context.receiverType, path);
                 List<Receiver> parameters = new ArrayList<>();
-                return new PureMethodCall(context.receiverType, methodElement,
+                return new PureMethodCall(ElementUtils.getType(methodElement), methodElement,
                         context.receiver, parameters);
             } catch (Throwable t) {
                 throw new FlowExpressionParseException(Result.failure(
