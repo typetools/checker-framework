@@ -321,6 +321,12 @@ public class InternalUtils {
         if (t2.getKind() == TypeKind.NULL) {
             return t2;
         }
+        if (t1.getKind() == TypeKind.WILDCARD) {
+            return t2;
+        }
+        if (t2.getKind() == TypeKind.WILDCARD) {
+            return t1;
+        }
         return types.glb(t1, t2);
     }
 }
