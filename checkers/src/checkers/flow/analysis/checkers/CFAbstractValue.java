@@ -17,6 +17,7 @@ import dataflow.util.HashCodeUtils;
 import checkers.basetype.BaseTypeChecker;
 import checkers.types.AbstractBasicAnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
+import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
 import checkers.types.QualifierHierarchy;
@@ -87,19 +88,20 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
      *
      * <p>
      * TODO: The code in this method is rather similar to
-     * {@link #mostSpecific(CFAbstractValue, CFAbstractValue)}. Can code be
-     * reused?
+     * {@link CFAbstractValue#mostSpecific(CFAbstractValue, CFAbstractValue)}.
+     * Can code be reused?
      */
     public AnnotatedTypeMirror leastUpperBound(AnnotatedTypeMirror type,
             AnnotatedTypeMirror otherType) {
         AbstractBasicAnnotatedTypeFactory<? extends BaseTypeChecker, V, ?, ?, ?> factory = analysis
                 .getFactory();
         ProcessingEnvironment processingEnv = factory.getProcessingEnv();
+        QualifierHierarchy qualifierHierarchy = factory.getQualifierHierarchy();
+
         TypeMirror lubType = InternalUtils.leastUpperBound(processingEnv,
                 type.getUnderlyingType(), otherType.getUnderlyingType());
         AnnotatedTypeMirror lubAnnotatedType = AnnotatedTypeMirror.createType(
                 lubType, factory);
-        QualifierHierarchy qualifierHierarchy = analysis.qualifierHierarchy;
 
         Set<AnnotationMirror> annos1;
         Set<AnnotationMirror> annos2;
@@ -137,6 +139,37 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
                 upperBound.addAnnotations(qualifierHierarchy.leastUpperBounds(
                         upperBound1, upperBound2));
             }
+        } else if (type.getKind() == TypeKind.ARRAY
+                && otherType.getKind() == TypeKind.ARRAY) {
+            AnnotatedArrayType aLubAnnotatedType = (AnnotatedArrayType) lubAnnotatedType;
+            // for arrays, we have:
+            // lub(@A1 A @A2[],@B1 B @B2[]) = lub(@A1,@B1) lub(A, B)
+            // lub(@A2,@B2) []
+            AnnotatedArrayType a = (AnnotatedArrayType) type;
+            AnnotatedArrayType b = (AnnotatedArrayType) otherType;
+
+            Set<AnnotationMirror> componentAnnos = qualifierHierarchy
+                    .leastUpperBounds(a.getComponentType(), b
+                            .getComponentType(), a.getComponentType()
+                            .getAnnotations(), b.getComponentType()
+                            .getAnnotations());
+            aLubAnnotatedType.getComponentType().addAnnotations(componentAnnos);
+        } else if (kind == TypeKind.ARRAY) {
+            AnnotatedArrayType aLubAnnotatedType = (AnnotatedArrayType) lubAnnotatedType;
+            // lub(a,b) is an array, but not both a and b are arrays -> either a
+            // or b must be the null type.
+            AnnotatedArrayType array;
+            if (type.getKind() == TypeKind.ARRAY) {
+                assert otherType.getKind() == TypeKind.NULL;
+                array = (AnnotatedArrayType) type;
+            } else {
+                assert otherType.getKind() == TypeKind.ARRAY;
+                assert type.getKind() == TypeKind.NULL;
+                array = (AnnotatedArrayType) otherType;
+            }
+            // copy over annotations
+            aLubAnnotatedType.getComponentType().addAnnotations(
+                    array.getComponentType().getAnnotations());
         }
         return lubAnnotatedType;
     }
@@ -243,7 +276,8 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
             }
         }
 
-        if (result.getKind() == TypeKind.WILDCARD) {
+        TypeKind kind = result.getKind();
+        if (kind == TypeKind.WILDCARD) {
             AnnotatedWildcardType wResult = (AnnotatedWildcardType) result;
             AnnotatedTypeMirror extendsBound = wResult.getExtendsBound();
             extendsBound.clearAnnotations();
@@ -252,7 +286,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
                     .getType());
             extendsBound.addAnnotations(mostSpecific(extendsBound1,
                     extendsBound2));
-        } else if (result.getKind() == TypeKind.TYPEVAR) {
+        } else if (kind == TypeKind.TYPEVAR) {
             AnnotatedTypeVariable tResult = (AnnotatedTypeVariable) result;
             AnnotatedTypeMirror upperBound = tResult.getUpperBound();
             Collection<AnnotationMirror> upperBound1 = getUpperBound(getType());
@@ -266,6 +300,21 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
                 upperBound
                         .addAnnotations(mostSpecific(upperBound1, upperBound2));
             }
+        } else if (type.getKind() == TypeKind.ARRAY
+                && otherType.getKind() == TypeKind.ARRAY) {
+            AnnotatedArrayType aLubAnnotatedType = (AnnotatedArrayType) result;
+            // for arrays, we have:
+            // ms(@A1 A @A2[],@B1 A @B2[]) = ms(@A1,@B1) A
+            // ms(@A2,@B2) []
+            AnnotatedArrayType a = (AnnotatedArrayType) type;
+            AnnotatedArrayType b = (AnnotatedArrayType) otherType;
+
+            Set<AnnotationMirror> componentAnnos = mostSpecific(a.getComponentType()
+                            .getAnnotations(), b.getComponentType()
+                            .getAnnotations());
+            aLubAnnotatedType.getComponentType().addAnnotations(componentAnnos);
+        } else if (kind == TypeKind.ARRAY) {
+            assert false;
         }
 
         return analysis.createAbstractValue(result);
@@ -274,9 +323,9 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
     /**
      * Returns the set of annotations that is most specific from 'a' and 'b'.
      */
-    private Iterable<? extends AnnotationMirror> mostSpecific(
+    private Set<AnnotationMirror> mostSpecific(
             Collection<AnnotationMirror> a, Collection<AnnotationMirror> b) {
-        Collection<AnnotationMirror> result = AnnotationUtils
+        Set<AnnotationMirror> result = AnnotationUtils
                 .createAnnotationSet();
         QualifierHierarchy qualHierarchy = analysis.qualifierHierarchy;
         for (AnnotationMirror top : qualHierarchy.getTopAnnotations()) {
