@@ -232,7 +232,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
         }
         // Create new full type (with the same underlying type), and then add
         // the appropriate annotations.
-        TypeMirror underlyingType = InternalUtils.leastUpperBound(analysis
+        TypeMirror underlyingType = InternalUtils.greatestLowerBound(analysis
                 .getEnv(), getType().getUnderlyingType(), other.getType()
                 .getUnderlyingType());
         AnnotatedTypeMirror result = AnnotatedTypeMirror.createType(
@@ -321,7 +321,15 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
                     bb.getComponentType(), null,
                     aLubAnnotatedType.getComponentType());
         } else if (kind == TypeKind.ARRAY) {
-            assert false;
+            AnnotatedArrayType aLubAnnotatedType = (AnnotatedArrayType) result;
+            AnnotatedTypeMirror componentType = aLubAnnotatedType.getComponentType();
+            // copy annotations from the input array (either a or b)
+            if (a.getKind() == TypeKind.ARRAY) {
+                componentType.addAnnotations(((AnnotatedArrayType) a).getAnnotations());
+            } else {
+                assert b.getKind() == TypeKind.ARRAY;
+                componentType.addAnnotations(((AnnotatedArrayType) b).getAnnotations());
+            }
         }
     }
 
