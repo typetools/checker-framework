@@ -5,10 +5,12 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
 import javacutils.Pair;
@@ -20,6 +22,9 @@ import checkers.basetype.BaseTypeChecker;
 import checkers.types.AbstractBasicAnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
+import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
 import checkers.types.QualifierHierarchy;
 import checkers.types.TypeHierarchy;
 
@@ -146,10 +151,22 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
      */
     public V createSingleAnnotationValue(AnnotationMirror anno, TypeMirror underlyingType) {
         AnnotatedTypeMirror type = AnnotatedTypeMirror.createType(
-                underlyingType, atypeFactory);
-        type.addAnnotations(getFactory().getQualifierHierarchy()
-                .getTopAnnotations());
+                underlyingType, getFactory());
+        Set<AnnotationMirror> tops = getFactory().getQualifierHierarchy()
+                .getTopAnnotations();
+        type.addAnnotations(tops);
         type.replaceAnnotation(anno);
+        TypeKind kind = type.getKind();
+        if (kind == TypeKind.ARRAY) {
+            AnnotatedArrayType a = (AnnotatedArrayType) type;
+            a.getComponentType().addAnnotations(tops);
+        } else if (kind == TypeKind.TYPEVAR) {
+            AnnotatedTypeVariable a = (AnnotatedTypeVariable) type;
+            a.getUpperBound().addAnnotations(tops);
+        } else if (kind == TypeKind.WILDCARD) {
+            AnnotatedWildcardType a = (AnnotatedWildcardType) type;
+            a.getExtendsBound().addAnnotations(tops);
+        }
         return createAbstractValue(type);
     }
 }
