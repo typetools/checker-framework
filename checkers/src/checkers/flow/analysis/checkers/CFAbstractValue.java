@@ -66,15 +66,6 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
         return type;
     }
 
-    /**
-     * Computes and returns the least upper bound of two sets of type
-     * annotations.
-     *
-     * <p>
-     * TODO: The code in this method is rather similar to
-     * {@link #mostSpecific(CFAbstractValue, CFAbstractValue)}. Can code be
-     * reused?
-     */
     @Override
     public V leastUpperBound(/* @Nullable */V other) {
         if (other == null) {
@@ -82,12 +73,30 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
             V v = (V) this;
             return v;
         }
+        AnnotatedTypeMirror otherType = other.getType();
+        AnnotatedTypeMirror type = getType();
+
+        AnnotatedTypeMirror lubAnnotatedType = leastUpperBound(type, otherType);
+
+        return analysis.createAbstractValue(lubAnnotatedType);
+    }
+
+    /**
+     * Computes and returns the least upper bound of two
+     * {@link AnnotatedTypeMirror}.
+     *
+     * <p>
+     * TODO: The code in this method is rather similar to
+     * {@link #mostSpecific(CFAbstractValue, CFAbstractValue)}. Can code be
+     * reused?
+     */
+    public AnnotatedTypeMirror leastUpperBound(AnnotatedTypeMirror type,
+            AnnotatedTypeMirror otherType) {
         AbstractBasicAnnotatedTypeFactory<? extends BaseTypeChecker, V, ?, ?, ?> factory = analysis
                 .getFactory();
         ProcessingEnvironment processingEnv = factory.getProcessingEnv();
         TypeMirror lubType = InternalUtils.leastUpperBound(processingEnv,
-                getType().getUnderlyingType(), other.getType()
-                        .getUnderlyingType());
+                type.getUnderlyingType(), otherType.getUnderlyingType());
         AnnotatedTypeMirror lubAnnotatedType = AnnotatedTypeMirror.createType(
                 lubType, factory);
         QualifierHierarchy qualifierHierarchy = analysis.qualifierHierarchy;
@@ -95,32 +104,31 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
         Set<AnnotationMirror> annos1;
         Set<AnnotationMirror> annos2;
         if (QualifierHierarchy.canHaveEmptyAnnotationSet(lubAnnotatedType)) {
-            annos1 = getType().getAnnotations();
-            annos2 = other.getType().getAnnotations();
+            annos1 = type.getAnnotations();
+            annos2 = otherType.getAnnotations();
         } else {
-            annos1 = getType().getEffectiveAnnotations();
-            annos2 = other.getType().getEffectiveAnnotations();
+            annos1 = type.getEffectiveAnnotations();
+            annos2 = otherType.getEffectiveAnnotations();
         }
 
         lubAnnotatedType.addAnnotations(qualifierHierarchy.leastUpperBounds(
-                getType(), other.getType(), annos1, annos2));
+                type, otherType, annos1, annos2));
 
-        if (lubAnnotatedType.getKind() == TypeKind.WILDCARD) {
+        TypeKind kind = lubAnnotatedType.getKind();
+        if (kind == TypeKind.WILDCARD) {
             AnnotatedWildcardType wLubAnnotatedType = (AnnotatedWildcardType) lubAnnotatedType;
             AnnotatedTypeMirror extendsBound = wLubAnnotatedType
                     .getExtendsBound();
             extendsBound.clearAnnotations();
-            Collection<AnnotationMirror> extendsBound1 = getUpperBound(getType());
-            Collection<AnnotationMirror> extendsBound2 = getUpperBound(other
-                    .getType());
+            Collection<AnnotationMirror> extendsBound1 = getUpperBound(type);
+            Collection<AnnotationMirror> extendsBound2 = getUpperBound(otherType);
             extendsBound.addAnnotations(qualifierHierarchy.leastUpperBounds(
                     extendsBound1, extendsBound2));
-        } else if (lubAnnotatedType.getKind() == TypeKind.TYPEVAR) {
+        } else if (kind == TypeKind.TYPEVAR) {
             AnnotatedTypeVariable tLubAnnotatedType = (AnnotatedTypeVariable) lubAnnotatedType;
             AnnotatedTypeMirror upperBound = tLubAnnotatedType.getUpperBound();
-            Collection<AnnotationMirror> upperBound1 = getUpperBound(getType());
-            Collection<AnnotationMirror> upperBound2 = getUpperBound(other
-                    .getType());
+            Collection<AnnotationMirror> upperBound1 = getUpperBound(type);
+            Collection<AnnotationMirror> upperBound2 = getUpperBound(otherType);
 
             // TODO: how is it possible that uppBound1 or 2 does not have any
             // annotations?
@@ -130,8 +138,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
                         upperBound1, upperBound2));
             }
         }
-
-        return analysis.createAbstractValue(lubAnnotatedType);
+        return lubAnnotatedType;
     }
 
     /**
