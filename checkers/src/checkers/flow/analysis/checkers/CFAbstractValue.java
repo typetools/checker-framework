@@ -241,8 +241,8 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
                 .getQualifierHierarchy();
         AnnotatedTypeMirror otherType = other.getType();
 
-        mostSpecific(qualHierarchy, getType(), otherType, backup.getType(),
-                result);
+        mostSpecific(qualHierarchy, getType(), otherType, backup == null ? null
+                : backup.getType(), result);
 
         return analysis.createAbstractValue(result);
     }
