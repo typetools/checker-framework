@@ -8,6 +8,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
+import javacutils.AnnotationUtils;
 import javacutils.InternalUtils;
 
 import dataflow.analysis.AbstractValue;
@@ -68,6 +69,11 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
     /**
      * Computes and returns the least upper bound of two sets of type
      * annotations.
+     *
+     * <p>
+     * TODO: The code in this method is rather similar to
+     * {@link #mostSpecific(CFAbstractValue, CFAbstractValue)}. Can code be
+     * reused?
      */
     @Override
     public V leastUpperBound(/* @Nullable */V other) {
@@ -173,6 +179,10 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
      * {@link #isSubtype(int, InferredAnnotation, InferredAnnotation)}, then the
      * respective value from {@code backup} is used. If {@code backup} is
      * {@code null}, then an assertion error is raised.
+     *
+     * <p>
+     * TODO: The code in this method is rather similar to
+     * {@link #leastUpperBound(CFAbstractValue)}. Can code be reused?
      */
     public V mostSpecific(/* @Nullable */V other, /* @Nullable */V backup) {
         if (other == null) {
@@ -225,7 +235,58 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
                 }
             }
         }
+
+        if (result.getKind() == TypeKind.WILDCARD) {
+            AnnotatedWildcardType wResult = (AnnotatedWildcardType) result;
+            AnnotatedTypeMirror extendsBound = wResult.getExtendsBound();
+            extendsBound.clearAnnotations();
+            Collection<AnnotationMirror> extendsBound1 = getUpperBound(getType());
+            Collection<AnnotationMirror> extendsBound2 = getUpperBound(other
+                    .getType());
+            extendsBound.addAnnotations(mostSpecific(extendsBound1,
+                    extendsBound2));
+        } else if (result.getKind() == TypeKind.TYPEVAR) {
+            AnnotatedTypeVariable tResult = (AnnotatedTypeVariable) result;
+            AnnotatedTypeMirror upperBound = tResult.getUpperBound();
+            Collection<AnnotationMirror> upperBound1 = getUpperBound(getType());
+            Collection<AnnotationMirror> upperBound2 = getUpperBound(other
+                    .getType());
+
+            // TODO: how is it possible that uppBound1 or 2 does not have any
+            // annotations?
+            if (upperBound1.size() != 0 && upperBound2.size() != 0) {
+                upperBound.clearAnnotations();
+                upperBound
+                        .addAnnotations(mostSpecific(upperBound1, upperBound2));
+            }
+        }
+
         return analysis.createAbstractValue(result);
+    }
+
+    /**
+     * Returns the set of annotations that is most specific from 'a' and 'b'.
+     */
+    private Iterable<? extends AnnotationMirror> mostSpecific(
+            Collection<AnnotationMirror> a, Collection<AnnotationMirror> b) {
+        Collection<AnnotationMirror> result = AnnotationUtils
+                .createAnnotationSet();
+        QualifierHierarchy qualHierarchy = analysis.qualifierHierarchy;
+        for (AnnotationMirror top : qualHierarchy.getTopAnnotations()) {
+            AnnotationMirror aAnno = qualHierarchy.findCorrespondingAnnotation(
+                    top, a);
+            AnnotationMirror bAnno = qualHierarchy.findCorrespondingAnnotation(
+                    top, b);
+            if (qualHierarchy.isSubtype(aAnno, bAnno)) {
+                result.add(aAnno);
+            } else if (qualHierarchy.isSubtype(bAnno, aAnno)) {
+                result.add(bAnno);
+            } else {
+                assert false : "Neither of the two values is more specific: "
+                        + a + ", " + b + ".";
+            }
+        }
+        return result;
     }
 
     @Override
