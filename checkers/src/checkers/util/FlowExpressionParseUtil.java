@@ -5,24 +5,14 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.Element;
-import javax.lang.model.type.TypeMirror;
-
 import javacutils.ElementUtils;
 import javacutils.InternalUtils;
 import javacutils.Resolver;
 import javacutils.TreeUtils;
 
-import dataflow.analysis.FlowExpressions;
-import dataflow.analysis.FlowExpressions.FieldAccess;
-import dataflow.analysis.FlowExpressions.PureMethodCall;
-import dataflow.analysis.FlowExpressions.Receiver;
-import dataflow.analysis.FlowExpressions.ThisReference;
-import dataflow.cfg.node.ImplicitThisLiteralNode;
-import dataflow.cfg.node.LocalVariableNode;
-import dataflow.cfg.node.MethodInvocationNode;
-import dataflow.cfg.node.Node;
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.Element;
+import javax.lang.model.type.TypeMirror;
 
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeFactory;
@@ -31,6 +21,17 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+
+import dataflow.analysis.FlowExpressions;
+import dataflow.analysis.FlowExpressions.ClassName;
+import dataflow.analysis.FlowExpressions.FieldAccess;
+import dataflow.analysis.FlowExpressions.PureMethodCall;
+import dataflow.analysis.FlowExpressions.Receiver;
+import dataflow.analysis.FlowExpressions.ThisReference;
+import dataflow.cfg.node.ImplicitThisLiteralNode;
+import dataflow.cfg.node.LocalVariableNode;
+import dataflow.cfg.node.MethodInvocationNode;
+import dataflow.cfg.node.Node;
 
 /**
  * A collection of helper methods to parse a string that represents a restricted
@@ -109,16 +110,31 @@ public class FlowExpressionParseUtil {
         if (selfMatcher.matches() && allowSelf) {
             return new ThisReference(context.receiverType);
         } else if (identifierMatcher.matches() && allowIdentifier) {
-            // field access
+            Resolver resolver = new Resolver(env);
             try {
-                Resolver resolver = new Resolver(env);
+                // field access
                 Element fieldElem = resolver.findField(s, context.receiverType,
                         path);
-                return new FieldAccess(context.receiver, ElementUtils.getType(fieldElem),
-                        fieldElem);
+                if (ElementUtils.isStatic(fieldElem)) {
+                    Element classElem = fieldElem.getEnclosingElement();
+                    Receiver staticClassReceiver = new ClassName(
+                            ElementUtils.getType(classElem), classElem);
+                    return new FieldAccess(staticClassReceiver,
+                            ElementUtils.getType(fieldElem), fieldElem);
+                } else {
+                    return new FieldAccess(context.receiver,
+                            ElementUtils.getType(fieldElem), fieldElem);
+                }
             } catch (Throwable t) {
-                throw new FlowExpressionParseException(Result.failure(
-                        "flowexpr.parse.error", s));
+                try {
+                    // class literal
+                    Element classElem = resolver.findClass(s, path);
+                    return new ClassName(ElementUtils.getType(classElem),
+                            classElem);
+                } catch (Throwable t2) {
+                    throw new FlowExpressionParseException(Result.failure(
+                            "flowexpr.parse.error", s));
+                }
             }
         } else if (parameterMatcher.matches() && allowParameter) {
             // parameter syntax
@@ -147,8 +163,8 @@ public class FlowExpressionParseUtil {
                 Element methodElement = resolver.findMethod(methodName,
                         context.receiverType, path);
                 List<Receiver> parameters = new ArrayList<>();
-                return new PureMethodCall(ElementUtils.getType(methodElement), methodElement,
-                        context.receiver, parameters);
+                return new PureMethodCall(ElementUtils.getType(methodElement),
+                        methodElement, context.receiver, parameters);
             } catch (Throwable t) {
                 throw new FlowExpressionParseException(Result.failure(
                         "flowexpr.parse.error", s));
