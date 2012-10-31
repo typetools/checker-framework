@@ -11,7 +11,6 @@ import javacutils.AnnotationProvider;
 import javacutils.ElementUtils;
 import javacutils.PurityUtils;
 import javacutils.TreeUtils;
-
 import dataflow.cfg.node.ClassNameNode;
 import dataflow.cfg.node.FieldAccessNode;
 import dataflow.cfg.node.LocalVariableNode;
@@ -32,9 +31,9 @@ import dataflow.util.HashCodeUtils;
  * <li>Pure method calls (e.g., <em>o.m()</em>)</li>
  * <li>Unknown other expressions to mark that something else was present.</li>
  * </ul>
- * 
+ *
  * @author Stefan Heule
- * 
+ *
  */
 public class FlowExpressions {
 
@@ -46,7 +45,11 @@ public class FlowExpressions {
             AnnotationProvider provider, FieldAccessNode node) {
         Receiver receiver;
         Node receiverNode = node.getReceiver();
-        receiver = internalReprOf(provider, receiverNode);
+        if (node.isStatic()) {
+            receiver = new ClassName(receiverNode.getType());
+        } else {
+            receiver = internalReprOf(provider, receiverNode);
+        }
         return new FieldAccess(receiver, node);
     }
 
@@ -67,7 +70,7 @@ public class FlowExpressions {
             receiver = new LocalVariable(lv);
         } else if (receiverNode instanceof ClassNameNode) {
             ClassNameNode cn = (ClassNameNode) receiverNode;
-            receiver = new ClassName(cn.getType(), cn.getElement());
+            receiver = new ClassName(cn.getType());
         } else if (receiverNode instanceof ValueLiteralNode) {
             ValueLiteralNode vn = (ValueLiteralNode) receiverNode;
             receiver = new ValueLiteral(vn.getType(), vn);
@@ -135,11 +138,11 @@ public class FlowExpressions {
          * Returns true if and only if {@code other} appear anywhere in this
          * receiver or an expression appears in this receiver such that
          * {@code other} might alias this expression.
-         * 
+         *
          * <p>
-         * 
+         *
          * Informal examples include:
-         * 
+         *
          * <pre>
          *   "a".containsAliasOf("a") == true
          *   "x.f".containsAliasOf("x.f") == true
@@ -281,13 +284,8 @@ public class FlowExpressions {
     public static class ClassName extends Receiver {
         protected Element element;
 
-        public ClassName(TypeMirror type, Element element) {
+        public ClassName(TypeMirror type) {
             super(type);
-            this.element = element;
-        }
-
-        public Element getElement() {
-            return element;
         }
 
         @Override
@@ -296,17 +294,17 @@ public class FlowExpressions {
                 return false;
             }
             ClassName other = (ClassName) obj;
-            return getElement().equals(other.getElement());
+            return getType().toString().equals(other.getType().toString());
         }
 
         @Override
         public int hashCode() {
-            return HashCodeUtils.hash(getElement());
+            return HashCodeUtils.hash(getType().toString());
         }
 
         @Override
         public String toString() {
-            return getElement().getSimpleName().toString();
+            return getType().toString();
         }
 
         @Override
@@ -418,7 +416,7 @@ public class FlowExpressions {
             return true;
         }
     }
-    
+
     public static class ValueLiteral extends Receiver {
 
         protected final Object value;
@@ -437,7 +435,7 @@ public class FlowExpressions {
         public boolean isUnmodifiableByOtherCode() {
             return true;
         }
-        
+
         @Override
         public boolean equals(Object obj) {
             if (obj == null || !(obj instanceof ValueLiteral)) {
@@ -446,12 +444,12 @@ public class FlowExpressions {
             ValueLiteral other = (ValueLiteral) obj;
             return value.equals(other.value);
         }
-        
+
         @Override
         public int hashCode() {
             return HashCodeUtils.hash(value);
         }
-        
+
         @Override
         public boolean syntacticEquals(Receiver other) {
             return this.equals(other);
