@@ -1,9 +1,10 @@
 import checkers.util.test.*;
 
 import java.util.*;
+import dataflow.quals.Pure;
+import dataflow.quals.Pure.Kind;
 import checkers.quals.*;
 import tests.util.*;
-import checkers.quals.Pure.Kind;
 
 // various tests for the checker to automatically suggest pure methods (most methods have been copied from Purity.java)
 //:: warning: (pure.more.pure)

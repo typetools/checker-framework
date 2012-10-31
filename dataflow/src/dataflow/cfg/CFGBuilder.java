@@ -26,6 +26,8 @@ import javax.lang.model.type.UnionType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
+import javacutils.AnnotationProvider;
+import javacutils.BasicAnnotationProvider;
 import javacutils.ElementUtils;
 import javacutils.InternalUtils;
 import javacutils.Pair;
@@ -128,6 +130,8 @@ import dataflow.cfg.node.UnsignedRightShiftNode;
 import dataflow.cfg.node.ValueLiteralNode;
 import dataflow.cfg.node.VariableDeclarationNode;
 import dataflow.cfg.node.WideningConversionNode;
+
+import dataflow.quals.TerminatesExecution;
 
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
@@ -285,8 +289,9 @@ public class CFGBuilder {
             UnderlyingAST underlyingAST) {
         declaredClasses = new LinkedList<>();
         TreeBuilder builder = new TreeBuilder(env);
+        AnnotationProvider annotationProvider = new BasicAnnotationProvider();
         PhaseOneResult phase1result = new CFGTranslationPhaseOne().process(
-                root, env, underlyingAST, exceptionalExitLabel, builder);
+                root, env, underlyingAST, exceptionalExitLabel, builder, annotationProvider);
         ControlFlowGraph phase2result = new CFGTranslationPhaseTwo()
                 .process(phase1result);
         ControlFlowGraph phase3result = CFGTranslationPhaseThree
@@ -1331,6 +1336,7 @@ public class CFGBuilder {
         protected Types types;
         protected Trees trees;
         protected TreeBuilder treeBuilder;
+        protected AnnotationProvider annotationProvider;
 
         /**
          * The translation starts in regular mode, that is
@@ -1434,15 +1440,18 @@ public class CFGBuilder {
          *            the label for exceptional exits from the CFG
          * @param treeBuilder
          *            builder for new AST nodes
+         * @param annotationProvider
+         *            extracts annotations from AST nodes
          * @return The result of phase one.
          */
         public PhaseOneResult process(
                 CompilationUnitTree root, ProcessingEnvironment env,
                 UnderlyingAST underlyingAST, Label exceptionalExitLabel,
-                TreeBuilder treeBuilder) {
+                TreeBuilder treeBuilder, AnnotationProvider annotationProvider) {
             this.env = env;
             this.tryStack = new TryStack(exceptionalExitLabel);
             this.treeBuilder = treeBuilder;
+            this.annotationProvider = annotationProvider;
             elements = env.getElementUtils();
             types = env.getTypeUtils();
             trees = Trees.instance(env);
@@ -2159,12 +2168,20 @@ public class CFGBuilder {
                     .getTypeElement("java.lang.Throwable");
             thrownSet.add(throwableElement.asType());
 
-            extendWithNodeWithExceptions(node, thrownSet);
+            ExtendedNode extendedNode = extendWithNodeWithExceptions(node, thrownSet);
 
             conditionalMode = outerConditionalMode;
 
             if (conditionalMode && isBooleanMethod) {
                 extendWithExtendedNode(cjump);
+            }
+
+            /* Check for the TerminatesExecution annotation. */
+            Element methodElement = InternalUtils.symbol(tree);
+            boolean terminatesExecution = annotationProvider.getDeclAnnotation(
+                    methodElement, TerminatesExecution.class) != null;
+            if (terminatesExecution) {
+                extendedNode.setTerminatesExecution(true);
             }
 
             return node;

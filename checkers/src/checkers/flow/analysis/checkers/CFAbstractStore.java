@@ -13,7 +13,6 @@ import javax.lang.model.util.Types;
 
 import javacutils.AnnotationUtils;
 import javacutils.Pair;
-import javacutils.PurityUtils;
 
 import dataflow.analysis.FlowExpressions;
 import dataflow.analysis.FlowExpressions.PureMethodCall;
@@ -23,6 +22,7 @@ import dataflow.cfg.node.FieldAccessNode;
 import dataflow.cfg.node.LocalVariableNode;
 import dataflow.cfg.node.MethodInvocationNode;
 import dataflow.cfg.node.Node;
+import dataflow.util.PurityUtils;
 
 import checkers.quals.MonotonicAnnotation;
 import checkers.types.AnnotatedTypeFactory;
@@ -113,7 +113,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      *
      * <ol>
      * <li>If the method is side-effect free (as indicated by
-     * {@link checkers.quals.Pure}), then no information needs to be removed.
+     * {@link dataflow.quals.Pure}), then no information needs to be removed.
      * <li>Otherwise, all information about field accesses {@code a.f} needs to
      * be removed, except if the method {@code n} cannot modify {@code a.f}
      * (e.g., if {@code a} is a local variable or {@code this}, and {@code f} is

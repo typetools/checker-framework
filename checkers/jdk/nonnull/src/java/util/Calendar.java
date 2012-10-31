@@ -1,5 +1,6 @@
 package java.util;
-import checkers.quals.Pure;
+import dataflow.quals.Pure;
+
 import checkers.nonnull.quals.Nullable;
 
 public abstract class Calendar implements java.io.Serializable, Cloneable, Comparable<Calendar> {
