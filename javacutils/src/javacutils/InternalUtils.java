@@ -283,4 +283,50 @@ public class InternalUtils {
         }
         return types.lub(t1, t2);
     }
+
+    /**
+     * Returns the greatest lower bound of two {@link TypeMirror}s.
+     *
+     * @param processingEnv
+     *            The {@link ProcessingEnvironment} to be used.
+     * @param t1
+     *            A {@link TypeMirror}.
+     * @param t2
+     *            A {@link TypeMirror}.
+     * @return The greatest lower bound of {@code t1} and {@code t2}.
+     */
+    public static TypeMirror greatestLowerBound(ProcessingEnvironment processingEnv,
+            TypeMirror tm1, TypeMirror tm2) {
+        Type t1 = (Type) tm1;
+        Type t2 = (Type) tm2;
+        JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) processingEnv;
+        Types types = Types.instance(javacEnv.getContext());
+        if (types.isSameType(t1, t2)) {
+            // Special case if the two types are equal.
+            return t1;
+        }
+        // Special case for primitives.
+        if (TypesUtils.isPrimitive(t1) || TypesUtils.isPrimitive(t2)) {
+            if (types.isAssignable(t1, t2)) {
+                return t1;
+            } else {
+                assert types.isAssignable(t2, t1);
+                return t2;
+            }
+        }
+        // Handle the 'null' type manually.
+        if (t1.getKind() == TypeKind.NULL) {
+            return t1;
+        }
+        if (t2.getKind() == TypeKind.NULL) {
+            return t2;
+        }
+        if (t1.getKind() == TypeKind.WILDCARD) {
+            return t2;
+        }
+        if (t2.getKind() == TypeKind.WILDCARD) {
+            return t1;
+        }
+        return types.glb(t1, t2);
+    }
 }

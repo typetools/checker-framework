@@ -13,10 +13,9 @@ public class BasicAnnotationProvider implements AnnotationProvider {
     public AnnotationMirror getDeclAnnotation(Element elt,
             Class<? extends Annotation> anno) {
         String annoName = anno.getCanonicalName();
-        String eltName = ElementUtils.getVerboseName(elt);
         List<? extends AnnotationMirror> annotationMirrors = elt
                 .getAnnotationMirrors();
-        
+
         // Then look at the real annotations.
         for (AnnotationMirror am : annotationMirrors) {
             if (AnnotationUtils.areSameByName(am, annoName)) {
