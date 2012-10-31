@@ -1,7 +1,9 @@
 package checkers.basetype;
 
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -33,9 +35,10 @@ import dataflow.cfg.node.MethodInvocationNode;
 import dataflow.cfg.node.Node;
 import dataflow.cfg.node.ReturnNode;
 import dataflow.quals.Pure;
+import dataflow.util.PurityChecker;
+import dataflow.util.PurityChecker.PurityResult;
 import dataflow.util.PurityUtils;
 
-import checkers.basetype.PurityChecker.PurityResult;
 import checkers.compilermsgs.quals.CompilerMessageKey;
 import checkers.flow.analysis.checkers.CFAbstractStore;
 import checkers.flow.analysis.checkers.CFAbstractValue;
@@ -93,7 +96,7 @@ import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeInfo;
 /*>>>
-import checkers.basetype.PurityChecker.PurityResult;
+import dataflow.util.PurityChecker.PurityResult;
 import checkers.compilermsgs.quals.CompilerMessageKey;
 import checkers.nonnull.quals.Nullable;
 */
@@ -311,7 +314,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                 // Report errors if necessary.
                 PurityResult r = PurityChecker.checkPurity(node.getBody(), atypeFactory);
                 if (!r.isPure(kinds)) {
-                    r.reportErrors(checker, node, kinds);
+                    reportPurityErrors(r, node, kinds);
                 }
                 // Issue a warning if the method is pure, but not annotated as such (if the feature is activated).
                 if (checkPurityAlways) {
@@ -359,6 +362,47 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
             visitorState.setMethodReceiver(preMRT);
             visitorState.setMethodTree(preMT);
         }
+    }
+
+    /**
+     * Reports errors found during purity checking.
+     */
+    protected void reportPurityErrors(PurityResult result, MethodTree node,
+            Collection<Pure.Kind> expectedTypes) {
+        assert !result.isPure(expectedTypes);
+        Collection<Pure.Kind> t = EnumSet.copyOf(expectedTypes);  
+        t.removeAll(result.getTypes());
+        if (t.contains(Pure.Kind.DETERMINISTIC)
+            && t.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
+            checker.report(Result.failure(
+                                          "pure.not.deterministic.and.sideeffect.free",
+                                          errorList(result.getNotBothReasons())), node);
+        }
+        else if (t.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
+            List<String> errors = new ArrayList<>(result.getNotSeFreeReasons());
+            errors.addAll(result.getNotBothReasons());
+            checker.report(Result.failure("pure.not.sideeffect.free",
+                                          errorList(errors)), node);
+        }
+        else if (t.contains(Pure.Kind.DETERMINISTIC)) {
+            List<String> errors = new ArrayList<>(result.getNotDetReasons());
+            errors.addAll(result.getNotBothReasons());
+            checker.report(Result.failure("pure.not.deterministic",
+                                          errorList(errors)), node);
+        }
+    }
+
+    private static String errorList(List<String> reasons) {
+        StringBuilder s = new StringBuilder();
+        boolean first = true;
+        for (String r : reasons) {
+            if (!first) {
+                s.append(", ");
+            }
+            s.append(r);
+            first = false;
+        }
+        return s.toString();
     }
 
     /**
