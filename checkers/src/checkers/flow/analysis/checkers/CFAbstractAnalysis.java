@@ -70,6 +70,8 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
 
     protected List<Pair<VariableElement, V>> fieldValues;
 
+    protected final int expectedNumberOfAnnotations;
+
     public <Checker extends BaseTypeChecker> CFAbstractAnalysis(
             AbstractBasicAnnotatedTypeFactory<Checker, V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory,
             ProcessingEnvironment env, Checker checker) {
@@ -80,6 +82,7 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
         this.checker = checker;
         transferFunction = createTransferFunction();
         fieldValues = Collections.emptyList();
+        expectedNumberOfAnnotations = qualifierHierarchy.getWidth();
     }
 
     public <Checker extends BaseTypeChecker> CFAbstractAnalysis(
@@ -92,6 +95,28 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
 
     public List<Pair<VariableElement, V>> getFieldValues() {
         return fieldValues;
+    }
+
+    /**
+     * Returns true if the abstract value {@value} passed a set of
+     * well-formedness checks. The method will never return false for valid
+     * types, but might not catch all invalid abstract values.
+     */
+    public boolean isValidValue(AnnotatedTypeMirror type) {
+        if (type == null) {
+            return false;
+        }
+        Set<AnnotationMirror> annotations = type.getAnnotations();
+        int n = annotations.size();
+        if (n > expectedNumberOfAnnotations) {
+            return false;
+        }
+        boolean canHaveEmptyAnnotationSet = QualifierHierarchy
+                .canHaveEmptyAnnotationSet(type);
+        if (!canHaveEmptyAnnotationSet && n != expectedNumberOfAnnotations) {
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -149,7 +174,8 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
      * annotation {@code anno}, and 'top' for all other hierarchies. The
      * underlying type is {@link Object}.
      */
-    public V createSingleAnnotationValue(AnnotationMirror anno, TypeMirror underlyingType) {
+    public V createSingleAnnotationValue(AnnotationMirror anno,
+            TypeMirror underlyingType) {
         AnnotatedTypeMirror type = AnnotatedTypeMirror.createType(
                 underlyingType, getFactory());
         Set<AnnotationMirror> tops = getFactory().getQualifierHierarchy()
