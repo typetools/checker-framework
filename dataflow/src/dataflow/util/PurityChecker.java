@@ -1,4 +1,4 @@
-package checkers.basetype;
+package dataflow.util;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -7,15 +7,12 @@ import java.util.List;
 
 import javax.lang.model.element.Element;
 
+import javacutils.AnnotationProvider;
 import javacutils.InternalUtils;
 import javacutils.TreeUtils;
 
 import dataflow.quals.Pure;
 import dataflow.quals.Pure.Kind;
-import dataflow.util.PurityUtils;
-
-import checkers.source.Result;
-import checkers.types.AnnotatedTypeFactory;
 
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
@@ -90,8 +87,8 @@ public class PurityChecker {
      * {@code type}.
      */
     public static PurityResult checkPurity(Tree statement,
-            AnnotatedTypeFactory atypeFactory) {
-        PurityCheckerHelper helper = new PurityCheckerHelper(atypeFactory);
+            AnnotationProvider annoProvider) {
+        PurityCheckerHelper helper = new PurityCheckerHelper(annoProvider);
         PurityResult res = helper.scan(statement, new PurityResult());
         return res;
     }
@@ -99,7 +96,7 @@ public class PurityChecker {
     /**
      * Result of the {@link PurityChecker}.
      */
-    protected static class PurityResult {
+    public static class PurityResult {
 
         protected final List<String> notSeFreeReasons;
         protected final List<String> notDetReasons;
@@ -123,12 +120,26 @@ public class PurityChecker {
         }
 
         /**
+         * Get the {@code reason}s why the method is not side-effect free.
+         */
+        public List<String> getNotSeFreeReasons() {
+            return notSeFreeReasons;
+        }
+
+        /**
          * Add {@code reason} as a reason why the method is not side-effect
          * free.
          */
         public void addNotSeFreeReason(String reason) {
             notSeFreeReasons.add(reason);
             types.remove(Kind.SIDE_EFFECT_FREE);
+        }
+
+        /**
+         * Get the {@code reason}s why the method is not deterministic.
+         */
+        public List<String> getNotDetReasons() {
+            return notDetReasons;
         }
 
         /**
@@ -140,6 +151,15 @@ public class PurityChecker {
         }
 
         /**
+         * Get the {@code reason}s why the method is not both side-effect free
+         * and deterministic.
+         */
+        public List<String> getNotBothReasons() {
+            return notBothReasons;
+        }
+
+
+        /**
          * Add {@code reason} as a reason why the method is not both side-effect
          * free and deterministic.
          */
@@ -147,47 +167,6 @@ public class PurityChecker {
             notBothReasons.add(reason);
             types.remove(Kind.DETERMINISTIC);
             types.remove(Kind.SIDE_EFFECT_FREE);
-        }
-
-        /**
-         * Report all errors encountered.
-         */
-        public void reportErrors(BaseTypeChecker checker, MethodTree node,
-                Collection<Pure.Kind> expectedTypes) {
-            assert !isPure(expectedTypes);
-            Collection<Pure.Kind> t = EnumSet.copyOf(expectedTypes);  
-            t.removeAll(types);
-            if (t.contains(Kind.DETERMINISTIC)
-                    && t.contains(Kind.SIDE_EFFECT_FREE)) {
-                checker.report(Result.failure(
-                        "pure.not.deterministic.and.sideeffect.free",
-                        errorList(notBothReasons)), node);
-            }
-            else if (t.contains(Kind.SIDE_EFFECT_FREE)) {
-                List<String> errors = new ArrayList<>(notSeFreeReasons);
-                errors.addAll(notBothReasons);
-                checker.report(Result.failure("pure.not.sideeffect.free",
-                        errorList(errors)), node);
-            }
-            else if (t.contains(Kind.DETERMINISTIC)) {
-                List<String> errors = new ArrayList<>(notDetReasons);
-                errors.addAll(notBothReasons);
-                checker.report(Result.failure("pure.not.deterministic",
-                        errorList(errors)), node);
-            }
-        }
-
-        private static String errorList(List<String> reasons) {
-            StringBuilder s = new StringBuilder();
-            boolean first = true;
-            for (String r : reasons) {
-                if (!first) {
-                    s.append(", ");
-                }
-                s.append(r);
-                first = false;
-            }
-            return s.toString();
         }
     }
 
@@ -201,11 +180,11 @@ public class PurityChecker {
     protected static class PurityCheckerHelper implements
             TreeVisitor<PurityResult, PurityResult> {
 
-        protected final AnnotatedTypeFactory atypeFactory;
+        protected final AnnotationProvider annoProvider;
         protected/* @Nullable */List<Element> methodParameter;
 
-        public PurityCheckerHelper(AnnotatedTypeFactory atypeFactory) {
-            this.atypeFactory = atypeFactory;
+        public PurityCheckerHelper(AnnotationProvider annoProvider) {
+            this.annoProvider = annoProvider;
         }
 
         /**
@@ -374,12 +353,12 @@ public class PurityChecker {
         public PurityResult visitMethodInvocation(MethodInvocationTree node,
                 PurityResult p) {
             Element elt = TreeUtils.elementFromUse(node);
-            if (!PurityUtils.hasPurityAnnotation(atypeFactory, elt)) {
+            if (!PurityUtils.hasPurityAnnotation(annoProvider, elt)) {
                 p.addNotBothReason("non-pure method call");
             } else {
-                boolean det = PurityUtils.isDeterministic(atypeFactory, elt);
+                boolean det = PurityUtils.isDeterministic(annoProvider, elt);
                 boolean seFree = PurityUtils
-                        .isSideEffectFree(atypeFactory, elt);
+                        .isSideEffectFree(annoProvider, elt);
                 if (!det && !seFree) {
                     p.addNotBothReason("non-pure method call");
                 } else if (!det) {
@@ -395,7 +374,7 @@ public class PurityChecker {
 
         public PurityResult visitNewClass(NewClassTree node, PurityResult p) {
             Element methodElement = InternalUtils.symbol(node);
-            boolean sideEffectFree = PurityUtils.isSideEffectFree(atypeFactory,
+            boolean sideEffectFree = PurityUtils.isSideEffectFree(annoProvider,
                     methodElement);
             if (sideEffectFree) {
                 p.addNotDetReason("object creation");
