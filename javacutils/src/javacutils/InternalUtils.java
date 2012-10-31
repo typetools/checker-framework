@@ -245,6 +245,13 @@ public class InternalUtils {
             // Special case if the two types are equal.
             return t1;
         }
+        // Handle the 'null' type manually (not done by types.lub).
+        if (t1.getKind() == TypeKind.NULL) {
+            return t2;
+        }
+        if (t2.getKind() == TypeKind.NULL) {
+            return t1;
+        }
         // Special case for primitives.
         if (TypesUtils.isPrimitive(t1) || TypesUtils.isPrimitive(t2)) {
             if (types.isAssignable(t1, t2)) {
@@ -253,13 +260,6 @@ public class InternalUtils {
                 assert types.isAssignable(t2, t1);
                 return t1;
             }
-        }
-        // Handle the 'null' type manually (not done by types.lub).
-        if (t1.getKind() == TypeKind.NULL) {
-            return t2;
-        }
-        if (t2.getKind() == TypeKind.NULL) {
-            return t1;
         }
         if (t1.getKind() == TypeKind.WILDCARD) {
             WildcardType wc1 = (WildcardType)t1;
@@ -305,21 +305,22 @@ public class InternalUtils {
             // Special case if the two types are equal.
             return t1;
         }
-        // Special case for primitives.
-        if (TypesUtils.isPrimitive(t1) || TypesUtils.isPrimitive(t2)) {
-            if (types.isAssignable(t1, t2)) {
-                return t1;
-            } else {
-                assert types.isAssignable(t2, t1);
-                return t2;
-            }
-        }
         // Handle the 'null' type manually.
         if (t1.getKind() == TypeKind.NULL) {
             return t1;
         }
         if (t2.getKind() == TypeKind.NULL) {
             return t2;
+        }
+        // Special case for primitives.
+        if (TypesUtils.isPrimitive(t1) || TypesUtils.isPrimitive(t2)) {
+            if (types.isAssignable(t1, t2)) {
+                return t1;
+            } else {
+                assert types.isAssignable(t2, t1) : "Type " + t2
+                        + " is not assignable to " + t1 + ".";
+                return t2;
+            }
         }
         if (t1.getKind() == TypeKind.WILDCARD) {
             return t2;
