@@ -446,6 +446,9 @@ public class FlowExpressions {
                 return false;
             }
             ValueLiteral other = (ValueLiteral) obj;
+            if (value == null) {
+                return other.value == null;
+            }
             return value.equals(other.value);
         }
 
