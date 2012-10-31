@@ -5,6 +5,8 @@ import javax.lang.model.type.*;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
+import com.sun.tools.javac.model.JavacTypes;
+
 /**
  * A utility class that helps with {@link TypeMirror}s.
  *
@@ -296,5 +298,13 @@ public final class TypesUtils {
             }
             return element.asType();
         }
+    }
+
+    /**
+     * Returns an {@link ArrayType} with elements of type {@code componentType}.
+     */
+    public static ArrayType createArrayType(Types types, TypeMirror componentType) {
+        JavacTypes t = (JavacTypes) types;
+        return t.getArrayType(componentType);
     }
 }
