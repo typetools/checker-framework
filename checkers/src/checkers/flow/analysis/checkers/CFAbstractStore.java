@@ -516,6 +516,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * conservative answer (i.e., returns {@code true} if not enough information
      * is available to determine aliasing).
      */
+    @Override
     public boolean canAlias(FlowExpressions.Receiver a,
             FlowExpressions.Receiver b) {
         TypeMirror tb = b.getType();
