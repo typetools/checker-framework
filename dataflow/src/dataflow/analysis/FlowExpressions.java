@@ -186,6 +186,10 @@ public class FlowExpressions {
             return ElementUtils.isFinal(field);
         }
 
+        public boolean isStatic() {
+            return ElementUtils.isStatic(field);
+        }
+
         @Override
         public boolean equals(Object obj) {
             if (obj == null || !(obj instanceof FieldAccess)) {
