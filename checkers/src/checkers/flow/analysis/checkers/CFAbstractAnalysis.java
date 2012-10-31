@@ -154,19 +154,26 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
                 underlyingType, getFactory());
         Set<AnnotationMirror> tops = getFactory().getQualifierHierarchy()
                 .getTopAnnotations();
-        type.addAnnotations(tops);
+        makeTop(type, tops);
         type.replaceAnnotation(anno);
+        return createAbstractValue(type);
+    }
+
+    /**
+     * Adds top as the annotation on all locations of a given type.
+     */
+    private void makeTop(AnnotatedTypeMirror type, Set<AnnotationMirror> tops) {
+        type.addAnnotations(tops);
         TypeKind kind = type.getKind();
         if (kind == TypeKind.ARRAY) {
             AnnotatedArrayType a = (AnnotatedArrayType) type;
-            a.getComponentType().addAnnotations(tops);
+            makeTop(a.getComponentType(), tops);
         } else if (kind == TypeKind.TYPEVAR) {
             AnnotatedTypeVariable a = (AnnotatedTypeVariable) type;
-            a.getUpperBound().addAnnotations(tops);
+            makeTop(a.getUpperBound(), tops);
         } else if (kind == TypeKind.WILDCARD) {
             AnnotatedWildcardType a = (AnnotatedWildcardType) type;
-            a.getExtendsBound().addAnnotations(tops);
+            makeTop(a.getExtendsBound(), tops);
         }
-        return createAbstractValue(type);
     }
 }
