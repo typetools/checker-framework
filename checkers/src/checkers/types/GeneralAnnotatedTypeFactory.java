@@ -53,7 +53,7 @@ class GeneralQualifierHierarchy extends QualifierHierarchy {
     // Never find a corresponding qualifier.
     @Override
     public AnnotationMirror findCorrespondingAnnotation(
-            AnnotationMirror aliased, Set<AnnotationMirror> annotations) {
+            AnnotationMirror aliased, Collection<AnnotationMirror> annotations) {
         return null;
     }
 
