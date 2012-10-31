@@ -263,7 +263,7 @@ public class NonNullAnnotatedTypeFactory
             // fixed we manually inspect enclosing catch blocks.
             // case 9. exception parameter
             if (isExceptionParameter(node))
-                type.addAnnotation(NONNULL);
+                type.replaceAnnotation(NONNULL);
 
             return super.visitIdentifier(node, type);
         }
