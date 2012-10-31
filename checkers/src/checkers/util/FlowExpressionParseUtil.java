@@ -118,7 +118,7 @@ public class FlowExpressionParseUtil {
                 if (ElementUtils.isStatic(fieldElem)) {
                     Element classElem = fieldElem.getEnclosingElement();
                     Receiver staticClassReceiver = new ClassName(
-                            ElementUtils.getType(classElem), classElem);
+                            ElementUtils.getType(classElem));
                     return new FieldAccess(staticClassReceiver,
                             ElementUtils.getType(fieldElem), fieldElem);
                 } else {
@@ -129,8 +129,7 @@ public class FlowExpressionParseUtil {
                 try {
                     // class literal
                     Element classElem = resolver.findClass(s, path);
-                    return new ClassName(ElementUtils.getType(classElem),
-                            classElem);
+                    return new ClassName(ElementUtils.getType(classElem));
                 } catch (Throwable t2) {
                     throw new FlowExpressionParseException(Result.failure(
                             "flowexpr.parse.error", s));
