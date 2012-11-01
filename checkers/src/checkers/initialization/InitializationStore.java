@@ -12,6 +12,7 @@ import javacutils.AnnotationUtils;
 
 import dataflow.analysis.FlowExpressions;
 import dataflow.analysis.FlowExpressions.FieldAccess;
+import dataflow.analysis.FlowExpressions.ThisReference;
 import dataflow.cfg.node.MethodInvocationNode;
 
 import checkers.flow.analysis.checkers.CFAbstractAnalysis;
@@ -83,7 +84,22 @@ public class InitializationStore extends
     }
 
     /**
-     * Mark the field identified by the element {@code f} as initialized.
+     * Mark the field identified by the element {@code field} as initialized (if
+     * it belongs to the current class, or is static (in which case there is no
+     * aliasing issue and we can just add all static fields).
+     */
+    public void addInitializedField(FieldAccess field) {
+        boolean fieldOnThisReference = field.getReceiver() instanceof ThisReference;
+        boolean staticField = field.isStatic();
+        if (fieldOnThisReference || staticField) {
+            initializedFields.add(field.getField());
+        }
+    }
+
+    /**
+     * Mark the field identified by the element {@code f} as initialized (the
+     * caller needs to ensure that the field belongs to the current class, or is
+     * a static field).
      */
     public void addInitializedField(Element f) {
         initializedFields.add(f);
