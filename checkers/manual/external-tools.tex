@@ -372,7 +372,7 @@ have to declared as a dependency:
         <dependency>
             <groupId>types.checkers</groupId>
             <artifactId>checkers-quals</artifactId>
-            <version>1.4.0</version>
+            <version>1.4.3</version>
         </dependency>
 
         <!-- other dependencies -->
@@ -387,7 +387,7 @@ have to declared as a dependency:
             <plugin>
                 <groupId>types.checkers</groupId>
                 <artifactId>checkersplugin</artifactId>
-                <version>0.2</version>
+                <version>0.4</version>
                 <executions>
                     <execution>
                         <!-- run the checkers after compilation; this can also be any later phase -->
@@ -474,6 +474,25 @@ argument, then you can do so in the following way:
 \begin{Verbatim}
 tasks.withType(Compile).allObjects { compile ->
   compile.options.fork.executable = "$CHECKERS/binary/javac"
+}
+\end{Verbatim}
+
+You can also combine these methods as follows:
+
+\begin{Verbatim}
+def env         = System.getenv()
+def checkersDir = env["CHECKERS"]
+
+tasks.compileJava {
+  description = 'Compiles both the scala and java files for this project using the checker framework compiler and the scala compiler'
+  options.fork = true
+  options.compilerArgs = [
+  	  '-version',
+      '-implicit:class',
+      '-Awarns', '-Xmaxwarns', '10000',
+      '-processor', 'checkers.nullness.NullnessChecker',
+      "-Xbootclasspath/p:$checkersDir/jdk/jdk.jar"]
+  options.forkOptions.executable="$checkersDir/binary/javac"
 }
 \end{Verbatim}
 % extra $ to unconfuse Emacs's LaTeX mode
