@@ -12,8 +12,6 @@ import javacutils.TreeUtils;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
-import javax.lang.model.type.TypeMirror;
-
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeFactory;
 
@@ -108,13 +106,13 @@ public class FlowExpressionParseUtil {
 
         // this literal
         if (selfMatcher.matches() && allowSelf) {
-            return new ThisReference(context.receiverType);
+            return new ThisReference(context.receiver.getType());
         } else if (identifierMatcher.matches() && allowIdentifier) {
             Resolver resolver = new Resolver(env);
             try {
                 // field access
-                Element fieldElem = resolver.findField(s, context.receiverType,
-                        path);
+                Element fieldElem = resolver.findField(s,
+                        context.receiver.getType(), path);
                 if (ElementUtils.isStatic(fieldElem)) {
                     Element classElem = fieldElem.getEnclosingElement();
                     Receiver staticClassReceiver = new ClassName(
@@ -131,8 +129,7 @@ public class FlowExpressionParseUtil {
                     Element classElem = resolver.findClass(s, path);
                     return new ClassName(ElementUtils.getType(classElem));
                 } catch (Throwable t2) {
-                    throw new FlowExpressionParseException(Result.failure(
-                            "flowexpr.parse.error", s));
+                    throw constructParserException(s);
                 }
             }
         } else if (parameterMatcher.matches() && allowParameter) {
@@ -157,16 +154,17 @@ public class FlowExpressionParseUtil {
                 throw new FlowExpressionParseException(
                         Result.failure("flowexpr.parse.nonempty.parameter"));
             }
+            List<Receiver> parameters = ParameterListParser.parseParameterList(
+                    parameterList, true, context.useOuterReceiver(), path);
             try {
                 Resolver resolver = new Resolver(env);
                 Element methodElement = resolver.findMethod(methodName,
-                        context.receiverType, path);
-                List<Receiver> parameters = new ArrayList<>();
+                        context.receiver.getType(), path);
+                // TODO: check that method is actually pure
                 return new PureMethodCall(ElementUtils.getType(methodElement),
                         methodElement, context.receiver, parameters);
             } catch (Throwable t) {
-                throw new FlowExpressionParseException(Result.failure(
-                        "flowexpr.parse.error", s));
+                throw constructParserException(s);
             }
         } else if (dotMatcher.matches() && allowDot) {
             String receiverString = dotMatcher.group(1);
@@ -180,8 +178,127 @@ public class FlowExpressionParseUtil {
             return parse(remainingString, newContext, path, false, true, false,
                     true, true);
         } else {
-            throw new FlowExpressionParseException(Result.failure(
-                    "flowexpr.parse.error", s));
+            throw constructParserException(s);
+        }
+    }
+
+    /**
+     * Returns a {@link FlowExpressionParseException} for the string {@code s}.
+     */
+    private static FlowExpressionParseException constructParserException(
+            String s) {
+        return new FlowExpressionParseException(Result.failure(
+                "flowexpr.parse.error", s));
+    }
+
+    /**
+     * A very simple parser for parameter lists, i.e. strings of the form
+     * {@code a, b, c} for some expressions {@code a}, {@code b} and {@code c}.
+     *
+     * @author Stefan Heule
+     */
+    private static class ParameterListParser {
+
+        /**
+         * Parse a parameter list and return the parameters as a list (or throw
+         * a {@link FlowExpressionParseException}).
+         */
+        private static List<Receiver> parseParameterList(
+                String parameterString, boolean allowEmptyList,
+                FlowExpressionContext context, TreePath path)
+                throws FlowExpressionParseException {
+            ArrayList<Receiver> result = new ArrayList<>();
+            // the index of the character in 'parameterString' that the parser
+            // is currently looking at
+            int idx = 0;
+            // how deeply are method calls nested at this point? callLevel is 0
+            // in the beginning, and increases with every method call by 1. For
+            // instance it would be 2 at the end of the following string:
+            // "get(get(1,2,"
+            int callLevel = 0;
+            // is the parser currently in a string literal?
+            boolean inString = false;
+            while (true) {
+                // end of string reached
+                if (idx == parameterString.length()) {
+                    // finish current param
+                    if (inString || callLevel > 0) {
+                        throw constructParserException(parameterString);
+                    } else {
+                        finishParam(parameterString, allowEmptyList, context,
+                                path, result, idx);
+                        return result;
+                    }
+                }
+
+                // get next character
+                char next = parameterString.charAt(idx);
+                idx++;
+
+                // case split on character
+                switch (next) {
+                case ',':
+                    if (inString) {
+                        // stay in same state and consume the character
+                    } else {
+                        if (callLevel == 0) {
+                            // parse first parameter
+                            finishParam(parameterString, allowEmptyList,
+                                    context, path, result, idx);
+                            // parse remaining parameters
+                            List<Receiver> rest = parseParameterList(
+                                    parameterString.substring(idx), false,
+                                    context, path);
+                            result.addAll(rest);
+                            return result;
+                        } else {
+                            // not the outermost method call, defer parsing of
+                            // this parameter list to recursive call.
+                        }
+                    }
+                    break;
+                case '"':
+                    // start or finish string
+                    inString = !inString;
+                case '(':
+                    if (inString) {
+                        // stay in same state and consume the character
+                    } else {
+                        callLevel++;
+                    }
+                case ')':
+                    if (inString) {
+                        // stay in same state and consume the character
+                    } else {
+                        if (callLevel == 0) {
+                            throw constructParserException(parameterString);
+                        } else {
+                            callLevel--;
+                        }
+                    }
+                default:
+                    // stay in same state and consume the character
+                    break;
+                }
+                break;
+            }
+            return result;
+        }
+
+        private static void finishParam(String parameterString,
+                boolean allowEmptyList, FlowExpressionContext context,
+                TreePath path, ArrayList<Receiver> result, int idx)
+                throws FlowExpressionParseException {
+            if (idx == 0) {
+                if (allowEmptyList) {
+                    return;
+                } else {
+                    throw constructParserException(parameterString);
+                }
+            } else {
+                result.add(parse(parameterString.substring(0, idx), context,
+                        path));
+            }
         }
     }
 
@@ -189,27 +306,44 @@ public class FlowExpressionParseUtil {
      * Context used to parse a flow expression.
      */
     public static class FlowExpressionContext {
-        public final TypeMirror receiverType;
         public final Receiver receiver;
         public final List<Receiver> arguments;
         public final AnnotatedTypeFactory atypeFactory;
+        public final Receiver outerReceiver;
 
-        public FlowExpressionContext(TypeMirror receiverType,
-                Receiver receiver, List<Receiver> arguments,
-                AnnotatedTypeFactory factory) {
+        public FlowExpressionContext(Receiver receiver,
+                List<Receiver> arguments, AnnotatedTypeFactory factory) {
             assert factory != null;
-            this.receiverType = receiverType;
             this.receiver = receiver;
             this.arguments = arguments;
             this.atypeFactory = factory;
+            this.outerReceiver = receiver;
+        }
+
+        public FlowExpressionContext(Receiver receiver, Receiver outerReceiver,
+                List<Receiver> arguments, AnnotatedTypeFactory factory) {
+            assert factory != null;
+            this.receiver = receiver;
+            this.arguments = arguments;
+            this.atypeFactory = factory;
+            this.outerReceiver = outerReceiver;
         }
 
         /**
          * Returns a copy of the context that is identical, but has a different
-         * receiver.
+         * receiver. The outer receiver remains unchanged.
          */
         public FlowExpressionContext changeReceiver(Receiver receiver) {
-            return new FlowExpressionContext(receiver.getType(), receiver,
+            return new FlowExpressionContext(receiver, outerReceiver,
+                    arguments, atypeFactory);
+        }
+
+        /**
+         * Returns a copy of the context that is identical, but uses the outer
+         * receiver as main receiver.
+         */
+        public FlowExpressionContext useOuterReceiver() {
+            return new FlowExpressionContext(outerReceiver, outerReceiver,
                     arguments, atypeFactory);
         }
     }
@@ -262,8 +396,7 @@ public class FlowExpressionParseUtil {
                     new LocalVariableNode(arg)));
         }
         FlowExpressionContext flowExprContext = new FlowExpressionContext(
-                receiver.getType(), internalReceiver, internalArguments,
-                factory);
+                internalReceiver, internalArguments, factory);
         return flowExprContext;
     }
 
@@ -292,8 +425,7 @@ public class FlowExpressionParseUtil {
             internalArguments.add(FlowExpressions.internalReprOf(factory, arg));
         }
         FlowExpressionContext flowExprContext = new FlowExpressionContext(
-                receiver.getType(), internalReceiver, internalArguments,
-                factory);
+                internalReceiver, internalArguments, factory);
         return flowExprContext;
     }
 }
