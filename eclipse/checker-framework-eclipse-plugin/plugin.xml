@@ -4,7 +4,7 @@
 <plugin>
   <extension point="org.eclipse.ui.preferencePages">
     <page id="checkers.eclipse.prefs.CheckerPreferences"
- 	  name="%page.name"
+ 	  name="Checker Framework"
       class="checkers.eclipse.ui.CheckerPreferencePage">
    	</page>
     <page id="checkers.eclipse"
