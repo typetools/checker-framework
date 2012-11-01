@@ -159,8 +159,9 @@ public class NonNullTransfer extends InitializationTransfer<NonNullTransfer> {
             MethodInvocationNode n, TransferInput<CFValue, InitializationStore> in) {
         TransferResult<CFValue, InitializationStore> result = super
                 .visitMethodInvocation(n, in);
+
         // Make receiver non-null.
-        makeNonNull(result, n.getTarget());
+        makeNonNull(result, n.getTarget().getReceiver());
 
         // For all formal parameters with a non-null annotation, make the actual
         // argument non-null.
