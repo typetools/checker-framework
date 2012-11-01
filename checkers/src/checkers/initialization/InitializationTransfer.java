@@ -162,10 +162,13 @@ public class InitializationTransfer<T extends InitializationTransfer<T>>
         Map<FieldAccess, CFValue> fieldValues = store.getFieldValues();
         for (Entry<FieldAccess, CFValue> e : fieldValues.entrySet()) {
             FieldAccess field = e.getKey();
-            if (field.getReceiver() instanceof ThisReference) {
+            Receiver rec = field.getReceiver();
+            boolean fieldOnThisReference = rec instanceof ThisReference;
+            boolean staticField = field.isStatic();
+            if (fieldOnThisReference || staticField) {
                 // There is no need to check what CFValue the field has, as any
                 // value means that is has been initialized.
-                store.addInitializedField(field.getField());
+                store.addInitializedField(field);
             }
         }
     }
@@ -184,10 +187,7 @@ public class InitializationTransfer<T extends InitializationTransfer<T>>
         if (!expr.containsUnknown()) {
             if (expr instanceof FieldAccess) {
                 FieldAccess fa = (FieldAccess) expr;
-                if (fa.getReceiver() instanceof ThisReference) {
-                    Element field = fa.getField();
-                    result.getRegularStore().addInitializedField(field);
-                }
+                result.getRegularStore().addInitializedField(fa);
             }
         }
         return result;

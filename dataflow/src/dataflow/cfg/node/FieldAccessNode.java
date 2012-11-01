@@ -5,6 +5,7 @@ import java.util.Collections;
 
 import javax.lang.model.element.Element;
 
+import javacutils.ElementUtils;
 import javacutils.InternalUtils;
 import javacutils.TreeUtils;
 
@@ -16,13 +17,13 @@ import com.sun.source.tree.Tree;
 
 /**
  * A node for a field access, including a method accesses:
- * 
+ *
  * <pre>
  *   <em>expression</em> . <em>field</em>
  * </pre>
- * 
+ *
  * @author Stefan Heule
- * 
+ *
  */
 public class FieldAccessNode extends Node {
 
@@ -69,6 +70,13 @@ public class FieldAccessNode extends Node {
     @Override
     public String toString() {
         return getReceiver() + "." + field;
+    }
+
+    /**
+     * Is this a static field?
+     */
+    public boolean isStatic() {
+        return ElementUtils.isStatic(getElement());
     }
 
     @Override

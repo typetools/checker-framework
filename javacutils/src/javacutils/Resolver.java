@@ -1,7 +1,6 @@
 package javacutils;
 
 import static com.sun.tools.javac.code.Kinds.VAR;
-
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -13,6 +12,7 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.api.JavacScope;
 import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.comp.AttrContext;
 import com.sun.tools.javac.comp.Env;
@@ -33,6 +33,8 @@ public class Resolver {
 
     private final Method FIND_METHOD;
     private final Method FIND_IDENT_IN_TYPE;
+    private final Method FIND_IDENT_IN_PACKAGE;
+    private final Method FIND_TYPE;
 
     public Resolver(ProcessingEnvironment env) {
         Context context = ((JavacProcessingEnvironment) env).getContext();
@@ -41,15 +43,24 @@ public class Resolver {
         this.trees = Trees.instance(env);
 
         try {
-            this.FIND_METHOD = Resolve.class.getDeclaredMethod("findMethod",
+            FIND_METHOD = Resolve.class.getDeclaredMethod("findMethod",
                     Env.class, Type.class, Name.class, List.class, List.class,
                     boolean.class, boolean.class, boolean.class);
             FIND_METHOD.setAccessible(true);
 
-            this.FIND_IDENT_IN_TYPE = Resolve.class.getDeclaredMethod(
+            FIND_IDENT_IN_TYPE = Resolve.class.getDeclaredMethod(
                     "findIdentInType", Env.class, Type.class, Name.class,
                     int.class);
-            this.FIND_IDENT_IN_TYPE.setAccessible(true);
+            FIND_IDENT_IN_TYPE.setAccessible(true);
+
+            FIND_IDENT_IN_PACKAGE = Resolve.class.getDeclaredMethod(
+                    "findIdentInPackage", Env.class, TypeSymbol.class, Name.class,
+                    int.class);
+            FIND_IDENT_IN_PACKAGE.setAccessible(true);
+
+            FIND_TYPE = Resolve.class.getDeclaredMethod(
+                    "findType", Env.class, Name.class);
+            FIND_TYPE.setAccessible(true);
         } catch (Exception e) {
             Error err = new AssertionError(
                     "Compiler 'Resolve' class doesn't contain required 'find' method");
@@ -79,6 +90,25 @@ public class Resolver {
         Env<AttrContext> env = scope.getEnv();
         return wrapInvocation(FIND_IDENT_IN_TYPE, env, type,
                 names.fromString(name), VAR);
+    }
+
+    /**
+     * Finds the class literal with name {@code name}.
+     *
+     * <p>
+     * The method adheres to all the rules of Java's scoping (while also
+     * considering the imports) for name resolution.
+     *
+     * @param name
+     *            The name of the class.
+     * @param path
+     *            The tree path to the local scope.
+     * @return The element for the class.
+     */
+    public Element findClass(String name, TreePath path) {
+        JavacScope scope = (JavacScope) trees.getScope(path);
+        Env<AttrContext> env = scope.getEnv();
+        return wrapInvocation(FIND_TYPE, env, names.fromString(name));
     }
 
     /**
