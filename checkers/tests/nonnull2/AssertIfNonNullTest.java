@@ -12,7 +12,7 @@ public class AssertIfNonNullTest {
     }
 
     @AssertNonNullIfNonNull("id")
-    public @checkers.quals.Pure @Nullable Long getId(){
+    public @dataflow.quals.Pure @Nullable Long getId(){
         return id;
     }
 

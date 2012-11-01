@@ -101,7 +101,7 @@ public class AssertIfChecked {
   }
 
   @Nullable Object getValueUnpure() { return value; }
-  @checkers.quals.Pure @Nullable Object getValuePure() { return value; }
+  @dataflow.quals.Pure @Nullable Object getValuePure() { return value; }
   
   @EnsuresNonNullIf(result=true, expression="getValueUnpure()")
   public boolean hasValueUnpure() {
