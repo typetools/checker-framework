@@ -14,6 +14,7 @@ import checkers.initialization.InitializationChecker;
 import checkers.nonnull.quals.MonotonicNonNull;
 import checkers.nonnull.quals.NonNull;
 import checkers.nonnull.quals.Nullable;
+import checkers.source.SuppressWarningsKey;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.QualifierHierarchy;
 import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
@@ -26,7 +27,7 @@ import com.sun.source.tree.CompilationUnitTree;
 // TODO/later: Add "CommittedOnly" and adapt logic to support either as default, and only one annotation can be present, only present on fields
 
 // DONE: Stefan: don't allow casts between initialization types.
-
+@SuppressWarningsKey("nonnull")
 public abstract class AbstractNonNullChecker extends InitializationChecker {
 
     /** Annotation constants */
