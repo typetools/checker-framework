@@ -15,6 +15,7 @@ import javacutils.AnnotationUtils;
 import javacutils.Pair;
 
 import dataflow.analysis.FlowExpressions;
+import dataflow.analysis.FlowExpressions.FieldAccess;
 import dataflow.analysis.FlowExpressions.PureMethodCall;
 import dataflow.analysis.FlowExpressions.Receiver;
 import dataflow.analysis.Store;
@@ -52,13 +53,13 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
     /**
      * Information collected about fields, using the internal representation
-     * {@link FlowExpressions.FieldAccess}.
+     * {@link FieldAccess}.
      */
     protected Map<FlowExpressions.FieldAccess, V> fieldValues;
 
     /**
      * Information collected about pure method calls, using the internal
-     * representation {@link FlowExpressions.PureMethodCall}.
+     * representation {@link PureMethodCall}.
      */
     protected Map<FlowExpressions.PureMethodCall, V> methodValues;
 

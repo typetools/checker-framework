@@ -1,6 +1,7 @@
 package checkers.flow;
 
 import java.io.PrintStream;
+import java.util.BitSet;
 import java.util.Collection;
 import java.util.Deque;
 import java.util.HashMap;

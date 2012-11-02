@@ -1028,8 +1028,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * or qualifiers based on method invocation parameters.
      *
      * As an implementation detail, this method depends on
-     * {@link AnnotatedTypes#asMemberOf(AnnotatedTypeMirror, Element)}, and
-     * customization based on receiver type should be in accordance to its
+     * {@link AnnotatedTypes#asMemberOf(Types, AnnotatedTypeFactory, AnnotatedTypeMirror, Element)},
+     * and customization based on receiver type should be in accordance to its
      * specification.
      *
      * The return type is a pair of the type of the invoked method and
@@ -1041,8 +1041,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * for the checks of type argument well-formedness.
      *
      * Note that "this" and "super" constructor invocations are also handled by this
-     * method. Method {@link constructorFromUse} is only used for a constructor invocation
-     * in a "new" expression.
+     * method. Method {@link #constructorFromUse(NewClassTree)} is only used for a constructor
+     * invocation in a "new" expression.
      *
      * @param tree the method invocation tree
      * @return the method type being invoked with tree and the (inferred) type arguments
@@ -1084,7 +1084,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *   from the AnnotatedExecutableType computed here?
      *
      * Note that "this" and "super" constructor invocations are handled by
-     * method {@link methodFromUse}. This method only handles constructor invocations
+     * method {@link #methodFromUse}. This method only handles constructor invocations
      * in a "new" expression.
      *
      * @param tree the constructor invocation tree
@@ -1808,7 +1808,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Returns all of the actual annotation mirrors used to annotate this element
      * (includes stub files).
      *
-     * @param element
+     * @param elt
      *            The element for which to determine annotations.
      */
     public Set<AnnotationMirror> getDeclAnnotations(Element elt) {
