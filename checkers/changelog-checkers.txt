@@ -12,7 +12,8 @@ Aliased annotations:
   Clarified that there is no need to rewrite your program.  The Checker
     Framework recognizes dozens of annotations used by other tools.
 
-Improved documentation of the Lock Checker and Units Checker.
+Improved documentation of Units Checker and Gradle Integration.
+Improved developer documentation of Eclipse and Maven plugins.
 
 Bug fixes.
 
