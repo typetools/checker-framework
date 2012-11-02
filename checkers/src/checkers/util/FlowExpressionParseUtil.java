@@ -10,10 +10,12 @@ import javacutils.InternalUtils;
 import javacutils.PurityUtils;
 import javacutils.Resolver;
 import javacutils.TreeUtils;
-
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Types;
 
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeFactory;
@@ -29,6 +31,7 @@ import dataflow.analysis.FlowExpressions.FieldAccess;
 import dataflow.analysis.FlowExpressions.PureMethodCall;
 import dataflow.analysis.FlowExpressions.Receiver;
 import dataflow.analysis.FlowExpressions.ThisReference;
+import dataflow.analysis.FlowExpressions.ValueLiteral;
 import dataflow.cfg.node.ImplicitThisLiteralNode;
 import dataflow.cfg.node.LocalVariableNode;
 import dataflow.cfg.node.MethodInvocationNode;
@@ -65,6 +68,15 @@ public class FlowExpressionParseUtil {
     /** Matches a field access */
     protected static final Pattern dotPattern = Pattern
             .compile("^([^.]+)\\.(.+)$");
+    /** Regular expression for an integer literal */
+    protected static final Pattern intPattern = Pattern
+            .compile("^([1-9][0-9]*)$");
+    /** Regular expression for a long literal */
+    protected static final Pattern longPattern = Pattern
+            .compile("^([1-9][0-9]*L)$");
+    /** Regular expression for a string literal */
+    protected static final Pattern stringPattern = Pattern
+            .compile("^(\"([^\"\\\\]|\\\\.)*\")$");
 
     /**
      * Parse a string and return its representation as a
@@ -87,7 +99,9 @@ public class FlowExpressionParseUtil {
     public static/* @Nullable */FlowExpressions.Receiver parse(String s,
             FlowExpressionContext context, TreePath path)
             throws FlowExpressionParseException {
-        return parse(s, context, path, true, true, true, true, true);
+        Receiver result = parse(s, context, path, true, true, true, true, true,
+                true);
+        return result;
     }
 
     /**
@@ -97,18 +111,35 @@ public class FlowExpressionParseUtil {
     private static/* @Nullable */FlowExpressions.Receiver parse(String s,
             FlowExpressionContext context, TreePath path, boolean allowSelf,
             boolean allowIdentifier, boolean allowParameter, boolean allowDot,
-            boolean allowMethods) throws FlowExpressionParseException {
+            boolean allowMethods, boolean allowLiterals)
+            throws FlowExpressionParseException {
+        s = s.trim();
 
         Matcher identifierMatcher = identifierPattern.matcher(s);
         Matcher selfMatcher = selfPattern.matcher(s);
         Matcher parameterMatcher = parameterPattern.matcher(s);
         Matcher methodMatcher = methodPattern.matcher(s);
         Matcher dotMatcher = dotPattern.matcher(s);
+        Matcher intMatcher = intPattern.matcher(s);
+        Matcher longMatcher = longPattern.matcher(s);
+        Matcher stringMatcher = stringPattern.matcher(s);
 
         ProcessingEnvironment env = context.atypeFactory.getProcessingEnv();
+        Types types = env.getTypeUtils();
 
-        // this literal
-        if (selfMatcher.matches() && allowSelf) {
+        if (intMatcher.matches() && allowLiterals) {
+            int val = Integer.parseInt(s);
+            return new ValueLiteral(types.getPrimitiveType(TypeKind.INT), val);
+        } else if (longMatcher.matches() && allowLiterals) {
+            long val = Long.parseLong(s.substring(0, s.length() - 1));
+            return new ValueLiteral(types.getPrimitiveType(TypeKind.LONG), val);
+        } else if (stringMatcher.matches() && allowLiterals) {
+            TypeElement stringTypeElem = env.getElementUtils().getTypeElement(
+                    "java.lang.String");
+            return new ValueLiteral(types.getDeclaredType(stringTypeElem),
+                    s.substring(1, s.length() - 1));
+        } else if (selfMatcher.matches() && allowSelf) {
+            // this literal
             return new ThisReference(context.receiver.getType());
         } else if (identifierMatcher.matches() && allowIdentifier) {
             Resolver resolver = new Resolver(env);
@@ -163,22 +194,25 @@ public class FlowExpressionParseUtil {
             for (Receiver p : parameters) {
                 parameterTypes.add(p.getType());
             }
+            Element methodElement = null;
             try {
                 // try to find the correct method
                 Resolver resolver = new Resolver(env);
-                Element methodElement = resolver.findMethod(methodName,
+                methodElement = resolver.findMethod(methodName,
                         context.receiver.getType(), path, parameterTypes);
-
-                // check that the method is pure
-                if (!PurityUtils.isDeterministic(context.atypeFactory, methodElement)) {
-                    throw new FlowExpressionParseException(
-                            Result.failure("flowexpr.method.not.pure", methodElement.getSimpleName()));
-                }
-                return new PureMethodCall(ElementUtils.getType(methodElement),
-                        methodElement, context.receiver, parameters);
             } catch (Throwable t) {
                 throw constructParserException(s);
             }
+            // check that the method is pure
+            assert methodElement != null;
+            if (!PurityUtils.isDeterministic(context.atypeFactory,
+                    methodElement)) {
+                throw new FlowExpressionParseException(Result.failure(
+                        "flowexpr.method.not.pure",
+                        methodElement.getSimpleName()));
+            }
+            return new PureMethodCall(ElementUtils.getType(methodElement),
+                    methodElement, context.receiver, parameters);
         } else if (dotMatcher.matches() && allowDot) {
             String receiverString = dotMatcher.group(1);
             String remainingString = dotMatcher.group(2);
@@ -189,7 +223,7 @@ public class FlowExpressionParseUtil {
             // Parse the rest, with a new receiver.
             FlowExpressionContext newContext = context.changeReceiver(receiver);
             return parse(remainingString, newContext, path, false, true, false,
-                    true, true);
+                    true, true, false);
         } else {
             throw constructParserException(s);
         }
@@ -257,7 +291,7 @@ public class FlowExpressionParseUtil {
                         if (callLevel == 0) {
                             // parse first parameter
                             finishParam(parameterString, allowEmptyList,
-                                    context, path, result, idx);
+                                    context, path, result, idx - 1);
                             // parse remaining parameters
                             List<Receiver> rest = parseParameterList(
                                     parameterString.substring(idx), false,
@@ -273,12 +307,14 @@ public class FlowExpressionParseUtil {
                 case '"':
                     // start or finish string
                     inString = !inString;
+                    break;
                 case '(':
                     if (inString) {
                         // stay in same state and consume the character
                     } else {
                         callLevel++;
                     }
+                    break;
                 case ')':
                     if (inString) {
                         // stay in same state and consume the character
@@ -289,13 +325,12 @@ public class FlowExpressionParseUtil {
                             callLevel--;
                         }
                     }
+                    break;
                 default:
                     // stay in same state and consume the character
                     break;
                 }
-                break;
             }
-            return result;
         }
 
         private static void finishParam(String parameterString,
