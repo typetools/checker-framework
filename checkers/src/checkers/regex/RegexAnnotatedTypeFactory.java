@@ -3,12 +3,15 @@ package checkers.regex;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.flow.Flow;
+import checkers.nullness.quals.Pure;
 import checkers.regex.quals.PartialRegex;
 import checkers.regex.quals.PolyRegex;
 import checkers.regex.quals.Regex;
@@ -146,6 +149,20 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
         return new RegexTreeAnnotator(checker);
     }
 
+    /** This method is a copy of RegexUtil.isRegex.
+     * We cannot directly use RegexUtil, because it uses type annotations
+     * which cannot be used in IDEs (yet).
+     */
+    @Pure
+    private static boolean isRegex(String s) {
+        try {
+            Pattern.compile(s);
+        } catch (PatternSyntaxException e) {
+            return false;
+        }
+        return true;
+    }
+
     private class RegexTreeAnnotator extends TreeAnnotator {
 
         public RegexTreeAnnotator(BaseTypeChecker checker) {
@@ -167,7 +184,7 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
                     regex = Character.toString((Character) tree.getValue());
                 }
                 if (regex != null) {
-                    if (RegexUtil.isRegex(regex)) {
+                    if (isRegex(regex)) {
                         int groupCount = checker.getGroupCount(regex);
                         type.addAnnotation(createRegexAnnotation(groupCount));
                     } else {
@@ -211,7 +228,7 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
                     String lRegex = getPartialRegexValue(lExpr);
                     String rRegex = getPartialRegexValue(rExpr);
                     String concat = lRegex + rRegex;
-                    if (RegexUtil.isRegex(concat)) {
+                    if (isRegex(concat)) {
                         int groupCount = checker.getGroupCount(concat);
                         type.addAnnotation(createRegexAnnotation(groupCount));
                     } else {
