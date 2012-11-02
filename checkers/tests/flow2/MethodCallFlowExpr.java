@@ -170,7 +170,6 @@ class MethodCallFlowExpr {
         @Odd String l2 = p1d(1);
         @Odd String l2b = MethodCallFlowExpr.p1d(1);
         @Odd String l2c = this.p1d(1);
-        nonpure();
     }
     
     void t8() {
@@ -184,7 +183,6 @@ class MethodCallFlowExpr {
         @Odd String l2 = p1d(1);
         @Odd String l2b = MethodCallFlowExpr.p1d(1);
         @Odd String l2c = this.p1d(1);
-        nonpure();
     }
     
     void t9() {
@@ -198,6 +196,5 @@ class MethodCallFlowExpr {
         @Odd String l2 = p1d(1);
         @Odd String l2b = MethodCallFlowExpr.p1d(1);
         @Odd String l2c = this.p1d(1);
-        nonpure();
     }
 }
