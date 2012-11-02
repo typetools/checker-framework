@@ -171,7 +171,7 @@ public final class NonNullUtils {
     /**
      * For use only in GUI listener code.
      * @param ref
-     * @return
+     * @return ref with NonRaw and Committed annotations
      */
     @SuppressWarnings({"rawness","commitment"})
     public static <T extends /*@checkers.initialization.quals.Raw*/ /*@Unclassified*/ Object> /*@checkers.initialization.quals.NonRaw*/ /*@Committed*/ T castInitGui(T ref) {

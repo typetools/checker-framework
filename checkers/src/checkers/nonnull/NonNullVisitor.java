@@ -254,8 +254,8 @@ public class NonNullVisitor extends
     }
 
     /**
-     * @return Reports an error if a comparison of a @NonNull expression with
-     *         the null literal is performed.
+     * Reports an error if a comparison of a @NonNull expression with
+     * the null literal is performed.
      */
     protected void checkForRedundantTests(BinaryTree node) {
 
