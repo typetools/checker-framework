@@ -103,12 +103,6 @@ public class AssertIfChecked {
   @Nullable Object getValueUnpure() { return value; }
   @dataflow.quals.Pure @Nullable Object getValuePure() { return value; }
   
-  @EnsuresNonNullIf(result=true, expression="getValueUnpure()")
-  public boolean hasValueUnpure() {
-      //:: error: (contracts.conditional.postcondition.not.satisfied)
-      return getValueUnpure() != null;
-  }
-  
   @EnsuresNonNullIf(result=true, expression="getValuePure()")
   public boolean hasValuePure() {
       return getValuePure() != null;
