@@ -128,13 +128,16 @@ public class Resolver {
      * @return The method element (if found).
      */
     public Element findMethod(String methodName, TypeMirror receiverType,
-            TreePath path) {
+            TreePath path, java.util.List<TypeMirror> argumentTypes) {
         JavacScope scope = (JavacScope) trees.getScope(path);
         Env<AttrContext> env = scope.getEnv();
 
         Type site = (Type) receiverType;
         Name name = names.fromString(methodName);
         List<Type> argtypes = List.nil();
+        for (TypeMirror a : argumentTypes) {
+            argtypes = argtypes.append((Type) a);
+        }
         List<Type> typeargtypes = List.nil();
         boolean allowBoxing = true;
         boolean useVarargs = false;
