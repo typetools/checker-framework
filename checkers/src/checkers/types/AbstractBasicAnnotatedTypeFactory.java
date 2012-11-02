@@ -575,7 +575,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
             annotateImplicit(((VariableTree) tree).getType(), res, false);
         } else if (tree instanceof AssignmentTree) {
             res = fromExpression(((AssignmentTree) tree).getVariable());
-            annotateImplicit((AssignmentTree) tree, res, false);
+            annotateImplicit(tree, res, false);
         }
         return res;
     }
@@ -693,6 +693,14 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
 
     public Store getEmptyStore() {
         return emptyStore;
+    }
+
+    public boolean getUseFlow() {
+        return useFlow;
+    }
+
+    public void setUseFlow(boolean useFlow) {
+        this.useFlow = useFlow;
     }
 
     public void setEmptyStore(Store emptyStore) {
