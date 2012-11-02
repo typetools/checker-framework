@@ -13,6 +13,7 @@ import checkers.interning.quals.*;
 import checkers.quals.DefaultQualifier;
 import checkers.quals.ImplicitFor;
 import checkers.quals.Unqualified;
+import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;

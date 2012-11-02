@@ -14,7 +14,8 @@ import checkers.types.QualifierHierarchy;
 /**
 * Represents the type qualifier hierarchy of a type system.
 *
-* This class is immutable and can be only created through {@link GraphFactory}.
+* This class is immutable and can be only created through
+* {@link MultiGraphQualifierHierarchy.MultiGraphFactory}.
 */
 public class GraphQualifierHierarchy extends MultiGraphQualifierHierarchy {
 

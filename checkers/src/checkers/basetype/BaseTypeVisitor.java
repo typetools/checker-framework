@@ -62,6 +62,7 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
+import checkers.types.TypeHierarchy;
 import checkers.types.VisitorState;
 import checkers.types.visitors.AnnotatedTypeScanner;
 import checkers.util.AnnotatedTypes;
@@ -112,7 +113,7 @@ import checkers.nonnull.quals.Nullable;
  * invoke this factory on parts of the AST to determine the "annotated type" of
  * an expression. Then, the visitor methods will check the types in assignments
  * and pseudo-assignments using {@link #commonAssignmentCheck}, which
- * ultimately calls the {@link BaseTypeChecker#isSubtype} method and reports
+ * ultimately calls the {@link TypeHierarchy#isSubtype} method and reports
  * errors that violate Java's rules of assignment.
  *
  * <p>
@@ -128,7 +129,7 @@ import checkers.nonnull.quals.Nullable;
  * This implementation does the following checks:
  * 1. <b>Assignment and Pseudo-Assignment Check</b>:
  *    It verifies that any assignment type check, using
- *    {@code Checker.isSubtype} method. This includes method invocation and
+ *    {@code TypeHierarchy.isSubtype} method. This includes method invocation and
  *    method overriding checks.
  *
  * 2. <b>Type Validity Check</b>:
@@ -140,7 +141,7 @@ import checkers.nonnull.quals.Nullable;
  *    {@code Checker.isAssignable} method.
  *
  * @see "JLS $4"
- * @see BaseTypeChecker#isSubtype(AnnotatedTypeMirror, AnnotatedTypeMirror)
+ * @see TypeHierarchy#isSubtype(AnnotatedTypeMirror, AnnotatedTypeMirror)
  * @see AnnotatedTypeFactory
  */
 /*
@@ -164,15 +165,15 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
     /** For storing visitor state. **/
     protected final VisitorState visitorState;
 
-    /** An instance of the {@link ContractUtils} helper class. */
+    /** An instance of the {@link ContractsUtils} helper class. */
     protected final ContractsUtils contractsUtils;
 
-    /** The annoated-type factory (with a more specific type than super.atypeFactory). */
+    /** The annotated-type factory (with a more specific type than super.atypeFactory). */
     protected final AbstractBasicAnnotatedTypeFactory<?, ?, ?, ?, ?> atypeFactory;
 
     /**
      * @param checker the typechecker associated with this visitor (for
-     *        callbacks to {@link BaseTypeChecker#isSubtype})
+     *        callbacks to {@link TypeHierarchy#isSubtype})
      * @param root the root of the AST that this visitor operates on
      */
     public BaseTypeVisitor(Checker checker, CompilationUnitTree root) {

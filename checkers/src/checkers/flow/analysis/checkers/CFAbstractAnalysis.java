@@ -98,7 +98,7 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
     }
 
     /**
-     * Returns true if the abstract value {@value} passed a set of
+     * Returns true if the abstract value passed a set of
      * well-formedness checks. The method will never return false for valid
      * types, but might not catch all invalid abstract values.
      */
