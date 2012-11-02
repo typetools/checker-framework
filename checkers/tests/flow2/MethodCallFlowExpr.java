@@ -30,6 +30,22 @@ class MethodCallFlowExpr {
         return "";
     }
     
+    @Pure
+    <T> String p1c(T i) {
+        return "";
+    }
+    
+    @Pure
+    static String p1d(int i) {
+        return "";
+    }
+    
+    @EnsuresAnnotation(expression="p1c(\"abc\")", annotation=Odd.class)
+    //:: error: (contracts.postcondition.not.satisfied)
+    void e0() {
+        // don't bother with implementation
+    }
+    
     @EnsuresAnnotation(expression="p1(1)", annotation=Odd.class)
     //:: error: (contracts.postcondition.not.satisfied)
     void e1() {
@@ -65,7 +81,25 @@ class MethodCallFlowExpr {
         // don't bother with implementation
     }
     
-    void t1(@Odd String p1, @Value String p2) {
+    @EnsuresAnnotation(expression="p1d(1)", annotation=Odd.class)
+    //:: error: (contracts.postcondition.not.satisfied)
+    void e7a() {
+        // don't bother with implementation
+    }
+    
+    @EnsuresAnnotation(expression="this.p1d(1)", annotation=Odd.class)
+    //:: error: (contracts.postcondition.not.satisfied)
+    void e7b() {
+        // don't bother with implementation
+    }
+    
+    @EnsuresAnnotation(expression="MethodCallFlowExpr.p1d(1)", annotation=Odd.class)
+    //:: error: (contracts.postcondition.not.satisfied)
+    void e7c() {
+        // don't bother with implementation
+    }
+    
+    void t1() {
         //:: error: (assignment.type.incompatible)
         @Odd String l1 = p1(1);
         e1();
@@ -74,7 +108,7 @@ class MethodCallFlowExpr {
         @Odd String l3 = p1(1);
     }
     
-    void t2(@Odd String p1, @Value String p2) {
+    void t2() {
         //:: error: (assignment.type.incompatible)
         @Odd String l1 = p1("abc");
         e2();
@@ -96,7 +130,7 @@ class MethodCallFlowExpr {
         @Odd String l3 = p2("abc", 2L, p1(1));
     }
     
-    void t4(@Odd String p1, @Value String p2) {
+    void t4() {
         //:: error: (assignment.type.incompatible)
         @Odd String l1 = p1b(2L);
         e5();
@@ -107,12 +141,63 @@ class MethodCallFlowExpr {
         @Odd String l3 = p1b(2L);
     }
     
-    void t5(@Odd String p1, @Value String p2) {
+    void t5() {
         //:: error: (assignment.type.incompatible)
         @Odd String l1 = p1b(null);
         e6();
         //:: error: (assignment.type.incompatible)
         @Odd String l2 = p1b(1L);
         @Odd String l3 = p1b(null);
+    }
+    
+    void t6() {
+        //:: error: (assignment.type.incompatible)
+        @Odd String l1 = p1c("abc");
+        e0();
+        //:: error: (assignment.type.incompatible)
+        @Odd String l2 = p1c("def");
+        @Odd String l3 = p1c("abc");
+    }
+    
+    void t7() {
+      //:: error: (assignment.type.incompatible)
+        @Odd String l1 = p1d(1);
+        //:: error: (assignment.type.incompatible)
+        @Odd String l1b = MethodCallFlowExpr.p1d(1);
+        //:: error: (assignment.type.incompatible)
+        @Odd String l1c = this.p1d(1);
+        e7a();
+        @Odd String l2 = p1d(1);
+        @Odd String l2b = MethodCallFlowExpr.p1d(1);
+        @Odd String l2c = this.p1d(1);
+        nonpure();
+    }
+    
+    void t8() {
+        //:: error: (assignment.type.incompatible)
+        @Odd String l1 = p1d(1);
+        //:: error: (assignment.type.incompatible)
+        @Odd String l1b = MethodCallFlowExpr.p1d(1);
+        //:: error: (assignment.type.incompatible)
+        @Odd String l1c = this.p1d(1);
+        e7b();
+        @Odd String l2 = p1d(1);
+        @Odd String l2b = MethodCallFlowExpr.p1d(1);
+        @Odd String l2c = this.p1d(1);
+        nonpure();
+    }
+    
+    void t9() {
+        //:: error: (assignment.type.incompatible)
+        @Odd String l1 = p1d(1);
+        //:: error: (assignment.type.incompatible)
+        @Odd String l1b = MethodCallFlowExpr.p1d(1);
+        //:: error: (assignment.type.incompatible)
+        @Odd String l1c = this.p1d(1);
+        e7c();
+        @Odd String l2 = p1d(1);
+        @Odd String l2b = MethodCallFlowExpr.p1d(1);
+        @Odd String l2c = this.p1d(1);
+        nonpure();
     }
 }
