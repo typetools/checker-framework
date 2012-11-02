@@ -7,11 +7,14 @@ import java.util.regex.Pattern;
 
 import javacutils.ElementUtils;
 import javacutils.InternalUtils;
+import javacutils.PurityUtils;
 import javacutils.Resolver;
 import javacutils.TreeUtils;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
+import javax.lang.model.type.TypeMirror;
+
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeFactory;
 
@@ -149,18 +152,28 @@ public class FlowExpressionParseUtil {
             return context.arguments.get(idx - 1);
         } else if (methodMatcher.matches() && allowMethods) {
             String methodName = methodMatcher.group(1);
+
+            // parse parameter list
             String parameterList = methodMatcher.group(2);
-            if (parameterList.length() != 0) {
-                throw new FlowExpressionParseException(
-                        Result.failure("flowexpr.parse.nonempty.parameter"));
-            }
             List<Receiver> parameters = ParameterListParser.parseParameterList(
                     parameterList, true, context.useOuterReceiver(), path);
+
+            // get types for parameters
+            List<TypeMirror> parameterTypes = new ArrayList<>();
+            for (Receiver p : parameters) {
+                parameterTypes.add(p.getType());
+            }
             try {
+                // try to find the correct method
                 Resolver resolver = new Resolver(env);
                 Element methodElement = resolver.findMethod(methodName,
-                        context.receiver.getType(), path);
-                // TODO: check that method is actually pure
+                        context.receiver.getType(), path, parameterTypes);
+
+                // check that the method is pure
+                if (!PurityUtils.isDeterministic(context.atypeFactory, methodElement)) {
+                    throw new FlowExpressionParseException(
+                            Result.failure("flowexpr.method.not.pure", methodElement.getSimpleName()));
+                }
                 return new PureMethodCall(ElementUtils.getType(methodElement),
                         methodElement, context.receiver, parameters);
             } catch (Throwable t) {

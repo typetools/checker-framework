@@ -463,6 +463,9 @@ public class FlowExpressions {
         }
     }
 
+    /**
+     * A deterministic method call.
+     */
     public static class PureMethodCall extends Receiver {
 
         protected final Receiver receiver;
