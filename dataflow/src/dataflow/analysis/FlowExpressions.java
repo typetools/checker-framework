@@ -96,8 +96,13 @@ public class FlowExpressions {
                 for (Node p : mn.getArguments()) {
                     parameters.add(internalReprOf(provider, p));
                 }
-                Receiver methodReceiver = internalReprOf(provider, mn
-                        .getTarget().getReceiver());
+                Receiver methodReceiver;
+                if (ElementUtils.isStatic(invokedMethod)) {
+                    methodReceiver = new ClassName(mn.getTarget().getReceiver().getType());
+                } else {
+                    methodReceiver = internalReprOf(provider, mn
+                            .getTarget().getReceiver());
+                }
                 receiver = new PureMethodCall(mn.getType(), invokedMethod,
                         methodReceiver, parameters);
             }
