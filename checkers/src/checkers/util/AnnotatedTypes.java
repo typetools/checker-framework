@@ -256,7 +256,7 @@ public class AnnotatedTypes {
     }
 
     /**
-     * @see #asMemberOf(AnnotatedTypeMirror, Element)
+     * @see #asMemberOf(Types, AnnotatedTypeFactory, AnnotatedTypeMirror, Element)
      */
     public static AnnotatedExecutableType asMemberOf(Types types, AnnotatedTypeFactory atypeFactory, AnnotatedTypeMirror t,
             ExecutableElement elem) {

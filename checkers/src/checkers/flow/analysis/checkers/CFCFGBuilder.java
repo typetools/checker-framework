@@ -32,7 +32,6 @@ import dataflow.cfg.node.PostfixIncrementNode;
 import dataflow.cfg.node.VariableDeclarationNode;
 
 import checkers.basetype.BaseTypeChecker;
-import checkers.quals.TerminatesExecution;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 
@@ -54,8 +53,9 @@ import com.sun.source.tree.VariableTree;
 
 
 /**
- * A control-flow graph builder (see {@link CFGBuilder}) that knows about the
- * {@link TerminatesExecution} annotation.
+ * A control-flow graph builder (see {@link CFGBuilder}) that knows
+ * about the Checker Framework annotations and their representation as
+ * {@link AnnotatedTypeMirror}s.
  *
  * @author Stefan Heule
  */
@@ -90,7 +90,7 @@ public class CFCFGBuilder extends CFGBuilder {
         declaredClasses = new LinkedList<>();
         CFTreeBuilder builder = new CFTreeBuilder(env);
         PhaseOneResult phase1result = new CFCFGTranslationPhaseOne().process(
-                root, env, underlyingAST, exceptionalExitLabel, builder);
+                root, env, underlyingAST, exceptionalExitLabel, builder, factory);
         ControlFlowGraph phase2result = new CFGTranslationPhaseTwo()
                 .process(phase1result);
         ControlFlowGraph phase3result = CFGTranslationPhaseThree
@@ -99,24 +99,6 @@ public class CFCFGBuilder extends CFGBuilder {
     }
 
     public class CFCFGTranslationPhaseOne extends CFGTranslationPhaseOne {
-
-        /**
-         * Change behavior such that the {@link TerminatesExecution} annotation
-         * is recognized.
-         */
-        @Override
-        public MethodInvocationNode visitMethodInvocation(
-                MethodInvocationTree tree, Void p) {
-            MethodInvocationNode mi = super.visitMethodInvocation(tree, p);
-            ExtendedNode extendedMethodNode = nodeList.get(nodeList.size() - 1);
-            Element methodElement = InternalUtils.symbol(tree);
-            boolean terminatesExecution = factory.getDeclAnnotation(
-                    methodElement, TerminatesExecution.class) != null;
-            if (terminatesExecution) {
-                extendedMethodNode.setTerminatesExecution(true);
-            }
-            return mi;
-        }
 
         @Override
         protected boolean assumeAssertionsEnabledFor(AssertTree tree) {

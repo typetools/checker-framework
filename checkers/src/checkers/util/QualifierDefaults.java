@@ -75,8 +75,8 @@ public class QualifierDefaults {
             new IdentityHashMap<Element, AMLocTreeSet>();
 
     /**
-     * @param factory the factory for this checker
-     * @param annoFactory an annotation factory, used to get annotations by name
+     * @param elements interface to Element data in the current processing environment
+     * @param atypeFactory factory for the current checker
      */
     public QualifierDefaults(Elements elements, AnnotatedTypeFactory atypeFactory) {
         this.elements = elements;

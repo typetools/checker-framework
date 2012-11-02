@@ -210,7 +210,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
      * <p>
      * If neither of the two is more specific for one of the hierarchies (i.e.,
      * if the two are incomparable as determined by
-     * {@link #isSubtype(int, InferredAnnotation, InferredAnnotation)}, then the
+     * {@link TypeHierarchy#isSubtype(AnnotatedTypeMirror, AnnotatedTypeMirror)}, then the
      * respective value from {@code backup} is used. If {@code backup} is
      * {@code null}, then an assertion error is raised.
      *

@@ -80,20 +80,16 @@ public class FlowExpressionParseUtil {
 
     /**
      * Parse a string and return its representation as a
-     * {@link FlowExpression.Receiver}, or throw an
+     * {@link Receiver}, or throw an
      * {@link FlowExpressionParseException}. The expression is assumed to be
      * used in the context of a method.
      *
      * @param s
      *            The string to parse.
+     * @param context
+     *            information about any receiver and arguments
      * @param path
      *            The current tree path.
-     * @param receiverType
-     *            The type of the receiver that this expression might refer to.
-     * @param receiver
-     *            The receiver to be used in the result (if it occurs).
-     * @param arguments
-     *            The arguments of the method.
      * @throws FlowExpressionParseException
      */
     public static/* @Nullable */FlowExpressions.Receiver parse(String s,
