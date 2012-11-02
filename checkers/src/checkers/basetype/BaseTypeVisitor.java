@@ -1,7 +1,9 @@
 package checkers.basetype;
 
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -23,7 +25,6 @@ import javacutils.AnnotationUtils;
 import javacutils.ElementUtils;
 import javacutils.InternalUtils;
 import javacutils.Pair;
-import javacutils.PurityUtils;
 import javacutils.TreeUtils;
 import javacutils.TypesUtils;
 
@@ -33,8 +34,11 @@ import dataflow.cfg.node.BooleanLiteralNode;
 import dataflow.cfg.node.MethodInvocationNode;
 import dataflow.cfg.node.Node;
 import dataflow.cfg.node.ReturnNode;
+import dataflow.quals.Pure;
+import dataflow.util.PurityChecker;
+import dataflow.util.PurityChecker.PurityResult;
+import dataflow.util.PurityUtils;
 
-import checkers.basetype.PurityChecker.PurityResult;
 import checkers.compilermsgs.quals.CompilerMessageKey;
 import checkers.flow.analysis.checkers.CFAbstractStore;
 import checkers.flow.analysis.checkers.CFAbstractValue;
@@ -46,7 +50,6 @@ import checkers.igj.quals.Immutable;
 import checkers.igj.quals.ReadOnly;
 import checkers.nonnull.NonNullFbcChecker;
 import checkers.quals.DefaultQualifier;
-import checkers.quals.Pure;
 import checkers.quals.Unused;
 import checkers.source.Result;
 import checkers.source.SourceVisitor;
@@ -59,6 +62,7 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
+import checkers.types.TypeHierarchy;
 import checkers.types.VisitorState;
 import checkers.types.visitors.AnnotatedTypeScanner;
 import checkers.util.AnnotatedTypes;
@@ -93,7 +97,7 @@ import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeInfo;
 /*>>>
-import checkers.basetype.PurityChecker.PurityResult;
+import dataflow.util.PurityChecker.PurityResult;
 import checkers.compilermsgs.quals.CompilerMessageKey;
 import checkers.nonnull.quals.Nullable;
 */
@@ -109,7 +113,7 @@ import checkers.nonnull.quals.Nullable;
  * invoke this factory on parts of the AST to determine the "annotated type" of
  * an expression. Then, the visitor methods will check the types in assignments
  * and pseudo-assignments using {@link #commonAssignmentCheck}, which
- * ultimately calls the {@link BaseTypeChecker#isSubtype} method and reports
+ * ultimately calls the {@link TypeHierarchy#isSubtype} method and reports
  * errors that violate Java's rules of assignment.
  *
  * <p>
@@ -125,7 +129,7 @@ import checkers.nonnull.quals.Nullable;
  * This implementation does the following checks:
  * 1. <b>Assignment and Pseudo-Assignment Check</b>:
  *    It verifies that any assignment type check, using
- *    {@code Checker.isSubtype} method. This includes method invocation and
+ *    {@code TypeHierarchy.isSubtype} method. This includes method invocation and
  *    method overriding checks.
  *
  * 2. <b>Type Validity Check</b>:
@@ -137,7 +141,7 @@ import checkers.nonnull.quals.Nullable;
  *    {@code Checker.isAssignable} method.
  *
  * @see "JLS $4"
- * @see BaseTypeChecker#isSubtype(AnnotatedTypeMirror, AnnotatedTypeMirror)
+ * @see TypeHierarchy#isSubtype(AnnotatedTypeMirror, AnnotatedTypeMirror)
  * @see AnnotatedTypeFactory
  */
 /*
@@ -161,15 +165,15 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
     /** For storing visitor state. **/
     protected final VisitorState visitorState;
 
-    /** An instance of the {@link ContractUtils} helper class. */
+    /** An instance of the {@link ContractsUtils} helper class. */
     protected final ContractsUtils contractsUtils;
 
-    /** The annoated-type factory (with a more specific type than super.atypeFactory). */
+    /** The annotated-type factory (with a more specific type than super.atypeFactory). */
     protected final AbstractBasicAnnotatedTypeFactory<?, ?, ?, ?, ?> atypeFactory;
 
     /**
      * @param checker the typechecker associated with this visitor (for
-     *        callbacks to {@link BaseTypeChecker#isSubtype})
+     *        callbacks to {@link TypeHierarchy#isSubtype})
      * @param root the root of the AST that this visitor operates on
      */
     public BaseTypeVisitor(Checker checker, CompilationUnitTree root) {
@@ -288,7 +292,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
             boolean checkPurityAlways = checker.getProcessingEnvironment().getOptions().containsKey("suggestPureMethods");
             if (hasPurityAnnotation || checkPurityAlways) {
                 // check "no" purity
-                List<checkers.quals.Pure.Kind> kinds = PurityUtils
+                List<dataflow.quals.Pure.Kind> kinds = PurityUtils
                         .getPurityKinds(atypeFactory, node);
                 if (kinds.isEmpty() && hasPurityAnnotation) {
                     checker.report(
@@ -311,7 +315,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                 // Report errors if necessary.
                 PurityResult r = PurityChecker.checkPurity(node.getBody(), atypeFactory);
                 if (!r.isPure(kinds)) {
-                    r.reportErrors(checker, node, kinds);
+                    reportPurityErrors(r, node, kinds);
                 }
                 // Issue a warning if the method is pure, but not annotated as such (if the feature is activated).
                 if (checkPurityAlways) {
@@ -359,6 +363,47 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
             visitorState.setMethodReceiver(preMRT);
             visitorState.setMethodTree(preMT);
         }
+    }
+
+    /**
+     * Reports errors found during purity checking.
+     */
+    protected void reportPurityErrors(PurityResult result, MethodTree node,
+            Collection<Pure.Kind> expectedTypes) {
+        assert !result.isPure(expectedTypes);
+        Collection<Pure.Kind> t = EnumSet.copyOf(expectedTypes);  
+        t.removeAll(result.getTypes());
+        if (t.contains(Pure.Kind.DETERMINISTIC)
+            && t.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
+            checker.report(Result.failure(
+                                          "pure.not.deterministic.and.sideeffect.free",
+                                          errorList(result.getNotBothReasons())), node);
+        }
+        else if (t.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
+            List<String> errors = new ArrayList<>(result.getNotSeFreeReasons());
+            errors.addAll(result.getNotBothReasons());
+            checker.report(Result.failure("pure.not.sideeffect.free",
+                                          errorList(errors)), node);
+        }
+        else if (t.contains(Pure.Kind.DETERMINISTIC)) {
+            List<String> errors = new ArrayList<>(result.getNotDetReasons());
+            errors.addAll(result.getNotBothReasons());
+            checker.report(Result.failure("pure.not.deterministic",
+                                          errorList(errors)), node);
+        }
+    }
+
+    private static String errorList(List<String> reasons) {
+        StringBuilder s = new StringBuilder();
+        boolean first = true;
+        for (String r : reasons) {
+            if (!first) {
+                s.append(", ");
+            }
+            s.append(r);
+            first = false;
+        }
+        return s.toString();
     }
 
     /**

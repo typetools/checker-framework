@@ -34,6 +34,7 @@ import dataflow.cfg.UnderlyingAST.CFGMethod;
 import dataflow.cfg.UnderlyingAST.CFGStatement;
 import dataflow.cfg.node.Node;
 import dataflow.cfg.node.ReturnNode;
+import dataflow.quals.Pure;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.flow.analysis.checkers.CFAbstractAnalysis;
@@ -49,7 +50,6 @@ import checkers.quals.DefaultLocation;
 import checkers.quals.DefaultQualifier;
 import checkers.quals.DefaultQualifierInHierarchy;
 import checkers.quals.ImplicitFor;
-import checkers.quals.Pure;
 import checkers.quals.Unqualified;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;

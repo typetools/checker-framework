@@ -1,6 +1,7 @@
 package java.lang;
 
-import checkers.quals.Pure;
+import dataflow.quals.Pure;
+
 import checkers.nonnull.quals.Nullable;
 import checkers.initialization.quals.Raw;
 

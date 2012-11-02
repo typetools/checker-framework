@@ -1,5 +1,6 @@
 package java.util;
-import checkers.quals.Pure;
+import dataflow.quals.Pure;
+
 import checkers.nullness.quals.KeyFor;
 import checkers.nonnull.quals.Nullable;
 

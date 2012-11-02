@@ -40,7 +40,7 @@ import checkers.types.TypeHierarchy;
  * The purpose of this class is twofold: Firstly, it serves as factory for
  * abstract values, stores and the transfer function. Furthermore, it makes it
  * easy for the transfer function and the stores to access the
- * {@link AnnoatedTypeFactory}, the qualifier hierarchy, etc.
+ * {@link AnnotatedTypeFactory}, the qualifier hierarchy, etc.
  *
  * @author Charlie Garrett
  * @author Stefan Heule
@@ -98,7 +98,7 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
     }
 
     /**
-     * Returns true if the abstract value {@value} passed a set of
+     * Returns true if the abstract value passed a set of
      * well-formedness checks. The method will never return false for valid
      * types, but might not catch all invalid abstract values.
      */

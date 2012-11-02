@@ -1,5 +1,6 @@
 import checkers.util.test.*;
 import java.util.*;
+import dataflow.quals.Pure;
 import checkers.quals.*;
 import tests.util.*;
 

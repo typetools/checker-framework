@@ -402,7 +402,7 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
      * <ul>
      *  <li>based on the tree receiver, done automatically through implicit
      *      invocation of
-     *      {@link AnnotatedTypes#asMemberOf(AnnotatedTypeMirror, Element)}</li>
+     *      {@link AnnotatedTypes#asMemberOf(Types, AnnotatedTypeFactory, AnnotatedTypeMirror, Element)}</li>
      *  <li>based on the invocation passed parameters</li>
      *  <li>if any yet unresolved immutability variables get resolved to a
      *      wildcard type</li>

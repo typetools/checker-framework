@@ -10,8 +10,9 @@ import javacutils.ElementUtils;
 import javacutils.InternalUtils;
 import javacutils.TreeUtils;
 
+import dataflow.quals.Pure;
+
 import checkers.basetype.BaseTypeChecker;
-import checkers.quals.Pure;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 /*>>>
