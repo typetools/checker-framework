@@ -5,12 +5,14 @@ import java.util.List;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
 import javacutils.AnnotationProvider;
 import javacutils.ElementUtils;
 import javacutils.PurityUtils;
 import javacutils.TreeUtils;
+import javacutils.TypesUtils;
 import dataflow.cfg.node.ClassNameNode;
 import dataflow.cfg.node.FieldAccessNode;
 import dataflow.cfg.node.LocalVariableNode;
@@ -151,8 +153,7 @@ public class FlowExpressions {
          *   "?".containsAliasOf("a") == true // ? is Unknown, and a can be anything
          * </pre>
          */
-        public boolean containsAliasOf(Store<?> store,
-                Receiver other) {
+        public boolean containsAliasOf(Store<?> store, Receiver other) {
             return this.equals(other) || store.canAlias(this, other);
         }
     }
@@ -206,8 +207,7 @@ public class FlowExpressions {
         }
 
         @Override
-        public boolean containsAliasOf(Store<?> store,
-                Receiver other) {
+        public boolean containsAliasOf(Store<?> store, Receiver other) {
             return super.containsAliasOf(store, other)
                     || receiver.containsAliasOf(store, other);
         }
@@ -348,8 +348,7 @@ public class FlowExpressions {
         }
 
         @Override
-        public boolean containsAliasOf(Store<?> store,
-                Receiver other) {
+        public boolean containsAliasOf(Store<?> store, Receiver other) {
             return true;
         }
 
@@ -430,6 +429,11 @@ public class FlowExpressions {
             value = node.getValue();
         }
 
+        public ValueLiteral(TypeMirror type, Object value) {
+            super(type);
+            this.value = value;
+        }
+
         @Override
         public boolean containsUnknown() {
             return false;
@@ -447,14 +451,26 @@ public class FlowExpressions {
             }
             ValueLiteral other = (ValueLiteral) obj;
             if (value == null) {
-                return other.value == null;
+                return type.toString().equals(other.type.toString())
+                        && other.value == null;
             }
-            return value.equals(other.value);
+            return type.toString().equals(other.type.toString())
+                    && value.equals(other.value);
+        }
+
+        @Override
+        public String toString() {
+            if (TypesUtils.isString(type)) {
+                return "\"" + value + "\"";
+            } else if (type.getKind() == TypeKind.LONG) {
+                return value.toString() + "L";
+            }
+            return value == null ? "null" : value.toString();
         }
 
         @Override
         public int hashCode() {
-            return HashCodeUtils.hash(value);
+            return HashCodeUtils.hash(value, type.toString());
         }
 
         @Override
@@ -535,8 +551,7 @@ public class FlowExpressions {
         }
 
         @Override
-        public boolean containsAliasOf(Store<?> store,
-                Receiver other) {
+        public boolean containsAliasOf(Store<?> store, Receiver other) {
             if (receiver.containsAliasOf(store, other)) {
                 return true;
             }
@@ -579,8 +594,8 @@ public class FlowExpressions {
             StringBuilder result = new StringBuilder();
             result.append(receiver.toString());
             result.append(".");
-            String methodName = method.toString();
-            result.append(methodName.substring(0, methodName.length() - 2));
+            String methodName = method.getSimpleName().toString();
+            result.append(methodName);
             result.append("(");
             boolean first = true;
             for (Receiver p : parameters) {
