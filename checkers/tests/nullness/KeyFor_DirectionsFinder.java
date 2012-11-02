@@ -13,8 +13,8 @@ public class KeyFor_DirectionsFinder {
     public static void buildGraph(List<StreetSegment> segs) {
         Map<GeoPoint, Set<StreetSegment>> endMap = new 
             HashMap<GeoPoint, Set<StreetSegment>>();
-        Map</*@KeyFor("endMap")*/GeoPoint, Set<StreetSegment>> beginMap = new 
-            HashMap</*@KeyFor("endMap")*/GeoPoint, Set<StreetSegment>>();
+        Map<@KeyFor("endMap") GeoPoint, Set<StreetSegment>> beginMap = new 
+            HashMap<@KeyFor("endMap") GeoPoint, Set<StreetSegment>>();
 
         for(StreetSegment seg : segs) {
             GeoPoint p1 = new GeoPoint();
@@ -27,7 +27,7 @@ public class KeyFor_DirectionsFinder {
             beginMap.get(p1).add(seg);
         }
 
-        for (/*@KeyFor("endMap")*/ GeoPoint p : beginMap.keySet()) {
+        for (@KeyFor("endMap") GeoPoint p : beginMap.keySet()) {
             for (StreetSegment beginSeg : beginMap.get(p)) {
                 for (StreetSegment endSeg : endMap.get(p)) {
                     // graph.addEdge(endSeg,beginSeg);
