@@ -1,4 +1,5 @@
 
+import dataflow.quals.Pure;
 import checkers.initialization.quals.*;
 import checkers.nonnull.quals.*;
 import checkers.quals.*;

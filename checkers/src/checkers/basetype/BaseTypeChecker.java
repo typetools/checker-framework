@@ -10,6 +10,7 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Elements;
 
+import javacutils.AbstractTypeProcessor;
 import javacutils.AnnotationUtils;
 import javacutils.ErrorReporter;
 
@@ -44,7 +45,7 @@ import checkers.igj.quals.*;
  * should extend {@link SourceChecker}.
  *
  * Non-type checkers (e.g. checkers to enforce coding
- * styles) should extend {@link SourceChecker} or {@link AbstractProcessor}
+ * styles) should extend {@link SourceChecker} or {@link AbstractTypeProcessor}
  * directly; the Checker Framework is not designed for such checkers.
  *
  * <p>

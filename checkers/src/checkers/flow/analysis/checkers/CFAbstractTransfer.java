@@ -573,7 +573,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
     }
 
     /**
-     * Returns the abstract value of {@code (value1, value2)) that is more
+     * Returns the abstract value of {@code (value1, value2)} that is more
      * specific. If the two are incomparable, then {@code value1} is returned.
      */
     public V moreSpecificValue(V value1, V value2) {

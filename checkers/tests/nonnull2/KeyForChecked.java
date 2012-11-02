@@ -1,3 +1,4 @@
+import dataflow.quals.Pure;
 import checkers.nonnull.quals.*;
 import checkers.quals.*;
 import checkers.nullness.quals.KeyFor;
