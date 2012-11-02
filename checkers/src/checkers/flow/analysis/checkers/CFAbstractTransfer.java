@@ -91,9 +91,16 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
     protected V getValueFromFactory(Tree tree, Node node) {
         AbstractBasicAnnotatedTypeFactory<? extends BaseTypeChecker, V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory = analysis.atypeFactory;
         analysis.setCurrentTree(tree);
+        // is there an assignment context node available?
         if (node != null && node.getAssignmentContext() != null) {
+            // get the declared type of the assignment context by looking up the
+            // assignment context tree's type in the factory while flow is
+            // disabled.
+            boolean oldFlow = factory.getUseFlow();
+            factory.setUseFlow(false);
             AnnotatedTypeMirror assCtxt = factory.getAnnotatedType(node
                     .getAssignmentContext().getTree());
+            factory.setUseFlow(oldFlow);
             factory.getVisitorState().setAssignmentContext(assCtxt);
         }
         AnnotatedTypeMirror at = factory.getAnnotatedType(tree);
