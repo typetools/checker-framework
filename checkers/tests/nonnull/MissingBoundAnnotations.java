@@ -1,5 +1,7 @@
 
 import java.util.*;
+import checkers.quals.*;
+import checkers.nullness.quals.*;
 
 public final class MissingBoundAnnotations {
 
