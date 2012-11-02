@@ -3,21 +3,24 @@ package dataflow.analysis;
 import java.util.ArrayList;
 import java.util.List;
 
+import javacutils.AnnotationProvider;
+import javacutils.ElementUtils;
+import javacutils.TreeUtils;
+import javacutils.TypesUtils;
+
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
-import javacutils.AnnotationProvider;
-import javacutils.ElementUtils;
-import javacutils.TreeUtils;
-import javacutils.TypesUtils;
+import dataflow.cfg.node.BoxingNode;
 import dataflow.cfg.node.ClassNameNode;
 import dataflow.cfg.node.FieldAccessNode;
 import dataflow.cfg.node.LocalVariableNode;
 import dataflow.cfg.node.MethodInvocationNode;
 import dataflow.cfg.node.Node;
 import dataflow.cfg.node.ThisLiteralNode;
+import dataflow.cfg.node.UnboxingNode;
 import dataflow.cfg.node.ValueLiteralNode;
 import dataflow.util.HashCodeUtils;
 import dataflow.util.PurityUtils;
@@ -70,6 +73,14 @@ public class FlowExpressions {
         } else if (receiverNode instanceof LocalVariableNode) {
             LocalVariableNode lv = (LocalVariableNode) receiverNode;
             receiver = new LocalVariable(lv);
+        } else if (receiverNode instanceof BoxingNode) {
+            // ignore boxing
+            return internalReprOf(provider,
+                    ((BoxingNode) receiverNode).getOperand());
+        } else if (receiverNode instanceof UnboxingNode) {
+            // ignore unboxing
+            return internalReprOf(provider,
+                    ((UnboxingNode) receiverNode).getOperand());
         } else if (receiverNode instanceof ClassNameNode) {
             ClassNameNode cn = (ClassNameNode) receiverNode;
             receiver = new ClassName(cn.getType());
