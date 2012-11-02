@@ -14,17 +14,17 @@ import com.sun.source.tree.VariableTree;
 
 /**
  * A node for an assignment:
- * 
+ *
  * <pre>
  *   <em>variable</em> = <em>expression</em>
  *   <em>expression</em> . <em>field</em> = <em>expression</em>
  *   <em>expression</em> [ <em>index</em> ] = <em>expression</em>
  * </pre>
- * 
+ *
  * We allow assignments without corresponding AST {@link Tree}s.
  *
  * @author Stefan Heule
- * 
+ *
  */
 public class AssignmentNode extends Node {
 
@@ -42,6 +42,7 @@ public class AssignmentNode extends Node {
         this.tree = tree;
         this.lhs = target;
         this.rhs = expression;
+        rhs.setAssignmentContext(lhs);
     }
 
     public Node getTarget() {
