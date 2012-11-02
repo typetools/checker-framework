@@ -69,15 +69,17 @@ public class FlowExpressionParseUtil {
     /** Matches a field access */
     protected static final Pattern dotPattern = Pattern
             .compile("^([^.]+)\\.(.+)$");
-    /** Regular expression for an integer literal */
+    /** Matches integer literals */
     protected static final Pattern intPattern = Pattern
             .compile("^([1-9][0-9]*)$");
-    /** Regular expression for a long literal */
+    /** Matches long literals */
     protected static final Pattern longPattern = Pattern
             .compile("^([1-9][0-9]*L)$");
-    /** Regular expression for a string literal */
+    /** Matches string literals */
     protected static final Pattern stringPattern = Pattern
             .compile("^(\"([^\"\\\\]|\\\\.)*\")$");
+    /** Matches the null literal */
+    protected static final Pattern nullPattern = Pattern.compile("^(null)$");
 
     /**
      * Parse a string and return its representation as a
@@ -120,6 +122,7 @@ public class FlowExpressionParseUtil {
         Matcher intMatcher = intPattern.matcher(s);
         Matcher longMatcher = longPattern.matcher(s);
         Matcher stringMatcher = stringPattern.matcher(s);
+        Matcher nullMatcher = nullPattern.matcher(s);
 
         ProcessingEnvironment env = context.atypeFactory.getProcessingEnv();
         Types types = env.getTypeUtils();
@@ -127,6 +130,8 @@ public class FlowExpressionParseUtil {
         if (intMatcher.matches() && allowLiterals) {
             int val = Integer.parseInt(s);
             return new ValueLiteral(types.getPrimitiveType(TypeKind.INT), val);
+        } else if (nullMatcher.matches() && allowLiterals) {
+            return new ValueLiteral(types.getNullType(), (Object) null);
         } else if (longMatcher.matches() && allowLiterals) {
             long val = Long.parseLong(s.substring(0, s.length() - 1));
             return new ValueLiteral(types.getPrimitiveType(TypeKind.LONG), val);
