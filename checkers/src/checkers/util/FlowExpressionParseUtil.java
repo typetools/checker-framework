@@ -82,10 +82,9 @@ public class FlowExpressionParseUtil {
     protected static final Pattern nullPattern = Pattern.compile("^(null)$");
 
     /**
-     * Parse a string and return its representation as a
-     * {@link Receiver}, or throw an
-     * {@link FlowExpressionParseException}. The expression is assumed to be
-     * used in the context of a method.
+     * Parse a string and return its representation as a {@link Receiver}, or
+     * throw an {@link FlowExpressionParseException}. The expression is assumed
+     * to be used in the context of a method.
      *
      * @param s
      *            The string to parse.
@@ -213,8 +212,16 @@ public class FlowExpressionParseUtil {
                         "flowexpr.method.not.pure",
                         methodElement.getSimpleName()));
             }
-            return new PureMethodCall(ElementUtils.getType(methodElement),
-                    methodElement, context.receiver, parameters);
+            if (ElementUtils.isStatic(methodElement)) {
+                Element classElem = methodElement.getEnclosingElement();
+                Receiver staticClassReceiver = new ClassName(
+                        ElementUtils.getType(classElem));
+                return new PureMethodCall(ElementUtils.getType(methodElement),
+                        methodElement, staticClassReceiver, parameters);
+            } else {
+                return new PureMethodCall(ElementUtils.getType(methodElement),
+                        methodElement, context.receiver, parameters);
+            }
         } else if (dotMatcher.matches() && allowDot) {
             String receiverString = dotMatcher.group(1);
             String remainingString = dotMatcher.group(2);
