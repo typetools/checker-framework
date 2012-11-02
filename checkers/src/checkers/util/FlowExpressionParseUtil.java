@@ -7,9 +7,9 @@ import java.util.regex.Pattern;
 
 import javacutils.ElementUtils;
 import javacutils.InternalUtils;
-import javacutils.PurityUtils;
 import javacutils.Resolver;
 import javacutils.TreeUtils;
+
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
@@ -36,6 +36,7 @@ import dataflow.cfg.node.ImplicitThisLiteralNode;
 import dataflow.cfg.node.LocalVariableNode;
 import dataflow.cfg.node.MethodInvocationNode;
 import dataflow.cfg.node.Node;
+import dataflow.util.PurityUtils;
 
 /**
  * A collection of helper methods to parse a string that represents a restricted
