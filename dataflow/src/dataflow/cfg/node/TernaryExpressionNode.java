@@ -12,14 +12,14 @@ import com.sun.source.tree.Tree.Kind;
 
 /**
  * A node for a conditional expression:
- * 
+ *
  * <pre>
  *   <em>expression</em> ? <em>expression</em> : <em>expression</em>
  * </pre>
- * 
+ *
  * @author Stefan Heule
  * @author Charlie Garrett
- * 
+ *
  */
 public class TernaryExpressionNode extends Node {
 
@@ -36,6 +36,8 @@ public class TernaryExpressionNode extends Node {
         this.condition = condition;
         this.thenOperand = thenOperand;
         this.elseOperand = elseOperand;
+        thenOperand.setAssignmentContext(getAssignmentContext());
+        elseOperand.setAssignmentContext(getAssignmentContext());
     }
 
     public Node getConditionOperand() {

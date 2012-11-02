@@ -47,12 +47,18 @@ public abstract class Node {
     protected boolean lvalue = false;
 
     /**
+     * The assignment context of this node. That is, for a node that gets
+     * "assigned" to something, this TODO finish documentation.
+     */
+    protected/* @Nullable */Node assignmentContext;
+
+    /**
      * The type of this node. For {@link Node}s with {@link Tree}s, this type is
      * the type of the {@link Tree}. Otherwise, it is the type is set by the
      * {@link CFGBuilder}.
      */
     protected final TypeMirror type;
-    
+
     public Node(TypeMirror type) {
         assert type != null;
         this.type = type;
@@ -113,6 +119,14 @@ public abstract class Node {
      */
     public void setLValue() {
         lvalue = true;
+    }
+
+    public Node getAssignmentContext() {
+        return assignmentContext;
+    }
+
+    public void setAssignmentContext(Node assignmentContext) {
+        this.assignmentContext = assignmentContext;
     }
 
     /**

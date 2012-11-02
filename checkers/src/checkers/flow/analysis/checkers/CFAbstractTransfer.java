@@ -45,6 +45,8 @@ import checkers.util.ContractsUtils;
 import checkers.util.FlowExpressionParseUtil;
 import checkers.util.FlowExpressionParseUtil.FlowExpressionContext;
 import checkers.util.FlowExpressionParseUtil.FlowExpressionParseException;
+import checkers.basetype.BaseTypeChecker;
+import checkers.types.AbstractBasicAnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 
@@ -78,18 +80,25 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
 
     public CFAbstractTransfer(CFAbstractAnalysis<V, S, T> analysis) {
         this.analysis = analysis;
-        this.sequentialSemantics = !analysis.atypeFactory.getProcessingEnv().getOptions()
-                .containsKey("concurrentSemantics");
+        this.sequentialSemantics = !analysis.atypeFactory.getProcessingEnv()
+                .getOptions().containsKey("concurrentSemantics");
     }
 
     /**
      * @return The abstract value of a non-leaf tree {@code tree}, as computed
      *         by the {@link AnnotatedTypeFactory}.
      */
-    protected V getValueFromFactory(Tree tree) {
+    protected V getValueFromFactory(Tree tree, Node node) {
+        AbstractBasicAnnotatedTypeFactory<? extends BaseTypeChecker, V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory = analysis.atypeFactory;
         analysis.setCurrentTree(tree);
-        AnnotatedTypeMirror at = analysis.atypeFactory.getAnnotatedType(tree);
+        if (node != null && node.getAssignmentContext() != null) {
+            AnnotatedTypeMirror assCtxt = factory.getAnnotatedType(node
+                    .getAssignmentContext().getTree());
+            factory.getVisitorState().setAssignmentContext(assCtxt);
+        }
+        AnnotatedTypeMirror at = factory.getAnnotatedType(tree);
         analysis.setCurrentTree(null);
+        factory.getVisitorState().setAssignmentContext(null);
         return analysis.createAbstractValue(at);
     }
 
@@ -149,14 +158,16 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
     protected void addInformationFromPreconditions(S info,
             AnnotatedTypeFactory factory, CFGMethod method,
             MethodTree methodTree, ExecutableElement methodElement) {
-        ContractsUtils contracts = ContractsUtils.getInstance(analysis.atypeFactory);
+        ContractsUtils contracts = ContractsUtils
+                .getInstance(analysis.atypeFactory);
         FlowExpressionContext flowExprContext = null;
         Set<Pair<String, String>> preconditions = contracts
                 .getPreconditions(methodElement);
 
         for (Pair<String, String> p : preconditions) {
             String expression = p.first;
-            AnnotationMirror annotation = AnnotationUtils.fromName(analysis.getFactory().getElementUtils(), p.second);
+            AnnotationMirror annotation = AnnotationUtils.fromName(analysis
+                    .getFactory().getElementUtils(), p.second);
 
             // Only check if the postcondition concerns this checker
             if (!analysis.getFactory().getChecker()
@@ -176,7 +187,8 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
                 // be optimized to store the result the first time.
                 // (same for other annotations)
                 expr = FlowExpressionParseUtil.parse(expression,
-                        flowExprContext, analysis.atypeFactory.getPath(methodTree));
+                        flowExprContext,
+                        analysis.atypeFactory.getPath(methodTree));
                 info.insertValue(expr, annotation);
             } catch (FlowExpressionParseException e) {
                 // report errors here
@@ -197,7 +209,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
         Tree tree = n.getTree();
         if (tree != null) {
             if (TreeUtils.canHaveTypeAnnotation(tree)) {
-                value = getValueFromFactory(tree);
+                value = getValueFromFactory(tree, n);
             }
         }
 
@@ -219,7 +231,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
         // look up value in factory, and take the more specific one
         // TODO: handle cases, where this is not allowed (e.g. contructors in
         // non-null type systems)
-        V factoryValue = getValueFromFactory(n.getTree());
+        V factoryValue = getValueFromFactory(n.getTree(), n);
         V value = moreSpecificValue(factoryValue, storeValue);
         return new RegularTransferResult<>(value, store);
     }
@@ -232,7 +244,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
             TransferInput<V, S> in) {
         S store = in.getRegularStore();
         V valueFromStore = store.getValue(n);
-        V valueFromFactory = getValueFromFactory(n.getTree());
+        V valueFromFactory = getValueFromFactory(n.getTree(), n);
         V value = moreSpecificValue(valueFromFactory, valueFromStore);
         return new RegularTransferResult<>(value, store);
     }
@@ -412,7 +424,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
         Tree tree = n.getTree();
         if (tree != null) {
             // look up the value from factory
-            factoryValue = getValueFromFactory(tree);
+            factoryValue = getValueFromFactory(tree, n);
         }
         // look up the value in the store (if possible)
         V storeValue = store.getValue(n);
@@ -438,7 +450,8 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
      */
     protected void processPostconditions(MethodInvocationNode n, S store,
             ExecutableElement methodElement, Tree tree) {
-        ContractsUtils contracts = ContractsUtils.getInstance(analysis.atypeFactory);
+        ContractsUtils contracts = ContractsUtils
+                .getInstance(analysis.atypeFactory);
         Set<Pair<String, String>> postconditions = contracts
                 .getPostconditions(methodElement);
 
@@ -446,7 +459,8 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
 
         for (Pair<String, String> p : postconditions) {
             String expression = p.first;
-            AnnotationMirror anno = AnnotationUtils.fromName(analysis.getFactory().getElementUtils(), p.second);
+            AnnotationMirror anno = AnnotationUtils.fromName(analysis
+                    .getFactory().getElementUtils(), p.second);
 
             // Only check if the postcondition concerns this checker
             if (!analysis.getFactory().getChecker().isSupportedAnnotation(anno)) {
@@ -475,7 +489,8 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
      */
     protected void processConditionalPostconditions(MethodInvocationNode n,
             ExecutableElement methodElement, Tree tree, S thenStore, S elseStore) {
-        ContractsUtils contracts = ContractsUtils.getInstance(analysis.atypeFactory);
+        ContractsUtils contracts = ContractsUtils
+                .getInstance(analysis.atypeFactory);
         Set<Pair<String, Pair<Boolean, String>>> conditionalPostconditions = contracts
                 .getConditionalPostconditions(methodElement);
 
@@ -483,7 +498,8 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
 
         for (Pair<String, Pair<Boolean, String>> p : conditionalPostconditions) {
             String expression = p.first;
-            AnnotationMirror anno = AnnotationUtils.fromName(analysis.getFactory().getElementUtils(), p.second.second);
+            AnnotationMirror anno = AnnotationUtils.fromName(analysis
+                    .getFactory().getElementUtils(), p.second.second);
             boolean result = p.second.first;
 
             // Only check if the postcondition concerns this checker
@@ -525,18 +541,18 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
      * {@code @A}). However, if the inferred annotation of {@code e} is more
      * precise, we keep that one.
      */
-//    @Override
-//    public TransferResult<V, S> visitTypeCast(TypeCastNode n,
-//            TransferInput<V, S> p) {
-//        TransferResult<V, S> result = super.visitTypeCast(n, p);
-//        V value = result.getResultValue();
-//        V operandValue = p.getValueOfSubNode(n.getOperand());
-//        // Normally we take the value of the type cast node. However, if the old
-//        // flow-refined value was more precise, we keep that value.
-//        V resultValue = moreSpecificValue(value, operandValue);
-//        result.setResultValue(resultValue);
-//        return result;
-//    }
+    // @Override
+    // public TransferResult<V, S> visitTypeCast(TypeCastNode n,
+    // TransferInput<V, S> p) {
+    // TransferResult<V, S> result = super.visitTypeCast(n, p);
+    // V value = result.getResultValue();
+    // V operandValue = p.getValueOfSubNode(n.getOperand());
+    // // Normally we take the value of the type cast node. However, if the old
+    // // flow-refined value was more precise, we keep that value.
+    // V resultValue = moreSpecificValue(value, operandValue);
+    // result.setResultValue(resultValue);
+    // return result;
+    // }
 
     /**
      * Refine the operand of an instanceof check with more specific annotations
@@ -549,7 +565,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
 
         // Look at the annotations from the type of the instanceof check
         // (provided by the factory)
-        V factoryValue = getValueFromFactory(n.getTree().getType());
+        V factoryValue = getValueFromFactory(n.getTree().getType(), null);
 
         // Look at the value from the operand.
         V operandValue = p.getValueOfSubNode(n.getOperand());
