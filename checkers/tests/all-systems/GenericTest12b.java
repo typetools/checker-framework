@@ -1,9 +1,9 @@
 import checkers.nullness.quals.Nullable;
 
 class GenericTest12b {
-    class Cell<T1 extends /*@Nullable*/ Object> {}
+    class Cell<T1 extends @Nullable Object> {}
 
-    class Node<CONTENT extends /*@Nullable*/ Object> {
+    class Node<CONTENT extends @Nullable Object> {
         public Node(Cell<CONTENT> userObject) { }
         void nodecall(Cell<CONTENT> userObject) {}
     }

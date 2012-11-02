@@ -12,7 +12,7 @@ public class AssertIfTrueTest {
         if (!dbdir.isDirectory()) {
             throw new Error("Not a directory: " + dbdir);
         }
-        File1 /*@NonNull*/ [] files = dbdir.listFiles(killfile_filter);
+        File1 @NonNull [] files = dbdir.listFiles(killfile_filter);
     }
 
 
