@@ -387,7 +387,7 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
                 if (TreeUtils.isConstructor(node)) {
                     com.sun.tools.javac.code.Symbol meth =
                             (com.sun.tools.javac.code.Symbol)TreeUtils.elementFromDeclaration(node);
-                    rcvannos = meth.typeAnnotations;
+                    rcvannos = meth.getTypeAnnotationMirrors();
                     if (rcvannos==null){
                         rcvannos = Collections.<AnnotationMirror>emptyList();
                     }
