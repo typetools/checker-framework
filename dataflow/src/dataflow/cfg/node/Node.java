@@ -47,10 +47,9 @@ public abstract class Node {
     protected boolean lvalue = false;
 
     /**
-     * The assignment context of this node. That is, for a node that gets
-     * "assigned" to something, this TODO finish documentation.
+     * The assignment context of this node. See {@link AssignmentContext}.
      */
-    protected/* @Nullable */Node assignmentContext;
+    protected/* @Nullable */AssignmentContext assignmentContext;
 
     /**
      * The type of this node. For {@link Node}s with {@link Tree}s, this type is
@@ -121,11 +120,11 @@ public abstract class Node {
         lvalue = true;
     }
 
-    public Node getAssignmentContext() {
+    public AssignmentContext getAssignmentContext() {
         return assignmentContext;
     }
 
-    public void setAssignmentContext(Node assignmentContext) {
+    public void setAssignmentContext(AssignmentContext assignmentContext) {
         this.assignmentContext = assignmentContext;
     }
 

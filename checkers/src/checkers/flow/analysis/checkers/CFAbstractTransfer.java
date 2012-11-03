@@ -49,6 +49,7 @@ import checkers.basetype.BaseTypeChecker;
 import checkers.types.AbstractBasicAnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
+import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
@@ -96,10 +97,17 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
             // get the declared type of the assignment context by looking up the
             // assignment context tree's type in the factory while flow is
             // disabled.
+            // Note: Since we use getAnnotatedType(Element), flow is not used in
+            // any case, so we would not have to disable it.
             boolean oldFlow = factory.getUseFlow();
             factory.setUseFlow(false);
             AnnotatedTypeMirror assCtxt = factory.getAnnotatedType(node
-                    .getAssignmentContext().getTree());
+                    .getAssignmentContext().getElementForType());
+            if (assCtxt instanceof AnnotatedExecutableType) {
+                // For a MethodReturnContext, we get the full type of the
+                // method, but we only want the return type.
+                assCtxt = ((AnnotatedExecutableType) assCtxt).getReturnType();
+            }
             factory.setUseFlow(oldFlow);
             factory.getVisitorState().setAssignmentContext(assCtxt);
         }

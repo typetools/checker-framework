@@ -6,24 +6,26 @@ import java.util.List;
 
 import javacutils.InternalUtils;
 
-import dataflow.util.HashCodeUtils;
-
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
+
+import dataflow.cfg.node.AssignmentContext.MethodParameterContext;
+import dataflow.util.HashCodeUtils;
 
 /**
  * A node for method invocation
- * 
+ *
  * <pre>
  *   <em>target(arg1, arg2, ...)</em>
  * </pre>
- * 
+ *
  * CFGs may contain {@link MethodInvocationNode}s that correspond to no AST
  * {@link Tree}, in which case, the tree field will be null.
- * 
+ *
  * @author Stefan Heule
  * @author Charlie Garrett
- * 
+ *
  */
 public class MethodInvocationNode extends Node {
 
@@ -39,6 +41,13 @@ public class MethodInvocationNode extends Node {
         this.target = target;
         this.arguments = arguments;
         this.treePath = treePath;
+
+        // set assignment contexts for parameters
+        int i = 0;
+        for (Node arg : arguments) {
+            AssignmentContext ctx = new MethodParameterContext(target.getMethod() ,i++);
+            arg.setAssignmentContext(ctx);
+        }
     }
 
     public MethodInvocationNode(MethodAccessNode target, List<Node> arguments,

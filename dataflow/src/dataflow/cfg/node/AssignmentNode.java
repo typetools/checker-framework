@@ -5,12 +5,13 @@ import java.util.LinkedList;
 
 import javacutils.InternalUtils;
 
-import dataflow.util.HashCodeUtils;
-
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
+
+import dataflow.cfg.node.AssignmentContext.AssignmentLhsContext;
+import dataflow.util.HashCodeUtils;
 
 /**
  * A node for an assignment:
@@ -42,7 +43,7 @@ public class AssignmentNode extends Node {
         this.tree = tree;
         this.lhs = target;
         this.rhs = expression;
-        rhs.setAssignmentContext(lhs);
+        rhs.setAssignmentContext(new AssignmentLhsContext(lhs));
     }
 
     public Node getTarget() {
