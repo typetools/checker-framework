@@ -88,7 +88,7 @@ public class TypeFromElement {
             TypeElement clsElt = (TypeElement)enclosing;
             if (clsElt.getTypeParameters().contains(element)) {
                 int param_index = clsElt.getTypeParameters().indexOf(element);
-                for (Attribute.TypeCompound typeAnno : ((ClassSymbol) clsElt).typeAnnotations) {
+                for (Attribute.TypeCompound typeAnno : ((ClassSymbol) clsElt).getTypeAnnotationMirrors()) {
                     switch (typeAnno.position.type) {
                     case CLASS_TYPE_PARAMETER:
                     case CLASS_TYPE_PARAMETER_BOUND:
@@ -120,7 +120,7 @@ public class TypeFromElement {
             ExecutableElement execElt = (ExecutableElement) enclosing;
             if (execElt.getTypeParameters().contains(element)) {
                 int param_index = execElt.getTypeParameters().indexOf(element);
-                for (Attribute.TypeCompound typeAnno : ((MethodSymbol) execElt).typeAnnotations) {
+                for (Attribute.TypeCompound typeAnno : ((MethodSymbol) execElt).getTypeAnnotationMirrors()) {
                     switch (typeAnno.position.type) {
                     case METHOD_TYPE_PARAMETER:
                     //case METHOD_TYPE_PARAMETER_COMPONENT:
@@ -171,7 +171,7 @@ public class TypeFromElement {
             ExecutableElement execElt = (ExecutableElement) enclosing;
             if (execElt.getParameters().contains(element)) {
                 int param_index = execElt.getParameters().indexOf(element);
-                for (Attribute.TypeCompound typeAnno : ((MethodSymbol) execElt).typeAnnotations) {
+                for (Attribute.TypeCompound typeAnno : ((MethodSymbol) execElt).getTypeAnnotationMirrors()) {
                     switch (typeAnno.position.type) { 
                     case METHOD_PARAMETER:
                     case METHOD_PARAMETER_COMPONENT:
@@ -206,7 +206,7 @@ public class TypeFromElement {
             } else if (element.getSimpleName().contentEquals("this")) {
                 // TODO: Should the ExecutableElement have a way to get the receiver element?
                 // Is there such a thing as the receiver element?
-                for (Attribute.TypeCompound typeAnno : ((MethodSymbol) execElt).typeAnnotations) {
+                for (Attribute.TypeCompound typeAnno : ((MethodSymbol) execElt).getTypeAnnotationMirrors()) {
                     switch (typeAnno.position.type) { 
                     case METHOD_RECEIVER:
                     case METHOD_RECEIVER_COMPONENT:
@@ -263,7 +263,7 @@ public class TypeFromElement {
         VarSymbol symbol = (VarSymbol) element;
         addAnnotationsToElt(type, symbol.getAnnotationMirrors());
 
-        for (Attribute.TypeCompound anno : symbol.typeAnnotations) {
+        for (Attribute.TypeCompound anno : symbol.getTypeAnnotationMirrors()) {
             TypeAnnotationPosition pos = anno.position;
             switch (pos.type) {
             case FIELD:
@@ -305,7 +305,7 @@ public class TypeFromElement {
 
         VarSymbol symbol = (VarSymbol) element;
 
-        for (Attribute.TypeCompound anno : symbol.typeAnnotations) {
+        for (Attribute.TypeCompound anno : symbol.getTypeAnnotationMirrors()) {
 
             TypeAnnotationPosition pos = anno.position;
             switch (pos.type) {
@@ -346,7 +346,7 @@ public class TypeFromElement {
 
         List<AnnotatedTypeMirror> typeParameters = type.getTypeArguments();
 
-        for (Attribute.TypeCompound anno : symbol.typeAnnotations) {
+        for (Attribute.TypeCompound anno : symbol.getTypeAnnotationMirrors()) {
             TypeAnnotationPosition pos = anno.position;
             switch(pos.type) {
             case CLASS_TYPE_PARAMETER:
@@ -417,7 +417,7 @@ public class TypeFromElement {
 
         AnnotatedDeclaredType superClassType = hasSuperClass ? supertypes.get(0) : null;
         List<AnnotatedDeclaredType> superInterfaces = hasSuperClass ? tail(supertypes) : supertypes;
-        for (Attribute.TypeCompound anno : symbol.typeAnnotations) {
+        for (Attribute.TypeCompound anno : symbol.getTypeAnnotationMirrors()) {
             TypeAnnotationPosition pos = anno.position;
             switch(pos.type) {
             case CLASS_EXTENDS:
@@ -472,7 +472,7 @@ public class TypeFromElement {
         // Used in multiple cases below
         final List<AnnotatedTypeVariable> typeParams = type.getTypeVariables();
 
-        for (Attribute.TypeCompound typeAnno : symbol.typeAnnotations) {
+        for (Attribute.TypeCompound typeAnno : symbol.getTypeAnnotationMirrors()) {
             final TypeAnnotationPosition pos = typeAnno.position;
 
             switch (pos.type) {
