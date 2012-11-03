@@ -5,14 +5,15 @@ import java.lang.annotation.*;
 import checkers.quals.*;
 
 /**
- * The top of the fake enumeration type hierarchy.  This type should never
- * be written in source code; it is used internally by the fake enumeration
- * type system.
+ * The top of the fake enumeration type hierarchy.
+ * <p>
+ *
+ * This annotation may not be written in source code; it is an
+ * implementation detail of the checker.
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-// TODO: should we allow it in some places?
-// @Target( {} )
+@Target({}) // empty target prevents programmers from writing this in a program
 @TypeQualifier
 @SubtypeOf( { } )
 public @interface FenumTop {}

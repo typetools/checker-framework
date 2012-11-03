@@ -33,7 +33,7 @@ public class FlowNonThis {
     System.out.println(c.length());
   }
 
-  /*@AssertNonNullAfter("c")*/
+  @AssertNonNullAfter("c")
   public void setup() {
     c = "setup";
   }

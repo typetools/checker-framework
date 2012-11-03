@@ -118,8 +118,9 @@ The basic SI units
  \code{@mol}, \code{@cd})
 take an optional \code{Prefix} enum as argument.
 For example, to use nanoseconds as unit, you could use
-\code{@s(Prefix.nano)} as a unit type.  Furthermore, \<@mm> is equivalent to
-\<@m(Prefix.milli)>.
+\code{@s(Prefix.nano)} as a unit type.
+You can sometimes use a different annotation instead of a prefix;
+for example, \<@mm> is equivalent to \<@m(Prefix.milli)>.
 
 Class \code{UnitsTools} contains a constant for each SI unit.
 To create a value of the particular unit, multiply an unqualified
@@ -147,6 +148,7 @@ Here is an example of a new unit annotation.
 @TypeQualifier
 @SubtypeOf( \ttlcb{} Time.class \ttrcb{} )
 @UnitsMultiple(quantity=s.class, prefix=Prefix.nano)
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface ns \ttlcb{}\ttrcb{}
 \end{alltt}
 
@@ -200,6 +202,13 @@ If you encounter a \code{MixedUnits} annotation in an error message,
 ensure that your operations are performed on correct units or refine
 your \code{UnitsRelations} implementation.
 
+The Units Checker does \emph{not} change units based on multiplication; for
+example, if variable \<mass> has the type \<@kg double>, then \<mass *
+1000> has that same type rather than the type \<@g double>.  (The Units
+Checker has no way of knowing whether you intended a conversion, or you
+were computing the mass of 1000 items.  You need to make all conversions
+explicit in your code, and it's good style to minimize the number of
+conversions.)
 
 
 \section{Running the Units Checker\label{units-running}}

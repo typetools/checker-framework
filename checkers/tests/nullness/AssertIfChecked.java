@@ -121,14 +121,14 @@ public class AssertIfChecked {
    * AssertNonNullIfTrue is correctly added to the assumptions after a check.
    */
 
-  /*@AssertNonNullIfTrue({"#1", "#2"}) */
-  /* pure */ public static boolean sameLength(boolean /*@Nullable */[] seq1,
-          boolean /*@Nullable */[] seq2) {
+  @AssertNonNullIfTrue({"#1", "#2"})
+  /* pure */ public static boolean sameLength(boolean @Nullable [] seq1,
+          boolean @Nullable [] seq2) {
       return ((seq1 != null) && (seq2 != null) && seq1.length == seq2.length);
   }
 
-  /* pure */public static boolean isReverse(boolean /*@Nullable */[] seq1,
-          boolean /*@Nullable */[] seq2) {
+  /* pure */public static boolean isReverse(boolean @Nullable [] seq1,
+          boolean @Nullable [] seq2) {
       if (!sameLength(seq1, seq2)) {
           return false;
       }

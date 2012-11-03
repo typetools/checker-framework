@@ -4,11 +4,11 @@ import checkers.quals.*;
 import checkers.units.quals.*;
 
 /**
- * Hertz (Hz).
+ * Hertz (Hz), a unit of frequency.
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-// @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @TypeQualifier
 @SubtypeOf( { Frequency.class } )
 @UnitsRelations(FrequencyRelations.class)

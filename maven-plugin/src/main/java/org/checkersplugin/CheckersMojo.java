@@ -84,7 +84,7 @@ public class CheckersMojo extends AbstractMojo {
 
     /**
      * Which version of the JSR308 checkers to use
-     * @parameter default-value="1.4.0"
+     * @parameter default-value="1.4.3"
      */
     private String checkersVersion;
 

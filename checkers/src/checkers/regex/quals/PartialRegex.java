@@ -12,6 +12,10 @@ import checkers.quals.Unqualified;
  * The String itself can be stored as a parameter to the annotation,
  * allowing the Regex Checker to verify some concatenations of partial
  * regular expression Strings.
+ * <p>
+ *
+ * This annotation may not be written in source code; it is an
+ * implementation detail of the checker.
  */
 @TypeQualifier
 @InvisibleQualifier

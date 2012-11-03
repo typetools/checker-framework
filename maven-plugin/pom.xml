@@ -6,7 +6,7 @@
     <name>Checkers plugin</name>
     <groupId>types.checkers</groupId>
     <artifactId>checkersplugin</artifactId>
-    <version>0.2</version>
+    <version>0.4</version>
 
     <build>
         <plugins>

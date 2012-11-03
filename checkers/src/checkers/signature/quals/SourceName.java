@@ -1,5 +1,8 @@
 package checkers.signature.quals;
 
+import java.lang.annotation.Target;
+import java.lang.annotation.ElementType;
+
 import checkers.signature.quals.BinaryName;
 import checkers.signature.quals.FullyQualifiedName;
 import checkers.quals.SubtypeOf;
@@ -15,4 +18,5 @@ import checkers.quals.TypeQualifier;
 @SubtypeOf({BinaryName.class, FullyQualifiedName.class})
 // A @Target meta-annotation with an empty argument would prevent programmers
 // from writing this in a program, but it might sometimes be useful.
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface SourceName {}
