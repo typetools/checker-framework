@@ -36,8 +36,6 @@ public class TernaryExpressionNode extends Node {
         this.condition = condition;
         this.thenOperand = thenOperand;
         this.elseOperand = elseOperand;
-        thenOperand.setAssignmentContext(getAssignmentContext());
-        elseOperand.setAssignmentContext(getAssignmentContext());
     }
 
     public Node getConditionOperand() {
