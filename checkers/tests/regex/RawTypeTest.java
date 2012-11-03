@@ -17,9 +17,7 @@ class RawTypeTest {
 
         new WeakReference<Object>(c.asSubclass(I2.class));
         new WeakReference<Class>(c.asSubclass(I2.class));
-        // TODO: All of the above work, but the version below doesn't.
-        // What's the difference?
-        // new WeakReference<Class<? extends I2>>(c.asSubclass(I2.class));
+        new WeakReference<Class<? extends I2>>(c.asSubclass(I2.class));
     }
 
     /* It would be desirable to optionally check the following code without
