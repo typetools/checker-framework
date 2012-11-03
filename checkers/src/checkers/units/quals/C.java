@@ -5,11 +5,11 @@ import java.lang.annotation.*;
 import checkers.quals.*;
 
 /**
- *  Degree Celsius.
+ *  Degree Centigrade (Celsius).
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @TypeQualifier
 @SubtypeOf(Temperature.class)
 public @interface C {}

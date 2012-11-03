@@ -13,7 +13,7 @@ public class UnusedTypes {
 
   @TypeQualifier
   @SubtypeOf({})
-  @Target(ElementType.TYPE_USE)
+  @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
   public @interface Prototype {}
 
   @Unused(when=Prototype.class)

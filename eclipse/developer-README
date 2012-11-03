@@ -13,6 +13,14 @@ the Checker Framework and jsr308 (section 25.3).
 You must put the above libraries in the lib folder (create one if missing)
 in the checker-plugin folder.
 
+==== Opening the Plugin Project ====
+Eclipse has a nice set of tools for working with OSGI plugins.  To import the projects into your workspace use:
+File->Import
+Select the eclipse directory
+Select all three projects
+
+
+
 ==== Debugging/Running the plugin ====
 
 Since the plugin requires all the jars in the lib directory to be on the class path, if it's installed via the update-site (discussed below) then the plugin jar will be extracted into the plugins directory.  Unfortunately, this leads to a slightly different directory layout then the project directory (the bin/classes/checkers dir becomes a top level dir).  This means that the classpath used when the plugin is run as an actual plugin is different then the one needed to run the plugin from the eclipse project.  So (for now anyways), you must copy the bin/classes/checkers to checker-framework-eclipse-plugin if you want to run the plugin using the following instructions:
@@ -22,18 +30,25 @@ plugin.xml and use the "run" action in Eclipse, which should open a dialog
 where you can select "Run as Eclipse Application" or "Debug as Eclipse Application".
 
 ==== Packaging the feature ====
+Note: If you are releasing you will want to follow the instructions in Updating the release version first.
 
-To build the Eclipse feature after making changes to the source code, you
-just need to open the update-site project in Eclipse. Open site.xml to
-edit the update-site data. Remove the currently registered feature and click
-the add button to add the current version (only required if the version
-was updated).  Then click the "build all" button to have Eclipse build
-the jar files for the update-site.  
+To package the feature, open site.xml then click the "build all" button to have Eclipse build the jar files for the update-site. I usually have eclipse clean all three checker-framework-eclipse projects before doing this. 
 
 This will create a working update site. You can upload this to a web server
 to let users install the plugin from Eclipse's plugin installation process.
 
-NOTE:As the plugin should be released simultaneously with the checker-framework), the version should be updated every release as the files included in the plugin include the checker-framework project jars. 
+See next section (Updating the version)
+
+==== Updating the release version ====
+
+The plugin should be released simultaneously with the checker-framework therefore, since the plugin includes the checker-framework jars, the plugin feature version should be updated every release.
+
+To update the version:
+If the checker-framework-eclipse-plugin project has changed increment it's version by opening plugin.xml in Eclipse and selecting the "Overview" tab.
+
+Next go to the checker-framework-eclipse-feature project and open the feature.xml.  If you have changed the plugin version, go to the "Plug-ins" tab and remove the old version and add the new version.  Then go to the "Overview" tab and increment the feature version to be the same as the upcoming Checker-Framework-Release.   
+
+Next open the checker-framework-eclipse-update-site and select the site-map tab.  Press the arrow to view the features included in the checker.framework.eclipse.update.site.category.  Remove the only one there (it should be the previous version of the checker.framework.eclipse.feature.  Add the new checker.framework.eclipse.feature by selecting the category and pressing New Feature.  Select the new version of the feature you just made.
 
 
 ==== For UW's website ====

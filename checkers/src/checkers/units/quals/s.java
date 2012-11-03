@@ -5,11 +5,11 @@ import java.lang.annotation.*;
 import checkers.quals.*;
 
 /**
- * Second.
+ * A second (1/60 of a minute).
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @TypeQualifier
 @SubtypeOf(Time.class)
 public @interface s {

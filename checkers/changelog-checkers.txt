@@ -1,3 +1,23 @@
+Version 1.4.3, 1 Nov 2012
+
+Clarify license:
+  The Checker Framework is licensed under the GPL2.  More permissive
+    licenses apply to annotations, tool plugins (Maven, Eclipse),
+    external libraries included with the Checker Framework, and examples in
+    the Checker Framework manual.
+  Replaced all third-party annotations by cleanroom implementations, to
+    avoid any potential problems or confusion with licensing.
+
+Aliased annotations:
+  Clarified that there is no need to rewrite your program.  The Checker
+    Framework recognizes dozens of annotations used by other tools.
+
+Improved documentation of Units Checker and Gradle Integration.
+Improved developer documentation of Eclipse and Maven plugins.
+
+Bug fixes.
+
+----------------------------------------------------------------------
 Version 1.4.2, 16 Oct 2012
 
 External tool support:

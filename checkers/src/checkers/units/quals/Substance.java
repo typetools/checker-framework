@@ -5,11 +5,11 @@ import java.lang.annotation.*;
 import checkers.quals.*;
 
 /**
- * Units of substance.
+ * Units of substance, such as mole (@{@link mol}).
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @TypeQualifier
 @SubtypeOf(Unqualified.class)
 public @interface Substance {}
