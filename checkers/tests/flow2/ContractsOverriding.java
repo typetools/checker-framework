@@ -1,6 +1,8 @@
 import checkers.quals.EnsuresAnnotation;
+import checkers.quals.EnsuresAnnotationIf;
 import checkers.quals.RequiresAnnotation;
 import tests.util.EnsuresOdd;
+import tests.util.EnsuresOddIf;
 import tests.util.Odd;
 import tests.util.RequiresOdd;
 
@@ -111,6 +113,80 @@ class ContractsOverriding {
         @EnsuresAnnotation(expression = "this.f", annotation = Odd.class)
         void m4() {
             f = odd;
+        }
+    }
+    
+    static class Sub3 extends Super3 {
+        String g;
+
+        @Override
+        //:: error: (contracts.conditional.postcondition.true.override.invalid)
+        boolean m1() {
+            return true;
+        }
+
+        @Override
+        //:: error: (contracts.conditional.postcondition.true.override.invalid)
+        boolean m2() {
+            return true;
+        }
+
+        @Override
+        @EnsuresOddIf(expression="g", result=true)
+        //:: error: (contracts.conditional.postcondition.true.override.invalid)
+        boolean m3() {
+            g = odd;
+            return true;
+        }
+        
+        @Override
+        @EnsuresOddIf(expression="f", result=true)
+        boolean m4() {
+            return super.m4();
+        }
+        
+        @Override
+        // invalid result
+        @EnsuresOddIf(expression="f", result=false)
+        //:: error: (contracts.conditional.postcondition.true.override.invalid)
+        boolean m5() {
+            f = odd;
+            return true;
+        }
+    }
+
+    static class Super3 {
+        String f, g;
+        @Odd String odd;
+
+        @EnsuresOddIf(expression="f", result=true)
+        boolean m1() {
+            f = odd;
+            return true;
+        }
+
+        @EnsuresAnnotationIf(expression = "f", annotation = Odd.class, result=true)
+        boolean m2() {
+            f = odd;
+            return true;
+        }
+
+        @EnsuresOddIf(expression="g", result=true)
+        boolean m3() {
+            g = odd;
+            return true;
+        }
+        
+        @EnsuresAnnotationIf(expression = "this.f", annotation = Odd.class, result=true)
+        boolean m4() {
+            f = odd;
+            return true;
+        }
+        
+        @EnsuresAnnotationIf(expression = "this.f", annotation = Odd.class, result=true)
+        boolean m5() {
+            f = odd;
+            return true;
         }
     }
 }
