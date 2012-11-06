@@ -9,7 +9,6 @@ import javacutils.ElementUtils;
 import javacutils.InternalUtils;
 import javacutils.Resolver;
 import javacutils.TreeUtils;
-
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
@@ -24,6 +23,7 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import com.sun.tools.javac.code.Type.ClassType;
 
 import dataflow.analysis.FlowExpressions;
 import dataflow.analysis.FlowExpressions.ClassName;
@@ -60,6 +60,8 @@ public class FlowExpressionParseUtil {
      * synonym for "this".
      */
     protected static final Pattern selfPattern = Pattern.compile("^(this)$");
+    /** Matches 'super' */
+    protected static final Pattern superPattern = Pattern.compile("^(super)$");
     /** Matches an identifier */
     protected static final Pattern identifierPattern = Pattern.compile("^"
             + identifierRegex + "$");
@@ -115,6 +117,7 @@ public class FlowExpressionParseUtil {
 
         Matcher identifierMatcher = identifierPattern.matcher(s);
         Matcher selfMatcher = selfPattern.matcher(s);
+        Matcher superMatcher = superPattern.matcher(s);
         Matcher parameterMatcher = parameterPattern.matcher(s);
         Matcher methodMatcher = methodPattern.matcher(s);
         Matcher dotMatcher = dotPattern.matcher(s);
@@ -142,6 +145,27 @@ public class FlowExpressionParseUtil {
         } else if (selfMatcher.matches() && allowSelf) {
             // this literal
             return new ThisReference(context.receiver.getType());
+        } else if (superMatcher.matches() && allowSelf) {
+            // super literal
+            List<? extends TypeMirror> superTypes = types
+                    .directSupertypes(context.receiver.getType());
+            // find class supertype
+            TypeMirror superType = null;
+            for (TypeMirror t : superTypes) {
+                // ignore interface types
+                if (!(t instanceof ClassType)) {
+                    continue;
+                }
+                ClassType tt = (ClassType) t;
+                if (!tt.isInterface()) {
+                    superType = t;
+                    break;
+                }
+            }
+            if (superType == null) {
+                throw constructParserException(s);
+            }
+            return new ThisReference(superType);
         } else if (identifierMatcher.matches() && allowIdentifier) {
             Resolver resolver = new Resolver(env);
             try {
@@ -445,6 +469,25 @@ public class FlowExpressionParseUtil {
             MethodTree node, Tree classTree, AnnotatedTypeFactory factory) {
         Node receiver = new ImplicitThisLiteralNode(
                 InternalUtils.typeOf(classTree));
+        Receiver internalReceiver = FlowExpressions.internalReprOf(factory,
+                receiver);
+        List<Receiver> internalArguments = new ArrayList<>();
+        for (VariableTree arg : node.getParameters()) {
+            internalArguments.add(FlowExpressions.internalReprOf(factory,
+                    new LocalVariableNode(arg)));
+        }
+        FlowExpressionContext flowExprContext = new FlowExpressionContext(
+                internalReceiver, internalArguments, factory);
+        return flowExprContext;
+    }
+
+    /**
+     * @return A {@link FlowExpressionContext} for the method {@code node} as
+     *         seen at the method declaration.
+     */
+    public static FlowExpressionContext buildFlowExprContextForDeclaration(
+            MethodTree node, TypeMirror classType, AnnotatedTypeFactory factory) {
+        Node receiver = new ImplicitThisLiteralNode(classType);
         Receiver internalReceiver = FlowExpressions.internalReprOf(factory,
                 receiver);
         List<Receiver> internalArguments = new ArrayList<>();
