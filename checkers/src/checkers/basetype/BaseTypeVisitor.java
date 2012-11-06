@@ -473,7 +473,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                             || !atypeFactory.getQualifierHierarchy().isSubtype(
                                     inferredAnno, annotation)) {
                         checker.report(
-                                Result.failure("contracts.postcondition.not.satisfied"),
+                                Result.failure("contracts.postcondition.not.satisfied", expr.toString()),
                                 node);
                     }
                 }
@@ -567,7 +567,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                                 || !atypeFactory.getQualifierHierarchy()
                                         .isSubtype(inferredAnno, annotation)) {
                             checker.report(
-                                    Result.failure("contracts.conditional.postcondition.not.satisfied"),
+                                    Result.failure("contracts.conditional.postcondition.not.satisfied", expr.toString()),
                                     returnStmt.getTree());
                         }
                     }
@@ -765,7 +765,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                         || !atypeFactory.getQualifierHierarchy().isSubtype(
                                 inferredAnno, anno)) {
                     checker.report(Result
-                            .failure("contracts.precondition.not.satisfied"),
+                            .failure("contracts.precondition.not.satisfied", expr.toString()),
                             tree);
                 }
             } catch (FlowExpressionParseException e) {
