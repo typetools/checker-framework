@@ -1718,6 +1718,48 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
         Set<Pair<Receiver, AnnotationMirror>> subPre2 = resolveContracts(subPre, overrider);
         checkContractsSubset(subPre2, superPre2, "contracts.precondition.override.invalid");
 
+        // Check conditional postconditions
+        Set<Pair<String, Pair<Boolean, String>>> superCPost = contracts
+                .getConditionalPostconditions(overridden.getElement());
+        Set<Pair<String, Pair<Boolean, String>>> subCPost = contracts
+                .getConditionalPostconditions(overrider.getElement());
+        // consider only 'true' postconditions
+        Set<Pair<String, String>> superCPostTrue = filterConditionalPostconditions(
+                superCPost, true);
+        Set<Pair<String, String>> subCPostTrue = filterConditionalPostconditions(
+                subCPost, true);
+        Set<Pair<Receiver, AnnotationMirror>> superCPostTrue2 = resolveContracts(
+                superCPostTrue, overridden);
+        Set<Pair<Receiver, AnnotationMirror>> subCPostTrue2 = resolveContracts(
+                subCPostTrue, overrider);
+        checkContractsSubset(superCPostTrue2, subCPostTrue2,
+                "contracts.conditional.postcondition.true.override.invalid");
+        Set<Pair<String, String>> superCPostFalse = filterConditionalPostconditions(
+                superCPost, true);
+        Set<Pair<String, String>> subCPostFalse = filterConditionalPostconditions(
+                subCPost, true);
+        Set<Pair<Receiver, AnnotationMirror>> superCPostFalse2 = resolveContracts(
+                superCPostFalse, overridden);
+        Set<Pair<Receiver, AnnotationMirror>> subCPostFalse2 = resolveContracts(
+                subCPostFalse, overrider);
+        checkContractsSubset(superCPostFalse2, subCPostFalse2,
+                "contracts.conditional.postcondition.false.override.invalid");
+
+        return result;
+    }
+
+    /**
+     * Filters the set of conditional postconditions to return only those with
+     * {@code result=true}.
+     */
+    private <T, S> Set<Pair<T, S>> filterConditionalPostconditions(
+            Set<Pair<T, Pair<Boolean, S>>> conditionalPostconditions, boolean b) {
+        Set<Pair<T, S>> result = new HashSet<>();
+        for (Pair<T, Pair<Boolean, S>> p : conditionalPostconditions) {
+            if (p.second.first == b) {
+                result.add(Pair.of(p.first, p.second.second));
+            }
+        }
         return result;
     }
 
