@@ -396,7 +396,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             FlowExpressions.FieldAccess otherFieldAccess = e.getKey();
             V otherVal = e.getValue();
             // case 1:
-            if (otherFieldAccess.getReceiver().containsAliasOf(this, unknown)) {
+            if (otherFieldAccess.getReceiver().containsModifiableAliasOf(this,
+                    unknown)) {
                 continue; // remove information completely
             }
             newFieldValues.put(otherFieldAccess, otherVal);
@@ -422,9 +423,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * precise). However, this is only necessary if the field <em>g</em> is not
      * final.
      * <li value="2">Remove any abstract values for field accesses <em>b.g</em>
-     * where {@code fieldAccess} is the same (i.e., <em>a=b</em> and
-     * <em>f=g</em>), or where {@code fieldAccess} might alias any expression in
-     * the receiver <em>b</em>.
+     * where {@code fieldAccess} might be the same (i.e., <em>f=g</em> and
+     * <em>a</em> might alias <em>b</em>), or where {@code fieldAccess} might
+     * alias any expression in the receiver <em>b</em>.
      * <li value="3">Remove any information about pure method calls.
      * </ol>
      *
@@ -442,9 +443,12 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             FlowExpressions.FieldAccess otherFieldAccess = e.getKey();
             V otherVal = e.getValue();
             // case 2:
-            if (otherFieldAccess.getReceiver().containsAliasOf(this,
+            if (otherFieldAccess.getReceiver().containsModifiableAliasOf(this,
                     fieldAccess)
-                    || otherFieldAccess.equals(fieldAccess)) {
+                    || (otherFieldAccess.getField().equals(
+                            fieldAccess.getField()) && canAlias(
+                            otherFieldAccess.getReceiver(),
+                            fieldAccess.getReceiver()))) {
                 continue; // remove information completely
             }
             // case 1:
