@@ -54,7 +54,8 @@ public abstract class InitializationChecker extends BaseTypeChecker {
         if (useFbc) {
             COMMITTED = AnnotationUtils.fromClass(elements, Committed.class);
             FREE = AnnotationUtils.fromClass(elements, Free.class);
-            NOT_ONLY_COMMITTED = AnnotationUtils.fromClass(elements, NotOnlyCommitted.class);
+            NOT_ONLY_COMMITTED = AnnotationUtils.fromClass(elements,
+                    NotOnlyCommitted.class);
         } else {
             COMMITTED = AnnotationUtils.fromClass(elements, NonRaw.class);
         }
@@ -126,7 +127,8 @@ public abstract class InitializationChecker extends BaseTypeChecker {
     public AnnotationMirror createFreeAnnotation(TypeMirror typeFrame) {
         assert typeFrame != null;
         assert useFbc : "The rawness type system does not have a @Free annotation.";
-        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, Free.class);
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv,
+                Free.class);
         builder.setValue("value", typeFrame);
         return builder.build();
     }
@@ -137,17 +139,20 @@ public abstract class InitializationChecker extends BaseTypeChecker {
     public AnnotationMirror createFreeAnnotation(Class<?> typeFrame) {
         assert typeFrame != null;
         assert useFbc : "The rawness type system does not have a @Free annotation.";
-        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, Free.class);
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv,
+                Free.class);
         builder.setValue("value", typeFrame);
         return builder.build();
     }
 
     /**
-     * Returns a {@link Free} annotation with a given type frame.
+     * Returns a {@link Unclassified} or {@link Raw} annotation with a given
+     * type frame.
      */
     public AnnotationMirror createUnclassifiedAnnotation(Class<?> typeFrame) {
         assert typeFrame != null;
-        Class<? extends Annotation> clazz = useFbc ? Unclassified.class : Raw.class;
+        Class<? extends Annotation> clazz = useFbc ? Unclassified.class
+                : Raw.class;
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, clazz);
         builder.setValue("value", typeFrame);
         return builder.build();
@@ -158,7 +163,8 @@ public abstract class InitializationChecker extends BaseTypeChecker {
      */
     public AnnotationMirror createUnclassifiedAnnotation(TypeMirror typeFrame) {
         assert typeFrame != null;
-        Class<? extends Annotation> clazz = useFbc ? Unclassified.class : Raw.class;
+        Class<? extends Annotation> clazz = useFbc ? Unclassified.class
+                : Raw.class;
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, clazz);
         builder.setValue("value", typeFrame);
         return builder.build();
@@ -169,8 +175,8 @@ public abstract class InitializationChecker extends BaseTypeChecker {
      * be {@link Free} or {@link Unclassified}.
      */
     public TypeMirror getTypeFrameFromAnnotation(AnnotationMirror annotation) {
-        TypeMirror name = AnnotationUtils.getElementValue(annotation,
-                "value", TypeMirror.class, true);
+        TypeMirror name = AnnotationUtils.getElementValue(annotation, "value",
+                TypeMirror.class, true);
         return name;
     }
 
@@ -209,8 +215,8 @@ public abstract class InitializationChecker extends BaseTypeChecker {
     }
 
     /**
-     * Does {@code anno} have the annotation {@link Free} (with any type frame)? Always
-     * returns false if {@code useFbc} is false.
+     * Does {@code anno} have the annotation {@link Free} (with any type frame)?
+     * Always returns false if {@code useFbc} is false.
      */
     public boolean isFree(AnnotatedTypeMirror anno) {
         return useFbc && anno.hasEffectiveAnnotation(Free.class);
@@ -249,7 +255,8 @@ public abstract class InitializationChecker extends BaseTypeChecker {
      * hierarchy also includes the child type system, whose hierarchy is
      * provided through {@link #getChildQualifierHierarchy()}.
      */
-    protected class InitializationQualifierHierarchy extends MultiGraphQualifierHierarchy {
+    protected class InitializationQualifierHierarchy extends
+            MultiGraphQualifierHierarchy {
 
         protected Set<AnnotationMirror> tops;
         protected Set<AnnotationMirror> bottoms;
@@ -265,7 +272,8 @@ public abstract class InitializationChecker extends BaseTypeChecker {
             tops.addAll(childHierarchy.getTopAnnotations());
 
             bottoms = new HashSet<>();
-            bottoms.add(AnnotationUtils.fromClass(processingEnv.getElementUtils(), FBCBottom.class));
+            bottoms.add(AnnotationUtils.fromClass(
+                    processingEnv.getElementUtils(), FBCBottom.class));
             bottoms.addAll(childHierarchy.getBottomAnnotations());
         }
 
@@ -314,7 +322,8 @@ public abstract class InitializationChecker extends BaseTypeChecker {
             // Add qualifiers from the initialization type system.
             for (Class<?> clazz : clazzes) {
                 Elements elements = processingEnv.getElementUtils();
-                AnnotationMirror anno = AnnotationUtils.fromClass(elements, (Class) clazz);
+                AnnotationMirror anno = AnnotationUtils.fromClass(elements,
+                        (Class) clazz);
                 names.add(AnnotationUtils.annotationName(anno));
             }
             // Add qualifiers from the child type system.
@@ -388,23 +397,29 @@ public abstract class InitializationChecker extends BaseTypeChecker {
         }
 
         @Override
-        public boolean isSubtype(Collection<AnnotationMirror> rhs, Collection<AnnotationMirror> lhs) {
+        public boolean isSubtype(Collection<AnnotationMirror> rhs,
+                Collection<AnnotationMirror> lhs) {
             if (lhs.isEmpty() || rhs.isEmpty()) {
-                ErrorReporter.errorAbort("InitializationQualifierHierarchy: empty annotations in lhs: " + lhs + " or rhs: " + rhs);
+                ErrorReporter
+                        .errorAbort("InitializationQualifierHierarchy: empty annotations in lhs: "
+                                + lhs + " or rhs: " + rhs);
             }
             if (lhs.size() != rhs.size()) {
-                ErrorReporter.errorAbort("InitializationQualifierHierarchy: mismatched number of annotations in lhs: " + lhs + " and rhs: " + rhs);
+                ErrorReporter
+                        .errorAbort("InitializationQualifierHierarchy: mismatched number of annotations in lhs: "
+                                + lhs + " and rhs: " + rhs);
             }
             int valid = 0;
             for (AnnotationMirror lhsAnno : lhs) {
                 for (AnnotationMirror rhsAnno : rhs) {
-                    if (AnnotationUtils.areSame(getTopAnnotation(lhsAnno), getTopAnnotation(rhsAnno)) &&
-                            isSubtype(rhsAnno, lhsAnno)) {
+                    if (AnnotationUtils.areSame(getTopAnnotation(lhsAnno),
+                            getTopAnnotation(rhsAnno))
+                            && isSubtype(rhsAnno, lhsAnno)) {
                         ++valid;
                     }
                 }
             }
-            return lhs.size()==valid;
+            return lhs.size() == valid;
         }
 
         @Override
@@ -478,7 +493,8 @@ public abstract class InitializationChecker extends BaseTypeChecker {
 
         @Override
         public AnnotationMirror getPolymorphicAnnotation(AnnotationMirror start) {
-            ErrorReporter.errorAbort("InitializationQualifierHierarchy: no polymorphic annotation available");
+            ErrorReporter
+                    .errorAbort("InitializationQualifierHierarchy: no polymorphic annotation available");
             return null;
         }
 
