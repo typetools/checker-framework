@@ -98,10 +98,11 @@ public class FlowExpressions {
                 }
                 Receiver methodReceiver;
                 if (ElementUtils.isStatic(invokedMethod)) {
-                    methodReceiver = new ClassName(mn.getTarget().getReceiver().getType());
+                    methodReceiver = new ClassName(mn.getTarget().getReceiver()
+                            .getType());
                 } else {
-                    methodReceiver = internalReprOf(provider, mn
-                            .getTarget().getReceiver());
+                    methodReceiver = internalReprOf(provider, mn.getTarget()
+                            .getReceiver());
                 }
                 receiver = new PureMethodCall(mn.getType(), invokedMethod,
                         methodReceiver, parameters);
@@ -155,21 +156,14 @@ public class FlowExpressions {
         /**
          * Returns true if and only if {@code other} appear anywhere in this
          * receiver or an expression appears in this receiver such that
-         * {@code other} might alias this expression.
+         * {@code other} might alias this expression, and that expression
+         * is modifiable.
          *
          * <p>
-         *
-         * Informal examples include:
-         *
-         * <pre>
-         *   "a".containsAliasOf("a") == true
-         *   "x.f".containsAliasOf("x.f") == true
-         *   "x.f".containsAliasOf("y.g") == false
-         *   "x.f".containsAliasOf("a") == true // unless information about "x != a" is available
-         *   "?".containsAliasOf("a") == true // ? is Unknown, and a can be anything
-         * </pre>
+         * This is always true, except for cases where the Java type information
+         * prevents aliasing and none of the subexpressions can alias 'other'.
          */
-        public boolean containsAliasOf(Store<?> store, Receiver other) {
+        public boolean containsModifiableAliasOf(Store<?> store, Receiver other) {
             return this.equals(other) || store.canAlias(this, other);
         }
     }
@@ -223,9 +217,9 @@ public class FlowExpressions {
         }
 
         @Override
-        public boolean containsAliasOf(Store<?> store, Receiver other) {
-            return super.containsAliasOf(store, other)
-                    || receiver.containsAliasOf(store, other);
+        public boolean containsModifiableAliasOf(Store<?> store, Receiver other) {
+            return super.containsModifiableAliasOf(store, other)
+                    || receiver.containsModifiableAliasOf(store, other);
         }
 
         @Override
@@ -295,6 +289,11 @@ public class FlowExpressions {
         public boolean isUnmodifiableByOtherCode() {
             return true;
         }
+
+        @Override
+        public boolean containsModifiableAliasOf(Store<?> store, Receiver other) {
+            return false; // 'this' is not modifiable
+        }
     }
 
     /**
@@ -341,6 +340,11 @@ public class FlowExpressions {
         public boolean isUnmodifiableByOtherCode() {
             return true;
         }
+
+        @Override
+        public boolean containsModifiableAliasOf(Store<?> store, Receiver other) {
+            return false; // not modifiable
+        }
     }
 
     public static class Unknown extends Receiver {
@@ -364,7 +368,7 @@ public class FlowExpressions {
         }
 
         @Override
-        public boolean containsAliasOf(Store<?> store, Receiver other) {
+        public boolean containsModifiableAliasOf(Store<?> store, Receiver other) {
             return true;
         }
 
@@ -493,6 +497,11 @@ public class FlowExpressions {
         public boolean syntacticEquals(Receiver other) {
             return this.equals(other);
         }
+
+        @Override
+        public boolean containsModifiableAliasOf(Store<?> store, Receiver other) {
+            return false; // not modifiable
+        }
     }
 
     /**
@@ -567,16 +576,16 @@ public class FlowExpressions {
         }
 
         @Override
-        public boolean containsAliasOf(Store<?> store, Receiver other) {
-            if (receiver.containsAliasOf(store, other)) {
+        public boolean containsModifiableAliasOf(Store<?> store, Receiver other) {
+            if (receiver.containsModifiableAliasOf(store, other)) {
                 return true;
             }
             for (Receiver p : parameters) {
-                if (p.containsAliasOf(store, other)) {
+                if (p.containsModifiableAliasOf(store, other)) {
                     return true;
                 }
             }
-            return super.containsAliasOf(store, other);
+            return false; // the method call itself is not modifiable
         }
 
         @Override
