@@ -28,6 +28,7 @@ import dataflow.cfg.UnderlyingAST.CFGMethod;
 import dataflow.cfg.UnderlyingAST.Kind;
 import dataflow.cfg.node.AbstractNodeVisitor;
 import dataflow.cfg.node.AssignmentNode;
+import dataflow.cfg.node.BoxingNode;
 import dataflow.cfg.node.CaseNode;
 import dataflow.cfg.node.CompoundAssignmentNode;
 import dataflow.cfg.node.ConditionalNotNode;
@@ -36,10 +37,13 @@ import dataflow.cfg.node.FieldAccessNode;
 import dataflow.cfg.node.InstanceOfNode;
 import dataflow.cfg.node.LocalVariableNode;
 import dataflow.cfg.node.MethodInvocationNode;
+import dataflow.cfg.node.NarrowingConversionNode;
 import dataflow.cfg.node.Node;
 import dataflow.cfg.node.NotEqualNode;
 import dataflow.cfg.node.TernaryExpressionNode;
+import dataflow.cfg.node.UnboxingNode;
 import dataflow.cfg.node.VariableDeclarationNode;
+import dataflow.cfg.node.WideningConversionNode;
 
 import checkers.util.ContractsUtils;
 import checkers.util.FlowExpressionParseUtil;
@@ -621,5 +625,36 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
     public TransferResult<V, S> visitVariableDeclaration(
             VariableDeclarationNode n, TransferInput<V, S> p) {
         return new RegularTransferResult<>(null, p.getRegularStore());
+    }
+
+    @Override
+    public TransferResult<V, S> visitUnboxing(UnboxingNode n,
+            TransferInput<V, S> p) {
+        TransferResult<V, S> result = super.visitUnboxing(n, p);
+        result.setResultValue(p.getValueOfSubNode(n.getOperand()));
+        return result;
+    }
+
+    @Override
+    public TransferResult<V, S> visitBoxing(BoxingNode n, TransferInput<V, S> p) {
+        TransferResult<V, S> result = super.visitBoxing(n, p);
+        result.setResultValue(p.getValueOfSubNode(n.getOperand()));
+        return result;
+    }
+
+    @Override
+    public TransferResult<V, S> visitNarrowingConversion(
+            NarrowingConversionNode n, TransferInput<V, S> p) {
+        TransferResult<V, S> result = super.visitNarrowingConversion(n, p);
+        result.setResultValue(p.getValueOfSubNode(n.getOperand()));
+        return result;
+    }
+
+    @Override
+    public TransferResult<V, S> visitWideningConversion(
+            WideningConversionNode n, TransferInput<V, S> p) {
+        TransferResult<V, S> result = super.visitWideningConversion(n, p);
+        result.setResultValue(p.getValueOfSubNode(n.getOperand()));
+        return result;
     }
 }
