@@ -1705,6 +1705,9 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                 .getPostconditions(overridden.getElement());
         Set<Pair<String, String>> subPost = contracts
                 .getPostconditions(overrider.getElement());
+        Set<Pair<Receiver, AnnotationMirror>> superPost2 = resolveContracts(superPost, overridden);
+        Set<Pair<Receiver, AnnotationMirror>> subPost2 = resolveContracts(subPost, overrider);
+        checkContractsSubset(superPost2, subPost2, "contracts.postcondition.override.invalid");
 
         // Check preconditions
         Set<Pair<String, String>> superPre = contracts
