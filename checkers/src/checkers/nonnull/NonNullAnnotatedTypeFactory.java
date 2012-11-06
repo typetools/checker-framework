@@ -34,6 +34,8 @@ import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
@@ -287,6 +289,20 @@ public class NonNullAnnotatedTypeFactory
         public Void visitUnary(UnaryTree node, AnnotatedTypeMirror type) {
             type.replaceAnnotation(NONNULL);
             return null; // super.visitUnary(node, type);
+        }
+
+        // The result of newly allocated structures is always non-null.
+        @Override
+        public Void visitNewArray(NewArrayTree tree, AnnotatedTypeMirror type) {
+            type.replaceAnnotation(NONNULL);
+            return super.visitNewArray(tree, type);
+        }
+
+        // The result of newly allocated structures is always non-null.
+        @Override
+        public Void visitNewClass(NewClassTree node, AnnotatedTypeMirror type) {
+            type.replaceAnnotation(NONNULL);
+            return super.visitNewClass(node, type);
         }
     }
 
