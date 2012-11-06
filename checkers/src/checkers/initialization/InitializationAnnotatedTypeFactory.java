@@ -61,6 +61,11 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
         COMMITTED = checker.COMMITTED;
         NOT_ONLY_COMMITTED = checker.NOT_ONLY_COMMITTED;
 
+        addAliasedAnnotation(checkers.nullness.quals.Raw.class,
+                checker.createUnclassifiedAnnotation(Object.class));
+        addAliasedAnnotation(checkers.nullness.quals.NonRaw.class,
+                checker.COMMITTED);
+
         useFbc = checker.useFbc;
     }
 
@@ -140,11 +145,14 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
             if (areAllFieldsCommittedOnly(enclosingClass)) {
                 InitializationStore store = getStoreBefore(tree);
                 if (store != null) {
-                    if (getUninitializedInvariantFields(store, path, false).size() == 0) {
+                    if (getUninitializedInvariantFields(store, path, false)
+                            .size() == 0) {
                         if (useFbc) {
-                            annotation = checker.createFreeAnnotation(classType);
+                            annotation = checker
+                                    .createFreeAnnotation(classType);
                         } else {
-                            annotation = checker.createUnclassifiedAnnotation(classType);
+                            annotation = checker
+                                    .createUnclassifiedAnnotation(classType);
                         }
                         selfType.replaceAnnotation(annotation);
                     }
