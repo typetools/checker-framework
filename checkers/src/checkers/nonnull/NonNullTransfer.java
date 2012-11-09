@@ -20,6 +20,7 @@ import dataflow.cfg.node.MethodInvocationNode;
 import dataflow.cfg.node.Node;
 import dataflow.cfg.node.NullLiteralNode;
 import dataflow.cfg.node.ThrowNode;
+import dataflow.cfg.node.UnboxingNode;
 
 import checkers.flow.analysis.checkers.CFAbstractStore;
 import checkers.flow.analysis.checkers.CFValue;
@@ -57,7 +58,8 @@ public class NonNullTransfer extends InitializationTransfer<NonNullTransfer> {
     public NonNullTransfer(NonNullAnalysis analysis) {
         super(analysis);
         this.analysis = analysis;
-        NONNULL = AnnotationUtils.fromClass(analysis.getFactory().getElementUtils(), NonNull.class);
+        NONNULL = AnnotationUtils.fromClass(analysis.getFactory()
+                .getElementUtils(), NonNull.class);
     }
 
     /**
@@ -74,8 +76,8 @@ public class NonNullTransfer extends InitializationTransfer<NonNullTransfer> {
      * Sets a given {@link Node} {@code node} to non-null in the given
      * {@link TransferResult}.
      */
-    protected void makeNonNull(TransferResult<CFValue, InitializationStore> result,
-            Node node) {
+    protected void makeNonNull(
+            TransferResult<CFValue, InitializationStore> result, Node node) {
         if (result.containsTwoStores()) {
             makeNonNull(result.getThenStore(), node);
             makeNonNull(result.getElseStore(), node);
@@ -148,15 +150,16 @@ public class NonNullTransfer extends InitializationTransfer<NonNullTransfer> {
     @Override
     public TransferResult<CFValue, InitializationStore> visitThrow(ThrowNode n,
             TransferInput<CFValue, InitializationStore> p) {
-        TransferResult<CFValue, InitializationStore> result = super
-                .visitThrow(n, p);
+        TransferResult<CFValue, InitializationStore> result = super.visitThrow(
+                n, p);
         makeNonNull(result, n.getExpression());
         return result;
     }
 
     @Override
     public TransferResult<CFValue, InitializationStore> visitMethodInvocation(
-            MethodInvocationNode n, TransferInput<CFValue, InitializationStore> in) {
+            MethodInvocationNode n,
+            TransferInput<CFValue, InitializationStore> in) {
         TransferResult<CFValue, InitializationStore> result = super
                 .visitMethodInvocation(n, in);
 
@@ -176,6 +179,15 @@ public class NonNullTransfer extends InitializationTransfer<NonNullTransfer> {
                 makeNonNull(result, n.getArgument(i));
             }
         }
+        return result;
+    }
+
+    @Override
+    public TransferResult<CFValue, InitializationStore> visitUnboxing(
+            UnboxingNode n, TransferInput<CFValue, InitializationStore> p) {
+        TransferResult<CFValue, InitializationStore> result = super
+                .visitUnboxing(n, p);
+        makeNonNull(result, n);
         return result;
     }
 }
