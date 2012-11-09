@@ -920,11 +920,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Err
      * @return String keys that a checker honors for suppressing warnings
      *         and errors that it issues
      *
-     * @see SuppressWarningsKey
+     * @see SuppressWarningsKeys
      */
     public Collection<String> getSuppressWarningsKeys() {
-        SuppressWarningsKey annotation =
-            this.getClass().getAnnotation(SuppressWarningsKey.class);
+        SuppressWarningsKeys annotation =
+            this.getClass().getAnnotation(SuppressWarningsKeys.class);
 
         if (annotation != null)
             return Arrays.asList(annotation.value());

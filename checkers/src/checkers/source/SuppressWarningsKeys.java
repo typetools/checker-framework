@@ -20,7 +20,7 @@ import checkers.nullness.NullnessChecker;
 @Documented
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface SuppressWarningsKey {
+public @interface SuppressWarningsKeys {
 
     /**
      * @return the string that causes this checker to suppress a warning when
