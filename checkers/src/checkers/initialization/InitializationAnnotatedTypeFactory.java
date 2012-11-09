@@ -60,13 +60,14 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
 
         COMMITTED = checker.COMMITTED;
         NOT_ONLY_COMMITTED = checker.NOT_ONLY_COMMITTED;
+        useFbc = checker.useFbc;
 
-        addAliasedAnnotation(checkers.nullness.quals.Raw.class,
-                checker.createUnclassifiedAnnotation(Object.class));
+        if (!useFbc) {
+            addAliasedAnnotation(checkers.nullness.quals.Raw.class,
+                    checker.createUnclassifiedAnnotation(Object.class));
+        }
         addAliasedAnnotation(checkers.nullness.quals.NonRaw.class,
                 checker.COMMITTED);
-
-        useFbc = checker.useFbc;
     }
 
     public AnnotatedTypeMirror getUnalteredAnnotatedType(Tree tree) {
