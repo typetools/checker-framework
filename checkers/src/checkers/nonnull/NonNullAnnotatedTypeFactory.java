@@ -27,6 +27,7 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.GeneralAnnotatedTypeFactory;
 import checkers.types.TreeAnnotator;
 import checkers.types.TypeAnnotator;
+import checkers.util.DependentTypes;
 
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompilationUnitTree;
@@ -47,6 +48,9 @@ public class NonNullAnnotatedTypeFactory
 
     /** Annotation constants */
     protected final AnnotationMirror NONNULL, NULLABLE;
+
+    /** Dependent types instance. */
+    protected final DependentTypes dependentTypes;
 
     protected final MapGetHeuristics mapGetHeuristics;
     protected final SystemGetPropertyHandler systemGetPropertyHandler;
@@ -108,7 +112,25 @@ public class NonNullAnnotatedTypeFactory
         this.collectionToArrayHeuristics = new CollectionToArrayHeuristics(processingEnv,
                 this);
 
+        dependentTypes = new DependentTypes(checker, root);
+
         postInit();
+    }
+
+    // handle dependent types
+    @Override
+    public void annotateImplicit(Tree tree, AnnotatedTypeMirror type) {
+        super.annotateImplicit(tree, type);
+        dependentTypes.handle(tree, type);
+    }
+
+    // handle dependent types
+    @Override
+    public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> constructorFromUse(NewClassTree tree) {
+        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> fromUse = super.constructorFromUse(tree);
+        AnnotatedExecutableType constructor = fromUse.first;
+        dependentTypes.handleConstructor(tree, generalFactory.getAnnotatedType(tree), constructor);
+        return fromUse;
     }
 
     @Override
