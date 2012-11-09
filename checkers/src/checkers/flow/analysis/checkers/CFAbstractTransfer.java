@@ -27,6 +27,7 @@ import dataflow.cfg.UnderlyingAST;
 import dataflow.cfg.UnderlyingAST.CFGMethod;
 import dataflow.cfg.UnderlyingAST.Kind;
 import dataflow.cfg.node.AbstractNodeVisitor;
+import dataflow.cfg.node.ArrayAccessNode;
 import dataflow.cfg.node.AssignmentNode;
 import dataflow.cfg.node.BoxingNode;
 import dataflow.cfg.node.CaseNode;
@@ -255,6 +256,17 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
         return new RegularTransferResult<>(value, store);
     }
 
+    @Override
+    public TransferResult<V, S> visitArrayAccess(ArrayAccessNode n,
+            TransferInput<V, S> p) {
+        S store = p.getRegularStore();
+        V storeValue = store.getValue(n);
+        // look up value in factory, and take the more specific one
+        V factoryValue = getValueFromFactory(n.getTree(), n);
+        V value = moreSpecificValue(factoryValue, storeValue);
+        return new RegularTransferResult<>(value, store);
+    }
+
     /**
      * Use the most specific type information available according to the store.
      */
@@ -425,9 +437,14 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
             info.updateForAssignment(fieldAccess, rhsValue);
         }
 
-        // assignment to array (not treated)
+        // assignment to array
+        else if (lhs instanceof ArrayAccessNode) {
+            info.updateForAssignment((ArrayAccessNode) lhs, rhsValue);
+        }
+
+        // there should not be any other assignments
         else {
-            info.updateForUnknownAssignment(lhs);
+            assert false;
         }
     }
 
