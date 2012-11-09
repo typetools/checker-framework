@@ -132,9 +132,6 @@ class Basic2 {
     }
 
     // array accesses
-    // Note that we do not track the abstract value of array elements,
-    // so we just test that annotations declared on arrays are propagated
-    // through local variables.
     void t8(@Odd String a1[], String a2[], String p3) {
         String l1 = a1[0];
 
