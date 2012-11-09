@@ -405,6 +405,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
         }
 
         Queue<ClassTree> queue = new LinkedList<>();
+        List<Pair<VariableElement, Value>> fieldValues = new ArrayList<>();
         queue.add(classTree);
         while (!queue.isEmpty()) {
             ClassTree ct = queue.remove();
@@ -422,7 +423,6 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
 
             try {
                 List<MethodTree> methods = new ArrayList<>();
-                List<Pair<VariableElement, Value>> fieldValues = new ArrayList<>();
                 for (Tree m : ct.getMembers()) {
                     switch (m.getKind()) {
                     case METHOD:
