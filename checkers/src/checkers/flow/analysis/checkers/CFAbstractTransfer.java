@@ -425,27 +425,8 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
     protected void processCommonAssignment(TransferInput<V, S> in, Node lhs,
             Node rhs, S info, V rhsValue) {
 
-        // assignment to a local variable
-        if (lhs instanceof LocalVariableNode) {
-            LocalVariableNode var = (LocalVariableNode) lhs;
-            info.updateForAssignment(var, rhsValue);
-        }
-
-        // assignment to a field
-        else if (lhs instanceof FieldAccessNode) {
-            FieldAccessNode fieldAccess = (FieldAccessNode) lhs;
-            info.updateForAssignment(fieldAccess, rhsValue);
-        }
-
-        // assignment to array
-        else if (lhs instanceof ArrayAccessNode) {
-            info.updateForAssignment((ArrayAccessNode) lhs, rhsValue);
-        }
-
-        // there should not be any other assignments
-        else {
-            assert false;
-        }
+        // update information in the store
+        info.updateForAssignment(lhs, rhsValue);
     }
 
     @Override
