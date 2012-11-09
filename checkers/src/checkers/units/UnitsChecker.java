@@ -160,8 +160,8 @@ public class UnitsChecker extends BaseTypeChecker {
      * TODO: BasicChecker might also want to always call super.
      */
     @Override
-    public Collection<String> getSuppressWarningsKey() {
-        Set<String> swKeys = new HashSet<String>(super.getSuppressWarningsKey());
+    public Collection<String> getSuppressWarningsKeys() {
+        Set<String> swKeys = new HashSet<String>(super.getSuppressWarningsKeys());
         Set<Class<? extends Annotation>> annos = getSupportedTypeQualifiers();
 
         for (Class<? extends Annotation> anno : annos) {
