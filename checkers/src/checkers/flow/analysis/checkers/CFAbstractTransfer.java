@@ -41,6 +41,7 @@ import dataflow.cfg.node.MethodInvocationNode;
 import dataflow.cfg.node.NarrowingConversionNode;
 import dataflow.cfg.node.Node;
 import dataflow.cfg.node.NotEqualNode;
+import dataflow.cfg.node.StringConversionNode;
 import dataflow.cfg.node.TernaryExpressionNode;
 import dataflow.cfg.node.UnboxingNode;
 import dataflow.cfg.node.VariableDeclarationNode;
@@ -652,6 +653,14 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
     public TransferResult<V, S> visitWideningConversion(
             WideningConversionNode n, TransferInput<V, S> p) {
         TransferResult<V, S> result = super.visitWideningConversion(n, p);
+        result.setResultValue(p.getValueOfSubNode(n.getOperand()));
+        return result;
+    }
+
+    @Override
+    public TransferResult<V, S> visitStringConversion(StringConversionNode n,
+            TransferInput<V, S> p) {
+        TransferResult<V, S> result = super.visitStringConversion(n, p);
         result.setResultValue(p.getValueOfSubNode(n.getOperand()));
         return result;
     }

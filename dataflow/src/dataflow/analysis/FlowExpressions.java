@@ -20,6 +20,7 @@ import dataflow.cfg.node.FieldAccessNode;
 import dataflow.cfg.node.LocalVariableNode;
 import dataflow.cfg.node.MethodInvocationNode;
 import dataflow.cfg.node.Node;
+import dataflow.cfg.node.StringConversionNode;
 import dataflow.cfg.node.ThisLiteralNode;
 import dataflow.cfg.node.UnboxingNode;
 import dataflow.cfg.node.ValueLiteralNode;
@@ -96,6 +97,10 @@ public class FlowExpressions {
             // ignore unboxing
             return internalReprOf(provider,
                     ((UnboxingNode) receiverNode).getOperand());
+        } else if (receiverNode instanceof StringConversionNode) {
+            // ignore unboxing
+            return internalReprOf(provider,
+                    ((StringConversionNode) receiverNode).getOperand());
         } else if (receiverNode instanceof ClassNameNode) {
             ClassNameNode cn = (ClassNameNode) receiverNode;
             receiver = new ClassName(cn.getType());
