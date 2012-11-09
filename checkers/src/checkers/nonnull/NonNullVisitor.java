@@ -1,5 +1,6 @@
 package checkers.nonnull;
 
+import java.lang.annotation.Annotation;
 import java.util.Set;
 
 import javax.annotation.processing.ProcessingEnvironment;
@@ -8,6 +9,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeMirror;
 
+import javacutils.AnnotationUtils;
 import javacutils.InternalUtils;
 import javacutils.TreeUtils;
 import javacutils.TypesUtils;
@@ -20,6 +22,7 @@ import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
+import checkers.util.QualifierPolymorphism;
 
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.AssertTree;
@@ -84,10 +87,55 @@ public class NonNullVisitor extends
         stringType = elements.getTypeElement("java.lang.String").asType();
 
         ProcessingEnvironment env = checker.getProcessingEnvironment();
-        this.collectionSize = TreeUtils.getMethod("java.util.Collection", "size", 0, env);
-        this.collectionToArray = TreeUtils.getMethod("java.util.Collection", "toArray", 1, env);
+        this.collectionSize = TreeUtils.getMethod("java.util.Collection",
+                "size", 0, env);
+        this.collectionToArray = TreeUtils.getMethod("java.util.Collection",
+                "toArray", 1, env);
 
         checkForAnnotatedJdk();
+    }
+
+    @Override
+    public boolean isValidUse(AnnotatedDeclaredType declarationType,
+            AnnotatedDeclaredType useType) {
+        // At most a single qualifier on a type, ignoring a possible PolyAll
+        // annotation.
+        boolean foundInit = false;
+        boolean foundNonNull = false;
+        Set<Class<? extends Annotation>> initQuals = checker
+                .getInitializationAnnotations();
+        Set<AnnotationMirror> nonNullQuals = checker.getNonNullAnnotations();
+        for (AnnotationMirror anno : useType.getAnnotations()) {
+            if (QualifierPolymorphism.isPolyAll(anno)) {
+                // ok.
+            } else if (containsSameIgnoringValues(initQuals, anno)) {
+                if (foundInit) {
+                    return false;
+                }
+                foundInit = true;
+            } else if (AnnotationUtils.containsSameIgnoringValues(nonNullQuals,
+                    anno)) {
+                if (foundNonNull) {
+                    return false;
+                }
+                foundNonNull = true;
+            }
+        }
+        // The super implementation checks that useType is a subtype
+        // of declarationType. However, declarationType by default
+        // is NonNull, which would then forbid Nullable uses.
+        // Therefore, don't perform this check.
+        return true;
+    }
+
+    private boolean containsSameIgnoringValues(
+            Set<Class<? extends Annotation>> quals, AnnotationMirror anno) {
+        for (Class<? extends Annotation> q : quals) {
+            if (AnnotationUtils.areSameByClass(anno, q)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -162,29 +210,32 @@ public class NonNullVisitor extends
     public Void visitNewArray(NewArrayTree node, Void p) {
         AnnotatedArrayType type = atypeFactory.getAnnotatedType(node);
         AnnotatedTypeMirror componentType = type.getComponentType();
-        if (componentType.hasAnnotation(NONNULL) &&
-                !isNewArrayAllZeroDims(node) &&
-                !isNewArrayInToArray(node) &&
-                !TypesUtils.isPrimitive(componentType.getUnderlyingType()) &&
-                checker.getLintOption("arrays:forbidnonnullcomponents", false)) {
-            checker.report(Result.failure("new.array.type.invalid",
-                    componentType.getAnnotations(), type.toString()), node);
+        if (componentType.hasAnnotation(NONNULL)
+                && !isNewArrayAllZeroDims(node)
+                && !isNewArrayInToArray(node)
+                && !TypesUtils.isPrimitive(componentType.getUnderlyingType())
+                && checker.getLintOption("arrays:forbidnonnullcomponents",
+                        false)) {
+            checker.report(
+                    Result.failure("new.array.type.invalid",
+                            componentType.getAnnotations(), type.toString()),
+                    node);
         }
 
         return super.visitNewArray(node, p);
     }
 
-    /** Determine whether all dimensions given in a new array expression
-     * have zero as length. For example "new Object[0][0];".
-     * Also true for empty dimensions, as in "new Object[] {...}".
+    /**
+     * Determine whether all dimensions given in a new array expression have
+     * zero as length. For example "new Object[0][0];". Also true for empty
+     * dimensions, as in "new Object[] {...}".
      */
     private static boolean isNewArrayAllZeroDims(NewArrayTree node) {
         boolean isAllZeros = true;
         for (ExpressionTree dim : node.getDimensions()) {
             if (dim instanceof LiteralTree) {
-                Object val = ((LiteralTree)dim).getValue();
-                if (!(val instanceof Number) ||
-                        !(new Integer(0).equals(val))) {
+                Object val = ((LiteralTree) dim).getValue();
+                if (!(val instanceof Number) || !(new Integer(0).equals(val))) {
                     isAllZeros = false;
                     break;
                 }
@@ -197,7 +248,7 @@ public class NonNullVisitor extends
     }
 
     private boolean isNewArrayInToArray(NewArrayTree node) {
-        if (node.getDimensions().size()!=1) {
+        if (node.getDimensions().size() != 1) {
             return false;
         }
 
@@ -212,7 +263,7 @@ public class NonNullVisitor extends
         if (!(rcvsize instanceof MemberSelectTree)) {
             return false;
         }
-        rcvsize = ((MemberSelectTree)rcvsize).getExpression();
+        rcvsize = ((MemberSelectTree) rcvsize).getExpression();
         if (!(rcvsize instanceof IdentifierTree)) {
             return false;
         }
@@ -223,16 +274,18 @@ public class NonNullVisitor extends
             return false;
         }
 
-        ExpressionTree rcvtoarray = ((MethodInvocationTree) encl).getMethodSelect();
+        ExpressionTree rcvtoarray = ((MethodInvocationTree) encl)
+                .getMethodSelect();
         if (!(rcvtoarray instanceof MemberSelectTree)) {
             return false;
         }
-        rcvtoarray = ((MemberSelectTree)rcvtoarray).getExpression();
+        rcvtoarray = ((MemberSelectTree) rcvtoarray).getExpression();
         if (!(rcvtoarray instanceof IdentifierTree)) {
             return false;
         }
 
-        return ((IdentifierTree)rcvsize).getName() == ((IdentifierTree)rcvtoarray).getName();
+        return ((IdentifierTree) rcvsize).getName() == ((IdentifierTree) rcvtoarray)
+                .getName();
     }
 
     /** Case 4: Check for thrown exception nullness */
@@ -260,8 +313,8 @@ public class NonNullVisitor extends
     }
 
     /**
-     * Reports an error if a comparison of a @NonNull expression with
-     * the null literal is performed.
+     * Reports an error if a comparison of a @NonNull expression with the null
+     * literal is performed.
      */
     protected void checkForRedundantTests(BinaryTree node) {
 
@@ -357,7 +410,8 @@ public class NonNullVisitor extends
             // If receiver is Nullable, then we don't want to issue a warning
             // about method invocability (we'd rather have only the
             // "dereference.of.nullable" message).
-            if (recvAnnos.contains(NULLABLE) || recvAnnos.contains(MONOTONICNONNULL)) {
+            if (recvAnnos.contains(NULLABLE)
+                    || recvAnnos.contains(MONOTONICNONNULL)) {
                 return;
             }
         }
@@ -404,7 +458,7 @@ public class NonNullVisitor extends
 
     @Override
     public Void visitForLoop(ForLoopTree node, Void p) {
-        if (node.getCondition()!=null) {
+        if (node.getCondition() != null) {
             // Condition is null e.g. in "for (;;) {...}"
             checkForNullability(node.getCondition(), "condition.nullable");
         }
@@ -416,7 +470,9 @@ public class NonNullVisitor extends
         AnnotatedDeclaredType type = atypeFactory.getAnnotatedType(node);
         if (!type.hasAnnotation(NONNULL)) {
             // The type is not non-null => error
-            checker.report(Result.failure("new.class.type.invalid", type.getAnnotations()), node);
+            checker.report(
+                    Result.failure("new.class.type.invalid",
+                            type.getAnnotations()), node);
             // Note that other consistency checks are made by isValid.
         }
         // TODO: It might be nicer to introduce a framework-level
@@ -431,7 +487,8 @@ public class NonNullVisitor extends
     }
 
     @Override
-    public Void visitConditionalExpression(ConditionalExpressionTree node, Void p) {
+    public Void visitConditionalExpression(ConditionalExpressionTree node,
+            Void p) {
         checkForNullability(node.getCondition(), "condition.nullable");
         return super.visitConditionalExpression(node, p);
     }

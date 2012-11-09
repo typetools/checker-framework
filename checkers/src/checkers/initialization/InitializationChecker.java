@@ -70,7 +70,7 @@ public abstract class InitializationChecker extends BaseTypeChecker {
         return Collections.singleton("initialization");
     }
 
-    public Set<Class<? extends Annotation>> getCommitmentAnnotations() {
+    public Set<Class<? extends Annotation>> getInitializationAnnotations() {
         Set<Class<? extends Annotation>> result = new HashSet<>();
         if (useFbc) {
             result.add(Free.class);
@@ -94,7 +94,7 @@ public abstract class InitializationChecker extends BaseTypeChecker {
      *         return type.
      */
     public Set<Class<? extends Annotation>> getInvalidConstructorReturnTypeAnnotations() {
-        return getCommitmentAnnotations();
+        return getInitializationAnnotations();
     }
 
     /**
@@ -324,7 +324,7 @@ public abstract class InitializationChecker extends BaseTypeChecker {
                 return typeQualifiers;
             Set<Name> names = new HashSet<>();
             Set<Class<?>> clazzes = new HashSet<>();
-            clazzes.addAll(getCommitmentAnnotations());
+            clazzes.addAll(getInitializationAnnotations());
             // Add qualifiers from the initialization type system.
             for (Class<?> clazz : clazzes) {
                 Elements elements = processingEnv.getElementUtils();
