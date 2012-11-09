@@ -17,6 +17,7 @@ import javacutils.Pair;
 import dataflow.analysis.FlowExpressions;
 import dataflow.analysis.FlowExpressions.ArrayAccess;
 import dataflow.analysis.FlowExpressions.FieldAccess;
+import dataflow.analysis.FlowExpressions.LocalVariable;
 import dataflow.analysis.FlowExpressions.PureMethodCall;
 import dataflow.analysis.FlowExpressions.Receiver;
 import dataflow.analysis.Store;
@@ -24,6 +25,7 @@ import dataflow.cfg.node.ArrayAccessNode;
 import dataflow.cfg.node.FieldAccessNode;
 import dataflow.cfg.node.LocalVariableNode;
 import dataflow.cfg.node.MethodInvocationNode;
+import dataflow.cfg.node.Node;
 import dataflow.util.PurityUtils;
 
 import checkers.quals.MonotonicAnnotation;
@@ -391,6 +393,24 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     }
 
     /**
+     * Update the information in the store by considering an assignment with
+     * target {@code n}.
+     */
+    public void updateForAssignment(Node n, /* @Nullable */V val) {
+        Receiver receiver = FlowExpressions
+                .internalReprOf(analysis.getFactory(), n);
+        if (receiver instanceof ArrayAccess) {
+            updateForArrayAssignment((ArrayAccess) receiver, val);
+        } else if (receiver instanceof FieldAccess) {
+            updateForFieldAccessAssignment((FieldAccess) receiver, val);
+        } else if (receiver instanceof LocalVariable) {
+            updateForLocalVariableAssignment((LocalVariable) receiver, val);
+        } else {
+            assert false;
+        }
+    }
+
+    /**
      * Update the information in the store by considering a field assignment
      * with target {@code n}, where the right hand side has the abstract value
      * {@code val}.
@@ -399,9 +419,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      *            The abstract value of the value assigned to {@code n} (or
      *            {@code null} if the abstract value is not known).
      */
-    public void updateForAssignment(FieldAccessNode n, /* @Nullable */V val) {
-        FlowExpressions.FieldAccess fieldAccess = FlowExpressions
-                .internalReprOfFieldAccess(analysis.getFactory(), n);
+    protected void updateForFieldAccessAssignment(FieldAccess fieldAccess, /* @Nullable */V val) {
         removeConflicting(fieldAccess, val);
         if (!fieldAccess.containsUnknown() && val != null) {
             // Only store information about final fields (where the receiver is
@@ -414,8 +432,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
     /**
      * Update the information in the store by considering an assignment with
-     * target {@code n}, where the target is neither a local variable nor a
-     * field access. This includes the following steps:
+     * target {@code n}, where the target is an array access.
      *
      * <ol>
      * <li value="1">Remove any abstract values for field accesses <em>b.g</em>
@@ -423,9 +440,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * <li value="2">Remove any information about pure method calls.
      * </ol>
      */
-    public void updateForAssignment(ArrayAccessNode n, /* @Nullable */V val) {
-        FlowExpressions.ArrayAccess arrayAccess = FlowExpressions
-                .internalReprOfArrayAccess(analysis.getFactory(), n);
+    protected void updateForArrayAssignment(ArrayAccess arrayAccess, /* @Nullable */V val) {
         removeConflicting(arrayAccess, val);
         if (!arrayAccess.containsUnknown() && val != null) {
             // Only store information about final fields (where the receiver is
@@ -434,24 +449,21 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                 arrayValues.put(arrayAccess, val);
             }
         }
+    }
 
-        FlowExpressions.Unknown unknown = new FlowExpressions.Unknown(
-                n.getType());
-        Map<FlowExpressions.FieldAccess, V> newFieldValues = new HashMap<>();
-        for (Entry<FlowExpressions.FieldAccess, V> e : fieldValues.entrySet()) {
-            FlowExpressions.FieldAccess otherFieldAccess = e.getKey();
-            V otherVal = e.getValue();
-            // case 1:
-            if (otherFieldAccess.getReceiver().containsModifiableAliasOf(this,
-                    unknown)) {
-                continue; // remove information completely
-            }
-            newFieldValues.put(otherFieldAccess, otherVal);
+    /**
+     * Set the abstract value of a local variable in the store. Overwrites any
+     * value that might have been available previously.
+     *
+     * @param val
+     *            The abstract value of the value assigned to {@code n} (or
+     *            {@code null} if the abstract value is not known).
+     */
+    protected void updateForLocalVariableAssignment(LocalVariable receiver, /* @Nullable */V val) {
+        removeConflicting(receiver);
+        if (val != null) {
+            localVariableValues.put(receiver.getElement(), val);
         }
-        fieldValues = newFieldValues;
-
-        // case 2:
-        methodValues = new HashMap<>();
     }
 
     /**
@@ -608,9 +620,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * receiver or any of the parameters contains {@code localVar}.
      * </ol>
      */
-    protected void removeConflicting(LocalVariableNode localVar) {
-        FlowExpressions.LocalVariable var = new FlowExpressions.LocalVariable(
-                localVar);
+    protected void removeConflicting(LocalVariable var) {
         Map<FlowExpressions.FieldAccess, V> newFieldValues = new HashMap<>();
         for (Entry<FlowExpressions.FieldAccess, V> e : fieldValues.entrySet()) {
             FlowExpressions.FieldAccess otherFieldAccess = e.getKey();
@@ -672,21 +682,6 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     public/* @Nullable */V getValue(LocalVariableNode n) {
         Element el = n.getElement();
         return localVariableValues.get(el);
-    }
-
-    /**
-     * Set the abstract value of a local variable in the store. Overwrites any
-     * value that might have been available previously.
-     *
-     * @param val
-     *            The abstract value of the value assigned to {@code n} (or
-     *            {@code null} if the abstract value is not known).
-     */
-    public void updateForAssignment(LocalVariableNode n, /* @Nullable */V val) {
-        removeConflicting(n);
-        if (val != null) {
-            localVariableValues.put(n.getElement(), val);
-        }
     }
 
     /* --------------------------------------------------------- */
