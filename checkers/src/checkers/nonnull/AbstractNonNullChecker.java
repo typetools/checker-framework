@@ -50,9 +50,9 @@ public abstract class AbstractNonNullChecker extends InitializationChecker {
     }
 
     @Override
-    public Collection<String> getSuppressWarningsKey() {
+    public Collection<String> getSuppressWarningsKeys() {
         Collection<String> result = new HashSet<>();
-        result.addAll(super.getSuppressWarningsKey());
+        result.addAll(super.getSuppressWarningsKeys());
         result.add("nonnull");
         return result;
     }

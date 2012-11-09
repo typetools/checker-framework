@@ -2,15 +2,15 @@ package checkers.source;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.Stack;
 import java.util.regex.Pattern;
-
-import javax.annotation.processing.*;
-import javax.lang.model.SourceVersion;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.TypeElement;
-import javax.tools.Diagnostic;
-import javax.tools.Diagnostic.Kind;
 
 import javacutils.AbstractTypeProcessor;
 import javacutils.ElementUtils;
@@ -19,23 +19,38 @@ import javacutils.ErrorReporter;
 import javacutils.InternalUtils;
 import javacutils.TreeUtils;
 
+import javax.annotation.processing.AbstractProcessor;
+import javax.annotation.processing.Messager;
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.annotation.processing.Processor;
+import javax.annotation.processing.RoundEnvironment;
+import javax.annotation.processing.SupportedAnnotationTypes;
+import javax.lang.model.SourceVersion;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
+import javax.tools.Diagnostic;
+import javax.tools.Diagnostic.Kind;
+
 import checkers.basetype.BaseTypeChecker;
 import checkers.quals.TypeQualifiers;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.GeneralAnnotatedTypeFactory;
 
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreePath;
+import com.sun.source.util.Trees;
+import com.sun.tools.javac.processing.JavacProcessingEnvironment;
+import com.sun.tools.javac.util.Context;
+import com.sun.tools.javac.util.Log;
+
 /*>>>
 import checkers.compilermsgs.quals.CompilerMessageKey;
 import checkers.nullness.quals.*;
 */
-
-import com.sun.source.tree.*;
-import com.sun.source.util.TreePath;
-import com.sun.source.util.Trees;
-import com.sun.tools.javac.processing.JavacMessager;
-import com.sun.tools.javac.processing.JavacProcessingEnvironment;
-import com.sun.tools.javac.util.Context;
-import com.sun.tools.javac.util.Log;
 
 /**
  * An abstract annotation processor designed for implementing a
@@ -554,7 +569,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Err
         if (anno == null)
             return false;
 
-        Collection<String> swkeys = this.getSuppressWarningsKey();
+        Collection<String> swkeys = this.getSuppressWarningsKeys();
 
         // For all the method's annotations, check for a @SuppressWarnings
         // annotation. If one is found, check its values for this checker's
@@ -587,7 +602,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Err
     private boolean shouldSuppressWarnings(Tree tree, String err) {
 
         // Don't suppress warnings if there's no key.
-        Collection<String> swKeys = this.getSuppressWarningsKey();
+        Collection<String> swKeys = this.getSuppressWarningsKeys();
         if (swKeys.isEmpty())
             return false;
 
@@ -907,7 +922,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Err
      *
      * @see SuppressWarningsKey
      */
-    public Collection<String> getSuppressWarningsKey() {
+    public Collection<String> getSuppressWarningsKeys() {
         SuppressWarningsKey annotation =
             this.getClass().getAnnotation(SuppressWarningsKey.class);
 
