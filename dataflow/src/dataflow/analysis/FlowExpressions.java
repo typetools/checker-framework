@@ -13,6 +13,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
+import dataflow.cfg.node.ArrayAccessNode;
 import dataflow.cfg.node.BoxingNode;
 import dataflow.cfg.node.ClassNameNode;
 import dataflow.cfg.node.FieldAccessNode;
@@ -59,6 +60,17 @@ public class FlowExpressions {
     }
 
     /**
+     * @return The internal representation (as {@link FieldAccess}) of a
+     *         {@link FieldAccessNode}. Can contain {@link Unknown} as receiver.
+     */
+    public static ArrayAccess internalReprOfArrayAccess(
+            AnnotationProvider provider, ArrayAccessNode node) {
+        Receiver receiver = internalReprOf(provider, node.getArray());
+        Receiver index = internalReprOf(provider, node.getIndex());
+        return new ArrayAccess(node.getType(), receiver, index);
+    }
+
+    /**
      * @return The internal representation (as {@link Receiver}) of any
      *         {@link Node}. Might contain {@link Unknown}.
      */
@@ -73,6 +85,9 @@ public class FlowExpressions {
         } else if (receiverNode instanceof LocalVariableNode) {
             LocalVariableNode lv = (LocalVariableNode) receiverNode;
             receiver = new LocalVariable(lv);
+        } else if (receiverNode instanceof ArrayAccessNode) {
+            ArrayAccessNode a = (ArrayAccessNode) receiverNode;
+            receiver = internalReprOfArrayAccess(provider, a);
         } else if (receiverNode instanceof BoxingNode) {
             // ignore boxing
             return internalReprOf(provider,
@@ -156,8 +171,8 @@ public class FlowExpressions {
         /**
          * Returns true if and only if {@code other} appear anywhere in this
          * receiver or an expression appears in this receiver such that
-         * {@code other} might alias this expression, and that expression
-         * is modifiable.
+         * {@code other} might alias this expression, and that expression is
+         * modifiable.
          *
          * <p>
          * This is always true, except for cases where the Java type information
@@ -631,6 +646,92 @@ public class FlowExpressions {
                 first = false;
             }
             result.append(")");
+            return result.toString();
+        }
+    }
+
+    /**
+     * A deterministic method call.
+     */
+    public static class ArrayAccess extends Receiver {
+
+        protected final Receiver receiver;
+        protected final Receiver index;
+
+        public ArrayAccess(TypeMirror type, Receiver receiver, Receiver index) {
+            super(type);
+            this.receiver = receiver;
+            this.index = index;
+        }
+
+        @Override
+        public boolean containsUnknown() {
+            if (receiver.containsUnknown()) {
+                return true;
+            }
+            return index.containsUnknown();
+        }
+
+        public Receiver getReceiver() {
+            return receiver;
+        }
+
+        public Receiver getIndex() {
+            return index;
+        }
+
+        @Override
+        public boolean isUnmodifiableByOtherCode() {
+            return false;
+        }
+
+        @Override
+        public boolean containsSyntacticEqualReceiver(Receiver other) {
+            return syntacticEquals(other) || receiver.syntacticEquals(other)
+                    || index.syntacticEquals(other);
+        }
+
+        @Override
+        public boolean syntacticEquals(Receiver other) {
+            if (!(other instanceof ArrayAccess)) {
+                return false;
+            }
+            ArrayAccess otherArrayAccess = (ArrayAccess) other;
+            if (!receiver.syntacticEquals(otherArrayAccess.receiver)) {
+                return false;
+            }
+            return index.syntacticEquals(otherArrayAccess.index);
+        }
+
+        @Override
+        public boolean containsModifiableAliasOf(Store<?> store, Receiver other) {
+            if (receiver.containsModifiableAliasOf(store, other)) {
+                return true;
+            }
+            return index.containsModifiableAliasOf(store, other);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null || !(obj instanceof ArrayAccess)) {
+                return false;
+            }
+            ArrayAccess other = (ArrayAccess) obj;
+            return receiver.equals(other.receiver) && index.equals(other.index);
+        }
+
+        @Override
+        public int hashCode() {
+            return HashCodeUtils.hash(receiver, index);
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder result = new StringBuilder();
+            result.append(receiver.toString());
+            result.append("[");
+            result.append(index.toString());
+            result.append("]");
             return result.toString();
         }
     }
