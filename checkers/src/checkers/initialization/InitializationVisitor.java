@@ -59,12 +59,6 @@ public class InitializationVisitor<Checker extends InitializationChecker>
     }
 
     @Override
-    public boolean isValidUse(AnnotatedDeclaredType declarationType,
-            AnnotatedDeclaredType useType) {
-        return true;
-    }
-
-    @Override
     protected void commonAssignmentCheck(Tree varTree, ExpressionTree valueExp,
             String errorKey) {
         // field write of the form x.f = y
@@ -123,7 +117,7 @@ public class InitializationVisitor<Checker extends InitializationChecker>
                     node).getExplicitAnnotations();
             // Fields cannot have commitment annotations.
             for (Class<? extends Annotation> c : checker
-                    .getCommitmentAnnotations()) {
+                    .getInitializationAnnotations()) {
                 for (AnnotationMirror a : annotationMirrors) {
                     if (AnnotationUtils.areSameByClass(a, c)) {
                         checker.report(Result.failure(
@@ -145,7 +139,7 @@ public class InitializationVisitor<Checker extends InitializationChecker>
         AnnotationMirror exprAnno = null, castAnno = null;
 
         // find commitment annotation
-        for (Class<? extends Annotation> a : checker.getCommitmentAnnotations()) {
+        for (Class<? extends Annotation> a : checker.getInitializationAnnotations()) {
             if (castType.hasAnnotation(a)) {
                 assert castAnno == null;
                 castAnno = castType.getAnnotation(a);
