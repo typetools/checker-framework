@@ -615,7 +615,7 @@ implements Flow {
      * @return true iff information should be inferred.
      */
     protected static boolean inferFromAssert(AssertTree node, SourceChecker checker) {
-        return containsKey(node.getDetail(), checker.getSuppressWarningsKey())
+        return containsKey(node.getDetail(), checker.getSuppressWarningsKeys())
                 || checker.getLintOption("flow:inferFromAsserts", false);
     }
 

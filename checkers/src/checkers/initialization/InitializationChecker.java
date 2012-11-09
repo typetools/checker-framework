@@ -66,7 +66,7 @@ public abstract class InitializationChecker extends BaseTypeChecker {
     }
 
     @Override
-    public Collection<String> getSuppressWarningsKey() {
+    public Collection<String> getSuppressWarningsKeys() {
         return Collections.singleton("initialization");
     }
 
