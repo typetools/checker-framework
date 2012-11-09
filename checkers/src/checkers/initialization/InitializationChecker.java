@@ -1,6 +1,8 @@
 package checkers.initialization;
 
 import java.lang.annotation.Annotation;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -61,6 +63,11 @@ public abstract class InitializationChecker extends BaseTypeChecker {
         FBCBOTTOM = AnnotationUtils.fromClass(elements, FBCBottom.class);
 
         super.initChecker();
+    }
+
+    @Override
+    public Collection<String> getSuppressWarningsKey() {
+        return Collections.singleton("initialization");
     }
 
     public Set<Class<? extends Annotation>> getCommitmentAnnotations() {
