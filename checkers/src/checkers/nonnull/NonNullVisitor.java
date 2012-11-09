@@ -18,6 +18,7 @@ import checkers.nonnull.quals.NonNull;
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 
 import com.sun.source.tree.ArrayAccessTree;
@@ -25,20 +26,25 @@ import com.sun.source.tree.AssertTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.CompoundAssignmentTree;
+import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.ForLoopTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.IfTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.tree.WhileLoopTree;
 
 // TODO/later: documentation
 // Note: this code is originally based on NullnessVisitor
@@ -390,4 +396,43 @@ public class NonNullVisitor extends
         return InternalUtils.typeOf(tree).getKind().isPrimitive();
     }
 
+    @Override
+    public Void visitSwitch(SwitchTree node, Void p) {
+        checkForNullability(node.getExpression(), "switching.nullable");
+        return super.visitSwitch(node, p);
+    }
+
+    @Override
+    public Void visitForLoop(ForLoopTree node, Void p) {
+        if (node.getCondition()!=null) {
+            // Condition is null e.g. in "for (;;) {...}"
+            checkForNullability(node.getCondition(), "condition.nullable");
+        }
+        return super.visitForLoop(node, p);
+    }
+
+    @Override
+    public Void visitNewClass(NewClassTree node, Void p) {
+        AnnotatedDeclaredType type = atypeFactory.getAnnotatedType(node);
+        if (!type.hasAnnotation(NONNULL)) {
+            // The type is not non-null => error
+            checker.report(Result.failure("new.class.type.invalid", type.getAnnotations()), node);
+            // Note that other consistency checks are made by isValid.
+        }
+        // TODO: It might be nicer to introduce a framework-level
+        // isValidNewClassType or some such.
+        return super.visitNewClass(node, p);
+    }
+
+    @Override
+    public Void visitWhileLoop(WhileLoopTree node, Void p) {
+        checkForNullability(node.getCondition(), "condition.nullable");
+        return super.visitWhileLoop(node, p);
+    }
+
+    @Override
+    public Void visitConditionalExpression(ConditionalExpressionTree node, Void p) {
+        checkForNullability(node.getCondition(), "condition.nullable");
+        return super.visitConditionalExpression(node, p);
+    }
 }
