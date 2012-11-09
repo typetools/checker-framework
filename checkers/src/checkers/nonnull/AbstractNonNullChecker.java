@@ -1,6 +1,7 @@
 package checkers.nonnull;
 
 import java.lang.annotation.Annotation;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -46,6 +47,14 @@ public abstract class AbstractNonNullChecker extends InitializationChecker {
         NULLABLE = AnnotationUtils.fromClass(elements, Nullable.class);
         MONOTONICNONNULL = AnnotationUtils.fromClass(elements, MonotonicNonNull.class);
         super.initChecker();
+    }
+
+    @Override
+    public Collection<String> getSuppressWarningsKey() {
+        Collection<String> result = new HashSet<>();
+        result.addAll(super.getSuppressWarningsKey());
+        result.add("nonnull");
+        return result;
     }
 
     @Override
