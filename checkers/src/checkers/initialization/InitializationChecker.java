@@ -1,19 +1,18 @@
 package checkers.initialization;
 
 import java.lang.annotation.Annotation;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+
+import javacutils.AnnotationUtils;
+import javacutils.ErrorReporter;
+import javacutils.TypesUtils;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Name;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
-
-import javacutils.AnnotationUtils;
-import javacutils.ErrorReporter;
-import javacutils.TypesUtils;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.initialization.quals.Committed;
@@ -394,32 +393,6 @@ public abstract class InitializationChecker extends BaseTypeChecker {
                 }
             }
             return false;
-        }
-
-        @Override
-        public boolean isSubtype(Collection<AnnotationMirror> rhs,
-                Collection<AnnotationMirror> lhs) {
-            if (lhs.isEmpty() || rhs.isEmpty()) {
-                ErrorReporter
-                        .errorAbort("InitializationQualifierHierarchy: empty annotations in lhs: "
-                                + lhs + " or rhs: " + rhs);
-            }
-            if (lhs.size() != rhs.size()) {
-                ErrorReporter
-                        .errorAbort("InitializationQualifierHierarchy: mismatched number of annotations in lhs: "
-                                + lhs + " and rhs: " + rhs);
-            }
-            int valid = 0;
-            for (AnnotationMirror lhsAnno : lhs) {
-                for (AnnotationMirror rhsAnno : rhs) {
-                    if (AnnotationUtils.areSame(getTopAnnotation(lhsAnno),
-                            getTopAnnotation(rhsAnno))
-                            && isSubtype(rhsAnno, lhsAnno)) {
-                        ++valid;
-                    }
-                }
-            }
-            return lhs.size() == valid;
         }
 
         @Override
