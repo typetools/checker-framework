@@ -26,5 +26,5 @@ public @interface SuppressWarningsKey {
      * @return the string that causes this checker to suppress a warning when
      *         passed as the argument of {@link SuppressWarnings}
      */
-    String value();
+    String[] value();
 }

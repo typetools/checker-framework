@@ -261,10 +261,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Err
      *
      * @param msg The error message to log.
      */
+    @Override
     public void errorAbort(String msg) {
         throw new CheckerError(msg, new Throwable());
     }
 
+    @Override
     public void errorAbort(String msg, Throwable cause) {
         throw new CheckerError(msg, cause);
     }
@@ -309,7 +311,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Err
             super.typeProcessingStart();
             initChecker();
             if (this.messager == null) {
-                messager = (JavacMessager) processingEnv.getMessager();
+                messager = processingEnv.getMessager();
                 messager.printMessage(
                         javax.tools.Diagnostic.Kind.WARNING,
                         "You have forgotten to call super.initChecker in your "
@@ -910,7 +912,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Err
             this.getClass().getAnnotation(SuppressWarningsKey.class);
 
         if (annotation != null)
-            return Collections.singleton(annotation.value());
+            return Arrays.asList(annotation.value());
 
         // Inferring key from class name
         String className = this.getClass().getSimpleName();
