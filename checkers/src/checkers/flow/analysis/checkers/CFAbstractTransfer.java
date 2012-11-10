@@ -1,18 +1,33 @@
 package checkers.flow.analysis.checkers;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeMirror;
 
 import javacutils.AnnotationUtils;
 import javacutils.ElementUtils;
 import javacutils.InternalUtils;
 import javacutils.Pair;
 import javacutils.TreeUtils;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeMirror;
+
+import checkers.basetype.BaseTypeChecker;
+import checkers.types.AbstractBasicAnnotatedTypeFactory;
+import checkers.types.AnnotatedTypeFactory;
+import checkers.types.AnnotatedTypeMirror;
+import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
+import checkers.util.ContractsUtils;
+import checkers.util.FlowExpressionParseUtil;
+import checkers.util.FlowExpressionParseUtil.FlowExpressionContext;
+import checkers.util.FlowExpressionParseUtil.FlowExpressionParseException;
+
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Tree;
 
 import dataflow.analysis.ConditionalTransferResult;
 import dataflow.analysis.FlowExpressions;
@@ -47,19 +62,6 @@ import dataflow.cfg.node.TernaryExpressionNode;
 import dataflow.cfg.node.UnboxingNode;
 import dataflow.cfg.node.VariableDeclarationNode;
 import dataflow.cfg.node.WideningConversionNode;
-
-import checkers.util.ContractsUtils;
-import checkers.util.FlowExpressionParseUtil;
-import checkers.util.FlowExpressionParseUtil.FlowExpressionContext;
-import checkers.util.FlowExpressionParseUtil.FlowExpressionParseException;
-import checkers.basetype.BaseTypeChecker;
-import checkers.types.AbstractBasicAnnotatedTypeFactory;
-import checkers.types.AnnotatedTypeFactory;
-import checkers.types.AnnotatedTypeMirror;
-import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
-
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.Tree;
 
 /**
  * The default analysis transfer function for the Checker Framework propagates
@@ -379,22 +381,42 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
         if (firstValue != null) {
             // Only need to insert if the second value is actually different.
             if (!firstValue.equals(secondValue)) {
-                Receiver secondInternal = FlowExpressions.internalReprOf(
-                        analysis.getFactory(), secondNode);
-                if (CFAbstractStore.canInsertReceiver(secondInternal)) {
-                    S thenStore = res.getThenStore();
-                    S elseStore = res.getElseStore();
-                    if (notEqualTo) {
-                        elseStore.insertValue(secondInternal, firstValue);
-                    } else {
-                        thenStore.insertValue(secondInternal, firstValue);
+                List<Node> secondParts = splitAssignments(secondNode);
+                for (Node secondPart : secondParts) {
+                    Receiver secondInternal = FlowExpressions.internalReprOf(
+                            analysis.getFactory(), secondPart);
+                    if (CFAbstractStore.canInsertReceiver(secondInternal)) {
+                        S thenStore = res.getThenStore();
+                        S elseStore = res.getElseStore();
+                        if (notEqualTo) {
+                            elseStore.insertValue(secondInternal, firstValue);
+                        } else {
+                            thenStore.insertValue(secondInternal, firstValue);
+                        }
+                        return new ConditionalTransferResult<>(
+                                res.getResultValue(), thenStore, elseStore);
                     }
-                    return new ConditionalTransferResult<>(
-                            res.getResultValue(), thenStore, elseStore);
                 }
             }
         }
         return res;
+    }
+
+    /**
+     * Takes a node, and either returns the node itself again (as a singleton
+     * list), or if the node is an assignment node, returns the lhs and rhs
+     * (where splitAssignments is applied recursively to the rhs).
+     */
+    protected List<Node> splitAssignments(Node node) {
+        if (node instanceof AssignmentNode) {
+            List<Node> result = new ArrayList<>();
+            AssignmentNode a = (AssignmentNode) node;
+            result.add(a.getTarget());
+            result.addAll(splitAssignments(a.getExpression()));
+            return result;
+        } else {
+            return Collections.singletonList(node);
+        }
     }
 
     @Override
