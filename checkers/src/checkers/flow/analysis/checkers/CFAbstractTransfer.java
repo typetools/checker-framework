@@ -16,6 +16,7 @@ import javacutils.TreeUtils;
 
 import dataflow.analysis.ConditionalTransferResult;
 import dataflow.analysis.FlowExpressions;
+import dataflow.analysis.FlowExpressions.ClassName;
 import dataflow.analysis.FlowExpressions.FieldAccess;
 import dataflow.analysis.FlowExpressions.Receiver;
 import dataflow.analysis.FlowExpressions.ThisReference;
@@ -158,11 +159,17 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
                 VariableElement element = p.first;
                 V value = p.second;
                 if (ElementUtils.isFinal(element) || isConstructor) {
-                    TypeMirror type = InternalUtils.typeOf(method
+                    TypeMirror classType = InternalUtils.typeOf(method
                             .getClassTree());
-                    TypeMirror elemType = ElementUtils.getType(element);
-                    Receiver field = new FieldAccess(new ThisReference(type),
-                            elemType, element);
+                    TypeMirror fieldType = ElementUtils.getType(element);
+                    Receiver receiver;
+                    if (ElementUtils.isStatic(element)) {
+                        receiver = new ClassName(classType);
+                    } else {
+                        receiver = new ThisReference(classType);
+                    }
+                    Receiver field = new FieldAccess(receiver, fieldType,
+                            element);
                     info.insertValue(field, value);
                 }
             }
