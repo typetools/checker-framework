@@ -397,7 +397,7 @@ public class NonNullVisitor extends
     private void checkForNullability(ExpressionTree tree,
     /* @CompilerMessageKey */String errMsg) {
         AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(tree);
-        if (!type.hasAnnotation(NONNULL))
+        if (!type.hasEffectiveAnnotation(NONNULL))
             checker.report(Result.failure(errMsg, tree), tree);
     }
 
