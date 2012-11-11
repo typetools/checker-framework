@@ -33,6 +33,7 @@ import checkers.types.TypeAnnotator;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
@@ -324,6 +325,12 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
                 }
             }
             return null;
+        }
+
+        @Override
+        public Void visitLiteral(LiteralTree tree, AnnotatedTypeMirror type) {
+            type.addAnnotation(COMMITTED);
+            return super.visitLiteral(tree, type);
         }
     }
 }
