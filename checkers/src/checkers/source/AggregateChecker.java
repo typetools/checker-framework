@@ -60,13 +60,13 @@ public abstract class AggregateChecker extends SourceChecker {
     }
 
     @Override
-    public void typeProcessingStart() {
-        super.typeProcessingStart();
+    public void initChecker() {
+        super.initChecker();
         for (SourceChecker checker : checkers) {
             // Each checker should "support" all possible lint options - otherwise
             // subchecker A would complain about an lint option for subchecker B.
             checker.setSupportedLintOptions(this.getSupportedLintOptions());
-            checker.typeProcessingStart();
+            checker.initChecker();
         }
     }
 
