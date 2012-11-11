@@ -1559,13 +1559,14 @@ public abstract class AnnotatedTypeMirror {
         /**
          * Implementation that handles a single hierarchy (identified by top).
          */
-        public void fixupBoundAnnotationsImpl(AnnotationMirror top, AnnotationMirror lAnno, AnnotationMirror uAnno) {
+        private void fixupBoundAnnotationsImpl(AnnotationMirror top, AnnotationMirror lAnno, AnnotationMirror uAnno) {
             QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
             if (lAnno == null) {
                 AnnotationMirror a = qualifierHierarchy.getAnnotationInHierarchy(annotations, top);
                 if (a != null) {
                     lowerBound.replaceAnnotation(a);
                 } else {
+                    assert lowerBound.getAnnotationInHierarchy(top) == null;
                     lowerBound.addAnnotation(atypeFactory.getQualifierHierarchy().getBottomAnnotation(top));
                     // TODO: the qualifier hierarchy is null in the NullnessATF.mapGetHeuristics
                     // How should this be handled? What is that factory doing?
