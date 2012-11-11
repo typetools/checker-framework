@@ -1,3 +1,4 @@
+import checkers.initialization.quals.Unclassified;
 import checkers.nonnull.quals.EnsuresNonNull;
 import checkers.nullness.quals.*;
 import java.util.*;
@@ -12,7 +13,7 @@ class RawMethodInvocation {
   }
 
   @EnsuresNonNull("b")
-  void init_b(@Raw RawMethodInvocation this) {
+  void init_b(@Raw @Unclassified RawMethodInvocation this) {
     b = 2;
   }
 
@@ -21,7 +22,7 @@ class RawMethodInvocation {
   }
 
   @EnsuresNonNull({"a", "b"})
-  void init_ab(@Raw RawMethodInvocation this) {
+  void init_ab(@Raw @Unclassified RawMethodInvocation this) {
     a = 1;
     b = 2;
   }
