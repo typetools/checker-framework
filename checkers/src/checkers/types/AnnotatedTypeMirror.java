@@ -35,6 +35,8 @@ import javacutils.ErrorReporter;
 import javacutils.TreeUtils;
 import javacutils.TypesUtils;
 
+import checkers.initialization.quals.Committed;
+import checkers.initialization.quals.FBCBottom;
 import checkers.quals.InvisibleQualifier;
 import checkers.quals.TypeQualifier;
 import checkers.quals.Unqualified;
@@ -1565,13 +1567,20 @@ public abstract class AnnotatedTypeMirror {
                 AnnotationMirror a = qualifierHierarchy.getAnnotationInHierarchy(annotations, top);
                 if (a != null) {
                     lowerBound.replaceAnnotation(a);
+                    return;
                 } else {
-                    assert lowerBound.getAnnotationInHierarchy(top) == null;
-                    lowerBound.addAnnotation(atypeFactory.getQualifierHierarchy().getBottomAnnotation(top));
-                    // TODO: the qualifier hierarchy is null in the NullnessATF.mapGetHeuristics
-                    // How should this be handled? What is that factory doing?
+                    lAnno = atypeFactory.getQualifierHierarchy().getBottomAnnotation(top);
+                    lowerBound.replaceAnnotation(lAnno);
                 }
-            } else if (uAnno == null) {
+            }
+
+            // TODO: this is a hack to make the system work for the FBC type-system
+            if (AnnotationUtils.areSameByClass(lAnno, FBCBottom.class)
+                    && AnnotationUtils.areSameByClass(uAnno, Committed.class)) {
+                lowerBound.replaceAnnotation(uAnno);
+                return;
+            }
+            if (uAnno == null) {
                 // TODO: The subtype tests below fail with empty annotations.
                 // Is there anything better to do here?
             } else if (atypeFactory.getQualifierHierarchy().isSubtype(lAnno, uAnno)) {
