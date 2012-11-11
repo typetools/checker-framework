@@ -239,12 +239,15 @@ public class FlowExpressionParseUtil {
                 Element classElem = methodElement.getEnclosingElement();
                 Receiver staticClassReceiver = new ClassName(
                         ElementUtils.getType(classElem));
-                // TODO: if the type of the method contains type variables, then these need to be substituted with the actual types.
                 return new PureMethodCall(ElementUtils.getType(methodElement),
                         methodElement, staticClassReceiver, parameters);
             } else {
-                return new PureMethodCall(ElementUtils.getType(methodElement),
-                        methodElement, context.receiver, parameters);
+                TypeMirror methodType = InternalUtils
+                        .substituteMethodReturnType(
+                                ElementUtils.getType(methodElement),
+                                context.receiver.getType());
+                return new PureMethodCall(methodType, methodElement,
+                        context.receiver, parameters);
             }
         } else if (dotMatcher.matches() && allowDot) {
             String receiverString = dotMatcher.group(1);
