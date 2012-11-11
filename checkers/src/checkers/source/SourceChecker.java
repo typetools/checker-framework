@@ -2,6 +2,8 @@ package checkers.source;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryPoolMXBean;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -311,6 +313,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
                         "You have forgotten to call super.initChecker in your "
                                 + "subclass of SourceChecker! Please ensure your checker is properly initialized.");
             }
+            Runtime.getRuntime().addShutdownHook(new Thread() {
+                @Override
+                public void run() {
+                    shutdownHook();
+                }
+            });
         } catch (CheckerError ce) {
             logCheckerError(ce);
         } catch (Throwable t) {
@@ -340,6 +348,25 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         this.activeLints = createActiveLints(processingEnv.getOptions());
     }
 
+    /**
+     * Method that gets called exactly once at shutdown time of the JVM.
+     * Checkers can override this method to customize the behavior.
+     */
+    protected void shutdownHook() {
+        if (processingEnv.getOptions().containsKey("resourceStats")) {
+            printStats();
+        }
+    }
+
+    /** Print resource usage statistics */
+    protected void printStats() {
+        List<MemoryPoolMXBean> memoryPools = ManagementFactory.getMemoryPoolMXBeans();
+        for (MemoryPoolMXBean memoryPool : memoryPools) {
+            System.out.println("Memory pool " + memoryPool.getName() + " statistics");
+            System.out.println("  Pool type: " + memoryPool.getType());
+            System.out.println("  Peak usage: " + memoryPool.getPeakUsage());
+        }
+    }
 
     // Output the warning about source level at most once.
     private boolean warnedAboutSourceLevel = false;
