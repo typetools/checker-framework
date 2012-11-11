@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryPoolMXBean;
 import java.lang.management.RuntimeMXBean;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
@@ -39,7 +38,6 @@ public class CheckerMain {
             String[] newArgs = new String[args.length + 1];
             newArgs[0] = "-Xbootclasspath/p:" + jdkJar();
             System.arraycopy(args, 0, newArgs, 1, args.length);
-            handleResourceStatsFlag(args);
             com.sun.tools.javac.Main.main(newArgs);
         } else {
             System.out.println("Manipulating bootclasspath");
@@ -226,30 +224,5 @@ public class CheckerMain {
     static void execute(Iterable<String> cmdArray) {
         String command = constructCommand(cmdArray);
         CLibrary.INSTANCE.system(command);
-    }
-
-    /** Print resource usage statistics */
-    private static void printStats() {
-        List<MemoryPoolMXBean> memoryPools = ManagementFactory.getMemoryPoolMXBeans();
-        for (MemoryPoolMXBean memoryPool : memoryPools) {
-            System.out.println("Memory pool " + memoryPool.getName() + " statistics");
-            System.out.println("Pool type: " + memoryPool.getType());
-            System.out.println("Peak usage: " + memoryPool.getPeakUsage());
-        }
-    }
-
-    /** Check whether the user wants to print resource usage stats */
-    private static void handleResourceStatsFlag(String[] args) {
-        for (String arg : args) {
-            if (arg.equals("-AresourceStats")) {
-                Runtime.getRuntime().addShutdownHook(new Thread() {
-                        @Override
-                        public void run() {
-                            printStats();
-                        }
-                    });
-                break;
-            }
-        }
     }
 }
