@@ -57,10 +57,11 @@ public abstract class InitializationChecker extends BaseTypeChecker {
             FREE = AnnotationUtils.fromClass(elements, Free.class);
             NOT_ONLY_COMMITTED = AnnotationUtils.fromClass(elements,
                     NotOnlyCommitted.class);
+            FBCBOTTOM = AnnotationUtils.fromClass(elements, FBCBottom.class);
         } else {
             COMMITTED = AnnotationUtils.fromClass(elements, NonRaw.class);
+            FBCBOTTOM = COMMITTED; // @NonRaw is also bottom
         }
-        FBCBOTTOM = AnnotationUtils.fromClass(elements, FBCBottom.class);
 
         super.initChecker();
     }
@@ -76,11 +77,11 @@ public abstract class InitializationChecker extends BaseTypeChecker {
             result.add(Free.class);
             result.add(Committed.class);
             result.add(Unclassified.class);
+            result.add(FBCBottom.class);
         } else {
             result.add(Raw.class);
             result.add(NonRaw.class);
         }
-        result.add(FBCBottom.class);
         return result;
     }
 
@@ -206,7 +207,7 @@ public abstract class InitializationChecker extends BaseTypeChecker {
     }
 
     /**
-     * Is {@code anno} the {@link FBCBottom} annotation?
+     * Is {@code anno} the bottom annotation?
      */
     public boolean isFbcBottom(AnnotationMirror anno) {
         return AnnotationUtils.areSame(anno, FBCBOTTOM);
@@ -240,10 +241,12 @@ public abstract class InitializationChecker extends BaseTypeChecker {
     }
 
     /**
-     * Does {@code anno} have the annotation {@link FBCBottom}?
+     * Does {@code anno} have the bottom annotation?
      */
     public boolean isFbcBottom(AnnotatedTypeMirror anno) {
-        return anno.hasEffectiveAnnotation(FBCBottom.class);
+        Class<? extends Annotation> clazz = useFbc ? FBCBottom.class
+                : NonRaw.class;
+        return anno.hasEffectiveAnnotation(clazz);
     }
 
     /**
@@ -278,8 +281,10 @@ public abstract class InitializationChecker extends BaseTypeChecker {
             tops.addAll(childHierarchy.getTopAnnotations());
 
             bottoms = new HashSet<>();
+            Class<? extends Annotation> clazz = useFbc ? FBCBottom.class
+                    : NonRaw.class;
             bottoms.add(AnnotationUtils.fromClass(
-                    processingEnv.getElementUtils(), FBCBottom.class));
+                    processingEnv.getElementUtils(), clazz));
             bottoms.addAll(childHierarchy.getBottomAnnotations());
         }
 
