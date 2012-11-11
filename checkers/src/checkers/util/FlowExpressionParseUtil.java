@@ -24,7 +24,6 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Type.ClassType;
-
 import dataflow.analysis.FlowExpressions;
 import dataflow.analysis.FlowExpressions.ClassName;
 import dataflow.analysis.FlowExpressions.FieldAccess;
@@ -240,6 +239,7 @@ public class FlowExpressionParseUtil {
                 Element classElem = methodElement.getEnclosingElement();
                 Receiver staticClassReceiver = new ClassName(
                         ElementUtils.getType(classElem));
+                // TODO: if the type of the method contains type variables, then these need to be substituted with the actual types.
                 return new PureMethodCall(ElementUtils.getType(methodElement),
                         methodElement, staticClassReceiver, parameters);
             } else {
