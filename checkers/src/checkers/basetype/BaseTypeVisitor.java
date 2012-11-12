@@ -15,6 +15,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
@@ -84,6 +85,7 @@ import com.sun.source.tree.InstanceOfTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
@@ -288,6 +290,15 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
         ExecutableElement methodElement = TreeUtils
                 .elementFromDeclaration(node);
 
+        boolean abstractMethod = false;
+        ModifiersTree modifiers = node.getModifiers();
+        if (modifiers != null) {
+            Set<Modifier> flags = modifiers.getFlags();
+            if (flags.contains(Modifier.ABSTRACT)) {
+                abstractMethod = true;
+            }
+        }
+
         try {
             Element elt = InternalUtils.symbol(node);
             assert elt != null : "no symbol for method: " + node;
@@ -297,53 +308,58 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
             }
 
             // check method purity if needed
-            boolean hasPurityAnnotation = PurityUtils.hasPurityAnnotation(
-                    atypeFactory, node);
-            boolean checkPurityAlways = checker.getProcessingEnvironment()
-                    .getOptions().containsKey("suggestPureMethods");
-            if (hasPurityAnnotation || checkPurityAlways) {
-                // check "no" purity
-                List<dataflow.quals.Pure.Kind> kinds = PurityUtils
-                        .getPurityKinds(atypeFactory, node);
-                if (kinds.isEmpty() && hasPurityAnnotation) {
-                    checker.report(
-                            Result.warning("pure.annotation.with.emtpy.kind"),
-                            node);
-                }
-                if (TreeUtils.isConstructor(node)) {
-                    // constructors cannot be deterministic
-                    if (kinds.contains(Pure.Kind.DETERMINISTIC)
-                            && hasPurityAnnotation) {
-                        checker.report(
-                                Result.failure("pure.determinstic.constructor"),
+            if (!abstractMethod) {
+                boolean hasPurityAnnotation = PurityUtils.hasPurityAnnotation(
+                        atypeFactory, node);
+                boolean checkPurityAlways = checker.getProcessingEnvironment()
+                        .getOptions().containsKey("suggestPureMethods");
+                if (hasPurityAnnotation || checkPurityAlways) {
+                    // check "no" purity
+                    List<dataflow.quals.Pure.Kind> kinds = PurityUtils
+                            .getPurityKinds(atypeFactory, node);
+                    if (kinds.isEmpty() && hasPurityAnnotation) {
+                        checker.report(Result
+                                .warning("pure.annotation.with.emtpy.kind"),
                                 node);
                     }
-                } else {
-                    // check return type
-                    if (node.getReturnType().toString().equals("void")
-                            && hasPurityAnnotation) {
-                        checker.report(Result.warning("pure.void.method"), node);
-                    }
-                }
-                // Report errors if necessary.
-                PurityResult r = PurityChecker.checkPurity(node.getBody(),
-                        atypeFactory);
-                if (!r.isPure(kinds)) {
-                    reportPurityErrors(r, node, kinds);
-                }
-                // Issue a warning if the method is pure, but not annotated as
-                // such (if the feature is activated).
-                if (checkPurityAlways) {
-                    Collection<Pure.Kind> additionalKinds = new HashSet<>(
-                            r.getTypes());
-                    additionalKinds.removeAll(kinds);
                     if (TreeUtils.isConstructor(node)) {
-                        additionalKinds.remove(Pure.Kind.DETERMINISTIC);
+                        // constructors cannot be deterministic
+                        if (kinds.contains(Pure.Kind.DETERMINISTIC)
+                                && hasPurityAnnotation) {
+                            checker.report(Result
+                                    .failure("pure.determinstic.constructor"),
+                                    node);
+                        }
+                    } else {
+                        // check return type
+                        if (node.getReturnType().toString().equals("void")
+                                && hasPurityAnnotation) {
+                            checker.report(Result.warning("pure.void.method"),
+                                    node);
+                        }
                     }
-                    if (additionalKinds.size() > 0) {
-                        checker.report(Result.warning("pure.more.pure",
-                                node.getName(), additionalKinds.toString()),
-                                node);
+                    // Report errors if necessary.
+                    PurityResult r = PurityChecker.checkPurity(node.getBody(),
+                            atypeFactory);
+                    if (!r.isPure(kinds)) {
+                        reportPurityErrors(r, node, kinds);
+                    }
+                    // Issue a warning if the method is pure, but not annotated
+                    // as
+                    // such (if the feature is activated).
+                    if (checkPurityAlways) {
+                        Collection<Pure.Kind> additionalKinds = new HashSet<>(
+                                r.getTypes());
+                        additionalKinds.removeAll(kinds);
+                        if (TreeUtils.isConstructor(node)) {
+                            additionalKinds.remove(Pure.Kind.DETERMINISTIC);
+                        }
+                        if (additionalKinds.size() > 0) {
+                            checker.report(
+                                    Result.warning("pure.more.pure",
+                                            node.getName(),
+                                            additionalKinds.toString()), node);
+                        }
                     }
                 }
             }
@@ -372,11 +388,13 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
             return super.visitMethod(node, p);
         } finally {
 
-            // check postcondition annotations
-            checkPostconditions(node, methodElement);
+            if (!abstractMethod) {
+                // check postcondition annotations
+                checkPostconditions(node, methodElement);
 
-            // check conditional method postcondition
-            checkConditionalPostconditions(node, methodElement);
+                // check conditional method postcondition
+                checkConditionalPostconditions(node, methodElement);
+            }
 
             visitorState.setMethodReceiver(preMRT);
             visitorState.setMethodTree(preMT);

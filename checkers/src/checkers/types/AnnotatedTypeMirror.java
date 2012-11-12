@@ -35,6 +35,8 @@ import javacutils.ErrorReporter;
 import javacutils.TreeUtils;
 import javacutils.TypesUtils;
 
+import checkers.initialization.quals.Committed;
+import checkers.initialization.quals.FBCBottom;
 import checkers.quals.InvisibleQualifier;
 import checkers.quals.TypeQualifier;
 import checkers.quals.Unqualified;
@@ -1547,26 +1549,46 @@ public abstract class AnnotatedTypeMirror {
                     lowerBound != null && upperBound != null) {
                 Set<AnnotationMirror> lAnnos = lowerBound.getEffectiveAnnotations();
                 Set<AnnotationMirror> uAnnos = upperBound.getEffectiveAnnotations();
-                // System.out.printf("fixup: %s; low: %s; up: %s%n", this, lAnnos, uAnnos);
-
-                if (lAnnos.isEmpty()) {
-                    if (!annotations.isEmpty()) {
-                        lowerBound.replaceAnnotations(annotations);
-                    } else {
-                        lowerBound.addAnnotations(atypeFactory.getQualifierHierarchy().getBottomAnnotations());
-                        // TODO: the qualifier hierarchy is null in the NullnessATF.mapGetHeuristics
-                        // How should this be handled? What is that factory doing?
-                    }
-                } else if (uAnnos.isEmpty()) {
-                    // TODO: The subtype tests below fail with empty annotations.
-                    // Is there anything better to do here?
-                } else if (atypeFactory.getQualifierHierarchy().isSubtype(lAnnos, uAnnos)) {
-                    // Nothing to do if lAnnos is a subtype of uAnnos.
-                } else if (atypeFactory.getQualifierHierarchy().isSubtype(uAnnos, lAnnos)) {
-                    lowerBound.replaceAnnotations(uAnnos);
-                } else {
-                    ErrorReporter.errorAbort("AnnotatedTypeMirror.fixupBoundAnnotations: default annotation on lower bound ( " + lAnnos + ") is inconsistent with explicit upper bound: " + this);
+                QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
+                for (AnnotationMirror top : qualifierHierarchy.getTopAnnotations()) {
+                    AnnotationMirror lAnno = qualifierHierarchy.getAnnotationInHierarchy(lAnnos, top);
+                    AnnotationMirror uAnno = qualifierHierarchy.getAnnotationInHierarchy(uAnnos, top);
+                    fixupBoundAnnotationsImpl(top, lAnno, uAnno);
                 }
+            }
+        }
+
+        /**
+         * Implementation that handles a single hierarchy (identified by top).
+         */
+        private void fixupBoundAnnotationsImpl(AnnotationMirror top, AnnotationMirror lAnno, AnnotationMirror uAnno) {
+            QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
+            if (lAnno == null) {
+                AnnotationMirror a = qualifierHierarchy.getAnnotationInHierarchy(annotations, top);
+                if (a != null) {
+                    lowerBound.replaceAnnotation(a);
+                    return;
+                } else {
+                    lAnno = atypeFactory.getQualifierHierarchy().getBottomAnnotation(top);
+                    lowerBound.replaceAnnotation(lAnno);
+                }
+            }
+
+            // TODO: this is a hack to make the system work for the FBC type-system
+            if (AnnotationUtils.areSameByClass(lAnno, FBCBottom.class)
+                    && AnnotationUtils.areSameByClass(uAnno, Committed.class)) {
+                lowerBound.replaceAnnotation(uAnno);
+                return;
+            }
+            if (uAnno == null) {
+                // TODO: The subtype tests below fail with empty annotations.
+                // Is there anything better to do here?
+            } else if (atypeFactory.getQualifierHierarchy().isSubtype(lAnno, uAnno)) {
+                // Nothing to do if lAnnos is a subtype of uAnnos.
+            } else if (atypeFactory.getQualifierHierarchy().isSubtype(uAnno, lAnno)) {
+                lowerBound.replaceAnnotation(uAnno);
+            } else {
+                ErrorReporter.errorAbort("AnnotatedTypeMirror.fixupBoundAnnotations: default annotation on lower bound ( " + lAnno + ") is inconsistent with explicit upper bound: " + this);
             }
         }
 
