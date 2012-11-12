@@ -3,16 +3,16 @@ package checkers.nonnull;
 import java.lang.annotation.Annotation;
 import java.util.Set;
 
+import javacutils.AnnotationUtils;
+import javacutils.InternalUtils;
+import javacutils.TreeUtils;
+import javacutils.TypesUtils;
+
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeMirror;
-
-import javacutils.AnnotationUtils;
-import javacutils.InternalUtils;
-import javacutils.TreeUtils;
-import javacutils.TypesUtils;
 
 import checkers.compilermsgs.quals.CompilerMessageKey;
 import checkers.initialization.InitializationVisitor;
@@ -24,6 +24,7 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.util.QualifierPolymorphism;
 
+import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.AssertTree;
 import com.sun.source.tree.BinaryTree;
@@ -397,7 +398,7 @@ public class NonNullVisitor extends
     private void checkForNullability(ExpressionTree tree,
     /* @CompilerMessageKey */String errMsg) {
         AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(tree);
-        if (!type.hasAnnotation(NONNULL))
+        if (!type.hasEffectiveAnnotation(NONNULL))
             checker.report(Result.failure(errMsg, tree), tree);
     }
 
@@ -468,12 +469,29 @@ public class NonNullVisitor extends
     @Override
     public Void visitNewClass(NewClassTree node, Void p) {
         AnnotatedDeclaredType type = atypeFactory.getAnnotatedType(node);
-        if (!type.hasAnnotation(NONNULL)) {
-            // The type is not non-null => error
-            checker.report(
-                    Result.failure("new.class.type.invalid",
-                            type.getAnnotations()), node);
-            // Note that other consistency checks are made by isValid.
+        ExpressionTree identifier = node.getIdentifier();
+        if (identifier instanceof AnnotatedTypeTree) {
+            AnnotatedTypeTree t = (AnnotatedTypeTree) identifier;
+            for (AnnotationMirror a : atypeFactory.getAnnotatedType(t)
+                    .getAnnotations()) {
+                // is this an annotation of the nonnull checker?
+                boolean nonnullCheckerAnno = AnnotationUtils
+                        .containsSameIgnoringValues(
+                                checker.getNonNullAnnotations(), a);
+                if (nonnullCheckerAnno && !AnnotationUtils.areSame(NONNULL, a)) {
+                    // The type is not non-null => error
+                    checker.report(
+                            Result.failure("new.class.type.invalid",
+                                    type.getAnnotations()), node);
+                    // Note that other consistency checks are made by isValid.
+                }
+            }
+            if (t.toString().contains("@PolyNull")) {
+                // TODO: this is a hack, but PolyNull gets substituted afterwards
+                checker.report(
+                        Result.failure("new.class.type.invalid",
+                                type.getAnnotations()), node);
+            }
         }
         // TODO: It might be nicer to introduce a framework-level
         // isValidNewClassType or some such.
