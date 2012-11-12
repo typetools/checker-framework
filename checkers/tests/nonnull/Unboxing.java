@@ -16,4 +16,16 @@ class Unboxing {
         f.toString();
     }
     
+    public void t2() {
+        try {
+            //:: error: (unboxing.of.nullable)
+            @NonNull int l = f + 1;
+        } catch (NullPointerException npe) {
+            // f is known to be null on the exception edge
+            //:: error: (unboxing.of.nullable)
+            @NonNull int m = f + 1;
+        }
+        // after the merge, f cannot be null
+        f.toString();
+    }
 }

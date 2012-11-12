@@ -1634,7 +1634,9 @@ public class CFGBuilder {
                 node = new UnboxingNode(node.getTree(), node,
                         types.unboxedType(node.getType()));
                 replaceInLookupMap(node);
-                extendWithNode(node);
+                TypeElement npeElement = elements
+                    .getTypeElement("java.lang.NullPointerException");
+                extendWithNodeWithException(node, npeElement.asType());
             }
             return node;
         }
