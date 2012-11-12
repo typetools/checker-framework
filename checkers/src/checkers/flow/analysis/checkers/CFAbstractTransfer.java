@@ -1,12 +1,9 @@
 package checkers.flow.analysis.checkers;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeMirror;
 
 import javacutils.AnnotationUtils;
 import javacutils.ElementUtils;
@@ -14,8 +11,27 @@ import javacutils.InternalUtils;
 import javacutils.Pair;
 import javacutils.TreeUtils;
 
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeMirror;
+
+import checkers.basetype.BaseTypeChecker;
+import checkers.types.AbstractBasicAnnotatedTypeFactory;
+import checkers.types.AnnotatedTypeFactory;
+import checkers.types.AnnotatedTypeMirror;
+import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
+import checkers.util.ContractsUtils;
+import checkers.util.FlowExpressionParseUtil;
+import checkers.util.FlowExpressionParseUtil.FlowExpressionContext;
+import checkers.util.FlowExpressionParseUtil.FlowExpressionParseException;
+
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Tree;
+
 import dataflow.analysis.ConditionalTransferResult;
 import dataflow.analysis.FlowExpressions;
+import dataflow.analysis.FlowExpressions.ClassName;
 import dataflow.analysis.FlowExpressions.FieldAccess;
 import dataflow.analysis.FlowExpressions.Receiver;
 import dataflow.analysis.FlowExpressions.ThisReference;
@@ -41,23 +57,11 @@ import dataflow.cfg.node.MethodInvocationNode;
 import dataflow.cfg.node.NarrowingConversionNode;
 import dataflow.cfg.node.Node;
 import dataflow.cfg.node.NotEqualNode;
+import dataflow.cfg.node.StringConversionNode;
 import dataflow.cfg.node.TernaryExpressionNode;
 import dataflow.cfg.node.UnboxingNode;
 import dataflow.cfg.node.VariableDeclarationNode;
 import dataflow.cfg.node.WideningConversionNode;
-
-import checkers.util.ContractsUtils;
-import checkers.util.FlowExpressionParseUtil;
-import checkers.util.FlowExpressionParseUtil.FlowExpressionContext;
-import checkers.util.FlowExpressionParseUtil.FlowExpressionParseException;
-import checkers.basetype.BaseTypeChecker;
-import checkers.types.AbstractBasicAnnotatedTypeFactory;
-import checkers.types.AnnotatedTypeFactory;
-import checkers.types.AnnotatedTypeMirror;
-import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
-
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.Tree;
 
 /**
  * The default analysis transfer function for the Checker Framework propagates
@@ -157,11 +161,17 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
                 VariableElement element = p.first;
                 V value = p.second;
                 if (ElementUtils.isFinal(element) || isConstructor) {
-                    TypeMirror type = InternalUtils.typeOf(method
+                    TypeMirror classType = InternalUtils.typeOf(method
                             .getClassTree());
-                    TypeMirror elemType = ElementUtils.getType(element);
-                    Receiver field = new FieldAccess(new ThisReference(type),
-                            elemType, element);
+                    TypeMirror fieldType = ElementUtils.getType(element);
+                    Receiver receiver;
+                    if (ElementUtils.isStatic(element)) {
+                        receiver = new ClassName(classType);
+                    } else {
+                        receiver = new ThisReference(classType);
+                    }
+                    Receiver field = new FieldAccess(receiver, fieldType,
+                            element);
                     info.insertValue(field, value);
                 }
             }
@@ -371,22 +381,42 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
         if (firstValue != null) {
             // Only need to insert if the second value is actually different.
             if (!firstValue.equals(secondValue)) {
-                Receiver secondInternal = FlowExpressions.internalReprOf(
-                        analysis.getFactory(), secondNode);
-                if (CFAbstractStore.canInsertReceiver(secondInternal)) {
-                    S thenStore = res.getThenStore();
-                    S elseStore = res.getElseStore();
-                    if (notEqualTo) {
-                        elseStore.insertValue(secondInternal, firstValue);
-                    } else {
-                        thenStore.insertValue(secondInternal, firstValue);
+                List<Node> secondParts = splitAssignments(secondNode);
+                for (Node secondPart : secondParts) {
+                    Receiver secondInternal = FlowExpressions.internalReprOf(
+                            analysis.getFactory(), secondPart);
+                    if (CFAbstractStore.canInsertReceiver(secondInternal)) {
+                        S thenStore = res.getThenStore();
+                        S elseStore = res.getElseStore();
+                        if (notEqualTo) {
+                            elseStore.insertValue(secondInternal, firstValue);
+                        } else {
+                            thenStore.insertValue(secondInternal, firstValue);
+                        }
+                        return new ConditionalTransferResult<>(
+                                res.getResultValue(), thenStore, elseStore);
                     }
-                    return new ConditionalTransferResult<>(
-                            res.getResultValue(), thenStore, elseStore);
                 }
             }
         }
         return res;
+    }
+
+    /**
+     * Takes a node, and either returns the node itself again (as a singleton
+     * list), or if the node is an assignment node, returns the lhs and rhs
+     * (where splitAssignments is applied recursively to the rhs).
+     */
+    protected List<Node> splitAssignments(Node node) {
+        if (node instanceof AssignmentNode) {
+            List<Node> result = new ArrayList<>();
+            AssignmentNode a = (AssignmentNode) node;
+            result.add(a.getTarget());
+            result.addAll(splitAssignments(a.getExpression()));
+            return result;
+        } else {
+            return Collections.singletonList(node);
+        }
     }
 
     @Override
@@ -425,27 +455,8 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
     protected void processCommonAssignment(TransferInput<V, S> in, Node lhs,
             Node rhs, S info, V rhsValue) {
 
-        // assignment to a local variable
-        if (lhs instanceof LocalVariableNode) {
-            LocalVariableNode var = (LocalVariableNode) lhs;
-            info.updateForAssignment(var, rhsValue);
-        }
-
-        // assignment to a field
-        else if (lhs instanceof FieldAccessNode) {
-            FieldAccessNode fieldAccess = (FieldAccessNode) lhs;
-            info.updateForAssignment(fieldAccess, rhsValue);
-        }
-
-        // assignment to array
-        else if (lhs instanceof ArrayAccessNode) {
-            info.updateForAssignment((ArrayAccessNode) lhs, rhsValue);
-        }
-
-        // there should not be any other assignments
-        else {
-            assert false;
-        }
+        // update information in the store
+        info.updateForAssignment(lhs, rhsValue);
     }
 
     @Override
@@ -671,6 +682,14 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
     public TransferResult<V, S> visitWideningConversion(
             WideningConversionNode n, TransferInput<V, S> p) {
         TransferResult<V, S> result = super.visitWideningConversion(n, p);
+        result.setResultValue(p.getValueOfSubNode(n.getOperand()));
+        return result;
+    }
+
+    @Override
+    public TransferResult<V, S> visitStringConversion(StringConversionNode n,
+            TransferInput<V, S> p) {
+        TransferResult<V, S> result = super.visitStringConversion(n, p);
         result.setResultValue(p.getValueOfSubNode(n.getOperand()));
         return result;
     }

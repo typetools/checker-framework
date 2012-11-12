@@ -16,6 +16,7 @@ import javax.lang.model.type.TypeMirror;
 import javacutils.AnnotationUtils;
 import javacutils.ElementUtils;
 import javacutils.TreeUtils;
+import javacutils.TypesUtils;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.flow.analysis.checkers.CFAbstractAnalysis;
@@ -33,6 +34,7 @@ import checkers.types.TypeAnnotator;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
@@ -247,6 +249,10 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
     private void computeFieldAccessType(AnnotatedTypeMirror type,
             Collection<? extends AnnotationMirror> declaredFieldAnnotations,
             AnnotatedTypeMirror receiverType) {
+        // not necessary for primitive fields
+        if (TypesUtils.isPrimitive(type.getUnderlyingType())) {
+            return;
+        }
         if (checker.isUnclassified(receiverType)
                 || checker.isFree(receiverType)) {
 
@@ -324,6 +330,12 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
                 }
             }
             return null;
+        }
+
+        @Override
+        public Void visitLiteral(LiteralTree tree, AnnotatedTypeMirror type) {
+            type.addAnnotation(COMMITTED);
+            return super.visitLiteral(tree, type);
         }
     }
 }

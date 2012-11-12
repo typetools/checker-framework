@@ -24,7 +24,6 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Type.ClassType;
-
 import dataflow.analysis.FlowExpressions;
 import dataflow.analysis.FlowExpressions.ClassName;
 import dataflow.analysis.FlowExpressions.FieldAccess;
@@ -243,8 +242,12 @@ public class FlowExpressionParseUtil {
                 return new PureMethodCall(ElementUtils.getType(methodElement),
                         methodElement, staticClassReceiver, parameters);
             } else {
-                return new PureMethodCall(ElementUtils.getType(methodElement),
-                        methodElement, context.receiver, parameters);
+                TypeMirror methodType = InternalUtils
+                        .substituteMethodReturnType(
+                                ElementUtils.getType(methodElement),
+                                context.receiver.getType());
+                return new PureMethodCall(methodType, methodElement,
+                        context.receiver, parameters);
             }
         } else if (dotMatcher.matches() && allowDot) {
             String receiverString = dotMatcher.group(1);

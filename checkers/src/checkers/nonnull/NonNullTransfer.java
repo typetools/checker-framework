@@ -103,18 +103,21 @@ public class NonNullTransfer extends InitializationTransfer<NonNullTransfer> {
                 firstValue, secondValue, notEqualTo);
         // Case 1:
         if (firstNode instanceof NullLiteralNode) {
-            Receiver secondInternal = FlowExpressions.internalReprOf(
-                    analysis.getFactory(), secondNode);
-            if (CFAbstractStore.canInsertReceiver(secondInternal)) {
-                InitializationStore thenStore = res.getThenStore();
-                InitializationStore elseStore = res.getElseStore();
-                if (notEqualTo) {
-                    thenStore.insertValue(secondInternal, NONNULL);
-                } else {
-                    elseStore.insertValue(secondInternal, NONNULL);
+            List<Node> secondParts = splitAssignments(secondNode);
+            for (Node secondPart : secondParts) {
+                Receiver secondInternal = FlowExpressions.internalReprOf(
+                        analysis.getFactory(), secondPart);
+                if (CFAbstractStore.canInsertReceiver(secondInternal)) {
+                    InitializationStore thenStore = res.getThenStore();
+                    InitializationStore elseStore = res.getElseStore();
+                    if (notEqualTo) {
+                        thenStore.insertValue(secondInternal, NONNULL);
+                    } else {
+                        elseStore.insertValue(secondInternal, NONNULL);
+                    }
+                    return new ConditionalTransferResult<>(
+                            res.getResultValue(), thenStore, elseStore);
                 }
-                return new ConditionalTransferResult<>(res.getResultValue(),
-                        thenStore, elseStore);
             }
         }
         return res;
