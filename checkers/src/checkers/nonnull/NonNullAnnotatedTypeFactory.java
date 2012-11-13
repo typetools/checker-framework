@@ -134,8 +134,9 @@ public class NonNullAnnotatedTypeFactory
 
     @Override
     public Set<VariableTree> getUninitializedInvariantFields(
-            InitializationStore store, TreePath path, boolean isStatic) {
-        Set<VariableTree> candidates = super.getUninitializedInvariantFields(store, path, isStatic);
+            InitializationStore store, TreePath path, boolean isStatic,
+            List<AnnotationMirror> receiverAnnotations) {
+        Set<VariableTree> candidates = super.getUninitializedInvariantFields(store, path, isStatic, receiverAnnotations);
         Set<VariableTree> result = new HashSet<>();
         for (VariableTree c : candidates) {
             AnnotatedTypeMirror type = getAnnotatedType(c);

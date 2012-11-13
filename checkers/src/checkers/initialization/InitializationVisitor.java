@@ -2,6 +2,8 @@ package checkers.initialization;
 
 import java.lang.annotation.Annotation;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -100,8 +102,9 @@ public class InitializationVisitor<Checker extends InitializationChecker>
             AnnotatedTypeMirror var2 = atypeFactory.getAnnotatedType(lhs);
             factory.HACK_DONT_CALL_POST_AS_MEMBER = old;
             factory.shouldReadCache = old2;
-            var.replaceAnnotation(var2.getEffectiveAnnotationInHierarchy(checker
-                    .getFieldInvariantAnnotation()));
+            var.replaceAnnotation(var2
+                    .getEffectiveAnnotationInHierarchy(checker
+                            .getFieldInvariantAnnotation()));
             checkAssignability(var, varTree);
             commonAssignmentCheck(var, valueExp, errorKey, false);
             return;
@@ -139,7 +142,8 @@ public class InitializationVisitor<Checker extends InitializationChecker>
         AnnotationMirror exprAnno = null, castAnno = null;
 
         // find commitment annotation
-        for (Class<? extends Annotation> a : checker.getInitializationAnnotations()) {
+        for (Class<? extends Annotation> a : checker
+                .getInitializationAnnotations()) {
             if (castType.hasAnnotation(a)) {
                 assert castAnno == null;
                 castAnno = castType.getAnnotation(a);
@@ -188,7 +192,9 @@ public class InitializationVisitor<Checker extends InitializationChecker>
                     store.addInitializedField(t.first);
                 }
                 // Check that all static fields are initialized.
-                checkFieldsInitialized(node, isStatic, store);
+                List<AnnotationMirror> receiverAnnotations = Collections
+                        .emptyList();
+                checkFieldsInitialized(node, isStatic, store, receiverAnnotations);
             }
         }
         return super.visitBlock(node, p);
@@ -223,7 +229,9 @@ public class InitializationVisitor<Checker extends InitializationChecker>
                     .getFieldValues()) {
                 store.addInitializedField(t.first);
             }
-            checkFieldsInitialized(node, isStatic, store);
+            List<AnnotationMirror> receiverAnnotations = Collections
+                    .emptyList();
+            checkFieldsInitialized(node, isStatic, store, receiverAnnotations);
         }
 
         return result;
@@ -250,7 +258,9 @@ public class InitializationVisitor<Checker extends InitializationChecker>
             // constructor.
             boolean isStatic = false;
             InitializationStore store = factory.getRegularExitStore(node);
-            checkFieldsInitialized(node, isStatic, store);
+            List<AnnotationMirror> receiverAnnotations = Collections
+                    .emptyList();
+            checkFieldsInitialized(node, isStatic, store, receiverAnnotations);
         }
         return super.visitMethod(node, p);
     }
@@ -260,13 +270,14 @@ public class InitializationVisitor<Checker extends InitializationChecker>
      * true) are initialized in the given store.
      */
     protected void checkFieldsInitialized(Tree blockNode, boolean staticFields,
-            InitializationStore store) {
+            InitializationStore store,
+            List<AnnotationMirror> receiverAnnotations) {
         // If the store is null, then the constructor cannot terminate
         // successfully
         if (store != null) {
             Set<VariableTree> violatingFields = factory
                     .getUninitializedInvariantFields(store, getCurrentPath(),
-                            staticFields);
+                            staticFields, receiverAnnotations);
             if (!violatingFields.isEmpty()) {
                 StringBuilder fieldsString = new StringBuilder();
                 boolean first = true;
