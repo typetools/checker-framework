@@ -21,12 +21,16 @@ public class MarkerReporter implements IWorkspaceRunnable
     
     private final int startLine;
     private final String message;
+    private final int startPosition;
+    private final int endPosition;
 
-    public MarkerReporter(IResource resource, int startLine, String message)
+    public MarkerReporter(IResource resource, int startLine, String message, int startPosition, int endPosition)
     {
         this.startLine = startLine;
         this.resource = resource;
         this.message = message;
+        this.startPosition = startPosition;
+        this.endPosition = endPosition;
     }
 
     @Override
@@ -48,6 +52,8 @@ public class MarkerReporter implements IWorkspaceRunnable
         marker.setAttribute(IMarker.LINE_NUMBER, startLine);
         marker.setAttribute(IMarker.MESSAGE, message);
         marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
+        marker.setAttribute(IMarker.CHAR_START, startPosition);
+        marker.setAttribute(IMarker.CHAR_END, endPosition);
     }
 
 }
