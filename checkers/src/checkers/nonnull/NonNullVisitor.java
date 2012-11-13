@@ -32,6 +32,7 @@ import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ConditionalExpressionTree;
+import com.sun.source.tree.DoWhileLoopTree;
 import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.ForLoopTree;
@@ -321,6 +322,7 @@ public class NonNullVisitor extends
 
     @Override
     public Void visitIf(IfTree node, Void p) {
+        checkForNullability(node.getCondition(), "condition.nullable");
         return super.visitIf(node, p);
     }
 
@@ -514,6 +516,12 @@ public class NonNullVisitor extends
     public Void visitWhileLoop(WhileLoopTree node, Void p) {
         checkForNullability(node.getCondition(), "condition.nullable");
         return super.visitWhileLoop(node, p);
+    }
+
+    @Override
+    public Void visitDoWhileLoop(DoWhileLoopTree node, Void p) {
+        checkForNullability(node.getCondition(), "condition.nullable");
+        return super.visitDoWhileLoop(node, p);
     }
 
     @Override
