@@ -1,5 +1,6 @@
 import checkers.nullness.quals.*;
 
+//@skip-test
 public class NullableGeneric<T> {
 
   public static class Pair<T1 extends @Nullable Object, T2 extends @Nullable Object> {
