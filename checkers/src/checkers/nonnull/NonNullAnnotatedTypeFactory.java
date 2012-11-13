@@ -7,10 +7,13 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.util.Elements;
 
 import javacutils.AnnotationUtils;
 import javacutils.ElementUtils;
+import javacutils.InternalUtils;
 import javacutils.Pair;
 import javacutils.TreeUtils;
 import javacutils.TypesUtils;
@@ -22,6 +25,7 @@ import checkers.initialization.InitializationStore;
 import checkers.nonnull.quals.MonotonicNonNull;
 import checkers.nonnull.quals.NonNull;
 import checkers.nonnull.quals.Nullable;
+import checkers.quals.Unused;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.GeneralAnnotatedTypeFactory;
@@ -32,14 +36,17 @@ import checkers.util.DependentTypes;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.CompoundAssignmentTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import com.sun.tools.javac.code.Attribute.TypeCompound;
 
 public class NonNullAnnotatedTypeFactory
         extends
@@ -125,6 +132,7 @@ public class NonNullAnnotatedTypeFactory
     @Override
     public void annotateImplicit(Tree tree, AnnotatedTypeMirror type) {
         super.annotateImplicit(tree, type);
+        substituteUnused(tree, type);
         dependentTypes.handle(tree, type);
     }
 
@@ -338,5 +346,55 @@ public class NonNullAnnotatedTypeFactory
         public NonNullTypeAnnotator(BaseTypeChecker checker) {
             super(checker);
         }
+    }
+
+    private boolean substituteUnused(Tree tree, AnnotatedTypeMirror type) {
+        if (tree.getKind() != Tree.Kind.MEMBER_SELECT
+            && tree.getKind() != Tree.Kind.IDENTIFIER)
+            return false;
+
+        Element field = InternalUtils.symbol(tree);
+        if (field == null || field.getKind() != ElementKind.FIELD)
+            return false;
+
+        AnnotationMirror unused = getDeclAnnotation(field, Unused.class);
+        if (unused == null) {
+            return false;
+        }
+
+        Name whenName = AnnotationUtils.getElementValueClassName(unused, "when", false);
+        MethodTree method = TreeUtils.enclosingMethod(this.getPath(tree));
+        if (TreeUtils.isConstructor(method)) {
+            /* TODO: this is messy and should be cleaned up.
+             * The problem is that "receiver" means something different in
+             * constructors and methods. Should we adapt .getReceiverType to do something
+             * different in constructors vs. methods?
+             * Or should we change this annotation into a declaration annotation?
+             */
+            com.sun.tools.javac.code.Symbol meth =
+                    (com.sun.tools.javac.code.Symbol)TreeUtils.elementFromDeclaration(method);
+            com.sun.tools.javac.util.List<TypeCompound> retannos = meth.typeAnnotations;
+            if (retannos == null) {
+                return false;
+            }
+            boolean matched = false;
+            for (TypeCompound anno :  retannos) {
+                if (anno.getAnnotationType().toString().equals(whenName.toString())) {
+                    matched = true;
+                    break;
+                }
+            }
+            if (!matched) {
+                return false;
+            }
+        } else {
+            AnnotatedTypeMirror receiver = generalFactory.getReceiverType((ExpressionTree)tree);
+            Elements elements = processingEnv.getElementUtils();
+            if (receiver == null || !receiver.hasAnnotation(elements.getName(whenName))) {
+                return false;
+            }
+        }
+        type.replaceAnnotation(NULLABLE);
+        return true;
     }
 }
