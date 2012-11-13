@@ -18,6 +18,9 @@ Eclipse has a nice set of tools for working with OSGI plugins.  To import the pr
 File->Import
 Select the eclipse directory
 Select all three projects
+Note: The classpath and project files are checked in but the class path is relative to the installation path of Eclipse.  The easiest way to resolve these is:
+Right Click The Plugin Project -> PDE Tools -> Update Classpath
+
 
 
 
