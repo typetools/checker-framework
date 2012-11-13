@@ -479,9 +479,9 @@ public class NonNullVisitor extends
                         .containsSameIgnoringValues(
                                 checker.getNonNullAnnotations(), a);
                 if (nonnullCheckerAnno && !AnnotationUtils.areSame(NONNULL, a)) {
-                    // The type is not non-null => error
+                    // The type is not non-null => warning
                     checker.report(
-                            Result.failure("new.class.type.invalid",
+                            Result.warning("new.class.type.invalid",
                                     type.getAnnotations()), node);
                     // Note that other consistency checks are made by isValid.
                 }
@@ -489,7 +489,7 @@ public class NonNullVisitor extends
             if (t.toString().contains("@PolyNull")) {
                 // TODO: this is a hack, but PolyNull gets substituted afterwards
                 checker.report(
-                        Result.failure("new.class.type.invalid",
+                        Result.warning("new.class.type.invalid",
                                 type.getAnnotations()), node);
             }
         }
