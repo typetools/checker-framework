@@ -22,6 +22,7 @@ import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import checkers.util.QualifierPolymorphism;
 
 import com.sun.source.tree.AnnotatedTypeTree;
@@ -127,6 +128,16 @@ public class NonNullVisitor extends
         // is NonNull, which would then forbid Nullable uses.
         // Therefore, don't perform this check.
         return true;
+    }
+
+    @Override
+    public boolean isValidUse(AnnotatedPrimitiveType type) {
+        boolean nonNull = AnnotationUtils.containsSame(type.getAnnotations(),
+                checker.NONNULL);
+        if (!nonNull) {
+            return false;
+        }
+        return super.isValidUse(type);
     }
 
     private boolean containsSameIgnoringValues(
@@ -487,7 +498,8 @@ public class NonNullVisitor extends
                 }
             }
             if (t.toString().contains("@PolyNull")) {
-                // TODO: this is a hack, but PolyNull gets substituted afterwards
+                // TODO: this is a hack, but PolyNull gets substituted
+                // afterwards
                 checker.report(
                         Result.warning("new.class.type.invalid",
                                 type.getAnnotations()), node);
