@@ -11,7 +11,9 @@ import javax.lang.model.element.Element;
 import javacutils.AnnotationUtils;
 
 import dataflow.analysis.FlowExpressions;
+import dataflow.analysis.FlowExpressions.ClassName;
 import dataflow.analysis.FlowExpressions.FieldAccess;
+import dataflow.analysis.FlowExpressions.Receiver;
 import dataflow.analysis.FlowExpressions.ThisReference;
 import dataflow.cfg.node.MethodInvocationNode;
 
@@ -19,6 +21,7 @@ import checkers.flow.analysis.checkers.CFAbstractAnalysis;
 import checkers.flow.analysis.checkers.CFAbstractStore;
 import checkers.flow.analysis.checkers.CFValue;
 import checkers.types.AnnotatedTypeFactory;
+import checkers.types.QualifierHierarchy;
 
 /**
  * A store that extends {@code CFAbstractStore} and additionally tracks which
@@ -38,6 +41,33 @@ public class InitializationStore extends
             boolean sequentialSemantics) {
         super(analysis, sequentialSemantics);
         initializedFields = new HashSet<>();
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <p>
+     * If the receiver is a field, and has an invariant annotation, then it can
+     * be considered initialized.
+     */
+    @Override
+    public void insertValue(Receiver r, CFValue value) {
+        super.insertValue(r, value);
+        InitializationChecker checker = (InitializationChecker) analysis
+                .getFactory().getChecker();
+        QualifierHierarchy qualifierHierarchy = checker.getQualifierHierarchy();
+        AnnotationMirror invariantAnno = checker.getFieldInvariantAnnotation();
+        for (AnnotationMirror a : value.getType().getAnnotations()) {
+            if (qualifierHierarchy.isSubtype(a, invariantAnno)) {
+                if (r instanceof FieldAccess) {
+                    FieldAccess fa = (FieldAccess) r;
+                    if (fa.getReceiver() instanceof ThisReference
+                            || fa.getReceiver() instanceof ClassName) {
+                        addInitializedField(fa.getField());
+                    }
+                }
+            }
+        }
     }
 
     /**
