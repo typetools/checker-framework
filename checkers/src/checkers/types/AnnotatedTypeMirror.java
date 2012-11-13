@@ -319,7 +319,13 @@ public abstract class AnnotatedTypeMirror {
      * @return  a set of the annotations on this
      */
     public Set<AnnotationMirror> getEffectiveAnnotations() {
-        return getAnnotations();
+        Set<AnnotationMirror> effectiveAnnotations = getAnnotations();
+//        assert atypeFactory.qualHierarchy.getWidth() == effectiveAnnotations
+//                .size() : "Invalid number of effective annotations ("
+//                + effectiveAnnotations + "). Should be "
+//                + atypeFactory.qualHierarchy.getWidth() + " but is "
+//                + effectiveAnnotations.size() + ". Type: " + this.toString();
+        return effectiveAnnotations;
     }
 
     /**
@@ -1645,7 +1651,13 @@ public abstract class AnnotatedTypeMirror {
         public Set<AnnotationMirror> getEffectiveAnnotations() {
             // Do we want to re-introduce more efficient versions that don't
             // compute the whole type?
-            return getEffectiveUpperBound().getAnnotations();
+            Set<AnnotationMirror> effectiveAnnotations = getEffectiveUpperBound().getAnnotations();
+//          assert atypeFactory.qualHierarchy.getWidth() == effectiveAnnotations
+//          .size() : "Invalid number of effective annotations ("
+//          + effectiveAnnotations + "). Should be "
+//          + atypeFactory.qualHierarchy.getWidth() + " but is "
+//          + effectiveAnnotations.size() + ". Type: " + this.toString();
+            return effectiveAnnotations;
         }
 
         /**
@@ -2079,7 +2091,13 @@ public abstract class AnnotatedTypeMirror {
 
         @Override
         public Set<AnnotationMirror> getEffectiveAnnotations() {
-            return getEffectiveExtendsBoundAnnotations();
+            Set<AnnotationMirror> effectiveAnnotations = getEffectiveExtendsBoundAnnotations();
+//          assert atypeFactory.qualHierarchy.getWidth() == effectiveAnnotations
+//          .size() : "Invalid number of effective annotations ("
+//          + effectiveAnnotations + "). Should be "
+//          + atypeFactory.qualHierarchy.getWidth() + " but is "
+//          + effectiveAnnotations.size() + ". Type: " + this.toString();
+            return effectiveAnnotations;
         }
 
         @Override
