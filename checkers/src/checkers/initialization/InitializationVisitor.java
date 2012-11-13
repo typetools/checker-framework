@@ -17,6 +17,7 @@ import javacutils.Pair;
 import javacutils.TreeUtils;
 
 import checkers.basetype.BaseTypeVisitor;
+import checkers.flow.analysis.checkers.CFAbstractStore;
 import checkers.flow.analysis.checkers.CFValue;
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeMirror;
@@ -32,6 +33,10 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.Tree.Kind;
+
+import dataflow.analysis.FlowExpressions.FieldAccess;
+import dataflow.analysis.FlowExpressions.Receiver;
+import dataflow.analysis.FlowExpressions.ThisReference;
 
 // TODO/later: documentation
 public class InitializationVisitor<Checker extends InitializationChecker>
@@ -133,6 +138,28 @@ public class InitializationVisitor<Checker extends InitializationChecker>
             }
         }
         return super.visitVariable(node, p);
+    }
+
+    @Override
+    public boolean checkContract(Receiver expr,
+            AnnotationMirror necessaryAnnotation,
+            AnnotationMirror inferredAnnotation, CFAbstractStore<?, ?> store) {
+        // also use the information about initialized fields to check contracts
+        AnnotationMirror invariantAnno = checker.getFieldInvariantAnnotation();
+        if (checker.getQualifierHierarchy().isSubtype(invariantAnno,
+                necessaryAnnotation)) {
+            if (expr instanceof FieldAccess) {
+                FieldAccess fa = (FieldAccess) expr;
+                if (fa.getReceiver() instanceof ThisReference) {
+                    InitializationStore s = (InitializationStore) store;
+                    if (s.isFieldInitialized(fa.getField())) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return super.checkContract(expr, necessaryAnnotation,
+                inferredAnnotation, store);
     }
 
     @Override
