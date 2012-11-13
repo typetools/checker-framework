@@ -358,6 +358,7 @@ public class InternalUtils {
         if (methodType.getKind() != TypeKind.TYPEVAR) {
             return methodType;
         }
+        // TODO: find a nicer way to substitute type variables
         String t = methodType.toString();
         Type finalReceiverType = (Type) substitutedReceiverType;
         int i = 0;
