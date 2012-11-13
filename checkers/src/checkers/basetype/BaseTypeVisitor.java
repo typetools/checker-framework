@@ -779,17 +779,31 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
 
                 AnnotationMirror inferredAnno = value == null ? null : value
                         .getType().getAnnotationInHierarchy(anno);
-                if (inferredAnno == null
-                        || !atypeFactory.getQualifierHierarchy().isSubtype(
-                                inferredAnno, anno)) {
-                    checker.report(Result
-                            .failure("contracts.precondition.not.satisfied", expr.toString()),
-                            tree);
+                if (!checkContract(expr, anno, inferredAnno, store)) {
+                    checker.report(Result.failure(
+                            "contracts.precondition.not.satisfied",
+                            expr.toString()), tree);
                 }
             } catch (FlowExpressionParseException e) {
                 // errors are reported at declaration site
             }
         }
+    }
+
+    /**
+     * Returns true if and only if {@code inferredAnnotation} is valid for a
+     * given expression to match the {@code necessaryAnnotation}.
+     *
+     * <p>
+     * By default, {@code inferredAnnotation} must be a subtype of
+     * {@code necessaryAnnotation}, but subclasses might override this behavior.
+     */
+    public boolean checkContract(Receiver expr,
+            AnnotationMirror necessaryAnnotation,
+            AnnotationMirror inferredAnnotation, CFAbstractStore<?, ?> store) {
+        return !(inferredAnnotation == null || !atypeFactory
+                .getQualifierHierarchy().isSubtype(inferredAnnotation,
+                        necessaryAnnotation));
     }
 
     // Handle case Vector.copyInto()
