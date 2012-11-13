@@ -1510,7 +1510,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
             // Should we compare lower bounds instead of the annotations on the
             // type variables?
             if (!typeVar.getAnnotations().isEmpty()) {
-                if (!typearg.getAnnotations().equals(typeVar.getAnnotations())) {
+                if (!typearg.getEffectiveAnnotations().equals(typeVar.getEffectiveAnnotations())) {
                     if (typeargTrees == null || typeargTrees.isEmpty()) {
                         // The type arguments were inferred and we mark the
                         // whole method.
