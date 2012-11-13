@@ -178,8 +178,9 @@ public class InitializationTransfer<T extends InitializationTransfer<T>>
                 CFValue refinedResultValue = analysis
                         .createSingleAnnotationValue(inv, oldResultValue
                                 .getType().getUnderlyingType());
-                result.setResultValue(refinedResultValue.mostSpecific(
-                        oldResultValue, null));
+                CFValue newResultValue = refinedResultValue.mostSpecific(
+                        oldResultValue, null);
+                result.setResultValue(newResultValue);
             }
         }
         return result;
