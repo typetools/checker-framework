@@ -219,13 +219,16 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
      */
     public Set<VariableTree> getUninitializedInvariantFields(
             InitializationStore store, TreePath path, boolean isStatic,
-            List<AnnotationMirror> receiverAnnotations) {
+            List<? extends AnnotationMirror> receiverAnnotations) {
         ClassTree currentClass = TreeUtils.enclosingClass(path);
         Set<VariableTree> fields = InitializationChecker
                 .getAllFields(currentClass);
         Set<VariableTree> violatingFields = new HashSet<>();
         AnnotationMirror invariant = checker.getFieldInvariantAnnotation();
         for (VariableTree field : fields) {
+            if (isUnused(field, receiverAnnotations)) {
+                continue; // don't consider unused fields
+            }
             if (ElementUtils.isStatic(TreeUtils.elementFromDeclaration(field)) == isStatic) {
                 // Does this field need to satisfy the invariant?
                 if (getAnnotatedType(field).hasAnnotation(invariant)) {
@@ -244,13 +247,14 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
      * Returns whether the field {@code f} is unused, given the annotations on
      * the receiver.
      */
-    private boolean isUnused(VariableElement f,
+    private boolean isUnused(VariableTree field,
             Collection<? extends AnnotationMirror> receiverAnnos) {
         if (receiverAnnos.isEmpty()) {
             return false;
         }
 
-        AnnotationMirror unused = getDeclAnnotation(f, Unused.class);
+        AnnotationMirror unused = getDeclAnnotation(
+                TreeUtils.elementFromDeclaration(field), Unused.class);
         if (unused == null)
             return false;
 
