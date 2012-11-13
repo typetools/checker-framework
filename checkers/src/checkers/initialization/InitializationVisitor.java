@@ -2,18 +2,22 @@ package checkers.initialization;
 
 import java.lang.annotation.Annotation;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
-
+import javax.lang.model.type.ExecutableType;
 import javacutils.AnnotationUtils;
 import javacutils.ElementUtils;
 import javacutils.Pair;
 import javacutils.TreeUtils;
 
 import checkers.basetype.BaseTypeVisitor;
+import checkers.flow.analysis.checkers.CFAbstractStore;
 import checkers.flow.analysis.checkers.CFValue;
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeMirror;
@@ -29,6 +33,11 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.Tree.Kind;
+
+import dataflow.analysis.FlowExpressions.ClassName;
+import dataflow.analysis.FlowExpressions.FieldAccess;
+import dataflow.analysis.FlowExpressions.Receiver;
+import dataflow.analysis.FlowExpressions.ThisReference;
 
 // TODO/later: documentation
 public class InitializationVisitor<Checker extends InitializationChecker>
@@ -100,8 +109,9 @@ public class InitializationVisitor<Checker extends InitializationChecker>
             AnnotatedTypeMirror var2 = atypeFactory.getAnnotatedType(lhs);
             factory.HACK_DONT_CALL_POST_AS_MEMBER = old;
             factory.shouldReadCache = old2;
-            var.replaceAnnotation(var2.getEffectiveAnnotationInHierarchy(checker
-                    .getFieldInvariantAnnotation()));
+            var.replaceAnnotation(var2
+                    .getEffectiveAnnotationInHierarchy(checker
+                            .getFieldInvariantAnnotation()));
             checkAssignability(var, varTree);
             commonAssignmentCheck(var, valueExp, errorKey, false);
             return;
@@ -132,6 +142,35 @@ public class InitializationVisitor<Checker extends InitializationChecker>
     }
 
     @Override
+    protected boolean checkContract(Receiver expr,
+            AnnotationMirror necessaryAnnotation,
+            AnnotationMirror inferredAnnotation, CFAbstractStore<?, ?> store) {
+        // also use the information about initialized fields to check contracts
+        AnnotationMirror invariantAnno = checker.getFieldInvariantAnnotation();
+        if (checker.getQualifierHierarchy().isSubtype(invariantAnno,
+                necessaryAnnotation)) {
+            if (expr instanceof FieldAccess) {
+                FieldAccess fa = (FieldAccess) expr;
+                if (fa.getReceiver() instanceof ThisReference
+                        || fa.getReceiver() instanceof ClassName) {
+                    InitializationStore s = (InitializationStore) store;
+                    if (s.isFieldInitialized(fa.getField())) {
+                        AnnotatedTypeMirror fieldType = atypeFactory
+                                .getAnnotatedType(fa.getField());
+                        // is this an invariant-field?
+                        if (AnnotationUtils.containsSame(
+                                fieldType.getAnnotations(), invariantAnno)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return super.checkContract(expr, necessaryAnnotation,
+                inferredAnnotation, store);
+    }
+
+    @Override
     public Void visitTypeCast(TypeCastTree node, Void p) {
         AnnotatedTypeMirror exprType = factory.getAnnotatedType(node
                 .getExpression());
@@ -139,7 +178,8 @@ public class InitializationVisitor<Checker extends InitializationChecker>
         AnnotationMirror exprAnno = null, castAnno = null;
 
         // find commitment annotation
-        for (Class<? extends Annotation> a : checker.getInitializationAnnotations()) {
+        for (Class<? extends Annotation> a : checker
+                .getInitializationAnnotations()) {
             if (castType.hasAnnotation(a)) {
                 assert castAnno == null;
                 castAnno = castType.getAnnotation(a);
@@ -188,7 +228,10 @@ public class InitializationVisitor<Checker extends InitializationChecker>
                     store.addInitializedField(t.first);
                 }
                 // Check that all static fields are initialized.
-                checkFieldsInitialized(node, isStatic, store);
+                List<AnnotationMirror> receiverAnnotations = Collections
+                        .emptyList();
+                checkFieldsInitialized(node, isStatic, store,
+                        receiverAnnotations);
             }
         }
         return super.visitBlock(node, p);
@@ -223,7 +266,9 @@ public class InitializationVisitor<Checker extends InitializationChecker>
                     .getFieldValues()) {
                 store.addInitializedField(t.first);
             }
-            checkFieldsInitialized(node, isStatic, store);
+            List<AnnotationMirror> receiverAnnotations = Collections
+                    .emptyList();
+            checkFieldsInitialized(node, isStatic, store, receiverAnnotations);
         }
 
         return result;
@@ -250,9 +295,43 @@ public class InitializationVisitor<Checker extends InitializationChecker>
             // constructor.
             boolean isStatic = false;
             InitializationStore store = factory.getRegularExitStore(node);
-            checkFieldsInitialized(node, isStatic, store);
+            List<? extends AnnotationMirror> receiverAnnotations = getAllReceiverAnnotations(node);
+            checkFieldsInitialized(node, isStatic, store, receiverAnnotations);
         }
         return super.visitMethod(node, p);
+    }
+
+    /**
+     * Returns the full list of annotations on the receiver.
+     */
+    private List<? extends AnnotationMirror> getAllReceiverAnnotations(
+            MethodTree node) {
+        // TODO: get access to a Types instance and use it to get receiver type
+        // Or, extend ExecutableElement with such a method.
+        // Note that we cannot use the receiver type from
+        // AnnotatedExecutableType,
+        // because that would only have the nullness annotations; here we want
+        // to
+        // see all annotations on the receiver.
+        List<? extends AnnotationMirror> rcvannos;
+        if (TreeUtils.isConstructor(node)) {
+            com.sun.tools.javac.code.Symbol meth = (com.sun.tools.javac.code.Symbol) TreeUtils
+                    .elementFromDeclaration(node);
+            rcvannos = meth.typeAnnotations;
+            if (rcvannos == null) {
+                rcvannos = Collections.<AnnotationMirror> emptyList();
+            }
+        } else {
+            ExecutableElement meth = TreeUtils.elementFromDeclaration(node);
+            com.sun.tools.javac.code.Type rcv = (com.sun.tools.javac.code.Type) ((ExecutableType) meth
+                    .asType()).getReceiverType();
+            if (rcv != null) {
+                rcvannos = rcv.typeAnnotations;
+            } else {
+                rcvannos = Collections.<AnnotationMirror> emptyList();
+            }
+        }
+        return rcvannos;
     }
 
     /**
@@ -260,13 +339,14 @@ public class InitializationVisitor<Checker extends InitializationChecker>
      * true) are initialized in the given store.
      */
     protected void checkFieldsInitialized(Tree blockNode, boolean staticFields,
-            InitializationStore store) {
+            InitializationStore store,
+            List<? extends AnnotationMirror> receiverAnnotations) {
         // If the store is null, then the constructor cannot terminate
         // successfully
         if (store != null) {
             Set<VariableTree> violatingFields = factory
                     .getUninitializedInvariantFields(store, getCurrentPath(),
-                            staticFields);
+                            staticFields, receiverAnnotations);
             if (!violatingFields.isEmpty()) {
                 StringBuilder fieldsString = new StringBuilder();
                 boolean first = true;

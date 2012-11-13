@@ -22,6 +22,7 @@ import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import checkers.util.QualifierPolymorphism;
 
 import com.sun.source.tree.AnnotatedTypeTree;
@@ -31,6 +32,7 @@ import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ConditionalExpressionTree;
+import com.sun.source.tree.DoWhileLoopTree;
 import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.ForLoopTree;
@@ -127,6 +129,16 @@ public class NonNullVisitor extends
         // is NonNull, which would then forbid Nullable uses.
         // Therefore, don't perform this check.
         return true;
+    }
+
+    @Override
+    public boolean isValidUse(AnnotatedPrimitiveType type) {
+        boolean nonNull = AnnotationUtils.containsSame(type.getAnnotations(),
+                checker.NONNULL);
+        if (!nonNull) {
+            return false;
+        }
+        return super.isValidUse(type);
     }
 
     private boolean containsSameIgnoringValues(
@@ -310,6 +322,7 @@ public class NonNullVisitor extends
 
     @Override
     public Void visitIf(IfTree node, Void p) {
+        checkForNullability(node.getCondition(), "condition.nullable");
         return super.visitIf(node, p);
     }
 
@@ -479,17 +492,18 @@ public class NonNullVisitor extends
                         .containsSameIgnoringValues(
                                 checker.getNonNullAnnotations(), a);
                 if (nonnullCheckerAnno && !AnnotationUtils.areSame(NONNULL, a)) {
-                    // The type is not non-null => error
+                    // The type is not non-null => warning
                     checker.report(
-                            Result.failure("new.class.type.invalid",
+                            Result.warning("new.class.type.invalid",
                                     type.getAnnotations()), node);
                     // Note that other consistency checks are made by isValid.
                 }
             }
             if (t.toString().contains("@PolyNull")) {
-                // TODO: this is a hack, but PolyNull gets substituted afterwards
+                // TODO: this is a hack, but PolyNull gets substituted
+                // afterwards
                 checker.report(
-                        Result.failure("new.class.type.invalid",
+                        Result.warning("new.class.type.invalid",
                                 type.getAnnotations()), node);
             }
         }
@@ -502,6 +516,12 @@ public class NonNullVisitor extends
     public Void visitWhileLoop(WhileLoopTree node, Void p) {
         checkForNullability(node.getCondition(), "condition.nullable");
         return super.visitWhileLoop(node, p);
+    }
+
+    @Override
+    public Void visitDoWhileLoop(DoWhileLoopTree node, Void p) {
+        checkForNullability(node.getCondition(), "condition.nullable");
+        return super.visitDoWhileLoop(node, p);
     }
 
     @Override

@@ -98,9 +98,9 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
     }
 
     /**
-     * Returns true if the abstract value passed a set of
-     * well-formedness checks. The method will never return false for valid
-     * types, but might not catch all invalid abstract values.
+     * Returns true if the abstract value passed a set of well-formedness
+     * checks. The method will never return false for valid types, but might not
+     * catch all invalid abstract values.
      */
     public boolean isValidValue(AnnotatedTypeMirror type) {
         if (type == null) {
@@ -189,7 +189,6 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
      * Adds top as the annotation on all locations of a given type.
      */
     private void makeTop(AnnotatedTypeMirror type, Set<AnnotationMirror> tops) {
-        type.addAnnotations(tops);
         TypeKind kind = type.getKind();
         if (kind == TypeKind.ARRAY) {
             AnnotatedArrayType a = (AnnotatedArrayType) type;
@@ -200,6 +199,11 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
         } else if (kind == TypeKind.WILDCARD) {
             AnnotatedWildcardType a = (AnnotatedWildcardType) type;
             makeTop(a.getExtendsBound(), tops);
+        }
+
+        if (kind != TypeKind.TYPEVAR && kind != TypeKind.WILDCARD) {
+            // don't set top annotations, because [] is top
+            type.addAnnotations(tops);
         }
     }
 }
