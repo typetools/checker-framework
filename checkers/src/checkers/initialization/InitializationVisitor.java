@@ -142,7 +142,7 @@ public class InitializationVisitor<Checker extends InitializationChecker>
     }
 
     @Override
-    public boolean checkContract(Receiver expr,
+    protected boolean checkContract(Receiver expr,
             AnnotationMirror necessaryAnnotation,
             AnnotationMirror inferredAnnotation, CFAbstractStore<?, ?> store) {
         // also use the information about initialized fields to check contracts
@@ -155,7 +155,13 @@ public class InitializationVisitor<Checker extends InitializationChecker>
                         || fa.getReceiver() instanceof ClassName) {
                     InitializationStore s = (InitializationStore) store;
                     if (s.isFieldInitialized(fa.getField())) {
-                        return true;
+                        AnnotatedTypeMirror fieldType = atypeFactory
+                                .getAnnotatedType(fa.getField());
+                        // is this an invariant-field?
+                        if (AnnotationUtils.containsSame(
+                                fieldType.getAnnotations(), invariantAnno)) {
+                            return true;
+                        }
                     }
                 }
             }
