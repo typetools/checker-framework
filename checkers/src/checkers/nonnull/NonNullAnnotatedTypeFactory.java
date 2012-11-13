@@ -55,7 +55,10 @@ public class NonNullAnnotatedTypeFactory
     protected final SystemGetPropertyHandler systemGetPropertyHandler;
     protected final CollectionToArrayHeuristics collectionToArrayHeuristics;
 
-    /** Factory for arbitrary qualifiers, used for declarations and "unused" qualifier. */
+    /**
+     * Factory for arbitrary qualifiers, used for declarations and "unused"
+     * qualifier.
+     */
     protected final GeneralAnnotatedTypeFactory generalFactory;
 
     public NonNullAnnotatedTypeFactory(AbstractNonNullChecker checker,
@@ -105,11 +108,13 @@ public class NonNullAnnotatedTypeFactory
         // TODO: These heuristics are just here temporarily. They all either
         // need to be replaced, or carefully checked for correctness.
         generalFactory = new GeneralAnnotatedTypeFactory(checker, root);
-        mapGetHeuristics = new MapGetHeuristics(processingEnv, this, generalFactory);
-        systemGetPropertyHandler = new SystemGetPropertyHandler(processingEnv, this);
-        // do this last, as it might use the factory again.
-        this.collectionToArrayHeuristics = new CollectionToArrayHeuristics(processingEnv,
+        mapGetHeuristics = new MapGetHeuristics(processingEnv, this,
+                generalFactory);
+        systemGetPropertyHandler = new SystemGetPropertyHandler(processingEnv,
                 this);
+        // do this last, as it might use the factory again.
+        this.collectionToArrayHeuristics = new CollectionToArrayHeuristics(
+                processingEnv, this);
 
         dependentTypes = new DependentTypes(checker, root);
 
@@ -125,22 +130,27 @@ public class NonNullAnnotatedTypeFactory
 
     // handle dependent types
     @Override
-    public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> constructorFromUse(NewClassTree tree) {
-        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> fromUse = super.constructorFromUse(tree);
+    public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> constructorFromUse(
+            NewClassTree tree) {
+        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> fromUse = super
+                .constructorFromUse(tree);
         AnnotatedExecutableType constructor = fromUse.first;
-        dependentTypes.handleConstructor(tree, generalFactory.getAnnotatedType(tree), constructor);
+        dependentTypes.handleConstructor(tree,
+                generalFactory.getAnnotatedType(tree), constructor);
         return fromUse;
     }
 
     @Override
     public Set<VariableTree> getUninitializedInvariantFields(
             InitializationStore store, TreePath path, boolean isStatic,
-            List<AnnotationMirror> receiverAnnotations) {
-        Set<VariableTree> candidates = super.getUninitializedInvariantFields(store, path, isStatic, receiverAnnotations);
+            List<? extends AnnotationMirror> receiverAnnotations) {
+        Set<VariableTree> candidates = super.getUninitializedInvariantFields(
+                store, path, isStatic, receiverAnnotations);
         Set<VariableTree> result = new HashSet<>();
         for (VariableTree c : candidates) {
             AnnotatedTypeMirror type = getAnnotatedType(c);
-            boolean isPrimitive = TypesUtils.isPrimitive(type.getUnderlyingType());
+            boolean isPrimitive = TypesUtils.isPrimitive(type
+                    .getUnderlyingType());
             if (!isPrimitive) {
                 // primitives do not need to be initialized
                 result.add(c);
@@ -301,7 +311,8 @@ public class NonNullAnnotatedTypeFactory
 
         // The result of a compound operation is always non-null.
         @Override
-        public Void visitCompoundAssignment(CompoundAssignmentTree node, AnnotatedTypeMirror type) {
+        public Void visitCompoundAssignment(CompoundAssignmentTree node,
+                AnnotatedTypeMirror type) {
             type.replaceAnnotation(NONNULL);
             return null; // super.visitCompoundAssignment(node, type);
         }

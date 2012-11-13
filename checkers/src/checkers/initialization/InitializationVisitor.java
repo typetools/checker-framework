@@ -8,8 +8,9 @@ import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
-
+import javax.lang.model.type.ExecutableType;
 import javacutils.AnnotationUtils;
 import javacutils.ElementUtils;
 import javacutils.Pair;
@@ -194,7 +195,8 @@ public class InitializationVisitor<Checker extends InitializationChecker>
                 // Check that all static fields are initialized.
                 List<AnnotationMirror> receiverAnnotations = Collections
                         .emptyList();
-                checkFieldsInitialized(node, isStatic, store, receiverAnnotations);
+                checkFieldsInitialized(node, isStatic, store,
+                        receiverAnnotations);
             }
         }
         return super.visitBlock(node, p);
@@ -258,11 +260,43 @@ public class InitializationVisitor<Checker extends InitializationChecker>
             // constructor.
             boolean isStatic = false;
             InitializationStore store = factory.getRegularExitStore(node);
-            List<AnnotationMirror> receiverAnnotations = Collections
-                    .emptyList();
+            List<? extends AnnotationMirror> receiverAnnotations = getAllReceiverAnnotations(node);
             checkFieldsInitialized(node, isStatic, store, receiverAnnotations);
         }
         return super.visitMethod(node, p);
+    }
+
+    /**
+     * Returns the full list of annotations on the receiver.
+     */
+    private List<? extends AnnotationMirror> getAllReceiverAnnotations(
+            MethodTree node) {
+        // TODO: get access to a Types instance and use it to get receiver type
+        // Or, extend ExecutableElement with such a method.
+        // Note that we cannot use the receiver type from
+        // AnnotatedExecutableType,
+        // because that would only have the nullness annotations; here we want
+        // to
+        // see all annotations on the receiver.
+        List<? extends AnnotationMirror> rcvannos;
+        if (TreeUtils.isConstructor(node)) {
+            com.sun.tools.javac.code.Symbol meth = (com.sun.tools.javac.code.Symbol) TreeUtils
+                    .elementFromDeclaration(node);
+            rcvannos = meth.typeAnnotations;
+            if (rcvannos == null) {
+                rcvannos = Collections.<AnnotationMirror> emptyList();
+            }
+        } else {
+            ExecutableElement meth = TreeUtils.elementFromDeclaration(node);
+            com.sun.tools.javac.code.Type rcv = (com.sun.tools.javac.code.Type) ((ExecutableType) meth
+                    .asType()).getReceiverType();
+            if (rcv != null) {
+                rcvannos = rcv.typeAnnotations;
+            } else {
+                rcvannos = Collections.<AnnotationMirror> emptyList();
+            }
+        }
+        return rcvannos;
     }
 
     /**
@@ -271,7 +305,7 @@ public class InitializationVisitor<Checker extends InitializationChecker>
      */
     protected void checkFieldsInitialized(Tree blockNode, boolean staticFields,
             InitializationStore store,
-            List<AnnotationMirror> receiverAnnotations) {
+            List<? extends AnnotationMirror> receiverAnnotations) {
         // If the store is null, then the constructor cannot terminate
         // successfully
         if (store != null) {
