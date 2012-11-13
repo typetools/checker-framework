@@ -10,6 +10,7 @@ import javax.lang.model.type.TypeKind;
 
 import javacutils.AnnotationUtils;
 import javacutils.ErrorReporter;
+import javacutils.Pair;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.quals.ImplicitFor;
@@ -214,11 +215,11 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
 
         assert prev != null : "TreeAnnotator.visitNewArray: violated assumption about qualifiers";
 
-        AnnotatedTypeMirror context = atypeFactory.getVisitorState().getAssignmentContext();
+        Pair<Tree, AnnotatedTypeMirror> context = atypeFactory.getVisitorState().getAssignmentContext();
         Collection<AnnotationMirror> post;
 
-        if (context != null && context instanceof AnnotatedArrayType) {
-            AnnotatedTypeMirror contextComponentType = ((AnnotatedArrayType) context).getComponentType();
+        if (context != null && context.second != null && context.second instanceof AnnotatedArrayType) {
+            AnnotatedTypeMirror contextComponentType = ((AnnotatedArrayType) context.second).getComponentType();
             // Only compare the qualifiers that existed in the array type
             // Defaulting wasn't performed yet, so prev might have fewer qualifiers than
             // contextComponentType, which would cause a failure.

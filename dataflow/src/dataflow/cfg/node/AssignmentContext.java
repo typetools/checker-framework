@@ -50,6 +50,11 @@ public abstract class AssignmentContext {
                 return null;
             }
         }
+
+        @Override
+        public Tree getContextTree() {
+            return node.getTree();
+        }
     }
 
     /**
@@ -69,6 +74,11 @@ public abstract class AssignmentContext {
         public Element getElementForType() {
             return method.getParameters().get(paramNum);
         }
+
+        @Override
+        public Tree getContextTree() {
+            return null;
+        }
     }
 
     /**
@@ -86,10 +96,17 @@ public abstract class AssignmentContext {
         public Element getElementForType() {
             return method;
         }
+
+        @Override
+        public Tree getContextTree() {
+            return null;
+        }
     }
 
     /**
      * Returns an {@link Element} that has the type of this assignment context.
      */
     public abstract Element getElementForType();
+
+    public abstract Tree getContextTree();
 }
