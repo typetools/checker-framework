@@ -220,7 +220,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
         ClassTree preCT = visitorState.getClassTree();
         AnnotatedDeclaredType preAMT = visitorState.getMethodReceiver();
         MethodTree preMT = visitorState.getMethodTree();
-        AnnotatedTypeMirror preAssCtxt = visitorState.getAssignmentContext();
+        Pair<Tree, AnnotatedTypeMirror> preAssCtxt = visitorState.getAssignmentContext();
 
         visitorState.setClassType(atypeFactory.getAnnotatedType(node));
         visitorState.setClassTree(node);
@@ -626,8 +626,8 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
 
     @Override
     public Void visitVariable(VariableTree node, Void p) {
-        AnnotatedTypeMirror preAssCtxt = visitorState.getAssignmentContext();
-        visitorState.setAssignmentContext(atypeFactory.getAnnotatedType(node));
+        Pair<Tree, AnnotatedTypeMirror> preAssCtxt = visitorState.getAssignmentContext();
+        visitorState.setAssignmentContext(Pair.of((Tree) node, atypeFactory.getAnnotatedType(node)));
 
         try {
             boolean valid = validateTypeOf(node);
@@ -651,9 +651,8 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
      */
     @Override
     public Void visitAssignment(AssignmentTree node, Void p) {
-        AnnotatedTypeMirror preAssCtxt = visitorState.getAssignmentContext();
-        visitorState.setAssignmentContext(atypeFactory.getAnnotatedType(node
-                .getVariable()));
+        Pair<Tree, AnnotatedTypeMirror> preAssCtxt = visitorState.getAssignmentContext();
+        visitorState.setAssignmentContext(Pair.of((Tree) node.getVariable(), atypeFactory.getAnnotatedType(node.getVariable())));
         try {
             commonAssignmentCheck(node.getVariable(), node.getExpression(),
                     "assignment.type.incompatible");
@@ -914,7 +913,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
         if (node.getExpression() == null)
             return super.visitReturn(node, p);
 
-        AnnotatedTypeMirror preAssCtxt = visitorState.getAssignmentContext();
+        Pair<Tree, AnnotatedTypeMirror> preAssCtxt = visitorState.getAssignmentContext();
         try {
             MethodTree enclosingMethod = TreeUtils
                     .enclosingMethod(getCurrentPath());
@@ -922,7 +921,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
             AnnotatedExecutableType methodType = atypeFactory
                     .getAnnotatedType(enclosingMethod);
             AnnotatedTypeMirror ret = methodType.getReturnType();
-            visitorState.setAssignmentContext(ret);
+            visitorState.setAssignmentContext(Pair.of((Tree) node, ret));
 
             commonAssignmentCheck(ret, node.getExpression(),
                     "return.type.incompatible", false);
@@ -992,7 +991,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
 
             AnnotatedTypeMirror expected = annoTypes.get(at.getVariable()
                     .toString());
-            AnnotatedTypeMirror preAssCtxt = visitorState
+            Pair<Tree, AnnotatedTypeMirror> preAssCtxt = visitorState
                     .getAssignmentContext();
 
             {
@@ -1005,7 +1004,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                         + meth;
                 AnnotatedTypeMirror newctx = ((AnnotatedExecutableType) meth)
                         .getReturnType();
-                visitorState.setAssignmentContext(newctx);
+                visitorState.setAssignmentContext(Pair.of((Tree) null, newctx));
             }
 
             try {
@@ -1050,10 +1049,23 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
     public Void visitConditionalExpression(ConditionalExpressionTree node,
             Void p) {
         AnnotatedTypeMirror cond = atypeFactory.getAnnotatedType(node);
+        Pair<Tree, AnnotatedTypeMirror> ctx = visitorState.getAssignmentContext();
+        Tree assignmentContext = ctx == null ? null : ctx.first;
+        boolean isLocalVariableAssignment = false;
+        if (assignmentContext != null) {
+            if (assignmentContext instanceof VariableTree) {
+                isLocalVariableAssignment = assignmentContext instanceof IdentifierTree
+                        && !TreeUtils.isFieldAccess(assignmentContext);
+            }
+            if (assignmentContext instanceof VariableTree) {
+                isLocalVariableAssignment = TreeUtils
+                        .enclosingMethod(getCurrentPath()) != null;
+            }
+        }
         this.commonAssignmentCheck(cond, node.getTrueExpression(),
-                "conditional.type.incompatible", false);
+                "conditional.type.incompatible", isLocalVariableAssignment);
         this.commonAssignmentCheck(cond, node.getFalseExpression(),
-                "conditional.type.incompatible", false);
+                "conditional.type.incompatible", isLocalVariableAssignment);
         return super.visitConditionalExpression(node, p);
     }
 
@@ -1245,7 +1257,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
 
     @Override
     public Void visitArrayAccess(ArrayAccessTree node, Void p) {
-        AnnotatedTypeMirror preAssCtxt = visitorState.getAssignmentContext();
+        Pair<Tree, AnnotatedTypeMirror> preAssCtxt = visitorState.getAssignmentContext();
         try {
             visitorState.setAssignmentContext(null);
             scan(node.getExpression(), p);
@@ -1513,7 +1525,6 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                     }
                 }
             }
-
         }
     }
 
@@ -1579,10 +1590,10 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
         assert requiredArgs.size() == passedArgs.size() : "mismatch between required args ("
                 + requiredArgs + ") and passed args (" + passedArgs + ")";
 
-        AnnotatedTypeMirror preAssCtxt = visitorState.getAssignmentContext();
+        Pair<Tree, AnnotatedTypeMirror> preAssCtxt = visitorState.getAssignmentContext();
         try {
             for (int i = 0; i < requiredArgs.size(); ++i) {
-                visitorState.setAssignmentContext(requiredArgs.get(i));
+                visitorState.setAssignmentContext(Pair.of((Tree) null, (AnnotatedTypeMirror) requiredArgs.get(i)));
                 commonAssignmentCheck(requiredArgs.get(i), passedArgs.get(i),
                         "argument.type.incompatible", false);
                 // Also descend into the argument within the correct assignment
