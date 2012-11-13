@@ -36,7 +36,7 @@ import com.sun.source.tree.VariableTree;
 public abstract class InitializationChecker extends BaseTypeChecker {
 
     /** Annotation constants */
-    protected AnnotationMirror COMMITTED, FREE, FBCBOTTOM, NOT_ONLY_COMMITTED;
+    public AnnotationMirror COMMITTED, FREE, FBCBOTTOM, NOT_ONLY_COMMITTED;
 
     /**
      * Should the initialization type system be FBC? If not, the rawness type
