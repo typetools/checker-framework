@@ -472,7 +472,7 @@ ${build.version} of the 'javac.jar' library."/>
             <param name="param" value="tests.NonNullFbcTest"/>
         </antcall>
         <antcall target="-run-tests">
-            <param name="param" value="tests.NonNullRawTest"/>
+            <param name="param" value="tests.NonNullRawnessTest"/>
         </antcall>
     </target>
 
