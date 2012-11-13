@@ -421,10 +421,15 @@ public class NonNullVisitor extends
         if (!TreeUtils.isSelfAccess(node)) {
             Set<AnnotationMirror> recvAnnos = atypeFactory
                     .getReceiverType(node).getAnnotations();
+            AnnotatedTypeMirror methodReceiver = method.getReceiverType()
+                    .getErased();
+            AnnotatedTypeMirror treeReceiver = methodReceiver.getCopy(false);
+            AnnotatedTypeMirror rcv = atypeFactory.getReceiverType(node);
+            treeReceiver.addAnnotations(rcv.getEffectiveAnnotations());
             // If receiver is Nullable, then we don't want to issue a warning
             // about method invocability (we'd rather have only the
             // "dereference.of.nullable" message).
-            if (recvAnnos.contains(NULLABLE)
+            if (AnnotationUtils.containsSame(treeReceiver.getAnnotations(), NULLABLE)
                     || recvAnnos.contains(MONOTONICNONNULL)) {
                 return;
             }
