@@ -34,6 +34,7 @@ import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.Tree.Kind;
 
+import dataflow.analysis.FlowExpressions.ClassName;
 import dataflow.analysis.FlowExpressions.FieldAccess;
 import dataflow.analysis.FlowExpressions.Receiver;
 import dataflow.analysis.FlowExpressions.ThisReference;
@@ -150,7 +151,8 @@ public class InitializationVisitor<Checker extends InitializationChecker>
                 necessaryAnnotation)) {
             if (expr instanceof FieldAccess) {
                 FieldAccess fa = (FieldAccess) expr;
-                if (fa.getReceiver() instanceof ThisReference) {
+                if (fa.getReceiver() instanceof ThisReference
+                        || fa.getReceiver() instanceof ClassName) {
                     InitializationStore s = (InitializationStore) store;
                     if (s.isFieldInitialized(fa.getField())) {
                         return true;
