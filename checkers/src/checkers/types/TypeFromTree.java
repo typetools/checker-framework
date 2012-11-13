@@ -15,6 +15,7 @@ import javax.lang.model.type.TypeVariable;
 import javacutils.AnnotationUtils;
 import javacutils.ErrorReporter;
 import javacutils.InternalUtils;
+import javacutils.Pair;
 import javacutils.TreeUtils;
 import javacutils.TypesUtils;
 
@@ -80,7 +81,7 @@ abstract class TypeFromTree extends
         public AnnotatedTypeMirror visitArrayAccess(ArrayAccessTree node,
                 AnnotatedTypeFactory f) {
 
-            AnnotatedTypeMirror preAssCtxt = f.visitorState.getAssignmentContext();
+            Pair<Tree, AnnotatedTypeMirror> preAssCtxt = f.visitorState.getAssignmentContext();
             try {
                 // TODO: what other trees shouldn't maintain the context?
                 f.visitorState.setAssignmentContext(null);

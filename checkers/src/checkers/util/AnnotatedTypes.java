@@ -31,6 +31,7 @@ import javacutils.AnnotationUtils;
 import javacutils.ElementUtils;
 import javacutils.ErrorReporter;
 import javacutils.InternalUtils;
+import javacutils.Pair;
 import javacutils.TreeUtils;
 import javacutils.TypesUtils;
 
@@ -1225,12 +1226,12 @@ public class AnnotatedTypes {
         assert paramTypes.size() == trees.size() : "AnnotatedTypes.getAnnotatedTypes: size mismatch! " +
             "Parameter types: " + paramTypes + " Arguments: " + trees;
         List<AnnotatedTypeMirror> types = new ArrayList<AnnotatedTypeMirror>();
-        AnnotatedTypeMirror preAssCtxt = atypeFactory.getVisitorState().getAssignmentContext();
+        Pair<Tree, AnnotatedTypeMirror> preAssCtxt = atypeFactory.getVisitorState().getAssignmentContext();
 
         try {
             for (int i = 0; i < trees.size(); ++i) {
                 AnnotatedTypeMirror param = paramTypes.get(i);
-                atypeFactory.getVisitorState().setAssignmentContext(param);
+                atypeFactory.getVisitorState().setAssignmentContext(Pair.of((Tree) null, param));
                 ExpressionTree arg = trees.get(i);
                 types.add(atypeFactory.getAnnotatedType(arg));
             }
