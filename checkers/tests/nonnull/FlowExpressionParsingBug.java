@@ -39,12 +39,16 @@ public abstract class FlowExpressionParsingBug {
         a();
         FlowExpressionParsingBug.i = "";
         a();
-        
+    }
+    
+    void test1b() {
         //:: error: (contracts.precondition.not.satisfied)
         a();
         i = "";
         a();
-        
+    }
+    
+    void test1c() {
         //:: error: (contracts.precondition.not.satisfied)
         a();
         this.i = "";
@@ -56,12 +60,16 @@ public abstract class FlowExpressionParsingBug {
         b();
         FlowExpressionParsingBug.i = "";
         b();
-        
+    }
+    
+    void test2b() {
         //:: error: (contracts.precondition.not.satisfied)
         b();
         i = "";
         b();
-        
+    }
+    
+    void test2c() {
         //:: error: (contracts.precondition.not.satisfied)
         b();
         this.i = "";
@@ -73,12 +81,16 @@ public abstract class FlowExpressionParsingBug {
         c();
         FlowExpressionParsingBug.i = "";
         c();
-        
+    }
+    
+    void test3b() {
         //:: error: (contracts.precondition.not.satisfied)
         c();
         i = "";
         c();
-        
+    }
+    
+    void test3c() {
         //:: error: (contracts.precondition.not.satisfied)
         c();
         this.i = "";
