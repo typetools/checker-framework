@@ -2,8 +2,6 @@ package checkers.initialization;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -21,14 +19,11 @@ import dataflow.analysis.ConditionalTransferResult;
 import dataflow.analysis.FlowExpressions;
 import dataflow.analysis.FlowExpressions.FieldAccess;
 import dataflow.analysis.FlowExpressions.Receiver;
-import dataflow.analysis.FlowExpressions.ThisReference;
 import dataflow.analysis.RegularTransferResult;
 import dataflow.analysis.TransferInput;
 import dataflow.analysis.TransferResult;
-import dataflow.cfg.UnderlyingAST;
 import dataflow.cfg.node.AssignmentNode;
 import dataflow.cfg.node.FieldAccessNode;
-import dataflow.cfg.node.LocalVariableNode;
 import dataflow.cfg.node.MethodInvocationNode;
 import dataflow.cfg.node.Node;
 import dataflow.cfg.node.ThisLiteralNode;
@@ -52,9 +47,11 @@ import com.sun.source.tree.MethodInvocationTree;
  * <ol>
  * <li>After the call to a constructor ("this()" call), all non-null fields of
  * the current class can safely be considered initialized.
- * <li>TODO: After a method call with a postcondition that ensures a field to be
- * non-null, that field can safely be considered initialized.
- * <li>All non-null fields with an initializer can be considered initialized.
+ * <li>After a method call with a postcondition that ensures a field to be
+ * non-null, that field can safely be considered initialized (this is done in
+ * {@link InitializationStore#insertValue(Receiver, CFValue)}).
+ * <li>All non-null fields with an initializer can be considered initialized
+ * (this is done in {@link InitializationStore#insertValue(Receiver, CFValue)}).
  * <li>After the call to a super constructor ("super()" call), all non-null
  * fields of the super class can safely be considered initialized.
  * </ol>
@@ -75,17 +72,6 @@ public class InitializationTransfer<T extends InitializationTransfer<T>>
         super(analysis);
         this.checker = (InitializationChecker) analysis.getFactory()
                 .getChecker();
-    }
-
-    @Override
-    public InitializationStore initialStore(UnderlyingAST underlyingAST,
-            List<LocalVariableNode> parameters) {
-        InitializationStore result = super.initialStore(underlyingAST,
-                parameters);
-        // Case 3: all invariant fields that have an initializer are part of
-        // 'fieldValues', and can be considered initialized.
-        addInitializedFields(result);
-        return result;
     }
 
     /**
@@ -129,10 +115,6 @@ public class InitializationTransfer<T extends InitializationTransfer<T>>
             }
         }
 
-        // Case 2: After a method call that has some postcondition ensuring some
-        // properties about fields, these fields can be known to be initialized.
-        addInitializedFields(transferResult.getThenStore());
-        addInitializedFields(transferResult.getElseStore());
         return result;
     }
 
@@ -149,26 +131,6 @@ public class InitializationTransfer<T extends InitializationTransfer<T>>
                     .getAnnotatedType(field);
             if (fieldAnno.hasAnnotation(checker.getFieldInvariantAnnotation())) {
                 result.add(field);
-            }
-        }
-    }
-
-    /**
-     * For the given store {@code store}, add all fields for which we know some
-     * property (by looking at 'fieldValues' in the store) to the set of
-     * initialized fields.
-     */
-    protected void addInitializedFields(InitializationStore store) {
-        Map<FieldAccess, CFValue> fieldValues = store.getFieldValues();
-        for (Entry<FieldAccess, CFValue> e : fieldValues.entrySet()) {
-            FieldAccess field = e.getKey();
-            Receiver rec = field.getReceiver();
-            boolean fieldOnThisReference = rec instanceof ThisReference;
-            boolean staticField = field.isStatic();
-            if (fieldOnThisReference || staticField) {
-                // There is no need to check what CFValue the field has, as any
-                // value means that is has been initialized.
-                store.addInitializedField(field);
             }
         }
     }
@@ -216,8 +178,9 @@ public class InitializationTransfer<T extends InitializationTransfer<T>>
                 CFValue refinedResultValue = analysis
                         .createSingleAnnotationValue(inv, oldResultValue
                                 .getType().getUnderlyingType());
-                result.setResultValue(refinedResultValue.mostSpecific(
-                        oldResultValue, null));
+                CFValue newResultValue = refinedResultValue.mostSpecific(
+                        oldResultValue, null);
+                result.setResultValue(newResultValue);
             }
         }
         return result;

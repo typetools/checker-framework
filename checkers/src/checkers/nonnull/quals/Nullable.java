@@ -29,7 +29,7 @@ import com.sun.source.tree.Tree;
 @SubtypeOf({})
 @TypeQualifier
 @Retention(RetentionPolicy.RUNTIME)
-@ImplicitFor(trees = { Tree.Kind.NULL_LITERAL })
+@ImplicitFor(trees = { Tree.Kind.NULL_LITERAL }, typeNames = { java.lang.Void.class })
 @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
 public @interface Nullable {
 }

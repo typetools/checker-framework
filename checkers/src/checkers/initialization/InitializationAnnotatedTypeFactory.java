@@ -1,6 +1,7 @@
 package checkers.initialization;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -9,6 +10,8 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.Name;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
@@ -24,6 +27,7 @@ import checkers.flow.analysis.checkers.CFValue;
 import checkers.initialization.quals.Free;
 import checkers.initialization.quals.NotOnlyCommitted;
 import checkers.initialization.quals.Unclassified;
+import checkers.quals.Unused;
 import checkers.types.AbstractBasicAnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -148,8 +152,9 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
             if (areAllFieldsCommittedOnly(enclosingClass)) {
                 InitializationStore store = getStoreBefore(tree);
                 if (store != null) {
-                    if (getUninitializedInvariantFields(store, path, false)
-                            .size() == 0) {
+                    List<AnnotationMirror> annos = Collections.emptyList();
+                    if (getUninitializedInvariantFields(store, path, false,
+                            annos).size() == 0) {
                         if (useFbc) {
                             annotation = checker
                                     .createFreeAnnotation(classType);
@@ -213,13 +218,17 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
      * and are not yet initialized in a given store.
      */
     public Set<VariableTree> getUninitializedInvariantFields(
-            InitializationStore store, TreePath path, boolean isStatic) {
+            InitializationStore store, TreePath path, boolean isStatic,
+            List<? extends AnnotationMirror> receiverAnnotations) {
         ClassTree currentClass = TreeUtils.enclosingClass(path);
         Set<VariableTree> fields = InitializationChecker
                 .getAllFields(currentClass);
         Set<VariableTree> violatingFields = new HashSet<>();
         AnnotationMirror invariant = checker.getFieldInvariantAnnotation();
         for (VariableTree field : fields) {
+            if (isUnused(field, receiverAnnotations)) {
+                continue; // don't consider unused fields
+            }
             if (ElementUtils.isStatic(TreeUtils.elementFromDeclaration(field)) == isStatic) {
                 // Does this field need to satisfy the invariant?
                 if (getAnnotatedType(field).hasAnnotation(invariant)) {
@@ -232,6 +241,34 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
             }
         }
         return violatingFields;
+    }
+
+    /**
+     * Returns whether the field {@code f} is unused, given the annotations on
+     * the receiver.
+     */
+    private boolean isUnused(VariableTree field,
+            Collection<? extends AnnotationMirror> receiverAnnos) {
+        if (receiverAnnos.isEmpty()) {
+            return false;
+        }
+
+        AnnotationMirror unused = getDeclAnnotation(
+                TreeUtils.elementFromDeclaration(field), Unused.class);
+        if (unused == null)
+            return false;
+
+        Name when = AnnotationUtils.getElementValueClassName(unused, "when",
+                false);
+        for (AnnotationMirror anno : receiverAnnos) {
+            Name annoName = ((TypeElement) anno.getAnnotationType().asElement())
+                    .getQualifiedName();
+            if (annoName.contentEquals(when)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
