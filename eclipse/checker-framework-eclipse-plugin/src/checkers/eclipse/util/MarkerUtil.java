@@ -35,25 +35,31 @@ public final class MarkerUtil
     }
 
     /**
-     * @param message  The message to attach to the marker
-     * @param project  The project being worked on
+     * @param message The message to attach to the marker
+     * @param project The project being worked on
      * @param resource Typically a file, the resource being marked
-     * @param startLine The line 
+     * @param startLine The line
+     * @param startPosition The offset of the beginning of the code snippet
+     *            related to the message
+     * @param endPosition The offset of the end of the code snippet related to
+     *            the message
      */
     public static void addMarker(String message, IProject project,
-            IResource resource, int startLine)
+                                 IResource resource, int startLine, int startPosition, int endPosition)
     {
         if (CheckerPlugin.DEBUG)
         {
             System.out.println("Creating marker for " + resource.getLocation()
-                    + ": line " + startLine + " " + message);
+                    + ": line " + startLine + " : start position "
+                    + startPosition + " : end position " + endPosition + " "
+                    + message);
         }
 
         try
         {
             project.getWorkspace().run(
-                    new MarkerReporter(resource, startLine, message), null, 0,
-                    null);
+                    new MarkerReporter(resource, startLine, message,
+                            startPosition, endPosition), null, 0, null);
         }catch (CoreException e)
         {
             CheckerPlugin.logException(e, "Core exception on add marker");

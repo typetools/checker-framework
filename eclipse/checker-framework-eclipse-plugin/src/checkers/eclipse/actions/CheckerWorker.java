@@ -20,8 +20,10 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 
 import checkers.eclipse.CheckerPlugin;
+import checkers.eclipse.javac.CheckersRunner;
 import checkers.eclipse.javac.CommandlineJavacRunner;
 import checkers.eclipse.javac.JavacError;
+import checkers.eclipse.javac.JavacRunner;
 import checkers.eclipse.util.JavaUtils;
 import checkers.eclipse.util.MarkerUtil;
 import checkers.eclipse.util.Paths;
@@ -31,11 +33,14 @@ import com.sun.tools.javac.util.Pair;
 
 public class CheckerWorker extends Job
 {
-
     private final IJavaProject project;
     private final String checkerNames;
     private String[] sourceFiles;
-
+    
+    private final String javacJreVersion = "1.8.0"; 
+    
+    private final boolean useJavacRunner;
+    
     /**
      * This constructor is intended for use from an incremental builder that has
      * a list of updated source files to check
@@ -51,6 +56,7 @@ public class CheckerWorker extends Job
         this.project = project;
         this.sourceFiles = sourceFiles;
         this.checkerNames = checkerNames;
+    	this.useJavacRunner  = shouldUseJavacRunner();
     }
 
     public CheckerWorker(IJavaElement element, String checkerNames)
@@ -58,7 +64,8 @@ public class CheckerWorker extends Job
         super("Running checker on " + element.getElementName());
         this.project = element.getJavaProject();
         this.checkerNames = checkerNames;
-
+        this.useJavacRunner  = shouldUseJavacRunner();
+    	
         try
         {
             this.sourceFiles = ResourceUtils.sourceFilesOf(element).toArray(
@@ -67,6 +74,13 @@ public class CheckerWorker extends Job
         {
             CheckerPlugin.logException(e, e.getMessage());
         }
+    }
+
+    private boolean shouldUseJavacRunner() {            /*
+        int expectedLength = "1.x.x".length();
+        final String jreVersion      = System.getProperties().getProperty("java.runtime.version").substring(0, expectedLength);
+        return jreVersion.equals(javacJreVersion);     */
+        return false;
     }
 
     @Override
@@ -105,10 +119,15 @@ public class CheckerWorker extends Job
 
     private List<JavacError> runChecker() throws JavaModelException
     {
-        Pair<String, String> classpaths = classPathOf(project);
-        CommandlineJavacRunner runner = new CommandlineJavacRunner(sourceFiles,
-                checkerNames, classpaths.fst, classpaths.snd);
-
+        final Pair<String, String> classpaths = classPathOf(project);
+        final CheckersRunner runner;
+        if(useJavacRunner) {
+        	runner = new JavacRunner(sourceFiles, checkerNames.split(","),
+                                     classpaths.fst + File.pathSeparator + classpaths.snd);
+        } else {
+        	runner = new CommandlineJavacRunner(sourceFiles, checkerNames, 
+        			classpaths.fst, classpaths.snd);
+        }
         runner.run();
 
         return runner.getErrors();
@@ -125,11 +144,16 @@ public class CheckerWorker extends Job
     {
         for (JavacError error : errors)
         {
+            if (error.file == null)
+            {
+                continue;
+            }
+
             IResource file = ResourceUtils.getFile(project, error.file);
             if (file == null)
                 continue;
             MarkerUtil.addMarker(error.message, project.getProject(), file,
-                    error.lineNumber);
+                    error.lineNumber, error.startPosition, error.endPosition);
         }
     }
 
