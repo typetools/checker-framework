@@ -26,7 +26,7 @@ import checkers.eclipse.util.JavaUtils;
 /**
  * Runs the compiler and parses the output.
  */
-public class CommandlineJavacRunner
+public class CommandlineJavacRunner implements CheckersRunner
 {
     // TODO: some constants are here, some in JavacRunner
     // TODO: what is the relation between those classes?

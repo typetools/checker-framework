@@ -28,6 +28,18 @@ public class JavacError
     public final int lineNumber;
     public final String message;
     public final Diagnostic<? extends JavaFileObject> diag;
+    public final int startPosition;
+    public final int endPosition;
+
+    public JavacError(Diagnostic<? extends JavaFileObject> diag)
+    {
+        this.file = new File(diag.getSource().toUri().getPath());
+        this.lineNumber = (int) diag.getLineNumber();
+        this.message = diag.getMessage(null);
+        this.startPosition = (int) diag.getStartPosition();
+        this.endPosition = (int) diag.getEndPosition();
+        this.diag = diag;
+    }
 
     public JavacError(File file, int lineNumber, String message)
     {
@@ -35,7 +47,10 @@ public class JavacError
         this.lineNumber = lineNumber;
         this.message = message;
         this.diag = null;
+        this.startPosition = -1;
+        this.endPosition = -1;
     }
+
 
     @Override
     public String toString()
