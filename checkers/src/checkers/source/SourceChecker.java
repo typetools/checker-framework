@@ -313,12 +313,14 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
                         "You have forgotten to call super.initChecker in your "
                                 + "subclass of SourceChecker! Please ensure your checker is properly initialized.");
             }
-            Runtime.getRuntime().addShutdownHook(new Thread() {
-                @Override
-                public void run() {
-                    shutdownHook();
-                }
-            });
+            if (shouldAddShutdownHook()) {
+                Runtime.getRuntime().addShutdownHook(new Thread() {
+                    @Override
+                    public void run() {
+                        shutdownHook();
+                    }
+                });
+            }
         } catch (CheckerError ce) {
             logCheckerError(ce);
         } catch (Throwable t) {
@@ -346,6 +348,14 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         this.messages = getMessages();
         this.warns = processingEnv.getOptions().containsKey("warns");
         this.activeLints = createActiveLints(processingEnv.getOptions());
+    }
+
+    /**
+     * Return true to indicate that method {@link #shutdownHook} should be
+     * added as a shutdownHook of the JVM.
+     */
+    protected boolean shouldAddShutdownHook() {
+        return processingEnv.getOptions().containsKey("resourceStats");
     }
 
     /**
