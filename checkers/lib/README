@@ -1,0 +1,12 @@
+javaparser.jar
+  This file is not in the repository. It is rebuilt from the
+  CF/javaparser project.
+
+jna.jar
+  This is used by CheckerMain to call a system execute instead
+  of a pure Java solution. The comment says something about
+  support for "redirects".
+  Can we somehow get rid of this dependency?
+
+Also note that there is ../tests/junit-4.7.jar, which
+is used by the tests only.
