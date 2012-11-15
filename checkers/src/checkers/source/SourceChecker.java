@@ -592,11 +592,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         // SuppressWarnings key.
         for (String suppressWarningValue : anno.value()) {
             for (String swKey : swkeys) {
-                if (suppressWarningValue.equals(swKey))
+                if (suppressWarningValue.equalsIgnoreCase(swKey))
                     return true;
 
                 String expected = swKey + ":" + err;
-                if (expected.contains(suppressWarningValue))
+                if (expected.toLowerCase().contains(suppressWarningValue.toLowerCase()))
                     return true;
             }
         }
