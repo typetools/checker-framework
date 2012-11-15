@@ -50,6 +50,7 @@ public class ReportVisitor extends BaseTypeVisitor<ReportChecker> {
         }
     }
 
+    @SuppressWarnings("CompilerMessages") // These warnings are not translated.
     @Override
     public Void scan(Tree tree, Void p) {
         if (tree != null && treeKinds != null) {
@@ -261,6 +262,7 @@ public class ReportVisitor extends BaseTypeVisitor<ReportChecker> {
         return super.visitInstanceOf(node, p);
     }
 
+    @SuppressWarnings("CompilerMessages") // These warnings are not translated.
     @Override
     public Void visitModifiers(ModifiersTree node, Void p) {
         if (node != null && modifiers != null) {
@@ -275,6 +277,7 @@ public class ReportVisitor extends BaseTypeVisitor<ReportChecker> {
         return super.visitModifiers(node, p);
     }
 
+    @Override
     protected TypeValidator createTypeValidator() {
         return new ReportTypeValidator();
     }
