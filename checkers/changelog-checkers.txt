@@ -1,3 +1,14 @@
+Version 1.4.4, ? ? 2012
+
+Internal framework improvements:
+  Add shutdown hook mechanism and use it for -AresourceStats resource
+    statistics flag.
+  Ignore case when comparing error suppression keys.
+  Support the bottom type as subtype of any wildcard type.
+
+Bug fixes.
+
+----------------------------------------------------------------------
 Version 1.4.3, 1 Nov 2012
 
 Clarify license:
