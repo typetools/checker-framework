@@ -60,7 +60,7 @@ public class TypeHierarchy {
     /**
      * Constructs an instance of {@code TypeHierarchy} for the type system
      * whose qualifiers represented in qualifierHierarchy.
-     * 
+     *
      * @param checker The type checker to use
      * @param qualifierHierarchy The qualifier hierarchy to use
      */
@@ -159,6 +159,11 @@ public class TypeHierarchy {
                     for (AnnotationMirror bndi : bnd) {
                         bot.add(qualifierHierarchy.getBottomAnnotation(bndi));
                     }
+                    Set<AnnotationMirror> rhsAnnos = rhs.getEffectiveAnnotations();
+                    if (AnnotationUtils.areSame(bot, rhsAnnos)) {
+                        // If the rhs is all bottoms, allow.
+                        return true;
+                    }
                     if (!wildcard.isMethodTypeArgHack() &&
                             (!bnd.isEmpty() && bnd.size() == bot.size()) &&
                             (!qualifierHierarchy.isSubtype(bnd, bot) ||
@@ -218,7 +223,7 @@ public class TypeHierarchy {
             // System.out.printf("lhsBase (%s underlying=%s), rhsBase (%s underlying=%s), equals=%s%n", lhsBase.hashCode(), lhsBase.getUnderlyingType(), rhsBase.hashCode(), rhsBase.getUnderlyingType(), lhsBase.equals(rhsBase));
 
             if (areCorrespondingTypeVariables(lhsBase, rhsBase)) {
-                // We have corresponding type variables 
+                // We have corresponding type variables
                 if(!lhsBase.getAnnotations().isEmpty() && !rhsBase.getAnnotations().isEmpty() &&
                     qualifierHierarchy.isSubtype(rhsBase.getAnnotations(), lhsBase.getAnnotations())) {
                     // Both sides have annotations and the rhs is a subtype of the lhs -> good
@@ -470,7 +475,7 @@ public class TypeHierarchy {
      *
      * @return true iff rhs is a subtype of lhs
      */
-    protected boolean isSubtypeAsArrayComponent(AnnotatedTypeMirror rhs, AnnotatedTypeMirror lhs) {        
+    protected boolean isSubtypeAsArrayComponent(AnnotatedTypeMirror rhs, AnnotatedTypeMirror lhs) {
         // TODO: I think this can only happen from the method type variable introduction
         // of wildcards. If we change that (in AnnotatedTypes.inferTypeArguments)
         if (lhs.getKind() == TypeKind.WILDCARD && rhs.getKind() != TypeKind.WILDCARD) {
