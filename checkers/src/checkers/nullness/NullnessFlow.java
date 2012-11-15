@@ -911,7 +911,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
                         !(index != -1 && this.flowState.annos.get(NONNULL, index)) &&
                         !this.flowState.nnExprs.contains(check)) {
                         checker.report(Result.failure(
-                                                (ifTrue ? "assertiftrue" : "assertiffalse") + ".postcondition.not.satisfied",
+                                                (ifTrue ? "assertiftrue.postcondition.not.satisfied" : "assertiffalse.postcondition.not.satisfied"),
                                                 check), ret);
                         }
 
