@@ -1,5 +1,8 @@
 package checkers.regex;
 
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
+
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 
@@ -126,7 +129,7 @@ public class RegexAnnotatedTypeFactory extends AbstractBasicAnnotatedTypeFactory
      * We cannot directly use RegexUtil, because it uses type annotations
      * which cannot be used in IDEs (yet).
      */
-    @Pure
+    /*@dataflow.quals.Pure*/
     private static boolean isRegex(String s) {
         try {
             Pattern.compile(s);
