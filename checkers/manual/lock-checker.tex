@@ -29,7 +29,7 @@ other is a method annotation.
 \item[\code{@\refclass{lock/quals}{GuardedBy}}]
   indicates a type whose value may be accessed only when the given lock is
   held.  See the \ahref{doc/checkers/lock/quals/GuardedBy.html}{GuardedBy
-    Javadoc} for an explanation of the argument.  The lock
+    Javadoc} for an explanation of the argument and other details.  The lock
   acquisition and the value access may be arbitrarily far in the future;
   or, if the value is never accessed, the lock never need be held.
 
@@ -62,7 +62,10 @@ A return value may be annotated with \code{@GuardedBy}:
   }
 \end{Verbatim}
 
-A parameter may be annotated with \code{@GuardedBy}:
+A parameter may be annotated with \code{@GuardedBy}, which indicates that
+the method body must acquire the lock before accessing the parameter.  A
+client may pass a non-\code{@GuardedBy} reference as an argument, since it
+is legal to access such a reference after the lock is acquired.
 
 \begin{Verbatim}
   void helper1(@GuardedBy("MyClass.myLock") Object a) {
@@ -76,6 +79,7 @@ A parameter may be annotated with \code{@GuardedBy}:
     b.toString(); // OK: the lock is held
   }
   void helper3(Object c) {
+    helper1(c); // OK: passing a subtype in place of a the @GuardedBy supertype
     c.toString(); // OK: no lock constraints
   }
   void helper4(@GuardedBy("MyClass.myLock") Object d) {
@@ -163,6 +167,49 @@ The advantages of the \<@Holding> annotation include:
 \end{itemize}
 
 
+\section{Other lock annotations\label{other-lock-annotations}}
+
+The Checker Framework's lock annotations are similar to annotations used
+elsewhere.
+
+If your code is already annotated with a different lock
+annotation, you can reuse that effort.  The Checker Framework comes with
+cleanroom re-implementations of annotations from other tools.  It treats
+them exactly as if you had written the corresponding annotation from the
+Lock Checker, as described in Figure~\ref{fig:lock-refactoring}.
+
+
+% These lists should be kept in sync with LockAnnotatedTypeFactory.java .
+\begin{figure}
+\begin{center}
+% The ~ around the text makes things look better in Hevea (and not terrible
+% in LaTeX).
+\begin{tabular}{ll}
+\begin{tabular}{|l|}
+\hline
+ ~net.jcip.annotations.GuardedBy~ \\ \hline
+\end{tabular}
+&
+$\Rightarrow$
+~checkers.lock.quals.GuardedBy~
+\end{tabular}
+\end{center}
+%BEGIN LATEX
+\vspace{-1.5\baselineskip}
+%END LATEX
+\caption{Correspondence between other lock annotations and the
+  Checker Framework's annotations.}
+\label{fig:lock-refactoring}
+\end{figure}
+
+Alternately, the Checker Framework can process those other annotations (as
+well as its own, if they also appear in your program).  The Checker
+Framework has its own definition of the annotations on the left side of
+Figure~\ref{fig:lock-refactoring}, so that they can be used as type
+qualifiers.  The Checker Framework interprets them according to the right
+side of Figure~\ref{fig:lock-refactoring}.
+
+
 \subsection{Relationship to annotations in \emph{Java Concurrency in Practice}\label{jcip-annotations}}
 
 The book \ahref{http://jcip.net/}{\emph{Java Concurrency in Practice}}~\cite{Goetz2006} defines a
@@ -195,8 +242,10 @@ The Lock checker renames the method annotation to
 that can apply not just to a field but to an arbitrary type (including the
 type of a parameter, return value, local variable, generic type parameter,
 etc.).  This makes the annotations more expressive and also more amenable
-to automated checking.  It also accommodates the distinct (though related)
-meanings of the two annotations.
+to automated checking.  It also accommodates the distinct
+meanings of the two annotations, and resolves ambiguity when \<@GuardedBy>
+is written in a location that might apply to either the method or the
+return type.
 
 % It would not work to retain the name \code{@GuardedBy} but put it on the
 % receiver; an annotation on the receiver indicates what lock must be held
@@ -204,6 +253,22 @@ meanings of the two annotations.
 % when the method was called.
 
 
+\section{Possible extensions\label{lock-extensions}}
+
+The Lock Checker validates some uses of locks, but not all.  It would be
+possible to enrich it with additional annotations.  This would increase the
+programmer annotation burden, but would provide additional guarantees.
+
+Lock ordering:  Specify that one lock must be acquired before or after
+another, or specify a global ordering for all locks.  This would prevent
+deadlock.
+
+Not-holding:  Specify that a method must not be called if any of the listed
+locks are held.
+
+These features are supported by 
+\ahref{http://clang.llvm.org/docs/LanguageExtensions.html#threadsafety}{Clang's thread-safety annotations}.
+
 
 % LocalWords:  quals GuardedBy JCIP putfield getfield invokevirtual
-% LocalWords:  invokeinterface
+% LocalWords:  invokeinterface threadsafety Clang's

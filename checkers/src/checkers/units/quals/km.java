@@ -5,11 +5,11 @@ import java.lang.annotation.*;
 import checkers.quals.*;
 
 /**
- * Kilometers.
+ * Kilometer.
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @TypeQualifier
 @SubtypeOf(Length.class)
 @UnitsMultiple(quantity=m.class, prefix=Prefix.kilo)

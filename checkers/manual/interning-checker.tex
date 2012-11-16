@@ -246,9 +246,10 @@ The Checker Framework's interning annotations are similar to annotations used
 elsewhere.
 
 If your code is already annotated with a different interning
-annotation, you can reuse that effort by converting them to the Checker
-Framework's nullness annotations.  Perform the refactoring described in
-Figure~\ref{fig:interning-refactoring}.
+annotation, you can reuse that effort.  The Checker Framework comes with
+cleanroom re-implementations of annotations from other tools.  It treats
+them exactly as if you had written the corresponding annotation from the
+Interning Checker, as described in Figure~\ref{fig:interning-refactoring}.
 
 
 % These lists should be kept in sync with InterningAnnotatedTypeFactory.java .
@@ -269,8 +270,8 @@ $\Rightarrow$
 %BEGIN LATEX
 \vspace{-1.5\baselineskip}
 %END LATEX
-\caption{Refactoring for converting interning annotations from other tools
-  to the Checker Framework.}
+\caption{Correspondence between other interning annotations and the
+  Checker Framework's annotations.}
 \label{fig:interning-refactoring}
 \end{figure}
 

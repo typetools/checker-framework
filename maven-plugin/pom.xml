@@ -5,8 +5,8 @@
     <packaging>maven-plugin</packaging>
     <name>Checkers plugin</name>
     <groupId>types.checkers</groupId>
-    <artifactId>checkersplugin</artifactId>
-    <version>0.2</version>
+    <artifactId>checkers-maven-plugin</artifactId>
+    <version>1.4.4</version>
 
     <build>
         <plugins>

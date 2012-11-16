@@ -33,6 +33,7 @@ public class CheckerPlugin extends AbstractUIPlugin
 
     /** The console name to use for this plugin */
     private static final String consoleName = "Checkers Plugin Console";
+    
 
     public CheckerPlugin()
     {
@@ -43,7 +44,7 @@ public class CheckerPlugin extends AbstractUIPlugin
     @Override
     public void start(BundleContext context) throws Exception
     {
-        super.start(context);
+    	super.start(context);
     }
 
     @Override

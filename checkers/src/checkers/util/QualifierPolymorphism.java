@@ -437,7 +437,7 @@ public class QualifierPolymorphism {
                 visited.remove(actualType.getUnderlyingType());
                 return result;
             }
-            if (actualType.getKind() == TypeKind.WILDCARD) { 
+            if (actualType.getKind() == TypeKind.WILDCARD) {
                 if (visited.contains(actualType.getUnderlyingType()))
                     return Collections.emptyMap();
                 visited.add(actualType.getUnderlyingType());
@@ -457,15 +457,17 @@ public class QualifierPolymorphism {
                 AnnotationMirror top = kv.getKey();
                 AnnotationMirror poly = kv.getValue();
 
-                if (top == null) {
-                    // PolyAll qualifier
-                    result.put(poly, type.getAnnotations());
-                } else if (arType.hasAnnotation(poly)) {
-                    AnnotationMirror typeQual = type.getAnnotationInHierarchy(top);
-                    result.put(poly, Collections.singleton(typeQual));
+                if (arType.hasAnnotation(poly)) {
+                    Set<AnnotationMirror> typeQuals;
+                    if (top == null) {
+                        // PolyAll qualifier
+                        typeQuals = type.getAnnotations();
+                    } else {
+                        typeQuals = Collections.singleton(type.getAnnotationInHierarchy(top));
+                    }
+                    result.put(poly, typeQuals);
                 }
             }
-
             result = reduce(result, visit(type.getComponentType(), arType.getComponentType()));
             return result;
         }

@@ -138,6 +138,7 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
 
         addAliasedAnnotation(org.jmlspecs.annotation.Immutable.class, IMMUTABLE);
         addAliasedAnnotation(org.jmlspecs.annotation.Readonly.class, READONLY);
+        addAliasedAnnotation(net.jcip.annotations.Immutable.class, IMMUTABLE);
 
         // TODO: Add an alias for the Pure JML annotation. It's not a type qualifier, I think adding
         // it above does not work. Also see NullnessAnnotatedTypeFactory.

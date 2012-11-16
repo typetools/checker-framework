@@ -17,6 +17,8 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
 import checkers.util.AnnotatedTypes;
+import checkers.util.AnnotationUtils;
+import checkers.util.InternalUtils;
 import checkers.util.QualifierPolymorphism;
 
 /**
@@ -159,6 +161,11 @@ public class TypeHierarchy {
                     Set<AnnotationMirror> bot = AnnotationUtils.createAnnotationSet();
                     for (AnnotationMirror bndi : bnd) {
                         bot.add(qualifierHierarchy.getBottomAnnotation(bndi));
+                    }
+                    Set<AnnotationMirror> rhsAnnos = rhs.getEffectiveAnnotations();
+                    if (AnnotationUtils.areSame(bot, rhsAnnos)) {
+                        // If the rhs is all bottoms, allow.
+                        return true;
                     }
                     if (!wildcard.isMethodTypeArgHack() &&
                             (!bnd.isEmpty() && bnd.size() == bot.size()) &&

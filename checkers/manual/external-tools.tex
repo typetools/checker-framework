@@ -16,18 +16,20 @@ we can add it to this manual.
 This chapter also discusses type inference tools (see
 Section~\ref{type-inference-tools}).
 
+All examples in this chapter are in the public domain, with no copyright nor
+licensing restrictions.
+
 
 \section{Javac Compiler\label{javac-installation}}
 
-If you use \code{javac} compiler from the command line, then you can use
-the Type annotations compiler (a variant of the OpenJDK \code{javac}) that
-is bundled with the Checker Framework.  The bundled \code{javac} recognizes
-type annotations, and annotations in comments (see
-Section~\ref{annotations-in-comments}).  (Eventually, you will be able to
-use any Java compiler, such as the OpenJDK compiler, but Oracle has been
-slow to incorporate all the patches, so the bundled \code{javac} is
-superior, for the purpose of pluggable type-checking, and is equivalent in
-all other respects.)
+If you use \code{javac} compiler from the command line, then you can
+instead use the Type annotations compiler that is bundled with the Checker
+Framework.  The bundled \code{javac} is a variant of the OpenJDK
+\code{javac} that recognizes type annotations.  Eventually, the OpenJDK
+\code{javac} will recognize type annotations.  The bundled \code{javac}
+also supports annotations in comments (see
+Section~\ref{annotations-in-comments}), which the OpenJDK \code{javac} will
+not.
 
 This section describes how you can install and use the bundled
 \code{javac}, using either Unix/Linux/MacOS (see
@@ -74,7 +76,7 @@ different shell, you may need to slightly adjust the commands.
 The output of the last command should be:
 
 \begin{Verbatim}
-  javac 1.7.0-jsr308-1.4.2
+  javac 1.7.0-jsr308-1.4.3
 \end{Verbatim}
 
 
@@ -101,7 +103,7 @@ verify that the installation works.  From the command line, run:
 The output should be:
 
 \begin{Verbatim}
-  javac 1.7.0-jsr308-1.4.2
+  javac 1.7.0-jsr308-1.4.3
 \end{Verbatim}
 
 \end{enumerate}
@@ -142,7 +144,7 @@ the new \code{javac} compiler.
 The output should be:
 
 \begin{Verbatim}
-  javac 1.7.0-jsr308-1.4.2
+  javac 1.7.0-jsr308-1.4.3
 \end{Verbatim}
 
 \end{enumerate}
@@ -210,7 +212,7 @@ Now, verify that the installation works.  From the command line, run:
 The output should be:
 
 \begin{Verbatim}
-  javac 1.7.0-jsr308-1.4.2
+  javac 1.7.0-jsr308-1.4.3
 \end{Verbatim}
 
 \end{enumerate}
@@ -370,7 +372,7 @@ have to declared as a dependency:
         <dependency>
             <groupId>types.checkers</groupId>
             <artifactId>checkers-quals</artifactId>
-            <version>1.4.0</version>
+            <version>1.4.3</version>
         </dependency>
 
         <!-- other dependencies -->
@@ -385,7 +387,7 @@ have to declared as a dependency:
             <plugin>
                 <groupId>types.checkers</groupId>
                 <artifactId>checkersplugin</artifactId>
-                <version>0.2</version>
+                <version>0.4</version>
                 <executions>
                     <execution>
                         <!-- run the checkers after compilation; this can also be any later phase -->
@@ -442,9 +444,9 @@ The plugin was contributed by Adam Warski.
 % http://docs.codehaus.org/display/GRADLE/Gradle+0.8+Breaking+Changes
 
 \ahref{http://gradle.org/}{Gradle} lets you add command-line arguments to a
-\code{javac} invocation by setting the compilerArgs property of the
+\code{javac} invocation by setting the \<compilerArgs> property of the
 compiler options.  This is adequate for running the Checker Framework,
-because it is run by specifying command-line arguments.  See the
+which is run by specifying command-line arguments.  See the
 instructions elsewhere in this manual for a list of command-line arguments.
 
 To specify command-line arguments, set
@@ -472,6 +474,25 @@ argument, then you can do so in the following way:
 \begin{Verbatim}
 tasks.withType(Compile).allObjects { compile ->
   compile.options.fork.executable = "$CHECKERS/binary/javac"
+}
+\end{Verbatim}
+
+You can also combine these methods as follows:
+
+\begin{Verbatim}
+def env         = System.getenv()
+def checkersDir = env["CHECKERS"]
+
+tasks.compileJava {
+  description = 'Compiles both the scala and java files for this project using the checker framework compiler and the scala compiler'
+  options.fork = true
+  options.compilerArgs = [
+  	  '-version',
+      '-implicit:class',
+      '-Awarns', '-Xmaxwarns', '10000',
+      '-processor', 'checkers.nullness.NullnessChecker',
+      "-Xbootclasspath/p:$checkersDir/jdk/jdk.jar"]
+  options.forkOptions.executable="$checkersDir/binary/javac"
 }
 \end{Verbatim}
 % extra $ to unconfuse Emacs's LaTeX mode

@@ -25,6 +25,10 @@ import japa.parser.ast.body.*;
 import japa.parser.ast.expr.*;
 import japa.parser.ast.type.*;
 
+/*>>>
+import checkers.nullness.quals.*;
+*/
+
 // Main entry point is:
 // parse(Map<Element, AnnotatedTypeMirror>, Map<Element, Set<AnnotationMirror>>)
 
@@ -795,6 +799,10 @@ public class StubParser {
                 anaiexpr = aiexprvals.get(i);
                 if (anaiexpr instanceof FieldAccessExpr) {
                     elemarr[i] = findVariableElement((FieldAccessExpr) anaiexpr);
+                    if (elemarr[i] == null) {
+                        // A warning was already issued by findVariableElement;
+                        return;
+                    }
                     String constval = (String) ((VariableElement)elemarr[i]).getConstantValue();
                     if (constval!=null) {
                         elemarr[i] = constval;
@@ -812,7 +820,7 @@ public class StubParser {
         }
     }
 
-    private VariableElement findVariableElement(FieldAccessExpr faexpr) {
+    private /*@Nullable*/ VariableElement findVariableElement(FieldAccessExpr faexpr) {
         TypeElement rcvElt = elements.getTypeElement(faexpr.getScope().toString());
         if (rcvElt == null) {
             if (warnIfNotFound || debugStubParser)

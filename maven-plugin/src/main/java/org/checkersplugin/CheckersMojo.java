@@ -23,8 +23,6 @@ import java.util.HashSet;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.io.IOException;
-import java.io.BufferedReader;
-import java.io.StringReader;
 import java.io.File;
 
 /**
@@ -84,7 +82,7 @@ public class CheckersMojo extends AbstractMojo {
 
     /**
      * Which version of the JSR308 checkers to use
-     * @parameter default-value="1.4.0"
+     * @parameter default-value="1.4.3"
      */
     private String checkersVersion;
 
@@ -266,7 +264,7 @@ public class CheckersMojo extends AbstractMojo {
     
         
         // Executing the command
-        int exitCode;
+        final int exitCode;
         try {
             exitCode = CommandLineUtils.executeCommandLine(cl, out, err);
         } catch (CommandLineException e) {
@@ -275,10 +273,10 @@ public class CheckersMojo extends AbstractMojo {
         }
 
         // Parsing the messages from the compiler
-        List<CompilerError> messages;
+        final List<CompilerError> messages;
         try {
-            messages = JavacCompilerUtil.parseModernStream( new BufferedReader( new StringReader( err.getOutput() ) ) );
-        } catch (IOException e) {
+            messages = JavacErrorMessagesParser.parseMessages(err.getOutput());
+        } catch (RuntimeException e) {
             throw new MojoExecutionException("Unable to parse messages.", e);
         }
 
@@ -293,13 +291,43 @@ public class CheckersMojo extends AbstractMojo {
             log.info("No errors found by the processor(s).");
         } else {
             if (failOnError) {
-                throw new MojoFailureException(CompilationFailureException.longMessage(messages));
+                final List<CompilerError> warnings = new ArrayList<CompilerError>();
+                final List<CompilerError> errors   = new ArrayList<CompilerError>();
+                for (final CompilerError message : messages) {
+                    if (message.isError()) {
+                        errors.add(message);
+                    } else {
+                        warnings.add(message);
+                    }
+                }
+
+                if (!warnings.isEmpty()) {
+                    logErrors(warnings, "warning", log);
+                }
+
+                logErrors(errors, "error", log);
+
+                throw new MojoFailureException(null, "Errors found by the processor(s)", CompilationFailureException.longMessage(errors));
+
             } else {
                 log.info("Run with debug logging in order to view the compiler command line");
-                for (CompilerError compilerError : messages) {
+                for (final CompilerError compilerError : messages) {
                     log.warn(compilerError.toString());
                 }
             }
         }
+    }
+
+    private static final void logErrors(final List<CompilerError> errors, final String label, final Log log) {
+        log.info("-------------------------------------------------------------");
+        log.warn("CHECKERS " + label.toUpperCase() + ": ");
+        log.info("-------------------------------------------------------------");
+        for (final CompilerError error : errors) {
+            log.warn(error.toString().trim());
+        }
+
+        final String labelLc = label.toLowerCase() + ((errors.size() == 1) ? "" : "s");
+        log.info(errors.size() + " " + labelLc);
+        log.info("-------------------------------------------------------------");
     }
 }

@@ -19,7 +19,15 @@ import checkers.quals.TypeQualifier;
  * The field (or other reference) to which this annotation is applied can only be accessed
  * when holding a particular lock, which may be a built-in (synchronization) lock,
  * or may be an explicit {@link java.util.concurrent.locks.Lock}.
- *
+ * <p>
+ * 
+ * This annotation does <b>not</b> indicate whether or not the given lock
+ * is held.  It merely indicates that the lock must be held when the
+ * reference is accessed.  An unannotated reference is a subtype of a
+ * <code>@GuardedBy</code> one, because the unannotated reference may be
+ * used in any context where the <code>@GuardedBy</code> reference is.
+ * <p>
+ * 
  * The argument is a string that indicates which lock guards the annotated variable:
  * <ul>
  * <li>
@@ -50,6 +58,7 @@ import checkers.quals.TypeQualifier;
  *
  * @see Holding
  */
+@Documented
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 @TypeQualifier

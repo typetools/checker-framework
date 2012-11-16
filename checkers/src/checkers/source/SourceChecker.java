@@ -2,6 +2,8 @@ package checkers.source;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryPoolMXBean;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -332,6 +334,14 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Err
                         "You have forgotten to call super.initChecker in your "
                                 + "subclass of SourceChecker! Please ensure your checker is properly initialized.");
             }
+            if (shouldAddShutdownHook()) {
+                Runtime.getRuntime().addShutdownHook(new Thread() {
+                    @Override
+                    public void run() {
+                        shutdownHook();
+                    }
+                });
+            }
         } catch (CheckerError ce) {
             logCheckerError(ce);
         } catch (Throwable t) {
@@ -361,6 +371,33 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Err
         this.activeLints = createActiveLints(processingEnv.getOptions());
     }
 
+    /**
+     * Return true to indicate that method {@link #shutdownHook} should be
+     * added as a shutdownHook of the JVM.
+     */
+    protected boolean shouldAddShutdownHook() {
+        return processingEnv.getOptions().containsKey("resourceStats");
+    }
+
+    /**
+     * Method that gets called exactly once at shutdown time of the JVM.
+     * Checkers can override this method to customize the behavior.
+     */
+    protected void shutdownHook() {
+        if (processingEnv.getOptions().containsKey("resourceStats")) {
+            printStats();
+        }
+    }
+
+    /** Print resource usage statistics */
+    protected void printStats() {
+        List<MemoryPoolMXBean> memoryPools = ManagementFactory.getMemoryPoolMXBeans();
+        for (MemoryPoolMXBean memoryPool : memoryPools) {
+            System.out.println("Memory pool " + memoryPool.getName() + " statistics");
+            System.out.println("  Pool type: " + memoryPool.getType());
+            System.out.println("  Peak usage: " + memoryPool.getPeakUsage());
+        }
+    }
 
     // Output the warning about source level at most once.
     private boolean warnedAboutSourceLevel = false;
@@ -576,11 +613,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Err
         // SuppressWarnings key.
         for (String suppressWarningValue : anno.value()) {
             for (String swKey : swkeys) {
-                if (suppressWarningValue.equals(swKey))
+                if (suppressWarningValue.equalsIgnoreCase(swKey))
                     return true;
 
                 String expected = swKey + ":" + err;
-                if (expected.contains(suppressWarningValue))
+                if (expected.toLowerCase().contains(suppressWarningValue.toLowerCase()))
                     return true;
             }
         }

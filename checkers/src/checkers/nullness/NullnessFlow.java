@@ -788,12 +788,6 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
     // Also see checkNonNullOnEntry for comparison
     private void checkAssertNonNullAfter(MethodTree meth, ExecutableElement methElem) {
         AnnotationMirror anno = atypeFactory.getDeclAnnotation(methElem, AssertNonNullAfter.class);
-        java.lang.annotation.Annotation a = null;
-        try {
-            a = methElem.getAnnotation(AssertNonNullAfter.class);
-        } catch (Exception e) {
-            e.printStackTrace(System.err);
-        }
         List<String> annoValues = AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
         TreePath path = TreePath.getPath(TreeUtils.pathTillClass(getCurrentPath()), meth);
         ClassTree cls = TreeUtils.enclosingClass(atypeFactory.getPath(meth));
@@ -804,8 +798,15 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
             while (paramIndexMatcher.find()) {
                 int param = Integer.valueOf(paramIndexMatcher.group(1));
                 if (param <= 0 || param > meth.getParameters().size()) {
-                    Tree atree = atypeFactory.getDeclAnnotationTree(meth, AssertNonNullAfter.class);
-                    checker.report(Result.warning("param.index.nullness.parse.error", paramIndexMatcher.group(), meth.getParameters().size()), atree);
+                    AnnotationTree atree = atypeFactory.getDeclAnnotationTree(meth, AssertNonNullAfter.class);
+                    int size = meth.getParameters().size();
+                    if (size == 0) {
+                        checker.report(Result.warning("zero.param.index.nullness.parse.error", paramIndexMatcher.group()), atree);
+                    } else if (size == 1) {
+                        checker.report(Result.warning("one.param.index.nullness.parse.error", paramIndexMatcher.group()), atree);
+                    } else {
+                        checker.report(Result.warning("param.index.nullness.parse.error", paramIndexMatcher.group(), size), atree);
+                    }
                 }
                 continue;
             }
@@ -916,7 +917,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
                         !(index != -1 && this.flowState.annos.get(NONNULL, index)) &&
                         !this.flowState.nnExprs.contains(check)) {
                         checker.report(Result.failure(
-                                                (ifTrue ? "assertiftrue" : "assertiffalse") + ".postcondition.not.satisfied",
+                                                (ifTrue ? "assertiftrue.postcondition.not.satisfied" : "assertiffalse.postcondition.not.satisfied"),
                                                 check), ret);
                         }
 

@@ -14,7 +14,8 @@ import checkers.regex.quals.*;
 // This class should be kept in sync with plume.RegexUtil .
 
 /**
- * Utility methods for regular expressions.
+ * Utility methods for regular expressions, most notably for testing whether
+ * a string is a regular expression.
  * <p>
  *
  * For an example of intended use, see section <a
@@ -118,6 +119,7 @@ public class RegexUtil {
      *
      * @return The full detail message
      */
+    @Override
     public String getMessage() {
       return pse.getMessage();
     }
@@ -151,7 +153,8 @@ public class RegexUtil {
    */
   /*>>>
   @SuppressWarnings("regex")    // RegexUtil
-  /*@dataflow.quals.Pure*/
+  @dataflow.quals.Pure
+  */
   public static boolean isRegex(String s, int groups) {
     Pattern p;
     try {
@@ -168,7 +171,8 @@ public class RegexUtil {
    */
   /*>>>
   @SuppressWarnings("regex")    // RegexUtil
-  /*@dataflow.quals.Pure*/
+  @dataflow.quals.Pure
+  */
   public static boolean isRegex(char c) {
     return isRegex(Character.toString(c));
   }
@@ -180,7 +184,8 @@ public class RegexUtil {
    */
   /*>>>
   @SuppressWarnings("regex")    // RegexUtil
-  /*@dataflow.quals.Pure*/
+  @dataflow.quals.Pure
+  */
   public static /*@Nullable*/ String regexError(String s) {
     return regexError(s, 0);
   }
@@ -192,7 +197,8 @@ public class RegexUtil {
    */
   /*>>>
   @SuppressWarnings("regex")    // RegexUtil
-  /*@dataflow.quals.Pure*/
+  @dataflow.quals.Pure
+  */
   public static /*@Nullable*/ String regexError(String s, int groups) {
     try {
       Pattern p = Pattern.compile(s);
@@ -213,7 +219,8 @@ public class RegexUtil {
    */
   /*>>>
   @SuppressWarnings("regex")    // RegexUtil
-  /*@dataflow.quals.Pure*/
+  @dataflow.quals.Pure
+  */
   public static /*@Nullable*/ PatternSyntaxException regexException(String s) {
     return regexException(s, 0);
   }
@@ -225,7 +232,8 @@ public class RegexUtil {
    */
   /*>>>
   @SuppressWarnings("regex")    // RegexUtil
-  /*@dataflow.quals.Pure*/
+  @dataflow.quals.Pure
+  */
   public static /*@Nullable*/ PatternSyntaxException regexException(String s, int groups) {
     try {
       Pattern p = Pattern.compile(s);
@@ -257,7 +265,8 @@ public class RegexUtil {
    */
   /*>>>
   @SuppressWarnings("regex")    // RegexUtil
-  /*@dataflow.quals.Pure*/
+  @dataflow.quals.Pure
+  */
   public static /*@Regex*/ String asRegex(String s, int groups) {
     try {
       Pattern p = Pattern.compile(s);

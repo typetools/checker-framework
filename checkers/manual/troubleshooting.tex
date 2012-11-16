@@ -477,6 +477,7 @@ Compile the Type Annotations javac compiler and the javap tool:
   cd $JSR308/jsr308-langtools/make
   ant clean build-javac build-javap
 \end{Verbatim}
+% $ to unconfuse Emacs LaTeX mode
 
 \item
  Add the \<jsr308-langtools/dist/bin> directory to the front of your PATH environment variable.
@@ -485,6 +486,11 @@ Compile the Type Annotations javac compiler and the javap tool:
 \begin{Verbatim}
   export PATH=$JSR308/jsr308-langtools/dist/bin:${PATH}
 \end{Verbatim}
+
+You may wish to later put the Checker Framework \<javac> even earlier on
+your path.  The Checker Framework's \<javac> ensures that the Checker
+Framework is on your classpath and bootclasspath, but is otherwise
+identical to the Type Annotations compiler.
 
 \end{enumerate}
 
@@ -739,7 +745,7 @@ documentation for a detailed discussion of related work.
 
 
 
-\section{Credits and changelog\label{credits}}
+\section{Credits, changelog, and license\label{credits}}
 
 The key developers of the Checker Framework are Mahmood Ali, Telmo Correa,
 Werner M. Dietl, Michael D. Ernst, and Matthew M. Papi.
@@ -764,8 +770,13 @@ in the \code{changelog-checkers.txt} file.  This file is included in the
 Checker Framework distribution and is also available on the web at
 \myurl{http://types.cs.washington.edu/checker-framework/current/changelog-checkers.txt}.
 
-
-
+The Checker Framework is licensed under the GNU General Public License
+(GPL), version 2.  The GPL is the same license that OpenJDK is licensed
+under.  That means that type-checking your code using the Checker Framework
+is no more dangerous (from an intellectual property point of view) than
+compiling your code using javac.  The more permissive MIT License applies
+to code that you might want to include in your own
+program, such as the annotations.  For details, see file \<LICENSE.txt>.
 
 
 

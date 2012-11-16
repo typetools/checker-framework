@@ -1263,8 +1263,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /** Add the annotation clazz as an alias for the annotation type. */
-    protected void addAliasedAnnotation(Class<?> clazz, AnnotationMirror type) {
-        aliases.put(clazz.getCanonicalName(), type);
+    protected void addAliasedAnnotation(Class<?> alias, AnnotationMirror type) {
+        aliases.put(alias.getCanonicalName(), type);
     }
 
     /**
@@ -1725,21 +1725,25 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return;
     }
 
-    public Tree getDeclAnnotationTree(MethodTree meth,
+    /**
+     * Find the declaration annotation in method meth that
+     * has type anno and return the annotation tree.
+     *
+     * @param meth the method tree to query
+     * @param anno the annotation class to look for
+     * @return the AnnotationTree for anno in meth
+     */
+    public AnnotationTree getDeclAnnotationTree(MethodTree meth,
             Class<? extends Annotation> anno) {
-        String annoName = anno.getCanonicalName();
-        // String eltName = ElementUtils.getVerboseName(elt);
         List<? extends AnnotationTree> atrees = meth.getModifiers().getAnnotations();
         for (AnnotationTree atree : atrees) {
-            Tree atype = atree.getAnnotationType();
-            // TODO: totally wrong to use string test
-            if (anno.toString().endsWith(atype.toString())) {
-                return atype;
+            TypeMirror atype = InternalUtils.typeOf(atree);
+            if (anno.getCanonicalName().equals(atype.toString())) {
+                return atree;
             }
         }
         return null;
     }
-
 
     /**
      * Returns the actual annotation mirror used to annotate this element,

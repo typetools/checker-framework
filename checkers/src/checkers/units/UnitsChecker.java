@@ -38,8 +38,8 @@ public class UnitsChecker extends BaseTypeChecker {
 
     @Override
     public void initChecker() {
-        super.initChecker();
         elements = processingEnv.getElementUtils();
+        super.initChecker();
     }
 
     /** Copied from BasicChecker and adapted "quals" to "units".

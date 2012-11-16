@@ -33,75 +33,75 @@ public final
 
 
     public Class<?> getDeclaringClass() {
-	throw new RuntimeException("skeleton method");
+        throw new RuntimeException("skeleton method");
     }
 
 
     public String getName() {
-	throw new RuntimeException("skeleton method");
+        throw new RuntimeException("skeleton method");
     }
 
 
     public int getModifiers() {
-	throw new RuntimeException("skeleton method");
+        throw new RuntimeException("skeleton method");
     }
 
 
     public TypeVariable<Method>[] getTypeParameters() {
-	throw new RuntimeException("skeleton method");
+        throw new RuntimeException("skeleton method");
     }
 
 
     // never returns null; returns Void instead
     public Class<?> getReturnType() {
-	throw new RuntimeException("skeleton method");
+        throw new RuntimeException("skeleton method");
     }
 
-
-    public @Nullable Type getGenericReturnType() {
-      throw new RuntimeException("skeleton method");
+    // never returns null; returns Void instead
+    public Type getGenericReturnType() {
+        throw new RuntimeException("skeleton method");
     }
 
 
 
     public Class<?>[] getParameterTypes() {
-	throw new RuntimeException("skeleton method");
+        throw new RuntimeException("skeleton method");
     }
 
 
     public Type[] getGenericParameterTypes() {
-	throw new RuntimeException("skeleton method");
+        throw new RuntimeException("skeleton method");
     }
 
 
 
     public Class<?>[] getExceptionTypes() {
-	throw new RuntimeException("skeleton method");
+        throw new RuntimeException("skeleton method");
     }
 
 
-      public Type[] getGenericExceptionTypes() {
-	  throw new RuntimeException("skeleton method");
-      }
+    public Type[] getGenericExceptionTypes() {
+        throw new RuntimeException("skeleton method");
+    }
 
 
     public boolean equals(@Nullable Object obj) {
-	throw new RuntimeException("skeleton method");
+        throw new RuntimeException("skeleton method");
     }
 
 
     public int hashCode() {
-	throw new RuntimeException("skeleton method");
+        throw new RuntimeException("skeleton method");
     }
 
 
     public String toString() {
-	throw new RuntimeException("skeleton method");
+        throw new RuntimeException("skeleton method");
     }
 
 
     public String toGenericString() {
-	throw new RuntimeException("skeleton method");
+        throw new RuntimeException("skeleton method");
     }
 
 
