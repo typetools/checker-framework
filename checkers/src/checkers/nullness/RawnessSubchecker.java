@@ -21,16 +21,15 @@ import checkers.quals.TypeQualifiers;
 @TypeQualifiers({ Raw.class, NonRaw.class, PolyRaw.class })
 public class RawnessSubchecker extends BaseTypeChecker {
     @Override
-    public Collection<String> getSuppressWarningsKey() {
+    public Collection<String> getSuppressWarningsKeys() {
         Collection<String> lst = new ArrayList<String>();
-        lst.addAll(super.getSuppressWarningsKey());
+        lst.addAll(super.getSuppressWarningsKeys());
         lst.add("nullness");
         return lst;
     }
 
     public void initChecker(NullnessSubchecker nnsc) {
         this.init(nnsc.getProcessingEnvironment());
-        this.setSupportedLintOptions(nnsc.getSupportedLintOptions());
         this.initChecker();
     }
 }

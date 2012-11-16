@@ -1,11 +1,14 @@
 package tests;
 
 import static org.junit.Assert.*;
+
+import javacutils.AnnotationUtils;
+import javacutils.ErrorReporter;
+
 import checkers.igj.quals.I;
 import checkers.nullness.quals.NonNull;
 import checkers.source.SourceChecker;
 import checkers.util.AnnotationBuilder;
-import checkers.util.AnnotationUtils;
 
 import java.util.Collections;
 
@@ -20,12 +23,15 @@ import org.junit.Test;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
 
+import tests.util.TestChecker;
+
 public class AnnotationBuilderTest {
 
     private final ProcessingEnvironment env;
 
     public AnnotationBuilderTest() {
         env = new JavacProcessingEnvironment(new Context(), Collections.<Processor>emptyList());
+        ErrorReporter.setHandler(new TestChecker());
     }
 
     @Test

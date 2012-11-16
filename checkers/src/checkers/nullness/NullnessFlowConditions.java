@@ -11,14 +11,15 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
 
+import javacutils.ElementUtils;
+import javacutils.TreeUtils;
+
 import checkers.flow.AbstractFlow;
 /*>>>
 import checkers.igj.quals.ReadOnly;
 import checkers.nullness.quals.PolyNull;
 */
 import checkers.types.AnnotatedTypeMirror;
-import checkers.util.ElementUtils;
-import checkers.util.TreeUtils;
 
 import com.sun.source.tree.*;
 import com.sun.source.tree.Tree.Kind;

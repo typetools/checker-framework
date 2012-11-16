@@ -29,18 +29,21 @@ import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
+import javacutils.AnnotationUtils;
+import javacutils.ElementUtils;
+import javacutils.ErrorReporter;
+import javacutils.TreeUtils;
+import javacutils.TypesUtils;
+
+import checkers.initialization.quals.Committed;
+import checkers.initialization.quals.FBCBottom;
 import checkers.quals.InvisibleQualifier;
 import checkers.quals.TypeQualifier;
 import checkers.quals.Unqualified;
-import checkers.source.SourceChecker;
 import checkers.types.visitors.AnnotatedTypeScanner;
 import checkers.types.visitors.AnnotatedTypeVisitor;
 import checkers.types.visitors.SimpleAnnotatedTypeVisitor;
 import checkers.util.AnnotatedTypes;
-import checkers.util.AnnotationUtils;
-import checkers.util.ElementUtils;
-import checkers.util.TreeUtils;
-import checkers.util.TypesUtils;
 /*>>>
 import checkers.nullness.quals.NonNull;
 */
@@ -73,7 +76,6 @@ public abstract class AnnotatedTypeMirror {
      * provided type
      *
      * @param type
-     * @param env
      * @param atypeFactory
      * @return [to document]
      */
@@ -90,7 +92,7 @@ public abstract class AnnotatedTypeMirror {
             case DECLARED:
                 return new AnnotatedDeclaredType((DeclaredType) type, atypeFactory);
             case ERROR:
-                SourceChecker.errorAbort("AnnotatedTypeMirror.createType: input should type-check already! Found error type: " + type);
+                ErrorReporter.errorAbort("AnnotatedTypeMirror.createType: input should type-check already! Found error type: " + type);
                 return null; // dead code
             case EXECUTABLE:
                 return new AnnotatedExecutableType((ExecutableType) type, atypeFactory);
@@ -108,7 +110,7 @@ public abstract class AnnotatedTypeMirror {
                 if (type.getKind().isPrimitive()) {
                     return new AnnotatedPrimitiveType((PrimitiveType) type, atypeFactory);
                 }
-                SourceChecker.errorAbort("AnnotatedTypeMirror.createType: unidentified type " + type);
+                ErrorReporter.errorAbort("AnnotatedTypeMirror.createType: unidentified type " + type);
                 return null; // dead code
         }
     }
@@ -272,6 +274,33 @@ public abstract class AnnotatedTypeMirror {
     }
 
     /**
+     * Returns an annotation from the given sub-hierarchy, if such
+     * an annotation is present on this type or on its extends bounds;
+     * otherwise returns null.
+     *
+     * It doesn't account for annotations in deep types (type arguments,
+     * array components, etc).
+     *
+     * @param p The qualifier hierarchy to check for.
+     * @return An annotation from the same hierarchy as p if present.
+     */
+    public AnnotationMirror getEffectiveAnnotationInHierarchy(AnnotationMirror p) {
+        AnnotationMirror aliased = p;
+        if (!atypeFactory.isSupportedQualifier(aliased)) {
+            aliased = atypeFactory.aliasedAnnotation(p);
+        }
+        if (atypeFactory.isSupportedQualifier(aliased)) {
+            QualifierHierarchy qualHier = this.atypeFactory.getQualifierHierarchy();
+            AnnotationMirror anno = qualHier.findCorrespondingAnnotation(aliased,
+                    getEffectiveAnnotations());
+            if (anno != null) {
+                return anno;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Returns the annotations on this type.
      *
      * It does not include annotations in deep types (type arguments, array
@@ -290,7 +319,13 @@ public abstract class AnnotatedTypeMirror {
      * @return  a set of the annotations on this
      */
     public Set<AnnotationMirror> getEffectiveAnnotations() {
-        return getAnnotations();
+        Set<AnnotationMirror> effectiveAnnotations = getAnnotations();
+//        assert atypeFactory.qualHierarchy.getWidth() == effectiveAnnotations
+//                .size() : "Invalid number of effective annotations ("
+//                + effectiveAnnotations + "). Should be "
+//                + atypeFactory.qualHierarchy.getWidth() + " but is "
+//                + effectiveAnnotations.size() + ". Type: " + this.toString();
+        return effectiveAnnotations;
     }
 
     /**
@@ -391,7 +426,18 @@ public abstract class AnnotatedTypeMirror {
     public boolean hasAnnotation(Class<? extends Annotation> a) {
         return getAnnotation(a) != null;
     }
-    // TODO: do we need an "effective" version of the above hasAnnotation?
+
+    /**
+     * A version of hasAnnotation that considers annotations on the
+     * upper bound of wildcards and type variables.
+     *
+     * @see #hasAnnotation(Class)
+     */
+    public boolean hasEffectiveAnnotation(Class<? extends Annotation> a) {
+        return AnnotationUtils.containsSameIgnoringValues(
+                getEffectiveAnnotations(),
+                AnnotationUtils.fromClass(atypeFactory.elements, a));
+    }
 
     /**
      * A version of hasAnnotation that considers annotations on the
@@ -481,7 +527,7 @@ public abstract class AnnotatedTypeMirror {
      */
     public void addAnnotation(AnnotationMirror a) {
         if (a == null) {
-            SourceChecker.errorAbort("AnnotatedTypeMirror.addAnnotation: null is not a valid annotation.");
+            ErrorReporter.errorAbort("AnnotatedTypeMirror.addAnnotation: null is not a valid annotation.");
         }
         if (atypeFactory.isSupportedQualifier(a)) {
             this.annotations.add(a);
@@ -564,7 +610,7 @@ public abstract class AnnotatedTypeMirror {
     public boolean removeAnnotation(Class<? extends Annotation> a) {
         AnnotationMirror anno = AnnotationUtils.fromClass(atypeFactory.elements, a);
         if (anno == null || !atypeFactory.isSupportedQualifier(anno)) {
-            SourceChecker.errorAbort("AnnotatedTypeMirror.removeAnnotation called with un-supported class: " + a);
+            ErrorReporter.errorAbort("AnnotatedTypeMirror.removeAnnotation called with un-supported class: " + a);
         }
         return removeAnnotation(anno);
     }
@@ -622,7 +668,7 @@ public abstract class AnnotatedTypeMirror {
         StringBuilder sb = new StringBuilder();
         for (AnnotationMirror obj : lst) {
             if (obj == null) {
-                SourceChecker.errorAbort("AnnotatedTypeMirror.formatAnnotationString: found null AnnotationMirror!");
+                ErrorReporter.errorAbort("AnnotatedTypeMirror.formatAnnotationString: found null AnnotationMirror!");
             }
             if (isInvisibleQualified(obj) &&
                     !printInvisible) {
@@ -1509,26 +1555,46 @@ public abstract class AnnotatedTypeMirror {
                     lowerBound != null && upperBound != null) {
                 Set<AnnotationMirror> lAnnos = lowerBound.getEffectiveAnnotations();
                 Set<AnnotationMirror> uAnnos = upperBound.getEffectiveAnnotations();
-                // System.out.printf("fixup: %s; low: %s; up: %s%n", this, lAnnos, uAnnos);
-
-                if (lAnnos.isEmpty()) {
-                    if (!annotations.isEmpty()) {
-                        lowerBound.replaceAnnotations(annotations);
-                    } else {
-                        lowerBound.addAnnotations(atypeFactory.getQualifierHierarchy().getBottomAnnotations());
-                        // TODO: the qualifier hierarchy is null in the NullnessATF.mapGetHeuristics
-                        // How should this be handled? What is that factory doing?
-                    }
-                } else if (uAnnos.isEmpty()) {
-                    // TODO: The subtype tests below fail with empty annotations.
-                    // Is there anything better to do here?
-                } else if (atypeFactory.getQualifierHierarchy().isSubtype(lAnnos, uAnnos)) {
-                    // Nothing to do if lAnnos is a subtype of uAnnos.
-                } else if (atypeFactory.getQualifierHierarchy().isSubtype(uAnnos, lAnnos)) {
-                    lowerBound.replaceAnnotations(uAnnos);
-                } else {
-                    SourceChecker.errorAbort("AnnotatedTypeMirror.fixupBoundAnnotations: default annotation on lower bound ( " + lAnnos + ") is inconsistent with explicit upper bound: " + this);
+                QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
+                for (AnnotationMirror top : qualifierHierarchy.getTopAnnotations()) {
+                    AnnotationMirror lAnno = qualifierHierarchy.getAnnotationInHierarchy(lAnnos, top);
+                    AnnotationMirror uAnno = qualifierHierarchy.getAnnotationInHierarchy(uAnnos, top);
+                    fixupBoundAnnotationsImpl(top, lAnno, uAnno);
                 }
+            }
+        }
+
+        /**
+         * Implementation that handles a single hierarchy (identified by top).
+         */
+        private void fixupBoundAnnotationsImpl(AnnotationMirror top, AnnotationMirror lAnno, AnnotationMirror uAnno) {
+            QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
+            if (lAnno == null) {
+                AnnotationMirror a = qualifierHierarchy.getAnnotationInHierarchy(annotations, top);
+                if (a != null) {
+                    lowerBound.replaceAnnotation(a);
+                    return;
+                } else {
+                    lAnno = atypeFactory.getQualifierHierarchy().getBottomAnnotation(top);
+                    lowerBound.replaceAnnotation(lAnno);
+                }
+            }
+
+            // TODO: this is a hack to make the system work for the FBC type-system
+            if (AnnotationUtils.areSameByClass(lAnno, FBCBottom.class)
+                    && AnnotationUtils.areSameByClass(uAnno, Committed.class)) {
+                lowerBound.replaceAnnotation(uAnno);
+                return;
+            }
+            if (uAnno == null) {
+                // TODO: The subtype tests below fail with empty annotations.
+                // Is there anything better to do here?
+            } else if (atypeFactory.getQualifierHierarchy().isSubtype(lAnno, uAnno)) {
+                // Nothing to do if lAnnos is a subtype of uAnnos.
+            } else if (atypeFactory.getQualifierHierarchy().isSubtype(uAnno, lAnno)) {
+                lowerBound.replaceAnnotation(uAnno);
+            } else {
+                ErrorReporter.errorAbort("AnnotatedTypeMirror.fixupBoundAnnotations: default annotation on lower bound ( " + lAnno + ") is inconsistent with explicit upper bound: " + this);
             }
         }
 
@@ -1585,7 +1651,13 @@ public abstract class AnnotatedTypeMirror {
         public Set<AnnotationMirror> getEffectiveAnnotations() {
             // Do we want to re-introduce more efficient versions that don't
             // compute the whole type?
-            return getEffectiveUpperBound().getAnnotations();
+            Set<AnnotationMirror> effectiveAnnotations = getEffectiveUpperBound().getAnnotations();
+//          assert atypeFactory.qualHierarchy.getWidth() == effectiveAnnotations
+//          .size() : "Invalid number of effective annotations ("
+//          + effectiveAnnotations + "). Should be "
+//          + atypeFactory.qualHierarchy.getWidth() + " but is "
+//          + effectiveAnnotations.size() + ". Type: " + this.toString();
+            return effectiveAnnotations;
         }
 
         /**
@@ -1988,10 +2060,30 @@ public abstract class AnnotatedTypeMirror {
          */
         public Set<AnnotationMirror> getEffectiveExtendsBoundAnnotations() {
             Set<AnnotationMirror> result = annotations;
+            // If there are no annotations, return the upper bound.
             if (result.isEmpty()) {
                 AnnotatedTypeMirror ub = getExtendsBound();
                 if (ub != null) {
-                    result = ub.getEffectiveAnnotations();
+                    return ub.getEffectiveAnnotations();
+                } else {
+                    return Collections.unmodifiableSet(result);
+                }
+            }
+            result = AnnotationUtils.createAnnotationSet();
+            result.addAll(annotations);
+            Set<AnnotationMirror> boundAnnotations = Collections.emptySet();
+            AnnotatedTypeMirror ub = getExtendsBound();
+            if (ub != null) {
+                boundAnnotations = ub.getEffectiveAnnotations();
+            }
+            // Add all the annotation from the the upper bound, for which there
+            // isn't already another annotation in the set from the same
+            // hierarchy.
+            for (AnnotationMirror boundAnnotation : boundAnnotations) {
+                QualifierHierarchy qualHierarchy = atypeFactory.qualHierarchy;
+                AnnotationMirror top = qualHierarchy.getTopAnnotation(boundAnnotation);
+                if (qualHierarchy.getAnnotationInHierarchy(result, top) == null) {
+                    result.add(boundAnnotation);
                 }
             }
             return Collections.unmodifiableSet(result);
@@ -1999,7 +2091,13 @@ public abstract class AnnotatedTypeMirror {
 
         @Override
         public Set<AnnotationMirror> getEffectiveAnnotations() {
-            return getEffectiveExtendsBoundAnnotations();
+            Set<AnnotationMirror> effectiveAnnotations = getEffectiveExtendsBoundAnnotations();
+//          assert atypeFactory.qualHierarchy.getWidth() == effectiveAnnotations
+//          .size() : "Invalid number of effective annotations ("
+//          + effectiveAnnotations + "). Should be "
+//          + atypeFactory.qualHierarchy.getWidth() + " but is "
+//          + effectiveAnnotations.size() + ". Type: " + this.toString();
+            return effectiveAnnotations;
         }
 
         @Override
