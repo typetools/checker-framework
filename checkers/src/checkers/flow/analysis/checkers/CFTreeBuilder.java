@@ -7,53 +7,24 @@ import javax.annotation.processing.ProcessingEnvironment;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
-import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Name;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.ArrayType;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
-import javax.lang.model.util.ElementFilter;
-import javax.lang.model.util.Elements;
-import javax.lang.model.util.Types;
 
-import javacutils.InternalUtils;
-import javacutils.TypesUtils;
 import javacutils.trees.TreeBuilder;
 
 import checkers.types.AnnotatedTypeMirror;
 
-import com.sun.source.tree.ArrayAccessTree;
-import com.sun.source.tree.BinaryTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.IdentifierTree;
-import com.sun.source.tree.LiteralTree;
-import com.sun.source.tree.MemberSelectTree;
-import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.TypeCastTree;
-import com.sun.source.tree.UnaryTree;
-import com.sun.source.tree.VariableTree;
 
 import com.sun.tools.javac.code.Attribute;
 import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Symbol;
-import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.TypeAnnotationPosition;
 import com.sun.tools.javac.code.TypeTags;
-import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.TreeInfo;
-import com.sun.tools.javac.tree.TreeMaker;
-import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.List;
-import com.sun.tools.javac.util.Names;
 import com.sun.tools.javac.util.Pair;
 
 /**
@@ -251,7 +222,7 @@ public class CFTreeBuilder extends TreeBuilder {
         if (av instanceof AnnotationMirror) {
             return attributeFromAnnotationMirror((AnnotationMirror)av);
         }
-        
+
         // TODO: Create other kinds of Attributes.
 
         Object value = av.getValue();
