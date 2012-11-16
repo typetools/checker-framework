@@ -10,6 +10,12 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 
+import javacutils.AnnotationUtils;
+import javacutils.ElementUtils;
+import javacutils.InternalUtils;
+import javacutils.TreeUtils;
+import javacutils.Pair;
+
 import checkers.basetype.BaseTypeVisitor;
 /*>>>
 import checkers.compilermsgs.quals.CompilerMessageKey;
@@ -22,12 +28,7 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
-import checkers.util.AnnotationUtils;
-import checkers.util.ElementUtils;
-import checkers.util.InternalUtils;
 import checkers.util.QualifierPolymorphism;
-import checkers.util.TreeUtils;
-import checkers.util.Pair;
 
 import com.sun.source.tree.*;
 
@@ -79,7 +80,7 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
         // NULLABLE = checker.NULLABLE;
         // LAZYNONNULL = checker.LAZYNONNULL;
         PRIMITIVE = checker.PRIMITIVE;
-        RAW = ((NullnessAnnotatedTypeFactory)atypeFactory).RAW;
+        RAW = null; //((NullnessAnnotatedTypeFactory)atypeFactory).RAW;
         stringType = elements.getTypeElement("java.lang.String").asType();
 
         ProcessingEnvironment env = checker.getProcessingEnvironment();
@@ -405,7 +406,7 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
                 return super.visitMethod(node, p);
             } finally {
                 Set<VariableElement> initAfter
-                    = ((NullnessAnnotatedTypeFactory)atypeFactory).initializedAfter(node);
+                    = null; //((NullnessAnnotatedTypeFactory)atypeFactory).initializedAfter(node);
                 nonInitializedFields.first.removeAll(initAfter);
                 nonInitializedFields.second.removeAll(initAfter);
                 reportUninitializedFields(nonInitializedFields, node);
@@ -589,7 +590,7 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
             // error message, an explicit list of the fields that have been
             // initialized so far.
 
-            Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair = ((NullnessAnnotatedTypeFactory)atypeFactory).rawnessFactory.methodFromUse(node);
+            Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair = null;//((NullnessAnnotatedTypeFactory)atypeFactory).rawnessFactory.methodFromUse(node);
             AnnotatedExecutableType invokedMethod = mfuPair.first;
             // List<AnnotatedTypeMirror> typeargs = mfuPair.second;
             if (! invokedMethod.getReceiverType().hasAnnotation(RAW)) {
@@ -598,10 +599,12 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
                         checker.report(Result.failure("method.invocation.invalid.rawness",
                                                       TreeUtils.elementFromUse(node),
                                                       nonInitializedFields.first), node);
+                        return;
                     } else if (! nonInitializedFields.second.isEmpty()) {
                         checker.report(Result.warning("method.invocation.invalid.rawness",
                                                       TreeUtils.elementFromUse(node),
                                                       nonInitializedFields.second), node);
+                        return;
                     }
                 }
             }

@@ -1,5 +1,9 @@
 syntax: glob
 
+# git
+.gitignore
+.git
+
 # Emacs and other temporary files
 *~
 .#*
@@ -10,10 +14,9 @@ tags
 .DS_Store
 # Eclipse files
 .metadata
-.classpath
-.project
 .externalToolBuilders
 .settings
+dot_files
 
 Makefile.user
 
@@ -33,6 +36,7 @@ demos/units-extension/*.class
 # manual files
 bib
 doc
+*.synctex.gz
 manual.aux
 manual.blg
 manual.dvi
@@ -61,9 +65,17 @@ checkers/manual/figures/*.png
 checkers/manual/figures/signature-types-with-canonicalname.dia
 checkers/manual/*.png
 
-checkers/tests/nullness-extra/*.class
-checkers/tests/nullness-extra/multiple-errors/*.class
-checkers/tests/nullness-extra/multiple-errors/Out.txt
+# dataflow manual
+checkers/manual/dataflow-manual/dataflow.aux
+checkers/manual/dataflow-manual/dataflow.dvi
+checkers/manual/dataflow-manual/dataflow.log
+checkers/manual/dataflow-manual/dataflow.out
+checkers/manual/dataflow-manual/dataflow.pdf
+
+checkers/tests/nonnull-extra/*.class
+checkers/tests/nonnull-extra/multiple-errors/*.class
+checkers/tests/nonnull-extra/multiple-errors/Out.txt
+
 checkers/tests/nullness/generics/*.class
 checkers/tests/nullness-temp/*.java
 checkers/tests/nullness-temp/*.class

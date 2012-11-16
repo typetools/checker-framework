@@ -14,17 +14,18 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 
+import javacutils.AnnotationUtils;
+import javacutils.ElementUtils;
+import javacutils.InternalUtils;
+import javacutils.TreeUtils;
+import javacutils.Resolver;
+
 import checkers.nullness.quals.KeyFor;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
-import checkers.util.AnnotationUtils;
-import checkers.util.ElementUtils;
 import checkers.util.Heuristics.Matcher;
-import checkers.util.InternalUtils;
-import checkers.util.TreeUtils;
-import checkers.util.Resolver;
 
 import com.sun.source.tree.AssertTree;
 import com.sun.source.tree.BinaryTree;
@@ -171,7 +172,7 @@ import com.sun.source.util.TreePath;
 
         List<String> maps = AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
         for (String map: maps) {
-            Element elt = resolver.findVariable(map, path);
+            Element elt = null;//resolver.findVariable(map, path);
             if (elt.equals(mapElement) &&
                     !isSiteRequired(TreeUtils.getReceiverTree((ExpressionTree)path.getLeaf()), elt)) {
                 return true;
