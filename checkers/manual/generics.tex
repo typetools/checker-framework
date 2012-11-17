@@ -309,7 +309,8 @@ operation.
 The Checker Framework also supports type \emph{qualifier} polymorphism for
 methods, which permits a single method to have multiple different qualified
 type signatures.  This is similar to Java's generics, but is used in
-situations where you cannot use Java generics.
+situations where you cannot use Java generics.  If you can use generics,
+you typically do not need to use a polymorphic qualifier such as \<@PolyNull>.
 
 To \emph{use} a polymorphic qualifier, just write it on a type.
 For example, you can write \<@PolyNull> anywhere in a method that you would write
