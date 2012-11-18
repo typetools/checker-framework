@@ -889,6 +889,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         options.add("printErrorStack");
         options.add("printAllQualifiers");
         options.add("resourceStats");
+        options.add("stubWarnIfNotFound");
+        options.add("stubDebug");
         options.addAll(super.getSupportedOptions());
         return Collections.</*@NonNull*/ String>unmodifiableSet(options);
     }
