@@ -1,4 +1,4 @@
-package tests.util;
+package checkers.util.debug;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
@@ -31,13 +31,13 @@ import com.sun.tools.javac.util.Context;
  * For testing, you need to do the following:
  * 1. Run the Checker on the source file like any checker:
  *    <pre><code>
- *      java -processor tests.util.TypeOutputtingChecker [source-file]
+ *      java -processor checkers.util.debug.TypeOutputtingChecker [source-file]
  *    </code></pre>
  *
  * 2. Run the Checker on the bytecode, by simply running the main and passing
  *    the qualified name, e.g.
  *    <pre><code>
- *      java tests.util.TypeOutputtingChecker [qualified-name]
+ *      java checkers.util.debug.TypeOutputtingChecker [qualified-name]
  *    </code></pre>
  *
  * 3. Apply a simple diff on the two outputs
