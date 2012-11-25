@@ -1,10 +1,6 @@
 package tests.util;
 
-import java.util.Collections;
-
-
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.annotation.processing.Processor;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
@@ -106,8 +102,7 @@ public class TypeOutputtingChecker extends SourceChecker {
     }
 
     public void run(String[] args) {
-        ProcessingEnvironment env =
-            new JavacProcessingEnvironment(new Context(), Collections.<Processor>emptyList());
+        ProcessingEnvironment env = JavacProcessingEnvironment.instance(new Context());
         Elements elements = env.getElementUtils();
 
         AnnotatedTypeFactory atypeFactory = new GeneralAnnotatedTypeFactory(this, null);
