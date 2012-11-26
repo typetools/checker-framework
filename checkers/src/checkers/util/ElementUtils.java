@@ -215,6 +215,8 @@ public class ElementUtils {
     /**
      * Determine all type elements for the classes and interfaces referenced
      * in the extends/implements clauses of the given type element.
+     * TODO: can we learn from the implementation of
+     * com.sun.tools.javac.model.JavacElements.getAllMembers(TypeElement)?
      */
     public static List<TypeElement> getSuperTypes(TypeElement type) {
 
@@ -254,6 +256,8 @@ public class ElementUtils {
 
     /**
      * Return all fields declared in the given type or any superclass/interface.
+     * TODO: should this use javax.lang.model.util.Elements.getAllMembers(TypeElement)
+     * instead of our own getSuperTypes?
      */
     public static List<VariableElement> getAllFieldsIn(TypeElement type) {
         List<VariableElement> fields = new ArrayList<VariableElement>();
@@ -268,6 +272,8 @@ public class ElementUtils {
     /**
      * Return all methods declared in the given type or any superclass/interface.
      * Note that no constructors will be returned.
+     * TODO: should this use javax.lang.model.util.Elements.getAllMembers(TypeElement)
+     * instead of our own getSuperTypes?
      */
     public static List<ExecutableElement> getAllMethodsIn(TypeElement type) {
         List<ExecutableElement> meths = new ArrayList<ExecutableElement>();
