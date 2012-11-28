@@ -22,6 +22,8 @@ package java.lang;
   public @Interned String getName();
 }
 
+@UsesObjectEquals class ClassValue<T> {}
+
 class String {
   @Interned String intern();
 }
@@ -35,6 +37,8 @@ class Boolean {
 
 // All instances are interned
 @Interned class Character$UnicodeBlock { }
+
+@UsesObjectEquals class Thread implements Runnable {}
 
 package java.lang.reflect;
 
@@ -68,11 +72,17 @@ public class Arrays{
   public static String deepToString(@PolyInterned Object [] a1);
 }
 
+/*
+TODO: Attributes does not declare a toString method.
+This declaration then pollutes java.lang.Object.toString, making
+any override illegal.
+
 package java.util.jar;
 
 public class Attributes implements Map<Object,Object>, Cloneable {
   public @Interned String toString();
 }
+*/
 
 package java.util.regex;
 
@@ -1555,12 +1565,11 @@ package java.beans.beancontext;
 
 public @UsesObjectEquals class BeanContextChildSupport implements BeanContextChild, BeanContextServicesListener, Serializable {}
 
-package java.dyn;
+package java.lang.invoke;
 
 abstract public @UsesObjectEquals class CallSite {}
-public abstract @UsesObjectEquals class ClassValue<T> {}
 final @UsesObjectEquals class InvokeDynamic {}
-public @UsesObjectEquals class Linkage {}
+// public @UsesObjectEquals class Linkage {}
 public abstract @UsesObjectEquals class MethodHandleImpl {}
 public @UsesObjectEquals class MethodHandles {}
 public @UsesObjectEquals class SwitchPoint {}
@@ -1849,7 +1858,6 @@ public final @UsesObjectEquals class Scanner implements Iterator<String>, Closea
 public final @UsesObjectEquals class ServiceLoader<S>
     implements Iterable<S> {}
 public @UsesObjectEquals class StringTokenizer implements Enumeration<Object> {}
-public @UsesObjectEquals class Thread implements Runnable {}
 @UsesObjectEquals class TimSort<T> {}
 public @UsesObjectEquals class Timer {}
 public abstract @UsesObjectEquals class TimerTask implements Runnable {}

@@ -240,6 +240,8 @@ add the following import statement at the beginning of the file:
 \noindent
 The stub file parser silently ignores any annotations that it cannot
 resolve to a type, so don't forget the import statement.
+Use the \<-AstubWarnIfNotFound> command-line option to see warnings
+if an entry could not be found.
 
 \item
   Add annotations to the stub class.  For example, you might annotate
@@ -254,6 +256,14 @@ resolve to a type, so don't forget the import statement.
 
 \end{enumerate}
 
+
+Two command-line options can be used to debug the behavior of stub
+files:
+\<-AstubWarnIfNotFound> warns if a stub file entry could not be
+found. Annotations on unknown classes and methods are silently
+ignored. Use this option to ensure that all stub file entries could be
+resolved.
+\<-AstubDebug> outputs debug messages while parsing stub files.
 
 
 \subsection{Limitations\label{stub-limitations}}
