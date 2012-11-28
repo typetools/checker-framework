@@ -63,7 +63,7 @@ public class ElementUtils {
      *
      * Note that packages are not enclosed within each other, we have to manually climb
      * the namespaces. Calling "enclosingPackage" on a package element returns the
-     * package element itself again. 
+     * package element itself again.
      *
      * @param elem the package to start from
      * @return the parent package element
@@ -216,9 +216,9 @@ public class ElementUtils {
      * Determine all type elements for the classes and interfaces referenced
      * in the extends/implements clauses of the given type element.
      */
-    public static Set<TypeElement> getSuperTypes(TypeElement type) {
+    public static List<TypeElement> getSuperTypes(TypeElement type) {
 
-        Set<TypeElement> superelems = new HashSet<TypeElement>();
+        List<TypeElement> superelems = new ArrayList<TypeElement>();
         if (type == null)
             return superelems;
 
@@ -249,6 +249,34 @@ public class ElementUtils {
             }
         }
 
-        return Collections.<TypeElement>unmodifiableSet(superelems);
+        return Collections.<TypeElement>unmodifiableList(superelems);
+    }
+
+    /**
+     * Return all fields declared in the given type or any superclass/interface.
+     */
+    public static List<VariableElement> getAllFieldsIn(TypeElement type) {
+        List<VariableElement> fields = new ArrayList<VariableElement>();
+        fields.addAll(ElementFilter.fieldsIn(type.getEnclosedElements()));
+        List<TypeElement> alltypes = getSuperTypes(type);
+        for (TypeElement atype : alltypes) {
+            fields.addAll(ElementFilter.fieldsIn(atype.getEnclosedElements()));
+        }
+        return Collections.<VariableElement>unmodifiableList(fields);
+    }
+
+    /**
+     * Return all methods declared in the given type or any superclass/interface.
+     * Note that no constructors will be returned.
+     */
+    public static List<ExecutableElement> getAllMethodsIn(TypeElement type) {
+        List<ExecutableElement> meths = new ArrayList<ExecutableElement>();
+        meths.addAll(ElementFilter.methodsIn(type.getEnclosedElements()));
+
+        List<TypeElement> alltypes = getSuperTypes(type);
+        for (TypeElement atype : alltypes) {
+            meths.addAll(ElementFilter.methodsIn(atype.getEnclosedElements()));
+        }
+        return Collections.<ExecutableElement>unmodifiableList(meths);
     }
 }
