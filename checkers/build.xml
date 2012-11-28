@@ -660,7 +660,7 @@ ${build.version} of the 'javac.jar' library."/>
     <target name="check-nonnull"
       description="Run the Non-Null checker on the Framework">
         <antcall target="-run-checker">
-            <param name="checker-name" value="checkers.nonnull.NonNullChecker"/>
+            <param name="checker-name" value="checkers.nonnull.NonNullFbcChecker"/>
             <param name="checker-jdk" value="jdk/nonnull/src"/>
             <param name="checker-args" value="-Awarns"/>
         </antcall>
