@@ -7,8 +7,13 @@ import javax.annotation.processing.ProcessingEnvironment;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
+import javax.lang.model.element.AnnotationValueVisitor;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 
 import javacutils.trees.TreeBuilder;
@@ -65,7 +70,6 @@ public class CFTreeBuilder extends TreeBuilder {
             if (!AnnotatedTypeMirror.isUnqualified(am)) {
                 Attribute.TypeCompound typeCompound =
                     attributeFromAnnotationMirror(am);
-
                 JCTree.JCAnnotation annotationTree =
                     maker.Annotation(typeCompound);
                 JCTree.JCTypeAnnotation typeAnnotationTree =
@@ -218,24 +222,100 @@ public class CFTreeBuilder extends TreeBuilder {
      * @return  a new Attribute corresponding to the AnnotationValue
      */
     private Attribute attributeFromAnnotationValue(AnnotationValue av) {
-        // Create a new Attribute to match the AnnotationValue.
-        if (av instanceof AnnotationMirror) {
-            return attributeFromAnnotationMirror((AnnotationMirror)av);
+        return av.accept(new AttributeCreator(), null);
+    }
+
+    class AttributeCreator implements AnnotationValueVisitor<Attribute, Void> {
+        public Attribute visit(AnnotationValue av, Void p) {
+            return av.accept(this, p);
         }
 
-        // TODO: Create other kinds of Attributes.
+        public Attribute visit(AnnotationValue av) {
+            return visit(av, null);
+        }
 
-        Object value = av.getValue();
-        if (value instanceof Type) {
-            return new Attribute.Class(javacTypes, (Type)value);
-        } else if (value instanceof Symbol.VarSymbol) {
-            Symbol.VarSymbol sym = (Symbol.VarSymbol) value;
-            if (sym.getKind() == ElementKind.ENUM) {
-                return new Attribute.Enum(sym.type, sym);
+        public Attribute visitBoolean(boolean b, Void p) {
+            TypeMirror booleanType = modelTypes.getPrimitiveType(TypeKind.BOOLEAN);
+            return new Attribute.Constant((Type)booleanType, b);
+        }
+
+        public Attribute visitByte(byte b, Void p) {
+            TypeMirror byteType = modelTypes.getPrimitiveType(TypeKind.BYTE);
+            return new Attribute.Constant((Type)byteType, b);
+        }
+
+        public Attribute visitChar(char c, Void p) {
+            TypeMirror charType = modelTypes.getPrimitiveType(TypeKind.CHAR);
+            return new Attribute.Constant((Type)charType, c);
+        }
+
+        public Attribute visitDouble(double d, Void p) {
+            TypeMirror doubleType = modelTypes.getPrimitiveType(TypeKind.DOUBLE);
+            return new Attribute.Constant((Type)doubleType, d);
+        }
+
+        public Attribute visitFloat(float f, Void p) {
+            TypeMirror floatType = modelTypes.getPrimitiveType(TypeKind.FLOAT);
+            return new Attribute.Constant((Type)floatType, f);
+        }
+
+        public Attribute visitInt(int i, Void p) {
+            TypeMirror intType = modelTypes.getPrimitiveType(TypeKind.INT);
+            return new Attribute.Constant((Type)intType, i);
+        }
+
+        public Attribute visitLong(long i, Void p) {
+            TypeMirror longType = modelTypes.getPrimitiveType(TypeKind.LONG);
+            return new Attribute.Constant((Type)longType, i);
+        }
+
+        public Attribute visitShort(short s, Void p) {
+            TypeMirror shortType = modelTypes.getPrimitiveType(TypeKind.SHORT);
+            return new Attribute.Constant((Type)shortType, s);
+        }
+
+        public Attribute visitString(String s, Void p) {
+            TypeMirror stringType = elements.getTypeElement("java.lang.String").asType();
+            return new Attribute.Constant((Type)stringType, s);
+        }
+
+        public Attribute visitType(TypeMirror t, Void p) {
+            if (t instanceof Type) {
+                return new Attribute.Class(javacTypes, (Type)t);
             }
+
+            assert false : "Unexpected type of TypeMirror: " + t.getClass();
+            return null;
         }
 
-        assert false : "Unexpected type of AnnotationValue: " + value.getClass();
-        return null;
+        public Attribute visitEnumConstant(VariableElement c, Void p) {
+            if (c instanceof Symbol.VarSymbol) {
+                Symbol.VarSymbol sym = (Symbol.VarSymbol) c;
+                if (sym.getKind() == ElementKind.ENUM) {
+                    return new Attribute.Enum(sym.type, sym);
+                }
+            }
+
+            assert false : "Unexpected type of VariableElement: " + c.getClass();
+            return null;
+        }
+
+        public Attribute visitAnnotation(AnnotationMirror a, Void p) {
+            return attributeFromAnnotationMirror(a);
+        }
+
+        public Attribute visitArray(java.util.List<? extends AnnotationValue> vals, Void p) {
+            List<Attribute> valAttrs = List.nil();
+            for (AnnotationValue av : vals) {
+                valAttrs = valAttrs.append(av.accept(this, p));
+            }
+            ArrayType arrayType = modelTypes.getArrayType(valAttrs.get(0).type);
+            return new Attribute.Array((Type)arrayType, valAttrs);
+        }
+
+        public Attribute visitUnknown(AnnotationValue av, Void p) {
+            assert false : "Unexpected type of AnnotationValue: " + av.getClass();
+            return null;
+        }
     }
 }
