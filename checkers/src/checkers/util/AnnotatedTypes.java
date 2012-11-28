@@ -27,8 +27,15 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
+import javacutils.AnnotationUtils;
+import javacutils.ElementUtils;
+import javacutils.ErrorReporter;
+import javacutils.InternalUtils;
+import javacutils.Pair;
+import javacutils.TreeUtils;
+import javacutils.TypesUtils;
+
 import checkers.quals.TypeQualifier;
-import checkers.source.SourceChecker;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -250,7 +257,7 @@ public class AnnotatedTypes {
     }
 
     /**
-     * @see #asMemberOf(AnnotatedTypeMirror, Element)
+     * @see #asMemberOf(Types, AnnotatedTypeFactory, AnnotatedTypeMirror, Element)
      */
     public static AnnotatedExecutableType asMemberOf(Types types, AnnotatedTypeFactory atypeFactory, AnnotatedTypeMirror t,
             ExecutableElement elem) {
@@ -432,7 +439,7 @@ public class AnnotatedTypes {
                     ((AnnotatedTypeVariable) iterableType).getEffectiveUpperBound());
 
         if (iterableType.getKind() != TypeKind.DECLARED) {
-            SourceChecker.errorAbort("AnnotatedTypes.getIteratedType: not iterable type: " + iterableType);
+            ErrorReporter.errorAbort("AnnotatedTypes.getIteratedType: not iterable type: " + iterableType);
             return null; // dead code
         }
 
@@ -440,7 +447,7 @@ public class AnnotatedTypes {
         AnnotatedDeclaredType iterableElmType = atypeFactory.getAnnotatedType(iterableElement);
         AnnotatedDeclaredType dt = (AnnotatedDeclaredType) asSuper(processingEnv.getTypeUtils(), atypeFactory, iterableType, iterableElmType);
         if (dt == null) {
-            SourceChecker.errorAbort("AnnotatedTypes.getIteratedType: not iterable type: " + iterableType);
+            ErrorReporter.errorAbort("AnnotatedTypes.getIteratedType: not iterable type: " + iterableType);
             return null; // dead code
         } else if (dt.getTypeArguments().isEmpty()) {
             TypeElement e = processingEnv.getElementUtils().getTypeElement("java.lang.Object");
@@ -572,7 +579,7 @@ public class AnnotatedTypes {
             elt = (ExecutableElement) TreeUtils.elementFromUse(expr);
         } else {
             // This case should never happen.
-            SourceChecker.errorAbort("AnnotatedTypes.findTypeArguments: unexpected tree: " + expr);
+            ErrorReporter.errorAbort("AnnotatedTypes.findTypeArguments: unexpected tree: " + expr);
             elt = null;
         }
 
@@ -587,7 +594,7 @@ public class AnnotatedTypes {
             targs = ((NewClassTree) expr).getTypeArguments();
         } else {
             // This case should never happen.
-            SourceChecker.errorAbort("AnnotatedTypes.findTypeArguments: unexpected tree: " + expr);
+            ErrorReporter.errorAbort("AnnotatedTypes.findTypeArguments: unexpected tree: " + expr);
             targs = null;
         }
 
@@ -614,7 +621,7 @@ public class AnnotatedTypes {
      *
      * @param expr the method or constructor invocation tree; the passed argument
      *   has to be a subtype of MethodInvocationTree or NewClassTree.
-     * @param elt the element corresponding to the tree. 
+     * @param elt the element corresponding to the tree.
      * @return the mapping of the type variables to type arguments for
      *   this method or constructor invocation.
      */
@@ -947,10 +954,10 @@ public class AnnotatedTypes {
             MethodTree method = TreeUtils.enclosingMethod(path);
             return (atypeFactory.getAnnotatedType(method)).getReturnType();
         } else if (assignmentContext instanceof VariableTree) {
-            return atypeFactory.getAnnotatedType((VariableTree)assignmentContext);
+            return atypeFactory.getAnnotatedType(assignmentContext);
         }
 
-        SourceChecker.errorAbort("AnnotatedTypes.assignedTo: shouldn't be here!");
+        ErrorReporter.errorAbort("AnnotatedTypes.assignedTo: shouldn't be here!");
         return null; // dead code
     }
 
@@ -1016,7 +1023,7 @@ public class AnnotatedTypes {
             // TODO: This code needs some more serious thought.
             if (lub.getKind() == TypeKind.WILDCARD) {
                 subtypes.add(deepCopy(lub));
-            } else { 
+            } else {
                 for (AnnotatedTypeMirror type : types) {
                     if (type == null) {
                         continue;
@@ -1219,12 +1226,12 @@ public class AnnotatedTypes {
         assert paramTypes.size() == trees.size() : "AnnotatedTypes.getAnnotatedTypes: size mismatch! " +
             "Parameter types: " + paramTypes + " Arguments: " + trees;
         List<AnnotatedTypeMirror> types = new ArrayList<AnnotatedTypeMirror>();
-        AnnotatedTypeMirror preAssCtxt = atypeFactory.getVisitorState().getAssignmentContext();
+        Pair<Tree, AnnotatedTypeMirror> preAssCtxt = atypeFactory.getVisitorState().getAssignmentContext();
 
         try {
             for (int i = 0; i < trees.size(); ++i) {
                 AnnotatedTypeMirror param = paramTypes.get(i);
-                atypeFactory.getVisitorState().setAssignmentContext(param);
+                atypeFactory.getVisitorState().setAssignmentContext(Pair.of((Tree) null, param));
                 ExpressionTree arg = trees.get(i);
                 types.add(atypeFactory.getAnnotatedType(arg));
             }

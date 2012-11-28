@@ -8,12 +8,18 @@ import javax.lang.model.element.*;
 import javax.lang.model.type.*;
 import javax.lang.model.util.ElementFilter;
 
+import javacutils.AnnotationUtils;
+import javacutils.ElementUtils;
+import javacutils.ErrorReporter;
+import javacutils.Pair;
+import javacutils.Resolver;
+import javacutils.TreeUtils;
+
 import checkers.flow.DefaultFlow;
 import checkers.flow.Flow;
 import checkers.flow.FlowState;
 import checkers.nullness.quals.*;
 import checkers.source.Result;
-import checkers.source.SourceChecker;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -215,7 +221,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
             return "";
         else if (sel.getKind() == Tree.Kind.MEMBER_SELECT)
             return ((MemberSelectTree)sel).getExpression().toString() + ".";
-        SourceChecker.errorAbort("NullnessFlow.receiver: cannot be here");
+        ErrorReporter.errorAbort("NullnessFlow.receiver: cannot be here");
         return null; // dead code
     }
 
@@ -654,9 +660,9 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
 
         Element elt = var(expr);
         if (expr instanceof IdentifierTree)
-            elt = TreeUtils.elementFromUse((IdentifierTree) expr);
+            elt = TreeUtils.elementFromUse(expr);
         else if (expr instanceof MemberSelectTree)
-            elt = TreeUtils.elementFromUse((MemberSelectTree) expr);
+            elt = TreeUtils.elementFromUse(expr);
 
         if (elt != null && this.flowState.vars.contains(elt)) {
             int idx = this.flowState.vars.indexOf(elt);
@@ -805,7 +811,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
                 continue;
             }
 
-            Element e = resolver.findVariable(annoVal, path);
+            Element e = null;//resolver.findVariable(annoVal, path);
             // TODO: Handles static fields only as they are
             // resolved in compile time
             if (ElementUtils.isError(e)) {
@@ -894,7 +900,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
                 // Check annos?
 
                 for (String check : toCheck) {
-                    Element e = resolver.findVariable(check, path);
+                    Element e = null;//resolver.findVariable(check, path);
                     // TODO: Handles static fields only as they are
                     // resolved in compile time
                     if (ElementUtils.isError(e)) {
@@ -983,7 +989,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         }
 
         for (String check : toCheck) {
-            Element e = resolver.findVariable(check, path);
+            Element e = null;//resolver.findVariable(check, path);
             // TODO: Handles static fields only as they are
             // resolved in compile time
             if (ElementUtils.isError(e)) {
@@ -1257,7 +1263,7 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
             nnExprs.add(field);
 
             // whether a field with the name was already found
-            Element e = resolver.findVariable(field, path);
+            Element e = null;//resolver.findVariable(field, path);
             // TODO: Handles static fields only as they are
             // resolved in compile time
             if (DO_ADVANCED_CHECKS && ElementUtils.isError(e)) {
@@ -1349,9 +1355,9 @@ class NullnessFlow extends DefaultFlow<NullnessFlowState> {
         tree = TreeUtils.skipParens(tree);
         switch (tree.getKind()) {
         case IDENTIFIER:
-            return TreeUtils.elementFromUse((IdentifierTree) tree);
+            return TreeUtils.elementFromUse(tree);
         case MEMBER_SELECT:
-            return TreeUtils.elementFromUse((MemberSelectTree) tree);
+            return TreeUtils.elementFromUse(tree);
         case ASSIGNMENT:
             return var(((AssignmentTree)tree).getVariable());
         default:

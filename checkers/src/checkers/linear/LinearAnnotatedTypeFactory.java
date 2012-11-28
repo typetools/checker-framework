@@ -7,16 +7,16 @@ import javax.lang.model.element.Element;
 
 import com.sun.source.tree.*;
 
+import javacutils.AnnotationUtils;
+import javacutils.TreeUtils;
+
 import checkers.basetype.BaseTypeChecker;
 import checkers.flow.DefaultFlow;
 import checkers.flow.DefaultFlowState;
-import checkers.flow.Flow;
 import checkers.linear.quals.*;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.BasicAnnotatedTypeFactory;
-import checkers.util.AnnotationUtils;
-import checkers.util.TreeUtils;
 
 /**
  * Adds {@link Unusable} qualifier to a type if it represents:
@@ -54,11 +54,7 @@ public class LinearAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Linear
         super.annotateImplicit(elt, type);
     }
 
-    @Override
-    public Flow createFlow(LinearChecker checker, CompilationUnitTree tree,
-            Set<AnnotationMirror> flowQuals) {
-        return new LinearFlow(checker, tree, flowQuals, this);
-    }
+    // TODO: Re-enable flow with the new dataflow framework.
 
     /**
      * Performs flow-sensitive analysis to mark reference types {@code Linear}
