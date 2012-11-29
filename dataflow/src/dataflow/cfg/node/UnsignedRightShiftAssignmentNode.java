@@ -17,7 +17,7 @@ import com.sun.source.tree.Tree.Kind;
 public class UnsignedRightShiftAssignmentNode extends CompoundAssignmentNode {
 
     public UnsignedRightShiftAssignmentNode(Tree tree, Node left, Node right) {
-        super(tree, right, right);
+        super(tree, left, right);
         assert tree.getKind() == Kind.UNSIGNED_RIGHT_SHIFT_ASSIGNMENT;
     }
 
