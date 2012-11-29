@@ -1,0 +1,230 @@
+<html>
+<head>
+<title>Checker Framework Eclipse Plugin</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<style>@import url("web/site.css");</style>
+<script type="text/javascript">
+	var returnval = 0;
+	var stylesheet, xmlFile, cache, doc;
+	function init(){
+		// NSCP 7.1+ / Mozilla 1.4.1+ / Safari
+		// Use the standard DOM Level 2 technique, if it is supported
+		if (document.implementation && document.implementation.createDocument) {
+		        try { 
+		          xmlFile = document.implementation.createDocument("", "", null);
+			  stylesheet = document.implementation.createDocument("", "", null);
+			  xmlFile.load("site.xml");
+			  stylesheet.load("web/site.xsl");
+			  xmlFile.addEventListener("load", transformSync, false);
+			  stylesheet.addEventListener("load", transformSync, false);
+			}
+			catch (e) {
+			  try {
+			   var xmlhttp = new window.XMLHttpRequest();
+			   xmlhttp.open("GET","site.xml",false);
+			   xmlhttp.send(null);
+			   xmlFile = xmlhttp.responseXML.documentElement;
+			   xmlhttp = new window.XMLHttpRequest();
+			   xmlhttp.open("GET","web/site.xsl",false);
+			   xmlhttp.send(null);
+			   stylesheet = xmlhttp.responseXML.documentElement;
+			   transform()
+			  }
+			  catch (e) {
+			    alert("Document could not be loaded by browser.");
+			  }
+			}
+		}
+		//IE 6.0+ solution
+		else if (window.ActiveXObject) {
+			xmlFile = new ActiveXObject("msxml2.DOMDocument.3.0");
+			xmlFile.async = false;
+			xmlFile.load("site.xml");
+			stylesheet = new ActiveXObject("msxml2.FreeThreadedDOMDocument.3.0");
+			stylesheet.async = false;
+			stylesheet.load("web/site.xsl");
+			cache = new ActiveXObject("msxml2.XSLTemplate.3.0");
+			cache.stylesheet = stylesheet;
+			transformData();
+		}
+	}
+	// separate transformation function for IE 6.0+
+	function transformData(){
+		var processor = cache.createProcessor();
+		processor.input = xmlFile;
+		processor.transform();
+		data.innerHTML = processor.output;
+	}
+        // separate transformation function for Chrome
+        function transform() {
+			var processor = new XSLTProcessor();
+			processor.importStylesheet(stylesheet);
+			doc = processor.transformToDocument(xmlFile);
+			document.getElementById("data").innerHTML = doc.documentElement.innerHTML;
+        }
+	// separate transformation function for NSCP 7.1+ and Mozilla 1.4.1+
+	function transformSync(){
+		returnval+=1;
+		if (returnval==2){
+		  transform();
+		}
+	}
+      </script>
+      <link rel="stylesheet" href="custom.css" />
+      <link href='http://fonts.googleapis.com/css?family=Josefin+Sans+Std+Light' rel='stylesheet' type='text/css'>
+</head>
+<body onload="init();">
+<div id="main-content">
+<h1 id="title">Checker Plugin for Eclipse</h1>
+<h2>What it is:</h2>
+<p>
+The Checker Plugin is an Eclipse plugin that will help you use pluggable type-checkers 
+from the Checker Framework to type-check your programs.
+A pluggable type-checker is a bug-finding and verification tool. It can help you to detect 
+and prevent a variety of errors including null pointer errors, incorrect uses of equality 
+operations, and side effect errors (and other errors).  This document describes how to use 
+the Checker Plugin to run pluggable type-checking from within Eclipse.  For details about pluggable
+type-checking itself, see the 
+<a href="http://types.cs.washington.edu/checker-framework/">Checker Framework documentation</a>.
+</p>
+
+<h2>Requirements:</h2>
+<p>This plugin has been tested on both <a href="http://www.eclipse.org/">Eclipse</a> 3.7.2 and 4.2.1 
+using either <a href="http://www.java.com">Java</a> 6 or 7.</p>
+<p>Your Eclipse MUST be running on a Java 6 VM or newer.
+To see what Java VM is being used by eclipse, select from the menu <b>Help</b> &rarr; <b>About Eclipse Platform</b> &rarr; <b>Installation Details</b>.
+Depending on your installation, the menu may be <b>Help</b> &rarr; <b>About Eclipse SDK</b> &rarr; <b>Installation Details</b>.</p>
+
+<br>
+<h2>How to install:</h2>
+<ol>
+<li> In Eclipse, select from the menu <b> Help </b> &rarr; <b> Install New Software... </b></li>
+<li> Click <b>Add...</b>.</li>
+<li> Enter the following:
+  <ul>
+  <li><b>Name: </b>Checker Framework</li>
+  <li><b>Location: </b>http://types.cs.washington.edu/checker-framework/eclipse</li>
+  </ul>
+and click <b>OK</b>.</li>
+
+<li> Under <b> Work with:</b>, you should see "Checker Framework".<br>
+Select that entry and look at the selection area below.</li>
+<li> In the selection area, you should see the "Checker Framework Feature"
+under the "Pluggable Type-Checking" <!--was: "Uncategorized"--> category.<br>
+(You may have to expand the tree to make the feature visible.)<br>
+Select the checkbox next to it and click <b>Next</b>.</li>
+<li> Select the <b>I accept the terms in the license agreement</b> option and click <b> Next</b>.</li>
+<li> Then click <b>Finish</b>.</li>
+<li>The plugin is not digitally signed. Install it anyway.</li>
+<li> Click <b> Yes </b> to restart Eclipse.</li>
+</ol>
+<h2>How to use Checkers Feature:</h2>
+<p>Optionally, you may add <a href="../lib/checkers-quals.jar">checkers-quals.jar</a> to your project's classpath.
+<!--You can have the plugin do this automatically by using the <b>Add checkers-quals.jar to project</b>
+command from the plugin menu. -->
+(After you do this, Eclipse may complain about unresolved classes referenced from a classfile.
+This does not affect the checking, but to make the warning go away,
+add <a href="../lib/javac.jar">javac.jar</a> to the project's classpath.) This is not necessary
+but will keep Eclipse from complaining about missing annotation classes. Alternatively, you can
+use the <a href="#implicit-imports">Implicit Import</a> feature.</p>
+<p>To perform the checking, select the checker from the context menu of a Java project, for example <b>Checker Framework</b> &rarr; <b>Run Nullness Checker</b>.
+The checker will run and warnings will be added to the Problems view.
+To remove the warning markers, run <b>Checker Framework</b> &rarr; <b>Clear checker markers</b> (or Shift+Ctrl+C). Note that markers are cleared per project.</p>
+
+<img src="images/checker-context-menu.png" alt="Checker context menu" />
+
+<p>You can also run a checker on individual packages or files. To do this, just right-click on the
+package or file you want to typecheck and use the context menu as documented above.</p>
+
+<p>
+If you want to run multiple checkers at once, you can do so using the <b>Run selected checkers</b> action (or Ctrl+Alt+C).
+This will run the checkers that are selected in the <b>Checkers</b> section in the preferences, which
+are accessible through <b>Window</b> &rarr; <b>Preferences</b>. These selections are also used for
+automatic build, which is described below.
+</p>
+
+<!--<h3>Automatic build</h3>
+<p>
+The plugin can automatically typecheck your code whenever you change it,
+much as Eclipse's built-in compiler does.  To enable
+this behavior for a project, right click on your project and run <b>Checker Framework</b> &rarr; <b>Toggle checker nature on project</b>.
+Selecting the action again will disable the builder.
+</p>
+<p>
+The checkers that are run are those that are selected in the preferences. Additionally, the <b>Automatically run type-checkers</b> preference will either
+globally enable or disable automatic build depending on if it is selected or not. This preference is on by default.
+</p>-->
+
+<h3>Preferences</h3>
+<p>
+Most of the command-line options that can be supplied to the Checker Framework compiler are also supported
+by this plugin. To set the various options, go to <b>Window</b> &rarr; <b>Preferences</b> and select the
+<b>Checker</b> section. The options that correspond to command-line switches are marked as such.
+</p>
+<p>For more information on the supported command-line options, see the <a href="http://types.cs.washington.edu/checker-framework/">Checker Framework
+  Documentation</a>.
+</p>
+<p>To customize keyboard shortcuts for plugin commands, go to <b>Preferences</b> &rarr; <b>General</b> &rarr; <b>Keys</b> and search
+for "Checker Plugin". This should show all the plugin commands and allow shortcut rebinding.</p>
+
+<h3>Adding support for a new checker</h3>
+
+<p>
+The plugin comes with support for all checkers bundled in the Checker
+Framework.
+</p>
+
+<p>
+To make the plugin support a new checker, use the <b>Custom Checker</b> preference page. By pressing
+the <b>Search...</b> button you can select from a searchable listing of classes in the workspace. The class or classes you select must be
+on the classpath of the project you are type-checking. The custom class that you select will be used if you select the
+<b>Run Custom Checker</b> action from the popup menu. Note that if the preference field is empty you will get a warning message that
+no checkers were configured.</p>
+
+<p>If your checker supports extra command-line flags, you can pass these in the <b>Additional compiler parameters</b> field in the
+preferences, which will append the input to the compiler's arguments.</p>
+
+<h3 id="implicit-imports">Development style and implicit imports</h3>
+
+<p>If you work in a team and not everyone uses the Checker Framework or if you use older versions of Java, you can use implicit imports
+to avoid creating an explicit dependency on checker-quals.jar. Just enable the
+  setting in the preferences. After that, you can write <a href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#annotations-in-comments">annotations
+in comments</a>. The annotation classes that will be imported will be
+those that correspond to checkers selected in the preferences. Note that
+if no checkers are set, the type-checker will not see any type annotations
+in comments.
+</p>
+
+<h3>Customizing the build environment</h3>
+
+<p>By default, the plugin uses your system-specified JRE (whatever <tt>System.getProperty("java.home")</tt> returns).
+However, if would like to use custom JDK libraries you should specify those on the Eclipse system library buildpath in the project properties. You also have the
+option of explicitly setting the java executable to use in the plugin preferences.</p>
+
+<h2>How to report problems:</h2>
+<p>Submit bug reports at <a href="http://code.google.com/p/checker-framework/issues/list">http://code.google.com/p/checker-framework/issues/list </a></p>
+
+<h3>Troubleshooting tips</h3>
+<p>If you are having problems with the output from the plugin, you can check to see what the output on the built-in
+Eclipse console view, as opposed to the problems view that the Checker Plugin populates, indicates. The console
+will get the raw output from the compiler. Attaching the console output to a bug report can also help us figure out which component
+is reponsible for the bug.</p>
+<p>If you are finding that the plugin emits different or additional warnings in its problems view that Eclipse does not that are 
+unrelated to checkers, this
+is likely because the Eclipse compiler and Sun's javac compiler have different behaviors on certain kinds of errors. In this case, you
+can either try to fix the underlying cause for the warning or you can add a regular expression in the preferences (see the
+"Regex for warning/error filter" field) to filter the compiler output.</p>
+
+<div id="data"><!-- this is where the transformed data goes --></div>
+
+<h2>Where to get the source code:</h2>
+<p>To install and use the Checker Plugin you will not need to access or compile the source code. However, if you would like to make
+changes or browse the source code, it is publicly available.
+The repository for the code within the Checker Framework repository: <a href="http://code.google.com/p/checker-framework/">
+  http://code.google.com/p/checker-framework/</a>. The repository is hosted using <a href="http://mercurial.selenic.com/">Mercurial</a>.
+To check the source out, use the following command:
+<code>hg clone https://code.google.com/p/checker-framework/</code></p>
+
+</div>
+</body>
+</html>

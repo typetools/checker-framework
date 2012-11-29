@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.5"?>
+
+<plugin>
+  <extension point="org.eclipse.ui.preferencePages">
+    <page id="checkers.eclipse.prefs.CheckerPreferences"
+ 	  name="Checker Framework"
+      class="checkers.eclipse.ui.CheckerPreferencePage">
+   	</page>
+    <page id="checkers.eclipse"
+   	  name="Custom Checkers"
+   	  class="checkers.eclipse.ui.CustomPreferencesPage"
+   	  category="checkers.eclipse.prefs.CheckerPreferences">
+   	</page>
+  </extension>
+   
+  <extension point="org.eclipse.core.runtime.preferences">
+    <initializer class="checkers.eclipse.prefs.PreferenceInitializer" />
+  </extension>
+	
+<!--
+  <extension 
+    id="buildnature" 
+   	name="%extension.name" 
+   	point="org.eclipse.core.resources.natures"> 
+   	<runtime> 
+      <run class="checkers.eclipse.natures.CheckerBuildNature"/> 
+    </runtime> 
+    <builder id="checkers.eclipse.checkerbuilder"/>
+    <requires-nature id="org.eclipse.jdt.core.javanature"/>
+  </extension> 
+   
+  <extension 
+    id="checkerbuilder" 
+    name="%extension.name.0" 
+    point="org.eclipse.core.resources.builders">
+    <builder hasNature="true">
+      <run class="checkers.eclipse.builder.CheckerBuilder">
+        <parameter name="optimize" value="true"/>
+        <parameter name="comment" value="CheckerBuilder"/>
+      </run>
+    </builder>
+  </extension>-->
+      
+  <extension
+    id="checker.framework.eclipse.plugin.marker"
+    name="%extension.name.1"
+    point="org.eclipse.core.resources.markers">
+	<super type="org.eclipse.core.resources.problemmarker"/>
+	<super type="org.eclipse.core.resources.textmarker"/>
+	<persistent value="true"/>
+  </extension>
+   
+  <extension
+    point="org.eclipse.ui.ide.markerResolution">
+    <markerResolutionGenerator
+      markerType="checker.framework.eclipse.plugin.marker"
+      class="checkers.eclipse.marker.CheckerResolutionGenerator">
+    </markerResolutionGenerator>
+  </extension>
+  
+  <extension
+    point="org.eclipse.ui.menus">
+    <menuContribution
+      locationURI="popup:org.eclipse.ui.popup.any?after=additions">
+      <menu
+        id="checkers.eclipse.menu"
+        label="Checker Framework">
+        <command
+          commandId="checkers.eclipse.runselected"
+          label="Run Selected Checkers"
+          style="push">
+        </command>
+        <command
+          commandId="checkers.eclipse.clearmarkers"
+          label="Clear Checker Markers"
+          style="push">
+        </command>
+        <!--<command
+          commandId="checkers.eclipse.enablenature"
+          label="Enable Automatic Checking"
+          style="push">
+        </command>
+        <command
+          commandId="checkers.eclipse.disablenature"
+          label="Disable Automatic Checking"
+          style="push">
+        </command> -->
+        <!--<command
+          commandId="checkers.eclipse.addcheckers"
+          label="Add checkers-quals.jar to project"
+          style="push">
+          <visibleWhen checkEnabled="false">
+            <with variable="activeMenuSelection">
+              <iterate>
+                <adapt type="org.eclipse.core.resources.IProject">
+                </adapt>
+              </iterate>
+            </with>
+          </visibleWhen>
+        </command>-->
+        <separator
+          name="separator1"
+          visible="true">
+        </separator>
+        <menu
+          label="Built-in Checkers">
+          <command
+            commandId="checkers.eclipse.runnullness"
+            label="Run Nullness Checker"
+            style="push">
+          </command>
+          <command
+            commandId="checkers.eclipse.runfenum"
+            label="Run Fenum Checker"
+            style="push">
+          </command>
+          <command
+            commandId="checkers.eclipse.runigj"
+            label="Run IGJ Checker"
+            style="push">
+          </command>
+          <command
+            commandId="checkers.eclipse.runinterning"
+            label="Run Interning Checker"
+            style="push">
+          </command>
+          <command
+            commandId="checkers.eclipse.runjavari"
+            label="Run Javari Checker"
+            style="push">
+          </command>
+          <command
+            commandId="checkers.eclipse.runregex"
+            label="Run Regex Checker"
+            style="push">
+          </command>
+          <command
+            commandId="checkers.eclipse.runlock"
+            label="Run Lock Checker"
+            style="push">
+          </command>
+          <command
+            commandId="checkers.eclipse.runlinear"
+            label="Run Linear Checker"
+            style="push">
+          </command>
+          <command
+            commandId="checkers.eclipse.runi18n"
+            label="Run I18n Checker"
+            style="push">
+          </command>
+          <command
+            commandId="checkers.eclipse.runtainting"
+            label="Run Tainting Checker"
+            style="push">
+          </command>
+        </menu>
+        <command
+          commandId="checkers.eclipse.runcustom"
+          label="Run Custom Checker(s)"
+          style="push">
+        </command>
+        <visibleWhen checkEnabled="false">
+          <with variable="activeMenuSelection">
+          	<!--<or>-->
+	            <iterate>
+	              <adapt type="org.eclipse.jdt.internal.core.JavaElement">
+	              </adapt>
+	            </iterate>
+	            <!--<iterate>              
+	              <adapt type="org.eclipse.core.resources.IProject">
+	              </adapt> TODO: IS THIS OK TRY CHECKING WHOLE PROJECT 
+	            </iterate>-->
+            <!--</or>-->
+          </with>
+        </visibleWhen>
+      </menu>
+    </menuContribution>
+  </extension>
+
+  <extension
+    point="org.eclipse.ui.commands">
+    <command
+      categoryId="checkers.eclipse.category"
+      defaultHandler="checkers.eclipse.actions.CheckerActions$NullnessAction"
+      id="checkers.eclipse.runnullness"
+      name="Run Nullness Checker">
+    </command>
+    <command
+      categoryId="checkers.eclipse.category"
+      defaultHandler="checkers.eclipse.actions.CheckerActions$IGJAction"
+      id="checkers.eclipse.runigj"
+      name="Run IGJ Checker">
+    </command>
+    <command
+      categoryId="checkers.eclipse.category"
+      defaultHandler="checkers.eclipse.actions.CheckerActions$CustomAction"
+      id="checkers.eclipse.runcustom"
+      name="Run Custom Checker(s)">
+    </command>
+    <command
+      categoryId="checkers.eclipse.category"
+      defaultHandler="checkers.eclipse.actions.CheckerActions$LockAction"
+      id="checkers.eclipse.runlock"
+      name="Run Lock Checker">
+    </command>
+    <command
+      categoryId="checkers.eclipse.category"
+      defaultHandler="checkers.eclipse.actions.CheckerActions$InterningAction"
+      id="checkers.eclipse.runinterning"
+      name="Run Interning Checker">
+    </command>
+    <command
+      categoryId="checkers.eclipse.category"
+      defaultHandler="checkers.eclipse.actions.CheckerActions$JavariAction"
+      id="checkers.eclipse.runjavari"
+      name="Run Javari Checker">
+    </command>
+    <command
+      categoryId="checkers.eclipse.category"
+      defaultHandler="checkers.eclipse.actions.ClearMarkersAction"
+      id="checkers.eclipse.clearmarkers"
+      name="Clear Project Markers">
+    </command>
+    <!--<command
+      categoryId="checkers.eclipse.category"
+      defaultHandler="checkers.eclipse.actions.EnableNatureHandler"
+      id="checkers.eclipse.enablenature"
+      name="Enable Automatic Checking">
+    </command>  TODO: CAN I COMMENT OUT THE BUILDER?
+    <command
+      categoryId="checkers.eclipse.category"
+      defaultHandler="checkers.eclipse.actions.DisableNatureHandler"
+      id="checkers.eclipse.disablenature"
+      name="Disable Automatic Checking">
+    </command>-->
+    <command
+      categoryId="checkers.eclipse.category"
+      defaultHandler="checkers.eclipse.actions.CheckerActions$LinearAction"
+      id="checkers.eclipse.runlinear"
+      name="Run Linear Checker">
+    </command>
+    <command
+      categoryId="checkers.eclipse.category"
+      defaultHandler="checkers.eclipse.actions.CheckerActions$I18nAction"
+      id="checkers.eclipse.runi18n"
+      name="Run I18n Checker">
+    </command>
+    <command
+      categoryId="checkers.eclipse.category"
+      defaultHandler="checkers.eclipse.actions.CheckerActions$RegexAction"
+      id="checkers.eclipse.runregex"
+      name="Run Regex Checker">
+    </command>
+    <command
+      categoryId="checkers.eclipse.category"
+      defaultHandler="checkers.eclipse.actions.CheckerActions$TaintingAction"
+      id="checkers.eclipse.runtainting"
+      name="Run Tainting Checker">
+    </command>
+    <command
+      categoryId="checkers.eclipse.category"
+      defaultHandler="checkers.eclipse.actions.CheckerActions$CurrentAction"
+      id="checkers.eclipse.runselected"
+      name="Run Selected Checkers">
+    </command>
+    <command
+      categoryId="checkers.eclipse.category"
+      defaultHandler="checkers.eclipse.actions.CheckerActions$FenumAction"
+      id="checkers.eclipse.runfenum"
+      name="Run Fenum Checker">
+    </command>
+    <command
+      categoryId="checkers.eclipse.category"
+      defaultHandler="checkers.eclipse.actions.AddCheckersHandler"
+      id="checkers.eclipse.addcheckers"
+      name="Add checkers-quals.jar to project">
+    </command>
+    <category
+      id="checkers.eclipse.category"
+      name="Checker Plugin">
+    </category>
+  </extension>
+   
+  <extension point="org.eclipse.help.toc">
+    <toc file="toc.xml" primary="true" />
+  </extension>
+
+  <extension
+    point="org.eclipse.ui.bindings">
+    <key
+      commandId="checkers.eclipse.runselected"
+      contextId="org.eclipse.ui.contexts.window"
+      schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+      sequence="Ctrl+Alt+C">
+    </key>
+    <key
+      commandId="checkers.eclipse.clearmarkers"
+      contextId="org.eclipse.ui.contexts.window"
+      schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+      sequence="Shift+Ctrl+C">
+    </key>
+  </extension>
+   
+</plugin>
