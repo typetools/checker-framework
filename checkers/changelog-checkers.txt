@@ -3,6 +3,8 @@ Version 1.4.4, ? ? 2012
 Internal framework improvements:
   Add shutdown hook mechanism and use it for -AresourceStats resource
     statistics flag.
+  Add -AstubWarnIfNotFound and -AstubDebug options to improve
+    warnings and debug information from the stub file parsing.
   Ignore case when comparing error suppression keys.
   Support the bottom type as subtype of any wildcard type.
 
