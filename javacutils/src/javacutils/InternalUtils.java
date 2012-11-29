@@ -274,7 +274,8 @@ public class InternalUtils {
             if (types.isAssignable(t1, t2)) {
                 return t2;
             } else {
-                assert types.isAssignable(t2, t1);
+                assert types.isAssignable(t2, t1) : "Type " + t2
+                        + " is not assignable to " + t1 + ".";
                 return t1;
             }
         }

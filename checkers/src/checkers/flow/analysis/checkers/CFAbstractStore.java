@@ -406,7 +406,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         } else if (receiver instanceof LocalVariable) {
             updateForLocalVariableAssignment((LocalVariable) receiver, val);
         } else {
-            assert false;
+            assert false : "Unexpected receiver of class " + receiver.getClass();
         }
     }
 
