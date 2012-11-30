@@ -7,6 +7,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Elements;
 
 import javacutils.AnnotationUtils;
 import javacutils.InternalUtils;
@@ -98,12 +99,21 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
             AnnotatedArrayType b = (AnnotatedArrayType) otherType;
             AnnotatedTypeMirror componentLub = leastUpperBound(
                     a.getComponentType(), b.getComponentType());
-            TypeMirror underlyingType = TypesUtils.createArrayType(
-                    analysis.getTypes(), componentLub.getUnderlyingType());
-            lubAnnotatedType = AnnotatedTypeMirror.createType(underlyingType,
-                    factory);
-            AnnotatedArrayType aLubAnnotatedType = (AnnotatedArrayType) lubAnnotatedType;
-            aLubAnnotatedType.setComponentType(componentLub);
+            if (componentLub.getUnderlyingType().getKind() == TypeKind.NONE) {
+                // If the components do not have an upper bound, then Object
+                // is still an upper bound of the array types.
+                Elements elements = analysis.getEnv().getElementUtils();
+                TypeMirror underlyingType = elements.getTypeElement("java.lang.Object").asType();
+                lubAnnotatedType = AnnotatedTypeMirror.createType(underlyingType,
+                        factory);
+            } else {
+                TypeMirror underlyingType = TypesUtils.createArrayType(
+                        analysis.getTypes(), componentLub.getUnderlyingType());
+                lubAnnotatedType = AnnotatedTypeMirror.createType(underlyingType,
+                        factory);
+                AnnotatedArrayType aLubAnnotatedType = (AnnotatedArrayType) lubAnnotatedType;
+                aLubAnnotatedType.setComponentType(componentLub);
+            }
         } else {
             TypeMirror lubType = InternalUtils.leastUpperBound(processingEnv,
                     type.getUnderlyingType(), otherType.getUnderlyingType());
