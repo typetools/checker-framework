@@ -239,6 +239,9 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
         TypeMirror underlyingType = InternalUtils.greatestLowerBound(analysis
                 .getEnv(), getType().getUnderlyingType(), other.getType()
                 .getUnderlyingType());
+        if (underlyingType.getKind() == TypeKind.ERROR) {
+            return backup;
+        }
         AnnotatedTypeMirror result = AnnotatedTypeMirror.createType(
                 underlyingType, analysis.getFactory());
         QualifierHierarchy qualHierarchy = analysis.getFactory()
