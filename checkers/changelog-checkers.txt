@@ -1,4 +1,4 @@
-Version 1.4.4, ? ? 2012
+Version 1.4.4, 1 Dec 2012
 
 Internal framework improvements:
   Add shutdown hook mechanism and use it for -AresourceStats resource
@@ -9,10 +9,10 @@ Internal framework improvements:
   Support the bottom type as subtype of any wildcard type.
 
 Tool Integration Changes
-  The maven plugin id has been changed to reflect standard maven
-  naming conventions.
-  Eclipse and Maven plugin version numbers will now track the 
-  checker-framework version numbers.
+  The Maven plugin id has been changed to reflect standard Maven
+    naming conventions.
+  Eclipse and Maven plugin version numbers will now
+    track the Checker Framework version numbers.
   
 Bug fixes.
 
