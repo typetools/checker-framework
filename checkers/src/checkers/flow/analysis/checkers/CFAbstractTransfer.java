@@ -621,7 +621,6 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
 
         // Combine the two.
         V mostPreciceValue = moreSpecificValue(factoryValue, operandValue);
-        result.setResultValue(mostPreciceValue);
 
         // Insert into the store if possible.
         Receiver operandInternal = FlowExpressions.internalReprOf(
