@@ -334,10 +334,13 @@ public class InternalUtils {
         if (TypesUtils.isPrimitive(t1) || TypesUtils.isPrimitive(t2)) {
             if (types.isAssignable(t1, t2)) {
                 return t1;
-            } else {
-                assert types.isAssignable(t2, t1) : "Type " + t2
-                        + " is not assignable to " + t1 + ".";
+            } else if (types.isAssignable(t2, t1)) {
                 return t2;
+            } else {
+                // Javac types.glb returns TypeKind.Error when the GLB does
+                // not exist, but we can't create one.  Use TypeKind.NONE
+                // instead.
+                return processingEnv.getTypeUtils().getNoType(TypeKind.NONE);
             }
         }
         if (t1.getKind() == TypeKind.WILDCARD) {

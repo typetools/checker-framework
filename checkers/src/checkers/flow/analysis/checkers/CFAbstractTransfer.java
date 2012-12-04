@@ -129,6 +129,17 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
     }
 
     /**
+     * @return An abstract value with the given {@code type} and the annotations
+     *         from {@code annotatedValue}.
+     */
+    protected V getValueWithSameAnnotations(TypeMirror type, V annotatedValue) {
+        AbstractBasicAnnotatedTypeFactory<? extends BaseTypeChecker, V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory = analysis.atypeFactory;
+        AnnotatedTypeMirror at = factory.toAnnotatedType(type);
+        at.replaceAnnotations(annotatedValue.getType().getAnnotations());
+        return analysis.createAbstractValue(at);
+    }
+
+    /**
      * The initial store maps method formal parameters to their currently most
      * refined type.
      */
@@ -620,7 +631,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
         V operandValue = p.getValueOfSubNode(n.getOperand());
 
         // Combine the two.
-        V mostPreciceValue = moreSpecificValue(factoryValue, operandValue);
+        V mostPreciseValue = moreSpecificValue(factoryValue, operandValue);
 
         // Insert into the store if possible.
         Receiver operandInternal = FlowExpressions.internalReprOf(
@@ -628,7 +639,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
         if (CFAbstractStore.canInsertReceiver(operandInternal)) {
             S thenStore = result.getThenStore();
             S elseStore = result.getElseStore();
-            thenStore.insertValue(operandInternal, mostPreciceValue);
+            thenStore.insertValue(operandInternal, mostPreciseValue);
             return new ConditionalTransferResult<>(result.getResultValue(),
                     thenStore, elseStore);
         }
@@ -660,14 +671,20 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
     public TransferResult<V, S> visitUnboxing(UnboxingNode n,
             TransferInput<V, S> p) {
         TransferResult<V, S> result = super.visitUnboxing(n, p);
-        result.setResultValue(p.getValueOfSubNode(n.getOperand()));
+        // Combine annotations from the operand with the unboxed type
+        V operandValue = p.getValueOfSubNode(n.getOperand());
+        V unboxedValue = getValueWithSameAnnotations(n.getType(), operandValue);
+        result.setResultValue(unboxedValue);
         return result;
     }
 
     @Override
     public TransferResult<V, S> visitBoxing(BoxingNode n, TransferInput<V, S> p) {
         TransferResult<V, S> result = super.visitBoxing(n, p);
-        result.setResultValue(p.getValueOfSubNode(n.getOperand()));
+        // Combine annotations from the operand with the boxed type
+        V operandValue = p.getValueOfSubNode(n.getOperand());
+        V boxedValue = getValueWithSameAnnotations(n.getType(), operandValue);
+        result.setResultValue(boxedValue);
         return result;
     }
 
@@ -675,7 +692,10 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
     public TransferResult<V, S> visitNarrowingConversion(
             NarrowingConversionNode n, TransferInput<V, S> p) {
         TransferResult<V, S> result = super.visitNarrowingConversion(n, p);
-        result.setResultValue(p.getValueOfSubNode(n.getOperand()));
+        // Combine annotations from the operand with the narrow type
+        V operandValue = p.getValueOfSubNode(n.getOperand());
+        V narrowedValue = getValueWithSameAnnotations(n.getType(), operandValue);
+        result.setResultValue(narrowedValue);
         return result;
     }
 
@@ -683,7 +703,10 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
     public TransferResult<V, S> visitWideningConversion(
             WideningConversionNode n, TransferInput<V, S> p) {
         TransferResult<V, S> result = super.visitWideningConversion(n, p);
-        result.setResultValue(p.getValueOfSubNode(n.getOperand()));
+        // Combine annotations from the operand with the wide type
+        V operandValue = p.getValueOfSubNode(n.getOperand());
+        V widenedValue = getValueWithSameAnnotations(n.getType(), operandValue);
+        result.setResultValue(widenedValue);
         return result;
     }
 
