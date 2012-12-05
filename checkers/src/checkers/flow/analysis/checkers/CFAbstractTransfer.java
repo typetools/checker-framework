@@ -12,6 +12,7 @@ import javacutils.Pair;
 import javacutils.TreeUtils;
 
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
@@ -110,17 +111,19 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
             // any case, so we would not have to disable it.
             boolean oldFlow = factory.getUseFlow();
             factory.setUseFlow(false);
-            AnnotatedTypeMirror assCtxt = factory.getAnnotatedType(node
-                    .getAssignmentContext().getElementForType());
-            if (assCtxt instanceof AnnotatedExecutableType) {
-                // For a MethodReturnContext, we get the full type of the
-                // method, but we only want the return type.
-                assCtxt = ((AnnotatedExecutableType) assCtxt).getReturnType();
+            Element element = node.getAssignmentContext().getElementForType();
+            if (element != null) {
+                AnnotatedTypeMirror assCtxt = factory.getAnnotatedType(element);
+                if (assCtxt instanceof AnnotatedExecutableType) {
+                    // For a MethodReturnContext, we get the full type of the
+                    // method, but we only want the return type.
+                    assCtxt = ((AnnotatedExecutableType) assCtxt).getReturnType();
+                }
+                factory.setUseFlow(oldFlow);
+                factory.getVisitorState().setAssignmentContext(
+                        Pair.of(node.getAssignmentContext().getContextTree(),
+                                assCtxt));
             }
-            factory.setUseFlow(oldFlow);
-            factory.getVisitorState().setAssignmentContext(
-                    Pair.of(node.getAssignmentContext().getContextTree(),
-                            assCtxt));
         }
         AnnotatedTypeMirror at = factory.getAnnotatedType(tree);
         analysis.setCurrentTree(null);
