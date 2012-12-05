@@ -19,4 +19,10 @@ class AssignmentContext {
         String[] s = null;
         s = b ? new String[] {""} : null;
     }
+
+    void assignToCast(String[][] currentSample) {
+        // This statement used to cause a null pointer exception.
+        ((String [])currentSample[3])[4] = currentSample[3][4];
+    }
+
 }

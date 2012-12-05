@@ -248,17 +248,21 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
                 .getQualifierHierarchy();
         AnnotatedTypeMirror otherType = other.getType();
 
-        mostSpecific(qualHierarchy, getType(), otherType, backup == null ? null
-                : backup.getType(), result);
-
-        return analysis.createAbstractValue(result);
+        if (mostSpecific(qualHierarchy, getType(), otherType, backup == null ? null
+                : backup.getType(), result)) {
+            return analysis.createAbstractValue(result);
+        } else {
+            return backup;
+        }
     }
 
     /**
      * Implementation of {@link #mostSpecific(CFAbstractValue, CFAbstractValue)}
      * that works on {@link AnnotatedTypeMirror}s.
+     *
+     * @return true iff result could be set to a uniquely most specific type
      */
-    private static void mostSpecific(QualifierHierarchy qualHierarchy,
+    private static boolean mostSpecific(QualifierHierarchy qualHierarchy,
             AnnotatedTypeMirror a, AnnotatedTypeMirror b,
             AnnotatedTypeMirror backup, AnnotatedTypeMirror result) {
         boolean canContainEmpty = result.getKind() == TypeKind.TYPEVAR
@@ -284,11 +288,10 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
                     result.addAnnotation(bAnno);
                 }
             } else {
-                if (backup == null) {
-                    assert false : "Neither of the two values is more specific: "
-                            + a + ", " + b + ".";
-                } else {
+                if (backup != null) {
                     result.addAnnotation(backup.getAnnotationInHierarchy(top));
+                } else {
+                    return false;
                 }
             }
         }
@@ -324,7 +327,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
             AnnotatedArrayType aa = (AnnotatedArrayType) a;
             AnnotatedArrayType bb = (AnnotatedArrayType) b;
 
-            mostSpecific(qualHierarchy, aa.getComponentType(),
+            return mostSpecific(qualHierarchy, aa.getComponentType(),
                     bb.getComponentType(), null,
                     aLubAnnotatedType.getComponentType());
         } else if (kind == TypeKind.ARRAY) {
@@ -341,6 +344,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
                         .getAnnotations());
             }
         }
+        return true;
     }
 
     /**

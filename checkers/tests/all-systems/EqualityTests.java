@@ -5,6 +5,20 @@ public class EqualityTests {
         // failure in GLB computation.
         return !(((v1 == 0) || (v2 == 0)) && (v1 != v2));
     }
+
+    public int charEquals(boolean cond) {
+        char result = 'F';
+        if (cond) {
+            result = 'T';
+        }
+
+        if (result == 'T') {
+            return 1;
+        } else {
+            assert result == '?';
+        }
+        return 10;
+    }
 }
 
 
