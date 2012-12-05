@@ -618,11 +618,11 @@ public abstract class AnnotatedTypeMirror {
     }
 
     // A helper method to print annotations separated by a space.
+    // Note a final space after a list of annotations to separate from the underlying type.
     protected final static String formatAnnotationString(
             Collection<? extends AnnotationMirror> lst,
             boolean printInvisible) {
         StringBuilder sb = new StringBuilder();
-        boolean notfirst = false;
         for (AnnotationMirror obj : lst) {
             if (obj == null) {
                 SourceChecker.errorAbort("AnnotatedTypeMirror.formatAnnotationString: found null AnnotationMirror!");
@@ -631,12 +631,8 @@ public abstract class AnnotatedTypeMirror {
                     !printInvisible) {
                 continue;
             }
-
-            if (notfirst) {
-                sb.append(" ");
-            }
-            notfirst = true;
             formatAnnotationMirror(obj, sb);
+            sb.append(" ");
         }
         return sb.toString();
     }
@@ -715,7 +711,7 @@ public abstract class AnnotatedTypeMirror {
      */
     public String toString(boolean invisible) {
         return formatAnnotationString(getAnnotations(), invisible)
-                + " " + this.actualType;
+                + this.actualType;
     }
 
     public String toStringDebug() {
@@ -842,7 +838,6 @@ public abstract class AnnotatedTypeMirror {
             String smpl = typeElt.getSimpleName().toString();
             if (!smpl.isEmpty()) {
                 sb.append(formatAnnotationString(getAnnotations(), printInvisible));
-                sb.append(' ');
                 sb.append(smpl);
             } else {
                 // The simple name is empty for multiple upper bounds.
@@ -1751,7 +1746,6 @@ public abstract class AnnotatedTypeMirror {
         public String toString(boolean printInvisible) {
             StringBuilder sb = new StringBuilder();
             sb.append(formatAnnotationString(annotations, printInvisible));
-            sb.append(' ');
             sb.append(actualType);
             if (!isPrintingBound) {
                 try {
@@ -1884,7 +1878,7 @@ public abstract class AnnotatedTypeMirror {
         @Override
         public String toString(boolean printInvisible) {
             if (printInvisible) {
-                return formatAnnotationString(getAnnotations(), printInvisible) + " null";
+                return formatAnnotationString(getAnnotations(), printInvisible) + "null";
             } else {
                 return "null";
             }
@@ -2116,7 +2110,7 @@ public abstract class AnnotatedTypeMirror {
         public String toString(boolean printInvisible) {
             StringBuilder sb = new StringBuilder();
             sb.append(formatAnnotationString(annotations, printInvisible));
-            sb.append(" ?");
+            sb.append("?");
             if (!isPrintingBound) {
                 try {
                     isPrintingBound = true;
