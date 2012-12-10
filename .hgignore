@@ -1,0 +1,102 @@
+syntax: glob
+
+# git
+.gitignore
+.git
+
+# Emacs and other temporary files
+*~
+.#*
+*.swp
+TAGS
+tags
+*.orig
+.DS_Store
+# Eclipse files
+.metadata
+.externalToolBuilders
+.settings
+dot_files
+
+Makefile.user
+
+# build files
+bin
+build
+doc
+javaparser/docs/api
+*.jar
+checkers/jdk/**/*.class
+checkers/jdk/jdk.jar
+*.pyc
+checkers/binary/buildbin
+demos/nonnull-interned-demo/**/*.class
+demos/units-extension/*.class
+
+# manual files
+bib
+doc
+*.synctex.gz
+manual.aux
+manual.blg
+manual.dvi
+manual.haux
+manual.html
+manual.htoc
+manual.image.tex
+manual.image.tex.new
+manual.image.log
+manual.log
+manual.out
+manual.pdf
+manual.ps
+manual.toc
+manual001.gif
+manual001.png
+manual002.gif
+manual002.png
+manual003.gif
+manual003.png
+manual004.gif
+manual004.png
+checkers/manual/figures/*.eps
+checkers/manual/figures/*.pdf
+checkers/manual/figures/*.png
+checkers/manual/figures/signature-types-with-canonicalname.dia
+checkers/manual/*.png
+
+# dataflow manual
+checkers/manual/dataflow-manual/dataflow.aux
+checkers/manual/dataflow-manual/dataflow.dvi
+checkers/manual/dataflow-manual/dataflow.log
+checkers/manual/dataflow-manual/dataflow.out
+checkers/manual/dataflow-manual/dataflow.pdf
+
+checkers/tests/nonnull-extra/*.class
+checkers/tests/nonnull-extra/multiple-errors/*.class
+checkers/tests/nonnull-extra/multiple-errors/Out.txt
+
+checkers/tests/nullness/generics/*.class
+checkers/tests/nullness-temp/*.java
+checkers/tests/nullness-temp/*.class
+
+# release tmps
+tmp
+
+jsr308-langtools
+jsr308-langtools.basic
+langtools-ta
+
+# Maven files
+target/
+*.ipr
+*.iws
+*.iml
+
+syntax: regexp
+# Not a glob because it starts with # which looks like a comment.
+(.*/)?\#[^/]*\#$
+(.*/)?\.\#.*
+
+syntax: regexp
+^checkers/tests/nullness-extra/multiple-errors/Out\.txt$
