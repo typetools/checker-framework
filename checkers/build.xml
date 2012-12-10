@@ -645,7 +645,7 @@ ${build.version} of the 'javac.jar' library."/>
               failonerror="true"
               classpath="${compiler.lib}:${annotation-utils.lib}:${javaparser.lib}:${javacutils.lib}:${dataflow.lib}:${jna.lib}:${checkers.jar.file}"
               classname="com.sun.tools.javac.Main">
-            <jvmarg line="-Xbootclasspath/p:${compiler.lib}"/>
+            <jvmarg line="-Xbootclasspath/p:${compiler.lib}:${checkers.jar.file}"/>
             <arg value="-g"/>
             <arg line="-sourcepath ${src}:${checker-jdk}"/>
             <arg line="-d ${build}"/>
