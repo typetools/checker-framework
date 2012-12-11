@@ -401,7 +401,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         } finally {
             // Also add possibly deferred diagnostics, which will get published back in
             // AbstractTypeProcessor.
-            this.errsOnLastExit = log.nerrors + log.deferredDiagnostics.size();
+            this.errsOnLastExit = log.nerrors;
         }
     }
 
