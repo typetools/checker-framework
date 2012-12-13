@@ -662,7 +662,7 @@ ${build.version} of the 'javac.jar' library."/>
         <antcall target="-run-checker">
             <param name="checker-name" value="checkers.nonnull.NonNullFbcChecker"/>
             <param name="checker-jdk" value="jdk/nonnull/src"/>
-            <param name="checker-args" value="-Awarns"/>
+            <param name="checker-args" value="-Awarns -AprintErrorStack"/>
         </antcall>
     </target>
 
