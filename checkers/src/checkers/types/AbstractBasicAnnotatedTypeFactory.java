@@ -361,14 +361,8 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
         }
         FlowAnalysis analysis = analyses.getFirst();
         Node node = analysis.getNodeForTree(tree);
-        try {
         Store store = AnalysisResult.runAnalysisFor(node, true, analysis.getStore(node.getBlock()));
         return store;
-        } catch (Throwable t) {
-            System.out.println("Exception in runAnalysisFor node: " + node);
-            System.out.println("Block: " + node.getBlock());
-            throw t;
-        }
     }
 
     /**
