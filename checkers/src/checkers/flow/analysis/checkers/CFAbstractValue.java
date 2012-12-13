@@ -359,7 +359,6 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
                     top, a);
             AnnotationMirror bAnno = qualHierarchy.findCorrespondingAnnotation(
                     top, b);
-            try {
             if (qualHierarchy.isSubtype(aAnno, bAnno)) {
                 result.add(aAnno);
             } else if (qualHierarchy.isSubtype(bAnno, aAnno)) {
@@ -367,10 +366,6 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
             } else {
                 assert false : "Neither of the two values is more specific: "
                         + a + ", " + b + ".";
-            }
-            } catch (Throwable t) {
-                System.out.println("Exception comparing annotations a: " + aAnno + " b: " + bAnno + " top: " + top);
-                throw t;
             }
         }
         return result;
