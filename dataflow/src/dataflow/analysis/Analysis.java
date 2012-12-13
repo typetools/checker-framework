@@ -155,6 +155,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
         while (!worklist.isEmpty()) {
             Block b = worklist.poll();
 
+            try {
             switch (b.getType()) {
             case REGULAR_BLOCK: {
                 RegularBlock rb = (RegularBlock) b;
@@ -250,6 +251,10 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
                 assert false;
                 break;
             }
+            } catch (Throwable t) {
+                System.out.println("Exception analyzing block:" + b);
+                throw t;
+            }
         }
 
         assert isRunning == true;
@@ -272,8 +277,13 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
         }
         store.node = node;
         currentNode = node;
-        TransferResult<A, S> transferResult = node.accept(transferFunction,
-                store);
+        TransferResult<A, S> transferResult = null;
+        try {
+            transferResult = node.accept(transferFunction, store);
+        } catch (Throwable t) {
+            System.out.println("callTransferFunction exception on node: " + node);
+            throw t;
+        }
         currentNode = null;
         if (node instanceof ReturnNode) {
             // save a copy of the store to later check if some property held at
