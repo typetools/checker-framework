@@ -630,15 +630,10 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
 
         treeAnnotator.visit(tree, type);
 
-        // TODO: This is quite ugly
-        boolean finishedScanning = enclosingClass == null
-                || scannedClasses.get(enclosingClass) == ScanState.FINISHED;
-        if (finishedScanning || type.getKind() != TypeKind.TYPEVAR) {
-            Element elt = InternalUtils.symbol(tree);
-            typeAnnotator.visit(type, elt != null ? elt.getKind()
-                    : ElementKind.OTHER);
-            defaults.annotate(tree, type);
-        }
+        Element elt = InternalUtils.symbol(tree);
+        typeAnnotator.visit(type, elt != null ? elt.getKind()
+                : ElementKind.OTHER);
+        defaults.annotate(tree, type);
 
         Value as = null;
         if (!analyses.isEmpty() && tree != null) {
