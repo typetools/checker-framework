@@ -142,7 +142,9 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
      */
     public static <A extends AbstractValue<A>, S extends Store<S>> S runAnalysisFor(
             Node node, boolean before, TransferInput<A, S> transferInput) {
+        assert node != null;
         Block block = node.getBlock();
+        assert transferInput != null;
         Analysis<A, S, ?> analysis = transferInput.analysis;
         Node oldCurrentNode = analysis.currentNode;
 
