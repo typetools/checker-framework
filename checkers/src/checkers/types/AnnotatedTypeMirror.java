@@ -1388,7 +1388,9 @@ public abstract class AnnotatedTypeMirror {
                 return mappings.get(this);
 
             AnnotatedArrayType type = getCopy(true);
-            type.setComponentType(getComponentType().substitute(mappings));
+            AnnotatedTypeMirror c = getComponentType();
+            AnnotatedTypeMirror cs = c.substitute(mappings);
+            type.setComponentType(cs);
             return type;
         }
 
@@ -1717,7 +1719,8 @@ public abstract class AnnotatedTypeMirror {
                             // any annotations on the actual type argument.
                             @SuppressWarnings("unchecked")
                             V found = (V)possValue.getCopy(false);
-                            found.addAnnotations(key.annotations);
+                            found.addAnnotations(possValue.getAnnotations());
+                            found.replaceAnnotations(key.annotations);
                             return found;
                         } else {
                             return possValue;
