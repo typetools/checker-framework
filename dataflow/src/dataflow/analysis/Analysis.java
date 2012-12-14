@@ -502,7 +502,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
             // check that 'n' is a subnode of 'node'. Check immediate operands
             // first for efficiency.
             assert currentNode != null;
-            assert !n.isLValue();
+            assert !n.isLValue() : "Did not expect an lvalue, but got " + n;
             if (!(currentNode != n && (currentNode.getOperands().contains(n) || currentNode
                     .getTransitiveOperands().contains(n)))) {
                 return null;
@@ -524,7 +524,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
             return null;
         }
         Node nodeCorrespondingToTree = getNodeForTree(t);
-        if (nodeCorrespondingToTree == null) {
+        if (nodeCorrespondingToTree == null || nodeCorrespondingToTree.isLValue()) {
             return null;
         }
         return getValue(nodeCorrespondingToTree);
