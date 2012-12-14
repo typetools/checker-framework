@@ -26,6 +26,7 @@ import javacutils.Pair;
 import javacutils.TreeUtils;
 
 import dataflow.analysis.AnalysisResult;
+import dataflow.analysis.TransferInput;
 import dataflow.analysis.TransferResult;
 import dataflow.cfg.CFGBuilder;
 import dataflow.cfg.ControlFlowGraph;
@@ -361,7 +362,11 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
         }
         FlowAnalysis analysis = analyses.getFirst();
         Node node = analysis.getNodeForTree(tree);
-        Store store = AnalysisResult.runAnalysisFor(node, true, analysis.getStore(node.getBlock()));
+        TransferInput<Value, Store> prevStore = analysis.getStore(node.getBlock());
+        if (prevStore == null) {
+            return null;
+        }
+        Store store = AnalysisResult.runAnalysisFor(node, true, prevStore);
         return store;
     }
 
