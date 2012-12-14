@@ -399,6 +399,7 @@ public abstract class InitializationChecker extends BaseTypeChecker {
          * Is the annotation {@code anno} part of the child type system?
          */
         protected boolean isChildAnnotation(AnnotationMirror anno) {
+            assert anno != null;
             for (Name c : childHierarchy.getTypeQualifiers()) {
                 if (AnnotationUtils.areSameByName(anno, c.toString())) {
                     return true;

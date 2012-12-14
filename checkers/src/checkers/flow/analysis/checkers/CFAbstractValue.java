@@ -48,7 +48,8 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
 
     public CFAbstractValue(CFAbstractAnalysis<V, ?, ?> analysis,
             AnnotatedTypeMirror type) {
-        assert analysis.isValidValue(type) : "Encountered invalid type: " + type;
+        assert analysis.isValidValue(type) : "Encountered invalid type: "
+                + type;
         this.analysis = analysis;
         this.type = type;
         this.typeHierarchy = analysis.getTypeHierarchy();
@@ -103,14 +104,15 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
                 // If the components do not have an upper bound, then Object
                 // is still an upper bound of the array types.
                 Elements elements = analysis.getEnv().getElementUtils();
-                TypeMirror underlyingType = elements.getTypeElement("java.lang.Object").asType();
-                lubAnnotatedType = AnnotatedTypeMirror.createType(underlyingType,
-                        factory);
+                TypeMirror underlyingType = elements.getTypeElement(
+                        "java.lang.Object").asType();
+                lubAnnotatedType = AnnotatedTypeMirror.createType(
+                        underlyingType, factory);
             } else {
                 TypeMirror underlyingType = TypesUtils.createArrayType(
                         analysis.getTypes(), componentLub.getUnderlyingType());
-                lubAnnotatedType = AnnotatedTypeMirror.createType(underlyingType,
-                        factory);
+                lubAnnotatedType = AnnotatedTypeMirror.createType(
+                        underlyingType, factory);
                 AnnotatedArrayType aLubAnnotatedType = (AnnotatedArrayType) lubAnnotatedType;
                 aLubAnnotatedType.setComponentType(componentLub);
             }
@@ -220,8 +222,8 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
      * <p>
      * If neither of the two is more specific for one of the hierarchies (i.e.,
      * if the two are incomparable as determined by
-     * {@link TypeHierarchy#isSubtype(AnnotatedTypeMirror, AnnotatedTypeMirror)}, then the
-     * respective value from {@code backup} is used.
+     * {@link TypeHierarchy#isSubtype(AnnotatedTypeMirror, AnnotatedTypeMirror)}
+     * , then the respective value from {@code backup} is used.
      *
      * <p>
      * TODO: The code in this method is rather similar to
@@ -238,8 +240,8 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
         TypeMirror underlyingType = InternalUtils.greatestLowerBound(analysis
                 .getEnv(), getType().getUnderlyingType(), other.getType()
                 .getUnderlyingType());
-        if (underlyingType.getKind() == TypeKind.ERROR ||
-            underlyingType.getKind() == TypeKind.NONE) {
+        if (underlyingType.getKind() == TypeKind.ERROR
+                || underlyingType.getKind() == TypeKind.NONE) {
             return backup;
         }
         AnnotatedTypeMirror result = AnnotatedTypeMirror.createType(
@@ -248,8 +250,8 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
                 .getQualifierHierarchy();
         AnnotatedTypeMirror otherType = other.getType();
 
-        if (mostSpecific(qualHierarchy, getType(), otherType, backup == null ? null
-                : backup.getType(), result)) {
+        if (mostSpecific(qualHierarchy, getType(), otherType,
+                backup == null ? null : backup.getType(), result)) {
             return analysis.createAbstractValue(result);
         } else {
             return backup;
@@ -359,6 +361,10 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
                     top, a);
             AnnotationMirror bAnno = qualHierarchy.findCorrespondingAnnotation(
                     top, b);
+            assert aAnno != null : "Did not find an annotation for '" + top
+                    + "' in '" + a + "'.";
+            assert bAnno != null : "Did not find an annotation for '" + top
+                    + "' in '" + b + "'.";
             if (qualHierarchy.isSubtype(aAnno, bAnno)) {
                 result.add(aAnno);
             } else if (qualHierarchy.isSubtype(bAnno, aAnno)) {
