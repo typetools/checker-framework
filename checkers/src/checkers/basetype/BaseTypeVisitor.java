@@ -1285,10 +1285,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
      *            the error message to use if the check fails (must be a
      *            compiler message key, see {@link CompilerMessageKey})
      */
-    protected void commonAssignmentCheck(Tree varTree, ExpressionTree valueExp, /*
-                                                                                 * @
-                                                                                 * CompilerMessageKey
-                                                                                 */
+    protected void commonAssignmentCheck(Tree varTree, ExpressionTree valueExp, /*@CompilerMessageKey*/
             String errorKey) {
         AnnotatedTypeMirror var = atypeFactory.getAnnotatedType(varTree);
         assert var != null : "no variable found for tree: " + varTree;
@@ -1324,7 +1321,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
      *            variable?
      */
     protected void commonAssignmentCheck(AnnotatedTypeMirror varType,
-            ExpressionTree valueExp, /* @CompilerMessageKey */String errorKey,
+            ExpressionTree valueExp, /*@CompilerMessageKey*/ String errorKey,
             boolean isLocalVariableAssignement) {
         if (shouldSkipUses(valueExp))
             return;
@@ -1363,9 +1360,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
      *            variable?
      */
     protected void commonAssignmentCheck(AnnotatedTypeMirror varType,
-            AnnotatedTypeMirror valueType, Tree valueTree, /*
-                                                            * @CompilerMessageKey
-                                                            */String errorKey,
+            AnnotatedTypeMirror valueType, Tree valueTree, /*@CompilerMessageKey*/String errorKey,
             boolean isLocalVariableAssignement) {
 
         String valueTypeString = valueType.toString();
