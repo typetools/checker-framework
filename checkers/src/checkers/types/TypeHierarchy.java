@@ -202,6 +202,10 @@ public class TypeHierarchy {
             Set<AnnotationMirror> lhsAnnos = lhsBase.getEffectiveAnnotations();
             Set<AnnotationMirror> rhsAnnos = rhsBase.getEffectiveAnnotations();
 
+            assert lhsAnnos.size() == qualifierHierarchy.getWidth() : "Found invalid number of annotations on "
+                    + lhsBase;
+            assert rhsAnnos.size() == qualifierHierarchy.getWidth() : "Found invalid number of annotations on "
+                    + rhsBase;
             if (!qualifierHierarchy.isSubtype(rhsAnnos, lhsAnnos)) {
                 return false;
             }
