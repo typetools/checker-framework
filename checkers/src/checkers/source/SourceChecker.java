@@ -535,6 +535,25 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         if (this.processingEnv.getOptions() != null /*nnbug*/
                 && this.processingEnv.getOptions().containsKey("nomsgtext")) {
             fmtString = defaultFormat;
+        } else if (this.processingEnv.getOptions() != null /*nnbug*/
+                && this.processingEnv.getOptions().containsKey("detailedmsgtext")) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(defaultFormat);
+            sb.append(DETAILS_SEPARATOR);
+            if (args != null) {
+                sb.append(args.length);
+                sb.append(DETAILS_SEPARATOR);
+                for (Object arg : args) {
+                    sb.append(arg);
+                    sb.append(DETAILS_SEPARATOR);
+                }
+            } else {
+                // Output 0 for null arguments.
+                sb.append(0);
+                sb.append(DETAILS_SEPARATOR);
+            }
+            sb.append(fullMessageOf(msgKey, defaultFormat));
+            fmtString = sb.toString();
         } else {
             fmtString = fullMessageOf(msgKey, defaultFormat);
         }
@@ -553,6 +572,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
             SourceChecker.errorAbort("invalid position source: "
                     + source.getClass().getName());
     }
+
+    public static final String DETAILS_SEPARATOR = " $$ ";
 
     /**
      * Determines if an error (whose error key is {@code err}), should
@@ -879,6 +900,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         options.add("skipDefs");
         options.add("lint");
         options.add("nomsgtext");
+        options.add("detailedmsgtext");
         options.add("filenames");
         options.add("showchecks");
         options.add("stubs");
