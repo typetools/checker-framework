@@ -19,6 +19,7 @@ import checkers.quals.DefaultQualifier;
 import checkers.quals.DefaultQualifierInHierarchy;
 import checkers.quals.ImplicitFor;
 import checkers.quals.Unqualified;
+import checkers.source.SourceChecker;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.util.AnnotationUtils;
 import checkers.util.InternalUtils;
@@ -189,6 +190,7 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
         }
     }
 
+    @Override
     public void annotateImplicit(Tree tree, AnnotatedTypeMirror type) {
         assert root != null : "root needs to be set when used on trees";
         treeAnnotator.visit(tree, type);
@@ -197,6 +199,9 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
         defaults.annotate(tree, type);
 
         if (useFlow) {
+            if (flow == null) {
+                SourceChecker.errorAbort("Type factory \"" + this.getClass().getSimpleName() + "\" did not call postInit() to initialize flow inference!");
+            }
             final Set<AnnotationMirror> inferred = flow.test(tree);
             if (inferred != null) {
                 for (AnnotationMirror inf : inferred) {

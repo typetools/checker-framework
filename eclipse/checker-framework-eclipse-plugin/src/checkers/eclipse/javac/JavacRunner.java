@@ -34,7 +34,7 @@ import com.sun.tools.javac.file.JavacFileManager;
  * 
  * @author asumu
  */
-public class JavacRunner
+public class JavacRunner implements CheckersRunner
 {
     public static final String CHECKERS_LOCATION = "lib/checkers.jar";
     public static final String JAVAC_LOCATION = "lib/javac.jar";
@@ -66,6 +66,7 @@ public class JavacRunner
      * @param classpath
      *            The classpath to reference in compilation
      */
+
     public void run()
     {
         Iterable<String> opts;
@@ -75,19 +76,16 @@ public class JavacRunner
         // The following code uses the compiler's internal APIs, which are
         // volatile. (see warning in JavacTool source)
         JavacTool tool = JavacTool.create();
-        JavacFileManager manager = tool.getStandardFileManager(collector, null,
-                null);
+        JavacFileManager manager = tool.getStandardFileManager(collector, null, null);
 
-        Iterable<? extends JavaFileObject> fileObjs = manager
-                .getJavaFileObjectsFromStrings(fileNames);
+        Iterable<? extends JavaFileObject> fileObjs = manager.getJavaFileObjectsFromStrings(fileNames);
 
         CheckerPlugin.getDefault();
         MessageConsole console = CheckerPlugin.findConsole();
         MessageConsoleStream stream = console.newMessageStream();
         Writer writer = new OutputStreamWriter(stream);
 
-        JavacTask task = tool.getTask(writer, manager, collector, opts, null,
-                fileObjs);
+        JavacTask task = tool.getTask(writer, manager, collector, opts, null, fileObjs);
 
         task.call();
         manager.close();
@@ -199,8 +197,23 @@ public class JavacRunner
         return javacJarURL.getPath();
     }
 
-    public List<Diagnostic<? extends JavaFileObject>> getErrors()
+    public List<Diagnostic<? extends JavaFileObject>> getDiagnostics()
     {
         return collector.getDiagnostics();
+    }
+
+    public List<JavacError> getErrors()
+    {
+        List<Diagnostic<? extends JavaFileObject>> diagnostics = getDiagnostics();
+        List<JavacError> javacErrors = new ArrayList<JavacError>();
+        for (Diagnostic<? extends JavaFileObject> diagnostic : diagnostics)
+        {
+        	if(diagnostic.getSource() != null) {
+        		javacErrors.add(new JavacError(diagnostic));
+        	} else {//TODO: TEST PRINTING THIS TO THE CONSOLE
+        		System.out.println("No source for diagnostic at: " + diagnostic.getLineNumber() + " Message " + diagnostic.getMessage(null));
+        	}
+        }
+        return javacErrors;
     }
 }

@@ -24,6 +24,10 @@ import japa.parser.ast.body.*;
 import japa.parser.ast.expr.*;
 import japa.parser.ast.type.*;
 
+/*>>>
+import checkers.nullness.quals.*;
+*/
+
 // Main entry point is:
 // parse(Map<Element, AnnotatedTypeMirror>, Map<Element, Set<AnnotationMirror>>)
 
@@ -35,11 +39,10 @@ public class StubParser {
      * found on the user's real classpath.  Since the stub file may contain
      * packages that are not on the classpath, this can be OK, so default to
      * false.
-     * TODO: set based on command-line option.
      */
-    private static boolean warnIfNotFound = false;
+    private boolean warnIfNotFound = false;
 
-    private static final boolean debugStubParser = false;
+    private boolean debugStubParser = false;
 
     /** The file being parsed (makes error messages more informative). */
     private final String filename;
@@ -73,6 +76,9 @@ public class StubParser {
         if (supportedAnnotations.isEmpty()) {
             stubWarning("No supported annotations found! This likely means your stub file doesn't import them correctly.");
         }
+        Map<String, String> options = env.getOptions();
+        this.warnIfNotFound = options.containsKey("stubWarnIfNotFound");
+        this.debugStubParser = options.containsKey("stubDebug");
     }
 
     /** All annotations defined in the package.  Keys are simple names. */
@@ -463,7 +469,7 @@ public class StubParser {
         }
     }
 
-    private final static Set<String> nestedClassWarnings = new HashSet<String>();
+    private static final Set<String> nestedClassWarnings = new HashSet<String>();
 
     private Map<Element, BodyDeclaration> getMembers(TypeElement typeElt, TypeDeclaration typeDecl) {
         assert (typeElt.getSimpleName().contentEquals(typeDecl.getName())
@@ -522,7 +528,7 @@ public class StubParser {
             (methodDecl.getParameters() == null) ? 0 :
                 methodDecl.getParameters().size();
         final String wantedMethodString = StubUtil.toString(methodDecl);
-        for (ExecutableElement method : ElementFilter.methodsIn(typeElt.getEnclosedElements())) {
+        for (ExecutableElement method : ElementUtils.getAllMethodsIn(typeElt)) {
             // do heuristics first
             if (wantedMethodParams == method.getParameters().size()
                 && wantedMethodName.contentEquals(method.getSimpleName())
@@ -563,7 +569,7 @@ public class StubParser {
     }
 
     public VariableElement findFieldElement(TypeElement typeElt, String fieldName) {
-        for (VariableElement field : ElementFilter.fieldsIn(typeElt.getEnclosedElements())) {
+        for (VariableElement field : ElementUtils.getAllFieldsIn(typeElt)) {
             // field.getSimpleName() is a CharSequence, not a String
             if (fieldName.equals(field.getSimpleName().toString())) {
                 return field;
@@ -584,7 +590,7 @@ public class StubParser {
     private static <K,V> void putNew(Map<K,V> m, K key, V value) {
         if (key == null)
             return;
-        if (m.containsKey(key)) {
+        if (m.containsKey(key) && !m.get(key).equals(value)) {
             // TODO: instead of failing, can we try merging the information from
             // multiple stub files?
             SourceChecker.errorAbort("StubParser: key is already in map: " + LINE_SEPARATOR
@@ -714,6 +720,10 @@ public class StubParser {
                 anaiexpr = aiexprvals.get(i);
                 if (anaiexpr instanceof FieldAccessExpr) {
                     elemarr[i] = findVariableElement((FieldAccessExpr) anaiexpr);
+                    if (elemarr[i] == null) {
+                        // A warning was already issued by findVariableElement;
+                        return;
+                    }
                     String constval = (String) ((VariableElement)elemarr[i]).getConstantValue();
                     if (constval!=null) {
                         elemarr[i] = constval;
@@ -731,7 +741,7 @@ public class StubParser {
         }
     }
 
-    private VariableElement findVariableElement(FieldAccessExpr faexpr) {
+    private /*@Nullable*/ VariableElement findVariableElement(FieldAccessExpr faexpr) {
         TypeElement rcvElt = elements.getTypeElement(faexpr.getScope().toString());
         if (rcvElt == null) {
             if (warnIfNotFound || debugStubParser)
