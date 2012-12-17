@@ -2,6 +2,8 @@ package checkers.source;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryPoolMXBean;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -311,6 +313,14 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
                         "You have forgotten to call super.initChecker in your "
                                 + "subclass of SourceChecker! Please ensure your checker is properly initialized.");
             }
+            if (shouldAddShutdownHook()) {
+                Runtime.getRuntime().addShutdownHook(new Thread() {
+                    @Override
+                    public void run() {
+                        shutdownHook();
+                    }
+                });
+            }
         } catch (CheckerError ce) {
             logCheckerError(ce);
         } catch (Throwable t) {
@@ -340,6 +350,33 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         this.activeLints = createActiveLints(processingEnv.getOptions());
     }
 
+    /**
+     * Return true to indicate that method {@link #shutdownHook} should be
+     * added as a shutdownHook of the JVM.
+     */
+    protected boolean shouldAddShutdownHook() {
+        return processingEnv.getOptions().containsKey("resourceStats");
+    }
+
+    /**
+     * Method that gets called exactly once at shutdown time of the JVM.
+     * Checkers can override this method to customize the behavior.
+     */
+    protected void shutdownHook() {
+        if (processingEnv.getOptions().containsKey("resourceStats")) {
+            printStats();
+        }
+    }
+
+    /** Print resource usage statistics */
+    protected void printStats() {
+        List<MemoryPoolMXBean> memoryPools = ManagementFactory.getMemoryPoolMXBeans();
+        for (MemoryPoolMXBean memoryPool : memoryPools) {
+            System.out.println("Memory pool " + memoryPool.getName() + " statistics");
+            System.out.println("  Pool type: " + memoryPool.getType());
+            System.out.println("  Peak usage: " + memoryPool.getPeakUsage());
+        }
+    }
 
     // Output the warning about source level at most once.
     private boolean warnedAboutSourceLevel = false;
@@ -498,6 +535,25 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         if (this.processingEnv.getOptions() != null /*nnbug*/
                 && this.processingEnv.getOptions().containsKey("nomsgtext")) {
             fmtString = defaultFormat;
+        } else if (this.processingEnv.getOptions() != null /*nnbug*/
+                && this.processingEnv.getOptions().containsKey("detailedmsgtext")) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(defaultFormat);
+            sb.append(DETAILS_SEPARATOR);
+            if (args != null) {
+                sb.append(args.length);
+                sb.append(DETAILS_SEPARATOR);
+                for (Object arg : args) {
+                    sb.append(arg);
+                    sb.append(DETAILS_SEPARATOR);
+                }
+            } else {
+                // Output 0 for null arguments.
+                sb.append(0);
+                sb.append(DETAILS_SEPARATOR);
+            }
+            sb.append(fullMessageOf(msgKey, defaultFormat));
+            fmtString = sb.toString();
         } else {
             fmtString = fullMessageOf(msgKey, defaultFormat);
         }
@@ -516,6 +572,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
             SourceChecker.errorAbort("invalid position source: "
                     + source.getClass().getName());
     }
+
+    public static final String DETAILS_SEPARATOR = " $$ ";
 
     /**
      * Determines if an error (whose error key is {@code err}), should
@@ -555,11 +613,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         // SuppressWarnings key.
         for (String suppressWarningValue : anno.value()) {
             for (String swKey : swkeys) {
-                if (suppressWarningValue.equals(swKey))
+                if (suppressWarningValue.equalsIgnoreCase(swKey))
                     return true;
 
                 String expected = swKey + ":" + err;
-                if (expected.contains(suppressWarningValue))
+                if (expected.toLowerCase().contains(suppressWarningValue.toLowerCase()))
                     return true;
             }
         }
@@ -842,6 +900,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         options.add("skipDefs");
         options.add("lint");
         options.add("nomsgtext");
+        options.add("detailedmsgtext");
         options.add("filenames");
         options.add("showchecks");
         options.add("stubs");
@@ -852,6 +911,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         options.add("printErrorStack");
         options.add("printAllQualifiers");
         options.add("resourceStats");
+        options.add("stubWarnIfNotFound");
+        options.add("stubDebug");
         options.addAll(super.getSupportedOptions());
         return Collections.</*@NonNull*/ String>unmodifiableSet(options);
     }

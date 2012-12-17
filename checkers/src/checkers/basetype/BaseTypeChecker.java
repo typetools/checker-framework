@@ -2,6 +2,7 @@ package checkers.basetype;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 import com.sun.source.tree.CompilationUnitTree;
@@ -384,11 +385,23 @@ public abstract class BaseTypeChecker extends SourceChecker {
             Constructor<T> ctor = cls.getConstructor(paramTypes);
             return ctor.newInstance(args);
         } catch (Throwable t) {
-            SourceChecker.errorAbort("Unexpected " + t.getClass().getSimpleName() + " for " +
-                    "class name " + name +
-                    " when invoking the constructor; parameter types: " + Arrays.toString(paramTypes),
-                    // + " and args: " + Arrays.toString(args),
-                    t);
+            if (t instanceof InvocationTargetException) {
+                Throwable err = t.getCause();
+                String msg;
+                if (err instanceof CheckerError) {
+                    msg = err.getMessage();
+                } else {
+                    msg = err.toString();
+                }
+                SourceChecker.errorAbort("InvocationTargetException when invoking constructor for class " + name +
+                        "; Underlying cause: " + msg, t);
+            } else {
+                SourceChecker.errorAbort("Unexpected " + t.getClass().getSimpleName() + " for " +
+                        "class " + name +
+                        " when invoking the constructor; parameter types: " + Arrays.toString(paramTypes),
+                        // + " and args: " + Arrays.toString(args),
+                        t);
+            }
             return null; // dead code
         }
     }

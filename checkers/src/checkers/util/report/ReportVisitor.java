@@ -1,7 +1,7 @@
 package checkers.util.report;
 
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -50,6 +50,7 @@ public class ReportVisitor extends BaseTypeVisitor<ReportChecker> {
         }
     }
 
+    @SuppressWarnings("CompilerMessages") // These warnings are not translated.
     @Override
     public Void scan(Tree tree, Void p) {
         if (tree != null && treeKinds != null) {
@@ -106,7 +107,7 @@ public class ReportVisitor extends BaseTypeVisitor<ReportChecker> {
         // this.atypeFactory.getDeclAnnotation(member, ReportInherit.class) != null;
 
         // Check whether any superclass/interface had the ReportInherit annotation.
-        Set<TypeElement> suptypes = ElementUtils.getSuperTypes(member);
+        List<TypeElement> suptypes = ElementUtils.getSuperTypes(member);
         for (TypeElement sup : suptypes) {
             report = this.atypeFactory.getDeclAnnotation(sup, ReportInherit.class) != null;
             if (report) {
@@ -226,7 +227,7 @@ public class ReportVisitor extends BaseTypeVisitor<ReportChecker> {
         }
         if (!report) {
             // Check whether any superclass/interface had the ReportCreation annotation.
-            Set<TypeElement> suptypes = ElementUtils.getSuperTypes((TypeElement)member);
+            List<TypeElement> suptypes = ElementUtils.getSuperTypes((TypeElement)member);
             for (TypeElement sup : suptypes) {
                 report = this.atypeFactory.getDeclAnnotation(sup, ReportCreation.class) != null;
                 if (report) {
@@ -261,6 +262,7 @@ public class ReportVisitor extends BaseTypeVisitor<ReportChecker> {
         return super.visitInstanceOf(node, p);
     }
 
+    @SuppressWarnings("CompilerMessages") // These warnings are not translated.
     @Override
     public Void visitModifiers(ModifiersTree node, Void p) {
         if (node != null && modifiers != null) {
@@ -275,6 +277,7 @@ public class ReportVisitor extends BaseTypeVisitor<ReportChecker> {
         return super.visitModifiers(node, p);
     }
 
+    @Override
     protected TypeValidator createTypeValidator() {
         return new ReportTypeValidator();
     }

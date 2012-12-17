@@ -10,9 +10,11 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
@@ -615,7 +617,8 @@ public abstract class AnnotatedTypeMirror {
         return ((TypeElement)anno.getAnnotationType().asElement()).getAnnotation(InvisibleQualifier.class) != null;
     }
 
-    // A Helper method to print annotations separated with a space
+    // A helper method to print annotations separated by a space.
+    // Note a final space after a list of annotations to separate from the underlying type.
     protected final static String formatAnnotationString(
             Collection<? extends AnnotationMirror> lst,
             boolean printInvisible) {
@@ -628,20 +631,68 @@ public abstract class AnnotatedTypeMirror {
                     !printInvisible) {
                 continue;
             }
-
-            if (!obj.getElementValues().isEmpty()) {
-                // This prints the fully-qualified name whereas for annotations without values
-                // we only print the simple name.
-                // TODO: fix this inconsistency?
-                sb.append(obj.toString());
-                sb.append(" ");
-                continue;
-            }
-            sb.append("@");
-            sb.append(obj.getAnnotationType().asElement().getSimpleName());
+            formatAnnotationMirror(obj, sb);
             sb.append(" ");
         }
         return sb.toString();
+    }
+
+    // A helper method to output a single AnnotationMirror, without showing full package names.
+    protected final static void formatAnnotationMirror(AnnotationMirror am, StringBuilder sb) {
+        sb.append("@");
+        sb.append(am.getAnnotationType().asElement().getSimpleName());
+        Map<? extends ExecutableElement, ? extends AnnotationValue> args = am.getElementValues();
+        if (!args.isEmpty()) {
+            sb.append("(");
+            boolean oneValue = false;
+            if (args.size() == 1) {
+                Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> first = args.entrySet().iterator().next();
+                if (first.getKey().getSimpleName().contentEquals("value")) {
+                    formatAnnotationMirrorArg(first.getValue(), sb);
+                    oneValue = true;
+                }
+            }
+            if (!oneValue) {
+                boolean notfirst = false;
+                for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> arg : args.entrySet()) {
+                    if (notfirst) {
+                        sb.append(", ");
+                    }
+                    notfirst = true;
+                    sb.append(arg.getKey().getSimpleName() + "=");
+                    formatAnnotationMirrorArg(arg.getValue(), sb);
+                }
+            }
+            sb.append(")");
+        }
+    }
+
+    // A helper method to output a single AnnotationValue, without showing full package names.
+    @SuppressWarnings("unchecked")
+    protected final static void formatAnnotationMirrorArg(AnnotationValue av, StringBuilder sb) {
+        Object val = av.getValue();
+        if (List.class.isAssignableFrom(val.getClass())) {
+            List<AnnotationValue> vallist = (List<AnnotationValue>) val;
+            if (vallist.size() == 1) {
+                formatAnnotationMirrorArg(vallist.get(0), sb);
+            } else {
+                sb.append('{');
+                boolean notfirst = false;
+                for (AnnotationValue nav : vallist) {
+                    if (notfirst) {
+                        sb.append(", ");
+                    }
+                    notfirst = true;
+                    formatAnnotationMirrorArg(nav, sb);
+                }
+                sb.append('}');
+            }
+        } else if (VariableElement.class.isAssignableFrom(val.getClass())) {
+            VariableElement ve = (VariableElement) val;
+            sb.append(ve.getEnclosingElement().getSimpleName() + "." + ve.getSimpleName());
+        } else {
+            sb.append(av.toString());
+        }
     }
 
     @Override
