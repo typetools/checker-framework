@@ -345,8 +345,6 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
                     aLubAnnotatedType.getComponentType());
         } else if (kind == TypeKind.ARRAY) {
             AnnotatedArrayType aLubAnnotatedType = (AnnotatedArrayType) result;
-            AnnotatedTypeMirror componentType = aLubAnnotatedType
-                    .getComponentType();
             // copy annotations from the input array (either a or b)
             if (a.getKind() == TypeKind.ARRAY) {
                 copyArrayComponentAnnotations((AnnotatedArrayType) a, aLubAnnotatedType);
