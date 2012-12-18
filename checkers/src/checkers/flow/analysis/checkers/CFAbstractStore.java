@@ -30,6 +30,9 @@ import dataflow.util.PurityUtils;
 
 import checkers.quals.MonotonicAnnotation;
 import checkers.types.AnnotatedTypeFactory;
+import checkers.types.AnnotatedTypeMirror;
+import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
+import checkers.types.QualifierHierarchy;
 
 /**
  * A store for the checker framework analysis tracks the annotations of memory
@@ -111,6 +114,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     public void initializeMethodParameter(LocalVariableNode p, /* @Nullable */
             V value) {
         if (value != null) {
+            assert isValidType(value) : "Invalid type: " + value.getType().toString(true);
             localVariableValues.put(p.getElement(), value);
         }
     }
@@ -174,6 +178,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                 if (newOtherVal != null) {
                     // keep information for all hierarchies where we had a
                     // monotone annotation.
+                    assert isValidType(newOtherVal) : "Invalid type: " + newOtherVal.getType().toString(true);
                     newFieldValues.put(fieldAccess, newOtherVal);
                     continue;
                 }
@@ -265,6 +270,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             V oldValue = localVariableValues.get(localVar);
             V newValue = value.mostSpecific(oldValue, null);
             if (newValue != null) {
+                assert isValidType(newValue) : "Invalid type: " + newValue.getType().toString(true);
                 localVariableValues.put(localVar, newValue);
             }
         } else if (r instanceof FlowExpressions.FieldAccess) {
@@ -275,6 +281,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                 V oldValue = fieldValues.get(fieldAcc);
                 V newValue = value.mostSpecific(oldValue, null);
                 if (newValue != null) {
+                    assert isValidType(newValue) : "Invalid type: " + newValue.getType().toString(true);
                     fieldValues.put(fieldAcc, newValue);
                 }
             }
@@ -285,6 +292,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                 V oldValue = methodValues.get(method);
                 V newValue = value.mostSpecific(oldValue, null);
                 if (newValue != null) {
+                    assert isValidType(newValue) : "Invalid type: " + newValue.getType().toString(true);
                     methodValues.put(method, newValue);
                 }
             }
@@ -294,6 +302,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                 V oldValue = arrayValues.get(arrayAccess);
                 V newValue = value.mostSpecific(oldValue, null);
                 if (newValue != null) {
+                    assert isValidType(newValue) : "Invalid type: " + newValue.getType().toString(true);
                     arrayValues.put(arrayAccess, newValue);
                 }
             }
@@ -435,6 +444,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             // Only store information about final fields (where the receiver is
             // also fixed) if concurrent semantics are enabled.
             if (sequentialSemantics || fieldAccess.isUnmodifiableByOtherCode()) {
+                assert isValidType(val) : "Invalid type: " + val.getType().toString(true);
                 fieldValues.put(fieldAccess, val);
             }
         }
@@ -456,6 +466,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             // Only store information about final fields (where the receiver is
             // also fixed) if concurrent semantics are enabled.
             if (sequentialSemantics || arrayAccess.isUnmodifiableByOtherCode()) {
+                assert isValidType(val) : "Invalid type: " + val.getType().toString(true);
                 arrayValues.put(arrayAccess, val);
             }
         }
@@ -472,6 +483,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     protected void updateForLocalVariableAssignment(LocalVariable receiver, /* @Nullable */V val) {
         removeConflicting(receiver);
         if (val != null) {
+            assert isValidType(val) : "Invalid type: " + val.getType().toString(true);
             localVariableValues.put(receiver.getElement(), val);
         }
     }
@@ -523,8 +535,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                         otherFieldAccess.getReceiver())) {
                     if (!otherFieldAccess.isFinal()) {
                         if (val != null) {
+                            V newVal = val.leastUpperBound(otherVal);
+                            assert isValidType(newVal) : "Invalid type: " + newVal.getType().toString(true);
                             newFieldValues.put(otherFieldAccess,
-                                    val.leastUpperBound(otherVal));
+                                    newVal);
                         } else {
                             // remove information completely
                         }
@@ -718,6 +732,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                 V thisVal = localVariableValues.get(el);
                 V mergedVal = thisVal.leastUpperBound(otherVal);
                 if (mergedVal != null) {
+                    assert isValidType(mergedVal) : "Invalid type: " + mergedVal.getType().toString(true);
                     newStore.localVariableValues.put(el, mergedVal);
                 }
             }
@@ -733,6 +748,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                 V thisVal = fieldValues.get(el);
                 V mergedVal = thisVal.leastUpperBound(otherVal);
                 if (mergedVal != null) {
+                    assert isValidType(mergedVal) : "Invalid type: " + mergedVal.getType().toString(true);
                     newStore.fieldValues.put(el, mergedVal);
                 }
             }
@@ -748,6 +764,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                 V thisVal = arrayValues.get(el);
                 V mergedVal = thisVal.leastUpperBound(otherVal);
                 if (mergedVal != null) {
+                    assert isValidType(mergedVal) : "Invalid type: " + mergedVal.getType().toString(true);
                     newStore.arrayValues.put(el, mergedVal);
                 }
             }
@@ -762,6 +779,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                 V thisVal = methodValues.get(el);
                 V mergedVal = thisVal.leastUpperBound(otherVal);
                 if (mergedVal != null) {
+                    assert isValidType(mergedVal) : "Invalid type: " + mergedVal.getType().toString(true);
                     newStore.methodValues.put(el, mergedVal);
                 }
             }
@@ -868,5 +886,32 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             result.append("  " + entry.getKey() + " > " + entry.getValue()
                     + "\\n");
         }
+    }
+
+    /**
+     * Returns true if a type is valid (according to some
+     * well-definedness checks such as the number of annotations).
+     * A store should only contain valid types.
+     */
+    protected boolean isValidType(AnnotatedTypeMirror t) {
+        QualifierHierarchy qualifierHierarchy = analysis.qualifierHierarchy;
+        int w = qualifierHierarchy.getWidth();
+        if (QualifierHierarchy.canHaveEmptyAnnotationSet(t)) {
+            return t.getAnnotations().size() <= w;
+        }
+        if (t.getAnnotations().size() != w) {
+            return false;
+        }
+        if (t instanceof AnnotatedArrayType) {
+            AnnotatedArrayType at = (AnnotatedArrayType) t;
+            if (!isValidType(at.getComponentType())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    protected boolean isValidType(V t) {
+        return isValidType(t.getType());
     }
 }
