@@ -173,10 +173,21 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
                 array = (AnnotatedArrayType) otherType;
             }
             // copy over annotations
-            aLubAnnotatedType.getComponentType().addAnnotations(
-                    array.getComponentType().getAnnotations());
+            copyArrayComponentAnnotations(array, aLubAnnotatedType);
         }
         return lubAnnotatedType;
+    }
+
+    private void copyArrayComponentAnnotations(AnnotatedArrayType source,
+            AnnotatedArrayType dest) {
+        AnnotatedTypeMirror destComp = dest.getComponentType();
+        AnnotatedTypeMirror sourceComp = source.getComponentType();
+        destComp.addAnnotations(sourceComp.getAnnotations());
+        if (sourceComp instanceof AnnotatedArrayType) {
+            assert dest instanceof AnnotatedArrayType;
+            copyArrayComponentAnnotations((AnnotatedArrayType) sourceComp,
+                    (AnnotatedArrayType) destComp);
+        }
     }
 
     /**
