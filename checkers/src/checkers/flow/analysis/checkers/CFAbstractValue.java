@@ -178,7 +178,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
         return lubAnnotatedType;
     }
 
-    private void copyArrayComponentAnnotations(AnnotatedArrayType source,
+    private static void copyArrayComponentAnnotations(AnnotatedArrayType source,
             AnnotatedArrayType dest) {
         AnnotatedTypeMirror destComp = dest.getComponentType();
         AnnotatedTypeMirror sourceComp = source.getComponentType();
@@ -349,12 +349,10 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
                     .getComponentType();
             // copy annotations from the input array (either a or b)
             if (a.getKind() == TypeKind.ARRAY) {
-                componentType.addAnnotations(((AnnotatedArrayType) a)
-                        .getAnnotations());
+                copyArrayComponentAnnotations((AnnotatedArrayType) a, aLubAnnotatedType);
             } else {
                 assert b.getKind() == TypeKind.ARRAY;
-                componentType.addAnnotations(((AnnotatedArrayType) b)
-                        .getAnnotations());
+                copyArrayComponentAnnotations((AnnotatedArrayType) b, aLubAnnotatedType);
             }
         }
         return true;
