@@ -49,7 +49,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
     public CFAbstractValue(CFAbstractAnalysis<V, ?, ?> analysis,
             AnnotatedTypeMirror type) {
         assert analysis.isValidValue(type) : "Encountered invalid type: "
-                + type;
+                + type.toString(true);
         this.analysis = analysis;
         this.type = type;
         this.typeHierarchy = analysis.getTypeHierarchy();
