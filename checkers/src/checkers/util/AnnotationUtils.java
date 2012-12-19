@@ -457,7 +457,7 @@ public class AnnotationUtils {
             return cls;
         } catch (ClassNotFoundException e) {
             SourceChecker.errorAbort("Could not load class '" + cn + "' for field '" + name +
-                    "' in annotation " + anno);
+                    "' in annotation " + anno, e);
             return null; // dead code
         }
     }

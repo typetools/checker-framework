@@ -31,69 +31,7 @@ case `uname -s` in
       mydir=`cygpath -m $mydir`
       ;;
 esac
-## Checker Framework .jar files appear in this same directory, not in ../lib
-# mylib="$mydir/../lib"
-mylib=$mydir
+#We are searching for checkers.jar which is in the top-level of the checker-framework
+mylib=$mydir/..
 
-# By default, put the jar file and its dependencies on the bootclasspath.
-# This is always required on a Mac, because the system langtools classes
-# are always on the main class path; in addition, it may be required on
-# standard versions of JDK (i.e. using rt.jar and tools.jar) because some
-# langtools interfaces are in rt.jar.
-# Assume that the jar file being invoked lists all the necessary langtools
-# jar files in its Class-Path manifest entry, so there is no need to search
-# dependent jar files for additional dependencies.
-# Also add the current classpath (at the end).  This permits finding classes
-# used by annotation processors, for example.  It doesn't work to just put
-# these in the regular classpath.
-
-if [ "$LANGTOOLS_USE_BOOTCLASSPATH" != "no" ]; then
-   cp=`unzip -c "$mylib/jsr308-all.jar" META-INF/MANIFEST.MF |
-       grep "Class-Path:" |
-       sed -e 's|\r||' -e 's|Class-Path: *||' -e 's|\([a-z]*\.jar\) *|'"$mylib"'/\1:|g'`
-   # bcp="$mylib/javac.jar:$cp:$CLASSPATH"
-   # bcp="$mylib/jsr308-all.jar":$cp:$mylib/jdk.jar:$CLASSPATH
-   # bcp="$mylib/jsr308-all.jar":$cp:$CLASSPATH
-   bcp="$mylib/jsr308-all.jar":$cp
-fi
-
-# tools currently assumes that assertions are enabled in the launcher
-# The -esa enables assertion checking in the Checker Framework.
-# The packages in -ea are more for documentation; untested whether they
-# have an effect.
-ea="-ea:com.sun.tools...,checkers...,japa... -esa"
-
-# If user supplies no explicit -cp argument, use this, after the -jar
-# option (i.e., as an option to javac and not to java).
-# Otherwise, javac can't find classes on the classpath.
-cpOpt="-classpath '${CLASSPATH:-.}'"
-
-# Any parameters starting with -J are passed to the JVM.
-# All other parameters become parameters of javac.
-
-# Separate out -J* options for the JVM
-# Unset IFS and use newline as arg separator to preserve spaces in args
-DUALCASE=1  # for MKS: make case statement case-sensitive (6709498)
-saveIFS="$IFS"
-nl='
-'
-for i in "$@" ; do
-   IFS=
-   case $i in
-   -Xbootclasspath/p:* ) bcp=`echo $i | sed -e 's/^-Xbootclasspath.p://'`:${bcp} ;;
-   -J-Xbootclasspath/p:* ) bcp=`echo $i | sed -e 's/^-J-Xbootclasspath.p://'`:${bcp} ;;
-   -J* )       javaOpts=$javaOpts$nl"'"`echo $i | sed -e 's/^-J//'`"'" ;;
-   *   )       toolOpts=$toolOpts$nl"'"$i"'" ;;
-   esac
-   if [ "$i" = "-cp" ]; then
-     cpOpt="";
-   fi
-   if [ "$i" = "-classpath" ]; then
-     cpOpt="";
-   fi
-   IFS="$saveIFS"
-done
-unset DUALCASE
-
-IFS=$nl
-eval "java" "${bcp:+-Xbootclasspath/p:"$bcp"}" ${ea} ${javaOpts} -jar "${mydir}"/jsr308-all.jar ${cpOpt} ${toolOpts}
+eval "java" "-jar" "${mydir}"/../checkers.jar "${*:1}"
