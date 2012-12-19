@@ -116,6 +116,12 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
         if (!canHaveEmptyAnnotationSet && n != expectedNumberOfAnnotations) {
             return false;
         }
+        if (type instanceof AnnotatedArrayType) {
+            AnnotatedArrayType at = (AnnotatedArrayType) type;
+            if (!isValidValue(at.getComponentType())) {
+                return false;
+            }
+        }
         return true;
     }
 
