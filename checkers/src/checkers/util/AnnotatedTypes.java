@@ -1432,6 +1432,14 @@ public class AnnotatedTypes {
                 return false;
             }
         }
+        if (type instanceof AnnotatedDeclaredType) {
+            AnnotatedDeclaredType at = (AnnotatedDeclaredType) type;
+            for (AnnotatedTypeMirror typeArgument : at.getTypeArguments()) {
+                if (!isValidValue(qualifierHierarchy, typeArgument)) {
+                    return false;
+                }
+            }
+        }
         return true;
     }
 
