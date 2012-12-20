@@ -13,6 +13,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
+import javacutils.AnnotationUtils;
 import javacutils.Pair;
 
 import dataflow.analysis.Analysis;
@@ -106,6 +107,18 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
         if (type == null) {
             return false;
         }
+
+        // multiple annotations from the same hierarchy
+        Set<AnnotationMirror> seenTops = AnnotationUtils.createAnnotationSet();
+        for (AnnotationMirror anno : type.getAnnotations()) {
+            AnnotationMirror top = qualifierHierarchy.getTopAnnotation(anno);
+            if (seenTops.contains(top)) {
+                return false;
+            }
+            seenTops.add(top);
+        }
+
+        // too many annotations
         Set<AnnotationMirror> annotations = type.getAnnotations();
         int n = annotations.size();
         if (n > expectedNumberOfAnnotations) {
@@ -113,12 +126,36 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
         }
         boolean canHaveEmptyAnnotationSet = QualifierHierarchy
                 .canHaveEmptyAnnotationSet(type);
+
+        // wrong number of annotations
         if (!canHaveEmptyAnnotationSet && n != expectedNumberOfAnnotations) {
             return false;
         }
+
+        // recurse for composite types
         if (type instanceof AnnotatedArrayType) {
             AnnotatedArrayType at = (AnnotatedArrayType) type;
             if (!isValidValue(at.getComponentType())) {
+                return false;
+            }
+        } else if (type instanceof AnnotatedTypeVariable) {
+            AnnotatedTypeVariable at = (AnnotatedTypeVariable) type;
+            AnnotatedTypeMirror lowerBound = at.getLowerBound();
+            AnnotatedTypeMirror upperBound = at.getUpperBound();
+            if (lowerBound != null && !isValidValue(lowerBound)) {
+                return false;
+            }
+            if (upperBound != null && !isValidValue(upperBound)) {
+                return false;
+            }
+        } else if (type instanceof AnnotatedWildcardType) {
+            AnnotatedWildcardType at = (AnnotatedWildcardType) type;
+            AnnotatedTypeMirror extendsBound = at.getExtendsBound();
+            AnnotatedTypeMirror superBound = at.getSuperBound();
+            if (extendsBound != null && !isValidValue(extendsBound)) {
+                return false;
+            }
+            if (superBound != null && !isValidValue(superBound)) {
                 return false;
             }
         }
