@@ -150,6 +150,19 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
      */
     public abstract/* @Nullable */V createAbstractValue(AnnotatedTypeMirror type);
 
+    /**
+     * Default implementation for
+     * {@link #createAbstractValue(AnnotatedTypeMirror)} that takes care of
+     * invalid types.
+     */
+    public CFValue defaultCreateAbstractValue(CFAbstractAnalysis<CFValue, ?, ?> analysis, AnnotatedTypeMirror type) {
+        if (!isValidValue(type)) {
+            // If the type is not valid, we return null, which is the same as 'no information'.
+            return null;
+        }
+        return new CFValue(analysis, type);
+    }
+
     public TypeHierarchy getTypeHierarchy() {
         return typeHierarchy;
     }
