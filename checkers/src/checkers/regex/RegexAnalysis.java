@@ -38,6 +38,6 @@ public class RegexAnalysis extends
 
     @Override
     public CFValue createAbstractValue(AnnotatedTypeMirror type) {
-        return new CFValue(this, type);
+        return defaultCreateAbstractValue(this, type);
     }
 }
