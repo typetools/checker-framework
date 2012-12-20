@@ -13,7 +13,6 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
-import javacutils.AnnotationUtils;
 import javacutils.Pair;
 
 import dataflow.analysis.Analysis;
@@ -28,6 +27,7 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
 import checkers.types.QualifierHierarchy;
 import checkers.types.TypeHierarchy;
+import checkers.util.AnnotatedTypes;
 
 /**
  * {@link CFAbstractAnalysis} is an extensible dataflow analysis for the Checker
@@ -99,70 +99,6 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
     }
 
     /**
-     * Returns true if the abstract value passed a set of well-formedness
-     * checks. The method will never return false for valid types, but might not
-     * catch all invalid abstract values.
-     */
-    public boolean isValidValue(AnnotatedTypeMirror type) {
-        if (type == null) {
-            return false;
-        }
-
-        // multiple annotations from the same hierarchy
-        Set<AnnotationMirror> seenTops = AnnotationUtils.createAnnotationSet();
-        for (AnnotationMirror anno : type.getAnnotations()) {
-            AnnotationMirror top = qualifierHierarchy.getTopAnnotation(anno);
-            if (seenTops.contains(top)) {
-                return false;
-            }
-            seenTops.add(top);
-        }
-
-        // too many annotations
-        Set<AnnotationMirror> annotations = type.getAnnotations();
-        int n = annotations.size();
-        if (n > expectedNumberOfAnnotations) {
-            return false;
-        }
-        boolean canHaveEmptyAnnotationSet = QualifierHierarchy
-                .canHaveEmptyAnnotationSet(type);
-
-        // wrong number of annotations
-        if (!canHaveEmptyAnnotationSet && n != expectedNumberOfAnnotations) {
-            return false;
-        }
-
-        // recurse for composite types
-        if (type instanceof AnnotatedArrayType) {
-            AnnotatedArrayType at = (AnnotatedArrayType) type;
-            if (!isValidValue(at.getComponentType())) {
-                return false;
-            }
-        } else if (type instanceof AnnotatedTypeVariable) {
-            AnnotatedTypeVariable at = (AnnotatedTypeVariable) type;
-            AnnotatedTypeMirror lowerBound = at.getLowerBound();
-            AnnotatedTypeMirror upperBound = at.getUpperBound();
-            if (lowerBound != null && !isValidValue(lowerBound)) {
-                return false;
-            }
-            if (upperBound != null && !isValidValue(upperBound)) {
-                return false;
-            }
-        } else if (type instanceof AnnotatedWildcardType) {
-            AnnotatedWildcardType at = (AnnotatedWildcardType) type;
-            AnnotatedTypeMirror extendsBound = at.getExtendsBound();
-            AnnotatedTypeMirror superBound = at.getSuperBound();
-            if (extendsBound != null && !isValidValue(extendsBound)) {
-                return false;
-            }
-            if (superBound != null && !isValidValue(superBound)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
      * @return The transfer function to be used by the analysis.
      */
     @SuppressWarnings("unchecked")
@@ -192,9 +128,11 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
      * {@link #createAbstractValue(AnnotatedTypeMirror)} that takes care of
      * invalid types.
      */
-    public CFValue defaultCreateAbstractValue(CFAbstractAnalysis<CFValue, ?, ?> analysis, AnnotatedTypeMirror type) {
-        if (!isValidValue(type)) {
-            // If the type is not valid, we return null, which is the same as 'no information'.
+    public CFValue defaultCreateAbstractValue(
+            CFAbstractAnalysis<CFValue, ?, ?> analysis, AnnotatedTypeMirror type) {
+        if (!AnnotatedTypes.isValidValue(qualifierHierarchy, type)) {
+            // If the type is not valid, we return null, which is the same as
+            // 'no information'.
             return null;
         }
         return new CFValue(analysis, type);
