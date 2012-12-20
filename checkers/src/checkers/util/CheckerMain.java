@@ -97,7 +97,7 @@ public class CheckerMain {
 
         final List<String> argsList = new ArrayList<String>(Arrays.asList(args));
 
-        this.bootClasspath = prepFilePath(null, javacJar, jdkJar) + File.pathSeparator +
+        this.bootClasspath = prepFilePath(null, jdkJar, javacJar) + File.pathSeparator +
                              join(File.pathSeparator, extractBootClassPath(argsList));
         this.jvmOpts       = extractJvmOpts(argsList);
 

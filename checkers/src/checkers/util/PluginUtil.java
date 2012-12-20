@@ -10,7 +10,7 @@ package checkers.util;
  * checker-framework/
  *     checkers.util.PluginUtil
  *
- * These files MUST be IDENTICAL from the first line under //START_DIFF and beyond.
+ * These files MUST be IDENTICAL after the package descriptor.
  *
  * If you change this file be sure to copy the exact file (including this comment
  * and excluding the package line) to the other projects.  During release this file
