@@ -1583,7 +1583,8 @@ public abstract class AnnotatedTypeMirror {
             }
 
             // TODO: this is a hack to make the system work for the FBC type-system
-            if (AnnotationUtils.areSameByClass(lAnno, FBCBottom.class)
+            if (lAnno != null && uAnno != null
+                    && AnnotationUtils.areSameByClass(lAnno, FBCBottom.class)
                     && AnnotationUtils.areSameByClass(uAnno, Committed.class)) {
                 lowerBound.replaceAnnotation(uAnno);
                 return;
