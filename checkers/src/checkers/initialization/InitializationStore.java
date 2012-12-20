@@ -52,6 +52,11 @@ public class InitializationStore extends
      */
     @Override
     public void insertValue(Receiver r, CFValue value) {
+        if (value == null) {
+            // No need to insert a null abstract value because it represents
+            // top and top is also the default value.
+            return;
+        }
         super.insertValue(r, value);
         InitializationChecker checker = (InitializationChecker) analysis
                 .getFactory().getChecker();
