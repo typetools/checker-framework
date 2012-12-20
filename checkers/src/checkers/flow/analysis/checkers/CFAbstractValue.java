@@ -23,6 +23,7 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
 import checkers.types.QualifierHierarchy;
 import checkers.types.TypeHierarchy;
+import checkers.util.AnnotatedTypes;
 
 /**
  * An implementation of an abstract value used by the Checker Framework dataflow
@@ -48,7 +49,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
 
     public CFAbstractValue(CFAbstractAnalysis<V, ?, ?> analysis,
             AnnotatedTypeMirror type) {
-        assert analysis.isValidValue(type) : "Encountered invalid type: "
+        assert AnnotatedTypes.isValidValue(analysis.qualifierHierarchy, type) : "Encountered invalid type: "
                 + type.toString(true);
         this.analysis = analysis;
         this.type = type;
