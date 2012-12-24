@@ -8,6 +8,7 @@ package checkers.eclipse.prefs;
  */
 public final class CheckerPreferences
 {
+    //TODO: SHORTEN THESE AND CREATE BETTER NAMES
 
     /** A key for determining if individual class prefs should be checked */
     public static final String PREF_CHECKER_PREFS_SET = "checker_prefs";
@@ -50,5 +51,8 @@ public final class CheckerPreferences
 
     /** Key for option to use custom classes during autobuild */
     public static final String PREF_CHECKER_CUSTOM_CLASS_AUTOBUILD = "checker_custom_class_autobuild";
+
+    /** Key for option to use custom classes during autobuild */
+    public static final String PREF_CHECKER_SELECTED_CHECKERS = "checker_selected_checkers";
 
 }

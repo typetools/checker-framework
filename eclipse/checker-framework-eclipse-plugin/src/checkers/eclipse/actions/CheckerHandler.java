@@ -9,19 +9,14 @@ import org.eclipse.ui.handlers.HandlerUtil;
 
 import checkers.nullness.quals.Nullable;
 
-public abstract class CheckerHandler extends AbstractHandler
-{
-    protected @Nullable
-    IJavaElement element(ISelection selection)
-    {
-        if (selection instanceof IStructuredSelection)
-        {
+public abstract class CheckerHandler extends AbstractHandler {
+
+    protected @Nullable IJavaElement element(ISelection selection) {
+        if (selection instanceof IStructuredSelection) {
             IStructuredSelection structuredSelection = (IStructuredSelection) selection;
-            if (structuredSelection != null && !structuredSelection.isEmpty())
-            {
+            if (structuredSelection != null && !structuredSelection.isEmpty()) {
                 Object elem = structuredSelection.getFirstElement();
-                if (elem instanceof IJavaElement)
-                {
+                if (elem instanceof IJavaElement) {
                     return (IJavaElement) structuredSelection.getFirstElement();
                 }
             }
@@ -37,8 +32,7 @@ public abstract class CheckerHandler extends AbstractHandler
      * @param event
      * @return the current selection
      */
-    protected ISelection getSelection(ExecutionEvent event)
-    {
+    protected ISelection getSelection(ExecutionEvent event) {
         ISelection selection = HandlerUtil.getActiveMenuSelection(event);
 
         /* use the current selection when not called from popup menu */
