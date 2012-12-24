@@ -1,5 +1,6 @@
 package checkers.eclipse.actions;
 
+import checkers.eclipse.util.JavaUtils;
 import checkers.fenum.FenumChecker;
 import checkers.i18n.I18nChecker;
 import checkers.igj.IGJChecker;
@@ -11,6 +12,10 @@ import checkers.nullness.NullnessChecker;
 import checkers.regex.RegexChecker;
 import checkers.tainting.TaintingChecker;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * Stores information that describes a particular checker such as its label, the
  * class to run, or the quals path that is associate with it.
@@ -20,79 +25,64 @@ import checkers.tainting.TaintingChecker;
  */
 public class CheckerInfo
 {
+
+    public final static List<CheckerInfo> checkers = Arrays.asList(
+        new CheckerInfo("Nullness checker",  NullnessChecker.class.getCanonicalName(),  "checkers.nullness.quals.*"),
+        new CheckerInfo("Javari checker",    JavariChecker.class.getCanonicalName(),    "checkers.javari.quals.*"),
+        new CheckerInfo("Interning checker", InterningChecker.class.getCanonicalName(), "checkers.interning.quals.*"),
+        new CheckerInfo("Fenum checker",     FenumChecker.class.getCanonicalName(),     "checkers.fenum.quals.*"),
+
+        new CheckerInfo("Linear checker",    LinearChecker.class.getCanonicalName(),    "checkers.linear.quals.*"),
+        new CheckerInfo("Lock checker",      LockChecker.class.getCanonicalName(),      "checkers.lock.quals.*"),
+        new CheckerInfo("Regex checker",     RegexChecker.class.getCanonicalName(),     "checkers.regex.quals.*"),
+        new CheckerInfo("Tainting checker",  TaintingChecker.class.getCanonicalName(),  "checkers.tainting.quals.*"),
+
+        new CheckerInfo("I18n checker",      I18nChecker.class.getCanonicalName(),      "checkers.i18n.quals.*")
+    );
+
     private final String label;
-    private final Class<?> processor;
+    private final String processor;
     private final String qualsPath;
 
-    // Static information about built-in checkers
-    public static final String NULLNESS_LABEL = "Nullness checker";
-    public static final Class<?> NULLNESS_CLASS = NullnessChecker.class;
-    public static final String NULLNESS_QUALS = "checkers.nullness.quals.*";
-    public static final CheckerInfo NULLNESS_INFO = new CheckerInfo(
-            NULLNESS_LABEL, NULLNESS_CLASS, NULLNESS_QUALS);
-        
-    public static final String JAVARI_LABEL = "Javari checker";
-    public static final Class<?> JAVARI_CLASS = JavariChecker.class;
-    public static final String JAVARI_QUALS = "checkers.javari.quals.*";
-    public static final CheckerInfo JAVARI_INFO = new CheckerInfo(JAVARI_LABEL,
-            JAVARI_CLASS, JAVARI_QUALS);
-    
-    public static final String INTERNING_LABEL = "Interning checker";
-    public static final Class<?> INTERNING_CLASS = InterningChecker.class;
-    public static final String INTERNING_QUALS = "checkers.interning.quals.*";
-    public static final CheckerInfo INTERNING_INFO = new CheckerInfo(
-            INTERNING_LABEL, INTERNING_CLASS, INTERNING_QUALS);
-    
-    public static final String IGJ_LABEL = "IGJ checker";
-    public static final Class<?> IGJ_CLASS = IGJChecker.class;
-    public static final String IGJ_QUALS = "checkers.igj.quals.*";
-    public static final CheckerInfo IGJ_INFO = new CheckerInfo(IGJ_LABEL,
-            IGJ_CLASS, IGJ_QUALS);
-    
-    public static final String FENUM_LABEL = "Fenum checker";
-    public static final Class<?> FENUM_CLASS = FenumChecker.class;
-    public static final String FENUM_QUALS = "checkers.fenum.quals.*";
-    public static final CheckerInfo FENUM_INFO = new CheckerInfo(FENUM_LABEL,
-            FENUM_CLASS, FENUM_QUALS);
-        
-    public static final Class<?> LINEAR_CLASS = LinearChecker.class;
-    public static final String LINEAR_LABEL = "Linear checker";
-    public static final String LINEAR_QUALS = "checkers.linear.quals.*";
-    public static final CheckerInfo LINEAR_INFO = new CheckerInfo(LINEAR_LABEL,
-            LINEAR_CLASS, LINEAR_QUALS);
-    
-    public static final Class<?> LOCK_CLASS = LockChecker.class;
-    public static final String LOCK_LABEL = "Lock checker";
-    public static final String LOCK_QUALS = "checkers.lock.quals.*";
-    public static final CheckerInfo LOCK_INFO = new CheckerInfo(LOCK_LABEL,
-            LOCK_CLASS, LOCK_QUALS);
-    
-    public static final Class<?> REGEX_CLASS = RegexChecker.class;
-    public static final String REGEX_LABEL = "Regex checker";
-    public static final String REGEX_QUALS = "checkers.regex.quals.*";
-    public static final CheckerInfo REGEX_INFO = new CheckerInfo(REGEX_LABEL,
-            REGEX_CLASS, REGEX_QUALS);
-    
-    public static final Class<?> TAINTING_CLASS = TaintingChecker.class;
-    public static final String TAINTING_LABEL = "Tainting checker";
-    public static final String TAINTING_QUALS = "checkers.tainting.quals.*";
-    public static final CheckerInfo TAINTING_INFO = new CheckerInfo(
-            TAINTING_LABEL, TAINTING_CLASS, TAINTING_QUALS);
-    
-    public static final Class<?> I18N_CLASS = I18nChecker.class;
-    public static final String I18N_LABEL = "I18n checker";
-    public static final String I18N_QUALS = "checkers.i18n.quals.*";
-    public static final CheckerInfo I18N_INFO = new CheckerInfo(I18N_LABEL,
-            I18N_CLASS, I18N_QUALS);
+    public static String [] splitAtUppercase(final String toSplit) {
+        List<String> tokens = new ArrayList<String>();
 
+        int length = toSplit.length();
+
+        int start = 0;
+        for(int i = 0; i < length; i++) {
+            if((Character.isUpperCase(toSplit.charAt(i)) && i != 0)) {
+                tokens.add(toSplit.substring(start, i));
+                start = i;
+            }
+        }
+
+        tokens.add(toSplit.substring(start, length));
+        return tokens.toArray(new String[tokens.size()]);
+    }
+
+    public static CheckerInfo fromClassPath(final String classPath, final String qualsPath) {
+        String str = "fromClassPath(" + classPath + ", " + qualsPath + ")";
+        try  {
+        final String [] pathTokens = classPath.split("\\.");
+            str += "[" + JavaUtils.join(" ", pathTokens) + "]";
+        final String className = JavaUtils.join(" ", splitAtUppercase(pathTokens[pathTokens.length - 1]));
+            str += "className = " + className;
+            return new CheckerInfo(className, classPath, qualsPath);
+        } catch(Exception e) {
+            throw new RuntimeException(str, e);
+        }
+
+    }
 
     /**
      * Sets the name and processor accordingly.
      * 
      * @param label
      * @param processor
+     * @param qualsPath
      */
-    CheckerInfo(String label, Class<?> processor, String qualsPath)
+    public CheckerInfo(final String label, final String processor, final String qualsPath)
     {
         this.label = label;
         this.processor = processor;
@@ -104,9 +94,9 @@ public class CheckerInfo
      * 
      * @return the class name
      */
-    String getClassName()
+    public String getClassName()
     {
-        return this.processor.getCanonicalName();
+        return this.processor;
     }
 
     /**
@@ -114,7 +104,7 @@ public class CheckerInfo
      * 
      * @return the label name
      */
-    String getLabel()
+    public String getLabel()
     {
         return this.label;
     }
@@ -124,7 +114,7 @@ public class CheckerInfo
      * 
      * @return the quals path
      */
-    String getQualsPath()
+    public String getQualsPath()
     {
         return this.qualsPath;
     }

@@ -1,8 +1,12 @@
 package checkers.eclipse.actions;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
+import checkers.eclipse.prefs.CheckerPreferences;
+import checkers.eclipse.util.JavaUtils;
 import org.eclipse.jface.preference.IPreferenceStore;
 
 import checkers.eclipse.CheckerPlugin;
@@ -14,31 +18,15 @@ import checkers.eclipse.CheckerPlugin;
  * @author asumu
  * 
  */
-public class CheckerManager
-{
-    private List<CheckerInfo> processors;
+public class CheckerManager {
 
     /**
      * Singleton constructor, should only be called once for the instance
      */
-    private CheckerManager()
-    {
-        // add built-in checkers
-        processors = new ArrayList<CheckerInfo>();
-        processors.add(CheckerInfo.NULLNESS_INFO);
-        processors.add(CheckerInfo.LINEAR_INFO);
-        processors.add(CheckerInfo.LOCK_INFO);
-        processors.add(CheckerInfo.FENUM_INFO);
-        processors.add(CheckerInfo.INTERNING_INFO);
-        processors.add(CheckerInfo.I18N_INFO);
-        processors.add(CheckerInfo.REGEX_INFO);
-        processors.add(CheckerInfo.IGJ_INFO);
-        processors.add(CheckerInfo.TAINTING_INFO);
-        processors.add(CheckerInfo.JAVARI_INFO);
+    private CheckerManager() {
     }
 
-    private static class Holder
-    {
+    private static class Holder { //TODO: REMOVE
         private static final CheckerManager INSTANCE = new CheckerManager();
     }
 
@@ -47,41 +35,12 @@ public class CheckerManager
      * 
      * @return the static instance
      */
-    public static CheckerManager getInstance()
-    {
+    public static CheckerManager getInstance() {
         return Holder.INSTANCE;
     }
 
-    /**
-     * Get the list of checkers currently registered with the manager
-     * 
-     * @return a list of labels for processors
-     */
-    public List<String> getCheckerLabels()
-    {
-        ArrayList<String> results = new ArrayList<String>();
-        for (CheckerInfo processor : processors)
-        {
-            results.add(processor.getLabel());
-        }
-
-        return results;
-    }
-
-    /**
-     * Get the list of checker classes to call from the compiler
-     * 
-     * @return list of class names
-     */
-    public List<String> getClassNames()
-    {
-        ArrayList<String> results = new ArrayList<String>();
-        for (CheckerInfo processor : processors)
-        {
-            results.add(processor.getClassName());
-        }
-
-        return results;
+    public List<CheckerInfo> getCheckerInfos() {
+    	return CheckerInfo.checkers;
     }
 
     /**
@@ -94,11 +53,10 @@ public class CheckerManager
     {
         List<String> selected = new ArrayList<String>();
 
-        IPreferenceStore store = CheckerPlugin.getDefault()
-                .getPreferenceStore();
+        IPreferenceStore store = getPrefStore();
 
-        for (CheckerInfo processor : processors)
-        {
+
+        for (CheckerInfo processor : CheckerInfo.checkers) {
             String label = processor.getLabel();
             boolean selection = store.getBoolean(label);
             if (selection)
@@ -114,15 +72,12 @@ public class CheckerManager
      * 
      * @return a list of quals paths to use as imports
      */
-    public List<String> getSelectedQuals()
-    {
+    public List<String> getSelectedQuals() {
         List<String> selected = new ArrayList<String>();
 
-        IPreferenceStore store = CheckerPlugin.getDefault()
-                .getPreferenceStore();
+        IPreferenceStore store = getPrefStore();
 
-        for (CheckerInfo processor : processors)
-        {
+        for (CheckerInfo processor : CheckerInfo.checkers) {
             String label = processor.getLabel();
             boolean selection = store.getBoolean(label);
             if (selection)
@@ -131,4 +86,50 @@ public class CheckerManager
 
         return selected;
     }
+
+    public static IPreferenceStore getPrefStore() {
+        return CheckerPlugin.getDefault().getPreferenceStore();
+    }
+
+    public static String [] getStoredCustomClasses() {
+        final IPreferenceStore store = getPrefStore();
+        final String storedItems = store.getString(CheckerPreferences.PREF_CHECKER_CUSTOM_CLASSES);
+
+        if(storedItems != null && !storedItems.equals("")) {
+            return storedItems.split(",");
+        }
+
+        return new String[]{};
+    }
+
+
+    public static void storeCustomClasses(final String [] customClasses) {
+        final IPreferenceStore store = getPrefStore();
+        final String classString = JavaUtils.join(",", customClasses);
+
+        store.setValue(CheckerPreferences.PREF_CHECKER_CUSTOM_CLASSES, classString);
+    }
+
+
+    public static void storeSelectedClasses(final List<String> selectedClasses) {
+        final IPreferenceStore store = getPrefStore();
+
+        String toStore = "";
+        if(!selectedClasses.isEmpty()) {
+            toStore = JavaUtils.join(";", selectedClasses);
+        }
+
+        store.setValue(CheckerPreferences.PREF_CHECKER_SELECTED_CHECKERS, toStore);
+    }
+
+    public static List<String> getSelectedClasses() {
+        final IPreferenceStore store = getPrefStore();
+        String selectedStr = store.getString(CheckerPreferences.PREF_CHECKER_SELECTED_CHECKERS);
+        if(selectedStr == null || selectedStr.trim().isEmpty()) {
+            return new ArrayList<String>();
+        }
+
+        return Arrays.asList(selectedStr.split(";"));
+    }
+
 }

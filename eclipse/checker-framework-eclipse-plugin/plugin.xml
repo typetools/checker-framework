@@ -7,11 +7,6 @@
  	  name="Checker Framework"
       class="checkers.eclipse.ui.CheckerPreferencePage">
    	</page>
-    <page id="checkers.eclipse"
-   	  name="Custom Checkers"
-   	  class="checkers.eclipse.ui.CustomPreferencesPage"
-   	  category="checkers.eclipse.prefs.CheckerPreferences">
-   	</page>
   </extension>
    
   <extension point="org.eclipse.core.runtime.preferences">
@@ -76,6 +71,7 @@
           label="Clear Checker Markers"
           style="push">
         </command>
+        
         <!--<command
           commandId="checkers.eclipse.enablenature"
           label="Enable Automatic Checking"
@@ -156,11 +152,10 @@
             style="push">
           </command>
         </menu>
-        <command
-          commandId="checkers.eclipse.runcustom"
-          label="Run Custom Checker(s)"
-          style="push">
-        </command>
+        <dynamic
+              class="checkers.eclipse.ui.CustomCheckersMenu"
+              id="checkers.eclipse.ui.CustomCheckersMenu">
+        </dynamic>
         <visibleWhen checkEnabled="false">
           <with variable="activeMenuSelection">
           	<!--<or>-->
@@ -271,6 +266,19 @@
       id="checkers.eclipse.runfenum"
       name="Run Fenum Checker">
     </command>
+    
+    <command
+      categoryId="checkers.eclipse.category"
+      defaultHandler="checkers.eclipse.actions.CheckerActions$SingleCustomAction"
+      id="checkers.eclipse.singlecustom"
+      name="Run Single Custom Checker">
+       <commandParameter
+             id="checker-framework-eclipse-plugin.checker"
+             name="Checker To Run"
+             optional="false">
+       </commandParameter>
+    </command>
+    
     <command
       categoryId="checkers.eclipse.category"
       defaultHandler="checkers.eclipse.actions.AddCheckersHandler"
