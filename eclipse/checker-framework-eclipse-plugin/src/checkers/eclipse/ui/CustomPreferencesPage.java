@@ -1,6 +1,7 @@
 package checkers.eclipse.ui;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.jdt.core.IType;
@@ -33,9 +34,9 @@ import checkers.eclipse.util.JavaUtils;
 
 @SuppressWarnings("restriction")
 public class CustomPreferencesPage extends PreferencePage implements
-        IWorkbenchPreferencePage
-{
+        IWorkbenchPreferencePage {
     private Text customClasses;
+    private org.eclipse.swt.widgets.List customCheckers;
 
     /* private Button customClassAuto; */
 
@@ -82,11 +83,10 @@ public class CustomPreferencesPage extends PreferencePage implements
 
         Label classesLabel = new Label(customGroup, SWT.None);
         classesLabel.setText("Additional checker classes to use:");
-        customClasses = new Text(customGroup, SWT.SINGLE | SWT.BORDER);
 
-        Button searchButton = new Button(customGroup, SWT.PUSH);
-        searchButton.setText("Search...");
-        searchButton.addSelectionListener(new SelectionListener()
+        Button addButton = new Button(customGroup, SWT.PUSH);
+        addButton.setText("Add");
+        addButton.addSelectionListener(new SelectionListener()
         {
             @Override
             public void widgetSelected(SelectionEvent e)
@@ -99,22 +99,49 @@ public class CustomPreferencesPage extends PreferencePage implements
             {
             }
         });
+        
+        Button removeButton = new Button(customGroup, SWT.PUSH);
+        removeButton.setText("Remove");
+        removeButton.addSelectionListener(new SelectionListener()
+        {
+            @Override
+            public void widgetSelected(SelectionEvent e)
+            {
+            	customCheckers.remove(customCheckers.getSelectionIndices());
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e)
+            {
+            }
+        });
+        
+        customCheckers =
+        	new org.eclipse.swt.widgets.List(customGroup, SWT.MULTI);
 
         /*
          * customClassAuto = new Button(customGroup, SWT.CHECK);
          * customClassAuto.setText("Use custom classes in autobuild?");
          */
+        
+        FormData listFd = new FormData();
+        listFd.left = new FormAttachment(0, 5);
+        listFd.top = new FormAttachment(classesLabel, 5);
+        listFd.right = new FormAttachment(removeButton, -5);
+        listFd.bottom = new FormAttachment(100, -5);
+        customCheckers.setLayoutData(listFd);
 
-        FormData data1 = new FormData();
-        data1.left = new FormAttachment(0, 5);
-        data1.top = new FormAttachment(classesLabel, 5);
-        data1.right = new FormAttachment(searchButton, -5);
-        customClasses.setLayoutData(data1);
+        FormData addFd = new FormData();
+        addFd.top = new FormAttachment(classesLabel, 5);
+        addFd.right = new FormAttachment(100, -5);
+        addFd.left  = new FormAttachment(customCheckers, 5);
+        addButton.setLayoutData(addFd);
+        
+        FormData removeFd = new FormData();
+        removeFd.top = new FormAttachment(addButton, 5);
+        removeFd.right = new FormAttachment(100, -5);
+        removeButton.setLayoutData(removeFd);
 
-        FormData data2 = new FormData();
-        data2.top = new FormAttachment(classesLabel, 5);
-        data2.right = new FormAttachment(100, -5);
-        searchButton.setLayoutData(data2);
 
         /*
          * FormData data3 = new FormData(); data3.top = new
@@ -147,20 +174,36 @@ public class CustomPreferencesPage extends PreferencePage implements
                     classNames.add(type.getFullyQualifiedName());
                 }
             }
-
-            customClasses.setText(JavaUtils.join(",", classNames));
+            
+            for(final String cn : classNames) { 
+            	if(!contains(cn)) { //TODO: ADD A DIALOG TO WARN IF ALREADY CONTAINED
+            	    customCheckers.add(cn);
+            	}
+            }
         }
     }
 
+    private boolean contains(final String className) {
+    	for(final String str : customCheckers.getItems()) {
+    		if(str.equals(className)) {
+    			return true;
+    		}
+    	}
+    	
+    	return false;
+    }
+
     /**
-     * Initialise the values in the table to the preference values
+     * Initialize the values in the table to the preference values
      */
     private void initValues()
     {
         IPreferenceStore store = doGetPreferenceStore();
+        final String storedItems = store.getString(CheckerPreferences.PREF_CHECKER_CUSTOM_CLASSES);
 
-        customClasses.setText(store
-                .getString(CheckerPreferences.PREF_CHECKER_CUSTOM_CLASSES));
+        if(!storedItems.equals("")) {
+        	customCheckers.setItems(storedItems.split(","));
+        }
         /*
          * customClassAuto .setSelection(store
          * .getBoolean(CheckerPreferences.PREF_CHECKER_CUSTOM_CLASS_AUTOBUILD));
@@ -172,7 +215,7 @@ public class CustomPreferencesPage extends PreferencePage implements
         IPreferenceStore store = doGetPreferenceStore();
 
         store.setValue(CheckerPreferences.PREF_CHECKER_CUSTOM_CLASSES,
-                customClasses.getText());
+        		JavaUtils.join(",", customCheckers.getItems()));
 
         /*
          * store.setValue(CheckerPreferences.PREF_CHECKER_CUSTOM_CLASS_AUTOBUILD,
