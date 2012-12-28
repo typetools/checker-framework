@@ -117,6 +117,7 @@ public class PluginUtil {
         MISC_COMPILER() {
             @Override
             public List<String> getCmdLine(final Map<CheckerProp, Object> props) {
+                @SuppressWarnings("unchecked")
                 List<String> miscOpts = (List<String>) props.get(this);
 
                 if (miscOpts != null && !miscOpts.isEmpty()) {
