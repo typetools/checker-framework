@@ -2,9 +2,6 @@ package checkers.util;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;
-import java.lang.annotation.ElementType;
-import java.lang.management.ManagementFactory;
-import java.lang.management.RuntimeMXBean;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
