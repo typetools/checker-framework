@@ -1,39 +1,28 @@
 Version 1.5.0, 1 January 2013
 
-Major user-visible framework improvements:
-  All methods of invoking the Checker Framework now call the main
-    method of the class CheckerMain in checkers.jar.
-  CheckerMain now prepares the classpath and bootclasspath
-    appropriately and users should no longer provide any
-    Checker Framework jars on the classpath or bootclasspath.
-    jsr308-all.jar has been removed.
-  All Checker Framework jars now reside in
-    checker-framework/checkers/binary
-  An annotated jdk is now provided for each major version of Java
-     that is supported by the Checker Framework.  jdk6.jar and
-     jdk7.jar can now be found in the directory
-     checker-framework/checkers/binary
+User-visible framework improvements:
+  To invoke the Checker Framework, call the main method of class
+    CheckerMain, which is a drop-in replacement for javac.  This replaces
+    all previous techniques for invoking the Checker Framework.  Users
+    should no longer provide any Checker Framework jars on the classpath or
+    bootclasspath.  jsr308-all.jar has been removed.
+  The Checker Framework now works with both JDK 6 and JDK 7, without need
+    for user customization.  The Checker Framework determines the
+    appropriate annotated JDK to use.
+  All jar files now reside in checker-framework/checkers/binary/.
 
-Other Framework improvements:
-  Add a -Adetailedmsgtext option to output the error key, all
-     arguments, and the fully formatted message.
-  The Checker Framework manual has been updated to reflect all
-    changes mentioned in the above section "Major framework changes".
-  Individual pom files have been created for all jars built by
-    the Checker Framework.
-  The Checker Framework maven repository now holds artifacts for all
-    jars created by the Checker Framework.  See the section
-    "ExternalTools -> Maven" in the manual for more details.
-  Many interface and code improvements have been made to the
-    Eclipse plugin.
-  Misc. Maven/Eclipse plugin improvements including support for
-    those changes mentioned in "Major Framework Changes"
+Maven plugin:
+  Individual pom files (and artifacts in the Maven repository) for all
+    Checker Framework jar files.
+  Avoid too-long command lines on Windows.
+  See the Maven section of the manual for more details.
 
-Bug Fixes
-  Both the Eclipse plugin and Maven plugin should no longer generate
-    command line invocations that are too long for Windows.
-  Misc. Fixes
+Eclipse plugin:
+  Avoid too-long command lines on Windows.
+  Other bug fixes and interface improvements.
 
+Other framework improvements:
+  New -Adetailedmsgtext command-line option, intended for use by IDE plugins.
 
 ----------------------------------------------------------------------
 Version 1.4.4, 1 Dec 2012
