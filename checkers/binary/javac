@@ -34,4 +34,4 @@ esac
 #We are searching for checkers.jar which is in the top-level of the checker-framework
 mylib=$mydir/..
 
-eval "java" "-jar" "${mydir}"/../checkers.jar "${*:1}"
+eval "java" "-jar" "${mydir}"/../checkers.jar "$@"
