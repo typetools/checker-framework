@@ -2308,6 +2308,23 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                 // System.out.printf("BaseTypeVisitor.TypeValidator.visitTypeVariable(type: %s, tree: %s)%n",
                 // type, tree);
 
+                // TODO: the following check should not be necessary, once we are able to
+                // recurse on type parameters in AnnotatedTypes.isValidType (see todo there).
+                {
+                    // Check whether multiple qualifiers from the same hierarchy
+                    // appear.
+                    Set<AnnotationMirror> seenTops = AnnotationUtils
+                            .createAnnotationSet();
+                    for (AnnotationMirror aOnVar : onVar) {
+                        AnnotationMirror top = checker.getQualifierHierarchy()
+                                .getTopAnnotation(aOnVar);
+                        if (seenTops.contains(top)) {
+                            this.reportError(type, tree);
+                        }
+                        seenTops.add(top);
+                    }
+                }
+
                 // TODO: because of the way AnnotatedTypeMirror fixes up the
                 // bounds,
                 // i.e. an annotation on the type variable always replaces a
@@ -2351,6 +2368,23 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
             if (!onVar.isEmpty()) {
                 // System.out.printf("BaseTypeVisitor.TypeValidator.visitWildcard(type: %s, tree: %s)",
                 // type, tree);
+
+                // TODO: the following check should not be necessary, once we are able to
+                // recurse on type parameters in AnnotatedTypes.isValidType (see todo there).
+                {
+                    // Check whether multiple qualifiers from the same hierarchy
+                    // appear.
+                    Set<AnnotationMirror> seenTops = AnnotationUtils
+                            .createAnnotationSet();
+                    for (AnnotationMirror aOnVar : onVar) {
+                        AnnotationMirror top = checker.getQualifierHierarchy()
+                                .getTopAnnotation(aOnVar);
+                        if (seenTops.contains(top)) {
+                            this.reportError(type, tree);
+                        }
+                        seenTops.add(top);
+                    }
+                }
 
                 if (type.getExtendsBoundField() != null) {
                     AnnotatedTypeMirror upper = type.getExtendsBoundField();
