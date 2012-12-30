@@ -1372,9 +1372,21 @@ public class AnnotatedTypes {
      */
     public static boolean isValidValue(QualifierHierarchy qualifierHierarchy,
             AnnotatedTypeMirror type) {
+        return isValidValue(qualifierHierarchy, type,
+                Collections.<AnnotatedTypeMirror> emptySet());
+    }
+
+    private static boolean isValidValue(QualifierHierarchy qualifierHierarchy,
+            AnnotatedTypeMirror type, Set<AnnotatedTypeMirror> v) {
         if (type == null) {
             return false;
         }
+
+        Set<AnnotatedTypeMirror> visited = new HashSet<>(v);
+        if (visited.contains(type)) {
+            return true; // prevent infinite recursion
+        }
+        visited.add(type);
 
         // multiple annotations from the same hierarchy
         Set<AnnotationMirror> seenTops = AnnotationUtils.createAnnotationSet();
@@ -1404,7 +1416,7 @@ public class AnnotatedTypes {
         // recurse for composite types
         if (type instanceof AnnotatedArrayType) {
             AnnotatedArrayType at = (AnnotatedArrayType) type;
-            if (!isValidValue(qualifierHierarchy, at.getComponentType())) {
+            if (!isValidValue(qualifierHierarchy, at.getComponentType(), visited)) {
                 return false;
             }
         } else if (type instanceof AnnotatedTypeVariable) {
@@ -1412,11 +1424,11 @@ public class AnnotatedTypes {
             AnnotatedTypeMirror lowerBound = at.getLowerBound();
             AnnotatedTypeMirror upperBound = at.getUpperBound();
             if (lowerBound != null
-                    && !isValidValue(qualifierHierarchy, lowerBound)) {
+                    && !isValidValue(qualifierHierarchy, lowerBound, visited)) {
                 return false;
             }
             if (upperBound != null
-                    && !isValidValue(qualifierHierarchy, upperBound)) {
+                    && !isValidValue(qualifierHierarchy, upperBound, visited)) {
                 return false;
             }
         } else if (type instanceof AnnotatedWildcardType) {
@@ -1424,18 +1436,18 @@ public class AnnotatedTypes {
             AnnotatedTypeMirror extendsBound = at.getExtendsBound();
             AnnotatedTypeMirror superBound = at.getSuperBound();
             if (extendsBound != null
-                    && !isValidValue(qualifierHierarchy, extendsBound)) {
+                    && !isValidValue(qualifierHierarchy, extendsBound, visited)) {
                 return false;
             }
             if (superBound != null
-                    && !isValidValue(qualifierHierarchy, superBound)) {
+                    && !isValidValue(qualifierHierarchy, superBound, visited)) {
                 return false;
             }
         }
         if (type instanceof AnnotatedDeclaredType) {
             AnnotatedDeclaredType at = (AnnotatedDeclaredType) type;
             for (AnnotatedTypeMirror typeArgument : at.getTypeArguments()) {
-                if (!isValidValue(qualifierHierarchy, typeArgument)) {
+                if (!isValidValue(qualifierHierarchy, typeArgument, visited)) {
                     return false;
                 }
             }
