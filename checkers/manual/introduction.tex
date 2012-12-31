@@ -170,9 +170,9 @@ The installation process is simple!
 \item
   Optionally, update your execution path or create an alias.
 
-  When doing pluggable type-checking, you need to use the ``Type Annotations compiler'', an updated version of the
-  OpenJDK javac compiler that
-  understands type annotations.    The Type Annotations compiler is
+  When doing pluggable type-checking, you need to use the ``Checker Framework compiler''.  The
+  Checker Framework compiler in turn uses an updated version of the OpenJDK javac compiler that
+  understands type annotations known as ``Type Annotations compiler''.    The Type Annotations compiler is
   backward-compatible, so using it as your Java compiler should have no negative consequences.
 
   You can do this in three ways.  You can use any one of them.  However, if
@@ -209,24 +209,31 @@ The installation process is simple!
 
  \item
    Whenever this document tells you to run \code{javac}, instead
-   run \<java> (not \<javac>),
-   but pass an extra \code{-Xbootclasspath/p:} and
-   \code{-jar} argument, as in:
+   run checkers.jar via \<java> (not \<javac>) as in:
 
 \begin{Verbatim}
-  java -Xbootclasspath/p:$CHECKERS/binary/jsr308-all.jar -jar $CHECKERS/binary/jsr308-all.jar ...
+  java -jar $CHECKERS/binary/checkers.jar ...
 \end{Verbatim}
 
-    You can simplify this by introducing an alias.  Then,
+    Note: Previous versions of these instructions required the use of
+    \$CHECKERS/binary/javac.jar and providing jsr308-all.jar on the bootclasspath.
+    This is no longer the case.  The provided javac script and checkers.jar
+    will automatically fix up the classpath and bootclasspath for use with
+    the Checker Framework and call the type-annotations compiler appropriately.
+    jsr308-all.jar no longer exists.  Finally, anywhere javac.jar might be used
+    you can substitute \$CHECKERS/binary/checkers.jar in order to use
+    the Checker Framework.
+
+    You can simplify he above command by introducing an alias.  Then,
     whenever this document tells you to run \code{javac}, instead use that
     alias.  For example:
 
 \begin{Verbatim}
   # Unix
-  alias javacheck='java -Xbootclasspath/p:$CHECKERS/binary/jsr308-all.jar -jar $CHECKERS/binary/jsr308-all.jar'
+  alias javacheck='java -jar $CHECKERS/binary/checkers.jar'
 
   # Windows
-  doskey javacheck=java -Xbootclasspath/p:%CHECKERS%\binary\jsr308-all.jar -jar %CHECKERS%\binary\jsr308-all.jar $*
+  doskey javacheck=java -jar %CHECKERS%\binary\checkers.jar $*
 \end{Verbatim}
 \end{itemize}
 
@@ -307,8 +314,8 @@ public class GetStarted {
 \end{Verbatim}
 
 \noindent
-or compile from within your IDE, which you have customized to use the JSR
-308 compiler and to pass the extra arguments.
+or compile from within your IDE, which you have customized to use the
+Checker Framework compiler and to pass the extra arguments.
 
   The compilation should complete without any errors.
 
@@ -487,17 +494,19 @@ Two concrete examples (using the Nullness checker) are:
 %END LATEX
 \begin{Verbatim}
   javac -processor checkers.nullness.NullnessChecker MyFile.java
-  javac -processor checkers.nullness.NullnessChecker -Xbootclasspath/p:checkers/jdk/jdk.jar MyFile.java
+  java -jar $CHECKERS/binary/checkers.jar MyFile.java
 \end{Verbatim}
 %BEGIN LATEX
 \end{smaller}
 %END LATEX
 
 \noindent
-For a discussion of the \code{-Xbootclasspath/p} argument, see
+Note the two invocations above are equivalent.  Both result in the invocation of the
+Checker Framework compiler which in turn invokes the JSR308 Type Annotations compiler
+with an annotated JDK on it's classpath, form more information on annotated jdks see
 Section~\ref{skeleton-using}.
 
-The checker is run only on any Java file that javac compiles.
+The checker is run on only the Java files that javac compiles.
 This includes all Java files specified on the command line (or
 created by another annotation processor).  It may also include other of
 your Java files (but not if a more recent \code{.class} file exists).
