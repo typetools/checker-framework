@@ -23,7 +23,7 @@ licensing restrictions.
 \section{Javac Compiler\label{javac-installation}}
 
 If you use \code{javac} compiler from the command line, then you can
-instead use the Type annotations compiler that is bundled with the Checker
+instead use the Checker Framework compiler that is bundled with the Checker
 Framework.  The bundled \code{javac} is a variant of the OpenJDK
 \code{javac} that recognizes type annotations.  Eventually, the OpenJDK
 \code{javac} will recognize type annotations.  The bundled \code{javac}
@@ -138,7 +138,7 @@ the new \code{javac} compiler.
 % Do I need to quote the space in "Program Files"?
 \begin{Verbatim}
   set CHECKERS = C:\Program Files\checker-framework\checkers
-  java -Xbootclasspath/p:%CHECKERS%\binary\jsr308-all.jar -jar C:%CHECKERS%\binary\jsr308-all.jar -version
+  java -jar C:%CHECKERS%\binary\checkers.jar -version
 \end{Verbatim}
 
 The output should be:
@@ -238,17 +238,11 @@ Set the \code{jsr308javac} property:
   <dirname property="checkers" file="${env.CHECKERS}" />
 
   <presetdef name="jsr308.javac">
-    <javac fork="yes">
+    <javac fork="yes" executable="${checkers}/binary/javac" >
       <!-- JSR308 related compiler arguments -->
       <compilerarg value="-version"/>
       <!-- optional, so .class files work with older JVMs: <compilerarg line="-target 5"/> -->
       <compilerarg value="-implicit:class"/>
-      <!-- optional, to issue warnings instead of errors: <compilerarg line="-Awarns -Xmaxwarns 10000"/> -->
-      <compilerarg value="-J-Xbootclasspath/p:${checkers}/binary/jsr308-all.jar"/>
-
-      <classpath>
-        <pathelement location="${checkers}/checkers.jar"/>
-      </classpath>
     </javac>
   </presetdef>
 \end{Verbatim}
@@ -257,10 +251,9 @@ Set the \code{jsr308javac} property:
 \end{smaller}
 %END LATEX
 
-(Note: the classes in \<checkers.jar> are
-actually  read from \<jsr308-all.jar> due to the \<-Xbootclasspath> flag.
-Eventually, it may be possible to remove one of these flags.)
-
+(Note: For any platform that needs to use "java -jar $CHECKERS/binary/checkers.jar" instead of
+javac then a simple script that executes "java -jar $CHECKERS/binarycheckers.jar <parameters>
+should replace the "{checkers}/binary/javac" part of \code{executable="\${checkers}/binary/javac"} above.)
 
 \item Duplicate the compilation target, then modify it slightly as
 indicated in this example:
@@ -275,7 +268,6 @@ indicated in this example:
     <!-- use jsr308.javac instead of javac -->
     <jsr308.javac ... >
       <compilerarg line="-processor checkers.nullness.NullnessChecker"/>
-      <compilerarg value="-Xbootclasspath/p:${checkers}/jdk/jdk.jar"/>
       <!-- optional, for implicit imports: <compilerarg value="-J-Djsr308_imports=checkers.nullness.quals.*"/> -->
       <!-- optional, to not check uses of library methods: <compilerarg value="-AskipUses=^(java\.awt\.|javax\.swing\.)"/> -->
       ...
@@ -423,8 +415,8 @@ have to declared as a dependency:
                     <javacParams>-Alint</javacParams>
                     <!-- additional parameters to pass to the forked JVM -->
                     <javaParams>-Xdebug</javaParams>
-                    <!-- versions of checkers to use; defaults to the current newest version: 1.4.0 -->
-                    <checkersVersion>0.8.8</checkersVersion>
+                    <!-- versions of checkers to use; defaults to the current newest version: 1.4.5 -->
+                    <checkersVersion>1.4.1</checkersVersion>
                 </configuration>
             </plugin>
         </plugins>
@@ -443,11 +435,12 @@ The plugin was contributed by Adam Warski.
 % http://jira.codehaus.org/browse/GRADLE-342
 % http://docs.codehaus.org/display/GRADLE/Gradle+0.8+Breaking+Changes
 
-\ahref{http://gradle.org/}{Gradle} lets you add command-line arguments to a
-\code{javac} invocation by setting the \<compilerArgs> property of the
-compiler options.  This is adequate for running the Checker Framework,
-which is run by specifying command-line arguments.  See the
-instructions elsewhere in this manual for a list of command-line arguments.
+If you fork the compilation task, \ahref{http://gradle.org/}{Gradle}
+lets you specify the executable to compile java programs.
+
+To specify the appropriate executable, set
+\code{options.fork = true} and
+\code{compile.options.fork.executable = "\$CHECKERS/binary/javac"}
 
 To specify command-line arguments, set
 \code{compile.options.compilerArgs}.  Here is a possible example:
@@ -459,42 +452,13 @@ allprojects {
     compile.options.compilerArgs = [
       '-version',
       '-implicit:class',
-      '-J-Xbootclasspath/p:${env.CHECKERS}/binary/jsr308-all.jar',
-      '-processor', 'checkers.nullness.NullnessChecker',
-      '-Xbootclasspath/p:${env.CHECKERS}/jdk/jdk.jar']
+      '-processor', 'checkers.nullness.NullnessChecker]
+    options.fork = true,
+    compile.options.fork.executable = "$CHECKERS/binary/javac"
   }
 }
 \end{Verbatim}
 
-You don't need to use a special version of \code{javac}; you only need to
-give the \code{-J-Xbootclasspath/p:...} argument.  If you choose to use a
-special version of \code{javac} instead of supplying the command-line
-argument, then you can do so in the following way:
-
-\begin{Verbatim}
-tasks.withType(Compile).allObjects { compile ->
-  compile.options.fork.executable = "$CHECKERS/binary/javac"
-}
-\end{Verbatim}
-
-You can also combine these methods as follows:
-
-\begin{Verbatim}
-def env         = System.getenv()
-def checkersDir = env["CHECKERS"]
-
-tasks.compileJava {
-  description = 'Compiles both the scala and java files for this project using the checker framework compiler and the scala compiler'
-  options.fork = true
-  options.compilerArgs = [
-  	  '-version',
-      '-implicit:class',
-      '-Awarns', '-Xmaxwarns', '10000',
-      '-processor', 'checkers.nullness.NullnessChecker',
-      "-Xbootclasspath/p:$checkersDir/jdk/jdk.jar"]
-  options.forkOptions.executable="$checkersDir/binary/javac"
-}
-\end{Verbatim}
 % extra $ to unconfuse Emacs's LaTeX mode
 
 
