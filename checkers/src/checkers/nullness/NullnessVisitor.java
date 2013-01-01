@@ -383,22 +383,20 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
                 // because that would only have the nullness annotations; here we want to
                 // see all annotations on the receiver.
                 // TODO: can we clean up constructor vs. method distinction?
-                List<? extends AnnotationMirror> rcvannos;
+                List<? extends AnnotationMirror> rcvannos = null;
                 if (TreeUtils.isConstructor(node)) {
                     com.sun.tools.javac.code.Symbol meth =
                             (com.sun.tools.javac.code.Symbol)TreeUtils.elementFromDeclaration(node);
                     rcvannos = meth.getTypeAnnotationMirrors();
-                    if (rcvannos == null){
-                        rcvannos = Collections.<AnnotationMirror>emptyList();
-                    }
                 } else {
                     ExecutableElement meth = TreeUtils.elementFromDeclaration(node);
                     com.sun.tools.javac.code.Type rcv = (com.sun.tools.javac.code.Type) ((ExecutableType)meth.asType()).getReceiverType();
-                    if (rcv != null) {
-                        rcvannos = rcv.typeAnnotations;
-                    } else {
-                        rcvannos = Collections.<AnnotationMirror>emptyList();
+                    if (rcv != null && rcv.getKind() == TypeKind.ANNOTATED) {
+                        rcvannos = ((com.sun.tools.javac.code.Type.AnnotatedType)rcv).typeAnnotations;
                     }
+                }
+                if (rcvannos == null){
+                    rcvannos = Collections.<AnnotationMirror>emptyList();
                 }
                 nonInitializedFields
                     = getUninitializedFields(TreeUtils.enclosingClass(getCurrentPath()), rcvannos);
