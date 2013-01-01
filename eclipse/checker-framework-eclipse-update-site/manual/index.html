@@ -42,22 +42,12 @@
     <div class="section">
         <p>
             The <a href="http://types.cs.washington.edu/checker-framework/">Checker Framework</a> is a pluggable type-checking
-            system for Java.  Use a variety of built-in type systems to avoid common programming mistakes or
-            build your own type system to catch those types of errors that are most important to you.
-            This page describes the Eclipse plugin that provides GUI
-            support for the Checker-Framework. <br/><br/>
-        </p>
-            <div class="alert alert-warning">
-               For more information on the
-               <strong><a href="http://types.cs.washington.edu/checker-framework/">Checker Framework</a></strong>  visit:
-                <a href="http://types.cs.washington.edu/checker-framework/">http://types.cs.washington.edu/checker-framework/</a>.
-             </div>
-
-        <div class="alert alert-success">
-            To get started with the
+            system for Java:  It warns you, at compile time, about errors in your programs, beyond those that Java's built-in
+            type-checker does.
+            This document tells you how to get started using the
             <strong><a href="http://types.cs.washington.edu/checker-framework/">Checker Framework</a>
-            in Eclipse</strong>, please read on below.
-        </div>
+            in Eclipse</strong>.
+        </p>
     </div>
 </section>
 
@@ -71,7 +61,7 @@
         <p>This plugin has been tested on both Eclipse 3.7.2 and 4.2.1 using either Java 6 or 7.</p>
         <p>
             Your Eclipse installation MUST be running on a Java 6 VM or newer. To see what Java VM
-            is being used by eclipse, select from the menu
+            is being used by Eclipse, select from the menu
             Help &#8209;> About Eclipse Platform &#8209;> Installation Details. Depending on your
             OS/Eclipse version, the menu may be Help &#8209;> About Eclipse SDK &#8209;> Installation Details.
         </p>
@@ -93,7 +83,7 @@
                 <li>A summary of the plugins to be installed will be displayed.  Under Name should appear
                 "Checker Framework Feature" followed by the version of the plugin being installed. Click Next again.</li>
                 <li>Accept the license agreement and click Finish.</li>
-                <li>The plugin will then begin installing.  The plugin is NOT digitally signed.  Install it anyway.</li>
+                <li>The plugin will begin installing.  The plugin is NOT digitally signed.  Install it anyway.</li>
                 <li>Click "Restart Now".</li>
             </ol>
         </div>
@@ -102,9 +92,9 @@
         <strong>Note:</strong> You may want to add <strong>
             <a href="http://types.cs.washington.edu/checker-framework/checker-plugin/update-site/lib/checker-quals.jar">
                 checker-quals.jar
-            </a></strong> to your classpath.  It will provide the annotations used by the
+            </a></strong> to your classpath.  It provide the annotations used by the
             <a href="http://types.cs.washington.edu/checker-framework/">Checker Framework</a> for
-            it's built-in type-checkers and no other classes.
+            its built-in type-checkers.
         </div>
     </div>
 </section>
@@ -115,17 +105,17 @@
     </div>
 
     <div class="section">
-        <h4>Running Built-In Checkers</h4>
+        <h4>Running a Built-In Checker</h4>
         <p>
-            The Eclipse plugin allows you to run one or more checkers from the
-            <a href="http://types.cs.washington.edu/checker-framework/">Checker Framework</a>
-            on a single project, package, or source file. To do this:
+            Here is how to run one or more 
+            <a href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#introduction">built-in type-checkers</a>
+            from the Checker Framework:
         </p>
         <div class="well">
             <div class="row">
                 <div class="span5">
                     <ol style="float:left">
-                        <li>Right-click a single project, package or source file.</li>
+                        <li>Right-click a project, package, or source file.</li>
                         <li>Open the "Checker Framework" sub-menu.</li>
                         <li>Open the "Run Built-In Checker" sub-menu.</li>
                         <li>Select the checker you would like top run (e.g. NullnessChecker).</li>
@@ -137,41 +127,40 @@
             </div>
         </div>
         <p>
-            A progress dialog should briefly appear and inform you as the plugin enters the different
-            phases of checking: removing old markers, running the checker(s), and updating the problem list
-            and checker markers.<br/>
-            If you select the "Problems" window you should see all type-checking errors with a description of the
-            given errors. <br/>
-            In the editor warning markers will appear to the left of each line that has an type-checking error.
+            A progress dialog will inform you as the plugin performs these steps:
+            removing old markers, running the type-checker(s), and updating the problem list
+            and markers.<br/>
+            You can select the "Problems" window to see all the type-checking errors.<br/>
+            In the editor, a warning marker will appears to the left of each line that has a type-checking error.
             You can hover over the warning marker to view the given error. The errors are also output to
-            the console formatted as they appear when running the Checker Framework from the command line.
+            the console formatted as they appear when running the Checker Framework from the command line,
+            but most users do not view the console.
             <br/><br/>
-            You may clear all Checker Framework error markers by right clicking on the project and selecting:
+            You may clear all Checker Framework error markers by right-clicking on the project and selecting:
             (Checker Framework &#8209;> Clear Checker Markers).
         </p>
     </div>
 
     <div class="section">
-        <h4>Running Custom Checkers</h4>
+        <h4 id="running-a-custom-checker">Running a Custom Checker</h4>
         <p>
-            The <a href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#writing-a-checker">Checker Framework</a>
-            also allows you to write custom checkers to statically enforce rules of your own (see
-            <a href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#writing-a-checker">"How to create a checker"</a>).
+            The Checker Framework
+            also allows you to <a href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#writing-a-checker">write a custom checker</a> that enforces rules of your own.
             <br/>
-            To add a custom checker that you have written do the following:
+            To run a custom checker that you have written, do the following:
         </p>
 
         <div class="well">
             <div class="row">
                 <div class="span7">
                     <ol style="float: left;">
-                        <li>Open the Eclipse Preferences Page (usually Window&#8209;>Preferences or Eclipse&#8209;>Preferences depending on your platform).</li>
+                        <li>Open the Eclipse Preferences page (usually Window&#8209;>Preferences or Eclipse&#8209;>Preferences depending on your platform).</li>
                         <li>Select the "Checker Framework" preferences page.</li>
                         <li>In the "Checkers" section there will be a table of built-in checkers.  Press the "Add" button
                             located below the table.</li>
-                        <li>A dialog should pop-up.  In the text-field at the top of the dialog, type the class name of your
-                            checker WITHOUT the package.</br>
-                            (e.g. NullnessChecker NOT checkers.nullness.NullnessChecker)</li>
+                        <li>A dialog should pop up.  In the text field at the top of the dialog, type the class name of your
+                            checker without the package name
+                            (e.g., NullnessChecker, NOT checkers.nullness.NullnessChecker)</li>
                         <li>One or more classes should appear in a list below the text-field.  Select your checker.</li>
                         <li>Press "Ok".</li>
                         <li>The dialog will close and your custom checker should now appear in the "Checkers" table.
@@ -192,13 +181,13 @@
     </div>
 
     <div class="section">
-        <h4>Running Multiple Checkers</h4>
+        <h4 id="running-multiple-checkers">Running Multiple Checkers</h4>
         <p> If you wish to run several checkers at once follow the instructions below: </p>
         <div class="well">
             <div class="row">
                 <div class="span7">
                     <ol>
-                        <li>Open the Eclipse Preferences Page (usually Window&#8209;>Preferences or Eclipse&#8209;>Preferences depending on your platform).</li>
+                        <li>Open the Eclipse Preferences page (usually Window&#8209;>Preferences or Eclipse&#8209;>Preferences depending on your platform).</li>
                         <li>Select the "Checker Framework" preferences page.</li>
                         <li>In the "Checkers" section there will be a table of built-in checkers.  Place a 
                             check-mark next to each of the checkers (built-in or custom) you would like to run.
@@ -217,9 +206,11 @@
 
     <div class="section">
         <h4>Other Preferences</h4>
-        <div class="alert alert-info">We have discussed adding custom checkers and selecting specific checkers to run
-            together in the sections "Running Custom Checkers" and "Running Multiple Checkers".  This section
-            covers the various other options found on the plugin's preferences page.
+
+        <div class="alert alert-info">Previous sections discussed
+            <a href="#running-a-custom-checker">running a custom checker</a>
+            and <a href="#running-multiple-checkers">running multiple checkers</a>.
+            This section covers the other options found on the plugin's preferences page.
         </div>
 
         <div class="row">
@@ -231,18 +222,16 @@
                     "Checker Framework" from the list of preferences.
                 </p>
                 <p>
-                    <strong>Filtering errors messages</strong><br/>
-                    If you would like to filter out a specific set of error messages from appearing in the problems
-                    view you may provide a regular expression to filter the
-                    <a href="http://types.cs.washington.edu/checker-framework/">Checker Framework</a>
-                    compiler output.
+                    <strong>Filtering error messages</strong><br/>
+                    You can provide a a regular expression to filter out a specific set of Checker Framework error messages
+                    from appearing in the problems view.
                 </p>
                 <p>
                     <strong>Using a specific version of Java</strong><br/>
                     The Eclipse plugin will fork the running Eclipse instance in order to run the
-                    <a href="http://types.cs.washington.edu/checker-framework/">Checker Framework</a>
+                    Checker Framework
                     compiler.  You may select which version of Java will run the
-                    <a href="http://types.cs.washington.edu/checker-framework/">Checker Framework</a> via the
+                    Checker Framework via the
                     text-field labeled "Java Home Directory" or press the "Browse" button to select Java home via
                     a dialog.
                 </p>
@@ -253,31 +242,26 @@
         </div>
         <p>
             <strong>Processor/build options</strong><br/>
-            The <a href="http://types.cs.washington.edu/checker-framework/">Checker Framework</a>
-            allows various custom options to its compiler (usually prefaced by -A).  One
+            The Checker Framework
+            supports <a href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#checker-options">command-line options</a> to its compiler (usually prefaced by -A).  One
             way to use these options is enabling the various options under the label "Processor/build options".
-            A description of these options can be found in the
-            <a href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html">
-                Checker Framework Manual
-            </a>.  If you are using the
-            <a href="http://types.cs.washington.edu/checker-framework/">Checker Framework</a>
-            on a project for which other developers are not, you may be specifically interested in
-            <a href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#implicit-import-statements">
-            Section 20.3.2 Implicit Import Statements</a>.
+            If you are using the
+            Checker Framework
+            on a project for which other developers are not, you may be specifically interested in its 
+            <a href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#warnings-and-legacy">backward compatibility features</a>, such as annotations in comments and 
+            implicit import statements.
         </p>
         <p>
             <strong>Additional compiler parameters</strong><br/>
-            If there are particular compiler parameters you would like to pass to the
-            <a href="http://types.cs.washington.edu/checker-framework/">Checker Framework</a> (including
-            any option that would normally be passed to javac) you can provide them in the text-field
+            You can pass other compiler parameters in the text-field
             labeled "Additional compiler parameters".
         </p>
         <div class="alert alert-error"><strong>Warning!</strong> The text found in the "Additional compiler parameters"
             text-field will be added whole to the invocation of the compiler.  Please make sure any options added here
-            are well-formed <strong>javac</strong> or
-            <strong><a href="http://types.cs.washington.edu/checker-framework/">Checker Framework</a></strong>
-            options.  If they are malformed you can check the "Errors" window for any error messages or
-            exceptions thrown by the compiler/plugin
+            are well-formed <strong>javac options</strong> or
+            <a href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#checker-options">Checker Framework
+            options</a>.  If they are malformed you can check the "Errors" window for any error messages or
+            exceptions thrown by the compiler/plugin.
         </div>
     </div>
 </section>
@@ -288,18 +272,18 @@
     </div>
     <div class="section">
         <p>
-            To get support for either the
-            <a href="http://types.cs.washington.edu/checker-framework/">Checker Framework</a> or this plugin please
+            To get support for either the Checker Framework or this plugin please
             first consult the
-            <a href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html">Checker Framework Manual</a>
-            specifically
+            <a href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html">Checker Framework Manual</a>,
+            specifically the chapter
             <a href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#troubleshooting">
-                Chapter 25: "Troubleshooting and getting help"
-            </a>.  If you still have trouble you can find help via the discussion group
-            <a href="http://groups.google.com/group/checker-framework-discuss">Checker-framework-discuss</a>.  If you
-            believe you have run into a bug or other issue in the framework ou can file a report at
-            <a href="http://code.google.com/p/checker-framework/issues/list">http://code.google.com/p/checker-framework/issues/list</a>
-            (First, check whether there is an existing bug report for that issue.)
+                "Troubleshooting and getting help"
+            </a>.
+            If you find a bug, please report it at
+            <a href="http://code.google.com/p/checker-framework/issues/list">http://code.google.com/p/checker-framework/issues/list</a> 
+            (first, check whether there is an existing bug report for that issue).
+            You can also get help via the discussion group
+            <a href="http://groups.google.com/group/checker-framework-discuss">checker-framework-discuss</a>.  
         </p>
     </div>
 
@@ -310,14 +294,11 @@
         <h3>Source Code</h3>
     </div>
     <p>
-        To install and use the Checker Plugin you will not need to access or compile the source code.
-        However, if you would like to make changes or browse the source code, it is publicly available.
+        To install and use the Checker Plugin, you do not need to access or compile the source code.
+        However, if you would like to read or modify the source code, it is publicly available.
         The code for the Eclipse plugin can be found within the
-        <a href="http://code.google.com/p/checker-framework/">Checker Framework repository</a> at
-        <a href="http://code.google.com/p/checker-framework/">http://code.google.com/p/checker-framework/</a>.
-        <br/>
-        The repository is hosted using  <a href="http://mercurial.selenic.com/">Mercurial</a> and you can check out
-        the source code using the following command:
+        Checker Framework <a href="http://mercurial.selenic.com/">Mercurial</a> repository (<a href="http://code.google.com/p/checker-framework/">http://code.google.com/p/checker-framework/</a> in the <tt>checker-framework/eclipse</tt> directory.
+        To obtain your own copy of the source code, execute the following command:
     </p>
     <div class="alert alert-info">
         hg clone https://code.google.com/p/checker-framework/
@@ -325,9 +306,16 @@
 
 </section>
 
+<!--
 <div class="bottom_liner well">
     <a href="#">Top</a>
 </div>
+-->
 
 </body>
 </html>
+
+<!--  LocalWords:  Plugin plugin VM SDK plugins quals classpath 
+ -->
+<!--  LocalWords:  NullnessChecker plugin's hg
+ -->
