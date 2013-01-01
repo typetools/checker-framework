@@ -18,6 +18,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
+import javax.lang.model.type.AnnotatedType;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
@@ -86,6 +87,9 @@ public abstract class AnnotatedTypeMirror {
         if (replacer == null)
             replacer = new Replacer(atypeFactory.types);
 
+        if (type.getKind() == TypeKind.ANNOTATED) {
+            type = ((AnnotatedType)type).getUnderlyingType();
+        }
         switch (type.getKind()) {
             case ARRAY:
                 return new AnnotatedArrayType((ArrayType) type, atypeFactory);
