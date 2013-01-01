@@ -1,7 +1,6 @@
 package checkers.types;
 
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 
 import javax.lang.model.element.*;
@@ -604,7 +603,15 @@ public class TypeFromElement {
             return getLocationTypeATM(type.getTypeArguments().get(location.get(0).arg), tail(location));
         } else if (location.get(0).tag == TypePathEntryKind.INNER_TYPE) {
             // TODO: annotations on enclosing classes (e.g. @A Map.Entry<K, V>) not tested yet
-            return getLocationTypeATM(type.getEnclosingType(), tail(location));
+            if (type.getEnclosingType() != null) {
+                return getLocationTypeATM(type.getEnclosingType(), tail(location));
+            } else {
+                if (strict) {
+                    System.out.println("TypeFromElement.getLocationTypeADT: something is wrong!\n" +
+                            "    Found location: " + location + " for type: " + type);
+                }
+                return type;
+            }
         } else {
             // SourceChecker.errorAbort("TypeFromElement.getLocationTypeADT: " +
             //        "invalid locations " + location + " for type: " + type);
