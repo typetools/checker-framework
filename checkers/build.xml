@@ -15,8 +15,8 @@
     <property name="build.tests" value="tests/build"/>
     <property file="build.${os.name}.properties"/>
     <property file="build.properties"/>
-    <property name="checkers.jar.file" value="checkers.jar"/>
-    <property name="checkers-quals.jar.file" value="checkers-quals.jar"/>
+    <property name="checkers.jar.file" value="binary/checkers.jar"/>
+    <property name="checkers-quals.jar.file" value="binary/checkers-quals.jar"/>
     <property name="dist.doc" value="doc"/>
     <property name="javaparser.loc" value="../javaparser"/>
     <property name="checkers.rel.jp" value="../checkers"/>
@@ -560,7 +560,7 @@ ${build.version} of the 'javac.jar' library."/>
             <attribute name="jpda.jvmargs" default=""/>
             <sequential>
                 <property name="coverage.options" value=""/>    <!-- default -->
-                <property name="coverage.classpath" value="${basedir}/${javac.lib}:${basedir}/checkers.jar"/>    <!-- default -->
+                <property name="coverage.classpath" value="${basedir}/${javac.lib}:${checkers.jar.file}"/>    <!-- default -->
                 <!-- removed:
                     jdk="@{jdk}"
                    -->
@@ -659,7 +659,6 @@ ${build.version} of the 'javac.jar' library."/>
       Binary release of the Checker Framework; it includes javac.
      -->
 
-    <property name="checkers.lib" value="checkers.jar"/>
     <property name="temp.dir" value="binary/buildbin"/>
 
     <target name="-prep-bindist"
