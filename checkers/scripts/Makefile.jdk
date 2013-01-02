@@ -5,7 +5,7 @@
 
 # Variables
 CHECKERS ?= ../..
-CHECKERS_JAR ?= $(CHECKERS)/checkers.jar
+CHECKERS_JAR ?= $(CHECKERS)/binary/checkers.jar
 
 LANGTOOLS ?= ../../../../jsr308-langtools
 JAVADOCLIB ?= $(LANGTOOLS)/build/classes
