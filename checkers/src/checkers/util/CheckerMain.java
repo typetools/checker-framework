@@ -23,7 +23,7 @@ public class CheckerMain {
      * The paths searched for Checker Framework jars
      * TODO: Should probably remove this and put the binaries in ONE directory
      */
-    public static List<String> SEARCH_PATHS = Arrays.asList("binary", ".");
+    public static List<String> SEARCH_PATHS = Arrays.asList(".");
 
     /**
      * Most logic of the CheckerMain main method is delegated to the CheckerMain class.  This method
@@ -95,7 +95,7 @@ public class CheckerMain {
         final List<String> argsList = new ArrayList<String>(Arrays.asList(args));
 
         this.bootClasspath = prepFilePath(null, jdkJar, javacJar) + File.pathSeparator +
-                             join(File.pathSeparator, extractBootClassPath(argsList));
+                             PluginUtil.join(File.pathSeparator, extractBootClassPath(argsList));
         this.jvmOpts       = extractJvmOpts(argsList);
 
         this.cpOpts        = extractCpOpts(argsList);
@@ -126,25 +126,6 @@ public class CheckerMain {
                 return path + File.pathSeparator + previous;
             }
         }
-    }
-
-    /**
-     * TODO: Either create/use a util class
-     */
-    public String join(final String delimiter, final List<String> strings) {
-
-        boolean notFirst = false;
-        final StringBuffer sb = new StringBuffer();
-
-        for(final String str : strings) {
-            if(notFirst) {
-                sb.append(delimiter);
-            }
-            sb.append(str);
-            notFirst = true;
-        }
-
-        return sb.toString();
     }
 
 
@@ -263,7 +244,7 @@ public class CheckerMain {
         args.add(javacJar.getAbsolutePath());
 
         args.add("-classpath");
-        args.add(join(File.pathSeparator, cpOpts));
+        args.add(PluginUtil.join(File.pathSeparator, cpOpts));
 
         args.addAll(toolOpts);
 
