@@ -18,10 +18,9 @@
     <attribute name="custom.lib" default=""/>
     <sequential>
       <java fork="true" failonerror="true"
-            classpath="${compiler.lib}"
-            classname="com.sun.tools.javac.Main"
+            classpath="${checkers.lib}"
+            classname="checkers.util.CheckerMain"
             taskname="javac-jsr308">
-        <jvmarg line="-Xbootclasspath/p:${compiler.lib}"/>
         <!-- <arg value="-version"/> -->
         <arg value="-g"/>
         <arg line="-classpath ${deps.lib}:${checkers.lib}:${daikon.lib}:@{custom.lib}"/>
@@ -47,13 +46,12 @@
     <attribute name="custom.lib" default=""/>
     <sequential>
       <java fork="true" failonerror="true"
-            classpath="${compiler.lib}"
-            classname="com.sun.tools.javac.Main"
+            classpath="${checkers.lib}"
+            classname="checkers.util.CheckerMain"
             taskname="javac-jsr308">
-        <jvmarg line="-Xbootclasspath/p:${compiler.lib}"/>
         <!-- <arg value="-version"/> -->
         <arg value="-g"/>
-        <arg line="-classpath ${checkers.lib}:@{custom.lib}"/>
+        <arg line="-classpath @{custom.lib}"/>
         <arg line="-sourcepath @{srcpath}"/>
         <arg line="-processor @{checker}"/>
         <arg line="-implicit:none"/>
