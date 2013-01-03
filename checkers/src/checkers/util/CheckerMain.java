@@ -35,7 +35,8 @@ public class CheckerMain {
     public static void main(String[] args)  {
         final String pathToThisJar     = findPathJar(CheckerMain.class);
         final CheckerMain program      = new CheckerMain(pathToThisJar, SEARCH_PATHS, args);
-        program.invokeCompiler();
+        final int exitStatus = program.invokeCompiler();
+        System.exit(exitStatus);
     }
 
     /**
@@ -94,8 +95,12 @@ public class CheckerMain {
 
         final List<String> argsList = new ArrayList<String>(Arrays.asList(args));
 
-        this.bootClasspath = prepFilePath(null, jdkJar, javacJar) + File.pathSeparator +
-                             PluginUtil.join(File.pathSeparator, extractBootClassPath(argsList));
+        final String extractedBcp = PluginUtil.join(File.pathSeparator, extractBootClassPath(argsList));
+        this.bootClasspath = prepFilePath(null, jdkJar, javacJar) +
+                                 ( !extractedBcp.trim().isEmpty()  ?  (File.pathSeparator + extractedBcp) :
+                                                                      ""
+                                 );
+
         this.jvmOpts       = extractJvmOpts(argsList);
 
         this.cpOpts        = extractCpOpts(argsList);
@@ -120,7 +125,7 @@ public class CheckerMain {
                 path += File.pathSeparator + files[i].getAbsolutePath();
             }
 
-            if(previous == null) {
+            if(previous == null || previous.isEmpty()) {
                 return path;
             } else {
                 return path + File.pathSeparator + previous;
@@ -147,7 +152,7 @@ public class CheckerMain {
             if( matcher.matches() ) {
                 final String arg = matcher.group(1).trim();
 
-                if( !arg.equals("") || allowEmpties ) {
+                if( !arg.isEmpty() || allowEmpties ) {
                     matchedArgs.add(arg);
                 }
 
@@ -280,7 +285,6 @@ public class CheckerMain {
         CLibrary INSTANCE = (CLibrary)Native.loadLibrary("c", CLibrary.class);
         int system(String command);
      }
-
     /**
      * Helper method to do the proper escaping of arguments to pass to
      * system()
@@ -298,9 +302,16 @@ public class CheckerMain {
     }
 
     /** Execute the commands, with IO redirection */
-    static int execute(Iterable<String> cmdArray) {
-        String command = constructCommand(cmdArray);
-        return CLibrary.INSTANCE.system(command);
+    static int execute(final Iterable<String> cmdArray) {
+        final String command = constructCommand(cmdArray);
+        final int systemReturn = CLibrary.INSTANCE.system(command);
+        final int exitStatus   = systemReturn >> 8;
+
+        if(exitStatus == 0) {
+            return systemReturn;
+        } else {
+            return exitStatus;
+        }
     }
 
 
