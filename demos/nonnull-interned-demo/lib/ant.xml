@@ -24,7 +24,7 @@
         <!-- <arg value="-version"/> -->
         <arg value="-g"/>
         <arg line="-classpath ${deps.lib}:${checkers.lib}:${daikon.lib}:@{custom.lib}"/>
-        <jvmarg line="-Djsr308.imports='checkers.nullness.quals.*:checkers.interning.quals.*'"/>
+        <arg line="-J-Djsr308.imports='checkers.nullness.quals.*:checkers.interning.quals.*'"/>
         <arg line="-sourcepath @{srcpath}"/>
         <arg line="-processor @{checker}"/>
         <arg line="-implicit:none"/>
