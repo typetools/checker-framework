@@ -20,12 +20,6 @@ import com.sun.jna.Native;
 public class CheckerMain {
 
     /**
-     * The paths searched for Checker Framework jars
-     * TODO: Should probably remove this and put the binaries in ONE directory
-     */
-    public static List<String> SEARCH_PATHS = Arrays.asList(".");
-
-    /**
      * Most logic of the CheckerMain main method is delegated to the CheckerMain class.  This method
      * just determines the relevant parameters to CheckerMain then tells it to invoke the JSR308
      * Type Annotations Compiler
@@ -33,8 +27,10 @@ public class CheckerMain {
      * @throws Exception Any exception thrown by the Checker Framework escape to the command line
      */
     public static void main(String[] args)  {
-        final String pathToThisJar     = findPathJar(CheckerMain.class);
-        final CheckerMain program      = new CheckerMain(pathToThisJar, SEARCH_PATHS, args);
+        final File pathToThisJar     = new File(findPathTo(CheckerMain.class, false));
+        final File parentDir         = pathToThisJar.getParentFile();
+
+        final CheckerMain program      = new CheckerMain(parentDir, args);
         final int exitStatus = program.invokeCompiler();
         System.exit(exitStatus);
     }
@@ -52,12 +48,7 @@ public class CheckerMain {
     /**
      * The paths to the jar containing CheckerMain.class (i.e. checkers.jar)
      */
-    private final File thisJar;
-
-    /**
-     * Parent of thisJar
-     */
-    private final File parentDir;
+    private final File checkersJar;
 
     /**
      * The current major version of the jre in the form 1.X where X is the major version of Java
@@ -65,7 +56,7 @@ public class CheckerMain {
     private final double jreVersion;
 
 
-    private final String bootClasspath;
+    private final List<String> bootClasspath;
 
     private final List<String> jvmOpts;
 
@@ -76,37 +67,42 @@ public class CheckerMain {
     /**
      * Construct all the relevant file locations and java version given the path to this jar and
      * a set of directories in which to search for jars
-     * @param thisJar The path to this jar
-     * @param searchPath Directories in which to search for jars
      */
-    public CheckerMain(final String thisJar, final List<String> searchPath, final String [] args) {
-        this.thisJar     = new File(thisJar);
-        this.parentDir   = this.thisJar.getParentFile();
+    public CheckerMain(final File searchPath, final String [] args) {
+
         this.jreVersion  = getJreVersion();
 
-        final List<File> searchPathFiles = new ArrayList<File>();
-        for(final String file : searchPath) {
-            searchPathFiles.add(new File(parentDir, file));
-        }
-
-        this.javacJar      = findFileInDirectories("javac.jar",      searchPathFiles);
-        this.jdkJar        = findFileInDirectories(findJdkJarName(), searchPathFiles);
-        assertFilesExist( Arrays.asList(javacJar, jdkJar) );
+        this.checkersJar   = new File(searchPath, "checkers.jar");
+        this.javacJar      = new File(searchPath, "javac.jar");
+        this.jdkJar        = new File(searchPath, findJdkJarName());
 
         final List<String> argsList = new ArrayList<String>(Arrays.asList(args));
 
-        final String extractedBcp = PluginUtil.join(File.pathSeparator, extractBootClassPath(argsList));
-        this.bootClasspath = prepFilePath(null, jdkJar, javacJar) +
-                                 ( !extractedBcp.trim().isEmpty()  ?  (File.pathSeparator + extractedBcp) :
-                                                                      ""
-                                 );
-
+        this.bootClasspath = createBootClasspath(argsList);
         this.jvmOpts       = extractJvmOpts(argsList);
 
-        this.cpOpts        = extractCpOpts(argsList);
-        this.cpOpts.add(0, this.thisJar.getAbsolutePath());
-
+        this.cpOpts        = createCpOpts(argsList);
         this.toolOpts      = argsList;
+
+        assertValidState();
+    }
+
+    protected void assertValidState() {
+        assertFilesExist(Arrays.asList(javacJar, jdkJar, checkersJar));
+    }
+
+    protected List<String> createBootClasspath(final List<String> argsList) {
+        final List<String> extractedBcp = extractBootClassPath(argsList);
+        extractedBcp.add(0, javacJar.getAbsolutePath());
+        extractedBcp.add(1, jdkJar.getAbsolutePath());
+
+        return extractedBcp;
+    }
+
+    protected List<String> createCpOpts(final List<String> argsList) {
+        final List<String> extractedOps = extractCpOpts(argsList);
+        extractedOps.add(0, this.checkersJar.getAbsolutePath());
+        return extractedOps;
     }
 
     /**
@@ -116,7 +112,7 @@ public class CheckerMain {
      * @return previous with the conjoined file path appended to it or just the conjoined file path if previous is null
      */
 
-    public String prepFilePath(final String previous, File... files) {
+    protected static String prepFilePath(final String previous, File... files) {
         if(files == null || files.length == 0) {
             throw new RuntimeException("Prepending empty or null array to file path! files == " + (files == null ? " null" : " Empty"));
         } else {
@@ -132,7 +128,6 @@ public class CheckerMain {
             }
         }
     }
-
 
     /**
      * Find all args that match the given pattern and extract their index 1 group.  Add all the index 1 groups to the
@@ -221,7 +216,11 @@ public class CheckerMain {
         //The logic below is exactly what the javac script does
         //If it's empty use the current directory AND the "CLASSPATH" environment variable
         if( path == null ) {
-            actualArgs.add(System.getenv("CLASSPATH"));
+            final String systemClassPath = System.getenv("CLASSPATH");
+            if(systemClassPath != null && !systemClassPath.trim().isEmpty()) {
+                actualArgs.add(System.getenv("CLASSPATH"));
+            }
+
             actualArgs.add(".");
         } else {
             //Every classpath entry overrides the one before it and CLASSPATH
@@ -234,13 +233,13 @@ public class CheckerMain {
     /**
      * Invoke the JSR308 Type Annotations Compiler with all relevant jars on it's classpath or boot classpath
      */
-    private int invokeCompiler() {
+    protected int invokeCompiler() {
         List<String> args = new ArrayList<String>(jvmOpts.size() + cpOpts.size() + toolOpts.size() + 5);
 
         final String java = PluginUtil.getJavaCommand(System.getProperty("java.home"), System.out);
         args.add(java);
 
-        args.add("-Xbootclasspath/p:" + bootClasspath );
+        args.add("-Xbootclasspath/p:" + PluginUtil.join(File.pathSeparator, bootClasspath));
         args.add("-ea:com.sun.tools...");
 
         args.addAll(jvmOpts);
@@ -335,37 +334,11 @@ public class CheckerMain {
     }
 
     /**
-     * Find a file by searching each of directories in order
-     * Note: if the file does not exist in any of the directories a file object using the last directory as parent
-     * is returned but calling .exists() on it will return false
-     *
-     * @param fileName The name of the file to find
-     * @param directories The set of directories to check
-     * @return The first file with the given name found in the first directory that contains the file with fileName or
-     * a non-existant file with the given name in the last directory (this is so we can at least get the name back
-     * from the file without having to hold onto a reference of filename)
+     * Find the jar file or directory containing the .class file from which context was loaded
+     * @param context The class whose .class file we wish to locate
+     * @param directory Whether to throw an exception if the file was loaded from a directory
      */
-    private static File findFileInDirectories(final String fileName, final List<File> directories) {
-        assert( directories != null    );
-        assert( !directories.isEmpty() );
-        assert( fileName    != null    );
-
-        File file = null;
-        for(final File dirName : directories) {
-            file = new File(dirName, fileName);
-            if(file.exists()) {
-                break;
-            }
-        }
-
-        return file;
-    }
-
-    /**
-     * Find the jar file containing the annotated JDK (i.e. jar containing
-     * this file
-     */
-    public static String findPathJar(Class<?> context) throws IllegalStateException {
+    public static String findPathTo(Class<?> context, boolean directory) throws IllegalStateException {
         if (context == null) context = CheckerMain.class;
         String rawName = context.getName();
         String classFileName;
@@ -375,7 +348,13 @@ public class CheckerMain {
         }
 
         String uri = context.getResource(classFileName).toString();
-        if (uri.startsWith("file:")) throw new IllegalStateException("This class has been loaded from a directory and not from a jar file.");
+        if (uri.startsWith("file:")) {
+            if(directory) {
+                return uri;
+            } else {
+                throw new IllegalStateException("This class has been loaded from a directory and not from a jar file.");
+            }
+        }
         if (!uri.startsWith("jar:file:")) {
             int idx = uri.indexOf(':');
             String protocol = idx == -1 ? "(unknown)" : uri.substring(0, idx);
