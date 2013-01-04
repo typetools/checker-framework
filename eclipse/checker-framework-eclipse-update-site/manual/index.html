@@ -30,12 +30,12 @@
     </div>
 </div>
 
-<div class="page-header">
+<div class="page-header short" style="border-bottom: 1px solid #EEE; border-top: none;">
     <h1>Checker Framework Eclipse Plugin: <small>Pluggable type-checking for Java</small></h1>
 </div>
 
 <section id="introduction">
-    <div class="page-header short">
+    <div class="page-header short" style="border-top: none;">
         <h2>Introduction</h2>
     </div>
 
@@ -76,7 +76,7 @@
                         <tr><td><strong>Name:</strong>     </td><td>Checker Framework</td></tr>
                         <tr><td><strong>Location:</strong> </td><td>http://types.cs.washington.edu/checker-framework/eclipse</td></tr>
                     </table>
-                    Click <bold>Ok</bold>.
+                    Click <bold>OK</bold>.
                 </li>
                 <li>Appearing under name should be "Pluggable Type Checking", check the box next to it.</li>
                 <li>Click Next.</li>
@@ -90,11 +90,15 @@
 
         <div class="alert alert-info">
         <strong>Note:</strong> You may want to add <strong>
-            <a href="http://types.cs.washington.edu/checker-framework/checker-plugin/update-site/lib/checker-quals.jar">
-                checker-quals.jar
-            </a></strong> to your classpath.  It provide the annotations used by the
+            <a href="http://types.cs.washington.edu/checker-framework/checker-plugin/update-site/lib/checkers-quals.jar">
+                checkers-quals.jar
+            </a></strong> to your classpath for each Eclipse project you wish to check.
+            It provides the annotations used by the
             <a href="http://types.cs.washington.edu/checker-framework/">Checker Framework</a> for
-            its built-in type-checkers.
+            its built-in type-checkers.  <br/> To add the checkers-quals.jar to your Eclipse project, download the
+            jar from the above link.  Then right click the project you wish to check and select
+            Properties -> Java Build Path -> Libraries -> Add External Jars.  Select checkers-quals.jar from
+            the directory in which it's saved.
         </div>
     </div>
 </section>
@@ -162,9 +166,9 @@
                             checker without the package name
                             (e.g., NullnessChecker, NOT checkers.nullness.NullnessChecker)</li>
                         <li>One or more classes should appear in a list below the text-field.  Select your checker.</li>
-                        <li>Press "Ok".</li>
+                        <li>Press "OK".</li>
                         <li>The dialog will close and your custom checker should now appear in the "Checkers" table.
-                            Press "Ok" again.</li>
+                            Press "OK" again.</li>
                     </ol>
                 </div>
                 <div class="span4">
@@ -192,7 +196,7 @@
                         <li>In the "Checkers" section there will be a table of built-in checkers.  Place a 
                             check-mark next to each of the checkers (built-in or custom) you would like to run.
                         </li>
-                        <li>Press "Ok".</li>
+                        <li>Press "OK".</li>
                         <li>Right-click on the project, package, or file you would like to check.</li>
                         <li>Open the "Checker Framework" sub-menu and select "Run Selected Checkers"</li>
                     </ol>
@@ -223,17 +227,17 @@
                 </p>
                 <p>
                     <strong>Filtering error messages</strong><br/>
-                    You can provide a a regular expression to filter out a specific set of Checker Framework error messages
-                    from appearing in the problems view.
+                    You can provide a regular expression under "Regex for warning/error filter" to filter error messages.
+                    Any error messages that match the given regular expression will not be output in the problem view
+                    and will not show any error markers.
                 </p>
                 <p>
                     <strong>Using a specific version of Java</strong><br/>
-                    The Eclipse plugin will fork the running Eclipse instance in order to run the
-                    Checker Framework
-                    compiler.  You may select which version of Java will run the
-                    Checker Framework via the
-                    text-field labeled "Java Home Directory" or press the "Browse" button to select Java home via
-                    a dialog.
+                    The Eclipse plugin will start a new Java process in order to run the
+                    Checker Framework compiler.  You may select which version of Java will run the
+                    Checker Framework via the text-field labeled "Java Home Directory" or press the
+                    "Browse" button to select Java home via a dialog.  Otherwise, the version used
+                    to run Eclipse will also be used to run the Checker Framework compiler.
                 </p>
             </div>
             <div class="span5">
@@ -249,7 +253,8 @@
             Checker Framework
             on a project for which other developers are not, you may be specifically interested in its 
             <a href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#warnings-and-legacy">backward compatibility features</a>, such as annotations in comments and 
-            implicit import statements.
+            implicit import statement.  If you check the box next to the text "Use implicit imports for annotation classes"
+            then, for built-in checkers, all of the appropriate annotations will be imported implicitly.
         </p>
         <p>
             <strong>Additional compiler parameters</strong><br/>
@@ -257,7 +262,8 @@
             labeled "Additional compiler parameters".
         </p>
         <div class="alert alert-error"><strong>Warning!</strong> The text found in the "Additional compiler parameters"
-            text-field will be added whole to the invocation of the compiler.  Please make sure any options added here
+            text-field will first be split on white space and then added (without further manipulation) to
+            the command line that runs the Checker Framework compiler.  Please make sure any options added here
             are well-formed <strong>javac options</strong> or
             <a href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#checker-options">Checker Framework
             options</a>.  If they are malformed you can check the "Errors" window for any error messages or

@@ -9,7 +9,14 @@ div.section {
 }
 
 div.short {
+    border-top: 1px solid #EEE;
+    border-bottom: none;
     margin-bottom: 10px;
+}
+
+div.page_header {
+    border-bottom: none;
+    border-top: 1px solid #EEE;
 }
 
 div.top_liner {
