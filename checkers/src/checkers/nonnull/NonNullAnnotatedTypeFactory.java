@@ -25,6 +25,7 @@ import checkers.initialization.InitializationStore;
 import checkers.nonnull.quals.MonotonicNonNull;
 import checkers.nonnull.quals.NonNull;
 import checkers.nonnull.quals.Nullable;
+import checkers.nonnull.quals.PolyNull;
 import checkers.quals.Unused;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -53,7 +54,7 @@ public class NonNullAnnotatedTypeFactory
         InitializationAnnotatedTypeFactory<AbstractNonNullChecker, NonNullTransfer, NonNullAnalysis> {
 
     /** Annotation constants */
-    protected final AnnotationMirror NONNULL, NULLABLE;
+    protected final AnnotationMirror NONNULL, NULLABLE, POLYNULL;
 
     /** Dependent types instance. */
     protected final DependentTypes dependentTypes;
@@ -74,10 +75,12 @@ public class NonNullAnnotatedTypeFactory
 
         NONNULL = AnnotationUtils.fromClass(elements, NonNull.class);
         NULLABLE = AnnotationUtils.fromClass(elements, Nullable.class);
+        POLYNULL = AnnotationUtils.fromClass(elements, PolyNull.class);
 
         // aliases with checkers.nullness.quals qualifiers
         addAliasedAnnotation(checkers.nullness.quals.NonNull.class, NONNULL);
         addAliasedAnnotation(checkers.nullness.quals.Nullable.class, NULLABLE);
+        addAliasedAnnotation(checkers.nullness.quals.PolyNull.class, POLYNULL);
 
         addAliasedAnnotation(checkers.nullness.quals.LazyNonNull.class,
                 AnnotationUtils.fromClass(elements, MonotonicNonNull.class));
