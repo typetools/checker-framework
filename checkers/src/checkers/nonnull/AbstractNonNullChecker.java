@@ -5,16 +5,18 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+import javacutils.AnnotationUtils;
+
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Elements;
-
-import javacutils.AnnotationUtils;
 
 import checkers.basetype.BaseTypeVisitor;
 import checkers.initialization.InitializationChecker;
 import checkers.nonnull.quals.MonotonicNonNull;
 import checkers.nonnull.quals.NonNull;
 import checkers.nonnull.quals.Nullable;
+import checkers.nonnull.quals.PolyNull;
+import checkers.quals.PolyAll;
 import checkers.source.SuppressWarningsKeys;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.QualifierHierarchy;
@@ -75,6 +77,9 @@ public abstract class AbstractNonNullChecker extends InitializationChecker {
         result.add(NONNULL);
         result.add(MONOTONICNONNULL);
         result.add(NULLABLE);
+        Elements elements = processingEnv.getElementUtils();
+        result.add(AnnotationUtils.fromClass(elements, PolyNull.class));
+        result.add(AnnotationUtils.fromClass(elements, PolyAll.class));
         return result;
     }
 
@@ -85,6 +90,8 @@ public abstract class AbstractNonNullChecker extends InitializationChecker {
         l.add(NonNull.class);
         l.add(Nullable.class);
         l.add(MonotonicNonNull.class);
+        l.add(PolyNull.class);
+        l.add(PolyAll.class);
         return l;
     }
 
@@ -100,6 +107,8 @@ public abstract class AbstractNonNullChecker extends InitializationChecker {
         supportedTypeQualifiers.add(NonNull.class);
         supportedTypeQualifiers.add(Nullable.class);
         supportedTypeQualifiers.add(MonotonicNonNull.class);
+        supportedTypeQualifiers.add(PolyNull.class);
+        supportedTypeQualifiers.add(PolyAll.class);
         return createQualifierHierarchy(processingEnv.getElementUtils(), supportedTypeQualifiers, factory);
     }
 }
