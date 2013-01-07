@@ -1,0 +1,15 @@
+This directory, "binary/", houses all jars built for binary distribution.To build these jars run "ant clean bindist" from the "checkers" directory.  Afterward, the directory will contain all jars/scripts needed to run the Checker Framework.  
+
+checkers-quals.jar - Contains the annotations used by the checkers built into the Checker Framework
+
+checkers.jar - Contains all the Checker Framework classes including the framework itself, all built-in checkers, and the annotations found in checkers-quals.jar.
+
+javac.jar - Contains the Type Annotations Compiler (see http://types.cs.washington.edu/checker-framework/current/README-jsr308.html)
+
+jdk<x>.jar - Each jdk<x>.jar, where <x> is a major java version (e.g. 6 or 7), contains a version of the OpenJdk annotated with Checker Framework annotations.  Which jdk<x>.jar version is built depends on what version of java is found in the "JAVA_HOME" environment variable.  You can also build all versions of the jdk<x>.jar by running the ant target "ant all.jdks.jar".
+
+javac - Is a shell script that runs the Checker Framework in *nix systems including Mac OS X.  Its invocation is equivalent to "java -jar checkers.jar <compiler arguments>".  This script is a drop-in replacement for the script javac provided by the OpenJdk.
+
+poms - The poms directory contains Maven pom files for each of the jars that is found in this directory.  These poms are used to deploy each jar as a Maven artifact to the http://types.cs.washington.edu/m2-repo/ maven repository. 
+
+ 
