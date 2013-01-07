@@ -111,7 +111,7 @@ but I think only 5 people can connect to it at a time.
 
 Action item:  The instructions need to be clearer and more to the point;
 attendees want clear step-by-step instructions about what to do, without
-irrelevant text More complete instructions will enable people to follow the
+irrelevant text.  More complete instructions will enable people to follow the
 tutorial by themselves; I think the information in it is great and we can
 make good use of it in this way.  The distribution for the tutorial should
 be a single zip file that contains everything attendees need (including the
@@ -143,7 +143,7 @@ developers.
 
 Action item:  Mention the mailing list and encourage people to sign up.
 Somewhere on our webpages, list some specific to-do items that we need help
-with, such as Eclipse and Maven integration.
+with,
 
 Overall, the tutorial definitely made us some good contacts and some converts,
 and it raised the profile.  We should build on those successes to make it
@@ -186,8 +186,26 @@ get stuck, frustrated, and give up.
 The personalblog-demo.zip file that is referenced from the index.html file
 can be found at
 http://types.cs.washington.edu/checker-framework/2012-oscon/personalblog-demo.zip
-but we need a command that creates it from the proper sources.  We also
-need a command that re-deploys the tutorial -- maybe we will run this
-whenever we make a Checker Framework release.
+but we need a command that creates it from the proper sources.
+Werner says:
+  I think I built that zip file for OSBridge 2011 by taking the sources from
+  demos/nonnull-interned-demo/personalblog-demo
+  and re-arranging them in a more meaningful way.
+  As this was a one-off thing, I didn't add this to any build script.
+We should have an automated command for this, of course.
+
+We also need a command that re-deploys the tutorial to the web -- maybe we
+will run this whenever we make a Checker Framework release.  This would
+include making a single zip file that contains everything needed, including
+the Checker Framework manual, the tutorial instructions, etc.
+
+During the tutorial, people complained about having to do things on the
+command line.  The tutoral should use our Ant, Eclipse, and Maven
+integration, so it will also serve as a tutorial on those tools.  We might
+or might not want to also retain the command-line instructions, for people
+who don't use these tools.  The tutorial was written at a time that our
+tools did not support Ant, Eclipse, and Maven well, but now that has
+changed and we should check that the tutorial and other tasks work well
+with them.
 
 ===========================================================================
