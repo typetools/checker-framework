@@ -7,7 +7,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javacutils.AnnotationUtils;
-import javacutils.ErrorReporter;
 import javacutils.TypesUtils;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -479,9 +478,7 @@ public abstract class InitializationChecker extends BaseTypeChecker {
 
         @Override
         public AnnotationMirror getPolymorphicAnnotation(AnnotationMirror start) {
-            ErrorReporter
-                    .errorAbort("InitializationQualifierHierarchy: no polymorphic annotation available");
-            return null;
+            return childHierarchy.getPolymorphicAnnotation(start);
         }
 
     }
