@@ -5,11 +5,12 @@ import checkers.initialization.quals.Raw;
 import checkers.nonnull.quals.MonotonicNonNull;
 import checkers.nonnull.quals.NonNull;
 import checkers.nonnull.quals.Nullable;
+import checkers.nonnull.quals.PolyNull;
 import checkers.quals.TypeQualifiers;
 import checkers.source.SupportedLintOptions;
 
 @TypeQualifiers({ Nullable.class, MonotonicNonNull.class, NonNull.class,
-    NonRaw.class, Raw.class })
+    NonRaw.class, Raw.class, PolyNull.class })
 @SupportedLintOptions({ "strictMonotonicNonNullInit",
  // Temporary option to forbid non-null array component types,
  // which is allowed by default.
