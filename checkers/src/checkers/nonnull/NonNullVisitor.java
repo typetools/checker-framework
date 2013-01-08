@@ -17,7 +17,9 @@ import javax.lang.model.type.TypeMirror;
 import checkers.compilermsgs.quals.CompilerMessageKey;
 import checkers.initialization.InitializationVisitor;
 import checkers.nonnull.quals.NonNull;
+import checkers.nonnull.quals.Nullable;
 import checkers.nonnull.quals.PolyNull;
+import checkers.quals.PolyAll;
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -119,7 +121,7 @@ public class NonNullVisitor
      */
     protected AnnotatedTypeMirror handlePolyNull(AnnotatedTypeMirror type,
             Tree context) {
-        if (type.hasAnnotation(PolyNull.class)) {
+        if (type.hasAnnotation(PolyNull.class) || type.hasAnnotation(PolyAll.class)) {
             NonNullValue inferred = factory.getInferredValueFor(context);
             if (inferred != null && inferred.isPolyNullNull) {
                 type.replaceAnnotation(NULLABLE);
