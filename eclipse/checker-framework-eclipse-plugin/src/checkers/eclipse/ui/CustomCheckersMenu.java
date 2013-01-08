@@ -3,17 +3,13 @@ package checkers.eclipse.ui;
 import java.util.HashMap;
 import java.util.Map;
 
+import checkers.eclipse.actions.CheckerInfo;
 import org.eclipse.core.commands.Command;
-import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.commands.NotEnabledException;
-import org.eclipse.core.commands.NotHandledException;
 import org.eclipse.core.commands.ParameterizedCommand;
-import org.eclipse.core.commands.common.NotDefinedException;
 import org.eclipse.jface.action.ContributionItem;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.ui.PlatformUI;
@@ -21,7 +17,6 @@ import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.handlers.IHandlerService;
 
 import checkers.eclipse.CheckerPlugin;
-import checkers.eclipse.actions.CheckerActions;
 import checkers.eclipse.prefs.CheckerPreferences;
  
 public class CustomCheckersMenu extends ContributionItem {
@@ -67,9 +62,10 @@ public class CustomCheckersMenu extends ContributionItem {
 			Menu checkersMenu = new Menu(menuItem);
 			final String [] customCheckers = customClasses.split(",");
 			for(int i = 0; i < customCheckers.length; i++) {
-				final String text = customCheckers[i];
-				MenuItem runCustomChecker = new MenuItem(checkersMenu, SWT.CHECK, i);
-				runCustomChecker.setText(customCheckers[i]);
+				//final String text = customCheckers[i];
+                final CheckerInfo checkerInfo = CheckerInfo.fromClassPath(customCheckers[i], null);
+                MenuItem runCustomChecker = new MenuItem(checkersMenu, SWT.CHECK, i);
+				runCustomChecker.setText(checkerInfo.getLabel());
 				runCustomChecker.addSelectionListener(new SelectionAdapter() {
 					public void widgetSelected(SelectionEvent e) {
 						final IHandlerService handlerService = (IHandlerService) PlatformUI 
@@ -79,7 +75,7 @@ public class CustomCheckersMenu extends ContributionItem {
                         	Command command = service.getCommand("checkers.eclipse.singlecustom");
                         	
                         	final Map<String, Object> params = new HashMap<String, Object>();
-                        	params.put("checker-framework-eclipse-plugin.checker", text);
+                        	params.put("checker-framework-eclipse-plugin.checker", checkerInfo.getClassPath());
                         	final ParameterizedCommand pCmd = ParameterizedCommand.generateCommand(command, params);
                         	
                         	handlerService.executeCommand(pCmd, null);
