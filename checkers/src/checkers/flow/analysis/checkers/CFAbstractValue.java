@@ -254,7 +254,12 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
                 .getUnderlyingType());
         if (underlyingType.getKind() == TypeKind.ERROR
                 || underlyingType.getKind() == TypeKind.NONE) {
-            return backup;
+            // pick one of the option
+            if (backup != null) {
+                underlyingType = backup.getType().getUnderlyingType();
+            } else {
+                underlyingType = this.getType().getUnderlyingType();
+            }
         }
         AnnotatedTypeMirror result = AnnotatedTypeMirror.createType(
                 underlyingType, analysis.getFactory());
