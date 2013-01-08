@@ -6,7 +6,10 @@
     <name>Checkers plugin</name>
     <groupId>types.checkers</groupId>
     <artifactId>checkers-maven-plugin</artifactId>
-    <version>1.4.4</version>
+
+    <!-- Note: It's important that this is the first <version/> element to appear in this document (by line)
+         Because there is a simple logic in the release script to replace the version number of pom files -->
+    <version>1.5.0</version>
 
     <build>
         <plugins>
