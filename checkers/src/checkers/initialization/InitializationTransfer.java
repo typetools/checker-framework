@@ -62,13 +62,12 @@ import com.sun.source.tree.MethodInvocationTree;
  * @param <T>
  *            The type of the transfer function.
  */
-public class InitializationTransfer<T extends InitializationTransfer<T>>
-        extends CFAbstractTransfer<CFValue, InitializationStore, T> {
+public class InitializationTransfer<T extends InitializationTransfer<T, S>, S extends InitializationStore<S>>
+        extends CFAbstractTransfer<CFValue, S, T> {
 
     protected final InitializationChecker checker;
 
-    public InitializationTransfer(
-            CFAbstractAnalysis<CFValue, InitializationStore, T> analysis) {
+    public InitializationTransfer(CFAbstractAnalysis<CFValue, S, T> analysis) {
         super(analysis);
         this.checker = (InitializationChecker) analysis.getFactory()
                 .getChecker();
@@ -80,7 +79,7 @@ public class InitializationTransfer<T extends InitializationTransfer<T>>
      */
     protected Set<Element> initializedFieldsAfterCall(
             MethodInvocationNode node,
-            ConditionalTransferResult<CFValue, InitializationStore> transferResult) {
+            ConditionalTransferResult<CFValue, S> transferResult) {
         Set<Element> result = new HashSet<>();
         MethodInvocationTree tree = node.getTree();
         ExecutableElement method = TreeUtils.elementFromUse(tree);
@@ -136,10 +135,9 @@ public class InitializationTransfer<T extends InitializationTransfer<T>>
     }
 
     @Override
-    public TransferResult<CFValue, InitializationStore> visitAssignment(
-            AssignmentNode n, TransferInput<CFValue, InitializationStore> in) {
-        TransferResult<CFValue, InitializationStore> result = super
-                .visitAssignment(n, in);
+    public TransferResult<CFValue, S> visitAssignment(AssignmentNode n,
+            TransferInput<CFValue, S> in) {
+        TransferResult<CFValue, S> result = super.visitAssignment(n, in);
         assert result instanceof RegularTransferResult;
         Receiver expr = FlowExpressions.internalReprOf(analysis.getFactory(),
                 n.getTarget());
@@ -161,12 +159,11 @@ public class InitializationTransfer<T extends InitializationTransfer<T>>
      * the 'this' receiver are tracked for initialization.
      */
     @Override
-    public TransferResult<CFValue, InitializationStore> visitFieldAccess(
-            FieldAccessNode n, TransferInput<CFValue, InitializationStore> p) {
-        TransferResult<CFValue, InitializationStore> result = super
-                .visitFieldAccess(n, p);
+    public TransferResult<CFValue, S> visitFieldAccess(FieldAccessNode n,
+            TransferInput<CFValue, S> p) {
+        TransferResult<CFValue, S> result = super.visitFieldAccess(n, p);
         assert !result.containsTwoStores();
-        InitializationStore store = result.getRegularStore();
+        S store = result.getRegularStore();
         if (store.isFieldInitialized(n.getElement())
                 && n.getReceiver() instanceof ThisLiteralNode) {
             AnnotatedTypeMirror fieldAnno = analysis.getFactory()
@@ -187,15 +184,12 @@ public class InitializationTransfer<T extends InitializationTransfer<T>>
     }
 
     @Override
-    public TransferResult<CFValue, InitializationStore> visitMethodInvocation(
-            MethodInvocationNode n,
-            TransferInput<CFValue, InitializationStore> in) {
-        TransferResult<CFValue, InitializationStore> result = super
-                .visitMethodInvocation(n, in);
+    public TransferResult<CFValue, S> visitMethodInvocation(
+            MethodInvocationNode n, TransferInput<CFValue, S> in) {
+        TransferResult<CFValue, S> result = super.visitMethodInvocation(n, in);
         assert result instanceof ConditionalTransferResult;
-        Set<Element> newlyInitializedFields = initializedFieldsAfterCall(
-                n,
-                (ConditionalTransferResult<CFValue, InitializationStore>) result);
+        Set<Element> newlyInitializedFields = initializedFieldsAfterCall(n,
+                (ConditionalTransferResult<CFValue, S>) result);
         if (newlyInitializedFields.size() > 0) {
             for (Element f : newlyInitializedFields) {
                 result.getThenStore().addInitializedField(f);

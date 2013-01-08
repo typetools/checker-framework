@@ -55,7 +55,7 @@ import com.sun.source.tree.WhileLoopTree;
 // TODO/later: documentation
 // Note: this code is originally based on NullnessVisitor
 public class NonNullVisitor extends
-        InitializationVisitor<AbstractNonNullChecker> {
+        InitializationVisitor<AbstractNonNullChecker, NonNullStore> {
 
     // Error message keys
     private static final /*@CompilerMessageKey*/ String ASSIGNMENT_TYPE_INCOMPATIBLE = "assignment.type.incompatible";

@@ -2,11 +2,21 @@ package checkers.nonnull;
 
 import java.util.List;
 
+import javacutils.AnnotationUtils;
+import javacutils.TreeUtils;
+
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 
-import javacutils.AnnotationUtils;
-import javacutils.TreeUtils;
+import checkers.flow.analysis.checkers.CFAbstractStore;
+import checkers.flow.analysis.checkers.CFValue;
+import checkers.initialization.InitializationTransfer;
+import checkers.nonnull.quals.NonNull;
+import checkers.types.AnnotatedTypeMirror;
+import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
+
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodInvocationTree;
 
 import dataflow.analysis.ConditionalTransferResult;
 import dataflow.analysis.FlowExpressions;
@@ -22,17 +32,6 @@ import dataflow.cfg.node.NullLiteralNode;
 import dataflow.cfg.node.ThrowNode;
 import dataflow.cfg.node.UnboxingNode;
 
-import checkers.flow.analysis.checkers.CFAbstractStore;
-import checkers.flow.analysis.checkers.CFValue;
-import checkers.initialization.InitializationStore;
-import checkers.initialization.InitializationTransfer;
-import checkers.nonnull.quals.NonNull;
-import checkers.types.AnnotatedTypeMirror;
-import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
-
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MethodInvocationTree;
-
 /**
  * Transfer function for the non-null type system. Performs the following
  * refinements:
@@ -47,7 +46,8 @@ import com.sun.source.tree.MethodInvocationTree;
  *
  * @author Stefan Heule
  */
-public class NonNullTransfer extends InitializationTransfer<NonNullTransfer> {
+public class NonNullTransfer extends
+        InitializationTransfer<NonNullTransfer, NonNullStore> {
 
     /** Type-specific version of super.analysis. */
     protected final NonNullAnalysis analysis;
@@ -66,7 +66,7 @@ public class NonNullTransfer extends InitializationTransfer<NonNullTransfer> {
      * Sets a given {@link Node} to non-null in the given {@code store}. Calls
      * to this method implement case 2.
      */
-    protected void makeNonNull(InitializationStore store, Node node) {
+    protected void makeNonNull(NonNullStore store, Node node) {
         Receiver internalRepr = FlowExpressions.internalReprOf(
                 analysis.getFactory(), node);
         store.insertValue(internalRepr, NONNULL);
@@ -76,8 +76,8 @@ public class NonNullTransfer extends InitializationTransfer<NonNullTransfer> {
      * Sets a given {@link Node} {@code node} to non-null in the given
      * {@link TransferResult}.
      */
-    protected void makeNonNull(
-            TransferResult<CFValue, InitializationStore> result, Node node) {
+    protected void makeNonNull(TransferResult<CFValue, NonNullStore> result,
+            Node node) {
         if (result.containsTwoStores()) {
             makeNonNull(result.getThenStore(), node);
             makeNonNull(result.getElseStore(), node);
@@ -95,8 +95,8 @@ public class NonNullTransfer extends InitializationTransfer<NonNullTransfer> {
      * literal (listed as case 1 in the class description).
      */
     @Override
-    protected TransferResult<CFValue, InitializationStore> strengthenAnnotationOfEqualTo(
-            TransferResult<CFValue, InitializationStore> res, Node firstNode,
+    protected TransferResult<CFValue, NonNullStore> strengthenAnnotationOfEqualTo(
+            TransferResult<CFValue, NonNullStore> res, Node firstNode,
             Node secondNode, CFValue firstValue, CFValue secondValue,
             boolean notEqualTo) {
         res = super.strengthenAnnotationOfEqualTo(res, firstNode, secondNode,
@@ -108,8 +108,8 @@ public class NonNullTransfer extends InitializationTransfer<NonNullTransfer> {
                 Receiver secondInternal = FlowExpressions.internalReprOf(
                         analysis.getFactory(), secondPart);
                 if (CFAbstractStore.canInsertReceiver(secondInternal)) {
-                    InitializationStore thenStore = res.getThenStore();
-                    InitializationStore elseStore = res.getElseStore();
+                    NonNullStore thenStore = res.getThenStore();
+                    NonNullStore elseStore = res.getElseStore();
                     if (notEqualTo) {
                         thenStore.insertValue(secondInternal, NONNULL);
                     } else {
@@ -124,46 +124,44 @@ public class NonNullTransfer extends InitializationTransfer<NonNullTransfer> {
     }
 
     @Override
-    public TransferResult<CFValue, InitializationStore> visitArrayAccess(
-            ArrayAccessNode n, TransferInput<CFValue, InitializationStore> p) {
-        TransferResult<CFValue, InitializationStore> result = super
-                .visitArrayAccess(n, p);
+    public TransferResult<CFValue, NonNullStore> visitArrayAccess(
+            ArrayAccessNode n, TransferInput<CFValue, NonNullStore> p) {
+        TransferResult<CFValue, NonNullStore> result = super.visitArrayAccess(
+                n, p);
         makeNonNull(result, n.getArray());
         return result;
     }
 
     @Override
-    public TransferResult<CFValue, InitializationStore> visitMethodAccess(
-            MethodAccessNode n, TransferInput<CFValue, InitializationStore> p) {
-        TransferResult<CFValue, InitializationStore> result = super
-                .visitMethodAccess(n, p);
-        makeNonNull(result, n.getReceiver());
-        return result;
-    }
-
-    @Override
-    public TransferResult<CFValue, InitializationStore> visitFieldAccess(
-            FieldAccessNode n, TransferInput<CFValue, InitializationStore> p) {
-        TransferResult<CFValue, InitializationStore> result = super
-                .visitFieldAccess(n, p);
-        makeNonNull(result, n.getReceiver());
-        return result;
-    }
-
-    @Override
-    public TransferResult<CFValue, InitializationStore> visitThrow(ThrowNode n,
-            TransferInput<CFValue, InitializationStore> p) {
-        TransferResult<CFValue, InitializationStore> result = super.visitThrow(
+    public TransferResult<CFValue, NonNullStore> visitMethodAccess(
+            MethodAccessNode n, TransferInput<CFValue, NonNullStore> p) {
+        TransferResult<CFValue, NonNullStore> result = super.visitMethodAccess(
                 n, p);
+        makeNonNull(result, n.getReceiver());
+        return result;
+    }
+
+    @Override
+    public TransferResult<CFValue, NonNullStore> visitFieldAccess(
+            FieldAccessNode n, TransferInput<CFValue, NonNullStore> p) {
+        TransferResult<CFValue, NonNullStore> result = super.visitFieldAccess(
+                n, p);
+        makeNonNull(result, n.getReceiver());
+        return result;
+    }
+
+    @Override
+    public TransferResult<CFValue, NonNullStore> visitThrow(ThrowNode n,
+            TransferInput<CFValue, NonNullStore> p) {
+        TransferResult<CFValue, NonNullStore> result = super.visitThrow(n, p);
         makeNonNull(result, n.getExpression());
         return result;
     }
 
     @Override
-    public TransferResult<CFValue, InitializationStore> visitMethodInvocation(
-            MethodInvocationNode n,
-            TransferInput<CFValue, InitializationStore> in) {
-        TransferResult<CFValue, InitializationStore> result = super
+    public TransferResult<CFValue, NonNullStore> visitMethodInvocation(
+            MethodInvocationNode n, TransferInput<CFValue, NonNullStore> in) {
+        TransferResult<CFValue, NonNullStore> result = super
                 .visitMethodInvocation(n, in);
 
         // Make receiver non-null.
@@ -186,9 +184,9 @@ public class NonNullTransfer extends InitializationTransfer<NonNullTransfer> {
     }
 
     @Override
-    public TransferResult<CFValue, InitializationStore> visitUnboxing(
-            UnboxingNode n, TransferInput<CFValue, InitializationStore> p) {
-        TransferResult<CFValue, InitializationStore> result = super
+    public TransferResult<CFValue, NonNullStore> visitUnboxing(UnboxingNode n,
+            TransferInput<CFValue, NonNullStore> p) {
+        TransferResult<CFValue, NonNullStore> result = super
                 .visitUnboxing(n, p);
         makeNonNull(result, n);
         return result;

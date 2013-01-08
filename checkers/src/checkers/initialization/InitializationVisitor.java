@@ -40,7 +40,7 @@ import dataflow.analysis.FlowExpressions.Receiver;
 import dataflow.analysis.FlowExpressions.ThisReference;
 
 // TODO/later: documentation
-public class InitializationVisitor<Checker extends InitializationChecker>
+public class InitializationVisitor<Checker extends InitializationChecker, Store extends InitializationStore<Store>>
         extends BaseTypeVisitor<Checker> {
 
     // Error message keys
@@ -52,7 +52,8 @@ public class InitializationVisitor<Checker extends InitializationChecker>
     private static final String COMMITMENT_INVALID_FIELD_WRITE_COMMITTED = "commitment.invalid.field.write.committed";
 
     /** A better typed version of the ATF. */
-    protected final InitializationAnnotatedTypeFactory<?, ?, ?> factory = (InitializationAnnotatedTypeFactory<?, ?, ?>) atypeFactory;
+    @SuppressWarnings("unchecked")
+    protected final InitializationAnnotatedTypeFactory<?, Store, ?, ?> factory = (InitializationAnnotatedTypeFactory<?, Store, ?, ?>) atypeFactory;
 
     public InitializationVisitor(Checker checker, CompilationUnitTree root) {
         super(checker, root);
@@ -153,7 +154,8 @@ public class InitializationVisitor<Checker extends InitializationChecker>
                 FieldAccess fa = (FieldAccess) expr;
                 if (fa.getReceiver() instanceof ThisReference
                         || fa.getReceiver() instanceof ClassName) {
-                    InitializationStore s = (InitializationStore) store;
+                    @SuppressWarnings("unchecked")
+                    Store s = (Store) store;
                     if (s.isFieldInitialized(fa.getField())) {
                         AnnotatedTypeMirror fieldType = atypeFactory
                                 .getAnnotatedType(fa.getField());
@@ -221,7 +223,7 @@ public class InitializationVisitor<Checker extends InitializationChecker>
         if (enclosingClass.getMembers().contains(node)) {
             if (node.isStatic()) {
                 boolean isStatic = true;
-                InitializationStore store = factory.getRegularExitStore(node);
+                Store store = factory.getRegularExitStore(node);
                 // Add field values for fields with an initializer.
                 for (Pair<VariableElement, CFValue> t : store.getAnalysis()
                         .getFieldValues()) {
@@ -260,7 +262,7 @@ public class InitializationVisitor<Checker extends InitializationChecker>
         // initializer (otherwise, errors are reported there).
         if (!hasStaticInitializer && node.getKind() == Kind.CLASS) {
             boolean isStatic = true;
-            InitializationStore store = factory.getEmptyStore();
+            Store store = factory.getEmptyStore();
             // Add field values for fields with an initializer.
             for (Pair<VariableElement, CFValue> t : store.getAnalysis()
                     .getFieldValues()) {
@@ -294,7 +296,7 @@ public class InitializationVisitor<Checker extends InitializationChecker>
             // Check that all fields have been initialized at the end of the
             // constructor.
             boolean isStatic = false;
-            InitializationStore store = factory.getRegularExitStore(node);
+            Store store = factory.getRegularExitStore(node);
             List<? extends AnnotationMirror> receiverAnnotations = getAllReceiverAnnotations(node);
             checkFieldsInitialized(node, isStatic, store, receiverAnnotations);
         }
@@ -339,7 +341,7 @@ public class InitializationVisitor<Checker extends InitializationChecker>
      * true) are initialized in the given store.
      */
     protected void checkFieldsInitialized(Tree blockNode, boolean staticFields,
-            InitializationStore store,
+            Store store,
             List<? extends AnnotationMirror> receiverAnnotations) {
         // If the store is null, then the constructor cannot terminate
         // successfully
