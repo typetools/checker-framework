@@ -6,19 +6,20 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.ExecutableType;
 import javacutils.AnnotationUtils;
 import javacutils.ElementUtils;
 import javacutils.Pair;
 import javacutils.TreeUtils;
 
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ExecutableType;
+
 import checkers.basetype.BaseTypeVisitor;
 import checkers.flow.analysis.checkers.CFAbstractStore;
-import checkers.flow.analysis.checkers.CFValue;
+import checkers.flow.analysis.checkers.CFAbstractValue;
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -30,9 +31,9 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.VariableTree;
-import com.sun.source.tree.Tree.Kind;
 
 import dataflow.analysis.FlowExpressions.ClassName;
 import dataflow.analysis.FlowExpressions.FieldAccess;
@@ -40,7 +41,7 @@ import dataflow.analysis.FlowExpressions.Receiver;
 import dataflow.analysis.FlowExpressions.ThisReference;
 
 // TODO/later: documentation
-public class InitializationVisitor<Checker extends InitializationChecker, Store extends InitializationStore<Store>>
+public class InitializationVisitor<Checker extends InitializationChecker, Value extends CFAbstractValue<Value>, Store extends InitializationStore<Value, Store>>
         extends BaseTypeVisitor<Checker> {
 
     // Error message keys
@@ -53,7 +54,7 @@ public class InitializationVisitor<Checker extends InitializationChecker, Store 
 
     /** A better typed version of the ATF. */
     @SuppressWarnings("unchecked")
-    protected final InitializationAnnotatedTypeFactory<?, Store, ?, ?> factory = (InitializationAnnotatedTypeFactory<?, Store, ?, ?>) atypeFactory;
+    protected final InitializationAnnotatedTypeFactory<?, Value, Store, ?, ?> factory = (InitializationAnnotatedTypeFactory<?, Value, Store, ?, ?>) atypeFactory;
 
     public InitializationVisitor(Checker checker, CompilationUnitTree root) {
         super(checker, root);
@@ -225,7 +226,7 @@ public class InitializationVisitor<Checker extends InitializationChecker, Store 
                 boolean isStatic = true;
                 Store store = factory.getRegularExitStore(node);
                 // Add field values for fields with an initializer.
-                for (Pair<VariableElement, CFValue> t : store.getAnalysis()
+                for (Pair<VariableElement, Value> t : store.getAnalysis()
                         .getFieldValues()) {
                     store.addInitializedField(t.first);
                 }
@@ -264,7 +265,7 @@ public class InitializationVisitor<Checker extends InitializationChecker, Store 
             boolean isStatic = true;
             Store store = factory.getEmptyStore();
             // Add field values for fields with an initializer.
-            for (Pair<VariableElement, CFValue> t : store.getAnalysis()
+            for (Pair<VariableElement, Value> t : store.getAnalysis()
                     .getFieldValues()) {
                 store.addInitializedField(t.first);
             }

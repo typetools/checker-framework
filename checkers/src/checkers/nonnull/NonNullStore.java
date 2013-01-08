@@ -2,14 +2,13 @@ package checkers.nonnull;
 
 import checkers.flow.analysis.checkers.CFAbstractAnalysis;
 import checkers.flow.analysis.checkers.CFAbstractStore;
-import checkers.flow.analysis.checkers.CFValue;
 import checkers.initialization.InitializationStore;
 
-public class NonNullStore extends InitializationStore<NonNullStore> {
+public class NonNullStore extends InitializationStore<NonNullValue, NonNullStore> {
 
     protected boolean isPolyNullNull;
 
-    public NonNullStore(CFAbstractAnalysis<CFValue, NonNullStore, ?> analysis,
+    public NonNullStore(CFAbstractAnalysis<NonNullValue, NonNullStore, ?> analysis,
             boolean sequentialSemantics) {
         super(analysis, sequentialSemantics);
         isPolyNullNull = false;
@@ -32,7 +31,7 @@ public class NonNullStore extends InitializationStore<NonNullStore> {
     }
 
     @Override
-    protected boolean supersetOf(CFAbstractStore<CFValue, NonNullStore> o) {
+    protected boolean supersetOf(CFAbstractStore<NonNullValue, NonNullStore> o) {
         if (!(o instanceof InitializationStore)) {
             return false;
         }
