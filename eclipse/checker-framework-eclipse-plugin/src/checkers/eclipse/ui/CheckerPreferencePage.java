@@ -2,7 +2,6 @@ package checkers.eclipse.ui;
 
 import java.util.*;
 
-import checkers.eclipse.util.JavaUtils;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.search.IJavaSearchConstants;
 import org.eclipse.jdt.internal.ui.dialogs.OpenTypeSelectionDialog;
@@ -54,6 +53,8 @@ public class CheckerPreferencePage extends PreferencePage implements
     private Text optSkipUses;
     private Text optALint;
     private Text optFilter;
+    private Button optVerbose;
+
     private Text optJDKPath;
     //private Button optAutoBuild;
     private Button optWarning;
@@ -98,6 +99,9 @@ public class CheckerPreferencePage extends PreferencePage implements
 
         final GridData uiGridData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
         uiGroup.setLayoutData(uiGridData);
+
+        optVerbose = new Button(uiGroup, SWT.CHECK);
+        optVerbose.setText("Show verbose output");
 
         // JDK options
         final Group jdkGroup = new Group(tableComposite, SWT.None);
@@ -374,6 +378,8 @@ public class CheckerPreferencePage extends PreferencePage implements
                 .getBoolean(CheckerPreferences.PREF_CHECKER_A_SHOW_CHECKS));
         optFilter.setText(store
                 .getString(CheckerPreferences.PREF_CHECKER_ERROR_FILTER_REGEX));
+        optVerbose.setSelection(store
+                .getBoolean(CheckerPreferences.PREF_CHECKER_VERBOSE));
         optJDKPath.setText(store
                 .getString(CheckerPreferences.PREF_CHECKER_JDK_PATH));
         optImplicitImports.setSelection(store
@@ -415,6 +421,8 @@ public class CheckerPreferencePage extends PreferencePage implements
                 optShowChecks.getSelection());
         store.setValue(CheckerPreferences.PREF_CHECKER_ERROR_FILTER_REGEX,
                 optFilter.getText());
+        store.setValue(CheckerPreferences.PREF_CHECKER_VERBOSE,
+                optVerbose.getSelection());
         store.setValue(CheckerPreferences.PREF_CHECKER_JDK_PATH,
                 optJDKPath.getText());
         store.setValue(CheckerPreferences.PREF_CHECKER_IMPLICIT_IMPORTS,
@@ -474,7 +482,7 @@ public class CheckerPreferencePage extends PreferencePage implements
         final TableItem item = new TableItem(procTable, SWT.None);
         item.setText( LABEL.ordinal(),   checkerInfo.getLabel()                    );
         item.setText( SOURCE.ordinal(),  (builtIn) ? BUILT_IN_LABEL : CUSTOM_LABEL );
-        item.setText( CLASSES.ordinal(), checkerInfo.getClassName()                );
+        item.setText( CLASSES.ordinal(), checkerInfo.getClassPath()                );
         return item;
     }
 }

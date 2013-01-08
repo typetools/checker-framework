@@ -55,8 +55,8 @@ public class CheckerDevelMain extends CheckerMain {
     }
 
     @Override
-    protected List<String> createBootClasspath(final List<String> argsList) {
-        return prependPathOpts( BCP_PROP, super.createBootClasspath(argsList));
+    protected List<String> createCompilationBootclasspath(final List<String> argsList) {
+        return prependPathOpts( BCP_PROP, super.createCompilationBootclasspath(argsList));
     }
 
     @Override

@@ -94,7 +94,7 @@ public class CheckerInfo
      * 
      * @return the class name
      */
-    public String getClassName()
+    public String getClassPath()
     {
         return this.processor;
     }
