@@ -635,6 +635,16 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
                 : ElementKind.OTHER);
         defaults.annotate(tree, type);
 
+        Value as = getInferredValueFor(tree);
+        if (as != null) {
+            applyInferredAnnotations(type, as);
+        }
+    }
+
+    /**
+     * Returns the inferred value (by the dataflow analysis) for a given tree.
+     */
+    public Value getInferredValueFor(Tree tree) {
         Value as = null;
         if (!analyses.isEmpty() && tree != null) {
             as = analyses.getFirst().getValue(tree);
@@ -642,36 +652,35 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
         if (as == null && tree != null) {
             as = flowResult.getValue(tree);
         }
-        if (as != null) {
-            AnnotatedTypeMirror inferred = as.getType();
-            for (AnnotationMirror top : getQualifierHierarchy()
-                    .getTopAnnotations()) {
-                AnnotationMirror inferredAnnotation = inferred
+        return as;
+    }
+
+    /**
+     * Applies the annotations inferred by the dataflow analysis to the type {@code type}.
+     */
+    protected void applyInferredAnnotations(AnnotatedTypeMirror type, Value as) {
+        AnnotatedTypeMirror inferred = as.getType();
+        for (AnnotationMirror top : getQualifierHierarchy()
+                .getTopAnnotations()) {
+            AnnotationMirror inferredAnnotation = inferred
+                    .getAnnotationInHierarchy(top);
+            if (inferredAnnotation == null) {
+                // We inferred "no annotation" for this hierarchy.
+                type.removeAnnotationInHierarchy(top);
+            } else {
+                // We inferred an annotation.
+                AnnotationMirror present = type
                         .getAnnotationInHierarchy(top);
-                if (inferredAnnotation == null) {
-                    // We inferred "no annotation" for this hierarchy.
-                    type.removeAnnotationInHierarchy(top);
-                } else {
-                    // We inferred an annotation.
-                    AnnotationMirror present = type
-                            .getAnnotationInHierarchy(top);
-                    if (present != null) {
-                        if (getQualifierHierarchy().isSubtype(
-                                inferredAnnotation, present)) {
-                            // TODO: why is the above check needed?
-                            // Shouldn't inferred qualifiers always be
-                            // subtypes?
-                            type.replaceAnnotation(inferredAnnotation);
-                        } else {
-                            System.out.println("inferred: " + inferredAnnotation);
-                            System.out.println("present: " + present);
-                            System.out.println("inferred: " + inferred);
-                            System.out.println("present: " + type);
-                            System.out.println("----");
-                        }
-                    } else {
-                        type.addAnnotation(inferredAnnotation);
+                if (present != null) {
+                    if (getQualifierHierarchy().isSubtype(
+                            inferredAnnotation, present)) {
+                        // TODO: why is the above check needed?
+                        // Shouldn't inferred qualifiers always be
+                        // subtypes?
+                        type.replaceAnnotation(inferredAnnotation);
                     }
+                } else {
+                    type.addAnnotation(inferredAnnotation);
                 }
             }
         }

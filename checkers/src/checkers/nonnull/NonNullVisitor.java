@@ -17,6 +17,7 @@ import javax.lang.model.type.TypeMirror;
 import checkers.compilermsgs.quals.CompilerMessageKey;
 import checkers.initialization.InitializationVisitor;
 import checkers.nonnull.quals.NonNull;
+import checkers.nonnull.quals.PolyNull;
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -70,6 +71,8 @@ public class NonNullVisitor extends
     private final AnnotationMirror NONNULL, NULLABLE, MONOTONICNONNULL;
     private final TypeMirror stringType;
 
+    protected NonNullAnnotatedTypeFactory factory = (NonNullAnnotatedTypeFactory) super.factory;
+
     /**
      * The element for java.util.Collection.size().
      */
@@ -96,6 +99,18 @@ public class NonNullVisitor extends
                 "toArray", 1, env);
 
         checkForAnnotatedJdk();
+    }
+
+    @Override
+    protected AnnotatedTypeMirror getAnnotatedTypeOfLhs(Tree varTree, ExpressionTree valueTree) {
+        AnnotatedTypeMirror result = super.getAnnotatedTypeOfLhs(varTree, valueTree);
+        if (result.hasAnnotation(PolyNull.class)) {
+            NonNullValue inferred = factory.getInferredValueFor(valueTree);
+            if (inferred != null && inferred.isPolyNullNull) {
+                result.replaceAnnotation(NULLABLE);
+            }
+        }
+        return result;
     }
 
     @Override
