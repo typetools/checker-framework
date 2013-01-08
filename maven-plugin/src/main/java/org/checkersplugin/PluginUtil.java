@@ -1,5 +1,8 @@
 package org.checkersplugin;
 /**
+ * This file contains basic utility functions that should be reused to create
+ * a command line call to CheckerMain.
+ *
  * NOTE: There is multiple copies of this file in the following projects/locations:
  * maven-plugin/
  *     org.checkersplugin.PluginUtil
@@ -10,14 +13,14 @@ package org.checkersplugin;
  * checker-framework/
  *     checkers.util.PluginUtil
  *
- * These files MUST be IDENTICAL from the first line under //START_DIFF and beyond.
+ * These files MUST be IDENTICAL after the package descriptor.
  *
  * If you change this file be sure to copy the exact file (including this comment
  * and excluding the package line) to the other projects.  During release this file
  * and all its copies will be diffed (excluding any line starting with "package ")
  *
- * This file contains basic utility functions that should be reused to create
- * a command line call to CheckerMain.
+ * There is a script at checker-framework/release/syncPluginUtil.sh
+ * that syncs these files programatically.
  */
 
 import java.io.*;
@@ -82,6 +85,46 @@ public class PluginUtil {
         return tmpFile;
     }
 
+    public static File writeTmpArgFile(final String prefix, final String suffix, final boolean deleteOnExit,
+                                       final List<String> args) throws IOException {
+        final File tmpFile = File.createTempFile(prefix, suffix);
+        if( deleteOnExit ) {
+            tmpFile.deleteOnExit();
+        }
+        writeArgFile(tmpFile, args);
+        return tmpFile;
+    }
+
+    public static void writeArgFile(final File destination, final List<String> args) throws IOException {
+        final BufferedWriter bw = new BufferedWriter(new FileWriter(destination));
+        try {
+            bw.write(join(" ", args));
+            bw.flush();
+        } finally {
+            bw.close();
+        }
+    }
+
+    /**
+     * TODO: Either create/use a util class
+     */
+    public static String join(final String delimiter, final List<String> strings) {
+
+        boolean notFirst = false;
+        final StringBuffer sb = new StringBuffer();
+
+        for(final String str : strings) {
+            if(notFirst) {
+                sb.append(delimiter);
+            }
+            sb.append(str);
+            notFirst = true;
+        }
+
+        return sb.toString();
+    }
+
+
     public static List<String> getStringProp(final Map<CheckerProp, Object> props,
                                              final CheckerProp prop, final String tag,
                                              final String ... extras) {
@@ -117,6 +160,7 @@ public class PluginUtil {
         MISC_COMPILER() {
             @Override
             public List<String> getCmdLine(final Map<CheckerProp, Object> props) {
+                @SuppressWarnings("unchecked")
                 List<String> miscOpts = (List<String>) props.get(this);
 
                 if (miscOpts != null && !miscOpts.isEmpty()) {
@@ -180,6 +224,20 @@ public class PluginUtil {
         }
     }
 
+    public static File writeTmpSrcFofn(final String prefix, final boolean deleteOnExit,
+                                       final List<File> files) throws IOException {
+        return writeTmpFofn(prefix, ".src_files", deleteOnExit, files);
+    }
+
+    public static File writeTmpCpFile(final String prefix, final boolean deleteOnExit,
+                                       final String classpath) throws IOException {
+        return writeTmpArgFile(prefix, ".classpath", deleteOnExit, Arrays.asList("-classpath", classpath));
+    }
+
+    public static boolean isWindows() {
+        final String os = System.getProperty("os.name");
+        return os.toLowerCase().contains("win");
+    }
 
     public static String getJavaCommand(final String javaHome, final PrintStream out) {
         if( javaHome == null || javaHome.equals("") ) {
@@ -190,19 +248,22 @@ public class PluginUtil {
         if(java.exists()) {
             return java.getAbsolutePath();
         } else {
-            //TODO: IS THERE A BETTER WAY OF SAYING WE ARE LETTING THE OS RESOLVE THE REFERENCE TO JAVA?
-
             if( out != null ) {
                 out.println("Could not find java executable at " + java.getAbsolutePath() +
-                        ".  Using \"java\" command.");
+                        "\n  Using \"java\" command.\n");
             }
             return "java";
         }
     }
 
+    public static String fileArgToStr(final File fileArg) {
+        return "@" + fileArg.getAbsolutePath();
+    }
+
+    //TODO: Perhaps unify this with CheckerMain as it violates DRY
     public static List<String> getCmd(final String executable,  final File srcFofn, final String processors,
                                       final String checkerHome, final String javaHome,
-                                      final String classpath,   final String bootClassPath,
+                                      final File classPathFofn, final String bootClassPath,
                                       final Map<CheckerProp, Object> props, PrintStream out) {
 
         final List<String> cmd = new ArrayList<String>();
@@ -215,17 +276,22 @@ public class PluginUtil {
         cmd.add(checkerHome);
 
         cmd.add("-proc:only");
-        cmd.add("-Xbootclasspath/p:" + bootClassPath);
+        if(bootClassPath != null) {
+            cmd.add("-Xbootclasspath/p:" +  bootClassPath);
+        }
 
-        cmd.add("-classpath");
-        cmd.add(classpath);
+        if(classPathFofn != null ) {
+            cmd.add(fileArgToStr(classPathFofn));
+        }
 
-        cmd.add("-processor");
-        cmd.add(processors);
+        if(processors != null) {
+            cmd.add("-processor");
+            cmd.add(processors);
+        }
 
         addOptions(cmd, props);
+        cmd.add(fileArgToStr(srcFofn));
 
-        cmd.add("@" + srcFofn.getAbsolutePath());
         return cmd;
 
     }
@@ -241,11 +307,11 @@ public class PluginUtil {
 
     public static List<String> getCmdArgsOnly(final File srcFofn, final String processors,
                                               final String checkerHome, final String javaHome,
-                                              final String classpath,   final String bootClassPath,
+                                              final File classpathFofn,   final String bootClassPath,
                                               final Map<CheckerProp, Object> props, PrintStream out) {
 
         final List<String> cmd = getCmd(null, srcFofn, processors,
-                checkerHome, javaHome, classpath,
+                checkerHome, javaHome, classpathFofn,
                 bootClassPath, props, out);
         cmd.remove(0);
         return cmd;
