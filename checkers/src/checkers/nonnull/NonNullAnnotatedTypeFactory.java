@@ -129,15 +129,6 @@ public class NonNullAnnotatedTypeFactory
         postInit();
     }
 
-    @Override
-    protected void applyInferredAnnotations(AnnotatedTypeMirror type,
-            NonNullValue as) {
-        super.applyInferredAnnotations(type, as);
-        if (as.isPolyNullNull && type.hasAnnotation(POLYNULL)) {
-            type.replaceAnnotation(NULLABLE);
-        }
-    }
-
     // handle dependent types
     @Override
     public void annotateImplicit(Tree tree, AnnotatedTypeMirror type) {
