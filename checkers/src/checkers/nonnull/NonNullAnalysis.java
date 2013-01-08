@@ -10,6 +10,7 @@ import javax.lang.model.element.VariableElement;
 import checkers.flow.analysis.checkers.CFAbstractAnalysis;
 import checkers.flow.analysis.checkers.CFValue;
 import checkers.types.AnnotatedTypeMirror;
+import checkers.util.AnnotatedTypes;
 
 /**
  * The analysis class for the non-null type system (serves as factory for the
@@ -18,11 +19,11 @@ import checkers.types.AnnotatedTypeMirror;
  * @author Stefan Heule
  */
 public class NonNullAnalysis extends
-        CFAbstractAnalysis<CFValue, NonNullStore, NonNullTransfer> {
+        CFAbstractAnalysis<NonNullValue, NonNullStore, NonNullTransfer> {
 
     public NonNullAnalysis(NonNullAnnotatedTypeFactory factory,
             ProcessingEnvironment env, AbstractNonNullChecker checker,
-            List<Pair<VariableElement, CFValue>> fieldValues) {
+            List<Pair<VariableElement, NonNullValue>> fieldValues) {
         super(factory, env, checker, fieldValues);
     }
 
@@ -37,7 +38,12 @@ public class NonNullAnalysis extends
     }
 
     @Override
-    public CFValue createAbstractValue(AnnotatedTypeMirror type) {
-        return defaultCreateAbstractValue(this, type);
+    public NonNullValue createAbstractValue(AnnotatedTypeMirror type) {
+        if (!AnnotatedTypes.isValidType(qualifierHierarchy, type)) {
+            // If the type is not valid, we return null, which is the same as
+            // 'no information'.
+            return null;
+        }
+        return new NonNullValue(this, type);
     }
 }

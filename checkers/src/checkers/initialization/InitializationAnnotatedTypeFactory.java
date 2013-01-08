@@ -23,7 +23,7 @@ import javacutils.TypesUtils;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.flow.analysis.checkers.CFAbstractAnalysis;
-import checkers.flow.analysis.checkers.CFValue;
+import checkers.flow.analysis.checkers.CFAbstractValue;
 import checkers.initialization.quals.Free;
 import checkers.initialization.quals.NotOnlyCommitted;
 import checkers.initialization.quals.Unclassified;
@@ -47,9 +47,9 @@ import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.tree.JCTree;
 
-public abstract class InitializationAnnotatedTypeFactory<Checker extends InitializationChecker, Store extends InitializationStore<Store>, Transfer extends InitializationTransfer<Transfer, Store>, Flow extends CFAbstractAnalysis<CFValue, Store, Transfer>>
+public abstract class InitializationAnnotatedTypeFactory<Checker extends InitializationChecker, Value extends CFAbstractValue<Value>, Store extends InitializationStore<Value, Store>, Transfer extends InitializationTransfer<Value, Transfer, Store>, Flow extends CFAbstractAnalysis<Value, Store, Transfer>>
         extends
-        AbstractBasicAnnotatedTypeFactory<Checker, CFValue, Store, Transfer, Flow> {
+        AbstractBasicAnnotatedTypeFactory<Checker, Value, Store, Transfer, Flow> {
 
     /** The annotations */
     public final AnnotationMirror COMMITTED, NOT_ONLY_COMMITTED;
