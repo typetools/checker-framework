@@ -24,7 +24,7 @@ esac
 binaryDir="${mydir}"/../binary
 buildDir="${mydir}"/../build
 
-eval "java -Xbootclasspath/p:${mydir}/../lib/jna.jar" \
+eval "java" \
      "-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005" \
      "-DCheckerDevelMain.cp=${buildDir} -DCheckerDevelMain.bcp= -DCheckerDevelMain.binary=${binaryDir}" \
      "-classpath ${buildDir} checkers.util.CheckerDevelMain" "$@"
