@@ -7,9 +7,13 @@ import javacutils.TreeUtils;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 
 import checkers.flow.analysis.checkers.CFAbstractStore;
 import checkers.initialization.InitializationTransfer;
+import checkers.initialization.quals.Committed;
+import checkers.initialization.quals.NonRaw;
 import checkers.nonnull.quals.NonNull;
 import checkers.nonnull.quals.Nullable;
 import checkers.nonnull.quals.PolyNull;
@@ -22,6 +26,7 @@ import com.sun.source.tree.MethodInvocationTree;
 import dataflow.analysis.ConditionalTransferResult;
 import dataflow.analysis.FlowExpressions;
 import dataflow.analysis.FlowExpressions.Receiver;
+import dataflow.analysis.RegularTransferResult;
 import dataflow.analysis.TransferInput;
 import dataflow.analysis.TransferResult;
 import dataflow.cfg.node.ArrayAccessNode;
@@ -30,6 +35,7 @@ import dataflow.cfg.node.MethodAccessNode;
 import dataflow.cfg.node.MethodInvocationNode;
 import dataflow.cfg.node.Node;
 import dataflow.cfg.node.NullLiteralNode;
+import dataflow.cfg.node.ReturnNode;
 import dataflow.cfg.node.ThrowNode;
 import dataflow.cfg.node.UnboxingNode;
 
@@ -135,7 +141,8 @@ public class NonNullTransfer extends
                 }
             }
 
-            if (secondValue.getType().hasAnnotation(PolyNull.class)) {
+            if (secondValue != null
+                    && secondValue.getType().hasAnnotation(PolyNull.class)) {
                 thenStore = thenStore == null ? res.getThenStore() : thenStore;
                 elseStore = elseStore == null ? res.getElseStore() : elseStore;
                 thenStore.setPolyNullNull(true);
@@ -217,5 +224,38 @@ public class NonNullTransfer extends
                 .visitUnboxing(n, p);
         makeNonNull(result, n);
         return result;
+    }
+
+    @Override
+    public TransferResult<NonNullValue, NonNullStore> visitReturn(ReturnNode n,
+            TransferInput<NonNullValue, NonNullStore> in) {
+        // HACK: make sure we have a value for return statements, because we
+        // need to record whether (at this return statement) isPolyNullNull is
+        // set or not.
+        NonNullValue value = createDummyValue();
+        if (in.containsTwoStores()) {
+            NonNullStore thenStore = in.getThenStore();
+            NonNullStore elseStore = in.getElseStore();
+            return new ConditionalTransferResult<>(finishValue(value,
+                    thenStore, elseStore), thenStore, elseStore);
+        } else {
+            NonNullStore info = in.getRegularStore();
+            return new RegularTransferResult<>(finishValue(value, info), info);
+        }
+    }
+
+    /**
+     * Creates a dummy abstract value (whose type is not supposed to be looked at).
+     */
+    private NonNullValue createDummyValue() {
+        TypeMirror dummy = analysis.getEnv().getTypeUtils()
+                .getPrimitiveType(TypeKind.BOOLEAN);
+        AnnotatedTypeMirror annotatedDummy = AnnotatedTypeMirror.createType(
+                dummy, analysis.getFactory());
+        annotatedDummy.addAnnotation(NonNull.class);
+        annotatedDummy.addAnnotation(NonRaw.class);
+        annotatedDummy.addAnnotation(Committed.class);
+        NonNullValue value = new NonNullValue(analysis, annotatedDummy);
+        return value;
     }
 }

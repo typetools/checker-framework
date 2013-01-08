@@ -42,8 +42,10 @@ import com.sun.source.tree.IfTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.ThrowTree;
@@ -55,17 +57,18 @@ import com.sun.source.tree.WhileLoopTree;
 
 // TODO/later: documentation
 // Note: this code is originally based on NullnessVisitor
-public class NonNullVisitor extends
+public class NonNullVisitor
+        extends
         InitializationVisitor<AbstractNonNullChecker, NonNullValue, NonNullStore> {
 
     // Error message keys
-    private static final /*@CompilerMessageKey*/ String ASSIGNMENT_TYPE_INCOMPATIBLE = "assignment.type.incompatible";
-    private static final /*@CompilerMessageKey*/ String UNBOXING_OF_NULLABLE = "unboxing.of.nullable";
-    private static final /*@CompilerMessageKey*/ String KNOWN_NONNULL = "known.nonnull";
-    private static final /*@CompilerMessageKey*/ String LOCKING_NULLABLE = "locking.nullable";
-    private static final /*@CompilerMessageKey*/ String THROWING_NULLABLE = "throwing.nullable";
-    private static final /*@CompilerMessageKey*/ String ACCESSING_NULLABLE = "accessing.nullable";
-    private static final /*@CompilerMessageKey*/ String DEREFERENCE_OF_NULLABLE = "dereference.of.nullable";
+    private static final/* @CompilerMessageKey */String ASSIGNMENT_TYPE_INCOMPATIBLE = "assignment.type.incompatible";
+    private static final/* @CompilerMessageKey */String UNBOXING_OF_NULLABLE = "unboxing.of.nullable";
+    private static final/* @CompilerMessageKey */String KNOWN_NONNULL = "known.nonnull";
+    private static final/* @CompilerMessageKey */String LOCKING_NULLABLE = "locking.nullable";
+    private static final/* @CompilerMessageKey */String THROWING_NULLABLE = "throwing.nullable";
+    private static final/* @CompilerMessageKey */String ACCESSING_NULLABLE = "accessing.nullable";
+    private static final/* @CompilerMessageKey */String DEREFERENCE_OF_NULLABLE = "dereference.of.nullable";
 
     // Annotation and type constants
     private final AnnotationMirror NONNULL, NULLABLE, MONOTONICNONNULL;
@@ -102,15 +105,32 @@ public class NonNullVisitor extends
     }
 
     @Override
-    protected AnnotatedTypeMirror getAnnotatedTypeOfLhs(Tree varTree, ExpressionTree valueTree) {
-        AnnotatedTypeMirror result = super.getAnnotatedTypeOfLhs(varTree, valueTree);
-        if (result.hasAnnotation(PolyNull.class)) {
-            NonNullValue inferred = factory.getInferredValueFor(valueTree);
+    protected AnnotatedTypeMirror getAnnotatedTypeOfLhs(Tree varTree,
+            ExpressionTree valueTree) {
+        AnnotatedTypeMirror result = super.getAnnotatedTypeOfLhs(varTree,
+                valueTree);
+        return handlePolyNull(result, valueTree);
+    }
+
+    /**
+     * Replaces {@link PolyNull} with {@link Nullable} to be more permissive
+     * (because {@code type} is usually a left-hand side) if the dataflow
+     * analysis has determined that this is allowed soundly.
+     */
+    protected AnnotatedTypeMirror handlePolyNull(AnnotatedTypeMirror type,
+            Tree context) {
+        if (type.hasAnnotation(PolyNull.class)) {
+            NonNullValue inferred = factory.getInferredValueFor(context);
             if (inferred != null && inferred.isPolyNullNull) {
-                result.replaceAnnotation(NULLABLE);
+                type.replaceAnnotation(NULLABLE);
             }
         }
-        return result;
+        return type;
+    }
+
+    @Override
+    protected AnnotatedTypeMirror getMethodReturnType(MethodTree m, ReturnTree r) {
+        return handlePolyNull(super.getMethodReturnType(m, r), r);
     }
 
     @Override
@@ -444,8 +464,8 @@ public class NonNullVisitor extends
             // If receiver is Nullable, then we don't want to issue a warning
             // about method invocability (we'd rather have only the
             // "dereference.of.nullable" message).
-            if (AnnotationUtils.containsSame(treeReceiver.getAnnotations(), NULLABLE)
-                    || recvAnnos.contains(MONOTONICNONNULL)) {
+            if (AnnotationUtils.containsSame(treeReceiver.getAnnotations(),
+                    NULLABLE) || recvAnnos.contains(MONOTONICNONNULL)) {
                 return;
             }
         }
