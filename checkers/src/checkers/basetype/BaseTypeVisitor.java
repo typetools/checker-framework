@@ -918,9 +918,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
             MethodTree enclosingMethod = TreeUtils
                     .enclosingMethod(getCurrentPath());
 
-            AnnotatedExecutableType methodType = atypeFactory
-                    .getAnnotatedType(enclosingMethod);
-            AnnotatedTypeMirror ret = methodType.getReturnType();
+            AnnotatedTypeMirror ret = getMethodReturnType(enclosingMethod, node);
             visitorState.setAssignmentContext(Pair.of((Tree) node, ret));
 
             commonAssignmentCheck(ret, node.getExpression(),
@@ -930,6 +928,16 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
         } finally {
             visitorState.setAssignmentContext(preAssCtxt);
         }
+    }
+
+    /**
+     * Returns the return type of the method {@code m} at the return statement {@code r}.
+     */
+    protected AnnotatedTypeMirror getMethodReturnType(MethodTree m, ReturnTree r) {
+        AnnotatedExecutableType methodType = atypeFactory
+                .getAnnotatedType(m);
+        AnnotatedTypeMirror ret = methodType.getReturnType();
+        return ret;
     }
 
     /**
