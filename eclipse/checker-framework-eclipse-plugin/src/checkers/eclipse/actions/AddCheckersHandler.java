@@ -1,5 +1,6 @@
 package checkers.eclipse.actions;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
@@ -38,12 +39,10 @@ public class AddCheckersHandler extends CheckerHandler
                 FileInputStream input;
                 try
                 {
-                    input = new FileInputStream(
-                            CommandlineJavacRunner
-                                    .locatePluginFile(CHECKERS_QUALS_LOCATION));
+                    final String checkerQuals = CommandlineJavacRunner.locatePluginFile(CHECKERS_QUALS_LOCATION);
+                    input = new FileInputStream(checkerQuals);
                     jarFile.create(input, false, null);
-                }catch (FileNotFoundException e)
-                {
+                } catch (FileNotFoundException e) {
                     StatusManager manager = StatusManager.getManager();
                     CheckerErrorStatus status = new CheckerErrorStatus(
                             "Could not find plugin checkers file.");

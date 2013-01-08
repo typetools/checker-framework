@@ -14,7 +14,10 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.codehaus.plexus.util.DirectoryScanner;
 
-import java.io.File;
+import org.codehaus.plexus.util.FileUtils;
+import org.codehaus.plexus.util.StringUtils;
+
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -26,7 +29,6 @@ import java.util.Set;
  */
 public class PathUtils {
     private final static String CHECKERS_GROUPD_ID = "types.checkers";
-    private final static String CHECKERS_ARTIFACT_ID = "jsr308-all";
     private final static String DEFAULT_INCLUSION_PATTERN = "**/*.java";
 
     /**
@@ -39,12 +41,12 @@ public class PathUtils {
      * @return Path to the jsr308-all jar.
      * @throws MojoExecutionException
      */
-    public static String getCheckersJar(final String checkersVersion, final ArtifactFactory artifactFactory,
-                                        final ArtifactResolver artifactResolver, final List<?> remoteArtifactRepositories,
-                                        final ArtifactRepository localRepository) throws MojoExecutionException {
+    public static File getFrameworkJar(final String artifactId, final String checkersVersion, final ArtifactFactory artifactFactory,
+                                         final ArtifactResolver artifactResolver, final List<?> remoteArtifactRepositories,
+                                         final ArtifactRepository localRepository) throws MojoExecutionException {
         final Artifact checkersArtifact;
         try {
-            checkersArtifact = artifactFactory.createExtensionArtifact(CHECKERS_GROUPD_ID, CHECKERS_ARTIFACT_ID,
+            checkersArtifact = artifactFactory.createExtensionArtifact(CHECKERS_GROUPD_ID, artifactId,
                     VersionRange.createFromVersionSpec(checkersVersion));
         } catch (InvalidVersionSpecificationException e) {
             throw new MojoExecutionException("Wrong version: " + checkersVersion + " of checkers specifed.", e);
@@ -58,7 +60,43 @@ public class PathUtils {
             throw new MojoExecutionException("Unable to resolve version " + checkersVersion + " of checkers.", e);
         }
 
-        return checkersArtifact.getFile().getPath();
+        return checkersArtifact.getFile();
+    }
+
+    public static void writeVersion(final File versionFile, final String version) throws IOException {
+        BufferedWriter bw = null;
+        try {
+            bw = new BufferedWriter(new FileWriter(versionFile));
+            bw.write(version);
+            bw.newLine();
+            bw.flush();
+
+        } finally {
+            if(bw != null) {
+                bw.close();
+            }
+        }
+    }
+
+    public static String readVersion(final File versionFile) throws IOException {
+        if( !versionFile.exists() || versionFile.length() == 0) {
+            return null;
+        }
+
+        final BufferedReader vfReader = new BufferedReader(new FileReader(versionFile));
+
+        String line;
+        try {
+            line = vfReader.readLine();
+            if(line == null) {
+                return null;
+            }
+
+        } finally {
+            vfReader.close();
+        }
+
+        return line;
     }
 
     /**
@@ -135,4 +173,40 @@ public class PathUtils {
 
         return ds.getIncludedFiles();
     }
+
+
+    public static final void copyFiles(final File dest, final List<File> inputFiles, final List<String> outputFileNames)
+            throws IOException {
+        if( inputFiles.size() != outputFileNames.size() ) {
+
+            final String inputFilePaths = joinFilePaths(inputFiles);
+            final String outputFileNamesStr = StringUtils.join(outputFileNames.iterator(), ", ");
+
+            throw new RuntimeException("Number of input files and file names must be equal! "  +
+                    "Dest Dir( " + dest.getAbsolutePath() + ") Input Files (" + inputFilePaths +
+                    " ) OutputFileNames (" + outputFileNamesStr + ")"
+            );
+        }
+
+        for( int i = 0; i < inputFiles.size(); i++ ) {
+            FileUtils.copyFile(inputFiles.get(i), new File(dest, outputFileNames.get(i)));
+        }
+    }
+
+    public static String joinFilePaths(final List<File> files) {
+        String inputFilePaths = "";
+
+        boolean comma = false;
+        for(final File file : files) {
+            if(comma) {
+                inputFilePaths += ", ";
+            } else {
+                comma = true;
+            }
+            inputFilePaths += file.getAbsolutePath();
+        }
+
+        return inputFilePaths;
+    }
+
 }

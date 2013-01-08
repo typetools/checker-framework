@@ -1,5 +1,16 @@
 package checkers.eclipse.actions;
 
+import checkers.fenum.FenumChecker;
+import checkers.i18n.I18nChecker;
+import checkers.igj.IGJChecker;
+import checkers.interning.InterningChecker;
+import checkers.javari.JavariChecker;
+import checkers.linear.LinearChecker;
+import checkers.lock.LockChecker;
+import checkers.nullness.NullnessChecker;
+import checkers.regex.RegexChecker;
+import checkers.tainting.TaintingChecker;
+
 public class CheckerActions
 {
     private CheckerActions()
@@ -19,7 +30,7 @@ public class CheckerActions
     {
         public NullnessAction()
         {
-            super(CheckerInfo.NULLNESS_CLASS);
+            super(NullnessChecker.class.getCanonicalName());
         }
     }
 
@@ -27,7 +38,7 @@ public class CheckerActions
     {
         public JavariAction()
         {
-            super(CheckerInfo.JAVARI_CLASS);
+            super(JavariChecker.class.getCanonicalName());
         }
     }
 
@@ -35,7 +46,7 @@ public class CheckerActions
     {
         public InterningAction()
         {
-            super(CheckerInfo.INTERNING_CLASS);
+            super(InterningChecker.class.getCanonicalName());
         }
     }
 
@@ -43,7 +54,7 @@ public class CheckerActions
     {
         public IGJAction()
         {
-            super(CheckerInfo.IGJ_CLASS);
+            super(IGJChecker.class.getCanonicalName());
         }
     }
 
@@ -51,7 +62,7 @@ public class CheckerActions
     {
         public FenumAction()
         {
-            super(CheckerInfo.FENUM_CLASS);
+            super(FenumChecker.class.getCanonicalName());
         }
     }
 
@@ -59,7 +70,7 @@ public class CheckerActions
     {
         public LinearAction()
         {
-            super(CheckerInfo.LINEAR_CLASS);
+            super(LinearChecker.class.getCanonicalName());
         }
     }
 
@@ -67,7 +78,7 @@ public class CheckerActions
     {
         public LockAction()
         {
-            super(CheckerInfo.LOCK_CLASS);
+            super(LockChecker.class.getCanonicalName());
         }
     }
 
@@ -75,7 +86,7 @@ public class CheckerActions
     {
         public TaintingAction()
         {
-            super(CheckerInfo.TAINTING_CLASS);
+            super(TaintingChecker.class.getCanonicalName());
         }
     }
 
@@ -83,7 +94,7 @@ public class CheckerActions
     {
         public I18nAction()
         {
-            super(CheckerInfo.I18N_CLASS);
+            super(I18nChecker.class.getCanonicalName());
         }
     }
 
@@ -91,7 +102,7 @@ public class CheckerActions
     {
         public RegexAction()
         {
-            super(CheckerInfo.REGEX_CLASS);
+            super(RegexChecker.class.getCanonicalName());
         }
     }
 
@@ -102,5 +113,14 @@ public class CheckerActions
             useCustom = true;
             usePrefs = false;
         }
+    }
+    
+    public static class SingleCustomAction extends RunCheckerAction
+    {
+    	public SingleCustomAction() 
+    	{
+    		useSingleCustom = true;
+    		usePrefs = false;
+    	}
     }
 }

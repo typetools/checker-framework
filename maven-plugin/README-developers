@@ -15,7 +15,7 @@ To install the plugin to a repository:
     //deploy it to a location
     mvn deploy:deploy-file \
     -DartifactId=checkersplugin \         
-    -Dfile=<your path>/jsr308/checker-framework/maven-plugin/target/checkersplugin-<latest-version>.jar \        
+    -Dfile=<your path>/jsr308/checker-framework/maven-plugin/target/checkers-maven-plugin-<latest-version>.jar \        
     -Dversion=<latest-version> \
     -Durl=file://<your path>/maven/m2-repo \
     -DgroupId=types.checkers \
@@ -28,6 +28,8 @@ Note:  Before releasing the plugin you should update the default plugin version 
 To update the default plugin version:
 Open the "CheckersMojo.java" file and find the member variable "checkersVersion".
 Change the default value from the current version to the next version for deployment.
+There are now also pom files for all the artifacts of the checker-framework in $CHECKERS/binary/poms.
+These must have the versions updated and deployed in the release.
 
 To update the manual:
 TODO: Make this automatic.
