@@ -3,12 +3,22 @@ package checkers.nonnull;
 import checkers.flow.analysis.checkers.CFAbstractAnalysis;
 import checkers.flow.analysis.checkers.CFAbstractStore;
 import checkers.initialization.InitializationStore;
+import checkers.nonnull.quals.Nullable;
+import checkers.nonnull.quals.PolyNull;
 
-public class NonNullStore extends InitializationStore<NonNullValue, NonNullStore> {
+/**
+ * Behaves like {@link InitializationStore}, but additionally tracks whether
+ * {@link PolyNull} is known to be {@link Nullable}.
+ *
+ * @author Stefan Heule
+ */
+public class NonNullStore extends
+        InitializationStore<NonNullValue, NonNullStore> {
 
     protected boolean isPolyNullNull;
 
-    public NonNullStore(CFAbstractAnalysis<NonNullValue, NonNullStore, ?> analysis,
+    public NonNullStore(
+            CFAbstractAnalysis<NonNullValue, NonNullStore, ?> analysis,
             boolean sequentialSemantics) {
         super(analysis, sequentialSemantics);
         isPolyNullNull = false;
