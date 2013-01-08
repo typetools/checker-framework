@@ -1287,7 +1287,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
      */
     protected void commonAssignmentCheck(Tree varTree, ExpressionTree valueExp, /*@CompilerMessageKey*/
             String errorKey) {
-        AnnotatedTypeMirror var = atypeFactory.getAnnotatedType(varTree);
+        AnnotatedTypeMirror var = getAnnotatedTypeOfLhs(varTree, valueExp);
         assert var != null : "no variable found for tree: " + varTree;
         checkAssignability(var, varTree);
         boolean isLocalVariableAssignment = false;
@@ -1302,6 +1302,10 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
         }
         commonAssignmentCheck(var, valueExp, errorKey,
                 isLocalVariableAssignment);
+    }
+
+    protected AnnotatedTypeMirror getAnnotatedTypeOfLhs(Tree varTree, ExpressionTree valueTree) {
+        return atypeFactory.getAnnotatedType(varTree);
     }
 
     /**
