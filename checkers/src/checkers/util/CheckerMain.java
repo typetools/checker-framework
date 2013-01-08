@@ -1,155 +1,310 @@
 package checkers.util;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.UnsupportedEncodingException;
-import java.lang.management.ManagementFactory;
-import java.lang.management.RuntimeMXBean;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
-
-import com.sun.jna.Library;
-import com.sun.jna.Native;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
- * The main class for the Checkers when using the binary distribution, that
- * delegates the compilation invocation to javac.<p>
- *
- * The class has two responsibilities:
- * <ul>
- * <li>it adds the annotated JDK to the bootclasspath
- * <li>if invoked when the compiler classes is in the bootclasspath (e.g. with
- *     Apple JVM), it restarts the JVM and prepends the JSR 308 compiler to
- *     bootclasspath.
- * </ul>
+ * This class functions essentially the same as the JSR308 javac script EXCEPT that it adds the appropriate jdk.jar
+ * to the bootclasspath and adds checkers.jar to the classpath passed to javac
  */
 public class CheckerMain {
-    private static final String VERSION = "1";
 
-    public static void main(String[] args) throws Exception {
-        if (isUsingJSR308Compiler()) {
-            String[] newArgs = new String[args.length + 1];
-            newArgs[0] = "-Xbootclasspath/p:" + jdkJar();
-            System.arraycopy(args, 0, newArgs, 1, args.length);
-            com.sun.tools.javac.Main.main(newArgs);
+    /**
+     * Most logic of the CheckerMain main method is delegated to the CheckerMain class.  This method
+     * just determines the relevant parameters to CheckerMain then tells it to invoke the JSR308
+     * Type Annotations Compiler
+     * @param args Command line arguments, eventually passed to the jsr308 type annotations compiler
+     * @throws Exception Any exception thrown by the Checker Framework escape to the command line
+     */
+    public static void main(String[] args)  {
+        final File pathToThisJar     = new File(findPathTo(CheckerMain.class, false));
+        final File parentDir         = pathToThisJar.getParentFile();
+
+        final CheckerMain program      = new CheckerMain(parentDir, args);
+        final int exitStatus = program.invokeCompiler();
+        System.exit(exitStatus);
+    }
+
+    /**
+     * The path to the annotated jdk jar to use
+     */
+    private final File jdkJar;
+
+    /**
+     * The path to the jsr308 Langtools Type Annotations Compiler
+     */
+    private final File javacJar;
+
+    /**
+     * The paths to the jar containing CheckerMain.class (i.e. checkers.jar)
+     */
+    private final File checkersJar;
+
+    /**
+     * The current major version of the jre in the form 1.X where X is the major version of Java
+     */
+    private final double jreVersion;
+
+
+    private final List<String> compilationBootclasspath;
+
+    private final List<String> runtimeBootClasspath;
+
+    private final List<String> jvmOpts;
+
+    private final List<String> cpOpts;
+
+    private final List<String> toolOpts;
+
+    /**
+     * Construct all the relevant file locations and java version given the path to this jar and
+     * a set of directories in which to search for jars
+     */
+    public CheckerMain(final File searchPath, final String [] args) {
+
+        this.jreVersion  = getJreVersion();
+
+        this.checkersJar   = new File(searchPath, "checkers.jar");
+        this.javacJar      = new File(searchPath, "javac.jar");
+        this.jdkJar        = new File(searchPath, findJdkJarName());
+
+        final List<String> argsList = new ArrayList<String>(Arrays.asList(args));
+
+        this.compilationBootclasspath = createCompilationBootclasspath(argsList);
+        this.runtimeBootClasspath     = createRuntimeBootclasspath(argsList);
+        this.jvmOpts       = extractJvmOpts(argsList);
+
+        this.cpOpts        = createCpOpts(argsList);
+        this.toolOpts      = argsList;
+
+        assertValidState();
+    }
+
+    protected void assertValidState() {
+        assertFilesExist(Arrays.asList(javacJar, jdkJar, checkersJar));
+    }
+
+    protected List<String> createRuntimeBootclasspath(final List<String> argsList) {
+        return new ArrayList<String>(Arrays.asList(javacJar.getAbsolutePath()));
+    }
+
+    protected List<String> createCompilationBootclasspath(final List<String> argsList) {
+        final List<String> extractedBcp = extractBootClassPath(argsList);
+        extractedBcp.add(0, jdkJar.getAbsolutePath());
+
+        return extractedBcp;
+    }
+
+    protected List<String> createCpOpts(final List<String> argsList) {
+        final List<String> extractedOps = extractCpOpts(argsList);
+        extractedOps.add(0, this.checkersJar.getAbsolutePath());
+        return extractedOps;
+    }
+
+    /**
+     * Construct a file path from files nad prepend it to previous (if previous is not null)
+     * @param previous The previous file path to append to (can be null)
+     * @param files    The files used to construct a path using File.pathSeparator
+     * @return previous with the conjoined file path appended to it or just the conjoined file path if previous is null
+     */
+
+    protected static String prepFilePath(final String previous, File... files) {
+        if(files == null || files.length == 0) {
+            throw new RuntimeException("Prepending empty or null array to file path! files == " + (files == null ? " null" : " Empty"));
         } else {
-            System.out.println("Manipulating bootclasspath");
-            List<String> cmdArgs = newCommandArgs(args);
-            execute(cmdArgs);
+            String path = files[0].getAbsolutePath();
+            for( int i = 1; i < files.length; i++ ) {
+                path += File.pathSeparator + files[i].getAbsolutePath();
+            }
+
+            if(previous == null || previous.isEmpty()) {
+                return path;
+            } else {
+                return path + File.pathSeparator + previous;
+            }
         }
     }
 
     /**
-     * The new command to restart java, with compiler jar prepended to the
-     * bootclasspath
+     * Find all args that match the given pattern and extract their index 1 group.  Add all the index 1 groups to the
+     * returned list.   Remove all matching args from the input args list.
+     * @param pattern      A pattern with at least one matching group
+     * @param allowEmpties Whether or not to add empty group(1) matches to the returned list
+     * @param args         The arguments to extract from
+     * @return A list of arguments from the first group that matched the pattern for each input args or the empty list
+     *         if there were none
      */
-    static List<String> newCommandArgs(String[] currArgs) {
-        List<String> args = new ArrayList<String>(currArgs.length + 5);
-        args.add("java");
+    protected static List<String> extractOptWPattern(final Pattern pattern, boolean allowEmpties, final List<String> args) {
+        final List<String> matchedArgs = new ArrayList<String>();
 
-        // Java's Arguments
-        RuntimeMXBean mxBean = ManagementFactory.getRuntimeMXBean();
-        args.addAll(mxBean.getInputArguments());
+        int i = 0;
+        while(i < args.size()) {
+            final Matcher matcher = pattern.matcher(args.get(i));
+            if( matcher.matches() ) {
+                final String arg = matcher.group(1).trim();
 
-        String jarPath = findPathJar(CheckerMain.class);
-        args.add("-Xbootclasspath/p:" + jarPath);
+                if( !arg.isEmpty() || allowEmpties ) {
+                    matchedArgs.add(arg);
+                }
+
+                args.remove(i);
+            } else {
+                i++;
+            }
+        }
+
+        return matchedArgs;
+    }
+
+    /**
+     * A pattern to catch bootclasspath prepend entries, used to construct one -Xbootclasspath/p: argument
+     */
+    protected static final Pattern BOOT_CLASS_PATH_REGEX = Pattern.compile("^(?:-J){0,1}-Xbootclasspath/p:(.*)$");
+
+    /**
+     * Remove all -Xbootclasspath/p: or -J-Xbootclasspath/p: arguments from args and add them to the returned list
+     * @param args The arguments to extract from
+     * @return All non-empty arguments matching BOOT_CLASS_PATH_REGEX or an empty list if there were none
+     */
+    protected static List<String> extractBootClassPath(final List<String> args) {
+        return extractOptWPattern(BOOT_CLASS_PATH_REGEX, false, args);
+    }
+
+    /**
+     * Matches all -J arguments
+     */
+    protected static final Pattern JVM_OPTS_REGEX = Pattern.compile("^(?:-J)(.*)$");
+
+    /**
+     * Remove all -J arguments from args and add them to the returned list
+     * @param args The arguments to extract from
+     * @return All -j arguments (without the -J prefix) or an empty list if there were none
+     */
+    protected static List<String> extractJvmOpts(final List<String> args) {
+        return extractOptWPattern(JVM_OPTS_REGEX, false, args);
+    }
+
+    /**
+     * Extract the -cp and -classpath arguments and there immediate predecessors in args.  Return a list of the
+     * predecessors.  If NO -cp or -classpath arguments were present then use the current directory and the
+     * CLASSPATH environment variable
+     * @param args A list of arguments to extract from
+     * @return The arguments that should be put on the classpath when calling javac.jar
+     */
+    protected static List<String> extractCpOpts(final List<String> args) {
+        List<String> actualArgs = new ArrayList<String>();
+
+        String path = null;
+
+        int i = 0;
+        while(i < args.size()) {
+
+            if( args.get(i).equals("-cp") || args.get(i).equals("-classpath")) {
+                if(args.size() > i ) {
+                    args.remove(i);
+                    path = args.remove(i);
+                } //else loop ends and we have a dangling -cp
+            } else {
+                i++;
+            }
+        }
+
+        //The logic below is exactly what the javac script does
+        //If it's empty use the current directory AND the "CLASSPATH" environment variable
+        if( path == null ) {
+            final String systemClassPath = System.getenv("CLASSPATH");
+            if(systemClassPath != null && !systemClassPath.trim().isEmpty()) {
+                actualArgs.add(System.getenv("CLASSPATH"));
+            }
+
+            actualArgs.add(".");
+        } else {
+            //Every classpath entry overrides the one before it and CLASSPATH
+            actualArgs.add(path);
+        }
+
+        return actualArgs;
+    }
+
+    /**
+     * Invoke the JSR308 Type Annotations Compiler with all relevant jars on it's classpath or boot classpath
+     */
+    protected int invokeCompiler() {
+        List<String> args = new ArrayList<String>(jvmOpts.size() + cpOpts.size() + toolOpts.size() + 5);
+
+        final String java = PluginUtil.getJavaCommand(System.getProperty("java.home"), System.out);
+        args.add(java);
+
+        args.add("-Xbootclasspath/p:" + PluginUtil.join(File.pathSeparator, runtimeBootClasspath));
+        args.add("-ea:com.sun.tools...");
+
+        args.addAll(jvmOpts);
+
         args.add("-jar");
-        args.add(jarPath);
-        args.add("-Xbootclasspath/p:" + jdkJar());
-        args.addAll(Arrays.asList(currArgs));
-        return args;
-    }
+        args.add(javacJar.getAbsolutePath());
 
-    private static File tempJDKPath() {
-        String userSupplied = System.getProperty("jsr308.jdk");
-        if (userSupplied != null)
-            return new File(userSupplied);
+        args.add("-Xbootclasspath/p:" + PluginUtil.join(File.pathSeparator, compilationBootclasspath));
 
-        String tmpFolder = System.getProperty("java.io.tmpdir");
-        File jdkFile = new File(tmpFolder, "jdk-" + VERSION + ".jar");
-        return jdkFile;
-    }
 
-    /** returns the path to annotated JDK */
-    private static String jdkJar() {
-        // case 1: running from binary
-        String thisJar = findPathJar(CheckerMain.class);
-        File potential = new File(new File(thisJar).getParentFile(), "jdk.jar");
-        if (potential.exists()) {
-            //System.out.println("from adjacent jdk.jar");
-            return potential.getPath();
-        }
+        args.add("-classpath");
+        args.add(PluginUtil.join(File.pathSeparator, cpOpts));
 
-        // case 2: there was a temporary copy
-        File jdkFile = tempJDKPath();
-        //System.out.println(jdkFile);
-        if (jdkFile.exists()) {
-            //System.out.println("From temporary");
-            return jdkFile.getPath();
-        }
+        args.addAll(toolOpts);
 
-        // case 3: extract zipped jdk.jar
-        try {
-            extractFile(thisJar, "jdk.jar", jdkFile);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
-        if (jdkFile.exists()) {
-            //System.out.println("Extracted jar");
-            return jdkFile.getPath();
-        }
-
-        throw new AssertionError("Couldn't find annotated JDK");
-    }
-
-    private static void extractFile(String jar, String fileName, File output) throws Exception {
-        int BUFFER = 2048;
-
-        File jarFile = new File(jar);
-        if (! jarFile.exists()) {
-            throw new Exception("File does not exist: " + jarFile);
-        }
-        ZipFile zip;
-        try {
-            zip = new ZipFile(jarFile);
-        } catch (Exception e) {
-            throw new RuntimeException("Problem opening zip file " + jarFile);
-        }
-
-        ZipEntry entry = zip.getEntry(fileName);
-        assert !entry.isDirectory();
-
-        BufferedInputStream is = new BufferedInputStream(zip.getInputStream(entry));
-        int currentByte;
-        // establish buffer for writing file
-        byte data[] = new byte[BUFFER];
-
-        // write the current file to disk
-        FileOutputStream fos = new FileOutputStream(output);
-        BufferedOutputStream dest = new BufferedOutputStream(fos, BUFFER);
-
-        // read and write until last byte is encountered
-        while ((currentByte = is.read(data, 0, BUFFER)) != -1) {
-            dest.write(data, 0, currentByte);
-        }
-        dest.flush();
-        dest.close();
-        is.close();
+        //Actually invoke the compiler
+        return ExecUtil.execute(args.toArray(new String[args.size()]), System.out, System.err);
     }
 
     /**
-     * Find the jar file containing the annotated JDK (i.e. jar containing
-     * this file
+     * Determine the version of the JRE that we are currently running and select a jdk<V>.jar where
+     * <V> is the version of java that is being run (e.g. 6, 7, ...)
+     * @return The jdk<V>.jar where <V> is the version of java that is being run (e.g. 6, 7, ...)
      */
-    public static String findPathJar(Class<?> context) throws IllegalStateException {
+    private String findJdkJarName() {
+        final String fileName;
+        if(jreVersion == 1.4 || jreVersion == 1.5 || jreVersion == 1.6) {
+            fileName = "jdk6.jar";
+        } else if(jreVersion == 1.7) {
+            fileName = "jdk7.jar";
+        } else {
+            throw new AssertionError("Unsupported JRE version: " + jreVersion);
+        }
+
+        return fileName;
+    }
+
+    /**
+     * Extract the first two version numbers from java.version (e.g. 1.6 from 1.6.whatever)
+     * @return The first two version numbers from java.version (e.g. 1.6 from 1.6.whatever)
+     */
+    private static double getJreVersion() {
+        final Pattern versionPattern = Pattern.compile("^(\\d\\.\\d+)\\..*$");
+        final String  jreVersionStr = System.getProperty("java.version");
+        final Matcher versionMatcher = versionPattern.matcher(jreVersionStr);
+
+        final double version;
+        if(versionMatcher.matches()) {
+            version = Double.parseDouble(versionMatcher.group(1));
+        } else {
+            throw new RuntimeException("Could not determine version from property java.version=" + jreVersionStr);
+        }
+
+        return version;
+    }
+
+    /**
+     * Find the jar file or directory containing the .class file from which context was loaded
+     * @param context The class whose .class file we wish to locate
+     * @param directory Whether to throw an exception if the file was loaded from a directory
+     */
+    public static String findPathTo(Class<?> context, boolean directory) throws IllegalStateException {
         if (context == null) context = CheckerMain.class;
         String rawName = context.getName();
         String classFileName;
@@ -159,7 +314,13 @@ public class CheckerMain {
         }
 
         String uri = context.getResource(classFileName).toString();
-        if (uri.startsWith("file:")) throw new IllegalStateException("This class has been loaded from a directory and not from a jar file.");
+        if (uri.startsWith("file:")) {
+            if(directory) {
+                return uri;
+            } else {
+                throw new IllegalStateException("This class has been loaded from a directory and not from a jar file.");
+            }
+        }
         if (!uri.startsWith("jar:file:")) {
             int idx = uri.indexOf(':');
             String protocol = idx == -1 ? "(unknown)" : uri.substring(0, idx);
@@ -179,50 +340,29 @@ public class CheckerMain {
         }
     }
 
-    /** Returns true if the JSR308 classes are being used */
-    static boolean isUsingJSR308Compiler() {
-        try {
-            Class<?> clazz = com.sun.source.tree.MethodTree.class;
-            // Keep this method name synchronized!
-            clazz.getMethod("getReceiverParameter");
-            return true;
-        } catch (Throwable e) {
-            // Error either due to MethodTree not loadable, or that the JSR308
-            // specific getReceiverAnnotations() method isn't present
-            return false;
-        }
-    }
-
     /**
-     * Helper class to invoke the libc system() native call
+     * Assert that all files in the list exist and if they don't, throw a RuntimeException with a list of the files
+     * that do not exist
      *
-     * Using the system() native call, rather than Runtime.exec(), to handle
-     * IO "redirection"
-     **/
-    public interface CLibrary extends Library {
-        CLibrary INSTANCE = (CLibrary)Native.loadLibrary("c", CLibrary.class);
-        int system(String command);
-     }
-
-    /**
-     * Helper method to do the proper escaping of arguments to pass to
-     * system()
+     * @param expectedFiles Files that must exist
      */
-    static String constructCommand(Iterable<String> args) {
-        StringBuilder sb = new StringBuilder();
-
-        for (String arg: args) {
-            sb.append('"');
-            sb.append(arg.replace("\"", "\\\""));
-            sb.append("\" ");
+    private static void assertFilesExist(final List<File> expectedFiles) {
+        final List<File> missingFiles = new ArrayList<File>();
+        for(final File file : expectedFiles) {
+            if( file == null || !file.exists() ) {
+                missingFiles.add(file);
+            }
         }
 
-        return sb.toString();
-    }
+        if( !missingFiles.isEmpty() ) {
+            final File firstMissing = missingFiles.remove(0);
+            String message = "The following files could not be located: " + firstMissing.getName();
 
-    /** Execute the commands, with IO redirection */
-    static void execute(Iterable<String> cmdArray) {
-        String command = constructCommand(cmdArray);
-        CLibrary.INSTANCE.system(command);
+            for(final File missing : missingFiles) {
+                message += ", " + missing.getName();
+            }
+
+            throw new RuntimeException(message);
+        }
     }
 }

@@ -20,39 +20,33 @@ public abstract class RunCheckerAction extends CheckerHandler
     private final String checkerName;
     protected boolean usePrefs;
     protected boolean useCustom;
+    protected boolean useSingleCustom;
 
     /** true if this action is used from editor */
     protected boolean usedInEditor;
 
-    protected RunCheckerAction()
-    {
+    protected RunCheckerAction() {
         super();
         this.checkerName = null;
         this.usePrefs = true;
         this.useCustom = false;
+        this.useSingleCustom = false;
     }
 
-    protected RunCheckerAction(Class<?> checker)
-    {
-        this(checker.getCanonicalName());
-    }
-
-    protected RunCheckerAction(String checkerName)
-    {
+    protected RunCheckerAction(String checkerName) {
         super();
         this.checkerName = checkerName;
         this.useCustom = false;
         this.usePrefs = false;
+        this.useSingleCustom = false;
     }
 
     /**
      * If constructed with a no-arg constructor, then we get the list of classes
      * to use from the preferences system
      */
-    private List<String> getClassNameFromPrefs()
-    {
-
-        return CheckerManager.getInstance().getSelectedNames();
+    private List<String> getClassNameFromPrefs() {
+        return CheckerManager.getSelectedClasses();
     }
 
     /**
@@ -74,22 +68,23 @@ public abstract class RunCheckerAction extends CheckerHandler
             // * just run one particular checker
             // * use the custom configured checkers
             // * run "selected" checkers using the action or auto build
-            if (!usePrefs && !useCustom)
-            {
-                checkerJob = new CheckerWorker(element, checkerName);
+            
+            final String actualNames;
+            
+            if (!usePrefs && !useCustom && !useSingleCustom) {
+            	actualNames = checkerName;
             }
-            else if (!usePrefs)
-            {
-                checkerJob = new CheckerWorker(element, customClasses);
+            else if (!usePrefs && !useSingleCustom) {
+            	actualNames = customClasses;
             }
-            else
-            {
-
+            else if(useSingleCustom) {
+            	actualNames = event.getParameter("checker-framework-eclipse-plugin.checker");
+            } else {
                 List<String> names = getClassNameFromPrefs();
-
-                checkerJob = new CheckerWorker(element, JavaUtils.join(",",
-                        names));
+                actualNames = JavaUtils.join(",", names);
             }
+
+            checkerJob = new CheckerWorker(element, actualNames);
 
             checkerJob.setUser(true);
             checkerJob.setPriority(Job.BUILD);

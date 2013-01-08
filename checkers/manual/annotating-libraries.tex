@@ -35,8 +35,8 @@ You can make the annotations known to the checkers in two ways.
 \end{itemize}
 
 The Checker Framework distribution contains annotations for popular
-libraries, such as the JDK\@.  It uses both of the above mechanisms.  The
-Nullness, Javari, IGJ, and Interning Checkers use an annotated JDK
+libraries, such as the JDK6 and JDK7\@.  It uses both of the above mechanisms.  The
+Nullness, Javari, IGJ, and Interning Checkers use the annotated JDKs
 (Section~\ref{skeleton}), and all other checkers use stub files
 (Section~\ref{stub}).
 
@@ -314,40 +314,15 @@ in the library's \<.class> files instead.
 
 \section{Using distributed annotated JDKs\label{skeleton-using}\label{skeleton}}
 
-The Checker Framework distribution contains
-annotated JDKs at the path \<checkers/jdk/jdk.jar>.
-The \<javac> that is distributed with the Checker Framework uses the
-annotated JDKs by default.
+The Checker Framework distribution contains two
+annotated JDKs at the paths \<checkers/binary/jdk6.jar> and
+\<checkers/binary/jdk7.jar>.
+The \<javac> that is distributed with the Checker Framework and the command
+\code{java -jar \$CHECKERS/binary/checkers.jar} both use the appropriate jdk6.jar or jdk7.jar
+based on the version of Java used to run them.
 
-If you use a different \<javac>, then you must add a
-\code{-Xbootclasspath/p:} argument, which causes the compiler to read
-annotations from annotated JDK classes in preference to the unannotated
-original library classes.  Supply \code{-Xbootclasspath/p:} in addition to
-whatever other arguments you usually use, including \code{-classpath}.  For example:
-
-%BEGIN LATEX
-\begin{smaller}
-%END LATEX
-\begin{Verbatim}
-  javac -processor checkers.nullness.NullnessChecker -Xbootclasspath/p:${CHECKERS}/jdk/jdk.jar my_source_files
-\end{Verbatim}
-% Unconfuse Emacs font lock mode: $
-%BEGIN LATEX
-\end{smaller}
-%END LATEX
-
-If you do not supply the \code{-Xbootclasspath/p:} option, the checker will
-print a message warning you to do so.  In the unlikely event that you want
-to suppress this warning, use \code{-Anocheckjdk}.
-
-
-The annotated JDK should \emph{not} be in your classpath at run time, only
+The annotated JDKs should \emph{not} be in your classpath at run time, only
 at compile time.
-
-The supplied annotated JDK is a version of JDK 6.  If you wish to have an
-annotated version of JDK 7, you will need to create it yourself.  Running
-\<ant jdk.jar> from the \<checkers/> directory will perform this process.
-
 
 % Skeleton classes are inferior to stub classes for two reasons.  First,
 % skeleton files must be on the classpath during compilation but must
