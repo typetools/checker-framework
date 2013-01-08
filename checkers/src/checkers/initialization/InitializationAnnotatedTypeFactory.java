@@ -47,9 +47,9 @@ import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.tree.JCTree;
 
-public abstract class InitializationAnnotatedTypeFactory<Checker extends InitializationChecker, Transfer extends InitializationTransfer<Transfer>, Flow extends CFAbstractAnalysis<CFValue, InitializationStore, Transfer>>
+public abstract class InitializationAnnotatedTypeFactory<Checker extends InitializationChecker, Store extends InitializationStore<Store>, Transfer extends InitializationTransfer<Transfer, Store>, Flow extends CFAbstractAnalysis<CFValue, Store, Transfer>>
         extends
-        AbstractBasicAnnotatedTypeFactory<Checker, CFValue, InitializationStore, Transfer, Flow> {
+        AbstractBasicAnnotatedTypeFactory<Checker, CFValue, Store, Transfer, Flow> {
 
     /** The annotations */
     public final AnnotationMirror COMMITTED, NOT_ONLY_COMMITTED;
@@ -150,7 +150,7 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
             // If all fields are committed-only, and they are all initialized,
             // then it is save to switch to @Free(CurrentClass).
             if (areAllFieldsCommittedOnly(enclosingClass)) {
-                InitializationStore store = getStoreBefore(tree);
+                Store store = getStoreBefore(tree);
                 if (store != null) {
                     List<AnnotationMirror> annos = Collections.emptyList();
                     if (getUninitializedInvariantFields(store, path, false,
@@ -218,7 +218,7 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
      * and are not yet initialized in a given store.
      */
     public Set<VariableTree> getUninitializedInvariantFields(
-            InitializationStore store, TreePath path, boolean isStatic,
+            Store store, TreePath path, boolean isStatic,
             List<? extends AnnotationMirror> receiverAnnotations) {
         ClassTree currentClass = TreeUtils.enclosingClass(path);
         Set<VariableTree> fields = InitializationChecker

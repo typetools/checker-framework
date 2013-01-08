@@ -30,14 +30,14 @@ import checkers.types.QualifierHierarchy;
  * @author Stefan Heule
  * @see InitializationTransfer
  */
-public class InitializationStore extends
-        CFAbstractStore<CFValue, InitializationStore> {
+public class InitializationStore<S extends InitializationStore<S>> extends
+        CFAbstractStore<CFValue, S> {
 
     /** The list of fields that are initialized. */
     protected final Set<Element> initializedFields;
 
     public InitializationStore(
-            CFAbstractAnalysis<CFValue, InitializationStore, ?> analysis,
+            CFAbstractAnalysis<CFValue, S, ?> analysis,
             boolean sequentialSemantics) {
         super(analysis, sequentialSemantics);
         initializedFields = new HashSet<>();
@@ -113,7 +113,7 @@ public class InitializationStore extends
     }
 
     /** A copy constructor. */
-    public InitializationStore(InitializationStore other) {
+    public InitializationStore(S other) {
         super(other);
         initializedFields = new HashSet<>(other.initializedFields);
     }
@@ -148,11 +148,12 @@ public class InitializationStore extends
     }
 
     @Override
-    protected boolean supersetOf(CFAbstractStore<CFValue, InitializationStore> o) {
+    protected boolean supersetOf(CFAbstractStore<CFValue, S> o) {
         if (!(o instanceof InitializationStore)) {
             return false;
         }
-        InitializationStore other = (InitializationStore) o;
+        @SuppressWarnings("unchecked")
+        S other = (S) o;
         for (Element field : other.initializedFields) {
             if (!initializedFields.contains(field)) {
                 return false;
@@ -162,8 +163,8 @@ public class InitializationStore extends
     }
 
     @Override
-    public InitializationStore leastUpperBound(InitializationStore other) {
-        InitializationStore result = super.leastUpperBound(other);
+    public S leastUpperBound(S other) {
+        S result = super.leastUpperBound(other);
 
         // Set intersection for initializedFields.
         result.initializedFields.addAll(other.initializedFields);
@@ -182,7 +183,7 @@ public class InitializationStore extends
         return fieldValues;
     }
 
-    public CFAbstractAnalysis<CFValue, InitializationStore, ?> getAnalysis() {
+    public CFAbstractAnalysis<CFValue, S, ?> getAnalysis() {
         return analysis;
     }
 }
