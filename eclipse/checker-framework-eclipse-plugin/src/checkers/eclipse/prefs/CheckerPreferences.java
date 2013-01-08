@@ -55,4 +55,7 @@ public final class CheckerPreferences
     /** Key for option to use custom classes during autobuild */
     public static final String PREF_CHECKER_SELECTED_CHECKERS = "checker_selected_checkers";
 
+    /** Where or not the plugin should output extra diagnostic info */
+    public static final String PREF_CHECKER_VERBOSE = "checker_verbose";
+
 }

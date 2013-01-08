@@ -79,7 +79,7 @@ public class CheckerBuilder extends IncrementalProjectBuilder
         }
 
         runWorker(JavaCore.create(getProject()), visitor.getBuildFiles(),
-                CheckerManager.getInstance().getSelectedNames());
+                CheckerManager.getSelectedClasses());
     }
 
     private void fullBuild() throws CoreException
@@ -87,8 +87,7 @@ public class CheckerBuilder extends IncrementalProjectBuilder
         IJavaProject project = JavaCore.create(getProject());
         List<String> sourceNames = ResourceUtils.sourceFilesOf(project);
 
-        runWorker(project, sourceNames, CheckerManager.getInstance()
-                .getSelectedNames());
+        runWorker(project, sourceNames, CheckerManager.getSelectedClasses());
     }
 
     private void runWorker(IJavaProject project, List<String> sourceNames,
