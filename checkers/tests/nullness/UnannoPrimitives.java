@@ -15,10 +15,10 @@ class UnannoPrimitives {
     int i = new Integer(99) + 1900;
     int j = 7 + 1900;
 
-    //TODO:: error: (type.invalid)
+    //:: error: (type.invalid)
     @Nullable int f;
 
-    //TODO:: error: (type.invalid)
+    //:: error: (type.invalid)
     @NonNull int g;
   }
 

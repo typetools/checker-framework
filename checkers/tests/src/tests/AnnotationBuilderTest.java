@@ -7,10 +7,7 @@ import checkers.source.SourceChecker;
 import checkers.util.AnnotationBuilder;
 import checkers.util.AnnotationUtils;
 
-import java.util.Collections;
-
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.annotation.processing.Processor;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeMirror;
 
@@ -25,7 +22,7 @@ public class AnnotationBuilderTest {
     private final ProcessingEnvironment env;
 
     public AnnotationBuilderTest() {
-        env = new JavacProcessingEnvironment(new Context(), Collections.<Processor>emptyList());
+        env = JavacProcessingEnvironment.instance(new Context());
     }
 
     @Test

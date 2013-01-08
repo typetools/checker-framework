@@ -621,20 +621,26 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningChecker> {
     private boolean classIsAnnotated(AnnotatedTypeMirror type) {
 
         TypeMirror tm = type.getUnderlyingType();
-        if (tm instanceof TypeVariable) {
-            tm = ((TypeVariable) tm).getUpperBound();
-        }
-        if (tm instanceof WildcardType) {
-            tm = ((WildcardType) tm).getExtendsBound();
-        }
         if (tm == null) {
             // Maybe a type variable or wildcard had no upper bound
             return false;
         }
-        if (tm instanceof ArrayType) {
+        if (tm.getKind() == TypeKind.ANNOTATED) {
+            tm = ((AnnotatedType) tm).getUnderlyingType();
+        }
+        if (tm.getKind() == TypeKind.TYPEVAR) {
+            tm = ((TypeVariable) tm).getUpperBound();
+        }
+        if (tm.getKind() == TypeKind.WILDCARD) {
+            tm = ((WildcardType) tm).getExtendsBound();
+        }
+        if (tm.getKind() == TypeKind.ARRAY) {
             return false;
         }
-        if (! (tm instanceof DeclaredType)) {
+        if (tm.getKind() == TypeKind.ANNOTATED) {
+            tm = ((AnnotatedType) tm).getUnderlyingType();
+        }
+        if (tm.getKind() != TypeKind.DECLARED) {
             System.out.printf("InterningVisitor.classIsAnnotated: tm = %s (%s)%n", tm, tm.getClass());
         }
         Element classElt = ((DeclaredType) tm).asElement();

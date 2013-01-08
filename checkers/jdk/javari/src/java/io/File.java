@@ -18,7 +18,7 @@ import checkers.javari.quals.*;
 public class File implements Serializable, Comparable<File> {
     private static final long serialVersionUID = 0L;
 
-    static private FileSystem fs = FileSystem.getFileSystem();
+    static private FileSystem fs = null;
 
     public static final char separatorChar = fs.getSeparator();
     public static final String separator = "" + separatorChar;

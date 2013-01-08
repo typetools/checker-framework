@@ -18,6 +18,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
+import javax.lang.model.type.AnnotatedType;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
@@ -86,6 +87,9 @@ public abstract class AnnotatedTypeMirror {
         if (replacer == null)
             replacer = new Replacer(atypeFactory.types);
 
+        if (type.getKind() == TypeKind.ANNOTATED) {
+            type = ((AnnotatedType)type).getUnderlyingType();
+        }
         switch (type.getKind()) {
             case ARRAY:
                 return new AnnotatedArrayType((ArrayType) type, atypeFactory);
@@ -336,7 +340,7 @@ public abstract class AnnotatedTypeMirror {
             return AnnotationUtils.createAnnotationSet();
         } else {
             Set<AnnotationMirror> explicitAnnotations = AnnotationUtils.createAnnotationSet();
-            List<com.sun.tools.javac.code.Attribute.TypeCompound> typeAnnotations = ((com.sun.tools.javac.code.Symbol) this.element).typeAnnotations;
+            List<com.sun.tools.javac.code.Attribute.TypeCompound> typeAnnotations = ((com.sun.tools.javac.code.Symbol) this.element).getTypeAnnotationMirrors();
             // TODO: should we instead try to go to the Checker and use getSupportedTypeQualifiers()?
             Set<Name> validAnnotations = atypeFactory.getQualifierHierarchy().getTypeQualifiers();
             for (com.sun.tools.javac.code.Attribute.TypeCompound explicitAnno : typeAnnotations) {
