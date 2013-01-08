@@ -284,10 +284,12 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
     private static boolean mostSpecific(QualifierHierarchy qualHierarchy,
             AnnotatedTypeMirror a, AnnotatedTypeMirror b,
             AnnotatedTypeMirror backup, AnnotatedTypeMirror result) {
-        boolean canContainEmpty = result.getKind() == TypeKind.TYPEVAR
-                || result.getKind() == TypeKind.WILDCARD;
+        boolean canContainEmpty = QualifierHierarchy
+                .canHaveEmptyAnnotationSet(a)
+                && QualifierHierarchy.canHaveEmptyAnnotationSet(b)
+                && QualifierHierarchy.canHaveEmptyAnnotationSet(result);
         for (AnnotationMirror top : qualHierarchy.getTopAnnotations()) {
-            AnnotationMirror aAnno = canContainEmpty ? a
+            AnnotationMirror aAnno = canContainEmpty  ? a
                     .getAnnotationInHierarchy(top) : a
                     .getEffectiveAnnotationInHierarchy(top);
             AnnotationMirror bAnno = canContainEmpty ? b
