@@ -2,14 +2,13 @@ package checkers.nonnull;
 
 import java.util.List;
 
+import javacutils.Pair;
+
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.VariableElement;
 
-import javacutils.Pair;
-
 import checkers.flow.analysis.checkers.CFAbstractAnalysis;
 import checkers.flow.analysis.checkers.CFValue;
-import checkers.initialization.InitializationStore;
 import checkers.types.AnnotatedTypeMirror;
 
 /**
@@ -19,7 +18,7 @@ import checkers.types.AnnotatedTypeMirror;
  * @author Stefan Heule
  */
 public class NonNullAnalysis extends
-        CFAbstractAnalysis<CFValue, InitializationStore, NonNullTransfer> {
+        CFAbstractAnalysis<CFValue, NonNullStore, NonNullTransfer> {
 
     public NonNullAnalysis(NonNullAnnotatedTypeFactory factory,
             ProcessingEnvironment env, AbstractNonNullChecker checker,
@@ -28,13 +27,13 @@ public class NonNullAnalysis extends
     }
 
     @Override
-    public InitializationStore createEmptyStore(boolean sequentialSemantics) {
-        return new InitializationStore(this, sequentialSemantics);
+    public NonNullStore createEmptyStore(boolean sequentialSemantics) {
+        return new NonNullStore(this, sequentialSemantics);
     }
 
     @Override
-    public InitializationStore createCopiedStore(InitializationStore s) {
-        return new InitializationStore(s);
+    public NonNullStore createCopiedStore(NonNullStore s) {
+        return new NonNullStore(s);
     }
 
     @Override

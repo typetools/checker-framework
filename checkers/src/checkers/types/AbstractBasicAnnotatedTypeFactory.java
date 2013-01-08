@@ -662,6 +662,12 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
                             // Shouldn't inferred qualifiers always be
                             // subtypes?
                             type.replaceAnnotation(inferredAnnotation);
+                        } else {
+                            System.out.println("inferred: " + inferredAnnotation);
+                            System.out.println("present: " + present);
+                            System.out.println("inferred: " + inferred);
+                            System.out.println("present: " + type);
+                            System.out.println("----");
                         }
                     } else {
                         type.addAnnotation(inferredAnnotation);
