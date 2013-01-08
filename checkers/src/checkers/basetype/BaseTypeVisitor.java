@@ -2069,7 +2069,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
         }
 
         // basic consistency checks
-        if (!AnnotatedTypes.isValidValue(checker.getQualifierHierarchy(),
+        if (!AnnotatedTypes.isValidType(checker.getQualifierHierarchy(),
                 type)) {
             checker.report(
                     Result.failure("type.invalid", type.getAnnotations(),
