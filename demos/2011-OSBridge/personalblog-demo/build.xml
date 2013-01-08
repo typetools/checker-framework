@@ -11,7 +11,7 @@
       <compilerarg value="-J-Xbootclasspath/p:${env.CHECKERS}/binary/jsr308-all.jar"/>
 
       <classpath>
-        <pathelement location="${env.CHECKERS}/checkers.jar"/>
+        <pathelement location="${env.CHECKERS}/binary/checkers.jar"/>
         <pathelement location="lib/personalblog.jar"/>
         <pathelement location="lib/hibernate2.jar"/>
         <pathelement location="lib/commons-logging.jar"/>
