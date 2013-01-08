@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry excluding="checkers/nullness/NullnessUtils.java|checkers/regex/RegexUtil.java|checkers/units/UnitsTools.java" kind="src" path="src"/>
+	<classpathentry excluding="checkers/nullness/NullnessUtils.java|checkers/units/UnitsTools.java|checkers/nonnull/util/NonNullUtils.java|checkers/regex/RegexUtil.java" kind="src" path="src"/>
 	<classpathentry kind="src" path="tests/src"/>
 	<classpathentry kind="src" path="tests/test-lubglb"/>
 	<classpathentry kind="src" path="tests/test-polyall"/>
