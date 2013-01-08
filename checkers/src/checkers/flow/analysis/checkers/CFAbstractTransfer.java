@@ -95,9 +95,23 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
                 .getOptions().containsKey("concurrentSemantics");
     }
 
+    /**
+     * This method is called before returning the abstract value {@code value}
+     * as the result of the transfer function. By default, the value is not
+     * changed but subclasses might decide to implement some functionality. The
+     * store at this position is also passed.
+     */
     protected V finishValue(V value, S store) {
         return value;
     }
+
+    /**
+     * This method is called before returning the abstract value {@code value}
+     * as the result of the transfer function. By default, the value is not
+     * changed but subclasses might decide to implement some functionality. The
+     * store at this position is also passed (two stores, as the result is a
+     * {@link ConditionalTransferResult}.
+     */
     protected V finishValue(V value, S thenStore, S elseStore) {
         return value;
     }
@@ -124,7 +138,8 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
                 if (assCtxt instanceof AnnotatedExecutableType) {
                     // For a MethodReturnContext, we get the full type of the
                     // method, but we only want the return type.
-                    assCtxt = ((AnnotatedExecutableType) assCtxt).getReturnType();
+                    assCtxt = ((AnnotatedExecutableType) assCtxt)
+                            .getReturnType();
                 }
                 factory.setUseFlow(oldFlow);
                 factory.getVisitorState().setAssignmentContext(
@@ -269,7 +284,8 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
         if (in.containsTwoStores()) {
             S thenStore = in.getThenStore();
             S elseStore = in.getElseStore();
-            return new ConditionalTransferResult<>(finishValue(value, thenStore, elseStore), thenStore, elseStore);
+            return new ConditionalTransferResult<>(finishValue(value,
+                    thenStore, elseStore), thenStore, elseStore);
         } else {
             S info = in.getRegularStore();
             return new RegularTransferResult<>(finishValue(value, info), info);
@@ -328,7 +344,8 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
         if (thenValue != null && elseValue != null) {
             resultValue = thenValue.leastUpperBound(elseValue);
         }
-        return new RegularTransferResult<>(finishValue(resultValue, store), store);
+        return new RegularTransferResult<>(finishValue(resultValue, store),
+                store);
     }
 
     /**
@@ -511,7 +528,8 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
         // add new information based on conditional postcondition
         processConditionalPostconditions(n, method, tree, thenStore, elseStore);
 
-        return new ConditionalTransferResult<>(finishValue(resValue, thenStore, elseStore), thenStore, elseStore);
+        return new ConditionalTransferResult<>(finishValue(resValue, thenStore,
+                elseStore), thenStore, elseStore);
     }
 
     /**
