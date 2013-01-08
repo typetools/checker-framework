@@ -19,7 +19,7 @@ import dataflow.cfg.node.MethodInvocationNode;
 
 import checkers.flow.analysis.checkers.CFAbstractAnalysis;
 import checkers.flow.analysis.checkers.CFAbstractStore;
-import checkers.flow.analysis.checkers.CFValue;
+import checkers.flow.analysis.checkers.CFAbstractValue;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.QualifierHierarchy;
 
@@ -30,14 +30,14 @@ import checkers.types.QualifierHierarchy;
  * @author Stefan Heule
  * @see InitializationTransfer
  */
-public class InitializationStore<S extends InitializationStore<S>> extends
-        CFAbstractStore<CFValue, S> {
+public class InitializationStore<V extends CFAbstractValue<V>, S extends InitializationStore<V, S>> extends
+        CFAbstractStore<V, S> {
 
     /** The list of fields that are initialized. */
     protected final Set<Element> initializedFields;
 
     public InitializationStore(
-            CFAbstractAnalysis<CFValue, S, ?> analysis,
+            CFAbstractAnalysis<V, S, ?> analysis,
             boolean sequentialSemantics) {
         super(analysis, sequentialSemantics);
         initializedFields = new HashSet<>();
@@ -51,7 +51,7 @@ public class InitializationStore<S extends InitializationStore<S>> extends
      * be considered initialized.
      */
     @Override
-    public void insertValue(Receiver r, CFValue value) {
+    public void insertValue(Receiver r, V value) {
         if (value == null) {
             // No need to insert a null abstract value because it represents
             // top and top is also the default value.
@@ -84,7 +84,7 @@ public class InitializationStore<S extends InitializationStore<S>> extends
      */
     @Override
     public void updateForMethodCall(MethodInvocationNode n,
-            AnnotatedTypeFactory atypeFactory, CFValue val) {
+            AnnotatedTypeFactory atypeFactory, V val) {
         InitializationChecker checker = (InitializationChecker) analysis
                 .getFactory().getChecker();
         AnnotationMirror fieldInvariantAnnotation = checker
@@ -93,7 +93,7 @@ public class InitializationStore<S extends InitializationStore<S>> extends
         // Are there fields that have the 'invariant' annotations and are in the
         // store?
         Set<FlowExpressions.FieldAccess> invariantFields = new HashSet<>();
-        for (Entry<FlowExpressions.FieldAccess, CFValue> e : fieldValues
+        for (Entry<FlowExpressions.FieldAccess, V> e : fieldValues
                 .entrySet()) {
             FlowExpressions.FieldAccess fieldAccess = e.getKey();
             Set<AnnotationMirror> declaredAnnos = atypeFactory
@@ -148,7 +148,7 @@ public class InitializationStore<S extends InitializationStore<S>> extends
     }
 
     @Override
-    protected boolean supersetOf(CFAbstractStore<CFValue, S> o) {
+    protected boolean supersetOf(CFAbstractStore<V, S> o) {
         if (!(o instanceof InitializationStore)) {
             return false;
         }
@@ -179,11 +179,11 @@ public class InitializationStore<S extends InitializationStore<S>> extends
         result.append("  initialized fields = " + initializedFields + "\\n");
     }
 
-    public Map<FieldAccess, CFValue> getFieldValues() {
+    public Map<FieldAccess, V> getFieldValues() {
         return fieldValues;
     }
 
-    public CFAbstractAnalysis<CFValue, S, ?> getAnalysis() {
+    public CFAbstractAnalysis<V, S, ?> getAnalysis() {
         return analysis;
     }
 }
