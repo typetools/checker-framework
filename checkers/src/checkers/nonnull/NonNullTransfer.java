@@ -17,6 +17,7 @@ import checkers.initialization.quals.NonRaw;
 import checkers.nonnull.quals.NonNull;
 import checkers.nonnull.quals.Nullable;
 import checkers.nonnull.quals.PolyNull;
+import checkers.quals.PolyAll;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 
@@ -142,7 +143,8 @@ public class NonNullTransfer extends
             }
 
             if (secondValue != null
-                    && secondValue.getType().hasAnnotation(PolyNull.class)) {
+                    && (secondValue.getType().hasAnnotation(PolyNull.class) || secondValue
+                            .getType().hasAnnotation(PolyAll.class))) {
                 thenStore = thenStore == null ? res.getThenStore() : thenStore;
                 elseStore = elseStore == null ? res.getElseStore() : elseStore;
                 thenStore.setPolyNullNull(true);
