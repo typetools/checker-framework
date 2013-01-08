@@ -95,6 +95,13 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
                 .getOptions().containsKey("concurrentSemantics");
     }
 
+    protected V finishValue(V value, S store) {
+        return value;
+    }
+    protected V finishValue(V value, S thenStore, S elseStore) {
+        return value;
+    }
+
     /**
      * @return The abstract value of a non-leaf tree {@code tree}, as computed
      *         by the {@link AnnotatedTypeFactory}.
@@ -262,10 +269,10 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
         if (in.containsTwoStores()) {
             S thenStore = in.getThenStore();
             S elseStore = in.getElseStore();
-            return new ConditionalTransferResult<>(value, thenStore, elseStore);
+            return new ConditionalTransferResult<>(finishValue(value, thenStore, elseStore), thenStore, elseStore);
         } else {
             S info = in.getRegularStore();
-            return new RegularTransferResult<>(value, info);
+            return new RegularTransferResult<>(finishValue(value, info), info);
         }
     }
 
@@ -279,7 +286,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
         // non-null type systems)
         V factoryValue = getValueFromFactory(n.getTree(), n);
         V value = moreSpecificValue(factoryValue, storeValue);
-        return new RegularTransferResult<>(value, store);
+        return new RegularTransferResult<>(finishValue(value, store), store);
     }
 
     @Override
@@ -290,7 +297,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
         // look up value in factory, and take the more specific one
         V factoryValue = getValueFromFactory(n.getTree(), n);
         V value = moreSpecificValue(factoryValue, storeValue);
-        return new RegularTransferResult<>(value, store);
+        return new RegularTransferResult<>(finishValue(value, store), store);
     }
 
     /**
@@ -303,7 +310,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
         V valueFromStore = store.getValue(n);
         V valueFromFactory = getValueFromFactory(n.getTree(), n);
         V value = moreSpecificValue(valueFromFactory, valueFromStore);
-        return new RegularTransferResult<>(value, store);
+        return new RegularTransferResult<>(finishValue(value, store), store);
     }
 
     /**
@@ -321,7 +328,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
         if (thenValue != null && elseValue != null) {
             resultValue = thenValue.leastUpperBound(elseValue);
         }
-        return new RegularTransferResult<>(resultValue, store);
+        return new RegularTransferResult<>(finishValue(resultValue, store), store);
     }
 
     /**
@@ -445,7 +452,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
         V rhsValue = in.getValueOfSubNode(rhs);
         processCommonAssignment(in, lhs, rhs, info, rhsValue);
 
-        return new RegularTransferResult<>(rhsValue, info);
+        return new RegularTransferResult<>(finishValue(rhsValue, info), info);
     }
 
     @Override
@@ -504,7 +511,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
         // add new information based on conditional postcondition
         processConditionalPostconditions(n, method, tree, thenStore, elseStore);
 
-        return new ConditionalTransferResult<>(resValue, thenStore, elseStore);
+        return new ConditionalTransferResult<>(finishValue(resValue, thenStore, elseStore), thenStore, elseStore);
     }
 
     /**
@@ -595,7 +602,8 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
      */
     @Override
     public TransferResult<V, S> visitCase(CaseNode n, TransferInput<V, S> in) {
-        return new RegularTransferResult<>(null, in.getRegularStore());
+        S store = in.getRegularStore();
+        return new RegularTransferResult<>(finishValue(null, store), store);
     }
 
     /**
@@ -667,7 +675,8 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
     @Override
     public TransferResult<V, S> visitVariableDeclaration(
             VariableDeclarationNode n, TransferInput<V, S> p) {
-        return new RegularTransferResult<>(null, p.getRegularStore());
+        S store = p.getRegularStore();
+        return new RegularTransferResult<>(finishValue(null, store), store);
     }
 
     @Override

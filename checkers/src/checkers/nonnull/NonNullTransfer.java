@@ -89,6 +89,15 @@ public class NonNullTransfer extends
         }
     }
 
+    @Override
+    protected NonNullValue finishValue(NonNullValue value, NonNullStore store) {
+        value = super.finishValue(value, store);
+        if (value != null) {
+            value.isPolyNullNull = store.isPolyNullNull();
+        }
+        return value;
+    }
+
     /**
      * {@inheritDoc}
      *
