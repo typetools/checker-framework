@@ -2,7 +2,6 @@ package checkers.eclipse.actions;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import checkers.eclipse.prefs.CheckerPreferences;
@@ -41,29 +40,6 @@ public class CheckerManager {
 
     public List<CheckerInfo> getCheckerInfos() {
     	return CheckerInfo.checkers;
-    }
-
-    /**
-     * Check to see which classes have been selected and return those that have
-     * been selected
-     * 
-     * @return a list of classes to run
-     */
-    public List<String> getSelectedNames()
-    {
-        List<String> selected = new ArrayList<String>();
-
-        IPreferenceStore store = getPrefStore();
-
-
-        for (CheckerInfo processor : CheckerInfo.checkers) {
-            String label = processor.getLabel();
-            boolean selection = store.getBoolean(label);
-            if (selection)
-                selected.add(processor.getClassName());
-        }
-
-        return selected;
     }
 
     /**

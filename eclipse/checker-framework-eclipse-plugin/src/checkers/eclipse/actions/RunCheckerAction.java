@@ -46,7 +46,7 @@ public abstract class RunCheckerAction extends CheckerHandler
      * to use from the preferences system
      */
     private List<String> getClassNameFromPrefs() {
-        return CheckerManager.getInstance().getSelectedNames();
+        return CheckerManager.getSelectedClasses();
     }
 
     /**

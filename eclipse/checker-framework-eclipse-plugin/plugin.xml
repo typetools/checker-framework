@@ -26,7 +26,7 @@
   </extension> 
    
   <extension 
-    id="checkerbuilder" 
+    id="checkerbuilder"
     name="%extension.name.0" 
     point="org.eclipse.core.resources.builders">
     <builder hasNature="true">
@@ -100,55 +100,55 @@
           visible="true">
         </separator>
         <menu
-          label="Built-in Checkers">
+          label="Run Built-in Checker">
           <command
             commandId="checkers.eclipse.runnullness"
-            label="Run Nullness Checker"
+            label="Nullness Checker"
             style="push">
           </command>
           <command
             commandId="checkers.eclipse.runfenum"
-            label="Run Fenum Checker"
+            label="Fenum Checker"
             style="push">
           </command>
           <command
             commandId="checkers.eclipse.runigj"
-            label="Run IGJ Checker"
+            label="IGJ Checker"
             style="push">
           </command>
           <command
             commandId="checkers.eclipse.runinterning"
-            label="Run Interning Checker"
+            label="Interning Checker"
             style="push">
           </command>
           <command
             commandId="checkers.eclipse.runjavari"
-            label="Run Javari Checker"
+            label="Javari Checker"
             style="push">
           </command>
           <command
             commandId="checkers.eclipse.runregex"
-            label="Run Regex Checker"
+            label="Regex Checker"
             style="push">
           </command>
           <command
             commandId="checkers.eclipse.runlock"
-            label="Run Lock Checker"
+            label="Lock Checker"
             style="push">
           </command>
           <command
             commandId="checkers.eclipse.runlinear"
-            label="Run Linear Checker"
+            label="Linear Checker"
             style="push">
           </command>
           <command
             commandId="checkers.eclipse.runi18n"
-            label="Run I18n Checker"
+            label="I18n Checker"
             style="push">
           </command>
           <command
             commandId="checkers.eclipse.runtainting"
-            label="Run Tainting Checker"
+            label="Tainting Checker"
             style="push">
           </command>
         </menu>
