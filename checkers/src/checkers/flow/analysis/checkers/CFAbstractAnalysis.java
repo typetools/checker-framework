@@ -130,7 +130,7 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
      */
     public CFValue defaultCreateAbstractValue(
             CFAbstractAnalysis<CFValue, ?, ?> analysis, AnnotatedTypeMirror type) {
-        if (!AnnotatedTypes.isValidValue(qualifierHierarchy, type)) {
+        if (!AnnotatedTypes.isValidType(qualifierHierarchy, type)) {
             // If the type is not valid, we return null, which is the same as
             // 'no information'.
             return null;
