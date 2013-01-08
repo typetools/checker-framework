@@ -1370,13 +1370,13 @@ public class AnnotatedTypes {
      * arrays, as wells as bounds of type variables and wildcards.
      * </ol>
      */
-    public static boolean isValidValue(QualifierHierarchy qualifierHierarchy,
+    public static boolean isValidType(QualifierHierarchy qualifierHierarchy,
             AnnotatedTypeMirror type) {
-        return isValidValue(qualifierHierarchy, type,
+        return isValidType(qualifierHierarchy, type,
                 Collections.<AnnotatedTypeMirror> emptySet());
     }
 
-    private static boolean isValidValue(QualifierHierarchy qualifierHierarchy,
+    private static boolean isValidType(QualifierHierarchy qualifierHierarchy,
             AnnotatedTypeMirror type, Set<AnnotatedTypeMirror> v) {
         if (type == null) {
             return false;
@@ -1416,7 +1416,7 @@ public class AnnotatedTypes {
         // recurse for composite types
         if (type instanceof AnnotatedArrayType) {
             AnnotatedArrayType at = (AnnotatedArrayType) type;
-            if (!isValidValue(qualifierHierarchy, at.getComponentType(), visited)) {
+            if (!isValidType(qualifierHierarchy, at.getComponentType(), visited)) {
                 return false;
             }
         } else if (type instanceof AnnotatedTypeVariable) {
@@ -1424,11 +1424,11 @@ public class AnnotatedTypes {
             AnnotatedTypeMirror lowerBound = at.getLowerBound();
             AnnotatedTypeMirror upperBound = at.getUpperBound();
             if (lowerBound != null
-                    && !isValidValue(qualifierHierarchy, lowerBound, visited)) {
+                    && !isValidType(qualifierHierarchy, lowerBound, visited)) {
                 return false;
             }
             if (upperBound != null
-                    && !isValidValue(qualifierHierarchy, upperBound, visited)) {
+                    && !isValidType(qualifierHierarchy, upperBound, visited)) {
                 return false;
             }
         } else if (type instanceof AnnotatedWildcardType) {
@@ -1436,11 +1436,11 @@ public class AnnotatedTypes {
             AnnotatedTypeMirror extendsBound = at.getExtendsBound();
             AnnotatedTypeMirror superBound = at.getSuperBound();
             if (extendsBound != null
-                    && !isValidValue(qualifierHierarchy, extendsBound, visited)) {
+                    && !isValidType(qualifierHierarchy, extendsBound, visited)) {
                 return false;
             }
             if (superBound != null
-                    && !isValidValue(qualifierHierarchy, superBound, visited)) {
+                    && !isValidType(qualifierHierarchy, superBound, visited)) {
                 return false;
             }
         }
