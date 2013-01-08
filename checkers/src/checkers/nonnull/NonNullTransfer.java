@@ -12,6 +12,8 @@ import checkers.flow.analysis.checkers.CFAbstractStore;
 import checkers.flow.analysis.checkers.CFValue;
 import checkers.initialization.InitializationTransfer;
 import checkers.nonnull.quals.NonNull;
+import checkers.nonnull.quals.Nullable;
+import checkers.nonnull.quals.PolyNull;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 
@@ -53,13 +55,15 @@ public class NonNullTransfer extends
     protected final NonNullAnalysis analysis;
 
     /** Annotations of the non-null type system. */
-    protected final AnnotationMirror NONNULL;
+    protected final AnnotationMirror NONNULL, NULLABLE;
 
     public NonNullTransfer(NonNullAnalysis analysis) {
         super(analysis);
         this.analysis = analysis;
         NONNULL = AnnotationUtils.fromClass(analysis.getFactory()
                 .getElementUtils(), NonNull.class);
+        NULLABLE = AnnotationUtils.fromClass(analysis.getFactory()
+                .getElementUtils(), Nullable.class);
     }
 
     /**
@@ -101,23 +105,34 @@ public class NonNullTransfer extends
             boolean notEqualTo) {
         res = super.strengthenAnnotationOfEqualTo(res, firstNode, secondNode,
                 firstValue, secondValue, notEqualTo);
-        // Case 1:
         if (firstNode instanceof NullLiteralNode) {
+            NonNullStore thenStore = res.getThenStore();
+            NonNullStore elseStore = res.getElseStore();
+
             List<Node> secondParts = splitAssignments(secondNode);
             for (Node secondPart : secondParts) {
                 Receiver secondInternal = FlowExpressions.internalReprOf(
                         analysis.getFactory(), secondPart);
                 if (CFAbstractStore.canInsertReceiver(secondInternal)) {
-                    NonNullStore thenStore = res.getThenStore();
-                    NonNullStore elseStore = res.getElseStore();
+                    thenStore = thenStore==null ? res.getThenStore() : thenStore;
+                    elseStore = elseStore==null ? res.getElseStore() : elseStore;
                     if (notEqualTo) {
                         thenStore.insertValue(secondInternal, NONNULL);
                     } else {
                         elseStore.insertValue(secondInternal, NONNULL);
                     }
-                    return new ConditionalTransferResult<>(
-                            res.getResultValue(), thenStore, elseStore);
                 }
+            }
+
+            if (secondValue.getType().hasAnnotation(PolyNull.class)) {
+                thenStore = thenStore==null ? res.getThenStore() : thenStore;
+                elseStore = elseStore==null ? res.getElseStore() : elseStore;
+                thenStore.setPolyNullNull(true);
+            }
+
+            if (thenStore != null) {
+                return new ConditionalTransferResult<>(
+                        res.getResultValue(), thenStore, elseStore);
             }
         }
         return res;
