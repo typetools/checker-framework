@@ -10,9 +10,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.sun.jna.Library;
-import com.sun.jna.Native;
-
 /**
  * This class functions essentially the same as the JSR308 javac script EXCEPT that it adds the appropriate jdk.jar
  * to the bootclasspath and adds checkers.jar to the classpath passed to javac
@@ -56,7 +53,9 @@ public class CheckerMain {
     private final double jreVersion;
 
 
-    private final List<String> bootClasspath;
+    private final List<String> compilationBootclasspath;
+
+    private final List<String> runtimeBootClasspath;
 
     private final List<String> jvmOpts;
 
@@ -78,7 +77,8 @@ public class CheckerMain {
 
         final List<String> argsList = new ArrayList<String>(Arrays.asList(args));
 
-        this.bootClasspath = createBootClasspath(argsList);
+        this.compilationBootclasspath = createCompilationBootclasspath(argsList);
+        this.runtimeBootClasspath     = createRuntimeBootclasspath(argsList);
         this.jvmOpts       = extractJvmOpts(argsList);
 
         this.cpOpts        = createCpOpts(argsList);
@@ -91,10 +91,13 @@ public class CheckerMain {
         assertFilesExist(Arrays.asList(javacJar, jdkJar, checkersJar));
     }
 
-    protected List<String> createBootClasspath(final List<String> argsList) {
+    protected List<String> createRuntimeBootclasspath(final List<String> argsList) {
+        return new ArrayList<String>(Arrays.asList(javacJar.getAbsolutePath()));
+    }
+
+    protected List<String> createCompilationBootclasspath(final List<String> argsList) {
         final List<String> extractedBcp = extractBootClassPath(argsList);
-        extractedBcp.add(0, javacJar.getAbsolutePath());
-        extractedBcp.add(1, jdkJar.getAbsolutePath());
+        extractedBcp.add(0, jdkJar.getAbsolutePath());
 
         return extractedBcp;
     }
@@ -239,7 +242,7 @@ public class CheckerMain {
         final String java = PluginUtil.getJavaCommand(System.getProperty("java.home"), System.out);
         args.add(java);
 
-        args.add("-Xbootclasspath/p:" + PluginUtil.join(File.pathSeparator, bootClasspath));
+        args.add("-Xbootclasspath/p:" + PluginUtil.join(File.pathSeparator, runtimeBootClasspath));
         args.add("-ea:com.sun.tools...");
 
         args.addAll(jvmOpts);
@@ -247,13 +250,16 @@ public class CheckerMain {
         args.add("-jar");
         args.add(javacJar.getAbsolutePath());
 
+        args.add("-Xbootclasspath/p:" + PluginUtil.join(File.pathSeparator, compilationBootclasspath));
+
+
         args.add("-classpath");
         args.add(PluginUtil.join(File.pathSeparator, cpOpts));
 
         args.addAll(toolOpts);
 
         //Actually invoke the compiler
-        return execute(args);
+        return ExecUtil.execute(args.toArray(new String[args.size()]), System.out, System.err);
     }
 
     /**
@@ -273,46 +279,6 @@ public class CheckerMain {
 
         return fileName;
     }
-
-    /**
-     * Helper class to invoke the libc system() native call
-     *
-     * Using the system() native call, rather than Runtime.exec(), to handle
-     * IO "redirection"
-     **/
-    public interface CLibrary extends Library {
-        CLibrary INSTANCE = (CLibrary)Native.loadLibrary("c", CLibrary.class);
-        int system(String command);
-     }
-    /**
-     * Helper method to do the proper escaping of arguments to pass to
-     * system()
-     */
-    static String constructCommand(Iterable<String> args) {
-        StringBuilder sb = new StringBuilder();
-
-        for (String arg: args) {
-            sb.append('"');
-            sb.append(arg.replace("\"", "\\\""));
-            sb.append("\" ");
-        }
-
-        return sb.toString();
-    }
-
-    /** Execute the commands, with IO redirection */
-    static int execute(final Iterable<String> cmdArray) {
-        final String command = constructCommand(cmdArray);
-        final int systemReturn = CLibrary.INSTANCE.system(command);
-        final int exitStatus   = systemReturn >> 8;
-
-        if(exitStatus == 0) {
-            return systemReturn;
-        } else {
-            return exitStatus;
-        }
-    }
-
 
     /**
      * Extract the first two version numbers from java.version (e.g. 1.6 from 1.6.whatever)

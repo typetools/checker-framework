@@ -89,7 +89,6 @@
         </delete>
         <delete file="binary/jdk6.jar"/>
         <delete file="binary/jdk7.jar"/>
-        <delete file="binary/jna.jar"/>
         <delete file="jdk/jdk6.jar"/>
         <delete file="jdk/jdk7.jar"/>
     </target>
@@ -213,7 +212,6 @@ ${build.version} of the 'javac.jar' library."/>
             description="Create jar file">
         <delete dir="${build.reports}"/>
         <jar destfile="${checkers.jar.file}" basedir="${build}">
-            <zipfileset includes="**/*" src="lib/jna.jar" />
             <manifest>
                 <attribute name="Main-Class" value="checkers.util.CheckerMain"/>
             </manifest>

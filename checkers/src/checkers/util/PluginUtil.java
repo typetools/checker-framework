@@ -224,6 +224,20 @@ public class PluginUtil {
         }
     }
 
+    public static File writeTmpSrcFofn(final String prefix, final boolean deleteOnExit,
+                                       final List<File> files) throws IOException {
+        return writeTmpFofn(prefix, ".src_files", deleteOnExit, files);
+    }
+
+    public static File writeTmpCpFile(final String prefix, final boolean deleteOnExit,
+                                       final String classpath) throws IOException {
+        return writeTmpArgFile(prefix, ".classpath", deleteOnExit, Arrays.asList("-classpath", classpath));
+    }
+
+    public static boolean isWindows() {
+        final String os = System.getProperty("os.name");
+        return os.toLowerCase().contains("win");
+    }
 
     public static String getJavaCommand(final String javaHome, final PrintStream out) {
         if( javaHome == null || javaHome.equals("") ) {
@@ -234,11 +248,9 @@ public class PluginUtil {
         if(java.exists()) {
             return java.getAbsolutePath();
         } else {
-            //TODO: IS THERE A BETTER WAY OF SAYING WE ARE LETTING THE OS RESOLVE THE REFERENCE TO JAVA?
-
             if( out != null ) {
                 out.println("Could not find java executable at " + java.getAbsolutePath() +
-                        ".  Using \"java\" command.");
+                        "\n  Using \"java\" command.\n");
             }
             return "java";
         }
@@ -248,6 +260,7 @@ public class PluginUtil {
         return "@" + fileArg.getAbsolutePath();
     }
 
+    //TODO: Perhaps unify this with CheckerMain as it violates DRY
     public static List<String> getCmd(final String executable,  final File srcFofn, final String processors,
                                       final String checkerHome, final String javaHome,
                                       final File classPathFofn, final String bootClassPath,
@@ -264,11 +277,10 @@ public class PluginUtil {
 
         cmd.add("-proc:only");
         if(bootClassPath != null) {
-            cmd.add("-Xbootclasspath/p:" + bootClassPath);
+            cmd.add("-Xbootclasspath/p:" +  bootClassPath);
         }
 
         if(classPathFofn != null ) {
-            cmd.add("-classpath");
             cmd.add(fileArgToStr(classPathFofn));
         }
 

@@ -20,6 +20,6 @@ esac
 binaryDir="${mydir}"/../binary
 buildDir="${mydir}"/../build
 
-eval "java -Xbootclasspath/p:${mydir}/../lib/jna.jar" \
+eval "java" \
      "-DCheckerDevelMain.cp=${buildDir} -DCheckerDevelMain.bcp= -DCheckerDevelMain.binary=${binaryDir}" \
      "-classpath ${buildDir} checkers.util.CheckerDevelMain" "$@"
