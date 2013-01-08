@@ -43,6 +43,7 @@ import dataflow.cfg.node.UnboxingNode;
  * <li>If an expression is dereferenced, then it can safely be assumed to
  * non-null in the future. If it would not be, then the dereference would have
  * raised a {@link NullPointerException}.
+ * <li>Tracks whether {@link PolyNull} is known to be {@link Nullable}.
  * </ol>
  *
  * @author Stefan Heule
