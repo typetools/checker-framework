@@ -237,11 +237,7 @@ Set the \code{jsr308javac} property:
 
   <property name="checkers" value="${env.CHECKERS}" />
   
-  <!-- On Mac/Linux you should use the javac shell script but
-	   on Windows you need to use the javac.bat script.  However, if
-	   you need a script that will work on Windows and other environments
-	   you can use the following property to set the name of the 
-	   javac script -->
+  <!-- On Mac/Linux, use the javac shell script; on Windows, use javac.bat -->
   <condition property="cfJavac" value="javac.bat" else="javac">
       <os family="windows" />
   </condition>
