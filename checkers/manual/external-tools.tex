@@ -235,10 +235,19 @@ Set the \code{jsr308javac} property:
 \begin{Verbatim}
   <property environment="env"/>
 
-  <dirname property="checkers" file="${env.CHECKERS}" />
+  <property name="checkers" value="${env.CHECKERS}" />
+  
+  <!-- On Mac/Linux you should use the javac shell script but
+	   on Windows you need to use the javac.bat script.  However, if
+	   you need a script that will work on Windows and other environments
+	   you can use the following property to set the name of the 
+	   javac script -->
+  <condition property="cfJavac" value="javac.bat" else="javac">
+      <os family="windows" />
+  </condition>
 
   <presetdef name="jsr308.javac">
-    <javac fork="yes" executable="${checkers}/binary/javac" >
+    <javac fork="yes" executable="${checkers}/binary/${cfJavac}" >
       <!-- JSR308 related compiler arguments -->
       <compilerarg value="-version"/>
       <!-- optional, so .class files work with older JVMs: <compilerarg line="-target 5"/> -->
@@ -250,10 +259,6 @@ Set the \code{jsr308javac} property:
 %BEGIN LATEX
 \end{smaller}
 %END LATEX
-
-(Note: For any platform that needs to use "java -jar $CHECKERS/binary/checkers.jar" instead of
-javac then a simple script that executes "java -jar $CHECKERS/binarycheckers.jar <parameters>
-should replace the "{checkers}/binary/javac" part of \code{executable="\${checkers}/binary/javac"} above.)
 
 \item Duplicate the compilation target, then modify it slightly as
 indicated in this example:
