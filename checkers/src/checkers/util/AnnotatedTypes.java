@@ -1392,7 +1392,13 @@ public class AnnotatedTypes {
         // multiple annotations from the same hierarchy
         Set<AnnotationMirror> annotations = type.getAnnotations();
         Set<AnnotationMirror> seenTops = AnnotationUtils.createAnnotationSet();
+        int n = 0;
         for (AnnotationMirror anno : annotations) {
+            if (QualifierPolymorphism.isPolyAll(anno)) {
+                // ignore PolyAll when counting annotations
+                continue;
+            }
+            n++;
             AnnotationMirror top = qualifierHierarchy.getTopAnnotation(anno);
             if (seenTops.contains(top)) {
                 return false;
@@ -1401,7 +1407,6 @@ public class AnnotatedTypes {
         }
 
         // too many annotations
-        int n = annotations.size();
         int expectedN = qualifierHierarchy.getWidth();
         if (n > expectedN) {
             return false;
