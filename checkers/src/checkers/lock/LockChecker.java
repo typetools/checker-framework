@@ -7,6 +7,7 @@ import javacutils.AnnotationUtils;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.lock.quals.GuardedBy;
+import checkers.lock.quals.GuardedByTop;
 import checkers.quals.TypeQualifiers;
 import checkers.quals.Unqualified;
 import checkers.types.QualifierHierarchy;
@@ -19,15 +20,16 @@ import checkers.util.MultiGraphQualifierHierarchy;
  *
  * @see GuardedBy
  */
-@TypeQualifiers( { GuardedBy.class, Unqualified.class } )
+@TypeQualifiers( { GuardedBy.class, Unqualified.class, GuardedByTop.class } )
 public class LockChecker extends BaseTypeChecker {
 
-    protected AnnotationMirror GUARDEDBY, UNQUALIFIED;
+    protected AnnotationMirror GUARDEDBY, GUARDEDBYTOP, UNQUALIFIED;
 
     @Override
     public void initChecker() {
         Elements elements = processingEnv.getElementUtils();
         GUARDEDBY = AnnotationUtils.fromClass(elements, GuardedBy.class);
+        GUARDEDBYTOP = AnnotationUtils.fromClass(elements, GuardedByTop.class);
         UNQUALIFIED = AnnotationUtils.fromClass(elements, Unqualified.class);
 
         super.initChecker();
@@ -37,9 +39,11 @@ public class LockChecker extends BaseTypeChecker {
     public QualifierHierarchy createQualifierHierarchy(MultiGraphQualifierHierarchy.MultiGraphFactory ignorefactory) {
         MultiGraphQualifierHierarchy.MultiGraphFactory factory = createQualifierHierarchyFactory();
 
+        factory.addQualifier(GUARDEDBYTOP);
         factory.addQualifier(GUARDEDBY);
         factory.addQualifier(UNQUALIFIED);
         factory.addSubtype(UNQUALIFIED, GUARDEDBY);
+        factory.addSubtype(GUARDEDBY, GUARDEDBYTOP);
 
         return new LockQualifierHierarchy(factory);
     }
