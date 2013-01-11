@@ -3,6 +3,7 @@ public class StateMatch {
     private int num_elts = 0;
     private double[][] elts = null;
 
+    @SuppressWarnings("Interning")
     public boolean state_match (Object state) {
         if (!(state instanceof double [][]))
             System.out.println ("");
