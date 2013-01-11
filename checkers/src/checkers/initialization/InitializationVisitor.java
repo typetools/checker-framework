@@ -111,9 +111,12 @@ public class InitializationVisitor<Checker extends InitializationChecker, Value 
             AnnotatedTypeMirror var2 = atypeFactory.getAnnotatedType(lhs);
             factory.HACK_DONT_CALL_POST_AS_MEMBER = old;
             factory.shouldReadCache = old2;
-            var.replaceAnnotation(var2
-                    .getEffectiveAnnotationInHierarchy(checker
-                            .getFieldInvariantAnnotation()));
+            final AnnotationMirror newAnno = var2
+                    .getAnnotationInHierarchy(checker
+                            .getFieldInvariantAnnotation());
+            if (newAnno != null) {
+                var.replaceAnnotation(newAnno);
+            }
             checkAssignability(var, varTree);
             commonAssignmentCheck(var, valueExp, errorKey, false);
             return;
