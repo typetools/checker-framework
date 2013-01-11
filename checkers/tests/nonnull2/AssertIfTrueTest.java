@@ -3,6 +3,7 @@ import checkers.nullness.quals.*;
 
 /**
  * Test case for issue 62: http://code.google.com/p/checker-framework/issues/detail?id=62
+ * @skip-test
  */
 public class AssertIfTrueTest {
 
