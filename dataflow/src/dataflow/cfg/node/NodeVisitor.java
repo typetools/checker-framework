@@ -39,6 +39,8 @@ public interface NodeVisitor<R, P> {
 
     R visitBitwiseComplement(BitwiseComplementNode n, P p);
 
+    R visitNullChk(NullChkNode n, P p);
+
     // Binary operations
     R visitStringConcatenate(StringConcatenateNode n, P p);
 
