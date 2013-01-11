@@ -680,7 +680,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
         boolean valid = validateTypeOf(node.getVariable());
         if (valid) {
             commonAssignmentCheck(var, iteratedType, node.getExpression(),
-                    "enhancedfor.type.incompatible", false);
+                    "enhancedfor.type.incompatible", true);
         }
         return super.visitEnhancedForLoop(node, p);
     }
