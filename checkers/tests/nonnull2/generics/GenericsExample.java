@@ -67,7 +67,9 @@ class GenericsExample {
     void add(T arg) { }
     T get(int i) { return t; }
     void m() {
+      //:: error: (assignment.type.incompatible)
       t = null;
+      //:: error: (assignment.type.incompatible)
       t = nble;
       nble = null;
       //:: error: (assignment.type.incompatible)
