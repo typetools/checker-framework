@@ -99,7 +99,7 @@ import dataflow.cfg.node.NotEqualNode;
 import dataflow.cfg.node.NullLiteralNode;
 import dataflow.cfg.node.NumericalAdditionAssignmentNode;
 import dataflow.cfg.node.NumericalAdditionNode;
-import dataflow.cfg.node.NumericalMinusNode;
+import dataflow.cfg.node.NullChkNode;
 import dataflow.cfg.node.NumericalMultiplicationAssignmentNode;
 import dataflow.cfg.node.NumericalMultiplicationNode;
 import dataflow.cfg.node.NumericalPlusNode;
@@ -3743,7 +3743,7 @@ public class CFGBuilder {
                     break;
                 }
                 case UNARY_MINUS:
-                    result = extendWithNode(new NumericalMinusNode(tree, expr));
+                    result = extendWithNode(new NullChkNode(tree, expr));
                     break;
                 case UNARY_PLUS:
                     result = extendWithNode(new NumericalPlusNode(tree, expr));
@@ -3765,8 +3765,19 @@ public class CFGBuilder {
                 break;
             }
 
+            case OTHER: {
+                // special node NLLCHK
+                if (tree.toString().startsWith("<*nullchk*>")) {
+                    result = extendWithNode(new NullChkNode(tree, expr));
+                    break;
+                }
+
+                // fall-through
+            }
+
             default:
-                assert false : "Unknown kind of unary expression: " + kind;
+                assert false : "Unknown kind (" + kind
+                        + ") of unary expression: " + tree;
             }
 
             conditionalMode = outerConditionalMode;

@@ -1,5 +1,6 @@
 package dataflow.cfg.node;
 
+
 /**
  * A default implementation of the node visitor interface. The class introduces
  * several 'summary' methods, that can be overridden to change the behavior of
@@ -86,6 +87,11 @@ public abstract class AbstractNodeVisitor<R, P> implements NodeVisitor<R, P> {
 
     @Override
     public R visitBitwiseComplement(BitwiseComplementNode n, P p) {
+        return visitNode(n, p);
+    }
+
+    @Override
+    public R visitNullChk(NullChkNode n, P p) {
         return visitNode(n, p);
     }
 
