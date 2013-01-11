@@ -568,7 +568,7 @@ public final class TreeUtils {
     }
 
     // TODO: What about anonymous classes?
-    // Adding Tree.Kind.NEW_CLASS here doesn't work, because then a 
+    // Adding Tree.Kind.NEW_CLASS here doesn't work, because then a
     // tree gets cast to ClassTree when it is actually a NewClassTree,
     // for example in enclosingClass above.
     private final static Set<Tree.Kind> classTreeKinds = EnumSet.of(
@@ -595,7 +595,7 @@ public final class TreeUtils {
         if (!(tree instanceof MethodInvocationTree))
             return false;
         MethodInvocationTree methInvok = (MethodInvocationTree)tree;
-        ExecutableElement invoked = (ExecutableElement) TreeUtils.elementFromUse(methInvok);
+        ExecutableElement invoked = TreeUtils.elementFromUse(methInvok);
         return isMethod(invoked, method, env);
     }
 
@@ -687,7 +687,8 @@ public final class TreeUtils {
             // explicit method access
             MemberSelectTree memberSelect = (MemberSelectTree) tree;
             Element el = TreeUtils.elementFromUse(memberSelect);
-            return el.getKind() == ElementKind.METHOD;
+            return el.getKind() == ElementKind.METHOD
+                    || el.getKind() == ElementKind.CONSTRUCTOR;
         } else if (tree.getKind().equals(Tree.Kind.IDENTIFIER)) {
             // implicit method access
             IdentifierTree ident = (IdentifierTree) tree;
@@ -697,7 +698,8 @@ public final class TreeUtils {
                 return true;
             }
             Element el = TreeUtils.elementFromUse(ident);
-            return el.getKind() == ElementKind.METHOD;
+            return el.getKind() == ElementKind.METHOD
+                    || el.getKind() == ElementKind.CONSTRUCTOR;
         }
         return false;
     }
