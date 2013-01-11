@@ -2133,7 +2133,7 @@ public class CFGBuilder {
             conditionalMode = false;
 
             ExpressionTree methodSelect = tree.getMethodSelect();
-            assert TreeUtils.isMethodAccess(methodSelect);
+            assert TreeUtils.isMethodAccess(methodSelect) : "Expected a method access, but got: " + methodSelect;
 
             List<? extends ExpressionTree> actualExprs = tree.getArguments();
 
