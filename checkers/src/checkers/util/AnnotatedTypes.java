@@ -35,6 +35,7 @@ import javacutils.Pair;
 import javacutils.TreeUtils;
 import javacutils.TypesUtils;
 
+import checkers.quals.PolyAll;
 import checkers.quals.TypeQualifier;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
@@ -1391,12 +1392,7 @@ public class AnnotatedTypes {
         // multiple annotations from the same hierarchy
         Set<AnnotationMirror> annotations = type.getAnnotations();
         Set<AnnotationMirror> seenTops = AnnotationUtils.createAnnotationSet();
-        int n = 0;
         for (AnnotationMirror anno : annotations) {
-            if (QualifierPolymorphism.isPolyAll(anno)) {
-                continue; // skip PolyAll
-            }
-            n++;
             AnnotationMirror top = qualifierHierarchy.getTopAnnotation(anno);
             if (seenTops.contains(top)) {
                 return false;
@@ -1405,12 +1401,16 @@ public class AnnotatedTypes {
         }
 
         // too many annotations
+        int n = annotations.size();
         int expectedN = qualifierHierarchy.getWidth();
         if (n > expectedN) {
             return false;
         }
+
+        // treat types that have polyall like type variables
+        boolean hasPolyAll = type.hasAnnotation(PolyAll.class);
         boolean canHaveEmptyAnnotationSet = QualifierHierarchy
-                .canHaveEmptyAnnotationSet(type);
+                .canHaveEmptyAnnotationSet(type) || hasPolyAll;
 
         // wrong number of annotations
         if (!canHaveEmptyAnnotationSet && n != expectedN) {
