@@ -187,26 +187,26 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
                     // variation of case 1
                     // TODO: These cases are more of hacks and they should
                     // really be immutable or readonly
-                    type.addAnnotation(BOTTOM_QUAL);
+                    type.replaceAnnotation(BOTTOM_QUAL);
                 } else if (elementType.hasEffectiveAnnotation(IMMUTABLE))
                     // case 2: known immutable types
-                    type.addAnnotation(IMMUTABLE);
+                    type.replaceAnnotation(IMMUTABLE);
                 else if (p == ElementKind.LOCAL_VARIABLE)
-                    type.addAnnotation(READONLY);
+                    type.replaceAnnotation(READONLY);
                 else if (elementType.hasEffectiveAnnotation(MUTABLE)) // not immutable
                     // case 7: mutable by default
-                    type.addAnnotation(MUTABLE);
+                    type.replaceAnnotation(MUTABLE);
                 else if (p.isClass() || p.isInterface())
                     // case 9: class or interface declaration
-                    type.addAnnotation(BOTTOM_QUAL);
+                    type.replaceAnnotation(BOTTOM_QUAL);
                 else if (p.isField()
                         && type.getElement() != null // We don't know the field context here
                         && getAnnotatedType(ElementUtils.enclosingClass(type.getElement())).hasEffectiveAnnotation(IMMUTABLE)) {
-                    type.addAnnotation(IMMUTABLE);
+                    type.replaceAnnotation(IMMUTABLE);
                 }
                 else if (element.getKind().isClass() || element.getKind().isInterface())
                     // case 10
-                    type.addAnnotation(MUTABLE);
+                    type.replaceAnnotation(MUTABLE);
                 else
                     assert false : "shouldn't be here!";
 
@@ -227,15 +227,15 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
             if (type.getElement().getKind() == ElementKind.CONSTRUCTOR) {
                 // TODO: hack
                 if (ownerType.hasEffectiveAnnotation(MUTABLE) || ownerType.hasEffectiveAnnotation(BOTTOM_QUAL))
-                    receiver.addAnnotation(MUTABLE);
+                    receiver.replaceAnnotation(MUTABLE);
                 else
-                    receiver.addAnnotation(ASSIGNS_FIELDS);
+                    receiver.replaceAnnotation(ASSIGNS_FIELDS);
             } else if (ElementUtils.isObject(ownerElement) || ownerType.hasEffectiveAnnotation(IMMUTABLE)) {
                 // case 3
-                receiver.addAnnotation(BOTTOM_QUAL);
+                receiver.replaceAnnotation(BOTTOM_QUAL);
             } else {
                 // case 10: rest
-                receiver.addAnnotation(MUTABLE);
+                receiver.replaceAnnotation(MUTABLE);
             }
 
             return super.visitExecutable(type, p);
@@ -251,10 +251,10 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
                         || p == ElementKind.CONSTRUCTOR
                         || p == ElementKind.METHOD)
                     // case 5: upper bound within a class/method declaration
-                    type.getUpperBoundField().addAnnotation(READONLY);
+                    type.getUpperBoundField().replaceAnnotation(READONLY);
                 else if (TypesUtils.isObject(type.getUnderlyingType()))
                     // case 10: remaining cases
-                    type.getUpperBoundField().addAnnotation(MUTABLE);
+                    type.getUpperBoundField().replaceAnnotation(MUTABLE);
             }
 
             return super.visitTypeVariable(type, p);
@@ -270,10 +270,10 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
                         || p == ElementKind.CONSTRUCTOR
                         || p == ElementKind.METHOD)
                     // case 5: upper bound within a class/method declaration
-                    type.getExtendsBound().addAnnotation(READONLY);
+                    type.getExtendsBound().replaceAnnotation(READONLY);
                 else if (TypesUtils.isObject(type.getUnderlyingType()))
                     // case 10: remaining cases
-                    type.getExtendsBound().addAnnotation(MUTABLE);
+                    type.getExtendsBound().replaceAnnotation(MUTABLE);
             }
 
             return super.visitWildcard(type, p);
@@ -301,9 +301,9 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
                 if (!hasImmutabilityAnnotation(ct) || ct.hasAnnotationRelaxed(I)) {
                     AnnotatedExecutableType con = getAnnotatedType(TreeUtils.elementFromUse(node));
                     if (con.getReceiverType().hasEffectiveAnnotation(IMMUTABLE))
-                        p.addAnnotation(IMMUTABLE);
+                        p.replaceAnnotation(IMMUTABLE);
                     else
-                        p.addAnnotation(MUTABLE);
+                        p.replaceAnnotation(MUTABLE);
                 } else {
                     // case 2: known immutability type
                     p.addAnnotations(ct.getAnnotations());
@@ -327,8 +327,7 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
     protected AnnotatedDeclaredType getImplicitReceiverType(ExpressionTree tree) {
         AnnotatedDeclaredType receiver = super.getImplicitReceiverType(tree);
         if (receiver != null && !isMostEnclosingThisDeref(tree)) {
-            receiver.removeAnnotation(ASSIGNS_FIELDS);
-            receiver.addAnnotation(READONLY);
+            receiver.replaceAnnotation(READONLY);
         }
         return receiver;
     }
@@ -346,8 +345,7 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
             return act;
         // Are we in a mutable or Immutable scope
         if (isWithinConstructor(tree) && !methodReceiver.hasEffectiveAnnotation(MUTABLE)) {
-            methodReceiver.clearAnnotations();
-            methodReceiver.addAnnotation(ASSIGNS_FIELDS);
+            methodReceiver.replaceAnnotation(ASSIGNS_FIELDS);
         }
 
         if (methodReceiver.hasEffectiveAnnotation(MUTABLE) ||
@@ -355,7 +353,7 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
             return methodReceiver;
         } else if (act.hasAnnotationRelaxed(I) || act.hasEffectiveAnnotation(IMMUTABLE)) {
             if (methodReceiver.hasEffectiveAnnotation(ASSIGNS_FIELDS))
-                act.addAnnotation(ASSIGNS_FIELDS);
+                act.replaceAnnotation(ASSIGNS_FIELDS);
             return act;
         } else
             return methodReceiver;
@@ -433,8 +431,7 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
                     AnnotationMirror anno =
                         type.getAnnotation(I.class);
                     if (!mapping.containsValue(anno)) {
-                        type.removeAnnotation(I);
-                        type.addAnnotation(BOTTOM_QUAL);
+                        type.replaceAnnotation(BOTTOM_QUAL);
                     }
                 }
                 return super.visitDeclared(type, p);
@@ -498,8 +495,7 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
                     AnnotationUtils.getElementValue(getImmutabilityAnnotation(type),
                             IMMUTABILITY_KEY, String.class, true);
                 if (p.containsKey(immutableString)) {
-                    type.removeAnnotation(I);
-                    type.addAnnotation(p.get(immutableString));
+                    type.replaceAnnotation(p.get(immutableString));
                 }
             }
 
