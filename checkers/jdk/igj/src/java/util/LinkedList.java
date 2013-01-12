@@ -2,7 +2,7 @@ package java.util;
 import checkers.igj.quals.*;
 
 @I
-public class LinkedList<E> extends @I AbstractSequentialList<E> implements @I List<E>, @I Deque<E>, @I Cloneable, @I java.io.Serializable {
+public class LinkedList<E> extends @I AbstractSequentialList<E> implements @I List<E>, @I Deque<E>, @I Cloneable, java.io. @I Serializable {
     private static final long serialVersionUID = 0L;
   public LinkedList(@AssignsFields LinkedList<E> this) { throw new RuntimeException("skeleton method"); }
   public LinkedList(@AssignsFields LinkedList<E> this, @ReadOnly Collection<? extends E> a1) { throw new RuntimeException("skeleton method"); }

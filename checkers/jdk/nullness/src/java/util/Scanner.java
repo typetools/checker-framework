@@ -12,7 +12,7 @@ public final class Scanner implements Iterator<String> {
   public Scanner(java.nio.channels.ReadableByteChannel a1) { throw new RuntimeException("skeleton method"); }
   public Scanner(java.nio.channels.ReadableByteChannel a1, String a2) { throw new RuntimeException("skeleton method"); }
   public void close() { throw new RuntimeException("skeleton method"); }
-  public @Nullable java.io.IOException ioException() { throw new RuntimeException("skeleton method"); }
+  public java.io. @Nullable IOException ioException() { throw new RuntimeException("skeleton method"); }
   public java.util.regex.Pattern delimiter() { throw new RuntimeException("skeleton method"); }
   public Scanner useDelimiter(java.util.regex.Pattern a1) { throw new RuntimeException("skeleton method"); }
   public Scanner useDelimiter(String a1) { throw new RuntimeException("skeleton method"); }

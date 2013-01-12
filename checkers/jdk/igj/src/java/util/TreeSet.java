@@ -2,7 +2,7 @@ package java.util;
 import checkers.igj.quals.*;
 
 @I
-public class TreeSet<E> extends @I AbstractSet<E> implements @I NavigableSet<E>, @I Cloneable, @I java.io.Serializable {
+public class TreeSet<E> extends @I AbstractSet<E> implements @I NavigableSet<E>, @I Cloneable, java.io. @I Serializable {
     private static final long serialVersionUID = 0L;
   public TreeSet(@AssignsFields TreeSet<E> this) { throw new RuntimeException("skeleton method"); }
   public TreeSet(@AssignsFields TreeSet<E> this, @ReadOnly Comparator<? super E> a1) { throw new RuntimeException("skeleton method"); }
