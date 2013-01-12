@@ -64,6 +64,8 @@ checkers/manual/*.png
 checkers/tests/nullness-extra/*.class
 checkers/tests/nullness-extra/multiple-errors/*.class
 checkers/tests/nullness-extra/multiple-errors/Out.txt
+checkers/tests/nullness-extra/package-anno/Out.txt
+checkers/tests/nullness-extra/package-anno/test/*.class
 checkers/tests/nullness/generics/*.class
 checkers/tests/nullness-temp/*.java
 checkers/tests/nullness-temp/*.class
