@@ -2,7 +2,7 @@ package java.util;
 import checkers.igj.quals.*;
 
 @I
-public class TreeMap<K, V> extends @I AbstractMap<K, V> implements @I NavigableMap<K, V>, @I Cloneable, @I java.io.Serializable {
+public class TreeMap<K, V> extends @I AbstractMap<K, V> implements @I NavigableMap<K, V>, @I Cloneable, java.io. @I Serializable {
     private static final long serialVersionUID = 0L;
   public TreeMap(@AssignsFields TreeMap<K, V> this) { throw new RuntimeException("skeleton method"); }
   public TreeMap(@AssignsFields TreeMap<K, V> this, @ReadOnly Comparator<? super K> a1) { throw new RuntimeException("skeleton method"); }
@@ -19,17 +19,17 @@ public class TreeMap<K, V> extends @I AbstractMap<K, V> implements @I NavigableM
   public V put(@Mutable TreeMap<K, V> this, K a1, V a2) { throw new RuntimeException("skeleton method"); }
   public V remove(@Mutable TreeMap<K, V> this, @ReadOnly Object a1) { throw new RuntimeException("skeleton method"); }
   public void clear(@Mutable TreeMap<K, V> this) { throw new RuntimeException("skeleton method"); }
-  public @I Map.Entry<K, V> firstEntry(@ReadOnly TreeMap<K, V> this) { throw new RuntimeException("skeleton method"); }
-  public @I Map.Entry<K, V> lastEntry(@ReadOnly TreeMap<K, V> this) { throw new RuntimeException("skeleton method"); }
-  public @I Map.Entry<K, V> pollFirstEntry(@ReadOnly TreeMap<K, V> this) { throw new RuntimeException("skeleton method"); }
-  public @I Map.Entry<K, V> pollLastEntry(@ReadOnly TreeMap<K, V> this) { throw new RuntimeException("skeleton method"); }
-  public @I Map.Entry<K, V> lowerEntry(@ReadOnly TreeMap<K, V> this, K a1) { throw new RuntimeException("skeleton method"); }
+  public Map. @I Entry<K, V> firstEntry(@ReadOnly TreeMap<K, V> this) { throw new RuntimeException("skeleton method"); }
+  public Map. @I Entry<K, V> lastEntry(@ReadOnly TreeMap<K, V> this) { throw new RuntimeException("skeleton method"); }
+  public Map. @I Entry<K, V> pollFirstEntry(@ReadOnly TreeMap<K, V> this) { throw new RuntimeException("skeleton method"); }
+  public Map. @I Entry<K, V> pollLastEntry(@ReadOnly TreeMap<K, V> this) { throw new RuntimeException("skeleton method"); }
+  public Map. @I Entry<K, V> lowerEntry(@ReadOnly TreeMap<K, V> this, K a1) { throw new RuntimeException("skeleton method"); }
   public K lowerKey(@ReadOnly TreeMap<K, V> this, K a1) { throw new RuntimeException("skeleton method"); }
-  public @I Map.Entry<K, V> floorEntry(@ReadOnly TreeMap<K, V> this, K a1) { throw new RuntimeException("skeleton method"); }
+  public Map. @I Entry<K, V> floorEntry(@ReadOnly TreeMap<K, V> this, K a1) { throw new RuntimeException("skeleton method"); }
   public K floorKey(@ReadOnly TreeMap<K, V> this, K a1) { throw new RuntimeException("skeleton method"); }
-  public @I Map.Entry<K, V> ceilingEntry(@ReadOnly TreeMap<K, V> this, K a1) { throw new RuntimeException("skeleton method"); }
+  public Map. @I Entry<K, V> ceilingEntry(@ReadOnly TreeMap<K, V> this, K a1) { throw new RuntimeException("skeleton method"); }
   public K ceilingKey(@ReadOnly TreeMap<K, V> this, K a1) { throw new RuntimeException("skeleton method"); }
-  public @I Map.Entry<K, V> higherEntry(@ReadOnly TreeMap<K, V> this, K a1) { throw new RuntimeException("skeleton method"); }
+  public Map. @I Entry<K, V> higherEntry(@ReadOnly TreeMap<K, V> this, K a1) { throw new RuntimeException("skeleton method"); }
   public K higherKey(@ReadOnly TreeMap<K, V> this, K a1) { throw new RuntimeException("skeleton method"); }
   public @I Set<K> keySet(@ReadOnly TreeMap<K, V> this) { throw new RuntimeException("skeleton method"); }
   public @I NavigableSet<K> navigableKeySet(@ReadOnly TreeMap<K, V> this) { throw new RuntimeException("skeleton method"); }

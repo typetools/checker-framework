@@ -2,7 +2,7 @@ package java.util;
 import checkers.igj.quals.*;
 
 @I
-public class ArrayDeque<E> extends @I AbstractCollection<E> implements @I Deque<E>, @I Cloneable, @I java.io.Serializable {
+public class ArrayDeque<E> extends @I AbstractCollection<E> implements @I Deque<E>, @I Cloneable, java.io. @I Serializable {
     private static final long serialVersionUID = 0L;
   public ArrayDeque(@AssignsFields ArrayDeque<E> this) { throw new RuntimeException("skeleton method"); }
   public ArrayDeque(@AssignsFields ArrayDeque<E> this, int a1) { throw new RuntimeException("skeleton method"); }

@@ -33,6 +33,6 @@ public final class Field extends AccessibleObject implements Member {
   public void setLong(@Nullable Object a1, long a2) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
   public void setFloat(@Nullable Object a1, float a2) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
   public void setDouble(@Nullable Object a1, double a2) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
-  public <T extends @Nullable java.lang.annotation.Annotation> T getAnnotation(@NonNull Class<@NonNull T> a1) { throw new RuntimeException("skeleton method"); }
+  public <T extends java.lang.annotation. @Nullable Annotation> T getAnnotation(@NonNull Class<@NonNull T> a1) { throw new RuntimeException("skeleton method"); }
   public java.lang.annotation.Annotation @NonNull [] getDeclaredAnnotations() { throw new RuntimeException("skeleton method"); }
 }
