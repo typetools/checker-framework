@@ -2,7 +2,7 @@ package java.util;
 import checkers.igj.quals.*;
 
 @I
-public class PriorityQueue<E> extends @I AbstractQueue<E> implements @I java.io.Serializable {
+public class PriorityQueue<E> extends @I AbstractQueue<E> implements java.io. @I Serializable {
     private static final long serialVersionUID = 0L;
   public PriorityQueue(@AssignsFields PriorityQueue<E> this) { throw new RuntimeException("skeleton method"); }
   public PriorityQueue(@AssignsFields PriorityQueue<E> this, int a1) { throw new RuntimeException("skeleton method"); }

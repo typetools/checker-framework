@@ -2,7 +2,7 @@ package java.util;
 import checkers.igj.quals.*;
 
 @Immutable
-public final class Locale implements @Immutable Cloneable, @Immutable java.io.Serializable {
+public final class Locale implements @Immutable Cloneable, java.io. @Immutable Serializable {
     private static final long serialVersionUID = 0L;
   public final static Locale ENGLISH;
   public final static Locale FRENCH;
