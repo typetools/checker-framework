@@ -244,12 +244,16 @@ public class PluginUtil {
             return "java";
         }
 
-        final File java = new File(javaHome, "bin" + File.separator + "java");
+        final File java    = new File(javaHome, "bin" + File.separator + "java");
+        final File javaExe = new File(javaHome, "bin" + File.separator + "java.exe");
         if(java.exists()) {
             return java.getAbsolutePath();
+        } else if(javaExe.exists()) {
+            return javaExe.getAbsolutePath();
         } else {
             if( out != null ) {
-                out.println("Could not find java executable at " + java.getAbsolutePath() +
+                out.println("Could not find java executable at: ( " + java.getAbsolutePath()    + "," +
+                                                                      javaExe.getAbsolutePath() + ")" +
                         "\n  Using \"java\" command.\n");
             }
             return "java";
