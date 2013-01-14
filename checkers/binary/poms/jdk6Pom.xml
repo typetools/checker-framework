@@ -7,9 +7,9 @@
     <groupId>types.checkers</groupId>
     <artifactId>jdk6</artifactId>
 
-    <!-- Note: It's important that this is the first <version/> element to appear in this document (by line)
-         Because there is a simple logic in the release script to replace the version number of pom files -->
-    <version>1.5.0</version>
+    <!-- The comments in the version number are used to do a text substitution. Don't remove them
+         see checker-framework/binary/poms/updateVersion.sh -->
+    <version><!-- SUBST -->1.5.2<!-- /SUBST --></version>
 
     <distributionManagement>
         <repository>
