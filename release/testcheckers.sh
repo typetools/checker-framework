@@ -16,16 +16,14 @@ function cfruntest() {
   $CHECKERS/binary/javac -version
   if (($?)); then exit 6; fi
 
-  java -Xbootclasspath/p:$CHECKERS/binary/jsr308-all.jar \
-      -jar $CHECKERS/binary/jsr308-all.jar -version
+  java -jar $CHECKERS/binary/checkers.jar -version
   if (($?)); then exit 6; fi
 
   $CHECKERS/binary/javac -processor checkers.nullness.NullnessChecker \
       $CHECKERS/examples/NullnessReleaseTests.java 
   if (($?)); then exit 6; fi
 
-  java -Xbootclasspath/p:$CHECKERS/binary/jsr308-all.jar \
-      -jar $CHECKERS/binary/jsr308-all.jar \
+  java -jar $CHECKERS/binary/checkers.jar \
       -processor checkers.nullness.NullnessChecker \
       $CHECKERS/examples/NullnessReleaseTests.java 
   if (($?)); then exit 6; fi
