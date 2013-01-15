@@ -93,11 +93,11 @@ EDITOR = os.getenv('EDITOR')
 if EDITOR == None:
     EDITOR = 'emacs'
 
-PATH = os.environ['JAVA_HOME'] + "/projects/uns/F11/bin/"
+PATH = os.environ['JAVA_HOME'] + "/projects/uns/F11/bin/:" + os.environ['PATH']
 PATH = PATH + ":/scratch/secs-jenkins/tools/hevea-1.10/bin/:/projects/uns/F11/bin/"
 PATH = PATH + ":" + PLUME_LIB + "/bin:/homes/gws/mernst/bin/share"
 PATH = PATH + ":/homes/gws/mernst/bin/Linux-i686:/uns/bin:/homes/gws/mali/local/share/maven/bin:."
-os.environ['PATH'] = PATH + ":" + os.environ['PATH']
+os.environ['PATH'] = PATH
 
 #Tools that must be on your PATH ( besides common *nix ones like grep )
 TOOLS = [ 'hevea', 'perl', 'java', 'dia', 'latex', 'mvn', 'hg', EDITOR ]
@@ -136,11 +136,6 @@ def main(argv):
         next_version = suggested_version
     print next_version
 
-    #update the version of all Maven pom files including the maven plugin
-    print("\nUpdating Maven pom files")
-    updateVersionScript = os.path.join(CHECKER_FRAMEWORK, "checkers", "binary", "poms", "updateAllVersions.sh")
-    execute('sh %s %s' % (updateVersionScript, next_version))
-
     # Retrieve and update changes to the changelogs
     checkers_changes = retrieve_changes(CHECKER_FRAMEWORK, curr_version, "checkers-")
     edit_checkers_changelog(next_version, CHECKERS_CHANGELOG, EDITOR, changes=checkers_changes)
@@ -162,7 +157,12 @@ def main(argv):
     print("\n\n\n\n\n")
 
     # Making the real release
-    make_release(next_version, ant_args, real=False) #TODO: TURN THIS BACK TO TRUE
+    make_release(next_version, ant_args, real=True)
+
+    #update the version of all Maven pom files including the maven plugin
+    print("\nUpdating Maven pom files") #TODO: DID THIS NOT WORK
+    updateVersionScript = os.path.join(CHECKER_FRAMEWORK, "checkers", "binary", "poms", "updateAllVersions.sh")
+    execute('sh %s %s' % (updateVersionScript, next_version))
 
     # Build and then deploy the maven plugin
     mvn_install(MAVEN_PLUGIN_DIR)
