@@ -185,7 +185,7 @@ def main(argv):
 
     #Push the final state (after any changes made during the release) to the repositories
     #Adding an identifying tag for this release
-    commit_tag_and_push(next_version, CHECKER_FRAMEWORK, "checkers-")    TODO: TEMPORARILY AVOID TAGGING
+    commit_tag_and_push(next_version, CHECKER_FRAMEWORK, "checkers-")
     commit_tag_and_push(next_version, JSR308_LANGTOOLS, "jsr308-")
 
     #Add group write access to all files in the website to ensure they are served
