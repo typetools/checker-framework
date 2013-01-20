@@ -2,7 +2,7 @@ package java.util;
 import checkers.igj.quals.*;
 
 @I
-public class HashSet<E> extends @I AbstractSet<E> implements @I Set<E>, @I Cloneable, @I java.io.Serializable {
+public class HashSet<E> extends @I AbstractSet<E> implements @I Set<E>, @I Cloneable, java.io. @I Serializable {
     private static final long serialVersionUID = 0L;
   public HashSet(@AssignsFields HashSet<E> this) { throw new RuntimeException("skeleton method"); }
   public HashSet(@AssignsFields HashSet<E> this, @ReadOnly Collection<? extends E> a1) { throw new RuntimeException("skeleton method"); }

@@ -2,7 +2,7 @@ package java.util;
 import checkers.igj.quals.*;
 
 @I
-public abstract class Calendar implements @I java.io.Serializable, @I Cloneable, @I Comparable<@ReadOnly Calendar> {
+public abstract class Calendar implements java.io. @I Serializable, @I Cloneable, @I Comparable<@ReadOnly Calendar> {
   public final static int ERA = 0;
   public final static int YEAR = 1;
   public final static int MONTH = 2;

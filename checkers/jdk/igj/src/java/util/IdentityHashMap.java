@@ -2,7 +2,7 @@ package java.util;
 import checkers.igj.quals.*;
 
 @I
-public class IdentityHashMap<K, V> extends @I AbstractMap<K, V> implements @I Map<K, V>, @I java.io.Serializable, @I Cloneable {
+public class IdentityHashMap<K, V> extends @I AbstractMap<K, V> implements @I Map<K, V>, java.io. @I Serializable, @I Cloneable {
     private static final long serialVersionUID = 0L;
   public IdentityHashMap(@AssignsFields IdentityHashMap<K, V> this) { throw new RuntimeException("skeleton method"); }
   public IdentityHashMap(@AssignsFields IdentityHashMap<K, V> this, int a1) { throw new RuntimeException("skeleton method"); }
