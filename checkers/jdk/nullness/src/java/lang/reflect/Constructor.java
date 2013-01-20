@@ -20,7 +20,7 @@ public final class Constructor<T extends @Nullable Object> extends AccessibleObj
     public @NonNull T newInstance(Object[] arg0) throws InstantiationException,IllegalAccessException,IllegalArgumentException,InvocationTargetException { throw new RuntimeException("skeleton method"); }
     public boolean isVarArgs() { throw new RuntimeException("skeleton method"); }
     public boolean isSynthetic() { throw new RuntimeException("skeleton method"); }
-    public <T extends Annotation> T getAnnotation(Class<T> arg0) { throw new RuntimeException("skeleton method"); }
+    public <T extends @Nullable Annotation> @Nullable T getAnnotation(Class<T> arg0) { throw new RuntimeException("skeleton method"); }
     public Annotation[] getDeclaredAnnotations() { throw new RuntimeException("skeleton method"); }
     public Annotation[][] getParameterAnnotations() { throw new RuntimeException("skeleton method"); }
 }
