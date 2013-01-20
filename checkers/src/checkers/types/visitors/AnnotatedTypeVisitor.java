@@ -65,6 +65,15 @@ public interface AnnotatedTypeVisitor<R, P> {
     public R visitDeclared(AnnotatedDeclaredType type, P p);
 
     /**
+     * Visits an intersection type.
+     *
+     * @param type  the type to visit
+     * @param p a visitor-specified parameter
+     * @return a visitor-specified result
+     */
+    public R visitIntersection(AnnotatedIntersectionType type, P p);
+
+    /**
      * Visits an executable type.
      *
      * @param type  the type to visit

@@ -16,13 +16,13 @@ import checkers.source.SourceChecker;
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedIntersectionType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
 import checkers.util.AnnotatedTypes;
 import checkers.util.AnnotationUtils;
 import checkers.util.InternalUtils;
 import checkers.util.TreeUtils;
-import checkers.util.TypesUtils;
 
 import com.sun.source.tree.*;
 import com.sun.source.util.SimpleTreeVisitor;
@@ -563,8 +563,7 @@ abstract class TypeFromTree extends
                 result.setUpperBound(bounds.get(0));
                 break;
             default:
-                AnnotatedDeclaredType upperBound = (AnnotatedDeclaredType)result.getUpperBound();
-                assert TypesUtils.isAnonymousType(upperBound.getUnderlyingType());
+                AnnotatedIntersectionType upperBound = (AnnotatedIntersectionType) result.getUpperBound();
 
                 List<AnnotatedDeclaredType> superBounds = new ArrayList<AnnotatedDeclaredType>(bounds.size());
                 for (AnnotatedTypeMirror b : bounds) {

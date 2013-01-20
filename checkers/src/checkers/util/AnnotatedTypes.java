@@ -34,6 +34,7 @@ import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedIntersectionType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
@@ -185,15 +186,16 @@ public class AnnotatedTypes {
             AnnotatedTypeMirror elem) {
         switch (t.getKind()) {
         case DECLARED:
+            AnnotatedDeclaredType dt = (AnnotatedDeclaredType) t;
             do {
                 // Search among supers for a desired supertype
-                AnnotatedTypeMirror s = asSuper(types, atypeFactory, t, elem);
+                AnnotatedTypeMirror s = asSuper(types, atypeFactory, dt, elem);
                 if (s != null)
                     return s;
                 // if not found immediately, try enclosing type
                 // like A in A.B
-                t = t.getEnclosingType();
-            } while (t != null && t.getKind() == TypeKind.DECLARED);
+                dt = dt.getEnclosingType();
+            } while (dt != null);
             return null;
         case ARRAY:     // intentional follow-through
         case TYPEVAR:   // intentional follow-through
@@ -955,27 +957,6 @@ public class AnnotatedTypes {
     }
 
     /**
-     * Determines if the type is for an anonymous type or not
-     *
-     * @param type  type to be checked
-     * @return  true iff type is an anonymous type
-     */
-    public static boolean isAnonymousType(AnnotatedTypeMirror type) {
-        return TypesUtils.isAnonymousType(type.getUnderlyingType());
-    }
-
-    /**
-     * Determines if the type is for an intersect type or not
-     *
-     * @param type  type to be checked
-     * @return  true iff type is an intersect type
-     */
-    public boolean isIntersectType(AnnotatedTypeMirror type) {
-        return isAnonymousType(type) &&
-                type.getUnderlyingType().toString().contains("&");
-    }
-
-    /**
      * Annotate the lub type as if it is the least upper bound of the rest of
      * the types.  This is a useful method for finding conditional expression
      * types.
@@ -991,9 +972,9 @@ public class AnnotatedTypes {
         Elements elements = processingEnv.getElementUtils();
 
         // Is it anonymous?
-        if (isAnonymousType(lub)) {
+        if (lub.getKind() == TypeKind.INTERSECTION) {
             // Find the intersect types
-            AnnotatedDeclaredType adt = (AnnotatedDeclaredType)lub;
+            AnnotatedIntersectionType adt = (AnnotatedIntersectionType) lub;
 
             for (AnnotatedDeclaredType adts : adt.directSuperTypes()) {
                 List<AnnotatedTypeMirror> subtypes = new ArrayList<AnnotatedTypeMirror>(types.size());
