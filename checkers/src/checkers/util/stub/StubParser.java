@@ -5,6 +5,7 @@ import java.util.*;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.*;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
@@ -59,6 +60,18 @@ public class StubParser {
      */
     private final Map<String, AnnotationMirror> supportedAnnotations;
 
+    /**
+     * A list of imports that are not annotation types.
+     * Used for importing enums.
+     */
+    private final List<String> imports;
+
+    /**
+     * Mapping of a field access expression that has already been encountered
+     * to the resolved variable element.
+     */
+    private final Map<FieldAccessExpr, VariableElement> faexprcache;
+
     public StubParser(String filename, InputStream inputStream, AnnotatedTypeFactory factory, ProcessingEnvironment env) {
         this.filename = filename;
         IndexUnit parsedindex;
@@ -72,10 +85,13 @@ public class StubParser {
         this.atypeFactory = factory;
         this.processingEnv = env;
         this.elements = env.getElementUtils();
+        imports = new ArrayList<String>();
+        // getSupportedAnnotations also sets imports. This should be refactored to be nicer.
         supportedAnnotations = getSupportedAnnotations();
         if (supportedAnnotations.isEmpty()) {
             stubWarning("No supported annotations found! This likely means your stub file doesn't import them correctly.");
         }
+        faexprcache = new HashMap<FieldAccessExpr, VariableElement>();
         Map<String, String> options = env.getOptions();
         this.warnIfNotFound = options.containsKey("stubWarnIfNotFound");
         this.debugStubParser = options.containsKey("stubDebug");
@@ -114,14 +130,22 @@ public class StubParser {
             try {
                 if (importDecl.isAsterisk()) {
                     putAllNew(result, annosInPackage(imported));
+                    // We currently don't support asterisks for enum imports.
+                    // One should have similar logic to add any enum types
+                    // to field "imported".
                 } else {
-                    AnnotationMirror anno = AnnotationUtils.fromName(elements, imported);
-                    if (anno != null ) {
-                        Element annoElt = anno.getAnnotationType().asElement();
-                        putNew(result, annoElt.getSimpleName().toString(), anno);
+                    final TypeElement annoType = elements.getTypeElement(imported);
+                    if (annoType.getKind() == ElementKind.ANNOTATION_TYPE) {
+                        AnnotationMirror anno = AnnotationUtils.fromName(elements, imported);
+                        if (anno != null ) {
+                            Element annoElt = anno.getAnnotationType().asElement();
+                            putNew(result, annoElt.getSimpleName().toString(), anno);
+                        } else {
+                            if (warnIfNotFound || debugStubParser)
+                                stubWarning("Could not load import: " + imported);
+                        }
                     } else {
-                        if (warnIfNotFound || debugStubParser)
-                            stubWarning("Could not load import: " + imported);
+                        imports.add(imported);
                     }
                 }
             } catch (AssertionError error) {
@@ -742,13 +766,35 @@ public class StubParser {
     }
 
     private /*@Nullable*/ VariableElement findVariableElement(FieldAccessExpr faexpr) {
+        if (faexprcache.containsKey(faexpr)) {
+            return faexprcache.get(faexpr);
+        }
         TypeElement rcvElt = elements.getTypeElement(faexpr.getScope().toString());
         if (rcvElt == null) {
-            if (warnIfNotFound || debugStubParser)
-                stubWarning("Type " + faexpr.getScope().toString() + " not found");
-            return null;
+            // Search imports for full annotation name.
+            for (String imp: imports) {
+                String[] import_delimited = imp.split("\\.");
+                if (import_delimited[import_delimited.length - 1].equals(faexpr.getScope().toString())) {
+                    StringBuilder full_annotation = new StringBuilder();
+                    for (int i = 0; i < import_delimited.length - 1; i++) {
+                        full_annotation.append(import_delimited[i]);
+                        full_annotation.append('.');
+                    }
+                    full_annotation.append(faexpr.getScope().toString());
+                    rcvElt = elements.getTypeElement(full_annotation);
+                    break;
+                }
+            }
+
+            if (rcvElt == null) {
+                if (warnIfNotFound || debugStubParser)
+                    stubWarning("Type " + faexpr.getScope().toString() + " not found");
+                return null;
+            }
         }
 
-        return findFieldElement(rcvElt, faexpr.getField());
+        VariableElement res = findFieldElement(rcvElt, faexpr.getField());
+        faexprcache.put(faexpr, res);
+        return res;
     }
 }

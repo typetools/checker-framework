@@ -1,4 +1,11 @@
-Version 1.5.0, 1 January 2013
+Version 1.5.1, 1 Feb 2013
+
+User-visible framework improvements:
+  Support using enum constants in stub files without requiring the
+    fully qualified name.
+
+----------------------------------------------------------------------
+Version 1.5.0, 14 Jan 2013
 
 User-visible framework improvements:
   To invoke the Checker Framework, call the main method of class

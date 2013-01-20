@@ -76,7 +76,7 @@ different shell, you may need to slightly adjust the commands.
 The output of the last command should be:
 
 \begin{Verbatim}
-  javac 1.7.0-jsr308-1.4.4
+  javac 1.7.0-jsr308-1.5.0
 \end{Verbatim}
 
 
@@ -103,7 +103,7 @@ verify that the installation works.  From the command line, run:
 The output should be:
 
 \begin{Verbatim}
-  javac 1.7.0-jsr308-1.4.4
+  javac 1.7.0-jsr308-1.5.0
 \end{Verbatim}
 
 \end{enumerate}
@@ -144,7 +144,7 @@ the new \code{javac} compiler.
 The output should be:
 
 \begin{Verbatim}
-  javac 1.7.0-jsr308-1.4.4
+  javac 1.7.0-jsr308-1.5.0
 \end{Verbatim}
 
 \end{enumerate}
@@ -212,7 +212,7 @@ Now, verify that the installation works.  From the command line, run:
 The output should be:
 
 \begin{Verbatim}
-  javac 1.7.0-jsr308-1.4.4
+  javac 1.7.0-jsr308-1.5.0
 \end{Verbatim}
 
 \end{enumerate}
@@ -235,10 +235,15 @@ Set the \code{jsr308javac} property:
 \begin{Verbatim}
   <property environment="env"/>
 
-  <dirname property="checkers" file="${env.CHECKERS}" />
+  <property name="checkers" value="${env.CHECKERS}" />
+  
+  <!-- On Mac/Linux, use the javac shell script; on Windows, use javac.bat -->
+  <condition property="cfJavac" value="javac.bat" else="javac">
+      <os family="windows" />
+  </condition>
 
   <presetdef name="jsr308.javac">
-    <javac fork="yes" executable="${checkers}/binary/javac" >
+    <javac fork="yes" executable="${checkers}/binary/${cfJavac}" >
       <!-- JSR308 related compiler arguments -->
       <compilerarg value="-version"/>
       <!-- optional, so .class files work with older JVMs: <compilerarg line="-target 5"/> -->
@@ -250,10 +255,6 @@ Set the \code{jsr308javac} property:
 %BEGIN LATEX
 \end{smaller}
 %END LATEX
-
-(Note: For any platform that needs to use "java -jar $CHECKERS/binary/checkers.jar" instead of
-javac then a simple script that executes "java -jar $CHECKERS/binarycheckers.jar <parameters>
-should replace the "{checkers}/binary/javac" part of \code{executable="\${checkers}/binary/javac"} above.)
 
 \item Duplicate the compilation target, then modify it slightly as
 indicated in this example:
