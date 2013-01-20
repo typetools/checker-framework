@@ -7,9 +7,9 @@
     <groupId>types.checkers</groupId>
     <artifactId>checkers-maven-plugin</artifactId>
 
-    <!-- Note: It's important that this is the first <version/> element to appear in this document (by line)
-         Because there is a simple logic in the release script to replace the version number of pom files -->
-    <version>1.5.0</version>
+    <!-- The comments in the version number are used to do a text substitution. Don't remove them
+         see checker-framework/binary/poms/updateVersion.sh -->
+    <version><!-- SUBST -->1.5.0<!-- /SUBST --></version>
 
     <build>
         <plugins>
@@ -67,7 +67,7 @@
     <distributionManagement>
         <repository>
             <id>checker-releases</id>
-            <url>file:///cse/www2/types/m2-repo</url>
+            <url>file:///Users/jburke/Documents/local_repos/m2-repo</url>
         </repository>
     </distributionManagement>
 </project>

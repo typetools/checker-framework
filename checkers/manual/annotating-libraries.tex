@@ -166,9 +166,31 @@ following ways:
   This simplifies the creation of stub files.
 
 \item{\textbf{Import statements:}}
+  All imports must be at the beginning of the file.
   The only required import statements are the ones to import type
-  annotations.  Such imports must be at the beginning of the
-  file.  Other import statements are optional.
+  annotations.  Import statements for types are optional.
+
+  Enum constants in annotations need to be either fully qualified
+  or imported.
+  For example, one has to either write the enum constant \<ANY> in
+  fully-qualified form:
+
+\begin{Verbatim}
+@FlowSources(sparta.checkers.quals.FlowSources.FlowSource.ANY)
+\end{Verbatim}
+
+\noindent
+or correctly import the enum class:
+
+\begin{Verbatim}
+import sparta.checkers.quals.FlowSources.FlowSource;
+...
+@FlowSources(FlowSource.ANY)
+\end{Verbatim}
+
+  Importing all packages from a class (\<import my.package.*;>) only
+  considers annotations from that package; enum types need to be
+  explicitly imported.
 
 \item{\textbf{Multiple classes and packages:}}
   The stub file format permits having multiple classes and packages.
@@ -286,17 +308,6 @@ in a stub file one has to write
 \begin{Verbatim}
      returntype methodname(params) @Annotations;
 \end{Verbatim}
-
-\item
-  Enum constants in annotations need to be fully qualified.  For example,
-  one has to write the enum constant \<ANY> in fully-qualified form:
-
-\begin{Verbatim}
-@FlowSources(sparta.checkers.quals.FlowSources.FlowSource.ANY)
-\end{Verbatim}
-
-\noindent
-even when the enum class is correctly imported.
 
 \item
   The stub file reader

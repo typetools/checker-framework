@@ -32,6 +32,10 @@
     <property name="javac.lib" value="${jsr308.langtools}/dist/lib/javac.jar"/>
     <property environment="env"/>
 
+    <property name="JAVA_6_HOME" value="${env.JAVA_6_HOME}" />
+    <property name="JAVA_7_HOME" value="${env.JAVA_7_HOME}" />
+    <property name="JAVA_8_HOME" value="${env.JAVA_8_HOME}" />
+
     <condition property="jdkName" value="jdk7.jar">
         <contains string="${java.version}" substring="1.7"/>
     </condition>
@@ -207,7 +211,8 @@ ${build.version} of the 'javac.jar' library."/>
         </javadoc>
     </target>
 
-    <target name="dist" depends="jar,jdk.jar,bindist"
+    <!-- TODO: Remove this and just use bindist-all (or remove bindist-all and keep this) -->
+    <target name="dist" depends="bindist-all"
             description="Create .jar, annotated JDK, and binary distribution">
     </target>
 
