@@ -173,6 +173,21 @@ public class AnnotatedTypes {
 
             return null;
         }
+
+        @Override
+        public AnnotatedTypeMirror visitIntersection(AnnotatedIntersectionType type, AnnotatedTypeMirror p) {
+            if (shouldStop(p, type))
+                return type;
+
+            for (AnnotatedDeclaredType st : type.directSuperTypes()) {
+                AnnotatedDeclaredType x = (AnnotatedDeclaredType) asSuper(types, atypeFactory, st, p);
+                if (x != null) {
+                    return x;
+                }
+            }
+
+            return null;
+        }
     };
 
     /**
