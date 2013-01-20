@@ -75,7 +75,6 @@ class RawTypeTest {
         X f;
     }
 
-    /* TODO: implement annotations on wildcard bounds
     interface I1 {
         public void m(MyList<? extends @Regex String> l);
     }
@@ -84,7 +83,7 @@ class RawTypeTest {
         public void m(MyList par) {
             @Regex String xxx = par.f;
         }
-    }*/
+    }
 
     interface I2 {
         public void m(MyList<@Regex String> l);
