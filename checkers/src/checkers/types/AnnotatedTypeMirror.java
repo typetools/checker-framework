@@ -2156,7 +2156,7 @@ public abstract class AnnotatedTypeMirror {
 
         @Override
         public <R, P> R accept(AnnotatedTypeVisitor<R, P> v, P p) {
-            return null;
+            return v.visitIntersection(this, p);
         }
 
         @Override
