@@ -200,7 +200,7 @@ public class NonNullVisitor
             if (atypeFactory.fromElement(elem).hasAnnotation(MONOTONICNONNULL)
                     && !checker
                             .getLintOption(
-                                    "strictMonotonicNonNullInit",
+                                    AbstractNonNullChecker.LINT_STRICTMONOTONICNONNULLINIT,
                                     AbstractNonNullChecker.LINT_DEFAULT_STRICTMONOTONICNONNULLINIT)) {
                 return;
             }
