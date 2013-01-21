@@ -121,7 +121,8 @@ public class NonNullVisitor
      */
     protected AnnotatedTypeMirror handlePolyNull(AnnotatedTypeMirror type,
             Tree context) {
-        if (type.hasAnnotation(PolyNull.class) || type.hasAnnotation(PolyAll.class)) {
+        if (type.hasAnnotation(PolyNull.class)
+                || type.hasAnnotation(PolyAll.class)) {
             NonNullValue inferred = factory.getInferredValueFor(context);
             if (inferred != null && inferred.isPolyNullNull) {
                 type.replaceAnnotation(NULLABLE);
@@ -371,6 +372,13 @@ public class NonNullVisitor
 
         final ExpressionTree leftOp = node.getLeftOperand();
         final ExpressionTree rightOp = node.getRightOperand();
+
+        // respect command line option
+        if (!checker.getLintOption(
+                AbstractNonNullChecker.LINT_STRICTNULLCOMPARISON,
+                AbstractNonNullChecker.LINT_DEFAULT_STRICTNULLCOMPARISON)) {
+            return;
+        }
 
         // equality tests
         if ((node.getKind() == Tree.Kind.EQUAL_TO || node.getKind() == Tree.Kind.NOT_EQUAL_TO)) {

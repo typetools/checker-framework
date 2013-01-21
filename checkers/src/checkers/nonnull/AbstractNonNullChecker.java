@@ -37,6 +37,17 @@ public abstract class AbstractNonNullChecker extends InitializationChecker {
     public AnnotationMirror NONNULL, NULLABLE, MONOTONICNONNULL;
 
     public static final boolean LINT_DEFAULT_STRICTMONOTONICNONNULLINIT = false;
+    
+    /**
+     * Default for {@link #LINT_STRICTNULLCOMPARISON}.
+     */
+    public static final boolean LINT_DEFAULT_STRICTNULLCOMPARISON = false;
+    
+    /**
+     * Warn about redundant comparisons of expressions with {@code null}, if the
+     * expressions is known to be non-null.
+     */
+    public static final String LINT_STRICTNULLCOMPARISON = "strictNullComparison";
 
     public AbstractNonNullChecker(boolean useFbc) {
         super(useFbc);
@@ -47,7 +58,8 @@ public abstract class AbstractNonNullChecker extends InitializationChecker {
         Elements elements = processingEnv.getElementUtils();
         NONNULL = AnnotationUtils.fromClass(elements, NonNull.class);
         NULLABLE = AnnotationUtils.fromClass(elements, Nullable.class);
-        MONOTONICNONNULL = AnnotationUtils.fromClass(elements, MonotonicNonNull.class);
+        MONOTONICNONNULL = AnnotationUtils.fromClass(elements,
+                MonotonicNonNull.class);
         super.initChecker();
     }
 
@@ -109,6 +121,7 @@ public abstract class AbstractNonNullChecker extends InitializationChecker {
         supportedTypeQualifiers.add(MonotonicNonNull.class);
         supportedTypeQualifiers.add(PolyNull.class);
         supportedTypeQualifiers.add(PolyAll.class);
-        return createQualifierHierarchy(processingEnv.getElementUtils(), supportedTypeQualifiers, factory);
+        return createQualifierHierarchy(processingEnv.getElementUtils(),
+                supportedTypeQualifiers, factory);
     }
 }
