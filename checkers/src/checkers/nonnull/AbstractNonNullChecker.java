@@ -36,18 +36,26 @@ public abstract class AbstractNonNullChecker extends InitializationChecker {
     /** Annotation constants */
     public AnnotationMirror NONNULL, NULLABLE, MONOTONICNONNULL;
 
-    public static final boolean LINT_DEFAULT_STRICTMONOTONICNONNULLINIT = false;
-    
     /**
      * Default for {@link #LINT_STRICTNULLCOMPARISON}.
      */
-    public static final boolean LINT_DEFAULT_STRICTNULLCOMPARISON = false;
-    
+    public static final String LINT_STRICTMONOTONICNONNULLINIT = "strictMonotonicNonNullInit";
+
+    /**
+     * Should we be strict about initialization of {@link MonotonicNonNull} variables.
+     */
+    public static final boolean LINT_DEFAULT_STRICTMONOTONICNONNULLINIT = false;
+
     /**
      * Warn about redundant comparisons of expressions with {@code null}, if the
      * expressions is known to be non-null.
      */
     public static final String LINT_STRICTNULLCOMPARISON = "strictNullComparison";
+
+    /**
+     * Default for {@link #LINT_STRICTNULLCOMPARISON}.
+     */
+    public static final boolean LINT_DEFAULT_STRICTNULLCOMPARISON = false;
 
     public AbstractNonNullChecker(boolean useFbc) {
         super(useFbc);
