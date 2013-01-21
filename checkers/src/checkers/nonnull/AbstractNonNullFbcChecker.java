@@ -16,10 +16,12 @@ import checkers.source.SupportedLintOptions;
         Free.class, Committed.class, Unclassified.class, FBCBottom.class,
         PolyNull.class, PolyAll.class })
 @SupportedLintOptions({ "strictMonotonicNonNullInit",
-// Temporary option to forbid non-null array component types,
-// which is allowed by default.
-// Forbidding is sound and will eventually be the only possibility.
-// Allowing is unsound but permitted until flow-sensitivity changes are made.
+        AbstractNonNullChecker.LINT_STRICTNULLCOMPARISON,
+        // Temporary option to forbid non-null array component types,
+        // which is allowed by default.
+        // Forbidding is sound and will eventually be the only possibility.
+        // Allowing is unsound but permitted until flow-sensitivity changes are
+        // made.
         "arrays:forbidnonnullcomponents" })
 public class AbstractNonNullFbcChecker extends AbstractNonNullChecker {
 
