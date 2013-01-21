@@ -24,12 +24,6 @@ import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 
 import com.sun.source.tree.CompilationUnitTree;
 
-// TODO: Suppress "fields.uninitialized" warning if the cause for a field not being
-//		 initialized is a type error (the uninitialized error shows up before the
-//		 error that actually caused the problem, which is confusing)
-// TODO/later: Add "CommittedOnly" and adapt logic to support either as default, and only one annotation can be present, only present on fields
-
-// DONE: Stefan: don't allow casts between initialization types.
 @SuppressWarningsKeys("nonnull")
 public abstract class AbstractNonNullChecker extends InitializationChecker {
 
