@@ -10,7 +10,8 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.element.*;
 import javax.lang.model.util.AbstractElementVisitor6;
 
-import checkers.source.AbstractTypeProcessor;
+import javacutils.AbstractTypeProcessor;
+
 import checkers.source.SourceChecker;
 import checkers.source.SourceVisitor;
 import checkers.types.AnnotatedTypeFactory;
