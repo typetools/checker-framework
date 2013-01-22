@@ -664,7 +664,7 @@ ${build.version} of the 'javac.jar' library."/>
 
         <java fork="true"
               failonerror="true"
-              classpath="${javac.lib}:${annotation-utils.lib}:${javaparser.lib}:${javacutils.lib}:${dataflow.lib}:${checkers.jar.file}"
+              classpath="${javac.lib}:${checkers.jar.file}:${annotation-utils.lib}:${javaparser.lib}:${javacutils.lib}:${dataflow.lib}"
               classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
