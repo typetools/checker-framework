@@ -42,9 +42,9 @@ Or, you can copy and then modify a different existing checker --- whether
 one distributed with the Checker Framework or a third-party one.
 
 You can place your checker's source files wherever you like.  When you
-compile your checker, \<\$CHECKERS/binary/jsr308-all.jar> should be on your
-classpath.  (If you wish to modify an existing checker in place, or to
-place the source code for your new checker in your own private copy of the
+compile your checker, \<\$CHECKERS/binary/checkers.jar> and \<\$CHECKERS/binary/javac.jar>
+should be on your classpath.  (If you wish to modify an existing checker in place,
+or to place the source code for your new checker in your own private copy of the
 Checker Framework source code, then you need to be able to re-compile the
 Checker Framework, as described in Section~\ref{build-source}.)
 
@@ -900,6 +900,9 @@ switch, which is used to pass options to an annotation processor.
 \item \code{-Anomsgtext}: use message keys (such as ``\code{type.invalid}'')
 rather than full message text when reporting errors or warnings
 
+\item \code{-Adetailedmsgtext}: print a more detailed error message in addition
+to the full message text when reporting errors or warnings
+
 \item \code{-Ashowchecks}: print debugging information for each
 pseudo-assignment check (as performed by \refclass{basetype}{BaseTypeVisitor}; see Section
 \ref{extending-visitor} above)
@@ -959,9 +962,9 @@ can step into its source code if needed.
 You can also set up remote (or local) debugging using the following command as a template:
 
 \begin{Verbatim}
-java -Xbootclasspath/p:$CHECKERS/binary/jsr308-all.jar -jar \
-    -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005 \
-    $CHECKERS/binary/jsr308-all.jar -processor checkers.nullness.NullnessChecker \
+java -jar $CHECKERS/binary/checkers.jar \
+    -J-Xdebug -J-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005 \
+    -processor checkers.nullness.NullnessChecker \
     src/sandbox/FileToCheck.java
 
 \end{Verbatim}

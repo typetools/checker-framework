@@ -1,4 +1,38 @@
-Version 1.4.4, ? ? 2012
+Version 1.5.1, 1 Feb 2013
+
+User-visible framework improvements:
+  Support using enum constants in stub files without requiring the
+    fully qualified name.
+
+----------------------------------------------------------------------
+Version 1.5.0, 14 Jan 2013
+
+User-visible framework improvements:
+  To invoke the Checker Framework, call the main method of class
+    CheckerMain, which is a drop-in replacement for javac.  This replaces
+    all previous techniques for invoking the Checker Framework.  Users
+    should no longer provide any Checker Framework jars on the classpath or
+    bootclasspath.  jsr308-all.jar has been removed.
+  The Checker Framework now works with both JDK 6 and JDK 7, without need
+    for user customization.  The Checker Framework determines the
+    appropriate annotated JDK to use.
+  All jar files now reside in checker-framework/checkers/binary/.
+
+Maven plugin:
+  Individual pom files (and artifacts in the Maven repository) for all
+    Checker Framework jar files.
+  Avoid too-long command lines on Windows.
+  See the Maven section of the manual for more details.
+
+Eclipse plugin:
+  Avoid too-long command lines on Windows.
+  Other bug fixes and interface improvements.
+
+Other framework improvements:
+  New -Adetailedmsgtext command-line option, intended for use by IDE plugins.
+
+----------------------------------------------------------------------
+Version 1.4.4, 1 Dec 2012
 
 Internal framework improvements:
   Add shutdown hook mechanism and use it for -AresourceStats resource
@@ -8,6 +42,12 @@ Internal framework improvements:
   Ignore case when comparing error suppression keys.
   Support the bottom type as subtype of any wildcard type.
 
+Tool Integration Changes
+  The Maven plugin id has been changed to reflect standard Maven
+    naming conventions.
+  Eclipse and Maven plugin version numbers will now
+    track the Checker Framework version numbers.
+  
 Bug fixes.
 
 ----------------------------------------------------------------------

@@ -15,8 +15,8 @@
     <property name="build.tests" value="tests/build"/>
     <property file="build.${os.name}.properties"/>
     <property file="build.properties"/>
-    <property name="checkers.jar.file" value="checkers.jar"/>
-    <property name="checkers-quals.jar.file" value="checkers-quals.jar"/>
+    <property name="checkers.jar.file" value="binary/checkers.jar"/>
+    <property name="checkers-quals.jar.file" value="binary/checkers-quals.jar"/>
     <property name="dist.doc" value="doc"/>
     <property name="javaparser.loc" value="../javaparser"/>
     <property name="javacutils.loc" value="../javacutils"/>
@@ -32,8 +32,19 @@
     <property name="run.tests.should.fork" value="true"/>
     <property name="halt.on.test.failure" value="true"/>
 
+    <!-- THERE IS BOTH A javac.lib and a javac.lib -->
+    <property name="javac.lib" value="${jsr308.langtools}/dist/lib/javac.jar"/>
+    <property environment="env"/>
+
+    <property name="JAVA_6_HOME" value="${env.JAVA_6_HOME}" />
+    <property name="JAVA_7_HOME" value="${env.JAVA_7_HOME}" />
+
+    <condition property="jdkName" value="jdk7.jar" else="jdk6.jar">
+        <contains string="${java.version}" substring="1.7"/>
+    </condition>
+
     <path id="build.path">
-        <pathelement location="${compiler.lib}"/>
+        <pathelement location="${javac.lib}"/>
     </path>
 
     <!-- Used to have:
@@ -48,7 +59,7 @@
         <java fork="true"
               outputproperty="compiler.version"
               classname="com.sun.tools.javac.Main">
-          <jvmarg line="-Xbootclasspath/p:${compiler.lib}"/>
+          <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
           <arg line="-version"/>
         </java>
 
@@ -105,11 +116,14 @@
         <delete file="${checkers.jar.file}"/>
         <delete file="${checkers-quals.jar.file}"/>
         <delete dir="${temp.dir}"/>
-        <delete file="${bindist.file}"/>
         <delete failonerror="false">
             <fileset dir="${build.tests}" includes="**/*.class"/>
             <fileset dir="jdk" includes="**/*.class"/>
         </delete>
+        <delete file="binary/jdk6.jar"/>
+        <delete file="binary/jdk7.jar"/>
+        <delete file="jdk/jdk6.jar"/>
+        <delete file="jdk/jdk7.jar"/>
     </target>
 
     <target name="build.check.uptodate"
@@ -155,13 +169,13 @@
     </target>
 
     <target name="build" depends="prep,build.check.uptodate" unless="build.uptodate"
-            description="Compile files.  Does not update jsr308-all.jar">
+            description="Compile files.  Does not update any jars">
         <fail unless="compiler.exists"
             message="
 Needed version ${compiler.version.goal} of the JSR 308 compiler,
 but found version ${compiler.version} on your classpath.
 ${line.separator}${line.separator}
-Check that the 'compiler.lib' property in 'build.properties' points to version
+Check that the 'javac.lib' property in 'build.properties' points to version
 ${build.version} of the 'javac.jar' library."/>
 
         <copy todir="${build}" preservelastmodified="true">
@@ -177,9 +191,9 @@ ${build.version} of the 'javac.jar' library."/>
         </pathconvert>
         <java fork="true"
               failonerror="true"
-              classpath="${compiler.lib}:${annotation-utils.lib}:${javaparser.lib}:${javacutils.lib}:${dataflow.lib}:${jna.lib}:${tests.junit}"
+              classpath="${javac.lib}:${annotation-utils.lib}:${javaparser.lib}:${javacutils.lib}:${dataflow.lib}:${tests.junit}"
               classname="com.sun.tools.javac.Main">
-            <jvmarg line="-Xbootclasspath/p:${compiler.lib}"/>
+            <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
             <arg line="-sourcepath ${src}"/>
             <arg line="-d ${build}"/>
@@ -208,9 +222,9 @@ ${build.version} of the 'javac.jar' library."/>
     <target name="javadoc" depends="prep" description="Create Javadoc documentation">
         <java fork="true"
               failonerror="true"
-              classpath="${compiler.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar"
+              classpath="${javac.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar"
               classname="com.sun.tools.javac.Main">
-            <jvmarg line="-Xbootclasspath/p:${compiler.lib}:${javadoc.lib}"/>
+            <jvmarg line="-Xbootclasspath/p:${javac.lib}:${javadoc.lib}"/>
             <arg value="-g"/>
             <arg line="-d ${build}"/>
             <arg line="src/checkers/util/dist/ManualTaglet.java"/>
@@ -220,9 +234,9 @@ ${build.version} of the 'javac.jar' library."/>
         subdirectory fails. -->
         <javadoc sourcepath="${src}" destdir="${dist.doc}" failonerror="true"
             executable="${jsr308.langtools}/dist/bin/javadoc"
-          classpath="${build}:${compiler.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar:${jna.lib}:tests/junit-4.7.jar"
+          classpath="${build}:${javac.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar:tests/junit-4.7.jar"
           excludepackagenames="checkers.util.stub,checkers.util.dist"
-          bootclasspath="${compiler.lib}:${javadoc.lib}:${java.home}/lib/rt.jar">
+          bootclasspath="${javac.lib}:${javadoc.lib}:${java.home}/lib/rt.jar">
           <package name="checkers.*"/>
           <link href="http://docs.oracle.com/javase/7/docs/api/"/>
           <link href="http://docs.oracle.com/javase/7/docs/jdk/api/javac/tree/"/>
@@ -230,7 +244,8 @@ ${build.version} of the 'javac.jar' library."/>
         </javadoc>
     </target>
 
-    <target name="dist" depends="jar,jdk.jar,bindist"
+    <!-- TODO: Remove this and just use bindist-all (or remove bindist-all and keep this) -->
+    <target name="dist" depends="bindist-all"
             description="Create .jar, annotated JDK, and binary distribution">
     </target>
 
@@ -238,7 +253,11 @@ ${build.version} of the 'javac.jar' library."/>
     <target name="jar" depends="build,checkers-quals-jar"
             description="Create jar file">
         <delete dir="${build.reports}"/>
-        <jar destfile="${checkers.jar.file}" basedir="${build}"/>
+        <jar destfile="${checkers.jar.file}" basedir="${build}">
+            <manifest>
+                <attribute name="Main-Class" value="checkers.util.CheckerMain"/>
+            </manifest>
+        </jar>
     </target>
 
     <!-- This creates checkers-quals.jar -->
@@ -266,7 +285,7 @@ ${build.version} of the 'javac.jar' library."/>
 Version ${build.version} of the JSR 308 compiler was not found on your
 classpath.
 ${line.separator}${line.separator}
-Check that the 'compiler.lib' property in 'build.properties' points to version
+Check that the 'javac.lib' property in 'build.properties' points to version
 ${build.version} of the 'javac.jar' library."/>
         <pathconvert pathsep=" " property="src.tests">
             <path>
@@ -279,9 +298,9 @@ ${build.version} of the 'javac.jar' library."/>
         </pathconvert>
         <java fork="true"
               failonerror="true"
-              classpath="${compiler.lib}:${tests.junit}:${build}:${javacutils.lib}:${dataflow.lib}"
+              classpath="${javac.lib}:${tests.junit}:${build}:${javacutils.lib}:${dataflow.lib}"
               classname="com.sun.tools.javac.Main">
-            <jvmarg line="-Xbootclasspath/p:${compiler.lib}"/>
+            <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
             <arg line="-sourcepath ${tests}"/>
             <arg line="-d ${build.tests}"/>
@@ -289,18 +308,20 @@ ${build.version} of the 'javac.jar' library."/>
         </java>
     </target>
 
+    <!-- TODO: DUPLICATED FOR ALL_TESTS -->
     <!-- Per the <test> element, output goes to ${build.reports} -->
     <target name="-run-tests" description="Generalized test runner">
+
         <mkdir dir="${build.reports}"/>
         <junit fork="${run.tests.should.fork}"
             dir="${basedir}"
             printsummary="true"
             haltonfailure="${halt.on.test.failure}">
-            <jvmarg line="-Xbootclasspath/p:${build}/../jdk/jdk.jar:${compiler.lib}"/>
+            <jvmarg line="-Xbootclasspath/p:${basedir}/binary/${jdkName}:${javac.lib}"/>
             <jvmarg line="-ea"/>
 
             <classpath>
-                <pathelement path="${compiler.lib}"/>
+                <pathelement path="${javac.lib}"/>
                 <pathelement path="${checker.jar.file}"/>
                 <pathelement path="${build.tests}"/>
                 <pathelement path="${tests.junit}"/>
@@ -330,11 +351,11 @@ ${build.version} of the 'javac.jar' library."/>
             dir="${basedir}"
           printsummary="true"
           haltonfailure="${halt.on.test.failure}">
-          <jvmarg line="-Xbootclasspath/p:${build}/../jdk/jdk.jar:${compiler.lib}"/>
+          <jvmarg line="-Xbootclasspath/p:${basedir}/binary/${jdkName}:${javac.lib}"/>
           <jvmarg line="-ea"/>
 
           <classpath>
-              <pathelement path="${compiler.lib}"/>
+              <pathelement path="${javac.lib}"/>
               <pathelement path="${checker.jar.file}"/>
               <pathelement path="${build.tests}"/>
               <pathelement path="${tests.junit}"/>
@@ -600,7 +621,7 @@ ${build.version} of the 'javac.jar' library."/>
             <attribute name="jpda.jvmargs" default=""/>
             <sequential>
                 <property name="coverage.options" value=""/>    <!-- default -->
-                <property name="coverage.classpath" value="${basedir}/${compiler.lib}:${basedir}/checkers.jar"/>    <!-- default -->
+                <property name="coverage.classpath" value="${basedir}/${javac.lib}:${checkers.jar.file}"/>    <!-- default -->
                 <!-- removed:
                     jdk="@{jdk}"
                    -->
@@ -643,9 +664,9 @@ ${build.version} of the 'javac.jar' library."/>
 
         <java fork="true"
               failonerror="true"
-              classpath="${compiler.lib}:${annotation-utils.lib}:${javaparser.lib}:${javacutils.lib}:${dataflow.lib}:${jna.lib}:${checkers.jar.file}"
+              classpath="${javac.lib}:${annotation-utils.lib}:${javaparser.lib}:${javacutils.lib}:${dataflow.lib}:${checkers.jar.file}"
               classname="com.sun.tools.javac.Main">
-            <jvmarg line="-Xbootclasspath/p:${compiler.lib}:${checkers.jar.file}"/>
+            <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
             <arg line="-sourcepath ${src}:${checker-jdk}"/>
             <arg line="-d ${build}"/>
@@ -699,20 +720,34 @@ ${build.version} of the 'javac.jar' library."/>
       Binary release of the Checker Framework; it includes javac.
      -->
 
-    <property name="javac.lib" value="${jsr308.langtools}/dist/lib/javac.jar"/>
-    <property name="checkers.lib" value="checkers.jar"/>
-    <property name="bindist.file" value="binary/jsr308-all.jar"/>
     <property name="temp.dir" value="binary/buildbin"/>
 
     <target name="-prep-bindist"
             description="ensures that the necessary jar files exist">
-        <!-- check javac.jar -->
-        <available property="javac.exist" file="${javac.lib}"/>
-        <fail unless="javac.exist" message="Could not find javac.jar: ${javac.lib}"/>
+        <available property="javac.exist" file="${javac.lib}" />
+
+        <fail unless="javac.exist" message="Could not find javac.jar: ${javac.lib}" />
+    </target>
+
+    <target name="all.jdks.jar" description="If JAVA_6_HOME and JAVA_7_HOME are specified, this task builds both jdk6.jar and jdk7.jar by calling jdk.jar with JAVA_HOME set to the respective variables.">
+        <fail unless="JAVA_6_HOME" message="Property &quot;JAVA_6_HOME&quot; needs to be set!"/>
+        <fail unless="JAVA_7_HOME" message="Property &quot;JAVA_7_HOME&quot; needs to be set!"/>
+
+        <exec executable="ant" failonerror="true">
+            <arg line="jdk.jar"/>
+            <env key="JAVA_HOME"  value="${JAVA_6_HOME}"/>
+        </exec>
+
+        <exec executable="ant" failonerror="true">
+            <arg line="jdk.jar"/>
+            <env key="JAVA_HOME"  value="${JAVA_7_HOME}"/>
+        </exec>
+
     </target>
 
     <target name="jdk.jar" depends="jar"
-            description="creates the instrumented jdk.jar">
+            description="creates the instrumented jdk.jar using the JDK specified by JAVA_HOME">
+
       <exec executable="make" failonerror="true">
          <arg value="LANGTOOLS=${jsr308.langtools}"/>
          <arg value="ANNOTATION_TOOLS=${annotation.tools}"/>
@@ -720,28 +755,34 @@ ${build.version} of the 'javac.jar' library."/>
          <arg value="-C"/>
          <arg value="jdk"/>
       </exec>
+      <move file="jdk/jdk.jar" tofile="jdk/${jdkName}"/>
+
+    </target>
+
+    <target name="bindist-all" depends="-prep-bindist,jar,all.jdks.jar,bindist-nojdk"
+            description="Build checkers.jar, checker-quals.jar, jdk6.jar and jdk7.jar.  This comprises all jars needed to run the framework.">
     </target>
 
     <target name="bindist" depends="-prep-bindist,jar,jdk.jar,bindist-nojdk"
-            description="Generates jar file jsr308-all.jar including both javac and the Checker Framework">
+            description="Build checkers.jar, checker-quals.jar, and jdk(V).jar where (V) is the major version number of java in JAVA_HOME (only Java 6/7 are currently supported).  This comprises all jars needed to run the framework.">
     </target>
 
     <target name="bindist-nojdk" depends="-prep-bindist,jar"
-            description="Generates jar file jsr308-all.jar including both javac and the Checker Framework, WITHOUT updating jdk.jar">
-        <delete dir="${temp.dir}"/>
-        <unjar src="${checkers.lib}" dest="${temp.dir}"/>
-        <unjar src="${javac.lib}" dest="${temp.dir}"/>
-        <unjar src="${jna.lib}" dest="${temp.dir}"/>
-        <copy file="jdk/jdk.jar" todir="${temp.dir}"/>
-        <jar destfile="${bindist.file}" basedir="${temp.dir}">
-            <manifest>
-                <attribute name="Main-Class" value="checkers.util.CheckerMain"/>
-            </manifest>
-        </jar>
+            description="Build checkers.jar, checker-quals.jar WITHOUT updating jdk6.jar or jdk7.jar.  Move all relevant files to the binary directory. ">
 
-        <!-- overwrite="true" to avoid failing to copy due to timestamps -->
-        <copy file="jdk/jdk.jar" tofile="binary/jdk.jar" overwrite="true"/>
-        <delete dir="${temp.dir}"/>
+        <copy todir="binary" file="${javac.lib}"      overwrite="true" failonerror="true" />
+
+        <fail message="No jdk jars were found in the jdk directory.  At least one jdk (jdk6.jar or jdk7.jar) must be built!">
+            <condition>
+                <and>
+                    <not><available file="jdk/jdk6.jar"></available></not>
+                    <not><available file="jdk/jdk7.jar"></available></not>
+                </and>
+            </condition>
+        </fail>
+
+        <copy file="jdk/jdk6.jar" tofile="binary/jdk6.jar" overwrite="true" failonerror="false" />
+        <copy file="jdk/jdk7.jar" tofile="binary/jdk7.jar" overwrite="true" failonerror="false" />
     </target>
 
 </project>

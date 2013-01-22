@@ -110,7 +110,8 @@ The type com.sun.source.util.AbstractTypeProcessor cannot be resolved.
 \end{alltt}
 
 \noindent
-then you are missing \code{jsr308-all.jar} from your classpath.
+then you are likely NOT using the Checker Framework compiler.  Use
+either \code{\$CHECKERS/binary/javac} or \code{"java -jar \$CHECKERS/binary/checkers.jar"}.
 
 \item
 If you get the error
@@ -150,8 +151,9 @@ This problem occurs when your classpath contains code that was compiled
 with one version of the JDK and refers to its implementation details, but
 your classpath does not contain that version of the JDK itself.
 
-You can solve the problem by re-generating \code{jdk/jdk.jar} and
-\code{binary/jdk.jar}.  You can do this by running
+You can solve the problem by re-generating \code{binary/jdk6.jar}
+or \code{binary/jdk7.jar} and \code{binary/jdk.jar}.
+You can do this by running
 
 \begin{Verbatim}
   cd checkers
@@ -173,9 +175,9 @@ you're not executing with the right bootclasspath: some classes were
 compiled with the JDK 8 version and expect the field, but you're
 executing the compiler on a JDK without the field.
 
-One possibility is that you are not running the Type Annotations compiler
+One possibility is that you are not running the Checker Framework compiler
 --- use \<javac -version> to check this, then use the right one.  (Maybe
-the Type Annotations javac is at the end rather than the beginning of your
+the Checker Framework javac is at the end rather than the beginning of your
 path.)
 
 If you are using Ant, then one possibility
@@ -553,7 +555,7 @@ Run \code{ant} to create \<checkers.jar>:
 \begin{smaller}
 %END LATEX
 \begin{Verbatim}
-  export CLASSPATH=${CLASSPATH}:$JAVA_HOME/lib/tools.jar:$JSR308/checker-framework/checkers/checkers.jar
+  export CLASSPATH=${CLASSPATH}:$JAVA_HOME/lib/tools.jar:$JSR308/checker-framework/checkers/binary/checkers.jar
 \end{Verbatim}
 % $ to unconfuse Emacs LaTeX mode
 %BEGIN LATEX
