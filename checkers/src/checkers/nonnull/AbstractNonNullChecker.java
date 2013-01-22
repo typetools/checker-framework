@@ -24,19 +24,32 @@ import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 
 import com.sun.source.tree.CompilationUnitTree;
 
-// TODO: Suppress "fields.uninitialized" warning if the cause for a field not being
-//		 initialized is a type error (the uninitialized error shows up before the
-//		 error that actually caused the problem, which is confusing)
-// TODO/later: Add "CommittedOnly" and adapt logic to support either as default, and only one annotation can be present, only present on fields
-
-// DONE: Stefan: don't allow casts between initialization types.
 @SuppressWarningsKeys("nonnull")
 public abstract class AbstractNonNullChecker extends InitializationChecker {
 
     /** Annotation constants */
     public AnnotationMirror NONNULL, NULLABLE, MONOTONICNONNULL;
 
+    /**
+     * Default for {@link #LINT_STRICTNULLCOMPARISON}.
+     */
+    public static final String LINT_STRICTMONOTONICNONNULLINIT = "strictMonotonicNonNullInit";
+
+    /**
+     * Should we be strict about initialization of {@link MonotonicNonNull} variables.
+     */
     public static final boolean LINT_DEFAULT_STRICTMONOTONICNONNULLINIT = false;
+
+    /**
+     * Warn about redundant comparisons of expressions with {@code null}, if the
+     * expressions is known to be non-null.
+     */
+    public static final String LINT_STRICTNULLCOMPARISON = "strictNullComparison";
+
+    /**
+     * Default for {@link #LINT_STRICTNULLCOMPARISON}.
+     */
+    public static final boolean LINT_DEFAULT_STRICTNULLCOMPARISON = false;
 
     public AbstractNonNullChecker(boolean useFbc) {
         super(useFbc);
@@ -47,7 +60,8 @@ public abstract class AbstractNonNullChecker extends InitializationChecker {
         Elements elements = processingEnv.getElementUtils();
         NONNULL = AnnotationUtils.fromClass(elements, NonNull.class);
         NULLABLE = AnnotationUtils.fromClass(elements, Nullable.class);
-        MONOTONICNONNULL = AnnotationUtils.fromClass(elements, MonotonicNonNull.class);
+        MONOTONICNONNULL = AnnotationUtils.fromClass(elements,
+                MonotonicNonNull.class);
         super.initChecker();
     }
 
@@ -109,6 +123,7 @@ public abstract class AbstractNonNullChecker extends InitializationChecker {
         supportedTypeQualifiers.add(MonotonicNonNull.class);
         supportedTypeQualifiers.add(PolyNull.class);
         supportedTypeQualifiers.add(PolyAll.class);
-        return createQualifierHierarchy(processingEnv.getElementUtils(), supportedTypeQualifiers, factory);
+        return createQualifierHierarchy(processingEnv.getElementUtils(),
+                supportedTypeQualifiers, factory);
     }
 }
