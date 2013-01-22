@@ -1,8 +1,8 @@
 Version 1.5.1, 1 Feb 2013
 
 User-visible framework improvements:
-  Support using enum constants in stub files without requiring the
-    fully qualified name.
+  It is possible to use enum constants in stub files without requiring the
+    fully qualified name, as was previously necessary.
 
 ----------------------------------------------------------------------
 Version 1.5.0, 14 Jan 2013
