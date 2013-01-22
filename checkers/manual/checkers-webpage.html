@@ -1,0 +1,274 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+  <title>The Checker Framework</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <link rel="icon" type="image/png" href="../jsr308/favicon-jsr308.png" />
+</head>
+<body>
+
+<h1>The Checker Framework</h1>
+
+<p>
+Are you tired of null pointer exceptions, unintended side effects, SQL
+injections, concurrency errors, mistaken equality tests, and other run-time
+errors that appear during testing or in the field? 
+</p>
+
+<p>
+The Checker Framework enhances Java’s type system to make it more powerful
+and useful. This lets software developers detect and prevent errors in
+their Java programs.  The Checker Framework includes compiler plug-ins
+("checkers") that find bugs or verify their absence.  It also permits you
+to write your own compiler plug-ins.
+</p>
+
+<p>
+<b>Quick start</b>:  go directly to the
+<a
+href="current/checkers-manual.html#installation"><b>Installation
+instructions and tutorial</b></a>.
+</p>
+
+<ul>
+  <li>
+    Download: <a href="current/checkers.zip">checkers.zip</a>
+    version
+    <!-- checkers-version -->1.5.0, 14 Jan 2013<!-- /checkers-version -->
+    (includes source, platform-independent binary, tests, and documentation)<br/>
+    Then, see the <a
+    href="current/checkers-manual.html#installation"><b>Installation
+    instructions and tutorial</b></a>.
+  </li>
+
+  <li>
+    Documentation:
+    <ul>
+      <li>
+	<a href="current/checkers-manual.pdf">Checker Framework manual (PDF)</a>
+      </li>
+
+      <li>
+	<a href="current/checkers-manual.html">Checker Framework manual (HTML)</a>
+      </li>
+
+      <li>
+	<a href="current/checkers-manual.html#installation">Installation instructions</a>
+      </li>
+
+      <li>
+	<a href="current/doc/">Javadoc</a> API documentation
+      </li>
+
+      <li>
+	<a href="current/changelog-checkers.txt">Changelog</a>
+      </li>
+
+      <li>
+        Research papers:
+        <ul>
+	  <li>
+	    <a href="http://homes.cs.washington.edu/~mernst/pubs/pluggable-checkers-issta2008-abstract.html">Practical
+	    pluggable types for Java</a> (a paper presented at the
+	    ISSTA 2008 conference) describes the design of the
+	    Checker Framework, and case studies that found bugs in
+	    real programs and yielded new insights about type
+	    systems.
+	  </li>
+
+	  <li>
+	    <a href="http://homes.cs.washington.edu/~mernst/pubs/pluggable-checkers-icse2011-abstract.html">Building
+	    and using pluggable type-checkers</a> (a paper presented
+	    at the ICSE 2011 conference) evaluates the ease of
+	    pluggable type-checking with the Checker Framework. The
+	    type checkers were easy to write, easy for novices to use,
+	    and effective in finding hundreds of errors in case
+	    studies of 2 million lines of code.
+	  </li>
+        </ul>
+      </li>
+
+    </ul>
+  </li>
+
+  <li>
+    Source code repository (at Google Code):  <a href="http://code.google.com/p/checker-framework/">http://code.google.com/p/checker-framework/</a><br/>
+    The Checker Framework manual contains <a href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#build-source">instructions on building from source</a>.
+  </li>
+
+  <!-- This text appears identically at openjdk-webpage.html -->
+  <li>Inference tools automatically add annotations to your code,
+      making it even easier to start using the checkers.  You must
+      download these tools separately.
+    <ul>
+      <li>
+	To infer the <tt>@Nullable</tt> type qualifier, use <a
+	href="http://groups.csail.mit.edu/pag/daikon/download/doc/daikon.html#AnnotateNullable">Daikon</a>
+      </li>
+      <li>
+	To infer the <code>@NonNull</code> type qualifier, use the
+	<a href="http://julia.scienze.univr.it/">Julia
+	Analyzer</a>, <a href="http://nit.gforge.inria.fr/">Nit</a>, or <a
+	href="http://jastadd.org/jastadd-tutorial-examples/non-null-types-for-java/">JastAdd</a>
+      </li>
+      <li>
+	To infer the <code>@ReadOnly</code> type qualifier, use <a
+	href="http://types.cs.washington.edu/javari/javarifier/">Javarifier</a>
+      </li>
+    </ul>
+  </li>
+
+  <li>Optional related tools:
+    <ul>
+      <li>The <a href="../annotation-file-utilities/"><b>Annotation File Utilities</b></a>
+          extract annotations from, and write annotations to,
+          <code>.java</code> and <code>.class</code> files.
+          It also provides a representation (called
+          an &ldquo;annotation file&rdquo;) for annotations that is outside the source code or
+          the <code>.class</code> file.  The tools support both Java 5
+          annotations, and the type annotations defined in JSR 308.
+        <ul>
+          <li><a href="../annotation-file-utilities/annotation-tools.zip">annotation-tools.zip</a> (11 Sep 2012)
+          </li>
+          <li><a href="http://code.google.com/p/annotation-tools/">source code repository</a>
+          </li>
+          <li><a href="../annotation-file-utilities/">Documentation</a>
+              is included in the zip archive and in the repository.
+          </li>
+        </ul>
+      </li>
+      <li>The <a href="../jsr308/"><b>Type annotations compiler</b></a>
+          is fully <em>backward-compatible</em>.  You can use it in place
+	  of javac without any change in behavior, except that you will be permitted
+	  to place annotations in more locations (or in comments) and to use
+	  type-checking plug-ins that take advantage of those new locations.
+	  Most users don't need it, since a compiled version (without source
+	  code) is already included in the Checker Framework distribution.
+       </li>
+    </ul>
+  </li>
+</ul>
+
+
+
+<hr />
+<h2 id="Support">Support and community</h2>
+
+<p>
+If you <b>have a question</b>, then first see whether your question is
+answered in one of the manuals listed under
+<a href="#documentation">Documentation</a> below.
+If none of those documents answers your question, then use one of the
+<a href="#mailing-lists">mailing lists</a>.
+</p>
+
+
+<h3 id="documentation">Documentation</h3>
+
+<p>
+</p>
+
+<ul>
+  <li>Checker Framework manual (<a href="current/checkers-manual.pdf">PDF</a>, <a href="current/checkers-manual.html">HTML</a>)</li>
+  <li><a href="current/checkers-manual.html#installation">Installation instructions and tutorial</a>
+  <li><a href="current/checkers-manual.html">FAQ (Frequently Asked Questions with answers)</a>
+  </li>
+</ul>
+
+
+<h3 id="mailing-lists">Mailing lists</h3>
+
+<p>
+We welcome questions, suggestions, patches, reports about case
+studies, 
+and other contributions.
+Let us know how we can make the Checker Framework even better!
+</p>
+
+<ul>
+  <li>
+    <a href="http://groups.google.com/group/checker-framework-discuss">checker-framework-discuss</a>:
+    for general discussion about the Checker Framework for building
+    pluggable type systems
+    (<a href="http://groups.google.com/group/checker-framework-discuss/topics">view archives</a>,
+    <a href="http://types.cs.washington.edu/list-archives/jsr308/">view old archives</a>)
+  </li>
+  <li>
+    <a href="http://groups.google.com/group/checker-framework-dev">checker-framework-dev</a>:
+    to reach the developers who maintain and extend the Checker Framework
+    (<a href="http://groups.google.com/group/checker-framework-dev/topics">view archives</a>,
+    <a href="http://types.cs.washington.edu/list-archives/checkers/">view old archives</a>)
+  </li>
+</ul>
+
+<p>
+You can also use the mailing lists to <b>give help</b>.  Here are just a
+few examples:
+</p>
+<ul>
+  <li>Respond to questions.</li>
+  <li>Report problems (in the implementation or the documentation) or request features.</li>
+  <li>Write code, then share your bug fixes, new features, compiler plug-ins,
+      or other improvements.</li>
+  <li>Make suggestions regarding the specification.</li>
+</ul>
+
+
+<p>
+Another way to help is to tell your friends and colleagues about the
+usefulness and practicality of type annotations, or to report your
+successes to the mailing lists.
+</p>
+
+
+
+<h3 id="bugs">Bug reports</h3>
+
+<p>
+To submit a bug report, use the mailing list or, preferably, the issue tracker:
+</p>
+<ul>
+  <li><a href="http://code.google.com/p/checker-framework/issues/list">Checker Framework issue tracker</a> (please read these
+      <a href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#reporting-bugs">instructions</a>
+      first)
+  </li>
+</ul>
+
+
+
+<hr />
+
+<p>
+Last updated: December 9, 2011
+</p>
+
+</body>
+</html>
+<!--
+Local Variables:
+time-stamp-start: "^Last updated: "
+time-stamp-end: "\\.?$"
+time-stamp-format: "%:b %:d, %:y"
+time-stamp-line-limit: -50
+End:
+-->
+
+<!--  LocalWords:  JCP wiki classfile OpenJDK javac var NonNull subcategory SCA
+ -->
+<!--  LocalWords:  classfiles const changelog JLS Metadata getSize sql BNF jsr
+ -->
+<!--  LocalWords:  IGJ openjdk Inv isible isibleTypeAnnotations TypeArguments
+ -->
+<!--  LocalWords:  VariableDeclaratorRest MethodOrFieldRest TypeArgument Alast
+ -->
+<!--  LocalWords:  TypeArgumentsAnnotationsLast TypeArgumentsAnnotationsFirst
+ -->
+<!--  LocalWords:  BasicType RawBasicType NonEmpty Afirst UnmodifiableList int
+ -->
+<!--  LocalWords:  monitorTemperature TemperatureException myString myObject EE
+ -->
+<!--  LocalWords:  isNonNull instanceof myNonEmptyStringSet MyObject langtools
+ -->
+<!--  LocalWords:  rc desugar txt dev Nullable codename hg
+ -->
