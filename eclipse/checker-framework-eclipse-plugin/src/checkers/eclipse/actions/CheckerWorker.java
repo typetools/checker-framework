@@ -31,8 +31,7 @@ import checkers.eclipse.util.ResourceUtils;
 
 import com.sun.tools.javac.util.Pair;
 
-public class CheckerWorker extends Job
-{
+public class CheckerWorker extends Job {
     private final IJavaProject project;
     private final String checkerNames;
     private String[] sourceFiles;
@@ -50,8 +49,7 @@ public class CheckerWorker extends Job
      * @param checkerNames
      */
     public CheckerWorker(IJavaProject project, String[] sourceFiles,
-            String checkerNames)
-    {
+            String checkerNames) {
         super("Running checker on " + sourceFiles.toString());
         this.project = project;
         this.sourceFiles = sourceFiles;
@@ -59,19 +57,15 @@ public class CheckerWorker extends Job
     	this.useJavacRunner  = shouldUseJavacRunner();
     }
 
-    public CheckerWorker(IJavaElement element, String checkerNames)
-    {
+    public CheckerWorker(IJavaElement element, String checkerNames) {
         super("Running checker on " + element.getElementName());
         this.project = element.getJavaProject();
         this.checkerNames = checkerNames;
         this.useJavacRunner  = shouldUseJavacRunner();
     	
-        try
-        {
-            this.sourceFiles = ResourceUtils.sourceFilesOf(element).toArray(
-                    new String[] {});
-        }catch (CoreException e)
-        {
+        try {
+            this.sourceFiles = ResourceUtils.sourceFilesOf(element).toArray(new String[] {});
+        } catch (CoreException e) {
             CheckerPlugin.logException(e, e.getMessage());
         }
     }
@@ -84,23 +78,24 @@ public class CheckerWorker extends Job
     }
 
     @Override
-    protected IStatus run(IProgressMonitor monitor)
-    {
-        try
-        {
+    protected IStatus run(IProgressMonitor monitor) {
+        try {
             work(monitor);
-        }catch (Throwable e)
-        {
+        }catch (Throwable e) {
             CheckerPlugin.logException(e, "Analysis exception");
             return Status.CANCEL_STATUS;
         }
+
         return Status.OK_STATUS;
     }
 
-    private void work(IProgressMonitor pm) throws CoreException
-    {
-        pm.beginTask("Running checkers " + checkerNames.toString() + " on "
-                + sourceFiles.toString(), 10);
+    private void work(final IProgressMonitor pm) throws CoreException {
+    	if(checkerNames != null) {
+    		pm.beginTask("Running checkers " + checkerNames.toString() + " on "
+    				+ sourceFiles.toString(), 10);
+    	} else {
+    		pm.beginTask("Running custom single checker "+ " on " + sourceFiles.toString(), 10);
+    	}
 
         pm.setTaskName("Removing old markers");
         MarkerUtil.removeMarkers(project.getResource());
@@ -117,8 +112,7 @@ public class CheckerWorker extends Job
         pm.done();
     }
 
-    private List<JavacError> runChecker() throws JavaModelException
-    {
+    private List<JavacError> runChecker() throws JavaModelException {
         final Pair<String, String> classpaths = classPathOf(project);
         final CheckersRunner runner;
         if(useJavacRunner) {
@@ -137,15 +131,11 @@ public class CheckerWorker extends Job
      * Mark errors for this project in the appropriate files
      * 
      * @param project
-     * @param callJavac
      */
 
-    private void markErrors(IJavaProject project, List<JavacError> errors)
-    {
-        for (JavacError error : errors)
-        {
-            if (error.file == null)
-            {
+    private void markErrors(IJavaProject project, List<JavacError> errors) {
+        for (JavacError error : errors) {
+            if (error.file == null) {
                 continue;
             }
 
@@ -158,56 +148,52 @@ public class CheckerWorker extends Job
     }
 
     private Pair<List<String>, List<String>> pathOf(IClasspathEntry cp,
-            IJavaProject project) throws JavaModelException
-    {
+            IJavaProject project) throws JavaModelException {
         int entryKind = cp.getEntryKind();
-        switch (entryKind)
-        {
-        case IClasspathEntry.CPE_SOURCE:
-            return new Pair<List<String>, List<String>>(
-                    Arrays.asList(new String[] { ResourceUtils.outputLocation(
-                            cp, project) }), new ArrayList<String>());
-        case IClasspathEntry.CPE_LIBRARY:
-            return new Pair<List<String>, List<String>>(
-                    Arrays.asList(new String[] { Paths.absolutePathOf(cp) }),
-                    new ArrayList<String>());
-        case IClasspathEntry.CPE_PROJECT:
-            return projectPathOf(cp);
-        case IClasspathEntry.CPE_CONTAINER:
-            List<String> resultPaths = new ArrayList<String>();
-            List<String> resultBootPaths = new ArrayList<String>();
-            IClasspathContainer c = JavaCore.getClasspathContainer(
-                    cp.getPath(), project);
-            if (c.getKind() == IClasspathContainer.K_DEFAULT_SYSTEM
-                    || c.getKind() == IClasspathContainer.K_SYSTEM)
-            {
-                for (IClasspathEntry entry : c.getClasspathEntries())
-                {
-                    if (entry.getEntryKind() == IClasspathEntry.CPE_LIBRARY)
-                    {
-                        resultBootPaths.add(entry.getPath().makeAbsolute()
-                                .toFile().getAbsolutePath());
+        switch (entryKind) {
+            case IClasspathEntry.CPE_SOURCE:
+                return new Pair<List<String>, List<String>>(
+                        Arrays.asList(new String[] { ResourceUtils.outputLocation(
+                                cp, project) }), new ArrayList<String>());
+
+            case IClasspathEntry.CPE_LIBRARY:
+                return new Pair<List<String>, List<String>>(
+                        Arrays.asList(new String[] { Paths.absolutePathOf(cp) }),
+                        new ArrayList<String>());
+
+            case IClasspathEntry.CPE_PROJECT:
+                return projectPathOf(cp);
+
+            case IClasspathEntry.CPE_CONTAINER:
+                List<String> resultPaths = new ArrayList<String>();
+                List<String> resultBootPaths = new ArrayList<String>();
+                IClasspathContainer c = JavaCore.getClasspathContainer(
+                        cp.getPath(), project);
+                if (c.getKind() == IClasspathContainer.K_DEFAULT_SYSTEM
+                        || c.getKind() == IClasspathContainer.K_SYSTEM) {
+                    for (IClasspathEntry entry : c.getClasspathEntries()) {
+                        if (entry.getEntryKind() == IClasspathEntry.CPE_LIBRARY) {
+                            resultBootPaths.add(entry.getPath().makeAbsolute()
+                                    .toFile().getAbsolutePath());
+                        }
                     }
                 }
-            }
-            else
-            {
-                for (IClasspathEntry entry : c.getClasspathEntries())
-                {
-                    if (entry.getEntryKind() == IClasspathEntry.CPE_LIBRARY)
-                    {
-                        resultPaths.add(entry.getPath().makeAbsolute().toFile()
-                                .getAbsolutePath());
+                else {
+                    for (IClasspathEntry entry : c.getClasspathEntries()) {
+                        if (entry.getEntryKind() == IClasspathEntry.CPE_LIBRARY) {
+                            resultPaths.add(entry.getPath().makeAbsolute().toFile()
+                                    .getAbsolutePath());
+                        }
                     }
                 }
-            }
-            return new Pair<List<String>, List<String>>(resultPaths,
-                    resultBootPaths);
-        case IClasspathEntry.CPE_VARIABLE:
-            return pathOf(JavaCore.getResolvedClasspathEntry(cp), project);
+                return new Pair<List<String>, List<String>>(resultPaths, resultBootPaths);
+
+            case IClasspathEntry.CPE_VARIABLE:
+                return pathOf(JavaCore.getResolvedClasspathEntry(cp), project);
+
         }
-        return new Pair<List<String>, List<String>>(new ArrayList<String>(),
-                new ArrayList<String>());
+
+        return new Pair<List<String>, List<String>>(new ArrayList<String>(), new ArrayList<String>());
     }
 
     /**
@@ -218,8 +204,7 @@ public class CheckerWorker extends Job
      * @throws JavaModelException
      */
     private Pair<String, String> classPathOf(IJavaProject project)
-            throws JavaModelException
-    {
+            throws JavaModelException {
         Pair<List<String>, List<String>> paths = classPathEntries(project);
 
         return new Pair<String, String>(JavaUtils.join(File.pathSeparator,
@@ -227,13 +212,11 @@ public class CheckerWorker extends Job
     }
 
     private Pair<List<String>, List<String>> classPathEntries(
-            IJavaProject project) throws JavaModelException
-    {
-        Pair<List<String>, List<String>> results = new Pair<List<String>, List<String>>(
-                new ArrayList<String>(), new ArrayList<String>());
+            IJavaProject project) throws JavaModelException {
 
-        for (IClasspathEntry cp : project.getRawClasspath())
-        {
+        final Pair<List<String>, List<String>> results = new Pair<List<String>, List<String>>(new ArrayList<String>(), new ArrayList<String>());
+
+        for (IClasspathEntry cp : project.getRawClasspath()) {
             Pair<List<String>, List<String>> paths = pathOf(cp, project);
             results.fst.addAll(paths.fst);
             results.snd.addAll(paths.snd);
@@ -243,10 +226,8 @@ public class CheckerWorker extends Job
     }
 
     private Pair<List<String>, List<String>> projectPathOf(IClasspathEntry entry)
-            throws JavaModelException
-    {
-        IProject project = ResourceUtils.workspaceRoot().getProject(
-                entry.getPath().toOSString());
+            throws JavaModelException {
+        final IProject project = ResourceUtils.workspaceRoot().getProject( entry.getPath().toOSString() );
         return classPathEntries(JavaCore.create(project));
     }
 }

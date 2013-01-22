@@ -2,9 +2,9 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: checker.framework.eclipse.plugin;singleton:=true
-Bundle-Version: 1.1.6
-Bundle-ClassPath: lib/jdk.jar,
- lib/jsr308-all.jar,
+Bundle-Version: 1.5.0
+Bundle-ClassPath: lib/jdk.6jar,
+ lib/jdk.7jar,
  lib/checkers.jar,
  lib/javac.jar,
  bin,

@@ -10,4 +10,4 @@ binary/javac
 **/*.orig
 jdk/annotated/**
 jdk/*/build/**
-jdk/jdk.jar
+jdk/*.jar

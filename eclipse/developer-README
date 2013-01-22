@@ -5,7 +5,7 @@ For general user instructions, see the homepage at:
 http://types.cs.washington.edu/checker-framework/eclipse
 
 
-Prerequisites: checkers.jar, checkers-quals.jar, jsr308-all.jar, javac.jar, and jdk.jar.  Some of these are redundant (and will be removed in the future).
+Prerequisites: checkers.jar, checkers-quals.jar, checkers.jar, javac.jar, jdk6.jar, and jdk7.jar.  Some of these are redundant (and will be removed in the future).
 These are all available from the checker-framework and jsr308 projects
 respectively. For instructions on building these, see the documentation for
 the Checker Framework and jsr308 (section 25.3).
@@ -13,15 +13,15 @@ the Checker Framework and jsr308 (section 25.3).
 You must put the above libraries in the lib folder (create one if missing)
 in the checker-plugin folder.
 
+
 ==== Opening the Plugin Project ====
+
 Eclipse has a nice set of tools for working with OSGI plugins.  To import the projects into your workspace use:
 File->Import
 Select the eclipse directory
 Select all three projects
 Note: The classpath and project files are checked in but the class path is relative to the installation path of Eclipse.  The easiest way to resolve these is:
 Right Click The Plugin Project -> PDE Tools -> Update Classpath
-
-
 
 
 ==== Debugging/Running the plugin ====
@@ -32,7 +32,9 @@ open the checker-framework-eclipse-plugin project in Eclipse. Click on the
 plugin.xml and use the "run" action in Eclipse, which should open a dialog
 where you can select "Run as Eclipse Application" or "Debug as Eclipse Application".
 
+
 ==== Packaging the feature ====
+
 Note: If you are releasing you will want to follow the instructions in Updating the release version first.
 
 To package the feature, open site.xml then click the "build all" button to have Eclipse build the jar files for the update-site. I usually have eclipse clean all three checker-framework-eclipse projects before doing this. 
@@ -41,6 +43,7 @@ This will create a working update site. You can upload this to a web server
 to let users install the plugin from Eclipse's plugin installation process.
 
 See next section (Updating the version)
+
 
 ==== Updating the release version ====
 
@@ -71,6 +74,7 @@ lib folder in the checker-plugin folder mentioned above.
 The checker-plugin folder on the server and its descendant folders/files should
 be set to permissions 775.
 
+
 ==== Miscellaneous Dev Notes ====
 
 The following notes outline small small things that disproportionally slowed me down
@@ -82,3 +86,13 @@ Eclipse likes to cache everything.  Even if you told eclipse to uninstall the pl
 Note that in Eclipse 3.7 I ran into a problem where, when I checked "Unpack this jar", the output plugin.xml remained unchanged.  You must manually set unpack=true.
 
 When generating the update site it would be wise to tell the Eclipse IDE to clean the plugin and update site first.
+
+
+==== Easiest Dev. Process ====
+
+I found that the easiest way to develop the plugin is to setup an eclipse installation dedicated to testing the Plugin.  This installation should have a version of the plugin installed from the update-site found at .../checker-framework/eclipse/checker-framework-eclipse-update-site/ folder (rather than the remote one at types.washington.edu/...).  Then when you have made a change to the plugin, if the version number were 1.4.5 before then bump it to 1.4.5.1 and tell your eclipse installation to "Check For Updates".  Remember, you need to change this version number twice in the feature, once in the plugin, and once in the update-site.  Eventually we should write a script to do this.  
+When your Eclipse installation checks for updates, it should find the update and apply it relatively quickly.  This is still slower than using "Debug Project" but doesn't have the class path issues discussed earlier in the "Running/Debugging the plugin" section.
+
+Note:  If you ran the "Check For Updates" command in Eclipse before you actually updated the plugin in the update-site it will cause the "Check For Updates" command to inform you that there are no updates.  It will continue to do this (without checking the update site again) until Eclipse is restarted.  To quickly restart Eclipse use: File -> Restart
+
+In the future we should fix up the project so we can just debug it from Eclipse.

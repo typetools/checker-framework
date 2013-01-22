@@ -36,10 +36,10 @@ public class Arrays{
   public static int binarySearch(double[] a1, int a2, int a3, double a4) { throw new RuntimeException("skeleton method"); }
   public static int binarySearch(float[] a1, float a2) { throw new RuntimeException("skeleton method"); }
   public static int binarySearch(float[] a1, int a2, int a3, float a4) { throw new RuntimeException("skeleton method"); }
-  public static int binarySearch(Object[] a1, Object a2) { throw new RuntimeException("skeleton method"); }
-  public static int binarySearch(Object[] a1, int a2, int a3, Object a4) { throw new RuntimeException("skeleton method"); }
-  public static <T> int binarySearch(T[] a1, T a2, @Nullable Comparator<? super T> a3) { throw new RuntimeException("skeleton method"); }
-  public static <T> int binarySearch(T[] a1, int a2, int a3, T a4, @Nullable Comparator<? super T> a5) { throw new RuntimeException("skeleton method"); }
+  public static int binarySearch(@Nullable Object[] a1, @Nullable Object a2) { throw new RuntimeException("skeleton method"); }
+  public static int binarySearch(@Nullable Object[] a1, int a2, int a3, @Nullable Object a4) { throw new RuntimeException("skeleton method"); }
+  public static <T extends @Nullable Object> int binarySearch(T[] a1, T a2, @Nullable Comparator<? super T> a3) { throw new RuntimeException("skeleton method"); }
+  public static <T extends @Nullable Object> int binarySearch(T[] a1, int a2, int a3, T a4, @Nullable Comparator<? super T> a5) { throw new RuntimeException("skeleton method"); }
   public static boolean equals(long @Nullable [] a1, long @Nullable [] a2) { throw new RuntimeException("skeleton method"); }
   public static boolean equals(int @Nullable [] a1, int @Nullable [] a2) { throw new RuntimeException("skeleton method"); }
   public static boolean equals(short @Nullable [] a1, short @Nullable [] a2) { throw new RuntimeException("skeleton method"); }

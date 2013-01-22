@@ -1,5 +1,6 @@
 package org.checkersplugin;
 
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -11,19 +12,15 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.toolchain.ToolchainManager;
+
 import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.cli.Commandline;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
 import org.codehaus.plexus.util.cli.CommandLineException;
 import org.codehaus.plexus.compiler.CompilerError;
 
-import java.util.List;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.io.IOException;
-import java.io.File;
+import java.io.*;
+import java.util.*;
 
 /**
  * A Mojo is the main goal or task for a maven project.  CheckersMojo runs the CheckerFramework compiler with the
@@ -82,7 +79,7 @@ public class CheckersMojo extends AbstractMojo {
 
     /**
      * Which version of the JSR308 checkers to use
-     * @parameter default-value="1.4.3"
+     * @parameter default-value="${plugin.version}"
      */
     private String checkersVersion;
 
@@ -204,65 +201,94 @@ public class CheckersMojo extends AbstractMojo {
         log.info("Running processor(s): " + processor);
 
         final List<String> sources = PathUtils.scanForSources(compileSourceRoots, includes, excludes);
-        
-        final String checkersJar = PathUtils.getCheckersJar(checkersVersion, artifactFactory, artifactResolver,
-                remoteArtifactRepositories, localRepository);
+
+        final File checkersJar = locateArtifacts();
 
         final Commandline cl = new Commandline();
 
-        if (StringUtils.isEmpty(executable)) {
+        if ( StringUtils.isEmpty(executable) ) {
             executable = "java";
         }
-        cl.setExecutable(PathUtils.getExecutablePath(executable, toolchainManager, session));
 
-        // Building the arguments
-        final List<String> arguments = new ArrayList<String>();
+        final String executablePath = PathUtils.getExecutablePath(executable, toolchainManager, session);
+        cl.setExecutable(executablePath);
 
-        // Setting the boot class path: prepending the jar with jsr308 compiler
-        arguments.add("-Xbootclasspath/p:" + checkersJar);
-        // Javac currently assumes that assertions are enabled in the launcher
-        arguments.add("-ea:com.sun.tools");
-        // Optionally adding user-specified java parameters
-        if (!StringUtils.isEmpty(javaParams)) {
-            arguments.addAll(Arrays.asList(javaParams.split(" ")));
+        final String classpath  = StringUtils.join(classpathElements.iterator(), File.pathSeparator) +
+                //TODO: SEEMS THAT WHEN WE ARE USING @ ARGS THE CLASSPATH FROM THE JAR IS OVERRIDDEN - FIX THIS
+                File.pathSeparator + checkersJar.getAbsolutePath();
+
+        File srcFofn = null;
+        File cpFofn = null;
+        try {
+            srcFofn = PluginUtil.writeTmpSrcFofn("CFPlugin-maven-src", true, PluginUtil.toFiles(sources));
+            cpFofn  = PluginUtil.writeTmpCpFile("CFPlugin-maven-cp",   true, classpath);
+        } catch (IOException e) {
+            if(srcFofn != null && srcFofn.exists()) {
+                srcFofn.delete();
+            }
+            if(cpFofn  != null && cpFofn.exists()) {
+                cpFofn.delete();
+            }
+            throw new MojoExecutionException("Exception trying to write command file fofn!", e);
         }
-        // Running the compile process - main class of this jar 
-        arguments.add("-jar");
-        arguments.add(checkersJar);
 
-        // Now the arguments for the jar main class - that is, the compiler
 
-        // Setting the name of the processor
-        arguments.add("-processor");
-        arguments.add(processor);
-        // Running only the annotation processor, without compiling
-        arguments.add("-proc:only");
-        // Setting the classpath
-        arguments.add("-classpath" );
-        arguments.add(StringUtils.join(classpathElements.iterator(), File.pathSeparator));
-        // Setting the source dir path
-        arguments.add("-sourcepath");
-        arguments.add(StringUtils.join(compileSourceRoots.iterator(), File.pathSeparator));
-        // Optionally adding user-specified javac parameters
-        if (!StringUtils.isEmpty(javacParams)) {
-            arguments.addAll(Arrays.asList(javacParams.split(" ")));
-        }
-        // Now the source files
-        arguments.addAll(sources);
+        final Map<PluginUtil.CheckerProp, Object> props = makeProps();
+
+        final List<String> arguments = PluginUtil.getCmdArgsOnly(
+                srcFofn, processor, checkersJar.getAbsolutePath(),
+                null, cpFofn, null, props, null);
 
         // And executing
         cl.addArguments(arguments.toArray(new String[arguments.size()]));
 
         executeCommandLine(cl, log);
+        srcFofn.delete();
+        cpFofn.delete();
     }
 
+    /**
+     * TODO: Think of a better way to do CheckerProps, it's weird to have some params built in
+     * TODO: and some as MISC_OPTIONS
+     * @return
+     */
+    private Map<PluginUtil.CheckerProp, Object> makeProps() {
+
+        final String sourcePath = StringUtils.join(compileSourceRoots.iterator(), File.pathSeparator);
+
+        final List<String> miscOptions = new ArrayList<String>();
+        miscOptions.add("-sourcepath");
+        miscOptions.add(sourcePath);
+
+        // Optionally adding user-specified java parameters
+        if (!StringUtils.isEmpty(javaParams)) {
+            miscOptions.addAll(PluginUtil.toJavaOpts(Arrays.asList(javaParams.split(" "))));
+        }
+
+        // Optionally adding user-specified javac parameters
+        if (!StringUtils.isEmpty(javacParams)) {
+            miscOptions.addAll(Arrays.asList(javacParams.split(" ")));
+        }
+
+        final Map<PluginUtil.CheckerProp, Object> props = new HashMap<PluginUtil.CheckerProp, Object>();
+        props.put(PluginUtil.CheckerProp.MISC_COMPILER, miscOptions);
+
+        return props;
+    }
+
+    /**
+     * Execute the given command line and log any errors and debug info
+     * @param cl
+     * @param log
+     * @throws MojoExecutionException
+     * @throws MojoFailureException
+     */
     private void executeCommandLine(final Commandline cl, final Log log) throws MojoExecutionException, MojoFailureException {
         CommandLineUtils.StringStreamConsumer out = new CommandLineUtils.StringStreamConsumer();
         CommandLineUtils.StringStreamConsumer err = new CommandLineUtils.StringStreamConsumer();
-        
+
         log.debug("command line: " + Arrays.toString(cl.getCommandline()));
-    
-        
+
         // Executing the command
         final int exitCode;
         try {
@@ -318,6 +344,13 @@ public class CheckersMojo extends AbstractMojo {
         }
     }
 
+    /**
+     * Print a header with the given label and print all errors similar to the style
+     * maven itself uses
+     * @param errors Errors to print
+     * @param label The label (usually ERRORS or WARNINGS) to head the error list
+     * @param log The log to which the messages are printed
+     */
     private static final void logErrors(final List<CompilerError> errors, final String label, final Log log) {
         log.info("-------------------------------------------------------------");
         log.warn("CHECKERS " + label.toUpperCase() + ": ");
@@ -329,5 +362,59 @@ public class CheckersMojo extends AbstractMojo {
         final String labelLc = label.toLowerCase() + ((errors.size() == 1) ? "" : "s");
         log.info(errors.size() + " " + labelLc);
         log.info("-------------------------------------------------------------");
+    }
+
+    /**
+     * Find the location of all the necessary Checker Framework related artifacts.  If the
+     * artifacts have not been downloaded, download them.  Then copy them to the checker-maven-plugin
+     * directory (overwriting any other version that is there).
+     * @return The File pointing to checkers.jar
+     * @throws MojoExecutionException
+     */
+    private final File locateArtifacts() throws MojoExecutionException {
+
+        final File checkersJar = PathUtils.getFrameworkJar("framework", checkersVersion,
+                artifactFactory, artifactResolver, remoteArtifactRepositories, localRepository);
+
+        final File javacJar    = PathUtils.getFrameworkJar("compiler", checkersVersion,
+                artifactFactory, artifactResolver, remoteArtifactRepositories, localRepository);
+
+        final File jdk6Jar    = PathUtils.getFrameworkJar("jdk6", checkersVersion,
+                artifactFactory, artifactResolver, remoteArtifactRepositories, localRepository);
+
+        final File jdk7Jar    = PathUtils.getFrameworkJar("jdk7", checkersVersion,
+                artifactFactory, artifactResolver, remoteArtifactRepositories, localRepository);
+
+        final File destination     = new File( checkersJar.getParentFile(), ".cf_artifacts");
+        final File versionFile     = new File( destination, ".copy_version" );
+        final File checkerExe      = new File( destination, "checkers.jar"  );
+        final List<File>   toCopy  = Arrays.asList(checkersJar,    javacJar,    jdk6Jar,    jdk7Jar);
+        final List<String> names   = Arrays.asList("checkers.jar", "javac.jar", "jdk6.jar", "jdk7.jar");
+
+        String latest = "";
+        try {
+            latest =  PathUtils.readVersion(versionFile);
+        } catch(IOException exc) {
+            throw new MojoExecutionException("Exception reading latest Checker Framework Artifact's version!", exc);
+        }
+
+        if( !checkersVersion.equals(latest) ) {
+            try {
+                PathUtils.copyFiles(destination, toCopy, names);
+
+            } catch (IOException e) {
+                final String paths = PathUtils.joinFilePaths(toCopy);
+                throw new MojoExecutionException("Could not copy artifact jars ( " + paths +
+                        " ) to directory ( " + destination.getAbsolutePath() + " )", e);
+            }
+        }
+
+        try {
+            PathUtils.writeVersion(versionFile, checkersVersion);
+        } catch (IOException e) {
+            //TODO: Add warning?
+        }
+
+        return checkerExe;
     }
 }
