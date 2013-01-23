@@ -2,7 +2,6 @@ package checkers.nullness.quals;
 
 import java.lang.annotation.*;
 
-import checkers.nullness.NullnessChecker;
 import checkers.quals.*;
 
 /**
@@ -19,7 +18,7 @@ import checkers.quals.*;
  * fields declared in {@code T} and any subclasses might not yet be
  * initialized, but fields declared in superclasses of {@code T} have
  * already been initialized.
- * 
+ *
  * <p>
  *
  * This annotation is associated with the {@link NullnessChecker}.
