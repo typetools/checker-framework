@@ -45,12 +45,12 @@ public class InitializationVisitor<Checker extends InitializationChecker, Value 
         extends BaseTypeVisitor<Checker> {
 
     // Error message keys
-    private static final String COMMITMENT_INVALID_CAST = "commitment.invalid.cast";
-    private static final String COMMITMENT_FIELDS_UNINITIALIZED = "commitment.fields.uninitialized";
-    private static final String COMMITMENT_INVALID_FIELD_ANNOTATION = "commitment.invalid.field.annotation";
-    private static final String COMMITMENT_INVALID_CONSTRUCTOR_RETRUN_TYPE = "commitment.invalid.constructor.return.type";
-    private static final String COMMITMENT_INVALID_FIELD_WRITE_UNCLASSIFIED = "commitment.invalid.field.write.unclassified";
-    private static final String COMMITMENT_INVALID_FIELD_WRITE_COMMITTED = "commitment.invalid.field.write.committed";
+    private static final/* @CompilerMessageKey */String COMMITMENT_INVALID_CAST = "commitment.invalid.cast";
+    private static final/* @CompilerMessageKey */String COMMITMENT_FIELDS_UNINITIALIZED = "commitment.fields.uninitialized";
+    private static final/* @CompilerMessageKey */String COMMITMENT_INVALID_FIELD_ANNOTATION = "commitment.invalid.field.annotation";
+    private static final/* @CompilerMessageKey */String COMMITMENT_INVALID_CONSTRUCTOR_RETRUN_TYPE = "commitment.invalid.constructor.return.type";
+    private static final/* @CompilerMessageKey */String COMMITMENT_INVALID_FIELD_WRITE_UNCLASSIFIED = "commitment.invalid.field.write.unclassified";
+    private static final/* @CompilerMessageKey */String COMMITMENT_INVALID_FIELD_WRITE_COMMITTED = "commitment.invalid.field.write.committed";
 
     /** A better typed version of the ATF. */
     @SuppressWarnings("unchecked")
@@ -345,8 +345,7 @@ public class InitializationVisitor<Checker extends InitializationChecker, Value 
      * true) are initialized in the given store.
      */
     protected void checkFieldsInitialized(Tree blockNode, boolean staticFields,
-            Store store,
-            List<? extends AnnotationMirror> receiverAnnotations) {
+            Store store, List<? extends AnnotationMirror> receiverAnnotations) {
         // If the store is null, then the constructor cannot terminate
         // successfully
         if (store != null) {
