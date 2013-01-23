@@ -3,8 +3,6 @@ package checkers.nullness.quals;
 import java.lang.annotation.*;
 import java.io.File;
 
-import checkers.nullness.NullnessChecker;
-
 /**
  * Indicates that if the method returns true, then the value expressions
  * are non-null.
