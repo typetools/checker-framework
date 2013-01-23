@@ -2,7 +2,6 @@ package checkers.source;
 
 import java.lang.annotation.*;
 
-import checkers.nullness.NullnessChecker;
 
 /**
  * Specifies the argument that this checker recognizes for suppressing warnings
