@@ -71,7 +71,7 @@ public class InitializationVisitor<Checker extends InitializationChecker, Value 
 
     @Override
     protected void commonAssignmentCheck(Tree varTree, ExpressionTree valueExp,
-            String errorKey) {
+    /* @CompilerMessageKey */String errorKey) {
         // field write of the form x.f = y
         if (TreeUtils.isFieldAccess(varTree)) {
             // cast is safe: a field access can only be an IdentifierTree or
@@ -83,7 +83,7 @@ public class InitializationVisitor<Checker extends InitializationChecker, Value 
             AnnotatedTypeMirror yType = factory.getAnnotatedType(y);
             if (!ElementUtils.isStatic(el)
                     && !(checker.isCommitted(yType) || checker.isFree(xType))) {
-                String err;
+                /* @CompilerMessageKey */String err;
                 if (checker.isCommitted(xType)) {
                     err = COMMITMENT_INVALID_FIELD_WRITE_COMMITTED;
                 } else {
