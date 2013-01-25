@@ -115,16 +115,29 @@ abstract public class CheckerTest {
     protected void runTest(File expectedFile, File ... javaFiles) {
         TestRun run = getTest(javaFiles);
         if (expectedFile.exists()) {
-            checkTestResult(run, expectedFile, TestUtilities.shouldSucceed(expectedFile), joinPrefixed(javaFiles, " ", this.checkerDir + File.separator));
+            checkTestResult(run, expectedFile, TestUtilities.shouldSucceed(expectedFile), joinPrefixed(javaFiles, " ", this.checkerDir + File.separator), this.checkerOptions);
         } else {
-            List<String> expectedErrors = TestUtilities.expectedDiagnostics(this.checkerDir + File.separator, javaFiles);
-            checkTestResult(run, expectedErrors, expectedErrors.isEmpty(), joinPrefixed(javaFiles, " ", this.checkerDir + File.separator));
+            List<String> expectedErrors = TestUtilities.expectedDiagnostics(javaFiles);
+            checkTestResult(run, expectedErrors, expectedErrors.isEmpty(), joinPrefixed(javaFiles, " ", this.checkerDir + File.separator), this.checkerOptions);
         }
+    }
+
+    protected static void test(final String checkerName, final String [] checkerOptions, File ... javaFiles) {
+
+        final JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+        StandardJavaFileManager fileManager
+                = compiler.getStandardFileManager(null, null, null);
+        Iterable<? extends JavaFileObject> tests
+                = fileManager.getJavaFileObjects(javaFiles);
+
+        TestRun run = TestInput.compileAndCheck(tests, checkerName, checkerOptions);
+        List<String> expectedErrors = TestUtilities.expectedDiagnostics(javaFiles);
+        checkTestResult(run, expectedErrors, expectedErrors.isEmpty(), join(javaFiles, " "), checkerOptions);
     }
 
     protected void runTest(List<String> expectedErrors, boolean shouldSucceed, String ... javaFiles) {
         TestRun run = getTest(javaFiles);
-        checkTestResult(run, expectedErrors, shouldSucceed, joinPrefixed(javaFiles, " ", this.checkerDir + File.separator));
+        checkTestResult(run, expectedErrors, shouldSucceed, joinPrefixed(javaFiles, " ", this.checkerDir + File.separator), this.checkerOptions);
     }
 
     /**
@@ -142,10 +155,10 @@ abstract public class CheckerTest {
 
      protected void runTest(File expectedFile, boolean shouldSucceed, File ...javaFiles) {
          TestRun run = getTest(javaFiles);
-         checkTestResult(run, expectedFile, shouldSucceed, join(javaFiles, " "));
+         checkTestResult(run, expectedFile, shouldSucceed, join(javaFiles, " "), this.checkerOptions);
      }
 
-    protected void checkTestResult(TestRun run, File expectedFile, boolean shouldSucceed, String javaFile) {
+    protected static void checkTestResult(TestRun run, File expectedFile, boolean shouldSucceed, String javaFile,  final String [] checkerOptions) {
         if (shouldSucceed)
             assertSuccess(run);
         else
@@ -158,10 +171,10 @@ abstract public class CheckerTest {
             return;
         }
         List<Diagnostic<? extends JavaFileObject>> list = run.getDiagnostics();
-        assertDiagnostics(list, expectedFile, javaFile);
+        assertDiagnostics(list, expectedFile, javaFile, checkerOptions);
     }
 
-    protected void checkTestResult(TestRun run, List<String> expectedErrors, boolean shouldSucceed, String javaFile) {
+    protected static void checkTestResult(TestRun run, List<String> expectedErrors, boolean shouldSucceed, String javaFile, final String [] checkerOptions) {
         String msg = null;
         if (shouldSucceed)
             msg = assertSuccess(run);
@@ -169,7 +182,7 @@ abstract public class CheckerTest {
             msg = assertFailure(run);
 
         List<Diagnostic<? extends JavaFileObject>> list = run.getDiagnostics();
-        assertDiagnostics(msg, list, expectedErrors, javaFile);
+        assertDiagnostics(msg, list, expectedErrors, javaFile, checkerOptions);
     }
 
     /**
@@ -178,7 +191,7 @@ abstract public class CheckerTest {
      *
      * @param run the test run to check
      */
-    protected String assertSuccess(/*@ReadOnly*/ TestRun run) {
+    protected static String assertSuccess(/*@ReadOnly*/ TestRun run) {
         if (run.getResult()) {
             return "";
         } else {
@@ -191,7 +204,7 @@ abstract public class CheckerTest {
      *
      * @param run the test run to check
      */
-    protected String assertFailure(/*@ReadOnly*/ TestRun run) {
+    protected static String assertFailure(/*@ReadOnly*/ TestRun run) {
         if (run.getResult()) {
             return "The test run was expected to issue errors/warnings, but it did not.";
         } else {
@@ -207,9 +220,9 @@ abstract public class CheckerTest {
      * @param expectedDiagnosticFile a file containing a list of expected errors, one
      *        per line
      */
-    protected void assertDiagnostics(/*@ReadOnly*/ List</*@ReadOnly*/ Diagnostic<? extends JavaFileObject>> actualDiagnostics,
+    protected static void assertDiagnostics(/*@ReadOnly*/ List</*@ReadOnly*/ Diagnostic<? extends JavaFileObject>> actualDiagnostics,
             /*@ReadOnly*/ File expectedDiagnosticFile,
-            String javaFile) {
+            String javaFile, final String [] checkerOptions) {
 
         try {
             BufferedReader reader = new BufferedReader(new FileReader(expectedDiagnosticFile));
@@ -230,7 +243,7 @@ abstract public class CheckerTest {
                     // colon?  Should it always be in the first column?
                 }
             }
-            assertDiagnostics("", actualDiagnostics, lines, javaFile);
+            assertDiagnostics("", actualDiagnostics, lines, javaFile, checkerOptions);
         } catch (IOException e) {
             fail(e.getMessage());
         }
@@ -243,10 +256,10 @@ abstract public class CheckerTest {
      * For example, "new.array.type.invalid" is subsumed by "type.invalid".
      * This is not the case in the test framework; the exact error key is expected.
      */
-    protected void assertDiagnostics(String msg,
+    protected static void assertDiagnostics(String msg,
             /*@ReadOnly*/ List</*@ReadOnly*/ Diagnostic<? extends JavaFileObject>> actual_diagnostics,
             List</*@ReadOnly*/ String> expected_diagnostics,
-            String filename) {
+            String filename, final String [] checkerOptions) {
         // String cs = (checkerDir == "" ? "" : checkerDir + File.separator); // "interned"
 
         List<String> expectedList = new LinkedList<String>();
@@ -262,7 +275,7 @@ abstract public class CheckerTest {
                     result.contains("Recompile with -Xlint:varargs for details."))
                 continue;
             boolean nomsgtext = false;
-            for (String opt : this.checkerOptions) {
+            for (String opt : checkerOptions) {
                 if (opt.equals("-Anomsgtext")) {
                     nomsgtext = true;
                 }
