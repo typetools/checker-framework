@@ -196,9 +196,9 @@ public class LockVisitor extends BaseTypeVisitor<LockChecker> {
     }
 
     @Override
-    public boolean isValidUse(AnnotatedDeclaredType declarationType,
-            AnnotatedDeclaredType useType) {
-        return true;
+    public String isValidUse(AnnotatedDeclaredType declarationType,
+                             AnnotatedDeclaredType useType) {
+        return isValidToError(true);
     }
 
 }

@@ -102,16 +102,16 @@ public class JavariVisitor extends BaseTypeVisitor<JavariChecker> {
      * @see BaseTypeVisitor
      */
     @Override
-    public boolean isValidUse(AnnotatedDeclaredType elemType, AnnotatedDeclaredType useType) {
-        return true;
+    public String isValidUse(AnnotatedDeclaredType elemType, AnnotatedDeclaredType useType) {
+        return isValidToError(true);
     }
 
     @Override
-    public boolean isValidUse(AnnotatedPrimitiveType useType) {
+    public String isValidUse(AnnotatedPrimitiveType useType) {
         if (useType.hasAnnotation(QREADONLY)
                 || useType.hasAnnotation(READONLY)
                 || useType.hasAnnotation(POLYREAD)) {
-            return false;
+            return isValidToError(false);
         }
         return super.isValidUse(useType);
     }
