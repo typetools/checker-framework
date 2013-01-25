@@ -124,8 +124,8 @@ public class RegexVisitor extends BaseTypeVisitor<RegexChecker> {
     }
 
     @Override
-    public boolean isValidUse(AnnotatedDeclaredType declarationType,
-            AnnotatedDeclaredType useType) {
+    public String isValidUse(AnnotatedDeclaredType declarationType,
+                             AnnotatedDeclaredType useType) {
         // TODO: only allow Regex and PolyRegex annotations on types in legalReferenceTypes.
         // This is pending an implementation of AnnotatedTypeMirror.getExplicitAnnotations
         // that supports local variables, array types and parameterized types.
@@ -143,7 +143,7 @@ public class RegexVisitor extends BaseTypeVisitor<RegexChecker> {
     }
 
     @Override
-    public boolean isValidUse(AnnotatedPrimitiveType type) {
+    public String isValidUse(AnnotatedPrimitiveType type) {
         // TODO: only allow Regex and PolyRegex annotations on chars.
         // This is pending an implementation of AnnotatedTypeMirror.getExplicitAnnotations
         // that supports local variables and array types.

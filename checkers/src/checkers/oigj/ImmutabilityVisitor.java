@@ -21,9 +21,9 @@ public class ImmutabilityVisitor extends BaseTypeVisitor<ImmutabilitySubchecker>
     }
 
     @Override
-    public boolean isValidUse(AnnotatedDeclaredType declarationType,
-            AnnotatedDeclaredType useType) {
-        return true;
+    public String isValidUse(AnnotatedDeclaredType declarationType,
+                             AnnotatedDeclaredType useType) {
+        return isValidToError(true);
     }
 
     @Override
