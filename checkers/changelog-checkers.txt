@@ -4,6 +4,10 @@ User-visible framework improvements:
   It is possible to use enum constants in stub files without requiring the
     fully qualified name, as was previously necessary.
 
+Documentation:
+  A new tutorial is available at
+    http://types.cs.washington.edu/checker-framework/tutorial/
+
 ----------------------------------------------------------------------
 Version 1.5.0, 14 Jan 2013
 
