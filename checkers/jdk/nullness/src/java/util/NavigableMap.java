@@ -4,18 +4,18 @@ import checkers.nullness.quals.*;
 
 // Subclasses of this interface/class may opt to prohibit null elements
 public interface NavigableMap<K extends @Nullable Object, V extends @Nullable Object> extends SortedMap<K, V> {
-  public abstract @Nullable Map.Entry<K, V> lowerEntry(K a1);
+  public abstract Map. @Nullable Entry<K, V> lowerEntry(K a1);
   public abstract @Nullable K lowerKey(K a1);
-  public abstract @Nullable Map.Entry<K, V> floorEntry(K a1);
+  public abstract Map. @Nullable Entry<K, V> floorEntry(K a1);
   public abstract @Nullable K floorKey(K a1);
-  public abstract @Nullable Map.Entry<K, V> ceilingEntry(K a1);
+  public abstract Map. @Nullable Entry<K, V> ceilingEntry(K a1);
   public abstract @Nullable K ceilingKey(K a1);
-  public abstract @Nullable Map.Entry<K, V> higherEntry(K a1);
+  public abstract Map. @Nullable Entry<K, V> higherEntry(K a1);
   public abstract @Nullable K higherKey(K a1);
-  public abstract @Nullable Map.Entry<K, V> firstEntry();
-  public abstract @Nullable Map.Entry<K, V> lastEntry();
-  public abstract @Nullable Map.Entry<K, V> pollFirstEntry();
-  public abstract @Nullable Map.Entry<K, V> pollLastEntry();
+  public abstract Map. @Nullable Entry<K, V> firstEntry();
+  public abstract Map. @Nullable Entry<K, V> lastEntry();
+  public abstract Map. @Nullable Entry<K, V> pollFirstEntry();
+  public abstract Map. @Nullable Entry<K, V> pollLastEntry();
   public abstract NavigableMap<K, V> descendingMap();
   public abstract NavigableSet<@KeyFor("this") K> navigableKeySet();
   public abstract NavigableSet<@KeyFor("this") K> descendingKeySet();

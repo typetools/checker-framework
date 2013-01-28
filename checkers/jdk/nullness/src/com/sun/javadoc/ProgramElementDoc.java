@@ -3,12 +3,12 @@ package com.sun.javadoc;
 import checkers.nullness.quals.*;
 
 public abstract interface ProgramElementDoc extends Doc {
-  public abstract @Nullable com.sun.javadoc.ClassDoc containingClass();
-  public abstract @NonNull com.sun.javadoc.PackageDoc containingPackage();
-  public abstract @NonNull java.lang.String qualifiedName();
+  public abstract com.sun.javadoc. @Nullable ClassDoc containingClass();
+  public abstract com.sun.javadoc. @NonNull PackageDoc containingPackage();
+  public abstract java.lang. @NonNull String qualifiedName();
   public abstract int modifierSpecifier();
-  public abstract @NonNull java.lang.String modifiers();
-  public abstract @NonNull com.sun.javadoc.AnnotationDesc @NonNull [] annotations();
+  public abstract java.lang. @NonNull String modifiers();
+  public abstract com.sun.javadoc. @NonNull AnnotationDesc @NonNull [] annotations();
   public abstract boolean isPublic();
   public abstract boolean isProtected();
   public abstract boolean isPrivate();

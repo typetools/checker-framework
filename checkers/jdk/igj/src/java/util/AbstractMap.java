@@ -5,10 +5,10 @@ import checkers.igj.quals.*;
 @I
 public abstract class AbstractMap<K, V> implements @I Map<K, V> {
   @I
-  public static class SimpleEntry<K, V> implements @I Map.Entry<K, V>, @I java.io.Serializable {
+  public static class SimpleEntry<K, V> implements Map. @I Entry<K, V>, java.io. @I Serializable {
       private static final long serialVersionUID = 0L;
     public SimpleEntry(@AssignsFields SimpleEntry<K, V> this, K a1, V a2) { throw new RuntimeException("skeleton method"); }
-    public SimpleEntry(@AssignsFields SimpleEntry<K, V> this, @I Map.Entry<? extends K, ? extends V> a1) { throw new RuntimeException("skeleton method"); }
+    public SimpleEntry(@AssignsFields SimpleEntry<K, V> this, Map. @I Entry<? extends K, ? extends V> a1) { throw new RuntimeException("skeleton method"); }
     public K getKey(@ReadOnly SimpleEntry<K, V> this) { throw new RuntimeException("skeleton method"); }
     public V getValue(@ReadOnly SimpleEntry<K, V> this) { throw new RuntimeException("skeleton method"); }
     public V setValue(@AssignsFields SimpleEntry<K, V> this, V a1) { throw new RuntimeException("skeleton method"); }
@@ -18,7 +18,7 @@ public abstract class AbstractMap<K, V> implements @I Map<K, V> {
   }
 
   @Immutable
-  public static class SimpleImmutableEntry<K, V> implements @Immutable Map.Entry<K, V>, @Immutable java.io.Serializable {
+  public static class SimpleImmutableEntry<K, V> implements @Immutable Map.Entry<K, V>, java.io. @Immutable Serializable {
       private static final long serialVersionUID = 0L;
     public SimpleImmutableEntry(@AssignsFields SimpleImmutableEntry<K, V> this, K a1, V a2) { throw new RuntimeException("skeleton method"); }
     public SimpleImmutableEntry(@AssignsFields SimpleImmutableEntry<K, V> this, Map.Entry<? extends K, ? extends V> a1) { throw new RuntimeException("skeleton method"); }
