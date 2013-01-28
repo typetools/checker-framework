@@ -97,8 +97,10 @@
         </delete>
         <delete file="binary/jdk6.jar"/>
         <delete file="binary/jdk7.jar"/>
+        <delete file="binary/jdk8.jar"/>
         <delete file="jdk/jdk6.jar"/>
         <delete file="jdk/jdk7.jar"/>
+        <delete file="jdk/jdk8.jar"/>
     </target>
 
     <target name="build.check.uptodate"
