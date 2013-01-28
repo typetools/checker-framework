@@ -18,17 +18,17 @@ public class TreeMap<K, V> extends AbstractMap<K, V> implements NavigableMap<K, 
   public V put(K a1, V a2) { throw new RuntimeException(("skeleton method")); }
   public V remove(@ReadOnly TreeMap<K, V> this, @ReadOnly Object a1) { throw new RuntimeException(("skeleton method")); }
   public void clear() { throw new RuntimeException(("skeleton method")); }
-  public @PolyRead Map.Entry<K, V> firstEntry(@PolyRead TreeMap<K, V> this) { throw new RuntimeException(("skeleton method")); }
-  public @PolyRead Map.Entry<K, V> lastEntry(@PolyRead TreeMap<K, V> this) { throw new RuntimeException(("skeleton method")); }
+  public Map. @PolyRead Entry<K, V> firstEntry(@PolyRead TreeMap<K, V> this) { throw new RuntimeException(("skeleton method")); }
+  public Map. @PolyRead Entry<K, V> lastEntry(@PolyRead TreeMap<K, V> this) { throw new RuntimeException(("skeleton method")); }
   public Map.Entry<K, V> pollFirstEntry() { throw new RuntimeException(("skeleton method")); }
   public Map.Entry<K, V> pollLastEntry() { throw new RuntimeException(("skeleton method")); }
-  public @PolyRead Map.Entry<K, V> lowerEntry(@PolyRead TreeMap<K, V> this, K a1) { throw new RuntimeException(("skeleton method")); }
+  public Map. @PolyRead Entry<K, V> lowerEntry(@PolyRead TreeMap<K, V> this, K a1) { throw new RuntimeException(("skeleton method")); }
   public K lowerKey(@ReadOnly TreeMap<K, V> this, K a1) { throw new RuntimeException(("skeleton method")); }
-  public @PolyRead Map.Entry<K, V> floorEntry(@PolyRead TreeMap<K, V> this, K a1) { throw new RuntimeException(("skeleton method")); }
+  public Map. @PolyRead Entry<K, V> floorEntry(@PolyRead TreeMap<K, V> this, K a1) { throw new RuntimeException(("skeleton method")); }
   public K floorKey(@ReadOnly TreeMap<K, V> this, K a1) { throw new RuntimeException(("skeleton method")); }
-  public @PolyRead Map.Entry<K, V> ceilingEntry(@PolyRead TreeMap<K, V> this, K a1) { throw new RuntimeException(("skeleton method")); }
+  public Map. @PolyRead Entry<K, V> ceilingEntry(@PolyRead TreeMap<K, V> this, K a1) { throw new RuntimeException(("skeleton method")); }
   public K ceilingKey(@ReadOnly TreeMap<K, V> this, K a1) { throw new RuntimeException(("skeleton method")); }
-  public @PolyRead Map.Entry<K, V> higherEntry(@PolyRead TreeMap<K, V> this, K a1) { throw new RuntimeException(("skeleton method")); }
+  public Map. @PolyRead Entry<K, V> higherEntry(@PolyRead TreeMap<K, V> this, K a1) { throw new RuntimeException(("skeleton method")); }
   public K higherKey(@ReadOnly TreeMap<K, V> this, K a1) { throw new RuntimeException(("skeleton method")); }
   public Set<K> keySet(@PolyRead TreeMap<K, V> this) { throw new RuntimeException(("skeleton method")); }
   public @PolyRead NavigableSet<K> navigableKeySet(@PolyRead TreeMap<K, V> this) { throw new RuntimeException(("skeleton method")); }

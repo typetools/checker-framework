@@ -2,7 +2,6 @@ package checkers.util.debug;
 
 import java.io.PrintStream;
 import java.lang.reflect.Constructor;
-import java.util.Collections;
 import java.util.List;
 
 import javax.annotation.processing.*;
@@ -291,7 +290,7 @@ public class SignaturePrinter extends AbstractTypeProcessor {
 
         // Setup compiler environment
         Context context = new Context();
-        JavacProcessingEnvironment env = new JavacProcessingEnvironment(context, Collections.<Processor>emptyList());
+        JavacProcessingEnvironment env = JavacProcessingEnvironment.instance(context);
         SignaturePrinter printer = new SignaturePrinter();
         printer.init(env, checkerName);
 

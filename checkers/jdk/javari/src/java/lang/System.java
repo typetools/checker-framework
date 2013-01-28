@@ -84,7 +84,7 @@ public final class System {
         throw new RuntimeException("skeleton method");
     }
 
-    public static @ReadOnly java.util.Map< String, String> getenv() {
+    public static java.util. @ReadOnly Map<String, String> getenv() {
         throw new RuntimeException("skeleton method");
     }
 

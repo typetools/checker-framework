@@ -1,12 +1,10 @@
 package checkers.util.stub;
 
 import java.io.PrintStream;
-import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
 
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.annotation.processing.Processor;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
@@ -307,8 +305,7 @@ public class StubGenerator {
         }
 
         Context context = new Context();
-        ProcessingEnvironment env =
-            new JavacProcessingEnvironment(context, Collections.<Processor>emptyList());
+        ProcessingEnvironment env = JavacProcessingEnvironment.instance(context);
 
         StubGenerator generator = new StubGenerator();
 

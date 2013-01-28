@@ -61,6 +61,11 @@ public class SimpleAnnotatedTypeVisitor<R, P> implements AnnotatedTypeVisitor<R,
     }
 
     @Override
+    public R visitIntersection(AnnotatedIntersectionType type, P p) {
+        return defaultAction(type, p);
+    }
+
+    @Override
     public R visitArray(AnnotatedArrayType type, P p) {
         return defaultAction(type, p);
     }
