@@ -781,14 +781,14 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
 
 
     @Override
-    public String isValidUse(AnnotatedDeclaredType declarationType,
+    public boolean isValidUse(AnnotatedDeclaredType declarationType,
                              AnnotatedDeclaredType useType) {
         // At most a single qualifier on a type, ignoring a possible PolyAll annotation.
         boolean found = false;
         for (AnnotationMirror anno : useType.getAnnotations()) {
             if (!QualifierPolymorphism.isPolyAll(anno)) {
                 if (found) {
-                    return isValidToError(false);
+                    return false;
                 }
                 found = true;
             }
@@ -797,12 +797,12 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
         // of declarationType. However, declarationType by default
         // is NonNull, which would then forbid Nullable uses.
         // Therefore, don't perform this check.
-        return isValidToError(true);
+        return true;
         // return super.isValidUse(declarationType, useType);
     }
 
     @Override
-    public String isValidUse(AnnotatedPrimitiveType type) {
+    public boolean isValidUse(AnnotatedPrimitiveType type) {
         // No explicit qualifiers on primitive types
         if (type.getAnnotations().size()>1 ||
              (!type.hasAnnotation(Primitive.class) &&
@@ -810,7 +810,7 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
              // always a reason to warn.
              (type.getElement() == null ||
                      !type.getExplicitAnnotations().isEmpty()))) {
-            return isValidToError(false);
+            return false;
         }
         return super.isValidUse(type);
     }

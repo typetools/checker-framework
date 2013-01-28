@@ -77,13 +77,13 @@ public class FenumVisitor extends BaseTypeVisitor<FenumChecker> {
     // TODO: should we require a match between switch expression and cases?
 
     @Override
-    public String isValidUse(AnnotatedDeclaredType declarationType,
+    public boolean isValidUse(AnnotatedDeclaredType declarationType,
                              AnnotatedDeclaredType useType) {
         // The checker calls this method to compare the annotation used in a
         // type to the modifier it adds to the class declaration. As our default
         // modifier is Unqualified, this results in an error when a non-subtype
         // is used. Can we use FenumTop as default instead?
-        return isValidToError(true);
+        return true;
     }
 
 }
