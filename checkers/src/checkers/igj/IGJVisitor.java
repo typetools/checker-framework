@@ -47,9 +47,9 @@ public class IGJVisitor extends BaseTypeVisitor<IGJChecker> {
     }
 
     @Override
-    public String isValidUse(AnnotatedDeclaredType elemType, AnnotatedDeclaredType use) {
+    public boolean isValidUse(AnnotatedDeclaredType elemType, AnnotatedDeclaredType use) {
         if (elemType.hasEffectiveAnnotation(checker.I) || use.hasEffectiveAnnotation(checker.READONLY))
-            return isValidToError(true);
+            return true;
 
         return super.isValidUse(elemType, use);
     }

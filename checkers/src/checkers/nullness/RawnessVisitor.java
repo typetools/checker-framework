@@ -11,11 +11,11 @@ public class RawnessVisitor  extends BaseTypeVisitor<RawnessSubchecker> {
     }
 
     @Override
-    public String isValidUse(AnnotatedDeclaredType declarationType,
+    public boolean isValidUse(AnnotatedDeclaredType declarationType,
                              AnnotatedDeclaredType useType) {
         // Instead of this implementation, I would like to add
         // @ImplicitFor(trees={Tree.Kind.CLASS})
         // to the Raw annotation. But that creates some failures.
-        return isValidToError(true);
+        return true;
     }
 }
