@@ -128,7 +128,7 @@ public final
     }
 
 
-    public <T extends Annotation> @Nullable T getAnnotation(Class<T> annotationClass) {
+    public <T extends @Nullable Annotation> @Nullable T getAnnotation(Class<T> annotationClass) {
         throw new RuntimeException("skeleton method");
     }
 

@@ -1279,6 +1279,12 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
                 && ((AssignmentTree)tree).getExpression().getKind() == Tree.Kind.NULL_LITERAL);
     }
 
+    public static String TYPE_INVALID_KEY = "type.invalid";
+
+    public String isValidToError(final boolean isValid)  {
+        return isValid ? null : TYPE_INVALID_KEY;
+    }
+
     /**
      * Tests that the qualifiers present on the useType are valid qualifiers,
      * given the qualifiers on the declaration of the type, declarationType.
@@ -1304,13 +1310,15 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
      * {@code @Immutable String};  {@link ReadOnly} is not a subtype of
      * {@link Immutable}.
      *
+     *
      * @param declarationType  the type of the class (TypeElement)
      * @param useType   the use of the class (instance type)
      * @return  if the useType is a valid use of elemType
      */
-    public boolean isValidUse(AnnotatedDeclaredType declarationType,
-            AnnotatedDeclaredType useType) {
-        return checker.getTypeHierarchy().isSubtype(useType.getErased(), declarationType.getErased());
+    public String isValidUse(AnnotatedDeclaredType declarationType,
+                             AnnotatedDeclaredType useType) {
+        return isValidToError(
+                checker.getTypeHierarchy().isSubtype(useType.getErased(), declarationType.getErased()));
     }
 
     /**
@@ -1320,8 +1328,8 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
      * Subclasses should override this method to limit what annotations are
      * allowed on primitive types.
      */
-    public boolean isValidUse(AnnotatedPrimitiveType type) {
-        return true;
+    public String isValidUse(AnnotatedPrimitiveType type) {
+        return isValidToError(true);
     }
 
     /**
@@ -1333,8 +1341,8 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
      * Subclasses should override this method to limit what annotations are
      * allowed on array types.
      */
-    public boolean isValidUse(AnnotatedArrayType type) {
-        return true;
+    public String isValidUse(AnnotatedArrayType type) {
+        return isValidToError(true);
     }
 
     /**
@@ -1373,10 +1381,16 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
 
     protected class TypeValidator extends AnnotatedTypeScanner<Void, Tree> {
         public boolean isValid = true;
-        protected void reportError(AnnotatedTypeMirror type, Tree p) {
-            checker.report(Result.failure("type.invalid",
+        protected void reportValidityResult(final String errorType, final AnnotatedTypeMirror type, final Tree p) {
+            if(errorType != null) {
+                checker.report(Result.failure(errorType,
                         type.getAnnotations(), type.toString()), p);
-            isValid = false;
+                isValid = false;
+            }
+        }
+
+        protected void reportError(final AnnotatedTypeMirror type, final Tree p) {
+            reportValidityResult(TYPE_INVALID_KEY, type, p);
         }
 
         @Override
@@ -1391,9 +1405,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
                         atypeFactory.getAnnotatedType(
                                 type.getUnderlyingType().asElement());
 
-                if (!isValidUse(elemType, type)) {
-                    reportError(type, tree);
-                }
+                reportValidityResult(isValidUse(elemType, type), type, tree);
             }
 
             // System.out.println("Type: " + type);
@@ -1515,9 +1527,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
             if (checker.shouldSkipUses(type.getElement()))
                 return super.visitPrimitive(type, tree);
 
-            if (!isValidUse(type)) {
-                reportError(type, tree);
-            }
+            reportValidityResult(isValidUse(type), type, tree);
 
             return super.visitPrimitive(type, tree);
         }
@@ -1527,9 +1537,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
             if (checker.shouldSkipUses(type.getElement()))
                 return super.visitArray(type, tree);
 
-            if (!isValidUse(type)) {
-                reportError(type, tree);
-            }
+            reportValidityResult(isValidUse(type), type, tree);
 
             return super.visitArray(type, tree);
         }

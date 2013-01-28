@@ -37,6 +37,13 @@ class AnnotatedTypeParams3 {
         return annotation;
     }
 
+    void test1(Field field) {
+        Override a = field.getAnnotation(Override.class);
+        if(a != null) {
+            System.out.println("No warning on if.");
+        }
+    }
+
     <@NonNull T> void test(T p) {
         Object o = p;
         @NonNull Object re = o;
