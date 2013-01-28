@@ -139,8 +139,8 @@ public final class Character implements java.io.Serializable, Comparable<Charact
     public final static Character.UnicodeBlock HIGH_SURROGATES = new UnicodeBlock();
     public final static Character.UnicodeBlock HIGH_PRIVATE_USE_SURROGATES = new UnicodeBlock();
     public final static Character.UnicodeBlock LOW_SURROGATES = new UnicodeBlock();
-    public static @Nullable Character.UnicodeBlock of(char a1) { throw new RuntimeException("skeleton method"); }
-    public static @Nullable Character.UnicodeBlock of(int a1) { throw new RuntimeException("skeleton method"); }
+    public static Character. @Nullable UnicodeBlock of(char a1) { throw new RuntimeException("skeleton method"); }
+    public static Character. @Nullable UnicodeBlock of(int a1) { throw new RuntimeException("skeleton method"); }
     public final static Character.UnicodeBlock forName(String a1) { throw new RuntimeException("skeleton method"); }
     
     protected UnicodeBlock() {}

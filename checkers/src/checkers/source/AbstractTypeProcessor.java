@@ -12,8 +12,6 @@ import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.main.JavaCompiler.CompileState;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
-import com.sun.tools.javac.util.JCDiagnostic;
-import com.sun.tools.javac.util.JCDiagnostic.DiagnosticFlag;
 import com.sun.tools.javac.util.Log;
 
 import com.sun.source.tree.ClassTree;
@@ -199,18 +197,10 @@ public abstract class AbstractTypeProcessor extends AbstractProcessor {
             if (!elements.remove(e.getTypeElement().getQualifiedName()))
                 return;
 
-            if (isUnrecoverableError(log)) {
-                log.reportDeferredDiagnostics();
-                return;
-            }
-
             TypeElement elem = e.getTypeElement();
             TreePath p = Trees.instance(processingEnv).getPath(elem);
 
             typeProcess(elem, p);
-
-            // report errors accumulated during type checking
-            log.reportDeferredDiagnostics();
 
             if (!hasInvokedTypeProcessingOver && elements.isEmpty() && log.nerrors == 0) {
                 typeProcessingOver();
@@ -220,20 +210,5 @@ public abstract class AbstractTypeProcessor extends AbstractProcessor {
 
         @Override
         public void started(TaskEvent e) { }
-
-    }
-
-    /*
-     * I first used JavaCompiler.unrecoverableError (making it public to allow access.
-     * However, allowed programs to get type processed that had resolve errors.
-     * Now I'm using my own method and wonder whether javac's version should be changed.
-     */
-    private static boolean isUnrecoverableError(Log log) {
-        for (JCDiagnostic d: log.deferredDiagnostics) {
-            if (d.getKind() == JCDiagnostic.Kind.ERROR && !d.isFlagSet(DiagnosticFlag.RECOVERABLE) ||
-                    d.isFlagSet(DiagnosticFlag.RESOLVE_ERROR) )
-                return true;
-        }
-        return false;
     }
 }

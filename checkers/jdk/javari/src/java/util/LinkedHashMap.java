@@ -15,5 +15,5 @@ public class LinkedHashMap<K,V>
     public boolean containsValue(@ReadOnly LinkedHashMap<K,V> this, @ReadOnly Object value) { throw new RuntimeException("skeleton method"); }
     public V get(@ReadOnly LinkedHashMap<K,V> this, @ReadOnly Object key) { throw new RuntimeException("skeleton method"); }
     public void clear() { throw new RuntimeException("skeleton method"); }
-    protected boolean removeEldestEntry(@ReadOnly Map.Entry<K,V> eldest) { throw new RuntimeException("skeleton method"); }
+    protected boolean removeEldestEntry(Map. @ReadOnly Entry<K,V> eldest) { throw new RuntimeException("skeleton method"); }
 }
