@@ -153,7 +153,7 @@ public final class TestUtilities {
         return expected;
     }
 
-    public static List<String> expectedDiagnostics(String prefix, File[] files) {
+    public static List<String> expectedDiagnostics(File[] files) {
         List<String> expected = new ArrayList<String>();
 
         for (File file : files)
