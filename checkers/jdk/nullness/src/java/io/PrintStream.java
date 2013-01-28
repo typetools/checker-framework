@@ -37,9 +37,9 @@ public class PrintStream extends FilterOutputStream implements Appendable, Close
   // The vararg arrays can actually be null, but let's not annotate them
   // because passing null is bad sytle; see whether this annotation is useful.
   public PrintStream printf(String a1, @Nullable Object ... a2) { throw new RuntimeException("skeleton method"); }
-  public PrintStream printf(@Nullable java.util.Locale a1, String a2, @Nullable Object... a3) { throw new RuntimeException("skeleton method"); }
+  public PrintStream printf(java.util. @Nullable Locale a1, String a2, @Nullable Object... a3) { throw new RuntimeException("skeleton method"); }
   public PrintStream format(String a1, @Nullable Object... a2) { throw new RuntimeException("skeleton method"); }
-  public PrintStream format(@Nullable java.util.Locale a1, String a2, @Nullable Object... a3) { throw new RuntimeException("skeleton method"); }
+  public PrintStream format(java.util. @Nullable Locale a1, String a2, @Nullable Object... a3) { throw new RuntimeException("skeleton method"); }
   public PrintStream append(@Nullable CharSequence a1) { throw new RuntimeException("skeleton method"); }
   public PrintStream append(@Nullable CharSequence a1, int a2, int a3) { throw new RuntimeException("skeleton method"); }
   public PrintStream append(char a1) { throw new RuntimeException("skeleton method"); }

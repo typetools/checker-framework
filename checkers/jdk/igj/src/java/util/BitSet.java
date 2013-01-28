@@ -2,7 +2,7 @@ package java.util;
 import checkers.igj.quals.*;
 
 @I
-public class BitSet implements @I Cloneable, @I java.io.Serializable {
+public class BitSet implements @I Cloneable, java.io. @I Serializable {
     private static final long serialVersionUID = 0L;
   public BitSet(@AssignsFields BitSet this) { throw new RuntimeException("skeleton method"); }
   public BitSet(@AssignsFields BitSet this, int a1) { throw new RuntimeException("skeleton method"); }

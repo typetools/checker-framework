@@ -9,5 +9,5 @@ public final class PropertyPermission extends java.security.BasicPermission {
   public boolean equals(@ReadOnly Object a1) { throw new RuntimeException("skeleton method"); }
   public int hashCode() { throw new RuntimeException("skeleton method"); }
   public String getActions() { throw new RuntimeException("skeleton method"); }
-  public @I java.security.PermissionCollection newPermissionCollection() { throw new RuntimeException("skeleton method"); }
+  public java.security. @I PermissionCollection newPermissionCollection() { throw new RuntimeException("skeleton method"); }
 }

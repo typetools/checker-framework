@@ -2,7 +2,7 @@ package java.util;
 import checkers.igj.quals.*;
 
 @I
-public class Vector<E> extends @I AbstractList<E> implements @I List<E>, @I RandomAccess, @I Cloneable, @I java.io.Serializable {
+public class Vector<E> extends @I AbstractList<E> implements @I List<E>, @I RandomAccess, @I Cloneable, java.io. @I Serializable {
     private static final long serialVersionUID = 0L;
   public Vector(@AssignsFields Vector<E> this, int a1, int a2) { throw new RuntimeException("skeleton method"); }
   public Vector(@AssignsFields Vector<E> this, int a1) { throw new RuntimeException("skeleton method"); }
