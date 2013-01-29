@@ -884,7 +884,7 @@ implements Flow {
             Pair<Tree, AnnotatedTypeMirror> preAssCtxt = visitorState.getAssignmentContext();
             try {
                 AnnotatedTypeMirror ret = atypeFactory.getAnnotatedType(visitorState.getMethodTree().getReturnType());
-                visitorState.setAssignmentContext(Pair.of((Tree) null, atypeFactory.getAnnotatedType(node)));
+                visitorState.setAssignmentContext(Pair.<Tree, AnnotatedTypeMirror>of((Tree) null, atypeFactory.getAnnotatedType(node)));
                 scanExpr(node.getExpression());
             } finally {
                 visitorState.setAssignmentContext(preAssCtxt);
