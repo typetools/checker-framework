@@ -235,9 +235,15 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
 
         // If an analysis couldn't be loaded reflectively, return the
         // default.
+        List<Pair<VariableElement, CFValue>> tmp = new ArrayList<>();
+        for (Pair<VariableElement, Value> fieldVal : fieldValues) {
+            assert fieldVal.second instanceof CFValue;
+            tmp.add(Pair.<VariableElement, CFValue> of(fieldVal.first,
+                    (CFValue) fieldVal.second));
+        }
         return (FlowAnalysis) new CFAnalysis(
                 (AbstractBasicAnnotatedTypeFactory) this, processingEnv, checker,
-                (List) fieldValues);
+                tmp);
     }
 
     /**
