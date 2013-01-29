@@ -1290,9 +1290,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * with the same {@code annotation}, then the {@code anontationToUse} must
      * be the same.
      */
-    protected void addAliasedDeclAnnotation(
+    protected void addAliasedDeclAnnotation(Class<? extends Annotation> alias,
             Class<? extends Annotation> annotation,
-            Class<? extends Annotation> alias, AnnotationMirror annotationToUse) {
+            AnnotationMirror annotationToUse) {
         String aliasName = alias.getCanonicalName();
         String annotationName = annotation.getCanonicalName();
         Set<String> set = new HashSet<>();
