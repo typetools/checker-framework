@@ -64,13 +64,13 @@ public class NonNullVisitor
         InitializationVisitor<AbstractNonNullChecker, NonNullValue, NonNullStore> {
 
     // Error message keys
-    private static final/* @CompilerMessageKey */String ASSIGNMENT_TYPE_INCOMPATIBLE = "assignment.type.incompatible";
-    private static final/* @CompilerMessageKey */String UNBOXING_OF_NULLABLE = "unboxing.of.nullable";
-    private static final/* @CompilerMessageKey */String KNOWN_NONNULL = "known.nonnull";
-    private static final/* @CompilerMessageKey */String LOCKING_NULLABLE = "locking.nullable";
-    private static final/* @CompilerMessageKey */String THROWING_NULLABLE = "throwing.nullable";
-    private static final/* @CompilerMessageKey */String ACCESSING_NULLABLE = "accessing.nullable";
-    private static final/* @CompilerMessageKey */String DEREFERENCE_OF_NULLABLE = "dereference.of.nullable";
+    private static final /*@CompilerMessageKey*/ String ASSIGNMENT_TYPE_INCOMPATIBLE = "assignment.type.incompatible";
+    private static final /*@CompilerMessageKey*/ String UNBOXING_OF_NULLABLE = "unboxing.of.nullable";
+    private static final /*@CompilerMessageKey*/ String KNOWN_NONNULL = "known.nonnull";
+    private static final /*@CompilerMessageKey*/ String LOCKING_NULLABLE = "locking.nullable";
+    private static final /*@CompilerMessageKey*/ String THROWING_NULLABLE = "throwing.nullable";
+    private static final /*@CompilerMessageKey*/ String ACCESSING_NULLABLE = "accessing.nullable";
+    private static final /*@CompilerMessageKey*/ String DEREFERENCE_OF_NULLABLE = "dereference.of.nullable";
 
     // Annotation and type constants
     private final AnnotationMirror NONNULL, NULLABLE, MONOTONICNONNULL;
@@ -454,7 +454,7 @@ public class NonNullVisitor
      *            the tree where the error is to reported
      */
     private void checkForNullability(ExpressionTree tree,
-    /* @CompilerMessageKey */String errMsg) {
+    /*@CompilerMessageKey*/ String errMsg) {
         AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(tree);
         if (!type.hasEffectiveAnnotation(NONNULL))
             checker.report(Result.failure(errMsg, tree), tree);
