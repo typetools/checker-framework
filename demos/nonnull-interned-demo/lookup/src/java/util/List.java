@@ -6,7 +6,7 @@ public abstract interface List<E> extends java.util.Collection<E> {
   public abstract int size();
   public abstract boolean isEmpty();
   public abstract boolean contains(java.lang.Object a1);
-  public abstract @NonNull java.util.Iterator<E> iterator();
+  public abstract @NonNull Iterator<E> iterator();
   public abstract java.lang.Object[] toArray();
   public abstract <T> @NonNull T[] toArray(T[] a1);
   public abstract boolean add(E a1);
@@ -25,7 +25,7 @@ public abstract interface List<E> extends java.util.Collection<E> {
   public abstract E remove(int a1);
   public abstract int indexOf(java.lang.Object a1);
   public abstract int lastIndexOf(java.lang.Object a1);
-  public abstract @NonNull java.util.ListIterator<E> listIterator();
-  public abstract @NonNull java.util.ListIterator<E> listIterator(int a1);
-  public abstract @NonNull java.util.List<E> subList(int a1, int a2);
+  public abstract @NonNull ListIterator<E> listIterator();
+  public abstract @NonNull ListIterator<E> listIterator(int a1);
+  public abstract @NonNull List<E> subList(int a1, int a2);
 }
