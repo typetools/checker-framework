@@ -177,7 +177,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningChecker> {
         } else {
             //the class is not marked @UsesObjectEquals -> make sure its superclass isn't either.
             //this is impossible after design change making @UsesObjectEquals inherited?
-            //check left in case of future design change back to non-inherited. 
+            //check left in case of future design change back to non-inherited.
             if(superClass != null && (elmt != null && elmt.getAnnotation(UsesObjectEquals.class) != null)){
                 checker.report(Result.failure("superclass.marked"), node);
             }
@@ -634,7 +634,8 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningChecker> {
         if (tm.getKind() == TypeKind.WILDCARD) {
             tm = ((WildcardType) tm).getExtendsBound();
         }
-        if (tm.getKind() == TypeKind.ARRAY) {
+        if (tm == null || tm.getKind() == TypeKind.ARRAY) {
+            // Bound of a wildcard might be null
             return false;
         }
         if (tm.getKind() == TypeKind.ANNOTATED) {
