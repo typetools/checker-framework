@@ -32,6 +32,9 @@ import checkers.regex.quals.*;
  * To eliminate this dependency, you can simply copy this class into your
  * own project.
  */
+// The PurityChecker cannot show for most methods in this class that
+// they are pure, even though they are.
+@SuppressWarnings("pure")
 public class RegexUtil {
 
   /**
