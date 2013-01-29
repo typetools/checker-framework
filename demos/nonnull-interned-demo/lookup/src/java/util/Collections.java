@@ -24,11 +24,11 @@ public class Collections {
   public static <T> boolean replaceAll(java.util.List<T> a1, T a2, T a3) { throw new RuntimeException("skeleton method"); }
   public static int indexOfSubList(java.util.List<?> a1, java.util.List<?> a2) { throw new RuntimeException("skeleton method"); }
   public static int lastIndexOfSubList(java.util.List<?> a1, java.util.List<?> a2) { throw new RuntimeException("skeleton method"); }
-  public static <T> @NonNull java.util.Collection<T> unmodifiableCollection(java.util.Collection<? extends T> a1) { throw new RuntimeException("skeleton method"); }
-  public static <T> @NonNull java.util.Set<T> unmodifiableSet(java.util.Set<? extends T> a1) { throw new RuntimeException("skeleton method"); }
-  public static <T> @NonNull java.util.SortedSet<T> unmodifiableSortedSet(java.util.SortedSet<T> a1) { throw new RuntimeException("skeleton method"); }
-  public static <T> @NonNull java.util.List<T> unmodifiableList(java.util.List<? extends T> a1) { throw new RuntimeException("skeleton method"); }
-  public static <K, V> @NonNull java.util.Map<K, V> unmodifiableMap(java.util.Map<? extends K, ? extends V> a1) { throw new RuntimeException("skeleton method"); }
+  public static <T> @NonNull Collection<T> unmodifiableCollection(java.util.Collection<? extends T> a1) { throw new RuntimeException("skeleton method"); }
+  public static <T> @NonNull Set<T> unmodifiableSet(java.util.Set<? extends T> a1) { throw new RuntimeException("skeleton method"); }
+  public static <T> @NonNull SortedSet<T> unmodifiableSortedSet(java.util.SortedSet<T> a1) { throw new RuntimeException("skeleton method"); }
+  public static <T> @NonNull List<T> unmodifiableList(java.util.List<? extends T> a1) { throw new RuntimeException("skeleton method"); }
+  public static <K, V> @NonNull Map<K, V> unmodifiableMap(java.util.Map<? extends K, ? extends V> a1) { throw new RuntimeException("skeleton method"); }
   public static <K, V> java.util.SortedMap<K, V> unmodifiableSortedMap(java.util.SortedMap<K, ? extends V> a1) { throw new RuntimeException("skeleton method"); }
   public static <T> java.util.Collection<T> synchronizedCollection(java.util.Collection<T> a1) { throw new RuntimeException("skeleton method"); }
   public static <T> java.util.Set<T> synchronizedSet(java.util.Set<T> a1) { throw new RuntimeException("skeleton method"); }
@@ -42,12 +42,12 @@ public class Collections {
   public static <E> java.util.List<E> checkedList(java.util.List<E> a1, java.lang.Class<E> a2) { throw new RuntimeException("skeleton method"); }
   public static <K, V> java.util.Map<K, V> checkedMap(java.util.Map<K, V> a1, java.lang.Class<K> a2, java.lang.Class<V> a3) { throw new RuntimeException("skeleton method"); }
   public static <K, V> java.util.SortedMap<K, V> checkedSortedMap(java.util.SortedMap<K, V> a1, java.lang.Class<K> a2, java.lang.Class<V> a3) { throw new RuntimeException("skeleton method"); }
-  public final static <T> @NonNull java.util.Set<T> emptySet() { throw new RuntimeException("skeleton method"); }
-  public final static <T> @NonNull java.util.List<T> emptyList() { throw new RuntimeException("skeleton method"); }
-  public final static <K, V> @NonNull java.util.Map<K, V> emptyMap() { throw new RuntimeException("skeleton method"); }
-  public static <T> @NonNull java.util.Set<T> singleton(T a1) { throw new RuntimeException("skeleton method"); }
-  public static <T> @NonNull java.util.List<T> singletonList(T a1) { throw new RuntimeException("skeleton method"); }
-  public static <K, V> @NonNull java.util.Map<K, V> singletonMap(K a1, V a2) { throw new RuntimeException("skeleton method"); }
+  public final static <T> @NonNull Set<T> emptySet() { throw new RuntimeException("skeleton method"); }
+  public final static <T> @NonNull List<T> emptyList() { throw new RuntimeException("skeleton method"); }
+  public final static <K, V> @NonNull Map<K, V> emptyMap() { throw new RuntimeException("skeleton method"); }
+  public static <T> @NonNull Set<T> singleton(T a1) { throw new RuntimeException("skeleton method"); }
+  public static <T> @NonNull List<T> singletonList(T a1) { throw new RuntimeException("skeleton method"); }
+  public static <K, V> @NonNull Map<K, V> singletonMap(K a1, V a2) { throw new RuntimeException("skeleton method"); }
   public static <T> java.util.List<T> nCopies(int a1, T a2) { throw new RuntimeException("skeleton method"); }
   public static <T> java.util.Comparator<T> reverseOrder() { throw new RuntimeException("skeleton method"); }
   public static <T> java.util.Comparator<T> reverseOrder(java.util.Comparator<T> a1) { throw new RuntimeException("skeleton method"); }

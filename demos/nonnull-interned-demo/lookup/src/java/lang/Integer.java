@@ -7,32 +7,32 @@ public final class Integer extends java.lang.Number implements java.lang.Compara
   public final static int MAX_VALUE = 2147483647;
   public final static java.lang.Class<Integer> TYPE;
   public final static int SIZE = 32;
-  public static @NonNull java.lang.String toString(int a1, int a2) { throw new RuntimeException("skeleton method"); }
-  public static @NonNull java.lang.String toHexString(int a1) { throw new RuntimeException("skeleton method"); }
-  public static @NonNull java.lang.String toOctalString(int a1) { throw new RuntimeException("skeleton method"); }
-  public static @NonNull java.lang.String toBinaryString(int a1) { throw new RuntimeException("skeleton method"); }
-  public static @NonNull java.lang.String toString(int a1) { throw new RuntimeException("skeleton method"); }
-  public static int parseInt(@NonNull java.lang.String a1, int a2) throws java.lang.NumberFormatException { throw new RuntimeException("skeleton method"); }
-  public static int parseInt(@NonNull java.lang.String a1) throws java.lang.NumberFormatException { throw new RuntimeException("skeleton method"); }
-  public static @NonNull java.lang.Integer valueOf(java.lang.String a1, int a2) throws java.lang.NumberFormatException { throw new RuntimeException("skeleton method"); }
-  public static @NonNull java.lang.Integer valueOf(java.lang.String a1) throws java.lang.NumberFormatException { throw new RuntimeException("skeleton method"); }
-  public static @NonNull java.lang.Integer valueOf(int a1) { throw new RuntimeException("skeleton method"); }
+  public static @NonNull String toString(int a1, int a2) { throw new RuntimeException("skeleton method"); }
+  public static @NonNull String toHexString(int a1) { throw new RuntimeException("skeleton method"); }
+  public static @NonNull String toOctalString(int a1) { throw new RuntimeException("skeleton method"); }
+  public static @NonNull String toBinaryString(int a1) { throw new RuntimeException("skeleton method"); }
+  public static @NonNull String toString(int a1) { throw new RuntimeException("skeleton method"); }
+  public static int parseInt(@NonNull String a1, int a2) throws NumberFormatException { throw new RuntimeException("skeleton method"); }
+  public static int parseInt(@NonNull String a1) throws NumberFormatException { throw new RuntimeException("skeleton method"); }
+  public static @NonNull Integer valueOf(String a1, int a2) throws NumberFormatException { throw new RuntimeException("skeleton method"); }
+  public static @NonNull Integer valueOf(String a1) throws NumberFormatException { throw new RuntimeException("skeleton method"); }
+  public static @NonNull Integer valueOf(int a1) { throw new RuntimeException("skeleton method"); }
   public Integer(int a1) { throw new RuntimeException("skeleton method"); }
-  public Integer(java.lang.String a1) throws java.lang.NumberFormatException { throw new RuntimeException("skeleton method"); }
+  public Integer(String a1) throws NumberFormatException { throw new RuntimeException("skeleton method"); }
   public byte byteValue() { throw new RuntimeException("skeleton method"); }
   public short shortValue() { throw new RuntimeException("skeleton method"); }
   public int intValue() { throw new RuntimeException("skeleton method"); }
   public long longValue() { throw new RuntimeException("skeleton method"); }
   public float floatValue() { throw new RuntimeException("skeleton method"); }
   public double doubleValue() { throw new RuntimeException("skeleton method"); }
-  public @NonNull java.lang.String toString() { throw new RuntimeException("skeleton method"); }
+  public @NonNull String toString() { throw new RuntimeException("skeleton method"); }
   public int hashCode() { throw new RuntimeException("skeleton method"); }
-  public boolean equals(java.lang.Object a1) { throw new RuntimeException("skeleton method"); }
-  public static @Nullable java.lang.Integer getInteger( @Nullable java.lang.String a1) { throw new RuntimeException("skeleton method"); }
-  public static @NonNull java.lang.Integer getInteger(@Nullable java.lang.String a1, int a2) { throw new RuntimeException("skeleton method"); }
-  public static @Nullable java.lang.Integer getInteger(@Nullable java.lang.String a1, @Nullable java.lang.Integer a2) { throw new RuntimeException("skeleton method"); }
-  public static @NonNull java.lang.Integer decode( @NonNull java.lang.String a1) throws java.lang.NumberFormatException { throw new RuntimeException("skeleton method"); }
-  public int compareTo(@NonNull java.lang.Integer a1) { throw new RuntimeException("skeleton method"); }
+  public boolean equals(Object a1) { throw new RuntimeException("skeleton method"); }
+  public static @Nullable Integer getInteger(@Nullable String a1) { throw new RuntimeException("skeleton method"); }
+  public static @NonNull Integer getInteger(@Nullable String a1, int a2) { throw new RuntimeException("skeleton method"); }
+  public static @Nullable Integer getInteger(@Nullable String a1, @Nullable Integer a2) { throw new RuntimeException("skeleton method"); }
+  public static @NonNull Integer decode(@NonNull String a1) throws NumberFormatException { throw new RuntimeException("skeleton method"); }
+  public int compareTo(@NonNull Integer a1) { throw new RuntimeException("skeleton method"); }
   public static int highestOneBit(int a1) { throw new RuntimeException("skeleton method"); }
   public static int lowestOneBit(int a1) { throw new RuntimeException("skeleton method"); }
   public static int numberOfLeadingZeros(int a1) { throw new RuntimeException("skeleton method"); }

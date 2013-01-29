@@ -149,7 +149,7 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
     }
 
     private boolean isNewArrayInToArray(NewArrayTree node) {
-        if (node.getDimensions().size()!=1) {
+        if (node.getDimensions().size() != 1) {
             return false;
         }
 
@@ -254,7 +254,7 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
     // Nothing needed for EnhancedForLoop, no boolean get's unboxed there.
     @Override
     public Void visitForLoop(ForLoopTree node, Void p) {
-        if (node.getCondition()!=null) {
+        if (node.getCondition() != null) {
             // Condition is null e.g. in "for (;;) {...}"
             checkForNullability(node.getCondition(), "condition.nullable");
         }
@@ -383,22 +383,20 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
                 // because that would only have the nullness annotations; here we want to
                 // see all annotations on the receiver.
                 // TODO: can we clean up constructor vs. method distinction?
-                List<? extends AnnotationMirror> rcvannos;
+                List<? extends AnnotationMirror> rcvannos = null;
                 if (TreeUtils.isConstructor(node)) {
                     com.sun.tools.javac.code.Symbol meth =
                             (com.sun.tools.javac.code.Symbol)TreeUtils.elementFromDeclaration(node);
-                    rcvannos = meth.typeAnnotations;
-                    if (rcvannos==null){
-                        rcvannos = Collections.<AnnotationMirror>emptyList();
-                    }
+                    rcvannos = meth.getTypeAnnotationMirrors();
                 } else {
                     ExecutableElement meth = TreeUtils.elementFromDeclaration(node);
                     com.sun.tools.javac.code.Type rcv = (com.sun.tools.javac.code.Type) ((ExecutableType)meth.asType()).getReceiverType();
-                    if (rcv!=null) {
-                        rcvannos = rcv.typeAnnotations;
-                    } else {
-                        rcvannos = Collections.<AnnotationMirror>emptyList();
+                    if (rcv != null && rcv.getKind() == TypeKind.ANNOTATED) {
+                        rcvannos = ((com.sun.tools.javac.code.Type.AnnotatedType)rcv).typeAnnotations;
                     }
+                }
+                if (rcvannos == null){
+                    rcvannos = Collections.<AnnotationMirror>emptyList();
                 }
                 nonInitializedFields
                     = getUninitializedFields(TreeUtils.enclosingClass(getCurrentPath()), rcvannos);
@@ -673,11 +671,11 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
             AnnotationMirror overriddenAnno = atypeFactory.getDeclAnnotation(overridden.getElement(), methodAnno);
 
             // nothing to do if the overridden method has no annotation
-            if (overriddenAnno==null) continue;
+            if (overriddenAnno == null) continue;
 
             AnnotationMirror overriderAnno = atypeFactory.getDeclAnnotation(overrider.getElement(), methodAnno);
 
-            if (overriderAnno==null) {
+            if (overriderAnno == null) {
                 checker.report(Result.failure("override.post.method.annotation.invalid",
                         overriderMeth, overriderTyp, overriddenMeth, overriddenTyp,
                         overriderAnno,
@@ -717,11 +715,11 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
             AnnotationMirror overriderAnno = atypeFactory.getDeclAnnotation(overrider.getElement(), methodAnno);
 
             // nothing to do if the overrider method has no annotation
-            if (overriderAnno==null) continue;
+            if (overriderAnno == null) continue;
 
             AnnotationMirror overriddenAnno = atypeFactory.getDeclAnnotation(overridden.getElement(), methodAnno);
 
-            if (overriddenAnno==null) {
+            if (overriddenAnno == null) {
                 checker.report(Result.failure("override.pre.method.annotation.invalid",
                         overriderMeth, overriderTyp, overriddenMeth, overriddenTyp,
                         overriderAnno,
@@ -783,14 +781,14 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
 
 
     @Override
-    public String isValidUse(AnnotatedDeclaredType declarationType,
+    public boolean isValidUse(AnnotatedDeclaredType declarationType,
                              AnnotatedDeclaredType useType) {
         // At most a single qualifier on a type, ignoring a possible PolyAll annotation.
         boolean found = false;
         for (AnnotationMirror anno : useType.getAnnotations()) {
             if (!QualifierPolymorphism.isPolyAll(anno)) {
                 if (found) {
-                    return isValidToError(false);
+                    return false;
                 }
                 found = true;
             }
@@ -799,20 +797,20 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
         // of declarationType. However, declarationType by default
         // is NonNull, which would then forbid Nullable uses.
         // Therefore, don't perform this check.
-        return isValidToError(true);
+        return true;
         // return super.isValidUse(declarationType, useType);
     }
 
     @Override
-    public String isValidUse(AnnotatedPrimitiveType type) {
+    public boolean isValidUse(AnnotatedPrimitiveType type) {
         // No explicit qualifiers on primitive types
         if (type.getAnnotations().size()>1 ||
              (!type.hasAnnotation(Primitive.class) &&
              // The element is null if the primitive type is an array component ->
              // always a reason to warn.
-             (type.getElement()==null ||
+             (type.getElement() == null ||
                      !type.getExplicitAnnotations().isEmpty()))) {
-            return isValidToError(false);
+            return false;
         }
         return super.isValidUse(type);
     }

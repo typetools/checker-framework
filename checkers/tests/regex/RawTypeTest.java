@@ -17,9 +17,7 @@ class RawTypeTest {
 
         new WeakReference<Object>(c.asSubclass(I2.class));
         new WeakReference<Class>(c.asSubclass(I2.class));
-        // TODO: All of the above work, but the version below doesn't.
-        // What's the difference?
-        // new WeakReference<Class<? extends I2>>(c.asSubclass(I2.class));
+        new WeakReference<Class<? extends I2>>(c.asSubclass(I2.class));
     }
 
     /* It would be desirable to optionally check the following code without
@@ -77,7 +75,6 @@ class RawTypeTest {
         X f;
     }
 
-    /* TODO: implement annotations on wildcard bounds
     interface I1 {
         public void m(MyList<? extends @Regex String> l);
     }
@@ -86,7 +83,7 @@ class RawTypeTest {
         public void m(MyList par) {
             @Regex String xxx = par.f;
         }
-    }*/
+    }
 
     interface I2 {
         public void m(MyList<@Regex String> l);

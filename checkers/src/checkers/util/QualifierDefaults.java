@@ -447,14 +447,14 @@ public class QualifierDefaults {
             if (!type.isAnnotatedInHierarchy(qual))
                 type.addAnnotation(qual);
 
-            /* Anonymous types, e.g. intersection types, list the types
-             * in the direct supertypes. Make sure to apply the default there too.
+            /* Intersection types, list the types in the direct supertypes.
+             * Make sure to apply the default there too.
              * Use the direct supertypes field to prevent an infinite recursion
              * with the IGJATF.postDirectSuperTypes. TODO: investigate better way.
              */
-            if (TypesUtils.isAnonymousType(type.getUnderlyingType())) {
-                List<AnnotatedDeclaredType> sups = ((AnnotatedDeclaredType)type).directSuperTypesField();
-                if (sups!=null) {
+            if (type.getKind() == TypeKind.INTERSECTION) {
+                List<AnnotatedDeclaredType> sups = ((AnnotatedIntersectionType)type).directSuperTypesField();
+                if (sups != null) {
                     for (AnnotatedTypeMirror sup : sups) {
                         if (!sup.isAnnotatedInHierarchy(qual)) {
                             sup.addAnnotation(qual);
@@ -462,17 +462,6 @@ public class QualifierDefaults {
                     }
                 }
             }
-        }
-
-        @Override
-        public Void visitDeclared(AnnotatedDeclaredType type, AnnotationMirror qual) {
-            // TODO: should this logic be in AnnotatedTypeScanner?
-            if (TypesUtils.isAnonymousType(type.getUnderlyingType())) {
-                for(AnnotatedDeclaredType adt : type.directSuperTypes()) {
-                    scan(adt, qual);
-                }
-            }
-            return super.visitDeclared(type, qual);
         }
 
         private boolean isTypeVarExtends = false;

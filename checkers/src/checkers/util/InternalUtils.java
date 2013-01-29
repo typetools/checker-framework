@@ -159,7 +159,7 @@ public class InternalUtils {
     public final static List<AnnotationMirror> annotationsFromTypeAnnotationTrees(List<? extends AnnotationTree> annos) {
         List<AnnotationMirror> annotations = new ArrayList<AnnotationMirror>(annos.size());
         for (AnnotationTree anno : annos)
-            annotations.add(((JCTypeAnnotation)anno).attribute_field);
+            annotations.add(((JCAnnotation)anno).attribute);
         return annotations;
     }
     public final static List<? extends AnnotationMirror> annotationsFromTree(AnnotatedTypeTree node) {

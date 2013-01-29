@@ -11,12 +11,12 @@ public class File implements java.io.Serializable, java.lang.Comparable<java.io.
   public final static char pathSeparatorChar;
   public final static java.lang.String pathSeparator;
   public File(java.lang.String a1) { throw new RuntimeException("skeleton method"); }
-  public File(@Nullable java.lang.String a1, java.lang.String a2) { throw new RuntimeException("skeleton method"); }
-  public File(@Nullable java.io.File a1, java.lang.String a2) { throw new RuntimeException("skeleton method"); }
+  public File(@Nullable String a1, java.lang.String a2) { throw new RuntimeException("skeleton method"); }
+  public File(@Nullable File a1, java.lang.String a2) { throw new RuntimeException("skeleton method"); }
   public File(java.net.URI a1) { throw new RuntimeException("skeleton method"); }
   public java.lang.String getName() { throw new RuntimeException("skeleton method"); }
-  public @Nullable java.lang.String getParent() { throw new RuntimeException("skeleton method"); }
-  public @Nullable java.io.File getParentFile() { throw new RuntimeException("skeleton method"); }
+  public @Nullable String getParent() { throw new RuntimeException("skeleton method"); }
+  public @Nullable File getParentFile() { throw new RuntimeException("skeleton method"); }
   public java.lang.String getPath() { throw new RuntimeException("skeleton method"); }
   public boolean isAbsolute() { throw new RuntimeException("skeleton method"); }
   public java.lang.String getAbsolutePath() { throw new RuntimeException("skeleton method"); }
@@ -37,10 +37,10 @@ public class File implements java.io.Serializable, java.lang.Comparable<java.io.
   public boolean delete() { throw new RuntimeException("skeleton method"); }
   public void deleteOnExit() { throw new RuntimeException("skeleton method"); }
   public java.lang.String @Nullable [] list() { throw new RuntimeException("skeleton method"); }
-  public java.lang.String @Nullable [] list(@Nullable java.io.FilenameFilter a1) { throw new RuntimeException("skeleton method"); }
+  public java.lang.String @Nullable [] list(@Nullable FilenameFilter a1) { throw new RuntimeException("skeleton method"); }
   public java.io.File @Nullable [] listFiles() { throw new RuntimeException("skeleton method"); }
-  public java.io.File @Nullable [] listFiles(@Nullable java.io.FilenameFilter a1) { throw new RuntimeException("skeleton method"); }
-  public java.io.File @Nullable [] listFiles(@Nullable java.io.FileFilter a1) { throw new RuntimeException("skeleton method"); }
+  public java.io.File @Nullable [] listFiles(@Nullable FilenameFilter a1) { throw new RuntimeException("skeleton method"); }
+  public java.io.File @Nullable [] listFiles(@Nullable FileFilter a1) { throw new RuntimeException("skeleton method"); }
   public boolean mkdir() { throw new RuntimeException("skeleton method"); }
   public boolean mkdirs() { throw new RuntimeException("skeleton method"); }
   public boolean renameTo(java.io.File a1) { throw new RuntimeException("skeleton method"); }
@@ -57,10 +57,10 @@ public class File implements java.io.Serializable, java.lang.Comparable<java.io.
   public long getTotalSpace() { throw new RuntimeException("skeleton method"); }
   public long getFreeSpace() { throw new RuntimeException("skeleton method"); }
   public long getUsableSpace() { throw new RuntimeException("skeleton method"); }
-  public static java.io.File createTempFile(java.lang.String a1, @Nullable java.lang.String a2, @Nullable java.io.File a3) throws java.io.IOException { throw new RuntimeException("skeleton method"); }
-  public static java.io.File createTempFile(java.lang.String a1, @Nullable java.lang.String a2) throws java.io.IOException { throw new RuntimeException("skeleton method"); }
+  public static java.io.File createTempFile(java.lang.String a1, @Nullable String a2, @Nullable File a3) throws java.io.IOException { throw new RuntimeException("skeleton method"); }
+  public static java.io.File createTempFile(java.lang.String a1, @Nullable String a2) throws java.io.IOException { throw new RuntimeException("skeleton method"); }
   public int compareTo(java.io.File a1) { throw new RuntimeException("skeleton method"); }
-  public boolean equals(@Nullable java.lang.Object a1) { throw new RuntimeException("skeleton method"); }
+  public boolean equals(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   public int hashCode() { throw new RuntimeException("skeleton method"); }
   public java.lang.String toString() { throw new RuntimeException("skeleton method"); }
 }
