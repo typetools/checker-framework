@@ -12,10 +12,10 @@ public final class Double extends java.lang.Number implements java.lang.Comparab
   public final static int MAX_EXPONENT = 1023;
   public final static int MIN_EXPONENT = -1022;
   public final static int SIZE = 64;
-  public final static @NonNull java.lang.Class<@NonNull Double> TYPE;
+  public final static @NonNull Class<@NonNull Double> TYPE;
   public static java.lang.String toString(double a1) { throw new RuntimeException("skeleton method"); }
   public static java.lang.String toHexString(double a1) { throw new RuntimeException("skeleton method"); }
-  public static @NonNull java.lang.Double valueOf(@NonNull java.lang.String a1) throws java.lang.NumberFormatException { throw new RuntimeException("skeleton method"); }
+  public static @NonNull Double valueOf(@NonNull String a1) throws java.lang.NumberFormatException { throw new RuntimeException("skeleton method"); }
   public static java.lang.Double valueOf(double a1) { throw new RuntimeException("skeleton method"); }
   public static double parseDouble(java.lang.String a1) throws java.lang.NumberFormatException { throw new RuntimeException("skeleton method"); }
   public static boolean isNaN(double a1) { throw new RuntimeException("skeleton method"); }

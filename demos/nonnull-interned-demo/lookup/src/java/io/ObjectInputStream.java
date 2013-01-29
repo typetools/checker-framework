@@ -17,7 +17,7 @@ public class ObjectInputStream extends InputStream implements ObjectInput, Objec
     public abstract double get(java.lang.String a1, double a2) throws java.io.IOException;
     public abstract Object get(java.lang.String a1, java.lang.Object a2) throws java.io.IOException;
   }
-  public ObjectInputStream(@NonNull java.io.InputStream a1) throws java.io.IOException { throw new RuntimeException("skeleton method"); }
+  public ObjectInputStream(@NonNull InputStream a1) throws java.io.IOException { throw new RuntimeException("skeleton method"); }
   public final  @NonNull Object readObject() throws java.io.IOException, java.lang.ClassNotFoundException { throw new RuntimeException("skeleton method"); }
   public  Object readUnshared() throws java.io.IOException, java.lang.ClassNotFoundException { throw new RuntimeException("skeleton method"); }
   public void defaultReadObject() throws java.io.IOException, java.lang.ClassNotFoundException { throw new RuntimeException("skeleton method"); }

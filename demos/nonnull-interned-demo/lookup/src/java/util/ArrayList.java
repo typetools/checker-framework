@@ -28,6 +28,6 @@ public class ArrayList<E> extends java.util.AbstractList<E> implements java.util
   public boolean retainAll(java.util.Collection<?> a1) { throw new RuntimeException("skeleton method"); }
   public java.util.ListIterator<E> listIterator(int a1) { throw new RuntimeException("skeleton method"); }
   public java.util.ListIterator<E> listIterator() { throw new RuntimeException("skeleton method"); }
-  public @NonNull java.util.Iterator<E> iterator() { throw new RuntimeException("skeleton method"); }
+  public @NonNull Iterator<E> iterator() { throw new RuntimeException("skeleton method"); }
   public java.util.List<E> subList(int a1, int a2) { throw new RuntimeException("skeleton method"); }
 }
