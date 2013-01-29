@@ -9,6 +9,10 @@ Adapt to underlying jsr308-langtools changes.
   Most visible change is syntax for fully-qualified types, from
   @A java.lang.Object to java.lang.@A Object.
 
+Documentation:
+  A new tutorial is available at
+    http://types.cs.washington.edu/checker-framework/tutorial/
+
 ----------------------------------------------------------------------
 Version 1.5.0, 14 Jan 2013
 
