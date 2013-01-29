@@ -1233,7 +1233,7 @@ public class AnnotatedTypes {
         try {
             for (int i = 0; i < trees.size(); ++i) {
                 AnnotatedTypeMirror param = paramTypes.get(i);
-                atypeFactory.getVisitorState().setAssignmentContext(Pair.of((Tree) null, param));
+                atypeFactory.getVisitorState().setAssignmentContext(Pair.<Tree, AnnotatedTypeMirror>of((Tree) null, param));
                 ExpressionTree arg = trees.get(i);
                 types.add(atypeFactory.getAnnotatedType(arg));
             }

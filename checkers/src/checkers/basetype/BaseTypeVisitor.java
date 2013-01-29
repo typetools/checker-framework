@@ -1012,7 +1012,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
                         + meth;
                 AnnotatedTypeMirror newctx = ((AnnotatedExecutableType) meth)
                         .getReturnType();
-                visitorState.setAssignmentContext(Pair.of((Tree) null, newctx));
+                visitorState.setAssignmentContext(Pair.<Tree, AnnotatedTypeMirror>of((Tree) null, newctx));
             }
 
             try {
@@ -1600,7 +1600,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
         Pair<Tree, AnnotatedTypeMirror> preAssCtxt = visitorState.getAssignmentContext();
         try {
             for (int i = 0; i < requiredArgs.size(); ++i) {
-                visitorState.setAssignmentContext(Pair.of((Tree) null, (AnnotatedTypeMirror) requiredArgs.get(i)));
+                visitorState.setAssignmentContext(Pair.<Tree, AnnotatedTypeMirror>of((Tree) null, (AnnotatedTypeMirror) requiredArgs.get(i)));
                 commonAssignmentCheck(requiredArgs.get(i), passedArgs.get(i),
                         "argument.type.incompatible", false);
                 // Also descend into the argument within the correct assignment
