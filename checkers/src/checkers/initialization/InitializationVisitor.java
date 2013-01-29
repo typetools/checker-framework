@@ -40,17 +40,22 @@ import dataflow.analysis.FlowExpressions.FieldAccess;
 import dataflow.analysis.FlowExpressions.Receiver;
 import dataflow.analysis.FlowExpressions.ThisReference;
 
+/*>>>
+import checkers.compilermsgs.quals.CompilerMessageKey;
+import checkers.nonnull.quals.Nullable;
+*/
+
 // TODO/later: documentation
 public class InitializationVisitor<Checker extends InitializationChecker, Value extends CFAbstractValue<Value>, Store extends InitializationStore<Value, Store>>
         extends BaseTypeVisitor<Checker> {
 
     // Error message keys
-    private static final/* @CompilerMessageKey */String COMMITMENT_INVALID_CAST = "commitment.invalid.cast";
-    private static final/* @CompilerMessageKey */String COMMITMENT_FIELDS_UNINITIALIZED = "commitment.fields.uninitialized";
-    private static final/* @CompilerMessageKey */String COMMITMENT_INVALID_FIELD_ANNOTATION = "commitment.invalid.field.annotation";
-    private static final/* @CompilerMessageKey */String COMMITMENT_INVALID_CONSTRUCTOR_RETRUN_TYPE = "commitment.invalid.constructor.return.type";
-    private static final/* @CompilerMessageKey */String COMMITMENT_INVALID_FIELD_WRITE_UNCLASSIFIED = "commitment.invalid.field.write.unclassified";
-    private static final/* @CompilerMessageKey */String COMMITMENT_INVALID_FIELD_WRITE_COMMITTED = "commitment.invalid.field.write.committed";
+    private static final /*@CompilerMessageKey*/ String COMMITMENT_INVALID_CAST = "commitment.invalid.cast";
+    private static final /*@CompilerMessageKey*/ String COMMITMENT_FIELDS_UNINITIALIZED = "commitment.fields.uninitialized";
+    private static final /*@CompilerMessageKey*/ String COMMITMENT_INVALID_FIELD_ANNOTATION = "commitment.invalid.field.annotation";
+    private static final /*@CompilerMessageKey*/ String COMMITMENT_INVALID_CONSTRUCTOR_RETRUN_TYPE = "commitment.invalid.constructor.return.type";
+    private static final /*@CompilerMessageKey*/ String COMMITMENT_INVALID_FIELD_WRITE_UNCLASSIFIED = "commitment.invalid.field.write.unclassified";
+    private static final /*@CompilerMessageKey*/ String COMMITMENT_INVALID_FIELD_WRITE_COMMITTED = "commitment.invalid.field.write.committed";
 
     /** A better typed version of the ATF. */
     @SuppressWarnings("unchecked")
@@ -71,7 +76,7 @@ public class InitializationVisitor<Checker extends InitializationChecker, Value 
 
     @Override
     protected void commonAssignmentCheck(Tree varTree, ExpressionTree valueExp,
-    /* @CompilerMessageKey */String errorKey) {
+            /*@CompilerMessageKey*/ String errorKey) {
         // field write of the form x.f = y
         if (TreeUtils.isFieldAccess(varTree)) {
             // cast is safe: a field access can only be an IdentifierTree or
@@ -83,7 +88,7 @@ public class InitializationVisitor<Checker extends InitializationChecker, Value 
             AnnotatedTypeMirror yType = factory.getAnnotatedType(y);
             if (!ElementUtils.isStatic(el)
                     && !(checker.isCommitted(yType) || checker.isFree(xType))) {
-                /* @CompilerMessageKey */String err;
+                /*@CompilerMessageKey*/ String err;
                 if (checker.isCommitted(xType)) {
                     err = COMMITMENT_INVALID_FIELD_WRITE_COMMITTED;
                 } else {
