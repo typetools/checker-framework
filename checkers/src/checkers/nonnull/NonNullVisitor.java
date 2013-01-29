@@ -191,7 +191,7 @@ public class NonNullVisitor
 
     @Override
     protected void commonAssignmentCheck(Tree varTree, ExpressionTree valueExp,
-            String errorKey) {
+            /*@CompilerMessageKey*/ String errorKey) {
 
         // allow MonotonicNonNull to be initialized to null at declaration
         if (varTree.getKind() == Tree.Kind.VARIABLE) {
