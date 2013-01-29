@@ -1815,7 +1815,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends
      * same expression in {@code set}, with the same (or a stronger) annotation.
      */
     private void checkContractsSubset(Set<Pair<Receiver, AnnotationMirror>> mustSubset,
-            Set<Pair<Receiver, AnnotationMirror>> set, /* @CompilerMessageKey */String messageKey) {
+            Set<Pair<Receiver, AnnotationMirror>> set, /*@CompilerMessageKey*/ String messageKey) {
         for (Pair<Receiver, AnnotationMirror> a : mustSubset) {
             boolean found = false;
 
