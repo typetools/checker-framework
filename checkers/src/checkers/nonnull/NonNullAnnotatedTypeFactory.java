@@ -332,6 +332,13 @@ public class NonNullAnnotatedTypeFactory
             type.replaceAnnotation(NONNULL);
             return null; // super.visitUnary(node, type);
         }
+
+        // The result of newly allocated structures is always non-null.
+        @Override
+        public Void visitNewClass(NewClassTree node, AnnotatedTypeMirror type) {
+            type.replaceAnnotation(NONNULL);
+            return super.visitNewClass(node, type);
+        }
     }
 
     protected class NonNullTypeAnnotator
