@@ -213,9 +213,9 @@ public class CheckersMojo extends AbstractMojo {
         final String executablePath = PathUtils.getExecutablePath(executable, toolchainManager, session);
         cl.setExecutable(executablePath);
 
-        final String classpath  = StringUtils.join(classpathElements.iterator(), File.pathSeparator) +
-                //TODO: SEEMS THAT WHEN WE ARE USING @ ARGS THE CLASSPATH FROM THE JAR IS OVERRIDDEN - FIX THIS
-                File.pathSeparator + checkersJar.getAbsolutePath();
+        //TODO: SEEMS THAT WHEN WE ARE USING @ ARGS THE CLASSPATH FROM THE JAR IS OVERRIDDEN - FIX THIS
+        final String classpath  = checkersJar.getAbsolutePath() + File.pathSeparator
+        		+ StringUtils.join(classpathElements.iterator(), File.pathSeparator);
 
         File srcFofn = null;
         File cpFofn = null;
