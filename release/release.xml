@@ -147,9 +147,19 @@
             <arg line="manual.pdf manual.html"/>
         </exec>
     </target>
+    
+    <target name="tutorial" depends="update-versions"
+        description="makes the Checker Framework Tutorial">
+        
+        <exec executable="make" failonerror="true"
+            dir="${checkers.tutorial}" taskname="make">
+            <arg line="clean all"/>
+
+        </exec>
+    </target>
 
     <!-- By default, puts the copy in a directory like checker-framework/tmp/1.1.1/ -->
-    <target name="local" depends="-init-properties,-prep-checkdev,tools,manual"
+    <target name="local" depends="-init-properties,-prep-checkdev,tools,manual,tutorial"
       description="creates a local copy of the release directory">
 
         <copy file="${checkers.manual}/manual.html"
@@ -160,6 +170,7 @@
 
         <copy file="${checkers.manual}/${checkerswebpage}"
 	      tofile="${tmp.ver.dir}/${checkerswebpage}" />
+        
 
         <copy todir="${tmp.ver.dir}" flatten="true">
             <fileset dir="${checkers.manual}">
@@ -167,6 +178,7 @@
                 <include name="*.gif"/>
             </fileset>
         </copy>
+        <copy todir="${tmp.ver.dir}" dir="${checkers.tutorial}" />
 
         <copy todir="${tmp.ver.dir}" file="${jsr308doc}/README-jsr308.html" />
         <copy todir="${tmp.ver.dir}" file="${jsr308doc}/Makefile-jsr308-install" />
