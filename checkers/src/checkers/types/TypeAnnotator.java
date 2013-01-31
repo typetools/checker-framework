@@ -9,14 +9,15 @@ import javax.lang.model.element.*;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 
+import javacutils.AnnotationUtils;
+import javacutils.ErrorReporter;
+import javacutils.TypesUtils;
+
 import checkers.basetype.BaseTypeChecker;
 import checkers.quals.ImplicitFor;
 import checkers.quals.TypeQualifiers;
-import checkers.source.SourceChecker;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.visitors.AnnotatedTypeScanner;
-import checkers.util.AnnotationUtils;
-import checkers.util.TypesUtils;
 
 /**
  * Adds annotations to a type based on the contents of a type. By default, this
@@ -90,26 +91,26 @@ public class TypeAnnotator extends AnnotatedTypeScanner<Void, ElementKind> {
     }
 
     public void addTypeKind(TypeKind typeKind, AnnotationMirror theQual) {
-        boolean res = AnnotationUtils.updateMappingToMutableSet(qualHierarchy, typeKinds, typeKind, theQual);
+        boolean res = qualHierarchy.updateMappingToMutableSet(typeKinds, typeKind, theQual);
         if (!res) {
-            SourceChecker.errorAbort("TypeAnnotator: invalid update of typeKinds " +
+            ErrorReporter.errorAbort("TypeAnnotator: invalid update of typeKinds " +
                     typeKinds + " at " + typeKind + " with " + theQual);
         }
     }
 
     public void addTypeClass(Class<? extends AnnotatedTypeMirror> typeClass, AnnotationMirror theQual) {
-        boolean res = AnnotationUtils.updateMappingToMutableSet(qualHierarchy, typeClasses, typeClass, theQual);
+        boolean res = qualHierarchy.updateMappingToMutableSet(typeClasses, typeClass, theQual);
         if (!res) {
-            SourceChecker.errorAbort("TypeAnnotator: invalid update of typeClasses " +
+            ErrorReporter.errorAbort("TypeAnnotator: invalid update of typeClasses " +
                     typeClasses + " at " + typeClass + " with " + theQual);
         }
     }
 
     public void addTypeName(Class<?> typeName, AnnotationMirror theQual) {
         String typeNameString = typeName.getCanonicalName().intern();
-        boolean res = AnnotationUtils.updateMappingToMutableSet(qualHierarchy, typeNames, typeNameString, theQual);
+        boolean res = qualHierarchy.updateMappingToMutableSet(typeNames, typeNameString, theQual);
         if (!res) {
-            SourceChecker.errorAbort("TypeAnnotator: invalid update of typeNames " +
+            ErrorReporter.errorAbort("TypeAnnotator: invalid update of typeNames " +
                     typeNames + " at " + typeName + " with " + theQual);
         }
     }

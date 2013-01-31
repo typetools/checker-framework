@@ -88,6 +88,13 @@ this:
  * change checkers/build.xml to run those tests
 
 
+Disabling a test case
+=====================
+
+Write @skip-test before a method or class -- either alone, or in a JavaDoc
+comment, or in a java comment.
+
+
 Writing tests for new checkers
 ==============================
 

@@ -27,10 +27,19 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
+import javacutils.AnnotationUtils;
+import javacutils.ElementUtils;
+import javacutils.ErrorReporter;
+import javacutils.InternalUtils;
+import javacutils.Pair;
+import javacutils.TreeUtils;
+import javacutils.TypesUtils;
+
+import checkers.quals.PolyAll;
 import checkers.quals.TypeQualifier;
-import checkers.source.SourceChecker;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
+import checkers.types.QualifierHierarchy;
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -267,7 +276,7 @@ public class AnnotatedTypes {
     }
 
     /**
-     * @see #asMemberOf(AnnotatedTypeMirror, Element)
+     * @see #asMemberOf(Types, AnnotatedTypeFactory, AnnotatedTypeMirror, Element)
      */
     public static AnnotatedExecutableType asMemberOf(Types types, AnnotatedTypeFactory atypeFactory, AnnotatedTypeMirror t,
             ExecutableElement elem) {
@@ -449,7 +458,7 @@ public class AnnotatedTypes {
                     ((AnnotatedTypeVariable) iterableType).getEffectiveUpperBound());
 
         if (iterableType.getKind() != TypeKind.DECLARED) {
-            SourceChecker.errorAbort("AnnotatedTypes.getIteratedType: not iterable type: " + iterableType);
+            ErrorReporter.errorAbort("AnnotatedTypes.getIteratedType: not iterable type: " + iterableType);
             return null; // dead code
         }
 
@@ -457,7 +466,7 @@ public class AnnotatedTypes {
         AnnotatedDeclaredType iterableElmType = atypeFactory.getAnnotatedType(iterableElement);
         AnnotatedDeclaredType dt = (AnnotatedDeclaredType) asSuper(processingEnv.getTypeUtils(), atypeFactory, iterableType, iterableElmType);
         if (dt == null) {
-            SourceChecker.errorAbort("AnnotatedTypes.getIteratedType: not iterable type: " + iterableType);
+            ErrorReporter.errorAbort("AnnotatedTypes.getIteratedType: not iterable type: " + iterableType);
             return null; // dead code
         } else if (dt.getTypeArguments().isEmpty()) {
             TypeElement e = processingEnv.getElementUtils().getTypeElement("java.lang.Object");
@@ -589,7 +598,7 @@ public class AnnotatedTypes {
             elt = (ExecutableElement) TreeUtils.elementFromUse(expr);
         } else {
             // This case should never happen.
-            SourceChecker.errorAbort("AnnotatedTypes.findTypeArguments: unexpected tree: " + expr);
+            ErrorReporter.errorAbort("AnnotatedTypes.findTypeArguments: unexpected tree: " + expr);
             elt = null;
         }
 
@@ -604,7 +613,7 @@ public class AnnotatedTypes {
             targs = ((NewClassTree) expr).getTypeArguments();
         } else {
             // This case should never happen.
-            SourceChecker.errorAbort("AnnotatedTypes.findTypeArguments: unexpected tree: " + expr);
+            ErrorReporter.errorAbort("AnnotatedTypes.findTypeArguments: unexpected tree: " + expr);
             targs = null;
         }
 
@@ -631,7 +640,7 @@ public class AnnotatedTypes {
      *
      * @param expr the method or constructor invocation tree; the passed argument
      *   has to be a subtype of MethodInvocationTree or NewClassTree.
-     * @param elt the element corresponding to the tree. 
+     * @param elt the element corresponding to the tree.
      * @return the mapping of the type variables to type arguments for
      *   this method or constructor invocation.
      */
@@ -964,10 +973,10 @@ public class AnnotatedTypes {
             MethodTree method = TreeUtils.enclosingMethod(path);
             return (atypeFactory.getAnnotatedType(method)).getReturnType();
         } else if (assignmentContext instanceof VariableTree) {
-            return atypeFactory.getAnnotatedType((VariableTree)assignmentContext);
+            return atypeFactory.getAnnotatedType(assignmentContext);
         }
 
-        SourceChecker.errorAbort("AnnotatedTypes.assignedTo: shouldn't be here!");
+        ErrorReporter.errorAbort("AnnotatedTypes.assignedTo: shouldn't be here!");
         return null; // dead code
     }
 
@@ -1012,7 +1021,7 @@ public class AnnotatedTypes {
             // TODO: This code needs some more serious thought.
             if (lub.getKind() == TypeKind.WILDCARD) {
                 subtypes.add(deepCopy(lub));
-            } else { 
+            } else {
                 for (AnnotatedTypeMirror type : types) {
                     if (type == null) {
                         continue;
@@ -1215,12 +1224,12 @@ public class AnnotatedTypes {
         assert paramTypes.size() == trees.size() : "AnnotatedTypes.getAnnotatedTypes: size mismatch! " +
             "Parameter types: " + paramTypes + " Arguments: " + trees;
         List<AnnotatedTypeMirror> types = new ArrayList<AnnotatedTypeMirror>();
-        AnnotatedTypeMirror preAssCtxt = atypeFactory.getVisitorState().getAssignmentContext();
+        Pair<Tree, AnnotatedTypeMirror> preAssCtxt = atypeFactory.getVisitorState().getAssignmentContext();
 
         try {
             for (int i = 0; i < trees.size(); ++i) {
                 AnnotatedTypeMirror param = paramTypes.get(i);
-                atypeFactory.getVisitorState().setAssignmentContext(param);
+                atypeFactory.getVisitorState().setAssignmentContext(Pair.<Tree, AnnotatedTypeMirror>of((Tree) null, param));
                 ExpressionTree arg = trees.get(i);
                 types.add(atypeFactory.getAnnotatedType(arg));
             }
@@ -1339,6 +1348,119 @@ public class AnnotatedTypes {
             if(isTypeAnnotation(am)) return true;
         }
         return false;
+    }
+
+    /**
+     * Returns true if the given {@link AnnotatedTypeMirror} passed a set of
+     * well-formedness checks. The method will never return false for valid
+     * types, but might not catch all invalid types.
+     *
+     * <p>
+     * Currently, the following is checked:
+     * <ol>
+     * <li>There should not be multiple annotations from the same hierarchy.
+     * <li>There should not be more annotations than the width of the qualifier
+     * hierarchy.
+     * <li>If the type is not a type variable, then the number of annotations
+     * should be the same as the width of the qualifier hierarchy.
+     * <li>These properties should also hold recursively for component types of
+     * arrays, as wells as bounds of type variables and wildcards.
+     * </ol>
+     */
+    public static boolean isValidType(QualifierHierarchy qualifierHierarchy,
+            AnnotatedTypeMirror type) {
+        return isValidType(qualifierHierarchy, type,
+                Collections.<AnnotatedTypeMirror> emptySet());
+    }
+
+    private static boolean isValidType(QualifierHierarchy qualifierHierarchy,
+            AnnotatedTypeMirror type, Set<AnnotatedTypeMirror> v) {
+        if (type == null) {
+            return false;
+        }
+
+        Set<AnnotatedTypeMirror> visited = new HashSet<>(v);
+        if (visited.contains(type)) {
+            return true; // prevent infinite recursion
+        }
+        visited.add(type);
+
+        // multiple annotations from the same hierarchy
+        Set<AnnotationMirror> annotations = type.getAnnotations();
+        Set<AnnotationMirror> seenTops = AnnotationUtils.createAnnotationSet();
+        int n = 0;
+        for (AnnotationMirror anno : annotations) {
+            if (QualifierPolymorphism.isPolyAll(anno)) {
+                // ignore PolyAll when counting annotations
+                continue;
+            }
+            n++;
+            AnnotationMirror top = qualifierHierarchy.getTopAnnotation(anno);
+            if (seenTops.contains(top)) {
+                return false;
+            }
+            seenTops.add(top);
+        }
+
+        // too many annotations
+        int expectedN = qualifierHierarchy.getWidth();
+        if (n > expectedN) {
+            return false;
+        }
+
+        // treat types that have polyall like type variables
+        boolean hasPolyAll = type.hasAnnotation(PolyAll.class);
+        boolean canHaveEmptyAnnotationSet = QualifierHierarchy
+                .canHaveEmptyAnnotationSet(type) || hasPolyAll;
+
+        // wrong number of annotations
+        if (!canHaveEmptyAnnotationSet && n != expectedN) {
+            return false;
+        }
+
+        // recurse for composite types
+        if (type instanceof AnnotatedArrayType) {
+            AnnotatedArrayType at = (AnnotatedArrayType) type;
+            if (!isValidType(qualifierHierarchy, at.getComponentType(), visited)) {
+                return false;
+            }
+        } else if (type instanceof AnnotatedTypeVariable) {
+            AnnotatedTypeVariable at = (AnnotatedTypeVariable) type;
+            AnnotatedTypeMirror lowerBound = at.getLowerBound();
+            AnnotatedTypeMirror upperBound = at.getUpperBound();
+            if (lowerBound != null
+                    && !isValidType(qualifierHierarchy, lowerBound, visited)) {
+                return false;
+            }
+            if (upperBound != null
+                    && !isValidType(qualifierHierarchy, upperBound, visited)) {
+                return false;
+            }
+        } else if (type instanceof AnnotatedWildcardType) {
+            AnnotatedWildcardType at = (AnnotatedWildcardType) type;
+            AnnotatedTypeMirror extendsBound = at.getExtendsBound();
+            AnnotatedTypeMirror superBound = at.getSuperBound();
+            if (extendsBound != null
+                    && !isValidType(qualifierHierarchy, extendsBound, visited)) {
+                return false;
+            }
+            if (superBound != null
+                    && !isValidType(qualifierHierarchy, superBound, visited)) {
+                return false;
+            }
+        }
+        // TODO: the recursive checks on type arguments are currently skipped, because
+        // this breaks various tests.  it seems that checking the validity changes the
+        // annotations on some types.
+//        if (type instanceof AnnotatedDeclaredType) {
+//            AnnotatedDeclaredType at = (AnnotatedDeclaredType) type;
+//            for (AnnotatedTypeMirror typeArgument : at.getTypeArguments()) {
+//                if (!isValidValue(qualifierHierarchy, typeArgument, visited)) {
+//                    return false;
+//                }
+//            }
+//        }
+        return true;
     }
 
 }
