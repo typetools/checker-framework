@@ -19,7 +19,7 @@ public class NonNullTempTest extends ParameterizedCheckerTest {
         super(testFile, checkers.nonnull.NonNullFbcChecker.class.getName(),
                 "nonnull", "-Anomsgtext",
                 "-Alint=arrays:forbidnonnullcomponents,"
-                        + AbstractNonNullChecker.LINT_STRICTNULLCOMPARISON);
+                        + AbstractNonNullChecker.LINT_REDUNDANTNULLCOMPARISON);
     }
 
     @Parameters

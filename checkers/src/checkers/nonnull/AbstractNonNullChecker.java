@@ -31,7 +31,7 @@ public abstract class AbstractNonNullChecker extends InitializationChecker {
     public AnnotationMirror NONNULL, NULLABLE, MONOTONICNONNULL;
 
     /**
-     * Default for {@link #LINT_STRICTNULLCOMPARISON}.
+     * Default for {@link #LINT_REDUNDANTNULLCOMPARISON}.
      */
     public static final String LINT_STRICTMONOTONICNONNULLINIT = "strictMonotonicNonNullInit";
 
@@ -44,10 +44,10 @@ public abstract class AbstractNonNullChecker extends InitializationChecker {
      * Warn about redundant comparisons of expressions with {@code null}, if the
      * expressions is known to be non-null.
      */
-    public static final String LINT_STRICTNULLCOMPARISON = "strictNullComparison";
+    public static final String LINT_REDUNDANTNULLCOMPARISON = "redundantNullComparison";
 
     /**
-     * Default for {@link #LINT_STRICTNULLCOMPARISON}.
+     * Default for {@link #LINT_REDUNDANTNULLCOMPARISON}.
      */
     public static final boolean LINT_DEFAULT_STRICTNULLCOMPARISON = false;
 
