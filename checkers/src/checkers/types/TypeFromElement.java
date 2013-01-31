@@ -1,7 +1,6 @@
 package checkers.types;
 
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 
 import javax.lang.model.element.*;
@@ -23,8 +22,11 @@ import com.sun.tools.javac.code.Attribute;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
+import com.sun.tools.javac.code.TargetType;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.TypeAnnotationPosition;
+import com.sun.tools.javac.code.TypeAnnotationPosition.TypePathEntry;
+import com.sun.tools.javac.code.TypeAnnotationPosition.TypePathEntryKind;
 
 /**
  * A utility class used to extract the annotations from an element and inserts
@@ -35,6 +37,8 @@ public class TypeFromElement {
      * Whether to throw a CheckerError if an error in the elements was found.
      */
     private static final boolean strict = false;
+
+    private static final boolean debug = false;
 
     /**
      * Extracts type annotations from the element and inserts them into the
@@ -48,7 +52,9 @@ public class TypeFromElement {
      *
      */
     public static void annotate(AnnotatedTypeMirror type, Element element) {
-        // System.out.println("TypeFromElement::annotate: type: " + type + " element: " + element);
+        if (debug) {
+            System.out.println("TypeFromElement.annotate: type: " + type + " element: " + element);
+        }
         if (element == null) {
             ErrorReporter.errorAbort("TypeFromElement.annotate: element cannot be null");
         } else if (element.getKind().isField()) {
@@ -83,26 +89,27 @@ public class TypeFromElement {
     }
 
     private static void annotateTypeParam(AnnotatedTypeMirror type, Element element) {
-        // System.out.println("TypeFromElement::annotateTypeParam: type: " + type + " element: " + element);
+        if (debug) {
+            System.out.println("TypeFromElement.annotateTypeParam: type: " + type + " element: " + element);
+        }
         Element enclosing = element.getEnclosingElement();
         if (enclosing instanceof TypeElement) {
             TypeElement clsElt = (TypeElement)enclosing;
             if (clsElt.getTypeParameters().contains(element)) {
                 int param_index = clsElt.getTypeParameters().indexOf(element);
-                for (Attribute.TypeCompound typeAnno : ((ClassSymbol) clsElt).typeAnnotations) {
+                for (Attribute.TypeCompound typeAnno : ((ClassSymbol) clsElt).getTypeAnnotationMirrors()) {
                     switch (typeAnno.position.type) {
                     case CLASS_TYPE_PARAMETER:
                     case CLASS_TYPE_PARAMETER_BOUND:
-                    case CLASS_TYPE_PARAMETER_BOUND_COMPONENT:
                         if (typeAnno.position.parameter_index == param_index) {
-                            annotatePossibleBound(type, typeAnno);
+                            annotatePossibleBound(type, typeAnno,
+                                    typeAnno.position.type == TargetType.CLASS_TYPE_PARAMETER_BOUND);
                         } /*else if (strict) {
                             ErrorReporter.errorAbort("TypeFromElement.annotateTypeParam(class): " +
-                                    "invalid type paramter index " + typeAnno.position.parameter_index + " for annotation: " + typeAnno + " in class: " + clsElt);
+                                    "invalid type parameter index " + typeAnno.position.parameter_index + " for annotation: " + typeAnno + " in class: " + clsElt);
                         }*/
                         break;
                     case CLASS_EXTENDS:
-                    case CLASS_EXTENDS_COMPONENT:
                         // Valid in this location, but handled elsewhere.
                         break;
                     default: if (strict) {
@@ -121,31 +128,24 @@ public class TypeFromElement {
             ExecutableElement execElt = (ExecutableElement) enclosing;
             if (execElt.getTypeParameters().contains(element)) {
                 int param_index = execElt.getTypeParameters().indexOf(element);
-                for (Attribute.TypeCompound typeAnno : ((MethodSymbol) execElt).typeAnnotations) {
+                for (Attribute.TypeCompound typeAnno : ((MethodSymbol) execElt).getTypeAnnotationMirrors()) {
                     switch (typeAnno.position.type) {
                     case METHOD_TYPE_PARAMETER:
-                    //case METHOD_TYPE_PARAMETER_COMPONENT:
                     case METHOD_TYPE_PARAMETER_BOUND:
-                    case METHOD_TYPE_PARAMETER_BOUND_COMPONENT:
                         if (typeAnno.position.parameter_index == param_index) {
-                            annotatePossibleBound(type, typeAnno);
+                            annotatePossibleBound(type, typeAnno,
+                                    typeAnno.position.type == TargetType.METHOD_TYPE_PARAMETER_BOUND);
                         }/* else if (strict) {
                             ErrorReporter.errorAbort("TypeFromElement.annotate: " +
                                     "invalid method type parameter index " + typeAnno.position.parameter_index + " for annotation: " + typeAnno);
                         }*/
                         break;
                     case METHOD_RETURN:
-                    case METHOD_RETURN_COMPONENT:
-                    case METHOD_PARAMETER:
-                    case METHOD_PARAMETER_COMPONENT:
+                    case METHOD_FORMAL_PARAMETER:
                     case METHOD_RECEIVER:
-                    case METHOD_RECEIVER_COMPONENT:
                     case LOCAL_VARIABLE:
-                    case LOCAL_VARIABLE_COMPONENT:
                     case NEW:
-                    case NEW_COMPONENT:
-                    case TYPECAST:
-                    case TYPECAST_COMPONENT:
+                    case CAST:
                         // Valid in this location, but handled elsewhere.
                         break;
                     default: if (strict) {
@@ -172,28 +172,21 @@ public class TypeFromElement {
             ExecutableElement execElt = (ExecutableElement) enclosing;
             if (execElt.getParameters().contains(element)) {
                 int param_index = execElt.getParameters().indexOf(element);
-                for (Attribute.TypeCompound typeAnno : ((MethodSymbol) execElt).typeAnnotations) {
+                for (Attribute.TypeCompound typeAnno : ((MethodSymbol) execElt).getTypeAnnotationMirrors()) {
                     switch (typeAnno.position.type) { 
-                    case METHOD_PARAMETER:
-                    case METHOD_PARAMETER_COMPONENT:
+                    case METHOD_FORMAL_PARAMETER:
                         if (typeAnno.position.parameter_index == param_index) {
                             annotate(type, typeAnno);
                         }
                         break;
                     case METHOD_RECEIVER:
-                    case METHOD_RECEIVER_COMPONENT:
                     case METHOD_RETURN:
-                    case METHOD_RETURN_COMPONENT:
                     case THROWS:
                     case METHOD_TYPE_PARAMETER:
                     case METHOD_TYPE_PARAMETER_BOUND:
-                    case METHOD_TYPE_PARAMETER_BOUND_COMPONENT:
                     case LOCAL_VARIABLE:
-                    case LOCAL_VARIABLE_COMPONENT:
                     case NEW:
-                    case NEW_COMPONENT:
-                    case TYPECAST:
-                    case TYPECAST_COMPONENT:
+                    case CAST:
                         // Valid in this location, but handled elsewhere.
                         break;
                     default: if (strict) {
@@ -207,26 +200,19 @@ public class TypeFromElement {
             } else if (element.getSimpleName().contentEquals("this")) {
                 // TODO: Should the ExecutableElement have a way to get the receiver element?
                 // Is there such a thing as the receiver element?
-                for (Attribute.TypeCompound typeAnno : ((MethodSymbol) execElt).typeAnnotations) {
+                for (Attribute.TypeCompound typeAnno : ((MethodSymbol) execElt).getTypeAnnotationMirrors()) {
                     switch (typeAnno.position.type) { 
                     case METHOD_RECEIVER:
-                    case METHOD_RECEIVER_COMPONENT:
                         annotate(type, typeAnno);
                         break;
-                    case METHOD_PARAMETER:
-                    case METHOD_PARAMETER_COMPONENT:
+                    case METHOD_FORMAL_PARAMETER:
                     case METHOD_RETURN:
-                    case METHOD_RETURN_COMPONENT:
                     case THROWS:
                     case METHOD_TYPE_PARAMETER:
                     case METHOD_TYPE_PARAMETER_BOUND:
-                    case METHOD_TYPE_PARAMETER_BOUND_COMPONENT:
                     case LOCAL_VARIABLE:
-                    case LOCAL_VARIABLE_COMPONENT:
                     case NEW:
-                    case NEW_COMPONENT:
-                    case TYPECAST:
-                    case TYPECAST_COMPONENT:
+                    case CAST:
                         // Valid in this location, but handled elsewhere.
                         break;
                     default: if (strict) {
@@ -264,17 +250,14 @@ public class TypeFromElement {
         VarSymbol symbol = (VarSymbol) element;
         addAnnotationsToElt(type, symbol.getAnnotationMirrors());
 
-        for (Attribute.TypeCompound anno : symbol.typeAnnotations) {
+        for (Attribute.TypeCompound anno : symbol.getTypeAnnotationMirrors()) {
             TypeAnnotationPosition pos = anno.position;
             switch (pos.type) {
             case FIELD:
-            case FIELD_COMPONENT:
                 annotate(type, anno);
                 break;
             case NEW:
-            case NEW_COMPONENT:
-            case TYPECAST:
-            case TYPECAST_COMPONENT:
+            case CAST:
                 // Valid in this location, but handled elsewhere.
                 break;
             default: if (strict) {
@@ -306,18 +289,15 @@ public class TypeFromElement {
 
         VarSymbol symbol = (VarSymbol) element;
 
-        for (Attribute.TypeCompound anno : symbol.typeAnnotations) {
+        for (Attribute.TypeCompound anno : symbol.getTypeAnnotationMirrors()) {
 
             TypeAnnotationPosition pos = anno.position;
             switch (pos.type) {
             case LOCAL_VARIABLE:
-            case LOCAL_VARIABLE_COMPONENT:
                 annotate(type, anno);
                 break;
             case NEW:
-            case NEW_COMPONENT:
-            case TYPECAST:
-            case TYPECAST_COMPONENT:
+            case CAST:
                 // Valid in this location, but handled elsewhere.
                 break;
             default: if (strict) {
@@ -347,7 +327,7 @@ public class TypeFromElement {
 
         List<AnnotatedTypeMirror> typeParameters = type.getTypeArguments();
 
-        for (Attribute.TypeCompound anno : symbol.typeAnnotations) {
+        for (Attribute.TypeCompound anno : symbol.getTypeAnnotationMirrors()) {
             TypeAnnotationPosition pos = anno.position;
             switch(pos.type) {
             case CLASS_TYPE_PARAMETER:
@@ -369,7 +349,6 @@ public class TypeFromElement {
                 }
                 break;
             case CLASS_TYPE_PARAMETER_BOUND:
-            case CLASS_TYPE_PARAMETER_BOUND_COMPONENT:
                 if (pos.parameter_index >= 0 && pos.parameter_index < typeParameters.size()) {
                     List<AnnotatedTypeMirror> bounds = getBounds(typeParameters.get(pos.parameter_index));
                     int boundIndex = pos.bound_index;
@@ -392,13 +371,9 @@ public class TypeFromElement {
                 }
                 break;
             case CLASS_EXTENDS:
-            case CLASS_EXTENDS_COMPONENT:
             case LOCAL_VARIABLE: // ? TODO: check why those appear on a type element
-            case LOCAL_VARIABLE_COMPONENT: // ?
             case NEW: // ?
-            case NEW_COMPONENT: // ?
-            case TYPECAST: // ?
-            case TYPECAST_COMPONENT: // ?
+            case CAST: // ?
                 // Valid in this location, but handled elsewhere.
                 break;
             default: if (strict) {
@@ -418,11 +393,10 @@ public class TypeFromElement {
 
         AnnotatedDeclaredType superClassType = hasSuperClass ? supertypes.get(0) : null;
         List<AnnotatedDeclaredType> superInterfaces = hasSuperClass ? tail(supertypes) : supertypes;
-        for (Attribute.TypeCompound anno : symbol.typeAnnotations) {
+        for (Attribute.TypeCompound anno : symbol.getTypeAnnotationMirrors()) {
             TypeAnnotationPosition pos = anno.position;
             switch(pos.type) {
             case CLASS_EXTENDS:
-            case CLASS_EXTENDS_COMPONENT:
                 if (pos.type_index == -1 && superClassType != null) {
                     annotate(superClassType, anno);
                 } else if (pos.type_index >= 0 && pos.type_index < superInterfaces.size()) {
@@ -436,7 +410,6 @@ public class TypeFromElement {
                 break;
             case CLASS_TYPE_PARAMETER:
             case CLASS_TYPE_PARAMETER_BOUND:
-            case CLASS_TYPE_PARAMETER_BOUND_COMPONENT:
                 // Valid in this location, but handled elsewhere.
                 break;
             default: if (strict) {
@@ -459,6 +432,7 @@ public class TypeFromElement {
      * @param element the element of a method
      */
     private static void annotateExec(AnnotatedExecutableType type, ExecutableElement element) {
+        // System.out.println("AnnotateExec: " + element);
         MethodSymbol symbol = (MethodSymbol) element;
 
         // Add annotations on the return type
@@ -473,22 +447,19 @@ public class TypeFromElement {
         // Used in multiple cases below
         final List<AnnotatedTypeVariable> typeParams = type.getTypeVariables();
 
-        for (Attribute.TypeCompound typeAnno : symbol.typeAnnotations) {
+        for (Attribute.TypeCompound typeAnno : symbol.getTypeAnnotationMirrors()) {
             final TypeAnnotationPosition pos = typeAnno.position;
 
             switch (pos.type) {
             case METHOD_RECEIVER:
-            case METHOD_RECEIVER_COMPONENT:
                 annotate(type.getReceiverType(), typeAnno);
                 break;
 
             case METHOD_RETURN:
-            case METHOD_RETURN_COMPONENT:
                 annotate(type.getReturnType(), typeAnno);
                 break;
 
-            case METHOD_PARAMETER:
-            case METHOD_PARAMETER_COMPONENT:
+            case METHOD_FORMAL_PARAMETER:
                 if (pos.parameter_index >= 0 && pos.parameter_index < params.size()) {
                     annotate(params.get(pos.parameter_index), typeAnno);
                 } else if (strict) {
@@ -500,7 +471,6 @@ public class TypeFromElement {
                 break;
 
             case THROWS:
-            //case THROWS_COMPONENT:
                 final List<AnnotatedTypeMirror> thrown = type.getThrownTypes();
                 if (pos.type_index >= 0 && pos.type_index < thrown.size()) {
                     annotate(thrown.get(pos.type_index), typeAnno);
@@ -513,7 +483,6 @@ public class TypeFromElement {
                 break;
 
             case METHOD_TYPE_PARAMETER:
-            //case METHOD_TYPE_PARAMETER_COMPONENT:
                 if (pos.parameter_index >= 0 && pos.parameter_index < typeParams.size()) {
                     annotate(typeParams.get(pos.parameter_index), typeAnno);
                 } else if (strict) {
@@ -525,7 +494,6 @@ public class TypeFromElement {
                 break;
 
             case METHOD_TYPE_PARAMETER_BOUND:
-            case METHOD_TYPE_PARAMETER_BOUND_COMPONENT:
                 if (pos.parameter_index >= 0 && pos.parameter_index < typeParams.size()) {
                     List<AnnotatedTypeMirror> bounds = getBounds(typeParams.get(pos.parameter_index));
                     int boundIndex = pos.bound_index;
@@ -551,11 +519,8 @@ public class TypeFromElement {
                 }
                 break;
             case LOCAL_VARIABLE:
-            case LOCAL_VARIABLE_COMPONENT:
             case NEW:
-            case NEW_COMPONENT:
-            case TYPECAST:
-            case TYPECAST_COMPONENT:
+            case CAST:
                 // Valid in this location, but handled elsewhere.
                 break;
             default: if (strict) {
@@ -576,10 +541,10 @@ public class TypeFromElement {
 
     private static void annotate(AnnotatedTypeMirror type, Attribute.TypeCompound anno) {
         TypeAnnotationPosition pos = anno.position;
-        if (!pos.type.hasLocation()) {
+        if (pos.location.isEmpty()) {
             // This check prevents that annotations on the declaration of
             // the type variable are also added to the type variable use.
-            if (type.getKind()==TypeKind.TYPEVAR) {
+            if (type.getKind() == TypeKind.TYPEVAR) {
                 type.removeAnnotationInHierarchy(anno);
             }
             type.addAnnotation(anno);
@@ -588,8 +553,9 @@ public class TypeFromElement {
         }
     }
 
-    private static void annotatePossibleBound(AnnotatedTypeMirror type, Attribute.TypeCompound anno) {
-        if (!anno.position.type.hasBound()) {
+    private static void annotatePossibleBound(AnnotatedTypeMirror type, Attribute.TypeCompound anno,
+            boolean onBound) {
+        if (!onBound) {
             annotate(type, anno);
         } else {
             if (type.getKind() != TypeKind.TYPEVAR
@@ -615,13 +581,18 @@ public class TypeFromElement {
         }
     }
 
-    private static void annotate(AnnotatedTypeMirror type, List<Integer> location, List<? extends AnnotationMirror> annotations) {
-        // System.out.printf("TypeFromElement.annotate: type: %s, location: %s, annos: %s%n", type, location, annotations);
+    private static void annotate(AnnotatedTypeMirror type, List<TypePathEntry> location, List<? extends AnnotationMirror> annotations) {
+        if (debug) {
+            System.out.printf("TypeFromElement.annotate: type: %s, location: %s, annos: %s%n", type, location, annotations);
+        }
         AnnotatedTypeMirror inner = getLocationTypeATM(type, location);
         inner.addAnnotations(annotations);
     }
 
-    private static AnnotatedTypeMirror getLocationTypeATM(AnnotatedTypeMirror type, List<Integer> location) { 
+    private static AnnotatedTypeMirror getLocationTypeATM(AnnotatedTypeMirror type, List<TypePathEntry> location) {
+        if (debug) {
+            System.out.println("getLocationTypeATM type: " + type + " location: " + location);
+        }
         if (location.isEmpty()) {
             return type;
         } else if (type.getKind() == TypeKind.DECLARED) {
@@ -637,13 +608,48 @@ public class TypeFromElement {
         }
     }
 
-    private static AnnotatedTypeMirror getLocationTypeADT(AnnotatedDeclaredType type,  List<Integer> location) {
+    private static AnnotatedTypeMirror getLocationTypeADT(AnnotatedDeclaredType type,  List<TypePathEntry> location) {
+        if (debug) {
+            System.out.println("getLocationTypeADT type: " + type + " location: " + location);
+        }
         if (location.isEmpty()) {
+            // TODO: should this be the most enclosing, left most type?
             return type;
-        } else if (location.get(0) < type.getTypeArguments().size()) {
-            return getLocationTypeATM(type.getTypeArguments().get(location.get(0)), tail(location));
+        } else if (location.get(0).tag.equals(TypePathEntryKind.TYPE_ARGUMENT) &&
+                location.get(0).arg < type.getTypeArguments().size()) {
+            return getLocationTypeATM(type.getTypeArguments().get(location.get(0).arg), tail(location));
+        } else if (location.get(0).tag.equals(TypePathEntryKind.INNER_TYPE)) {
+            // TODO: annotations on enclosing classes (e.g. @A Map.Entry<K, V>) not tested yet
+            int totalEncl = countEnclosing(type);
+            int totalInner = countInner(location);
+            if (totalInner > totalEncl) {
+                if (strict) {
+                    System.out.println("TypeFromElement.getLocationTypeADT: too many INNER_TYPE tags!\n" +
+                            "    Found location: " + location + " for type: " + type);
+                } return type;
+            } else if (totalInner == totalEncl) {
+                List<TypePathEntry> loc = location;
+                for (int i = 0; i < totalEncl; ++i) {
+                    loc = tail(loc);
+                }
+                return getLocationTypeATM(type, loc);
+            } else {
+                AnnotatedDeclaredType toret = type;
+                List<TypePathEntry> loc = location;
+                for (int i = 0; i < (totalEncl-totalInner); ++i) {
+                    if (toret.getEnclosingType() != null) {
+                        toret = toret.getEnclosingType();
+                        loc = tail(loc);
+                    } else {
+                        if (strict) {
+                            System.out.println("TypeFromElement.getLocationTypeADT: not enough enclosing types!\n" +
+                                    "    Found location: " + location + " for type: " + type);
+                        }
+                    }
+                }
+                return getLocationTypeATM(toret, loc);
+            }
         } else {
-            // TODO: annotations on enclosing classes (e.g. @A Map.Entry<K, V>) not handled yet
             // ErrorReporter.errorAbort("TypeFromElement.getLocationTypeADT: " +
             //        "invalid locations " + location + " for type: " + type);
             if (strict) {
@@ -654,10 +660,32 @@ public class TypeFromElement {
         }
     }
 
-    private static AnnotatedTypeMirror getLocationTypeAWT(AnnotatedWildcardType type,  List<Integer> location) {
+    private static int countInner(List<TypePathEntry> location) {
+        int cnt = 0;
+        while (!location.isEmpty() &&
+                location.get(0).tag.equals(TypePathEntryKind.INNER_TYPE)) {
+            ++cnt;
+            location = tail(location);
+        }
+        return cnt;
+    }
+
+    private static int countEnclosing(AnnotatedDeclaredType type) {
+        int cnt = 0;
+        while (type.getEnclosingType() != null) {
+            ++cnt;
+            type = type.getEnclosingType();
+        }
+        return cnt;
+    }
+
+    private static AnnotatedTypeMirror getLocationTypeAWT(AnnotatedWildcardType type,  List<TypePathEntry> location) {
+        if (debug) {
+            System.out.println("getLocationTypeAWT type: " + type + " location: " + location);
+        }
         if (location.isEmpty()) {
             return type;
-        } else if (location.get(0) == 0) {
+        } else if (location.get(0).tag.equals(TypePathEntryKind.WILDCARD)) {
             List<AnnotatedTypeMirror> bounds = getBounds(type);
             // TODO: what should happen if bounds is empty or has more than one entry?
             return getLocationTypeATM(bounds.get(0), tail(location));
@@ -671,47 +699,19 @@ public class TypeFromElement {
     }
 
     // Dealing with arrays requires much testing
-    private static AnnotatedTypeMirror getLocationTypeAAT(AnnotatedArrayType type, List<Integer> location) {
-        if (location.size() >= 1) {
-            int arrayIndex = location.get(0);
-            List<AnnotatedTypeMirror> arrays = createArraysList(type);
-            if (arrayIndex < arrays.size()) {
-                return getLocationTypeATM(arrays.get(arrayIndex), tail(location));
-            } else {
-                ErrorReporter.errorAbort("TypeFromElement.annotateAAT: " +
-                        "invalid location " + location + " for type: " + type);
-                return null; // dead code
-            }
+    private static AnnotatedTypeMirror getLocationTypeAAT(AnnotatedArrayType type, List<TypePathEntry> location) {
+        if (debug) {
+            System.out.println("getLocationTypeAAT type: " + type + " location: " + location);
+        }
+        if (location.size() >= 1 &&
+                location.get(0).tag.equals(TypePathEntryKind.ARRAY)) {
+            AnnotatedTypeMirror comptype = type.getComponentType();
+            return getLocationTypeATM(comptype, tail(location));
         } else {
             ErrorReporter.errorAbort("TypeFromElement.annotateAAT: " +
                     "invalid location " + location + " for type: " + type);
             return null; // dead code
         }
-    }
-
-    private static List<AnnotatedTypeMirror> createArraysList(AnnotatedArrayType array) {
-        LinkedList<AnnotatedTypeMirror> arrays = new LinkedList<AnnotatedTypeMirror>();
-
-        // I think that type can never be null
-        AnnotatedTypeMirror type = array;
-        while (type != null && type.getKind() == TypeKind.ARRAY) {
-            arrays.addLast(type);
-            type = ((AnnotatedArrayType)type).getComponentType();
-        }
-
-        // The annotation on the first array component is added by the non-array annotation,
-        // e.g. FIELD.
-        arrays.removeFirst();
-
-        // adding the component type at the end
-        if (type != null) {
-            arrays.addLast(type);
-        } else if (strict) {
-            ErrorReporter.errorAbort("TypeFromElement.createArraysList: " +
-                    "null component type for array: " + array);
-        }
-
-        return arrays;
     }
 
     private static <T> List<T> tail(List<T> list) {
@@ -733,12 +733,12 @@ public class TypeFromElement {
             bound = ((AnnotatedTypeVariable)type).getUpperBound();
         } else if (type.getKind() == TypeKind.WILDCARD) {
             AnnotatedWildcardType wt = (AnnotatedWildcardType)type;
-            if (((WildcardType)wt.getUnderlyingType()).getExtendsBound()!=null) {
+            if (((WildcardType)wt.getUnderlyingType()).getExtendsBound() != null) {
                 bound = wt.getExtendsBound();
             } else {
                 bound = wt.getSuperBound();
             }
-            if (bound==null) {
+            if (bound == null) {
                 // If neither bound is set explicitly, this will
                 // set a meaningful default (java.lang.Object or the type
                 // variable bound.
@@ -751,10 +751,10 @@ public class TypeFromElement {
 
         if (bound == null) {
             return Collections.emptyList();
-        } else if (!TypesUtils.isAnonymousType(bound.getUnderlyingType())) {
-            return Collections.singletonList(bound);
-        } else {
+        } else if (bound.getKind() == TypeKind.INTERSECTION) {
             return Collections.unmodifiableList(bound.directSuperTypes());
+        } else {
+            return Collections.singletonList(bound);
         }
     }
 }

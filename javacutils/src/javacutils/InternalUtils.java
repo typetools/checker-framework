@@ -61,23 +61,21 @@ public class InternalUtils {
     /**
      * Gets the {@link Element} ("symbol") for the given Tree API node.
      *
-     * @param tree
-     *            the {@link Tree} node to get the symbol for
+     * @param tree the {@link Tree} node to get the symbol for
      * @throws IllegalArgumentException
-     *             if {@code tree} is null or is not a valid javac-internal tree
-     *             (JCTree)
-     * @return the {@code {@link Symbol} for the given tree, or null if one
+     *         if {@code tree} is null or is not a valid javac-internal tree
+     *         (JCTree)
+     * @return the {@code {@link Symbol}} for the given tree, or null if one
      *         could not be found
      */
-    public static/* @Nullable */Element symbol(/* @Nullable */Tree tree) {
+    public static /*@Nullable*/ Element symbol(/*@Nullable*/ Tree tree) {
         if (tree == null) {
             ErrorReporter.errorAbort("InternalUtils.symbol: tree is null");
             return null; // dead code
         }
 
         if (!(tree instanceof JCTree)) {
-            ErrorReporter
-                    .errorAbort("InternalUtils.symbol: tree is not a valid Javac tree");
+            ErrorReporter.errorAbort("InternalUtils.symbol: tree is not a valid Javac tree");
             return null; // dead code
         }
 
@@ -86,33 +84,30 @@ public class InternalUtils {
         }
 
         switch (tree.getKind()) {
-        case VARIABLE:
-        case METHOD:
-        case CLASS:
-        case ENUM:
-        case INTERFACE:
-        case ANNOTATION_TYPE:
-            return TreeInfo.symbolFor((JCTree) tree);
+            case VARIABLE:
+            case METHOD:
+            case CLASS:
+            case ENUM:
+            case INTERFACE:
+            case ANNOTATION_TYPE:
+                return TreeInfo.symbolFor((JCTree) tree);
 
-            // symbol() only works on MethodSelects, so we need to get it
-            // manually
+            // symbol() only works on MethodSelects, so we need to get it manually
             // for method invocations.
-        case METHOD_INVOCATION:
-            return TreeInfo.symbol(((JCMethodInvocation) tree)
-                    .getMethodSelect());
+            case METHOD_INVOCATION:
+                return TreeInfo.symbol(((JCMethodInvocation) tree).getMethodSelect());
 
-        case ASSIGNMENT:
-            return TreeInfo.symbol((JCTree) ((AssignmentTree) tree)
-                    .getVariable());
+            case ASSIGNMENT:
+                return TreeInfo.symbol((JCTree)((AssignmentTree)tree).getVariable());
 
-        case ARRAY_ACCESS:
-            return symbol(((ArrayAccessTree) tree).getExpression());
+            case ARRAY_ACCESS:
+                return symbol(((ArrayAccessTree)tree).getExpression());
 
-        case NEW_CLASS:
-            return ((JCNewClass) tree).constructor;
+            case NEW_CLASS:
+                return ((JCNewClass)tree).constructor;
 
-        default:
-            return TreeInfo.symbol((JCTree) tree);
+            default:
+                return TreeInfo.symbol((JCTree) tree);
         }
     }
 
@@ -121,26 +116,25 @@ public class InternalUtils {
      * {@link TreePath} is an anonymous constructor (the constructor for an
      * anonymous class.
      *
-     * @param method
-     *            the {@link TreePath} for a node that may be an anonymous
-     *            constructor
+     * @param method the {@link TreePath} for a node that may be an anonymous
+     *        constructor
      * @return true if the given path points to an anonymous constructor, false
      *         if it does not
      */
     public static boolean isAnonymousConstructor(final MethodTree method) {
-        /* @Nullable */Element e = InternalUtils.symbol(method);
+        /*@Nullable*/ Element e = InternalUtils.symbol(method);
         if (e == null || !(e instanceof Symbol))
             return false;
 
-        if ((((/* @NonNull */Symbol) e).flags() & Flags.ANONCONSTR) != 0)
+        if ((((/*@NonNull*/ Symbol)e).flags() & Flags.ANONCONSTR) != 0)
             return true;
 
         return false;
     }
 
     /**
-     * indicates whether it should return the constructor that gets invoked in
-     * cases of anonymous classes
+     * indicates whether it should return the constructor that gets invoked
+     * in cases of anonymous classes
      */
     private static final boolean RETURN_INVOKE_CONSTRUCTOR = true;
 
@@ -152,16 +146,14 @@ public class InternalUtils {
      * constructor that gets invoked in the extended class, rather than the
      * anonymous constructor implicitly added by the constructor (JLS 15.9.5.1)
      *
-     * @param tree
-     *            the constructor invocation
+     * @param tree the constructor invocation
      * @return the {@link ExecutableElement} corresponding to the constructor
      *         call in {@code tree}
      */
     public static ExecutableElement constructor(NewClassTree tree) {
 
         if (!(tree instanceof JCTree.JCNewClass)) {
-            ErrorReporter
-                    .errorAbort("InternalUtils.constructor: not a javac internal tree");
+            ErrorReporter.errorAbort("InternalUtils.constructor: not a javac internal tree");
             return null; // dead code
         }
 
@@ -170,15 +162,15 @@ public class InternalUtils {
         if (RETURN_INVOKE_CONSTRUCTOR && tree.getClassBody() != null) {
             // anonymous constructor bodies should contain exactly one statement
             // in the form:
-            // super(arg1, ...)
+            //    super(arg1, ...)
             // or
-            // o.super(arg1, ...)
+            //    o.super(arg1, ...)
             //
             // which is a method invocation (!) to the actual constructor
 
             // the method call is guaranteed to return nonnull
-            JCMethodDecl anonConstructor = (JCMethodDecl) TreeInfo
-                    .declarationFor(newClassTree.constructor, newClassTree);
+            JCMethodDecl anonConstructor =
+                (JCMethodDecl) TreeInfo.declarationFor(newClassTree.constructor, newClassTree);
             assert anonConstructor != null;
             assert anonConstructor.body.stats.size() == 1;
             JCExpressionStatement stmt = (JCExpressionStatement) anonConstructor.body.stats.head;
@@ -193,27 +185,22 @@ public class InternalUtils {
         return (ExecutableElement) e;
     }
 
-    public final static List<AnnotationMirror> annotationsFromTypeAnnotationTrees(
-            List<? extends AnnotationTree> annos) {
-        List<AnnotationMirror> annotations = new ArrayList<AnnotationMirror>(
-                annos.size());
+    public final static List<AnnotationMirror> annotationsFromTypeAnnotationTrees(List<? extends AnnotationTree> annos) {
+        List<AnnotationMirror> annotations = new ArrayList<AnnotationMirror>(annos.size());
         for (AnnotationTree anno : annos)
-            annotations.add(((JCTypeAnnotation) anno).attribute_field);
+            annotations.add(((JCAnnotation)anno).attribute);
         return annotations;
     }
 
-    public final static List<? extends AnnotationMirror> annotationsFromTree(
-            AnnotatedTypeTree node) {
-        return annotationsFromTypeAnnotationTrees(((JCAnnotatedType) node).annotations);
+    public final static List<? extends AnnotationMirror> annotationsFromTree(AnnotatedTypeTree node) {
+        return annotationsFromTypeAnnotationTrees(((JCAnnotatedType)node).annotations);
     }
 
-    public final static List<? extends AnnotationMirror> annotationsFromTree(
-            TypeParameterTree node) {
-        return annotationsFromTypeAnnotationTrees(((JCTypeParameter) node).annotations);
+    public final static List<? extends AnnotationMirror> annotationsFromTree(TypeParameterTree node) {
+        return annotationsFromTypeAnnotationTrees(((JCTypeParameter)node).annotations);
     }
 
-    public final static List<? extends AnnotationMirror> annotationsFromArrayCreation(
-            NewArrayTree node, int level) {
+    public final static List<? extends AnnotationMirror> annotationsFromArrayCreation(NewArrayTree node, int level) {
 
         assert node instanceof JCNewArray;
         final JCNewArray newArray = ((JCNewArray) node);
@@ -222,10 +209,10 @@ public class InternalUtils {
             return annotationsFromTypeAnnotationTrees(newArray.annotations);
         }
 
-        if (newArray.dimAnnotations.length() > 0 && (level >= 0)
+        if (newArray.dimAnnotations.length() > 0
+                && (level >= 0)
                 && (level < newArray.dimAnnotations.size()))
-            return annotationsFromTypeAnnotationTrees(newArray.dimAnnotations
-                    .get(level));
+            return annotationsFromTypeAnnotationTrees(newArray.dimAnnotations.get(level));
 
         return Collections.emptyList();
     }

@@ -80,20 +80,12 @@ public final class TypesUtils {
      * @return type iff type represents a declared type of the qualified name
      */
     public static boolean isDeclaredOfName(TypeMirror type, CharSequence qualifiedName) {
+        if (type.getKind() == TypeKind.ANNOTATED) {
+            type = ((AnnotatedType)type).getUnderlyingType();
+        }
         return type.getKind() == TypeKind.DECLARED
             && getQualifiedName((DeclaredType)type).contentEquals(qualifiedName);
 
-    }
-    /**
-     * Checks if the type represents an anonymous type, e.g. as a result of an
-     * intersection type
-     *
-     * @param type  the declared type
-     * @return true iff the type represents an anonymous type.
-     */
-    public static boolean isAnonymousType(TypeMirror type) {
-        return ((type.getKind() == TypeKind.DECLARED) &&
-                (getQualifiedName((DeclaredType)type).length() == 0));
     }
 
     public static boolean isBoxedPrimitive(TypeMirror type) {

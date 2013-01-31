@@ -38,9 +38,14 @@
 
     <property name="JAVA_6_HOME" value="${env.JAVA_6_HOME}" />
     <property name="JAVA_7_HOME" value="${env.JAVA_7_HOME}" />
+    <property name="JAVA_8_HOME" value="${env.JAVA_8_HOME}" />
 
-    <condition property="jdkName" value="jdk7.jar" else="jdk6.jar">
+    <condition property="jdkName" value="jdk7.jar">
         <contains string="${java.version}" substring="1.7"/>
+    </condition>
+
+    <condition property="jdkName" value="jdk8.jar" else="jdk6.jar">
+        <contains string="${java.version}" substring="1.8"/>
     </condition>
 
     <path id="build.path">
@@ -122,8 +127,10 @@
         </delete>
         <delete file="binary/jdk6.jar"/>
         <delete file="binary/jdk7.jar"/>
+        <delete file="binary/jdk8.jar"/>
         <delete file="jdk/jdk6.jar"/>
         <delete file="jdk/jdk7.jar"/>
+        <delete file="jdk/jdk8.jar"/>
     </target>
 
     <target name="build.check.uptodate"
@@ -232,7 +239,7 @@ ${build.version} of the 'javac.jar' library."/>
         </java>
         <!-- This relative path is wrong; running "ant -find" from a
         subdirectory fails. -->
-        <javadoc sourcepath="${src}" destdir="${dist.doc}" failonerror="true"
+        <javadoc sourcepath="${src}" destdir="${dist.doc}" failonerror="false"
             executable="${jsr308.langtools}/dist/bin/javadoc"
           classpath="${build}:${javac.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar:tests/junit-4.7.jar"
           excludepackagenames="checkers.util.stub,checkers.util.dist"
@@ -777,12 +784,14 @@ ${build.version} of the 'javac.jar' library."/>
                 <and>
                     <not><available file="jdk/jdk6.jar"></available></not>
                     <not><available file="jdk/jdk7.jar"></available></not>
+                    <not><available file="jdk/jdk8.jar"></available></not>
                 </and>
             </condition>
         </fail>
 
         <copy file="jdk/jdk6.jar" tofile="binary/jdk6.jar" overwrite="true" failonerror="false" />
         <copy file="jdk/jdk7.jar" tofile="binary/jdk7.jar" overwrite="true" failonerror="false" />
+        <copy file="jdk/jdk8.jar" tofile="binary/jdk8.jar" overwrite="true" failonerror="false" />
     </target>
 
 </project>

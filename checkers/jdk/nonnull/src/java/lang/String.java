@@ -73,7 +73,7 @@ public final class String implements java.io.Serializable, Comparable<String>, C
   public String toString() { throw new RuntimeException("skeleton method"); }
   public char[] toCharArray() { throw new RuntimeException("skeleton method"); }
   public static String format(String a1, @Nullable Object... a2) { throw new RuntimeException("skeleton method"); }
-  public static String format(@Nullable java.util.Locale a1, String a2, @Nullable Object... a3) { throw new RuntimeException("skeleton method"); }
+  public static String format(java.util. @Nullable Locale a1, String a2, @Nullable Object... a3) { throw new RuntimeException("skeleton method"); }
   public static String valueOf(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   public static String valueOf(char[] a1) { throw new RuntimeException("skeleton method"); }
   public static String valueOf(char[] a1, int a2, int a3) { throw new RuntimeException("skeleton method"); }

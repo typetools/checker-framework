@@ -20,11 +20,11 @@ public final class Class<T extends @Nullable Object> extends Object implements j
   public String getName() { throw new RuntimeException("skeleton method"); }
   public @Nullable ClassLoader getClassLoader() { throw new RuntimeException("skeleton method"); }
   public java.lang.reflect.TypeVariable<Class<T>>[] getTypeParameters() { throw new RuntimeException("skeleton method"); }
-  public @Nullable java.lang.reflect.Type getGenericSuperclass() { throw new RuntimeException("skeleton method"); }
+  public java.lang.reflect. @Nullable Type getGenericSuperclass() { throw new RuntimeException("skeleton method"); }
   public @Pure @Nullable Package getPackage() { throw new RuntimeException("skeleton method"); }
   public java.lang.reflect.Type[] getGenericInterfaces() { throw new RuntimeException("skeleton method"); }
-  public @Nullable java.lang.reflect.Method getEnclosingMethod() { throw new RuntimeException("skeleton method"); }
-  public @Nullable java.lang.reflect.Constructor<?> getEnclosingConstructor() { throw new RuntimeException("skeleton method"); }
+  public java.lang.reflect. @Nullable Method getEnclosingMethod() { throw new RuntimeException("skeleton method"); }
+  public java.lang.reflect. @Nullable Constructor<?> getEnclosingConstructor() { throw new RuntimeException("skeleton method"); }
   public @Nullable Class<?> getEnclosingClass() { throw new RuntimeException("skeleton method"); }
   public String getSimpleName() { throw new RuntimeException("skeleton method"); }
   public native @Pure @Nullable Class<? super T> getSuperclass();
@@ -47,8 +47,8 @@ public final class Class<T extends @Nullable Object> extends Object implements j
   public java.lang.reflect.Field getDeclaredField(String a1) throws NoSuchFieldException, SecurityException { throw new RuntimeException("skeleton method"); }
   public java.lang.reflect.Method getDeclaredMethod(String a1, Class<?>... a2) throws NoSuchMethodException, SecurityException { throw new RuntimeException("skeleton method"); }
   public java.lang.reflect.Constructor<T> getDeclaredConstructor(Class<?>... a1) throws NoSuchMethodException, SecurityException { throw new RuntimeException("skeleton method"); }
-  public @Nullable java.io.InputStream getResourceAsStream(String a1) { throw new RuntimeException("skeleton method"); }
-  public @Nullable java.net.URL getResource(String a1) { throw new RuntimeException("skeleton method"); }
+  public java.io. @Nullable InputStream getResourceAsStream(String a1) { throw new RuntimeException("skeleton method"); }
+  public java.net. @Nullable URL getResource(String a1) { throw new RuntimeException("skeleton method"); }
   public java.security.ProtectionDomain getProtectionDomain() { throw new RuntimeException("skeleton method"); }
   public boolean desiredAssertionStatus() { throw new RuntimeException("skeleton method"); }
   public boolean isEnum() { throw new RuntimeException("skeleton method"); }

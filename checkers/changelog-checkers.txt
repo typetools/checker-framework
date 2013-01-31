@@ -1,8 +1,17 @@
-Version 1.5.1, 1 Feb 2013
+Version 1.6.0, 1 Feb 2013
 
 User-visible framework improvements:
-  Support using enum constants in stub files without requiring the
-    fully qualified name.
+  It is possible to use enum constants in stub files without requiring the
+    fully qualified name, as was previously necessary.
+  Support build on a stock Java 8 OpenJDK.
+
+Adapt to underlying jsr308-langtools changes.
+  Most visible change is syntax for fully-qualified types, from
+  @A java.lang.Object to java.lang.@A Object.
+
+Documentation:
+  A new tutorial is available at
+    http://types.cs.washington.edu/checker-framework/tutorial/
 
 ----------------------------------------------------------------------
 Version 1.5.0, 14 Jan 2013

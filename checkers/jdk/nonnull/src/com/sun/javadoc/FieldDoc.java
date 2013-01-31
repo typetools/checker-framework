@@ -8,5 +8,5 @@ public abstract interface FieldDoc extends MemberDoc {
   public abstract boolean isVolatile();
   public abstract com.sun.javadoc.SerialFieldTag[] serialFieldTags();
   public abstract @Nullable Object constantValue();
-  public abstract @Nullable java.lang.String constantValueExpression();
+  public abstract java.lang. @Nullable String constantValueExpression();
 }

@@ -41,5 +41,5 @@ public final class StringBuilder{
   public int lastIndexOf(java.lang.String a1) { throw new RuntimeException("skeleton method"); }
   public int lastIndexOf(java.lang.String a1, int a2) { throw new RuntimeException("skeleton method"); }
   public java.lang.StringBuilder reverse() { throw new RuntimeException("skeleton method"); }
-  public @NonNull java.lang.String toString() { throw new RuntimeException("skeleton method"); }
+  public @NonNull String toString() { throw new RuntimeException("skeleton method"); }
 }

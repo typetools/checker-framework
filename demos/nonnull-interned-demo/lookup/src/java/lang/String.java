@@ -1,5 +1,7 @@
 package java.lang;
 
+import java.util.Locale;
+
 import checkers.nullness.quals.*;
 
 @checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
@@ -34,10 +36,10 @@ public final class String implements java.io.Serializable, java.lang.Comparable<
   public byte[] getBytes(java.lang.String a1) throws java.io.UnsupportedEncodingException { throw new RuntimeException("skeleton method"); }
   public byte[] getBytes(java.nio.charset.Charset a1) { throw new RuntimeException("skeleton method"); }
   public byte[] getBytes() { throw new RuntimeException("skeleton method"); }
-  public boolean equals(@Nullable java.lang.Object a1) { throw new RuntimeException("skeleton method"); }
+  public boolean equals(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   public boolean contentEquals(java.lang.StringBuffer a1) { throw new RuntimeException("skeleton method"); }
   public boolean contentEquals(java.lang.CharSequence a1) { throw new RuntimeException("skeleton method"); }
-  public boolean equalsIgnoreCase(@Nullable java.lang.String a1) { throw new RuntimeException("skeleton method"); }
+  public boolean equalsIgnoreCase(@Nullable String a1) { throw new RuntimeException("skeleton method"); }
   public int compareTo(java.lang.String a1) { throw new RuntimeException("skeleton method"); }
   public int compareToIgnoreCase(java.lang.String a1) { throw new RuntimeException("skeleton method"); }
   public boolean regionMatches(int a1, java.lang.String a2, int a3, int a4) { throw new RuntimeException("skeleton method"); }
@@ -73,9 +75,9 @@ public final class String implements java.io.Serializable, java.lang.Comparable<
   public java.lang.String trim() { throw new RuntimeException("skeleton method"); }
   public java.lang.String toString() { throw new RuntimeException("skeleton method"); }
   public char[] toCharArray() { throw new RuntimeException("skeleton method"); }
-  public static java.lang.String format(java.lang.String a1, @Nullable java.lang.Object... a2) { throw new RuntimeException("skeleton method"); }
-  public static java.lang.String format(@Nullable java.util.Locale a1, java.lang.String a2, @Nullable java.lang.Object... a3) { throw new RuntimeException("skeleton method"); }
-  public static java.lang.String valueOf(@Nullable java.lang.Object a1) { throw new RuntimeException("skeleton method"); }
+  public static java.lang.String format(java.lang.String a1, @Nullable Object... a2) { throw new RuntimeException("skeleton method"); }
+  public static java.lang.String format(@Nullable Locale a1, java.lang.String a2, @Nullable Object... a3) { throw new RuntimeException("skeleton method"); }
+  public static java.lang.String valueOf(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   public static java.lang.String valueOf(char[] a1) { throw new RuntimeException("skeleton method"); }
   public static java.lang.String valueOf(char[] a1, int a2, int a3) { throw new RuntimeException("skeleton method"); }
   public static java.lang.String copyValueOf(char[] a1, int a2, int a3) { throw new RuntimeException("skeleton method"); }

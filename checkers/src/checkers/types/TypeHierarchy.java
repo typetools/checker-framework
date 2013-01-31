@@ -142,6 +142,28 @@ public class TypeHierarchy {
         // return true.  If it's not a subtype, we wouldn't have gotten here again.
         if (visited.contains(lhs))
             return true;
+
+        // An intersection type on the RHS is a subtype,
+        // iff any of its bounds is. 
+        if (rhs.getKind() == TypeKind.INTERSECTION) {
+            for (AnnotatedTypeMirror atm : rhs.directSuperTypes()) {
+                if (isSubtypeImpl(atm, lhs)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        // An intersection type on the LHS is a supertype,
+        // iff all of its bounds are.
+        if (lhs.getKind() == TypeKind.INTERSECTION) {
+            for (AnnotatedTypeMirror atm : lhs.directSuperTypes()) {
+                if (!isSubtypeImpl(rhs, atm)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
         AnnotatedTypeMirror lhsBase = lhs;
         while (lhsBase.getKind() != rhs.getKind()
                 && (lhsBase.getKind() == TypeKind.WILDCARD || lhsBase.getKind() == TypeKind.TYPEVAR)) {

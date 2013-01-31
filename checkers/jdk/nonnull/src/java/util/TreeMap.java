@@ -23,17 +23,17 @@ public class TreeMap<K extends @Nullable Object, V extends @Nullable Object> ext
   public @Nullable V put(K a1, V a2) { throw new RuntimeException("skeleton method"); }
   public @Nullable V remove(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   public void clear() { throw new RuntimeException("skeleton method"); }
-  public @Nullable Map.Entry<K, V> firstEntry() { throw new RuntimeException("skeleton method"); }
-  public @Nullable Map.Entry<K, V> lastEntry() { throw new RuntimeException("skeleton method"); }
-  public @Nullable Map.Entry<K, V> pollFirstEntry() { throw new RuntimeException("skeleton method"); }
-  public @Nullable Map.Entry<K, V> pollLastEntry() { throw new RuntimeException("skeleton method"); }
-  public @Nullable Map.Entry<K, V> lowerEntry(K a1) { throw new RuntimeException("skeleton method"); }
+  public Map. @Nullable Entry<K, V> firstEntry() { throw new RuntimeException("skeleton method"); }
+  public Map. @Nullable Entry<K, V> lastEntry() { throw new RuntimeException("skeleton method"); }
+  public Map. @Nullable Entry<K, V> pollFirstEntry() { throw new RuntimeException("skeleton method"); }
+  public Map. @Nullable Entry<K, V> pollLastEntry() { throw new RuntimeException("skeleton method"); }
+  public Map. @Nullable Entry<K, V> lowerEntry(K a1) { throw new RuntimeException("skeleton method"); }
   public @Nullable K lowerKey(K a1) { throw new RuntimeException("skeleton method"); }
-  public @Nullable Map.Entry<K, V> floorEntry(K a1) { throw new RuntimeException("skeleton method"); }
+  public Map. @Nullable Entry<K, V> floorEntry(K a1) { throw new RuntimeException("skeleton method"); }
   public @Nullable K floorKey(K a1) { throw new RuntimeException("skeleton method"); }
-  public @Nullable Map.Entry<K, V> ceilingEntry(K a1) { throw new RuntimeException("skeleton method"); }
+  public Map. @Nullable Entry<K, V> ceilingEntry(K a1) { throw new RuntimeException("skeleton method"); }
   public @Nullable K ceilingKey(K a1) { throw new RuntimeException("skeleton method"); }
-  public @Nullable Map.Entry<K, V> higherEntry(K a1) { throw new RuntimeException("skeleton method"); }
+  public Map. @Nullable Entry<K, V> higherEntry(K a1) { throw new RuntimeException("skeleton method"); }
   public @Nullable K higherKey(K a1) { throw new RuntimeException("skeleton method"); }
   public Set<@KeyFor("this") K> keySet() { throw new RuntimeException("skeleton method"); }
   public NavigableSet<@KeyFor("this") K> navigableKeySet() { throw new RuntimeException("skeleton method"); }

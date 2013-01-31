@@ -13,10 +13,10 @@ public class Runtime{
   public static void runFinalizersOnExit(boolean a1) { throw new RuntimeException("skeleton method"); }
   public Process exec(String a1) throws java.io.IOException { throw new RuntimeException("skeleton method"); }
   public Process exec(String a1, String @Nullable [] a2) throws java.io.IOException { throw new RuntimeException("skeleton method"); }
-  public Process exec(String a1, String @Nullable [] a2, @Nullable java.io.File a3) throws java.io.IOException { throw new RuntimeException("skeleton method"); }
+  public Process exec(String a1, String @Nullable [] a2, java.io. @Nullable File a3) throws java.io.IOException { throw new RuntimeException("skeleton method"); }
   public Process exec(String[] a1) throws java.io.IOException { throw new RuntimeException("skeleton method"); }
   public Process exec(String[] a1, String @Nullable [] a2) throws java.io.IOException { throw new RuntimeException("skeleton method"); }
-  public Process exec(String[] a1, String @Nullable [] a2, @Nullable java.io.File a3) throws java.io.IOException { throw new RuntimeException("skeleton method"); }
+  public Process exec(String[] a1, String @Nullable [] a2, java.io. @Nullable File a3) throws java.io.IOException { throw new RuntimeException("skeleton method"); }
   public void runFinalization() { throw new RuntimeException("skeleton method"); }
   public void load(String a1) { throw new RuntimeException("skeleton method"); }
   public void loadLibrary(String a1) { throw new RuntimeException("skeleton method"); }

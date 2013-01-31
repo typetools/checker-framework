@@ -133,8 +133,11 @@ synonyms.
 
 \section{Installation\label{installation}}
 
-This section describes how to install the binary release of the Checker
-Framework.  The binary release contains everything that you need, both to
+This section describes how to install the Checker
+Framework for use from the command line, Ant, and Maven.  If you wish to
+use the Checker Framework from Eclipse, see the Checker Framework Eclipse
+Plugin webpage: \ahrefurl{http://types.cs.washington.edu/checker-framework/current/checkers.zip}.
+The Checker Framework release contains everything that you need, both to
 run checkers and to write your own checkers.  As an alternative, you can
 build the latest development version from source
 (Section~\refwithpage{build-source}).
@@ -253,9 +256,18 @@ That's all there is to it!  Now you are ready to start using the checkers.
 
 Section~\ref{example-use} walks you through a simple example.  More detailed
 instructions for using a checker appear in Chapter~\ref{using-a-checker}.
+There is also a \ahreforurl{http://types.cs.washington.edu/checker-framework/tutorial/}{tutorial}
+that walks you through how to use the Checker Framework in Eclipse or on
+the command line.
 
 
 \section{Example use:  detecting a null pointer bug\label{example-use}}
+
+This section gives a very simple example of running the Checker Framework
+from the command line.  There is also a \ahreforurl{http://types.cs.washington.edu/checker-framework/tutorial/}{tutorial}
+that gives more extensive instructions for using the Checker Framework in
+Eclipse or on the command line.
+
 
 To run a checker on a source file, just run javac as usual, passing the
 \<-processor> flag.  (You can also use an IDE or other build tool; see
@@ -392,6 +404,11 @@ Additional topics that apply to all checkers are covered later in the manual:
 \item Chapter~\ref{external-tools}: Integration with external tools
 \end{itemize}
 
+
+Finally, there is a 
+\ahreforurl{http://types.cs.washington.edu/checker-framework/tutorial/}{tutorial}
+that walks you through using the Checker Framework in Eclipse or on the
+command line.
 
 % The annotations have to be on your classpath even when you are not using
 % the -processor, because of the existence of the import statement for

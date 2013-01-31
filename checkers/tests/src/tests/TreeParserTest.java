@@ -1,9 +1,6 @@
 package tests;
 
-import java.util.Collections;
-
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.annotation.processing.Processor;
 
 import junit.framework.Assert;
 
@@ -20,7 +17,7 @@ public class TreeParserTest {
     private final TreeParser parser;
 
     public TreeParserTest() {
-        env = new JavacProcessingEnvironment(new Context(), Collections.<Processor>emptyList());
+        env = JavacProcessingEnvironment.instance(new Context());
         parser = new TreeParser(env);
     }
 

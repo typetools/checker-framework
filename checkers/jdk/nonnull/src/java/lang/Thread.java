@@ -59,10 +59,10 @@ public class Thread implements Runnable {
   public static java.util.Map<Thread, StackTraceElement[]> getAllStackTraces() { throw new RuntimeException("skeleton method"); }
   public long getId() { throw new RuntimeException("skeleton method"); }
   public Thread.State getState() { throw new RuntimeException("skeleton method"); }
-  public static void setDefaultUncaughtExceptionHandler(@Nullable Thread.UncaughtExceptionHandler a1) { throw new RuntimeException("skeleton method"); }
-  public static @Nullable Thread.UncaughtExceptionHandler getDefaultUncaughtExceptionHandler() { throw new RuntimeException("skeleton method"); }
-  public @Nullable Thread.UncaughtExceptionHandler getUncaughtExceptionHandler() { throw new RuntimeException("skeleton method"); }
-  public void setUncaughtExceptionHandler(@Nullable Thread.UncaughtExceptionHandler a1) { throw new RuntimeException("skeleton method"); }
+  public static void setDefaultUncaughtExceptionHandler(Thread. @Nullable UncaughtExceptionHandler a1) { throw new RuntimeException("skeleton method"); }
+  public static Thread. @Nullable UncaughtExceptionHandler getDefaultUncaughtExceptionHandler() { throw new RuntimeException("skeleton method"); }
+  public Thread. @Nullable UncaughtExceptionHandler getUncaughtExceptionHandler() { throw new RuntimeException("skeleton method"); }
+  public void setUncaughtExceptionHandler(Thread. @Nullable UncaughtExceptionHandler a1) { throw new RuntimeException("skeleton method"); }
 
   public static boolean holdsLock(Object a1) { throw new RuntimeException("skeleton method"); }
   public final native boolean isAlive();

@@ -126,7 +126,7 @@ public class RegexVisitor extends BaseTypeVisitor<RegexChecker> {
 
     @Override
     public boolean isValidUse(AnnotatedDeclaredType declarationType,
-            AnnotatedDeclaredType useType) {
+                             AnnotatedDeclaredType useType) {
         // TODO: only allow Regex and PolyRegex annotations on types in legalReferenceTypes.
         // This is pending an implementation of AnnotatedTypeMirror.getExplicitAnnotations
         // that supports local variables, array types and parameterized types.

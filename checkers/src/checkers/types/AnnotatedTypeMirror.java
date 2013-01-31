@@ -18,9 +18,11 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
+import javax.lang.model.type.AnnotatedType;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
+import javax.lang.model.type.IntersectionType;
 import javax.lang.model.type.NoType;
 import javax.lang.model.type.NullType;
 import javax.lang.model.type.PrimitiveType;
@@ -88,6 +90,9 @@ public abstract class AnnotatedTypeMirror {
         if (replacer == null)
             replacer = new Replacer(atypeFactory.types);
 
+        if (type.getKind() == TypeKind.ANNOTATED) {
+            type = ((AnnotatedType)type).getUnderlyingType();
+        }
         switch (type.getKind()) {
             case ARRAY:
                 return new AnnotatedArrayType((ArrayType) type, atypeFactory);
@@ -108,11 +113,14 @@ public abstract class AnnotatedTypeMirror {
                 return new AnnotatedTypeVariable((TypeVariable) type, atypeFactory);
             case WILDCARD:
                 return new AnnotatedWildcardType((WildcardType) type, atypeFactory);
+            case INTERSECTION:
+                return new AnnotatedIntersectionType((IntersectionType) type, atypeFactory);
             default:
                 if (type.getKind().isPrimitive()) {
                     return new AnnotatedPrimitiveType((PrimitiveType) type, atypeFactory);
                 }
-                ErrorReporter.errorAbort("AnnotatedTypeMirror.createType: unidentified type " + type);
+                ErrorReporter.errorAbort("AnnotatedTypeMirror.createType: unidentified type " +
+                        type + " (" + type.getKind() + ")");
                 return null; // dead code
         }
     }
@@ -128,9 +136,6 @@ public abstract class AnnotatedTypeMirror {
     // TODO: Clarify, with value not the element of the type.
     // I.e. For 'Integer i;' the element would be for 'i' not 'Integer'
     protected Element element;
-
-    /** The enclosing Type **/
-    protected AnnotatedTypeMirror enclosingType;
 
     /** The annotations on this type. */
     // AnnotationMirror doesn't override Object.hashCode, .equals, so we use
@@ -205,25 +210,6 @@ public abstract class AnnotatedTypeMirror {
      */
     public TypeMirror getUnderlyingType() {
         return actualType;
-    }
-
-    /**
-     * Sets the enclosing type
-     *
-     * @param enclosingType
-     */
-    void setEnclosingType(AnnotatedTypeMirror enclosingType) {
-        this.enclosingType = enclosingType;
-    }
-
-    /**
-     * Returns the enclosing type, as in the type of {@code A} in the type
-     * {@code A.B}.
-     *
-     * @return enclosingType the enclosing type
-     */
-    public AnnotatedTypeMirror getEnclosingType() {
-        return enclosingType;
     }
 
     /**
@@ -371,7 +357,7 @@ public abstract class AnnotatedTypeMirror {
             return AnnotationUtils.createAnnotationSet();
         } else {
             Set<AnnotationMirror> explicitAnnotations = AnnotationUtils.createAnnotationSet();
-            List<com.sun.tools.javac.code.Attribute.TypeCompound> typeAnnotations = ((com.sun.tools.javac.code.Symbol) this.element).typeAnnotations;
+            List<com.sun.tools.javac.code.Attribute.TypeCompound> typeAnnotations = ((com.sun.tools.javac.code.Symbol) this.element).getTypeAnnotationMirrors();
             // TODO: should we instead try to go to the Checker and use getSupportedTypeQualifiers()?
             Set<Name> validAnnotations = atypeFactory.getQualifierHierarchy().getTypeQualifiers();
             for (com.sun.tools.javac.code.Attribute.TypeCompound explicitAnno : typeAnnotations) {
@@ -807,7 +793,6 @@ public abstract class AnnotatedTypeMirror {
      */
     protected AnnotatedTypeMirror copyFields(AnnotatedTypeMirror type, boolean annotation) {
         type.setElement(getElement());
-        type.setEnclosingType(getEnclosingType());
         if (annotation)
             type.addAnnotations(annotations);
         return type;
@@ -858,6 +843,9 @@ public abstract class AnnotatedTypeMirror {
 
         protected boolean isGeneric = false;
 
+        /** The enclosing Type **/
+        protected AnnotatedDeclaredType enclosingType;
+
         protected final DeclaredType actualType;
 
         protected List<AnnotatedDeclaredType> supertypes;
@@ -875,6 +863,13 @@ public abstract class AnnotatedTypeMirror {
             DeclaredType elem = (DeclaredType)((TypeElement)type.asElement()).asType();
             isGeneric = !elem.getTypeArguments().isEmpty();
             this.supertypes = null;
+            TypeKind enclKind = type.getEnclosingType().getKind();
+            if (enclKind == TypeKind.DECLARED) {
+                this.enclosingType = (AnnotatedDeclaredType) createType(type.getEnclosingType(), atypeFactory);
+            } else if (enclKind != TypeKind.NONE) {
+                SourceChecker.errorAbort("AnnotatedDeclaredType: unsupported enclosing type: " +
+                        type.getEnclosingType() + " (" + enclKind + ")");
+            }
         }
 
         @Override
@@ -882,20 +877,8 @@ public abstract class AnnotatedTypeMirror {
             StringBuilder sb = new StringBuilder();
             final Element typeElt = this.getUnderlyingType().asElement();
             String smpl = typeElt.getSimpleName().toString();
-            if (!smpl.isEmpty()) {
-                sb.append(formatAnnotationString(getAnnotations(), printInvisible));
-                sb.append(smpl);
-            } else {
-                // The simple name is empty for multiple upper bounds.
-                // This check is similar to TypesUtils.isAnonymousType,
-                // but we need the partial result anyway.
-                // The upper bounds are stored in the supertypes field; see
-                // TypeFromTree.visitTypeParameter for initialization.
-                // TODO: Should multiple bounds be represented more directly?
-                // See MultiBoundTypeVar.java for an example.
-                assert TypesUtils.isAnonymousType(this.getUnderlyingType());
-                formatConjunctiveSuperTypes(sb, printInvisible);
-            }
+            sb.append(formatAnnotationString(getAnnotations(), printInvisible));
+            sb.append(smpl);
             if (!this.getTypeArguments().isEmpty()) {
                 sb.append("<");
 
@@ -908,19 +891,6 @@ public abstract class AnnotatedTypeMirror {
                 sb.append(">");
             }
             return sb.toString();
-        }
-
-        private void formatConjunctiveSuperTypes(StringBuilder sb, boolean printInvisible) {
-            // Prevent an infinite recursion that might happen when calling toString
-            // within deepCopy, caused by postAsSuper in (at least) the IGJ checker.
-            // if (this.supertypes == null) { return; }
-
-            boolean isFirst = true;
-            for(AnnotatedDeclaredType adt : this.directSuperTypes()) {
-                if (!isFirst) sb.append(" & ");
-                sb.append(adt.toString(printInvisible));
-                isFirst = false;
-            }
         }
 
         @Override
@@ -1008,9 +978,8 @@ public abstract class AnnotatedTypeMirror {
             AnnotatedDeclaredType type =
                 new AnnotatedDeclaredType(getUnderlyingType(), atypeFactory);
             copyFields(type, copyAnnotations);
-
+            type.setEnclosingType(getEnclosingType());
             type.setTypeArguments(getTypeArguments());
-
             return type;
         }
 
@@ -1032,14 +1001,6 @@ public abstract class AnnotatedTypeMirror {
                 typeArgs.add(t.substitute(newMappings));
             type.setTypeArguments(typeArgs);
 
-            if (TypesUtils.isAnonymousType(actualType)
-                && this.supertypes != null) {
-                // watch need to copy upper bound as well
-                List<AnnotatedDeclaredType> supertypes = new ArrayList<AnnotatedDeclaredType>();
-                for (AnnotatedDeclaredType t : directSuperTypes())
-                    supertypes.add((AnnotatedDeclaredType)t.substitute(newMappings));
-                type.setDirectSuperTypes(supertypes);
-            }
             return type;
         }
 
@@ -1063,7 +1024,7 @@ public abstract class AnnotatedTypeMirror {
                 // Handle case 2
                 // TODO: Test this
                 AnnotatedDeclaredType rType = getCopy(true);
-                AnnotatedTypeMirror et = getEnclosingType();
+                AnnotatedDeclaredType et = getEnclosingType();
                 rType.setEnclosingType(et.getErased());
                 return rType;
             } else {
@@ -1093,6 +1054,25 @@ public abstract class AnnotatedTypeMirror {
             return res;
         }
         */
+
+        /**
+         * Sets the enclosing type
+         *
+         * @param enclosingType
+         */
+        void setEnclosingType(AnnotatedDeclaredType enclosingType) {
+            this.enclosingType = enclosingType;
+        }
+
+        /**
+         * Returns the enclosing type, as in the type of {@code A} in the type
+         * {@code A.B}.
+         *
+         * @return enclosingType the enclosing type
+         */
+        public AnnotatedDeclaredType getEnclosingType() {
+            return enclosingType;
+        }
     }
 
     /**
@@ -1352,7 +1332,9 @@ public abstract class AnnotatedTypeMirror {
                 sb.append("> ");
             }
             sb.append(getReturnType().toString(printInvisible));
-            sb.append(" (");
+            sb.append(' ');
+            sb.append(this.getElement().getSimpleName());
+            sb.append('(');
             sb.append(getReceiverType().toString(printInvisible));
             sb.append(" this");
             if (!getParameterTypes().isEmpty()) {
@@ -2242,6 +2224,98 @@ public abstract class AnnotatedTypeMirror {
             return methodTypeArgHack;
         }
     }
+
+    public static class AnnotatedIntersectionType extends AnnotatedTypeMirror {
+
+        protected final IntersectionType actualType;
+
+        /**
+         * Constructor for this type
+         *
+         * @param type  underlying kind of this type
+         * @param atypeFactory TODO
+         */
+        private AnnotatedIntersectionType(IntersectionType type,
+                AnnotatedTypeFactory atypeFactory) {
+            super(type, atypeFactory);
+            this.actualType = type;
+        }
+
+        @Override
+        public String toString(boolean printInvisible) {
+            StringBuilder sb = new StringBuilder();
+            // Prevent an infinite recursion that might happen when calling toString
+            // within deepCopy, caused by postAsSuper in (at least) the IGJ checker.
+            // if (this.supertypes == null) { return; }
+
+            boolean isFirst = true;
+            for(AnnotatedDeclaredType adt : this.directSuperTypes()) {
+                if (!isFirst) sb.append(" & ");
+                sb.append(adt.toString(printInvisible));
+                isFirst = false;
+            }
+            return sb.toString();
+        }
+
+        @Override
+        public <R, P> R accept(AnnotatedTypeVisitor<R, P> v, P p) {
+            return v.visitIntersection(this, p);
+        }
+
+        @Override
+        public AnnotatedIntersectionType getCopy(boolean copyAnnotations) {
+            AnnotatedIntersectionType type =
+                    new AnnotatedIntersectionType(actualType, atypeFactory);
+            copyFields(type, copyAnnotations);
+            return type;
+        }
+
+        protected List<AnnotatedDeclaredType> supertypes;
+
+        public List<AnnotatedDeclaredType> directSuperTypes() {
+            if (supertypes == null) {
+                List<? extends TypeMirror> ubounds = actualType.getBounds();
+                List<AnnotatedDeclaredType> res = new ArrayList<AnnotatedDeclaredType>(ubounds.size());
+                for (TypeMirror bnd : ubounds) {
+                    res.add((AnnotatedDeclaredType) createType(bnd, atypeFactory));
+                }
+                supertypes = res;
+            }
+            return Collections.unmodifiableList(supertypes);
+        }
+
+        public List<AnnotatedDeclaredType> directSuperTypesField() {
+            return supertypes;
+        }
+
+        void setDirectSuperTypes(List<AnnotatedDeclaredType> supertypes) {
+            this.supertypes = new ArrayList<AnnotatedDeclaredType>(supertypes);
+        }
+
+        @Override
+        public AnnotatedTypeMirror substitute(
+                Map<? extends AnnotatedTypeMirror,
+                    ? extends AnnotatedTypeMirror> mappings) {
+            if (mappings.containsKey(this))
+                return mappings.get(this);
+
+            AnnotatedIntersectionType type = getCopy(true);
+
+            Map<AnnotatedTypeMirror, AnnotatedTypeMirror> newMappings =
+                    new HashMap<AnnotatedTypeMirror, AnnotatedTypeMirror>(mappings);
+            newMappings.put(this, type);
+
+            if (this.supertypes != null) {
+                // watch need to copy upper bound as well
+                List<AnnotatedDeclaredType> supertypes = new ArrayList<AnnotatedDeclaredType>();
+                for (AnnotatedDeclaredType t : directSuperTypes())
+                    supertypes.add((AnnotatedDeclaredType)t.substitute(newMappings));
+                type.supertypes = supertypes;
+            }
+            return type;
+        }
+    }
+
 
     public List<? extends AnnotatedTypeMirror> directSuperTypes() {
         return directSuperTypes(this);

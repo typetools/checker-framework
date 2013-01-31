@@ -177,7 +177,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningChecker> {
         } else {
             //the class is not marked @UsesObjectEquals -> make sure its superclass isn't either.
             //this is impossible after design change making @UsesObjectEquals inherited?
-            //check left in case of future design change back to non-inherited. 
+            //check left in case of future design change back to non-inherited.
             if(superClass != null && (elmt != null && elmt.getAnnotation(UsesObjectEquals.class) != null)){
                 checker.report(Result.failure("superclass.marked"), node);
             }
@@ -621,20 +621,27 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningChecker> {
     private boolean classIsAnnotated(AnnotatedTypeMirror type) {
 
         TypeMirror tm = type.getUnderlyingType();
-        if (tm instanceof TypeVariable) {
-            tm = ((TypeVariable) tm).getUpperBound();
-        }
-        if (tm instanceof WildcardType) {
-            tm = ((WildcardType) tm).getExtendsBound();
-        }
         if (tm == null) {
             // Maybe a type variable or wildcard had no upper bound
             return false;
         }
-        if (tm instanceof ArrayType) {
+        if (tm.getKind() == TypeKind.ANNOTATED) {
+            tm = ((AnnotatedType) tm).getUnderlyingType();
+        }
+        if (tm.getKind() == TypeKind.TYPEVAR) {
+            tm = ((TypeVariable) tm).getUpperBound();
+        }
+        if (tm.getKind() == TypeKind.WILDCARD) {
+            tm = ((WildcardType) tm).getExtendsBound();
+        }
+        if (tm == null || tm.getKind() == TypeKind.ARRAY) {
+            // Bound of a wildcard might be null
             return false;
         }
-        if (! (tm instanceof DeclaredType)) {
+        if (tm.getKind() == TypeKind.ANNOTATED) {
+            tm = ((AnnotatedType) tm).getUnderlyingType();
+        }
+        if (tm.getKind() != TypeKind.DECLARED) {
             System.out.printf("InterningVisitor.classIsAnnotated: tm = %s (%s)%n", tm, tm.getClass());
         }
         Element classElt = ((DeclaredType) tm).asElement();

@@ -2,7 +2,7 @@ package java.util;
 import checkers.igj.quals.*;
 
 @I
-public class Date implements @I java.io.Serializable, @I Cloneable, @I Comparable<@ReadOnly Date> {
+public class Date implements java.io. @I Serializable, @I Cloneable, @I Comparable<@ReadOnly Date> {
     private static final long serialVersionUID = 0L;
   public Date(@AssignsFields Date this) { throw new RuntimeException("skeleton method"); }
   public Date(@AssignsFields Date this, long a1) { throw new RuntimeException("skeleton method"); }

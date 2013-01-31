@@ -9,11 +9,9 @@ import checkers.igj.quals.I;
 import checkers.nullness.quals.NonNull;
 import checkers.source.SourceChecker;
 import checkers.util.AnnotationBuilder;
-
-import java.util.Collections;
+import checkers.util.AnnotationUtils;
 
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.annotation.processing.Processor;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeMirror;
 

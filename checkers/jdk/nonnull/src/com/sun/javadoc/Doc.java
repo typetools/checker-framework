@@ -26,5 +26,5 @@ public abstract interface Doc extends java.lang.Comparable<java.lang.Object> {
   public abstract boolean isOrdinaryClass();
   public abstract boolean isClass();
   public abstract boolean isIncluded();
-  public abstract @Nullable com.sun.javadoc.SourcePosition position();
+  public abstract com.sun.javadoc. @Nullable SourcePosition position();
 }

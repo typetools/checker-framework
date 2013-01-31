@@ -347,7 +347,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Err
             logCheckerError(ce);
         } catch (Throwable t) {
             logCheckerError(new CheckerError("SourceChecker.init: unexpected Throwable (" +
-                    t.getClass().getSimpleName() + "); message: " + t.getMessage(), t));
+                    t.getClass().getSimpleName() + "); message: " + t.getMessage() +
+                    "; invoke the compiler with -AprintErrorStack to see the stack trace.", t));
         }
     }
 
@@ -456,11 +457,12 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Err
             logCheckerError(new CheckerError("SourceChecker.typeProcess: unexpected Throwable (" +
                     t.getClass().getSimpleName() + ")  when processing "
                     + currentRoot.getSourceFile().getName() +
-                    (t.getMessage()!=null ? "; message: " + t.getMessage() : ""), t));
+                    (t.getMessage() != null ? "; message: " + t.getMessage() : "") +
+                    "; invoke the compiler with -AprintErrorStack to see the stack trace.", t));
         } finally {
             // Also add possibly deferred diagnostics, which will get published back in
             // AbstractTypeProcessor.
-            this.errsOnLastExit = log.nerrors + log.deferredDiagnostics.size();
+            this.errsOnLastExit = log.nerrors;
         }
     }
 
