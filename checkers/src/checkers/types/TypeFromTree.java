@@ -12,7 +12,13 @@ import javax.lang.model.element.*;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeVariable;
 
-import checkers.source.SourceChecker;
+import javacutils.AnnotationUtils;
+import javacutils.ErrorReporter;
+import javacutils.InternalUtils;
+import javacutils.Pair;
+import javacutils.TreeUtils;
+import javacutils.TypesUtils;
+
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -20,9 +26,6 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedIntersectionType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
 import checkers.util.AnnotatedTypes;
-import checkers.util.AnnotationUtils;
-import checkers.util.InternalUtils;
-import checkers.util.TreeUtils;
 
 import com.sun.source.tree.*;
 import com.sun.source.util.SimpleTreeVisitor;
@@ -41,10 +44,10 @@ abstract class TypeFromTree extends
     @Override
     public AnnotatedTypeMirror defaultAction(Tree node, AnnotatedTypeFactory f) {
         if (node == null) {
-            SourceChecker.errorAbort("TypeFromTree.defaultAction: null tree");
+            ErrorReporter.errorAbort("TypeFromTree.defaultAction: null tree");
             return null; // dead code
         }
-        SourceChecker.errorAbort("TypeFromTree.defaultAction: conversion undefined for tree type " + node.getKind());
+        ErrorReporter.errorAbort("TypeFromTree.defaultAction: conversion undefined for tree type " + node.getKind());
         return null; // dead code
     }
 
@@ -79,7 +82,7 @@ abstract class TypeFromTree extends
         public AnnotatedTypeMirror visitArrayAccess(ArrayAccessTree node,
                 AnnotatedTypeFactory f) {
 
-            AnnotatedTypeMirror preAssCtxt = f.visitorState.getAssignmentContext();
+            Pair<Tree, AnnotatedTypeMirror> preAssCtxt = f.visitorState.getAssignmentContext();
             try {
                 // TODO: what other trees shouldn't maintain the context?
                 f.visitorState.setAssignmentContext(null);
@@ -593,19 +596,24 @@ abstract class TypeFromTree extends
         private AnnotatedTypeMirror forTypeVariable(AnnotatedTypeMirror type,
                 AnnotatedTypeFactory f) {
             if (type.getKind() != TypeKind.TYPEVAR) {
-                SourceChecker.errorAbort("TypeFromTree.forTypeVariable: should only be called on type variables");
+                ErrorReporter.errorAbort("TypeFromTree.forTypeVariable: should only be called on type variables");
                 return null; // dead code
             }
 
-            TypeParameterElement tpe = (TypeParameterElement)
-                    ((TypeVariable)type.getUnderlyingType()).asElement();
+            TypeVariable typeVar = (TypeVariable)type.getUnderlyingType();
+            TypeParameterElement tpe = (TypeParameterElement)typeVar.asElement();
             Element elt = tpe.getGenericElement();
             if (elt instanceof TypeElement) {
                 TypeElement typeElt = (TypeElement)elt;
                 int idx = typeElt.getTypeParameters().indexOf(tpe);
-                ClassTree cls = (ClassTree)f.declarationFromElement(typeElt);
-                AnnotatedTypeMirror result = visit(cls.getTypeParameters().get(idx), f);
-                return result;
+                ClassTree cls = (ClassTree) f.declarationFromElement(typeElt);
+                if (cls != null) {
+                    AnnotatedTypeMirror result = visit(cls.getTypeParameters().get(idx), f);
+                    return result;
+                } else {
+                    // We already have all info from the element -> nothing to do.
+                    return type;
+                }
             } else if (elt instanceof ExecutableElement) {
                 ExecutableElement exElt = (ExecutableElement)elt;
                 int idx = exElt.getTypeParameters().indexOf(tpe);
@@ -613,8 +621,14 @@ abstract class TypeFromTree extends
                 AnnotatedTypeMirror result = visit(meth.getTypeParameters().get(idx), f);
                 return result;
             } else {
-                SourceChecker.errorAbort("TypeFromTree.forTypeVariable: not a supported element: " + elt);
-                return null; // dead code
+                // Captured types can have a generic element (owner) that is
+                // not an element at all, namely Symtab.noSymbol.
+                if (InternalUtils.isCaptured(typeVar)) {
+                    return type;
+                } else {
+                    ErrorReporter.errorAbort("TypeFromTree.forTypeVariable: not a supported element: " + elt);
+                    return null; // dead code
+                }
             }
         }
 

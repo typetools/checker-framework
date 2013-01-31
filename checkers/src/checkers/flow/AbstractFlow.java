@@ -1,6 +1,7 @@
 package checkers.flow;
 
 import java.io.PrintStream;
+import java.util.BitSet;
 import java.util.Collection;
 import java.util.Deque;
 import java.util.HashMap;
@@ -17,6 +18,12 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
+import javacutils.AnnotationUtils;
+import javacutils.ElementUtils;
+import javacutils.ErrorReporter;
+import javacutils.Pair;
+import javacutils.TreeUtils;
+
 import checkers.basetype.BaseTypeChecker;
 import checkers.source.SourceChecker;
 import checkers.types.AnnotatedTypeFactory;
@@ -26,10 +33,6 @@ import checkers.types.GeneralAnnotatedTypeFactory;
 import checkers.types.QualifierHierarchy;
 import checkers.types.VisitorState;
 import checkers.util.AnnotatedTypes;
-import checkers.util.AnnotationUtils;
-import checkers.util.ElementUtils;
-import checkers.util.Pair;
-import checkers.util.TreeUtils;
 /*>>>
 import checkers.nullness.quals.*;
 */
@@ -544,8 +547,8 @@ implements Flow {
                 // Set the assignment context for array component type inference.
                 // Note that flow is performed before the BaseTypeVisitor could set this
                 // information.
-                AnnotatedTypeMirror preAssCtxt = visitorState.getAssignmentContext();
-                atypeFactory.getVisitorState().setAssignmentContext(atypeFactory.getAnnotatedType(node));
+                Pair<Tree, AnnotatedTypeMirror> preAssCtxt = visitorState.getAssignmentContext();
+                atypeFactory.getVisitorState().setAssignmentContext(Pair.of((Tree) node, atypeFactory.getAnnotatedType(node)));
                 try {
                     propagate(node, init);
                     recordBits(getCurrentPath());
@@ -561,11 +564,11 @@ implements Flow {
     public Void visitAssignment(AssignmentTree node, Void p) {
         ExpressionTree var = node.getVariable();
         ExpressionTree expr = node.getExpression();
-        AnnotatedTypeMirror preAssCtxt = visitorState.getAssignmentContext();
+        Pair<Tree, AnnotatedTypeMirror> preAssCtxt = visitorState.getAssignmentContext();
 
         try {
             AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(var);
-            atypeFactory.getVisitorState().setAssignmentContext(type);
+            atypeFactory.getVisitorState().setAssignmentContext(Pair.of((Tree) var, type));
             if (!(var instanceof IdentifierTree))
                 scanExpr(var);
             scanExpr(expr);
@@ -612,7 +615,7 @@ implements Flow {
      * @return true iff information should be inferred.
      */
     protected static boolean inferFromAssert(AssertTree node, SourceChecker checker) {
-        return containsKey(node.getDetail(), checker.getSuppressWarningsKey())
+        return containsKey(node.getDetail(), checker.getSuppressWarningsKeys())
                 || checker.getLintOption("flow:inferFromAsserts", false);
     }
 
@@ -844,7 +847,7 @@ implements Flow {
         if (iter != null) {
             propagateFromType(var, iter);
         } else {
-            SourceChecker.errorAbort("AbstractFlow.visitEnahncedForLoop: could not determine iterated type!");
+            ErrorReporter.errorAbort("AbstractFlow.visitEnahncedForLoop: could not determine iterated type!");
         }
 
         ST stEntry = copyState(flowState);
@@ -878,10 +881,10 @@ implements Flow {
     @Override
     public Void visitReturn(ReturnTree node, Void p) {
         if (node.getExpression() != null) {
-            AnnotatedTypeMirror preAssCtxt = visitorState.getAssignmentContext();
+            Pair<Tree, AnnotatedTypeMirror> preAssCtxt = visitorState.getAssignmentContext();
             try {
                 AnnotatedTypeMirror ret = atypeFactory.getAnnotatedType(visitorState.getMethodTree().getReturnType());
-                visitorState.setAssignmentContext(ret);
+                visitorState.setAssignmentContext(Pair.<Tree, AnnotatedTypeMirror>of((Tree) null, atypeFactory.getAnnotatedType(node)));
                 scanExpr(node.getExpression());
             } finally {
                 visitorState.setAssignmentContext(preAssCtxt);
@@ -954,7 +957,7 @@ implements Flow {
     }
 
     /* TODO: Instead of the "scan(node.getArguments(), p);" I had the following:
-     * 
+     *
     Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair = factory.methodFromUse(node);
     AnnotatedExecutableType invokedMethod = mfuPair.first;
     List<AnnotatedTypeMirror> params =
@@ -1039,8 +1042,9 @@ implements Flow {
         // Usually there is nothing to do.
     }
 
+    @Override
     public Void visitArrayAccess(ArrayAccessTree node, Void p) {
-        AnnotatedTypeMirror preAssCtxt = visitorState.getAssignmentContext();
+        Pair<Tree, AnnotatedTypeMirror> preAssCtxt = visitorState.getAssignmentContext();
         try {
             visitorState.setAssignmentContext(null);
             scan(node.getExpression(), p);
