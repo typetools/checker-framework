@@ -101,7 +101,9 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
     /**
      * @return The transfer function to be used by the analysis.
      */
-    @SuppressWarnings("unchecked")
+    // there is a bug about raw types in the Checker Framework, making it
+    // necessary to suppress argument.type.incompatible
+    @SuppressWarnings( { "unchecked", "argument.type.incompatible" } )
     public T createTransferFunction() {
         @SuppressWarnings("rawtypes")
         AbstractBasicAnnotatedTypeFactory f = atypeFactory;
