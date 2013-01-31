@@ -16,7 +16,7 @@ import checkers.source.SupportedLintOptions;
         Free.class, Committed.class, Unclassified.class, FBCBottom.class,
         PolyNull.class, PolyAll.class })
 @SupportedLintOptions({ AbstractNonNullChecker.LINT_STRICTMONOTONICNONNULLINIT,
-        AbstractNonNullChecker.LINT_STRICTNULLCOMPARISON,
+        AbstractNonNullChecker.LINT_REDUNDANTNULLCOMPARISON,
         // Temporary option to forbid non-null array component types,
         // which is allowed by default.
         // Forbidding is sound and will eventually be the only possibility.

@@ -20,7 +20,7 @@ public class NonNullRawnessTest extends ParameterizedCheckerTest {
         super(testFile, checkers.nonnull.NonNullRawnessChecker.class.getName(),
                 "nonnull", "-Anomsgtext",
                 "-Alint=arrays:forbidnonnullcomponents,"
-                        + AbstractNonNullChecker.LINT_STRICTNULLCOMPARISON);
+                        + AbstractNonNullChecker.LINT_REDUNDANTNULLCOMPARISON);
     }
 
     @Parameters

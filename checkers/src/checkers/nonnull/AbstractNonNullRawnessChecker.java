@@ -13,7 +13,7 @@ import checkers.source.SupportedLintOptions;
 @TypeQualifiers({ Nullable.class, MonotonicNonNull.class, NonNull.class,
         NonRaw.class, Raw.class, PolyNull.class, PolyAll.class })
 @SupportedLintOptions({ AbstractNonNullChecker.LINT_STRICTMONOTONICNONNULLINIT,
-        AbstractNonNullChecker.LINT_STRICTNULLCOMPARISON,
+        AbstractNonNullChecker.LINT_REDUNDANTNULLCOMPARISON,
         // Temporary option to forbid non-null array component types,
         // which is allowed by default.
         // Forbidding is sound and will eventually be the only possibility.
