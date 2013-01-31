@@ -375,7 +375,7 @@ public class NonNullVisitor
 
         // respect command line option
         if (!checker.getLintOption(
-                AbstractNonNullChecker.LINT_STRICTNULLCOMPARISON,
+                AbstractNonNullChecker.LINT_REDUNDANTNULLCOMPARISON,
                 AbstractNonNullChecker.LINT_DEFAULT_STRICTNULLCOMPARISON)) {
             return;
         }
