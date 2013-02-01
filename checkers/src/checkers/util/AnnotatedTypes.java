@@ -33,7 +33,6 @@ import javacutils.ErrorReporter;
 import javacutils.InternalUtils;
 import javacutils.Pair;
 import javacutils.TreeUtils;
-import javacutils.TypesUtils;
 
 import checkers.quals.PolyAll;
 import checkers.quals.TypeQualifier;

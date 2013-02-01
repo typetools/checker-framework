@@ -41,6 +41,7 @@ import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.IfTree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.InstanceOfTree;
+import com.sun.source.tree.IntersectionTypeTree;
 import com.sun.source.tree.LabeledStatementTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.LiteralTree;
@@ -509,6 +510,11 @@ public class PurityChecker {
         }
 
         public PurityResult visitUnionType(UnionTypeTree node, PurityResult p) {
+            assert false : "this type of tree is unexpected here";
+            return null;
+        }
+
+        public PurityResult visitIntersectionType(IntersectionTypeTree node, PurityResult p) {
             assert false : "this type of tree is unexpected here";
             return null;
         }
