@@ -280,7 +280,7 @@ public class PluginUtil {
         cmd.add(checkerHome);
 
         cmd.add("-proc:only");
-        if(bootClassPath != null) {
+        if(bootClassPath != null && !bootClassPath.trim().isEmpty()) {
             cmd.add("-Xbootclasspath/p:" +  bootClassPath);
         }
 

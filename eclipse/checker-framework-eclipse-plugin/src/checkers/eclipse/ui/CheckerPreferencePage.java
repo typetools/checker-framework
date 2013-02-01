@@ -243,11 +243,11 @@ public class CheckerPreferencePage extends PreferencePage implements
         }
 
         //Add built in Checkers to the table
-        for ( final CheckerInfo checkerInfo : CheckerManager.getInstance().getCheckerInfos() ) {
+        for ( final CheckerInfo checkerInfo : CheckerManager.getCheckerInfos() ) {
             addProcTableItem(checkerInfo, true);
         }
 
-        for ( final String className : CheckerManager.getInstance().getStoredCustomClasses() ) {
+        for ( final String className : CheckerManager.getStoredCustomClasses() ) {
             addProcTableItem(CheckerInfo.fromClassPath(className, null), false);
         }
 

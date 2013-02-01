@@ -3,6 +3,7 @@ package checkers.eclipse.javac;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
 
@@ -36,27 +37,32 @@ public class CommandlineJavacRunner implements CheckersRunner {
     /**
      * Names of source files to compile
      */
-    private final List<String> fileNames;
+    protected final List<String> fileNames;
 
     /**
      * checkers to run
      */
-    private final String processors;
+    protected final String processors;
 
     /**
      * The classpath for this project
      */
-    private final String classpath;
+    protected final String classpath;
 
     /**
      * The bootclasspath for this project
      */
-    private final String bootClasspath;
+    protected final String bootClasspath;
 
     /**
      * The output of running the Checker Framework Compiler
      */
-    private String checkResult;
+    protected String checkResult;
+
+    /**
+     * The location of checkers.jar
+     */
+    protected File checkersJar;
 
     public CommandlineJavacRunner(String[] fileNames, String processors,
             String classpath, String bootClasspath) {
@@ -64,7 +70,8 @@ public class CommandlineJavacRunner implements CheckersRunner {
         this.processors = processors;
 
         //TODO: SEEMS THAT WHEN WE ARE USING @ ARGS THE CLASSPATH FROM THE JAR IS OVERRIDDEN - FIX THIS
-        this.classpath = classpath + File.pathSeparator + locatePluginFile(CHECKERS_LOCATION);
+        this.checkersJar = locatePluginFile(CHECKERS_LOCATION);
+        this.classpath = classpath + File.pathSeparator + checkersJar.getAbsolutePath();
         this.bootClasspath = bootClasspath;
 
         final IPreferenceStore prefs = CheckerPlugin.getDefault().getPreferenceStore();
@@ -84,7 +91,7 @@ public class CommandlineJavacRunner implements CheckersRunner {
             final File srcFofn       = PluginUtil.writeTmpSrcFofn("CFPlugin-eclipse", true, PluginUtil.toFiles(fileNames));
             final File classpathFofn = PluginUtil.writeTmpCpFile("CFPlugin-eclipse", true,  classpath);
 
-        	final List<String> cmd = createCommand(srcFofn, processors, classpathFofn, bootClasspath, new PrintStream(out));
+            final List<String> cmd = createCommand(srcFofn, processors, classpathFofn, bootClasspath, new PrintStream(out));
 
             if (verbose) {
                 out.println(JavaUtils.join(" ", cmd));
@@ -113,7 +120,7 @@ public class CommandlineJavacRunner implements CheckersRunner {
      * see -Djsr308_imports in the Checker Framework manual
      */
     private String implicitAnnotations() {
-        return JavaUtils.join(File.pathSeparator, CheckerManager.getInstance().getSelectedQuals());
+        return JavaUtils.join(File.pathSeparator, CheckerManager.getSelectedQuals());
     }
 
     /**
@@ -126,9 +133,9 @@ public class CommandlineJavacRunner implements CheckersRunner {
      * @param bootClassPath The Eclipse project's bootclasspath
      * @return A list of strings that (when separated by spaces) will form a call to the Checker Framework compiler
      */
-    private List<String> createCommand( final File srcFofn, final String processors,
-                                        final File classpathFofn, final String bootClassPath,
-                                        PrintStream out)  {
+    protected List<String> createCommand( final File srcFofn, final String processors,
+                                          final File classpathFofn, final String bootClassPath,
+                                          PrintStream out)  {
         final Map<PluginUtil.CheckerProp, Object> props = new HashMap<PluginUtil.CheckerProp, Object>();
 
         final IPreferenceStore prefs = CheckerPlugin.getDefault().getPreferenceStore();
@@ -145,11 +152,11 @@ public class CommandlineJavacRunner implements CheckersRunner {
         final String jdkPath = prefs.getString(CheckerPreferences.PREF_CHECKER_JDK_PATH);
 
         return PluginUtil.getCmd(null, srcFofn, processors,
-                                 locatePluginFile(CHECKERS_LOCATION),
-                                 jdkPath, classpathFofn, bootClassPath,
-                                 props, out);
+                checkersJar.getAbsolutePath(),
+                jdkPath, classpathFofn, bootClassPath,
+                props, out);
     }
-    
+
     /**
      * Any options found under the label "Additional Compiler Options" in the Checker Framework Plugin
      * preferences page
@@ -171,11 +178,10 @@ public class CommandlineJavacRunner implements CheckersRunner {
 
     /**
      * Add options for type processing from the preferences
-     * 
+     *
      * @param opts
      */
-    private void addProcessorOptions(Map<PluginUtil.CheckerProp, Object> opts, IPreferenceStore store)
-    {
+    private void addProcessorOptions(Map<PluginUtil.CheckerProp, Object> opts, IPreferenceStore store) {
         // TODO: some input validation would be nice here. Especially for
         // the additional compiler flags, which could be checked against
         // the compiler.
@@ -209,7 +215,7 @@ public class CommandlineJavacRunner implements CheckersRunner {
      * @param path The name of the file to find relative to the plugin directory
      * @return The path to the given file
      */
-    public static String locatePluginFile(String path) {
+    public static File locatePluginFile(String path) {
         Bundle bundle = Platform.getBundle(CheckerPlugin.PLUGIN_ID);
 
         Path checkersJAR = new Path(path);
@@ -219,10 +225,17 @@ public class CommandlineJavacRunner implements CheckersRunner {
         } catch (IOException e) {
             throw new RuntimeException("Exception locating plugin on path: " + path, e);
         } catch (NullPointerException npe) {
-        	throw new RuntimeException("Bundle= " + bundle + " ID=" + CheckerPlugin.PLUGIN_ID + " checkersJar=" + checkersJAR, npe);
+            throw new RuntimeException("Bundle= " + bundle + " ID=" + CheckerPlugin.PLUGIN_ID + " checkersJar=" + checkersJAR, npe);
         }
 
-        return checkersJarURL.getPath();
+        File checkersJarFile;
+        try {
+            checkersJarFile = new File(checkersJarURL.toURI());
+        } catch(URISyntaxException e) {
+            checkersJarFile = new File(checkersJarURL.getPath());
+        }
+
+        return checkersJarFile;
     }
 
     /**

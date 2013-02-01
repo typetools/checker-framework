@@ -39,7 +39,8 @@ public class AddCheckersHandler extends CheckerHandler
                 FileInputStream input;
                 try
                 {
-                    final String checkerQuals = CommandlineJavacRunner.locatePluginFile(CHECKERS_QUALS_LOCATION);
+                    final String checkerQuals =
+                        CommandlineJavacRunner.locatePluginFile(CHECKERS_QUALS_LOCATION).getAbsolutePath();
                     input = new FileInputStream(checkerQuals);
                     jarFile.create(input, false, null);
                 } catch (FileNotFoundException e) {
