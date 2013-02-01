@@ -12,10 +12,10 @@
   <extension point="org.eclipse.core.runtime.preferences">
     <initializer class="checkers.eclipse.prefs.PreferenceInitializer" />
   </extension>
-	
+
 <!--
   <extension 
-    id="buildnature" 
+    id="buildnature"
    	name="%extension.name" 
    	point="org.eclipse.core.resources.natures"> 
    	<runtime> 
@@ -71,7 +71,7 @@
           label="Clear Checker Markers"
           style="push">
         </command>
-        
+
         <!--<command
           commandId="checkers.eclipse.enablenature"
           label="Enable Automatic Checking"
