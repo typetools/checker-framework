@@ -9,7 +9,6 @@ import javax.lang.model.type.WildcardType;
 
 import javacutils.ElementUtils;
 import javacutils.ErrorReporter;
-import javacutils.TypesUtils;
 
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;

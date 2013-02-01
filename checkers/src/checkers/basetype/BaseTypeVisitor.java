@@ -20,7 +20,7 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
-import javax.tools.Diagnostic;
+import javax.tools.Diagnostic.Kind;
 
 import javacutils.AnnotationUtils;
 import javacutils.ElementUtils;
@@ -1288,11 +1288,12 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
      * @param errorKey the error message to use if the check fails (must be a
      *        compiler message key, see {@link CompilerMessageKey})
      * @param isLocalVariableAssignement
-     *            Are we dealing with an assigment and is the lhs a local
+     *            Are we dealing with an assignment and is the lhs a local
      *            variable?
      */
     protected void commonAssignmentCheck(AnnotatedTypeMirror varType,
-            ExpressionTree valueExp, /*@CompilerMessageKey*/ String errorKey) {
+            ExpressionTree valueExp, /*@CompilerMessageKey*/ String errorKey,
+            boolean isLocalVariableAssignement) {
         if (shouldSkipUses(valueExp))
             return;
         if (varType.getKind() == TypeKind.ARRAY

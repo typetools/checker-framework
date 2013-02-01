@@ -37,7 +37,6 @@ import javacutils.AnnotationUtils;
 import javacutils.ElementUtils;
 import javacutils.ErrorReporter;
 import javacutils.TreeUtils;
-import javacutils.TypesUtils;
 
 import checkers.initialization.quals.Committed;
 import checkers.initialization.quals.FBCBottom;
@@ -867,7 +866,7 @@ public abstract class AnnotatedTypeMirror {
             if (enclKind == TypeKind.DECLARED) {
                 this.enclosingType = (AnnotatedDeclaredType) createType(type.getEnclosingType(), atypeFactory);
             } else if (enclKind != TypeKind.NONE) {
-                SourceChecker.errorAbort("AnnotatedDeclaredType: unsupported enclosing type: " +
+                ErrorReporter.errorAbort("AnnotatedDeclaredType: unsupported enclosing type: " +
                         type.getEnclosingType() + " (" + enclKind + ")");
             }
         }
