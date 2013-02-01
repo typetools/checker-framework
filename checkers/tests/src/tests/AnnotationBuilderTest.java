@@ -9,7 +9,6 @@ import checkers.igj.quals.I;
 import checkers.nullness.quals.NonNull;
 import checkers.source.SourceChecker;
 import checkers.util.AnnotationBuilder;
-import checkers.util.AnnotationUtils;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
@@ -28,7 +27,7 @@ public class AnnotationBuilderTest {
     private final ProcessingEnvironment env;
 
     public AnnotationBuilderTest() {
-        env = new JavacProcessingEnvironment(new Context(), Collections.<Processor>emptyList());
+        env = JavacProcessingEnvironment.instance(new Context());
         ErrorReporter.setHandler(new TestChecker());
     }
 

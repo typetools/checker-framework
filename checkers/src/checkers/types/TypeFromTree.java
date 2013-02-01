@@ -17,7 +17,6 @@ import javacutils.ErrorReporter;
 import javacutils.InternalUtils;
 import javacutils.Pair;
 import javacutils.TreeUtils;
-import javacutils.TypesUtils;
 
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;

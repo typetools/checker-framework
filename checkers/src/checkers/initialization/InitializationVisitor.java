@@ -15,7 +15,9 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.AnnotatedType;
 import javax.lang.model.type.ExecutableType;
+import javax.lang.model.type.TypeKind;
 
 import checkers.basetype.BaseTypeVisitor;
 import checkers.flow.analysis.checkers.CFAbstractStore;
@@ -328,7 +330,7 @@ public class InitializationVisitor<Checker extends InitializationChecker, Value 
         if (TreeUtils.isConstructor(node)) {
             com.sun.tools.javac.code.Symbol meth = (com.sun.tools.javac.code.Symbol) TreeUtils
                     .elementFromDeclaration(node);
-            rcvannos = meth.typeAnnotations;
+            rcvannos = meth.getTypeAnnotationMirrors();
             if (rcvannos == null) {
                 rcvannos = Collections.<AnnotationMirror> emptyList();
             }
@@ -336,8 +338,8 @@ public class InitializationVisitor<Checker extends InitializationChecker, Value 
             ExecutableElement meth = TreeUtils.elementFromDeclaration(node);
             com.sun.tools.javac.code.Type rcv = (com.sun.tools.javac.code.Type) ((ExecutableType) meth
                     .asType()).getReceiverType();
-            if (rcv != null) {
-                rcvannos = rcv.typeAnnotations;
+            if (rcv != null && (rcv.getKind() == TypeKind.ANNOTATED)) {
+                rcvannos = ((AnnotatedType) rcv).getAnnotations();
             } else {
                 rcvannos = Collections.<AnnotationMirror> emptyList();
             }

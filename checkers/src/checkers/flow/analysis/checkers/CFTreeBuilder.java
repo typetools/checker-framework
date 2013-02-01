@@ -27,7 +27,7 @@ import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.TypeAnnotationPosition;
-import com.sun.tools.javac.code.TypeTags;
+import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Pair;
@@ -61,7 +61,7 @@ public class CFTreeBuilder extends TreeBuilder {
         // Convert the annotations from a set of AnnotationMirrors
         // to a list of AnnotationTrees.
         Set<AnnotationMirror> annotations = annotatedType.getAnnotations();
-        List<JCTree.JCTypeAnnotation> annotationTrees = List.nil();
+        List<JCTree.JCAnnotation> annotationTrees = List.nil();
 
         for (AnnotationMirror am : annotations) {
             // We can only make annotation trees out of annotations
@@ -72,11 +72,11 @@ public class CFTreeBuilder extends TreeBuilder {
                     attributeFromAnnotationMirror(am);
                 JCTree.JCAnnotation annotationTree =
                     maker.Annotation(typeCompound);
-                JCTree.JCTypeAnnotation typeAnnotationTree =
+                JCTree.JCAnnotation typeAnnotationTree =
                     maker.TypeAnnotation(annotationTree.getAnnotationType(),
                                          annotationTree.getArguments());
 
-                typeAnnotationTree.attribute_field = typeCompound;
+                typeAnnotationTree.attribute = typeCompound;
 
                 annotationTrees = annotationTrees.append(typeAnnotationTree);
             }
@@ -88,31 +88,31 @@ public class CFTreeBuilder extends TreeBuilder {
         Tree underlyingTypeTree;
         switch (annotatedType.getKind()) {
         case BYTE:
-            underlyingTypeTree = maker.TypeIdent(TypeTags.BYTE);
+            underlyingTypeTree = maker.TypeIdent(TypeTag.BYTE);
             break;
         case CHAR:
-            underlyingTypeTree = maker.TypeIdent(TypeTags.BYTE);
+            underlyingTypeTree = maker.TypeIdent(TypeTag.BYTE);
             break;
         case SHORT:
-            underlyingTypeTree = maker.TypeIdent(TypeTags.SHORT);
+            underlyingTypeTree = maker.TypeIdent(TypeTag.SHORT);
             break;
         case INT:
-            underlyingTypeTree = maker.TypeIdent(TypeTags.INT);
+            underlyingTypeTree = maker.TypeIdent(TypeTag.INT);
             break;
         case LONG:
-            underlyingTypeTree = maker.TypeIdent(TypeTags.LONG);
+            underlyingTypeTree = maker.TypeIdent(TypeTag.LONG);
             break;
         case FLOAT:
-            underlyingTypeTree = maker.TypeIdent(TypeTags.FLOAT);
+            underlyingTypeTree = maker.TypeIdent(TypeTag.FLOAT);
             break;
         case DOUBLE:
-            underlyingTypeTree = maker.TypeIdent(TypeTags.DOUBLE);
+            underlyingTypeTree = maker.TypeIdent(TypeTag.DOUBLE);
             break;
         case BOOLEAN:
-            underlyingTypeTree = maker.TypeIdent(TypeTags.BOOLEAN);
+            underlyingTypeTree = maker.TypeIdent(TypeTag.BOOLEAN);
             break;
         case VOID:
-            underlyingTypeTree = maker.TypeIdent(TypeTags.VOID);
+            underlyingTypeTree = maker.TypeIdent(TypeTag.VOID);
             break;
         case TYPEVAR: {
             // No recursive annotations.
@@ -140,7 +140,7 @@ public class CFTreeBuilder extends TreeBuilder {
             } else {
                 underlyingTypeTree =
                     maker.Wildcard(maker.TypeBoundKind(BoundKind.UNBOUND),
-                                   maker.TypeIdent(TypeTags.VOID));
+                                   maker.TypeIdent(TypeTag.VOID));
             }
             break;
         }
@@ -172,7 +172,7 @@ public class CFTreeBuilder extends TreeBuilder {
             break;
         }
         case ERROR:
-            underlyingTypeTree = maker.TypeIdent(TypeTags.ERROR);
+            underlyingTypeTree = maker.TypeIdent(TypeTag.ERROR);
             break;
         default:
             assert false : "unexpected type: " + annotatedType;

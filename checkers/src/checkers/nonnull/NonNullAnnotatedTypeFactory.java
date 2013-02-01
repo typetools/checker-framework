@@ -374,7 +374,7 @@ public class NonNullAnnotatedTypeFactory
              */
             com.sun.tools.javac.code.Symbol meth =
                     (com.sun.tools.javac.code.Symbol)TreeUtils.elementFromDeclaration(method);
-            com.sun.tools.javac.util.List<TypeCompound> retannos = meth.typeAnnotations;
+            com.sun.tools.javac.util.List<TypeCompound> retannos = meth.getTypeAnnotationMirrors();
             if (retannos == null) {
                 return false;
             }
