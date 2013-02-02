@@ -8,6 +8,7 @@ User-visible framework improvements:
 Adapt to underlying jsr308-langtools changes.
   Most visible change is syntax for fully-qualified types, from
   @A java.lang.Object to java.lang.@A Object.
+  Checker Framework does not build or run on JDK 6.
 
 Documentation:
   A new tutorial is available at

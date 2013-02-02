@@ -214,7 +214,7 @@ ${build.version} of the 'javac.jar' library."/>
     </target>
 
     <!-- TODO: Remove this and just use bindist-all (or remove bindist-all and keep this) -->
-    <target name="dist" depends="bindist-all"
+    <target name="dist" depends="bindist"
             description="Create .jar, annotated JDK, and binary distribution">
     </target>
 
