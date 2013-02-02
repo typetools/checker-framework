@@ -314,7 +314,7 @@ implements Flow {
      * @param lhs the left-hand side of the assignment
      * @param rhs the type of the right-hand side of the assignment
      */
-    abstract void propagateFromType(Tree lhs, AnnotatedTypeMirror rhs);
+    protected abstract void propagateFromType(Tree lhs, AnnotatedTypeMirror rhs);
 
     /**
      * @param path the path to check
