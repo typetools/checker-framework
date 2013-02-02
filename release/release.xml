@@ -178,7 +178,9 @@
                 <include name="*.gif"/>
             </fileset>
         </copy>
-        <copy todir="${tmp.ver.dir}" dir="${checkers.tutorial}" />
+        <copy todir="${tmp.ver.dir}" >
+            <fileset dir="${checkers.tutorial}" includes="**"/>
+        </copy>
 
         <copy todir="${tmp.ver.dir}" file="${jsr308doc}/README-jsr308.html" />
         <copy todir="${tmp.ver.dir}" file="${jsr308doc}/Makefile-jsr308-install" />
