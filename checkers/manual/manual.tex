@@ -1,0 +1,109 @@
+\documentclass[10pt]{report}
+
+\input{manual-style.tex}
+
+\title{The Checker Framework: \\ Custom pluggable types for Java}
+\author{% MIT Program Analysis Group \\
+\url{http://types.cs.washington.edu/checker-framework/}}
+\newcommand{\ReleaseInfo}{1.6.0 (1 Feb 2013)}
+\date{Version \ReleaseInfo{}}
+
+\begin{document}
+
+\maketitle
+
+% %BEGIN LATEX
+% \tableofcontents
+% %END LATEX
+
+
+%BEGIN LATEX
+\setcounter{page}{2}
+%END LATEX
+
+%BEGIN LATEX
+\newcommand{\ahreforurl}[2]{#2 (\url{#1})}
+%END LATEX
+%HEVEA \newcommand{\ahreforurl}[2]{\ahref{#1}{#2}}
+
+
+\noindent
+\textbf{For the impatient:}
+Section~\refwithpageparen{installation}
+describes how to \textbf{install and use} pluggable type-checkers.
+
+% %BEGIN LATEX
+% \medskip
+% %END LATEX
+%
+% \noindent
+% You can also jump directly to the documentation for a particular checker:
+%  Nullness checker (\chapterpageref{nullness-checker}),
+%  Interning checker (\chapterpageref{interning-checker}),
+%  IGJ immutability checker (\chapterpageref{igj-checker}),
+%  Javari immutability checker (\chapterpageref{javari-checker}),
+%  Lock checker (\chapterpageref{lock-checker}),
+%  Fake enum checker (\chapterpageref{fenum-checker}),
+%  Tainting checker (\chapterpageref{tainting-checker}),
+%  Linear (single-use) checker (\chapterpageref{linear-checker}),
+%  Regex checker (\chapterpageref{regex-checker}),
+%  Property file checker (\chapterpageref{propkey-checker}),
+%  Basic checker (\chapterpageref{basic-checker}),
+%  Typestate checker (\chapterpageref{typestate-checker}),
+%  Units checker (\chapterpageref{units-checker}),
+%  Third-party checkers (\chapterpageref{third-party-checkers}).
+% % Keep this list in sync with the list at the top of introduction.tex.
+% TODO: do we need the list above? Isn't it enough to highlight that also
+% introduction.tex needs to be updated?
+
+
+%HEVEA \setcounter{tocdepth}{1}
+% Not supported by Hevea, so don't bother: \dominitoc
+\tableofcontents
+\newpage
+
+\input{introduction.tex}
+
+%% Checkers
+
+\input{nullness-checker.tex}
+\input{interning-checker.tex}
+\input{lock-checker.tex}
+\input{fenum-checker.tex}
+\input{tainting-checker.tex}
+\input{regex-checker.tex}
+\input{propkey-checker.tex}
+\input{signature-checker.tex}
+\input{units-checker.tex}
+
+% Less well-tested checkers:
+\input{linear-checker.tex}
+\input{igj-checker.tex}
+% Reinstate when this is more than a stub.
+% \input{oigj-checker.tex}
+\input{javari-checker.tex}
+
+\input{basic-checker.tex}
+\input{external-checkers.tex}
+
+%% Advanced material
+
+\input{generics.tex}
+\input{advanced-features.tex}
+\input{warnings.tex}
+\input{annotating-libraries.tex}
+\input{creating-a-checker.tex}
+\input{external-tools.tex}
+\input{faq.tex}
+\input{troubleshooting.tex}
+
+\htmlhr
+\bibliographystyle{alpha}
+% The .bib files are available from
+% http://code.google.com/p/plume-bib/
+% clone the project somewhere and set your BIBINPUTS accordingly.
+\bibliography{bibstring-unabbrev,types,ernst,invariants,generals,alias,concurrency}
+
+\end{document}
+
+% LocalWords:  pt TODO JavaDocs Arg api HEVEA html ernst IGJ igj javari
