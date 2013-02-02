@@ -174,7 +174,7 @@ public class DefaultFlow<ST extends DefaultFlowState> extends AbstractFlow<ST> {
     }
 
     @Override
-    void propagateFromType(Tree lhs, AnnotatedTypeMirror rhs) {
+    protected void propagateFromType(Tree lhs, AnnotatedTypeMirror rhs) {
 
         if (lhs.getKind() == Tree.Kind.ARRAY_ACCESS)
             return;
