@@ -454,6 +454,18 @@ Similarly,
 objects.
 
 
+Some older tools interpret a declaration like \<@NonEmpty String[] var> as
+``non-empty array of strings''.  This is in conflict with the Java type
+annotations specification, which defines it as meanning ``array of
+non-empty strings''.
+% (and has since October 2007)
+If you use one of these
+older tools, you will find this incompatibility confusing.
+You will have to live with it until the older
+tool is updated to conform to the Java specification, or until you
+transition to a newer tool that conforms to the Java specification.
+
+
 \section{Why are the type parameters to \<List> and \<Map> annotated as \<@NonNull>?\label{faq-list-map-nonnull-typeargs}}
 
 The annotation on \<java.util.Collection> only allows non-null elements:
