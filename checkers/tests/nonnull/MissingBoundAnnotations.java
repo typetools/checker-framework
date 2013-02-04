@@ -1,9 +1,7 @@
-
 import java.util.*;
 import checkers.quals.*;
 import checkers.nullness.quals.*;
 
-//@skip-test
 public final class MissingBoundAnnotations {
 
   // Test that the upper bound "Comparable<...>" receives an @Unqualified annotation.

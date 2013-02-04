@@ -1,20 +1,10 @@
 package checkers.linear;
 
-import java.util.Set;
-
-import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 
 import com.sun.source.tree.*;
 
-import javacutils.AnnotationUtils;
-import javacutils.TreeUtils;
-
-import checkers.basetype.BaseTypeChecker;
-import checkers.flow.DefaultFlow;
-import checkers.flow.DefaultFlowState;
-import checkers.linear.quals.*;
-import checkers.types.AnnotatedTypeFactory;
+import checkers.linear.quals.Unusable;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.BasicAnnotatedTypeFactory;
 
@@ -31,14 +21,14 @@ import checkers.types.BasicAnnotatedTypeFactory;
  */
 public class LinearAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<LinearChecker> {
 
-    private final AnnotationMirror LINEAR, UNUSABLE;
+    // private final AnnotationMirror LINEAR, UNUSABLE;
 
     public LinearAnnotatedTypeFactory(LinearChecker checker,
             CompilationUnitTree root) {
         super(checker, root);
 
-        LINEAR = AnnotationUtils.fromClass(elements, Linear.class);
-        UNUSABLE = AnnotationUtils.fromClass(elements, Unusable.class);
+        // LINEAR = AnnotationUtils.fromClass(elements, Linear.class);
+        // UNUSABLE = AnnotationUtils.fromClass(elements, Unusable.class);
 
         this.postInit();
     }
@@ -64,6 +54,7 @@ public class LinearAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Linear
      * an {@link IdentifierTree}.
      *
      */
+    /*
     private class LinearFlow extends DefaultFlow<DefaultFlowState> {
         public LinearFlow(BaseTypeChecker checker, CompilationUnitTree root,
                 Set<AnnotationMirror> annotations, AnnotatedTypeFactory factory) {
@@ -72,7 +63,7 @@ public class LinearAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Linear
 
         /**
          * Case 2: add {@code Unusable} to node type, if it is {@code Linear}.
-         */
+         *
         @Override
         public Void visitIdentifier(IdentifierTree node, Void p) {
             super.visitIdentifier(node, p);
@@ -86,7 +77,7 @@ public class LinearAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Linear
          *
          * The method should be called on every instance of a tree
          * that causes the reference to be "used up".
-         */
+         *
         private void markAsUnusableIfLinear(ExpressionTree node) {
             if (!LinearVisitor.isLocalVarOrParam(node))
                 return;
@@ -101,6 +92,6 @@ public class LinearAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Linear
                 }
             }
         }
-
     }
+    */
 }
