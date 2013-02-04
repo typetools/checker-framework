@@ -1,6 +1,9 @@
 package javacutils;
 
 import static com.sun.tools.javac.code.Kinds.VAR;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -15,6 +18,7 @@ import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.comp.AttrContext;
+import com.sun.tools.javac.comp.DeferredAttr;
 import com.sun.tools.javac.comp.Env;
 import com.sun.tools.javac.comp.Resolve;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
@@ -142,8 +146,58 @@ public class Resolver {
         boolean allowBoxing = true;
         boolean useVarargs = false;
         boolean operator = true;
-        return wrapInvocation(FIND_METHOD, env, site, name, argtypes,
+
+        try {
+            // For some reason we have to set our own method context, which is rather ugly.
+            // TODO: find a nicer way to do this.
+            Object methodContext = buildMethodContext();
+            Object oldContext = getField(resolve, "currentResolutionContext");
+            setField(resolve, "currentResolutionContext", methodContext);
+            Element result = wrapInvocation(FIND_METHOD, env, site, name, argtypes,
                 typeargtypes, allowBoxing, useVarargs, operator);
+            setField(resolve, "currentResolutionContext", oldContext);
+            return result;
+        } catch (Throwable t) {
+            Error err = new AssertionError("Unexpected Reflection error");
+            err.initCause(t);
+            throw err;
+        }
+    }
+
+    /**
+     * Build an instance of {@code Resolve$MethodResolutionContext}.
+     */
+    protected Object buildMethodContext() throws ClassNotFoundException,
+            InstantiationException, IllegalAccessException,
+            InvocationTargetException, NoSuchFieldException {
+        // Class is not accessible, instantiate reflectively.
+        Class<?> methCtxClss = Class.forName("com.sun.tools.javac.comp.Resolve$MethodResolutionContext");
+        Constructor<?> constructor = methCtxClss.getDeclaredConstructors()[0];
+        constructor.setAccessible(true);
+        Object methodContext = constructor.newInstance(resolve);
+        // we need to also initialize the fields attrMode and step
+        setField(methodContext, "attrMode", DeferredAttr.AttrMode.CHECK);
+        @SuppressWarnings("rawtypes")
+        List<?> phases = (List) getField(resolve, "methodResolutionSteps");
+        setField(methodContext, "step", phases.get(1));
+        return methodContext;
+    }
+
+    /** Reflectively set a field. */
+    private void setField(Object receiver, String fieldName,
+            Object value) throws NoSuchFieldException,
+            IllegalAccessException {
+        Field f = receiver.getClass().getDeclaredField(fieldName);
+        f.setAccessible(true);
+        f.set(receiver, value);
+    }
+
+    /** Reflectively get the value of a field. */
+    private Object getField(Object receiver, String fieldName) throws NoSuchFieldException,
+            IllegalAccessException {
+        Field f = receiver.getClass().getDeclaredField(fieldName);
+        f.setAccessible(true);
+        return f.get(receiver);
     }
 
     private Symbol wrapInvocation(Method method, Object... args) {
