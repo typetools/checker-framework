@@ -2208,6 +2208,11 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
 
         @Override
         public Void visitTypeVariable(AnnotatedTypeVariable type, Tree tree) {
+            if (visitedNodes.containsKey(type)) {
+                return visitedNodes.get(type);
+            }
+            visitedNodes.put(type, null);
+
             // Keep in sync with visitWildcard
             Set<AnnotationMirror> onVar = type.getAnnotations();
             if (!onVar.isEmpty()) {
@@ -2259,6 +2264,11 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
 
         @Override
         public Void visitWildcard(AnnotatedWildcardType type, Tree tree) {
+            if (visitedNodes.containsKey(type)) {
+                return visitedNodes.get(type);
+            }
+            visitedNodes.put(type, null);
+
             // Keep in sync with visitTypeVariable
             Set<AnnotationMirror> onVar = type.getAnnotations();
             if (!onVar.isEmpty()) {
