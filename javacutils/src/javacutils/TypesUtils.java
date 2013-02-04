@@ -133,6 +133,8 @@ public final class TypesUtils {
         case LONG:
         case SHORT:
             return true;
+        case ANNOTATED:
+            return isPrimitive(((AnnotatedType)type).getUnderlyingType());
         default:
             return false;
         }
@@ -166,6 +168,8 @@ public final class TypesUtils {
         case LONG:
         case SHORT:
             return true;
+        case ANNOTATED:
+            return isNumeric(((AnnotatedType)type).getUnderlyingType());
         default:
             return false;
         }
@@ -184,6 +188,8 @@ public final class TypesUtils {
         case LONG:
         case SHORT:
             return true;
+        case ANNOTATED:
+            return isIntegral(((AnnotatedType)type).getUnderlyingType());
         default:
             return false;
         }
@@ -199,6 +205,8 @@ public final class TypesUtils {
         case DOUBLE:
         case FLOAT:
             return true;
+        case ANNOTATED:
+            return isFloating(((AnnotatedType)type).getUnderlyingType());
         default:
             return false;
         }
