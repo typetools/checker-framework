@@ -76,7 +76,7 @@ different shell, you may need to slightly adjust the commands.
 The output of the last command should be:
 
 \begin{Verbatim}
-  javac 1.7.0-jsr308-1.5.0
+  javac 1.7.0-jsr308-1.6.0
 \end{Verbatim}
 
 
@@ -103,7 +103,7 @@ verify that the installation works.  From the command line, run:
 The output should be:
 
 \begin{Verbatim}
-  javac 1.7.0-jsr308-1.5.0
+  javac 1.7.0-jsr308-1.6.0
 \end{Verbatim}
 
 \end{enumerate}
@@ -144,7 +144,7 @@ the new \code{javac} compiler.
 The output should be:
 
 \begin{Verbatim}
-  javac 1.7.0-jsr308-1.5.0
+  javac 1.7.0-jsr308-1.6.0
 \end{Verbatim}
 
 \end{enumerate}
@@ -212,7 +212,7 @@ Now, verify that the installation works.  From the command line, run:
 The output should be:
 
 \begin{Verbatim}
-  javac 1.7.0-jsr308-1.5.0
+  javac 1.7.0-jsr308-1.6.0
 \end{Verbatim}
 
 \end{enumerate}
@@ -473,8 +473,10 @@ See \url{http://blogs.jetbrains.com/idea/2009/07/type-annotations-jsr-308-suppor
 \section{Eclipse\label{eclipse}}
 
 There are two ways to run a checker from within the Eclipse IDE:  via Ant
-or using an Eclipse plug-in.
-
+or using an Eclipse plug-in.  No matter what method you choose, we suggest that
+all Checker Framework annotations be written in the comments.  This will avoid many
+text highlighting errors with versions of Eclipse that don't support Java 8 and the
+new JSR308 syntax changes.
 
 \paragraph{Using an Ant task}
 
