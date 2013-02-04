@@ -1,6 +1,7 @@
 package checkers.eclipse.actions;
 
 import java.io.File;
+import java.lang.RuntimeException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -114,6 +115,7 @@ public class CheckerWorker extends Job {
 
     private List<JavacError> runChecker() throws JavaModelException {
         final Pair<String, String> classpaths = classPathOf(project);
+
         final CheckersRunner runner;
         if(useJavacRunner) {
         	runner = new JavacRunner(sourceFiles, checkerNames.split(","),
@@ -147,14 +149,12 @@ public class CheckerWorker extends Job {
         }
     }
 
-    private Pair<List<String>, List<String>> pathOf(IClasspathEntry cp,
-            IJavaProject project) throws JavaModelException {
+    private Pair<List<String>, List<String>> pathOf(IClasspathEntry cp, IJavaProject project) throws JavaModelException {
         int entryKind = cp.getEntryKind();
         switch (entryKind) {
             case IClasspathEntry.CPE_SOURCE:
                 return new Pair<List<String>, List<String>>(
-                        Arrays.asList(new String[] { ResourceUtils.outputLocation(
-                                cp, project) }), new ArrayList<String>());
+                        Arrays.asList(new String[] { ResourceUtils.outputLocation(cp, project) }), new ArrayList<String>());
 
             case IClasspathEntry.CPE_LIBRARY:
                 return new Pair<List<String>, List<String>>(
@@ -211,12 +211,11 @@ public class CheckerWorker extends Job {
                 paths.fst), JavaUtils.join(File.pathSeparator, paths.snd));
     }
 
-    private Pair<List<String>, List<String>> classPathEntries(
-            IJavaProject project) throws JavaModelException {
+    private Pair<List<String>, List<String>> classPathEntries(IJavaProject project) throws JavaModelException {
 
         final Pair<List<String>, List<String>> results = new Pair<List<String>, List<String>>(new ArrayList<String>(), new ArrayList<String>());
 
-        for (IClasspathEntry cp : project.getRawClasspath()) {
+        for (IClasspathEntry cp : project.getResolvedClasspath(true)) {
             Pair<List<String>, List<String>> paths = pathOf(cp, project);
             results.fst.addAll(paths.fst);
             results.snd.addAll(paths.snd);

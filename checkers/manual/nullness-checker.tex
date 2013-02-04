@@ -1544,6 +1544,14 @@ import at most one of the annotations with
 conflicting names; the other(s) must be written out fully rather than
 imported.
 
+Note that some older tools interpret array and vararg declarations
+inconsistently with the Java specification.  For example, they might
+interpret \<@NonNull Object []> as ``non-null array of objects'', rather
+than as ``array of non-null objects'' which is the correct Java
+interpretation.  Such an interpretation is unfortunate and confusing.  See
+Section~\ref{faq-array-syntax-meaning} for some more details about this
+issue.
+
 
 \subsection{Which tool is right for you?\label{choosing-nullness-tool}}
 

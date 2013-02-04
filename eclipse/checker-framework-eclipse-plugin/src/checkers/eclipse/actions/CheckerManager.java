@@ -25,21 +25,8 @@ public class CheckerManager {
     private CheckerManager() {
     }
 
-    private static class Holder { //TODO: REMOVE
-        private static final CheckerManager INSTANCE = new CheckerManager();
-    }
-
-    /**
-     * get the static instance of the manager
-     * 
-     * @return the static instance
-     */
-    public static CheckerManager getInstance() {
-        return Holder.INSTANCE;
-    }
-
-    public List<CheckerInfo> getCheckerInfos() {
-    	return CheckerInfo.checkers;
+    public static List<CheckerInfo> getCheckerInfos() {
+    	return CheckerInfo.getCheckers();
     }
 
     /**
@@ -48,12 +35,12 @@ public class CheckerManager {
      * 
      * @return a list of quals paths to use as imports
      */
-    public List<String> getSelectedQuals() {
+    public static List<String> getSelectedQuals() {
         List<String> selected = new ArrayList<String>();
 
         IPreferenceStore store = getPrefStore();
 
-        for (CheckerInfo processor : CheckerInfo.checkers) {
+        for (CheckerInfo processor : CheckerInfo.getCheckers()) {
             String label = processor.getLabel();
             boolean selection = store.getBoolean(label);
             if (selection)

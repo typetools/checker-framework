@@ -53,13 +53,11 @@ CHECKER_BIN_DIR    = os.path.join(CHECKER_FRAMEWORK, 'checkers', 'binary')
 CHECKERS_BINARY    = os.path.join(CHECKER_BIN_DIR, 'checkers.jar'       )
 CHECKERS_QUALS     = os.path.join(CHECKER_BIN_DIR, 'checkers-quals.jar' )
 JAVAC_BINARY       = os.path.join(CHECKER_BIN_DIR, 'javac.jar')
-JDK6_BINARY        = os.path.join(CHECKER_BIN_DIR, 'jdk6.jar' )
 JDK7_BINARY        = os.path.join(CHECKER_BIN_DIR, 'jdk7.jar' )
 
 CHECKERS_BINARY_POM    = os.path.join(CHECKER_BIN_DIR, 'poms', 'checkersPom.xml'      )
 CHECKERS_QUALS_POM     = os.path.join(CHECKER_BIN_DIR, 'poms', 'checkersQualsPom.xml' )
 JAVAC_BINARY_POM       = os.path.join(CHECKER_BIN_DIR, 'poms', 'compilerPom.xml'      )
-JDK6_BINARY_POM        = os.path.join(CHECKER_BIN_DIR, 'poms', 'jdk6Pom.xml' )
 JDK7_BINARY_POM        = os.path.join(CHECKER_BIN_DIR, 'poms', 'jdk7Pom.xml' )
 
 CHECKERS_CHANGELOG = os.path.join(CHECKER_FRAMEWORK, 'checkers', 'changelog-checkers.txt')
@@ -85,13 +83,16 @@ os.environ['PLUME_LIB'] =  PLUME_LIB
 os.environ['TEXINPUTS'] =  '.:/scratch/secs-jenkins/tools/hevea-1.10/lib/hevea:/usr/share/texmf/tex/latex/hevea/:/homes/gws/mernst/tex/sty:/homes/gws/mernst/tex:..:'
 os.environ['PERLLIB']   =  getAndAppend('PERLLIB', ":")  + "/homes/gws/mernst/bin/src/perl/lib/perl5/site_perl/5.10.0:/homes/gws/jburke/perl_lib"
 os.environ['PERL5LIB']  =  getAndAppend('PERL5LIB', ":") + "/homes/gws/mernst/bin/src/perl/lib/perl5/site_perl/5.10.0:/homes/gws/jburke/perl_lib"
-os.environ['JAVA_HOME'] =  '/scratch/secs-jenkins/java/jdk1.6.0'
-os.environ['JAVA_6_HOME'] =  '/scratch/secs-jenkins/java/jdk1.6.0'
 os.environ['JAVA_7_HOME'] =  '/scratch/secs-jenkins/java/jdk1.7.0'
+os.environ['JAVA_HOME']   =  os.environ['JAVA_7_HOME']
 
 EDITOR = os.getenv('EDITOR')
 if EDITOR == None:
     EDITOR = 'emacs'
+
+HGUSER = os.getenv('HGUSER')
+if HGUSER == None:
+    raise Exception('HGUSER environment variable is not set')
 
 PATH = os.environ['JAVA_HOME'] + "/projects/uns/F11/bin/:" + os.environ['PATH']
 PATH = PATH + ":/scratch/secs-jenkins/tools/hevea-1.10/bin/:/projects/uns/F11/bin/"
@@ -172,8 +173,7 @@ def main(argv):
     mvn_deploy( CHECKERS_BINARY, CHECKERS_BINARY_POM, MAVEN_REPO )
     mvn_deploy( CHECKERS_QUALS,  CHECKERS_QUALS_POM,  MAVEN_REPO )
     mvn_deploy( JAVAC_BINARY,    JAVAC_BINARY_POM,    MAVEN_REPO )
-    mvn_deploy( JDK6_BINARY,     JDK6_BINARY_POM,     MAVEN_REPO )
-    mvn_deploy( JDK6_BINARY,     JDK7_BINARY_POM,     MAVEN_REPO )
+    mvn_deploy( JDK7_BINARY,     JDK7_BINARY_POM,     MAVEN_REPO )
 
     checklinks(JSR308_DOC_MAKEFILE, DEFAULT_SITE)
 
