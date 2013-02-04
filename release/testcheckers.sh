@@ -19,12 +19,12 @@ function cfruntest() {
   java -jar $CHECKERS/binary/checkers.jar -version
   if (($?)); then exit 6; fi
 
-  $CHECKERS/binary/javac -processor checkers.nullness.NullnessChecker \
+  $CHECKERS/binary/javac -processor checkers.nonnull.NonNullFbcChecker \
       $CHECKERS/examples/NullnessReleaseTests.java 
   if (($?)); then exit 6; fi
 
   java -jar $CHECKERS/binary/checkers.jar \
-      -processor checkers.nullness.NullnessChecker \
+      -processor checkers.nonnull.NonNullFbcChecker \
       $CHECKERS/examples/NullnessReleaseTests.java 
   if (($?)); then exit 6; fi
 }
