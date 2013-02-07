@@ -1,3 +1,4 @@
+import java.util.*;
 import checkers.regex.quals.*;
 
 public class InvariantTypes {
@@ -9,10 +10,17 @@ public class InvariantTypes {
   public static final String[] sa6 = {"a", "b"};
   final String[] sa7 = {"a", "b"};
 
+  // tested above:  String[] sa = {"a"};
   @Regex String[] rsa = {"a"};
+  String[] nrsa = {"(a"};
   //:: error: (array.initializer.type.incompatible) :: error: (assignment.type.incompatible)
   @Regex String[] rsaerr = {"(a"};
-  String[] nrsa = {"(a"};
+
+  List<String> ls = Arrays.asList("alice", "bob", "carol");
+  List<@Regex String> lrs = Arrays.asList("alice", "bob", "carol");
+  List<String> lnrs = Arrays.asList("(alice", "bob", "carol");
+  //:: error: (assignment.type.incompatible)
+  List<@Regex String> lrserr = Arrays.asList("(alice", "bob", "carol");
 
   void unqm(String[] sa) {}
   void rem(@Regex String[] rsa) {}
