@@ -2,7 +2,6 @@ package checkers.nullness.quals;
 
 import java.lang.annotation.*;
 
-import checkers.nullness.NullnessChecker;
 import checkers.quals.ImplicitFor;
 import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifier;
