@@ -80,9 +80,9 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
         this.treeAnnotator = createTreeAnnotator(checker);
         this.typeAnnotator = createTypeAnnotator(checker);
         this.useFlow = useFlow;
-        this.poly = new QualifierPolymorphism(checker, this);
 
-        this.defaults = new QualifierDefaults(elements, this);
+        this.poly = createQualifierPolymorphism();
+        this.defaults = createQualifierDefaults();
         boolean foundDefault = false;
         // TODO: should look for a default qualifier per qualifier hierarchy.
         for (Class<? extends Annotation> qual : checker.getSupportedTypeQualifiers()) {
@@ -172,6 +172,23 @@ public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends 
     protected Flow createFlow(Checker checker, CompilationUnitTree root,
             Set<AnnotationMirror> flowQuals) {
         return new DefaultFlow<DefaultFlowState>(checker, root, flowQuals, this);
+    }
+
+    /**
+     * Create {@link QualifierDefaults} which handles user specified defaults
+     * @return the QualifierDefaults class
+     */
+    protected QualifierDefaults createQualifierDefaults() {
+        return new QualifierDefaults(elements, this);
+    }
+
+    /**
+     * Creates {@link QualifierPolymorphism} which supports
+     * QualifierPolymorphism mechanism
+     * @return the QualifierPolymorphism class
+     */
+    protected QualifierPolymorphism createQualifierPolymorphism() {
+        return new QualifierPolymorphism(checker, this);
     }
 
     // **********************************************************************
