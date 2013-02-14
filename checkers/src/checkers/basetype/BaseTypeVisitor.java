@@ -1360,6 +1360,8 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         default:
             type = atypeFactory.getAnnotatedType(tree);
         }
+
+        typeValidator.isValid = true;
         typeValidator.visit(type, tree);
         return typeValidator.isValid;
     }
