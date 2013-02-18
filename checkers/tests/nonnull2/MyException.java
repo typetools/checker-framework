@@ -14,7 +14,7 @@ public class MyException extends Exception {
          return sb.toString();
      }
 
-     @SuppressWarnings("nullness")
+     @SuppressWarnings("nonnull")
      public StackTraceElement[] getStackTrace() {
          throw new RuntimeException("not implemented yet");
      }

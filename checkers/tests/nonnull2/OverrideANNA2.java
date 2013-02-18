@@ -1,12 +1,13 @@
+import checkers.initialization.quals.Unclassified;
+import checkers.nonnull.quals.EnsuresNonNull;
 import checkers.nullness.quals.*;
 
-//@skip-test
 class OverrideANNA2 {
   static class Super {
     Object f;
 
-    @AssertNonNullAfter("f")
-    void setf() {
+    @EnsuresNonNull("f")
+    void setf(@Raw @Unclassified Super this) {
       f = new Object();
     }
 
@@ -18,11 +19,10 @@ class OverrideANNA2 {
   static class Sub extends Super {
     Object f;
 
-    // TODO: some error here: the "f" in the annotation refers to a
-    // different field than the superclass.
     @Override
-    @AssertNonNullAfter("f")
-    void setf() {
+    @EnsuresNonNull("f")
+    //:: error: (contracts.postcondition.override.invalid)
+    void setf(@Raw @Unclassified Sub this) {
       f = new Object();
     }
 

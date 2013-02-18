@@ -1,10 +1,11 @@
+import checkers.nonnull.quals.EnsuresNonNull;
 import checkers.nullness.quals.*;
 
 public class AssertNonNullTest {
   public @Nullable String s;
    
-  //:: error: (assert.postcondition.not.satisfied)
-  public @AssertNonNullAfter("s") void makeNN() {
+  //:: error: (contracts.postcondition.not.satisfied)
+  public @EnsuresNonNull("s") void makeNN() {
     s = null;
   }
    

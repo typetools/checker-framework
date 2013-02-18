@@ -13,7 +13,7 @@ class ArrayLazyNN {
         o1[0] = null;
         //:: error: (assignment.type.incompatible)
         @NonNull Object [] o2 = o1;
-        @SuppressWarnings("nullness")
+        @SuppressWarnings("nonnull")
         @NonNull Object [] o3 = o1;
     }
 }

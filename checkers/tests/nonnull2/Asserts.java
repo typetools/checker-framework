@@ -1,3 +1,4 @@
+import checkers.nonnull.quals.EnsuresNonNullIf;
 import checkers.nullness.quals.*;
 
 public class Asserts {
@@ -9,14 +10,13 @@ public class Asserts {
 
     void incorrectAssertExpr() {
         String s = null;
-        //:: error: (dereference.of.nullable)
-        assert s != null : s.getClass() + " suppress nullness";  // error
+        assert s != null : "@AssumeAssertion(nonnull)";  // error
         s.getClass();  // OK
     }
 
     void correctAssertExpr() {
         String s = null;
-        assert s == null : s.getClass() + " suppress nullness";
+        assert s == null : "@AssumeAssertion(nonnull)";
         //:: error: (dereference.of.nullable)
         s.getClass();   // error
     }
@@ -26,8 +26,11 @@ public class Asserts {
     }
 
     void assertComplexExpr (ArrayCell ac, int i) {
-        assert ac.vals[i] != null : "@SuppressWarnings(nullness)";
+        assert ac.vals[i] != null : "@AssumeAssertion(nonnull)";
         @NonNull Object o = ac.vals[i];
+        i = 10;
+        //:: error: (assignment.type.incompatible)
+        @NonNull Object o2 = ac.vals[i];
     }
 
     boolean pairwiseEqual(boolean @Nullable [] seq1, boolean @Nullable [] seq2) {
@@ -36,10 +39,10 @@ public class Asserts {
         return true;
       }
 
-    @AssertNonNullIfTrue({"#1", "#2"})
-    boolean sameLength(boolean @Nullable [] seq1, boolean @Nullable [] seq2) {
+    @EnsuresNonNullIf(result=true, expression={"#1", "#2"})
+    boolean sameLength(final boolean @Nullable [] seq1, final boolean @Nullable [] seq2) {
         // don't bother with the implementation
-        //:: error: (assertiftrue.postcondition.not.satisfied)
+        //:: error: (contracts.conditional.postcondition.not.satisfied)
         return true;
     }
 
@@ -48,13 +51,13 @@ public class Asserts {
 
     void testAssertBad(boolean @Nullable [] seq1, boolean @Nullable [] seq2) {
         assert sameLength(seq1, seq2);
-        // the AssertNonNullIfTrue is not taken from the assert, as it doesn't contain "nullness"
+        // the @EnsuresNonNullIf is not taken from the assert, as it doesn't contain "nullness"
         //:: error: (accessing.nullable)
         if (seq1[0]);        
     }
     
     void testAssertGood(boolean @Nullable [] seq1, boolean @Nullable [] seq2) {
-        assert sameLength(seq1, seq2) : "@SuppressWarnings(nullness)";
+        assert sameLength(seq1, seq2) : "@AssumeAssertion(nonnull)";
         // The explanation contains "nullness" and we therefore take the additional assumption
         if (seq1[0]);        
     }

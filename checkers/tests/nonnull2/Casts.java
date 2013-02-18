@@ -16,7 +16,7 @@ public class Casts {
         Integer b = null;
         //:: error: (assignment.type.incompatible)
         int i = b;
-        //:: error: (unboxing.of.nullable)
+        // no error, because there was already a nullpointer exception
         Object o = (int)b;
     }
 
@@ -69,7 +69,7 @@ public class Casts {
     void testSuppression(@Nullable Object x) {
         //:: error: (assignment.type.incompatible)
         @NonNull String s1 = (String) x;
-        @SuppressWarnings("nullness")
+        @SuppressWarnings("nonnull")
         @NonNull String s2 = (String) x;
     }
 
