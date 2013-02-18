@@ -49,14 +49,14 @@ public class MisuseProperties {
     //    @HasSystemProperties, and forbid some operations (or any
     //    treatment as a supertype) for such properties.
 
-    Set<Object> keys = p.keySet();
+    Set<@KeyFor("p") Object> keys = p.keySet();
     // now remove  "line.separator" from the set
     keys.remove("line.separator");
     keys.removeAll(keys);
     keys.clear();
     keys.retainAll(Collections.EMPTY_SET);
 
-    Set<Map.Entry<Object,Object>> entries = p.entrySet();
+    Set<Map.Entry<@KeyFor("p") Object,Object>> entries = p.entrySet();
     // now remove the pair containing "line.separator" from the set, as above
 
     Collection<Object> values = p.values();
