@@ -1,3 +1,4 @@
+import checkers.nonnull.quals.RequiresNonNull;
 import checkers.nullness.quals.*;
 
 class NNOEMoreTests {
@@ -7,13 +8,13 @@ class NNOEMoreTests {
     @Nullable
     String otherNullable = null;
 
-    @NonNullOnEntry("nullable")
+    @RequiresNonNull("nullable")
     void test1() {
       nullable.toString();
     }
 
-    //:: error: (field.not.found.nullness.parse.error)
-    @NonNullOnEntry("xxx") void test2() {
+    //:: error: (flowexpr.parse.error)
+    @RequiresNonNull("xxx") void test2() {
       //:: error: (dereference.of.nullable)
       nullable.toString();
     }
@@ -21,11 +22,10 @@ class NNOEMoreTests {
 
   class NNOESeparate {
     void call1(NNOEMain p) {
-      //:: error: (nonnullonentry.precondition.not.satisfied)
+      //:: error: (contracts.precondition.not.satisfied)
       p.test1();
 
       Object xxx = new Object();
-      //:: error: (nullness.parse.error)
       p.test2();
     }
 
@@ -37,7 +37,7 @@ class NNOEMoreTests {
   
   @Nullable Object field1;
   
-  @NonNullOnEntry("field1")
+  @RequiresNonNull("field1")
   void methWithIf1() {
       if (5 < 99) {
       } else {

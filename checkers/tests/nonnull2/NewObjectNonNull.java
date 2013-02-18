@@ -1,5 +1,5 @@
 import checkers.quals.*;
-import checkers.nullness.quals.*;
+import checkers.nonnull.quals.*;
 
 class NewObjectNonNull {
   @DefaultQualifier(Nullable.class)

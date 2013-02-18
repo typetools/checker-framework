@@ -116,10 +116,9 @@ class Flow {
         @NonNull String b = str;
     }
 
-    public void testAssert(String str) {
+    public void testAssert(@Nullable String str) {
 
-        //String str = "foo";
-        assert str != null : "suppress nullness";
+        assert str != null : "@AssumeAssertion(nonnull)";
 
         @NonNull String a = str;
 
@@ -179,9 +178,8 @@ class Flow {
         throw new RuntimeException();
     }
 
-    public void retestWhile() {
+    public void retestWhile(@Nullable String str) {
 
-        String str = "foo";
         while (str != null) {
             @NonNull String a = str;
             break;

@@ -55,9 +55,6 @@ public class LazyInitialization {
     }
 
     class PptRelation1 {
-        // TODO: This @SuppressWarnings should not be necessary.
-        // See bug 107: http://code.google.com/p/checker-framework/issues/detail?id=107
-        @SuppressWarnings("nullness")
         public void init_hierarchy_new (PptTopLevel ppt, Object eq) {
             ppt.equality_view = eq;
             ppt.equality_view.toString();
@@ -86,11 +83,9 @@ public class LazyInitialization {
             pr1.equality_view2 = eq;
             pr1.equality_view2.toString();
 
-            // Flow inference uses the Element instead of something more precise to handle
-            // aliasing correctly.
-            //TODO:: error: (dereference.of.nullable)
+            //:: error: (dereference.of.nullable)
             pr2.equality_view2.toString();
-            //TODO:: error: (dereference.of.nullable)
+            //:: error: (dereference.of.nullable)
             this.equality_view2.toString();
 
             pr2.equality_view2 = eq;

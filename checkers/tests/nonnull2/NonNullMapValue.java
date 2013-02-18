@@ -1,3 +1,4 @@
+import checkers.nonnull.quals.EnsuresNonNullIf;
 import checkers.nullness.quals.*;
 
 import java.util.*;
@@ -158,7 +159,7 @@ public class NonNullMapValue {
       }
   }
 
-  // Map.get should be annotated as @Pure
+  // Map.get should be annotated as @dataflow.quals.Pure
   public static int mapGetSize(MyMap<Object, List<Object>> covered, Object file) {
     return (covered.get(file) == null) ? 0 : covered.get(file).size();
   }
@@ -170,7 +171,7 @@ public class NonNullMapValue {
     // We get an override warning, because we do not use the annotated JDK in the
     // test suite. Ignore this.
     @SuppressWarnings("override.return.invalid")
-    @Pure public @Nullable V get(@Nullable Object o);
+    @dataflow.quals.Pure public @Nullable V get(@Nullable Object o);
   }
 
   private static final String KEY = "key";
@@ -193,21 +194,22 @@ public class NonNullMapValue {
     if (map.containsKey(KEY)) {
       map.get(KEY).toString();
     }
+    //:: warning: (known.nonnull)
     if (map.containsKey(KEY2) && map.get(KEY2).toString() != null) {
       // do nothing
     }
   }
 
   interface MyMap2<K, V> {
-    @Pure
+      @dataflow.quals.Pure
     // This annotation is not legal on containsKey in general.
     // If the Map is declared as (say) Map<Object, @Nullable Object>,
     // then get returns a nullable value.  We really want to say that if
     // containsKey returns non-null, then get returns V rather than
     // @Nullable V, but I don't know how to say that.
-    @AssertNonNullIfTrue("get(#1)")
+    @EnsuresNonNullIf(result=true, expression="get(#1)")
     public abstract boolean containsKey(@Nullable Object a1);
-    public abstract @Pure @Nullable V get(@Nullable Object a1);
+    public abstract @dataflow.quals.Pure @Nullable V get(@Nullable Object a1);
   }
 
 

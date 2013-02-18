@@ -1,11 +1,14 @@
+import checkers.initialization.quals.Raw;
+import checkers.initialization.quals.Unclassified;
+import checkers.nonnull.quals.EnsuresNonNull;
 import checkers.nullness.quals.*;
 
 class OverrideANNA {
   static class Super {
     Object f;
 
-    @AssertNonNullAfter("f")
-    void setf() {
+    @EnsuresNonNull("f")
+    void setf(@Raw @Unclassified Super this) {
       f = new Object();
     }
 
@@ -16,8 +19,8 @@ class OverrideANNA {
 
   static class Sub extends Super {
     @Override
-    //:: error: (override.post.method.annotation.invalid)
-    void setf() { }
+    //:: error: (contracts.postcondition.override.invalid)
+    void setf(@Raw @Unclassified Sub this) { }
   }
 
   public static void main(String[] args) {
