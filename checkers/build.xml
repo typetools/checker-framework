@@ -490,7 +490,7 @@ ${build.version} of the 'javac.jar' library."/>
         </antcall>
     </target>
 
-    <target name="nonnull-tests" depends="jar,build-tests,nonnull-base-tests,nonnull-skipuses-tests,nonnull-skipdefs-tests,nonnull-uninit-tests,nonnull-extra-tests"
+    <target name="nonnull-tests" depends="jar,build-tests,nonnull-base-tests,nonnull-skipuses-tests,nonnull-skipdefs-tests,nonnull-extra-tests"
       description="Run tests for the Non-Null checker">
     </target>
 
@@ -501,13 +501,6 @@ ${build.version} of the 'javac.jar' library."/>
         </antcall>
         <antcall target="-run-tests">
             <param name="param" value="tests.NonNullRawnessTest"/>
-        </antcall>
-    </target>
-
-    <target name="nonnull-uninit-tests" depends="jar,build-tests"
-      description="Run uninit tests for the Non-Null checker">
-        <antcall target="-run-tests">
-            <param name="param" value="tests.NonNullUninitializedTest"/>
         </antcall>
     </target>
 
