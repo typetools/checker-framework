@@ -1,18 +1,20 @@
 // Note that this file is a near duplicate in /nullness and /nullness-uninit
 
+import checkers.initialization.quals.Unclassified;
+import checkers.nonnull.quals.EnsuresNonNull;
+import checkers.nonnull.quals.RequiresNonNull;
 import checkers.nullness.quals.*;
 import java.util.*;
 
-@checkers.quals.DefaultQualifier(Nullable.class)
 class RawTypes {
 
     class Bad {
         @NonNull String field;
 
         public Bad() {
-            //:: error: (method.invocation.invalid.rawness)
+            //:: error: (method.invocation.invalid)
             this.init();                                // error
-            //:: error: (method.invocation.invalid.rawness)
+            //:: error: (method.invocation.invalid)
             init();                                     // error
 
             this.field = "field";                       // valid
@@ -38,22 +40,22 @@ class RawTypes {
             init();                                             // valid
         }
 
-        public void init(@Raw A this) {
+        public void init(@Raw @Unclassified A this) {
             //:: error: (dereference.of.nullable)
             output(this.field.length());
         }
 
-        public void initExpl2(@Raw A this) {
+        public void initExpl2(@Raw @Unclassified A this) {
             //:: error: (argument.type.incompatible)
             output(this.field);
         }
 
-        public void initImpl1(@Raw A this) {
+        public void initImpl1(@Raw @Unclassified A this) {
             //:: error: (dereference.of.nullable)
             output(field.length());
         }
 
-        public void initImpl2(@Raw A this) {
+        public void initImpl2(@Raw @Unclassified A this) {
             //:: error: (argument.type.incompatible)
             output(field);
         }
@@ -70,23 +72,23 @@ class RawTypes {
         }
 
         @Override
-        public void init(@Raw B this) {
+        public void init(@Raw @Unclassified B this) {
             //:: error: (dereference.of.nullable)
             output(this.field.length());            // error (TODO: substitution)
             super.init();                                       // valid
         }
 
-        public void initImpl1(@Raw B this) {
+        public void initImpl1(@Raw @Unclassified B this) {
             //:: error: (dereference.of.nullable)
             output(field.length());                 // error (TODO: substitution)
         }
 
-        public void initExpl2(@Raw B this) {
+        public void initExpl2(@Raw @Unclassified B this) {
             //:: error: (dereference.of.nullable)
             output(this.otherField.length());       // error
         }
 
-        public void initImpl2(@Raw B this) {
+        public void initImpl2(@Raw @Unclassified B this) {
             //:: error: (dereference.of.nullable)
             output(otherField.length());            // error
         }
@@ -96,7 +98,7 @@ class RawTypes {
             this.init();                                        // valid
         }
 
-        void otherRaw(@Raw B this) {
+        void otherRaw(@Raw @Unclassified B this) {
             init();                                             // valid
             this.init();                                        // valid
         }
@@ -108,7 +110,7 @@ class RawTypes {
         @NonNull String[] strings;
 
         @Override
-        public void init(@Raw C this) {
+        public void init(@Raw @Unclassified C this) {
             //:: error: (dereference.of.nullable)
             output(this.strings.length);            // error
             System.out.println();                   // valid
@@ -121,29 +123,29 @@ class RawTypes {
 
     class D extends C {
         @Override
-        public void init(@Raw D this) {
+        public void init(@Raw @Unclassified D this) {
             this.field = "s";
             output(this.field.length());
         }
     }
 
     class MyTest {
-        int i;
+        Integer i;
         MyTest(int i) {
             this.i = i;
         }
-        void myTest(@Raw MyTest this) {
-            i++;
+        void myTest(@Raw @Unclassified MyTest this) {
+            //:: error: (unboxing.of.nullable)
+            i = i+1;
         }
     }
 
     class AllFieldsInitialized {
-        long elapsedMillis = 0;
-        long startTime = 0;
+        Integer elapsedMillis = 0;
+        Integer startTime = 0;
 
-        // If all fields have an initializer, then the type of "this"
-        // should be non-raw in the constructor.
         public AllFieldsInitialized() {
+            //:: error: (method.invocation.invalid)
             nonRawMethod();
         }
 
@@ -157,23 +159,23 @@ class RawTypes {
     }
 
     class AllFieldsSetInInitializer {
-        long elapsedMillis;
-        long startTime;
+        Integer elapsedMillis;
+        Integer startTime;
 
-        // If all fields have an initializer, then the type of "this"
-        // should be non-raw in the constructor.
         public AllFieldsSetInInitializer() {
             elapsedMillis = 0;
-            //:: warning: (method.invocation.invalid.rawness)
+            //:: error: (method.invocation.invalid)
             nonRawMethod();     // error
             startTime = 0;
-            nonRawMethod();     // no error
+            //:: error: (method.invocation.invalid)
+            nonRawMethod();     // error
+            //:: error: (commitment.invalid.field.write.committed)
             new AFSIICell().afsii = this;
         }
 
         //:: error: (commitment.fields.uninitialized)
         public AllFieldsSetInInitializer(boolean b) {
-            //:: warning: (method.invocation.invalid.rawness)
+            //:: error: (method.invocation.invalid)
             nonRawMethod();     // error
         }
 
@@ -182,13 +184,14 @@ class RawTypes {
     }
 
     class ConstructorInvocations {
-        int v;
+        Integer v;
         public ConstructorInvocations(int v) {
             this.v = v;
         }
         public ConstructorInvocations() {
             this(0);
-            nonRawMethod(); // valid
+            //:: error: (method.invocation.invalid)
+            nonRawMethod(); // invalid
         }
         public void nonRawMethod() { }
     }
@@ -198,12 +201,12 @@ class RawTypes {
             @NonNull String s = string();
         }
 
-        public @NonNull String string(@Raw MethodAccess this) {
+        public @NonNull String string(@Raw @Unclassified MethodAccess this) {
             return "nonnull";
         }
     }
 
-    void cast(@Raw Object... args) {
+    void cast(@Raw @Unclassified Object... args) {
 
         @SuppressWarnings("rawtypes")
         //:: error: (assignment.type.incompatible)
@@ -223,13 +226,12 @@ class RawTypes {
 
     class RawAfterConstructorOK1 {
         @Nullable Object o;
-        //:: error: (commitment.fields.uninitialized)
         RawAfterConstructorOK1() {
         }
     }
 
     class RawAfterConstructorOK2 {
-        int a;
+        Integer a;
         //:: error: (commitment.fields.uninitialized)
         RawAfterConstructorOK2() {
         }
@@ -240,43 +242,42 @@ class RawTypes {
      // TODO: reinstate.  This shows desired features, for initialization in
      // a helper method rather than in the constructor.
     class InitInHelperMethod {
-        int a;
-        int b;
+        Integer a;
+        Integer b;
 
         InitInHelperMethod(short constructor_inits_ab) {
             a = 1;
             b = 1;
+            //:: error: (method.invocation.invalid)
             nonRawMethod();
         }
 
         InitInHelperMethod(boolean constructor_inits_a) {
             a = 1;
             init_b();
+            //:: error: (method.invocation.invalid)
             nonRawMethod();
         }
 
-        // @SuppressWarnings because initialization is computed only for the
-        // constructor.  It should arguably be computed for every raw reference.
-        @SuppressWarnings("rawness")
-        @NonNullOnEntry("a")
-        @AssertNonNullAfter("b")
-        void init_b(@Raw InitInHelperMethod this) {
+        @RequiresNonNull("a")
+        @EnsuresNonNull("b")
+        void init_b(@Raw @Unclassified InitInHelperMethod this) {
             b = 2;
+            //:: error: (method.invocation.invalid)
             nonRawMethod();
         }
 
         InitInHelperMethod(int constructor_inits_none) {
             init_ab();
+            //:: error: (method.invocation.invalid)
             nonRawMethod();
         }
 
-        // @SuppressWarnings because initialization is computed only for the
-        // constructor.  It should arguably be computed for every raw reference.
-        @SuppressWarnings("rawness")
-        @AssertNonNullAfter({"a", "b"})
-        void init_ab(@Raw InitInHelperMethod this) {
+        @EnsuresNonNull({"a", "b"})
+        void init_ab(@Raw @Unclassified InitInHelperMethod this) {
             a = 1;
             b = 2;
+            //:: error: (method.invocation.invalid)
             nonRawMethod();
         }
 
