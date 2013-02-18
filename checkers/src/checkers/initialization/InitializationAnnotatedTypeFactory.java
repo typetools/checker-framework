@@ -244,6 +244,32 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
     }
 
     /**
+     * Returns the set of (non-static) fields that have the invariant annotation
+     * and are initialized in a given store.
+     */
+    public Set<VariableTree> getInitializedInvariantFields(
+            Store store, TreePath path) {
+        ClassTree currentClass = TreeUtils.enclosingClass(path);
+        Set<VariableTree> fields = InitializationChecker
+                .getAllFields(currentClass);
+        Set<VariableTree> initializedFields = new HashSet<>();
+        AnnotationMirror invariant = checker.getFieldInvariantAnnotation();
+        for (VariableTree field : fields) {
+            if (!ElementUtils.isStatic(TreeUtils.elementFromDeclaration(field))) {
+                // Does this field need to satisfy the invariant?
+                if (getAnnotatedType(field).hasAnnotation(invariant)) {
+                    // Has the field been initialized?
+                    if (store.isFieldInitialized(TreeUtils
+                            .elementFromDeclaration(field))) {
+                        initializedFields.add(field);
+                    }
+                }
+            }
+        }
+        return initializedFields;
+    }
+
+    /**
      * Returns whether the field {@code f} is unused, given the annotations on
      * the receiver.
      */

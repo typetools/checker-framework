@@ -3,6 +3,7 @@ package checkers.initialization;
 import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -250,8 +251,35 @@ public class InitializationVisitor<Checker extends InitializationChecker, Value 
         return super.visitBlock(node, p);
     }
 
+    protected Set<VariableTree> initializedFields = new HashSet<>();
     @Override
     public Void visitClass(ClassTree node, Void p) {
+
+        // call the ATF with any node from this class to trigger the dataflow
+        // analysis.
+        atypeFactory.getAnnotatedType(node);
+
+        // go through all members and look for initializers.
+        // save all fields that are initialized and do not report errors about
+        // them later when checking constructors.
+        for (Tree member : node.getMembers()) {
+            if (member instanceof BlockTree && !((BlockTree) member).isStatic()) {
+                BlockTree block = (BlockTree) member;
+                Store store = factory.getRegularExitStore(block);
+                if (store != null) {
+                    // Add field values for fields with an initializer.
+                    for (Pair<VariableElement, Value> t : store.getAnalysis()
+                            .getFieldValues()) {
+                        store.addInitializedField(t.first);
+                    }
+                    final Set<VariableTree> init = factory
+                            .getInitializedInvariantFields(store,
+                                    getCurrentPath());
+                    initializedFields.addAll(init);
+                }
+            }
+        }
+
         Void result = super.visitClass(node, p);
 
         // Is there a static initializer block?
@@ -359,6 +387,11 @@ public class InitializationVisitor<Checker extends InitializationChecker, Value 
             Set<VariableTree> violatingFields = factory
                     .getUninitializedInvariantFields(store, getCurrentPath(),
                             staticFields, receiverAnnotations);
+            if (!staticFields) {
+                // remove fields that have already been initialized by an
+                // initializer block
+                violatingFields.removeAll(initializedFields);
+            }
             if (!violatingFields.isEmpty()) {
                 StringBuilder fieldsString = new StringBuilder();
                 boolean first = true;
