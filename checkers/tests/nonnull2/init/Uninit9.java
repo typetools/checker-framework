@@ -1,3 +1,5 @@
+import checkers.initialization.quals.Unclassified;
+import checkers.nonnull.quals.RequiresNonNull;
 import checkers.nullness.quals.*;
 
 public class Uninit9 {
@@ -10,7 +12,7 @@ class Uninit9Sub extends Uninit9 {
     super();
     fIsSetOnEntry();
   }
-  @NonNullOnEntry("f")
-  void fIsSetOnEntry() {
+  @RequiresNonNull("f")
+  void fIsSetOnEntry(@Raw @Unclassified Uninit9Sub this) {
   }
 }
