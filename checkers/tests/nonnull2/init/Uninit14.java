@@ -1,6 +1,5 @@
-// Test case for Issue 144:
+// Test case for Issue 144 (now fixed):
 // http://code.google.com/p/checker-framework/issues/detail?id=144
-// Field o should be counted as initialized, but isn't.
 public class Uninit14 {
   private final Object o;
   {
