@@ -1,4 +1,4 @@
-//:: error: (fields.uninitialized)
+//:: error: (commitment.fields.uninitialized)
 public class Uninit {
   Object a;
 }
