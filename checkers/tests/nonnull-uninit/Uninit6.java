@@ -5,6 +5,6 @@ public class Uninit6 {
   // guarantee of no null pointer errors.
   @LazyNonNull Object f;
   @Nullable Object g;
-  //:: warning: (fields.uninitialized)
+  //:: error: (commitment.fields.uninitialized)
   Uninit6() { }
 }

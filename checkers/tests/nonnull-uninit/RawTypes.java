@@ -102,7 +102,7 @@ class RawTypes {
         }
     }
 
-    //:: warning: (fields.uninitialized)
+    //:: error: (commitment.fields.uninitialized)
     class C extends B {
 
         @NonNull String[] strings;
@@ -151,7 +151,7 @@ class RawTypes {
         }
     }
 
-    //:: warning: (fields.uninitialized)
+    //:: error: (commitment.fields.uninitialized)
     class AFSIICell {
         AllFieldsSetInInitializer afsii;
     }
@@ -171,7 +171,7 @@ class RawTypes {
             new AFSIICell().afsii = this;
         }
 
-        //:: warning: (fields.uninitialized)
+        //:: error: (commitment.fields.uninitialized)
         public AllFieldsSetInInitializer(boolean b) {
             //:: warning: (method.invocation.invalid.rawness)
             nonRawMethod();     // error
@@ -216,21 +216,21 @@ class RawTypes {
 
     class RawAfterConstructorBad {
         Object o;
-        //:: warning: (fields.uninitialized)
+        //:: error: (commitment.fields.uninitialized)
         RawAfterConstructorBad() {
         }
     }
 
     class RawAfterConstructorOK1 {
         @Nullable Object o;
-        //:: warning: (fields.uninitialized)
+        //:: error: (commitment.fields.uninitialized)
         RawAfterConstructorOK1() {
         }
     }
 
     class RawAfterConstructorOK2 {
         int a;
-        //:: warning: (fields.uninitialized)
+        //:: error: (commitment.fields.uninitialized)
         RawAfterConstructorOK2() {
         }
     }

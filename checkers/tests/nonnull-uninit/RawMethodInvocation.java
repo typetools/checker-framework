@@ -15,12 +15,12 @@ class RawMethodInvocation {
     b = 2;
   }
 
-  //:: warning: (fields.uninitialized)
+  //:: warning: (commitment.fields.uninitialized)
   RawMethodInvocation(Byte constructor_inits_b) {
     init_b();
   }
 
-  //:: warning: (fields.uninitialized)
+  //:: warning: (commitment.fields.uninitialized)
   RawMethodInvocation(byte constructor_inits_b) {
     b = 2;
     init_b();
