@@ -147,7 +147,7 @@ public class ArrayCreationNullable {
                 out[i] = null;
             } else {
                 out[i] = in[i].getClass().toString();
-                //TODO:: error: (assignment.type.incompatible)
+                //:: error: (assignment.type.incompatible)
                 out[i] = null;
             }
         }

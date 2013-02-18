@@ -69,12 +69,19 @@ public class Boxing {
 
     void equalityTest() {
         Integer bN = null;
+        Integer bN1 = null;
+        Integer bN2 = null;
+        Integer bN3 = null;
+        Integer bN4 = null;
+        Integer bN5 = null;
+        Integer bN6 = null;
+        Integer bN7 = null;
         Integer b1 = 1;
         int u1 = 1;
-        System.out.println(bN == bN); // valid
-        System.out.println(bN == b1); // valid
-        System.out.println(bN != bN); // valid
-        System.out.println(bN != b1); // valid
+        System.out.println(bN == bN1); // valid
+        System.out.println(bN2 == b1); // valid
+        System.out.println(bN3 != bN4); // valid
+        System.out.println(bN5 != b1); // valid
 
         System.out.println(u1 == b1);
         System.out.println(u1 != b1);
@@ -82,35 +89,39 @@ public class Boxing {
         System.out.println(u1 != u1);
 
         //:: error: (unboxing.of.nullable)
-        System.out.println(bN == u1); // invalid
+        System.out.println(bN6 == u1); // invalid
         //:: error: (unboxing.of.nullable)
-        System.out.println(bN != u1); // invalid
+        System.out.println(bN7 != u1); // invalid
     }
 
     void addition() {
         Integer bN = null;
+        Integer bN1 = null;
+        Integer bN2 = null;
+        Integer bN3 = null;
         Integer b1 = 1;
         int u1 = 1;
         //:: error: (unboxing.of.nullable)
-        System.out.println(bN + bN); // invalid
+        System.out.println(bN + bN1); // invalid
         //:: error: (unboxing.of.nullable)
-        System.out.println(bN + b1); // invalid
+        System.out.println(bN2 + b1); // invalid
 
         System.out.println(u1 + b1);
         System.out.println(u1 + u1);
 
         //:: error: (unboxing.of.nullable)
-        System.out.println(bN + u1); // invalid
+        System.out.println(bN3 + u1); // invalid
     }
 
     void visitCast() {
         Integer bN = null;
+        Integer bN2 = null;
         Integer b1 = 1;
         int u1 = 1;
 
         println(bN);
         //:: error: (unboxing.of.nullable)
-        println((int)bN); // invalid
+        println((int)bN2); // invalid
 
         println(b1);
         println((int)b1);

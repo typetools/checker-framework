@@ -1,7 +1,6 @@
 import checkers.nullness.quals.*;
 
-// TODO
-// @skip-test
+//:: error: (commitment.fields.uninitialized)
 public class NonNullInitialization {
   private String test;
    

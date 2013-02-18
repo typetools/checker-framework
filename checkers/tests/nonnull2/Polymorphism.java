@@ -1,4 +1,4 @@
-import checkers.nullness.quals.*;
+import checkers.nonnull.quals.*;
 
 public class Polymorphism {
     // Test parameters
