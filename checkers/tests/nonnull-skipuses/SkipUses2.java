@@ -1,16 +1,17 @@
+import checkers.nonnull.quals.RequiresNonNull;
 import checkers.nullness.quals.*;
 
 public class SkipUses2 {
 
   static class SkipMe {
     static @Nullable Object f;
-    @NonNullOnEntry("f")
+    @RequiresNonNull("f")
     static void foo() { }
   }
 
   static class DontSkip {
     static @Nullable Object f;
-    @NonNullOnEntry("f")
+    @RequiresNonNull("f")
     static @Nullable Object foo() {
       return null;
     }
@@ -21,7 +22,7 @@ public class SkipUses2 {
       SkipMe.f = null;
       SkipMe.foo();
       DontSkip.f = null;
-      //:: error: (nonnullonentry.precondition.not.satisfied)
+      //:: error: (contracts.precondition.not.satisfied)
       DontSkip.foo();
     }
   }
