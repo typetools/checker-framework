@@ -1291,9 +1291,14 @@ public abstract class AnnotatedTypeMirror {
             sb.append(getReceiverType().toString(printInvisible));
             sb.append(" this");
             if (!getParameterTypes().isEmpty()) {
-                sb.append(", ");
+                int p = 0;
                 for (AnnotatedTypeMirror atm : getParameterTypes()) {
+                    sb.append(", ");
                     sb.append(atm.toString(printInvisible));
+                    // Output some parameter names to make it look more like a method.
+                    // TODO: go to the element and look up real parameter names, maybe.
+                    sb.append(" p");
+                    sb.append(p++);
                 }
             }
             sb.append(')');
@@ -2169,6 +2174,7 @@ public abstract class AnnotatedTypeMirror {
 
         protected List<AnnotatedDeclaredType> supertypes;
 
+        @Override
         public List<AnnotatedDeclaredType> directSuperTypes() {
             if (supertypes == null) {
                 List<? extends TypeMirror> ubounds = actualType.getBounds();
