@@ -458,7 +458,7 @@ public class StubParser {
         for (AnnotationExpr annotation : annotations) {
             AnnotationMirror annoMirror = getAnnotation(annotation, supportedAnnotations, processingEnv);
             if (annoMirror != null)
-                type.addAnnotation(annoMirror);
+                type.replaceAnnotation(annoMirror);
         }
     }
 
