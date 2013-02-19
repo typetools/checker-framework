@@ -3,7 +3,7 @@ import checkers.nullness.quals.*;
 public class ThreadLocalTest {
 
   // implementation MUST override initialValue(), or SuppressWarnings is unsound
-  @SuppressWarnings("nullness:type.argument.type.incompatible")
+  @SuppressWarnings("nonnull:type.argument.type.incompatible")
   class MyThreadLocalNN extends ThreadLocal<@NonNull Integer> {
     @Override
     protected Integer initialValue() { return new Integer(0); }
