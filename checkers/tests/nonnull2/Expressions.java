@@ -21,7 +21,7 @@ public class Expressions {
   private HashMap<String, String> map = new HashMap<String, String>();
 
   public void test() {
-      @SuppressWarnings("nullness") String s = map.get("foo");
+      @SuppressWarnings("nonnull") String s = map.get("foo");
 
       Class<?> cl = Boolean.TYPE;
 

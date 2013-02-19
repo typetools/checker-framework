@@ -10,7 +10,7 @@ class TestPolyAll {
    void test2() { identity((@Nullable String) null); }
 
    public static @PolyAll String[] typeArray(@PolyAll Object[] seq) {
-    @SuppressWarnings("nullness") // ignore array initialization here. 
+    @SuppressWarnings("nonnull") // ignore array initialization here. 
     @PolyAll String[] retval = new @Nullable String[seq.length];
     for (int i = 0 ; i < seq.length ; i++) {
       if (seq[i] == null) {
@@ -18,7 +18,7 @@ class TestPolyAll {
         retval[i] = "ok";
       } else {
         retval[i] = seq[i].getClass().toString();
-        //TODO:: error: (assignment.type.incompatible)
+        //:: error: (assignment.type.incompatible)
         retval[i] = null;
       }
     }
