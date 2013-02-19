@@ -1580,6 +1580,7 @@ MethodDeclaration MethodDeclaration(Modifier modifier):
 	String name;
 	List parameters;
 	int arrayCount = 0;
+	List annotations = null;
         List receiverAnnotations = null;
 	List throws_ = null;
 	BlockStmt block = null;
@@ -1589,14 +1590,22 @@ MethodDeclaration MethodDeclaration(Modifier modifier):
 {
   // Modifiers already matched in the caller!
   [ typeParameters = TypeParameters() { int[] lineCol=(int[])typeParameters.remove(0); if(line==-1){ line=lineCol[0]; column=lineCol[1];} } ]
+  annotations = Annotationsopt()
   type = UnResultType() { if(line==-1){line=type.getBeginLine(); column=type.getBeginColumn();}}
   <IDENTIFIER> { name = token.image; } parameters = FormalParameters() ( "[" "]" { arrayCount++; } )*
   receiverAnnotations = Annotationsopt()
   [ "throws" throws_ = NameList() ]
   ( block = Block() | ";" )
 
-  { type.setAnnotations(modifier.annotations);
-return new MethodDeclaration(line, column, token.endLine, token.endColumn,popJavadoc(), modifier.modifiers, null, typeParameters, type, name, parameters, arrayCount, receiverAnnotations, throws_, block); }
+  {
+    if (annotations == null) {
+      annotations = modifier.annotations;
+    } else if (modifier.annotations != null) {
+      annotations.addAll(0, modifier.annotations);
+    }
+    type.setAnnotations(annotations);
+    return new MethodDeclaration(line, column, token.endLine, token.endColumn,popJavadoc(), modifier.modifiers, null, typeParameters, type, name, parameters, arrayCount, receiverAnnotations, throws_, block);
+  }
 }
 
 List FormalParameters():
