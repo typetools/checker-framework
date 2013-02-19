@@ -434,13 +434,30 @@ public class QualifierDefaults {
             return super.scan(t, qual);
         }
 
+        /**
+         * Returns true if the given qualifier should be applied to the given type
+         * @param type Type to which qual would be applied
+         * @param qual A default qualifier to apply
+         * @return true if this application should proceed
+         */
+        protected static boolean shouldBeAnnotated( final AnnotatedTypeMirror type,
+                                                    final AnnotationMirror    qual  ) {
+
+            return !(
+                      type  == null || type.getKind() == TypeKind.NONE ||
+                      type.getKind() == TypeKind.WILDCARD ||
+                      type.getKind() == TypeKind.TYPEVAR  ||
+                      type instanceof AnnotatedNoType );
+
+        }
+
         private static void doApply(AnnotatedTypeMirror type, AnnotationMirror qual) {
             // Never apply default qualifiers to type variables or wildcards.
             // TODO: add a special DefaultLocation for them?
             // Note duplication with check above. Improve this.
-            if (type.getKind() == TypeKind.WILDCARD ||
-                    type.getKind() == TypeKind.TYPEVAR)
+            if ( !shouldBeAnnotated(type, qual) ) {
                 return;
+            }
 
             // Add the default annotation, but only if no other
             // annotation is present.
