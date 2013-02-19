@@ -29,15 +29,6 @@ function cfruntest() {
   if (($?)); then exit 6; fi
 }
 
-
-echo "Testing with Java 6:"
-
-export JAVA_HOME=$JAVA6_HOME
-export PATH=$JAVA_HOME/bin:$PATH
-
-cfruntest
-
-
 echo "Testing with Java 7:"
 
 export JAVA_HOME=$JAVA7_HOME
