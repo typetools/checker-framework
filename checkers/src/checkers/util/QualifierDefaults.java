@@ -385,15 +385,10 @@ public class QualifierDefaults {
         @Override
         public Void scan(AnnotatedTypeMirror t, AnnotationMirror qual) {
 
-            if (t == null || t.getKind() == TypeKind.NONE)
-                return null;
 
-            // Skip type variables, but continue to scan their bounds.
-            // TODO: Do we want a special DefaultLocation to specify these?
-            // I wouldn't want them included in ALL or OTHERWISE, though.
-            if (t.getKind() == TypeKind.WILDCARD ||
-                    t.getKind() == TypeKind.TYPEVAR)
+            if ( !shouldBeAnnotated(t, qual) )  {
                 return super.scan(t, qual);
+            }
 
             switch (location) {
             case LOCALS: {
@@ -446,13 +441,28 @@ public class QualifierDefaults {
             return super.scan(t, qual);
         }
 
+        /**
+         * Returns true if the given qualifier should be applied to the given type.  Currently we do not
+         * apply defaults to void types, packages, wildcards, and type variables
+         * @param type Type to which qual would be applied
+         * @param qual A default qualifier to apply
+         * @return true if this application should proceed
+         */
+        protected static boolean shouldBeAnnotated( final AnnotatedTypeMirror type,
+                                                    final AnnotationMirror    qual  ) {
+
+            return !( type  == null || type.getKind() == TypeKind.NONE ||
+                      type.getKind() == TypeKind.WILDCARD ||
+                      type.getKind() == TypeKind.TYPEVAR  ||
+                      type instanceof AnnotatedNoType );
+
+        }
+
         private static void doApply(AnnotatedTypeMirror type, AnnotationMirror qual) {
-            // Never apply default qualifiers to type variables or wildcards.
-            // TODO: add a special DefaultLocation for them?
-            // Note duplication with check above. Improve this.
-            if (type.getKind() == TypeKind.WILDCARD ||
-                    type.getKind() == TypeKind.TYPEVAR)
+
+            if ( !shouldBeAnnotated(type, qual) ) {
                 return;
+            }
 
             // Add the default annotation, but only if no other
             // annotation is present.
