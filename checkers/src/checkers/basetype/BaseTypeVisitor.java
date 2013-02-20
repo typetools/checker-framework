@@ -131,16 +131,19 @@ import com.sun.tools.javac.tree.TreeInfo;
  *
  * <p>
  *
- * This implementation does the following checks: 1. <b>Assignment and
- * Pseudo-Assignment Check</b>: It verifies that any assignment type check,
- * using {@code TypeHierarchy.isSubtype} method. This includes method invocation
- * and method overriding checks.
+ * This implementation does the following checks:
+ * 1. <b>Assignment and Pseudo-Assignment Check</b>:
+ *    It verifies that any assignment type check, using
+ *    {@code TypeHierarchy.isSubtype} method. This includes method invocation and
+ *    method overriding checks.
  *
- * 2. <b>Type Validity Check</b>: It verifies that any user-supplied type is a
- * valid type, using {@code isValidUse} method.
+ * 2. <b>Type Validity Check</b>:
+ *    It verifies that any user-supplied type is a valid type, using
+ *    {@code isValidUse} method.
  *
- * 3. <b>(Re-)Assignability Check</b>: It verifies that any assignment is valid,
- * using {@code Checker.isAssignable} method.
+ * 3. <b>(Re-)Assignability Check</b>:
+ *    It verifies that any assignment is valid, using
+ *    {@code Checker.isAssignable} method.
  *
  * @see "JLS $4"
  * @see TypeHierarchy#isSubtype(AnnotatedTypeMirror, AnnotatedTypeMirror)
@@ -233,10 +236,9 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
                 checkDefaultConstructor(node);
             }
 
-            /*
-             * Visit the extends and implements clauses. The superclass also
-             * visits them, but only calls visitParameterizedType, which looses
-             * a main modifier.
+            /* Visit the extends and implements clauses.
+             * The superclass also visits them, but only calls visitParameterizedType, which
+             * looses a main modifier.
              */
             Tree ext = node.getExtendsClause();
             if (ext != null) {
@@ -260,19 +262,18 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         }
     }
 
-    protected void checkDefaultConstructor(ClassTree node) {
-    }
+    protected void checkDefaultConstructor(ClassTree node) { }
 
     /**
      * Performs pseudo-assignment check: checks that the method obeys override
      * and subtype rules to all overridden methods.
      *
-     * The override rule specifies that a method, m1, may override a method m2
-     * only if:
+     * The override rule specifies that a method, m1, may override a method
+     * m2 only if:
      * <ul>
-     * <li>m1 return type is a subtype of m2</li>
-     * <li>m1 receiver type is a supertype of m2</li>
-     * <li>m1 parameters are supertypes of corresponding m2 parameters</li>
+     *  <li> m1 return type is a subtype of m2 </li>
+     *  <li> m1 receiver type is a supertype of m2 </li>
+     *  <li> m1 parameters are supertypes of corresponding m2 parameters </li>
      * </ul>
      *
      * Also, it issues a "missing.this" error for static method annotated
@@ -644,8 +645,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
      * Performs two checks: subtyping and assignability checks, using
      * {@link #commonAssignmentCheck(Tree, ExpressionTree, String)}.
      *
-     * If the subtype check fails, it issues a "assignment.type.incompatible"
-     * error.
+     * If the subtype check fails, it issues a "assignment.type.incompatible" error.
      */
     @Override
     public Void visitAssignment(AssignmentTree node, Void p) {
@@ -661,11 +661,11 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
     }
 
     /**
-     * Performs a subtype check, to test whether the node expression iterable
-     * type is a subtype of the variable type in the enhanced for loop.
+     * Performs a subtype check, to test whether the node expression
+     * iterable type is a subtype of the variable type in the enhanced for
+     * loop.
      *
-     * If the subtype check fails, it issues a "enhancedfor.type.incompatible"
-     * error.
+     * If the subtype check fails, it issues a "enhancedfor.type.incompatible" error.
      */
     @Override
     public Void visitEnhancedForLoop(EnhancedForLoopTree node, Void p) {
@@ -687,10 +687,10 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
      *
      * An invocation of a method, m, on the receiver, r is valid only if:
      * <ul>
-     * <li>passed arguments are subtypes of corresponding m parameters</li>
-     * <li>r is a subtype of m receiver type</li>
-     * <li>if m is generic, passed type arguments are subtypes of m type
-     * variables</li>
+     *  <li> passed arguments are subtypes of corresponding m parameters </li>
+     *  <li> r is a subtype of m receiver type </li>
+     *  <li> if m is generic, passed type arguments are subtypes
+     *      of m type variables </li>
      * </ul>
      */
     @Override
@@ -798,8 +798,8 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
     }
 
     // Handle case Vector.copyInto()
-    private final AnnotatedDeclaredType vectorType = super.atypeFactory
-            .fromElement(elements.getTypeElement("java.util.Vector"));
+    private final AnnotatedDeclaredType vectorType =
+        atypeFactory.fromElement(elements.getTypeElement("java.util.Vector"));
 
     /**
      * Returns true if the method symbol represents {@code Vector.copyInto}
@@ -816,15 +816,17 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
     /**
      * Type checks the method arguments of {@code Vector.copyInto()}.
      *
-     * The Checker Framework special-cases the method invocation, as it is type
-     * safety cannot be expressed by Java's type system.
+     * The Checker Framework special-cases the method invocation, as it is
+     * type safety cannot be expressed by Java's type system.
      *
-     * For a Vector {@code v} of type {@code Vectory<E>}, the method invocation
-     * {@code v.copyInto(arr)} is type-safe iff {@code arr} is a array of type
-     * {@code T[]}, where {@code T} is a subtype of {@code E}.
+     * For a Vector {@code v} of type {@code Vectory<E>}, the method
+     * invocation {@code v.copyInto(arr)} is type-safe iff {@code arr}
+     * is a array of type {@code T[]}, where {@code T} is a subtype of
+     * {@code E}.
      *
-     * In other words, this method checks that the type argument of the receiver
-     * method is a subtype of the component type of the passed array argument.
+     * In other words, this method checks that the type argument of the
+     * receiver method is a subtype of the component type of the passed array
+     * argument.
      *
      * @param node   a method invocation of {@code Vector.copyInto()}
      * @param params the types of the parameters of {@code Vectory.copyInto()}
@@ -832,14 +834,11 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
      */
     protected void typeCheckVectorCopyIntoArgument(MethodInvocationTree node,
             List<? extends AnnotatedTypeMirror> params) {
-        assert params.size() == 1 : "invalid no. of parameters " + params
-                + " found for method invocation " + node;
-        assert node.getArguments().size() == 1 : "invalid no. of arguments in method invocation "
-                + node;
+        assert params.size() == 1 : "invalid no. of parameters " + params + " found for method invocation " + node;
+        assert node.getArguments().size() == 1 : "invalid no. of arguments in method invocation " + node;
 
-        AnnotatedTypeMirror passed = atypeFactory.getAnnotatedType(node
-                .getArguments().get(0));
-        AnnotatedArrayType passedAsArray = (AnnotatedArrayType) passed;
+        AnnotatedTypeMirror passed = atypeFactory.getAnnotatedType(node.getArguments().get(0));
+        AnnotatedArrayType passedAsArray = (AnnotatedArrayType)passed;
 
         AnnotatedTypeMirror receiver = atypeFactory.getReceiverType(node);
         AnnotatedDeclaredType receiverAsVector = (AnnotatedDeclaredType) AnnotatedTypes
@@ -849,9 +848,12 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
                 || receiverAsVector.getTypeArguments().isEmpty())
             return;
 
-        commonAssignmentCheck(passedAsArray.getComponentType(),
-                receiverAsVector.getTypeArguments().get(0), node.getArguments()
-                        .get(0), "vector.copyinto.type.incompatible", false);
+        commonAssignmentCheck(
+                passedAsArray.getComponentType(),
+                receiverAsVector.getTypeArguments().get(0),
+                node.getArguments().get(0),
+                "vector.copyinto.type.incompatible",
+                false);
     }
 
     /**
@@ -859,9 +861,9 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
      *
      * An invocation of a constructor, c, is valid only if:
      * <ul>
-     * <li>passed arguments are subtypes of corresponding c parameters</li>
-     * <li>if c is generic, passed type arguments are subtypes of c type
-     * variables</li>
+     *  <li> passed arguments are subtypes of corresponding c parameters </li>
+     *  <li> if c is generic, passed type arguments are subtypes
+     *      of c type variables </li>
      * </ul>
      */
     @Override
@@ -869,14 +871,13 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         if (checker.shouldSkipUses(InternalUtils.constructor(node)))
             return super.visitNewClass(node, p);
 
-        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> fromUse = atypeFactory
-                .constructorFromUse(node);
+        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> fromUse = atypeFactory.constructorFromUse(node);
         AnnotatedExecutableType constructor = fromUse.first;
         List<AnnotatedTypeMirror> typeargs = fromUse.second;
 
         List<? extends ExpressionTree> passedArguments = node.getArguments();
-        List<AnnotatedTypeMirror> params = AnnotatedTypes.expandVarArgs(
-                atypeFactory, constructor, passedArguments);
+        List<AnnotatedTypeMirror> params =
+            AnnotatedTypes.expandVarArgs(atypeFactory, constructor, passedArguments);
 
         checkArguments(params, passedArguments);
 
@@ -884,10 +885,10 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         // TODO: What is the difference between "type" and "constructor"?
         // Using "constructor" seems to work equally well...
         // AnnotatedExecutableType type =
-        // atypeFactory.getAnnotatedType(InternalUtils.constructor(node));
+        //   atypeFactory.getAnnotatedType(InternalUtils.constructor(node));
 
-        checkTypeArguments(node, constructor.getTypeVariables(), typeargs,
-                node.getTypeArguments());
+        checkTypeArguments(node, constructor.getTypeVariables(),
+                typeargs, node.getTypeArguments());
 
         AnnotatedDeclaredType dt = atypeFactory.getAnnotatedType(node);
         checkConstructorInvocation(dt, constructor, node);
@@ -969,8 +970,8 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
             }
 
             AssignmentTree at = (AssignmentTree) arg;
-            // Ensure that we never ask for the annotated type of an annotation,
-            // because we don't have a type for annotations.
+            // Ensure that we never ask for the annotated type of an annotation, because
+            // we don't have a type for annotations.
             if (at.getExpression().getKind() == Tree.Kind.ANNOTATION) {
                 visitAnnotation((AnnotationTree) at.getExpression(), p);
                 continue;
@@ -2002,6 +2003,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         }
 
         // more checks (also specific to checker, potentially)
+        typeValidator.isValid = true;
         typeValidator.visit(type, tree);
         return typeValidator.isValid;
     }
