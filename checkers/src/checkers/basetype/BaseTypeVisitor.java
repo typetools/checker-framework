@@ -799,7 +799,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
 
     // Handle case Vector.copyInto()
     private final AnnotatedDeclaredType vectorType =
-        atypeFactory.fromElement(elements.getTypeElement("java.util.Vector"));
+        super.atypeFactory.fromElement(elements.getTypeElement("java.util.Vector"));
 
     /**
      * Returns true if the method symbol represents {@code Vector.copyInto}
