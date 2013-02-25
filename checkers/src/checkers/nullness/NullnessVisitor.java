@@ -391,7 +391,7 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
                 } else {
                     ExecutableElement meth = TreeUtils.elementFromDeclaration(node);
                     com.sun.tools.javac.code.Type rcv = (com.sun.tools.javac.code.Type) ((ExecutableType)meth.asType()).getReceiverType();
-                    if (rcv != null && rcv.getKind() == TypeKind.ANNOTATED) {
+                    if (rcv != null && rcv.isAnnotated()) {
                         rcvannos = ((com.sun.tools.javac.code.Type.AnnotatedType)rcv).typeAnnotations;
                     }
                 }
