@@ -2,7 +2,6 @@ package checkers.nullness.quals;
 
 import java.lang.annotation.*;
 
-import checkers.nullness.NullnessChecker;
 import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifier;
 
@@ -25,7 +24,7 @@ import checkers.quals.TypeQualifier;
  * method</em> can be assumed to be non-null, even after arbitrary external
  * method calls that might access the field.
  * <p>
- * 
+ *
  * {@code LazyNonNull} gives stronger guarantees than {@link Nullable}.
  * After a check that a {@link Nullable} field holds a non-null value, only
  * accesses until the next non-{@link Pure} method is called can be assumed
