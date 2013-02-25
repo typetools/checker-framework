@@ -16,7 +16,6 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.AnnotatedType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 
@@ -366,8 +365,8 @@ public class InitializationVisitor<Checker extends InitializationChecker, Value 
             ExecutableElement meth = TreeUtils.elementFromDeclaration(node);
             com.sun.tools.javac.code.Type rcv = (com.sun.tools.javac.code.Type) ((ExecutableType) meth
                     .asType()).getReceiverType();
-            if (rcv != null && (rcv.getKind() == TypeKind.ANNOTATED)) {
-                rcvannos = ((AnnotatedType) rcv).getAnnotations();
+            if (rcv != null && rcv.isAnnotated()) {
+                rcvannos = ((com.sun.tools.javac.code.Type.AnnotatedType)rcv).typeAnnotations;
             } else {
                 rcvannos = Collections.<AnnotationMirror> emptyList();
             }
