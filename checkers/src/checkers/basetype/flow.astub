@@ -1,0 +1,43 @@
+import dataflow.quals.*;
+
+package java.lang;
+
+public final class Class {
+    @Pure public String getName();
+}
+
+public class Object {
+    @Pure public Object();
+    @Pure public String toString();
+    @Pure public int hashCode();
+    @Pure public final Class<?> getClass();
+}
+
+public final class String {
+    @Pure public String intern();
+    @Pure public int lastIndexOf(int ch);
+    @Pure public String substring(int beginIndex);
+}
+
+public final class System {
+    @TerminatesExecution public static void exit(int status);
+}
+
+
+package java.util;
+
+public interface Map<K, V> {
+    @Pure V get(Object key);
+}
+
+public abstract class TimeZone {
+    @Pure public final String getDisplayName();
+}
+
+
+package java.util.regex;
+
+public final class Pattern {
+    @Pure public static String quote(String s);
+}
+
