@@ -18,7 +18,6 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
-import javax.lang.model.type.AnnotatedType;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
@@ -87,9 +86,8 @@ public abstract class AnnotatedTypeMirror {
         if (replacer == null)
             replacer = new Replacer(atypeFactory.types);
 
-        if (type.getKind() == TypeKind.ANNOTATED) {
-            type = ((AnnotatedType)type).getUnderlyingType();
-        }
+        type = ((com.sun.tools.javac.code.Type)type).unannotatedType();
+
         switch (type.getKind()) {
             case ARRAY:
                 return new AnnotatedArrayType((ArrayType) type, atypeFactory);
@@ -830,6 +828,11 @@ public abstract class AnnotatedTypeMirror {
             StringBuilder sb = new StringBuilder();
             final Element typeElt = this.getUnderlyingType().asElement();
             String smpl = typeElt.getSimpleName().toString();
+            if (smpl.isEmpty()) {
+                // For anonymous classes smpl is empty - toString
+                // of the element is more useful.
+                smpl = typeElt.toString();
+            }
             sb.append(formatAnnotationString(getAnnotations(), printInvisible));
             sb.append(smpl);
             if (!this.getTypeArguments().isEmpty()) {
