@@ -1,27 +1,49 @@
 
-The following items most likely need to be updated or added to the checker manual.  Some of these might not need to go into the manual, but will only be mentioned in the changelog (?).
+Necessary changes to the manual.  In brackets I (Stefan) wrote the names of people familiar with the particular change, which might be most qualified to make the change.  If no person is listed, than anyone could do the change.
 
 
-- Explain the command line parameter -Adotflowdir (probably find a better name first).
-- Explain the command line parameter -AsuggestPureMethods.
-- Explain the generic pre- and postcondition annotations: @EnsuresAnnotation/@EnsuresAnnotations, @EnsuresAnnotationIf/@EnsuresAnnotationsIf and @RequiresAnnotation/@RequiresAnnotations.
-- Explain the meta-annotations @PreconditionAnnotation, @ConditionalPostconditionAnnotation and @PostconditionAnnotation.
-- Explain the new annotation @TerminatesExecution.
-- Explain the new defaulting for local variables (including our decision on casts and instanceof).
-- Update the new purity annotation @Pure (with the two version for determinitic methods and side-effect free methods).  It is now available for all type-systems, not just nullness.
-- Document @Covariant annotation
-- Document -AconcurrentSemantics command-line option; also note it in caveats about what the checker guarantees
-- Document -AassumeAssertionsAreEnabled and -AassumeAssertionsAreDisabled.
-- Update the documentation on how to suppress warnings using assert statements: The string @AssumeAssertion(warningkey) must be present anywhere in the detail message of the assert statement.
-- Document the lint option strictMonotonicNonNullInit for NonNullChecker (disallow null initializations for @MonoNonNull fields)
-- After an expression has been unboxed, it is assumed to be non-null (if it was not, then a NPE has occured).  This prevents many errors for the same problem, just like there is only one error for "o.toString(); o.toString()".
 
+New section on concepts and annotations that apply to all type-systems and checkers
+===========================================================================
+What would a good place be for this?  At the beginning/end?  Split into multiple sections?
+
+- Purity annotation
+  - Explain the annotation and its semantics (can probably mostly taken from the javadoc of @Pure).
+  - Explain the command line parameter -AsuggestPureMethods, as well as what the purity analysis does (again, see javadoc of @Pure).
+
+- Pre-/postconditions from a user perspective:
+  - Explain the generic pre- and postcondition annotations: @EnsuresAnnotation/@EnsuresAnnotations, @EnsuresAnnotationIf/@EnsuresAnnotationsIf and @RequiresAnnotation/@RequiresAnnotations.
+  - Explain what kind of strings are supported (see at the end of the documentation for a list).
+
+- Pre-/postconditions from a developer perspective:
+  - Explain the meta-annotations @PreconditionAnnotation, @ConditionalPostconditionAnnotation and @PostconditionAnnotation.
+
+- Dataflow analysis
+  - Explain the new defaulting for local variables (including our decision on casts and instanceof).
+  - Explain the command line parameter -Adotflowdir (probably find a better name first) [Stefan/Charlie].
+  - Explain the new annotation @TerminatesExecution.
+  - Document -AconcurrentSemantics command-line option; also note it in caveats about what the checker guarantees [Stefan].
+  - Document -AassumeAssertionsAreEnabled and -AassumeAssertionsAreDisabled [Stefan].
+
+- Document @Covariant annotation [Mike/Werner].
+
+
+Changes throughout the manual to existing sections
 ===========================================================================
 
-The remainder of this file is to-do issues with a description that is
-longer than one line.
+Document the lint option strictMonotonicNonNullInit for NonNullChecker (disallow null initializations for @MonoNonNull fields)
 
-===========================================================================
+------------------------------------------------------
+
+[Stefan]
+
+After an expression has been unboxed, it is assumed to be non-null (if it was not, then a NPE has occured).  This prevents many errors for the same problem, just like there is only one error for "o.toString(); o.toString()".
+
+------------------------------------------------------
+
+Update the documentation on how to suppress warnings using assert statements: The string @AssumeAssertion(warningkey) must be present anywhere in the detail message of the assert statement.
+
+------------------------------------------------------
 
 "NNEL" default becomes "top for locals, casts, and instanceof"
 The top qualifier should only be added to top-level type variables,
@@ -29,7 +51,9 @@ because those will get suitably refined by flow.
 For type variables in other positions, e.g. as type argument in your
 example, we should not add default qualifiers.
 
-===========================================================================
+------------------------------------------------------
+
+[Mike]
 
 Discuss that the Checker Framework is stricter than Java, in the sense that
 it treats arrays invariantly rather than covariantly.  Explain the rationale
@@ -75,7 +99,9 @@ The solution is to change the declared type to:
 
 Explain this issue in the manual.
 
-===========================================================================
+------------------------------------------------------
+
+[Mike]
 
 Concurrency:
 
@@ -99,7 +125,7 @@ Also add a mention to:
 Note that putting data in a local variable doesn't fix the problem, just
 masks it from one particular checker.  This is bad style!
 
-===========================================================================
+------------------------------------------------------
 
 Explain relationship between XXXChecker and XXXAnnotatedTypeFactory:
 if the Checker is a subtype of BaseTypeChecker, the ATF has to be a
@@ -107,9 +133,11 @@ subtype of AbstractBasicATF, because BaseTypeVisitor assumes that.
 
 Can we find better naming for Basic vs. Base classes?
 
-===========================================================================
+------------------------------------------------------
 
-Explanations on what flow expressions are supported (i.e. strings in pre/postconditions:
+[Stefan]
+
+Explanations on what flow expressions are supported (i.e. strings in pre/postconditions):
 
 - Flow expressions:  There is fairly good support for methods with arguments now.   In general, the following features work.
     - Field accesses of the form "expr.f" (for any flow expression "expr", including method calls or other field access expressions).
@@ -125,4 +153,3 @@ Explanations on what flow expressions are supported (i.e. strings in pre/postcon
     - Mathematical operators (plus, minus, division, ...).
     - Comparisons (equality, less than, etc.).
     - Probably other Java expressions that are "pure" (non-pure things cannot occur, anyway) that I did not think of.
-
