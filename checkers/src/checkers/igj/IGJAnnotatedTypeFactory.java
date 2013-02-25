@@ -294,7 +294,11 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
 
         @Override
         public Void visitNewClass(NewClassTree node, AnnotatedTypeMirror p) {
-            if (!hasImmutabilityAnnotation(p)) {
+            if (node.getClassBody() != null) {
+                AnnotatedTypeMirror tt = IGJAnnotatedTypeFactory.this.getAnnotatedType(node.getIdentifier());
+                p.replaceAnnotations(tt.getAnnotations());
+                // Is this the right way to handle anonymous classes?
+            } else if (!hasImmutabilityAnnotation(p)) {
                 AnnotatedTypeMirror ct = fromElement(
                         ((AnnotatedDeclaredType)p).getUnderlyingType().asElement());
 

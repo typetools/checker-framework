@@ -80,9 +80,8 @@ public final class TypesUtils {
      * @return type iff type represents a declared type of the qualified name
      */
     public static boolean isDeclaredOfName(TypeMirror type, CharSequence qualifiedName) {
-        if (type.getKind() == TypeKind.ANNOTATED) {
-            type = ((AnnotatedType)type).getUnderlyingType();
-        }
+        type = ((com.sun.tools.javac.code.Type)type).unannotatedType();
+
         return type.getKind() == TypeKind.DECLARED
             && getQualifiedName((DeclaredType)type).contentEquals(qualifiedName);
 

@@ -35,7 +35,7 @@ public class TypeFromElement {
     /**
      * Whether to throw a CheckerError if an error in the elements was found.
      */
-    private static final boolean strict = false;
+    private static final boolean strict = true;
 
     private static final boolean debug = false;
 
@@ -71,10 +71,11 @@ public class TypeFromElement {
         } else if (element.getKind() == ElementKind.EXCEPTION_PARAMETER) {
             // Or is this like a local variable?
             // TODO: annotateExceptionParam(type, element);
+            /*
             if (strict) {
                 System.out.println("TypeFromElement.annotate: unhandled element: " + element +
                         " [" + element.getKind() + "]");
-            }
+            }*/
         } else if (element.getKind() == ElementKind.RESOURCE_VARIABLE) {
             // TODO;
             if (strict) {
@@ -145,6 +146,12 @@ public class TypeFromElement {
                     case LOCAL_VARIABLE:
                     case NEW:
                     case CAST:
+                    case METHOD_INVOCATION_TYPE_ARGUMENT:
+                    case CONSTRUCTOR_INVOCATION_TYPE_ARGUMENT:
+                    case METHOD_REFERENCE:
+                    case CONSTRUCTOR_REFERENCE:
+                    case METHOD_REFERENCE_TYPE_ARGUMENT:
+                    case CONSTRUCTOR_REFERENCE_TYPE_ARGUMENT:
                         // Valid in this location, but handled elsewhere.
                         break;
                     default: if (strict) {
@@ -186,6 +193,12 @@ public class TypeFromElement {
                     case LOCAL_VARIABLE:
                     case NEW:
                     case CAST:
+                    case METHOD_INVOCATION_TYPE_ARGUMENT:
+                    case CONSTRUCTOR_INVOCATION_TYPE_ARGUMENT:
+                    case METHOD_REFERENCE:
+                    case CONSTRUCTOR_REFERENCE:
+                    case METHOD_REFERENCE_TYPE_ARGUMENT:
+                    case CONSTRUCTOR_REFERENCE_TYPE_ARGUMENT:
                         // Valid in this location, but handled elsewhere.
                         break;
                     default: if (strict) {
@@ -212,6 +225,12 @@ public class TypeFromElement {
                     case LOCAL_VARIABLE:
                     case NEW:
                     case CAST:
+                    case METHOD_INVOCATION_TYPE_ARGUMENT:
+                    case CONSTRUCTOR_INVOCATION_TYPE_ARGUMENT:
+                    case METHOD_REFERENCE:
+                    case CONSTRUCTOR_REFERENCE:
+                    case METHOD_REFERENCE_TYPE_ARGUMENT:
+                    case CONSTRUCTOR_REFERENCE_TYPE_ARGUMENT:
                         // Valid in this location, but handled elsewhere.
                         break;
                     default: if (strict) {
@@ -257,6 +276,12 @@ public class TypeFromElement {
                 break;
             case NEW:
             case CAST:
+            case METHOD_INVOCATION_TYPE_ARGUMENT:
+            case CONSTRUCTOR_INVOCATION_TYPE_ARGUMENT:
+            case METHOD_REFERENCE:
+            case CONSTRUCTOR_REFERENCE:
+            case METHOD_REFERENCE_TYPE_ARGUMENT:
+            case CONSTRUCTOR_REFERENCE_TYPE_ARGUMENT:
                 // Valid in this location, but handled elsewhere.
                 break;
             default: if (strict) {
@@ -297,6 +322,12 @@ public class TypeFromElement {
                 break;
             case NEW:
             case CAST:
+            case METHOD_INVOCATION_TYPE_ARGUMENT:
+            case CONSTRUCTOR_INVOCATION_TYPE_ARGUMENT:
+            case METHOD_REFERENCE:
+            case CONSTRUCTOR_REFERENCE:
+            case METHOD_REFERENCE_TYPE_ARGUMENT:
+            case CONSTRUCTOR_REFERENCE_TYPE_ARGUMENT:
                 // Valid in this location, but handled elsewhere.
                 break;
             default: if (strict) {
@@ -370,9 +401,23 @@ public class TypeFromElement {
                 }
                 break;
             case CLASS_EXTENDS:
+                // Add annotations on the top-level of extends/implements to
+                // the type itself.
+                if (pos.type_index >= -1 && pos.location.isEmpty()) {
+                    // Should check that type_index < number of superinterfaces
+                    // TODO: must location be empty? should INNER_TYPE be allowed?
+                    type.addAnnotation(anno);
+                }
+                break;
             case LOCAL_VARIABLE: // ? TODO: check why those appear on a type element
             case NEW: // ?
             case CAST: // ?
+            case METHOD_INVOCATION_TYPE_ARGUMENT:
+            case CONSTRUCTOR_INVOCATION_TYPE_ARGUMENT:
+            case METHOD_REFERENCE:
+            case CONSTRUCTOR_REFERENCE:
+            case METHOD_REFERENCE_TYPE_ARGUMENT:
+            case CONSTRUCTOR_REFERENCE_TYPE_ARGUMENT:
                 // Valid in this location, but handled elsewhere.
                 break;
             default: if (strict) {
@@ -520,6 +565,12 @@ public class TypeFromElement {
             case LOCAL_VARIABLE:
             case NEW:
             case CAST:
+            case METHOD_INVOCATION_TYPE_ARGUMENT:
+            case CONSTRUCTOR_INVOCATION_TYPE_ARGUMENT:
+            case METHOD_REFERENCE:
+            case CONSTRUCTOR_REFERENCE:
+            case METHOD_REFERENCE_TYPE_ARGUMENT:
+            case CONSTRUCTOR_REFERENCE_TYPE_ARGUMENT:
                 // Valid in this location, but handled elsewhere.
                 break;
             default: if (strict) {

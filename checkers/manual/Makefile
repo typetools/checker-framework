@@ -60,6 +60,7 @@ html: manual.html
 manual.html: manual.dvi
 	hevea -fix -exec xxdate.exe urlhref.hva manual.tex
 	hevea -exec xxdate.exe urlhref.hva manual.tex
+# The following three lines are only necessary when using Hevea before version 2.04
 	\mv -f manual.html manual.html-with-htoc
 	./hevea-retarget-crossrefs < manual.html-with-htoc > manual.html
 	\rm -f manual.html-with-htoc

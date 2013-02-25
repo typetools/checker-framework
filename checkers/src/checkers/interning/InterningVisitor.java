@@ -625,9 +625,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningChecker> {
             // Maybe a type variable or wildcard had no upper bound
             return false;
         }
-        if (tm.getKind() == TypeKind.ANNOTATED) {
-            tm = ((AnnotatedType) tm).getUnderlyingType();
-        }
+        tm = ((com.sun.tools.javac.code.Type)tm).unannotatedType();
         if (tm.getKind() == TypeKind.TYPEVAR) {
             tm = ((TypeVariable) tm).getUpperBound();
         }
@@ -638,9 +636,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningChecker> {
             // Bound of a wildcard might be null
             return false;
         }
-        if (tm.getKind() == TypeKind.ANNOTATED) {
-            tm = ((AnnotatedType) tm).getUnderlyingType();
-        }
+        tm = ((com.sun.tools.javac.code.Type)tm).unannotatedType();
         if (tm.getKind() != TypeKind.DECLARED) {
             System.out.printf("InterningVisitor.classIsAnnotated: tm = %s (%s)%n", tm, tm.getClass());
         }
