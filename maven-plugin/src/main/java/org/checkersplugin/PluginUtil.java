@@ -120,16 +120,16 @@ public class PluginUtil {
     /**
      * TODO: Either create/use a util class
      */
-    public static String join(final String delimiter, final List<String> strings) {
+    public static <T> String join(final String delimiter, final List<T> objs) {
 
         boolean notFirst = false;
         final StringBuffer sb = new StringBuffer();
 
-        for(final String str : strings) {
+        for(final Object obj : objs) {
             if(notFirst) {
                 sb.append(delimiter);
             }
-            sb.append(str);
+            sb.append(obj.toString());
             notFirst = true;
         }
 
