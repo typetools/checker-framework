@@ -25,9 +25,7 @@ public class CheckerMain {
      */
     public static void main(String[] args)  {
         final File pathToThisJar     = new File(findPathTo(CheckerMain.class, false));
-        final File parentDir         = pathToThisJar.getParentFile();
-
-        final CheckerMain program      = new CheckerMain(parentDir, args);
+        final CheckerMain program      = new CheckerMain(pathToThisJar, args);
         final int exitStatus = program.invokeCompiler();
         System.exit(exitStatus);
     }
@@ -67,15 +65,16 @@ public class CheckerMain {
      * Construct all the relevant file locations and java version given the path to this jar and
      * a set of directories in which to search for jars
      */
-    public CheckerMain(final File searchPath, final String [] args) {
+    public CheckerMain(final File checkersJar, final String [] args) {
 
+        final File searchPath = checkersJar.getParentFile();
         this.jreVersion  = getJreVersion();
-
-        this.checkersJar   = new File(searchPath, "checkers.jar");
-        this.javacJar      = new File(searchPath, "javac.jar");
-        this.jdkJar        = new File(searchPath, findJdkJarName());
+        this.checkersJar   = checkersJar;
 
         final List<String> argsList = new ArrayList<String>(Arrays.asList(args));
+
+        this.javacJar = extractFileArg(PluginUtil.JAVAC_PATH_OPT, new File(searchPath, "javac.jar"), argsList);
+        this.jdkJar   = extractFileArg(PluginUtil.JDK_PATH_OPT, new File(searchPath, findJdkJarName()), argsList);
 
         this.compilationBootclasspath = createCompilationBootclasspath(argsList);
         this.runtimeBootClasspath     = createRuntimeBootclasspath(argsList);
@@ -106,6 +105,48 @@ public class CheckerMain {
         final List<String> extractedOps = extractCpOpts(argsList);
         extractedOps.add(0, this.checkersJar.getAbsolutePath());
         return extractedOps;
+    }
+
+    /**
+     * Remove the argument given by argumentName and the subsequent value from the list args if present.
+     * Return the subsequent value.
+     * @param argumentName Argument to extract
+     * @param alternative  Value to return if argumentName is not found in args
+     * @param args The current list of arguments
+     * @return The string that follows argumentName if argumentName is in args or alternative if
+     * argumentName is not present in args
+     */
+    protected static String extractArg(final String argumentName, final String alternative, final List<String> args) {
+        for(int i = 0; i < args.size(); i++) {
+            if(args.get(i).trim().equals(argumentName)) {
+                if(i == args.size() - 1) {
+                    throw new RuntimeException("Argument " + argumentName + " specified but given no value!");
+                } else {
+                    args.remove(i);
+                    return args.remove(i);
+                }
+            }
+        }
+
+        return alternative;
+    }
+
+    /**
+     * Remove the argument given by argumentName and the subsequent value from the list args if present.
+     * Return the subsequent value wrapped as a File.
+     * @param argumentName Argument to extract
+     * @param alternative  File to return if argumentName is not found in args
+     * @param args The current list of arguments
+     * @return The string that follows argumentName wrapped as a File if argumentName is in args or alternative if
+     * argumentName is not present in args
+     */
+    protected static File extractFileArg(final String argumentName, final File alternative, final List<String> args) {
+        final String filePath = extractArg(argumentName, null, args);
+        if(filePath == null) {
+            return alternative;
+        } else {
+            return new File(filePath);
+        }
     }
 
     /**
@@ -358,11 +399,12 @@ public class CheckerMain {
 
         if( !missingFiles.isEmpty() ) {
             final File firstMissing = missingFiles.remove(0);
-            String message = "The following files could not be located: " + firstMissing.getName();
+            String message = "The following files could not be located: " + firstMissing.getAbsolutePath();
 
             for(final File missing : missingFiles) {
-                message += ", " + missing.getName();
+                message += ", " + missing.getAbsolutePath();
             }
+
 
             throw new RuntimeException(message);
         }
