@@ -35,13 +35,13 @@ public class PluginUtil {
      * Option name for specifying an alternative javac.jar location.  The accompanying value
      * MUST be the path to the jar file (NOT the path to its encompassing directory)
      */
-    public static final String JAVAC_PATH_OPT = "-javacPath";
+    public static final String JAVAC_PATH_OPT = "-javacJar";
 
     /**
      * Option name for specifying an alternative jdk.jar location.  The accompanying value
      * MUST be the path to the jar file (NOT the path to its encompassing directory)
      */
-    public static final String JDK_PATH_OPT   = "-jdkPath";
+    public static final String JDK_PATH_OPT   = "-jdkJar";
 
 
     public static List<File> toFiles(final List<String> fileNames) {
@@ -182,7 +182,7 @@ public class PluginUtil {
             }
         },
 
-        A_SKIP() { //TODO: NEED TO ADD
+        A_SKIP() {
             @Override
             public List<String> getCmdLine(final Map<CheckerProp, Object> props) {
                 return getStringProp(props, this, "-AskipUses=");
@@ -218,6 +218,12 @@ public class PluginUtil {
             @Override
             public List<String> getCmdLine(final Map<CheckerProp, Object> props) {
                 return getBooleanProp(props, this, "-Afilenames");
+            }
+        },
+        A_DETAILED_MSG() {
+            @Override
+            public List<String> getCmdLine(final Map<CheckerProp, Object> props) {
+                return getBooleanProp(props, this, "-Adetailedmsgtext");
             }
         };
 
