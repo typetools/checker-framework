@@ -1,4 +1,4 @@
-package checkers.eclipse.util;
+package checkers.util;
 /**
  * This file contains basic utility functions that should be reused to create
  * a command line call to CheckerMain.
