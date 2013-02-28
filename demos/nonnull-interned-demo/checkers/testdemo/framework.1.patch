@@ -1,0 +1,14 @@
+Index: src/checkers/types/InternalAnnotationScanner.java
+===================================================================
+--- src/checkers/types/InternalAnnotationScanner.java	(revision 3589)
++++ src/checkers/types/InternalAnnotationScanner.java	(working copy)
+@@ -203,6 +203,9 @@
+         TreePath path = trees.getPath(root, node);
+         Element method = InternalUtils.enclosingSymbol(path);
+ 
++        if (method == null)
++          return InternalAnnotationGroup.EMPTY;
++
+         return annotationsFromElement(method, node);
+     }
+ 
