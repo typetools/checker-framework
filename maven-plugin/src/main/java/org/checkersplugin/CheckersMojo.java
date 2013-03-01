@@ -102,8 +102,21 @@ public class CheckersMojo extends AbstractMojo {
      private boolean skip;
 
     /**
+     * Whether to do only checking, without any subsequent compilation
+     * @parameter default-value="true"
+     */
+     private boolean procOnly;
+
+    /**
      * DEPENDENCIES
      */
+
+    /**
+      * @parameter expression="${project.build.outputDirectory}"
+      * @required
+      * @readonly
+      */
+     private String outputDirectory;
     
     /**
      * The source directories containing the sources to be compiled.
@@ -173,6 +186,22 @@ public class CheckersMojo extends AbstractMojo {
      */
     private List<?> classpathElements;
 
+
+    /**
+     * The location of the Framework jar
+     */
+    private File checkersJar;
+
+    /**
+     * The location of the Compiler Jar
+     */
+    private File javacJar;
+
+    /**
+     * The location of the jdk7 jar
+     */
+    private File jdk7Jar;
+
     /**
      * Main control method for the Checker Maven Plugin.  Scans for sources, resolves classpath, and passes these
      * arguments to the the checker compiler which is run on the command line.
@@ -202,7 +231,7 @@ public class CheckersMojo extends AbstractMojo {
 
         final List<String> sources = PathUtils.scanForSources(compileSourceRoots, includes, excludes);
 
-        final File checkersJar = locateArtifacts();
+        locateArtifacts();
 
         final Commandline cl = new Commandline();
 
@@ -213,9 +242,9 @@ public class CheckersMojo extends AbstractMojo {
         final String executablePath = PathUtils.getExecutablePath(executable, toolchainManager, session);
         cl.setExecutable(executablePath);
 
-        final String classpath  = StringUtils.join(classpathElements.iterator(), File.pathSeparator) +
-                //TODO: SEEMS THAT WHEN WE ARE USING @ ARGS THE CLASSPATH FROM THE JAR IS OVERRIDDEN - FIX THIS
-                File.pathSeparator + checkersJar.getAbsolutePath();
+        //TODO: SEEMS THAT WHEN WE ARE USING @ ARGS THE CLASSPATH FROM THE JAR IS OVERRIDDEN - FIX THIS
+        final String classpath  = checkersJar.getAbsolutePath() + File.pathSeparator
+        		+ StringUtils.join(classpathElements.iterator(), File.pathSeparator);
 
         File srcFofn = null;
         File cpFofn = null;
@@ -236,8 +265,10 @@ public class CheckersMojo extends AbstractMojo {
         final Map<PluginUtil.CheckerProp, Object> props = makeProps();
 
         final List<String> arguments = PluginUtil.getCmdArgsOnly(
+                javacJar, jdk7Jar,
                 srcFofn, processor, checkersJar.getAbsolutePath(),
-                null, cpFofn, null, props, null);
+                null, cpFofn, null, props, null,
+                procOnly, outputDirectory);
 
         // And executing
         cl.addArguments(arguments.toArray(new String[arguments.size()]));
@@ -328,10 +359,10 @@ public class CheckersMojo extends AbstractMojo {
                 }
 
                 if (!warnings.isEmpty()) {
-                    logErrors(warnings, "warning", log);
+                    logErrors(warnings, "warning", true, log);
                 }
 
-                logErrors(errors, "error", log);
+                logErrors(errors, "error", false, log);
 
                 throw new MojoFailureException(null, "Errors found by the processor(s)", CompilationFailureException.longMessage(errors));
 
@@ -351,12 +382,18 @@ public class CheckersMojo extends AbstractMojo {
      * @param label The label (usually ERRORS or WARNINGS) to head the error list
      * @param log The log to which the messages are printed
      */
-    private static final void logErrors(final List<CompilerError> errors, final String label, final Log log) {
+    private static final void logErrors(final List<CompilerError> errors, final String label,
+                                        boolean warn, final Log log) {
         log.info("-------------------------------------------------------------");
         log.warn("CHECKERS " + label.toUpperCase() + ": ");
         log.info("-------------------------------------------------------------");
         for (final CompilerError error : errors) {
-            log.warn(error.toString().trim());
+            final String msg = error.toString().trim();
+            if(warn) {
+                log.warn(msg);
+            } else {
+                log.error(msg);
+            }
         }
 
         final String labelLc = label.toLowerCase() + ((errors.size() == 1) ? "" : "s");
@@ -368,53 +405,17 @@ public class CheckersMojo extends AbstractMojo {
      * Find the location of all the necessary Checker Framework related artifacts.  If the
      * artifacts have not been downloaded, download them.  Then copy them to the checker-maven-plugin
      * directory (overwriting any other version that is there).
-     * @return The File pointing to checkers.jar
      * @throws MojoExecutionException
      */
-    private final File locateArtifacts() throws MojoExecutionException {
+    private final void locateArtifacts() throws MojoExecutionException {
 
-        final File checkersJar = PathUtils.getFrameworkJar("framework", checkersVersion,
+        checkersJar = PathUtils.getFrameworkJar("framework", checkersVersion,
                 artifactFactory, artifactResolver, remoteArtifactRepositories, localRepository);
 
-        final File javacJar    = PathUtils.getFrameworkJar("compiler", checkersVersion,
+        javacJar    = PathUtils.getFrameworkJar("compiler", checkersVersion,
                 artifactFactory, artifactResolver, remoteArtifactRepositories, localRepository);
 
-        final File jdk6Jar    = PathUtils.getFrameworkJar("jdk6", checkersVersion,
+        jdk7Jar    = PathUtils.getFrameworkJar("jdk7", checkersVersion,
                 artifactFactory, artifactResolver, remoteArtifactRepositories, localRepository);
-
-        final File jdk7Jar    = PathUtils.getFrameworkJar("jdk7", checkersVersion,
-                artifactFactory, artifactResolver, remoteArtifactRepositories, localRepository);
-
-        final File destination     = new File( checkersJar.getParentFile(), ".cf_artifacts");
-        final File versionFile     = new File( destination, ".copy_version" );
-        final File checkerExe      = new File( destination, "checkers.jar"  );
-        final List<File>   toCopy  = Arrays.asList(checkersJar,    javacJar,    jdk6Jar,    jdk7Jar);
-        final List<String> names   = Arrays.asList("checkers.jar", "javac.jar", "jdk6.jar", "jdk7.jar");
-
-        String latest = "";
-        try {
-            latest =  PathUtils.readVersion(versionFile);
-        } catch(IOException exc) {
-            throw new MojoExecutionException("Exception reading latest Checker Framework Artifact's version!", exc);
-        }
-
-        if( !checkersVersion.equals(latest) ) {
-            try {
-                PathUtils.copyFiles(destination, toCopy, names);
-
-            } catch (IOException e) {
-                final String paths = PathUtils.joinFilePaths(toCopy);
-                throw new MojoExecutionException("Could not copy artifact jars ( " + paths +
-                        " ) to directory ( " + destination.getAbsolutePath() + " )", e);
-            }
-        }
-
-        try {
-            PathUtils.writeVersion(versionFile, checkersVersion);
-        } catch (IOException e) {
-            //TODO: Add warning?
-        }
-
-        return checkerExe;
     }
 }
