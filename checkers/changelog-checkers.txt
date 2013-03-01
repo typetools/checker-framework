@@ -1,3 +1,32 @@
+Version 1.6.1, 01 Mar 2013
+
+User-visible framework improvements:
+  A number of error messages have been clarified
+  Stub file now supports type annotations in front and after method type variable declarations.
+  You may now specify custom paths to javac.jar and jdk7.jar on the command line for non-standard installations.
+
+Internal framework improvements:
+  Adapt to underlying jsr308-langtools changes
+  Add shouldBeApplied method to avoid unnecessary scans in DefaultApplier and avoid annotating void types
+  Add createQualifierDefaults and createQualifierPolymorphism factory methods
+
+Maven plugin:
+  Put checker framework jars at the beginning of classpath
+  Added option to compile code in order to support checking for multi-module projects
+  The plugin no longer copies the various Checker Framework maven artifacts to one location but instead takes advantage of the new custom path options for javac.jar and jdk7.jar
+  The maven plugin no longer attempts to resolve jdk6.jar
+  
+Eclipse plugin:
+  Put checker framework jars at the beginning of classpath.
+  All files selected from a single project can now be checked.  The previous behavior only checked the entire project or one file depending on the type of the first file selected.
+  
+Documentation:
+  Fixed broken links and incomplete URLs in checker-framework manual
+  Update FAQ to discuss conflicting interpretations of array declarations
+  
+Bug fixes
+
+----------------------------------------------------------------------
 Version 1.6.0, 1 Feb 2013
 
 User-visible framework improvements:
