@@ -6,7 +6,6 @@ User-visible framework improvements:
   You may now specify custom paths to javac.jar and jdk7.jar on the command line for non-standard installations.
 
 Internal framework improvements:
-  Adapt to underlying jsr308-langtools changes.
   Add shouldBeApplied method to avoid unnecessary scans in DefaultApplier and avoid annotating void types.
   Add createQualifierDefaults and createQualifierPolymorphism factory methods.
 
@@ -30,18 +29,15 @@ Bug fixes
 Version 1.6.0, 1 Feb 2013
 
 User-visible framework improvements:
-  It is possible to use enum constants in stub files without requiring the
-    fully qualified name, as was previously necessary.
+  It is possible to use enum constants in stub files without requiring the fully qualified name, as was previously necessary.
   Support build on a stock Java 8 OpenJDK.
 
 Adapt to underlying jsr308-langtools changes.
-  Most visible change is syntax for fully-qualified types, from
-  @A java.lang.Object to java.lang.@A Object.
-  Checker Framework does not build or run on JDK 6.
+  The most visible change is syntax for fully-qualified types, from @A java.lang.Object to java.lang.@A Object.
+  The Checker Framework does not build or run on JDK 6.
 
 Documentation:
-  A new tutorial is available at
-    http://types.cs.washington.edu/checker-framework/tutorial/
+  A new tutorial is available at http://types.cs.washington.edu/checker-framework/tutorial/
 
 ----------------------------------------------------------------------
 Version 1.5.0, 14 Jan 2013
