@@ -335,8 +335,13 @@ public abstract class AnnotatedTypeMirror {
      * @param anno annotation class
      * @return the annotation mirror for anno
      */
-    public AnnotationMirror getAnnotation(Class<? extends Annotation> anno) {
-        return getAnnotation(atypeFactory.elements.getName(anno.getCanonicalName()));
+    public AnnotationMirror getAnnotation(Class<? extends Annotation> annoClass) {
+        for (AnnotationMirror annoMirror : getAnnotations()) {
+            if (AnnotationUtils.areSameByClass(annoMirror, annoClass)) {
+                return annoMirror;
+            }
+        }
+        return null;
     }
 
     /**
