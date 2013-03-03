@@ -48,6 +48,14 @@ public class AnnotationUtils {
     private static final Map<CharSequence, AnnotationMirror> annotationsFromNames
         = new HashMap<CharSequence, AnnotationMirror>();
 
+    /** Cache names of AnnotationMirrors for faster access. */
+    private static final Map<AnnotationMirror, Name> annotationMirrorNames
+        = new HashMap<AnnotationMirror, Name>();
+
+    /** Cache names of classes representing AnnotationMirrors for faster access. */
+    private static final Map<Class<? extends Annotation>, String> annotationClassNames
+        = new HashMap<Class<? extends Annotation>, String>();
+
     /**
      * Creates an {@link AnnotationMirror} given by a particular
      * fully-qualified name.  getElementValues on the result returns an
@@ -127,16 +135,21 @@ public class AnnotationUtils {
      * @return the fully-qualified name of an annotation as a Name
      */
     public static final Name annotationName(AnnotationMirror annotation) {
+        if (annotationMirrorNames.containsKey(annotation))
+            return annotationMirrorNames.get(annotation);
+
         final DeclaredType annoType = annotation.getAnnotationType();
         final TypeElement elm = (TypeElement) annoType.asElement();
-        return elm.getQualifiedName();
+        Name name = elm.getQualifiedName();
+        annotationMirrorNames.put(annotation, name);
+        return name;
     }
 
     /**
      * Checks if both annotations are the same.
      *
      * Returns true iff both annotations are of the same type and have the
-     * same annotation values.  This behavior defers from
+     * same annotation values.  This behavior differs from
      * {@code AnnotationMirror.equals(Object)}.  The equals method returns
      * true iff both annotations are the same and annotate the same annotation
      * target (e.g. field, variable, etc).
@@ -184,7 +197,14 @@ public class AnnotationUtils {
      */
     public static boolean areSameByClass(AnnotationMirror am,
             Class<? extends Annotation> anno) {
-        return areSameByName(am, anno.getCanonicalName());
+        String canonicalName;
+        if (annotationClassNames.containsKey(anno)) {
+            canonicalName = annotationClassNames.get(anno);
+        } else {
+            canonicalName = anno.getCanonicalName();
+            annotationClassNames.put(anno, canonicalName);
+        }
+        return areSameByName(am, canonicalName);
     }
 
     /**
