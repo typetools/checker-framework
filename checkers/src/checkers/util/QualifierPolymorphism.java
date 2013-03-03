@@ -138,7 +138,7 @@ public class QualifierPolymorphism {
     }
 
     public static boolean isPolyAll(AnnotationMirror qual) {
-        return qual.getAnnotationType().toString().equals(PolyAll.class.getCanonicalName());
+        return AnnotationUtils.areSameByClass(qual, PolyAll.class);
     }
 
     // Returns null if the qualifier is not polymorphic.
