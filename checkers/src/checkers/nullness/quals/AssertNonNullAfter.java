@@ -2,8 +2,6 @@ package checkers.nullness.quals;
 
 import java.lang.annotation.*;
 
-import checkers.nullness.NullnessChecker;
-
 /**
  * Indicates that if the method terminates successfully, the value expressions
  * are non-null.

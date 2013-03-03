@@ -7,6 +7,8 @@ import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 
+import javacutils.AnnotationUtils;
+
 import checkers.basetype.BaseTypeChecker;
 import checkers.quals.Bottom;
 import checkers.types.AnnotatedTypeMirror;
@@ -16,7 +18,6 @@ import checkers.units.quals.MixedUnits;
 import checkers.units.quals.Prefix;
 import checkers.units.quals.UnitsMultiple;
 import checkers.util.AnnotationBuilder;
-import checkers.util.AnnotationUtils;
 
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompilationUnitTree;

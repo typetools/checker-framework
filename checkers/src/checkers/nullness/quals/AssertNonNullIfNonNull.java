@@ -2,8 +2,6 @@ package checkers.nullness.quals;
 
 import java.lang.annotation.*;
 
-import checkers.nullness.NullnessChecker;
-
 /**
  * Indicates that if the method returns a non-null value, then the value
  * expressions are also non-null.
