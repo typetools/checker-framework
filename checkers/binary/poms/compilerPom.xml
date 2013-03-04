@@ -8,7 +8,7 @@
 
     <!-- The comments in the version number are used to do a text substitution. Don't remove them
          see checker-framework/binary/poms/updateVersion.sh -->
-    <version><!-- SUBST -->1.6.1<!-- /SUBST --></version>
+    <version><!-- checkers-version -->1.6.1<!-- /checkers-version --></version>
 
     <distributionManagement>
         <repository>
