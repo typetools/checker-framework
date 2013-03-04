@@ -1,5 +1,6 @@
 package dataflow.cfg;
 
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 
@@ -45,9 +46,9 @@ public abstract class UnderlyingAST {
         protected final MethodTree method;
         
         /** The class tree this method belongs to. */
-        protected final Tree classTree;
+        protected final ClassTree classTree;
 
-        public CFGMethod(MethodTree method, Tree classTree) {
+        public CFGMethod(MethodTree method, ClassTree classTree) {
             super(Kind.METHOD);
             this.method = method;
             this.classTree = classTree;
@@ -62,7 +63,7 @@ public abstract class UnderlyingAST {
             return method;
         }
         
-        public Tree getClassTree() {
+        public ClassTree getClassTree() {
             return classTree;
         }
 

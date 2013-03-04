@@ -27,6 +27,7 @@ import dataflow.cfg.node.LocalVariableNode;
 import dataflow.cfg.node.Node;
 import dataflow.cfg.node.ReturnNode;
 
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
@@ -535,6 +536,22 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
      */
     public Node getNodeForTree(Tree t) {
         return cfg.getNodeCorrespondingToTree(t);
+    }
+
+    /**
+     * Get the {@link MethodTree} of the current CFG if the argument {@link Tree} maps
+     * to a {@link Node} in the CFG or null otherwise.
+     */
+    public/* @Nullable */MethodTree getContainingMethod(Tree t) {
+        return cfg.getContainingMethod(t);
+    }
+
+    /**
+     * Get the {@link ClassTree} of the current CFG if the argument {@link Tree} maps
+     * to a {@link Node} in the CFG or null otherwise.
+     */
+    public/* @Nullable */ClassTree getContainingClass(Tree t) {
+        return cfg.getContainingClass(t);
     }
 
     public List<Pair<ReturnNode, TransferResult<A, S>>> getReturnStatementStores() {

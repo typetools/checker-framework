@@ -259,7 +259,7 @@ public class CFGBuilder {
      */
     public static ControlFlowGraph build(
             CompilationUnitTree root, ProcessingEnvironment env,
-            MethodTree tree, Tree classTree, boolean assumeAssertionsEnabled, boolean assumeAssertionsDisabled) {
+            MethodTree tree, ClassTree classTree, boolean assumeAssertionsEnabled, boolean assumeAssertionsDisabled) {
         return new CFGBuilder(assumeAssertionsEnabled, assumeAssertionsDisabled).run(root, env, tree, classTree);
     }
 
@@ -277,7 +277,7 @@ public class CFGBuilder {
      */
     public static ControlFlowGraph build(
             CompilationUnitTree root, ProcessingEnvironment env,
-            MethodTree tree, Tree classTree) {
+            MethodTree tree, ClassTree classTree) {
         return new CFGBuilder(false, false).run(root, env, tree, classTree);
     }
 
@@ -304,7 +304,7 @@ public class CFGBuilder {
      */
     public ControlFlowGraph run(
             CompilationUnitTree root, ProcessingEnvironment env,
-            MethodTree tree, Tree classTree) {
+            MethodTree tree, ClassTree classTree) {
         UnderlyingAST underlyingAST = new CFGMethod(tree, classTree);
         return run(root, env, underlyingAST);
     }
