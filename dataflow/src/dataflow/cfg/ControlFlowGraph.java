@@ -17,6 +17,8 @@ import dataflow.cfg.block.SpecialBlockImpl;
 import dataflow.cfg.node.Node;
 import dataflow.cfg.node.ReturnNode;
 
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 
 /**
@@ -141,4 +143,31 @@ public class ControlFlowGraph {
         return new IdentityHashMap<>(treeLookup);
     }
 
+    /**
+     * Get the {@link MethodTree} of the CFG if the argument {@link Tree} maps
+     * to a {@link Node} in the CFG or null otherwise.
+     */
+    public/* @Nullable */MethodTree getContainingMethod(Tree t) {
+        if (treeLookup.containsKey(t)) {
+            if (underlyingAST.getKind() == UnderlyingAST.Kind.METHOD) {
+                UnderlyingAST.CFGMethod cfgMethod = (UnderlyingAST.CFGMethod) underlyingAST;
+                return cfgMethod.getMethod();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Get the {@link ClassTree} of the CFG if the argument {@link Tree} maps
+     * to a {@link Node} in the CFG or null otherwise.
+     */
+    public/* @Nullable */ClassTree getContainingClass(Tree t) {
+        if (treeLookup.containsKey(t)) {
+            if (underlyingAST.getKind() == UnderlyingAST.Kind.METHOD) {
+                UnderlyingAST.CFGMethod cfgMethod = (UnderlyingAST.CFGMethod) underlyingAST;
+                return cfgMethod.getClassTree();
+            }
+        }
+        return null;
+    }
 }
