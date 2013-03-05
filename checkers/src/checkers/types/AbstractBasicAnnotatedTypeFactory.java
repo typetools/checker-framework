@@ -4,6 +4,7 @@ import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -70,6 +71,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.TreeScanner;
 
 /**
  * A factory that extends {@link AnnotatedTypeFactory} to optionally use
@@ -624,16 +626,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
     protected void annotateImplicitWithFlow(Tree tree, AnnotatedTypeMirror type) {
         assert useFlow : "useFlow must be true to use flow analysis";
 
-        // This function can be called on Trees outside of the current
-        // compilation unit root.
-        TreePath path = trees.getPath(root, tree);
-        ClassTree enclosingClass = null;
-        if (path != null) {
-            enclosingClass = TreeUtils.enclosingClass(path);
-            if (!scannedClasses.containsKey(enclosingClass)) {
-                performFlowAnalysis(enclosingClass);
-            }
-        }
+        analyzeNewClass(tree);
 
         treeAnnotator.visit(tree, type);
 
@@ -647,6 +640,46 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
             applyInferredAnnotations(type, as);
         }
     }
+
+    /**
+     * Check for a request to annotate a {@link Tree} in a class that
+     * has not yet been analyzed, in which case we will analyze the
+     * new class first to refine type information.  The call to
+     * getPath is extremely expensive, so we first check whether tree
+     * belongs to any method that is currently being analyzed.
+     **/
+
+    private Set<Tree> markedTrees = new HashSet<Tree>();
+
+    protected void analyzeNewClass(Tree tree) {
+        if (!markedTrees.contains(tree)) {
+            TreePath path = trees.getPath(root, tree);
+
+            ClassTree enclosingClass = null;
+            if (path != null) {
+                enclosingClass = TreeUtils.enclosingClass(path);
+
+                enclosingClass.accept(new TreeMarker(), markedTrees);
+
+                if (!scannedClasses.containsKey(enclosingClass)) {
+                    performFlowAnalysis(enclosingClass);
+                }
+            }
+        }
+    }
+
+    protected static class TreeMarker extends TreeScanner<Void, Set<Tree>> {
+        @Override
+        public Void scan(Tree tree, Set<Tree> set) {
+            if (tree != null) {
+                set.add(tree);
+                return tree.accept(this, set);
+            } else {
+                return null;
+            }
+        }
+    }
+
 
     /**
      * Returns the inferred value (by the dataflow analysis) for a given tree.
