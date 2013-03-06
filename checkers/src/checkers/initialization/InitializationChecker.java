@@ -1,5 +1,9 @@
 package checkers.initialization;
 
+/*>>>
+import checkers.interning.quals.*;
+*/
+
 import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.Collections;
@@ -268,7 +272,7 @@ public abstract class InitializationChecker extends BaseTypeChecker {
 
         protected Set<AnnotationMirror> tops;
         protected Set<AnnotationMirror> bottoms;
-        protected Set<Name> typeQualifiers;
+        protected Set</*@Interned*/String> typeQualifiers;
         protected QualifierHierarchy childHierarchy = getChildQualifierHierarchy();
         protected Types types = processingEnv.getTypeUtils();
 
@@ -323,10 +327,10 @@ public abstract class InitializationChecker extends BaseTypeChecker {
 
         @Override
         @SuppressWarnings({ "rawtypes", "unchecked" })
-        public Set<Name> getTypeQualifiers() {
+        public Set</*@Interned*/String> getTypeQualifiers() {
             if (typeQualifiers != null)
                 return typeQualifiers;
-            Set<Name> names = new HashSet<>();
+            Set</*@Interned*/String> names = new HashSet<>();
             Set<Class<?>> clazzes = new HashSet<>();
             clazzes.addAll(getInitializationAnnotations());
             // Add qualifiers from the initialization type system.
@@ -399,8 +403,8 @@ public abstract class InitializationChecker extends BaseTypeChecker {
          */
         protected boolean isChildAnnotation(AnnotationMirror anno) {
             assert anno != null;
-            for (Name c : childHierarchy.getTypeQualifiers()) {
-                if (AnnotationUtils.areSameByName(anno, c.toString())) {
+            for (/*@Interned*/ String c : childHierarchy.getTypeQualifiers()) {
+                if (AnnotationUtils.areSameByName(anno, c)) {
                     return true;
                 }
             }

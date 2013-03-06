@@ -621,17 +621,21 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
         annotateImplicit(tree, type, this.useFlow);
     }
 
+    /**
+     * We perform flow analysis on each {@link ClassTree} that is
+     * passed to annotateImplicitWithFlow.  This works correctly when
+     * a {@link ClassTree} is passed to this method before any of its
+     * sub-trees.  It also helps to satisfy the requirement that a
+     * {@link ClassTree} has been advanced to annotation before we
+     * analyze it.
+     */
     protected void annotateImplicitWithFlow(Tree tree, AnnotatedTypeMirror type) {
         assert useFlow : "useFlow must be true to use flow analysis";
 
-        // This function can be called on Trees outside of the current
-        // compilation unit root.
-        TreePath path = trees.getPath(root, tree);
-        ClassTree enclosingClass = null;
-        if (path != null) {
-            enclosingClass = TreeUtils.enclosingClass(path);
-            if (!scannedClasses.containsKey(enclosingClass)) {
-                performFlowAnalysis(enclosingClass);
+        if (tree instanceof ClassTree) {
+            ClassTree classTree = (ClassTree) tree;
+            if (!scannedClasses.containsKey(classTree)) {
+                performFlowAnalysis(classTree);
             }
         }
 
