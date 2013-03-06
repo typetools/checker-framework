@@ -2,6 +2,7 @@ package javacutils;
 
 /*>>>
 import checkers.nullness.quals.*;
+import checkers.interning.quals.*;
 */
 
 import com.sun.tools.javac.code.Symbol.VarSymbol;
@@ -48,13 +49,20 @@ public class AnnotationUtils {
     private static final Map<CharSequence, AnnotationMirror> annotationsFromNames
         = new HashMap<CharSequence, AnnotationMirror>();
 
-    /** Cache names of AnnotationMirrors for faster access. */
-    private static final Map<AnnotationMirror, Name> annotationMirrorNames
-        = new HashMap<AnnotationMirror, Name>();
+    /**
+     * Cache names of AnnotationMirrors for faster access.  Values in
+     * the map are interned Strings, so they can be compared with ==.
+     */
+    private static final Map<AnnotationMirror, /*@Interned*/String> annotationMirrorNames
+        = new HashMap<AnnotationMirror, /*@Interned*/String>();
 
-    /** Cache names of classes representing AnnotationMirrors for faster access. */
-    private static final Map<Class<? extends Annotation>, String> annotationClassNames
-        = new HashMap<Class<? extends Annotation>, String>();
+    /**
+     * Cache names of classes representing AnnotationMirrors for
+     * faster access.  Values in the map are interned Strings, so they
+     * can be compared with ==.
+     */
+    private static final Map<Class<? extends Annotation>, /*@Interned*/String> annotationClassNames
+        = new HashMap<Class<? extends Annotation>, /*@Interned*/String>();
 
     /**
      * Creates an {@link AnnotationMirror} given by a particular
@@ -134,13 +142,13 @@ public class AnnotationUtils {
     /**
      * @return the fully-qualified name of an annotation as a Name
      */
-    public static final Name annotationName(AnnotationMirror annotation) {
+    public static final/*@Interned*/String annotationName(AnnotationMirror annotation) {
         if (annotationMirrorNames.containsKey(annotation))
             return annotationMirrorNames.get(annotation);
 
         final DeclaredType annoType = annotation.getAnnotationType();
         final TypeElement elm = (TypeElement) annoType.asElement();
-        Name name = elm.getQualifiedName();
+        /*@Interned*/String name = elm.getQualifiedName().toString().intern();
         annotationMirrorNames.put(annotation, name);
         return name;
     }
@@ -158,7 +166,7 @@ public class AnnotationUtils {
      */
     public static boolean areSame(/*@Nullable*/ AnnotationMirror a1, /*@Nullable*/ AnnotationMirror a2) {
         if (a1 != null && a2 != null) {
-            if (!annotationName(a1).equals(annotationName(a2))) {
+            if (annotationName(a1) != annotationName(a2)) {
                 return false;
             }
 
@@ -178,7 +186,7 @@ public class AnnotationUtils {
      */
     public static boolean areSameIgnoringValues(AnnotationMirror a1, AnnotationMirror a2) {
         if (a1 != null && a2 != null)
-            return annotationName(a1).equals(annotationName(a2));
+            return annotationName(a1) == annotationName(a2);
         return a1 == a2;
     }
 
@@ -186,9 +194,9 @@ public class AnnotationUtils {
      * Checks that the annotation {@code am} has the name {@code aname}. Values
      * are ignored.
      */
-    public static boolean areSameByName(AnnotationMirror am, String aname) {
-        Name amname = AnnotationUtils.annotationName(am);
-        return amname.toString().equals(aname);
+    public static boolean areSameByName(AnnotationMirror am, /*@Interned*/String aname) {
+        // Both strings are interned.
+        return annotationName(am) == aname;
     }
 
     /**
@@ -197,11 +205,11 @@ public class AnnotationUtils {
      */
     public static boolean areSameByClass(AnnotationMirror am,
             Class<? extends Annotation> anno) {
-        String canonicalName;
+        /*@Interned*/String canonicalName;
         if (annotationClassNames.containsKey(anno)) {
-            canonicalName = annotationClassNames.get(anno);
+            canonicalName = annotationClassNames.get(anno).intern();
         } else {
-            canonicalName = anno.getCanonicalName();
+            canonicalName = anno.getCanonicalName().intern();
             annotationClassNames.put(anno, canonicalName);
         }
         return areSameByName(am, canonicalName);

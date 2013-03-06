@@ -1,5 +1,9 @@
 package checkers.types;
 
+/*>>>
+import checkers.interning.quals.*;
+*/
+
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -69,7 +73,7 @@ public abstract class QualifierHierarchy {
      *
      * @return the fully qualified name represented in this hierarchy
      */
-    public abstract Set<Name> getTypeQualifiers();
+    public abstract Set</*@Interned*/String> getTypeQualifiers();
 
     // **********************************************************************
     // Qualifier Hierarchy Queries

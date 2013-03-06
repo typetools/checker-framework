@@ -1,5 +1,9 @@
 package checkers.types;
 
+/*>>>
+import checkers.interning.quals.*;
+*/
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -133,7 +137,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * class names (canonical names) for annotations with the same meaning
      * (i.e., aliases), as well as the annotation mirror that should be used.
      */
-    private final Map<String, Pair<AnnotationMirror, Set<String>>> declAliases = new HashMap<>();
+    private final Map<String, Pair<AnnotationMirror, Set</*@Interned*/String>>> declAliases = new HashMap<>();
 
 	/** Unique ID counter; for debugging purposes. */
     private static int uidCounter = 0;
@@ -1258,7 +1262,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     public boolean isSupportedQualifier(/*@Nullable*/ AnnotationMirror a) {
         if (a == null) return false;
-        Name name = AnnotationUtils.annotationName(a);
+        /*@Interned*/String name = AnnotationUtils.annotationName(a);
         return this.qualHierarchy.getTypeQualifiers().contains(name);
     }
 
@@ -1294,12 +1298,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             Class<? extends Annotation> annotation,
             AnnotationMirror annotationToUse) {
         String aliasName = alias.getCanonicalName();
-        String annotationName = annotation.getCanonicalName();
-        Set<String> set = new HashSet<>();
+        /*@Interned*/String annotationName = annotation.getCanonicalName();
+        Set</*@Interned*/String> set = new HashSet<>();
         if (declAliases.containsKey(annotationName)) {
             set.addAll(declAliases.get(annotationName).second);
         }
-        set.add(aliasName);
+        set.add(aliasName.intern());
         declAliases.put(annotationName, Pair.of(annotationToUse, set));
     }
 
@@ -1755,7 +1759,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     @Override
     public AnnotationMirror getDeclAnnotation(Element elt,
             Class<? extends Annotation> anno) {
-        String annoName = anno.getCanonicalName();
+        String annoName = anno.getCanonicalName().intern();
         String eltName = ElementUtils.getVerboseName(elt);
         List<? extends AnnotationMirror> annotationMirrors = elt.getAnnotationMirrors();
         return getDeclAnnotation(eltName, annoName, annotationMirrors, true);
@@ -1766,11 +1770,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * name equals the passed annotationName if one exists, null otherwise. This
      * is the private implementation of the same-named, public method.
      */
-    private AnnotationMirror getDeclAnnotation(String eltName, String annoName,
+    private AnnotationMirror getDeclAnnotation(String eltName,
+            /*@Interned*/String annoName,
             List<? extends AnnotationMirror> annotationMirrors,
             boolean checkAliases) {
 
-        Pair<AnnotationMirror, Set<String>> aliases = checkAliases ? declAliases.get(annoName) : null;
+        Pair<AnnotationMirror, Set</*@Interned*/String>> aliases = checkAliases ? declAliases.get(annoName) : null;
 
         // 1. Look in the stub files.
         if (indexDeclAnnos != null) {
