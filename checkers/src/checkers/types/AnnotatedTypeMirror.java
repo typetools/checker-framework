@@ -1,5 +1,9 @@
 package checkers.types;
 
+/*>>>
+import checkers.interning.quals.*;
+*/
+
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -322,8 +326,20 @@ public abstract class AnnotatedTypeMirror {
      */
     public AnnotationMirror getAnnotation(Name annotationName) {
         assert annotationName != null : "Null annotationName in getAnnotation";
+        return getAnnotation(annotationName.toString().intern());
+    }
+
+    /**
+     * Returns the actual annotation mirror used to annotate this type,
+     * whose name equals the string argument if one exists, null otherwise.
+     *
+     * @param annotationStr
+     * @return the annotation mirror for annotationStr
+     */
+    public AnnotationMirror getAnnotation(/*@Interned*/String annotationStr) {
+        assert annotationStr != null : "Null annotationName in getAnnotation";
         for (AnnotationMirror anno : getAnnotations())
-            if (annotationName.equals(AnnotationUtils.annotationName(anno)))
+            if (AnnotationUtils.areSameByName(anno, annotationStr))
                 return anno;
         return null;
     }
@@ -361,10 +377,10 @@ public abstract class AnnotatedTypeMirror {
             Set<AnnotationMirror> explicitAnnotations = AnnotationUtils.createAnnotationSet();
             List<com.sun.tools.javac.code.Attribute.TypeCompound> typeAnnotations = ((com.sun.tools.javac.code.Symbol) this.element).getTypeAnnotationMirrors();
             // TODO: should we instead try to go to the Checker and use getSupportedTypeQualifiers()?
-            Set<Name> validAnnotations = atypeFactory.getQualifierHierarchy().getTypeQualifiers();
+            Set</*@Interned*/String> validAnnotations = atypeFactory.getQualifierHierarchy().getTypeQualifiers();
             for (com.sun.tools.javac.code.Attribute.TypeCompound explicitAnno : typeAnnotations) {
-                for (Name validAnno : validAnnotations) {
-                    if (explicitAnno.getAnnotationType().toString().equals(validAnno.toString())) {
+                for (/*@Interned*/String validAnno : validAnnotations) {
+                    if (explicitAnno.getAnnotationType().toString().equals(validAnno)) {
                         explicitAnnotations.add(explicitAnno);
                     }
                 }

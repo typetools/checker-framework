@@ -1,5 +1,9 @@
 package checkers.types;
 
+/*>>>
+import checkers.interning.quals.*;
+*/
+
 import java.util.Collection;
 import java.util.Set;
 
@@ -73,7 +77,7 @@ class GeneralQualifierHierarchy extends QualifierHierarchy {
 
     // Not needed - raises error.
     @Override
-    public Set<Name> getTypeQualifiers() {
+    public Set</*@Interned*/String> getTypeQualifiers() {
         ErrorReporter.errorAbort("GeneralQualifierHierarchy.getTypeQualifiers() was called! It shouldn't be called.");
         return null;
     }
