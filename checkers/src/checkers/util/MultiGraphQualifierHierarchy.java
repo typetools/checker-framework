@@ -1,5 +1,9 @@
 package checkers.util;
 
+/*>>>
+import checkers.interning.quals.*;
+*/
+
 import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.Collections;
@@ -340,13 +344,13 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         return true;
     }
 
-    private Set<Name> typeQualifiers = null;
+    private Set</*@Interned*/String> typeQualifiers = null;
 
     @Override
-    public Set<Name> getTypeQualifiers() {
+    public Set</*@Interned*/String> getTypeQualifiers() {
         if (typeQualifiers != null)
             return typeQualifiers;
-        Set<Name> names = new HashSet<Name>();
+        Set</*@Interned*/String> names = new HashSet</*@Interned*/String>();
         for (AnnotationMirror anno : supertypesMap.keySet())
             names.add(AnnotationUtils.annotationName(anno));
         typeQualifiers = names;
