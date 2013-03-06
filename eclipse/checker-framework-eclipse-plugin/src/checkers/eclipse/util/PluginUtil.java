@@ -31,6 +31,18 @@ import java.util.Map;
 
 public class PluginUtil {
 
+    /**
+     * Option name for specifying an alternative javac.jar location.  The accompanying value
+     * MUST be the path to the jar file (NOT the path to its encompassing directory)
+     */
+    public static final String JAVAC_PATH_OPT = "-javacJar";
+
+    /**
+     * Option name for specifying an alternative jdk.jar location.  The accompanying value
+     * MUST be the path to the jar file (NOT the path to its encompassing directory)
+     */
+    public static final String JDK_PATH_OPT   = "-jdkJar";
+
 
     public static List<File> toFiles(final List<String> fileNames) {
         final List<File> files = new ArrayList<File>(fileNames.size());
@@ -108,16 +120,16 @@ public class PluginUtil {
     /**
      * TODO: Either create/use a util class
      */
-    public static String join(final String delimiter, final List<String> strings) {
+    public static <T> String join(final String delimiter, final List<T> objs) {
 
         boolean notFirst = false;
         final StringBuffer sb = new StringBuffer();
 
-        for(final String str : strings) {
+        for(final Object obj : objs) {
             if(notFirst) {
                 sb.append(delimiter);
             }
-            sb.append(str);
+            sb.append(obj.toString());
             notFirst = true;
         }
 
@@ -170,7 +182,7 @@ public class PluginUtil {
             }
         },
 
-        A_SKIP() { //TODO: NEED TO ADD
+        A_SKIP() {
             @Override
             public List<String> getCmdLine(final Map<CheckerProp, Object> props) {
                 return getStringProp(props, this, "-AskipUses=");
@@ -206,6 +218,12 @@ public class PluginUtil {
             @Override
             public List<String> getCmdLine(final Map<CheckerProp, Object> props) {
                 return getBooleanProp(props, this, "-Afilenames");
+            }
+        },
+        A_DETAILED_MSG() {
+            @Override
+            public List<String> getCmdLine(final Map<CheckerProp, Object> props) {
+                return getBooleanProp(props, this, "-Adetailedmsgtext");
             }
         };
 
@@ -264,24 +282,43 @@ public class PluginUtil {
         return "@" + fileArg.getAbsolutePath();
     }
 
+
     //TODO: Perhaps unify this with CheckerMain as it violates DRY
-    public static List<String> getCmd(final String executable,  final File srcFofn, final String processors,
+    public static List<String> getCmd(final String executable,  final File javacPath, final File jdkPath,
+                                      final File srcFofn, final String processors,
                                       final String checkerHome, final String javaHome,
                                       final File classPathFofn, final String bootClassPath,
-                                      final Map<CheckerProp, Object> props, PrintStream out) {
+                                      final Map<CheckerProp, Object> props, PrintStream out,
+                                      final boolean procOnly, final String outputDirectory) {
 
         final List<String> cmd = new ArrayList<String>();
 
         final String java    = ( executable != null ) ? executable
-                                                      : getJavaCommand(javaHome, out);
+                : getJavaCommand(javaHome, out);
 
         cmd.add(java);
         cmd.add("-jar");
         cmd.add(checkerHome);
 
-        cmd.add("-proc:only");
+        if(procOnly) {
+            cmd.add("-proc:only");
+        } else {
+            cmd.add("-d");
+            cmd.add(outputDirectory);
+        }
+
         if(bootClassPath != null && !bootClassPath.trim().isEmpty()) {
             cmd.add("-Xbootclasspath/p:" +  bootClassPath);
+        }
+
+        if(javacPath != null) {
+            cmd.add(JAVAC_PATH_OPT);
+            cmd.add(javacPath.getAbsolutePath());
+        }
+
+        if(jdkPath != null) {
+            cmd.add(JDK_PATH_OPT);
+            cmd.add(jdkPath.getAbsolutePath());
         }
 
         if(classPathFofn != null ) {
@@ -312,11 +349,28 @@ public class PluginUtil {
     public static List<String> getCmdArgsOnly(final File srcFofn, final String processors,
                                               final String checkerHome, final String javaHome,
                                               final File classpathFofn,   final String bootClassPath,
-                                              final Map<CheckerProp, Object> props, PrintStream out) {
+                                              final Map<CheckerProp, Object> props, PrintStream out,
+                                              final boolean procOnly, final String outputDirectory) {
 
-        final List<String> cmd = getCmd(null, srcFofn, processors,
-                checkerHome, javaHome, classpathFofn,
-                bootClassPath, props, out);
+        final List<String> cmd = getCmd(null, null, null, srcFofn, processors,
+                checkerHome, javaHome, classpathFofn, bootClassPath, props, out,
+                procOnly, outputDirectory);
+        cmd.remove(0);
+        return cmd;
+    }
+
+
+
+    public static List<String> getCmdArgsOnly(final File javacPath, final File jdkPath,
+                                              final File srcFofn, final String processors,
+                                              final String checkerHome, final String javaHome,
+                                              final File classpathFofn,   final String bootClassPath,
+                                              final Map<CheckerProp, Object> props, PrintStream out,
+                                              final boolean procOnly, final String outputDirectory) {
+
+        final List<String> cmd = getCmd(null, javacPath, jdkPath, srcFofn, processors,
+                checkerHome, javaHome, classpathFofn, bootClassPath, props, out,
+                procOnly, outputDirectory);
         cmd.remove(0);
         return cmd;
     }

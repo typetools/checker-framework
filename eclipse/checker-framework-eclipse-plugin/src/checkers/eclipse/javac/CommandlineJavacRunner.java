@@ -71,7 +71,7 @@ public class CommandlineJavacRunner implements CheckersRunner {
 
         //TODO: SEEMS THAT WHEN WE ARE USING @ ARGS THE CLASSPATH FROM THE JAR IS OVERRIDDEN - FIX THIS
         this.checkersJar = locatePluginFile(CHECKERS_LOCATION);
-        this.classpath = classpath + File.pathSeparator + checkersJar.getAbsolutePath();
+        this.classpath = checkersJar.getAbsolutePath() + File.pathSeparator + classpath;
         this.bootClasspath = bootClasspath;
 
         final IPreferenceStore prefs = CheckerPlugin.getDefault().getPreferenceStore();
@@ -146,15 +146,17 @@ public class CommandlineJavacRunner implements CheckersRunner {
         final List<String> miscOptions = new ArrayList<String>();
         addPreferenceOptions(miscOptions, prefs);
         props.put(PluginUtil.CheckerProp.MISC_COMPILER, miscOptions);
+        props.put(PluginUtil.CheckerProp.A_DETAILED_MSG, true);
 
         addProcessorOptions(props, prefs);
 
+
         final String jdkPath = prefs.getString(CheckerPreferences.PREF_CHECKER_JDK_PATH);
 
-        return PluginUtil.getCmd(null, srcFofn, processors,
+        return PluginUtil.getCmd(null, null, null, srcFofn, processors,
                 checkersJar.getAbsolutePath(),
                 jdkPath, classpathFofn, bootClassPath,
-                props, out);
+                props, out, true, null);
     }
 
     /**
