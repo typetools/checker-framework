@@ -621,6 +621,11 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
         annotateImplicit(tree, type, this.useFlow);
     }
 
+    /**
+     * We perform flow analysis on each {@link ClassTree} that is passed to
+     * annotateImplicitWithFlow.  This works correctly when a
+     * {@link ClassTree} is annotated before any of its sub-trees.
+     */
     protected void annotateImplicitWithFlow(Tree tree, AnnotatedTypeMirror type) {
         assert useFlow : "useFlow must be true to use flow analysis";
 
