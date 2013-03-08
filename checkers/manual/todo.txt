@@ -8,8 +8,8 @@ New section on concepts and annotations that apply to all type-systems and check
 What would a good place be for this?  At the beginning/end?  Split into multiple sections?
 
 - Purity annotation
-  - Explain the annotation and its semantics (can probably mostly taken from the javadoc of @Pure).
-  - Explain the command line parameter -AsuggestPureMethods, as well as what the purity analysis does (again, see javadoc of @Pure).
+  - Explain the annotation and its semantics (can probably mostly taken from the Javadoc of @Pure).
+  - Explain the command line parameter -AsuggestPureMethods, as well as what the purity analysis does (again, see Javadoc of @Pure).
 
 - Pre-/postconditions from a user perspective:
   - Explain the generic pre- and postcondition annotations: @EnsuresAnnotation/@EnsuresAnnotations, @EnsuresAnnotationIf/@EnsuresAnnotationsIf and @RequiresAnnotation/@RequiresAnnotations.
