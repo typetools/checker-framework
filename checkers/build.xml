@@ -252,8 +252,9 @@ ${build.version} of the 'javac.jar' library."/>
     </target>
 
     <!-- TODO: Remove this and just use bindist-all (or remove bindist-all and keep this) -->
-    <target name="dist" depends="bindist"
-            description="Create .jar, annotated JDK, and binary distribution">
+    <target name="dist" depends="clean, bindist, all-tests-nojar, docs"
+            description="Everything necessary to prepare this project for distribution: binary distribution, testing,
+            and documentation.">
     </target>
 
     <!-- This creates checkers.jar -->
@@ -346,8 +347,14 @@ ${build.version} of the 'javac.jar' library."/>
     <target name="all-tests" depends="jar,jdk.jar,all-tests-nojdk"
       description="Run tests for all checkers"/>
 
-    <target name="all-tests-nojdk" depends="jar,build-tests"
-      description="Run tests for all checkers, WITHOUT updating jdk.jar">
+    <!-- Used to guarantee that targets executed from other ant scripts do not cause unnecessary rebuilds -->
+    <target name="all-tests-nojdk" depends="jar, all-tests-nojar"
+            description="Run tests for all checkers, WITHOUT updating jdk.jar">
+    </target>
+
+    <!-- Used to guarantee that targets executed from other ant scripts do not cause unnecessary rebuilds -->
+    <target name="all-tests-nojar" depends="build-tests"
+      description="Run tests for all checkers, WITHOUT building anything">
       <!-- TODO: for all -nojdk targets:
            check whether jdk.jar exists and create if not. -->
       <antcall target="nonnull-extra-tests-nojdk"/>
