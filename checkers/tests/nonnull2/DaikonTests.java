@@ -114,9 +114,20 @@ public class DaikonTests {
             b.clazz.hashCode();
         }
     }
-    
+
+    // From LimitedSizeSet.  The following initialization of the values array
+    // has caused a NullPointerException.
+    class Bug6<T> {
+        protected /*@Nullable*/ T /*@Nullable*/ [] values;
+
+        public Bug6() {
+            /*@Nullable*/ T[] new_values_array = (/*@Nullable*/ T[]) new /*@Nullable*/ Object[4];
+            values = new_values_array;
+        }
+    }
 }
 
 class Bug1Other {
     static @Nullable Object field;
 }
+
