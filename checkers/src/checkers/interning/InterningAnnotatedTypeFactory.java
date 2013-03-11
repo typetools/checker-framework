@@ -13,15 +13,16 @@ import checkers.interning.quals.*;
 import checkers.quals.DefaultQualifier;
 import checkers.quals.ImplicitFor;
 import checkers.quals.Unqualified;
+import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.types.TreeAnnotator;
 import checkers.types.TypeAnnotator;
-import checkers.util.AnnotationUtils;
-import checkers.util.TreeUtils;
-import checkers.util.ElementUtils;
+import javacutils.AnnotationUtils;
+import javacutils.TreeUtils;
+import javacutils.ElementUtils;
 
 import com.sun.source.tree.Tree;
 
