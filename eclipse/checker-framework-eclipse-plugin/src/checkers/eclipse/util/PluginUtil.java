@@ -24,10 +24,7 @@ package checkers.eclipse.util;
  */
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class PluginUtil {
 
@@ -120,7 +117,7 @@ public class PluginUtil {
     /**
      * TODO: Either create/use a util class
      */
-    public static <T> String join(final String delimiter, final List<T> objs) {
+    public static <T> String join(final String delimiter, final Collection<T> objs) {
 
         boolean notFirst = false;
         final StringBuffer sb = new StringBuffer();
@@ -248,7 +245,7 @@ public class PluginUtil {
     }
 
     public static File writeTmpCpFile(final String prefix, final boolean deleteOnExit,
-                                       final String classpath) throws IOException {
+                                      final String classpath) throws IOException {
         return writeTmpArgFile(prefix, ".classpath", deleteOnExit, Arrays.asList("-classpath", classpath));
     }
 
@@ -271,7 +268,7 @@ public class PluginUtil {
         } else {
             if( out != null ) {
                 out.println("Could not find java executable at: ( " + java.getAbsolutePath()    + "," +
-                                                                      javaExe.getAbsolutePath() + ")" +
+                        javaExe.getAbsolutePath() + ")" +
                         "\n  Using \"java\" command.\n");
             }
             return "java";
