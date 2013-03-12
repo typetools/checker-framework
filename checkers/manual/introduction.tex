@@ -513,15 +513,16 @@ Two concrete examples (using the Nullness checker) are:
   javac -processor checkers.nullness.NullnessChecker MyFile.java
   java -jar $CHECKERS/binary/checkers.jar MyFile.java
 \end{Verbatim}
+% Unconfuse Emacs LaTeX mode: $
 %BEGIN LATEX
 \end{smaller}
 %END LATEX
 
 \noindent
-Note the two invocations above are equivalent.  Both result in the invocation of the
-Checker Framework compiler which in turn invokes the JSR308 Type Annotations compiler
-with an annotated JDK on it's classpath, form more information on annotated jdks see
-Section~\ref{skeleton-using}.
+Note that the two invocations above are equivalent.  Each one invokes the
+Checker Framework compiler, which in turn invokes the Type Annotations compiler
+with an annotated JDK on its classpath.  For more information on annotated
+JDKs, see Section~\ref{skeleton-using}.
 
 The checker is run on only the Java files that javac compiles.
 This includes all Java files specified on the command line (or
@@ -1040,4 +1041,5 @@ bug in the checker; in this case, please report the bug (see
 % LocalWords:  html JCIP MultiSet Astubs Afilenames Anomsgtext Ashowchecks tex
 % LocalWords:  Aquals processorpath regex RegEx Xmaxwarns Xbootclasspath com
 % LocalWords:  IntelliJ assertNotNull checkNotNull Goetz antipattern subclassed
-% LocalWords:  callees Xmx unconfuse fenum propkey forName
+% LocalWords:  callees Xmx unconfuse fenum propkey forName jsr308
+% LocalWords:  bootclasspath
