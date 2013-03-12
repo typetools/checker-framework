@@ -145,6 +145,7 @@ public class TypeFromElement {
                     case LOCAL_VARIABLE:
                     case NEW:
                     case CAST:
+                    case INSTANCEOF:
                     case METHOD_INVOCATION_TYPE_ARGUMENT:
                     case CONSTRUCTOR_INVOCATION_TYPE_ARGUMENT:
                     case METHOD_REFERENCE:
@@ -192,6 +193,7 @@ public class TypeFromElement {
                     case LOCAL_VARIABLE:
                     case NEW:
                     case CAST:
+                    case INSTANCEOF:
                     case METHOD_INVOCATION_TYPE_ARGUMENT:
                     case CONSTRUCTOR_INVOCATION_TYPE_ARGUMENT:
                     case METHOD_REFERENCE:
@@ -224,6 +226,7 @@ public class TypeFromElement {
                     case LOCAL_VARIABLE:
                     case NEW:
                     case CAST:
+                    case INSTANCEOF:
                     case METHOD_INVOCATION_TYPE_ARGUMENT:
                     case CONSTRUCTOR_INVOCATION_TYPE_ARGUMENT:
                     case METHOD_REFERENCE:
@@ -275,6 +278,7 @@ public class TypeFromElement {
                 break;
             case NEW:
             case CAST:
+            case INSTANCEOF:
             case METHOD_INVOCATION_TYPE_ARGUMENT:
             case CONSTRUCTOR_INVOCATION_TYPE_ARGUMENT:
             case METHOD_REFERENCE:
@@ -321,6 +325,7 @@ public class TypeFromElement {
                 break;
             case NEW:
             case CAST:
+            case INSTANCEOF:
             case METHOD_INVOCATION_TYPE_ARGUMENT:
             case CONSTRUCTOR_INVOCATION_TYPE_ARGUMENT:
             case METHOD_REFERENCE:
@@ -411,6 +416,7 @@ public class TypeFromElement {
             case LOCAL_VARIABLE: // ? TODO: check why those appear on a type element
             case NEW: // ?
             case CAST: // ?
+            case INSTANCEOF:
             case METHOD_INVOCATION_TYPE_ARGUMENT:
             case CONSTRUCTOR_INVOCATION_TYPE_ARGUMENT:
             case METHOD_REFERENCE:
@@ -564,6 +570,7 @@ public class TypeFromElement {
             case LOCAL_VARIABLE:
             case NEW:
             case CAST:
+            case INSTANCEOF:
             case METHOD_INVOCATION_TYPE_ARGUMENT:
             case CONSTRUCTOR_INVOCATION_TYPE_ARGUMENT:
             case METHOD_REFERENCE:
