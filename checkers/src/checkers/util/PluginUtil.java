@@ -1,4 +1,4 @@
-package checkers.eclipse.util;
+package checkers.util;
 /**
  * This file contains basic utility functions that should be reused to create
  * a command line call to CheckerMain.
@@ -268,7 +268,7 @@ public class PluginUtil {
         } else {
             if( out != null ) {
                 out.println("Could not find java executable at: ( " + java.getAbsolutePath()    + "," +
-                        javaExe.getAbsolutePath() + ")" +
+                                                                      javaExe.getAbsolutePath() + ")" +
                         "\n  Using \"java\" command.\n");
             }
             return "java";
