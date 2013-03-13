@@ -197,7 +197,9 @@ public class NonNullAnnotatedTypeFactory
              * this lead to confusion for programmers? I think skipping the
              * mapGetHeuristics is always a safe option.
              */
-            mapGetHeuristics.handle(path, method);
+            // Commented out to avoid NullPointerException in javac code.
+            // See tests/nonnull2/KeyFors.java for an example.
+            // mapGetHeuristics.handle(path, method);
         }
         systemGetPropertyHandler.handle(tree, method);
         collectionToArrayHeuristics.handle(tree, method);
