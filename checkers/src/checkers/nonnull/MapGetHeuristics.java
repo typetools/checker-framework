@@ -108,14 +108,20 @@ import com.sun.source.util.TreePath;
     }
 
     public void handle(TreePath path, AnnotatedExecutableType method) {
-        MethodInvocationTree tree = (MethodInvocationTree)path.getLeaf();
-        if (TreeUtils.isMethodInvocation(tree, mapGet, processingEnv)) {
-            AnnotatedTypeMirror type = method.getReturnType();
-            if (!isSuppressable(path)) {
-                type.replaceAnnotation(atypeFactory.NULLABLE);
-            } else {
-                type.replaceAnnotation(atypeFactory.NONNULL);
+        try {
+            MethodInvocationTree tree = (MethodInvocationTree) path.getLeaf();
+            if (TreeUtils.isMethodInvocation(tree, mapGet, processingEnv)) {
+                AnnotatedTypeMirror type = method.getReturnType();
+                if (!isSuppressable(path)) {
+                    type.replaceAnnotation(atypeFactory.NULLABLE);
+                } else {
+                    type.replaceAnnotation(atypeFactory.NONNULL);
+                }
             }
+        } catch (Throwable t) {
+            // TODO: this is an ugly hack to suppress some problems in Resolver2
+            // that cause an exception. See tests/nonnull2/KeyFors.java for an
+            // example that might be affected.
         }
     }
 
