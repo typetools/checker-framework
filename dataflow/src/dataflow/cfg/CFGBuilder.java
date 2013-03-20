@@ -25,6 +25,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.ReferenceType;
@@ -1863,7 +1864,7 @@ public class CFGBuilder {
             } else if (isRightReference && isLeftReference && isSubtype) {
                 // widening reference conversion is a no-op, but if it
                 // applies, then later conversions do not.
-            } else if (isRightPrimitive && isLeftBoxed) {
+            } else if (isRightPrimitive && isLeftReference) {
                 node = box(node);
                 nodeType = node.getType();
             } else if (isRightBoxed && isLeftPrimitive) {
@@ -1992,8 +1993,13 @@ public class CFGBuilder {
                             && types.isAssignable(actualType, lastParamType)) {
                         // Normal call with no array creation
                     } else {
+                        assert lastParamType instanceof ArrayType :
+                            "variable argument formal must be an array";
+                        TypeMirror elemType =
+                            ((ArrayType)lastParamType).getComponentType();
                         for (int i = lastArgIndex; i < numActuals; i++) {
-                            initializers.add(actualNodes.remove(lastArgIndex));
+                            Node actualVal = actualNodes.remove(lastArgIndex);
+                            initializers.add(assignConvert(actualVal, elemType));
                         }
 
                         Node lastArgument = new ArrayCreationNode(null,
@@ -3398,6 +3404,9 @@ public class CFGBuilder {
         public Node visitNewArray(NewArrayTree tree, Void p) {
             // see JLS 15.10
 
+            ArrayType type = (ArrayType)InternalUtils.typeOf(tree);
+            TypeMirror elemType = type.getComponentType();
+
             List<? extends ExpressionTree> dimensions = tree.getDimensions();
             List<? extends ExpressionTree> initializers = tree
                     .getInitializers();
@@ -3412,11 +3421,10 @@ public class CFGBuilder {
             List<Node> initializerNodes = new ArrayList<Node>();
             if (initializers != null) {
                 for (ExpressionTree init : initializers) {
-                    initializerNodes.add(scan(init, p));
+                    initializerNodes.add(assignConvert(scan(init, p), elemType));
                 }
             }
 
-            TypeMirror type = tree == null ? null : InternalUtils.typeOf(tree);
             Node node = new ArrayCreationNode(tree, type, dimensionNodes,
                     initializerNodes);
             return extendWithNode(node);
