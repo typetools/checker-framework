@@ -245,9 +245,18 @@ public class InternalUtils {
         Type t2 = (Type) tm2;
         JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) processingEnv;
         Types types = Types.instance(javacEnv.getContext());
-        if (types.isSameType(t1, t2)) {
-            // Special case if the two types are equal.
-            return t1;
+        try {
+            if (types.isSameType(t1, t2)) {
+                // Special case if the two types are equal.
+                return t1;
+            }
+        } catch (Throwable t) {
+            // If we were unable to determine if t1 and t2 are the same type,
+            // then we continue with the normal execution and perform the
+            // computation.
+            // TODO: It would be nicer to make sure isSameType does not throw an
+            // exception for the types we pass to it instead of catching it
+            // here.
         }
         // Handle the 'null' type manually (not done by types.lub).
         if (t1.getKind() == TypeKind.NULL) {
@@ -306,6 +315,19 @@ public class InternalUtils {
         Type t2 = (Type) tm2;
         JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) processingEnv;
         Types types = Types.instance(javacEnv.getContext());
+        try {
+            if (types.isSameType(t1, t2)) {
+                // Special case if the two types are equal.
+                return t1;
+            }
+        } catch (Throwable t) {
+            // If we were unable to determine if t1 and t2 are the same type,
+            // then we continue with the normal execution and perform the
+            // computation.
+            // TODO: It would be nicer to make sure isSameType does not throw an
+            // exception for the types we pass to it instead of catching it
+            // here.
+        }
         // Handle the 'null' type manually.
         if (t1.getKind() == TypeKind.NULL) {
             return t1;
