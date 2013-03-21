@@ -11,9 +11,9 @@ public class Fields {
     @I Fields next;
     @ReadOnly Fields ro;
 
-    Fields(@AssignsFields Fields this) { }
+    Fields() { }
 
-    Fields(@AssignsFields Fields this, int arg) {
+    Fields(int arg) {
         left = new @I Fields();
         next = new @Mutable Fields();   // should emit error
         next = new @Immutable Fields(); //  should emit error

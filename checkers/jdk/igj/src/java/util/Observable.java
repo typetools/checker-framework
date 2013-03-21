@@ -3,7 +3,7 @@ import checkers.igj.quals.*;
 
 @I
 public class Observable{
-  public Observable(@AssignsFields Observable this) { throw new RuntimeException("skeleton method"); }
+  public Observable() { throw new RuntimeException("skeleton method"); }
   public synchronized void addObserver(@Mutable Observable this, @Mutable Observer a1) { throw new RuntimeException("skeleton method"); }
   public synchronized void deleteObserver(@Mutable Observable this, @ReadOnly Observer a1) { throw new RuntimeException("skeleton method"); }
   public void notifyObservers(@ReadOnly Observable this) { throw new RuntimeException("skeleton method"); }

@@ -4,10 +4,10 @@ import checkers.igj.quals.*;
 @I
 public class Vector<E> extends @I AbstractList<E> implements @I List<E>, @I RandomAccess, @I Cloneable, java.io. @I Serializable {
     private static final long serialVersionUID = 0L;
-  public Vector(@AssignsFields Vector<E> this, int a1, int a2) { throw new RuntimeException("skeleton method"); }
-  public Vector(@AssignsFields Vector<E> this, int a1) { throw new RuntimeException("skeleton method"); }
-  public Vector(@AssignsFields Vector<E> this) { throw new RuntimeException("skeleton method"); }
-  public Vector(@AssignsFields Vector<E> this, @ReadOnly Collection<? extends E> a1) { throw new RuntimeException("skeleton method"); }
+  public Vector(int a1, int a2) { throw new RuntimeException("skeleton method"); }
+  public Vector(int a1) { throw new RuntimeException("skeleton method"); }
+  public Vector() { throw new RuntimeException("skeleton method"); }
+  public Vector(@ReadOnly Collection<? extends E> a1) { throw new RuntimeException("skeleton method"); }
   public synchronized void copyInto(@ReadOnly Vector<E> this, @ReadOnly Object @Mutable [] a1) { throw new RuntimeException("skeleton method"); }
   public synchronized void trimToSize(@ReadOnly Vector<E> this) { throw new RuntimeException("skeleton method"); }
   public synchronized void ensureCapacity(int a1) { throw new RuntimeException("skeleton method"); }
