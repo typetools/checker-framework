@@ -47,7 +47,7 @@ public abstract class Calendar implements java.io. @I Serializable, @I Cloneable
   public final static int ALL_STYLES = 0;
   public final static int SHORT = 1;
   public final static int LONG = 2;
-  protected Calendar(@ReadOnly Calendar this) {}
+  protected Calendar() {}
   public static @I Calendar getInstance() { throw new RuntimeException("skeleton method"); }
   public static @I Calendar getInstance(@ReadOnly TimeZone a1) { throw new RuntimeException("skeleton method"); }
   public static @I Calendar getInstance(@ReadOnly Locale a1) { throw new RuntimeException("skeleton method"); }

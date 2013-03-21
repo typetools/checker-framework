@@ -5,8 +5,8 @@ public class TreeMap<K, V> extends AbstractMap<K, V> implements NavigableMap<K, 
     private static final long serialVersionUID = 0L;
   public TreeMap() { throw new RuntimeException(("skeleton method")); }
   public TreeMap(Comparator<? super K> a1) { throw new RuntimeException(("skeleton method")); }
-  public TreeMap(@PolyRead TreeMap<K, V> this, @PolyRead Map<? extends K, ? extends V> a1) { throw new RuntimeException(("skeleton method")); }
-  public TreeMap(@PolyRead TreeMap<K, V> this, @PolyRead SortedMap<K, ? extends V> a1) { throw new RuntimeException(("skeleton method")); }
+  public @PolyRead TreeMap(@PolyRead Map<? extends K, ? extends V> a1) { throw new RuntimeException(("skeleton method")); }
+  public @PolyRead TreeMap(@PolyRead SortedMap<K, ? extends V> a1) { throw new RuntimeException(("skeleton method")); }
   public int size(@ReadOnly TreeMap<K, V> this) { throw new RuntimeException(("skeleton method")); }
   public boolean containsKey(@ReadOnly TreeMap<K, V> this, @ReadOnly Object a1) { throw new RuntimeException(("skeleton method")); }
   public boolean containsValue(@ReadOnly TreeMap<K, V> this, @ReadOnly Object a1) { throw new RuntimeException(("skeleton method")); }
