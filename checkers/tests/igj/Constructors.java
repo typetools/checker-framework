@@ -8,7 +8,7 @@ import checkers.igj.quals.*;
 public class Constructors {
     int field;
 
-    Constructors(@Mutable Constructors this) {
+    Constructors() {
         field = 0;
     }
 
@@ -18,7 +18,7 @@ public class Constructors {
     // propagated?
     // TODO JSR 308: is this receiver annotation even still valid?
     @Immutable 
-    Constructors(@Immutable Constructors this, int a) {
+    Constructors(int a) {
         field = 0;
     }
 

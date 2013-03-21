@@ -24,7 +24,7 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
 
 class SubList<E> extends AbstractList<E> {
     protected SubList() {}
-    SubList(@PolyRead SubList<E> this, @PolyRead AbstractList<E> list, int fromIndex, int toIndex) { throw new RuntimeException("skeleton method"); }
+    @PolyRead SubList(@PolyRead AbstractList<E> list, int fromIndex, int toIndex) { throw new RuntimeException("skeleton method"); }
     public E set(int index, E element) { throw new RuntimeException("skeleton method"); }
     public E get(@ReadOnly SubList<E> this, int index) { throw new RuntimeException("skeleton method"); }
     public int size(@ReadOnly SubList<E> this) { throw new RuntimeException("skeleton method"); }
@@ -39,6 +39,6 @@ class SubList<E> extends AbstractList<E> {
 }
 
 class RandomAccessSubList<E> extends SubList<E> implements RandomAccess {
-    RandomAccessSubList(@PolyRead RandomAccessSubList<E> this, @PolyRead AbstractList<E> list, int fromIndex, int toIndex) { throw new RuntimeException("skeleton method"); }
+    @PolyRead RandomAccessSubList(@PolyRead AbstractList<E> list, int fromIndex, int toIndex) { throw new RuntimeException("skeleton method"); }
     public @PolyRead List<E> subList(@PolyRead RandomAccessSubList<E> this, int fromIndex, int toIndex) { throw new RuntimeException("skeleton method"); }
 }

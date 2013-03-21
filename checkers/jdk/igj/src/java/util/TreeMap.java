@@ -4,10 +4,10 @@ import checkers.igj.quals.*;
 @I
 public class TreeMap<K, V> extends @I AbstractMap<K, V> implements @I NavigableMap<K, V>, @I Cloneable, java.io. @I Serializable {
     private static final long serialVersionUID = 0L;
-  public TreeMap(@AssignsFields TreeMap<K, V> this) { throw new RuntimeException("skeleton method"); }
-  public TreeMap(@AssignsFields TreeMap<K, V> this, @ReadOnly Comparator<? super K> a1) { throw new RuntimeException("skeleton method"); }
-  public TreeMap(@AssignsFields TreeMap<K, V> this, @ReadOnly Map<? extends K, ? extends V> a1) { throw new RuntimeException("skeleton method"); }
-  public TreeMap(@AssignsFields TreeMap<K, V> this, @ReadOnly SortedMap<K, ? extends V> a1) { throw new RuntimeException("skeleton method"); }
+  public TreeMap() { throw new RuntimeException("skeleton method"); }
+  public TreeMap(@ReadOnly Comparator<? super K> a1) { throw new RuntimeException("skeleton method"); }
+  public TreeMap(@ReadOnly Map<? extends K, ? extends V> a1) { throw new RuntimeException("skeleton method"); }
+  public TreeMap(@ReadOnly SortedMap<K, ? extends V> a1) { throw new RuntimeException("skeleton method"); }
   public int size(@ReadOnly TreeMap<K, V> this) { throw new RuntimeException("skeleton method"); }
   public boolean containsKey(@ReadOnly TreeMap<K, V> this, @ReadOnly Object a1) { throw new RuntimeException("skeleton method"); }
   public boolean containsValue(@ReadOnly TreeMap<K, V> this, @ReadOnly Object a1) { throw new RuntimeException("skeleton method"); }

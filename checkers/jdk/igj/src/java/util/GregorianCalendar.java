@@ -6,13 +6,13 @@ public class GregorianCalendar extends @I Calendar{
     private static final long serialVersionUID = 0L;
   public final static int BC = 0;
   public final static int AD = 1;
-  public GregorianCalendar(@AssignsFields GregorianCalendar this)  { throw new RuntimeException("skeleton method"); }
-  public GregorianCalendar(@AssignsFields GregorianCalendar this, @ReadOnly TimeZone a1) { throw new RuntimeException("skeleton method"); }
-  public GregorianCalendar(@AssignsFields GregorianCalendar this, @ReadOnly Locale a1) { throw new RuntimeException("skeleton method"); }
-  public GregorianCalendar(@AssignsFields GregorianCalendar this, @ReadOnly TimeZone a1, @ReadOnly Locale a2) { throw new RuntimeException("skeleton method"); }
-  public GregorianCalendar(@AssignsFields GregorianCalendar this, int a1, int a2, int a3) { throw new RuntimeException("skeleton method"); }
-  public GregorianCalendar(@AssignsFields GregorianCalendar this, int a1, int a2, int a3, int a4, int a5) { throw new RuntimeException("skeleton method"); }
-  public GregorianCalendar(@AssignsFields GregorianCalendar this, int a1, int a2, int a3, int a4, int a5, int a6) { throw new RuntimeException("skeleton method"); }
+  public GregorianCalendar()  { throw new RuntimeException("skeleton method"); }
+  public GregorianCalendar(@ReadOnly TimeZone a1) { throw new RuntimeException("skeleton method"); }
+  public GregorianCalendar(@ReadOnly Locale a1) { throw new RuntimeException("skeleton method"); }
+  public GregorianCalendar(@ReadOnly TimeZone a1, @ReadOnly Locale a2) { throw new RuntimeException("skeleton method"); }
+  public GregorianCalendar(int a1, int a2, int a3) { throw new RuntimeException("skeleton method"); }
+  public GregorianCalendar(int a1, int a2, int a3, int a4, int a5) { throw new RuntimeException("skeleton method"); }
+  public GregorianCalendar(int a1, int a2, int a3, int a4, int a5, int a6) { throw new RuntimeException("skeleton method"); }
   public void setGregorianChange(@AssignsFields GregorianCalendar this, @ReadOnly Date a1) { throw new RuntimeException("skeleton method"); }
   public final Date getGregorianChange(@ReadOnly GregorianCalendar this) { throw new RuntimeException("skeleton method"); }
   public boolean isLeapYear(@ReadOnly GregorianCalendar this, int a1) { throw new RuntimeException("skeleton method"); }
