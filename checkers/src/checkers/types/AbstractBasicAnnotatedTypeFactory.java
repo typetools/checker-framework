@@ -148,8 +148,8 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
         }
 
         // Add common aliases.
-        addAliasedDeclAnnotation(checkers.nullness.quals.Pure.class,
-                Pure.class, AnnotationUtils.fromClass(elements, Pure.class));
+        // addAliasedDeclAnnotation(checkers.nullness.quals.Pure.class,
+        //         Pure.class, AnnotationUtils.fromClass(elements, Pure.class));
 
         // every subclass must call postInit!
         if (this.getClass().equals(BasicAnnotatedTypeFactory.class)) {
