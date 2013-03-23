@@ -7,7 +7,7 @@ import java.lang.annotation.Target;
 
 import javax.lang.model.type.TypeKind;
 
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.Nullable;
 import checkers.types.AnnotatedTypeMirror;
 
 import com.sun.source.tree.Tree;

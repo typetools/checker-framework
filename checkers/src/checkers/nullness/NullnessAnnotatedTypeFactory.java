@@ -1,4 +1,4 @@
-package checkers.nonnull;
+package checkers.nullness;
 
 import java.util.HashSet;
 import java.util.List;
@@ -20,10 +20,10 @@ import javacutils.TypesUtils;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.initialization.InitializationAnnotatedTypeFactory;
-import checkers.nonnull.quals.MonotonicNonNull;
-import checkers.nonnull.quals.NonNull;
-import checkers.nonnull.quals.Nullable;
-import checkers.nonnull.quals.PolyNull;
+import checkers.nullness.quals.MonotonicNonNull;
+import checkers.nullness.quals.NonNull;
+import checkers.nullness.quals.Nullable;
+import checkers.nullness.quals.PolyNull;
 import checkers.quals.Unused;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;

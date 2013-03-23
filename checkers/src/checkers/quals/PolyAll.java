@@ -7,7 +7,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import checkers.interning.quals.PolyInterned;
-import checkers.nonnull.quals.PolyNull;
+import checkers.nullness.quals.PolyNull;
 import checkers.util.QualifierPolymorphism;
 
 /**

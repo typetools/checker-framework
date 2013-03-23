@@ -1,10 +1,10 @@
-package checkers.nonnull;
+package checkers.nullness;
 
 import checkers.flow.analysis.checkers.CFAbstractAnalysis;
 import checkers.flow.analysis.checkers.CFAbstractStore;
 import checkers.initialization.InitializationStore;
-import checkers.nonnull.quals.Nullable;
-import checkers.nonnull.quals.PolyNull;
+import checkers.nullness.quals.Nullable;
+import checkers.nullness.quals.PolyNull;
 
 /**
  * Behaves like {@link InitializationStore}, but additionally tracks whether

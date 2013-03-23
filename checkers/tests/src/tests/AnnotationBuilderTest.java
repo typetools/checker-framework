@@ -14,7 +14,7 @@ import org.junit.Test;
 
 import tests.util.TestChecker;
 import checkers.igj.quals.I;
-import checkers.nonnull.quals.NonNull;
+import checkers.nullness.quals.NonNull;
 import checkers.source.SourceChecker;
 import checkers.util.AnnotationBuilder;
 

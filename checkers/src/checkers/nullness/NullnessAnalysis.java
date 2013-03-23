@@ -1,4 +1,4 @@
-package checkers.nonnull;
+package checkers.nullness;
 
 import java.util.List;
 
