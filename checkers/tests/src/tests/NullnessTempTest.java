@@ -9,15 +9,15 @@ import checkers.nonnull.AbstractNullnessChecker;
 import checkers.util.test.ParameterizedCheckerTest;
 
 /**
- * JUnit tests for the NonNull checker.
+ * JUnit tests for the nullness checker.
  */
-public class NonNullTempTest extends ParameterizedCheckerTest {
+public class NullnessTempTest extends ParameterizedCheckerTest {
 
-    public NonNullTempTest(File testFile) {
+    public NullnessTempTest(File testFile) {
         // TODO: remove arrays:forbidnonnullcomponents option once it's no
         // longer needed.
         super(testFile, checkers.nonnull.NullnessFbcChecker.class.getName(),
-                "nonnull", "-Anomsgtext",
+                "nullness", "-Anomsgtext",
                 "-Alint=arrays:forbidnonnullcomponents,"
                         + AbstractNullnessChecker.LINT_REDUNDANTNULLCOMPARISON);
     }
