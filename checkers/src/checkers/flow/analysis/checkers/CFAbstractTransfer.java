@@ -141,11 +141,11 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
                     assCtxt = ((AnnotatedExecutableType) assCtxt)
                             .getReturnType();
                 }
-                factory.setUseFlow(oldFlow);
                 factory.getVisitorState().setAssignmentContext(
                         Pair.of(node.getAssignmentContext().getContextTree(),
                                 assCtxt));
             }
+            factory.setUseFlow(oldFlow);
         }
         AnnotatedTypeMirror at = factory.getAnnotatedType(tree);
         analysis.setCurrentTree(null);
