@@ -1,5 +1,5 @@
 package java.util;
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.Nullable;
 import checkers.nullness.quals.PolyNull;
 
 // Subclasses of this interface/class may opt to prohibit null elements

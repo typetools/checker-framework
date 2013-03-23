@@ -2,7 +2,7 @@ package java.io;
 
 import checkers.nullness.quals.*;
 
-@checkers.quals.DefaultQualifier(checkers.nonnull.quals.NonNull.class)
+@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
 
 public class ByteArrayOutputStream extends OutputStream {
   public ByteArrayOutputStream() { throw new RuntimeException("skeleton method"); }

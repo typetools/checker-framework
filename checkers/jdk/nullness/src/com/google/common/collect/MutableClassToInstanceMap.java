@@ -19,7 +19,7 @@ package com.google.common.collect;
 import java.util.HashMap;
 import java.util.Map;
 
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.Nullable;
 
 /**
  * A mutable class-to-instance map backed by an arbitrary user-provided map.

@@ -1,6 +1,6 @@
 package java.lang;
 
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.Nullable;
 
 
 // It is permitted to write a subclass that extends ThreadLocal<@NonNull

@@ -1,5 +1,5 @@
 package java.util;
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.Nullable;
 
 public final class PropertyPermission extends java.security.BasicPermission {
     private static final long serialVersionUID = 0L;

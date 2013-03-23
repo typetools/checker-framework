@@ -2,7 +2,7 @@ package java.util;
 import dataflow.quals.Pure;
 
 import checkers.nullness.quals.KeyFor;
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.Nullable;
 
 public abstract class ResourceBundle{
   public static class Control{

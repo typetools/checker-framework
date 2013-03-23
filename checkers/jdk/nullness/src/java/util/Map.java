@@ -3,7 +3,7 @@ import dataflow.quals.Pure;
 
 import checkers.nullness.quals.Covariant;
 import checkers.nullness.quals.KeyFor;
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.Nullable;
 
 // Subclasses of this interface/class may opt to prohibit null elements
 public interface Map<K extends @Nullable Object, V extends @Nullable Object> {

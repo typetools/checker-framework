@@ -1,5 +1,5 @@
 package java.util;
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.Nullable;
 
 public interface ListIterator<E extends @Nullable Object> extends Iterator<E> {
   public abstract boolean hasNext();

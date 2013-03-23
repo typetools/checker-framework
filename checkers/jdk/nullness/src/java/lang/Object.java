@@ -2,7 +2,7 @@ package java.lang;
 
 import dataflow.quals.Pure;
 
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.Nullable;
 import checkers.initialization.quals.Raw;
 
 import checkers.initialization.quals.Unclassified;
