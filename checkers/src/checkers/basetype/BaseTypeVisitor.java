@@ -1,7 +1,6 @@
 package checkers.basetype;
 
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -409,35 +408,21 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         Collection<Pure.Kind> t = EnumSet.copyOf(expectedTypes);
         t.removeAll(result.getTypes());
         if (t.contains(Pure.Kind.DETERMINISTIC)
-                && t.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
-            checker.report(Result.failure(
-                    "pure.not.deterministic.and.sideeffect.free",
-                    errorList(result.getNotBothReasons())), node);
-        } else if (t.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
-            List<String> errors = new ArrayList<>(result.getNotSeFreeReasons());
-            errors.addAll(result.getNotBothReasons());
-            checker.report(Result.failure("pure.not.sideeffect.free",
-                    errorList(errors)), node);
-        } else if (t.contains(Pure.Kind.DETERMINISTIC)) {
-            List<String> errors = new ArrayList<>(result.getNotDetReasons());
-            errors.addAll(result.getNotBothReasons());
-            checker.report(
-                    Result.failure("pure.not.deterministic", errorList(errors)),
-                    node);
-        }
-    }
-
-    private static String errorList(List<String> reasons) {
-        StringBuilder s = new StringBuilder();
-        boolean first = true;
-        for (String r : reasons) {
-            if (!first) {
-                s.append(", ");
+                || t.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
+            for (Pair<Tree, String>  r: result.getNotBothReasons()) {
+                checker.report(Result.failure(r.second), r.first);
             }
-            s.append(r);
-            first = false;
+            if (t.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
+                for (Pair<Tree, String>  r: result.getNotSeFreeReasons()) {
+                    checker.report(Result.failure(r.second), r.first);
+                }
+            }
+            if (t.contains(Pure.Kind.DETERMINISTIC)) {
+                for (Pair<Tree, String>  r: result.getNotDetReasons()) {
+                    checker.report(Result.failure(r.second), r.first);
+                }
+            }
         }
-        return s.toString();
     }
 
     /**
