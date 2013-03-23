@@ -59,9 +59,9 @@ import com.sun.source.tree.WhileLoopTree;
 
 // TODO/later: documentation
 // Note: this code is originally based on NullnessVisitor
-public class NonNullVisitor
+public class NullnessVisitor
         extends
-        InitializationVisitor<AbstractNonNullChecker, NonNullValue, NonNullStore> {
+        InitializationVisitor<AbstractNullnessChecker, NullnessValue, NullnessStore> {
 
     // Error message keys
     private static final /*@CompilerMessageKey*/ String ASSIGNMENT_TYPE_INCOMPATIBLE = "assignment.type.incompatible";
@@ -76,7 +76,7 @@ public class NonNullVisitor
     private final AnnotationMirror NONNULL, NULLABLE, MONOTONICNONNULL;
     private final TypeMirror stringType;
 
-    protected NonNullAnnotatedTypeFactory factory = (NonNullAnnotatedTypeFactory) super.factory;
+    protected NullnessAnnotatedTypeFactory factory = (NullnessAnnotatedTypeFactory) super.factory;
 
     /**
      * The element for java.util.Collection.size().
@@ -88,7 +88,7 @@ public class NonNullVisitor
      */
     private final ExecutableElement collectionToArray;
 
-    public NonNullVisitor(AbstractNonNullChecker checker,
+    public NullnessVisitor(AbstractNullnessChecker checker,
             CompilationUnitTree root) {
         super(checker, root);
 
@@ -123,7 +123,7 @@ public class NonNullVisitor
             Tree context) {
         if (type.hasAnnotation(PolyNull.class)
                 || type.hasAnnotation(PolyAll.class)) {
-            NonNullValue inferred = factory.getInferredValueFor(context);
+            NullnessValue inferred = factory.getInferredValueFor(context);
             if (inferred != null && inferred.isPolyNullNull) {
                 type.replaceAnnotation(NULLABLE);
             }
@@ -200,8 +200,8 @@ public class NonNullVisitor
             if (atypeFactory.fromElement(elem).hasAnnotation(MONOTONICNONNULL)
                     && !checker
                             .getLintOption(
-                                    AbstractNonNullChecker.LINT_STRICTMONOTONICNONNULLINIT,
-                                    AbstractNonNullChecker.LINT_DEFAULT_STRICTMONOTONICNONNULLINIT)) {
+                                    AbstractNullnessChecker.LINT_STRICTMONOTONICNONNULLINIT,
+                                    AbstractNullnessChecker.LINT_DEFAULT_STRICTMONOTONICNONNULLINIT)) {
                 return;
             }
         }
@@ -230,8 +230,8 @@ public class NonNullVisitor
         super.commonAssignmentCheck(varTree, valueExp, errorKey);
     }
 
-    private NonNullAnnotatedTypeFactory getNonNullFactory() {
-        return (NonNullAnnotatedTypeFactory) atypeFactory;
+    private NullnessAnnotatedTypeFactory getNonNullFactory() {
+        return (NullnessAnnotatedTypeFactory) atypeFactory;
     }
 
     /** Case 1: Check for null dereferencing */
@@ -375,8 +375,8 @@ public class NonNullVisitor
 
         // respect command line option
         if (!checker.getLintOption(
-                AbstractNonNullChecker.LINT_REDUNDANTNULLCOMPARISON,
-                AbstractNonNullChecker.LINT_DEFAULT_STRICTNULLCOMPARISON)) {
+                AbstractNullnessChecker.LINT_REDUNDANTNULLCOMPARISON,
+                AbstractNullnessChecker.LINT_DEFAULT_STRICTNULLCOMPARISON)) {
             return;
         }
 

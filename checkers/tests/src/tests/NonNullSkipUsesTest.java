@@ -13,7 +13,7 @@ import checkers.util.test.ParameterizedCheckerTest;
 public class NonNullSkipUsesTest extends ParameterizedCheckerTest {
 
     public NonNullSkipUsesTest(File testFile) {
-        super(testFile, checkers.nonnull.NonNullFbcChecker.class.getName(),
+        super(testFile, checkers.nonnull.NullnessFbcChecker.class.getName(),
                 "nonnull", "-Anomsgtext", "-AskipUses=SkipMe");
     }
 

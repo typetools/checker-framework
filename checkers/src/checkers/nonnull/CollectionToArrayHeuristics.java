@@ -67,7 +67,7 @@ import com.sun.source.tree.Tree;
  */
 public class CollectionToArrayHeuristics {
     private final ProcessingEnvironment processingEnv;
-    private final NonNullAnnotatedTypeFactory atypeFactory;
+    private final NullnessAnnotatedTypeFactory atypeFactory;
 
     private final ExecutableElement collectionToArrayObject;
     private final ExecutableElement collectionToArrayE;
@@ -75,7 +75,7 @@ public class CollectionToArrayHeuristics {
     private final AnnotatedDeclaredType collectionType;
 
     public CollectionToArrayHeuristics(ProcessingEnvironment env,
-            NonNullAnnotatedTypeFactory factory) {
+            NullnessAnnotatedTypeFactory factory) {
         this.processingEnv = env;
         this.atypeFactory = factory;
 

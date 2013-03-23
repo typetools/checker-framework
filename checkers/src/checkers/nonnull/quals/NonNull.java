@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
 import javax.lang.model.type.TypeKind;
 
 import checkers.initialization.InitializationChecker;
-import checkers.nonnull.AbstractNonNullChecker;
+import checkers.nonnull.AbstractNullnessChecker;
 import checkers.quals.DefaultQualifierInHierarchy;
 import checkers.quals.ImplicitFor;
 import checkers.quals.SubtypeOf;
@@ -37,11 +37,11 @@ import com.sun.source.tree.Tree;
  * This annotation is rarely written in source code, because it is the default.
  *
  * <p>
- * This annotation is associated with the {@link AbstractNonNullChecker}.
+ * This annotation is associated with the {@link AbstractNullnessChecker}.
  *
  * @see Nullable
  * @see MonotonicNonNull
- * @see AbstractNonNullChecker
+ * @see AbstractNullnessChecker
  */
 @Documented
 @TypeQualifier

@@ -12,17 +12,17 @@ import checkers.source.SupportedLintOptions;
 
 @TypeQualifiers({ Nullable.class, MonotonicNonNull.class, NonNull.class,
         NonRaw.class, Raw.class, PolyNull.class, PolyAll.class })
-@SupportedLintOptions({ AbstractNonNullChecker.LINT_STRICTMONOTONICNONNULLINIT,
-        AbstractNonNullChecker.LINT_REDUNDANTNULLCOMPARISON,
+@SupportedLintOptions({ AbstractNullnessChecker.LINT_STRICTMONOTONICNONNULLINIT,
+        AbstractNullnessChecker.LINT_REDUNDANTNULLCOMPARISON,
         // Temporary option to forbid non-null array component types,
         // which is allowed by default.
         // Forbidding is sound and will eventually be the only possibility.
         // Allowing is unsound but permitted until flow-sensitivity changes are
         // made.
         "arrays:forbidnonnullcomponents" })
-public class AbstractNonNullRawnessChecker extends AbstractNonNullChecker {
+public class AbstractNullnessRawnessChecker extends AbstractNullnessChecker {
 
-    public AbstractNonNullRawnessChecker() {
+    public AbstractNullnessRawnessChecker() {
         super(false);
     }
 
