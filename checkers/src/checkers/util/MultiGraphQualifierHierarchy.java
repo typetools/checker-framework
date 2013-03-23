@@ -13,17 +13,16 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Name;
-import javax.lang.model.util.Elements;
-
 import javacutils.AnnotationUtils;
 import javacutils.ErrorReporter;
 
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.util.Elements;
+
 import checkers.basetype.BaseTypeChecker;
-import checkers.nullness.quals.NonNull;
-import checkers.nullness.quals.Nullable;
-import checkers.nullness.quals.PolyNull;
+import checkers.nonnull.quals.NonNull;
+import checkers.nonnull.quals.Nullable;
+import checkers.nonnull.quals.PolyNull;
 import checkers.quals.PolymorphicQualifier;
 import checkers.types.QualifierHierarchy;
 
