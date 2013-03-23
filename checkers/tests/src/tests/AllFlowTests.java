@@ -18,6 +18,6 @@ import org.junit.runners.Suite.SuiteClasses;
         PolyAllTest.class, PuritySuggestionsTest.class, RegexTest.class,
         ReportModifiersTest.class, ReportTest.class, ReportTreeKindsTest.class,
         SignatureTest.class, TaintingTest.class, TreeParserTest.class,
-        UnitsTest.class, NonNullFbcTest.class, NonNullRawnessTest.class })
+        UnitsTest.class, NullnessFbcTest.class, NullnessRawnessTest.class })
 public class AllFlowTests {
 }

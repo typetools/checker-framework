@@ -9,16 +9,16 @@ import checkers.nonnull.AbstractNullnessChecker;
 import checkers.util.test.ParameterizedCheckerTest;
 
 /**
- * JUnit tests for the NonNull checker (that uses the rawness type system for
+ * JUnit tests for the Nullness checker (that uses the rawness type system for
  * initialization).
  */
-public class NonNullRawnessTest extends ParameterizedCheckerTest {
+public class NullnessRawnessTest extends ParameterizedCheckerTest {
 
-    public NonNullRawnessTest(File testFile) {
+    public NullnessRawnessTest(File testFile) {
         // TODO: remove arrays:forbidnonnullcomponents option once it's no
         // longer needed.
         super(testFile, checkers.nonnull.NullnessRawnessChecker.class.getName(),
-                "nonnull", "-Anomsgtext",
+                "nullness", "-Anomsgtext",
                 "-Alint=arrays:forbidnonnullcomponents,"
                         + AbstractNullnessChecker.LINT_REDUNDANTNULLCOMPARISON);
     }
