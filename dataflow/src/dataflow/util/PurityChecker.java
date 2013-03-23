@@ -9,6 +9,7 @@ import javax.lang.model.element.Element;
 
 import javacutils.AnnotationProvider;
 import javacutils.InternalUtils;
+import javacutils.Pair;
 import javacutils.TreeUtils;
 
 import dataflow.quals.Pure;
@@ -99,9 +100,9 @@ public class PurityChecker {
      */
     public static class PurityResult {
 
-        protected final List<String> notSeFreeReasons;
-        protected final List<String> notDetReasons;
-        protected final List<String> notBothReasons;
+        protected final List<Pair<Tree, String>> notSeFreeReasons;
+        protected final List<Pair<Tree, String>> notDetReasons;
+        protected final List<Pair<Tree, String>> notBothReasons;
         protected EnumSet<Pure.Kind> types;
 
         public PurityResult() {
@@ -123,7 +124,7 @@ public class PurityChecker {
         /**
          * Get the {@code reason}s why the method is not side-effect free.
          */
-        public List<String> getNotSeFreeReasons() {
+        public List<Pair<Tree, String>> getNotSeFreeReasons() {
             return notSeFreeReasons;
         }
 
@@ -131,23 +132,23 @@ public class PurityChecker {
          * Add {@code reason} as a reason why the method is not side-effect
          * free.
          */
-        public void addNotSeFreeReason(String reason) {
-            notSeFreeReasons.add(reason);
+        public void addNotSeFreeReason(Tree t, String msgId) {
+            notSeFreeReasons.add(Pair.of(t, "pure.not.sef." + msgId));
             types.remove(Kind.SIDE_EFFECT_FREE);
         }
 
         /**
          * Get the {@code reason}s why the method is not deterministic.
          */
-        public List<String> getNotDetReasons() {
+        public List<Pair<Tree, String>> getNotDetReasons() {
             return notDetReasons;
         }
 
         /**
          * Add {@code reason} as a reason why the method is not deterministic.
          */
-        public void addNotDetReason(String reason) {
-            notDetReasons.add(reason);
+        public void addNotDetReason(Tree t, String msgId) {
+            notDetReasons.add(Pair.of(t, "pure.not.det." + msgId));
             types.remove(Kind.DETERMINISTIC);
         }
 
@@ -155,17 +156,16 @@ public class PurityChecker {
          * Get the {@code reason}s why the method is not both side-effect free
          * and deterministic.
          */
-        public List<String> getNotBothReasons() {
+        public List<Pair<Tree, String>> getNotBothReasons() {
             return notBothReasons;
         }
-
 
         /**
          * Add {@code reason} as a reason why the method is not both side-effect
          * free and deterministic.
          */
-        public void addNotBothReason(String reason) {
-            notBothReasons.add(reason);
+        public void addNotBothReason(Tree t, String msgId) {
+            notBothReasons.add(Pair.of(t, "pure.not.det.not.sef." + msgId));
             types.remove(Kind.DETERMINISTIC);
             types.remove(Kind.SIDE_EFFECT_FREE);
         }
@@ -320,7 +320,7 @@ public class PurityChecker {
 
         @Override
         public PurityResult visitCatch(CatchTree node, PurityResult p) {
-            p.addNotDetReason("catch statement");
+            p.addNotDetReason(node, "catch");
             PurityResult r = scan(node.getParameter(), p);
             r = scan(node.getBlock(), r);
             return r;
@@ -380,20 +380,19 @@ public class PurityChecker {
         public PurityResult visitMethodInvocation(MethodInvocationTree node,
                 PurityResult p) {
             Element elt = TreeUtils.elementFromUse(node);
-            final String reason = "non-pure call to method '"
-                    + TreeUtils.getMethodName(node.getMethodSelect()) + "'";
+            String reason = "call";
             if (!PurityUtils.hasPurityAnnotation(annoProvider, elt)) {
-                p.addNotBothReason(reason);
+                p.addNotBothReason(node, reason);
             } else {
                 boolean det = PurityUtils.isDeterministic(annoProvider, elt);
                 boolean seFree = PurityUtils
                         .isSideEffectFree(annoProvider, elt);
                 if (!det && !seFree) {
-                    p.addNotBothReason(reason);
+                    p.addNotBothReason(node, reason);
                 } else if (!det) {
-                    p.addNotDetReason(reason);
+                    p.addNotDetReason(node, reason);
                 } else if (!seFree) {
-                    p.addNotSeFreeReason(reason);
+                    p.addNotSeFreeReason(node, reason);
                 }
             }
             PurityResult r = scan(node.getMethodSelect(), p);
@@ -407,9 +406,9 @@ public class PurityChecker {
             boolean sideEffectFree = PurityUtils.isSideEffectFree(annoProvider,
                     methodElement);
             if (sideEffectFree) {
-                p.addNotDetReason("object creation");
+                p.addNotDetReason(node, "object.creation");
             } else {
-                p.addNotBothReason("object creation with non-pure constructor");
+                p.addNotBothReason(node, "non.pure.object.creation");
             }
             PurityResult r = scan(node.getEnclosingExpression(), p);
             r = scan(node.getArguments(), r);
@@ -451,13 +450,10 @@ public class PurityChecker {
                 ExpressionTree variable) {
             if (TreeUtils.isFieldAccess(variable)) {
                 // rhs is a field access
-                p.addNotBothReason("assignment to field '"
-                        + TreeUtils.getFieldName(variable) + "'");
+                p.addNotBothReason(variable, "assign.field");
             } else if (variable instanceof ArrayAccessTree) {
                 // rhs is array access
-                ArrayAccessTree a = (ArrayAccessTree) variable;
-                p.addNotBothReason("assignment to array '" + a.getExpression()
-                        + "'");
+                p.addNotBothReason(variable, "assign.array");
             } else {
                 // rhs is a local variable
                 assert isLocalVariable(variable);
