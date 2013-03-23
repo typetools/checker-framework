@@ -12,26 +12,26 @@ import checkers.nonnull.quals.PolyNull;
  *
  * @author Stefan Heule
  */
-public class NonNullStore extends
-        InitializationStore<NonNullValue, NonNullStore> {
+public class NullnessStore extends
+        InitializationStore<NullnessValue, NullnessStore> {
 
     protected boolean isPolyNullNull;
 
-    public NonNullStore(
-            CFAbstractAnalysis<NonNullValue, NonNullStore, ?> analysis,
+    public NullnessStore(
+            CFAbstractAnalysis<NullnessValue, NullnessStore, ?> analysis,
             boolean sequentialSemantics) {
         super(analysis, sequentialSemantics);
         isPolyNullNull = false;
     }
 
-    public NonNullStore(NonNullStore s) {
+    public NullnessStore(NullnessStore s) {
         super(s);
         isPolyNullNull = s.isPolyNullNull;
     }
 
     @Override
-    public NonNullStore leastUpperBound(NonNullStore other) {
-        NonNullStore lub = super.leastUpperBound(other);
+    public NullnessStore leastUpperBound(NullnessStore other) {
+        NullnessStore lub = super.leastUpperBound(other);
         if (isPolyNullNull == other.isPolyNullNull) {
             lub.isPolyNullNull = isPolyNullNull;
         } else {
@@ -41,11 +41,11 @@ public class NonNullStore extends
     }
 
     @Override
-    protected boolean supersetOf(CFAbstractStore<NonNullValue, NonNullStore> o) {
+    protected boolean supersetOf(CFAbstractStore<NullnessValue, NullnessStore> o) {
         if (!(o instanceof InitializationStore)) {
             return false;
         }
-        NonNullStore other = (NonNullStore) o;
+        NullnessStore other = (NullnessStore) o;
         if (other.isPolyNullNull != isPolyNullNull) {
             return false;
         }

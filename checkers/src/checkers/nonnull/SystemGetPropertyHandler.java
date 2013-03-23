@@ -29,7 +29,7 @@ import com.sun.source.tree.*;
 public class SystemGetPropertyHandler {
 
     protected final ProcessingEnvironment env;
-    protected final NonNullAnnotatedTypeFactory factory;
+    protected final NullnessAnnotatedTypeFactory factory;
 
     protected final ExecutableElement systemGetProperty;
 
@@ -46,7 +46,7 @@ public class SystemGetPropertyHandler {
             "line.separator", "user.name", "user.home", "user.dir"));
 
     public SystemGetPropertyHandler(ProcessingEnvironment env,
-            NonNullAnnotatedTypeFactory factory) {
+            NullnessAnnotatedTypeFactory factory) {
         this.env = env;
         this.factory = factory;
 

@@ -17,32 +17,32 @@ import checkers.util.AnnotatedTypes;
  *
  * @author Stefan Heule
  */
-public class NonNullAnalysis extends
-        CFAbstractAnalysis<NonNullValue, NonNullStore, NonNullTransfer> {
+public class NullnessAnalysis extends
+        CFAbstractAnalysis<NullnessValue, NullnessStore, NullnessTransfer> {
 
-    public NonNullAnalysis(NonNullAnnotatedTypeFactory factory,
-            ProcessingEnvironment env, AbstractNonNullChecker checker,
-            List<Pair<VariableElement, NonNullValue>> fieldValues) {
+    public NullnessAnalysis(NullnessAnnotatedTypeFactory factory,
+            ProcessingEnvironment env, AbstractNullnessChecker checker,
+            List<Pair<VariableElement, NullnessValue>> fieldValues) {
         super(factory, env, checker, fieldValues);
     }
 
     @Override
-    public NonNullStore createEmptyStore(boolean sequentialSemantics) {
-        return new NonNullStore(this, sequentialSemantics);
+    public NullnessStore createEmptyStore(boolean sequentialSemantics) {
+        return new NullnessStore(this, sequentialSemantics);
     }
 
     @Override
-    public NonNullStore createCopiedStore(NonNullStore s) {
-        return new NonNullStore(s);
+    public NullnessStore createCopiedStore(NullnessStore s) {
+        return new NullnessStore(s);
     }
 
     @Override
-    public NonNullValue createAbstractValue(AnnotatedTypeMirror type) {
+    public NullnessValue createAbstractValue(AnnotatedTypeMirror type) {
         if (!AnnotatedTypes.isValidType(qualifierHierarchy, type)) {
             // If the type is not valid, we return null, which is the same as
             // 'no information'.
             return null;
         }
-        return new NonNullValue(this, type);
+        return new NullnessValue(this, type);
     }
 }

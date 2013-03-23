@@ -6,7 +6,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import checkers.nonnull.AbstractNonNullChecker;
+import checkers.nonnull.AbstractNullnessChecker;
 import checkers.quals.ImplicitFor;
 import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifier;
@@ -19,11 +19,11 @@ import com.sun.source.tree.Tree;
  * {@link Nullable} type it can be assigned {@code null}.
  *
  * <p>
- * This annotation is associated with the {@link AbstractNonNullChecker}.
+ * This annotation is associated with the {@link AbstractNullnessChecker}.
  *
  * @see NonNull
  * @see MonotonicNonNull
- * @see AbstractNonNullChecker
+ * @see AbstractNullnessChecker
  */
 @Documented
 @SubtypeOf({})
