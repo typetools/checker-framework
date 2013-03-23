@@ -6,7 +6,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import checkers.nonnull.AbstractNonNullChecker;
+import checkers.nonnull.AbstractNullnessChecker;
 import checkers.quals.MonotonicAnnotation;
 import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifier;
@@ -18,10 +18,10 @@ import checkers.quals.TypeQualifier;
  * {@link NonNull}, but if it does, it will stay {@link NonNull}.
  *
  * <p>
- * This annotation is associated with the {@link AbstractNonNullChecker}.
+ * This annotation is associated with the {@link AbstractNullnessChecker}.
  *
  * @see MonotonicAnnotation
- * @see AbstractNonNullChecker
+ * @see AbstractNullnessChecker
  */
 @Documented
 @TypeQualifier

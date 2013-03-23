@@ -47,9 +47,9 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Attribute.TypeCompound;
 
-public class NonNullAnnotatedTypeFactory
+public class NullnessAnnotatedTypeFactory
         extends
-        InitializationAnnotatedTypeFactory<AbstractNonNullChecker, NonNullValue, NonNullStore, NonNullTransfer, NonNullAnalysis> {
+        InitializationAnnotatedTypeFactory<AbstractNullnessChecker, NullnessValue, NullnessStore, NullnessTransfer, NullnessAnalysis> {
 
     /** Annotation constants */
     protected final AnnotationMirror NONNULL, NULLABLE, POLYNULL;
@@ -67,18 +67,14 @@ public class NonNullAnnotatedTypeFactory
      */
     protected final GeneralAnnotatedTypeFactory generalFactory;
 
-    public NonNullAnnotatedTypeFactory(AbstractNonNullChecker checker,
+    @SuppressWarnings("deprecation") // aliasing to deprecated annotation
+    public NullnessAnnotatedTypeFactory(AbstractNullnessChecker checker,
             CompilationUnitTree root) {
         super(checker, root);
 
         NONNULL = AnnotationUtils.fromClass(elements, NonNull.class);
         NULLABLE = AnnotationUtils.fromClass(elements, Nullable.class);
         POLYNULL = AnnotationUtils.fromClass(elements, PolyNull.class);
-
-        // aliases with checkers.nullness.quals qualifiers
-        addAliasedAnnotation(checkers.nullness.quals.NonNull.class, NONNULL);
-        addAliasedAnnotation(checkers.nullness.quals.Nullable.class, NULLABLE);
-        addAliasedAnnotation(checkers.nullness.quals.PolyNull.class, POLYNULL);
 
         addAliasedAnnotation(checkers.nullness.quals.LazyNonNull.class,
                 AnnotationUtils.fromClass(elements, MonotonicNonNull.class));
@@ -151,7 +147,7 @@ public class NonNullAnnotatedTypeFactory
 
     @Override
     public Set<VariableTree> getUninitializedInvariantFields(
-            NonNullStore store, TreePath path, boolean isStatic,
+            NullnessStore store, TreePath path, boolean isStatic,
             List<? extends AnnotationMirror> receiverAnnotations) {
         Set<VariableTree> candidates = super.getUninitializedInvariantFields(
                 store, path, isStatic, receiverAnnotations);
@@ -169,15 +165,15 @@ public class NonNullAnnotatedTypeFactory
     }
 
     @Override
-    protected NonNullAnalysis createFlowAnalysis(
-            AbstractNonNullChecker checker,
-            List<Pair<VariableElement, NonNullValue>> fieldValues) {
-        return new NonNullAnalysis(this, processingEnv, checker, fieldValues);
+    protected NullnessAnalysis createFlowAnalysis(
+            AbstractNullnessChecker checker,
+            List<Pair<VariableElement, NullnessValue>> fieldValues) {
+        return new NullnessAnalysis(this, processingEnv, checker, fieldValues);
     }
 
     @Override
-    public NonNullTransfer createFlowTransferFunction(NonNullAnalysis analysis) {
-        return new NonNullTransfer(analysis);
+    public NullnessTransfer createFlowTransferFunction(NullnessAnalysis analysis) {
+        return new NullnessTransfer(analysis);
     };
 
     @Override
@@ -217,12 +213,12 @@ public class NonNullAnnotatedTypeFactory
     }
 
     @Override
-    protected TypeAnnotator createTypeAnnotator(AbstractNonNullChecker checker) {
+    protected TypeAnnotator createTypeAnnotator(AbstractNullnessChecker checker) {
         return new NonNullTypeAnnotator(checker);
     }
 
     @Override
-    protected TreeAnnotator createTreeAnnotator(AbstractNonNullChecker checker) {
+    protected TreeAnnotator createTreeAnnotator(AbstractNullnessChecker checker) {
         return new NonNullTreeAnnotator(checker);
     }
 
@@ -274,7 +270,7 @@ public class NonNullAnnotatedTypeFactory
 
     protected class NonNullTreeAnnotator
             extends
-            InitializationAnnotatedTypeFactory<AbstractNonNullChecker, NonNullValue, NonNullStore, NonNullTransfer, NonNullAnalysis>.CommitmentTreeAnnotator {
+            InitializationAnnotatedTypeFactory<AbstractNullnessChecker, NullnessValue, NullnessStore, NullnessTransfer, NullnessAnalysis>.CommitmentTreeAnnotator {
         public NonNullTreeAnnotator(BaseTypeChecker checker) {
             super(checker);
         }
@@ -343,7 +339,7 @@ public class NonNullAnnotatedTypeFactory
 
     protected class NonNullTypeAnnotator
             extends
-            InitializationAnnotatedTypeFactory<AbstractNonNullChecker, NonNullValue, NonNullStore, NonNullTransfer, NonNullAnalysis>.CommitmentTypeAnnotator {
+            InitializationAnnotatedTypeFactory<AbstractNullnessChecker, NullnessValue, NullnessStore, NullnessTransfer, NullnessAnalysis>.CommitmentTypeAnnotator {
         public NonNullTypeAnnotator(BaseTypeChecker checker) {
             super(checker);
         }

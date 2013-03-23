@@ -24,8 +24,8 @@ import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 
 import com.sun.source.tree.CompilationUnitTree;
 
-@SuppressWarningsKeys("nonnull")
-public abstract class AbstractNonNullChecker extends InitializationChecker {
+@SuppressWarningsKeys("nullness")
+public abstract class AbstractNullnessChecker extends InitializationChecker {
 
     /** Annotation constants */
     public AnnotationMirror NONNULL, NULLABLE, MONOTONICNONNULL;
@@ -51,7 +51,7 @@ public abstract class AbstractNonNullChecker extends InitializationChecker {
      */
     public static final boolean LINT_DEFAULT_STRICTNULLCOMPARISON = false;
 
-    public AbstractNonNullChecker(boolean useFbc) {
+    public AbstractNullnessChecker(boolean useFbc) {
         super(useFbc);
     }
 
@@ -75,12 +75,12 @@ public abstract class AbstractNonNullChecker extends InitializationChecker {
 
     @Override
     protected BaseTypeVisitor<?> createSourceVisitor(CompilationUnitTree root) {
-        return new NonNullVisitor(this, root);
+        return new NullnessVisitor(this, root);
     }
 
     @Override
     public AnnotatedTypeFactory createFactory(CompilationUnitTree root) {
-        return new NonNullAnnotatedTypeFactory(this, root);
+        return new NullnessAnnotatedTypeFactory(this, root);
     }
 
     /**

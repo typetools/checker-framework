@@ -13,11 +13,11 @@ import checkers.types.AnnotatedTypeMirror;
  *
  * @author Stefan Heule
  */
-public class NonNullValue extends CFAbstractValue<NonNullValue> {
+public class NullnessValue extends CFAbstractValue<NullnessValue> {
 
     protected boolean isPolyNullNull;
 
-    public NonNullValue(CFAbstractAnalysis<NonNullValue, ?, ?> analysis,
+    public NullnessValue(CFAbstractAnalysis<NullnessValue, ?, ?> analysis,
             AnnotatedTypeMirror type) {
         super(analysis, type);
     }
