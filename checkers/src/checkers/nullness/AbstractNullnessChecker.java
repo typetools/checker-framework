@@ -1,4 +1,4 @@
-package checkers.nonnull;
+package checkers.nullness;
 
 import java.lang.annotation.Annotation;
 import java.util.Collection;
@@ -12,10 +12,10 @@ import javax.lang.model.util.Elements;
 
 import checkers.basetype.BaseTypeVisitor;
 import checkers.initialization.InitializationChecker;
-import checkers.nonnull.quals.MonotonicNonNull;
-import checkers.nonnull.quals.NonNull;
-import checkers.nonnull.quals.Nullable;
-import checkers.nonnull.quals.PolyNull;
+import checkers.nullness.quals.MonotonicNonNull;
+import checkers.nullness.quals.NonNull;
+import checkers.nullness.quals.Nullable;
+import checkers.nullness.quals.PolyNull;
 import checkers.quals.PolyAll;
 import checkers.source.SuppressWarningsKeys;
 import checkers.types.AnnotatedTypeFactory;

@@ -5,7 +5,7 @@ import java.util.Collection;
 
 import org.junit.runners.Parameterized.Parameters;
 
-import checkers.nonnull.AbstractNullnessChecker;
+import checkers.nullness.AbstractNullnessChecker;
 import checkers.util.test.ParameterizedCheckerTest;
 
 /**
@@ -17,7 +17,7 @@ public class NullnessRawnessTest extends ParameterizedCheckerTest {
     public NullnessRawnessTest(File testFile) {
         // TODO: remove arrays:forbidnonnullcomponents option once it's no
         // longer needed.
-        super(testFile, checkers.nonnull.NullnessRawnessChecker.class.getName(),
+        super(testFile, checkers.nullness.NullnessRawnessChecker.class.getName(),
                 "nullness", "-Anomsgtext",
                 "-Alint=arrays:forbidnonnullcomponents,"
                         + AbstractNullnessChecker.LINT_REDUNDANTNULLCOMPARISON);

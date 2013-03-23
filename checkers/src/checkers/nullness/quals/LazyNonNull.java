@@ -2,8 +2,6 @@ package checkers.nullness.quals;
 
 import java.lang.annotation.*;
 
-import checkers.nonnull.quals.MonotonicNonNull;
-import checkers.nonnull.quals.Nullable;
 import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifier;
 
