@@ -1,6 +1,6 @@
 package java.util;
 
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.Nullable;
 import checkers.nullness.quals.Covariant;
 
 // This @Covariant annotation is sound, but it would not be sound on

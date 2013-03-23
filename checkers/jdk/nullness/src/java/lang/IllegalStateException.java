@@ -25,7 +25,7 @@
 
 package java.lang;
 
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.Nullable;
 
 /**
  * Signals that a method has been invoked at an illegal or

@@ -25,7 +25,7 @@
 
 package java.lang;
 
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.Nullable;
 
 /**
  * Thrown when an application tries to access an enum constant by name

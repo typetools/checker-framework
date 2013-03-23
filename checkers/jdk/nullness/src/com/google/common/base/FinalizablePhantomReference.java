@@ -18,7 +18,7 @@ package com.google.common.base;
 
 import java.lang.ref.PhantomReference;
 
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.Nullable;
 
 /**
  * Phantom reference with a {@code finalizeReferent()} method which a

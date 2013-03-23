@@ -1,5 +1,5 @@
 package java.util;
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.Nullable;
 
 public class Date implements java.io.Serializable, Cloneable, Comparable<Date> {
   private static final long serialVersionUID = 0;

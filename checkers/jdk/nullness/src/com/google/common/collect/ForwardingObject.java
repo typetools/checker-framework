@@ -20,7 +20,7 @@ import com.google.common.annotations.GwtCompatible;
 
 import java.io.Serializable;
 
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.Nullable;
 
 /**
  * An abstract base class for implementing the <a

@@ -1,6 +1,6 @@
 package java.lang;
 
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.Nullable;
 
 
 public final class StringBuffer extends AbstractStringBuilder implements java.io.Serializable, CharSequence{

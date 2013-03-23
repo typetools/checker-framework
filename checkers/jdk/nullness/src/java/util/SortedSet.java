@@ -1,5 +1,5 @@
 package java.util;
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.Nullable;
 
 // Subclasses of this interface/class may opt to prohibit null elements
 public interface SortedSet<E extends @Nullable Object> extends Set<E> {

@@ -21,7 +21,7 @@ import com.google.common.annotations.GwtCompatible;
 import java.util.Collection;
 import java.util.Iterator;
 
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.Nullable;
 
 /**
  * A collection which forwards all its method calls to another collection.

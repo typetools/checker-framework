@@ -1,5 +1,5 @@
 package java.util;
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.Nullable;
 
 public final class Scanner implements Iterator<String> {
   public Scanner(Readable a1) { throw new RuntimeException("skeleton method"); }

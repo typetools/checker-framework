@@ -22,7 +22,7 @@ import com.google.common.annotations.GwtIncompatible;
 import java.lang.reflect.Array;
 import java.util.List;
 
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.Nullable;
 
 /**
  * Methods factored out so that they can be emulated differently in GWT.

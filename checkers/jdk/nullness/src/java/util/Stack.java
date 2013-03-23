@@ -1,5 +1,5 @@
 package java.util;
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.Nullable;
 
 // permits null elements
 public class Stack<E extends @Nullable Object> extends Vector<E> {

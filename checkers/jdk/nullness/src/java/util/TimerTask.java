@@ -1,5 +1,5 @@
 package java.util;
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.Nullable;
 
 public abstract class TimerTask implements Runnable{
   protected TimerTask() {}

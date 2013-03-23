@@ -1,5 +1,5 @@
 package java.util;
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.Nullable;
 
 public final class Formatter implements java.io.Closeable, java.io.Flushable {
   public enum BigDecimalLayoutForm {

@@ -1,5 +1,5 @@
 package java.util;
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.Nullable;
 
 public abstract class TimeZone implements java.io.Serializable, Cloneable{
   public final static int SHORT = 0;

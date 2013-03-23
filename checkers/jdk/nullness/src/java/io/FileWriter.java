@@ -1,8 +1,8 @@
 package java.io;
 
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.Nullable;
 
-@checkers.quals.DefaultQualifier(checkers.nonnull.quals.NonNull.class)
+@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
 
 public class FileWriter extends OutputStreamWriter {
   public FileWriter(String a1) throws IOException { super(null); throw new RuntimeException("skeleton method"); }

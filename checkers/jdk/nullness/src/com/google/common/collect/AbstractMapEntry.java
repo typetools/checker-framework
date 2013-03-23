@@ -21,7 +21,7 @@ import com.google.common.base.Objects;
 
 import java.util.Map.Entry;
 
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.Nullable;
 
 /**
  * Implementation of the {@code equals}, {@code hashCode}, and {@code toString}

@@ -1,8 +1,8 @@
 package java.util;
 import dataflow.quals.Pure;
 
-import checkers.nonnull.quals.EnsuresNonNullIf;
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.EnsuresNonNullIf;
+import checkers.nullness.quals.Nullable;
 import checkers.nullness.quals.PolyNull;
 
 // This class permits null elements

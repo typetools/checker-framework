@@ -16,7 +16,7 @@
 
 package com.google.common.base;
 
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.Nullable;
 
 /**
  * Implemented by references that have code to run after garbage collection of
