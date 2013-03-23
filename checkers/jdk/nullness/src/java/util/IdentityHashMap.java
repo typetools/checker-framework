@@ -2,7 +2,7 @@ package java.util;
 import dataflow.quals.Pure;
 
 import checkers.nullness.quals.KeyFor;
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.Nullable;
 
 // This class allows null elements
 public class IdentityHashMap<K extends @Nullable Object, V extends @Nullable Object> extends AbstractMap<K, V> implements Map<K, V>, java.io.Serializable, Cloneable {

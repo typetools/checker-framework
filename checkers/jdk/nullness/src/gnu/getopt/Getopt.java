@@ -27,7 +27,7 @@ import java.util.ResourceBundle;
 import java.util.PropertyResourceBundle;
 import java.text.MessageFormat;
 
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.Nullable;
 
 
 /**************************************************************************/

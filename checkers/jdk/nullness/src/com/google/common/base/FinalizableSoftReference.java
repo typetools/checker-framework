@@ -18,7 +18,7 @@ package com.google.common.base;
 
 import java.lang.ref.SoftReference;
 
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.Nullable;
 
 /**
  * Soft reference with a {@code finalizeReferent()} method which a background

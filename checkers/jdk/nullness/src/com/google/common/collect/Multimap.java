@@ -22,7 +22,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.Nullable;
 
 /**
  * A collection similar to a {@code Map}, but which may associate multiple

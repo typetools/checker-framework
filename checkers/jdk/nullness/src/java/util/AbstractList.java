@@ -1,7 +1,7 @@
 package java.util;
 import dataflow.quals.Pure;
 
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.Nullable;
 
 // Subclasses of this interface/class may opt to prohibit null elements
 public abstract class AbstractList<E extends @Nullable Object> extends AbstractCollection<E> implements List<E> {

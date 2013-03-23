@@ -1,6 +1,6 @@
 package java.util.regex;
 
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.Nullable;
 
 public final class Matcher implements MatchResult {
   protected Matcher() {}

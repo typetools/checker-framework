@@ -20,7 +20,7 @@ import com.google.common.annotations.GwtCompatible;
 
 import java.util.Iterator;
 
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.Nullable;
 
 /**
  * An iterator that does not support {@link #remove}.

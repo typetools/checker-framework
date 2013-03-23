@@ -23,7 +23,7 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Iterator;
 
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.Nullable;
 
 /**
  * An immutable collection. Does not permit null elements.

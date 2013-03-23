@@ -28,7 +28,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.Nullable;
 /**
  * A comparator with added methods to support common functions. For example:
  * <pre>   {@code

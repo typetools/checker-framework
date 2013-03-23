@@ -5,7 +5,7 @@ import java.lang.annotation.AnnotationFormatError;
 import java.nio.ByteBuffer;
 import java.util.Map;
 
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.Nullable;
 
 @SuppressWarnings("rawtypes")
 public final

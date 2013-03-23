@@ -1,6 +1,6 @@
 package com.sun.javadoc;
 
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.Nullable;
 
 public abstract interface Doc extends java.lang.Comparable<java.lang.Object> {
   public abstract java.lang.String commentText();

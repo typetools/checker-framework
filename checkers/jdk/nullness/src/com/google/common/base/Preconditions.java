@@ -21,7 +21,7 @@ import com.google.common.annotations.VisibleForTesting;
 
 import java.util.NoSuchElementException;
 
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.Nullable;
 
 /**
  * Simple static methods to be called at the start of your own methods to verify

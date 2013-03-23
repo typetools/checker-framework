@@ -25,7 +25,7 @@
 
 package java.lang;
 
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.Nullable;
 
 /**
  * <code>RuntimeException</code> is the superclass of those

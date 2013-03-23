@@ -1,7 +1,7 @@
 package java.lang.reflect;
 
-import checkers.nonnull.quals.NonNull;
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.NonNull;
+import checkers.nullness.quals.Nullable;
 
 public final class Field extends AccessibleObject implements Member {
   protected Field() {}

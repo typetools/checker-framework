@@ -1,9 +1,9 @@
 package java.util;
 import dataflow.quals.Pure;
 
-import checkers.nonnull.quals.EnsuresNonNullIf;
+import checkers.nullness.quals.EnsuresNonNullIf;
 import checkers.nullness.quals.KeyFor;
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.Nullable;
 
 // This permits null element when using a custom comparator which allows null
 public class TreeMap<K extends @Nullable Object, V extends @Nullable Object> extends AbstractMap<K, V> implements NavigableMap<K, V>, Cloneable, java.io.Serializable {

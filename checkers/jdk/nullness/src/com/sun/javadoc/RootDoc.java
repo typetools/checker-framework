@@ -1,7 +1,7 @@
 package com.sun.javadoc;
 
-import checkers.nonnull.quals.NonNull;
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.NonNull;
+import checkers.nullness.quals.Nullable;
 
 public interface RootDoc extends Doc, DocErrorReporter {
     String[][] options();

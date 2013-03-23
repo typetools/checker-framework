@@ -25,7 +25,7 @@ import java.io.ObjectOutputStream;
 import java.util.Collection;
 import java.util.Map;
 
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.Nullable;
 //import javax.annotation.Nullable;
 
 /**

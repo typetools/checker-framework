@@ -28,7 +28,7 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.Nullable;
 //import javax.annotation.Nullable;
 
 /**

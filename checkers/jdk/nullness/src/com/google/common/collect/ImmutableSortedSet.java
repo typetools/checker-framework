@@ -31,7 +31,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.SortedSet;
 
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.Nullable;
 
 /**
  * An immutable {@code SortedSet} that stores its elements in a sorted array.

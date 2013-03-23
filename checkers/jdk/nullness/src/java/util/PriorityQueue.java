@@ -1,7 +1,7 @@
 package java.util;
-import checkers.nonnull.quals.EnsuresNonNullIf;
-import checkers.nonnull.quals.NonNull;
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.EnsuresNonNullIf;
+import checkers.nullness.quals.NonNull;
+import checkers.nullness.quals.Nullable;
 import checkers.nullness.quals.PolyNull;
 
 // doesn't permit null element

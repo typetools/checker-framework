@@ -23,7 +23,7 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.Nullable;
 
 /**
  * A {@code BiMap} backed by an {@code EnumMap} instance for keys-to-values, and

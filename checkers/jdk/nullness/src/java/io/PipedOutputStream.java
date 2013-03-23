@@ -1,6 +1,6 @@
 package java.io;
 
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.Nullable;
 
 
 public class PipedOutputStream extends OutputStream {

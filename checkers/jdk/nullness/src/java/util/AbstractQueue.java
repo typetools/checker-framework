@@ -1,6 +1,6 @@
 package java.util;
-import checkers.nonnull.quals.EnsuresNonNullIf;
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.EnsuresNonNullIf;
+import checkers.nullness.quals.Nullable;
 
 public abstract class AbstractQueue<E extends @Nullable Object> extends AbstractCollection<E> implements Queue<E> {
   protected AbstractQueue() {}

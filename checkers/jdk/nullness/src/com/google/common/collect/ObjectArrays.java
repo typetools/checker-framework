@@ -21,7 +21,7 @@ import com.google.common.annotations.GwtIncompatible;
 
 import java.util.Collection;
 
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.Nullable;
 
 /**
  * Static utility methods pertaining to object arrays.

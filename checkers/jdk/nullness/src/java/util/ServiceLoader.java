@@ -1,5 +1,5 @@
 package java.util;
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.Nullable;
 
 public final class ServiceLoader<S> implements Iterable<S> {
   protected ServiceLoader() {}

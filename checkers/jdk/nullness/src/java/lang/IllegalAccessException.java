@@ -25,7 +25,7 @@
 
 package java.lang;
 
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.Nullable;
 
 /**
  * An IllegalAccessException is thrown when an application tries

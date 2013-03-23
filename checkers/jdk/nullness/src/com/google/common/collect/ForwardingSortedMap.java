@@ -21,7 +21,7 @@ import com.google.common.annotations.GwtCompatible;
 import java.util.Comparator;
 import java.util.SortedMap;
 
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.Nullable;
 
 /**
  * A sorted map which forwards all its method calls to another sorted map.

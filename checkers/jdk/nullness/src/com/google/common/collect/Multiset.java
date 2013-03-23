@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.Nullable;
 
 /**
  * A collection that supports order-independent equality, like {@link Set}, but

@@ -24,7 +24,7 @@ import java.io.ObjectOutputStream;
 import java.util.EnumMap;
 import java.util.Map;
 
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.Nullable;
 
 /**
  * A {@code BiMap} backed by two {@code EnumMap} instances. Null keys and values

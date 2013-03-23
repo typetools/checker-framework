@@ -18,7 +18,7 @@ package com.google.common.collect;
 
 import java.util.Timer;
 
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.Nullable;
 
 /**
  * Timer used for entry expiration in MapMaker.

@@ -25,7 +25,7 @@
 
 package java.lang;
 
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.Nullable;
 
 /**
  * Thrown when an exceptional arithmetic condition has occurred. For

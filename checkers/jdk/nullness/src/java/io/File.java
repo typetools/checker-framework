@@ -2,9 +2,9 @@ package java.io;
 
 import dataflow.quals.Pure;
 
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.Nullable;
 
-@checkers.quals.DefaultQualifier(checkers.nonnull.quals.NonNull.class)
+@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
 
 public class File implements Serializable, Comparable<File> {
   private static final long serialVersionUID = 0;

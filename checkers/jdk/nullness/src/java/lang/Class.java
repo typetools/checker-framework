@@ -2,9 +2,9 @@ package java.lang;
 
 import dataflow.quals.Pure;
 
-import checkers.nonnull.quals.EnsuresNonNullIf;
-import checkers.nonnull.quals.NonNull;
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.EnsuresNonNullIf;
+import checkers.nullness.quals.NonNull;
+import checkers.nullness.quals.Nullable;
 import checkers.nullness.quals.PolyNull;
 
 public final class Class<T extends @Nullable Object> extends Object implements java.io.Serializable, java.lang.reflect.GenericDeclaration, java.lang.reflect.Type, java.lang.reflect.AnnotatedElement {

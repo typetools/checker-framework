@@ -26,7 +26,7 @@ import java.net.URLClassLoader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.Nullable;
 
 /**
  * A reference queue with an associated background thread that dequeues
