@@ -8,13 +8,13 @@ import org.junit.runners.Parameterized.Parameters;
 import checkers.util.test.ParameterizedCheckerTest;
 
 /**
- * JUnit tests for the NonNull Checker -- testing -AskipUses command-line argument.
+ * JUnit tests for the nullness checker -- testing -AskipUses command-line argument.
  */
-public class NonNullSkipUsesTest extends ParameterizedCheckerTest {
+public class NullnessSkipUsesTest extends ParameterizedCheckerTest {
 
-    public NonNullSkipUsesTest(File testFile) {
+    public NullnessSkipUsesTest(File testFile) {
         super(testFile, checkers.nonnull.NullnessFbcChecker.class.getName(),
-                "nonnull", "-Anomsgtext", "-AskipUses=SkipMe");
+                "nullness", "-Anomsgtext", "-AskipUses=SkipMe");
     }
 
     @Parameters

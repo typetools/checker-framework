@@ -9,16 +9,16 @@ import checkers.nonnull.AbstractNullnessChecker;
 import checkers.util.test.ParameterizedCheckerTest;
 
 /**
- * JUnit tests for the NonNull checker (that uses the Freedom Before Commitment
+ * JUnit tests for the Nullness checker (that uses the Freedom Before Commitment
  * type system for initialization).
  */
-public class NonNullFbcTest extends ParameterizedCheckerTest {
+public class NullnessFbcTest extends ParameterizedCheckerTest {
 
-    public NonNullFbcTest(File testFile) {
+    public NullnessFbcTest(File testFile) {
         // TODO: remove arrays:forbidnonnullcomponents option once it's no
         // longer needed.
         super(testFile, checkers.nonnull.NullnessFbcChecker.class.getName(),
-                "nonnull", "-Anomsgtext",
+                "nullness", "-Anomsgtext",
                 "-Alint=arrays:forbidnonnullcomponents,"
                         + AbstractNullnessChecker.LINT_REDUNDANTNULLCOMPARISON);
     }
