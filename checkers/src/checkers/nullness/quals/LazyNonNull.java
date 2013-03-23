@@ -2,10 +2,15 @@ package checkers.nullness.quals;
 
 import java.lang.annotation.*;
 
+import checkers.nonnull.quals.MonotonicNonNull;
+import checkers.nonnull.quals.Nullable;
 import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifier;
 
 /**
+ * This annotation is deprecated.  {@link MonotonicNonNull} should be used
+ * instead.
+ *
  * Indicates that a field (or variable) is lazily initialized to a non-null
  * value.  Once the field becomes non-null, it never becomes null again.
  * There is no guarantee that the field ever becomes non-null, however.
@@ -45,6 +50,7 @@ import checkers.quals.TypeQualifier;
  * @see NullnessChecker
  * @checker.framework.manual #nullness-checker Nullness Checker
  */
+@Deprecated
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE_USE) // not applicable to ElementType.TYPE_PARAMETER
