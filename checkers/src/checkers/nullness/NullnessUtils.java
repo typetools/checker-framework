@@ -26,9 +26,9 @@ import checkers.nonnull.quals.*;
 // Casts look redundant if Nullness Checker is not run.
 @SuppressWarnings({"nullness",
     "cast"})
-public final class NonNullUtils {
+public final class NullnessUtils {
 
-    private NonNullUtils()
+    private NullnessUtils()
     { throw new AssertionError("shouldn't be instantiated"); }
 
     /**
