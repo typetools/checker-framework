@@ -1,4 +1,4 @@
-package checkers.nonnull.quals;
+package checkers.nullness.quals;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;

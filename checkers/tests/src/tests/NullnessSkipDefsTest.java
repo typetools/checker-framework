@@ -13,7 +13,7 @@ import checkers.util.test.ParameterizedCheckerTest;
 public class NullnessSkipDefsTest extends ParameterizedCheckerTest {
 
     public NullnessSkipDefsTest(File testFile) {
-        super(testFile, checkers.nonnull.NullnessFbcChecker.class.getName(),
+        super(testFile, checkers.nullness.NullnessFbcChecker.class.getName(),
                 "nullness", "-Anomsgtext", "-AskipDefs=SkipMe");
     }
 

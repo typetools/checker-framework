@@ -49,7 +49,7 @@ import checkers.util.FlowExpressionParseUtil.FlowExpressionContext;
 import checkers.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import checkers.igj.quals.Immutable;
 import checkers.igj.quals.ReadOnly;
-import checkers.nonnull.NullnessFbcChecker;
+import checkers.nullness.NullnessFbcChecker;
 import checkers.quals.DefaultQualifier;
 import checkers.quals.Unused;
 import checkers.source.Result;
@@ -2399,7 +2399,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
                         ((com.sun.tools.javac.code.Symbol)m).getTypeAnnotationMirrors()) {
                     if ( tc.position.type == com.sun.tools.javac.code.TargetType.METHOD_FORMAL_PARAMETER &&
                             tc.position.parameter_index == 0 &&
-                            tc.type.toString().equals(checkers.nonnull.quals.Nullable.class.getName()) ) {
+                            tc.type.toString().equals(checkers.nullness.quals.Nullable.class.getName()) ) {
                         foundNN = true;
                     }
                 }

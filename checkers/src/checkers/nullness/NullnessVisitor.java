@@ -1,4 +1,4 @@
-package checkers.nonnull;
+package checkers.nullness;
 
 import java.lang.annotation.Annotation;
 import java.util.Set;
@@ -16,9 +16,9 @@ import javax.lang.model.type.TypeMirror;
 
 import checkers.compilermsgs.quals.CompilerMessageKey;
 import checkers.initialization.InitializationVisitor;
-import checkers.nonnull.quals.NonNull;
-import checkers.nonnull.quals.Nullable;
-import checkers.nonnull.quals.PolyNull;
+import checkers.nullness.quals.NonNull;
+import checkers.nullness.quals.Nullable;
+import checkers.nullness.quals.PolyNull;
 import checkers.quals.PolyAll;
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeMirror;

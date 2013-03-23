@@ -1,4 +1,4 @@
-package checkers.nonnull.quals;
+package checkers.nullness.quals;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -6,7 +6,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import checkers.nonnull.AbstractNullnessChecker;
+import checkers.nullness.AbstractNullnessChecker;
 import checkers.quals.MonotonicAnnotation;
 import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifier;

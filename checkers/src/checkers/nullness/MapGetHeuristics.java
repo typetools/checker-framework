@@ -1,4 +1,4 @@
-package checkers.nonnull;
+package checkers.nullness;
 
 import static checkers.util.Heuristics.Matchers.ofKind;
 import static checkers.util.Heuristics.Matchers.or;

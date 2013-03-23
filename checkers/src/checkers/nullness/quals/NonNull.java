@@ -1,4 +1,4 @@
-package checkers.nonnull.quals;
+package checkers.nullness.quals;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
 import javax.lang.model.type.TypeKind;
 
 import checkers.initialization.InitializationChecker;
-import checkers.nonnull.AbstractNullnessChecker;
+import checkers.nullness.AbstractNullnessChecker;
 import checkers.quals.DefaultQualifierInHierarchy;
 import checkers.quals.ImplicitFor;
 import checkers.quals.SubtypeOf;

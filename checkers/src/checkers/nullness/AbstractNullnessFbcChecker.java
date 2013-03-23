@@ -1,17 +1,20 @@
-package checkers.nonnull;
+package checkers.nullness;
 
-import checkers.initialization.quals.NonRaw;
-import checkers.initialization.quals.Raw;
-import checkers.nonnull.quals.MonotonicNonNull;
-import checkers.nonnull.quals.NonNull;
-import checkers.nonnull.quals.Nullable;
-import checkers.nonnull.quals.PolyNull;
+import checkers.initialization.quals.Committed;
+import checkers.initialization.quals.FBCBottom;
+import checkers.initialization.quals.Free;
+import checkers.initialization.quals.Unclassified;
+import checkers.nullness.quals.MonotonicNonNull;
+import checkers.nullness.quals.NonNull;
+import checkers.nullness.quals.Nullable;
+import checkers.nullness.quals.PolyNull;
 import checkers.quals.PolyAll;
 import checkers.quals.TypeQualifiers;
 import checkers.source.SupportedLintOptions;
 
 @TypeQualifiers({ Nullable.class, MonotonicNonNull.class, NonNull.class,
-        NonRaw.class, Raw.class, PolyNull.class, PolyAll.class })
+        Free.class, Committed.class, Unclassified.class, FBCBottom.class,
+        PolyNull.class, PolyAll.class })
 @SupportedLintOptions({ AbstractNullnessChecker.LINT_STRICTMONOTONICNONNULLINIT,
         AbstractNullnessChecker.LINT_REDUNDANTNULLCOMPARISON,
         // Temporary option to forbid non-null array component types,
@@ -20,10 +23,10 @@ import checkers.source.SupportedLintOptions;
         // Allowing is unsound but permitted until flow-sensitivity changes are
         // made.
         "arrays:forbidnonnullcomponents" })
-public class AbstractNullnessRawnessChecker extends AbstractNullnessChecker {
+public class AbstractNullnessFbcChecker extends AbstractNullnessChecker {
 
-    public AbstractNullnessRawnessChecker() {
-        super(false);
+    public AbstractNullnessFbcChecker() {
+        super(true);
     }
 
 }
