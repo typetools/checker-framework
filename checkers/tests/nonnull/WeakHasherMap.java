@@ -2,7 +2,7 @@ import java.util.Map;
 import java.util.AbstractMap;
 
 import checkers.quals.*;
-import checkers.nonnull.quals.*;
+import checkers.nullness.quals.*;
 import checkers.regex.quals.*;
 import checkers.initialization.quals.*;
 

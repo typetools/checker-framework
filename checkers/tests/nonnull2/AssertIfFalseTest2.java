@@ -1,4 +1,4 @@
-import checkers.nonnull.quals.*;
+import checkers.nullness.quals.*;
 import dataflow.quals.Pure;
 
 public class AssertIfFalseTest2 {

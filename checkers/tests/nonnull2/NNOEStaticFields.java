@@ -1,4 +1,4 @@
-import checkers.nonnull.quals.RequiresNonNull;
+import checkers.nullness.quals.RequiresNonNull;
 import checkers.nullness.quals.*;
 
 import java.util.*;

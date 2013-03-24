@@ -1,6 +1,6 @@
 import java.util.ArrayList;
 
-import checkers.nonnull.quals.*;
+import checkers.nullness.quals.*;
 import checkers.quals.*;
 import checkers.initialization.quals.*;
 

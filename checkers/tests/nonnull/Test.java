@@ -1,7 +1,7 @@
 package examples;
 
 import checkers.initialization.quals.Unclassified;
-import checkers.nonnull.quals.NonNull;
+import checkers.nullness.quals.NonNull;
 
 
 public class Test {

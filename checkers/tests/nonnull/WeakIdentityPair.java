@@ -1,4 +1,4 @@
-import checkers.nonnull.quals.*;
+import checkers.nullness.quals.*;
 import java.lang.ref.WeakReference;
 
 public class WeakIdentityPair<T1 extends Object> {

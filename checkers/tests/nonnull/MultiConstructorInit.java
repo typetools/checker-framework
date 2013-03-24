@@ -1,6 +1,6 @@
-import checkers.nonnull.quals.*;
+import checkers.nullness.quals.*;
 import checkers.initialization.quals.*;
-import static checkers.nonnull.util.NonNullUtils.*;
+import static checkers.nullness.util.NonNullUtils.*;
 
 class MultiConstructorInit {
     

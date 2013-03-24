@@ -1,4 +1,4 @@
-import checkers.nonnull.util.NonNullUtils;
+import checkers.nullness.util.NonNullUtils;
 import checkers.nullness.quals.*;
 
 /*
