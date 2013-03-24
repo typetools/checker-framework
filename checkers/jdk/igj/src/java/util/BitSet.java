@@ -4,8 +4,8 @@ import checkers.igj.quals.*;
 @I
 public class BitSet implements @I Cloneable, java.io. @I Serializable {
     private static final long serialVersionUID = 0L;
-  public BitSet(@AssignsFields BitSet this) { throw new RuntimeException("skeleton method"); }
-  public BitSet(@AssignsFields BitSet this, int a1) { throw new RuntimeException("skeleton method"); }
+  public BitSet() { throw new RuntimeException("skeleton method"); }
+  public BitSet(int a1) { throw new RuntimeException("skeleton method"); }
   public void flip(@Mutable BitSet this, int a1) { throw new RuntimeException("skeleton method"); }
   public void flip(@Mutable BitSet this, int a1, int a2) { throw new RuntimeException("skeleton method"); }
   public void set(@AssignsFields BitSet this, int a1) { throw new RuntimeException("skeleton method"); }

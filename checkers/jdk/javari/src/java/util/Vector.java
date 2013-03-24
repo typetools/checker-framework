@@ -6,7 +6,7 @@ public class Vector<E> extends AbstractList<E> implements List<E>, RandomAccess,
   public Vector(int a1, int a2) { throw new RuntimeException(("skeleton method")); }
   public Vector(int a1) { throw new RuntimeException(("skeleton method")); }
   public Vector() { throw new RuntimeException(("skeleton method")); }
-  public Vector(@PolyRead Vector<E> this, @PolyRead Collection<? extends E> a1) { throw new RuntimeException(("skeleton method")); }
+  public @PolyRead Vector(@PolyRead Collection<? extends E> a1) { throw new RuntimeException(("skeleton method")); }
   // copyInto is special-cased by the type-checker
   public synchronized void copyInto(@ReadOnly Vector<E> this, @ReadOnly Object @Mutable [] a1) { throw new RuntimeException(("skeleton method")); }
   public synchronized void trimToSize() { throw new RuntimeException(("skeleton method")); }

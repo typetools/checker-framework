@@ -5,7 +5,7 @@ public class ArrayDeque<E> extends AbstractCollection<E> implements Deque<E>, Cl
     private static final long serialVersionUID = 0L;
   public ArrayDeque() { throw new RuntimeException(("skeleton method")); }
   public ArrayDeque(int a1) { throw new RuntimeException(("skeleton method")); }
-  public ArrayDeque(@PolyRead ArrayDeque<E> this, @PolyRead Collection<? extends E> a1) { throw new RuntimeException(("skeleton method")); }
+  public @PolyRead ArrayDeque(@PolyRead Collection<? extends E> a1) { throw new RuntimeException(("skeleton method")); }
   public void addFirst(E a1) { throw new RuntimeException(("skeleton method")); }
   public void addLast(E a1) { throw new RuntimeException(("skeleton method")); }
   public boolean offerFirst(E a1) { throw new RuntimeException(("skeleton method")); }

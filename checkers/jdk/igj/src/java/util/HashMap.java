@@ -4,10 +4,10 @@ import checkers.igj.quals.*;
 @I
 public class HashMap<K, V> extends @I AbstractMap<K, V> implements @I Map<K, V>, @I Cloneable, java.io. @I Serializable {
     private static final long serialVersionUID = 0L;
-  public HashMap(@AssignsFields HashMap<K, V> this, int a1, float a2) { throw new RuntimeException("skeleton method"); }
-  public HashMap(@AssignsFields HashMap<K, V> this, int a1) { throw new RuntimeException("skeleton method"); }
-  public HashMap(@AssignsFields HashMap<K, V> this) { throw new RuntimeException("skeleton method"); }
-  public HashMap(@AssignsFields HashMap<K, V> this, @ReadOnly Map<? extends K, ? extends V> a1) { throw new RuntimeException("skeleton method"); }
+  public HashMap(int a1, float a2) { throw new RuntimeException("skeleton method"); }
+  public HashMap(int a1) { throw new RuntimeException("skeleton method"); }
+  public HashMap() { throw new RuntimeException("skeleton method"); }
+  public HashMap(@ReadOnly Map<? extends K, ? extends V> a1) { throw new RuntimeException("skeleton method"); }
   public int size(@ReadOnly HashMap<K, V> this) { throw new RuntimeException("skeleton method"); }
   public boolean isEmpty(@ReadOnly HashMap<K, V> this) { throw new RuntimeException("skeleton method"); }
   public V get(@ReadOnly HashMap<K, V> this, @ReadOnly Object a1) { throw new RuntimeException("skeleton method"); }

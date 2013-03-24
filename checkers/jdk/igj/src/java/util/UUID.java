@@ -4,7 +4,7 @@ import checkers.igj.quals.*;
 @Immutable
 public final class UUID implements java.io.Serializable, Comparable<UUID> {
     private static final long serialVersionUID = 0L;
-  public UUID(@AssignsFields UUID this, long a1, long a2) { throw new RuntimeException("skeleton method"); }
+  public UUID(long a1, long a2) { throw new RuntimeException("skeleton method"); }
   public static UUID randomUUID() { throw new RuntimeException("skeleton method"); }
   public static UUID nameUUIDFromBytes(byte @ReadOnly [] a1) { throw new RuntimeException("skeleton method"); }
   public static UUID fromString(String a1) { throw new RuntimeException("skeleton method"); }

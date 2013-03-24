@@ -4,9 +4,9 @@ import checkers.igj.quals.*;
 @I
 public class IdentityHashMap<K, V> extends @I AbstractMap<K, V> implements @I Map<K, V>, java.io. @I Serializable, @I Cloneable {
     private static final long serialVersionUID = 0L;
-  public IdentityHashMap(@AssignsFields IdentityHashMap<K, V> this) { throw new RuntimeException("skeleton method"); }
-  public IdentityHashMap(@AssignsFields IdentityHashMap<K, V> this, int a1) { throw new RuntimeException("skeleton method"); }
-  public IdentityHashMap(@AssignsFields IdentityHashMap<K, V> this, @ReadOnly Map<? extends K, ? extends V> a1) { throw new RuntimeException("skeleton method"); }
+  public IdentityHashMap() { throw new RuntimeException("skeleton method"); }
+  public IdentityHashMap(int a1) { throw new RuntimeException("skeleton method"); }
+  public IdentityHashMap(@ReadOnly Map<? extends K, ? extends V> a1) { throw new RuntimeException("skeleton method"); }
   public int size(@ReadOnly IdentityHashMap<K, V> this) { throw new RuntimeException("skeleton method"); }
   public boolean isEmpty(@ReadOnly IdentityHashMap<K, V> this) { throw new RuntimeException("skeleton method"); }
   public V get(@ReadOnly IdentityHashMap<K, V> this, @ReadOnly Object a1) { throw new RuntimeException("skeleton method"); }

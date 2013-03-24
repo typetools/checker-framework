@@ -5,8 +5,8 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E>, Clone
     private static final long serialVersionUID = 0L;
   public TreeSet() { throw new RuntimeException(("skeleton method")); }
   public TreeSet(Comparator<? super E> a1) { throw new RuntimeException(("skeleton method")); }
-  public TreeSet(@PolyRead TreeSet<E> this, @PolyRead Collection<? extends E> a1) { throw new RuntimeException(("skeleton method")); }
-  public TreeSet(@PolyRead TreeSet<E> this, @PolyRead SortedSet<E> a1) { throw new RuntimeException(("skeleton method")); }
+  public @PolyRead TreeSet(@PolyRead Collection<? extends E> a1) { throw new RuntimeException(("skeleton method")); }
+  public @PolyRead TreeSet(@PolyRead SortedSet<E> a1) { throw new RuntimeException(("skeleton method")); }
   public @PolyRead Iterator<E> iterator(@PolyRead TreeSet<E> this) { throw new RuntimeException(("skeleton method")); }
   public @PolyRead Iterator<E> descendingIterator(@PolyRead TreeSet<E> this) { throw new RuntimeException(("skeleton method")); }
   public @PolyRead NavigableSet<E> descendingSet(@PolyRead TreeSet<E> this) { throw new RuntimeException(("skeleton method")); }
