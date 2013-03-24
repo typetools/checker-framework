@@ -1,5 +1,6 @@
 import checkers.nullness.quals.RequiresNonNull;
 import checkers.nullness.quals.*;
+import checkers.initialization.quals.*;
 
 import java.util.*;
 
