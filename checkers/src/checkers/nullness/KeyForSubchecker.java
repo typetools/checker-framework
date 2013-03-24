@@ -6,6 +6,8 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 
+import javacutils.AnnotationUtils;
+
 import checkers.basetype.BaseTypeChecker;
 import checkers.nullness.quals.Covariant;
 import checkers.nullness.quals.KeyFor;
@@ -16,7 +18,6 @@ import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.QualifierHierarchy;
 import checkers.types.TypeHierarchy;
-import checkers.util.AnnotationUtils;
 import checkers.util.GraphQualifierHierarchy;
 import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 

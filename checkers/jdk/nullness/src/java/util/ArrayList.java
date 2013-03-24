@@ -1,6 +1,8 @@
 package java.util;
-import checkers.nullness.quals.*;
-@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
+import dataflow.quals.Pure;
+
+import checkers.nullness.quals.Nullable;
+import checkers.nullness.quals.PolyNull;
 
 // permits null elements
 public class ArrayList<E extends @Nullable Object> extends AbstractList<E> implements List<E>, RandomAccess, Cloneable, java.io.Serializable {

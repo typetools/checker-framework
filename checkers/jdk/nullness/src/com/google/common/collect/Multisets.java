@@ -28,7 +28,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
 /**
  * Provides static utility methods for creating and working with {@link

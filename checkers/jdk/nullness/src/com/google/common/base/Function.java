@@ -18,7 +18,7 @@ package com.google.common.base;
 
 import com.google.common.annotations.GwtCompatible;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
 /**
  * A transformation from one object to another. For example, a
