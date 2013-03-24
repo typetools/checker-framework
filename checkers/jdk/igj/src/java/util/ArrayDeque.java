@@ -4,9 +4,9 @@ import checkers.igj.quals.*;
 @I
 public class ArrayDeque<E> extends @I AbstractCollection<E> implements @I Deque<E>, @I Cloneable, java.io. @I Serializable {
     private static final long serialVersionUID = 0L;
-  public ArrayDeque(@AssignsFields ArrayDeque<E> this) { throw new RuntimeException("skeleton method"); }
-  public ArrayDeque(@AssignsFields ArrayDeque<E> this, int a1) { throw new RuntimeException("skeleton method"); }
-  public ArrayDeque(@AssignsFields ArrayDeque<E> this, @ReadOnly Collection<? extends E> a1) { throw new RuntimeException("skeleton method"); }
+  public ArrayDeque() { throw new RuntimeException("skeleton method"); }
+  public ArrayDeque(int a1) { throw new RuntimeException("skeleton method"); }
+  public ArrayDeque(@ReadOnly Collection<? extends E> a1) { throw new RuntimeException("skeleton method"); }
   public void addFirst(@Mutable ArrayDeque<E> this, E a1) { throw new RuntimeException("skeleton method"); }
   public void addLast(@Mutable ArrayDeque<E> this, E a1) { throw new RuntimeException("skeleton method"); }
   public boolean offerFirst(@Mutable ArrayDeque<E> this, E a1) { throw new RuntimeException("skeleton method"); }

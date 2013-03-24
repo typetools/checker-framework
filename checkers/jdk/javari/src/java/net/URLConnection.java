@@ -44,7 +44,7 @@ public abstract class URLConnection {
         throw new RuntimeException("skeleton method");
     }
 
-    protected URLConnection(@ReadOnly URLConnection this, @ReadOnly URL url) {
+    protected URLConnection(@ReadOnly URL url) {
         throw new RuntimeException("skeleton method");
     }
 

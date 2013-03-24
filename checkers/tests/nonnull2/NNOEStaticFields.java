@@ -1,5 +1,6 @@
-import checkers.nonnull.quals.RequiresNonNull;
+import checkers.nullness.quals.RequiresNonNull;
 import checkers.nullness.quals.*;
+import checkers.initialization.quals.*;
 
 import java.util.*;
 
@@ -85,11 +86,11 @@ class NNOEStaticFields {
     static class ChicoryPremain1 {
 
         // Non-null if doPurity == true
-        private static @LazyNonNull Set<String> pureMethods = null;
+        private static @MonotonicNonNull Set<String> pureMethods = null;
 
         private static boolean doPurity = false;
 
-        @AssertNonNullIfTrue("ChicoryPremain1.pureMethods")
+        @EnsuresNonNullIf(result=true, expression="ChicoryPremain1.pureMethods")
         public static boolean shouldDoPurity() {
             return doPurity;
         }

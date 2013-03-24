@@ -4,8 +4,8 @@ import checkers.igj.quals.*;
 @I
 public class Properties extends @I Hashtable<Object, Object> {
     private static final long serialVersionUID = 0L;
-  public Properties(@AssignsFields Properties this) { throw new RuntimeException("skeleton method"); }
-  public Properties(@AssignsFields Properties this, @ReadOnly Properties a1) { throw new RuntimeException("skeleton method"); }
+  public Properties() { throw new RuntimeException("skeleton method"); }
+  public Properties(@ReadOnly Properties a1) { throw new RuntimeException("skeleton method"); }
   public synchronized Object setProperty(@Mutable Properties this, String a1, String a2) { throw new RuntimeException("skeleton method"); }
   public synchronized void load(@Mutable Properties this, java.io.Reader a1)  throws java.io.IOException { throw new RuntimeException("skeleton method"); }
   public synchronized void load(@Mutable Properties this, java.io.InputStream a1) throws java.io.IOException { throw new RuntimeException("skeleton method"); }

@@ -1,4 +1,4 @@
-import checkers.nonnull.quals.NonNull;
+import checkers.nullness.quals.NonNull;
 
 public class FlowNegation {
 

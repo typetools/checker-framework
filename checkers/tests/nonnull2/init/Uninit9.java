@@ -1,5 +1,5 @@
 import checkers.initialization.quals.Unclassified;
-import checkers.nonnull.quals.RequiresNonNull;
+import checkers.nullness.quals.RequiresNonNull;
 import checkers.nullness.quals.*;
 
 public class Uninit9 {

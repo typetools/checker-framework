@@ -1,7 +1,6 @@
 package checkers.basetype;
 
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -50,7 +49,7 @@ import checkers.util.FlowExpressionParseUtil.FlowExpressionContext;
 import checkers.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import checkers.igj.quals.Immutable;
 import checkers.igj.quals.ReadOnly;
-import checkers.nonnull.NonNullFbcChecker;
+import checkers.nullness.NullnessFbcChecker;
 import checkers.quals.DefaultQualifier;
 import checkers.quals.Unused;
 import checkers.source.Result;
@@ -125,8 +124,8 @@ import com.sun.tools.javac.tree.TreeInfo;
  *
  * Note that since this implementation only performs assignment and
  * pseudo-assignment checking, other rules for custom type systems must be added
- * in subclasses (e.g., dereference checking in the {@link NonNullFbcChecker} is
- * implemented in the {@link NonNullFbcChecker}'s
+ * in subclasses (e.g., dereference checking in the {@link NullnessFbcChecker} is
+ * implemented in the {@link NullnessFbcChecker}'s
  * {@link TreeScanner#visitMemberSelect} method).
  *
  * <p>
@@ -409,35 +408,21 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         Collection<Pure.Kind> t = EnumSet.copyOf(expectedTypes);
         t.removeAll(result.getTypes());
         if (t.contains(Pure.Kind.DETERMINISTIC)
-                && t.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
-            checker.report(Result.failure(
-                    "pure.not.deterministic.and.sideeffect.free",
-                    errorList(result.getNotBothReasons())), node);
-        } else if (t.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
-            List<String> errors = new ArrayList<>(result.getNotSeFreeReasons());
-            errors.addAll(result.getNotBothReasons());
-            checker.report(Result.failure("pure.not.sideeffect.free",
-                    errorList(errors)), node);
-        } else if (t.contains(Pure.Kind.DETERMINISTIC)) {
-            List<String> errors = new ArrayList<>(result.getNotDetReasons());
-            errors.addAll(result.getNotBothReasons());
-            checker.report(
-                    Result.failure("pure.not.deterministic", errorList(errors)),
-                    node);
-        }
-    }
-
-    private static String errorList(List<String> reasons) {
-        StringBuilder s = new StringBuilder();
-        boolean first = true;
-        for (String r : reasons) {
-            if (!first) {
-                s.append(", ");
+                || t.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
+            for (Pair<Tree, String>  r: result.getNotBothReasons()) {
+                checker.report(Result.failure(r.second), r.first);
             }
-            s.append(r);
-            first = false;
+            if (t.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
+                for (Pair<Tree, String>  r: result.getNotSeFreeReasons()) {
+                    checker.report(Result.failure(r.second), r.first);
+                }
+            }
+            if (t.contains(Pure.Kind.DETERMINISTIC)) {
+                for (Pair<Tree, String>  r: result.getNotDetReasons()) {
+                    checker.report(Result.failure(r.second), r.first);
+                }
+            }
         }
-        return s.toString();
     }
 
     /**
@@ -2414,7 +2399,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
                         ((com.sun.tools.javac.code.Symbol)m).getTypeAnnotationMirrors()) {
                     if ( tc.position.type == com.sun.tools.javac.code.TargetType.METHOD_FORMAL_PARAMETER &&
                             tc.position.parameter_index == 0 &&
-                            tc.type.toString().equals(checkers.nonnull.quals.Nullable.class.getName()) ) {
+                            tc.type.toString().equals(checkers.nullness.quals.Nullable.class.getName()) ) {
                         foundNN = true;
                     }
                 }

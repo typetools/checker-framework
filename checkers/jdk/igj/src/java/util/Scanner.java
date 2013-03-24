@@ -4,14 +4,14 @@ import checkers.igj.quals.*;
 
 @I
 public final class Scanner implements @Immutable Iterator<String> {
-  public Scanner(@AssignsFields Scanner this, Readable a1) { throw new RuntimeException("skeleton method"); }
-  public Scanner(@AssignsFields Scanner this, java.io.InputStream a1) { throw new RuntimeException("skeleton method"); }
-  public Scanner(@AssignsFields Scanner this, java.io.InputStream a1, String a2) { throw new RuntimeException("skeleton method"); }
-  public Scanner(@AssignsFields Scanner this, java.io.File a1) throws java.io.FileNotFoundException { throw new RuntimeException("skeleton method"); }
-  public Scanner(@AssignsFields Scanner this, java.io.File a1, String a2) throws java.io.FileNotFoundException { throw new RuntimeException("skeleton method"); }
-  public Scanner(@AssignsFields Scanner this, String a1) { throw new RuntimeException("skeleton method"); }
-  public Scanner(@AssignsFields Scanner this, java.nio.channels.ReadableByteChannel a1) { throw new RuntimeException("skeleton method"); }
-  public Scanner(@AssignsFields Scanner this, java.nio.channels.ReadableByteChannel a1, String a2) { throw new RuntimeException("skeleton method"); }
+  public Scanner(Readable a1) { throw new RuntimeException("skeleton method"); }
+  public Scanner(java.io.InputStream a1) { throw new RuntimeException("skeleton method"); }
+  public Scanner(java.io.InputStream a1, String a2) { throw new RuntimeException("skeleton method"); }
+  public Scanner(java.io.File a1) throws java.io.FileNotFoundException { throw new RuntimeException("skeleton method"); }
+  public Scanner(java.io.File a1, String a2) throws java.io.FileNotFoundException { throw new RuntimeException("skeleton method"); }
+  public Scanner(String a1) { throw new RuntimeException("skeleton method"); }
+  public Scanner(java.nio.channels.ReadableByteChannel a1) { throw new RuntimeException("skeleton method"); }
+  public Scanner(java.nio.channels.ReadableByteChannel a1, String a2) { throw new RuntimeException("skeleton method"); }
   public void close(@Mutable Scanner this) { throw new RuntimeException("skeleton method"); }
   public java.io.IOException ioException(@ReadOnly Scanner this) { throw new RuntimeException("skeleton method"); }
   public java.util.regex.Pattern delimiter(@ReadOnly Scanner this) { throw new RuntimeException("skeleton method"); }
