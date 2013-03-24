@@ -132,8 +132,8 @@ public class ArrayCreationNullable {
         //:: error: (new.array.type.invalid)
         oaa2 = new Object @NonNull [10] @NonNull [10];
 
-        @LazyNonNull Object @NonNull [] @LazyNonNull [] oaa3 = new @LazyNonNull Object @NonNull [10] @LazyNonNull [10];
-        oaa3[0] = new @LazyNonNull Object[4];
+        @MonotonicNonNull Object @NonNull [] @MonotonicNonNull [] oaa3 = new @MonotonicNonNull Object @NonNull [10] @MonotonicNonNull [10];
+        oaa3[0] = new @MonotonicNonNull Object[4];
         //:: error: (assignment.type.incompatible)
         oaa3[0] = null;
         //:: error: (assignment.type.incompatible) :: error: (accessing.nullable)
@@ -154,16 +154,16 @@ public class ArrayCreationNullable {
         return out;
     }
 
-    void testLazyNonNull() {
-        @LazyNonNull Object @NonNull [] loa = new @LazyNonNull Object @NonNull [10];
+    void testMonotonicNonNull() {
+        @MonotonicNonNull Object @NonNull [] loa = new @MonotonicNonNull Object @NonNull [10];
         loa = new Object @NonNull [10];
         loa[0] = new Object();
-        @LazyNonNull Object @NonNull [] loa2 = new Object @NonNull [10];
+        @MonotonicNonNull Object @NonNull [] loa2 = new Object @NonNull [10];
         //:: error: (dereference.of.nullable)
         loa2[0].toString();
     }
 
-    @LazyNonNull Object @NonNull [] testReturnContext() {
+    @MonotonicNonNull Object @NonNull [] testReturnContext() {
         return new Object[10];
     }
 
@@ -171,7 +171,7 @@ public class ArrayCreationNullable {
     @NonNull Object @NonNull [] oa0 = new Object [10];
 
     // OK
-    @LazyNonNull Object @NonNull [] loa0 = new @LazyNonNull Object @NonNull [10];
+    @MonotonicNonNull Object @NonNull [] loa0 = new @MonotonicNonNull Object @NonNull [10];
 
     Object[] oa1 = new Object[] {new Object()};
 

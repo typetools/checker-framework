@@ -311,7 +311,7 @@ public class Flow {
         }
     }
 
-    private double @LazyNonNull [] intersect;// = null; TODO: do we want to allow assignments of null to LazyNonNull?
+    private double @MonotonicNonNull [] intersect;// = null; TODO: do we want to allow assignments of null to MonotonicNonNull?
 
     public void add_modified(double[] a, int count) {
         // System.out.println ("common: " + ArraysMDE.toString (a));
