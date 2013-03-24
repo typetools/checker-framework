@@ -1,5 +1,5 @@
-import checkers.nonnull.quals.EnsuresNonNull;
-import checkers.nonnull.quals.EnsuresNonNullIf;
+import checkers.nullness.quals.EnsuresNonNull;
+import checkers.nullness.quals.EnsuresNonNullIf;
 import checkers.nullness.quals.*;
 
 public class AssertWithStatic {

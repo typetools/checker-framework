@@ -1,6 +1,6 @@
 
 import checkers.initialization.quals.*;
-import checkers.nonnull.quals.*;
+import checkers.nullness.quals.*;
 
 public class Lazy {
     

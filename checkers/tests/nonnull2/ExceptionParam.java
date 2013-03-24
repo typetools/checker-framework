@@ -7,7 +7,7 @@ import checkers.quals.DefaultQualifier;
  * Exception parameters are non-null, even if the
  * default is nullable.
  */
-@DefaultQualifier(checkers.nonnull.quals.Nullable.class)
+@DefaultQualifier(checkers.nullness.quals.Nullable.class)
 class ExceptionParam {
     void exc() {
         try {
