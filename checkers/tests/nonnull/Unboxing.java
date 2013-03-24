@@ -3,7 +3,7 @@ import java.util.ArrayList;
 
 import checkers.nullness.quals.*;
 import checkers.oigj.quals.O;
-import static checkers.nullness.util.NonNullUtils.*;;
+import static checkers.nullness.NullnessUtils.*;;
 
 class Unboxing {
     
