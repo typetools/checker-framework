@@ -3,7 +3,6 @@ import java.util.ArrayList;
 
 import checkers.nullness.quals.*;
 import checkers.oigj.quals.O;
-import static checkers.nonnull.util.NonNullUtils.*;;
 
 class ArrayInitBug {
     
