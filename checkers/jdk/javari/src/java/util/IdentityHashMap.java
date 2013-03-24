@@ -5,7 +5,7 @@ public class IdentityHashMap<K, V> extends AbstractMap<K, V> implements Map<K, V
     private static final long serialVersionUID = 0L;
   public IdentityHashMap() { throw new RuntimeException(("skeleton method")); }
   public IdentityHashMap(int a1) { throw new RuntimeException(("skeleton method")); }
-  public IdentityHashMap(@PolyRead IdentityHashMap<K, V> this, @PolyRead Map<? extends K, ? extends V> a1) { throw new RuntimeException(("skeleton method")); }
+  public @PolyRead IdentityHashMap(@PolyRead Map<? extends K, ? extends V> a1) { throw new RuntimeException(("skeleton method")); }
   public int size(@ReadOnly IdentityHashMap<K, V> this) { throw new RuntimeException(("skeleton method")); }
   public boolean isEmpty(@ReadOnly IdentityHashMap<K, V> this) { throw new RuntimeException(("skeleton method")); }
   public V get(@ReadOnly IdentityHashMap<K, V> this, Object a1) { throw new RuntimeException(("skeleton method")); }

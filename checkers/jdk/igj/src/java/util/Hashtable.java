@@ -4,10 +4,10 @@ import checkers.igj.quals.*;
 @I
 public class Hashtable<K, V> extends @I Dictionary<K, V> implements @I Map<K, V>, @I Cloneable, java.io. @I Serializable {
     private static final long serialVersionUID = 0L;
-  public Hashtable(@AssignsFields Hashtable<K, V> this, int a1, float a2) { throw new RuntimeException("skeleton method"); }
-  public Hashtable(@AssignsFields Hashtable<K, V> this, int a1) { throw new RuntimeException("skeleton method"); }
-  public Hashtable(@AssignsFields Hashtable<K, V> this) { throw new RuntimeException("skeleton method"); }
-  public Hashtable(@AssignsFields Hashtable<K, V> this, @ReadOnly Map<? extends K, ? extends V> a1) { throw new RuntimeException("skeleton method"); }
+  public Hashtable(int a1, float a2) { throw new RuntimeException("skeleton method"); }
+  public Hashtable(int a1) { throw new RuntimeException("skeleton method"); }
+  public Hashtable() { throw new RuntimeException("skeleton method"); }
+  public Hashtable(@ReadOnly Map<? extends K, ? extends V> a1) { throw new RuntimeException("skeleton method"); }
   public synchronized int size(@ReadOnly Hashtable<K, V> this) { throw new RuntimeException("skeleton method"); }
   public synchronized boolean isEmpty(@ReadOnly Hashtable<K, V> this) { throw new RuntimeException("skeleton method"); }
   public synchronized Enumeration<K> keys(@ReadOnly Hashtable<K, V> this) { throw new RuntimeException("skeleton method"); }

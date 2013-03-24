@@ -4,7 +4,7 @@ import checkers.igj.quals.*;
 @Immutable
 public final class Currency implements java.io.Serializable {
     private static final long serialVersionUID = 0L;
-  protected Currency(@ReadOnly Currency this) {}
+  protected Currency() {}
   public static Currency getInstance(String a1) { throw new RuntimeException("skeleton method"); }
   public static Currency getInstance(Locale a1) { throw new RuntimeException("skeleton method"); }
   public String getCurrencyCode() { throw new RuntimeException("skeleton method"); }

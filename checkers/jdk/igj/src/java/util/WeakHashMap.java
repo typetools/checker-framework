@@ -3,10 +3,10 @@ import checkers.igj.quals.*;
 
 @I
 public class WeakHashMap<K, V> extends @I AbstractMap<K, V> implements @I Map<K, V> {
-  public WeakHashMap(@AssignsFields WeakHashMap<K, V> this, int a1, float a2) { throw new RuntimeException("skeleton method"); }
-  public WeakHashMap(@AssignsFields WeakHashMap<K, V> this, int a1) { throw new RuntimeException("skeleton method"); }
-  public WeakHashMap(@AssignsFields WeakHashMap<K, V> this) { throw new RuntimeException("skeleton method"); }
-  public WeakHashMap(@AssignsFields WeakHashMap<K, V> this, Map<? extends K, ? extends V> a1) { throw new RuntimeException("skeleton method"); }
+  public WeakHashMap(int a1, float a2) { throw new RuntimeException("skeleton method"); }
+  public WeakHashMap(int a1) { throw new RuntimeException("skeleton method"); }
+  public WeakHashMap() { throw new RuntimeException("skeleton method"); }
+  public WeakHashMap(Map<? extends K, ? extends V> a1) { throw new RuntimeException("skeleton method"); }
   public int size(@ReadOnly WeakHashMap<K, V> this) { throw new RuntimeException("skeleton method"); }
   public boolean isEmpty(@ReadOnly WeakHashMap<K, V> this) { throw new RuntimeException("skeleton method"); }
   public V get(@ReadOnly WeakHashMap<K, V> this, @ReadOnly Object a1) { throw new RuntimeException("skeleton method"); }
