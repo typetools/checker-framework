@@ -1,5 +1,5 @@
 import dataflow.quals.Pure;
-import checkers.nonnull.quals.*;
+import checkers.nullness.quals.*;
 import checkers.quals.*;
 import checkers.nullness.quals.KeyFor;
 import checkers.nullness.quals.Covariant;
