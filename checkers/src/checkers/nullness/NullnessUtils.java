@@ -1,6 +1,6 @@
-package checkers.nonnull.util;
+package checkers.nullness;
 
-import checkers.nonnull.quals.*;
+import checkers.nullness.quals.*;
 
 /**
  * Utilities class for the Nullness Checker.
