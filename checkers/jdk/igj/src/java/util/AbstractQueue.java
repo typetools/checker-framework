@@ -3,7 +3,7 @@ import checkers.igj.quals.*;
 
 @I
 public abstract class AbstractQueue<E> extends @I AbstractCollection<E> implements @I Queue<E> {
-  protected AbstractQueue(@ReadOnly AbstractQueue<E> this) {}
+  protected AbstractQueue() {}
   public boolean add(@Mutable AbstractQueue<E> this, E a1) { throw new RuntimeException("skeleton method"); }
   public E remove(@Mutable AbstractQueue<E> this) { throw new RuntimeException("skeleton method"); }
   public E element(@ReadOnly AbstractQueue<E> this) { throw new RuntimeException("skeleton method"); }

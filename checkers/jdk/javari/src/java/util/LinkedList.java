@@ -4,7 +4,7 @@ import checkers.javari.quals.*;
 public class LinkedList<E> extends AbstractSequentialList<E> implements List<E>, Deque<E>, Cloneable, java.io.Serializable {
     private static final long serialVersionUID = 0L;
   public LinkedList() { throw new RuntimeException(("skeleton method")); }
-  public LinkedList(@PolyRead LinkedList<E> this, @PolyRead Collection<? extends E> a1) { throw new RuntimeException(("skeleton method")); }
+  public @PolyRead LinkedList(@PolyRead Collection<? extends E> a1) { throw new RuntimeException(("skeleton method")); }
   public E getFirst(@ReadOnly LinkedList<E> this) { throw new RuntimeException(("skeleton method")); }
   public E getLast(@ReadOnly LinkedList<E> this) { throw new RuntimeException(("skeleton method")); }
   public E removeFirst() { throw new RuntimeException(("skeleton method")); }

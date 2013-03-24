@@ -1,5 +1,5 @@
-import checkers.nonnull.quals.EnsuresNonNull;
-import checkers.nonnull.quals.EnsuresNonNullIf;
+import checkers.nullness.quals.EnsuresNonNull;
+import checkers.nullness.quals.EnsuresNonNullIf;
 import checkers.nullness.quals.*;
 
 /*
@@ -41,7 +41,7 @@ public class DaikonTests {
     }
     
     class Bug2Super {
-        public @LazyNonNull Bug2Data field;
+        public @MonotonicNonNull Bug2Data field;
     }
     
     class Bug2 extends Bug2Super {
@@ -84,7 +84,7 @@ public class DaikonTests {
     // Not yet able to reproduce the problem :-(
 
     class Bug4 {
-        @LazyNonNull Object field;
+        @MonotonicNonNull Object field;
         
         void m(Bug4 p) {
             if (false && p.field != null)

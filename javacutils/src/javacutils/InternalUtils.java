@@ -306,6 +306,10 @@ public class InternalUtils {
         Type t2 = (Type) tm2;
         JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) processingEnv;
         Types types = Types.instance(javacEnv.getContext());
+        if (types.isSameType(t1, t2)) {
+            // Special case if the two types are equal.
+            return t1;
+        }
         // Handle the 'null' type manually.
         if (t1.getKind() == TypeKind.NULL) {
             return t1;

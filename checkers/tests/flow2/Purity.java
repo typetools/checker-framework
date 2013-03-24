@@ -51,8 +51,8 @@ class Purity {
         return "";
     }
     
-    //:: error: (pure.not.deterministic.and.sideeffect.free)
     @Pure String t3() {
+      //:: error: (pure.not.det.not.sef.call)
       nonpure();
       return "";
     }
@@ -90,27 +90,28 @@ class Purity {
         return "b" + "a";
     }
     
-    //:: error: (pure.not.deterministic.and.sideeffect.free)
     @Pure String t10() {
+        //:: error: (pure.not.det.not.sef.assign.field)
         f1 = "";
+        //:: error: (pure.not.det.not.sef.assign.field)
         f2 = "";
         return "";
     }
     
-    //:: error: (pure.not.deterministic.and.sideeffect.free)
     @Pure String t11(Purity l) {
+        //:: error: (pure.not.det.not.sef.assign.array)
         l.a[0] = "";
         return "";
     }
     
-    //:: error: (pure.not.deterministic.and.sideeffect.free)
     @Pure String t12(String[] s) {
+        //:: error: (pure.not.det.not.sef.assign.array)
         s[0] = "";
         return "";
     }
     
-    //:: error: (pure.not.deterministic)
     @Pure String t13() {
+        //:: error: (pure.not.det.object.creation)
         PureClass p = new PureClass();
         return "";
     }
@@ -120,8 +121,8 @@ class Purity {
         return "";
     }
     
-    //:: error: (pure.not.deterministic)
     @Pure(Kind.DETERMINISTIC) String t13c() {
+        //:: error: (pure.not.det.object.creation)
         PureClass p = new PureClass();
         return "";
     }
@@ -137,10 +138,10 @@ class Purity {
         return s[0];
     }
 
-    //:: error: (pure.not.deterministic)
     @Pure String t16() {
         try {
             int i = 1/0;
+            //:: error: (pure.not.det.catch)
         } catch (Throwable t) {
             // ..
         }
@@ -156,10 +157,10 @@ class Purity {
         return "";
     }
     
-    //:: error: (pure.not.deterministic)
     @Pure(Kind.DETERMINISTIC) String t16c() {
         try {
             int i = 1/0;
+            //:: error: (pure.not.det.catch)
         } catch (Throwable t) {
             // ..
         }
@@ -171,8 +172,8 @@ class Purity {
         return "";
     }
     
-    //:: error: (pure.not.deterministic.and.sideeffect.free)
     @Pure String t12() {
+        //:: error: (pure.not.det.not.sef.non.pure.object.creation)
         NonPureClass p = new NonPureClass();
         return "";
     }

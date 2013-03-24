@@ -1,5 +1,5 @@
 import checkers.initialization.quals.Unclassified;
-import checkers.nonnull.quals.EnsuresNonNull;
+import checkers.nullness.quals.EnsuresNonNull;
 import checkers.nullness.quals.*;
 import java.util.*;
 @checkers.quals.DefaultQualifier(Nullable.class)

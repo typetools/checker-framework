@@ -9,6 +9,7 @@ import javax.lang.model.element.Element;
 
 import javacutils.AnnotationProvider;
 import javacutils.InternalUtils;
+import javacutils.Pair;
 import javacutils.TreeUtils;
 
 import dataflow.quals.Pure;
@@ -74,12 +75,12 @@ import com.sun.tools.javac.tree.TreeScanner;
 /**
  * A visitor that checks the purity (as defined by {@link dataflow.quals.Pure})
  * of a statement or expression.
- * 
+ *
  * @see The annotation {@link Pure} for more details on what is checked and the
  *      semantics of purity.
- * 
+ *
  * @author Stefan Heule
- * 
+ *
  */
 public class PurityChecker {
 
@@ -99,9 +100,9 @@ public class PurityChecker {
      */
     public static class PurityResult {
 
-        protected final List<String> notSeFreeReasons;
-        protected final List<String> notDetReasons;
-        protected final List<String> notBothReasons;
+        protected final List<Pair<Tree, String>> notSeFreeReasons;
+        protected final List<Pair<Tree, String>> notDetReasons;
+        protected final List<Pair<Tree, String>> notBothReasons;
         protected EnumSet<Pure.Kind> types;
 
         public PurityResult() {
@@ -110,7 +111,7 @@ public class PurityChecker {
             notBothReasons = new ArrayList<>();
             types = EnumSet.allOf(Pure.Kind.class);
         }
-        
+
         public EnumSet<Pure.Kind> getTypes() {
             return types;
         }
@@ -123,7 +124,7 @@ public class PurityChecker {
         /**
          * Get the {@code reason}s why the method is not side-effect free.
          */
-        public List<String> getNotSeFreeReasons() {
+        public List<Pair<Tree, String>> getNotSeFreeReasons() {
             return notSeFreeReasons;
         }
 
@@ -131,23 +132,23 @@ public class PurityChecker {
          * Add {@code reason} as a reason why the method is not side-effect
          * free.
          */
-        public void addNotSeFreeReason(String reason) {
-            notSeFreeReasons.add(reason);
+        public void addNotSeFreeReason(Tree t, String msgId) {
+            notSeFreeReasons.add(Pair.of(t, "pure.not.sef." + msgId));
             types.remove(Kind.SIDE_EFFECT_FREE);
         }
 
         /**
          * Get the {@code reason}s why the method is not deterministic.
          */
-        public List<String> getNotDetReasons() {
+        public List<Pair<Tree, String>> getNotDetReasons() {
             return notDetReasons;
         }
 
         /**
          * Add {@code reason} as a reason why the method is not deterministic.
          */
-        public void addNotDetReason(String reason) {
-            notDetReasons.add(reason);
+        public void addNotDetReason(Tree t, String msgId) {
+            notDetReasons.add(Pair.of(t, "pure.not.det." + msgId));
             types.remove(Kind.DETERMINISTIC);
         }
 
@@ -155,17 +156,16 @@ public class PurityChecker {
          * Get the {@code reason}s why the method is not both side-effect free
          * and deterministic.
          */
-        public List<String> getNotBothReasons() {
+        public List<Pair<Tree, String>> getNotBothReasons() {
             return notBothReasons;
         }
-
 
         /**
          * Add {@code reason} as a reason why the method is not both side-effect
          * free and deterministic.
          */
-        public void addNotBothReason(String reason) {
-            notBothReasons.add(reason);
+        public void addNotBothReason(Tree t, String msgId) {
+            notBothReasons.add(Pair.of(t, "pure.not.det.not.sef." + msgId));
             types.remove(Kind.DETERMINISTIC);
             types.remove(Kind.SIDE_EFFECT_FREE);
         }
@@ -208,39 +208,47 @@ public class PurityChecker {
             return r;
         }
 
+        @Override
         public PurityResult visitCompilationUnit(CompilationUnitTree node,
                 PurityResult p) {
             assert false : "this type of tree is unexpected here";
             return null;
         }
 
+        @Override
         public PurityResult visitImport(ImportTree node, PurityResult p) {
             assert false : "this type of tree is unexpected here";
             return null;
         }
 
+        @Override
         public PurityResult visitClass(ClassTree node, PurityResult p) {
             return p;
         }
 
+        @Override
         public PurityResult visitMethod(MethodTree node, PurityResult p) {
             assert false : "this type of tree is unexpected here";
             return null;
         }
 
+        @Override
         public PurityResult visitVariable(VariableTree node, PurityResult p) {
             return scan(node.getInitializer(), p);
         }
 
+        @Override
         public PurityResult visitEmptyStatement(EmptyStatementTree node,
                 PurityResult p) {
             return p;
         }
 
+        @Override
         public PurityResult visitBlock(BlockTree node, PurityResult p) {
             return scan(node.getStatements(), p);
         }
 
+        @Override
         public PurityResult visitDoWhileLoop(DoWhileLoopTree node,
                 PurityResult p) {
             PurityResult r = scan(node.getStatement(), p);
@@ -248,12 +256,14 @@ public class PurityChecker {
             return r;
         }
 
+        @Override
         public PurityResult visitWhileLoop(WhileLoopTree node, PurityResult p) {
             PurityResult r = scan(node.getCondition(), p);
             r = scan(node.getStatement(), r);
             return r;
         }
 
+        @Override
         public PurityResult visitForLoop(ForLoopTree node, PurityResult p) {
             PurityResult r = scan(node.getInitializer(), p);
             r = scan(node.getCondition(), r);
@@ -262,6 +272,7 @@ public class PurityChecker {
             return r;
         }
 
+        @Override
         public PurityResult visitEnhancedForLoop(EnhancedForLoopTree node,
                 PurityResult p) {
             PurityResult r = scan(node.getVariable(), p);
@@ -270,23 +281,27 @@ public class PurityChecker {
             return r;
         }
 
+        @Override
         public PurityResult visitLabeledStatement(LabeledStatementTree node,
                 PurityResult p) {
             return scan(node.getStatement(), p);
         }
 
+        @Override
         public PurityResult visitSwitch(SwitchTree node, PurityResult p) {
             PurityResult r = scan(node.getExpression(), p);
             r = scan(node.getCases(), r);
             return r;
         }
 
+        @Override
         public PurityResult visitCase(CaseTree node, PurityResult p) {
             PurityResult r = scan(node.getExpression(), p);
             r = scan(node.getStatements(), r);
             return r;
         }
 
+        @Override
         public PurityResult visitSynchronized(SynchronizedTree node,
                 PurityResult p) {
             PurityResult r = scan(node.getExpression(), p);
@@ -294,6 +309,7 @@ public class PurityChecker {
             return r;
         }
 
+        @Override
         public PurityResult visitTry(TryTree node, PurityResult p) {
             PurityResult r = scan(node.getResources(), p);
             r = scan(node.getBlock(), r);
@@ -302,13 +318,15 @@ public class PurityChecker {
             return r;
         }
 
+        @Override
         public PurityResult visitCatch(CatchTree node, PurityResult p) {
-            p.addNotDetReason("catch statement");
+            p.addNotDetReason(node, "catch");
             PurityResult r = scan(node.getParameter(), p);
             r = scan(node.getBlock(), r);
             return r;
         }
 
+        @Override
         public PurityResult visitConditionalExpression(
                 ConditionalExpressionTree node, PurityResult p) {
             PurityResult r = scan(node.getCondition(), p);
@@ -317,6 +335,7 @@ public class PurityChecker {
             return r;
         }
 
+        @Override
         public PurityResult visitIf(IfTree node, PurityResult p) {
             PurityResult r = scan(node.getCondition(), p);
             r = scan(node.getThenStatement(), r);
@@ -324,48 +343,56 @@ public class PurityChecker {
             return r;
         }
 
+        @Override
         public PurityResult visitExpressionStatement(
                 ExpressionStatementTree node, PurityResult p) {
             return scan(node.getExpression(), p);
         }
 
+        @Override
         public PurityResult visitBreak(BreakTree node, PurityResult p) {
             return p;
         }
 
+        @Override
         public PurityResult visitContinue(ContinueTree node, PurityResult p) {
             return p;
         }
 
+        @Override
         public PurityResult visitReturn(ReturnTree node, PurityResult p) {
             return scan(node.getExpression(), p);
         }
 
+        @Override
         public PurityResult visitThrow(ThrowTree node, PurityResult p) {
             return scan(node.getExpression(), p);
         }
 
+        @Override
         public PurityResult visitAssert(AssertTree node, PurityResult p) {
             PurityResult r = scan(node.getCondition(), p);
             r = scan(node.getDetail(), r);
             return r;
         }
 
+        @Override
         public PurityResult visitMethodInvocation(MethodInvocationTree node,
                 PurityResult p) {
             Element elt = TreeUtils.elementFromUse(node);
+            String reason = "call";
             if (!PurityUtils.hasPurityAnnotation(annoProvider, elt)) {
-                p.addNotBothReason("non-pure method call");
+                p.addNotBothReason(node, reason);
             } else {
                 boolean det = PurityUtils.isDeterministic(annoProvider, elt);
                 boolean seFree = PurityUtils
                         .isSideEffectFree(annoProvider, elt);
                 if (!det && !seFree) {
-                    p.addNotBothReason("non-pure method call");
+                    p.addNotBothReason(node, reason);
                 } else if (!det) {
-                    p.addNotDetReason("non-pure method call");
+                    p.addNotDetReason(node, reason);
                 } else if (!seFree) {
-                    p.addNotSeFreeReason("non-pure method call");
+                    p.addNotSeFreeReason(node, reason);
                 }
             }
             PurityResult r = scan(node.getMethodSelect(), p);
@@ -373,14 +400,15 @@ public class PurityChecker {
             return r;
         }
 
+        @Override
         public PurityResult visitNewClass(NewClassTree node, PurityResult p) {
             Element methodElement = InternalUtils.symbol(node);
             boolean sideEffectFree = PurityUtils.isSideEffectFree(annoProvider,
                     methodElement);
             if (sideEffectFree) {
-                p.addNotDetReason("object creation");
+                p.addNotDetReason(node, "object.creation");
             } else {
-                p.addNotBothReason("object creation with non-pure constructor");
+                p.addNotBothReason(node, "non.pure.object.creation");
             }
             PurityResult r = scan(node.getEnclosingExpression(), p);
             r = scan(node.getArguments(), r);
@@ -388,12 +416,14 @@ public class PurityChecker {
             return r;
         }
 
+        @Override
         public PurityResult visitNewArray(NewArrayTree node, PurityResult p) {
             PurityResult r = scan(node.getDimensions(), p);
             r = scan(node.getInitializers(), r);
             return r;
         }
 
+        @Override
         public PurityResult visitLambdaExpression(LambdaExpressionTree node,
                 PurityResult p) {
             PurityResult r = scan(node.getParameters(), p);
@@ -401,11 +431,13 @@ public class PurityChecker {
             return r;
         }
 
+        @Override
         public PurityResult visitParenthesized(ParenthesizedTree node,
                 PurityResult p) {
             return scan(node.getExpression(), p);
         }
 
+        @Override
         public PurityResult visitAssignment(AssignmentTree node, PurityResult p) {
             ExpressionTree variable = node.getVariable();
             p = assignmentCheck(p, variable);
@@ -418,13 +450,10 @@ public class PurityChecker {
                 ExpressionTree variable) {
             if (TreeUtils.isFieldAccess(variable)) {
                 // rhs is a field access
-                p.addNotBothReason("assignment to field '"
-                        + TreeUtils.getFieldName(variable) + "'");
+                p.addNotBothReason(variable, "assign.field");
             } else if (variable instanceof ArrayAccessTree) {
                 // rhs is array access
-                ArrayAccessTree a = (ArrayAccessTree) variable;
-                p.addNotBothReason("assignment to array '" + a.getExpression()
-                        + "'");
+                p.addNotBothReason(variable, "assign.array");
             } else {
                 // rhs is a local variable
                 assert isLocalVariable(variable);
@@ -437,6 +466,7 @@ public class PurityChecker {
                     && !TreeUtils.isFieldAccess(variable);
         }
 
+        @Override
         public PurityResult visitCompoundAssignment(
                 CompoundAssignmentTree node, PurityResult p) {
             ExpressionTree variable = node.getVariable();
@@ -446,26 +476,31 @@ public class PurityChecker {
             return r;
         }
 
+        @Override
         public PurityResult visitUnary(UnaryTree node, PurityResult p) {
             return scan(node.getExpression(), p);
         }
 
+        @Override
         public PurityResult visitBinary(BinaryTree node, PurityResult p) {
             PurityResult r = scan(node.getLeftOperand(), p);
             r = scan(node.getRightOperand(), r);
             return r;
         }
 
+        @Override
         public PurityResult visitTypeCast(TypeCastTree node, PurityResult p) {
             PurityResult r = scan(node.getExpression(), p);
             return r;
         }
 
+        @Override
         public PurityResult visitInstanceOf(InstanceOfTree node, PurityResult p) {
             PurityResult r = scan(node.getExpression(), p);
             return r;
         }
 
+        @Override
         public PurityResult visitArrayAccess(ArrayAccessTree node,
                 PurityResult p) {
             PurityResult r = scan(node.getExpression(), p);
@@ -473,84 +508,100 @@ public class PurityChecker {
             return r;
         }
 
+        @Override
         public PurityResult visitMemberSelect(MemberSelectTree node,
                 PurityResult p) {
             return scan(node.getExpression(), p);
         }
 
+        @Override
         public PurityResult visitMemberReference(MemberReferenceTree node,
                 PurityResult p) {
             assert false : "this type of tree is unexpected here";
             return null;
         }
 
+        @Override
         public PurityResult visitIdentifier(IdentifierTree node, PurityResult p) {
             return p;
         }
 
+        @Override
         public PurityResult visitLiteral(LiteralTree node, PurityResult p) {
             return p;
         }
 
+        @Override
         public PurityResult visitPrimitiveType(PrimitiveTypeTree node,
                 PurityResult p) {
             assert false : "this type of tree is unexpected here";
             return null;
         }
 
+        @Override
         public PurityResult visitArrayType(ArrayTypeTree node, PurityResult p) {
             assert false : "this type of tree is unexpected here";
             return null;
         }
 
+        @Override
         public PurityResult visitParameterizedType(ParameterizedTypeTree node,
                 PurityResult p) {
             assert false : "this type of tree is unexpected here";
             return null;
         }
 
+        @Override
         public PurityResult visitUnionType(UnionTypeTree node, PurityResult p) {
             assert false : "this type of tree is unexpected here";
             return null;
         }
 
+        @Override
         public PurityResult visitIntersectionType(IntersectionTypeTree node, PurityResult p) {
             assert false : "this type of tree is unexpected here";
             return null;
         }
 
+        @Override
         public PurityResult visitTypeParameter(TypeParameterTree node,
                 PurityResult p) {
             assert false : "this type of tree is unexpected here";
             return null;
         }
 
+        @Override
         public PurityResult visitWildcard(WildcardTree node, PurityResult p) {
             assert false : "this type of tree is unexpected here";
             return null;
         }
 
+        @Override
         public PurityResult visitModifiers(ModifiersTree node, PurityResult p) {
             assert false : "this type of tree is unexpected here";
             return null;
         }
 
+        @Override
         public PurityResult visitAnnotation(AnnotationTree node, PurityResult p) {
             assert false : "this type of tree is unexpected here";
             return null;
         }
 
+        @Override
         public PurityResult visitAnnotatedType(AnnotatedTypeTree node,
                 PurityResult p) {
             assert false : "this type of tree is unexpected here";
             return null;
         }
 
+        @Override
         public PurityResult visitOther(Tree node, PurityResult p) {
             assert false : "this type of tree is unexpected here";
             return null;
         }
 
+        @Override
         public PurityResult visitErroneous(ErroneousTree node, PurityResult p) {
             assert false : "this type of tree is unexpected here";
             return null;

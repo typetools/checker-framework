@@ -275,7 +275,7 @@ ${build.version} of the 'javac.jar' library."/>
         <jar destfile="${checkers-quals.jar.file}" basedir="${build}">
             <include name="**/quals/*"/>
             <!-- Watch out for inner anonymous class within utilities -->
-            <include name="**/NonNullUtils*"/>
+            <include name="**/NullnessUtils*"/>
             <include name="**/RegexUtil*"/>
         </jar>
     </target>
@@ -357,7 +357,7 @@ ${build.version} of the 'javac.jar' library."/>
       description="Run tests for all checkers, WITHOUT building anything">
       <!-- TODO: for all -nojdk targets:
            check whether jdk.jar exists and create if not. -->
-      <antcall target="nonnull-extra-tests-nojdk"/>
+      <antcall target="nullness-extra-tests-nojdk"/>
 
       <!-- Copied from -run-tests target -->
       <mkdir dir="${build.reports}"/>
@@ -497,55 +497,55 @@ ${build.version} of the 'javac.jar' library."/>
         </antcall>
     </target>
 
-    <target name="nonnull-tests" depends="jar,build-tests,nonnull-base-tests,nonnull-skipuses-tests,nonnull-skipdefs-tests,nonnull-extra-tests"
+    <target name="nullness-tests" depends="jar,build-tests,nullness-base-tests,nullness-skipuses-tests,nullness-skipdefs-tests,nullness-extra-tests"
       description="Run tests for the Non-Null checker">
     </target>
 
-    <target name="nonnull-base-tests" depends="jar,build-tests"
-      description="Run base tests for the NonNull checker">
+    <target name="nullness-base-tests" depends="jar,build-tests"
+      description="Run base tests for the Nullness checker">
         <antcall target="-run-tests">
-            <param name="param" value="tests.NonNullFbcTest"/>
+            <param name="param" value="tests.NullnessFbcTest"/>
         </antcall>
         <antcall target="-run-tests">
-            <param name="param" value="tests.NonNullRawnessTest"/>
+            <param name="param" value="tests.NullnessRawnessTest"/>
         </antcall>
     </target>
 
     <!-- Differs from other targets in that it is defined via a Makefile and
        is not run via the "-run-tests" Antfile target, as other tests are. -->
-    <target name="nonnull-extra-tests" depends="bindist,build-tests,nonnull-extra-tests-nojdk"
+    <target name="nullness-extra-tests" depends="bindist,build-tests,nullness-extra-tests-nojdk"
       description="Run extra tests for the Non-Null checker"/>
 
-    <target name="nonnull-extra-tests-nojdk" depends="bindist-nojdk,build-tests"
+    <target name="nullness-extra-tests-nojdk" depends="bindist-nojdk,build-tests"
       description="Run extra tests for the Non-Null checker, WITHOUT updating jdk.jar">
       <exec executable="chmod">
         <arg line="+x ${basedir}/binary/javac"/>
       </exec>
       <exec executable="make" failonerror="${halt.on.test.failure}">
         <env key="JAVAC" value="${basedir}/binary/javac"/>
-        <arg line="-C tests/nonnull-extra/"/>
+        <arg line="-C tests/nullness-extra/"/>
       </exec>
     </target>
 
-    <target name="nonnull-skipuses-tests" depends="jar,build-tests"
+    <target name="nullness-skipuses-tests" depends="jar,build-tests"
       description="Run skipuses tests for the Non-Null checker">
         <antcall target="-run-tests">
-            <param name="param" value="tests.NonNullSkipUsesTest"/>
+            <param name="param" value="tests.NullnessSkipUsesTest"/>
         </antcall>
     </target>
 
-    <target name="nonnull-skipdefs-tests" depends="jar,build-tests"
+    <target name="nullness-skipdefs-tests" depends="jar,build-tests"
       description="Run skipdefs tests for the Non-Null checker">
         <antcall target="-run-tests">
-            <param name="param" value="tests.NonNullSkipDefsTest"/>
+            <param name="param" value="tests.NullnessSkipDefsTest"/>
         </antcall>
     </target>
 
-    <!-- Do not include this as a dependence for nonnull-tests! -->
-    <target name="nonnull-temp-tests" depends="jar,build-tests"
+    <!-- Do not include this as a dependence for nullness-tests! -->
+    <target name="nullness-temp-tests" depends="jar,build-tests"
       description="Run temporary tests for the Non-Null checker">
         <antcall target="-run-tests">
-            <param name="param" value="tests.NonNullTempTest"/>
+            <param name="param" value="tests.NullnessTempTest"/>
         </antcall>
     </target>
 
@@ -685,11 +685,11 @@ ${build.version} of the 'javac.jar' library."/>
         </java>
     </target>
 
-    <target name="check-nonnull"
+    <target name="check-nullness"
       description="Run the Non-Null checker on the Framework">
         <antcall target="-run-checker">
-            <param name="checker-name" value="checkers.nonnull.NonNullFbcChecker"/>
-            <param name="checker-jdk" value="jdk/nonnull/src"/>
+            <param name="checker-name" value="checkers.nullness.NullnessFbcChecker"/>
+            <param name="checker-jdk" value="jdk/nullness/src"/>
             <param name="checker-args" value="-Awarns"/>
         </antcall>
     </target>
@@ -707,7 +707,7 @@ ${build.version} of the 'javac.jar' library."/>
       description="Run the compiler message keys checker on the Framework">
         <antcall target="-run-checker">
             <param name="checker-name" value="checkers.compilermsgs.CompilerMessagesChecker"/>
-            <param name="checker-args" value="-Awarns -Apropfiles=./src/checkers/lock/messages.properties:./src/checkers/javari/messages.properties:./src/checkers/interning/messages.properties:./src/checkers/basetype/messages.properties:./src/checkers/nonnull/messages.properties:./src/checkers/initialization/messages.properties:./src/checkers/linear/messages.properties:./src/checkers/regex/messages.properties:./src/checkers/util/report/messages.properties"/>
+            <param name="checker-args" value="-Awarns -Apropfiles=./src/checkers/lock/messages.properties:./src/checkers/javari/messages.properties:./src/checkers/interning/messages.properties:./src/checkers/basetype/messages.properties:./src/checkers/nullness/messages.properties:./src/checkers/initialization/messages.properties:./src/checkers/linear/messages.properties:./src/checkers/regex/messages.properties:./src/checkers/util/report/messages.properties"/>
         </antcall>
     </target>
 

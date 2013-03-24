@@ -18,11 +18,11 @@ public class Throwable implements Serializable {
         throw new RuntimeException("skeleton method");
     }
 
-    public Throwable(@PolyRead Throwable this, String message, @PolyRead Throwable cause) {
+    public @PolyRead Throwable(String message, @PolyRead Throwable cause) {
         throw new RuntimeException("skeleton method");
     }
 
-    public Throwable(@PolyRead Throwable this, @PolyRead Throwable cause) {
+    public @PolyRead Throwable(@PolyRead Throwable cause) {
         throw new RuntimeException("skeleton method");
     }
 

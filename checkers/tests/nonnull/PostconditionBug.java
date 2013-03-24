@@ -1,7 +1,7 @@
 import checkers.initialization.quals.*;
-import checkers.nonnull.quals.*;
+import checkers.nullness.quals.*;
 
-import checkers.nonnull.quals.EnsuresNonNull;
+import checkers.nullness.quals.EnsuresNonNull;
 
 public class PostconditionBug {
     

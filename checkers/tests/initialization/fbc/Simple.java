@@ -1,7 +1,7 @@
 
 import dataflow.quals.Pure;
 import checkers.initialization.quals.*;
-import checkers.nonnull.quals.*;
+import checkers.nullness.quals.*;
 import checkers.quals.*;
 
 public class Simple {

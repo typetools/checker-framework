@@ -3,7 +3,7 @@ import checkers.igj.quals.*;
 
 @I
 public abstract class Dictionary<K, V> {
-  public Dictionary(@AssignsFields Dictionary<K, V> this) { throw new RuntimeException("skeleton method"); }
+  public Dictionary() { throw new RuntimeException("skeleton method"); }
   public abstract int size(@ReadOnly Dictionary<K, V> this);
   public abstract boolean isEmpty(@ReadOnly Dictionary<K, V> this);
   public abstract Enumeration<K> keys(@ReadOnly Dictionary<K, V> this);

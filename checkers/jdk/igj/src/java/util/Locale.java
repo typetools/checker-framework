@@ -26,9 +26,9 @@ public final class Locale implements @Immutable Cloneable, java.io. @Immutable S
   public final static Locale CANADA;
   public final static Locale CANADA_FRENCH;
   public final static Locale ROOT;
-  public Locale(@AssignsFields Locale this, String a1, String a2, String a3) { throw new RuntimeException("skeleton method"); }
-  public Locale(@AssignsFields Locale this, String a1, String a2) { throw new RuntimeException("skeleton method"); }
-  public Locale(@AssignsFields Locale this, String a1) { throw new RuntimeException("skeleton method"); }
+  public Locale(String a1, String a2, String a3) { throw new RuntimeException("skeleton method"); }
+  public Locale(String a1, String a2) { throw new RuntimeException("skeleton method"); }
+  public Locale(String a1) { throw new RuntimeException("skeleton method"); }
   public static Locale getDefault() { throw new RuntimeException("skeleton method"); }
   public static synchronized void setDefault(Locale a1) { throw new RuntimeException("skeleton method"); }
   public static Locale @ReadOnly [] getAvailableLocales() { throw new RuntimeException("skeleton method"); }
