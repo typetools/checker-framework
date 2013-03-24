@@ -1,4 +1,4 @@
-import checkers.nonnull.quals.EnsuresNonNullIf;
+import checkers.nullness.quals.EnsuresNonNullIf;
 import checkers.nullness.quals.*;
 
 public class AssertParameterNullness {

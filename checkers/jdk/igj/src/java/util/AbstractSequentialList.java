@@ -3,7 +3,7 @@ import checkers.igj.quals.*;
 
 @I
 public abstract class AbstractSequentialList<E> extends @I AbstractList<E> {
-  protected AbstractSequentialList(@ReadOnly AbstractSequentialList<E> this) {}
+  protected AbstractSequentialList() {}
   public E get(@ReadOnly AbstractSequentialList<E> this, int a1) { throw new RuntimeException("skeleton method"); }
   public E set(@Mutable AbstractSequentialList<E> this, int a1, E a2) { throw new RuntimeException("skeleton method"); }
   public void add(@Mutable AbstractSequentialList<E> this, int a1, E a2) { throw new RuntimeException("skeleton method"); }

@@ -1,4 +1,4 @@
-import checkers.nonnull.quals.EnsuresNonNullIf;
+import checkers.nullness.quals.EnsuresNonNullIf;
 import checkers.nullness.quals.*;
 
 import java.util.*;
@@ -33,7 +33,7 @@ public class NonEmptyCollection {
   ///
 
   public class PriorityQueue1<E> {
-    //:: error: (pure.not.deterministic.and.sideeffect.free)
+    @SuppressWarnings("pure")
     public @Nullable @dataflow.quals.Pure E poll() { throw new RuntimeException("skeleton method"); }
     public E remove() { throw new RuntimeException("skeleton method"); }
 

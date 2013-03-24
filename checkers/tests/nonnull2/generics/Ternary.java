@@ -1,4 +1,4 @@
-import checkers.nonnull.quals.*;
+import checkers.nullness.quals.*;
 
 class Ternary {
     class Generic1<T extends @NonNull Object> {

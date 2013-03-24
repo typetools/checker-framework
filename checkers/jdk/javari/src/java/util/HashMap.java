@@ -13,7 +13,7 @@ public class HashMap<K,V>
     public HashMap(int initialCapacity, float loadFactor) { throw new RuntimeException("skeleton method"); }
     public HashMap(int initialCapacity) { throw new RuntimeException("skeleton method"); }
     public HashMap() { throw new RuntimeException("skeleton method"); }
-    public HashMap(@PolyRead HashMap<K,V> this, @PolyRead Map<? extends K, ? extends V> m) { throw new RuntimeException("skeleton method"); }
+    public @PolyRead HashMap(@PolyRead Map<? extends K, ? extends V> m) { throw new RuntimeException("skeleton method"); }
     public int size() { throw new RuntimeException("skeleton method"); }
     public boolean isEmpty() { throw new RuntimeException("skeleton method"); }
     public V get(@ReadOnly HashMap<K,V> this, @ReadOnly Object key) { throw new RuntimeException("skeleton method"); }

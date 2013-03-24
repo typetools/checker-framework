@@ -74,7 +74,7 @@ public class KeyFors {
 
         Otherclass o = new Otherclass();
         o.map.get(s1).toString();
-        //:: error: (dereference.of.nullable)
+        //TODO:: error: (dereference.of.nullable)
         o.map.get(s2).toString();        
     }
 

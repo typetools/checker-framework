@@ -1,4 +1,4 @@
-import checkers.nonnull.quals.*;
+import checkers.nullness.quals.*;
 
 public class SkipDefs2 {
 

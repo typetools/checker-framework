@@ -1,36 +1,24 @@
 package checkers.nullness.quals;
 
-import java.lang.annotation.*;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-import checkers.quals.*;
+import checkers.quals.SubtypeOf;
+import checkers.quals.TypeQualifier;
 
-/**
- * An annotation that indicates that the object may not be fully initialized.
- * In particular, non-null fields might be
- * null within the body of the method, e.g., if {@code this} is {@code Raw},
- * {@code this.field} might be null even if {@code field} was declared to be
- * {@link NonNull}.  This can happen because the code where the initializer
- * sets {@code field} has not yet been executed.
- *
- * <p>
- *
- * Suppose the {@code @Raw} annotation is placed on type {@code T}.  Then
- * fields declared in {@code T} and any subclasses might not yet be
- * initialized, but fields declared in superclasses of {@code T} have
- * already been initialized.
- *
- * <p>
- *
- * This annotation is associated with the {@link NullnessChecker}.
- *
- * @see NonRaw
- * @see NonNull
- * @see NullnessChecker
- * @checker.framework.manual #nullness-checker Nullness Checker
- */
+// TODO: document
 @Documented
+@SubtypeOf({})
+@TypeQualifier
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-@TypeQualifier
-@SubtypeOf({})
-public @interface Raw {}
+public @interface Raw {
+    /**
+     * The type-frame down to which the expression (of this type) has been
+     * initialized at least.
+     */
+    Class<?> value() default Object.class;
+}

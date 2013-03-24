@@ -1,7 +1,5 @@
-import checkers.initialization.quals.Unclassified;
-import checkers.nonnull.quals.EnsuresNonNull;
-import checkers.nullness.quals.AssertNonNullAfter;
-import checkers.nullness.quals.Raw;
+import checkers.initialization.quals.*;
+import checkers.nullness.quals.*;
 
 public class Uninit8 {
 

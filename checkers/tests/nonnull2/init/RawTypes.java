@@ -1,8 +1,8 @@
 // Note that this file is a near duplicate in /nullness and /nullness-uninit
 
 import checkers.initialization.quals.Unclassified;
-import checkers.nonnull.quals.EnsuresNonNull;
-import checkers.nonnull.quals.RequiresNonNull;
+import checkers.nullness.quals.EnsuresNonNull;
+import checkers.nullness.quals.RequiresNonNull;
 import checkers.nullness.quals.*;
 import java.util.*;
 
