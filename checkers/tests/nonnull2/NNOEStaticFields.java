@@ -90,7 +90,7 @@ class NNOEStaticFields {
 
         private static boolean doPurity = false;
 
-        @AssertNonNullIfTrue("ChicoryPremain1.pureMethods")
+        @EnsuresNonNullIf(result=true, expression="ChicoryPremain1.pureMethods")
         public static boolean shouldDoPurity() {
             return doPurity;
         }
