@@ -3,8 +3,14 @@ package checkers.regex;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import checkers.quals.EnsuresAnnotationIf;
+import checkers.regex.quals.Regex;
+import dataflow.quals.Pure;
+
+/*>>>
 import checkers.nullness.quals.*;
 import checkers.regex.quals.*;
+*/
 
 // This class should be kept in sync with plume.RegexUtil .
 
@@ -26,6 +32,9 @@ import checkers.regex.quals.*;
  * To eliminate this dependency, you can simply copy this class into your
  * own project.
  */
+// The PurityChecker cannot show for most methods in this class that
+// they are pure, even though they are.
+@SuppressWarnings("pure")
 public class RegexUtil {
 
   /**
@@ -137,6 +146,8 @@ public class RegexUtil {
    * Returns true if the argument is a syntactically valid regular
    * expression.
    */
+  @Pure
+  @EnsuresAnnotationIf(result=true, expression="#1", annotation=Regex.class)
   public static boolean isRegex(String s) {
     return isRegex(s, 0);
   }
@@ -145,7 +156,9 @@ public class RegexUtil {
    * Returns true if the argument is a syntactically valid regular
    * expression with at least the given number of groups.
    */
+  /*>>>
   @SuppressWarnings("regex")    // RegexUtil
+  */
   @Pure
   public static boolean isRegex(String s, int groups) {
     Pattern p;
@@ -161,7 +174,9 @@ public class RegexUtil {
    * Returns true if the argument is a syntactically valid regular
    * expression.
    */
+  /*>>>
   @SuppressWarnings("regex")    // RegexUtil
+  */
   @Pure
   public static boolean isRegex(char c) {
     return isRegex(Character.toString(c));
@@ -172,9 +187,11 @@ public class RegexUtil {
    * expression. Otherwise returns a string describing why the argument is
    * not a regex.
    */
+  /*>>>
   @SuppressWarnings("regex")    // RegexUtil
-  @Pure
-  public static @Nullable String regexError(String s) {
+  */
+  @Pure(value=Pure.Kind.SIDE_EFFECT_FREE)
+  public static /*@Nullable*/ String regexError(String s) {
     return regexError(s, 0);
   }
 
@@ -183,9 +200,11 @@ public class RegexUtil {
    * expression with at least the given number of groups. Otherwise returns
    * a string describing why the argument is not a regex.
    */
+  /*>>>
   @SuppressWarnings("regex")    // RegexUtil
-  @Pure
-  public static @Nullable String regexError(String s, int groups) {
+  */
+  @Pure(value=Pure.Kind.SIDE_EFFECT_FREE)
+  public static /*@Nullable*/ String regexError(String s, int groups) {
     try {
       Pattern p = Pattern.compile(s);
       int actualGroups = getGroupCount(p);
@@ -203,9 +222,11 @@ public class RegexUtil {
    * expression. Otherwise returns a PatternSyntaxException describing
    * why the argument is not a regex.
    */
+  /*>>>
   @SuppressWarnings("regex")    // RegexUtil
-  @Pure
-  public static @Nullable PatternSyntaxException regexException(String s) {
+  */
+  @Pure(value=Pure.Kind.SIDE_EFFECT_FREE)
+  public static /*@Nullable*/ PatternSyntaxException regexException(String s) {
     return regexException(s, 0);
   }
 
@@ -214,9 +235,11 @@ public class RegexUtil {
    * expression with at least the given number of groups. Otherwise returns a
    * PatternSyntaxException describing why the argument is not a regex.
    */
+  /*>>>
   @SuppressWarnings("regex")    // RegexUtil
-  @Pure
-  public static @Nullable PatternSyntaxException regexException(String s, int groups) {
+  */
+  @Pure(value=Pure.Kind.SIDE_EFFECT_FREE)
+  public static /*@Nullable*/ PatternSyntaxException regexException(String s, int groups) {
     try {
       Pattern p = Pattern.compile(s);
       int actualGroups = getGroupCount(p);
@@ -235,7 +258,8 @@ public class RegexUtil {
    * Checker warnings. Once the the Regex Checker supports flow-sensitivity, it
    * should be very rarely needed.
    */
-  public static @Regex String asRegex(String s) {
+  @Pure(value=Pure.Kind.SIDE_EFFECT_FREE)
+  public static /*@Regex*/ String asRegex(String s) {
     return asRegex(s, 0);
   }
 
@@ -245,9 +269,11 @@ public class RegexUtil {
    * purpose of this method is to suppress Regex Checker warnings. Once the the
    * Regex Checker supports flow-sensitivity, it should be very rarely needed.
    */
+  /*>>>
   @SuppressWarnings("regex")    // RegexUtil
-  @Pure
-  public static @Regex String asRegex(String s, int groups) {
+  */
+  @Pure(value=Pure.Kind.SIDE_EFFECT_FREE)
+  public static /*@Regex*/ String asRegex(String s, int groups) {
     try {
       Pattern p = Pattern.compile(s);
       int actualGroups = getGroupCount(p);
@@ -272,6 +298,7 @@ public class RegexUtil {
   /**
    * Returns the count of groups in the argument.
    */
+  @Pure
   private static int getGroupCount(Pattern p) {
     return p.matcher("").groupCount();
   }

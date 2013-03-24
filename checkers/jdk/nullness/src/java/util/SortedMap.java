@@ -1,6 +1,6 @@
 package java.util;
-import checkers.nullness.quals.*;
-@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
+import checkers.nullness.quals.KeyFor;
+import checkers.nullness.quals.Nullable;
 
 // Subclasses of this interface/class may opt to prohibit null elements
 public interface SortedMap<K extends @Nullable Object, V extends @Nullable Object> extends Map<K, V> {
