@@ -1,11 +1,11 @@
 package checkers.nullness;
 
-import checkers.initialization.quals.NonRaw;
-import checkers.initialization.quals.Raw;
 import checkers.nullness.quals.MonotonicNonNull;
 import checkers.nullness.quals.NonNull;
+import checkers.nullness.quals.NonRaw;
 import checkers.nullness.quals.Nullable;
 import checkers.nullness.quals.PolyNull;
+import checkers.nullness.quals.Raw;
 import checkers.quals.PolyAll;
 import checkers.quals.TypeQualifiers;
 import checkers.source.SupportedLintOptions;
