@@ -4,12 +4,12 @@ import checkers.igj.quals.*;
 @I
 public class Date implements java.io. @I Serializable, @I Cloneable, @I Comparable<@ReadOnly Date> {
     private static final long serialVersionUID = 0L;
-  public Date(@AssignsFields Date this) { throw new RuntimeException("skeleton method"); }
-  public Date(@AssignsFields Date this, long a1) { throw new RuntimeException("skeleton method"); }
-  public Date(@AssignsFields Date this, int a1, int a2, int a3) { throw new RuntimeException("skeleton method"); }
-  public Date(@AssignsFields Date this, int a1, int a2, int a3, int a4, int a5) { throw new RuntimeException("skeleton method"); }
-  public Date(@AssignsFields Date this, int a1, int a2, int a3, int a4, int a5, int a6) { throw new RuntimeException("skeleton method"); }
-  public Date(@AssignsFields Date this, String a1) { throw new RuntimeException("skeleton method"); }
+  public Date() { throw new RuntimeException("skeleton method"); }
+  public Date(long a1) { throw new RuntimeException("skeleton method"); }
+  public Date(int a1, int a2, int a3) { throw new RuntimeException("skeleton method"); }
+  public Date(int a1, int a2, int a3, int a4, int a5) { throw new RuntimeException("skeleton method"); }
+  public Date(int a1, int a2, int a3, int a4, int a5, int a6) { throw new RuntimeException("skeleton method"); }
+  public Date(String a1) { throw new RuntimeException("skeleton method"); }
   public static long UTC(int a1, int a2, int a3, int a4, int a5, int a6) { throw new RuntimeException("skeleton method"); }
   public static long parse(String a1) { throw new RuntimeException("skeleton method"); }
   public int getYear(@ReadOnly Date this) { throw new RuntimeException("skeleton method"); }

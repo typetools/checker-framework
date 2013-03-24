@@ -5,7 +5,7 @@ import checkers.igj.quals.*;
 public abstract class TimeZone implements java.io.Serializable, Cloneable {
   public final static int SHORT = 0;
   public final static int LONG = 1;
-  public TimeZone(@AssignsFields TimeZone this) { throw new RuntimeException("skeleton method"); }
+  public @AssignsFields TimeZone() { throw new RuntimeException("skeleton method"); }
   public abstract int getOffset(@ReadOnly TimeZone this, int a1, int a2, int a3, int a4, int a5, int a6);
   public int getOffset(@ReadOnly TimeZone this, long a1) { throw new RuntimeException("skeleton method"); }
   public abstract void setRawOffset(int a1);

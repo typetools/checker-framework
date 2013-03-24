@@ -2,7 +2,7 @@ package java.util;
 import checkers.igj.quals.*;
 
 public class Collections{
-  protected Collections(@ReadOnly Collections this) {}
+  protected Collections() {}
   @SuppressWarnings("rawtypes")
   public final static @Immutable Set EMPTY_SET = null;
 @SuppressWarnings("rawtypes")

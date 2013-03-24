@@ -6,7 +6,7 @@ public class Hashtable<K, V> extends Dictionary<K, V> implements Map<K, V>, Clon
   public Hashtable(int a1, float a2) { throw new RuntimeException(("skeleton method")); }
   public Hashtable(int a1) { throw new RuntimeException(("skeleton method")); }
   public Hashtable() { throw new RuntimeException(("skeleton method")); }
-  public Hashtable(@PolyRead Hashtable<K, V> this, @PolyRead Map<? extends K, ? extends V> a1) { throw new RuntimeException(("skeleton method")); }
+  public @PolyRead Hashtable(@PolyRead Map<? extends K, ? extends V> a1) { throw new RuntimeException(("skeleton method")); }
   public synchronized int size(@ReadOnly Hashtable<K, V> this) { throw new RuntimeException(("skeleton method")); }
   public synchronized boolean isEmpty(@ReadOnly Hashtable<K, V> this) { throw new RuntimeException(("skeleton method")); }
   public synchronized @PolyRead Enumeration<K> keys(@PolyRead Hashtable<K, V> this) { throw new RuntimeException(("skeleton method")); }
