@@ -7,8 +7,8 @@ public class Lazy {
     @NonNull String f;
     @MonotonicNonNull String g;
     @MonotonicNonNull String g2;
-    @checkers.nullness.quals.LazyNonNull String _g;
-    @checkers.nullness.quals.LazyNonNull String _g2;
+    @checkers.nullness.quals.MonotonicNonNull String _g;
+    @checkers.nullness.quals.MonotonicNonNull String _g2;
     
     // Initialization with null is allowed for legacy reasons.
     @MonotonicNonNull String init = null;

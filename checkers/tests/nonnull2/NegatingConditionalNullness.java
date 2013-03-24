@@ -4,7 +4,7 @@ import java.util.*;
 
 class PptTopLevel {
     /** List of all of the splitters for this ppt. */
-    public @LazyNonNull List<Object> splitters = null;
+    public @MonotonicNonNull List<Object> splitters = null;
 
     @EnsuresNonNullIf(result=true, expression="splitters")
     public boolean has_splitters() {
