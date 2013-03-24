@@ -1,6 +1,4 @@
-import checkers.initialization.quals.Raw;
-import checkers.initialization.quals.Unclassified;
-import checkers.nullness.quals.EnsuresNonNull;
+import checkers.initialization.quals.*;
 import checkers.nullness.quals.*;
 
 class OverrideANNA {
