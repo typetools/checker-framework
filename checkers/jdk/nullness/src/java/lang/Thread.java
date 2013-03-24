@@ -1,7 +1,7 @@
 package java.lang;
 
-import checkers.nullness.quals.Nullable;
-import checkers.initialization.quals.Raw;
+import checkers.nullness.quals.*;
+import checkers.initialization.quals.*;
 
 import checkers.initialization.quals.Unclassified;
 

@@ -2,10 +2,8 @@ package java.lang;
 
 import dataflow.quals.Pure;
 
-import checkers.nullness.quals.Nullable;
-import checkers.initialization.quals.Raw;
-
-import checkers.initialization.quals.Unclassified;
+import checkers.nullness.quals.*;
+import checkers.initialization.quals.*;
 
 public class Object {
   public Object() { throw new RuntimeException("skeleton method"); }
