@@ -101,32 +101,6 @@ Explain this issue in the manual.
 
 ------------------------------------------------------
 
-[Mike]
-
-Concurrency:
-
-Add FAQ about:
-
-> How do different approaches handle concurrency?
-
-The Checker Framework currently ignores it.  In the future, we plan to add
-a concurrent mode to our toolset, but we expect this will dramatically
-reduce the usefulness of the tool for sequential code.  So, for the moment
-we are focused on sequential code.
-
-[Mention the concurrency checker and the effect on flow-sensitivity.]
-
-See email thread:
-Reality check: how to protect access to @Nullable fields?
-
-Also add a mention to:
-2.3  What the checker guarantees
-
-Note that putting data in a local variable doesn't fix the problem, just
-masks it from one particular checker.  This is bad style!
-
-------------------------------------------------------
-
 Explain relationship between XXXChecker and XXXAnnotatedTypeFactory:
 if the Checker is a subtype of BaseTypeChecker, the ATF has to be a
 subtype of AbstractBasicATF, because BaseTypeVisitor assumes that.
@@ -153,3 +127,14 @@ Explanations on what flow expressions are supported (i.e. strings in pre/postcon
     - Mathematical operators (plus, minus, division, ...).
     - Comparisons (equality, less than, etc.).
     - Probably other Java expressions that are "pure" (non-pure things cannot occur, anyway) that I did not think of.
+
+
+Changelog
+===========================================================================
+
+Renamed method annotations used by the Nullness Checker:
+  AssertNonNullAfter => EnsuresNonNull
+  NonNullOnEntry => RequiresNonNull
+  AssertNonNullIfTrue(...) => EnsuresNonNullIf(result=true, expression=...)
+  AssertNonNullIfFalse(...) => EnsuresNonNullIf(result=false, expression=...)
+  LazyNonNull => MonotonicNonNull
