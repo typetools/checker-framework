@@ -685,6 +685,11 @@ There are some limitations to the guarantee.
   that therefore may violate the property being checked.
 
 \item
+  The Checker Framework assumes it is checking single-threaded code.
+  Concurrent access to variables (that is, race conditions) could cause
+  errors that the Checker Framework does not report.
+
+\item
   The Checker Framework does not yet support annotations on intersection
   types (see
   \ahref{\jlsintersectiontypesurl}{JLS \S4.9}).  As a result, checkers cannot provide guarantees about
