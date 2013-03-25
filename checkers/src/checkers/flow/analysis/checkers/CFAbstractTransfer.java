@@ -48,6 +48,7 @@ import dataflow.cfg.node.ArrayAccessNode;
 import dataflow.cfg.node.AssignmentNode;
 import dataflow.cfg.node.BoxingNode;
 import dataflow.cfg.node.CaseNode;
+import dataflow.cfg.node.ClassNameNode;
 import dataflow.cfg.node.CompoundAssignmentNode;
 import dataflow.cfg.node.ConditionalNotNode;
 import dataflow.cfg.node.EqualToNode;
@@ -278,6 +279,33 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
         if (tree != null) {
             if (TreeUtils.canHaveTypeAnnotation(tree)) {
                 value = getValueFromFactory(tree, n);
+            }
+        }
+
+        if (in.containsTwoStores()) {
+            S thenStore = in.getThenStore();
+            S elseStore = in.getElseStore();
+            return new ConditionalTransferResult<>(finishValue(value,
+                    thenStore, elseStore), thenStore, elseStore);
+        } else {
+            S info = in.getRegularStore();
+            return new RegularTransferResult<>(finishValue(value, info), info);
+        }
+    }
+
+    @Override
+    public TransferResult<V, S> visitClassName(ClassNameNode n, TransferInput<V, S> in) {
+        // The tree underlying a class name is a type tree.
+        V value = null;
+
+        Tree tree = n.getTree();
+        if (tree != null) {
+            if (TreeUtils.canHaveTypeAnnotation(tree)) {
+                AbstractBasicAnnotatedTypeFactory<? extends BaseTypeChecker, V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory = analysis.atypeFactory;
+                analysis.setCurrentTree(tree);
+                AnnotatedTypeMirror at = factory.getAnnotatedTypeFromTypeTree(tree);
+                analysis.setCurrentTree(null);
+                value = analysis.createAbstractValue(at);
             }
         }
 
