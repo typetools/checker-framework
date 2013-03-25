@@ -1,6 +1,11 @@
 import java.util.*;
 import checkers.igj.quals.*;
 
+//This test is skipped because the IGJ/OIGJ checkers are not fully compatible with the latest
+//version of the Checker Framework.
+//See issue http://code.google.com/p/checker-framework/issues/detail?id=199.
+//@skip-test
+
 public class RandomTests {
     MyClass m = null;
     @Mutable Date d = m.get();

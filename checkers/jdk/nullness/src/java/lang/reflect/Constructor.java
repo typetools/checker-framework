@@ -1,9 +1,9 @@
 package java.lang.reflect;
 
 import java.lang.annotation.Annotation;
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.NonNull;
+import checkers.nullness.quals.Nullable;
 
-@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
 public final class Constructor<T extends @Nullable Object> extends AccessibleObject implements GenericDeclaration, Member {
 	public Class<T> getDeclaringClass() { throw new RuntimeException("skeleton method"); }
 	public String getName() { throw new RuntimeException("skeleton method"); }
