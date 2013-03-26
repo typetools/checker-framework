@@ -31,7 +31,7 @@ What would a good place be for this?  At the beginning/end?  Split into multiple
 Changes throughout the manual to existing sections
 ===========================================================================
 
-Document the lint option strictMonotonicNonNullInit for NonNullChecker (disallow null initializations for @MonoNonNull fields)
+Document the lint option strictMonotonicNonNullInit for NullnessChecker (disallow null initializations for @MonoNonNull fields)
 
 ------------------------------------------------------
 
