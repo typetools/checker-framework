@@ -1,11 +1,12 @@
 package checkers.fenum;
 
+import javacutils.TreeUtils;
+
 import checkers.basetype.BaseTypeVisitor;
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
-import checkers.util.TreeUtils;
 
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CaseTree;
@@ -61,7 +62,7 @@ public class FenumVisitor extends BaseTypeVisitor<FenumChecker> {
                 AnnotatedTypeMirror caseType = atypeFactory.getAnnotatedType(realCaseExpr);
 
                 this.commonAssignmentCheck(exprType, caseType, caseExpr,
-                        "switch.type.incompatible");
+                        "switch.type.incompatible", false);
             }
         }
         return super.visitSwitch(node, p);

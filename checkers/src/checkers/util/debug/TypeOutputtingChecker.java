@@ -7,13 +7,14 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.Elements;
 
+import javacutils.TreeUtils;
+
 import checkers.source.SourceChecker;
 import checkers.source.SourceVisitor;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.GeneralAnnotatedTypeFactory;
-import checkers.util.TreeUtils;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;

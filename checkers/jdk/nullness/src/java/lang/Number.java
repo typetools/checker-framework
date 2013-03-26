@@ -1,8 +1,7 @@
 package java.lang;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
-@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
 
 public abstract class Number implements java.io.Serializable {
   public Number() { throw new RuntimeException("skeleton method"); }
