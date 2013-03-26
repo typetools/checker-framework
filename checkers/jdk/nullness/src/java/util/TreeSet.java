@@ -1,6 +1,6 @@
 package java.util;
-import checkers.nullness.quals.*;
-@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
+import checkers.nullness.quals.EnsuresNonNullIf;
+import checkers.nullness.quals.Nullable;
 
 // Subclasses of this interface/class may opt to prohibit null elements
 public class TreeSet<E extends @Nullable Object> extends AbstractSet<E> implements NavigableSet<E>, Cloneable, java.io.Serializable {
@@ -13,7 +13,7 @@ public class TreeSet<E extends @Nullable Object> extends AbstractSet<E> implemen
   public Iterator<E> descendingIterator() { throw new RuntimeException("skeleton method"); }
   public NavigableSet<E> descendingSet() { throw new RuntimeException("skeleton method"); }
   public int size() { throw new RuntimeException("skeleton method"); }
-  @AssertNonNullIfFalse({"pollFirst()", "pollLast()"})
+  @EnsuresNonNullIf(expression={"pollFirst()", "pollLast()"}, result=false)
   public boolean isEmpty() { throw new RuntimeException("skeleton method"); }
   public boolean contains(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   public boolean add(E a1) { throw new RuntimeException("skeleton method"); }

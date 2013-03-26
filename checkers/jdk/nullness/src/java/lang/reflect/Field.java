@@ -1,20 +1,21 @@
 package java.lang.reflect;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.NonNull;
+import checkers.nullness.quals.Nullable;
 
 public final class Field extends AccessibleObject implements Member {
   protected Field() {}
-  public @NonNull Class<?> getDeclaringClass() { throw new RuntimeException("skeleton method"); }
-  public @NonNull String getName() { throw new RuntimeException("skeleton method"); }
+  public Class<?> getDeclaringClass() { throw new RuntimeException("skeleton method"); }
+  public String getName() { throw new RuntimeException("skeleton method"); }
   public int getModifiers() { throw new RuntimeException("skeleton method"); }
   public boolean isEnumConstant() { throw new RuntimeException("skeleton method"); }
   public boolean isSynthetic() { throw new RuntimeException("skeleton method"); }
-  public @NonNull Class<? /*extends @NonNull Object*/> getType() { throw new RuntimeException("skeleton method"); }
-  public @NonNull Type getGenericType() { throw new RuntimeException("skeleton method"); }
+  public Class<? /*extends @NonNull Object*/> getType() { throw new RuntimeException("skeleton method"); }
+  public Type getGenericType() { throw new RuntimeException("skeleton method"); }
   public boolean equals(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   public int hashCode() { throw new RuntimeException("skeleton method"); }
-  public @NonNull String toString() { throw new RuntimeException("skeleton method"); }
-  public @NonNull String toGenericString() { throw new RuntimeException("skeleton method"); }
+  public String toString() { throw new RuntimeException("skeleton method"); }
+  public String toGenericString() { throw new RuntimeException("skeleton method"); }
   public @Nullable Object get(@Nullable Object a1) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
   public boolean getBoolean(@Nullable Object a1) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
   public byte getByte(@Nullable Object a1) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
@@ -34,5 +35,5 @@ public final class Field extends AccessibleObject implements Member {
   public void setFloat(@Nullable Object a1, float a2) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
   public void setDouble(@Nullable Object a1, double a2) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
   public <T extends java.lang.annotation. @Nullable Annotation> @Nullable T getAnnotation(Class<@NonNull T> a1) { throw new RuntimeException("skeleton method"); }
-  public java.lang.annotation.Annotation @NonNull [] getDeclaredAnnotations() { throw new RuntimeException("skeleton method"); }
+  public java.lang.annotation.Annotation[] getDeclaredAnnotations() { throw new RuntimeException("skeleton method"); }
 }

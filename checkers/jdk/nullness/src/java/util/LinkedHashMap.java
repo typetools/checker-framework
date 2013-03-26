@@ -1,6 +1,7 @@
 package java.util;
-import checkers.nullness.quals.*;
-@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
+import dataflow.quals.Pure;
+
+import checkers.nullness.quals.Nullable;
 
 public class LinkedHashMap<K extends @Nullable Object, V extends @Nullable Object> extends HashMap<K, V> implements Map<K, V> {
   private static final long serialVersionUID = 0;
