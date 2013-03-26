@@ -150,6 +150,7 @@ public final class AnnotationLocation {
     /**
      * Return the type parameter within type that is specified by this.
      **/
+    @SuppressWarnings("igj")
     public TypeMirror getTypeFrom(TypeMirror type) {
         TypeMirror current = type;
         // Walk down the generic type according to the integer list,
