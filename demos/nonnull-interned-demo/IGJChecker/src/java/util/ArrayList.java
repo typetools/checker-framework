@@ -3,9 +3,9 @@ import checkers.igj.quals.*;
 
 @I
 public class ArrayList<E> extends java.util. @I AbstractList<E> implements java.util. @I List<E>, java.util. @I RandomAccess, java.lang. @I Cloneable, java.io. @I Serializable {
-  public ArrayList(@AssignsFields ArrayList<E> this, int a1) { throw new RuntimeException("skeleton method"); }
-  public ArrayList(@AssignsFields ArrayList<E> this) { throw new RuntimeException("skeleton method"); }
-  public ArrayList(@AssignsFields ArrayList<E> this, java.util. @ReadOnly Collection<? extends E> a1) { throw new RuntimeException("skeleton method"); }
+  public ArrayList(int a1) { throw new RuntimeException("skeleton method"); }
+  public ArrayList() { throw new RuntimeException("skeleton method"); }
+  public ArrayList(java.util. @ReadOnly Collection<? extends E> a1) { throw new RuntimeException("skeleton method"); }
   public void trimToSize(@AssignsFields ArrayList<E> this) { throw new RuntimeException("skeleton method"); }
   public void ensureCapacity(@AssignsFields ArrayList<E> this, int a1) { throw new RuntimeException("skeleton method"); }
   public int size(@ReadOnly ArrayList<E> this) { throw new RuntimeException("skeleton method"); }
