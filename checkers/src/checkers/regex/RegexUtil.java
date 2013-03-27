@@ -263,7 +263,7 @@ public class RegexUtil {
   /**
    * Returns the argument as a {@code @Regex(groups) String} if it is a regex
    * with at least the given number of groups, otherwise throws an error. The
-   * purpose of this method is to suppress Regex Checker warnings. Once the the
+   * purpose of this method is to suppress Regex Checker warnings. Once the
    * Regex Checker supports flow-sensitivity, it should be very rarely needed.
    * @param s string to check for being a regular expression
    * @param groups number of groups expected
