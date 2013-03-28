@@ -103,6 +103,13 @@ class Precondition {
         requiresParams(p1, p1);
     }
     
+    // Resolver does not find a field in the enclosing class.
+    class inner {
+        @RequiresAnnotation(expression="f1", annotation=Odd.class)
+        //:: error: (flowexpr.parse.error)
+        void foo() {}
+    }
+
     /***** multiple preconditions ******/
     
     @RequiresAnnotations({
