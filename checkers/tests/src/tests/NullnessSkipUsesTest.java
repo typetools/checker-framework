@@ -8,16 +8,16 @@ import org.junit.runners.Parameterized.Parameters;
 import checkers.util.test.ParameterizedCheckerTest;
 
 /**
- * JUnit tests for the Nullness checker -- testing -AskipUses command-line argument.
+ * JUnit tests for the nullness checker -- testing -AskipUses command-line argument.
  */
 public class NullnessSkipUsesTest extends ParameterizedCheckerTest {
 
     public NullnessSkipUsesTest(File testFile) {
-        super(testFile, checkers.nullness.NullnessChecker.class.getName(),
-                "nullness", "-Anomsgtext", "-AskipUses=SkipMe", "-Alint=advancedchecks");
+        super(testFile, checkers.nullness.NullnessFbcChecker.class.getName(),
+                "nullness", "-Anomsgtext", "-AskipUses=SkipMe");
     }
 
     @Parameters
-    public static Collection<Object[]> data() { return testFiles("nullness-skipuses"); }
+    public static Collection<Object[]> data() { return testFiles("nonnull-skipuses"); }
 
 }

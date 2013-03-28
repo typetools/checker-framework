@@ -7,6 +7,9 @@ import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.util.Elements;
 
+import javacutils.AnnotationUtils;
+import javacutils.TreeUtils;
+
 import checkers.basetype.BaseTypeChecker;
 import checkers.quals.PolyAll;
 import checkers.quals.TypeQualifiers;
@@ -16,10 +19,8 @@ import checkers.regex.quals.PolyRegex;
 import checkers.regex.quals.Regex;
 import checkers.regex.quals.RegexBottom;
 import checkers.types.QualifierHierarchy;
-import checkers.util.AnnotationUtils;
 import checkers.util.GraphQualifierHierarchy;
 import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
-import checkers.util.TreeUtils;
 
 /**
  * A type-checker plug-in for the {@link Regex} qualifier that finds
