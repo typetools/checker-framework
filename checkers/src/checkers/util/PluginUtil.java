@@ -62,7 +62,7 @@ public class PluginUtil {
         final BufferedWriter bw = new BufferedWriter(new FileWriter(destination));
         try {
             for(final File file : files) {
-                bw.write(file.getAbsolutePath());
+                bw.write(wrapArg(file.getAbsolutePath()));
                 bw.newLine();
             }
 
@@ -246,12 +246,19 @@ public class PluginUtil {
 
     public static File writeTmpCpFile(final String prefix, final boolean deleteOnExit,
                                       final String classpath) throws IOException {
-        return writeTmpArgFile(prefix, ".classpath", deleteOnExit, Arrays.asList("-classpath", classpath));
+        return writeTmpArgFile(prefix, ".classpath", deleteOnExit, Arrays.asList("-classpath", wrapArg(classpath)));
     }
 
     public static boolean isWindows() {
         final String os = System.getProperty("os.name");
         return os.toLowerCase().contains("win");
+    }
+
+    public static String wrapArg(final String classpath) {
+        if(classpath.contains(" ")) {
+            return '"' + classpath + '"';
+        }
+        return classpath;
     }
 
     public static String getJavaCommand(final String javaHome, final PrintStream out) {
