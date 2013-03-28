@@ -1,0 +1,25 @@
+#!/bin/sh
+
+#
+# This file simply redirects all passed arguments
+# to checkers.util.CheckerDevelMain
+#
+# This script loads the .class files found in the
+# build directory before it uses any jar files so
+# that a user does not have to repackage the whole
+# project to debug changes
+#
+
+mydir="`dirname $0`"
+case `uname -s` in
+    CYGWIN*)
+      mydir=`cygpath -m $mydir`
+      ;;
+esac
+
+binaryDir="${mydir}"/../binary
+buildDir="${mydir}"/../build
+
+eval "java" \
+     "-DCheckerDevelMain.cp=${buildDir} -DCheckerDevelMain.bcp= -DCheckerDevelMain.binary=${binaryDir}" \
+     "-classpath ${buildDir} checkers.util.CheckerDevelMain" "$@"
