@@ -178,6 +178,12 @@ public class TypeHierarchy {
                     return true;
                 } else {
                     Set<AnnotationMirror> bnd = wildcard.getEffectiveAnnotations();
+                    if (bnd.isEmpty()) {
+                        // The bound of a wildcard should only be empty if the type variable
+                        // bounds had circular dependencies and "unrolling" stopped.
+                        // Is there a nicer solution?
+                        return true;
+                    }
                     Set<AnnotationMirror> bot = AnnotationUtils.createAnnotationSet();
                     for (AnnotationMirror bndi : bnd) {
                         bot.add(qualifierHierarchy.getBottomAnnotation(bndi));
@@ -225,9 +231,9 @@ public class TypeHierarchy {
             Set<AnnotationMirror> rhsAnnos = rhsBase.getEffectiveAnnotations();
 
             assert lhsAnnos.size() == qualifierHierarchy.getWidth() : "Found invalid number of annotations on "
-                    + lhsBase;
+                    + lhsBase + "; comparing lhs: " + lhs + " rhs: " + rhs;
             assert rhsAnnos.size() == qualifierHierarchy.getWidth() : "Found invalid number of annotations on "
-                    + rhsBase;
+                    + rhsBase + "; comparing lhs: " + lhs + " rhs: " + rhs;
             if (!qualifierHierarchy.isSubtype(rhsAnnos, lhsAnnos)) {
                 return false;
             }
