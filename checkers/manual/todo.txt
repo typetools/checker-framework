@@ -31,7 +31,7 @@ What would a good place be for this?  At the beginning/end?  Split into multiple
 Changes throughout the manual to existing sections
 ===========================================================================
 
-Document the lint option strictMonotonicNonNullInit for NonNullChecker (disallow null initializations for @MonoNonNull fields)
+Document the lint option strictMonotonicNonNullInit for NullnessChecker (disallow null initializations for @MonoNonNull fields)
 
 ------------------------------------------------------
 
@@ -133,8 +133,10 @@ Changelog
 ===========================================================================
 
 Renamed method annotations used by the Nullness Checker:
-  AssertNonNullAfter => EnsuresNonNull
-  NonNullOnEntry => RequiresNonNull
-  AssertNonNullIfTrue(...) => EnsuresNonNullIf(result=true, expression=...)
-  AssertNonNullIfFalse(...) => EnsuresNonNullIf(result=false, expression=...)
-  LazyNonNull => MonotonicNonNull
+  @AssertNonNullAfter => @EnsuresNonNull
+  @NonNullOnEntry => @RequiresNonNull
+  @AssertNonNullIfTrue(...) => @EnsuresNonNullIf(result=true, expression=...)
+  @AssertNonNullIfFalse(...) => @EnsuresNonNullIf(result=false, expression=...)
+  @LazyNonNull => @MonotonicNonNull
+Renamed method annotations used by all checkers:
+  @SuppressWarnings => @AssumeAssertion

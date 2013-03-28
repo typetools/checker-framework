@@ -78,7 +78,7 @@ public class StubParser {
         try {
             parsedindex = JavaParser.parse(inputStream);
         } catch (Exception e) {
-            ErrorReporter.errorAbort("StubParser: exception from JavaParser.parse", e);
+            ErrorReporter.errorAbort("StubParser: exception from JavaParser.parse for file " + filename, e);
             parsedindex = null; // dead code, but needed for def. assignment checks
         }
         this.index = parsedindex;

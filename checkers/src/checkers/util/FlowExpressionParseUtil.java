@@ -171,21 +171,30 @@ public class FlowExpressionParseUtil {
                 // field access
                 Element fieldElem = resolver.findField(s,
                         context.receiver.getType(), path);
+                TypeMirror fieldType = ElementUtils.getType(fieldElem);
+                if (fieldType == null) {
+                    // Unknown fields result in a valid Element with a null type
+                    throw constructParserException(s);
+                }
                 if (ElementUtils.isStatic(fieldElem)) {
                     Element classElem = fieldElem.getEnclosingElement();
                     Receiver staticClassReceiver = new ClassName(
                             ElementUtils.getType(classElem));
                     return new FieldAccess(staticClassReceiver,
-                            ElementUtils.getType(fieldElem), fieldElem);
+                            fieldType, fieldElem);
                 } else {
                     return new FieldAccess(context.receiver,
-                            ElementUtils.getType(fieldElem), fieldElem);
+                            fieldType, fieldElem);
                 }
             } catch (Throwable t) {
                 try {
                     // class literal
                     Element classElem = resolver.findClass(s, path);
-                    return new ClassName(ElementUtils.getType(classElem));
+                    TypeMirror classType = ElementUtils.getType(classElem);
+                    if (classType == null) {
+                        throw constructParserException(s);
+                    }
+                    return new ClassName(classType);
                 } catch (Throwable t2) {
                     throw constructParserException(s);
                 }
