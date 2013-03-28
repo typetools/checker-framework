@@ -35,7 +35,6 @@ import dataflow.cfg.UnderlyingAST.CFGMethod;
 import dataflow.cfg.UnderlyingAST.CFGStatement;
 import dataflow.cfg.node.Node;
 import dataflow.cfg.node.ReturnNode;
-import dataflow.quals.Pure;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.flow.analysis.checkers.CFAbstractAnalysis;
@@ -69,7 +68,6 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
-import com.sun.source.util.TreePath;
 
 /**
  * A factory that extends {@link AnnotatedTypeFactory} to optionally use
@@ -115,7 +113,6 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
      * @param useFlow
      *            whether flow analysis should be performed
      */
-    @SuppressWarnings("deprecation")
     // we alias a deprecated annotation to its replacement
     public AbstractBasicAnnotatedTypeFactory(Checker checker,
             CompilationUnitTree root, boolean useFlow) {
@@ -463,8 +460,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
                             Value value = flowResult.getValue(initializer);
                             if (value != null) {
                                 // Store the abstract value for the field.
-                                VariableElement element = TreeUtils
-                                        .elementFromDeclaration(vt);
+                                VariableElement element = TreeUtils.elementFromDeclaration(vt);
                                 fieldValues.add(Pair.of(element, value));
                             }
                         }
@@ -671,10 +667,8 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
      */
     protected void applyInferredAnnotations(AnnotatedTypeMirror type, Value as) {
         AnnotatedTypeMirror inferred = as.getType();
-        for (AnnotationMirror top : getQualifierHierarchy()
-                .getTopAnnotations()) {
-            AnnotationMirror inferredAnnotation = inferred
-                    .getAnnotationInHierarchy(top);
+        for (AnnotationMirror top : getQualifierHierarchy().getTopAnnotations()) {
+            AnnotationMirror inferredAnnotation = inferred.getAnnotationInHierarchy(top);
             if (inferredAnnotation == null) {
                 // We inferred "no annotation" for this hierarchy.
                 type.removeAnnotationInHierarchy(top);
@@ -706,8 +700,8 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
     @Override
     public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> methodFromUse(
             MethodInvocationTree tree) {
-        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair = super
-                .methodFromUse(tree);
+        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair =
+                super.methodFromUse(tree);
         AnnotatedExecutableType method = mfuPair.first;
         poly.annotate(tree, method);
         return mfuPair;
