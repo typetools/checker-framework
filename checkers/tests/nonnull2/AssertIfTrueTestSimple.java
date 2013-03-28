@@ -2,7 +2,7 @@ import checkers.nullness.quals.EnsuresNonNullIf;
 import checkers.nullness.quals.*;
 
 /*
- * These tests ensure that AssertNonNullIfTrue methods
+ * These tests ensure that EnsuresNonNullIf methods
  * are verified.
  */
 public class AssertIfTrueTestSimple {
