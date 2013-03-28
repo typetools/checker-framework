@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
  * forms of purity:  side-effect freedom; determinism; and both together.
  * 
  * <ul>
- * <li><tt>@Pure(kind=Kind.SIDE_EFFECT_FREE)</tt>: A method is called
+ * <li><tt>@Pure(Kind.SIDE_EFFECT_FREE)</tt>: A method is called
  * <em>side-effect free</em> if it has no visible side-effects. That
  * is, if some dataflow fact is known before a call to such a method, then it is
  * still known afterwards, even if the fact is about some non-final field.
@@ -36,7 +36,7 @@ import java.lang.annotation.Target;
  * strict (there are false positives).  In particular, a method that caches
  * its result will be rejected.
  *
- * <li><tt>@Pure(kind=Kind.DETERMINISTIC)</em>: A method is called
+ * <li><tt>@Pure(Kind.DETERMINISTIC)</em>: A method is called
  * <em>deterministic</em> or <em>idempotent</em> if it returns the same
  * value every time called with the same parameters and in the same
  * environment. The parameters include the receiver, and the environment
@@ -49,9 +49,9 @@ import java.lang.annotation.Target;
  * <li>Assignment to any expression, except for local variables (and method
  * parameters).
  * <li>A method invocation of a method that is not deterministic (as indicated
- * by a {@link Pure} annotation of type {@code Kind.DETERMINISTIC} on that
- * methods declaration).
- * <li>Construction of a new object
+ * by a {@link Pure}() annotation of type {@code Kind.DETERMINISTIC} on that
+ * method's declaration).
+ * <li>Construction of a new object.
  * <li>Catching any exceptions.
  * </ol>
  * This is a conservative analysis.  That is, these checks are sufficient
