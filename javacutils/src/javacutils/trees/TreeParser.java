@@ -17,8 +17,8 @@ import com.sun.tools.javac.util.Names;
  * A Utility class for parsing Java expression snippets, and converting them
  * to proper Javac AST nodes.
  *
- * This is useful for parsing {@code AssertNonNullIfTrue},
- * {@code AssertNonNull*}, and {@code KeyFor} values.
+ * This is useful for parsing {@code EnsuresNonNull*},
+ * and {@code KeyFor} values.
  *
  * Currently, it handles four tree types only:
  * <ul>
