@@ -2295,6 +2295,7 @@ public abstract class AnnotatedTypeMirror {
             AnnotatedIntersectionType type =
                     new AnnotatedIntersectionType(actualType, atypeFactory);
             copyFields(type, copyAnnotations);
+            type.supertypes = this.supertypes;
             return type;
         }
 
