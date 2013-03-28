@@ -3,8 +3,14 @@ package checkers.regex;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import checkers.quals.EnsuresAnnotationIf;
+import checkers.regex.quals.Regex;
+import dataflow.quals.Pure;
+
+/*>>>
 import checkers.nullness.quals.*;
 import checkers.regex.quals.*;
+*/
 
 // This class should be kept in sync with plume.RegexUtil .
 
@@ -26,6 +32,9 @@ import checkers.regex.quals.*;
  * To eliminate this dependency, you can simply copy this class into your
  * own project.
  */
+// The PurityChecker cannot show for most methods in this class that
+// they are pure, even though they are.
+@SuppressWarnings("pure")
 public class RegexUtil {
 
   /**
@@ -140,6 +149,8 @@ public class RegexUtil {
    * @param s string to check for being a regular expression
    * @return true iff s is a regular expression
    */
+  @Pure
+  @EnsuresAnnotationIf(result=true, expression="#1", annotation=Regex.class)
   public static boolean isRegex(String s) {
     return isRegex(s, 0);
   }
@@ -151,7 +162,9 @@ public class RegexUtil {
    * @param groups number of groups expected
    * @return true iff s is a regular expression with groups groups
    */
+  /*>>>
   @SuppressWarnings("regex")    // RegexUtil
+  */
   @Pure
   public static boolean isRegex(String s, int groups) {
     Pattern p;
@@ -169,7 +182,9 @@ public class RegexUtil {
    * @param c char to check for being a regular expression
    * @return true iff c is a regular expression
    */
+  /*>>>
   @SuppressWarnings("regex")    // RegexUtil
+  */
   @Pure
   public static boolean isRegex(char c) {
     return isRegex(Character.toString(c));
@@ -182,9 +197,11 @@ public class RegexUtil {
    * @param s string to check for being a regular expression
    * @return null, or a string describing why the argument is not a regex.
    */
+  /*>>>
   @SuppressWarnings("regex")    // RegexUtil
-  @Pure
-  public static @Nullable String regexError(String s) {
+  */
+  @Pure(value=Pure.Kind.SIDE_EFFECT_FREE)
+  public static /*@Nullable*/ String regexError(String s) {
     return regexError(s, 0);
   }
 
@@ -196,9 +213,11 @@ public class RegexUtil {
    * @param groups number of groups expected
    * @return null, or a string describing why the argument is not a regex.
    */
+  /*>>>
   @SuppressWarnings("regex")    // RegexUtil
-  @Pure
-  public static @Nullable String regexError(String s, int groups) {
+  */
+  @Pure(value=Pure.Kind.SIDE_EFFECT_FREE)
+  public static /*@Nullable*/ String regexError(String s, int groups) {
     try {
       Pattern p = Pattern.compile(s);
       int actualGroups = getGroupCount(p);
@@ -218,9 +237,11 @@ public class RegexUtil {
    * @param s string to check for being a regular expression
    * @return null, or a PatternSyntaxException describing why the argument is not a regex.
    */
+  /*>>>
   @SuppressWarnings("regex")    // RegexUtil
-  @Pure
-  public static @Nullable PatternSyntaxException regexException(String s) {
+  */
+  @Pure(value=Pure.Kind.SIDE_EFFECT_FREE)
+  public static /*@Nullable*/ PatternSyntaxException regexException(String s) {
     return regexException(s, 0);
   }
 
@@ -232,9 +253,11 @@ public class RegexUtil {
    * @param groups number of groups expected
    * @return null, or a PatternSyntaxException describing why the argument is not a regex.
    */
+  /*>>>
   @SuppressWarnings("regex")    // RegexUtil
-  @Pure
-  public static @Nullable PatternSyntaxException regexException(String s, int groups) {
+  */
+  @Pure(value=Pure.Kind.SIDE_EFFECT_FREE)
+  public static /*@Nullable*/ PatternSyntaxException regexException(String s, int groups) {
     try {
       Pattern p = Pattern.compile(s);
       int actualGroups = getGroupCount(p);
@@ -256,7 +279,8 @@ public class RegexUtil {
    * @return its argument
    * @throws Error if argument is not a regex
    */
-  public static @Regex String asRegex(String s) {
+  @Pure(value=Pure.Kind.SIDE_EFFECT_FREE)
+  public static /*@Regex*/ String asRegex(String s) {
     return asRegex(s, 0);
   }
 
@@ -270,9 +294,11 @@ public class RegexUtil {
    * @return its argument
    * @throws Error if argument is not a regex
    */
+  /*>>>
   @SuppressWarnings("regex")    // RegexUtil
-  @Pure
-  public static @Regex String asRegex(String s, int groups) {
+  */
+  @Pure(value=Pure.Kind.SIDE_EFFECT_FREE)
+  public static /*@Regex*/ String asRegex(String s, int groups) {
     try {
       Pattern p = Pattern.compile(s);
       int actualGroups = getGroupCount(p);
@@ -302,6 +328,7 @@ public class RegexUtil {
    * @param p pattern whose groups to count
    * @return the count of groups in the argument
    */
+  @Pure
   private static int getGroupCount(Pattern p) {
     return p.matcher("").groupCount();
   }

@@ -23,7 +23,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.ListIterator;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
 /**
  * A list which forwards all its method calls to another list. Subclasses should
