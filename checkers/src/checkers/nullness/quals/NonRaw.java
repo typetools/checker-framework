@@ -1,46 +1,22 @@
 package checkers.nullness.quals;
 
-import java.lang.annotation.*;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-import checkers.nullness.NullnessChecker;
-import checkers.quals.*;
+import checkers.initialization.quals.Unclassified;
+import checkers.quals.DefaultQualifierInHierarchy;
+import checkers.quals.SubtypeOf;
+import checkers.quals.TypeQualifier;
 
-/**
- * An annotation that indicates a type that contains an initialized object
- * &mdash; that is, the object's constructor has completed, either in full
- * or in part.
- *
- * <p>
- *
- * When no argument is given, as in {@code @NonRaw}, then the object is
- * fully initialized; this is the default, so there is little need for a
- * programmer to write this explicitly.
- *
- * <p>
- *
- * When an argument is given, as in {@code @NonRaw(MyClass.class)}, then
- * the object's {@code MyClass} constructor has completed.
- * All {@code @NonNull} fields declared in {@code MyClass} or in any of its
- * superclasses have a non-{@code null} value.
- * Thus, when a constructor in class {@code C} completes, {@code this} has
- * type {@code @NonRaw(C.class) C}.
- *
- * <p>
- *
- * This annotation is associated with the {@link NullnessChecker}.
- *
- * @see Raw
- * @see NonNull
- * @see NullnessChecker
- * @checker.framework.manual #nullness-checker Nullness Checker
- */
+// TODO: document
 @Documented
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @TypeQualifier
 @DefaultQualifierInHierarchy
-@SubtypeOf(Raw.class)
+@SubtypeOf(Unclassified.class)
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface NonRaw {
-  // TODO: implement this
-  // Class<?> upFrom() default Object.class;
 }

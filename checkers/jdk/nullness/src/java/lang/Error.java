@@ -1,6 +1,6 @@
 package java.lang;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
 public class Error extends Throwable {
     static final long serialVersionUID = 4980196508277280342L;

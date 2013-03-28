@@ -3,7 +3,7 @@ package checkers.tainting;
 import checkers.basetype.BaseTypeChecker;
 import checkers.quals.TypeQualifiers;
 import checkers.quals.PolyAll;
-import checkers.source.SuppressWarningsKey;
+import checkers.source.SuppressWarningsKeys;
 import checkers.tainting.quals.*;
 
 /**
@@ -15,5 +15,5 @@ import checkers.tainting.quals.*;
  */
 @TypeQualifiers({Untainted.class, Tainted.class,
     PolyTainted.class, PolyAll.class})
-@SuppressWarningsKey("untainted")
+@SuppressWarningsKeys("untainted")
 public class TaintingChecker extends BaseTypeChecker {}
