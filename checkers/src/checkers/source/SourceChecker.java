@@ -346,9 +346,15 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Err
         } catch (CheckerError ce) {
             logCheckerError(ce);
         } catch (Throwable t) {
+            String stackTraceHelp;
+            if (! processingEnv.getOptions().containsKey("printErrorStack")) {
+                stackTraceHelp = "";
+            } else {
+                stackTraceHelp = "; invoke the compiler with -AprintErrorStack to see the stack trace.";
+            }
             logCheckerError(new CheckerError("SourceChecker.init: unexpected Throwable (" +
                     t.getClass().getSimpleName() + "); message: " + t.getMessage() +
-                    "; invoke the compiler with -AprintErrorStack to see the stack trace.", t));
+                    stackTraceHelp, t));
         }
     }
 
