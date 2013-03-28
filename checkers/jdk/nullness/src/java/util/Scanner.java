@@ -1,6 +1,5 @@
 package java.util;
-import checkers.nullness.quals.*;
-@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
+import checkers.nullness.quals.Nullable;
 
 public final class Scanner implements Iterator<String> {
   public Scanner(Readable a1) { throw new RuntimeException("skeleton method"); }

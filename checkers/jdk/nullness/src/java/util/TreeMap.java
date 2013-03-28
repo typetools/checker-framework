@@ -1,6 +1,9 @@
 package java.util;
-import checkers.nullness.quals.*;
-@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
+import dataflow.quals.Pure;
+
+import checkers.nullness.quals.EnsuresNonNullIf;
+import checkers.nullness.quals.KeyFor;
+import checkers.nullness.quals.Nullable;
 
 // This permits null element when using a custom comparator which allows null
 public class TreeMap<K extends @Nullable Object, V extends @Nullable Object> extends AbstractMap<K, V> implements NavigableMap<K, V>, Cloneable, java.io.Serializable {
@@ -46,6 +49,6 @@ public class TreeMap<K extends @Nullable Object, V extends @Nullable Object> ext
   public SortedMap<K, V> tailMap(K a1) { throw new RuntimeException("skeleton method"); }
   public Object clone() { throw new RuntimeException("skeleton method"); }
 
-  @AssertNonNullIfFalse({"firstEntry()", "pollFirstEntry()", "lastEntry()", "pollLastEntry()"})
+  @EnsuresNonNullIf(expression={"firstEntry()", "pollFirstEntry()", "lastEntry()", "pollLastEntry()"}, result=false)
   public boolean isEmpty() { throw new RuntimeException("skeleton method"); }
 }

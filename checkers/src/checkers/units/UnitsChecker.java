@@ -12,11 +12,12 @@ import javax.annotation.processing.SupportedOptions;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Elements;
 
+import javacutils.AnnotationUtils;
+
 import checkers.quals.Bottom;
 import checkers.quals.Unqualified;
 import checkers.types.QualifierHierarchy;
 import checkers.units.quals.*;
-import checkers.util.AnnotationUtils;
 import checkers.util.GraphQualifierHierarchy;
 import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import checkers.basetype.BaseTypeChecker;
@@ -159,8 +160,8 @@ public class UnitsChecker extends BaseTypeChecker {
      * TODO: BasicChecker might also want to always call super.
      */
     @Override
-    public Collection<String> getSuppressWarningsKey() {
-        Set<String> swKeys = new HashSet<String>(super.getSuppressWarningsKey());
+    public Collection<String> getSuppressWarningsKeys() {
+        Set<String> swKeys = new HashSet<String>(super.getSuppressWarningsKeys());
         Set<Class<? extends Annotation>> annos = getSupportedTypeQualifiers();
 
         for (Class<? extends Annotation> anno : annos) {
