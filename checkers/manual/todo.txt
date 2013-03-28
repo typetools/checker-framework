@@ -133,8 +133,10 @@ Changelog
 ===========================================================================
 
 Renamed method annotations used by the Nullness Checker:
-  AssertNonNullAfter => EnsuresNonNull
-  NonNullOnEntry => RequiresNonNull
-  AssertNonNullIfTrue(...) => EnsuresNonNullIf(result=true, expression=...)
-  AssertNonNullIfFalse(...) => EnsuresNonNullIf(result=false, expression=...)
-  LazyNonNull => MonotonicNonNull
+  @AssertNonNullAfter => @EnsuresNonNull
+  @NonNullOnEntry => @RequiresNonNull
+  @AssertNonNullIfTrue(...) => @EnsuresNonNullIf(result=true, expression=...)
+  @AssertNonNullIfFalse(...) => @EnsuresNonNullIf(result=false, expression=...)
+  @LazyNonNull => @MonotonicNonNull
+Renamed method annotations used by all checkers:
+  @SuppressWarnings => @AssumeAssertion
