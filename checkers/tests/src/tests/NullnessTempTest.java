@@ -23,6 +23,6 @@ public class NullnessTempTest extends ParameterizedCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> data() { return testFiles("nonnull-temp"); }
+    public static Collection<Object[]> data() { return testFiles("nullness-temp"); }
 
 }

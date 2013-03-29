@@ -18,6 +18,6 @@ public class NullnessSkipDefsTest extends ParameterizedCheckerTest {
     }
 
     @Parameters
-    public static Collection<Object[]> data() { return testFiles("nonnull-skipdefs"); }
+    public static Collection<Object[]> data() { return testFiles("nullness-skipdefs"); }
 
 }
