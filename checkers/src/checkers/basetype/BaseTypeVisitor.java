@@ -320,15 +320,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
                                 .warning("pure.annotation.with.emtpy.kind"),
                                 node);
                     }
-                    if (TreeUtils.isConstructor(node)) {
-                        // constructors cannot be deterministic
-                        if (kinds.contains(Pure.Kind.DETERMINISTIC)
-                                && hasPurityAnnotation) {
-                            checker.report(Result
-                                    .failure("pure.determinstic.constructor"),
-                                    node);
-                        }
-                    } else {
+                    if (!TreeUtils.isConstructor(node)) {
                         // check return type
                         if (node.getReturnType().toString().equals("void")
                                 && hasPurityAnnotation) {
