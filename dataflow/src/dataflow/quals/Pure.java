@@ -52,14 +52,31 @@ import java.lang.annotation.Target;
  * by a {@link Pure}() annotation of type {@code Kind.DETERMINISTIC} on that
  * method's declaration).
  * <li>Construction of a new object.
- * <li>Catching any exceptions.
+ * <li>Catching any exceptions.  This is to prevent a method to get a hold of
+ * newly created objects and using these objects (or some property thereof)
+ * to change their return value.  For instance, the following method must be
+ * forbidden.
+ * <pre>
+    <code>
+      Pure(Kind.DETERMINISTIC)
+      int f() {
+         try {
+            int b = 0;
+            int a = 1/b;
+         } catch (Throwable t) {
+            return t.hashCode();
+         }
+         return 0;
+      }
+    </code>
+</pre>
  * </ol>
  * This is a conservative analysis.  That is, these checks are sufficient
  * for soundness (no false negatives), but the checks are unnecessarily
  * strict (there are false positives).
  *
- * <li><tt>@Pure</tt>: indicates that the method is both side-effect-free
- * and deterministic.
+ * <li><tt>@Pure</tt>: indicates that the method is both side-effect-free and
+ * deterministic.
  * </ul>
  *
  * <p>
