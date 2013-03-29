@@ -25,7 +25,7 @@ public class NullnessRawnessTest extends ParameterizedCheckerTest {
 
     @Parameters
     public static Collection<Object[]> data() {
-        return testFiles("nonnull", "nonnull2");
+        return testFiles("nullness");
     }
 
 }

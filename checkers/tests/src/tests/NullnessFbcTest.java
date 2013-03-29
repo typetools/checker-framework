@@ -25,7 +25,7 @@ public class NullnessFbcTest extends ParameterizedCheckerTest {
 
     @Parameters
     public static Collection<Object[]> data() {
-        return testFiles("nonnull", "nonnull2", "initialization/fbc");
+        return testFiles("nullness", "initialization/fbc");
     }
 
 }
