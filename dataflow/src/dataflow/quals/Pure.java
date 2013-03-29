@@ -8,20 +8,20 @@ import java.lang.annotation.Target;
 
 /**
  * {@code Pure} is a method annotation that indicates some form of
- * <em>purity</em> of that method. The dataflow framework supports three
- * forms of purity:  side-effect freedom; determinism; and both together.
- * 
+ * <em>purity</em> of that method. The dataflow framework supports three forms
+ * of purity: side-effect freedom; determinism; and both together.
+ *
  * <ul>
  * <li><tt>@Pure(Kind.SIDE_EFFECT_FREE)</tt>: A method is called
- * <em>side-effect free</em> if it has no visible side-effects. That
- * is, if some dataflow fact is known before a call to such a method, then it is
- * still known afterwards, even if the fact is about some non-final field.
+ * <em>side-effect free</em> if it has no visible side-effects. That is, if some
+ * dataflow fact is known before a call to such a method, then it is still known
+ * afterwards, even if the fact is about some non-final field.
  * <p>
- * Only the visible side-effects are important.  The method is allowed to
- * cache the answer to a computationally expensive query, for instance.
+ * Only the visible side-effects are important. The method is allowed to cache
+ * the answer to a computationally expensive query, for instance.
  * <p>
- * If a method is annotated as side-effect-free, the Checker Framework
- * warns if the method uses any of the following Java constructs:
+ * If a method is annotated as side-effect-free, the Checker Framework warns if
+ * the method uses any of the following Java constructs:
  * <ol>
  * <li>Assignment to any expression, except for local variables (and method
  * parameters).
@@ -31,10 +31,10 @@ import java.lang.annotation.Target;
  * <li>Construction of a new object where the constructor is not side-effect
  * free.
  * </ol>
- * This is a conservative analysis.  That is, these checks are sufficient
- * for soundness (no false negatives), but the checks are unnecessarily
- * strict (there are false positives).  In particular, a method that caches
- * its result will be rejected.
+ * This is a conservative analysis. That is, these checks are sufficient for
+ * soundness (no false negatives), but the checks are unnecessarily strict
+ * (there are false positives). In particular, a method that caches its result
+ * will be rejected.
  *
  * <li><tt>@Pure(Kind.DETERMINISTIC)</em>: A method is called
  * <em>deterministic</em> or <em>idempotent</em> if it returns the same
@@ -58,23 +58,23 @@ import java.lang.annotation.Target;
  * for soundness (no false negatives), but the checks are unnecessarily
  * strict (there are false positives).
  *
- * <li><tt>@Pure</tt>: indicates that the method is both side-effect-free and deterministic.
+ * <li><tt>@Pure</tt>: indicates that the method is both side-effect-free
+ * and deterministic.
  * </ul>
- * 
+ *
  * <p>
- * A constructor can be <tt>@Pure</tt>, but a constructor
- * <em>invocation</em> is not deterministic since it returns a different
- * new object each time.
- * TODO: Side-effect free constructors could be allowed to set their own fields.
+ * A constructor can be <tt>@Pure</tt>, but a constructor <em>invocation</em> is
+ * not deterministic since it returns a different new object each time. TODO:
+ * Side-effect free constructors could be allowed to set their own fields.
  * </p>
- * 
+ *
  * <p>
  * Note that the rules for checking currently imply that every deterministic
  * method is also side-effect free. This might change in the future; in general,
  * a deterministic method does not need to be side-effect free.
- * 
+ *
  * @author Stefan Heule
- * 
+ *
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
