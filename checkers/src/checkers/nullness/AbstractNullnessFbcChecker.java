@@ -1,5 +1,8 @@
 package checkers.nullness;
 
+import java.util.Collection;
+import java.util.HashSet;
+
 import checkers.initialization.quals.Committed;
 import checkers.initialization.quals.FBCBottom;
 import checkers.initialization.quals.Free;
@@ -27,6 +30,14 @@ public class AbstractNullnessFbcChecker extends AbstractNullnessChecker {
 
     public AbstractNullnessFbcChecker() {
         super(true);
+    }
+
+    @Override
+    public Collection<String> getSuppressWarningsKeys() {
+        Collection<String> result = new HashSet<>();
+        result.addAll(super.getSuppressWarningsKeys());
+        result.add("fbc");
+        return result;
     }
 
 }
