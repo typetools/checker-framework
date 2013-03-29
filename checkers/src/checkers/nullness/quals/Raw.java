@@ -55,23 +55,23 @@ import checkers.quals.TypeQualifier;
  * <pre>
  * <code>
  *   class A {
- *      @NonNull String a;
+ *      &#64;NonNull String a;
  *      public A() {
  *          a = "";
  *          // Now, all fields of A are initialized.
  *          // However, if this constuctor is invoked as part of 'new B()', then
  *          // the fields of B are not yet initialized.
- *          // If we would type 'this' as @NonRaw, then the following call is valid:
+ *          // If we would type 'this' as &#64;NonRaw, then the following call is valid:
  *          foo();
  *      }
  *      void foo() {}
  *   }
  *
  *   class B extends A {
- *      @NonNull String b;
- *      @Override
+ *      &#64;NonNull String b;
+ *      &#64;Override
  *      void foo() {
- *          // Dereferencing 'b' is ok, sind 'this' is @NonRaw and 'b' @NonNull.
+ *          // Dereferencing 'b' is ok, since 'this' is &#64;NonRaw and 'b' &#64;NonNull.
  *          // However, in 'new B()', this throws a null-pointer exception.
  *          b.toString();
  *      }

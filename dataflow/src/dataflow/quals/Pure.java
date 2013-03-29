@@ -58,7 +58,7 @@ import java.lang.annotation.Target;
  * forbidden.
  * <pre>
     <code>
-      Pure(Kind.DETERMINISTIC)
+      &#64;Pure(Kind.DETERMINISTIC)
       int f() {
          try {
             int b = 0;
