@@ -11,14 +11,14 @@ public class Suppression {
     
     }
     
-    @SuppressWarnings({"commitment","nonnull"})
+    @SuppressWarnings({"fbc","nullness"})
     void foo(@Unclassified Suppression arg) {
-        t = arg;    // "commitment" error
-        t = null;    // "nonnull" error
+        t = arg;    // "fbc" error
+        t = null;    // "nullness" error
     }
     
     void test() {
-        @SuppressWarnings("nonnull:assignment.type.incompatible")
+        @SuppressWarnings("nullness:assignment.type.incompatible")
         @NonNull String s = null;
     }
 

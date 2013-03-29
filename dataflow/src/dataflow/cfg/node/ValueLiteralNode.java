@@ -10,7 +10,7 @@ import dataflow.util.HashCodeUtils;
 import com.sun.source.tree.LiteralTree;
 
 /*>>>
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.Nullable;
 */
 
 /**
@@ -25,9 +25,9 @@ import checkers.nonnull.quals.Nullable;
  * <li>boolean literal</li>
  * <li>null literal</li>
  * </ul>
- * 
+ *
  * @author Stefan Heule
- * 
+ *
  */
 public abstract class ValueLiteralNode extends Node {
 
@@ -37,7 +37,7 @@ public abstract class ValueLiteralNode extends Node {
      * @return The value of the literal.
      */
     abstract public /*@Nullable*/ Object getValue();
-    
+
     public ValueLiteralNode(LiteralTree tree) {
         super(InternalUtils.typeOf(tree));
         this.tree = tree;

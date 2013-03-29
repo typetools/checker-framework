@@ -19,7 +19,7 @@ import com.sun.source.tree.Tree;
  *
  * Boxing can fail with an {@link OutOfMemoryError}, but that is not something
  * we consider in our dataflow analyses. Boxing of primitive types always yields
- * a {@link checkers.nonnull.quals.NonNull NonNull} reference, however, boxing
+ * a {@link checkers.nullness.quals.NonNull NonNull} reference, however, boxing
  * of null values yields null.
  *
  * @author Stefan Heule
