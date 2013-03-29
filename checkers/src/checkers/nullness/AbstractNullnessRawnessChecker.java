@@ -1,5 +1,8 @@
 package checkers.nullness;
 
+import java.util.Collection;
+import java.util.HashSet;
+
 import checkers.nullness.quals.MonotonicNonNull;
 import checkers.nullness.quals.NonNull;
 import checkers.nullness.quals.NonRaw;
@@ -24,6 +27,14 @@ public class AbstractNullnessRawnessChecker extends AbstractNullnessChecker {
 
     public AbstractNullnessRawnessChecker() {
         super(false);
+    }
+
+    @Override
+    public Collection<String> getSuppressWarningsKeys() {
+        Collection<String> result = new HashSet<>();
+        result.addAll(super.getSuppressWarningsKeys());
+        result.add("rawness");
+        return result;
     }
 
 }

@@ -17,14 +17,12 @@ import checkers.nullness.quals.NonNull;
 import checkers.nullness.quals.Nullable;
 import checkers.nullness.quals.PolyNull;
 import checkers.quals.PolyAll;
-import checkers.source.SuppressWarningsKeys;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.QualifierHierarchy;
 import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 
 import com.sun.source.tree.CompilationUnitTree;
 
-@SuppressWarningsKeys("nullness")
 public abstract class AbstractNullnessChecker extends InitializationChecker {
 
     /** Annotation constants */
@@ -69,7 +67,7 @@ public abstract class AbstractNullnessChecker extends InitializationChecker {
     public Collection<String> getSuppressWarningsKeys() {
         Collection<String> result = new HashSet<>();
         result.addAll(super.getSuppressWarningsKeys());
-        result.add("nonnull");
+        result.add("nullness");
         return result;
     }
 
