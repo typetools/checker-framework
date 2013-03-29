@@ -523,7 +523,7 @@ ${build.version} of the 'javac.jar' library."/>
       </exec>
       <exec executable="make" failonerror="${halt.on.test.failure}">
         <env key="JAVAC" value="${basedir}/binary/javac"/>
-        <arg line="-C tests/nonnull-extra/"/>
+        <arg line="-C tests/nullness-extra/"/>
       </exec>
     </target>
 
