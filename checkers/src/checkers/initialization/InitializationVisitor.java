@@ -17,8 +17,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ExecutableType;
-import javax.lang.model.type.TypeKind;
-
 import checkers.basetype.BaseTypeVisitor;
 import checkers.flow.analysis.checkers.CFAbstractStore;
 import checkers.flow.analysis.checkers.CFAbstractValue;
@@ -44,7 +42,7 @@ import dataflow.analysis.FlowExpressions.ThisReference;
 
 /*>>>
 import checkers.compilermsgs.quals.CompilerMessageKey;
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.Nullable;
 */
 
 // TODO/later: documentation

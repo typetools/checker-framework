@@ -16,7 +16,7 @@ public class AssertTwice {
 
     private void assertTwiceWithUse() {
         String methodDeclaration = null;
-        assert methodDeclaration != null : "@AssumeAssertion(nonnull)";
+        assert methodDeclaration != null : "@AssumeAssertion(nullness)";
         methodDeclaration.toString();
         //:: warning: (known.nonnull)
         assert methodDeclaration != null;

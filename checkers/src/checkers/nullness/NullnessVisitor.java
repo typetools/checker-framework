@@ -537,11 +537,11 @@ public class NullnessVisitor
             AnnotatedTypeTree t = (AnnotatedTypeTree) identifier;
             for (AnnotationMirror a : atypeFactory.getAnnotatedType(t)
                     .getAnnotations()) {
-                // is this an annotation of the nonnull checker?
-                boolean nonnullCheckerAnno = AnnotationUtils
+                // is this an annotation of the nullness checker?
+                boolean nullnessCheckerAnno = AnnotationUtils
                         .containsSameIgnoringValues(
                                 checker.getNonNullAnnotations(), a);
-                if (nonnullCheckerAnno && !AnnotationUtils.areSame(NONNULL, a)) {
+                if (nullnessCheckerAnno && !AnnotationUtils.areSame(NONNULL, a)) {
                     // The type is not non-null => warning
                     checker.report(
                             Result.warning("new.class.type.invalid",

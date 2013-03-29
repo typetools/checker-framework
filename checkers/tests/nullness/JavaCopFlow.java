@@ -118,7 +118,7 @@ class Flow {
 
     public void testAssert(@Nullable String str) {
 
-        assert str != null : "@AssumeAssertion(nonnull)";
+        assert str != null : "@AssumeAssertion(nullness)";
 
         @NonNull String a = str;
 

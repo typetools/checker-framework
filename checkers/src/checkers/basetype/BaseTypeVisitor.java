@@ -103,7 +103,7 @@ import com.sun.tools.javac.tree.TreeInfo;
 /*>>>
  import dataflow.util.PurityChecker.PurityResult;
  import checkers.compilermsgs.quals.CompilerMessageKey;
- import checkers.nonnull.quals.Nullable;
+ import checkers.nullness.quals.Nullable;
  */
 
 /**
