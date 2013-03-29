@@ -21,7 +21,7 @@ public class Expressions {
   private HashMap<String, String> map = new HashMap<String, String>();
 
   public void test() {
-      @SuppressWarnings("nonnull") String s = map.get("foo");
+      @SuppressWarnings("nullness") String s = map.get("foo");
 
       Class<?> cl = Boolean.TYPE;
 
@@ -61,7 +61,7 @@ public class Expressions {
   }
 
   void testRawness(@Raw Object obj) {
-      @SuppressWarnings("rawness")
+      @SuppressWarnings("initialization")
       @NonRaw Object nonRaw = obj;
       this.obj = nonRaw;
   }

@@ -69,7 +69,7 @@ public class Casts {
     void testSuppression(@Nullable Object x) {
         //:: error: (assignment.type.incompatible)
         @NonNull String s1 = (String) x;
-        @SuppressWarnings("nonnull")
+        @SuppressWarnings("nullness")
         @NonNull String s2 = (String) x;
     }
 

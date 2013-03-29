@@ -7,7 +7,7 @@ import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.util.Name;
 
 /*>>>
-import checkers.nonnull.quals.Nullable;
+import checkers.nullness.quals.Nullable;
 */
 
 /**

@@ -34,7 +34,7 @@ public class FlowField {
 
     class B extends A {
         void test() {
-            assert field != null : "@AssumeAssertion(nonnull)";
+            assert field != null : "@AssumeAssertion(nullness)";
             field.length();
         }
     }

@@ -18,7 +18,7 @@ class PptTopLevel {
     }
 
     static void testPptTopLevelAssert(PptTopLevel ppt) {
-        assert ppt.has_splitters() : "@AssumeAssertion(nonnull)";
+        assert ppt.has_splitters() : "@AssumeAssertion(nullness)";
         @NonNull Object s2 = ppt.splitters;
     }
 

@@ -10,13 +10,13 @@ public class Asserts {
 
     void incorrectAssertExpr() {
         String s = null;
-        assert s != null : "@AssumeAssertion(nonnull)";  // error
+        assert s != null : "@AssumeAssertion(nullness)";  // error
         s.getClass();  // OK
     }
 
     void correctAssertExpr() {
         String s = null;
-        assert s == null : "@AssumeAssertion(nonnull)";
+        assert s == null : "@AssumeAssertion(nullness)";
         //:: error: (dereference.of.nullable)
         s.getClass();   // error
     }
@@ -26,7 +26,7 @@ public class Asserts {
     }
 
     void assertComplexExpr (ArrayCell ac, int i) {
-        assert ac.vals[i] != null : "@AssumeAssertion(nonnull)";
+        assert ac.vals[i] != null : "@AssumeAssertion(nullness)";
         @NonNull Object o = ac.vals[i];
         i = 10;
         //:: error: (assignment.type.incompatible)
@@ -57,7 +57,7 @@ public class Asserts {
     }
     
     void testAssertGood(boolean @Nullable [] seq1, boolean @Nullable [] seq2) {
-        assert sameLength(seq1, seq2) : "@AssumeAssertion(nonnull)";
+        assert sameLength(seq1, seq2) : "@AssumeAssertion(nullness)";
         // The explanation contains "nullness" and we therefore take the additional assumption
         if (seq1[0]);        
     }

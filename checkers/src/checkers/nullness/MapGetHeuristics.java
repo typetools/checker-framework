@@ -120,7 +120,7 @@ import com.sun.source.util.TreePath;
             }
         } catch (Throwable t) {
             // TODO: this is an ugly hack to suppress some problems in Resolver2
-            // that cause an exception. See tests/nonnull2/KeyFors.java for an
+            // that cause an exception. See tests/nullness/KeyFors.java for an
             // example that might be affected.
         }
     }

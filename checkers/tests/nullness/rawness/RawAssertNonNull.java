@@ -59,7 +59,7 @@ class RawAssertNonNull {
             // If one has some additional information that the type system hasn't
             // one can suppress the error from Test1c using an assertion,
             // which is nicer than suppressing the warning.
-            assert this.g!=null : "@AssumeAssertion(nonnull)";
+            assert this.g!=null : "@AssumeAssertion(nullness)";
         }
 
         @EnsuresNonNull({"f"})
