@@ -91,7 +91,10 @@ class NNOEStaticFields {
         private static boolean doPurity = false;
 
         @EnsuresNonNullIf(result=true, expression="ChicoryPremain1.pureMethods")
+        // this postcondition cannot be proved with the Checker Framework, as the relation
+        // between doPurity and pureMethods is not explicit
         public static boolean shouldDoPurity() {
+            //:: error: (contracts.conditional.postcondition.not.satisfied)
             return doPurity;
         }
 
