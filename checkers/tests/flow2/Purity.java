@@ -23,18 +23,6 @@ class Purity {
         }
     }
     
-    // class with wrong purity annotations on constructors
-    private static class InvalidClass {
-        @Pure(Kind.DETERMINISTIC)
-        //:: error: (pure.determinstic.constructor)
-        public InvalidClass() {
-        }
-        @Pure
-        //:: error: (pure.determinstic.constructor)
-        public InvalidClass(int i) {
-        }
-    }
-    
     // a method that is not pure (no annotation)
     void nonpure() {
     }
