@@ -11,33 +11,35 @@ import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifier;
 
 /**
- * This type qualifier belongs to the rawness initialization tracking
- * type-system. This type-system is not used on its own, but in conjunction with
- * some other type-system that wants to ensure safe initialization. For
+ * This type qualifier belongs to the rawness type-system for tracking
+ * initialization. This type-system is not used on its own, but in conjunction
+ * with some other type-system that wants to ensure safe initialization. For
  * instance, {@link NullnessRawnessChecker} uses rawness to track initialization
  * of {@link NonNull} fields.
  *
  * <p>
  * This type qualifier indicates that the object might not have been fully
- * initialized, where "being initialized" refers to the state of fields and
- * whether they have a value that corresponds to their type qualifier. What type
- * qualifier are considered depends on the checker; for instance, the
+ * initialized.  An object is fully initialized when each of its fields
+ * contains a value that satisfies its type qualifier. What type
+ * qualifiers are considered depends on the checker; for instance, the
  * {@link NullnessRawnessChecker} considers {@link NonNull}.
  *
  * <p>
- * Therefore, reading fields of an object of type {@link Raw} might yield
- * objects that do not correspond to the type qualifier written for that field.
- * For instance, in the {@link NullnessRawnessChecker}, fields might be
- * {@code null} even if they have been annotated as {@link NonNull}.
+ * Therefore, reading a field of an object of type {@link Raw} might yield
+ * a value that does not correspond to the declared type qualifier for that field.
+ * For instance, in the {@link NullnessRawnessChecker}, a field might be
+ * {@code null} even if it has been annotated as {@link NonNull}.
  *
  * <p>
  * More precisely, an expression of type {@code @Raw(T.class)} refers to an
  * object that has all fields of {@code T} (and any super-classes) initialized
- * (e.g. to a non-null value in the {@link NullnessRawnessChecker}).
+ * (e.g., to a non-null value in the {@link NullnessRawnessChecker}).
+ * Just {@code @Raw} is equivalent to {@code @Raw{Object.class}}.
  *
  * <p>
  * At the beginning of a constructor, the fields of the object are not yet
- * initialized and thus {@link Raw} is used as the type of the self-reference
+ * initialized and thus {@link Raw(<em>supertype</em>)} is used as the type of
+ * the self-reference
  * {@code this}. Consider a class {@code B} that is a subtype of {@code A}. At
  * the beginning of the constructor of {@code B}, {@code this} has the type
  * {@code @Raw(A.class)}, since all fields of {@code A} have been initialized by
@@ -49,7 +51,7 @@ import checkers.quals.TypeQualifier;
  * <p>
  * Note that it would not be sound to type {@code this} as {@link NonRaw}
  * anywhere in a constructor (with the exception of final classes; but this is
- * currently not implemented), because there might always be subclasses with
+ * currently not implemented), because there might be subclasses with
  * uninitialized fields. The following example shows why:
  *
  * <pre>
@@ -72,7 +74,7 @@ import checkers.quals.TypeQualifier;
  *      &#64;Override
  *      void foo() {
  *          // Dereferencing 'b' is ok, since 'this' is &#64;NonRaw and 'b' &#64;NonNull.
- *          // However, in 'new B()', this throws a null-pointer exception.
+ *          // However, when executing 'new B()', this line throws a null-pointer exception.
  *          b.toString();
  *      }
  *   }
