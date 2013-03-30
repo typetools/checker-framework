@@ -29,4 +29,8 @@ class TestPolyNull {
     return retval;
   }
 
+  public static /*@PolyNull*/ String identity2(/*@PolyNull*/ String a) {
+    return (a == null) ? null : a;
+  }
+
 }
