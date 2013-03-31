@@ -46,7 +46,10 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedIntersectionType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
+import checkers.types.TypeHierarchy;
+import checkers.types.visitors.AnnotatedTypeScanner;
 import checkers.types.visitors.SimpleAnnotatedTypeVisitor;
+
 /*>>>
 import checkers.nullness.quals.*;
 */
@@ -309,6 +312,7 @@ public class AnnotatedTypes {
         case STATIC_INIT:
         case TYPE_PARAMETER:
             return atypeFactory.fromElement(elem);
+        default:
         }
         AnnotatedTypeMirror type = asMemberOfImpl(types, atypeFactory, t, elem);
         if (!ElementUtils.isStatic(elem))
@@ -682,45 +686,69 @@ public class AnnotatedTypes {
             methodType = null;
         }
 
+        // Using assignment context first
+        AnnotatedTypeMirror assigned =
+            assignedTo(types, atypeFactory, atypeFactory.getPath(expr));
+
         for (TypeParameterElement var : elt.getTypeParameters()) {
             // Find the un-annotated binding for the type variable
             AnnotatedTypeVariable typeVar = (AnnotatedTypeVariable) atypeFactory.getAnnotatedType(var);
-            AnnotatedTypeMirror returnTypeBase;
 
-            AnnotatedTypeMirror argument =
-                inferTypeArgsUsingArgs(processingEnv, atypeFactory, typeVar, returnType, methodType, expr);
+            AnnotatedTypeMirror argument = null;
 
-            if (argument == null) {
-                // Using assignment context
-                AnnotatedTypeMirror assigned =
-                    assignedTo(types, atypeFactory, atypeFactory.getPath(expr));
-                if (assigned != null) {
+            argument = inferTypeArgsUsingArgs(processingEnv, atypeFactory, typeVar, returnType, methodType, expr);
+
+            if (argument == null ||
+                    (assigned != null &&
+                    !containsTypeVar(assigned))) {
+
+                TypeHierarchy typeHierarchy = atypeFactory.getTypeHierarchy();
+
+                if (assigned != null &&
+                        (argument == null ||
+                        typeHierarchy == null ||
+                        !(types.isSubtype(argument.getUnderlyingType(), assigned.getUnderlyingType()) &&
+                                typeHierarchy.isSubtype(argument, assigned)))) {
                     AnnotatedTypeMirror rettype = methodType.getReturnType();
-                    returnTypeBase = asSuper(types, atypeFactory, rettype, assigned);
+                    AnnotatedTypeMirror returnTypeBase = asSuper(types, atypeFactory, rettype, assigned);
+
                     List<AnnotatedTypeMirror> lst =
-                        new TypeResolutionFinder(processingEnv, atypeFactory, typeVar).visit(returnTypeBase, assigned);
+                            new TypeResolutionFinder(processingEnv, atypeFactory, typeVar).visit(returnTypeBase, assigned);
 
                     if (lst != null && !lst.isEmpty()) {
                         argument = lst.get(0);
-                    } else {
-                        if (rettype instanceof AnnotatedTypeVariable) {
-                            AnnotatedTypeVariable atvrettype = (AnnotatedTypeVariable) rettype;
-                            if (atvrettype.getUnderlyingType().asElement() == var) {
-                                // Special case if the return type is the type variable we are looking at
-                                if (!atypeFactory.getQualifierHierarchy().isSubtype(assigned.getAnnotations(),
-                                        rettype.getEffectiveAnnotations())) {
-                                    // If the assignment context is not a subtype of the upper bound of the
-                                    // return type, take the type qualifiers from the upper bound.
-                                    // If the assignment type and bound type are incompatible, we'll get an
-                                    // error later. Most likely the assignment type is simply a supertype of
-                                    // the bound, e.g. because of the non-null except locals default.
-                                    assigned = deepCopy(assigned);
-                                    assigned.clearAnnotations();
-                                    assigned.addAnnotations(rettype.getEffectiveAnnotations());
-                                }
-                                argument = assigned;
-                            }
+                        if (argument.getKind() == TypeKind.WILDCARD) {
+                            // It's not good to infer a wildcard type. Try again below using
+                            // just the arguments. TODO: is this good?
+                            argument = null;
                         }
+                    }
+                }
+
+                if (argument == null && assigned != null) {
+                    AnnotatedTypeMirror rettype = methodType.getReturnType();
+                    if (rettype.getKind() == TypeKind.TYPEVAR) {
+                        AnnotatedTypeVariable atvrettype = (AnnotatedTypeVariable) rettype;
+                        if (atvrettype.getUnderlyingType().asElement() == var) {
+                            // Special case if the return type is the type variable we are looking at
+                            if (!atypeFactory.getQualifierHierarchy().isSubtype(assigned.getAnnotations(),
+                                    rettype.getEffectiveAnnotations())) {
+                                // If the assignment context is not a subtype of the upper bound of the
+                                // return type, take the type qualifiers from the upper bound.
+                                // If the assignment type and bound type are incompatible, we'll get an
+                                // error later. Most likely the assignment type is simply a supertype of
+                                // the bound, e.g. because of the non-null except locals default.
+                                assigned = deepCopy(assigned);
+                                assigned.clearAnnotations();
+                                assigned.addAnnotations(rettype.getEffectiveAnnotations());
+                            }
+                            argument = assigned;
+                        }
+                    }
+                    if (argument == null) {
+                        // Inferring using context failed for some reason; use the
+                        // best we can from the arguments.
+                        argument = inferTypeArgsUsingArgs(processingEnv, atypeFactory, typeVar, returnType, methodType, expr);
                     }
                 }
             }
@@ -735,6 +763,16 @@ public class AnnotatedTypes {
         }
 
         return typeArguments;
+    }
+
+    private static boolean containsTypeVar(AnnotatedTypeMirror assigned) {
+        Boolean res = assigned.accept(new AnnotatedTypeScanner<Boolean, Void>() {
+            @Override
+            public Boolean visitTypeVariable(AnnotatedTypeVariable type, Void p) {
+                return true;
+            }
+        }, null);
+        return res != null && res;
     }
 
     /**

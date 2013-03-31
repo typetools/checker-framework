@@ -98,6 +98,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /** Represent the annotation relations. **/
     protected final QualifierHierarchy qualHierarchy;
 
+    /** Represent the type relations.
+     * Can be null if the checker doesn't support type hierarchies.
+     */
+    protected final /*@Nullable*/ TypeHierarchy typeHierarchy;
+
     /** Types read from stub files (but not those from the annotated JDK jar file). */
     // Initially null, then assigned in postInit().  Caching is enabled as
     // soon as this is non-null, so it should be first set to its final
@@ -162,6 +167,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     public AnnotatedTypeFactory(SourceChecker checker,
             QualifierHierarchy qualHierarchy,
+            /*@Nullable*/ TypeHierarchy typeHierarchy,
             /*@Nullable*/ CompilationUnitTree root) {
         uid = ++uidCounter;
         this.processingEnv = checker.getProcessingEnvironment();
@@ -172,6 +178,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         this.types = processingEnv.getTypeUtils();
         this.visitorState = new VisitorState();
         this.qualHierarchy = qualHierarchy;
+        this.typeHierarchy = typeHierarchy;
         if (qualHierarchy == null) {
             ErrorReporter.errorAbort("AnnotatedTypeFactory with null qualifier hierarchy not supported.");
         }
@@ -1351,6 +1358,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     public QualifierHierarchy getQualifierHierarchy() {
         return this.qualHierarchy;
+    }
+
+    public /*@Nullable*/ TypeHierarchy getTypeHierarchy() {
+        return this.typeHierarchy;
     }
 
     /**

@@ -401,16 +401,16 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         t.removeAll(result.getTypes());
         if (t.contains(Pure.Kind.DETERMINISTIC)
                 || t.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
-            for (Pair<Tree, String>  r: result.getNotBothReasons()) {
+            for (Pair<Tree, /*@CompilerMessageKey*/ String> r: result.getNotBothReasons()) {
                 checker.report(Result.failure(r.second), r.first);
             }
             if (t.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
-                for (Pair<Tree, String>  r: result.getNotSeFreeReasons()) {
+                for (Pair<Tree, /*@CompilerMessageKey*/ String> r: result.getNotSeFreeReasons()) {
                     checker.report(Result.failure(r.second), r.first);
                 }
             }
             if (t.contains(Pure.Kind.DETERMINISTIC)) {
-                for (Pair<Tree, String>  r: result.getNotDetReasons()) {
+                for (Pair<Tree, /*@CompilerMessageKey*/ String> r: result.getNotDetReasons()) {
                     checker.report(Result.failure(r.second), r.first);
                 }
             }
@@ -1299,7 +1299,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
      * @param errorKey the error message to use if the check fails (must be a
      *        compiler message key, see {@link CompilerMessageKey})
      * @param isLocalVariableAssignement
-     *            Are we dealing with an assigment and is the lhs a local
+     *            Are we dealing with an assignment and is the lhs a local
      *            variable?
      */
     protected void commonAssignmentCheck(AnnotatedTypeMirror varType,
@@ -1994,7 +1994,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
 
     protected class TypeValidator extends AnnotatedTypeScanner<Void, Tree> {
         public boolean isValid = true;
-        protected void reportValidityResult(final String errorType, final AnnotatedTypeMirror type, final Tree p) {
+        protected void reportValidityResult(final /*@CompilerMessageKey*/ String errorType, final AnnotatedTypeMirror type, final Tree p) {
             checker.report(Result.failure(errorType,
                     type.getAnnotations(), type.toString()), p);
             isValid = false;
