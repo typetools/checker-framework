@@ -19,7 +19,7 @@ public class InvariantTypes {
   List<String> ls = Arrays.asList("alice", "bob", "carol");
   List<@Regex String> lrs = Arrays.asList("alice", "bob", "carol");
   List<String> lnrs = Arrays.asList("(alice", "bob", "carol");
-  //:: error: (assignment.type.incompatible)
+  //:: error: (argument.type.incompatible)
   List<@Regex String> lrserr = Arrays.asList("(alice", "bob", "carol");
 
   void unqm(String[] sa) {}
@@ -46,15 +46,40 @@ public class InvariantTypes {
 
   // method argument context
 
-    String[] retunqm(String[] sa) { return sa;}
-    @Regex String[] retrem(@Regex String[] rsa) { return rsa; }
-    @Regex String[] mixedm( String[] rsa) { return null; }
+  String[] retunqm(String[] sa) { return sa;}
+  @Regex String[] retrem(@Regex String[] rsa) { return rsa; }
+  @Regex String[] mixedm( String[] rsa) { return null; }
 
-    void retunqcalls() {
-        @Regex String[] re = mixedm(new String[] {"a("});
-        //TODOINVARR:: error: (argument.type.incompatible)
-        String [] u = retunqm(new String[] {"a"});
-        //TODOINVARR:: error: (argument.type.incompatible)
-        re = mixedm(new String[2]);
-    }
+  void retunqcalls() {
+    @Regex String[] re = mixedm(new String[] {"a("});
+    //TODOINVARR:: error: (argument.type.incompatible)
+    String [] u = retunqm(new String[] {"a"});
+    //TODOINVARR:: error: (argument.type.incompatible)
+    re = mixedm(new String[2]);
+  }
+
+  void lrem(List<@Regex String> p) {}
+  void lunqm(List<String> p) {}
+
+  void listcalls() {
+    lunqm(Arrays.asList("alice", "bob", "carol"));
+    lrem(Arrays.asList("alice", "bob", "carol"));
+    lunqm(Arrays.asList("(alice", "bob", "carol"));
+    //:: error: (argument.type.incompatible)
+    lrem(Arrays.asList("(alice", "bob", "carol"));
+  }
+
+  class ReTests {
+    ReTests(List<@Regex String> p) {}
+    ReTests(List<String> p, int i) {}
+  }
+
+  void listctrs() {
+    new ReTests(Arrays.asList("alice", "bob", "carol"), 0);
+    new ReTests(Arrays.asList("alice", "bob", "carol"));
+    new ReTests(Arrays.asList("(alice", "bob", "carol"), 0);
+    //:: error: (argument.type.incompatible)
+    new ReTests(Arrays.asList("(alice", "bob", "carol"));
+  }
+
 }
