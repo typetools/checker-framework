@@ -1,5 +1,7 @@
 import java.util.*;
+
 import checkers.regex.quals.*;
+import checkers.types.AnnotatedTypeMirror;
 
 public class InvariantTypes {
   String[] sa = {"a"};
@@ -82,4 +84,21 @@ public class InvariantTypes {
     new ReTests(Arrays.asList("(alice", "bob", "carol"));
   }
 
+  <J> String join(final String delimiter, final Collection<J> objs) {
+    return delimiter;
+  }
+
+  String s1 = join(" ", Arrays.asList("1", "2", "3"));
+  String s2 = "xxx" + join(" ", Arrays.asList("1", "2", "3"));
+
+  <K extends AnnotatedTypeMirror, V extends AnnotatedTypeMirror>
+  V mapGetHelper(Map<K, V> mappings) {
+    return null;
+  }
+  Map<? extends AnnotatedTypeMirror, ? extends AnnotatedTypeMirror> mappings;
+  AnnotatedTypeMirror found = mapGetHelper(mappings);
+
+  class TV<T> {
+    List<List<T>> emptylist = Collections.emptyList();
+  }
 }
