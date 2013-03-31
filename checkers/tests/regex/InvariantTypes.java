@@ -21,7 +21,7 @@ public class InvariantTypes {
   List<String> ls = Arrays.asList("alice", "bob", "carol");
   List<@Regex String> lrs = Arrays.asList("alice", "bob", "carol");
   List<String> lnrs = Arrays.asList("(alice", "bob", "carol");
-  //:: error: (argument.type.incompatible)
+  //:: error: (assignment.type.incompatible)
   List<@Regex String> lrserr = Arrays.asList("(alice", "bob", "carol");
 
   void unqm(String[] sa) {}

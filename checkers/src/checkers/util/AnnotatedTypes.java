@@ -696,60 +696,56 @@ public class AnnotatedTypes {
 
             AnnotatedTypeMirror argument = null;
 
+            // first use the arguments
             argument = inferTypeArgsUsingArgs(processingEnv, atypeFactory, typeVar, returnType, methodType, expr);
 
-            if (argument == null ||
-                    (assigned != null &&
-                    !containsTypeVar(assigned))) {
+            if (assigned != null) {
+                // if we also have an assignment context, try using it
+                AnnotatedTypeMirror rettype = methodType.getReturnType();
+                AnnotatedTypeMirror returnTypeBase = asSuper(types, atypeFactory, rettype, assigned);
 
-                TypeHierarchy typeHierarchy = atypeFactory.getTypeHierarchy();
+                List<AnnotatedTypeMirror> lst =
+                        new TypeResolutionFinder(processingEnv, atypeFactory, typeVar).visit(returnTypeBase, assigned);
 
-                if (assigned != null &&
-                        (argument == null ||
-                        typeHierarchy == null ||
-                        !(types.isSubtype(argument.getUnderlyingType(), assigned.getUnderlyingType()) &&
-                                typeHierarchy.isSubtype(argument, assigned)))) {
-                    AnnotatedTypeMirror rettype = methodType.getReturnType();
-                    AnnotatedTypeMirror returnTypeBase = asSuper(types, atypeFactory, rettype, assigned);
+                if (lst != null && !lst.isEmpty()) {
+                    AnnotatedTypeMirror retinf = lst.get(0);
 
-                    List<AnnotatedTypeMirror> lst =
-                            new TypeResolutionFinder(processingEnv, atypeFactory, typeVar).visit(returnTypeBase, assigned);
+                    TypeHierarchy typeHierarchy = atypeFactory.getTypeHierarchy();
 
-                    if (lst != null && !lst.isEmpty()) {
-                        argument = lst.get(0);
-                        if (argument.getKind() == TypeKind.WILDCARD) {
-                            // It's not good to infer a wildcard type. Try again below using
-                            // just the arguments. TODO: is this good?
-                            argument = null;
-                        }
+                    if (argument == null || retinf != null &&
+                            types.isSubtype(argument.getUnderlyingType(), retinf.getUnderlyingType()) &&
+                            typeHierarchy.isSubtype(argument, retinf)) {
+                        // Only use a type inferred from the assignment context if it is a supertype
+                        // of the type inferred by the arguments.
+                        argument = retinf;
                     }
                 }
+            }
 
-                if (argument == null && assigned != null) {
-                    AnnotatedTypeMirror rettype = methodType.getReturnType();
-                    if (rettype.getKind() == TypeKind.TYPEVAR) {
-                        AnnotatedTypeVariable atvrettype = (AnnotatedTypeVariable) rettype;
-                        if (atvrettype.getUnderlyingType().asElement() == var) {
-                            // Special case if the return type is the type variable we are looking at
-                            if (!atypeFactory.getQualifierHierarchy().isSubtype(assigned.getAnnotations(),
-                                    rettype.getEffectiveAnnotations())) {
-                                // If the assignment context is not a subtype of the upper bound of the
-                                // return type, take the type qualifiers from the upper bound.
-                                // If the assignment type and bound type are incompatible, we'll get an
-                                // error later. Most likely the assignment type is simply a supertype of
-                                // the bound, e.g. because of the non-null except locals default.
-                                assigned = deepCopy(assigned);
-                                assigned.clearAnnotations();
-                                assigned.addAnnotations(rettype.getEffectiveAnnotations());
-                            }
-                            argument = assigned;
+            if (argument == null && assigned != null) {
+                AnnotatedTypeMirror rettype = methodType.getReturnType();
+                if (rettype.getKind() == TypeKind.TYPEVAR) {
+                    AnnotatedTypeVariable atvrettype = (AnnotatedTypeVariable) rettype;
+                    if (atvrettype.getUnderlyingType().asElement() == var) {
+                        // Special case if the return type is the type variable we are looking at
+                        if (!atypeFactory.getQualifierHierarchy().isSubtype(assigned.getAnnotations(),
+                                rettype.getEffectiveAnnotations())) {
+                            // If the assignment context is not a subtype of the upper bound of the
+                            // return type, take the type qualifiers from the upper bound.
+                            // If the assignment type and bound type are incompatible, we'll get an
+                            // error later. Most likely the assignment type is simply a supertype of
+                            // the bound, e.g. because of the non-null except locals default.
+                            assigned = deepCopy(assigned);
+                            assigned.clearAnnotations();
+                            assigned.addAnnotations(rettype.getEffectiveAnnotations());
                         }
+                        argument = assigned;
                     }
-                    if (argument == null) {
-                        // Inferring using context failed for some reason; use the
-                        // best we can from the arguments.
-                        argument = inferTypeArgsUsingArgs(processingEnv, atypeFactory, typeVar, returnType, methodType, expr);
-                    }
+                }
+                if (argument == null) {
+                    // Inferring using context failed for some reason; use the
+                    // best we can from the arguments.
+                    argument = inferTypeArgsUsingArgs(processingEnv, atypeFactory, typeVar, returnType, methodType, expr);
                 }
             }
 
@@ -763,16 +759,6 @@ public class AnnotatedTypes {
         }
 
         return typeArguments;
-    }
-
-    private static boolean containsTypeVar(AnnotatedTypeMirror assigned) {
-        Boolean res = assigned.accept(new AnnotatedTypeScanner<Boolean, Void>() {
-            @Override
-            public Boolean visitTypeVariable(AnnotatedTypeVariable type, Void p) {
-                return true;
-            }
-        }, null);
-        return res != null && res;
     }
 
     /**
