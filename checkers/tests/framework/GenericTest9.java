@@ -34,7 +34,7 @@ class GenericTest9 {
     }
 
     <V> void test(Ordering2<@Odd Entry<?>> ord, Entry<V> e, @Odd Entry<V> o) {
-        //:: error: (argument.type.incompatible)
+        //:: error: (type.argument.type.incompatible)
         Entry<V> e1 = ord.sort(e);
         //:: error: (type.argument.type.incompatible)
         Entry<V> e2 = ord.<Entry<V>>sort(e);
