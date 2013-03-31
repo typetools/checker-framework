@@ -8,7 +8,6 @@ import java.util.Collection;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Name;
 
 import javacutils.ErrorReporter;
 
@@ -23,7 +22,7 @@ import com.sun.source.tree.CompilationUnitTree;
 public class GeneralAnnotatedTypeFactory extends AnnotatedTypeFactory {
 
     public GeneralAnnotatedTypeFactory(SourceChecker checker, CompilationUnitTree root) {
-        super(checker, new GeneralQualifierHierarchy(), root);
+        super(checker, new GeneralQualifierHierarchy(), null, root);
         postInit();
     }
 

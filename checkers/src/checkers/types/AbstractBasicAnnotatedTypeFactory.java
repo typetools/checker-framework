@@ -116,7 +116,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
     // we alias a deprecated annotation to its replacement
     public AbstractBasicAnnotatedTypeFactory(Checker checker,
             CompilationUnitTree root, boolean useFlow) {
-        super(checker, checker.getQualifierHierarchy(), root);
+        super(checker, checker.getQualifierHierarchy(), checker.getTypeHierarchy(), root);
         this.checker = checker;
         this.treeAnnotator = createTreeAnnotator(checker);
         this.typeAnnotator = createTypeAnnotator(checker);
