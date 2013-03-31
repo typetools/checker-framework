@@ -72,6 +72,10 @@ import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.tree.WildcardTree;
 import com.sun.tools.javac.tree.TreeScanner;
 
+/*>>>
+import checkers.compilermsgs.quals.CompilerMessageKey;
+*/
+
 /**
  * A visitor that checks the purity (as defined by {@link dataflow.quals.Pure})
  * of a statement or expression.
@@ -100,9 +104,9 @@ public class PurityChecker {
      */
     public static class PurityResult {
 
-        protected final List<Pair<Tree, String>> notSeFreeReasons;
-        protected final List<Pair<Tree, String>> notDetReasons;
-        protected final List<Pair<Tree, String>> notBothReasons;
+        protected final List<Pair<Tree, /*@CompilerMessageKey*/ String>> notSeFreeReasons;
+        protected final List<Pair<Tree, /*@CompilerMessageKey*/ String>> notDetReasons;
+        protected final List<Pair<Tree, /*@CompilerMessageKey*/ String>> notBothReasons;
         protected EnumSet<Pure.Kind> types;
 
         public PurityResult() {
@@ -124,7 +128,7 @@ public class PurityChecker {
         /**
          * Get the {@code reason}s why the method is not side-effect free.
          */
-        public List<Pair<Tree, String>> getNotSeFreeReasons() {
+        public List<Pair<Tree, /*@CompilerMessageKey*/ String>> getNotSeFreeReasons() {
             return notSeFreeReasons;
         }
 
@@ -140,7 +144,7 @@ public class PurityChecker {
         /**
          * Get the {@code reason}s why the method is not deterministic.
          */
-        public List<Pair<Tree, String>> getNotDetReasons() {
+        public List<Pair<Tree, /*@CompilerMessageKey*/ String>> getNotDetReasons() {
             return notDetReasons;
         }
 
@@ -156,7 +160,7 @@ public class PurityChecker {
          * Get the {@code reason}s why the method is not both side-effect free
          * and deterministic.
          */
-        public List<Pair<Tree, String>> getNotBothReasons() {
+        public List<Pair<Tree, /*@CompilerMessageKey*/ String>> getNotBothReasons() {
             return notBothReasons;
         }
 
