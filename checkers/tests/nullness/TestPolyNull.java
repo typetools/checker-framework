@@ -30,7 +30,17 @@ class TestPolyNull {
   }
 
   public static /*@PolyNull*/ String identity2(/*@PolyNull*/ String a) {
+    // TODO: it would be nice, if this code type-checks (just like identity and identity3),
+    // but currently a technical limitation in the flow analysis prevents this
+    //:: error: (return.type.incompatible)
     return (a == null) ? null : a;
+  }
+  
+  public static /*@PolyNull*/ String identity3(/*@PolyNull*/ String a) {
+    if (a == null) {
+        return null;
+    }
+    return a;
   }
 
 }
