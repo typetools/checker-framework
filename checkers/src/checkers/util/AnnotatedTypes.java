@@ -46,7 +46,10 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedIntersectionType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
+import checkers.types.TypeHierarchy;
+import checkers.types.visitors.AnnotatedTypeScanner;
 import checkers.types.visitors.SimpleAnnotatedTypeVisitor;
+
 /*>>>
 import checkers.nullness.quals.*;
 */
@@ -309,6 +312,7 @@ public class AnnotatedTypes {
         case STATIC_INIT:
         case TYPE_PARAMETER:
             return atypeFactory.fromElement(elem);
+        default:
         }
         AnnotatedTypeMirror type = asMemberOfImpl(types, atypeFactory, t, elem);
         if (!ElementUtils.isStatic(elem))
@@ -692,25 +696,38 @@ public class AnnotatedTypes {
 
             AnnotatedTypeMirror argument = null;
 
-            if (assigned == null) {
-                argument = inferTypeArgsUsingArgs(processingEnv, atypeFactory, typeVar, returnType, methodType, expr);
-            } else {
-                AnnotatedTypeMirror rettype = methodType.getReturnType();
-                AnnotatedTypeMirror returnTypeBase = asSuper(types, atypeFactory, rettype, assigned);
-                List<AnnotatedTypeMirror> lst =
-                        new TypeResolutionFinder(processingEnv, atypeFactory, typeVar).visit(returnTypeBase, assigned);
+            argument = inferTypeArgsUsingArgs(processingEnv, atypeFactory, typeVar, returnType, methodType, expr);
 
-                if (lst != null && !lst.isEmpty()) {
-                    argument = lst.get(0);
-                    if (argument.getKind() == TypeKind.WILDCARD) {
-                        // It's not good to infer a wildcard type. Try again below using
-                        // just the arguments. TODO: is this good?
-                        argument = null;
+            if (argument == null ||
+                    (assigned != null &&
+                    !containsTypeVar(assigned))) {
+
+                TypeHierarchy typeHierarchy = atypeFactory.getTypeHierarchy();
+
+                if (assigned != null &&
+                        (argument == null ||
+                        typeHierarchy == null ||
+                        !(types.isSubtype(argument.getUnderlyingType(), assigned.getUnderlyingType()) &&
+                                typeHierarchy.isSubtype(argument, assigned)))) {
+                    AnnotatedTypeMirror rettype = methodType.getReturnType();
+                    AnnotatedTypeMirror returnTypeBase = asSuper(types, atypeFactory, rettype, assigned);
+
+                    List<AnnotatedTypeMirror> lst =
+                            new TypeResolutionFinder(processingEnv, atypeFactory, typeVar).visit(returnTypeBase, assigned);
+
+                    if (lst != null && !lst.isEmpty()) {
+                        argument = lst.get(0);
+                        if (argument.getKind() == TypeKind.WILDCARD) {
+                            // It's not good to infer a wildcard type. Try again below using
+                            // just the arguments. TODO: is this good?
+                            argument = null;
+                        }
                     }
                 }
 
-                if (argument == null) {
-                    if (rettype instanceof AnnotatedTypeVariable) {
+                if (argument == null && assigned != null) {
+                    AnnotatedTypeMirror rettype = methodType.getReturnType();
+                    if (rettype.getKind() == TypeKind.TYPEVAR) {
                         AnnotatedTypeVariable atvrettype = (AnnotatedTypeVariable) rettype;
                         if (atvrettype.getUnderlyingType().asElement() == var) {
                             // Special case if the return type is the type variable we are looking at
@@ -746,6 +763,16 @@ public class AnnotatedTypes {
         }
 
         return typeArguments;
+    }
+
+    private static boolean containsTypeVar(AnnotatedTypeMirror assigned) {
+        Boolean res = assigned.accept(new AnnotatedTypeScanner<Boolean, Void>() {
+            @Override
+            public Boolean visitTypeVariable(AnnotatedTypeVariable type, Void p) {
+                return true;
+            }
+        }, null);
+        return res != null && res;
     }
 
     /**
