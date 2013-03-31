@@ -682,45 +682,56 @@ public class AnnotatedTypes {
             methodType = null;
         }
 
+        // Using assignment context first
+        AnnotatedTypeMirror assigned =
+            assignedTo(types, atypeFactory, atypeFactory.getPath(expr));
+
         for (TypeParameterElement var : elt.getTypeParameters()) {
             // Find the un-annotated binding for the type variable
             AnnotatedTypeVariable typeVar = (AnnotatedTypeVariable) atypeFactory.getAnnotatedType(var);
-            AnnotatedTypeMirror returnTypeBase;
 
-            AnnotatedTypeMirror argument =
-                inferTypeArgsUsingArgs(processingEnv, atypeFactory, typeVar, returnType, methodType, expr);
+            AnnotatedTypeMirror argument = null;
 
-            if (argument == null) {
-                // Using assignment context
-                AnnotatedTypeMirror assigned =
-                    assignedTo(types, atypeFactory, atypeFactory.getPath(expr));
-                if (assigned != null) {
-                    AnnotatedTypeMirror rettype = methodType.getReturnType();
-                    returnTypeBase = asSuper(types, atypeFactory, rettype, assigned);
-                    List<AnnotatedTypeMirror> lst =
+            if (assigned == null) {
+                argument = inferTypeArgsUsingArgs(processingEnv, atypeFactory, typeVar, returnType, methodType, expr);
+            } else {
+                AnnotatedTypeMirror rettype = methodType.getReturnType();
+                AnnotatedTypeMirror returnTypeBase = asSuper(types, atypeFactory, rettype, assigned);
+                List<AnnotatedTypeMirror> lst =
                         new TypeResolutionFinder(processingEnv, atypeFactory, typeVar).visit(returnTypeBase, assigned);
 
-                    if (lst != null && !lst.isEmpty()) {
-                        argument = lst.get(0);
-                    } else {
-                        if (rettype instanceof AnnotatedTypeVariable) {
-                            AnnotatedTypeVariable atvrettype = (AnnotatedTypeVariable) rettype;
-                            if (atvrettype.getUnderlyingType().asElement() == var) {
-                                // Special case if the return type is the type variable we are looking at
-                                if (!atypeFactory.getQualifierHierarchy().isSubtype(assigned.getAnnotations(),
-                                        rettype.getEffectiveAnnotations())) {
-                                    // If the assignment context is not a subtype of the upper bound of the
-                                    // return type, take the type qualifiers from the upper bound.
-                                    // If the assignment type and bound type are incompatible, we'll get an
-                                    // error later. Most likely the assignment type is simply a supertype of
-                                    // the bound, e.g. because of the non-null except locals default.
-                                    assigned = deepCopy(assigned);
-                                    assigned.clearAnnotations();
-                                    assigned.addAnnotations(rettype.getEffectiveAnnotations());
-                                }
-                                argument = assigned;
+                if (lst != null && !lst.isEmpty()) {
+                    argument = lst.get(0);
+                    if (argument.getKind() == TypeKind.WILDCARD) {
+                        // It's not good to infer a wildcard type. Try again below using
+                        // just the arguments. TODO: is this good?
+                        argument = null;
+                    }
+                }
+
+                if (argument == null) {
+                    if (rettype instanceof AnnotatedTypeVariable) {
+                        AnnotatedTypeVariable atvrettype = (AnnotatedTypeVariable) rettype;
+                        if (atvrettype.getUnderlyingType().asElement() == var) {
+                            // Special case if the return type is the type variable we are looking at
+                            if (!atypeFactory.getQualifierHierarchy().isSubtype(assigned.getAnnotations(),
+                                    rettype.getEffectiveAnnotations())) {
+                                // If the assignment context is not a subtype of the upper bound of the
+                                // return type, take the type qualifiers from the upper bound.
+                                // If the assignment type and bound type are incompatible, we'll get an
+                                // error later. Most likely the assignment type is simply a supertype of
+                                // the bound, e.g. because of the non-null except locals default.
+                                assigned = deepCopy(assigned);
+                                assigned.clearAnnotations();
+                                assigned.addAnnotations(rettype.getEffectiveAnnotations());
                             }
+                            argument = assigned;
                         }
+                    }
+                    if (argument == null) {
+                        // Inferring using context failed for some reason; use the
+                        // best we can from the arguments.
+                        argument = inferTypeArgsUsingArgs(processingEnv, atypeFactory, typeVar, returnType, methodType, expr);
                     }
                 }
             }
