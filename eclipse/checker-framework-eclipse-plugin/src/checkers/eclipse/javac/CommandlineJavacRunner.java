@@ -7,6 +7,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
 
+import checkers.eclipse.prefs.OptionLine;
 import checkers.eclipse.util.PluginUtil;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
@@ -64,8 +65,8 @@ public class CommandlineJavacRunner implements CheckersRunner {
      */
     protected File checkersJar;
 
-    public CommandlineJavacRunner(String[] fileNames, String processors,
-            String classpath, String bootClasspath) {
+    public CommandlineJavacRunner(final String[] fileNames, final String processors,
+            final String classpath, final String bootClasspath) {
         this.fileNames = Arrays.asList(fileNames);
         this.processors = processors;
 
@@ -145,16 +146,22 @@ public class CommandlineJavacRunner implements CheckersRunner {
 
         final List<String> miscOptions = new ArrayList<String>();
         addPreferenceOptions(miscOptions, prefs);
-        props.put(PluginUtil.CheckerProp.MISC_COMPILER, miscOptions);
+
+        if(!miscOptions.isEmpty()) {
+            props.put(PluginUtil.CheckerProp.MISC_COMPILER, miscOptions);
+        }
+
+        props.put(PluginUtil.CheckerProp.A_DETAILED_MSG, true);
 
         addProcessorOptions(props, prefs);
 
+
         final String jdkPath = prefs.getString(CheckerPreferences.PREF_CHECKER_JDK_PATH);
 
-        return PluginUtil.getCmd(null, srcFofn, processors,
+        return PluginUtil.getCmd(null, null, null, srcFofn, processors,
                 checkersJar.getAbsolutePath(),
                 jdkPath, classpathFofn, bootClassPath,
-                props, out);
+                props, out, true, null);
     }
 
     /**
@@ -163,15 +170,12 @@ public class CommandlineJavacRunner implements CheckersRunner {
      * @param store  The preference store for this plugin
      */
     private void addPreferenceOptions(final List<String> opts, IPreferenceStore store) {
-
         // add options from preferences
         String argStr = store.getString(CheckerPreferences.PREF_CHECKER_ARGS);
-
-        if (!argStr.isEmpty()) {
-            String[] prefOpts = argStr.split("\\s+");
-
-            for (String opt : prefOpts) {
-                opts.add(opt);
+        List<OptionLine> optionlines = OptionLine.parseOptions(argStr);
+        for(final OptionLine optLine : optionlines) {
+            if(optLine.isActive()) {
+                opts.add(optLine.getArgument());
             }
         }
     }

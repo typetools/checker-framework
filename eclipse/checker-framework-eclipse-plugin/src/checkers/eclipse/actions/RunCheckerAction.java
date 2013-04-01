@@ -13,8 +13,13 @@ import checkers.eclipse.util.JavaUtils;
 import checkers.eclipse.util.MutexSchedulingRule;
 
 /**
- * Superclass of all checker actions.
+ *
+ * RunCheckerAction is an action handler that determines what
+ *
  */
+//TODO: Rename to RunCheckerHandler
+//TODO: Remove all subclasses and just parameterize RunCheckerAction (perhaps take a list of checkers,
+//TODO: or if no checkers are specified use custom checkers)
 public abstract class RunCheckerAction extends CheckerHandler
 {
     private final String checkerName;
@@ -55,9 +60,9 @@ public abstract class RunCheckerAction extends CheckerHandler
     public Object execute(ExecutionEvent event)
     {
         ISelection selection = getSelection(event);
-        IJavaElement element = element(selection);
+        List<IJavaElement> elements = selectionToJavaElements(selection);
 
-        if (element != null)
+        if (!elements.isEmpty())
         {
             Job checkerJob;
             String customClasses = CheckerPlugin.getDefault()
@@ -84,7 +89,7 @@ public abstract class RunCheckerAction extends CheckerHandler
                 actualNames = JavaUtils.join(",", names);
             }
 
-            checkerJob = new CheckerWorker(element, actualNames);
+            checkerJob = new CheckerWorker(elements, actualNames);
 
             checkerJob.setUser(true);
             checkerJob.setPriority(Job.BUILD);

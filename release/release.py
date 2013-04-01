@@ -185,8 +185,8 @@ def main(argv):
 
     #Push the final state (after any changes made during the release) to the repositories
     #Adding an identifying tag for this release
-    commit_tag_and_push(next_version, CHECKER_FRAMEWORK, "checkers-")
-    commit_tag_and_push(next_version, JSR308_LANGTOOLS, "jsr308-")
+    #commit_tag_and_push(next_version, CHECKER_FRAMEWORK, "checkers-")
+    #commit_tag_and_push(next_version, JSR308_LANGTOOLS, "jsr308-")
 
     #Add group write access to all files in the website to ensure they are served
     ensure_group_access( LOCAL_PATH_TO_SITE )

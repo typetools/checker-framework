@@ -24,10 +24,7 @@ package checkers.util;
  */
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class PluginUtil {
 
@@ -35,13 +32,13 @@ public class PluginUtil {
      * Option name for specifying an alternative javac.jar location.  The accompanying value
      * MUST be the path to the jar file (NOT the path to its encompassing directory)
      */
-    public static final String JAVAC_PATH_OPT = "-javacPath";
+    public static final String JAVAC_PATH_OPT = "-javacJar";
 
     /**
      * Option name for specifying an alternative jdk.jar location.  The accompanying value
      * MUST be the path to the jar file (NOT the path to its encompassing directory)
      */
-    public static final String JDK_PATH_OPT   = "-jdkPath";
+    public static final String JDK_PATH_OPT   = "-jdkJar";
 
 
     public static List<File> toFiles(final List<String> fileNames) {
@@ -65,7 +62,7 @@ public class PluginUtil {
         final BufferedWriter bw = new BufferedWriter(new FileWriter(destination));
         try {
             for(final File file : files) {
-                bw.write(file.getAbsolutePath());
+                bw.write(wrapArg(file.getAbsolutePath()));
                 bw.newLine();
             }
 
@@ -120,16 +117,16 @@ public class PluginUtil {
     /**
      * TODO: Either create/use a util class
      */
-    public static String join(final String delimiter, final List<String> strings) {
+    public static <T> String join(final String delimiter, final Collection<T> objs) {
 
         boolean notFirst = false;
         final StringBuffer sb = new StringBuffer();
 
-        for(final String str : strings) {
+        for(final Object obj : objs) {
             if(notFirst) {
                 sb.append(delimiter);
             }
-            sb.append(str);
+            sb.append(obj.toString());
             notFirst = true;
         }
 
@@ -182,7 +179,7 @@ public class PluginUtil {
             }
         },
 
-        A_SKIP() { //TODO: NEED TO ADD
+        A_SKIP() {
             @Override
             public List<String> getCmdLine(final Map<CheckerProp, Object> props) {
                 return getStringProp(props, this, "-AskipUses=");
@@ -219,6 +216,12 @@ public class PluginUtil {
             public List<String> getCmdLine(final Map<CheckerProp, Object> props) {
                 return getBooleanProp(props, this, "-Afilenames");
             }
+        },
+        A_DETAILED_MSG() {
+            @Override
+            public List<String> getCmdLine(final Map<CheckerProp, Object> props) {
+                return getBooleanProp(props, this, "-Adetailedmsgtext");
+            }
         };
 
         public abstract List<String> getCmdLine(final Map<CheckerProp, Object> props);
@@ -242,13 +245,20 @@ public class PluginUtil {
     }
 
     public static File writeTmpCpFile(final String prefix, final boolean deleteOnExit,
-                                       final String classpath) throws IOException {
-        return writeTmpArgFile(prefix, ".classpath", deleteOnExit, Arrays.asList("-classpath", classpath));
+                                      final String classpath) throws IOException {
+        return writeTmpArgFile(prefix, ".classpath", deleteOnExit, Arrays.asList("-classpath", wrapArg(classpath)));
     }
 
     public static boolean isWindows() {
         final String os = System.getProperty("os.name");
         return os.toLowerCase().contains("win");
+    }
+
+    public static String wrapArg(final String classpath) {
+        if(classpath.contains(" ")) {
+            return '"' + classpath + '"';
+        }
+        return classpath;
     }
 
     public static String getJavaCommand(final String javaHome, final PrintStream out) {

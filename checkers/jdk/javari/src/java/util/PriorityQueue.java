@@ -6,9 +6,9 @@ public class PriorityQueue<E> extends AbstractQueue<E> implements java.io.Serial
   public PriorityQueue() { throw new RuntimeException(("skeleton method")); }
   public PriorityQueue(int a1) { throw new RuntimeException(("skeleton method")); }
   public PriorityQueue(int a1, Comparator<? super E> a2) { throw new RuntimeException(("skeleton method")); }
-  public PriorityQueue(@PolyRead PriorityQueue<E> this, @PolyRead Collection<? extends E> a1) { throw new RuntimeException(("skeleton method")); }
-  public PriorityQueue(@PolyRead PriorityQueue<E> this, @PolyRead PriorityQueue<? extends E> a1) { throw new RuntimeException(("skeleton method")); }
-  public PriorityQueue(@PolyRead PriorityQueue<E> this, @PolyRead SortedSet<? extends E> a1) { throw new RuntimeException(("skeleton method")); }
+  public @PolyRead PriorityQueue(@PolyRead Collection<? extends E> a1) { throw new RuntimeException(("skeleton method")); }
+  public @PolyRead PriorityQueue(@PolyRead PriorityQueue<? extends E> a1) { throw new RuntimeException(("skeleton method")); }
+  public @PolyRead PriorityQueue(@PolyRead SortedSet<? extends E> a1) { throw new RuntimeException(("skeleton method")); }
   public boolean add(E a1) { throw new RuntimeException(("skeleton method")); }
   public boolean offer(E a1) { throw new RuntimeException(("skeleton method")); }
   public E peek(@ReadOnly PriorityQueue<E> this) { throw new RuntimeException(("skeleton method")); }

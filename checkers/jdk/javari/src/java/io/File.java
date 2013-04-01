@@ -31,7 +31,7 @@ public class File implements Serializable, Comparable<File> {
     public File(String parent, String child) {
         throw new RuntimeException("skeleton method");
     }
-    public File(@PolyRead File this, @PolyRead File parent, String child) {
+    public @PolyRead File(@PolyRead File parent, String child) {
       throw new RuntimeException("skeleton method");
     }
     public File(@ReadOnly URI uri) {

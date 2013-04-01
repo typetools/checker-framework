@@ -4,10 +4,10 @@ import checkers.igj.quals.*;
 @I
 public class TreeSet<E> extends @I AbstractSet<E> implements @I NavigableSet<E>, @I Cloneable, java.io. @I Serializable {
     private static final long serialVersionUID = 0L;
-  public TreeSet(@AssignsFields TreeSet<E> this) { throw new RuntimeException("skeleton method"); }
-  public TreeSet(@AssignsFields TreeSet<E> this, @ReadOnly Comparator<? super E> a1) { throw new RuntimeException("skeleton method"); }
-  public TreeSet(@AssignsFields TreeSet<E> this, @ReadOnly Collection<? extends E> a1) { throw new RuntimeException("skeleton method"); }
-  public TreeSet(@AssignsFields TreeSet<E> this, @ReadOnly SortedSet<E> a1) { throw new RuntimeException("skeleton method"); }
+  public TreeSet() { throw new RuntimeException("skeleton method"); }
+  public TreeSet(@ReadOnly Comparator<? super E> a1) { throw new RuntimeException("skeleton method"); }
+  public TreeSet(@ReadOnly Collection<? extends E> a1) { throw new RuntimeException("skeleton method"); }
+  public TreeSet(@ReadOnly SortedSet<E> a1) { throw new RuntimeException("skeleton method"); }
   public @I Iterator<E> iterator(@ReadOnly TreeSet<E> this) { throw new RuntimeException("skeleton method"); }
   public @I Iterator<E> descendingIterator(@ReadOnly TreeSet<E> this) { throw new RuntimeException("skeleton method"); }
   public @I NavigableSet<E> descendingSet(@ReadOnly TreeSet<E> this) { throw new RuntimeException("skeleton method"); }

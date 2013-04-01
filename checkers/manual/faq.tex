@@ -22,6 +22,7 @@ There is a separate FAQ for the type annotations syntax
 \ref{never-make-type-errors}: I don't make type errors, so would pluggable type checking help me? \\
 \ref{faq-handling-warnings}: What should I do if a checker issues a warning about my code? \\
 \ref{faq-no-absolute-guarantee}: Can a pluggable type-checker give an absolute guarantee of correctness? \\
+\ref{faq-concurrency}: What guarantee does the Checker Framework give for concurrent code? \\
 \ref{faq-awarns}: How do I make compilation succeed even if a checker issues errors? \\
 \ref{faq-slowdown}: Will using the Checker Framework slow down my program?  Will it slow down the compiler? \\
 \ref{faq-run-time-checking}: How can I do run-time monitoring of properties that were not statically checked? \\
@@ -169,6 +170,71 @@ guarantee of correctness, it is still useful.  It can finding errors,
 excluding certain types of possible problems (e.g., restricting the
 possible class of problems), and increasing confidence in a piece of
 software.
+
+
+\section{What guarantee does the Checker Framework give for concurrent code?\label{faq-concurrency}}
+
+The Checker Framework currently assumes that the code that it is checking
+is sequential:  that is, there are no concurrent accesses from another
+thread.  This means that The Checker Framework is unsound for concurrent
+code, in the sense that it may fail to warn about a possible null
+dereference.  For example, the Nullness Checker issues no warning for this
+code:
+
+\begin{Verbatim}
+  if (myobject.myfield != null) {
+    myobject.myfield.toString();
+  }
+\end{Verbatim}
+
+\noindent
+However, in the presence of multithreading, the call to \<toString> may
+fail because another thread may set \<myobject.myfield> to \<null> after
+the nullness check in the \<if> condition, but before the \<if> body is
+executed.
+
+In the future, the Checker Framework developers plan to add a concurrent
+mode that would warn about any error that could happen due to concurrent
+accesses to data structures.  This extension is non-trivial, and enabling
+it by default would yield many unhelpful warnings for sequential code.
+
+The Lock Checker (see Chapter~\ref{lock-checker}) offers a way to detect
+and prevent certain concurrency errors.
+
+
+% If you are concerned about concurrency, then the ``fix''
+% of putting data in a local variable doesn't fix the problem,
+% just masks it from one particular checker.  This is bad style and may make
+% debugging harder rather than easier.
+% 
+% For instance, suppose you you have
+% 
+% if (x.val != null) {
+%   x.val = x.val + 1;
+% }
+% 
+% which can suffer a null pointer exception if another thread nulls out
+% x.val.  The underlying problem is the possible concurrency error:  the user
+% should have used locks or some other mechanism to protect access to x.val.
+% 
+% Changing this to
+% 
+% myval = x.val;
+% if (myval != null) {
+%   x.val = myval + 1;
+% }
+% 
+% does not fix the concurrency error, because no locking has been introduced.
+% The code still has a data race that can lose updates or corrupt data
+% structures.  The code has been transformed so that the nullness checker
+% does not issue a warning, but this is scant comfort since the code is no
+% more correct than it was before.
+% 
+% If you want to detect concurrency errors, then it is better to use a
+% correct checker that is concurrency-aware, rather than an unsound one that
+% encourages incorrect workarounds.  Another way to put this is that a static
+% checker should encourage better overall design, not just different bad
+% designs.
 
 
 \section{How do I make compilation succeed even if a checker issues errors?\label{faq-awarns}}

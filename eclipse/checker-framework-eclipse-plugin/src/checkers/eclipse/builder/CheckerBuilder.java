@@ -1,7 +1,9 @@
 package checkers.eclipse.builder;
 
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResourceDelta;
@@ -78,19 +80,19 @@ public class CheckerBuilder extends IncrementalProjectBuilder
             e.printStackTrace();
         }
 
-        runWorker(JavaCore.create(getProject()), visitor.getBuildFiles(),
+        runWorker(JavaCore.create(getProject()), new LinkedHashSet<String>(visitor.getBuildFiles()),
                 CheckerManager.getSelectedClasses());
     }
 
     private void fullBuild() throws CoreException
     {
         IJavaProject project = JavaCore.create(getProject());
-        List<String> sourceNames = ResourceUtils.sourceFilesOf(project);
+        Set<String> sourceNames = ResourceUtils.sourceFilesOf(project);
 
         runWorker(project, sourceNames, CheckerManager.getSelectedClasses());
     }
 
-    private void runWorker(IJavaProject project, List<String> sourceNames,
+    private void runWorker(IJavaProject project, Set<String> sourceNames,
             List<String> checkerNames)
     {
         Job checkerJob = new CheckerWorker(project,
