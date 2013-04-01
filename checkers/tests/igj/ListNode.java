@@ -5,7 +5,7 @@ public class ListNode {
     @I ListNode prev;
     @I ListNode next;
 
-    public ListNode(@AssignsFields ListNode this, int length) {
+    public ListNode(int length) {
         if (length == 0) {
             next = this;
             prev = this;

@@ -249,7 +249,7 @@ full pathname to \<javac> or the alias, if you did not add the Type Annotations 
 The output should be:
 
 \begin{Verbatim}
-  javac 1.7.0-jsr308-1.6.0
+  javac 1.7.0-jsr308-1.6.1
 \end{Verbatim}
 
 That's all there is to it!  Now you are ready to start using the checkers.
@@ -513,15 +513,16 @@ Two concrete examples (using the Nullness checker) are:
   javac -processor checkers.nullness.NullnessChecker MyFile.java
   java -jar $CHECKERS/binary/checkers.jar MyFile.java
 \end{Verbatim}
+% Unconfuse Emacs LaTeX mode: $
 %BEGIN LATEX
 \end{smaller}
 %END LATEX
 
 \noindent
-Note the two invocations above are equivalent.  Both result in the invocation of the
-Checker Framework compiler which in turn invokes the JSR308 Type Annotations compiler
-with an annotated JDK on it's classpath, form more information on annotated jdks see
-Section~\ref{skeleton-using}.
+Note that the two invocations above are equivalent.  Each one invokes the
+Checker Framework compiler, which in turn invokes the Type Annotations compiler
+with an annotated JDK on its classpath.  For more information on annotated
+JDKs, see Section~\ref{skeleton-using}.
 
 The checker is run on only the Java files that javac compiles.
 This includes all Java files specified on the command line (or
@@ -682,6 +683,11 @@ There are some limitations to the guarantee.
   effects of reflection.  Similarly, deserialization and cloning can
   create objects that could not result from normal constructor calls, and
   that therefore may violate the property being checked.
+
+\item
+  The Checker Framework assumes it is checking single-threaded code.
+  Concurrent access to variables (that is, race conditions) could cause
+  errors that the Checker Framework does not report.
 
 \item
   The Checker Framework does not yet support annotations on intersection
@@ -1040,4 +1046,5 @@ bug in the checker; in this case, please report the bug (see
 % LocalWords:  html JCIP MultiSet Astubs Afilenames Anomsgtext Ashowchecks tex
 % LocalWords:  Aquals processorpath regex RegEx Xmaxwarns Xbootclasspath com
 % LocalWords:  IntelliJ assertNotNull checkNotNull Goetz antipattern subclassed
-% LocalWords:  callees Xmx unconfuse fenum propkey forName
+% LocalWords:  callees Xmx unconfuse fenum propkey forName jsr308
+% LocalWords:  bootclasspath

@@ -5,7 +5,7 @@ public class WeakHashMap<K, V> extends AbstractMap<K, V> implements Map<K, V> {
   public WeakHashMap(int a1, float a2) { throw new RuntimeException(("skeleton method")); }
   public WeakHashMap(int a1) { throw new RuntimeException(("skeleton method")); }
   public WeakHashMap() { throw new RuntimeException(("skeleton method")); }
-  public WeakHashMap(@PolyRead WeakHashMap<K, V> this, @PolyRead Map<? extends K, ? extends V> a1) { throw new RuntimeException(("skeleton method")); }
+  public @PolyRead WeakHashMap(@PolyRead Map<? extends K, ? extends V> a1) { throw new RuntimeException(("skeleton method")); }
   public int size(@ReadOnly WeakHashMap<K, V> this) { throw new RuntimeException(("skeleton method")); }
   public boolean isEmpty(@ReadOnly WeakHashMap<K, V> this) { throw new RuntimeException(("skeleton method")); }
   public V get(@ReadOnly Object a1) { throw new RuntimeException(("skeleton method")); }

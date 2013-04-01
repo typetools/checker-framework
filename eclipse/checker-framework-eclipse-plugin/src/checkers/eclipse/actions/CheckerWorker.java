@@ -1,11 +1,11 @@
 package checkers.eclipse.actions;
 
 import java.io.File;
-import java.lang.RuntimeException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import checkers.eclipse.util.*;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -25,13 +25,10 @@ import checkers.eclipse.javac.CheckersRunner;
 import checkers.eclipse.javac.CommandlineJavacRunner;
 import checkers.eclipse.javac.JavacError;
 import checkers.eclipse.javac.JavacRunner;
-import checkers.eclipse.util.JavaUtils;
-import checkers.eclipse.util.MarkerUtil;
-import checkers.eclipse.util.Paths;
-import checkers.eclipse.util.ResourceUtils;
 
 import com.sun.tools.javac.util.Pair;
 
+//TODO: RENAME THIS TO CHECKER JOB
 public class CheckerWorker extends Job {
     private final IJavaProject project;
     private final String checkerNames;
@@ -58,14 +55,14 @@ public class CheckerWorker extends Job {
     	this.useJavacRunner  = shouldUseJavacRunner();
     }
 
-    public CheckerWorker(IJavaElement element, String checkerNames) {
-        super("Running checker on " + element.getElementName());
-        this.project = element.getJavaProject();
+    public CheckerWorker(List<IJavaElement> elements, String checkerNames) {
+        super("Running checker on " + PluginUtil.join(",", elements));
+        this.project = elements.get(0).getJavaProject();
         this.checkerNames = checkerNames;
         this.useJavacRunner  = shouldUseJavacRunner();
     	
         try {
-            this.sourceFiles = ResourceUtils.sourceFilesOf(element).toArray(new String[] {});
+            this.sourceFiles = ResourceUtils.sourceFilesOf(elements).toArray(new String[] {});
         } catch (CoreException e) {
             CheckerPlugin.logException(e, e.getMessage());
         }
