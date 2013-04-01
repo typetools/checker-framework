@@ -2,9 +2,11 @@ package checkers.eclipse.ui;
 
 import java.util.*;
 
+import checkers.eclipse.prefs.OptionLine;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.search.IJavaSearchConstants;
 import org.eclipse.jdt.internal.ui.dialogs.OpenTypeSelectionDialog;
+import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.swt.SWT;
@@ -49,6 +51,7 @@ public class CheckerPreferencePage extends PreferencePage implements
     }
 
     private Table procTable;
+    private Table optTable;
     private Text argText;
     private Text optSkipUses;
     private Text optALint;
@@ -188,18 +191,8 @@ public class CheckerPreferencePage extends PreferencePage implements
                 false);
         procGroup.setLayoutData(procGridData);
 
-        // Additional arguments to javac
-        Group javacGroup = new Group(tableComposite, SWT.None);
-        javacGroup.setText("Additional compiler parameters");
-        FillLayout javacLayout = new FillLayout();
-        javacLayout.marginWidth = javacLayout.marginHeight = 5;
-        javacGroup.setLayout(javacLayout);
-
-        argText = new Text(javacGroup, SWT.SINGLE | SWT.BORDER);
-
-        GridData javacGridData = new GridData(SWT.FILL, SWT.BEGINNING, true,
-                false);
-        javacGroup.setLayoutData(javacGridData);
+        //argText = new Text(javacGroup, SWT.SINGLE | SWT.BORDER);
+        makeCompilerParameters(tableComposite);
 
         initValues();
 
@@ -313,7 +306,108 @@ public class CheckerPreferencePage extends PreferencePage implements
             }
         });
     }
-    
+
+    //TODO: Lot's of overlap with procTable, perhaps there is a way to generalize these two
+    //TODO: We could also move some of the other built-in options as unremovable options in this table
+    public void makeCompilerParameters(final Composite tableComposite) {
+        final Group group = new Group(tableComposite, SWT.None);
+        group.setText("Additional compiler parameters");
+
+        //Layout info for tableComposite's layout
+        GridData groupGridData = new GridData(SWT.FILL, SWT.FILL, true, true);
+        group.setLayoutData(groupGridData);
+
+        //group's layout
+        final GridLayout layout = new GridLayout();
+        layout.numColumns = 2;
+
+        group.setLayout(layout);
+
+        //Make Processor table
+        optTable = new Table(group, SWT.CHECK | SWT.MULTI | SWT.BORDER);
+
+        //layout data within the group
+        final GridData optTableData = new GridData( SWT.FILL, SWT.TOP, true, false );
+        optTableData.heightHint = 100;
+        optTableData.horizontalSpan = 2;
+        optTableData.horizontalSpan = SWT.FILL;
+        optTableData.grabExcessHorizontalSpace = true;
+
+        optTable.setLayoutData(optTableData);
+        optTable.setLinesVisible (true);
+        optTable.setHeaderVisible (true);
+
+        final TableColumn column = new TableColumn (optTable, SWT.NONE);
+        column.setText ("Option");
+
+        //Add existing op;tions to the table
+        for ( final OptionLine optionInfo : getMiscParams() ) {
+            addOptTableItem(optionInfo);
+        }
+
+        for( final TableColumn columns : optTable.getColumns() ) {
+            columns.pack();
+        }
+
+        final Button addButton = new Button(group, SWT.PUSH);
+        addButton.setText("Add");
+        addButton.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetSelected( SelectionEvent e ) {
+                addOption();
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+            }
+        });
+
+        final Button removeButton = new Button(group, SWT.PUSH);
+        removeButton.setText("Remove");
+        removeButton.setEnabled(false);
+        removeButton.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                removeOptionIndices(optTable.getSelectionIndices());
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+            }
+        });
+
+        final GridData removeGd = new GridData();
+        removeGd.horizontalAlignment = SWT.END;
+        removeButton.setLayoutData(removeGd);
+
+        //enable/disable the remove button (enabled only there are NO
+        //built-in checkers enabled and when at least 1 custom checker is
+        //selected)
+
+        optTable.addSelectionListener(new SelectionListener() {
+            public void widgetSelected(SelectionEvent event)        { setRemoveState(); }
+            public void widgetDefaultSelected(SelectionEvent event) { setRemoveState(); }
+
+            private void setRemoveState() {
+                final TableItem [] selectedItems = optTable.getSelection();
+                removeButton.setEnabled(selectedItems != null || selectedItems.length != 0);
+            }
+        });
+    }
+
+    private TableItem addOptTableItem(final OptionLine optLine) {
+        final TableItem item = new TableItem(optTable, SWT.None);
+        item.setText( 0, optLine.getArgument() );
+        item.setChecked(optLine.isActive());
+        return item;
+    }
+
+
+    private void removeOptionIndices(final int [] indices) {
+        optTable.remove(indices);
+    }
+
+
     private void removePTIndices(final int [] indices) {
         for(final int index : indices) {
             final TableItem ti = procTable.getItem(index);
@@ -341,6 +435,23 @@ public class CheckerPreferencePage extends PreferencePage implements
         return tokens.toArray(new String[tokens.size()]);
     }
 
+
+    protected List<OptionLine> getMiscParams() {
+        IPreferenceStore store = doGetPreferenceStore();
+        return OptionLine.parseOptions(store.getString(CheckerPreferences.PREF_CHECKER_ARGS));
+    }
+
+    protected void writeMiscParams() {
+        final List<OptionLine> options = new ArrayList<OptionLine>();
+        for (TableItem item : optTable.getItems()) {
+            options.add(new OptionLine(item.getText(0), item.getChecked()));
+        }
+
+        doGetPreferenceStore().setValue(CheckerPreferences.PREF_CHECKER_ARGS,
+                OptionLine.optionLinesToString(options));
+
+    }
+
     /**
      * Initialise the values in the table to the preference values
      */
@@ -361,7 +472,6 @@ public class CheckerPreferencePage extends PreferencePage implements
             }
         }
 
-        argText.setText(store.getString(CheckerPreferences.PREF_CHECKER_ARGS));
         /*optAutoBuild.setSelection(store
                 .getBoolean(CheckerPreferences.PREF_CHECKER_AUTO_BUILD)); */
         optSkipUses.setText(store
@@ -398,13 +508,13 @@ public class CheckerPreferencePage extends PreferencePage implements
         }
 
         CheckerManager.storeSelectedClasses(selectedClasses);
+        writeMiscParams();
 
         final List<String> ccFromTi = customClassesFromTableItems();
         final String [] customClasses = ccFromTi.toArray(new String[ccFromTi.size()]);
         CheckerManager.storeCustomClasses(customClasses);
 
         store.setValue(CheckerPreferences.PREF_CHECKER_PREFS_SET, true);
-        store.setValue(CheckerPreferences.PREF_CHECKER_ARGS, argText.getText());
         /*store.setValue(CheckerPreferences.PREF_CHECKER_AUTO_BUILD,
                 optAutoBuild.getSelection()); */
         store.setValue(CheckerPreferences.PREF_CHECKER_A_SKIP_CLASSES,
@@ -457,6 +567,19 @@ public class CheckerPreferencePage extends PreferencePage implements
                     addProcTableItem(ci, false);
                 }
             }
+        }
+    }
+
+    private void addOption() {
+        final InputDialog inputDialog = new InputDialog( getShell(), "Add Option",
+                "Please enter your option exactly as it would appear on the command line. " +
+                "Include any space that would appear between the option name and value.",
+                "",
+                null);
+
+        if (inputDialog.open() == SelectionDialog.OK) {
+            final String result = inputDialog.getValue();
+            addOptTableItem(new OptionLine(result, true));
         }
     }
 

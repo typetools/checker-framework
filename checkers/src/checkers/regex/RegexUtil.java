@@ -71,6 +71,7 @@ public class RegexUtil {
      * <p>
      * Consider calling this constructor with the result of
      * {@link RegexUtil#regexError}.
+     * @param pse the PatternSyntaxException to be wrapped
      */
     public CheckedPatternSyntaxException(PatternSyntaxException pse) {
       this.pse = pse;
@@ -136,6 +137,8 @@ public class RegexUtil {
   /**
    * Returns true if the argument is a syntactically valid regular
    * expression.
+   * @param s string to check for being a regular expression
+   * @return true iff s is a regular expression
    */
   public static boolean isRegex(String s) {
     return isRegex(s, 0);
@@ -144,6 +147,9 @@ public class RegexUtil {
   /**
    * Returns true if the argument is a syntactically valid regular
    * expression with at least the given number of groups.
+   * @param s string to check for being a regular expression
+   * @param groups number of groups expected
+   * @return true iff s is a regular expression with groups groups
    */
   @SuppressWarnings("regex")    // RegexUtil
   @Pure
@@ -160,6 +166,8 @@ public class RegexUtil {
   /**
    * Returns true if the argument is a syntactically valid regular
    * expression.
+   * @param c char to check for being a regular expression
+   * @return true iff c is a regular expression
    */
   @SuppressWarnings("regex")    // RegexUtil
   @Pure
@@ -171,6 +179,8 @@ public class RegexUtil {
    * Returns null if the argument is a syntactically valid regular
    * expression. Otherwise returns a string describing why the argument is
    * not a regex.
+   * @param s string to check for being a regular expression
+   * @return null, or a string describing why the argument is not a regex.
    */
   @SuppressWarnings("regex")    // RegexUtil
   @Pure
@@ -182,6 +192,9 @@ public class RegexUtil {
    * Returns null if the argument is a syntactically valid regular
    * expression with at least the given number of groups. Otherwise returns
    * a string describing why the argument is not a regex.
+   * @param s string to check for being a regular expression
+   * @param groups number of groups expected
+   * @return null, or a string describing why the argument is not a regex.
    */
   @SuppressWarnings("regex")    // RegexUtil
   @Pure
@@ -202,6 +215,8 @@ public class RegexUtil {
    * Returns null if the argument is a syntactically valid regular
    * expression. Otherwise returns a PatternSyntaxException describing
    * why the argument is not a regex.
+   * @param s string to check for being a regular expression
+   * @return null, or a PatternSyntaxException describing why the argument is not a regex.
    */
   @SuppressWarnings("regex")    // RegexUtil
   @Pure
@@ -213,6 +228,9 @@ public class RegexUtil {
    * Returns null if the argument is a syntactically valid regular
    * expression with at least the given number of groups. Otherwise returns a
    * PatternSyntaxException describing why the argument is not a regex.
+   * @param s string to check for being a regular expression
+   * @param groups number of groups expected
+   * @return null, or a PatternSyntaxException describing why the argument is not a regex.
    */
   @SuppressWarnings("regex")    // RegexUtil
   @Pure
@@ -234,6 +252,9 @@ public class RegexUtil {
    * otherwise throws an error. The purpose of this method is to suppress Regex
    * Checker warnings. Once the the Regex Checker supports flow-sensitivity, it
    * should be very rarely needed.
+   * @param s string to check for being a regular expression
+   * @return its argument
+   * @throws Error if argument is not a regex
    */
   public static @Regex String asRegex(String s) {
     return asRegex(s, 0);
@@ -242,8 +263,12 @@ public class RegexUtil {
   /**
    * Returns the argument as a {@code @Regex(groups) String} if it is a regex
    * with at least the given number of groups, otherwise throws an error. The
-   * purpose of this method is to suppress Regex Checker warnings. Once the the
+   * purpose of this method is to suppress Regex Checker warnings. Once the
    * Regex Checker supports flow-sensitivity, it should be very rarely needed.
+   * @param s string to check for being a regular expression
+   * @param groups number of groups expected
+   * @return its argument
+   * @throws Error if argument is not a regex
    */
   @SuppressWarnings("regex")    // RegexUtil
   @Pure
@@ -263,6 +288,9 @@ public class RegexUtil {
   /**
    * Generates an error message for s when expectedGroups are needed, but s
    * only has actualGroups.
+   * @param s string to check for being a regular expression
+   * @return an error message for s when expectedGroups groups are needed, but s
+   * only has actualGroups groups
    */
   private static String regexErrorMessage(String s, int expectedGroups, int actualGroups) {
     return "regex \"" + s + "\" has " + actualGroups + " groups, but " +
@@ -270,7 +298,9 @@ public class RegexUtil {
   }
 
   /**
-   * Returns the count of groups in the argument.
+   * Return the count of groups in the argument.
+   * @param p pattern whose groups to count
+   * @return the count of groups in the argument
    */
   private static int getGroupCount(Pattern p) {
     return p.matcher("").groupCount();

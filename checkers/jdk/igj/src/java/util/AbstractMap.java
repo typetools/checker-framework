@@ -7,8 +7,8 @@ public abstract class AbstractMap<K, V> implements @I Map<K, V> {
   @I
   public static class SimpleEntry<K, V> implements Map. @I Entry<K, V>, java.io. @I Serializable {
       private static final long serialVersionUID = 0L;
-    public SimpleEntry(@AssignsFields SimpleEntry<K, V> this, K a1, V a2) { throw new RuntimeException("skeleton method"); }
-    public SimpleEntry(@AssignsFields SimpleEntry<K, V> this, Map. @I Entry<? extends K, ? extends V> a1) { throw new RuntimeException("skeleton method"); }
+    public SimpleEntry(K a1, V a2) { throw new RuntimeException("skeleton method"); }
+    public SimpleEntry(Map. @I Entry<? extends K, ? extends V> a1) { throw new RuntimeException("skeleton method"); }
     public K getKey(@ReadOnly SimpleEntry<K, V> this) { throw new RuntimeException("skeleton method"); }
     public V getValue(@ReadOnly SimpleEntry<K, V> this) { throw new RuntimeException("skeleton method"); }
     public V setValue(@AssignsFields SimpleEntry<K, V> this, V a1) { throw new RuntimeException("skeleton method"); }
@@ -20,8 +20,8 @@ public abstract class AbstractMap<K, V> implements @I Map<K, V> {
   @Immutable
   public static class SimpleImmutableEntry<K, V> implements @Immutable Map.Entry<K, V>, java.io. @Immutable Serializable {
       private static final long serialVersionUID = 0L;
-    public SimpleImmutableEntry(@AssignsFields SimpleImmutableEntry<K, V> this, K a1, V a2) { throw new RuntimeException("skeleton method"); }
-    public SimpleImmutableEntry(@AssignsFields SimpleImmutableEntry<K, V> this, Map.Entry<? extends K, ? extends V> a1) { throw new RuntimeException("skeleton method"); }
+    public SimpleImmutableEntry(K a1, V a2) { throw new RuntimeException("skeleton method"); }
+    public SimpleImmutableEntry(Map.Entry<? extends K, ? extends V> a1) { throw new RuntimeException("skeleton method"); }
     public K getKey(@ReadOnly SimpleImmutableEntry<K, V> this) { throw new RuntimeException("skeleton method"); }
     public V getValue(@ReadOnly SimpleImmutableEntry<K, V> this) { throw new RuntimeException("skeleton method"); }
     public V setValue(@AssignsFields SimpleImmutableEntry<K, V> this, V a1) { throw new RuntimeException("skeleton method"); }
@@ -30,7 +30,7 @@ public abstract class AbstractMap<K, V> implements @I Map<K, V> {
     public String toString(@ReadOnly SimpleImmutableEntry<K, V> this) { throw new RuntimeException("skeleton method"); }
   }
 
-  protected AbstractMap(@ReadOnly AbstractMap<K, V> this) {}
+  protected AbstractMap() {}
   public int size(@ReadOnly AbstractMap<K, V> this) { throw new RuntimeException("skeleton method"); }
   public boolean isEmpty(@ReadOnly AbstractMap<K, V> this) { throw new RuntimeException("skeleton method"); }
   public boolean containsValue(@ReadOnly AbstractMap<K, V> this, @ReadOnly Object a1) { throw new RuntimeException("skeleton method"); }

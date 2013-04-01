@@ -353,41 +353,42 @@ The Nullness Checker supports a form of conditional nullness types, via the
 The annotation on a method declares that some expressions are non-null, if
 the method returns true (false, respectively).
 
-Consider \sunjavadoc{java/io/File.html}{java.io.File}.
+Consider \sunjavadoc{java/lang/Class.html}{java.lang.Class}.
 Method
-\sunjavadoc{java/io/File.html#listFiles()}{File.listFiles()} may
-return null, but is specified to return a non-null value if
-\sunjavadoc{java/io/File.html#isDirectory()}{File.isDirectory()} is
-true.  The same holds for method
-\sunjavadoc{java/io/File.html#listFiles()}{File.list()}.
+\sunjavadoc{java/lang/Class.html#getComponentType()}{Class.getComponentType()}
+may return null, but it is specified to return a non-null value if
+\sunjavadoc{java/lang/Class.html#isArray()}{Class.isArray()} is
+true.
 You could declare this relationship in the following way (this particular
 example is already
 done for you in the annotated JDK that comes with the Checker Framework):
 
 \begin{Verbatim}
-  class File {
+  class Class {
+    @AssertNonNullIfTrue("getComponentType()")
+    public native boolean isArray();
 
-    @AssertNonNullIfTrue({"list()", "listFiles()"})
-    public boolean isDirectory() { ... }
-
-    public File @Nullable [] listFiles();
+    public native @Nullable Class<?> getComponentType();
   }
 \end{Verbatim}
 
-A client that checks that a \code{File} reference is indeed that of a directory,
-can then de-reference \code{File.isDirectory} safely without any nullness check.
+A client that checks that a \code{Class} reference is indeed that of an array,
+can then de-reference the result of \code{Class.getComponentType} safely
+without any nullness check.  The Checker Framework source code itself
+uses such a pattern:
 
 \begin{Verbatim}
-  static void analyze(File file) {
-    if (file.isDirectory()) {
-      for (File child : file.listFiles()) {  // no possible null dereference
-        analyze(child);
-      }
-    } else {
-        ... analyze file ...
+    if (clazz.isArray()) {
+      // no possible null dereference on the following line
+      TypeMirror componentType = typeFromClass(clazz.getComponentType());
+      ...
     }
-  }
 \end{Verbatim}
+
+Another example is \sunjavadoc{java/util/Queue.html#peek()}{Queue.peek}
+and \sunjavadoc{java/util/Queue.html#poll()}{Queue.poll}, which return
+non-null if \sunjavadoc{java/util/Queue.html#isEmpty()}{Queue.isEmpty}
+returns false.
 
 The argument to \code{@AssertNonNullIfTrue} and
 \code{@AssertNonNullIfFalse} is a Java expression, including method calls

@@ -6,10 +6,7 @@ import static org.eclipse.core.resources.IResource.FOLDER;
 
 import java.io.File;
 import java.lang.RuntimeException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -210,13 +207,23 @@ public class ResourceUtils {
         return ResourcesPlugin.getWorkspace().getRoot();
     }
 
-    public static List<String> sourceFilesOf(IJavaElement project)
+    public static Set<String> sourceFilesOf(IJavaElement element)
             throws CoreException {
-        final List<String> fileNames = new ArrayList<String>();
+        final Set<String> fileNames = new LinkedHashSet<String>();
 
-        for (ICompilationUnit cu : Util.getAllCompilationUnits(project)) {
+        for (ICompilationUnit cu : Util.getAllCompilationUnits(element)) {
             fileNames.add(cu.getResource().getLocation().toOSString());
         }
+        return fileNames;
+    }
+
+    public static Set<String> sourceFilesOf(List<IJavaElement> elements)
+            throws CoreException {
+        final Set<String> fileNames = new LinkedHashSet<String>();
+        for(final IJavaElement element : elements) {
+            fileNames.addAll(sourceFilesOf(element));
+        }
+
         return fileNames;
     }
 
