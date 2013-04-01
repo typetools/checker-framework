@@ -328,7 +328,7 @@ public class CheckerPreferencePage extends PreferencePage implements
 
         //layout data within the group
         final GridData optTableData = new GridData( SWT.FILL, SWT.TOP, true, false );
-        optTableData.heightHint = 200;
+        optTableData.heightHint = 100;
         optTableData.horizontalSpan = 2;
         optTableData.horizontalSpan = SWT.FILL;
         optTableData.grabExcessHorizontalSpace = true;
