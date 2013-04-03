@@ -1,6 +1,7 @@
 package dataflow.cfg.block;
 
 import java.util.Map;
+import java.util.Set;
 
 import javax.lang.model.type.TypeMirror;
 
@@ -32,6 +33,6 @@ public interface ExceptionBlock extends SingleSuccessorBlock {
     /**
      * @return The list of exceptional successor blocks as an unmodifiable map.
      */
-    Map<TypeMirror, Block> getExceptionalSuccessors();
+    Map<TypeMirror, Set<Block>> getExceptionalSuccessors();
 
 }

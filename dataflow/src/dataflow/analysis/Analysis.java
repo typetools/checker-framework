@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.PriorityQueue;
+import java.util.Set;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.type.TypeMirror;
@@ -203,17 +204,20 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
                 }
 
                 // propagate store to exceptional successors
-                for (Entry<TypeMirror, Block> e : eb.getExceptionalSuccessors()
+                for (Entry<TypeMirror, Set<Block>> e : eb.getExceptionalSuccessors()
                         .entrySet()) {
-                    Block exceptionSucc = e.getValue();
                     TypeMirror cause = e.getKey();
                     S exceptionalStore = transferResult
                             .getExceptionalStore(cause);
                     if (exceptionalStore != null) {
-                        addStoreBefore(exceptionSucc, new TransferInput<>(node,
-                                this, exceptionalStore));
+                        for (Block exceptionSucc : e.getValue()) {
+                            addStoreBefore(exceptionSucc, new TransferInput<>(node,
+                                    this, exceptionalStore));
+                        }
                     } else {
-                        addStoreBefore(exceptionSucc, storeBefore.copy());
+                        for (Block exceptionSucc : e.getValue()) {
+                            addStoreBefore(exceptionSucc, storeBefore.copy());
+                        }
                     }
                 }
                 break;
@@ -450,8 +454,15 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
                 result.add(((SingleSuccessorBlock) block).getSuccessor());
             } else if (block instanceof ExceptionBlock) {
                 result.add(((ExceptionBlock) block).getSuccessor());
-                result.addAll(((ExceptionBlock) block)
-                        .getExceptionalSuccessors().values());
+                // Exceptional successors may contain duplicates
+                for (Set<Block> exceptionSuccSet : ((ExceptionBlock) block)
+                         .getExceptionalSuccessors().values()) {
+                    for (Block exceptionSucc : exceptionSuccSet) {
+                        if (!result.contains(exceptionSucc)) {
+                            result.add(exceptionSucc);
+                        }
+                    }
+                }
             }
             return result;
         }
