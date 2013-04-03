@@ -120,7 +120,9 @@ public class ControlFlowGraph {
 
             if (cur.getType() == BlockType.EXCEPTION_BLOCK) {
                 ExceptionBlock ecur = (ExceptionBlock) cur;
-                succs.addAll(ecur.getExceptionalSuccessors().values());
+                for (Set<Block> exceptionSuccSet : ecur.getExceptionalSuccessors().values()) {
+                    succs.addAll(exceptionSuccSet);
+                }
             }
 
             for (Block b : succs) {

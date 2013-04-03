@@ -2,7 +2,9 @@ package dataflow.cfg.block;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import javax.lang.model.type.TypeMirror;
 
@@ -18,7 +20,7 @@ public class ExceptionBlockImpl extends SingleSuccessorBlockImpl implements
         ExceptionBlock {
 
     /** Set of exceptional successors. */
-    protected Map<TypeMirror, Block> exceptionalSuccessors;
+    protected Map<TypeMirror, Set<Block>> exceptionalSuccessors;
 
     public ExceptionBlockImpl() {
         type = BlockType.EXCEPTION_BLOCK;
@@ -49,12 +51,17 @@ public class ExceptionBlockImpl extends SingleSuccessorBlockImpl implements
         if (exceptionalSuccessors == null) {
             exceptionalSuccessors = new HashMap<>();
         }
-        exceptionalSuccessors.put(cause, b);
+        Set<Block> blocks = exceptionalSuccessors.get(cause);
+        if (blocks == null) {
+            blocks = new HashSet<Block>();
+            exceptionalSuccessors.put(cause, blocks);
+        }
+        blocks.add(b);
         b.addPredecessor(this);
     }
 
     @Override
-    public Map<TypeMirror, Block> getExceptionalSuccessors() {
+    public Map<TypeMirror, Set<Block>> getExceptionalSuccessors() {
         if (exceptionalSuccessors == null) {
             return Collections.emptyMap();
         }
