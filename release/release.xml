@@ -1,203 +1,18 @@
-<project name="jsr-308" default="local" basedir="..">
+<project name="jsr-308" basedir="..">
 
     <description>
-        Makes releases of the JSR 308 langtools and checkers projects.
+        Ant utilities for releasing JSR308-Langtools and Checker-Framework.  All targets in this file
+        are intended to be run much like method calls (i.e. you must specify a certain set of properties
+        as parameters and they do not depend on any other target.
     </description>
 
     <property file="release/release.properties"/>
-    <property file="${user.home}/.jsr308-release.properties"/>
-
+    <!-- Todays date -->
     <tstamp>
-        <format property="date" pattern="yyyyMMdd" locale="en,US"/>
+        <format property="release.date" pattern="d MMM yyyy"/>
     </tstamp>
-    <property name="release.ver" value="ea-${date}" />
 
-    <target name="clean" depends="-prep-releasedir"
-      description="deletes the temporary release directory">
-        <delete dir="${tmp.root.dir}"/>
-    </target>
-
-    <target name="-init-properties-dry" unless="release.is.real">
-        <property name="web.root.dir" value="${web.dry.root.dir}"/>
-        <property name="sanitycheck.url" value="${sanitycheck.dry.url}"/>
-    </target>
-
-    <target name="-init-properties-real" if="release.is.real">
-        <property name="web.root.dir" value="${web.real.root.dir}"/>
-        <property name="sanitycheck.url" value="${sanitycheck.real.url}"/>
-    </target>
-
-    <target name="-init-properties"
-        depends="-init-properties-dry,-init-properties-real">
-        <property name="web.jsr308.root.dir" value="${web.root.dir}/../jsr308"/>
-        <property name="web.release.dir" value="${web.root.dir}/releases"/>
-        <property name="web.ver.dir" value="${web.release.dir}/${release.ver}"/>
-    </target>
-
-    <target name="-prep-checkdiff">
-        <!-- Checks that TargetType is in sync in scene-lib & langtools. -->
-<!--
-        <exec executable="diff" failonerror="true">
-            <arg value="${targettype.scene-lib.dir}/TargetType.java"/>
-            <arg value="${targettype.langtools.dir}/TargetType.java"/>
-            <arg line="-I '^package'"/>
-            <arg line="-I '^import'"/>
-            <arg line="-w"/>
-        </exec>
--->
-    </target>
-
-
-    <!-- For creating release archives: -->
-
-    <target name="-prep-build-langtools">
-        <!-- Runs "ant clean build-javac build-javap" for langtools. -->
-        <ant antfile="make/build.xml" dir="${langtools}">
-           <target name="clean"/>
-            <target name="build-javac"/>
-            <target name="build-javap"/>
-            <target name="build-javadoc"/>
-            <target name="build-doclets"/>
-        </ant>
-    </target>
-
-    <target name="-prep-build-checkers" depends="-prep-build-langtools">
-        <!-- Runs "ant clean dist all-tests" for checkers. -->
-
-        <ant dir="${checkers}" inheritAll="false">
-            <property name="halt.on.test.failure" value="${halt.on.test.failure}"/>
-            <target name="clean"/>
-            <target name="dist"/>
-            <target name="docs"/>
-            <target name="all-tests"/>
-            <target name="bindist"/>
-        </ant>
-    </target>
-
-    <target name="release-compiler"
-      depends="-prep-checkdiff,-prep-checkdev,-prep-build-langtools"
-      description="Creates a zip archive for langtools.">
-
-        <zip destfile="${tmp.ver.dir}/${langtools.zip}">
-            <zipfileset dir="${langtools}" prefix="jsr308-langtools"
-              excludesfile="release/langtools-excludes"/>
-
-            <zipfileset dir="${langtools}"
-              includes="dist/lib/javac.jar"
-              fullpath="jsr308-langtools/binary/javac.jar"/>
-
-            <zipfileset dir="${langtools}"
-              includes="dist/lib/javap.jar"
-              fullpath="jsr308-langtools/binary/javap.jar"/>
-
-            <zipfileset dir="${langtools}" prefix="jsr308-langtools"
-              includes="dist/bin/**" filemode="755"/>
-        </zip>
-    </target>
-
-    <target name="release-checkers"
-      depends="-prep-checkdiff,-prep-checkdev,-prep-build-checkers"
-      description="Creates a zip archive for checkers.">
-
-        <chmod file="${checkers}/binary/javac" perm="+x"/>
-        <zip destfile="${tmp.ver.dir}/${checkers.zip}">
-            <zipfileset dir="${checkers}" prefix="checker-framework/checkers"
-                includesfile="release/checkers-includes"
-                excludesfile="release/checkers-excludes"/>
-            <zipfileset dir="${checkers}" prefix="checker-framework/checkers"
-                includes="**/javac" filemode="755"/>
-        </zip>
-    </target>
-
-    <target name="tools"
-      depends="-prep-releasedir,update-versions,release-compiler,release-checkers"
-      description="builds zip files of the langtools and checkers"/>
-
-
-    <!-- For building a release directory: -->
-
-    <target name="-prep-tstamp" unless="release.date">
-        <!-- Sets the release date. -->
-
-        <tstamp>
-            <format property="release.date" pattern="d MMM yyyy"/>
-        </tstamp>
-    </target>
-
-    <target name="-prep-checkdev" depends="-prep-tstamp">
-        <!-- Sets properties based on whether this is a dev release. -->
-
-        <condition property="is.dev.release">
-            <istrue value="${release.is.dev}"/>
-        </condition>
-
-        <echo>Version: ${release.ver}</echo>
-    </target>
-
-    <target name="-prep-releasedir" depends="-prep-checkdev">
-        <!-- Sets up a temp directory for this release. -->
-        <mkdir dir="${tmp.ver.dir}"/>
-    </target>
-
-    <target name="manual" depends="update-versions"
-      description="makes the checkers manual (PDF and HTML)">
-
-        <exec executable="make" failonerror="true"
-            dir="${checkers.manual}" taskname="make">
-            <arg line="manual.pdf manual.html"/>
-        </exec>
-    </target>
-    
-    <target name="tutorial" depends="update-versions"
-        description="makes the Checker Framework Tutorial">
-        
-        <exec executable="make" failonerror="true"
-            dir="${checkers.tutorial}" taskname="make">
-            <arg line="clean all"/>
-
-        </exec>
-    </target>
-
-    <!-- By default, puts the copy in a directory like checker-framework/tmp/1.1.1/ -->
-    <target name="local" depends="-init-properties,-prep-checkdev,tools,manual,tutorial"
-      description="creates a local copy of the release directory">
-
-        <copy file="${checkers.manual}/manual.html"
-            tofile="${tmp.ver.dir}/${manual.name}.html"/>
-
-        <copy file="${checkers.manual}/manual.pdf"
-            tofile="${tmp.ver.dir}/${manual.name}.pdf"/>
-
-        <copy file="${checkers.manual}/${checkerswebpage}"
-	      tofile="${tmp.ver.dir}/${checkerswebpage}" />
-        
-
-        <copy todir="${tmp.ver.dir}" flatten="true">
-            <fileset dir="${checkers.manual}">
-                <include name="*.png"/>
-                <include name="*.gif"/>
-            </fileset>
-        </copy>
-        <copy todir="${tmp.ver.dir}" >
-            <fileset dir="${checkers.tutorial}" includes="**"/>
-        </copy>
-
-        <copy todir="${tmp.ver.dir}" file="${jsr308doc}/README-jsr308.html" />
-        <copy todir="${tmp.ver.dir}" file="${jsr308doc}/Makefile-jsr308-install" />
-        <copy todir="${tmp.ver.dir}" file="${jsr308doc}/changelog-jsr308.txt" />
-
-        <copy todir="${tmp.ver.dir}" file="${checkers}/changelog-checkers.txt" />
-
-        <copy todir="${tmp.ver.dir}/doc" flatten="false">
-            <fileset dir="${checkers}/doc">
-                <include name="**" />
-            </fileset>
-        </copy>
-    </target>
-
-
-    <!-- For updating version numbers in files: -->
-
+    <!-- For updating version numbers in files -->
     <macrodef name="update">
         <attribute name="file"/>
         <attribute name="start"/>
@@ -206,274 +21,198 @@
         <sequential>
             <echo level="info" message="updating @{file}"/>
             <replaceregexp file="@{file}" byline="true"
-                match="@{start}.*@{end}" replace="@{start}@{with}@{end}"/>
+                           match="@{start}.*@{end}" replace="@{start}@{with}@{end}"/>
         </sequential>
     </macrodef>
 
-    <target name="-update-versions-stable" depends="-prep-checkdev"
-      unless="is.dev.release">
-        <!-- Updates version numbers in files for a stable release. -->
+    <target name="update-langtools-versions" description="updates version info in Langtool documents and build configs">
 
-        <replaceregexp file="${jsr308doc}/${jsr308webpage}" byline="true"
-          match="^\s*&lt;!-- begin dev release --&gt;$"
-          replace="&lt;!-- begin dev release ->"/>
+        <fail unless="langtools"   message="langtools property is not set!"  />
+        <fail unless="release.ver" message="release.ver property is not set!"/>
 
-        <replaceregexp file="${jsr308doc}/${jsr308webpage}" byline="true"
-          match="^\s*&lt;!-- end dev release --&gt;$"
-          replace="&lt;!- end dev release --&gt;"/>
+        <property name="jsr308WebPage"   value="${langtools}/doc/jsr308-webpage.html" />
+        <property name="jsr308Readme"    value="${langtools}/doc/README-jsr308.htm"   />
+        <property name="langtools.make"  value="${langtools}/make"                        />
 
-        <replaceregexp file="${jsr308doc}/${jsr308webpage}" byline="true" flags="true"
-          match="&lt;!-- ([^ ]+)-dev-version --&gt;"
-          replace="&lt;!- \1-dev-version -&gt;"/>
+        <update file="${jsr308WebPage}"
+                start="${checkers.ver.0}" end="${checkers.ver.1}"
+                with="${release.ver}, ${release.date}"/>
 
-        <update file="${jsr308doc}/${jsr308webpage}"
-          start="${checkers.ver.0}" end="${checkers.ver.1}"
-          with="${release.ver}, ${release.date}"/>
+        <update file="${jsr308WebPage}"
+                start="${compiler.ver.0}" end="${compiler.ver.1}"
+                with="${release.ver}, ${release.date}"/>
 
-        <update file="${jsr308doc}/${jsr308webpage}"
-          start="${compiler.ver.0}" end="${compiler.ver.1}"
-          with="${release.ver}, ${release.date}"/>
-
-        <update file="${checkers.manual}/${checkerswebpage}"
-          start="${checkers.ver.0}" end="${checkers.ver.1}"
-          with="${release.ver}, ${release.date}"/>
-
-        <update file="${checkers.manual}/${checkerswebpage}"
-          start="${compiler.ver.0}" end="${compiler.ver.1}"
-          with="${release.ver}, ${release.date}"/>
-
-        <replaceregexp file="${langtools.readme}" byline="true"
-            match="\/pag\/jsr308\/dev" replace="/pag/jsr308/current"/>
-
-        <replaceregexp file="${checkers.manual}/introduction.tex" byline="true"
-            match="\/pag\/jsr308\/dev" replace="/pag/jsr308/current"/>
-
-        <replaceregexp file="${checkers.manual}/introduction.tex" byline="true"
-            match="1.7.0-jsr308-\S*" replace="1.7.0-jsr308-${release.ver}"/>
-
-        <replaceregexp file="${checkers.manual}/external-tools.tex" byline="true"
-            match="1.7.0-jsr308-\S*" replace="1.7.0-jsr308-${release.ver}"/>
-
-    </target>
-
-    <target name="-update-versions-dev" depends="-prep-checkdev"
-      if="is.dev.release">
-        <!-- Updates versions for a dev release. -->
-
-        <replaceregexp file="${jsr308doc}/${jsr308webpage}" byline="true"
-          match="^\s*&lt;!-- begin dev release -&gt;"
-          replace="&lt;!-- begin dev release --&gt;"/>
-
-        <replaceregexp file="${jsr308doc}/${jsr308webpage}" byline="true"
-          match="^\s*&lt;!- end dev release --&gt;$"
-          replace="&lt;!-- end dev release --&gt;"/>
-
-        <replaceregexp file="${jsr308doc}/${jsr308webpage}" byline="true" flags="g"
-          match="&lt;!- ([^ ]+)-dev-version -&gt;"
-          replace="&lt;!-- \1-dev-version --&gt;"/>
-
-        <replaceregexp file="${jsr308doc}/${jsr308webpage}" byline="true"
-            flags="g" match="~~" replace="--"/>
-
-        <update file="${jsr308doc}/${jsr308webpage}"
-          start="${checkers.dev.ver.0}" end="${checkers.dev.ver.1}"
-          with="${release.ver}, ${release.date}"/>
-
-        <update file="${jsr308doc}/${jsr308webpage}"
-          start="${compiler.dev.ver.0}" end="${compiler.dev.ver.1}"
-          with="${release.ver}, ${release.date}"/>
-
-        <update file="${checkers.manual}/${checkerswebpage}"
-          start="${checkers.dev.ver.0}" end="${checkers.dev.ver.1}"
-          with="${release.ver}, ${release.date}"/>
-
-        <update file="${checkers.manual}/${checkerswebpage}"
-          start="${compiler.dev.ver.0}" end="${compiler.dev.ver.1}"
-          with="${release.ver}, ${release.date}"/>
-
-        <replaceregexp file="${langtools.readme}" byline="true"
-            match="\/pag\/jsr308\/current" replace="/pag/jsr308/dev"/>
-
-        <replaceregexp file="${checkers.manual}/introduction.tex" byline="true"
-            match="\/pag\/jsr308\/current" replace="/pag/jsr308/dev"/>
-
-        <replaceregexp file="${checkers.manual}/introduction.tex" byline="true"
-            match="1.7.0-jsr308-\S*" replace="1.7.0-jsr308-${release.ver}"/>
-
-    </target>
-
-    <target name="update-versions"
-      depends="-prep-tstamp,-update-versions-stable,-update-versions-dev"
-      description="updates version info in documents and build configs">
-
-        <!-- Update properties files -->
-
-        <update file="${checkers}/build.properties"
-          start="build.version = " with="${release.ver}"/>
+        <!-- I can only find these in design.tex and they are commented out but
+             for now I will keep these in -->
+        <replaceregexp file="${jsr308WebPage}" byline="true"
+                       flags="g" match="~~" replace="--"/>
 
         <update file="${langtools.make}/build.properties"
-          start="jsr308.version = " with="${release.ver}"/>
-
-        <!-- Update readme -->
+                start="jsr308.version = " with="${release.ver}"/>
 
         <update file="${langtools.readme}"
-            start="${h4.ver.0}" end="${h4.ver.1}"
-            with="Version ${release.ver} (${release.date})"/>
+                start="${h4.ver.0}" end="${h4.ver.1}"
+                with="Version ${release.ver} (${release.date})"/>
 
-        <update file="${checkers.manual}/manual.tex"
-            start="${manual.ver.0}" end="${manual.ver.1}"
-            with="${release.ver} (${release.date})"/>
-
-        <!-- Update installation script -->
 
         <update file="${jsr308doc}/Makefile-jsr308-install"
                 start="JSR308_BUILD := "
                 with="${release.ver}"/>
+     </target>
+
+    <target name="update-checker-framework-versions" description="updates version info in Checker Framework documents and build configs">
+
+        <fail unless="checkers"    message="checkers property is not set!"   />
+        <fail unless="release.ver" message="release.ver property is not set!"/>
+
+        <property name="checkers.manual"      value="${checkers}/manual"                       />
+        <property name="checkersWebPage"      value="${checkers.manual}/checkers-webpage.html" />
+        <property name="checkers.binary.poms" value="${checkers}/binary/poms"                  />
+        <property name="maven.plugin"         value="${checkers}/../maven-plugin"              />
+
+        <update file="${checkersWebPage}"
+                start="${checkers.ver.0}" end="${checkers.ver.1}"
+                with="${release.ver}, ${release.date}"/>
+
+        <update file="${checkersWebPage}"
+                start="${compiler.ver.0}" end="${compiler.ver.1}"
+                with="${release.ver}, ${release.date}"/>
+
+        <replaceregexp file="${checkers.manual}/introduction.tex" byline="true"
+                       match="1.7.0-jsr308-\S*" replace="1.7.0-jsr308-${release.ver}"/>
+
+        <replaceregexp file="${checkers.manual}/external-tools.tex" byline="true"
+                       match="1.7.0-jsr308-\S*" replace="1.7.0-jsr308-${release.ver}"/>
+
+        <update file="${checkers}/build.properties"
+                start="build.version = " with="${release.ver}"/>
+
+        <update file="${checkers.manual}/manual.tex"
+                start="${manual.ver.0}" end="${manual.ver.1}"
+                with="${release.ver} (${release.date})"/>
+
+        <!-- Checker Framework Maven artifacts -->
+        <update file="${checkers.binary.poms}/checkersPom.xml"
+                start="${checkers.ver.0}" end="${checkers.ver.1}"
+                with="${release.ver}"/>
+
+        <update file="${checkers.binary.poms}/checkersQualsPom.xml"
+                start="${checkers.ver.0}" end="${checkers.ver.1}"
+                with="${release.ver}"/>
+
+        <update file="${checkers.binary.poms}/compilerPom.xml"
+                start="${checkers.ver.0}" end="${checkers.ver.1}"
+                with="${release.ver}"/>
+
+        <update file="${checkers.binary.poms}/jdk7Pom.xml"
+                start="${checkers.ver.0}" end="${checkers.ver.1}"
+                with="${release.ver}"/>
+
+        <update file="${maven.plugin}/pom.xml"
+                start="${checkers.ver.0}" end="${checkers.ver.1}"
+                with="${release.ver}"/>
+    </target>
+
+    <target name="zip-langtools" description="Creates a zip archive for JSR308-Langtools.">
+
+        <fail unless="langtools"   message="langtools property is not set!" />
+        <fail unless="dest.dir"    message="dest.dir property is not set!"  />
+        <fail unless="file.name"   message="file.name property is not set!" />
+
+        <zip destfile="${dest.dir}/${file.name}">
+            <zipfileset dir="${langtools}" prefix="jsr308-langtools"
+                        excludesfile="release/langtools-excludes"/>
+
+            <zipfileset dir="${langtools}"
+                        includes="dist/lib/javac.jar"
+                        fullpath="jsr308-langtools/binary/javac.jar"/>
+
+            <zipfileset dir="${langtools}"
+                        includes="dist/lib/javap.jar"
+                        fullpath="jsr308-langtools/binary/javap.jar"/>
+
+            <zipfileset dir="${langtools}" prefix="jsr308-langtools"
+                        includes="dist/bin/**" filemode="755"/>
+        </zip>
 
     </target>
 
+    <target name="zip-checker-framework" description="Creates a zip archive for the Checker Framework.">
 
-    <!-- For making a copy of the site for testing: -->
+        <fail unless="checkers"    message="checkers property is not set!" />
+        <fail unless="dest.dir"    message="dest.dir property is not set!"  />
+        <fail unless="file.name"   message="file.name property is not set!" />
 
-    <macrodef name="confirm">
-        <attribute name="message"/>
-        <sequential>
-            <input message="@{message} "
-              validargs="y,n" addproperty="do.copy"/>
-            <condition property="do.abort">
-                <equals arg1="n" arg2="${do.copy}"/>
-            </condition>
-            <fail if="do.abort">Build aborted by user.</fail>
-        </sequential>
-    </macrodef>
+        <chmod file="${checkers}/binary/javac" perm="+x"/>
+        <zip destfile="${dest.dir}/${file.name}">
+            <zipfileset dir="${checkers}" prefix="checker-framework/checkers"
+                        includesfile="release/checkers-includes"
+                        excludesfile="release/checkers-excludes"/>
+            <zipfileset dir="${checkers}" prefix="checker-framework/checkers"
+                        includes="**/javac" filemode="755"/>
+        </zip>
 
+    </target>
 
-    <target name="site-copy"
-      description="creates a copy of the JSR 308 site for testing">
+    <target name="langtools-website-docs" description="Copies the relevant JSR308 Langtools files to the given directory">
 
-        <confirm message="
-The contents of ${site-copy.to.dir} will be overwritten if it exists. Continue?"/>
+        <fail unless="langtools"  message="langtools property is not set!" />
+        <fail unless="dest.dir"   message="dest.dir property is not set!"  />
 
-        <!-- Avoid including old files -->
-        <delete dir="${site-copy.to.dir}"/>
-        <mkdir dir="${site-copy.to.dir}"/>
+        <property name="langtools.doc"   value="${langtools}/doc" />
 
-        <copy todir="${site-copy.to.dir}" overwrite="true">
-            <fileset dir="${site-copy.from.dir}"
-              includesfile="release/site-copy-includes"
-              excludesfile="release/site-copy-excludes"/>
+        <copy todir="${dest.dir}" file="${langtools.doc}/README-jsr308.html"      />
+        <copy todir="${dest.dir}" file="${langtools.doc}/Makefile-jsr308-install" />
+        <copy todir="${dest.dir}" file="${langtools.doc}/changelog-jsr308.txt"    />
+
+        <symlink overwrite="true" link="${dest.dir}/../index.html" resource="${dest.dir}/jsr308-webpage.html"/>
+
+    </target>
+
+    <!-- TODO: Doc the params -->
+    <target name="checker-framework-website-docs" description="Copies the relevant Checker Framework files to the given directory">
+
+        <!-- The directory in which the Checker Framework has been built -->
+        <fail unless="checkers"   message="checkers property is not set!" />
+
+        <!-- THe -->
+        <fail unless="dest.dir"   message="dest.dir property is not set!" />
+        <fail unless="manual.name"        message="manual.name property is not set!" />
+        <fail unless="checkers.webpage"   message="checkers.webpage property is not set!" />
+
+        <!-- //TODO: PERHAPS CHECK THAT THESE FILES EXIST -->
+        <property name="checkers.manual"   value="${checkers}/manual" />
+        <property name="checkers.tutorial" value="${checkers}/../tutorial" />
+        <property name="web.root"          value="${dest.dir}/../.." />
+
+        <copy file="${checkers.manual}/manual.html" tofile="${dest.dir}/${manual.name}.html"/>
+        <copy file="${checkers.manual}/manual.pdf"  tofile="${dest.dir}/${manual.name}.pdf"/>
+
+        <copy file="${checkers.manual}/${checkers.webpage}" tofile="${dest.dir}/${checkers.webpage}" />
+
+        <copy todir="${dest.dir}" flatten="true">
+            <fileset dir="${checkers.manual}">
+                <include name="*.png"/>
+                <include name="*.gif"/>
+            </fileset>
         </copy>
-    </target>
 
-
-    <!-- For releasing to the web: -->
-
-    <target name="webpage" depends="update-versions,-prep-releasedir"
-      description="makes the JSR 308 web page">
-        <exec executable="make" dir="${jsr308doc}" failonerror="true" taskname="make">
-            <arg line="jsr308_www=${web.jsr308.root.dir}"/>
-            <arg line="web"/>
-        </exec>
-    </target>
-
-    <target name="checklinks" depends="-init-properties">
-        <exec executable="make" dir="${jsr308doc}" failonerror="true" taskname="make">
-            <arg line="jsr308_www_online=${web.jsr308.root.dir}"/>
-            <arg line="checklinks"/>
-        </exec>
-    </target>
-
-    <target name="web-prep" depends="-web-prep" />
-
-    <target name="-web-prep" depends="-prep-releasedir,webpage,tools" >
-        <mkdir dir="${web.root.dir}"/>
-        <mkdir dir="${web.ver.dir}"/>
-        <copy todir="${web.ver.dir}">
-            <fileset dir="${tmp.ver.dir}"/>
+        <copy todir="${dest.dir}/tutorial" >
+            <fileset dir="${checkers.tutorial}" includes="**"/>
         </copy>
+
+        <copy todir="${dest.dir}" file="${checkers}/changelog-checkers.txt" />
+
+        <copy todir="${dest.dir}/doc" flatten="false">
+            <fileset dir="${checkers}/doc">
+                <include name="**" />
+            </fileset>
+        </copy>
+
+        <symlink overwrite="true" link="${dest.dir}/index.html" resource="${dest.dir}/${checkers.webpage}" />
         <symlink overwrite="true"
-            link="${web.jsr308.root.dir}/index.html"
-            resource="${jsr308webpage}"/>
-    </target>
+                 link="${web.root}/current/favicon-jsr308.png" resource="${web.root}/favicon-jsr308.png"/>
 
-    <target name="-web-dev" depends="-web-prep" if="is.dev.release">
-        <symlink overwrite="true"
-            link="${web.root.dir}/dev"
-            resource="releases/${release.ver}"/>
-        <symlink overwrite="true"
-            link="${web.root.dir}/dev/index.html"
-            resource="${checkerswebpage}" />
-        <symlink overwrite="true"
-            link="${web.root.dir}/index.html"
-            resource="dev/index.html"/>
-    </target>
-
-    <target name="-web-stable" depends="-web-prep" unless="is.dev.release">
-        <symlink overwrite="true"
-            link="${web.root.dir}/current"
-            resource="releases/${release.ver}"/>
-        <symlink overwrite="true"
-            link="${web.root.dir}/current/index.html"
-            resource="${checkerswebpage}" />
-        <symlink overwrite="true"
-            link="${web.root.dir}/index.html"
-            resource="current/index.html"/>
-        <symlink overwrite="true"
-            link="${web.root.dir}/current/favicon-jsr308.png"
-            resource="../../favicon-jsr308.png"/>
-    </target>
-
-    <target name="web" depends="-init-properties,local,-prep-checkdev,-web-stable,-web-dev"
-      description="adds the JSR 308 release to the web site"/>
-
-
-    <!-- For sanity-checking a web release: -->
-
-    <target name="-prep-sanitycheck" depends="-prep-releasedir,-prep-checkdev">
-
-        <delete dir="${sanitycheck.ver.dir}"/>
-        <mkdir dir="${sanitycheck.ver.dir}"/>
-
-        <condition property="checkers.get.zip"
-          value="${checkers-dev.zip}"
-          else="${checkers.zip}">
-            <istrue value="${release.is.dev}"/>
-        </condition>
-
-        <condition property="langtools.get.zip"
-          value="${langtools-dev.zip}"
-          else="${langtools.zip}">
-            <istrue value="${release.is.dev}"/>
-        </condition>
-    </target>
-
-    <target name="sanitycheck" depends="-init-properties,checklinks,-prep-sanitycheck"
-      description="downloads the release, builds it, and runs tests">
-
-        <get src="${sanitycheck.url}/${checkers.get.zip}"
-          dest="${sanitycheck.ver.dir}/checkers.zip"/>
-        <unzip src="${sanitycheck.ver.dir}/checkers.zip" dest="${sanitycheck.ver.dir}"/>
-
-        <get src="${sanitycheck.url}/${langtools.get.zip}"
-          dest="${sanitycheck.ver.dir}/langtools.zip"/>
-        <unzip src="${sanitycheck.ver.dir}/langtools.zip" dest="${sanitycheck.ver.dir}"/>
-
-        <copy file="${langtools.make}/build.properties"
-          todir="${sanitycheck.ver.dir}/jsr308-langtools/make"
-          overwrite="true"/>
-
-        <ant dir="${sanitycheck.ver.dir}/jsr308-langtools"
-          antfile="make/build.xml">
-            <target name="build-javac"/>
-            <target name="build-javap"/>
-        </ant>
-
-        <ant dir="${sanitycheck.ver.dir}/checker-framework/checkers" target="all-tests"/>
-
-        <ant dir="${sanitycheck.ver.dir}/checker-framework/checkers">
-            <target name="clean"/>
-            <target name="all-tests"/>
-        </ant>
     </target>
 
 </project>
