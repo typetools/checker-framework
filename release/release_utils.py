@@ -19,20 +19,22 @@ import subprocess
 from subprocess import Popen, PIPE
 import os
 import pwd
+import re
+import shutil
 
 #=========================================================================================
 # Command utils
 
 #Execute the given command
-def execute(command_args, halt_if_fail=True, capture_output=False):
+def execute(command_args, halt_if_fail=True, capture_output=False, working_dir=None):
     print("Executing: %s" % (command_args))
     import shlex
     args = shlex.split(command_args) if isinstance(command_args, str) else command_args
 
     if capture_output:
-        return subprocess.Popen(args, stdout=subprocess.PIPE).communicate()[0]
+        return subprocess.Popen(args, stdout=subprocess.PIPE, cwd=working_dir).communicate()[0]
     else:
-        r = subprocess.call(args)
+        r = subprocess.call(args, cwd=working_dir)
         if halt_if_fail and r:
             raise Exception('Error %s while executing %s' % (r, command_args))
         return r
@@ -41,6 +43,63 @@ def check_command(command):
     p = execute(['which', command], False)
     if p:
         raise AssertionError('command not found: %s' % command)
+    print ''
+
+def prompt_yn(msg):
+    y_or_n = 'z'
+    while(y_or_n != 'y' and y_or_n != 'n'):
+        print(msg + " [y|n]")
+        y_or_n = raw_input().lower()
+
+    return y_or_n == 'y'
+
+def maybe_prompt_yn(msg, prompt):
+    if not prompt:
+        return True
+
+    return prompt_yn(msg)
+
+def prompt_w_suggestion(msg, suggestion, validRegex=None):
+    answer = None
+    while(answer is None):
+        answer = raw_input(msg + " (%s): " % suggestion)
+
+        if answer is None or answer == "":
+            answer = suggestion
+        else:
+            answer = answer.strip()
+
+            if validRegex is not None:
+                m = re.match(validRegex, answer)
+                if m is None:
+                    answer = None
+                    print "Invalid answer.  Validating regex: " + validRegex
+            else:
+                answer = suggestion
+
+    return answer
+
+def maybe_prompt_w_suggestion(msg, suggestion, validRegex, prompt):
+    if not prompt:
+        return True
+    return prompt_w_suggestion(msg, suggestion, validRegex, prompt)
+
+def check_tools(tools):
+    print("\nChecking to make sure the following programs are installed:")
+    print(', '.join(tools))
+    print('Note: If you are NOT working on buffalo.cs.washington.edu then you ' +
+        'likely need to change the variables that are set in release.py \n'   +
+        'search for "Set environment variables"')
+    map(check_command, tools)
+    print ''
+
+def match_one(toTest, patternStrings):
+    for patternStr in patternStrings:
+        isMatch = re.match(patternStr, toTest)
+        if isMatch is not None:
+            return patternStr
+
+    return None
         
 #=========================================================================================
 # Version Utils
@@ -49,6 +108,7 @@ def current_distribution(site):
     Reads the checker framework version from the checker framework website and
     returns the version of the current release
     """
+    print 'Looking up Checkers-Version from %s\n' % site
     ver_re = re.compile(r"<!-- checkers-version -->(.*),")
     text = urllib2.urlopen(url=site).read()
     result = ver_re.search(text)
@@ -59,7 +119,7 @@ def latest_openjdk(site):
     text = urllib2.urlopen(url=site).read()
     result = ver_re.search(text)
     return result.group(1)
-    
+
 def increment_version(version):
     """
     Returns a recommendation of the next incremental version based on the
@@ -76,24 +136,56 @@ def increment_version(version):
 
     """
     parts = [int(x) for x in version.split('.')]
-    parts[2] += 1
-    if parts[2] > 9:
-        parts[2] -= 10
-        parts[1] += 1
-    if parts[1] > 9:
-        parts[1] -= 10
-        parts[0] += 1
-    return ".".join([str(x) for x in parts])
+
+    #We suggest only 3 part versions with the fourth part dropped if present
+    intVer = version_to_integer(version)
+    return integer_to_version(intVer + 10)
+
+def version_to_integer(version):
+    parts = version.split('.')
+    iVer  = int(parts[0]) * 1000
+    iVer += int(parts[1]) * 100
+    if len(parts) > 2:
+        iVer += int(parts[2]) * 10
+    if len(parts) > 3:
+        iVer += int(parts[3])
+    return iVer
+
+def integer_to_version(intVer):
+    parts = [0,0,0]
+    if intVer >= 1000:
+        parts[0] = intVer / 1000
+        intVer = intVer % 1000
+
+    if intVer >= 100:
+        parts[1] = intVer / 100
+        intVer = intVer % 100
+
+    if intVer >= 10:
+        parts[2] = intVer / 10
+        intVer = intVer % 10
+
+    version = ".".join([str(x) for x in parts])
+    if intVer > 0:
+        version = version + "." + str(intVer)
+
+    return version
+
+def is_version_increased(old_version, new_version):
+    return version_to_integer(new_version) > version_to_integer(old_version)
     
 #=========================================================================================
 # Mercurial Utils
 
 #Pull the latest changes and update
+def update_project(path):
+    execute('hg -R %s pull' % path)
+    execute('hg -R %s update' % path)
+
 def update_projects(paths):
     for path in paths:
-        execute('hg -R %s pull' % path)
-        execute('hg -R %s update' % path)
-        print("Checking changes")
+        update_project( path )
+        #print("Checking changes")
         # execute('hg -R %s outgoing' % path)
 
 #Commit the changes we made for this release
@@ -103,12 +195,6 @@ def commit_tag_and_push(version, path, tag_prefix):
     execute('hg -R %s commit -m "new release %s"' % (path, version))
     execute('hg -R %s tag %s%s' % (path, tag_prefix, version))
     execute('hg -R %s push' % path)
-
-#Give group access to the specified path
-def ensure_group_access(path):
-    # Errs for any file not owned by this user.
-    # But, the point is to set group writeability of any *new* files.
-    execute('chmod -f -R g+w %s' % path, halt_if_fail=False)
     
 # Retrive the changes since the tag (prefix + prev_version)
 def retrieve_changes(root, prev_version, prefix):
@@ -116,6 +202,70 @@ def retrieve_changes(root, prev_version, prefix):
             "hg -R %s log -r %s%s:tip --template ' * {desc}\n'" %
                 (root, prefix, prev_version),
                 capture_output=True)
+
+def clone_or_update_repo(src_repo, dst_repo):
+    if os.path.isdir(dst_repo):
+        update_project( dst_repo )
+    else:
+        execute('hg clone %s %s' % (src_repo, dst_repo))
+
+def is_repo_cleaned_and_updated(repo):
+    summary = execute('hg -R %s summary' % (repo), capture_output=True)
+    if not "commit: (clean)" in summary:
+        return False
+    if not "update: (current)" in summary:
+        return False
+    return True
+
+def repo_exists(repo):
+    print ('Does repo exist: %s' % repo)
+    failed = execute('hg -R %s root' % (repo), False, False)
+    print ''
+    return not failed
+
+def strip(repo):
+    strip_args = ['hg', '-R', repo, 'strip', '--no-backup', 'roots(outgoing())']
+    out, err = subprocess.Popen(strip_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+
+    match = re.match("\d+ files updated, \d+ files merged, \d+ files removed, \d+ files unresolved", out)
+    if match is None:
+        match = re.match("abort: empty revision set", err)
+        if match is None:
+            raise Exception("Could not recognize strip output: (%s, %s)" % (out, err))
+        else:
+            print err
+    else:
+        print out
+    print ""
+
+def revert(repo):
+    execute('hg -R %s revert --all' % repo)
+
+def purge(repo):
+    execute('hg -R %s purge' % repo)
+
+def clean_repo(repo, prompt):
+    if maybe_prompt_yn( 'Remove all modified files, untracked files and outgoing commits from %s ?' % repo, prompt ):
+        strip(repo)
+        revert(repo)
+        purge(repo)
+    print ''
+
+def clean_repos(repos, prompt):
+    if maybe_prompt_yn( 'Remove all modified files, untracked files and outgoing commits from:\n%s ?' % '\n'.join(repos), prompt ):
+        for repo in repos:
+            if repo_exists(repo):
+                clean_repo(repo, False)
+
+def check_repos(repos, fail_on_error):
+    for repo in repos:
+        if repo_exists(repo):
+            if not is_repo_cleaned_and_updated(repo):
+                if(fail_on_error):
+                    raise Exception('repo %s is not cleaned and updated!' % repo)
+                else:
+                    if not prompt_yn( '%s is not clean and up to date! Continue?' % repo):
+                        raise Exception( '%s is not clean and up to date! Halting!' % repo )
 
 #=========================================================================================
 # File Utils
@@ -139,7 +289,40 @@ def first_line_containing(value, file):
     p1 = Popen(["grep", "-m", "1", "-n", value, file], stdout=PIPE)
     p2 = Popen(["sed", "-n", 's/^\\([0-9]*\\)[:].*/\\1/p'], stdin=p1.stdout, stdout=PIPE)
     return int(p2.communicate()[0])
-                    
+
+#Give group access to the specified path
+def ensure_group_access(path):
+    # Errs for any file not owned by this user.
+    # But, the point is to set group writeability of any *new* files.
+    execute('chmod -f -R g+w %s' % path, halt_if_fail=False)
+
+def find_first_instance(regex, file, delim=""):
+    with open(file, 'r') as f:
+        pattern = re.compile(regex)
+        for line in f:
+            m = pattern.match(line)
+            if m is not None:
+                if pattern.groups > 0:
+                    groups = m.groups()
+                    useDel = False
+                    res = ""
+                    for g in m.groups():
+                        if useDel:
+                            res = res + delim
+                        else:
+                            useDel = True
+                        res = res + g
+                    return res
+                else:
+                    return m.group(0)
+    return None
+
+def prompt_to_delete(path):
+    if os.path.exists(path):
+        result = prompt_w_suggestion("Delete the following file:\n %s [Yes|No]" % path, "no", "^(Yes|yes|No|no)$")
+        if result == "Yes" or result == "yes":
+            shutil.rmtree(path)
+
 #=========================================================================================
 # Change Log utils
 
