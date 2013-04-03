@@ -103,20 +103,22 @@ public class CFGDOTVisualizer {
             // exceptional edges
             if (cur.getType() == BlockType.EXCEPTION_BLOCK) {
                 ExceptionBlock ecur = (ExceptionBlock) cur;
-                for (Entry<TypeMirror, Block> e : ecur
+                for (Entry<TypeMirror, Set<Block>> e : ecur
                         .getExceptionalSuccessors().entrySet()) {
-                    Block b = e.getValue();
+                    Set<Block> blocks = e.getValue();
                     TypeMirror cause = e.getKey();
                     String exception = cause.toString();
                     if (exception.startsWith("java.lang.")) {
                         exception = exception.replace("java.lang.", "");
                     }
-
-                    sb2.append("    " + cur.getId() + " -> " + b.getId());
-                    sb2.append(" [label=\"" + exception + "\"];\n");
-                    if (!visited.contains(b)) {
-                        visited.add(b);
-                        worklist.add(b);
+                    
+                    for (Block b : blocks) {
+                        sb2.append("    " + cur.getId() + " -> " + b.getId());
+                        sb2.append(" [label=\"" + exception + "\"];\n");
+                        if (!visited.contains(b)) {
+                            visited.add(b);
+                            worklist.add(b);
+                        }
                     }
                 }
             }

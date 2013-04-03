@@ -990,10 +990,10 @@ public class CFGBuilder {
                 if (e.getSuccessor() == cur) {
                     return singleSuccessorHolder(e, cur);
                 } else {
-                    Set<Entry<TypeMirror, Block>> entrySet = e
+                    Set<Entry<TypeMirror, Set<Block>>> entrySet = e
                             .getExceptionalSuccessors().entrySet();
-                    for (final Entry<TypeMirror, Block> entry : entrySet) {
-                        if (entry.getValue() == cur) {
+                    for (final Entry<TypeMirror, Set<Block>> entry : entrySet) {
+                        if (entry.getValue().contains(cur)) {
                             return new PredecessorHolder() {
                                 @Override
                                 public void setSuccessor(BlockImpl b) {
@@ -1196,8 +1196,8 @@ public class CFGBuilder {
                         for (Label label : entry.getValue()) {
                             Integer target = bindings.get(label);
                             missingExceptionalEdges
-                                    .add(new Tuple<ExceptionBlockImpl, Integer, TypeMirror>(
-                                            e, target, cause));
+                                .add(new Tuple<ExceptionBlockImpl, Integer, TypeMirror>(
+                                        e, target, cause));
                         }
                     }
                     break;
@@ -2166,8 +2166,8 @@ public class CFGBuilder {
             // TODO: lock the receiver for synchronized methods
 
             MethodInvocationNode node = new MethodInvocationNode(tree, target, arguments, getCurrentPath());
-            Set<TypeMirror> thrownSet = new HashSet<>();
 
+            Set<TypeMirror> thrownSet = new HashSet<>();
             // Add exceptions explicitly mentioned in the throws clause.
             List<? extends TypeMirror> thrownTypes = element.getThrownTypes();
             thrownSet.addAll(thrownTypes);
@@ -3453,7 +3453,19 @@ public class CFGBuilder {
             Node constructorNode = scan(tree.getIdentifier(), p);
 
             Node node = new ObjectCreationNode(tree, constructorNode, arguments);
-            return extendWithNode(node);
+
+            Set<TypeMirror> thrownSet = new HashSet<>();
+            // Add exceptions explicitly mentioned in the throws clause.
+            List<? extends TypeMirror> thrownTypes = constructor.getThrownTypes();
+            thrownSet.addAll(thrownTypes);
+            // Add Throwable to account for unchecked exceptions
+            TypeElement throwableElement = elements
+                    .getTypeElement("java.lang.Throwable");
+            thrownSet.add(throwableElement.asType());
+
+            extendWithNodeWithExceptions(node, thrownSet);
+
+            return node;
         }
 
         @Override
@@ -3906,11 +3918,20 @@ public class CFGBuilder {
             System.out.print(b.hashCode() + ": " + b);
             switch (b.getType()) {
             case REGULAR_BLOCK:
-            case EXCEPTION_BLOCK:
             case SPECIAL_BLOCK: {
                 Block succ = ((SingleSuccessorBlockImpl) b).getSuccessor();
                 System.out.println(" -> "
                         + (succ != null ? succ.hashCode() : "||"));
+                break;
+            }
+            case EXCEPTION_BLOCK: {
+                Block succ = ((SingleSuccessorBlockImpl) b).getSuccessor();
+                System.out.print(" -> "
+                                 + (succ != null ? succ.hashCode() : "||") + " {");
+                for (Map.Entry<TypeMirror, Set<Block>> entry : ((ExceptionBlockImpl) b).getExceptionalSuccessors().entrySet()) {
+                    System.out.print(entry.getKey() + " : " + entry.getValue() + ", ");
+                }
+                System.out.println("}");
                 break;
             }
             case CONDITIONAL_BLOCK: {
