@@ -1,9 +1,9 @@
 \htmlhr
 \chapter{How to create a new checker\label{writing-a-checker}}
 
-\newcommand{\TreeAPIBase}{http://docs.oracle.com/javase/7/docs/jdk/api/javac/tree/com/sun/source}
+\newcommand{\TreeAPIBase}{http://types.cs.washington.edu/checker-framework/api/javac/tree/com/sun/source}
 \newcommand{\refTreeclass}[2]{\ahref{\TreeAPIBase{}/#1/#2.html?is-external=true}{\<#2>}}
-\newcommand{\ModelAPIBase}{http://docs.oracle.com/javase/7/docs/api/javax/lang/model}
+\newcommand{\ModelAPIBase}{http://types.cs.washington.edu/checker-framework/api/javac/tree/javax/lang/model}
 \newcommand{\refModelclass}[2]{\ahref{\ModelAPIBase{}/#1/#2.html?is-external=true}{\<#2>}}
 
 This chapter describes how to create a checker
@@ -578,7 +578,7 @@ The Checker Framework provides a \textit{base visitor class},
 \refclass{basetype}{BaseTypeVisitor}, that performs type-checking at each node of a
 source file's AST\@.  It uses the visitor design pattern to traverse
 Java syntax trees as provided by Oracle's
-\ahref{http://docs.oracle.com/javase/7/docs/jdk/api/javac/tree/index.html}{Tree
+\ahref{http://types.cs.washington.edu/checker-framework/api/javac/tree//index.html}{Tree
 API},
 and it issues a warning whenever the type system is violated.
 
@@ -1170,10 +1170,10 @@ notable exception: \refclass{util}{AnnotatedTypes}.
 
 The Checker Framework builds on the Annotation Processing API
 introduced in Java 6.  A type annotation processor is one that extends
-\refTreeclass{util}{AbstractTypeProcessor}; these get run on each class
+\refclass{source}{AbstractTypeProcessor}; these get run on each class
 source file after the compiler confirms that the class is valid Java code.
 
-The most important methods of \refTreeclass{util}{AbstractTypeProcessor}
+The most important methods of \refclass{source}{AbstractTypeProcessor}
 are \code{typeProcess} and \code{getSupportedSourceVersion}. The former
 class is where you would insert any sort of method call to walk the AST\@,
 and the latter just returns a constant indicating that we are targeting
