@@ -163,6 +163,7 @@
         <property name="web.root"        value="${dest.dir}/../.." />
 
         <copy todir="${dest.dir}" file="${langtools.doc}/README-jsr308.html"      />
+        <copy todir="${dest.dir}" file="${langtools.doc}/jsr308-faq.html"      />
         <copy todir="${dest.dir}" file="${langtools.doc}/Makefile-jsr308-install" />
         <copy todir="${dest.dir}" file="${langtools.doc}/changelog-jsr308.txt"    />
 
