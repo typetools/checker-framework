@@ -61,7 +61,7 @@ def build_jsr308_langtools_release(version, checker_framework_interm_dir, jsr308
     execute("ant -Dhalt.on.test.failure=true clean-and-build-all-tools build-javadoc build-doclets", True, False, JSR308_MAKE)
 
     #zip up jsr308-langtools project and place it in jsr308_interm_dir
-    ant_props = "-Dlangtools=%s -Ddest.dir=%s -Dfile.name%s" % (JSR308_LANGTOOLS, jsr308_interm_dir, "jsr308-langtools.zip")
+    ant_props = "-Dlangtools=%s -Ddest.dir=%s -Dfile.name=%s" % (JSR308_LANGTOOLS, jsr308_interm_dir, "jsr308-langtools.zip")
     ant_cmd   = "ant -f release.xml %s zip-langtools " % ant_props
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
