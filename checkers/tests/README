@@ -10,8 +10,17 @@ rebuilding the JDK; for example,
 
 To run an individual test (check one source code file), do something like:
 
-cd $CHECKERS/tests/nullness
-(cd $CHECKERS && ant -e jar) && javac -processor checkers.nullness.NullnessChecker -Xbootclasspath/p:$CHECKERS/jdk/jdk.jar AssertNonNullTest.java
+  cd $CHECKERS/tests/nullness
+  (cd $CHECKERS && ant -e jar) && javac -processor checkers.nullness.NullnessChecker -Xbootclasspath/p:$CHECKERS/jdk/jdk.jar AssertNonNullTest.java
+
+or
+
+  cd $CHECKERS/tests/framework
+  (cd $CHECKERS && ant -e jar) && javac -processor tests.util.TestChecker -classpath $CHECKERS/tests/build -Xbootclasspath/p:$CHECKERS/jdk/jdk.jar GenericTest10.java
+
+where the specific checker and command-line arguments are often clear from
+the directory name but can also be determined from
+  checker-framework/checkers/tests/src/tests/MyTypeSystemTest.java
 
 
 How to write test cases for the Checker Framework
@@ -88,12 +97,24 @@ this:
  * change checkers/build.xml to run those tests
 
 
+Disabling a test case
+=====================
+
+Write @skip-test before a method or class -- either alone, or in a JavaDoc
+comment, or in a java comment.
+
+
 Writing tests for new checkers
 ==============================
 
 Essentially, just copy an existing checker, analogously to creating a new
 test directory for testing different command-line arguments, as described
 above.
+
+You will thus create a new file such as 
+  checker-framework/checkers/tests/src/tests/MyTypeSystemTest.java
+and a new directory such as 
+  checker-framework/checkers/tests/mytypesystem/
 
 
 Annotated JDK
