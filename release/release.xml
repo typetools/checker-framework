@@ -31,7 +31,7 @@
         <fail unless="release.ver" message="release.ver property is not set!"/>
 
         <property name="jsr308WebPage"   value="${langtools}/doc/jsr308-webpage.html" />
-        <property name="jsr308Readme"    value="${langtools}/doc/README-jsr308.htm"   />
+        <property name="jsr308Readme"    value="${langtools}/doc/README-jsr308.html"   />
         <property name="langtools.make"  value="${langtools}/make"                        />
 
         <update file="${jsr308WebPage}"
@@ -50,12 +50,12 @@
         <update file="${langtools.make}/build.properties"
                 start="jsr308.version = " with="${release.ver}"/>
 
-        <update file="${langtools.readme}"
+        <update file="${jsr308Readme}"
                 start="${h4.ver.0}" end="${h4.ver.1}"
                 with="Version ${release.ver} (${release.date})"/>
 
 
-        <update file="${jsr308doc}/Makefile-jsr308-install"
+        <update file="${langtools}/doc/Makefile-jsr308-install"
                 start="JSR308_BUILD := "
                 with="${release.ver}"/>
      </target>
