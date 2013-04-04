@@ -11,6 +11,8 @@ import checkers.types.AnnotatedTypeFactory;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.util.*;
 
+import javacutils.ErrorReporter;
+
 /**
  * An AST visitor that provides a variety of compiler utilities and interfaces
  * to facilitate typechecking.
@@ -54,5 +56,8 @@ public abstract class SourceVisitor<R, P> extends TreePathScanner<R, P> {
 
         // Ask the checker for the AnnotatedTypeFactory.
         this.atypeFactory = checker.createFactory(root);
+
+        // Install the SourceChecker as the error handler
+        ErrorReporter.setHandler(checker);
     }
 }

@@ -1,5 +1,7 @@
 import java.util.*;
 import java.io.*;
+
+import checkers.nullness.quals.EnsuresNonNull;
 import checkers.nullness.quals.*;
 
 public class FlowNonThis {
@@ -11,8 +13,7 @@ public class FlowNonThis {
     t.setup();
     System.out.println(t.c.length());
     t.erase();
-    // TODO:
-    // //:: error: (dereference.of.nullable)
+    //:: error: (dereference.of.nullable)
     System.out.println(t.c.length());
   }
 
@@ -20,8 +21,7 @@ public class FlowNonThis {
     setup();
     System.out.println(c.length());
     erase();
-    // TODO:
-    // //:: error: (dereference.of.nullable)
+    //:: error: (dereference.of.nullable)
     System.out.println(c.length());
   }
 
@@ -33,12 +33,11 @@ public class FlowNonThis {
     System.out.println(c.length());
   }
 
-  @AssertNonNullAfter("c")
+  @EnsuresNonNull("c")
   public void setup() {
     c = "setup";
   }
 
-  /*@ Assert Null After("c")*/ // <- no such annotation
   public void erase() {
     c = null;
   }

@@ -8,7 +8,6 @@ public class NullableLUB<T extends @Nullable Object> {
     @Nullable T nt;
 
     T m(boolean b, T p) {
-        //:: error: (assignment.type.incompatible)
         T r1 = b ? p : null;
         nt = r1;
         return r1;

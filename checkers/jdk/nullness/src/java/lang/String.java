@@ -1,8 +1,8 @@
 package java.lang;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
+import dataflow.quals.Pure;
 
-@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
 
 public final class String implements java.io.Serializable, Comparable<String>, CharSequence {
   private static final long serialVersionUID = 0;
@@ -71,7 +71,7 @@ public final class String implements java.io.Serializable, Comparable<String>, C
   public String toUpperCase(java.util.Locale a1) { throw new RuntimeException("skeleton method"); }
   public String toUpperCase() { throw new RuntimeException("skeleton method"); }
   public String trim() { throw new RuntimeException("skeleton method"); }
-  public String toString() { throw new RuntimeException("skeleton method"); }
+  public @Pure String toString() { throw new RuntimeException("skeleton method"); }
   public char[] toCharArray() { throw new RuntimeException("skeleton method"); }
   public static String format(String a1, @Nullable Object... a2) { throw new RuntimeException("skeleton method"); }
   public static String format(java.util. @Nullable Locale a1, String a2, @Nullable Object... a3) { throw new RuntimeException("skeleton method"); }

@@ -9,6 +9,8 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Elements;
 
+import javacutils.AnnotationUtils;
+
 import checkers.basetype.BaseTypeChecker;
 import checkers.javari.quals.*;
 import checkers.quals.PolyAll;
@@ -16,7 +18,6 @@ import checkers.quals.TypeQualifiers;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.QualifierHierarchy;
 import checkers.types.TypeHierarchy;
-import checkers.util.AnnotationUtils;
 import checkers.util.GraphQualifierHierarchy;
 import checkers.util.MultiGraphQualifierHierarchy;
 

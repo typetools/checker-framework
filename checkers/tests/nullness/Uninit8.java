@@ -1,4 +1,5 @@
-import checkers.nullness.quals.AssertNonNullAfter;
+import checkers.initialization.quals.*;
+import checkers.nullness.quals.*;
 
 public class Uninit8 {
 
@@ -6,8 +7,8 @@ public class Uninit8 {
 
   Uninit8() { setFields(); }
 
-  @AssertNonNullAfter("f")
-  void setFields() {
+  @EnsuresNonNull("f")
+  void setFields(@Raw @Unclassified Uninit8 this) {
     f = new Object();
   }
 

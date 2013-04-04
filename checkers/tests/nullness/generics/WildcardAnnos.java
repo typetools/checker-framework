@@ -26,8 +26,8 @@ class WildcardAnnos {
   //:: error: (type.invalid)
   @Nullable List<@Nullable @NonNull ? super @NonNull Object> l7 = null;
   //:: error: (type.invalid)
-  @Nullable List<? super @Nullable @NonNull  Object> l8 = null;
+  @Nullable List<? extends @Nullable @NonNull Object> l8 = null;
   //:: error: (type.invalid)
-  @Nullable List<? super @Nullable @NonNull  Object> l9 = null;
+  @Nullable List<? super @Nullable @NonNull Object> l9 = null;
 
 }
