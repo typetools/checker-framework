@@ -1,4 +1,4 @@
-Version 1.6.2, 01 Apr 2013
+Version 1.6.2, 04 Apr 2013
 
 Eclipse plugin:
   The "Additional compiler parameters" text field has now been replaced by a list.  Parameters in this list may be activated/deactivated via checkbox.
