@@ -243,27 +243,34 @@
                     "Browse" button to select Java home via a dialog.  Otherwise, the version used
                     to run Eclipse will also be used to run the Checker Framework compiler.
                 </p>
+                
+                <p>
+                    <strong>Processor/build options</strong><br/>
+                    The Checker Framework
+                    supports <a href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#checker-options">command-line options</a> to its compiler (usually prefaced by -A).  One
+                    way to use these options is enabling the various options under the label "Processor/build options".
+                    If you are using the
+                    Checker Framework
+                    on a project for which other developers are not, you may be specifically interested in its 
+                    <a href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#warnings-and-legacy">backward compatibility features</a>, such as annotations in comments and 
+                    implicit import statement.  If you check the box next to the text "Use implicit imports for annotation classes"
+                    then, for built-in checkers, all of the appropriate annotations will be imported implicitly.
+                </p>
             </div>
             <div class="span5">
                 <img style="position:relative; top: 0px; float: right;" src="images/other_preferences.png"/>
             </div>
         </div>
         <p>
-            <strong>Processor/build options</strong><br/>
-            The Checker Framework
-            supports <a href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#checker-options">command-line options</a> to its compiler (usually prefaced by -A).  One
-            way to use these options is enabling the various options under the label "Processor/build options".
-            If you are using the
-            Checker Framework
-            on a project for which other developers are not, you may be specifically interested in its 
-            <a href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#warnings-and-legacy">backward compatibility features</a>, such as annotations in comments and 
-            implicit import statement.  If you check the box next to the text "Use implicit imports for annotation classes"
-            then, for built-in checkers, all of the appropriate annotations will be imported implicitly.
-        </p>
-        <p>
             <strong>Additional compiler parameters</strong><br/>
-            You can pass other compiler parameters in the text-field
-            labeled "Additional compiler parameters".
+            The Checker Framework compiler has many options, including all of the standard javac options.  
+            You may wish to pass a javac option to the Checker Framework compiler or a Checker Framework option
+            not explicitly listed in the "Processor/Build Options" section.  To add custom options,
+            press the "Add" button found in the "Additional compiler parameters" section.  In the provided
+            text box, add one or more options as they would appear on your command line.
+            Each option, or group of options, added in this manner will appear on a line in the options table above the "Add" button.  
+            The options provided by a line in this table may be activated and deactivated via the check box to the left of its definition.  
+            Any line which has a checkmark to its left will be added to the command line when the Checker Framework is run.  
         </p>
         <div class="alert alert-error"><strong>Warning!</strong> The text found in the "Additional compiler parameters"
             text-field will first be split on white space and then added (without further manipulation) to
