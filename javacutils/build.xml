@@ -13,6 +13,7 @@
     <property file="build.properties"/>
 
     <property name="dist.file" value="javacutils.jar"/>
+    <property name="dist.doc" value="doc"/>
 
     <property name="tmpdir" value="${java.io.tmpdir}/${user.name}/${ant.project.name}" />
 
@@ -75,7 +76,7 @@ ${build.version} of the 'javac.jar' library."/>
             <path>
                 <fileset dir="${src}">
                     <include name="**/*.java"/>
-                    <exclude name="checkers/util/dist/**"/>
+                    <exclude name="javacutils/dist/**"/>
                 </fileset>
             </path>
         </pathconvert>
@@ -118,6 +119,7 @@ ${build.version} of the 'javac.jar' library."/>
             <jvmarg line="-Xbootclasspath/p:${compiler.lib}:${javadoc.lib}"/>
             <arg value="-g"/>
             <arg line="-d ${build}"/>
+            <arg line="src/javacutils/dist/ManualTaglet.java"/>
             <arg line="-version"/>
         </java>
         <!-- This relative path is wrong; running "ant -find" from a
@@ -126,9 +128,10 @@ ${build.version} of the 'javac.jar' library."/>
             executable="${jsr308.langtools}/dist/bin/javadoc"
           classpath="${build}:${compiler.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar:${jna.lib}:tests/junit-4.7.jar"
           bootclasspath="${compiler.lib}:${javadoc.lib}:${java.home}/lib/rt.jar">
-          <package name="checkers.*"/>
+          <package name="javacutils.*"/>
           <link href="http://docs.oracle.com/javase/7/docs/api/"/>
           <link href="http://docs.oracle.com/javase/7/docs/jdk/api/javac/tree/"/>
+          <taglet name="javacutils.dist.ManualTaglet" path="${build}"/>
         </javadoc>
     </target>
 

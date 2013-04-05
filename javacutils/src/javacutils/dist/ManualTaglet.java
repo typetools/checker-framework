@@ -1,4 +1,4 @@
-package checkers.util.dist;
+package javacutils.dist;
 
 import java.util.Map;
 

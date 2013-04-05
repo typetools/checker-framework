@@ -152,7 +152,7 @@ ${build.version} of the 'javac.jar' library."/>
             <jvmarg line="-Xbootclasspath/p:${compiler.lib}:${javadoc.lib}"/>
             <arg value="-g"/>
             <arg line="-d ${build}"/>
-            <arg line="src/checkers/util/dist/ManualTaglet.java"/>
+            <arg line="${javacutils.loc}/src/javacutils/dist/ManualTaglet.java"/>
             <arg line="-version"/>
         </java>
         <!-- This relative path is wrong; running "ant -find" from a
@@ -162,10 +162,10 @@ ${build.version} of the 'javac.jar' library."/>
           classpath="${build}:${compiler.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar:${jna.lib}:tests/junit-4.7.jar"
           excludepackagenames="checkers.util.stub,checkers.util.dist"
           bootclasspath="${compiler.lib}:${javadoc.lib}:${java.home}/lib/rt.jar">
-          <package name="checkers.*"/>
+          <package name="dataflow.*"/>
           <link href="http://docs.oracle.com/javase/7/docs/api/"/>
           <link href="http://docs.oracle.com/javase/7/docs/jdk/api/javac/tree/"/>
-          <taglet name="checkers.util.dist.ManualTaglet" path="${build}"/>
+          <taglet name="javacutils.dist.ManualTaglet" path="${build}"/>
         </javadoc>
     </target>
 
