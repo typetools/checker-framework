@@ -1,0 +1,6 @@
+This directory shows how to create:
+ * a new kind, @Frequency
+ * a new unit, Hertz (@Hz)
+ * relations that enforce that Hertz is computed as scalar/second
+
+You can model your own new units and unit checkers after it.
