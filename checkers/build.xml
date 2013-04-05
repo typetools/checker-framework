@@ -244,9 +244,15 @@ ${build.version} of the 'javac.jar' library."/>
           excludepackagenames="checkers.util.stub"
           bootclasspath="${javac.lib}:${javadoc.lib}:${java.home}/lib/rt.jar">
           <package name="checkers.*"/>
+<<<<<<< local
           <link href="http://docs.oracle.com/javase/7/docs/api/"/>
           <link href="http://docs.oracle.com/javase/7/docs/jdk/api/javac/tree/"/>
           <taglet name="javacutils.dist.ManualTaglet" path="${build}"/>
+=======
+          <link href="http://types.cs.washington.edu/checker-framework/api/jdk/"/>
+          <link href="http://types.cs.washington.edu/checker-framework/api/javac/tree/"/>
+          <taglet name="checkers.util.dist.ManualTaglet" path="${build}"/>
+>>>>>>> other
         </javadoc>
     </target>
 
