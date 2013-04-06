@@ -229,6 +229,13 @@ public class InternalUtils {
     }
 
     /**
+     * Returns whether a TypeMirror represents a class type.
+     */
+    public static boolean isClassType(TypeMirror type) {
+        return (type instanceof Type.ClassType);
+    }
+
+    /**
      * Returns the least upper bound of two {@link TypeMirror}s.
      *
      * @param processingEnv
