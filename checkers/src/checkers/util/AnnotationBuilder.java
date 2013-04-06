@@ -26,6 +26,7 @@ import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Types;
 
 import javacutils.ErrorReporter;
+import javacutils.InternalUtils;
 import javacutils.TypesUtils;
 
 /**
@@ -457,6 +458,9 @@ public class AnnotationBuilder {
                         encl = encl + '.';
                     }
                     return encl + var.toString();
+                } else if (value instanceof TypeMirror &&
+                           InternalUtils.isClassType((TypeMirror)value)) {
+                    return value.toString() + ".class";
                 } else {
                     return value.toString();
                 }
