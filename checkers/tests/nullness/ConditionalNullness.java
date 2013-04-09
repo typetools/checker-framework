@@ -1,16 +1,17 @@
+import checkers.nullness.quals.EnsuresNonNullIf;
 import checkers.nullness.quals.*;
 import java.util.*;
 public class ConditionalNullness {
 
-    @AssertNonNullIfTrue({"field", "method()"})
+    @EnsuresNonNullIf(expression={"field", "method()"}, result=true)
     boolean checkNonNull() {
         // don't bother with the implementation
-        //:: error: (assertiftrue.postcondition.not.satisfied)
+        //:: error: (contracts.conditional.postcondition.not.satisfied)
         return true;
     }
 
     @Nullable Object field = null;
-    @Nullable Object method() { return "m"; }
+    @dataflow.quals.Pure @Nullable Object method() { return "m"; }
 
     void testSelfWithCheck() {
         ConditionalNullness other = new ConditionalNullness();
@@ -39,10 +40,6 @@ public class ConditionalNullness {
                 //:: error: (dereference.of.nullable)
             field.toString();   // error
         }
-        // TODO: actually, both branches ensure that field is non-null.
-        // However, the NN checker does not recognize the NN in the
-        // if branch, b/c it's implemented with a simple String pattern.
-        //:: error: (dereference.of.nullable)
         field.toString();       // error
     }
 

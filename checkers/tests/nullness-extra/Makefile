@@ -3,8 +3,8 @@
 all: Bug109 multiple-errors package-anno
 
 Bug109:
-	$(JAVAC) -processor checkers.nullness.NullnessChecker Bug109_A.java Bug109_B.java
-	$(JAVAC) -processor checkers.nullness.NullnessChecker Bug109_B.java Bug109_A.java
+	$(JAVAC) -processor checkers.nullness.NullnessFbcChecker Bug109_A.java Bug109_B.java
+	$(JAVAC) -processor checkers.nullness.NullnessFbcChecker Bug109_B.java Bug109_A.java
 
 
 multiple-errors:
