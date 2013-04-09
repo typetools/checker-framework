@@ -424,7 +424,7 @@ public class TypeHierarchy {
             visited.add(lhs);
 
             if(!lhs.getAnnotations().isEmpty()) {
-                if (!lhs.getAnnotations().equals(rhs.getEffectiveAnnotations())) {
+                if (!lhs.getEffectiveAnnotations().equals(rhs.getEffectiveAnnotations())) {
                     return false;
                 }
             }
