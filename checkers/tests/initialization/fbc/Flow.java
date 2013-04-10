@@ -5,7 +5,7 @@ import checkers.nullness.quals.*;
 public class Flow {
     
     @NonNull String f;
-    @NotOnlyCommitted @NonNull String g;
+    @NotOnlyInitialized @NonNull String g;
     
     public Flow(String arg) {
         //:: error: (dereference.of.nullable)

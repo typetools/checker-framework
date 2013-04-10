@@ -9,9 +9,9 @@ public class Commitment2 {
     
     Commitment2 h;
     
-    @NotOnlyCommitted Commitment2 c;
+    @NotOnlyInitialized Commitment2 c;
     
-    @NotOnlyCommitted Commitment2 f;
+    @NotOnlyInitialized Commitment2 f;
     public void test(@UnderInitializion Commitment2 c) {
         //:: error: (commitment.invalid.field.write.committed)
         f = c;
