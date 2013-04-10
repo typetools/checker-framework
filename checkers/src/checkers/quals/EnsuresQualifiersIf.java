@@ -7,14 +7,14 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * A meta annotation to allow multiple precondition annotations.
+ * A meta annotation to allow multiple conditional postcondition annotations.
  *
  * @author Stefan Heule
- * @see RequiresAnnotation
+ * @see EnsuresQualifierIf
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.METHOD, ElementType.CONSTRUCTOR })
-public @interface RequiresAnnotations {
-    RequiresAnnotation[] value();
+@Target({ ElementType.METHOD })
+public @interface EnsuresQualifiersIf {
+    EnsuresQualifierIf[] value();
 }

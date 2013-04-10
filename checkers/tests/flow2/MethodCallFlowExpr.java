@@ -1,4 +1,4 @@
-import checkers.quals.EnsuresAnnotation;
+import checkers.quals.EnsuresQualifier;
 import checkers.util.test.*;
 
 import java.util.*;
@@ -40,60 +40,60 @@ class MethodCallFlowExpr {
         return "";
     }
     
-    @EnsuresAnnotation(expression="p1c(\"abc\")", annotation=Odd.class)
+    @EnsuresQualifier(expression="p1c(\"abc\")", qualifier=Odd.class)
     //:: error: (contracts.postcondition.not.satisfied)
     void e0() {
         // don't bother with implementation
     }
     
-    @EnsuresAnnotation(expression="p1(1)", annotation=Odd.class)
+    @EnsuresQualifier(expression="p1(1)", qualifier=Odd.class)
     //:: error: (contracts.postcondition.not.satisfied)
     void e1() {
         // don't bother with implementation
     }
     
-    @EnsuresAnnotation(expression="p1(\"abc\")", annotation=Odd.class)
+    @EnsuresQualifier(expression="p1(\"abc\")", qualifier=Odd.class)
     //:: error: (contracts.postcondition.not.satisfied)
     void e2() {
         // don't bother with implementation
     }
     
-    @EnsuresAnnotation(expression="nonpure()", annotation=Odd.class)
+    @EnsuresQualifier(expression="nonpure()", qualifier=Odd.class)
     //:: error: (flowexpr.method.not.pure)
     void e3() {
     }
     
-    @EnsuresAnnotation(expression="p2(\"abc\", 2L, p1(1))", annotation=Odd.class)
+    @EnsuresQualifier(expression="p2(\"abc\", 2L, p1(1))", qualifier=Odd.class)
     //:: error: (contracts.postcondition.not.satisfied)
     void e4() {
         // don't bother with implementation
     }
     
-    @EnsuresAnnotation(expression="p1b(2L)", annotation=Odd.class)
+    @EnsuresQualifier(expression="p1b(2L)", qualifier=Odd.class)
     //:: error: (contracts.postcondition.not.satisfied)
     void e5() {
         // don't bother with implementation
     }
     
-    @EnsuresAnnotation(expression="p1b(null)", annotation=Odd.class)
+    @EnsuresQualifier(expression="p1b(null)", qualifier=Odd.class)
     //:: error: (contracts.postcondition.not.satisfied)
     void e6() {
         // don't bother with implementation
     }
     
-    @EnsuresAnnotation(expression="p1d(1)", annotation=Odd.class)
+    @EnsuresQualifier(expression="p1d(1)", qualifier=Odd.class)
     //:: error: (contracts.postcondition.not.satisfied)
     void e7a() {
         // don't bother with implementation
     }
     
-    @EnsuresAnnotation(expression="this.p1d(1)", annotation=Odd.class)
+    @EnsuresQualifier(expression="this.p1d(1)", qualifier=Odd.class)
     //:: error: (contracts.postcondition.not.satisfied)
     void e7b() {
         // don't bother with implementation
     }
     
-    @EnsuresAnnotation(expression="MethodCallFlowExpr.p1d(1)", annotation=Odd.class)
+    @EnsuresQualifier(expression="MethodCallFlowExpr.p1d(1)", qualifier=Odd.class)
     //:: error: (contracts.postcondition.not.satisfied)
     void e7c() {
         // don't bother with implementation

@@ -8,11 +8,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * A postcondition annotation to indicate that a method ensures certain
- * expressions to have a certain annotation once the method has successfully
- * terminated. The expressions for which the annotation must hold after the
- * methods execution are indicated by {@code expression} and are specified using
- * a string. The annotation is specified by {@code annotation}.
+ * A precondition annotation to indicate that a method requires certain
+ * expressions to have a certain qualifier at the time of the call to the
+ * method. The expressions for which the annotation must hold after the methods
+ * execution are indicated by {@code expression} and are specified using a
+ * string. The qualifier is specified by {@code qualifier}.
  *
  * @author Stefan Heule
  * @see <a
@@ -22,10 +22,9 @@ import java.lang.annotation.Target;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.METHOD, ElementType.CONSTRUCTOR })
-public @interface EnsuresAnnotation {
+public @interface RequiresQualifier {
     /**
-     * The Java expressions for which the annotation holds after successful
-     * method termination.
+     * The Java expressions for which the annotation need to be present.
      *
      * @see <a
      *      href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#java-expressions-as-arguments">Syntax
@@ -34,8 +33,7 @@ public @interface EnsuresAnnotation {
     String[] expression();
 
     /**
-     * The annotation that is guaranteed to hold on successfull termination of
-     * the method.
+     * The qualifier that is required.
      */
-    Class<? extends Annotation> annotation();
+    Class<? extends Annotation> qualifier();
 }

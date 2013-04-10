@@ -16,22 +16,22 @@ class Postcondition {
     
     /***** normal postcondition ******/
     
-    @EnsuresAnnotation(expression="f1", annotation=Odd.class)
+    @EnsuresQualifier(expression="f1", qualifier=Odd.class)
     void oddF1() {
         f1 = null;
     }
     
-    @EnsuresAnnotation(expression="p.f1", annotation=Odd.class)
+    @EnsuresQualifier(expression="p.f1", qualifier=Odd.class)
     void oddF1_1() {
         p.f1 = null;
     }
     
-    @EnsuresAnnotation(expression="#1.f1", annotation=Odd.class)
+    @EnsuresQualifier(expression="#1.f1", qualifier=Odd.class)
     void oddF1_2(final Postcondition param) {
         param.f1 = null;
     }
     
-    @EnsuresAnnotation(expression="p.p1()", annotation=Odd.class)
+    @EnsuresQualifier(expression="p.p1()", qualifier=Odd.class)
     void oddF1_3() {
         if (p.p1() == null) {
             return;
@@ -39,34 +39,34 @@ class Postcondition {
         throw new RuntimeException();
     }
     
-    @EnsuresAnnotation(expression="f1", annotation=Value.class)
+    @EnsuresQualifier(expression="f1", qualifier=Value.class)
     //:: error: (contracts.postcondition.not.satisfied)
     void valueF1() {
     }
     
-    @EnsuresAnnotation(expression="---", annotation=Value.class)
+    @EnsuresQualifier(expression="---", qualifier=Value.class)
     //:: error: (flowexpr.parse.error)
     void error() {
     }
     
-    @EnsuresAnnotation(expression="#1.#2", annotation=Value.class)
+    @EnsuresQualifier(expression="#1.#2", qualifier=Value.class)
     //:: error: (flowexpr.parse.error)
     void error2(final String p1, final String p2) {
     }
     
-    @EnsuresAnnotation(expression="f1", annotation=Value.class)
+    @EnsuresQualifier(expression="f1", qualifier=Value.class)
     void exception() {
         throw new RuntimeException();
     }
     
-    @EnsuresAnnotation(expression="#1", annotation=Value.class)
+    @EnsuresQualifier(expression="#1", qualifier=Value.class)
     void param1(final @Value String f) {
     }
-    @EnsuresAnnotation(expression={"#1","#2"}, annotation=Value.class)
+    @EnsuresQualifier(expression={"#1","#2"}, qualifier=Value.class)
     //:: error: (flowexpr.parameter.not.final)
     void param2(@Value String f, @Value String g) {
     }
-    @EnsuresAnnotation(expression="#1", annotation=Value.class)
+    @EnsuresQualifier(expression="#1", qualifier=Value.class)
     //:: error: (flowexpr.parse.index.too.big)
     void param3() {
     }
@@ -114,25 +114,25 @@ class Postcondition {
     
     /***** many postcondition ******/
     
-    @EnsuresAnnotations({
-        @EnsuresAnnotation(expression="f1", annotation=Odd.class),
-        @EnsuresAnnotation(expression="f2", annotation=Value.class)
+    @EnsuresQualifiers({
+        @EnsuresQualifier(expression="f1", qualifier=Odd.class),
+        @EnsuresQualifier(expression="f2", qualifier=Value.class)
     })
     void oddValueF1(@Value String p1) {
         f1 = null;
         f2 = p1;
     }
     
-    @EnsuresAnnotations({
-        @EnsuresAnnotation(expression="f1", annotation=Odd.class),
-        @EnsuresAnnotation(expression="f2", annotation=Value.class)
+    @EnsuresQualifiers({
+        @EnsuresQualifier(expression="f1", qualifier=Odd.class),
+        @EnsuresQualifier(expression="f2", qualifier=Value.class)
     })
     //:: error: (contracts.postcondition.not.satisfied)
     void oddValueF1_invalid(@Value String p1) {
     }
     
-    @EnsuresAnnotations({
-        @EnsuresAnnotation(expression="--", annotation=Odd.class),
+    @EnsuresQualifiers({
+        @EnsuresQualifier(expression="--", qualifier=Odd.class),
     })
     //:: error: (flowexpr.parse.error)
     void error2() {
@@ -153,7 +153,7 @@ class Postcondition {
     
     /***** conditional postcondition ******/
     
-    @EnsuresAnnotationIf(result=true, expression="f1", annotation=Odd.class)
+    @EnsuresQualifierIf(result=true, expression="f1", qualifier=Odd.class)
     boolean condOddF1(boolean b) {
         if (b) {
             f1 = null;
@@ -161,7 +161,7 @@ class Postcondition {
         }
         return false;
     }
-    @EnsuresAnnotationIf(result=false, expression="f1", annotation=Odd.class)
+    @EnsuresQualifierIf(result=false, expression="f1", qualifier=Odd.class)
     boolean condOddF1False(boolean b) {
         if (b) {
             return true;
@@ -169,7 +169,7 @@ class Postcondition {
         f1 = null;
         return false;
     }
-    @EnsuresAnnotationIf(result=false, expression="f1", annotation=Odd.class)
+    @EnsuresQualifierIf(result=false, expression="f1", qualifier=Odd.class)
     boolean condOddF1Invalid(boolean b) {
         if (b) {
             f1 = null;
@@ -178,26 +178,26 @@ class Postcondition {
         //:: error: (contracts.conditional.postcondition.not.satisfied)
         return false;
     }
-    @EnsuresAnnotationIf(result=false, expression="f1", annotation=Odd.class)
+    @EnsuresQualifierIf(result=false, expression="f1", qualifier=Odd.class)
     //:: error: (contracts.conditional.postcondition.invalid.returntype)
     void wrongReturnType() {
     }
-    @EnsuresAnnotationIf(result=false, expression="f1", annotation=Odd.class)
+    @EnsuresQualifierIf(result=false, expression="f1", qualifier=Odd.class)
     //:: error: (contracts.conditional.postcondition.invalid.returntype)
     String wrongReturnType2() {
         f1 = null;
         return "";
     }
     
-    @EnsuresAnnotationIf(result=true, expression="#1", annotation=Odd.class)
+    @EnsuresQualifierIf(result=true, expression="#1", qualifier=Odd.class)
     boolean isOdd(final String p1) {
         return isOdd(p1, 0);
     }
-    @EnsuresAnnotationIf(result=true, expression="#1", annotation=Odd.class)
+    @EnsuresQualifierIf(result=true, expression="#1", qualifier=Odd.class)
     boolean isOdd(final String p1, int p2) {
         return p1 == null;
     }
-    @EnsuresAnnotationIf(result=false, expression="#1", annotation=Odd.class)
+    @EnsuresQualifierIf(result=false, expression="#1", qualifier=Odd.class)
     boolean isNotOdd(final String p1) {
         return !isOdd(p1);
     }
@@ -237,9 +237,9 @@ class Postcondition {
     
     /***** many conditional postcondition ******/
     
-    @EnsuresAnnotationsIf({
-        @EnsuresAnnotationIf(result=true, expression="f1", annotation=Odd.class),
-        @EnsuresAnnotationIf(result=false, expression="f1", annotation=Value.class)
+    @EnsuresQualifiersIf({
+        @EnsuresQualifierIf(result=true, expression="f1", qualifier=Odd.class),
+        @EnsuresQualifierIf(result=false, expression="f1", qualifier=Value.class)
     })
     boolean condsOddF1(boolean b, @Value String p1) {
         if (b) {
@@ -250,9 +250,9 @@ class Postcondition {
         return false;
     }
     
-    @EnsuresAnnotationsIf({
-        @EnsuresAnnotationIf(result=true, expression="f1", annotation=Odd.class),
-        @EnsuresAnnotationIf(result=false, expression="f1", annotation=Value.class)
+    @EnsuresQualifiersIf({
+        @EnsuresQualifierIf(result=true, expression="f1", qualifier=Odd.class),
+        @EnsuresQualifierIf(result=false, expression="f1", qualifier=Value.class)
     })
     boolean condsOddF1_invalid(boolean b, @Value String p1) {
         if (b) {
@@ -263,8 +263,8 @@ class Postcondition {
         return false;
     }
     
-    @EnsuresAnnotationsIf({
-        @EnsuresAnnotationIf(result=false, expression="f1", annotation=Odd.class)
+    @EnsuresQualifiersIf({
+        @EnsuresQualifierIf(result=false, expression="f1", qualifier=Odd.class)
     })
     //:: error: (contracts.conditional.postcondition.invalid.returntype)
     String wrongReturnType3() {
