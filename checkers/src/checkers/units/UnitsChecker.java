@@ -42,7 +42,7 @@ public class UnitsChecker extends BaseTypeChecker {
         super.initChecker();
     }
 
-    /** Copied from BasicChecker and adapted "quals" to "units".
+    /** Copied from SubtypingChecker and adapted "quals" to "units".
      */
     @Override
     @SuppressWarnings("unchecked")
@@ -156,8 +156,8 @@ public class UnitsChecker extends BaseTypeChecker {
         }
     }
 
-    /** Copied from BasicChecker; cannot reuse it, because BasicChecker is final.
-     * TODO: BasicChecker might also want to always call super.
+    /** Copied from SubtypingChecker; cannot reuse it, because SubtypingChecker is final.
+     * TODO: SubtypingChecker might also want to always call super.
      */
     @Override
     public Collection<String> getSuppressWarningsKeys() {

@@ -51,7 +51,7 @@ public class FenumChecker extends BaseTypeChecker {
         super.initChecker();
     }
 
-    /** Copied from BasicChecker.
+    /** Copied from SubtypingChecker.
      * Instead of returning an empty set if no "quals" option is given,
      * we return Fenum as the only qualifier.
      */
@@ -89,7 +89,7 @@ public class FenumChecker extends BaseTypeChecker {
         return Collections.unmodifiableSet(qualSet);
     }
 
-    /** Copied from BasicChecker; cannot reuse it, because BasicChecker is final.
+    /** Copied from SubtypingChecker; cannot reuse it, because SubtypingChecker is final.
      */
     @Override
     public Collection<String> getSuppressWarningsKeys() {
