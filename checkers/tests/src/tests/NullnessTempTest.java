@@ -16,7 +16,7 @@ public class NullnessTempTest extends ParameterizedCheckerTest {
     public NullnessTempTest(File testFile) {
         // TODO: remove arrays:forbidnonnullcomponents option once it's no
         // longer needed.
-        super(testFile, checkers.nullness.NullnessFbcChecker.class.getName(),
+        super(testFile, checkers.nullness.NullnessChecker.class.getName(),
                 "nullness", "-Anomsgtext",
                 "-Alint=arrays:forbidnonnullcomponents,"
                         + AbstractNullnessChecker.LINT_REDUNDANTNULLCOMPARISON);

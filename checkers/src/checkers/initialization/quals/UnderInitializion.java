@@ -14,7 +14,7 @@ import checkers.quals.TypeQualifier;
  * This type qualifier belongs to the freedom-before-commitment type-system for
  * tracking initialization. This type-system is not used on its own, but in
  * conjunction with some other type-system that wants to ensure safe
- * initialization. For instance, {@link NullnessFbcChecker} uses
+ * initialization. For instance, {@link NullnessChecker} uses
  * freedom-before-commitment to track initialization of {@link NonNull} fields.
  *
  * <p>
