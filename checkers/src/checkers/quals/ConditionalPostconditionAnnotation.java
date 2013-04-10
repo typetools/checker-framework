@@ -9,25 +9,25 @@ import java.lang.annotation.Target;
 /**
  * A meta-annotation that indicates that an annotation is a conditional
  * postcondition annotation, i.e., a type-specialized version of
- * {@link EnsuresAnnotationIf}. The annotation that is annotated as
+ * {@link EnsuresQualifierIf}. The annotation that is annotated as
  * {@link ConditionalPostconditionAnnotation} must have a value called
  * {@code expression} that is an array of {@code String}s of the same format and
  * with the same meaning as the value {@code expression} in
- * {@link EnsuresAnnotationIf}, as well as a value {@code result} with the same
- * meaning as the value {@code result} in {@link EnsuresAnnotationIf}.
- * 
+ * {@link EnsuresQualifierIf}, as well as a value {@code result} with the same
+ * meaning as the value {@code result} in {@link EnsuresQualifierIf}.
+ *
  * <p>
- * The value {@code annotation} that is necessary for a conditional
- * postcondition specified with {@link EnsuresAnnotation} is hard-coded here
- * with the value {@code annotation}.
- * 
+ * The value {@code qualifier} that is necessary for a conditional
+ * postcondition specified with {@link EnsuresQualifier} is hard-coded here
+ * with the value {@code qualifier}.
+ *
  * @author Stefan Heule
- * @see EnsuresAnnotation
- * 
+ * @see EnsuresQualifier
+ *
  */
 @Target({ ElementType.ANNOTATION_TYPE })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ConditionalPostconditionAnnotation {
-    /** The hard-coded annotation for the postcondition. */
-    Class<? extends Annotation> annotation();
+    /** The hard-coded qualifier for the postcondition. */
+    Class<? extends Annotation> qualifier();
 }

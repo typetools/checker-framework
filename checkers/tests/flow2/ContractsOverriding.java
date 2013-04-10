@@ -1,6 +1,6 @@
-import checkers.quals.EnsuresAnnotation;
-import checkers.quals.EnsuresAnnotationIf;
-import checkers.quals.RequiresAnnotation;
+import checkers.quals.EnsuresQualifier;
+import checkers.quals.EnsuresQualifierIf;
+import checkers.quals.RequiresQualifier;
 import tests.util.EnsuresOdd;
 import tests.util.EnsuresOddIf;
 import tests.util.Odd;
@@ -39,7 +39,7 @@ class ContractsOverriding {
         }
 
         @Override
-        @RequiresAnnotation(expression = "f", annotation = Odd.class)
+        @RequiresQualifier(expression = "f", qualifier = Odd.class)
         //:: error: (contracts.precondition.override.invalid)
         void m2() {
         }
@@ -57,9 +57,9 @@ class ContractsOverriding {
         }
 
         @Override
-        // use different string to refer to 'f' and RequiresAnnotation instead
+        // use different string to refer to 'f' and RequiresQualifier instead
         // of RequiresOdd
-        @RequiresAnnotation(expression = "this.f", annotation = Odd.class)
+        @RequiresQualifier(expression = "this.f", qualifier = Odd.class)
         void m4() {
         }
     }
@@ -100,7 +100,7 @@ class ContractsOverriding {
             f = odd;
         }
 
-        @EnsuresAnnotation(expression = "f", annotation = Odd.class)
+        @EnsuresQualifier(expression = "f", qualifier = Odd.class)
         void m2() {
             f = odd;
         }
@@ -110,7 +110,7 @@ class ContractsOverriding {
             g = odd;
         }
         
-        @EnsuresAnnotation(expression = "this.f", annotation = Odd.class)
+        @EnsuresQualifier(expression = "this.f", qualifier = Odd.class)
         void m4() {
             f = odd;
         }
@@ -165,7 +165,7 @@ class ContractsOverriding {
             return true;
         }
 
-        @EnsuresAnnotationIf(expression = "f", annotation = Odd.class, result=true)
+        @EnsuresQualifierIf(expression = "f", qualifier = Odd.class, result=true)
         boolean m2() {
             f = odd;
             return true;
@@ -177,13 +177,13 @@ class ContractsOverriding {
             return true;
         }
         
-        @EnsuresAnnotationIf(expression = "this.f", annotation = Odd.class, result=true)
+        @EnsuresQualifierIf(expression = "this.f", qualifier = Odd.class, result=true)
         boolean m4() {
             f = odd;
             return true;
         }
         
-        @EnsuresAnnotationIf(expression = "this.f", annotation = Odd.class, result=true)
+        @EnsuresQualifierIf(expression = "this.f", qualifier = Odd.class, result=true)
         boolean m5() {
             f = odd;
             return true;

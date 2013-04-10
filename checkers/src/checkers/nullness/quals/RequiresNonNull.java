@@ -17,7 +17,7 @@ import checkers.quals.PreconditionAnnotation;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.METHOD, ElementType.CONSTRUCTOR })
-@PreconditionAnnotation(annotation = NonNull.class)
+@PreconditionAnnotation(qualifier = NonNull.class)
 public @interface RequiresNonNull {
     /**
      * The Java expressions which need to be {@link NonNull}.

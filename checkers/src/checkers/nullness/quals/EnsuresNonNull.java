@@ -17,7 +17,7 @@ import checkers.quals.PostconditionAnnotation;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.METHOD, ElementType.CONSTRUCTOR })
-@PostconditionAnnotation(annotation = NonNull.class)
+@PostconditionAnnotation(qualifier = NonNull.class)
 public @interface EnsuresNonNull {
     /**
      * The Java expressions that are ensured to be {@link NonNull} on successful
