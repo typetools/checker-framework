@@ -687,7 +687,7 @@ ${build.version} of the 'javac.jar' library."/>
     <target name="check-nullness"
       description="Run the Non-Null checker on the Framework">
         <antcall target="-run-checker">
-            <param name="checker-name" value="checkers.nullness.NullnessFbcChecker"/>
+            <param name="checker-name" value="checkers.nullness.NullnessChecker"/>
             <param name="checker-jdk" value="jdk/nullness/src"/>
             <param name="checker-args" value="-Awarns"/>
         </antcall>

@@ -6,7 +6,7 @@ import java.util.Collection;
 import checkers.source.AggregateChecker;
 import checkers.source.SourceChecker;
 
-public class NullnessFbcChecker extends AggregateChecker {
+public class NullnessChecker extends AggregateChecker {
 
     @Override
     protected Collection<Class<? extends SourceChecker>> getSupportedCheckers() {
