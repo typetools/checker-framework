@@ -12,7 +12,7 @@ import javax.lang.model.type.TypeMirror;
 
 import checkers.flow.analysis.checkers.CFAbstractStore;
 import checkers.initialization.InitializationTransfer;
-import checkers.initialization.quals.Committed;
+import checkers.initialization.quals.Initialized;
 import checkers.nullness.quals.NonNull;
 import checkers.nullness.quals.NonRaw;
 import checkers.nullness.quals.Nullable;
@@ -256,7 +256,7 @@ public class NullnessTransfer extends
                 dummy, analysis.getFactory());
         annotatedDummy.addAnnotation(NonNull.class);
         annotatedDummy.addAnnotation(NonRaw.class);
-        annotatedDummy.addAnnotation(Committed.class);
+        annotatedDummy.addAnnotation(Initialized.class);
         NullnessValue value = new NullnessValue(analysis, annotatedDummy);
         return value;
     }

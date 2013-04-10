@@ -12,12 +12,12 @@ public class Commitment2 {
     @NotOnlyCommitted Commitment2 c;
     
     @NotOnlyCommitted Commitment2 f;
-    public void test(@Free Commitment2 c) {
+    public void test(@UnderInitializion Commitment2 c) {
         //:: error: (commitment.invalid.field.write.committed)
         f = c;
     }
     
-    public static @Unclassified Commitment2 create() {
+    public static @UnkownInitialization Commitment2 create() {
         return new Commitment2();
     }
     
@@ -27,7 +27,7 @@ public class Commitment2 {
     }
     
     //:: error: (commitment.fields.uninitialized)
-    public Commitment2(@Free Commitment2 likeAnEagle) {
+    public Commitment2(@UnderInitializion Commitment2 likeAnEagle) {
         //:: error: (assignment.type.incompatible)
         h = likeAnEagle;
         

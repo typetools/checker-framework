@@ -45,7 +45,7 @@ public class FlowInitialization {
     }
     
     @EnsuresAnnotation(expression="f", annotation=NonNull.class)
-    public void setField(@Unclassified @Raw FlowInitialization this) {
+    public void setField(@UnkownInitialization @Raw FlowInitialization this) {
         f = "";
     }
 }

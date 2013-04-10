@@ -19,11 +19,11 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
 import checkers.basetype.BaseTypeChecker;
-import checkers.initialization.quals.Committed;
+import checkers.initialization.quals.Initialized;
 import checkers.initialization.quals.FBCBottom;
-import checkers.initialization.quals.Free;
+import checkers.initialization.quals.UnderInitializion;
 import checkers.initialization.quals.NotOnlyCommitted;
-import checkers.initialization.quals.Unclassified;
+import checkers.initialization.quals.UnkownInitialization;
 import checkers.nullness.quals.NonRaw;
 import checkers.nullness.quals.Raw;
 import checkers.types.AnnotatedTypeMirror;
@@ -55,8 +55,8 @@ public abstract class InitializationChecker extends BaseTypeChecker {
         Elements elements = processingEnv.getElementUtils();
 
         if (useFbc) {
-            COMMITTED = AnnotationUtils.fromClass(elements, Committed.class);
-            FREE = AnnotationUtils.fromClass(elements, Free.class);
+            COMMITTED = AnnotationUtils.fromClass(elements, Initialized.class);
+            FREE = AnnotationUtils.fromClass(elements, UnderInitializion.class);
             NOT_ONLY_COMMITTED = AnnotationUtils.fromClass(elements,
                     NotOnlyCommitted.class);
             FBCBOTTOM = AnnotationUtils.fromClass(elements, FBCBottom.class);
@@ -76,9 +76,9 @@ public abstract class InitializationChecker extends BaseTypeChecker {
     public Set<Class<? extends Annotation>> getInitializationAnnotations() {
         Set<Class<? extends Annotation>> result = new HashSet<>();
         if (useFbc) {
-            result.add(Free.class);
-            result.add(Committed.class);
-            result.add(Unclassified.class);
+            result.add(UnderInitializion.class);
+            result.add(Initialized.class);
+            result.add(UnkownInitialization.class);
             result.add(FBCBottom.class);
         } else {
             result.add(Raw.class);
@@ -131,36 +131,36 @@ public abstract class InitializationChecker extends BaseTypeChecker {
     }
 
     /**
-     * Returns a {@link Free} annotation with a given type frame.
+     * Returns a {@link UnderInitializion} annotation with a given type frame.
      */
     public AnnotationMirror createFreeAnnotation(TypeMirror typeFrame) {
         assert typeFrame != null;
-        assert useFbc : "The rawness type system does not have a @Free annotation.";
+        assert useFbc : "The rawness type system does not have a @UnderInitializion annotation.";
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv,
-                Free.class);
+                UnderInitializion.class);
         builder.setValue("value", typeFrame);
         return builder.build();
     }
 
     /**
-     * Returns a {@link Free} annotation with a given type frame.
+     * Returns a {@link UnderInitializion} annotation with a given type frame.
      */
     public AnnotationMirror createFreeAnnotation(Class<?> typeFrame) {
         assert typeFrame != null;
-        assert useFbc : "The rawness type system does not have a @Free annotation.";
+        assert useFbc : "The rawness type system does not have a @UnderInitializion annotation.";
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv,
-                Free.class);
+                UnderInitializion.class);
         builder.setValue("value", typeFrame);
         return builder.build();
     }
 
     /**
-     * Returns a {@link Unclassified} or {@link Raw} annotation with a given
+     * Returns a {@link UnkownInitialization} or {@link Raw} annotation with a given
      * type frame.
      */
     public AnnotationMirror createUnclassifiedAnnotation(Class<?> typeFrame) {
         assert typeFrame != null;
-        Class<? extends Annotation> clazz = useFbc ? Unclassified.class
+        Class<? extends Annotation> clazz = useFbc ? UnkownInitialization.class
                 : Raw.class;
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, clazz);
         builder.setValue("value", typeFrame);
@@ -168,11 +168,11 @@ public abstract class InitializationChecker extends BaseTypeChecker {
     }
 
     /**
-     * Returns a {@link Unclassified} annotation with a given type frame.
+     * Returns a {@link UnkownInitialization} annotation with a given type frame.
      */
     public AnnotationMirror createUnclassifiedAnnotation(TypeMirror typeFrame) {
         assert typeFrame != null;
-        Class<? extends Annotation> clazz = useFbc ? Unclassified.class
+        Class<? extends Annotation> clazz = useFbc ? UnkownInitialization.class
                 : Raw.class;
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, clazz);
         builder.setValue("value", typeFrame);
@@ -181,7 +181,7 @@ public abstract class InitializationChecker extends BaseTypeChecker {
 
     /**
      * Returns the type frame of a given annotation. The annotation must either
-     * be {@link Free} or {@link Unclassified}.
+     * be {@link UnderInitializion} or {@link UnkownInitialization}.
      */
     public TypeMirror getTypeFrameFromAnnotation(AnnotationMirror annotation) {
         TypeMirror name = AnnotationUtils.getElementValue(annotation, "value",
@@ -190,20 +190,20 @@ public abstract class InitializationChecker extends BaseTypeChecker {
     }
 
     /**
-     * Is {@code anno} the {@link Free} annotation (with any type frame)? Always
+     * Is {@code anno} the {@link UnderInitializion} annotation (with any type frame)? Always
      * returns false if {@code useFbc} is false.
      */
     public boolean isFree(AnnotationMirror anno) {
-        return useFbc && AnnotationUtils.areSameByClass(anno, Free.class);
+        return useFbc && AnnotationUtils.areSameByClass(anno, UnderInitializion.class);
     }
 
     /**
-     * Is {@code anno} the {@link Unclassified} annotation (with any type
+     * Is {@code anno} the {@link UnkownInitialization} annotation (with any type
      * frame)? If {@code useFbc} is false, then {@link Raw} is used in the
      * comparison.
      */
     public boolean isUnclassified(AnnotationMirror anno) {
-        Class<? extends Annotation> clazz = useFbc ? Unclassified.class
+        Class<? extends Annotation> clazz = useFbc ? UnkownInitialization.class
                 : Raw.class;
         return AnnotationUtils.areSameByClass(anno, clazz);
     }
@@ -216,7 +216,7 @@ public abstract class InitializationChecker extends BaseTypeChecker {
     }
 
     /**
-     * Is {@code anno} the {@link Committed} annotation? If {@code useFbc} is
+     * Is {@code anno} the {@link Initialized} annotation? If {@code useFbc} is
      * false, then {@link NonRaw} is used in the comparison.
      */
     public boolean isCommitted(AnnotationMirror anno) {
@@ -224,20 +224,20 @@ public abstract class InitializationChecker extends BaseTypeChecker {
     }
 
     /**
-     * Does {@code anno} have the annotation {@link Free} (with any type frame)?
+     * Does {@code anno} have the annotation {@link UnderInitializion} (with any type frame)?
      * Always returns false if {@code useFbc} is false.
      */
     public boolean isFree(AnnotatedTypeMirror anno) {
-        return useFbc && anno.hasEffectiveAnnotation(Free.class);
+        return useFbc && anno.hasEffectiveAnnotation(UnderInitializion.class);
     }
 
     /**
-     * Does {@code anno} have the annotation {@link Unclassified} (with any type
+     * Does {@code anno} have the annotation {@link UnkownInitialization} (with any type
      * frame)? If {@code useFbc} is false, then {@link Raw} is used in the
      * comparison.
      */
     public boolean isUnclassified(AnnotatedTypeMirror anno) {
-        Class<? extends Annotation> clazz = useFbc ? Unclassified.class
+        Class<? extends Annotation> clazz = useFbc ? UnkownInitialization.class
                 : Raw.class;
         return anno.hasEffectiveAnnotation(clazz);
     }
@@ -252,11 +252,11 @@ public abstract class InitializationChecker extends BaseTypeChecker {
     }
 
     /**
-     * Does {@code anno} have the annotation {@link Committed}? If
+     * Does {@code anno} have the annotation {@link Initialized}? If
      * {@code useFbc} is false, then {@link NonRaw} is used in the comparison.
      */
     public boolean isCommitted(AnnotatedTypeMirror anno) {
-        Class<? extends Annotation> clazz = useFbc ? Committed.class
+        Class<? extends Annotation> clazz = useFbc ? Initialized.class
                 : NonRaw.class;
         return anno.hasEffectiveAnnotation(clazz);
     }
@@ -364,11 +364,11 @@ public abstract class InitializationChecker extends BaseTypeChecker {
             if (AnnotationUtils.areSame(anno1, anno2)) {
                 return true;
             }
-            // @Committed is only a supertype of @FBCBottom.
+            // @Initialized is only a supertype of @FBCBottom.
             if (isCommitted(anno2)) {
                 return isFbcBottom(anno1);
             }
-            // @Committed is only a subtype of @Unclassified.
+            // @Initialized is only a subtype of @UnkownInitialization.
             boolean unc2 = isUnclassified(anno2);
             if (isCommitted(anno1)) {
                 return unc2;
@@ -384,12 +384,12 @@ public abstract class InitializationChecker extends BaseTypeChecker {
             boolean unc1 = isUnclassified(anno1);
             boolean free1 = isFree(anno1);
             boolean free2 = isFree(anno2);
-            // @Unclassified is not a subtype of @Free.
+            // @UnkownInitialization is not a subtype of @UnderInitializion.
             if (unc1 && free2) {
                 return false;
             }
-            // Now, either both annotations are @Free, both annotations are
-            // @Unclassified or anno1 is @Free and anno2 is @Unclassified.
+            // Now, either both annotations are @UnderInitializion, both annotations are
+            // @UnkownInitialization or anno1 is @UnderInitializion and anno2 is @UnkownInitialization.
             assert (free1 && free2) || (unc1 && unc2) || (free1 && unc2);
             // Thus, we only need to look at the type frame.
             TypeMirror frame1 = getTypeFrameFromAnnotation(anno1);
@@ -437,7 +437,7 @@ public abstract class InitializationChecker extends BaseTypeChecker {
             boolean free1 = isFree(anno1);
             boolean free2 = isFree(anno2);
 
-            // Handle @Committed.
+            // Handle @Initialized.
             if (isCommitted(anno1)) {
                 assert free2;
                 return createUnclassifiedAnnotation(getTypeFrameFromAnnotation(anno2));

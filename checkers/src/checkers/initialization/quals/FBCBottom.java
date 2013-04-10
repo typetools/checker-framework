@@ -16,7 +16,7 @@ import checkers.quals.TypeQualifier;
  */
 @Documented
 @TypeQualifier
-@SubtypeOf({ Free.class, Committed.class })
+@SubtypeOf({ UnderInitializion.class, Initialized.class })
 @Retention(RetentionPolicy.RUNTIME)
 // empty target prevents programmers from writing this in a program
 @Target({})

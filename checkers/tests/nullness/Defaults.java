@@ -4,8 +4,8 @@ import checkers.initialization.quals.*;
 public class Defaults {
 
     // local variable defaults
-    void test(@Unclassified Defaults para, @Committed Defaults comm) {
-        // @Nullable @Unclassified by default
+    void test(@UnkownInitialization Defaults para, @Initialized Defaults comm) {
+        // @Nullable @UnkownInitialization by default
         String s = "abc";
         
         s = null;
@@ -13,7 +13,7 @@ public class Defaults {
         Defaults d;
         d = null; // null okay (default == @Nullable)
         
-        d = comm; // committed okay (default == @Committed)
+        d = comm; // committed okay (default == @Initialized)
         d.hashCode();
     }
 }
