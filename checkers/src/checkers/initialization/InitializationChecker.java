@@ -35,6 +35,11 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 
+/**
+ * The checker for the freedom-before-commitement type-system.
+ *
+ * @author Stefan Heule
+ */
 public abstract class InitializationChecker extends BaseTypeChecker {
 
     /** Annotation constants */
