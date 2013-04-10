@@ -9,11 +9,11 @@ import java.lang.annotation.Target;
 
 /**
  * A conditional postcondition annotation to indicate that a method ensures that
- * certain expressions have a certain annotation once the method has finished,
+ * certain expressions have a certain qualifier once the method has finished,
  * and if the result is as indicated by {@code result}. The expressions for
  * which the annotation must hold after the methods execution are indicated by
- * {@code expression} and are specified using a string. The annotation is
- * specified by {@code annotation}.
+ * {@code expression} and are specified using a string. The qualifier is
+ * specified by {@code qualifier}.
  *
  * <p>
  * This annotation is only applicable to methods with a boolean return type.
@@ -26,9 +26,9 @@ import java.lang.annotation.Target;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.METHOD })
-public @interface EnsuresAnnotationIf {
+public @interface EnsuresQualifierIf {
     /**
-     * The Java expressions for which the annotation holds if the method
+     * The Java expressions for which the qualifier holds if the method
      * terminates with return value {@link #result()}.
      *
      * @see <a
@@ -38,10 +38,10 @@ public @interface EnsuresAnnotationIf {
     String[] expression();
 
     /**
-     * The annotation that is guaranteed to hold if the method terminates with
+     * The qualifier that is guaranteed to hold if the method terminates with
      * return value {@link #result()}.
      */
-    Class<? extends Annotation> annotation();
+    Class<? extends Annotation> qualifier();
 
     /**
      * The return value of the method that needs to hold for the postcondition

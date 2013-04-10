@@ -3,7 +3,7 @@ package checkers.regex;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import checkers.quals.EnsuresAnnotationIf;
+import checkers.quals.EnsuresQualifierIf;
 import checkers.regex.quals.Regex;
 import dataflow.quals.Pure;
 
@@ -150,7 +150,7 @@ public class RegexUtil {
    * @return true iff s is a regular expression
    */
   @Pure
-  @EnsuresAnnotationIf(result=true, expression="#1", annotation=Regex.class)
+  @EnsuresQualifierIf(result=true, expression="#1", qualifier=Regex.class)
   public static boolean isRegex(String s) {
     return isRegex(s, 0);
   }

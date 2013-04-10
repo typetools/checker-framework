@@ -48,12 +48,12 @@ class Initializer {
         c = "";
     }
     
-    @EnsuresAnnotation(expression="a", annotation=NonNull.class)
+    @EnsuresQualifier(expression="a", qualifier=NonNull.class)
     public void setField(@UnkownInitialization @Raw Initializer this) {
         a = "";
     }
     
-    @EnsuresAnnotationIf(result=true, expression="a", annotation=NonNull.class)
+    @EnsuresQualifierIf(result=true, expression="a", qualifier=NonNull.class)
     public boolean setFieldMaybe(@UnkownInitialization @Raw Initializer this) {
         a = "";
         return true;

@@ -36,7 +36,7 @@ public class RegexTransfer extends
     }
 
     // TODO: These are special cases for isRegex(String, int) and asRegex(String, int).
-    // They should be replaced by adding an @EnsuresAnnotationIf annotation that supports
+    // They should be replaced by adding an @EnsuresQualifierIf annotation that supports
     // specifying attributes.
     @Override
     public TransferResult<CFValue, CFStore> visitMethodInvocation(

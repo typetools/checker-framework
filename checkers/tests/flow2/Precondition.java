@@ -11,7 +11,7 @@ class Precondition {
     String f1, f2, f3;
     Precondition p;
     
-    @RequiresAnnotation(expression="f1", annotation=Odd.class)
+    @RequiresQualifier(expression="f1", qualifier=Odd.class)
     void requiresF1() {
         //:: error: (assignment.type.incompatible)
         @Value String l1 = f1;
@@ -19,7 +19,7 @@ class Precondition {
     }
     
     @Pure
-    @RequiresAnnotation(expression="f1", annotation=Odd.class)
+    @RequiresQualifier(expression="f1", qualifier=Odd.class)
     int requiresF1AndPure() {
         //:: error: (assignment.type.incompatible)
         @Value String l1 = f1;
@@ -27,14 +27,14 @@ class Precondition {
         return 1;
     }
     
-    @RequiresAnnotation(expression="f1", annotation=Value.class)
+    @RequiresQualifier(expression="f1", qualifier=Value.class)
     void requiresF1Value() {
         //:: error: (assignment.type.incompatible)
         @Odd String l1 = f1;
         @Value String l2 = f1;
     }
     
-    @RequiresAnnotation(expression="---", annotation=Odd.class)
+    @RequiresQualifier(expression="---", qualifier=Odd.class)
     //:: error: (flowexpr.parse.error)
     void error() {
         //:: error: (assignment.type.incompatible)
@@ -43,14 +43,14 @@ class Precondition {
         @Odd String l2 = f1;
     }
     
-    @RequiresAnnotation(expression="#1", annotation=Odd.class)
+    @RequiresQualifier(expression="#1", qualifier=Odd.class)
     void requiresParam(String p) {
         //:: error: (assignment.type.incompatible)
         @Value String l1 = p;
         @Odd String l2 = p;
     }
     
-    @RequiresAnnotation(expression={"#1","#2"}, annotation=Odd.class)
+    @RequiresQualifier(expression={"#1","#2"}, qualifier=Odd.class)
     void requiresParams(String p1, String p2) {
         //:: error: (assignment.type.incompatible)
         @Value String l1 = p1;
@@ -59,7 +59,7 @@ class Precondition {
         @Odd String l3 = p1;
         @Odd String l4 = p2;
     }
-    @RequiresAnnotation(expression="#1", annotation=Odd.class)
+    @RequiresQualifier(expression="#1", qualifier=Odd.class)
     //:: error: (flowexpr.parse.index.too.big)
     void param3() {
     }
@@ -106,16 +106,16 @@ class Precondition {
     // TODO: Resolver does not find a field in the enclosing class
     // (cf. issue http://code.google.com/p/checker-framework/issues/detail?id=213) 
     class inner {
-        @RequiresAnnotation(expression="f1", annotation=Odd.class)
+        @RequiresQualifier(expression="f1", qualifier=Odd.class)
         //:: error: (flowexpr.parse.error)
         void foo() {}
     }
 
     /***** multiple preconditions ******/
     
-    @RequiresAnnotations({
-        @RequiresAnnotation(expression="f1", annotation=Value.class),
-        @RequiresAnnotation(expression="f2", annotation=Odd.class)
+    @RequiresQualifiers({
+        @RequiresQualifier(expression="f1", qualifier=Value.class),
+        @RequiresQualifier(expression="f2", qualifier=Odd.class)
     })
     void multi() {
         @Value String l1 = f1;
@@ -126,8 +126,8 @@ class Precondition {
         @Odd String l4 = f1;
     }
     
-    @RequiresAnnotations({
-        @RequiresAnnotation(expression="--", annotation=Value.class)
+    @RequiresQualifiers({
+        @RequiresQualifier(expression="--", qualifier=Value.class)
     })
     //:: error: (flowexpr.parse.error)
     void error2() {

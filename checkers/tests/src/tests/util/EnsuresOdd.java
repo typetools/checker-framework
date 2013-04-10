@@ -18,7 +18,7 @@ import checkers.quals.PostconditionAnnotation;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.METHOD, ElementType.CONSTRUCTOR })
-@PostconditionAnnotation(annotation = Odd.class)
+@PostconditionAnnotation(qualifier = Odd.class)
 public @interface EnsuresOdd {
     String[] value();
 }
