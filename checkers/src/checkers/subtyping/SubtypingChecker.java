@@ -1,4 +1,4 @@
-package checkers.basic;
+package checkers.subtyping;
 
 import java.lang.annotation.Annotation;
 import java.util.*;
@@ -28,11 +28,11 @@ import com.sun.source.tree.CompilationUnitTree;
  *
  */
 @SupportedOptions( { "quals" })
-public final class BasicChecker extends BaseTypeChecker {
+public final class SubtypingChecker extends BaseTypeChecker {
 
     @Override
     public AnnotatedTypeFactory createFactory(CompilationUnitTree root) {
-        return new BasicAnnotatedTypeFactory<BasicChecker>(this, root);
+        return new BasicAnnotatedTypeFactory<SubtypingChecker>(this, root);
     }
 
     @Override @SuppressWarnings("unchecked")
@@ -40,7 +40,7 @@ public final class BasicChecker extends BaseTypeChecker {
 
         String qualNames = processingEnv.getOptions().get("quals");
         if (qualNames == null) {
-            errorAbort("BasicChecker: missing required option: -Aquals");
+            errorAbort("SubtypingChecker: missing required option: -Aquals");
         }
 
         Set<Class<? extends Annotation>> qualSet =
@@ -51,7 +51,7 @@ public final class BasicChecker extends BaseTypeChecker {
                     (Class<? extends Annotation>)Class.forName(qualName);
                 qualSet.add(q);
             } catch (ClassNotFoundException e) {
-                errorAbort("BasicChecker: could not load class for qualifier: " + qualName + "; ensure that your classpath is correct.");
+                errorAbort("SubtypingChecker: could not load class for qualifier: " + qualName + "; ensure that your classpath is correct.");
             }
         }
 
