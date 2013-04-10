@@ -25,7 +25,7 @@ import checkers.basetype.BaseTypeChecker;
 import checkers.flow.analysis.checkers.CFAbstractAnalysis;
 import checkers.flow.analysis.checkers.CFAbstractValue;
 import checkers.initialization.quals.UnderInitializion;
-import checkers.initialization.quals.NotOnlyCommitted;
+import checkers.initialization.quals.NotOnlyInitialized;
 import checkers.initialization.quals.UnkownInitialization;
 import checkers.quals.Unused;
 import checkers.types.AbstractBasicAnnotatedTypeFactory;
@@ -88,7 +88,7 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
             VariableTree var = (VariableTree) member;
             VariableElement varElt = TreeUtils.elementFromDeclaration(var);
             // var is not committed-only
-            if (getDeclAnnotation(varElt, NotOnlyCommitted.class) != null) {
+            if (getDeclAnnotation(varElt, NotOnlyInitialized.class) != null) {
                 // var is not static -- need a check of initializer blocks,
                 // not of constructor which is where this is used
                 if (!varElt.getModifiers().contains(Modifier.STATIC)) {

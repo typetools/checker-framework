@@ -22,7 +22,7 @@ import checkers.basetype.BaseTypeChecker;
 import checkers.initialization.quals.Initialized;
 import checkers.initialization.quals.FBCBottom;
 import checkers.initialization.quals.UnderInitializion;
-import checkers.initialization.quals.NotOnlyCommitted;
+import checkers.initialization.quals.NotOnlyInitialized;
 import checkers.initialization.quals.UnkownInitialization;
 import checkers.nullness.quals.NonRaw;
 import checkers.nullness.quals.Raw;
@@ -58,7 +58,7 @@ public abstract class InitializationChecker extends BaseTypeChecker {
             COMMITTED = AnnotationUtils.fromClass(elements, Initialized.class);
             FREE = AnnotationUtils.fromClass(elements, UnderInitializion.class);
             NOT_ONLY_COMMITTED = AnnotationUtils.fromClass(elements,
-                    NotOnlyCommitted.class);
+                    NotOnlyInitialized.class);
             FBCBOTTOM = AnnotationUtils.fromClass(elements, FBCBottom.class);
         } else {
             COMMITTED = AnnotationUtils.fromClass(elements, NonRaw.class);

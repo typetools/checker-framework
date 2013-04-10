@@ -7,7 +7,7 @@ import checkers.quals.*;
 public class Simple {
 
     Simple f;
-    @NotOnlyCommitted Simple g;
+    @NotOnlyInitialized Simple g;
     
     @Pure int pure() {
         return 1;
