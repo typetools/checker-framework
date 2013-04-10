@@ -57,8 +57,9 @@ import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
 
-// TODO/later: documentation
-// Note: this code is originally based on NullnessVisitor
+/**
+ * The visitor for the nullness type-system.
+ */
 public class NullnessVisitor
         extends
         InitializationVisitor<AbstractNullnessChecker, NullnessValue, NullnessStore> {

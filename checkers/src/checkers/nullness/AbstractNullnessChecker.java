@@ -23,6 +23,10 @@ import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 
 import com.sun.source.tree.CompilationUnitTree;
 
+/**
+ * An implementation of the nullness type-system based on an initialization
+ * type-system for safe initialization.
+ */
 public abstract class AbstractNullnessChecker extends InitializationChecker {
 
     /** Annotation constants */
