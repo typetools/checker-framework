@@ -28,7 +28,7 @@ import dataflow.cfg.node.MethodInvocationNode;
 import dataflow.cfg.node.Node;
 import dataflow.util.PurityUtils;
 
-import checkers.quals.MonotonicAnnotation;
+import checkers.quals.MonotonicQualifier;
 import checkers.types.AnnotatedTypeFactory;
 
 /**
@@ -154,7 +154,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                 List<Pair<AnnotationMirror, AnnotationMirror>> fieldAnnotations = atypeFactory
                         .getAnnotationWithMetaAnnotation(
                                 fieldAccess.getField(),
-                                MonotonicAnnotation.class);
+                                MonotonicQualifier.class);
                 V newOtherVal = null;
                 for (Pair<AnnotationMirror, AnnotationMirror> fieldAnnotation : fieldAnnotations) {
                     AnnotationMirror monotonicAnnotation = fieldAnnotation.second;
