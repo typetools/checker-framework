@@ -41,7 +41,7 @@ import javacutils.ElementUtils;
 import javacutils.ErrorReporter;
 import javacutils.TreeUtils;
 
-import checkers.initialization.quals.Committed;
+import checkers.initialization.quals.Initialized;
 import checkers.initialization.quals.FBCBottom;
 import checkers.quals.InvisibleQualifier;
 import checkers.quals.TypeQualifier;
@@ -1646,7 +1646,7 @@ public abstract class AnnotatedTypeMirror {
             // TODO: this is a hack to make the system work for the FBC type-system
             if (lAnno != null && uAnno != null
                     && AnnotationUtils.areSameByClass(lAnno, FBCBottom.class)
-                    && AnnotationUtils.areSameByClass(uAnno, Committed.class)) {
+                    && AnnotationUtils.areSameByClass(uAnno, Initialized.class)) {
                 lowerBound.replaceAnnotation(uAnno);
                 return;
             }

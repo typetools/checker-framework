@@ -25,17 +25,17 @@ public class Simple {
         System.out.println(s);
     }
 
-    void test2(@Unclassified @NonNull Simple t) {
+    void test2(@UnkownInitialization @NonNull Simple t) {
         //:: error: (assignment.type.incompatible)
         @NonNull Simple a = t.f;
     }
 
     // check committed-only semantics for fields
-    void test3(@Unclassified @NonNull Simple t) {
-        @Committed @Nullable Simple a = t.f;
+    void test3(@UnkownInitialization @NonNull Simple t) {
+        @Initialized @Nullable Simple a = t.f;
 
         //:: error: (assignment.type.incompatible)
-        @Committed @Nullable Simple b = t.g;
+        @Initialized @Nullable Simple b = t.g;
     }
 
     void simplestTestEver() {
@@ -51,6 +51,6 @@ public class Simple {
     void anotherMethod() {
         @Nullable String s = null;
 
-        @Committed @Nullable String t = s;
+        @Initialized @Nullable String t = s;
     }
 }

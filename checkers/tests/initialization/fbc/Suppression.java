@@ -12,7 +12,7 @@ public class Suppression {
     }
     
     @SuppressWarnings({"fbc","nullness"})
-    void foo(@Unclassified Suppression arg) {
+    void foo(@UnkownInitialization Suppression arg) {
         t = arg;    // "fbc" error
         t = null;    // "nullness" error
     }

@@ -8,8 +8,8 @@ import java.lang.annotation.Target;
 
 /**
  * A declaration annotation for fields that indicates that the values the given
- * field can store might not be {@link Committed} (but {@link Free} or
- * {@link Unclassified} instead). This is necessary to make allow circular
+ * field can store might not be {@link Initialized} (but {@link UnderInitializion} or
+ * {@link UnkownInitialization} instead). This is necessary to make allow circular
  * initialization as supported by FBC.
  *
  * @author Stefan Heule

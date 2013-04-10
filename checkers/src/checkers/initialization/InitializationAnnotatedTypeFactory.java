@@ -24,9 +24,9 @@ import javacutils.TypesUtils;
 import checkers.basetype.BaseTypeChecker;
 import checkers.flow.analysis.checkers.CFAbstractAnalysis;
 import checkers.flow.analysis.checkers.CFAbstractValue;
-import checkers.initialization.quals.Free;
+import checkers.initialization.quals.UnderInitializion;
 import checkers.initialization.quals.NotOnlyCommitted;
-import checkers.initialization.quals.Unclassified;
+import checkers.initialization.quals.UnkownInitialization;
 import checkers.quals.Unused;
 import checkers.types.AbstractBasicAnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
@@ -141,7 +141,7 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
             AnnotationMirror annotation = null;
 
             // If all fields are committed-only, and they are all initialized,
-            // then it is save to switch to @Free(CurrentClass).
+            // then it is save to switch to @UnderInitializion(CurrentClass).
             if (areAllFieldsCommittedOnly(enclosingClass)) {
                 Store store = getStoreBefore(tree);
                 if (store != null) {
@@ -173,7 +173,7 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
     }
 
     /**
-     * Returns a {@link Free} annotation (or {@link Unclassified} if rawness is
+     * Returns a {@link UnderInitializion} annotation (or {@link UnkownInitialization} if rawness is
      * used) that has the supertype of {@code type} as type frame.
      */
     protected AnnotationMirror getFreeOrRawAnnotationOfSuperType(TypeMirror type) {

@@ -13,8 +13,8 @@ import checkers.quals.TypeQualifier;
 @Documented
 @TypeQualifier
 @DefaultQualifierInHierarchy
-@SubtypeOf(Unclassified.class)
+@SubtypeOf(UnkownInitialization.class)
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-public @interface Committed {
+public @interface Initialized {
 }

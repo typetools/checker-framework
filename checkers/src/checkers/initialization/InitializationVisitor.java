@@ -207,7 +207,7 @@ public class InitializationVisitor<Checker extends InitializationChecker, Value 
         // the subtyping is alright
         // The case that has come up is with wildcards not getting a type for
         // some reason, even though
-        // the default is @Committed.
+        // the default is @Initialized.
         boolean isSubtype;
         if (exprAnno == null || castAnno == null) {
             isSubtype = true;
