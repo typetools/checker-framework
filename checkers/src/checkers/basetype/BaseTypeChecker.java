@@ -15,7 +15,7 @@ import javacutils.AbstractTypeProcessor;
 import javacutils.AnnotationUtils;
 import javacutils.ErrorReporter;
 
-import checkers.quals.MonotonicAnnotation;
+import checkers.quals.MonotonicQualifier;
 import checkers.quals.PolymorphicQualifier;
 import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifiers;
@@ -167,13 +167,13 @@ public abstract class BaseTypeChecker extends SourceChecker {
      *
      * @return the monotonic type qualifiers supported this processor, or an empty
      * set if none
-     * @see MonotonicAnnotation
+     * @see MonotonicQualifier
      */
     public final Set<Class<? extends Annotation>> getSupportedMonotonicTypeQualifiers() {
         if (supportedMonotonicQuals == null) {
             supportedMonotonicQuals = new HashSet<>();
             for (Class<? extends Annotation> anno : getSupportedTypeQualifiers()) {
-                MonotonicAnnotation mono = anno.getAnnotation(MonotonicAnnotation.class);
+                MonotonicQualifier mono = anno.getAnnotation(MonotonicQualifier.class);
                 if (mono != null) {
                     supportedMonotonicQuals.add(anno);
                 }
