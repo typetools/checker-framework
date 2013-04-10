@@ -6,6 +6,7 @@ import java.util.regex.PatternSyntaxException;
 import checkers.quals.EnsuresQualifierIf;
 import checkers.regex.quals.Regex;
 import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
 
 /*>>>
 import checkers.nullness.quals.*;
@@ -200,7 +201,7 @@ public class RegexUtil {
   /*>>>
   @SuppressWarnings("regex")    // RegexUtil
   */
-  @Pure(value=Pure.Kind.SIDE_EFFECT_FREE)
+  @SideEffectFree
   public static /*@Nullable*/ String regexError(String s) {
     return regexError(s, 0);
   }
@@ -216,7 +217,7 @@ public class RegexUtil {
   /*>>>
   @SuppressWarnings("regex")    // RegexUtil
   */
-  @Pure(value=Pure.Kind.SIDE_EFFECT_FREE)
+  @SideEffectFree
   public static /*@Nullable*/ String regexError(String s, int groups) {
     try {
       Pattern p = Pattern.compile(s);
@@ -240,7 +241,7 @@ public class RegexUtil {
   /*>>>
   @SuppressWarnings("regex")    // RegexUtil
   */
-  @Pure(value=Pure.Kind.SIDE_EFFECT_FREE)
+  @SideEffectFree
   public static /*@Nullable*/ PatternSyntaxException regexException(String s) {
     return regexException(s, 0);
   }
@@ -256,7 +257,7 @@ public class RegexUtil {
   /*>>>
   @SuppressWarnings("regex")    // RegexUtil
   */
-  @Pure(value=Pure.Kind.SIDE_EFFECT_FREE)
+  @SideEffectFree
   public static /*@Nullable*/ PatternSyntaxException regexException(String s, int groups) {
     try {
       Pattern p = Pattern.compile(s);
@@ -279,7 +280,7 @@ public class RegexUtil {
    * @return its argument
    * @throws Error if argument is not a regex
    */
-  @Pure(value=Pure.Kind.SIDE_EFFECT_FREE)
+  @SideEffectFree
   public static /*@Regex*/ String asRegex(String s) {
     return asRegex(s, 0);
   }
@@ -297,7 +298,7 @@ public class RegexUtil {
   /*>>>
   @SuppressWarnings("regex")    // RegexUtil
   */
-  @Pure(value=Pure.Kind.SIDE_EFFECT_FREE)
+  @SideEffectFree
   public static /*@Regex*/ String asRegex(String s, int groups) {
     try {
       Pattern p = Pattern.compile(s);

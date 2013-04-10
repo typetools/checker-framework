@@ -3,7 +3,9 @@ import checkers.util.test.*;
 import java.util.*;
 import checkers.quals.*;
 import tests.util.*;
+import dataflow.quals.Deterministic;
 import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
 import dataflow.quals.Pure.Kind;
 
 // various tests for the @Pure annotation
@@ -18,7 +20,7 @@ class Purity {
     
     // class with a pure constructor
     private static class PureClass {
-        @Pure(Kind.SIDE_EFFECT_FREE)
+        @SideEffectFree
         public PureClass() {
         }
     }
@@ -104,12 +106,12 @@ class Purity {
         return "";
     }
     
-    @Pure(Kind.SIDE_EFFECT_FREE) String t13b() {
+    @SideEffectFree String t13b() {
         PureClass p = new PureClass();
         return "";
     }
     
-    @Pure(Kind.DETERMINISTIC) String t13c() {
+    @Deterministic String t13c() {
         //:: error: (pure.not.det.object.creation)
         PureClass p = new PureClass();
         return "";
@@ -136,7 +138,7 @@ class Purity {
         return "";
     }
     
-    @Pure(Kind.SIDE_EFFECT_FREE) String t16b() {
+    @SideEffectFree String t16b() {
         try {
             int i = 1/0;
         } catch (Throwable t) {
@@ -145,7 +147,7 @@ class Purity {
         return "";
     }
     
-    @Pure(Kind.DETERMINISTIC) String t16c() {
+    @Deterministic String t16c() {
         try {
             int i = 1/0;
             //:: error: (pure.not.det.catch)
