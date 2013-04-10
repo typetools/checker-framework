@@ -7,7 +7,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import checkers.nullness.AbstractNullnessChecker;
-import checkers.quals.MonotonicAnnotation;
+import checkers.quals.MonotonicQualifier;
 import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifier;
 
@@ -20,14 +20,14 @@ import checkers.quals.TypeQualifier;
  * <p>
  * This annotation is associated with the {@link AbstractNullnessChecker}.
  *
- * @see MonotonicAnnotation
+ * @see MonotonicQualifier
  * @see AbstractNullnessChecker
  */
 @Documented
 @TypeQualifier
 @SubtypeOf(Nullable.class)
 @Target(ElementType.TYPE_USE)
-@MonotonicAnnotation(NonNull.class)
+@MonotonicQualifier(NonNull.class)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface MonotonicNonNull {
 }

@@ -7,11 +7,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * A meta-annotation that indicates that an annotation indicates that an
+ * A meta-annotation that indicates that a qualifier indicates that an
  * expression goes monotonically from a type qualifier {@code T} to another
  * qualifier {@code S}. The annotation {@code S} is called the <em>target</em>
- * of the monotonic annotation, and has to be indicated by
- * {@link MonotonicAnnotation#value()}.
+ * of the monotonic qualifier, and has to be indicated by
+ * {@link MonotonicQualifier#value()}.
  *
  * <p>
  * This meta-annotation can be used on the declaration of the monotonic
@@ -45,6 +45,6 @@ import java.lang.annotation.Target;
  */
 @Target({ ElementType.ANNOTATION_TYPE })
 @Retention(RetentionPolicy.RUNTIME)
-public @interface MonotonicAnnotation {
+public @interface MonotonicQualifier {
     Class<? extends Annotation> value();
 }
