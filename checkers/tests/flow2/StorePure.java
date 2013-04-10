@@ -1,5 +1,7 @@
 import checkers.util.test.*;
 import java.util.*;
+
+import dataflow.quals.Deterministic;
 import dataflow.quals.Pure;
 import checkers.quals.*;
 import tests.util.*;
@@ -13,7 +15,7 @@ class StorePure {
     
     @Pure String pure1() { return null; }
     @Pure String pure1b() { return null; }
-    @Pure(Pure.Kind.SIDE_EFFECT_FREE) String pure1c() { return null; }
+    @Deterministic String pure1c() { return null; }
     @Pure String pure2(int i) { return null; }
     @Pure String pure3(boolean b) { return null; }
     @Pure String pure4(String o) { return null; }
