@@ -36,7 +36,9 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 
 /**
- * The checker for the freedom-before-commitement type-system.
+ * The checker for the freedom-before-commitement type-system. Also supports
+ * rawness as a type-system for tracking initialization, though FBC is
+ * preferred.
  *
  * @author Stefan Heule
  */

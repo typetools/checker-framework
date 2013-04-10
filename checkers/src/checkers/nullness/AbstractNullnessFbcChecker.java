@@ -15,10 +15,15 @@ import checkers.quals.PolyAll;
 import checkers.quals.TypeQualifiers;
 import checkers.source.SupportedLintOptions;
 
+/**
+ * A concrete instantiation of {@link AbstractNullnessChecker} using
+ * freedom-before-commitment.
+ */
 @TypeQualifiers({ Nullable.class, MonotonicNonNull.class, NonNull.class,
-        UnderInitializion.class, Initialized.class, UnkownInitialization.class, FBCBottom.class,
-        PolyNull.class, PolyAll.class })
-@SupportedLintOptions({ AbstractNullnessChecker.LINT_STRICTMONOTONICNONNULLINIT,
+        UnderInitializion.class, Initialized.class, UnkownInitialization.class,
+        FBCBottom.class, PolyNull.class, PolyAll.class })
+@SupportedLintOptions({
+        AbstractNullnessChecker.LINT_STRICTMONOTONICNONNULLINIT,
         AbstractNullnessChecker.LINT_REDUNDANTNULLCOMPARISON,
         // Temporary option to forbid non-null array component types,
         // which is allowed by default.
