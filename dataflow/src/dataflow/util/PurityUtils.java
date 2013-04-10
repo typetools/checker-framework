@@ -1,38 +1,39 @@
 package dataflow.util;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
+
+import javacutils.AnnotationProvider;
+import javacutils.InternalUtils;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 
-import javacutils.AnnotationProvider;
-import javacutils.AnnotationUtils;
-import javacutils.InternalUtils;
-
 import com.sun.source.tree.MethodTree;
 
+import dataflow.quals.Deterministic;
 import dataflow.quals.Pure;
 import dataflow.quals.Pure.Kind;
+import dataflow.quals.SideEffectFree;
 
 /**
  * An utility class for working with the {@link Pure} annotation.
- * 
+ *
  * @author Stefan Heule
- * 
+ *
  */
 public class PurityUtils {
 
     /** Does the method {@code tree} have a purity annotation? */
     public static boolean hasPurityAnnotation(AnnotationProvider provider,
             MethodTree tree) {
-        return getPurityAnnotation(provider, tree) != null;
+        return !getPurityKinds(provider, tree).isEmpty();
     }
 
     /** Does the method {@code methodElement} have a purity annotation? */
     public static boolean hasPurityAnnotation(AnnotationProvider provider,
             Element methodElement) {
-        return getPurityAnnotation(provider, methodElement) != null;
+        return !getPurityKinds(provider, methodElement).isEmpty();
     }
 
     /** Is the method {@code tree} deterministic? */
@@ -77,34 +78,24 @@ public class PurityUtils {
      */
     public static List<Pure.Kind> getPurityKinds(AnnotationProvider provider,
             Element methodElement) {
-        AnnotationMirror purityAnnotation = getPurityAnnotation(provider,
-                methodElement);
-        if (purityAnnotation == null) {
-            return Collections.emptyList();
-        }
-        List<Pure.Kind> kinds = AnnotationUtils.getElementValueEnumArray(purityAnnotation, "value",
-                        Pure.Kind.class, true);
-        return kinds;
-    }
-
-    /**
-     * @return The pure annotation for the method {@code tree} (or {@code null},
-     *         if not present).
-     */
-    public static/* @Nullable */AnnotationMirror getPurityAnnotation(
-            AnnotationProvider provider, MethodTree tree) {
-        Element methodElement = InternalUtils.symbol(tree);
-        return getPurityAnnotation(provider, methodElement);
-    }
-
-    /**
-     * @return The pure annotation for the method {@code methodElement} (or
-     *         {@code null}, if not present).
-     */
-    public static/* @Nullable */AnnotationMirror getPurityAnnotation(
-            AnnotationProvider provider, Element methodElement) {
         AnnotationMirror pureAnnotation = provider.getDeclAnnotation(
                 methodElement, Pure.class);
-        return pureAnnotation;
+        AnnotationMirror sefAnnotation = provider.getDeclAnnotation(
+                methodElement, SideEffectFree.class);
+        AnnotationMirror detAnnotation = provider.getDeclAnnotation(
+                methodElement, Deterministic.class);
+
+        List<Pure.Kind> kinds = new ArrayList<>();
+        if (pureAnnotation != null) {
+            kinds.add(Kind.DETERMINISTIC);
+            kinds.add(Kind.SIDE_EFFECT_FREE);
+        }
+        if (sefAnnotation != null) {
+            kinds.add(Kind.SIDE_EFFECT_FREE);
+        }
+        if (detAnnotation != null) {
+            kinds.add(Kind.DETERMINISTIC);
+        }
+        return kinds;
     }
 }
