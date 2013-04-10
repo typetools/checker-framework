@@ -1,4 +1,4 @@
-package checkers.flow.analysis.checkers;
+package checkers.flow;
 
 /**
  * The default transfer function used in the Checker Framework.

@@ -17,9 +17,9 @@ import dataflow.analysis.FlowExpressions.Receiver;
 import dataflow.analysis.FlowExpressions.ThisReference;
 import dataflow.cfg.node.MethodInvocationNode;
 
-import checkers.flow.analysis.checkers.CFAbstractAnalysis;
-import checkers.flow.analysis.checkers.CFAbstractStore;
-import checkers.flow.analysis.checkers.CFAbstractValue;
+import checkers.flow.CFAbstractAnalysis;
+import checkers.flow.CFAbstractStore;
+import checkers.flow.CFAbstractValue;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.QualifierHierarchy;
 

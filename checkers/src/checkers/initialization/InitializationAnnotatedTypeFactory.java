@@ -22,8 +22,8 @@ import javacutils.TreeUtils;
 import javacutils.TypesUtils;
 
 import checkers.basetype.BaseTypeChecker;
-import checkers.flow.analysis.checkers.CFAbstractAnalysis;
-import checkers.flow.analysis.checkers.CFAbstractValue;
+import checkers.flow.CFAbstractAnalysis;
+import checkers.flow.CFAbstractValue;
 import checkers.initialization.quals.UnderInitializion;
 import checkers.initialization.quals.NotOnlyInitialized;
 import checkers.initialization.quals.UnkownInitialization;

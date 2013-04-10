@@ -16,9 +16,9 @@ import dataflow.cfg.node.MethodAccessNode;
 import dataflow.cfg.node.MethodInvocationNode;
 import dataflow.cfg.node.Node;
 
-import checkers.flow.analysis.checkers.CFAbstractTransfer;
-import checkers.flow.analysis.checkers.CFStore;
-import checkers.flow.analysis.checkers.CFValue;
+import checkers.flow.CFAbstractTransfer;
+import checkers.flow.CFStore;
+import checkers.flow.CFValue;
 import checkers.util.FlowExpressionParseUtil;
 import checkers.util.FlowExpressionParseUtil.FlowExpressionContext;
 import checkers.util.FlowExpressionParseUtil.FlowExpressionParseException;
