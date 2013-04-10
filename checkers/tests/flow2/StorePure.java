@@ -38,7 +38,6 @@ class StorePure {
     // check that it only works for deterministic methods
     void t1b(@Odd String p1, String p2, boolean b1) {
         if (pure1c() == p1) {
-            //:: error: (assignment.type.incompatible)
             @Odd String l1 = pure1c();
         }
     }
