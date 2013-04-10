@@ -28,10 +28,10 @@ import dataflow.cfg.node.MethodInvocationNode;
 import dataflow.cfg.node.Node;
 import dataflow.cfg.node.ThisLiteralNode;
 
-import checkers.flow.analysis.checkers.CFAbstractAnalysis;
-import checkers.flow.analysis.checkers.CFAbstractTransfer;
-import checkers.flow.analysis.checkers.CFAbstractValue;
-import checkers.flow.analysis.checkers.CFValue;
+import checkers.flow.CFAbstractAnalysis;
+import checkers.flow.CFAbstractTransfer;
+import checkers.flow.CFAbstractValue;
+import checkers.flow.CFValue;
 import checkers.types.AnnotatedTypeMirror;
 
 import com.sun.source.tree.ClassTree;

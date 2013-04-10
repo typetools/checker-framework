@@ -10,7 +10,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
-import checkers.flow.analysis.checkers.CFAbstractStore;
+import checkers.flow.CFAbstractStore;
 import checkers.initialization.InitializationTransfer;
 import checkers.initialization.quals.Initialized;
 import checkers.nullness.quals.NonNull;

@@ -1,4 +1,4 @@
-package checkers.flow.analysis.checkers;
+package checkers.flow;
 
 import java.util.HashMap;
 import java.util.List;

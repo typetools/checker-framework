@@ -7,7 +7,7 @@ import javacutils.Pair;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.VariableElement;
 
-import checkers.flow.analysis.checkers.CFAbstractAnalysis;
+import checkers.flow.CFAbstractAnalysis;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.util.AnnotatedTypes;
 
