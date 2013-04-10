@@ -47,6 +47,9 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Attribute.TypeCompound;
 
+/**
+ * The annotated type factory for the nullness type-system.
+ */
 public class NullnessAnnotatedTypeFactory
         extends
         InitializationAnnotatedTypeFactory<AbstractNullnessChecker, NullnessValue, NullnessStore, NullnessTransfer, NullnessAnalysis> {

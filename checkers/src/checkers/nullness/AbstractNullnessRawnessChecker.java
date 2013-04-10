@@ -13,9 +13,13 @@ import checkers.quals.PolyAll;
 import checkers.quals.TypeQualifiers;
 import checkers.source.SupportedLintOptions;
 
+/**
+ * A concrete instantiation of {@link AbstractNullnessChecker} using rawness.
+ */
 @TypeQualifiers({ Nullable.class, MonotonicNonNull.class, NonNull.class,
         NonRaw.class, Raw.class, PolyNull.class, PolyAll.class })
-@SupportedLintOptions({ AbstractNullnessChecker.LINT_STRICTMONOTONICNONNULLINIT,
+@SupportedLintOptions({
+        AbstractNullnessChecker.LINT_STRICTMONOTONICNONNULLINIT,
         AbstractNullnessChecker.LINT_REDUNDANTNULLCOMPARISON,
         // Temporary option to forbid non-null array component types,
         // which is allowed by default.

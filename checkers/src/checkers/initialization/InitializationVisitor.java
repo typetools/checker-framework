@@ -50,7 +50,9 @@ import checkers.nullness.quals.Nullable;
  * The visitor for the freedom-before-commitment type-system. The
  * freedom-before-commitment type-system and this class are abstract and need to
  * be combined with another type-system whose safe initialization should be
- * tracked. For an example, see the {@link NullnessChecker}.
+ * tracked. For an example, see the {@link NullnessChecker}. Also supports
+ * rawness as a type-system for tracking initialization, though FBC is
+ * preferred.
  *
  * @author Stefan Heule
  */
