@@ -20,6 +20,7 @@ import javax.lang.model.type.ExecutableType;
 import checkers.basetype.BaseTypeVisitor;
 import checkers.flow.analysis.checkers.CFAbstractStore;
 import checkers.flow.analysis.checkers.CFAbstractValue;
+import checkers.nullness.NullnessChecker;
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -45,7 +46,14 @@ import checkers.compilermsgs.quals.CompilerMessageKey;
 import checkers.nullness.quals.Nullable;
 */
 
-// TODO/later: documentation
+/**
+ * The visitor for the freedom-before-commitment type-system. The
+ * freedom-before-commitment type-system and this class are abstract and need to
+ * be combined with another type-system whose safe initialization should be
+ * tracked. For an example, see the {@link NullnessChecker}.
+ *
+ * @author Stefan Heule
+ */
 public class InitializationVisitor<Checker extends InitializationChecker, Value extends CFAbstractValue<Value>, Store extends InitializationStore<Value, Store>>
         extends BaseTypeVisitor<Checker> {
 

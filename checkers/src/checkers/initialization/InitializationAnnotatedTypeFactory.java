@@ -27,6 +27,7 @@ import checkers.flow.analysis.checkers.CFAbstractValue;
 import checkers.initialization.quals.UnderInitializion;
 import checkers.initialization.quals.NotOnlyInitialized;
 import checkers.initialization.quals.UnkownInitialization;
+import checkers.nullness.NullnessChecker;
 import checkers.quals.Unused;
 import checkers.types.AbstractBasicAnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
@@ -47,6 +48,14 @@ import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.tree.JCTree;
 
+/**
+ * The annotated type factory for the freedom-before-commitment type-system. The
+ * freedom-before-commitment type-system and this class are abstract and need to
+ * be combined with another type-system whose safe initialization should be
+ * tracked. For an example, see the {@link NullnessChecker}.
+ *
+ * @author Stefan Heule
+ */
 public abstract class InitializationAnnotatedTypeFactory<Checker extends InitializationChecker, Value extends CFAbstractValue<Value>, Store extends InitializationStore<Value, Store>, Transfer extends InitializationTransfer<Value, Transfer, Store>, Flow extends CFAbstractAnalysis<Value, Store, Transfer>>
         extends
         AbstractBasicAnnotatedTypeFactory<Checker, Value, Store, Transfer, Flow> {
@@ -173,8 +182,9 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
     }
 
     /**
-     * Returns a {@link UnderInitializion} annotation (or {@link UnkownInitialization} if rawness is
-     * used) that has the supertype of {@code type} as type frame.
+     * Returns a {@link UnderInitializion} annotation (or
+     * {@link UnkownInitialization} if rawness is used) that has the supertype
+     * of {@code type} as type frame.
      */
     protected AnnotationMirror getFreeOrRawAnnotationOfSuperType(TypeMirror type) {
         // Find supertype if possible.
@@ -210,8 +220,8 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
      * Returns the set of (non-static) fields that have the invariant annotation
      * and are not yet initialized in a given store.
      */
-    public Set<VariableTree> getUninitializedInvariantFields(
-            Store store, TreePath path, boolean isStatic,
+    public Set<VariableTree> getUninitializedInvariantFields(Store store,
+            TreePath path, boolean isStatic,
             List<? extends AnnotationMirror> receiverAnnotations) {
         ClassTree currentClass = TreeUtils.enclosingClass(path);
         Set<VariableTree> fields = InitializationChecker
@@ -240,8 +250,8 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
      * Returns the set of (non-static) fields that have the invariant annotation
      * and are initialized in a given store.
      */
-    public Set<VariableTree> getInitializedInvariantFields(
-            Store store, TreePath path) {
+    public Set<VariableTree> getInitializedInvariantFields(Store store,
+            TreePath path) {
         ClassTree currentClass = TreeUtils.enclosingClass(path);
         Set<VariableTree> fields = InitializationChecker
                 .getAllFields(currentClass);
