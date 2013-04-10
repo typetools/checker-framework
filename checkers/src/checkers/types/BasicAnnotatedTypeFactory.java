@@ -7,10 +7,10 @@ import javax.lang.model.element.VariableElement;
 import javacutils.Pair;
 
 import checkers.basetype.BaseTypeChecker;
-import checkers.flow.analysis.checkers.CFAnalysis;
-import checkers.flow.analysis.checkers.CFStore;
-import checkers.flow.analysis.checkers.CFTransfer;
-import checkers.flow.analysis.checkers.CFValue;
+import checkers.flow.CFAnalysis;
+import checkers.flow.CFStore;
+import checkers.flow.CFTransfer;
+import checkers.flow.CFValue;
 
 import com.sun.source.tree.CompilationUnitTree;
 

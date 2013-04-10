@@ -1,7 +1,7 @@
 package checkers.nullness;
 
-import checkers.flow.analysis.checkers.CFAbstractAnalysis;
-import checkers.flow.analysis.checkers.CFAbstractStore;
+import checkers.flow.CFAbstractAnalysis;
+import checkers.flow.CFAbstractStore;
 import checkers.initialization.InitializationStore;
 import checkers.nullness.quals.Nullable;
 import checkers.nullness.quals.PolyNull;

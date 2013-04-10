@@ -41,8 +41,8 @@ import dataflow.util.PurityChecker.PurityResult;
 import dataflow.util.PurityUtils;
 
 import checkers.compilermsgs.quals.CompilerMessageKey;
-import checkers.flow.analysis.checkers.CFAbstractStore;
-import checkers.flow.analysis.checkers.CFAbstractValue;
+import checkers.flow.CFAbstractStore;
+import checkers.flow.CFAbstractValue;
 import checkers.util.ContractsUtils;
 import checkers.util.FlowExpressionParseUtil;
 import checkers.util.FlowExpressionParseUtil.FlowExpressionContext;

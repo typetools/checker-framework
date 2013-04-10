@@ -10,8 +10,8 @@ import javacutils.AnnotationUtils;
 import javacutils.TreeUtils;
 
 import checkers.basetype.BaseTypeChecker;
-import checkers.flow.analysis.checkers.CFStore;
-import checkers.flow.analysis.checkers.CFValue;
+import checkers.flow.CFStore;
+import checkers.flow.CFValue;
 import checkers.regex.quals.PartialRegex;
 import checkers.regex.quals.PolyRegex;
 import checkers.regex.quals.Regex;
