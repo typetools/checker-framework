@@ -20,7 +20,7 @@ class Purity {
     
     // class with a pure constructor
     private static class PureClass {
-        @SideEffectFree
+        @Pure
         public PureClass() {
         }
     }
@@ -154,11 +154,6 @@ class Purity {
         } catch (Throwable t) {
             // ..
         }
-        return "";
-    }
-    
-    //:: warning: (pure.annotation.with.emtpy.kind)
-    @Pure({}) String t17() {
         return "";
     }
     
