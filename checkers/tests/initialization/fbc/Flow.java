@@ -33,7 +33,7 @@ public class Flow {
         }
     }
     
-    void foo(@Unclassified Flow this) {}
+    void foo(@UnkownInitialization Flow this) {}
     
     // TODO Pure, etc.
 }

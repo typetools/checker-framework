@@ -11,10 +11,10 @@ import checkers.quals.TypeQualifier;
 
 @Documented
 @TypeQualifier
-@SubtypeOf(Unclassified.class)
+@SubtypeOf(UnkownInitialization.class)
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
-public @interface Free {
+public @interface UnderInitializion {
     /**
      * The type-frame down to which the expression (of this type) has been
      * initialized.

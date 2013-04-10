@@ -1,4 +1,4 @@
-import checkers.initialization.quals.Unclassified;
+import checkers.initialization.quals.UnkownInitialization;
 import checkers.nullness.quals.EnsuresNonNull;
 import checkers.nullness.quals.Raw;
 
@@ -8,7 +8,7 @@ class OverrideANNA {
     Object g;
 
     @EnsuresNonNull({"f", "g"})
-    void setfg(@Raw @Unclassified Super this) {
+    void setfg(@Raw @UnkownInitialization Super this) {
       f = new Object();
       g = new Object();
     }
@@ -22,7 +22,7 @@ class OverrideANNA {
     @Override
     @EnsuresNonNull("f")
     //:: error: (contracts.postcondition.override.invalid)
-    void setfg(@Raw @Unclassified Sub this) {
+    void setfg(@Raw @UnkownInitialization Sub this) {
       f = new Object();
     }
   }

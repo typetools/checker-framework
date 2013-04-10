@@ -6,7 +6,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import checkers.initialization.quals.Unclassified;
+import checkers.initialization.quals.UnkownInitialization;
 import checkers.nullness.NullnessRawnessChecker;
 import checkers.quals.DefaultQualifierInHierarchy;
 import checkers.quals.SubtypeOf;
@@ -27,7 +27,7 @@ import checkers.quals.TypeQualifier;
 @Documented
 @TypeQualifier
 @DefaultQualifierInHierarchy
-@SubtypeOf(Unclassified.class)
+@SubtypeOf(UnkownInitialization.class)
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
 public @interface NonRaw {

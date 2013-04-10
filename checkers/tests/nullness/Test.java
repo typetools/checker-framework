@@ -1,6 +1,6 @@
 package examples;
 
-import checkers.initialization.quals.Unclassified;
+import checkers.initialization.quals.UnkownInitialization;
 import checkers.nullness.quals.NonNull;
 
 
@@ -14,6 +14,6 @@ public class Test {
     }
     
     void b() {
-        @Unclassified @NonNull Test f = new Test();
+        @UnkownInitialization @NonNull Test f = new Test();
     }
 }

@@ -13,11 +13,11 @@ public class RawPartial {
 
   public void foo1() {}
 
-  public void foo2(@Raw(RawPartial.class) @Unclassified(RawPartial.class) RawPartial this)  {}
+  public void foo2(@Raw(RawPartial.class) @UnkownInitialization(RawPartial.class) RawPartial this)  {}
 
-  public void foo3(@Raw(RawPartial.class) @Unclassified(RawPartial.class) RawPartial this) {}
+  public void foo3(@Raw(RawPartial.class) @UnkownInitialization(RawPartial.class) RawPartial this) {}
 
-  public void foo4(@Raw(RawPartial.class) @Unclassified(RawPartial.class) RawPartial this) {}
+  public void foo4(@Raw(RawPartial.class) @UnkownInitialization(RawPartial.class) RawPartial this) {}
 
   public static void main(String[] args) {
     new SubRP();
@@ -39,13 +39,13 @@ class SubRP extends RawPartial {
   }
 
   @Override
-  public void foo3(@Raw(RawPartial.class) @Unclassified(RawPartial.class) SubRP this) {
+  public void foo3(@Raw(RawPartial.class) @UnkownInitialization(RawPartial.class) SubRP this) {
     //:: error: (dereference.of.nullable)
     f.toLowerCase();
   }
 
   @Override
-  public void foo4(@Raw @Unclassified SubRP this) {
+  public void foo4(@Raw @UnkownInitialization SubRP this) {
     //:: error: (dereference.of.nullable)
     f.toLowerCase();
   }

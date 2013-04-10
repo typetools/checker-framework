@@ -1,4 +1,4 @@
-import checkers.initialization.quals.Committed;
+import checkers.initialization.quals.Initialized;
 import checkers.nullness.quals.*;
 
 public class ConditionalOr {

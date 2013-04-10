@@ -6,28 +6,28 @@ public class Commitment {
     @NonNull String t;
     
     //:: error: (commitment.invalid.field.annotation)
-    @NonNull @Free String a;
+    @NonNull @UnderInitializion String a;
     //:: error: (commitment.invalid.field.annotation)
-    @Committed String b;
+    @Initialized String b;
     //:: error: (commitment.invalid.field.annotation)
-    @Unclassified @Nullable String c;
+    @UnkownInitialization @Nullable String c;
     
     //:: error: (commitment.invalid.constructor.return.type)
-    public @Free Commitment(int i) {
+    public @UnderInitializion Commitment(int i) {
         a = "";
         t = "";
         b = "";
     }
 
     //:: error: (commitment.invalid.constructor.return.type)
-    public @Committed Commitment(int i, int j) {
+    public @Initialized Commitment(int i, int j) {
         a = "";
         t = "";
         b = "";
     }
     
     //:: error: (commitment.invalid.constructor.return.type)
-    public @Committed @NonNull Commitment(boolean i) {
+    public @Initialized @NonNull Commitment(boolean i) {
         a = "";
         t = "";
         b = "";
@@ -47,25 +47,25 @@ public class Commitment {
         
         t = "";
         
-        @Free @NonNull Commitment c = this;
+        @UnderInitializion @NonNull Commitment c = this;
 
-        @Unclassified @NonNull Commitment c1 = this;
+        @UnkownInitialization @NonNull Commitment c1 = this;
 
         //:: error: (assignment.type.incompatible)
-        @Committed @NonNull Commitment c2 = this;
+        @Initialized @NonNull Commitment c2 = this;
     }
 
     //:: error: (commitment.fields.uninitialized)
-    public Commitment(@Unclassified Commitment arg) {
+    public Commitment(@UnkownInitialization Commitment arg) {
         t = "";
         
         //:: error: (argument.type.incompatible)
-        @Free Commitment t = new Commitment(this, 1);
+        @UnderInitializion Commitment t = new Commitment(this, 1);
 
         //:: error: (assignment.type.incompatible)
-        @Committed Commitment t1 = new Commitment(this);
+        @Initialized Commitment t1 = new Commitment(this);
         
-        @Free Commitment t2 = new Commitment(this);
+        @UnderInitializion Commitment t2 = new Commitment(this);
     }
     
     //:: error: (commitment.fields.uninitialized)

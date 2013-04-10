@@ -14,7 +14,7 @@ import checkers.quals.TypeQualifier;
 @TypeQualifier
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-public @interface Unclassified {
+public @interface UnkownInitialization {
     /**
      * The type-frame down to which the expression (of this type) has been
      * initialized at least.

@@ -1,4 +1,4 @@
-import checkers.initialization.quals.Unclassified;
+import checkers.initialization.quals.UnkownInitialization;
 import checkers.nullness.quals.RequiresNonNull;
 import checkers.nullness.quals.*;
 
@@ -13,6 +13,6 @@ class Uninit9Sub extends Uninit9 {
     fIsSetOnEntry();
   }
   @RequiresNonNull("f")
-  void fIsSetOnEntry(@Raw @Unclassified Uninit9Sub this) {
+  void fIsSetOnEntry(@Raw @UnkownInitialization Uninit9Sub this) {
   }
 }
