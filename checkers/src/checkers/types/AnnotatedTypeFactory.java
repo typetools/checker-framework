@@ -806,7 +806,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             return null;
         }
 
-        if (this.isExplicitThisDereference(receiver)) {
+        if (receiver.getKind() == Tree.Kind.IDENTIFIER
+                && ((IdentifierTree)receiver).getName().contentEquals("this")) {
             // TODO: also "super"?
             return this.getSelfType(tree);
         }
