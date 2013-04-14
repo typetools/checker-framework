@@ -53,59 +53,11 @@ example, we should not add default qualifiers.
 
 ------------------------------------------------------
 
-[Mike]
-
-Discuss that the Checker Framework is stricter than Java, in the sense that
-it treats arrays invariantly rather than covariantly.  Explain the rationale
-
-> This is due to Java's covariant array types.  In fact, this problem is not
-> unique to the Checker Framework, but you can write a variant of your code
-> in standard Java that compiles and type-checks, but does not work at
-> run-time:
-> 
->   String[] strs = new String[] {""};
->   Object[] tmp = strs;
->   tmp[0] = new Object();
->   String regexp = strs[0];
-> 
-> This code type-checks, but throws an ArrayStoreException at runtime. For
-> the Checker Framework, I think it is reasonable to adapt the same covariant
-> semantics, which is why your example type-checks.
-
-As Stefan points out, the standard Java type system has a hole, which Java
-patches via run-time checks.  The Checker Framework takes a stricter
-position, rejecting any unsafe array operation.  (Or, at least, it is
-supposed to!)  There are two reasons for this, one philosophical and one
-practical:
- * We would like our type system to be sound, which means that we want a
-   guarantee of no errors at run time.  Java's type system does not do
-   this:  there is only a guarantee that the JVM won't be corrupted, not
-   that your program will run without run-time exceptions.
- * The Checker Framework does not add any run-time checking, and so it
-   would be undesirable to mimic a feature that is sound only in the
-   presence of run-time checking.
-
------
-An example issue with un-annotated code, for the Regex Checker:
-
-String[] sa = {"hi"};
-
-We infer that "hi" is a "@Regex String" and therefore the RHS has type
-"@Regex String[]". With invariant subtyping, the assignment is now
-invalid.
-The solution is to change the declared type to:
-
-@Regex String[] sa = ...;
-
-Explain this issue in the manual.
-
-------------------------------------------------------
-
 Explain relationship between XXXChecker and XXXAnnotatedTypeFactory:
 if the Checker is a subtype of BaseTypeChecker, the ATF has to be a
 subtype of AbstractBasicATF, because BaseTypeVisitor assumes that.
 
-Can we find better naming for Basic vs. Base classes?
+We found a better naming scheme than Basic vs. Base; it needs to be documented.
 
 ------------------------------------------------------
 
@@ -140,3 +92,5 @@ Renamed method annotations used by the Nullness Checker:
   @LazyNonNull => @MonotonicNonNull
 Renamed method annotations used by all checkers:
   @SuppressWarnings => @AssumeAssertion
+
+New manual section about array types
