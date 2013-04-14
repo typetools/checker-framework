@@ -41,7 +41,6 @@ After an expression has been unboxed, it is assumed to be non-null (if it was no
 
 ------------------------------------------------------
 
-Update the documentation on how to suppress warnings using assert statements: The string @AssumeAssertion(warningkey) must be present anywhere in the detail message of the assert statement.
 
 ------------------------------------------------------
 
@@ -94,3 +93,6 @@ Renamed method annotations used by all checkers:
   @SuppressWarnings => @AssumeAssertion
 
 New manual section about array types
+
+Suppress warnings using assert statements with the string
+@AssumeAssertion(warningkey); previously, just the warning key sufficed.
