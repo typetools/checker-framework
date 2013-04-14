@@ -481,12 +481,13 @@ Section~\ref{suppressing-warnings}).  An example use is
 
 \begin{Verbatim}
     // might return null
-    @Nullable Object getObject() { ... }
+    @Nullable Object getObject(...) { ... }
 
     void myMethod() {
-      // The programmer knows that this partucular call never returns null.
+      // The programmer knows that this partucular call never returns null,
+      // perhaps based on the arguments or the state of other objects.
       @SuppressWarnings("nullness")
-      @NonNull Object o2 = getObject();
+      @NonNull Object o2 = getObject(...);
 \end{Verbatim}
 
 
