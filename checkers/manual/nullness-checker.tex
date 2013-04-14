@@ -424,7 +424,8 @@ each component, and then assigns the result to a non-null array:
 
 Note that the checker is currently not powerful enough to ensure that
 each array component was initialized. Therefore, the last assignment
-needs to be trusted.
+needs to be trusted:  that is, a programmer must verify that it is safe,
+then write a \<@SuppressWarnings> annotation.
 
 % TODO: explain more aspects, give more examples.
 
