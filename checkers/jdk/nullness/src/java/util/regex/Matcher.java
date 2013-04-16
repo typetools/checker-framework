@@ -1,5 +1,7 @@
 package java.util.regex;
 
+import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
 import checkers.nullness.quals.Nullable;
 
 public final class Matcher implements MatchResult {
