@@ -1,3 +1,17 @@
+Version 1.6.2, 04 Apr 2013
+
+Eclipse plugin:
+  The "Additional compiler parameters" text field has now been replaced by a list.  Parameters in this list may be activated/deactivated via checkbox.
+
+Eclipse plugin bug fixes:
+   Classpaths and source files should now be correctly quoted when they contain spaces.
+
+Internal framework improvements:
+  Update pom files to use the same update-version code as the Checker Framework "web" ant task.  Remove pom specific update-version code.
+  Update build ant tasks to avoid re-running targets when executing tests from the release script.
+
+----------------------------------------------------------------------
+
 Version 1.6.1, 01 Mar 2013
 
 User-visible framework improvements:
