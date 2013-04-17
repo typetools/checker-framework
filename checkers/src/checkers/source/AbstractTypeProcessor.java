@@ -9,7 +9,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
 
 import com.sun.tools.javac.main.JavaCompiler;
-import com.sun.tools.javac.main.JavaCompiler.CompileState;
+import com.sun.tools.javac.comp.CompileStates.CompileState;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Log;
