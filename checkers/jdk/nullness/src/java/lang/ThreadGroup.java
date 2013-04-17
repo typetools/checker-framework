@@ -1,8 +1,7 @@
 package java.lang;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
-@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
 
 public class ThreadGroup implements Thread.UncaughtExceptionHandler {
   public ThreadGroup(@Nullable String a1) { throw new RuntimeException("skeleton method"); }

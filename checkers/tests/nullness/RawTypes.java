@@ -1,5 +1,6 @@
 // Note that this file is a near duplicate in /nullness and /nullness-uninit
 
+import checkers.initialization.quals.UnkownInitialization;
 import checkers.nullness.quals.*;
 import java.util.*;
 @checkers.quals.DefaultQualifier(Nullable.class)
@@ -9,9 +10,9 @@ class RawTypes {
         @NonNull String field;
 
         public Bad() {
-            //:: error: (method.invocation.invalid.rawness)
+            //:: error: (method.invocation.invalid)
             this.init();                                // error
-            //:: error: (method.invocation.invalid.rawness)
+            //:: error: (method.invocation.invalid)
             init();                                     // error
 
             this.field = "field";                       // valid
@@ -37,22 +38,22 @@ class RawTypes {
             init();                                             // valid
         }
 
-        public void init(@Raw A this) {
+        public void init(@Raw @UnkownInitialization A this) {
             //:: error: (dereference.of.nullable)
             output(this.field.length());
         }
 
-        public void initExpl2(@Raw A this) {
+        public void initExpl2(@Raw @UnkownInitialization A this) {
             //:: error: (argument.type.incompatible)
             output(this.field);
         }
 
-        public void initImpl1(@Raw A this) {
+        public void initImpl1(@Raw @UnkownInitialization A this) {
             //:: error: (dereference.of.nullable)
             output(field.length());
         }
 
-        public void initImpl2(@Raw A this) {
+        public void initImpl2(@Raw @UnkownInitialization A this) {
             //:: error: (argument.type.incompatible)
             output(field);
         }
@@ -69,23 +70,23 @@ class RawTypes {
         }
 
         @Override
-        public void init(@Raw B this) {
+        public void init(@Raw @UnkownInitialization B this) {
             //:: error: (dereference.of.nullable)
             output(this.field.length());            // error (TODO: substitution)
             super.init();                                       // valid
         }
 
-        public void initImpl1(@Raw B this) {
+        public void initImpl1(@Raw @UnkownInitialization B this) {
             //:: error: (dereference.of.nullable)
             output(field.length());                 // error (TODO: substitution)
         }
 
-        public void initExpl2(@Raw B this) {
+        public void initExpl2(@Raw @UnkownInitialization B this) {
             //:: error: (dereference.of.nullable)
             output(this.otherField.length());       // error
         }
 
-        public void initImpl2(@Raw B this) {
+        public void initImpl2(@Raw @UnkownInitialization B this) {
             //:: error: (dereference.of.nullable)
             output(otherField.length());            // error
         }
@@ -95,7 +96,7 @@ class RawTypes {
             this.init();                                        // valid
         }
 
-        void otherRaw(@Raw B this) {
+        void otherRaw(@Raw @UnkownInitialization B this) {
             init();                                             // valid
             this.init();                                        // valid
         }
@@ -106,7 +107,7 @@ class RawTypes {
         @NonNull String[] strings;
 
         @Override
-        public void init(@Raw C this) {
+        public void init(@Raw @UnkownInitialization C this) {
             //:: error: (dereference.of.nullable)
             output(this.strings.length);            // error
             System.out.println();                   // valid
@@ -119,7 +120,7 @@ class RawTypes {
 
     class D extends C {
         @Override
-        public void init(@Raw D this) {
+        public void init(@Raw @UnkownInitialization D this) {
             this.field = "s";
             output(this.field.length());
         }
@@ -130,7 +131,7 @@ class RawTypes {
         MyTest(int i) {
             this.i = i;
         }
-        void myTest(@Raw MyTest this) {
+        void myTest(@Raw @UnkownInitialization MyTest this) {
             i++;
         }
     }
@@ -140,8 +141,9 @@ class RawTypes {
         long startTime = 0;
 
         // If all fields have an initializer, then the type of "this"
-        // should be non-raw in the constructor.
+        // should still not be non-raw (there might be uninitilized subclasses)
         public AllFieldsInitialized() {
+            //:: error: (method.invocation.invalid)
             nonRawMethod();
         }
 
@@ -157,17 +159,17 @@ class RawTypes {
         long elapsedMillis;
         long startTime;
 
-        // If all fields have an initializer, then the type of "this"
-        // should be non-raw in the constructor.
         public AllFieldsSetInInitializer() {
             elapsedMillis = 0;
+            //:: error: (method.invocation.invalid)
             nonRawMethod();
             startTime = 0;
-            nonRawMethod();     // no error
-            new AFSIICell().afsii = this;
+            //:: error: (method.invocation.invalid)
+            nonRawMethod(); // still error (subclasses...)
         }
 
         public AllFieldsSetInInitializer(boolean b) {
+            //:: error: (method.invocation.invalid)
             nonRawMethod();
         }
 
@@ -182,7 +184,8 @@ class RawTypes {
         }
         public ConstructorInvocations() {
             this(0);
-            nonRawMethod(); // valid
+            //:: error: (method.invocation.invalid)
+            nonRawMethod();
         }
         public void nonRawMethod() { }
     }
@@ -192,12 +195,12 @@ class RawTypes {
             @NonNull String s = string();
         }
 
-        public @NonNull String string(@Raw MethodAccess this) {
+        public @NonNull String string(@Raw @UnkownInitialization MethodAccess this) {
             return "nonnull";
         }
     }
 
-    void cast(@Raw Object... args) {
+    void cast(@Raw @UnkownInitialization Object... args) {
 
         @SuppressWarnings("rawtypes")
         //:: error: (assignment.type.incompatible)

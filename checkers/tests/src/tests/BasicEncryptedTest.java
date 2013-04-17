@@ -5,7 +5,8 @@ import java.util.Collection;
 
 import org.junit.runners.Parameterized.Parameters;
 
-import checkers.basic.BasicChecker;
+import tests.util.Encrypted;
+import checkers.subtyping.SubtypingChecker;
 import checkers.util.test.ParameterizedCheckerTest;
 
 /**
@@ -16,7 +17,7 @@ public class BasicEncryptedTest extends ParameterizedCheckerTest {
 
     public BasicEncryptedTest(File testFile) {
         super(testFile,
-                BasicChecker.class.getName(),
+                SubtypingChecker.class.getName(),
                 "basic",
                 "-Anomsgtext",
                 "-Aquals=tests.util.Encrypted,tests.util.PolyEncrypted,checkers.quals.Unqualified");
