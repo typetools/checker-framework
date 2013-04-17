@@ -34,6 +34,8 @@ There is a separate FAQ for the type annotations syntax
 \ref{faq-type-checking-vs-bug-detectors}: Why not just use a bug detector (like FindBugs)? \\
 \ref{faq-jml}: How does pluggable type-checking compare with JML? \\
 \ref{faq-no-annotation-on-types-and-declarations}: Why shouldn't a qualifier apply to both types and declarations? \\
+\ref{faq-receiver}: What is a ``receiver''? \\
+\ref{faq-annotation-after-type}: What is the meaning of an annotation after a type, such as \<@NonNull Object @Nullable>? \\
 \ref{faq-array-syntax-meaning}: What is the meaning of array annotations such as \<@NonNull Object @Nullable []>? \\
 \ref{faq-list-map-nonnull-typeargs}: Why are the type parameters to \<List> and \<Map> annotated as \<@NonNull>? \\
 \ref{faq-checker-framework-part-of-java}: Is the Checker Framework an official part of Java? \\
@@ -500,6 +502,14 @@ Then the behavior of four different invocations is as follows:
 
 The invocation \<myA.requiresB()> does not type-check because the actual
 argument's type is not a subtype of the formal parameter's type.
+
+
+\section{What is the meaning of an annotation after a type, such as \<@NonNull Object @Nullable>?\label{faq-annotation-after-type}}
+
+In a type such as \<@NonNull Object @Nullable []>, it may appear that the
+\<@Nullable> annotation is written \emph{after} the type \<Object>.  In
+fact, \<@Nullable> modifies \<[]>.  See the next FAQ, about array
+annotations (Section~\ref{faq-array-syntax-meaning}).
 
 
 \section{What is the meaning of array annotations such as \<@NonNull Object @Nullable []>?\label{faq-array-syntax-meaning}}
