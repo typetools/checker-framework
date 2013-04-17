@@ -1,5 +1,3 @@
-
-// @skip-test
 public class IterableGenerics {
     interface Data extends Iterable<String> { }
 

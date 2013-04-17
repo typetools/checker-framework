@@ -167,9 +167,11 @@ public class TypeFromElement {
                 ErrorReporter.errorAbort("TypeFromElement.annotateTypeParam(method): " + 
                         "not found in enclosing element: " + ElementUtils.getVerboseName(element));
             }
+        } else if (((com.sun.tools.javac.code.Symbol)enclosing).kind == com.sun.tools.javac.code.Kinds.NIL) {
+            // We might hit com.sun.tools.javac.code.Symtab.noSymbol. Ignore.
         } else if (strict) {
             ErrorReporter.errorAbort("TypeFromElement.annotateTypeParam: enclosing element not a type or executable: " +
-                    enclosing + " [" + enclosing.getKind() + ", " + enclosing.getClass() + "]");
+                    enclosing + " [" + enclosing.getKind() + ", " + enclosing.getClass() + ": \"" + enclosing + "\"]");
         }
     }
 

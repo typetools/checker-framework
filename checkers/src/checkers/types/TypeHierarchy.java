@@ -338,9 +338,9 @@ public class TypeHierarchy {
         com.sun.tools.javac.code.Symbol.TypeSymbol lhstsym = ((com.sun.tools.javac.code.Type)lhs.actualType).tsym;
         com.sun.tools.javac.code.Symbol.TypeSymbol rhstsym = ((com.sun.tools.javac.code.Type)rhs.actualType).tsym;
 
-        List<com.sun.tools.javac.code.Symbol.TypeSymbol> lhsTPs =
+        List<com.sun.tools.javac.code.Symbol.TypeVariableSymbol> lhsTPs =
                 lhstsym.getEnclosingElement().getTypeParameters();
-        List<com.sun.tools.javac.code.Symbol.TypeSymbol> rhsTPs =
+        List<com.sun.tools.javac.code.Symbol.TypeVariableSymbol> rhsTPs =
                 rhstsym.getEnclosingElement().getTypeParameters();
 
         if (lhsTPs.size() != rhsTPs.size()) {
