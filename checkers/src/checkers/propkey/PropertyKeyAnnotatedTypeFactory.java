@@ -11,13 +11,14 @@ import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.Tree;
 
+import javacutils.AnnotationUtils;
+
 import checkers.basetype.BaseTypeChecker;
 import checkers.propkey.quals.PropertyKey;
 import checkers.quals.Bottom;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.types.TreeAnnotator;
-import checkers.util.AnnotationUtils;
 
 /**
  * This AnnotatedTypeFactory adds PropertyKey annotations to String literals
