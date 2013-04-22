@@ -110,6 +110,16 @@ class Precondition {
         //:: error: (flowexpr.parse.error)
         void foo() {}
     }
+    
+    @Odd String f4;
+    
+    @RequiresQualifier(expression="f4", qualifier=Odd.class)
+    void requiresF4() {
+    }
+    
+    void tt1() {
+        requiresF4();
+    }
 
     /***** multiple preconditions ******/
     
