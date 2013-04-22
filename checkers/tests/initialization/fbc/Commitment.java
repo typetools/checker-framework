@@ -9,7 +9,6 @@ public class Commitment {
     @NonNull @UnderInitializion String a;
     //:: error: (commitment.invalid.field.annotation)
     @Initialized String b;
-    //:: error: (commitment.invalid.field.annotation)
     @UnkownInitialization @Nullable String c;
     
     //:: error: (commitment.invalid.constructor.return.type)

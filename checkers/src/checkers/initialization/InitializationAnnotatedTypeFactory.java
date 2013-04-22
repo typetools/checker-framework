@@ -129,7 +129,9 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
         if (!HACK_DONT_CALL_POST_AS_MEMBER) {
             if (element.getKind().isField()) {
                 Collection<? extends AnnotationMirror> declaredFieldAnnotations = getDeclAnnotations(element);
-                computeFieldAccessType(type, declaredFieldAnnotations, owner);
+                AnnotatedTypeMirror fieldAnnotations = getAnnotatedType(element);
+                computeFieldAccessType(type, declaredFieldAnnotations, owner,
+                        fieldAnnotations);
             }
         }
     }
@@ -313,12 +315,20 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
      *            Annotations on the element.
      * @param receiverType
      *            Inferred annotations of the receiver.
+     * @param fieldAnnotations
      */
     private void computeFieldAccessType(AnnotatedTypeMirror type,
             Collection<? extends AnnotationMirror> declaredFieldAnnotations,
-            AnnotatedTypeMirror receiverType) {
+            AnnotatedTypeMirror receiverType,
+            AnnotatedTypeMirror fieldAnnotations) {
         // not necessary for primitive fields
         if (TypesUtils.isPrimitive(type.getUnderlyingType())) {
+            return;
+        }
+        // not necessary if there is an explicit UnknownInitialization
+        // annotation on the field
+        if (AnnotationUtils.containsSameIgnoringValues(
+                fieldAnnotations.getAnnotations(), checker.UNCLASSIFIED)) {
             return;
         }
         if (checker.isUnclassified(receiverType)

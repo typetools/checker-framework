@@ -45,7 +45,7 @@ import com.sun.source.tree.VariableTree;
 public abstract class InitializationChecker extends BaseTypeChecker {
 
     /** Annotation constants */
-    public AnnotationMirror COMMITTED, FREE, FBCBOTTOM, NOT_ONLY_COMMITTED;
+    public AnnotationMirror COMMITTED, FREE, FBCBOTTOM, NOT_ONLY_COMMITTED, UNCLASSIFIED;
 
     /**
      * Should the initialization type system be FBC? If not, the rawness type
@@ -67,9 +67,11 @@ public abstract class InitializationChecker extends BaseTypeChecker {
             NOT_ONLY_COMMITTED = AnnotationUtils.fromClass(elements,
                     NotOnlyInitialized.class);
             FBCBOTTOM = AnnotationUtils.fromClass(elements, FBCBottom.class);
+            UNCLASSIFIED = AnnotationUtils.fromClass(elements, UnkownInitialization.class);
         } else {
             COMMITTED = AnnotationUtils.fromClass(elements, NonRaw.class);
             FBCBOTTOM = COMMITTED; // @NonRaw is also bottom
+            UNCLASSIFIED = AnnotationUtils.fromClass(elements, Raw.class);
         }
 
         super.initChecker();
