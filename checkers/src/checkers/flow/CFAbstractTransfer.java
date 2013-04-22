@@ -199,11 +199,11 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
             TypeMirror classType = InternalUtils.typeOf(classTree);
             List<Pair<VariableElement, V>> fieldValues = analysis
                     .getFieldValues();
-            boolean isConstructor = TreeUtils.isConstructor(methodTree);
+            boolean isNotFullyInitializedReceiver = isNotFullyInitializedReceiver(methodTree);
             for (Pair<VariableElement, V> p : fieldValues) {
                 VariableElement element = p.first;
                 V value = p.second;
-                if (ElementUtils.isFinal(element) || isConstructor) {
+                if (ElementUtils.isFinal(element) || isNotFullyInitializedReceiver) {
                     TypeMirror fieldType = ElementUtils.getType(element);
                     Receiver receiver;
                     if (ElementUtils.isStatic(element)) {
@@ -219,28 +219,38 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
 
             // add properties about fields (static information from type, only
             // available if we are not in a constructor)
-            for (Tree member : classTree.getMembers()) {
-                if (member instanceof VariableTree) {
-                    VariableTree vt = (VariableTree) member;
-                    final VariableElement element = TreeUtils
-                            .elementFromDeclaration(vt);
-                    AnnotatedTypeMirror type = factory
-                            .getAnnotatedType(element);
-                    TypeMirror fieldType = ElementUtils.getType(element);
-                    Receiver receiver;
-                    if (ElementUtils.isStatic(element)) {
-                        receiver = new ClassName(classType);
-                    } else {
-                        receiver = new ThisReference(classType);
+            if (!isNotFullyInitializedReceiver) {
+                for (Tree member : classTree.getMembers()) {
+                    if (member instanceof VariableTree) {
+                        VariableTree vt = (VariableTree) member;
+                        final VariableElement element = TreeUtils
+                                .elementFromDeclaration(vt);
+                        AnnotatedTypeMirror type = factory
+                                .getAnnotatedType(element);
+                        TypeMirror fieldType = ElementUtils.getType(element);
+                        Receiver receiver;
+                        if (ElementUtils.isStatic(element)) {
+                            receiver = new ClassName(classType);
+                        } else {
+                            receiver = new ThisReference(classType);
+                        }
+                        Receiver field = new FieldAccess(receiver, fieldType,
+                                element);
+                        info.insertValue(field,
+                                analysis.createAbstractValue(type));
                     }
-                    Receiver field = new FieldAccess(receiver, fieldType,
-                            element);
-                    info.insertValue(field, analysis.createAbstractValue(type));
                 }
             }
         }
 
         return info;
+    }
+
+    /**
+     * Returns true if the receiver of a method might not yet be fully initialized.
+     */
+    protected boolean isNotFullyInitializedReceiver(MethodTree methodTree) {
+        return TreeUtils.isConstructor(methodTree);
     }
 
     /**
