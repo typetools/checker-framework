@@ -59,4 +59,11 @@ class Initializer {
         return true;
     }
     
+    String f = "";
+    void t1(@UnkownInitialization @Raw Initializer this) {
+        // this is potentially uninitialized, but the static type of f, as well as
+        // the initializer guarantee that it is initialized.
+        this.f.toString();
+    }
+    
 }
