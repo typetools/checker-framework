@@ -33,9 +33,11 @@ import checkers.flow.CFAbstractTransfer;
 import checkers.flow.CFAbstractValue;
 import checkers.flow.CFValue;
 import checkers.types.AnnotatedTypeMirror;
+import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
 
 /**
  * A transfer function that extends {@link CFAbstractTransfer} and tracks
@@ -72,6 +74,16 @@ public class InitializationTransfer<V extends CFAbstractValue<V>, T extends Init
         super(analysis);
         this.checker = (InitializationChecker) analysis.getFactory()
                 .getChecker();
+    }
+
+    @Override
+    protected boolean isNotFullyInitializedReceiver(MethodTree methodTree) {
+        if (super.isNotFullyInitializedReceiver(methodTree)) {
+            return true;
+        }
+        final AnnotatedDeclaredType receiverType = analysis.getFactory()
+                .getAnnotatedType(methodTree).getReceiverType();
+        return checker.isUnclassified(receiverType) || checker.isFree(receiverType);
     }
 
     /**
@@ -173,9 +185,8 @@ public class InitializationTransfer<V extends CFAbstractValue<V>, T extends Init
             if (fieldAnno.hasAnnotation(checker.getFieldInvariantAnnotation())) {
                 AnnotationMirror inv = checker.getFieldInvariantAnnotation();
                 V oldResultValue = result.getResultValue();
-                V refinedResultValue = analysis
-                        .createSingleAnnotationValue(inv, oldResultValue
-                                .getType().getUnderlyingType());
+                V refinedResultValue = analysis.createSingleAnnotationValue(
+                        inv, oldResultValue.getType().getUnderlyingType());
                 V newResultValue = refinedResultValue.mostSpecific(
                         oldResultValue, null);
                 result.setResultValue(newResultValue);
@@ -185,8 +196,8 @@ public class InitializationTransfer<V extends CFAbstractValue<V>, T extends Init
     }
 
     @Override
-    public TransferResult<V, S> visitMethodInvocation(
-            MethodInvocationNode n, TransferInput<V, S> in) {
+    public TransferResult<V, S> visitMethodInvocation(MethodInvocationNode n,
+            TransferInput<V, S> in) {
         TransferResult<V, S> result = super.visitMethodInvocation(n, in);
         assert result instanceof ConditionalTransferResult;
         Set<Element> newlyInitializedFields = initializedFieldsAfterCall(n,
