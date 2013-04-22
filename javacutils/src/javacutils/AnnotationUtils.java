@@ -261,6 +261,22 @@ public class AnnotationUtils {
     }
 
     /**
+     * Checks that the collection contains the annotation.
+     * Using Collection.contains does not always work, because it
+     * does not use areSame for comparison.
+     *
+     * @return true iff c contains anno, according to areSameByClass.
+     */
+    public static boolean containsSameByClass(Collection<? extends AnnotationMirror> c, Class<? extends Annotation> anno) {
+        for(AnnotationMirror an : c) {
+            if(AnnotationUtils.areSameByClass(an, anno)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Checks that the collection contains the annotation ignoring values.
      * Using Collection.contains does not always work, because it
      * does not use areSameIgnoringValues for comparison.

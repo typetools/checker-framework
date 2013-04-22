@@ -96,45 +96,52 @@ public class InitializationVisitor<Checker extends InitializationChecker, Value 
             Element el = TreeUtils.elementFromUse(lhs);
             AnnotatedTypeMirror xType = factory.getReceiverType(lhs);
             AnnotatedTypeMirror yType = factory.getAnnotatedType(y);
-            if (!ElementUtils.isStatic(el)
-                    && !(checker.isCommitted(yType) || checker.isFree(xType))) {
-                /*@CompilerMessageKey*/ String err;
-                if (checker.isCommitted(xType)) {
-                    err = COMMITMENT_INVALID_FIELD_WRITE_COMMITTED;
-                } else {
-                    err = COMMITMENT_INVALID_FIELD_WRITE_UNCLASSIFIED;
+            // the special FBC rules do not apply if there is an explicit
+            // UnknownInitialization annotation
+            Set<AnnotationMirror> fieldAnnotations =
+                    factory.getAnnotatedType(TreeUtils.elementFromUse(lhs)).getAnnotations();
+            if (!AnnotationUtils.containsSameIgnoringValues(
+                    fieldAnnotations, checker.UNCLASSIFIED)) {
+                if (!ElementUtils.isStatic(el)
+                        && !(checker.isCommitted(yType) || checker.isFree(xType))) {
+                    /*@CompilerMessageKey*/ String err;
+                    if (checker.isCommitted(xType)) {
+                        err = COMMITMENT_INVALID_FIELD_WRITE_COMMITTED;
+                    } else {
+                        err = COMMITMENT_INVALID_FIELD_WRITE_UNCLASSIFIED;
+                    }
+                    checker.report(Result.failure(err, varTree), varTree);
+                    return; // prevent issuing another errow about subtyping
                 }
-                checker.report(Result.failure(err, varTree), varTree);
-                return; // prevent issuing another errow about subtyping
+                // for field access on the current object, make sure that we don't
+                // allow
+                // invalid assignments. that is, even though reading this.f in a
+                // constructor yields @Nullable (or similar for other typesystems),
+                // it
+                // is not allowed to write @Nullable to a @NonNull field.
+                // This is done by first getting the type as usual (var), and then
+                // again not using the postAsMember method (which takes care of
+                // transforming the type of o.f for a free receiver to @Nullable)
+                // (var2). Then, we take the child annotation from var2 and use it
+                // for var.
+                AnnotatedTypeMirror var = atypeFactory.getAnnotatedType(lhs);
+                boolean old = factory.HACK_DONT_CALL_POST_AS_MEMBER;
+                factory.HACK_DONT_CALL_POST_AS_MEMBER = true;
+                boolean old2 = factory.shouldReadCache;
+                factory.shouldReadCache = false;
+                AnnotatedTypeMirror var2 = atypeFactory.getAnnotatedType(lhs);
+                factory.HACK_DONT_CALL_POST_AS_MEMBER = old;
+                factory.shouldReadCache = old2;
+                final AnnotationMirror newAnno = var2
+                        .getAnnotationInHierarchy(checker
+                                .getFieldInvariantAnnotation());
+                if (newAnno != null) {
+                    var.replaceAnnotation(newAnno);
+                }
+                checkAssignability(var, varTree);
+                commonAssignmentCheck(var, valueExp, errorKey, false);
+                return;
             }
-            // for field access on the current object, make sure that we don't
-            // allow
-            // invalid assignments. that is, even though reading this.f in a
-            // constructor yields @Nullable (or similar for other typesystems),
-            // it
-            // is not allowed to write @Nullable to a @NonNull field.
-            // This is done by first getting the type as usual (var), and then
-            // again not using the postAsMember method (which takes care of
-            // transforming the type of o.f for a free receiver to @Nullable)
-            // (var2). Then, we take the child annotation from var2 and use it
-            // for var.
-            AnnotatedTypeMirror var = atypeFactory.getAnnotatedType(lhs);
-            boolean old = factory.HACK_DONT_CALL_POST_AS_MEMBER;
-            factory.HACK_DONT_CALL_POST_AS_MEMBER = true;
-            boolean old2 = factory.shouldReadCache;
-            factory.shouldReadCache = false;
-            AnnotatedTypeMirror var2 = atypeFactory.getAnnotatedType(lhs);
-            factory.HACK_DONT_CALL_POST_AS_MEMBER = old;
-            factory.shouldReadCache = old2;
-            final AnnotationMirror newAnno = var2
-                    .getAnnotationInHierarchy(checker
-                            .getFieldInvariantAnnotation());
-            if (newAnno != null) {
-                var.replaceAnnotation(newAnno);
-            }
-            checkAssignability(var, varTree);
-            commonAssignmentCheck(var, valueExp, errorKey, false);
-            return;
         }
         super.commonAssignmentCheck(varTree, valueExp, errorKey);
     }
@@ -149,6 +156,7 @@ public class InitializationVisitor<Checker extends InitializationChecker, Value 
             for (Class<? extends Annotation> c : checker
                     .getInitializationAnnotations()) {
                 for (AnnotationMirror a : annotationMirrors) {
+                    if (checker.isUnclassified(a)) continue; // unclassified is allowed
                     if (AnnotationUtils.areSameByClass(a, c)) {
                         checker.report(Result.failure(
                                 COMMITMENT_INVALID_FIELD_ANNOTATION, node),
