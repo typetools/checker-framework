@@ -234,6 +234,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
                         receiver = new ThisReference(classType);
                     }
                     V value = analysis.createAbstractValue(type);
+                    if (value == null) continue;
                     if (isNotFullyInitializedReceiver) {
                         // if we are in a constructor (or another method where
                         // the receiver might not yet be fully initialized),
