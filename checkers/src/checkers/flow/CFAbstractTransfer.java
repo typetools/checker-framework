@@ -27,8 +27,10 @@ import checkers.util.FlowExpressionParseUtil;
 import checkers.util.FlowExpressionParseUtil.FlowExpressionContext;
 import checkers.util.FlowExpressionParseUtil.FlowExpressionParseException;
 
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 
 import dataflow.analysis.ConditionalTransferResult;
 import dataflow.analysis.FlowExpressions;
@@ -192,7 +194,9 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
                     methodElem);
 
             // Add knowledge about final fields, or values of non-final fields
-            // if we are inside a constructor.
+            // if we are inside a constructor (information about initializers)
+            final ClassTree classTree = method.getClassTree();
+            TypeMirror classType = InternalUtils.typeOf(classTree);
             List<Pair<VariableElement, V>> fieldValues = analysis
                     .getFieldValues();
             boolean isConstructor = TreeUtils.isConstructor(methodTree);
@@ -200,8 +204,6 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
                 VariableElement element = p.first;
                 V value = p.second;
                 if (ElementUtils.isFinal(element) || isConstructor) {
-                    TypeMirror classType = InternalUtils.typeOf(method
-                            .getClassTree());
                     TypeMirror fieldType = ElementUtils.getType(element);
                     Receiver receiver;
                     if (ElementUtils.isStatic(element)) {
@@ -212,6 +214,28 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
                     Receiver field = new FieldAccess(receiver, fieldType,
                             element);
                     info.insertValue(field, value);
+                }
+            }
+
+            // add properties about fields (static information from type, only
+            // available if we are not in a constructor)
+            for (Tree member : classTree.getMembers()) {
+                if (member instanceof VariableTree) {
+                    VariableTree vt = (VariableTree) member;
+                    final VariableElement element = TreeUtils
+                            .elementFromDeclaration(vt);
+                    AnnotatedTypeMirror type = factory
+                            .getAnnotatedType(element);
+                    TypeMirror fieldType = ElementUtils.getType(element);
+                    Receiver receiver;
+                    if (ElementUtils.isStatic(element)) {
+                        receiver = new ClassName(classType);
+                    } else {
+                        receiver = new ThisReference(classType);
+                    }
+                    Receiver field = new FieldAccess(receiver, fieldType,
+                            element);
+                    info.insertValue(field, analysis.createAbstractValue(type));
                 }
             }
         }
@@ -294,7 +318,8 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
     }
 
     @Override
-    public TransferResult<V, S> visitClassName(ClassNameNode n, TransferInput<V, S> in) {
+    public TransferResult<V, S> visitClassName(ClassNameNode n,
+            TransferInput<V, S> in) {
         // The tree underlying a class name is a type tree.
         V value = null;
 
@@ -303,7 +328,8 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
             if (TreeUtils.canHaveTypeAnnotation(tree)) {
                 AbstractBasicAnnotatedTypeFactory<? extends BaseTypeChecker, V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory = analysis.atypeFactory;
                 analysis.setCurrentTree(tree);
-                AnnotatedTypeMirror at = factory.getAnnotatedTypeFromTypeTree(tree);
+                AnnotatedTypeMirror at = factory
+                        .getAnnotatedTypeFromTypeTree(tree);
                 analysis.setCurrentTree(null);
                 value = analysis.createAbstractValue(at);
             }
