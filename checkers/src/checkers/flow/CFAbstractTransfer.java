@@ -203,7 +203,8 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
             for (Pair<VariableElement, V> p : fieldValues) {
                 VariableElement element = p.first;
                 V value = p.second;
-                if (ElementUtils.isFinal(element) || isNotFullyInitializedReceiver) {
+                if (ElementUtils.isFinal(element)
+                        || TreeUtils.isConstructor(methodTree)) {
                     TypeMirror fieldType = ElementUtils.getType(element);
                     Receiver receiver;
                     if (ElementUtils.isStatic(element)) {
@@ -217,28 +218,44 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
                 }
             }
 
-            // add properties about fields (static information from type, only
-            // available if we are not in a constructor)
-            if (!isNotFullyInitializedReceiver) {
-                for (Tree member : classTree.getMembers()) {
-                    if (member instanceof VariableTree) {
-                        VariableTree vt = (VariableTree) member;
-                        final VariableElement element = TreeUtils
-                                .elementFromDeclaration(vt);
-                        AnnotatedTypeMirror type = factory
-                                .getAnnotatedType(element);
-                        TypeMirror fieldType = ElementUtils.getType(element);
-                        Receiver receiver;
-                        if (ElementUtils.isStatic(element)) {
-                            receiver = new ClassName(classType);
-                        } else {
-                            receiver = new ThisReference(classType);
-                        }
-                        Receiver field = new FieldAccess(receiver, fieldType,
-                                element);
-                        info.insertValue(field,
-                                analysis.createAbstractValue(type));
+            // add properties about fields (static information from type)
+            for (Tree member : classTree.getMembers()) {
+                if (member instanceof VariableTree) {
+                    VariableTree vt = (VariableTree) member;
+                    final VariableElement element = TreeUtils
+                            .elementFromDeclaration(vt);
+                    AnnotatedTypeMirror type = factory
+                            .getAnnotatedType(element);
+                    TypeMirror fieldType = ElementUtils.getType(element);
+                    Receiver receiver;
+                    if (ElementUtils.isStatic(element)) {
+                        receiver = new ClassName(classType);
+                    } else {
+                        receiver = new ThisReference(classType);
                     }
+                    V value = analysis.createAbstractValue(type);
+                    if (isNotFullyInitializedReceiver) {
+                        // if we are in a constructor (or another method where
+                        // the receiver might not yet be fully initialized),
+                        // then we can still use the static type, but only
+                        // if there is also an initializer that already does
+                        // some initialization.
+                        boolean found = false;
+                        for (Pair<VariableElement, V> fieldValue : fieldValues) {
+                            if (fieldValue.first.equals(element)) {
+                                value = value.leastUpperBound(fieldValue.second);
+                                found = true;
+                                break;
+                            }
+                        }
+                        if (!found) {
+                            // no initializer found, cannot use static type
+                            continue;
+                        }
+                    }
+                    Receiver field = new FieldAccess(receiver, fieldType,
+                            element);
+                    info.insertValue(field, value);
                 }
             }
         }
@@ -247,7 +264,8 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
     }
 
     /**
-     * Returns true if the receiver of a method might not yet be fully initialized.
+     * Returns true if the receiver of a method might not yet be fully
+     * initialized.
      */
     protected boolean isNotFullyInitializedReceiver(MethodTree methodTree) {
         return TreeUtils.isConstructor(methodTree);
