@@ -5,41 +5,41 @@ public class Commitment {
 
     @NonNull String t;
     
-    //:: error: (commitment.invalid.field.annotation)
+    //:: error: (commitment.invalid.constructor.return.type)
     @NonNull @UnderInitializion String a;
-    //:: error: (commitment.invalid.field.annotation)
+    //:: error: (commitment.invalid.constructor.return.type)
     @Initialized String b;
     @UnknownInitialization @Nullable String c;
     
-    //:: error: (commitment.invalid.constructor.return.type)
+    //:: error: (initialization.invalid.constructor.return.type)
     public @UnderInitializion Commitment(int i) {
         a = "";
         t = "";
         b = "";
     }
 
-    //:: error: (commitment.invalid.constructor.return.type)
+    //:: error: (initialization.invalid.constructor.return.type)
     public @Initialized Commitment(int i, int j) {
         a = "";
         t = "";
         b = "";
     }
     
-    //:: error: (commitment.invalid.constructor.return.type)
+    //:: error: (initialization.invalid.constructor.return.type)
     public @Initialized @NonNull Commitment(boolean i) {
         a = "";
         t = "";
         b = "";
     }
     
-    //:: error: (commitment.invalid.constructor.return.type)
+    //:: error: (initialization.invalid.constructor.return.type)
     public @Nullable Commitment(char i) {
         a = "";
         t = "";
         b = "";
     }
     
-    //:: error: (commitment.fields.uninitialized)
+    //:: error: (initialization.fields.uninitialized)
     public Commitment() {
         //:: error: (dereference.of.nullable)
         t.toLowerCase();
@@ -54,7 +54,7 @@ public class Commitment {
         @Initialized @NonNull Commitment c2 = this;
     }
 
-    //:: error: (commitment.fields.uninitialized)
+    //:: error: (initialization.fields.uninitialized)
     public Commitment(@UnknownInitialization Commitment arg) {
         t = "";
         
@@ -67,7 +67,7 @@ public class Commitment {
         @UnderInitializion Commitment t2 = new Commitment(this);
     }
     
-    //:: error: (commitment.fields.uninitialized)
+    //:: error: (initialization.fields.uninitialized)
     public Commitment(Commitment arg, int i) {
 
     }

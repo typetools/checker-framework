@@ -8,7 +8,7 @@ public class FlowInitialization {
     @NonNull String f;
     @Nullable String g;
     
-    //:: error: (commitment.fields.uninitialized)
+    //:: error: (initialization.fields.uninitialized)
     public FlowInitialization() {
         
     }
@@ -18,21 +18,21 @@ public class FlowInitialization {
         f = g;
     }
     
-    //:: error: (commitment.fields.uninitialized)
+    //:: error: (initialization.fields.uninitialized)
     public FlowInitialization(boolean b) {
         if (b) {
             f = "";
         }
     }
     
-    //:: error: (commitment.fields.uninitialized)
+    //:: error: (initialization.fields.uninitialized)
     public FlowInitialization(int i) {
         if (i == 0) {
             throw new RuntimeException();
         }
     }
     
-    //:: error: (commitment.fields.uninitialized)
+    //:: error: (initialization.fields.uninitialized)
     public FlowInitialization(char c) {
         if (c == 'c') {
             return;

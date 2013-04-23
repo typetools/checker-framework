@@ -13,7 +13,7 @@ public class Simple {
         return 1;
     }
 
-    //:: error: (commitment.fields.uninitialized)
+    //:: error: (initialization.fields.uninitialized)
     public Simple(String arg) {
     }
 

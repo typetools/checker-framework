@@ -2,7 +2,7 @@ import checkers.initialization.quals.UnknownInitialization;
 import checkers.nullness.quals.*;
 class Raw2 {
   private @NonNull Object field;
-  //:: error: (commitment.fields.uninitialized)
+  //:: error: (initialization.fields.uninitialized)
   public Raw2(int i) {
     this.method(this);
   }
