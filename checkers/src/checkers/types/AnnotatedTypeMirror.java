@@ -717,6 +717,15 @@ public abstract class AnnotatedTypeMirror {
         }
     }
 
+    /**
+     * Returns the string representation of a single AnnotationMirror, without showing full package names.
+     */
+    public final static String formatAnnotationMirror(AnnotationMirror am) {
+        StringBuilder sb = new StringBuilder();
+        formatAnnotationMirror(am, sb);
+        return sb.toString();
+    }
+
     // A helper method to output a single AnnotationValue, without showing full package names.
     @SuppressWarnings("unchecked")
     protected final static void formatAnnotationMirrorArg(AnnotationValue av, StringBuilder sb) {

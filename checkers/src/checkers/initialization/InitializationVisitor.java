@@ -236,7 +236,9 @@ public class InitializationVisitor<Checker extends InitializationChecker, Value 
         }
 
         if (!isSubtype) {
-            checker.report(Result.failure(COMMITMENT_INVALID_CAST, node), node);
+            checker.report(Result.failure(COMMITMENT_INVALID_CAST,
+                    AnnotatedTypeMirror.formatAnnotationMirror(exprAnno),
+                    AnnotatedTypeMirror.formatAnnotationMirror(castAnno)), node);
             return p; // suppress cast.unsafe warning
         }
 
