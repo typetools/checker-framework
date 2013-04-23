@@ -6,7 +6,7 @@ import checkers.nullness.quals.*;
 import checkers.regex.quals.*;
 import checkers.initialization.quals.*;
 
-//:: error: (commitment.fields.uninitialized)
+//:: error: (initialization.fields.uninitialized)
 public abstract class WeakHasherMap<K, V> extends AbstractMap<K, V> implements
         Map<K, V> {
     private Map<Object, V> hash;

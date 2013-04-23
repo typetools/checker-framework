@@ -6,7 +6,7 @@ public class Suppression {
     
     @NonNull Suppression t;
     
-    @SuppressWarnings("commitment.fields.uninitialized")
+    @SuppressWarnings("initialization.fields.uninitialized")
     public Suppression(Suppression arg) {
     
     }

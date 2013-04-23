@@ -7,7 +7,7 @@ import checkers.quals.*;
 // field f1, which is non-null, but is never initialized.
 // Fields f2 and f3 are OK.
 
-//:: error: (commitment.fields.uninitialized)
+//:: error: (initialization.fields.uninitialized)
 public class Uninit12 {
 
     static Object f1;

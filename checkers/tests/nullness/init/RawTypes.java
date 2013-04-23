@@ -104,7 +104,7 @@ class RawTypes {
         }
     }
 
-    //:: error: (commitment.fields.uninitialized)
+    //:: error: (initialization.fields.uninitialized)
     class C extends B {
 
         @NonNull String[] strings;
@@ -153,7 +153,7 @@ class RawTypes {
         }
     }
 
-    //:: error: (commitment.fields.uninitialized)
+    //:: error: (initialization.fields.uninitialized)
     class AFSIICell {
         AllFieldsSetInInitializer afsii;
     }
@@ -169,11 +169,11 @@ class RawTypes {
             startTime = 0;
             //:: error: (method.invocation.invalid)
             nonRawMethod();     // error
-            //:: error: (commitment.invalid.field.write.committed)
+            //:: error: (initialization.invalid.field.write.initialized)
             new AFSIICell().afsii = this;
         }
 
-        //:: error: (commitment.fields.uninitialized)
+        //:: error: (initialization.fields.uninitialized)
         public AllFieldsSetInInitializer(boolean b) {
             //:: error: (method.invocation.invalid)
             nonRawMethod();     // error
@@ -219,7 +219,7 @@ class RawTypes {
 
     class RawAfterConstructorBad {
         Object o;
-        //:: error: (commitment.fields.uninitialized)
+        //:: error: (initialization.fields.uninitialized)
         RawAfterConstructorBad() {
         }
     }
@@ -232,7 +232,7 @@ class RawTypes {
 
     class RawAfterConstructorOK2 {
         Integer a;
-        //:: error: (commitment.fields.uninitialized)
+        //:: error: (initialization.fields.uninitialized)
         RawAfterConstructorOK2() {
         }
     }

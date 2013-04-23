@@ -38,7 +38,7 @@ class RawAssertNonNull {
         private Object f;
         private Object g;
 
-        //:: error: (commitment.fields.uninitialized)
+        //:: error: (initialization.fields.uninitialized)
         Test1c() {
             m();
         }

@@ -3,7 +3,7 @@ import checkers.nullness.quals.*;
 class AnnotatedGenerics2 {
 // Top-level class to ensure that both classes are processed.
 
-//:: error: (commitment.fields.uninitialized)
+//:: error: (initialization.fields.uninitialized)
 class AnnotatedGenerics2Nble<T extends @Nullable Object> {
     @NonNull T myFieldNN;
     @Nullable T myFieldNble;
@@ -70,7 +70,7 @@ class AnnotatedGenerics2Nble<T extends @Nullable Object> {
   }
 }
 
-//:: error: (commitment.fields.uninitialized)
+//:: error: (initialization.fields.uninitialized)
 class AnnotatedGenerics2NN<T extends @NonNull Object> {
     @NonNull T myFieldNN;
     @Nullable T myFieldNble;

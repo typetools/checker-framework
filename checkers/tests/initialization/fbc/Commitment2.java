@@ -13,7 +13,7 @@ public class Commitment2 {
     
     @NotOnlyInitialized Commitment2 f;
     public void test(@UnderInitializion Commitment2 c) {
-        //:: error: (commitment.invalid.field.write.committed)
+        //:: error: (initialization.invalid.field.write.initialized)
         f = c;
     }
     
@@ -21,12 +21,12 @@ public class Commitment2 {
         return new Commitment2();
     }
     
-    //:: error: (commitment.fields.uninitialized)
+    //:: error: (initialization.fields.uninitialized)
     public Commitment2() {
         
     }
     
-    //:: error: (commitment.fields.uninitialized)
+    //:: error: (initialization.fields.uninitialized)
     public Commitment2(@UnderInitializion Commitment2 likeAnEagle) {
         //:: error: (assignment.type.incompatible)
         h = likeAnEagle;
