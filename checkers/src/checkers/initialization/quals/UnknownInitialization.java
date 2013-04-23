@@ -25,16 +25,16 @@ import checkers.quals.TypeQualifier;
  * {@link NullnessChecker} considers {@link NonNull}.
  *
  * <p>
- * Therefore, reading a field of an object of type {@link UnkownInitialization}
+ * Therefore, reading a field of an object of type {@link UnknownInitialization}
  * might yield a value that does not correspond to the declared type qualifier
  * for that field. For instance, in the {@link NullnessChecker}, a field
  * might be {@code null} even if it has been annotated as {@link NonNull}.
  *
  * <p>
- * More precisely, an expression of type {@code @UnkownInitialization(T.class)}
+ * More precisely, an expression of type {@code @UnknownInitialization(T.class)}
  * refers to an object that has all fields of {@code T} (and any super-classes)
  * initialized (e.g., to a non-null value in the {@link NullnessChecker}).
- * Just {@code @Raw} is equivalent to {@code @UnkownInitialization
+ * Just {@code @Raw} is equivalent to {@code @UnknownInitialization
  * Object.class} .
  */
 @Documented
@@ -42,11 +42,11 @@ import checkers.quals.TypeQualifier;
 @TypeQualifier
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
-public @interface UnkownInitialization {
+public @interface UnknownInitialization {
     /**
      * The type-frame down to which the expression (of this type) has been
      * initialized at least (inclusive). That is, an expression of type
-     * {@code @UnkownInitialization(T.class)} has all type-frames initialized
+     * {@code @UnknownInitialization(T.class)} has all type-frames initialized
      * starting at {@code Object} down to (and including) {@code T}.
      */
     Class<?> value() default Object.class;

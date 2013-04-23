@@ -28,7 +28,7 @@ class MethodInvocation {
         s.hashCode();
     }
     
-    public void c(@UnkownInitialization @Raw MethodInvocation this) {
+    public void c(@UnknownInitialization @Raw MethodInvocation this) {
         //:: error: (dereference.of.nullable)
         s.hashCode();
     }

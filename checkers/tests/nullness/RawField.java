@@ -5,7 +5,7 @@ import checkers.initialization.quals.*;
 
 class RawField {
     
-    public @Raw @UnkownInitialization RawField a;
+    public @Raw @UnknownInitialization RawField a;
     
     public RawField() {
         //:: error: (assignment.type.incompatible)
@@ -23,7 +23,7 @@ class RawField {
         a.t1();
     }
     
-    void t2(@Raw @UnkownInitialization RawField a) {
+    void t2(@Raw @UnknownInitialization RawField a) {
         this.a = a;
     }
 }

@@ -45,7 +45,7 @@ public class FlowInitialization {
     }
     
     @EnsuresQualifier(expression="f", qualifier=NonNull.class)
-    public void setField(@UnkownInitialization @Raw FlowInitialization this) {
+    public void setField(@UnknownInitialization @Raw FlowInitialization this) {
         f = "";
     }
 }

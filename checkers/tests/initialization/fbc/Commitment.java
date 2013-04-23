@@ -9,7 +9,7 @@ public class Commitment {
     @NonNull @UnderInitializion String a;
     //:: error: (commitment.invalid.field.annotation)
     @Initialized String b;
-    @UnkownInitialization @Nullable String c;
+    @UnknownInitialization @Nullable String c;
     
     //:: error: (commitment.invalid.constructor.return.type)
     public @UnderInitializion Commitment(int i) {
@@ -48,14 +48,14 @@ public class Commitment {
         
         @UnderInitializion @NonNull Commitment c = this;
 
-        @UnkownInitialization @NonNull Commitment c1 = this;
+        @UnknownInitialization @NonNull Commitment c1 = this;
 
         //:: error: (assignment.type.incompatible)
         @Initialized @NonNull Commitment c2 = this;
     }
 
     //:: error: (commitment.fields.uninitialized)
-    public Commitment(@UnkownInitialization Commitment arg) {
+    public Commitment(@UnknownInitialization Commitment arg) {
         t = "";
         
         //:: error: (argument.type.incompatible)

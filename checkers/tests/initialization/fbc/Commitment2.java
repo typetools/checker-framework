@@ -17,7 +17,7 @@ public class Commitment2 {
         f = c;
     }
     
-    public static @UnkownInitialization Commitment2 create() {
+    public static @UnknownInitialization Commitment2 create() {
         return new Commitment2();
     }
     

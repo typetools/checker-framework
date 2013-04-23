@@ -4,8 +4,8 @@ import checkers.initialization.quals.*;
 public class Defaults {
 
     // local variable defaults
-    void test(@UnkownInitialization Defaults para, @Initialized Defaults comm) {
-        // @Nullable @UnkownInitialization by default
+    void test(@UnknownInitialization Defaults para, @Initialized Defaults comm) {
+        // @Nullable @UnknownInitialization by default
         String s = "abc";
         
         s = null;
