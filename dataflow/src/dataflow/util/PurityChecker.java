@@ -412,7 +412,7 @@ public class PurityChecker {
             if (sideEffectFree) {
                 p.addNotDetReason(node, "object.creation");
             } else {
-                p.addNotBothReason(node, "non.pure.object.creation");
+                p.addNotBothReason(node, "object.creation");
             }
             PurityResult r = scan(node.getEnclosingExpression(), p);
             r = scan(node.getArguments(), r);
