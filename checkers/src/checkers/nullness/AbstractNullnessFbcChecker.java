@@ -6,7 +6,7 @@ import java.util.HashSet;
 import checkers.initialization.quals.Initialized;
 import checkers.initialization.quals.FBCBottom;
 import checkers.initialization.quals.UnderInitializion;
-import checkers.initialization.quals.UnkownInitialization;
+import checkers.initialization.quals.UnknownInitialization;
 import checkers.nullness.quals.MonotonicNonNull;
 import checkers.nullness.quals.NonNull;
 import checkers.nullness.quals.Nullable;
@@ -20,7 +20,7 @@ import checkers.source.SupportedLintOptions;
  * freedom-before-commitment.
  */
 @TypeQualifiers({ Nullable.class, MonotonicNonNull.class, NonNull.class,
-        UnderInitializion.class, Initialized.class, UnkownInitialization.class,
+        UnderInitializion.class, Initialized.class, UnknownInitialization.class,
         FBCBottom.class, PolyNull.class, PolyAll.class })
 @SupportedLintOptions({
         AbstractNullnessChecker.LINT_STRICTMONOTONICNONNULLINIT,

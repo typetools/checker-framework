@@ -26,7 +26,7 @@ import checkers.flow.CFAbstractAnalysis;
 import checkers.flow.CFAbstractValue;
 import checkers.initialization.quals.UnderInitializion;
 import checkers.initialization.quals.NotOnlyInitialized;
-import checkers.initialization.quals.UnkownInitialization;
+import checkers.initialization.quals.UnknownInitialization;
 import checkers.nullness.NullnessChecker;
 import checkers.quals.Unused;
 import checkers.types.AbstractBasicAnnotatedTypeFactory;
@@ -187,7 +187,7 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
 
     /**
      * Returns a {@link UnderInitializion} annotation (or
-     * {@link UnkownInitialization} if rawness is used) that has the supertype
+     * {@link UnknownInitialization} if rawness is used) that has the supertype
      * of {@code type} as type frame.
      */
     protected AnnotationMirror getFreeOrRawAnnotationOfSuperType(TypeMirror type) {

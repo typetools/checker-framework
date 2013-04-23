@@ -6,7 +6,7 @@ import checkers.nullness.quals.EnsuresNonNull;
 public class PostconditionBug {
     
 
-    void a(@UnkownInitialization @Raw PostconditionBug this) {
+    void a(@UnknownInitialization @Raw PostconditionBug this) {
          @NonNull String f = "abc";
          //:: error: (assignment.type.incompatible)
          f = null;

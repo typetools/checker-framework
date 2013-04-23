@@ -27,12 +27,12 @@ import checkers.quals.TypeQualifier;
  * potentially not fully initialized object in fields.
  *
  * <p>
- * Similar to {@link UnkownInitialization}, this type qualifier supports type
+ * Similar to {@link UnknownInitialization}, this type qualifier supports type
  * frames.
  *
  * <p>
  * At the beginning of a constructor, the fields of the object are not yet
- * initialized and thus {@link UnkownInitialization(<em>supertype</em>)} is used
+ * initialized and thus {@link UnknownInitialization(<em>supertype</em>)} is used
  * as the type of the self-reference {@code this}. Consider a class {@code B}
  * that is a subtype of {@code A}. At the beginning of the constructor of
  * {@code B}, {@code this} has the type {@code @UnderInitializion(A.class)},
@@ -76,7 +76,7 @@ import checkers.quals.TypeQualifier;
  */
 @Documented
 @TypeQualifier
-@SubtypeOf(UnkownInitialization.class)
+@SubtypeOf(UnknownInitialization.class)
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
 public @interface UnderInitializion {

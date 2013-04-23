@@ -6,7 +6,7 @@ class OverrideANNA2 {
     Object f;
 
     @EnsuresNonNull("f")
-    void setf(@Raw @UnkownInitialization Super this) {
+    void setf(@Raw @UnknownInitialization Super this) {
       f = new Object();
     }
 
@@ -21,7 +21,7 @@ class OverrideANNA2 {
     @Override
     @EnsuresNonNull("f")
     //:: error: (contracts.postcondition.override.invalid)
-    void setf(@Raw @UnkownInitialization Sub this) {
+    void setf(@Raw @UnknownInitialization Sub this) {
       f = new Object();
     }
 

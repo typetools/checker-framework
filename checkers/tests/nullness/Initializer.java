@@ -49,18 +49,18 @@ class Initializer {
     }
     
     @EnsuresQualifier(expression="a", qualifier=NonNull.class)
-    public void setField(@UnkownInitialization @Raw Initializer this) {
+    public void setField(@UnknownInitialization @Raw Initializer this) {
         a = "";
     }
     
     @EnsuresQualifierIf(result=true, expression="a", qualifier=NonNull.class)
-    public boolean setFieldMaybe(@UnkownInitialization @Raw Initializer this) {
+    public boolean setFieldMaybe(@UnknownInitialization @Raw Initializer this) {
         a = "";
         return true;
     }
     
     String f = "";
-    void t1(@UnkownInitialization @Raw Initializer this) {
+    void t1(@UnknownInitialization @Raw Initializer this) {
         // this is potentially uninitialized, but the static type of f, as well as
         // the initializer guarantee that it is initialized.
         this.f.toString();

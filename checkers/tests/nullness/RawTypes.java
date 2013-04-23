@@ -1,6 +1,6 @@
 // Note that this file is a near duplicate in /nullness and /nullness-uninit
 
-import checkers.initialization.quals.UnkownInitialization;
+import checkers.initialization.quals.UnknownInitialization;
 import checkers.nullness.quals.*;
 import java.util.*;
 @checkers.quals.DefaultQualifier(Nullable.class)
@@ -38,22 +38,22 @@ class RawTypes {
             init();                                             // valid
         }
 
-        public void init(@Raw @UnkownInitialization A this) {
+        public void init(@Raw @UnknownInitialization A this) {
             //:: error: (dereference.of.nullable)
             output(this.field.length());
         }
 
-        public void initExpl2(@Raw @UnkownInitialization A this) {
+        public void initExpl2(@Raw @UnknownInitialization A this) {
             //:: error: (argument.type.incompatible)
             output(this.field);
         }
 
-        public void initImpl1(@Raw @UnkownInitialization A this) {
+        public void initImpl1(@Raw @UnknownInitialization A this) {
             //:: error: (dereference.of.nullable)
             output(field.length());
         }
 
-        public void initImpl2(@Raw @UnkownInitialization A this) {
+        public void initImpl2(@Raw @UnknownInitialization A this) {
             //:: error: (argument.type.incompatible)
             output(field);
         }
@@ -70,23 +70,23 @@ class RawTypes {
         }
 
         @Override
-        public void init(@Raw @UnkownInitialization B this) {
+        public void init(@Raw @UnknownInitialization B this) {
             //:: error: (dereference.of.nullable)
             output(this.field.length());            // error (TODO: substitution)
             super.init();                                       // valid
         }
 
-        public void initImpl1(@Raw @UnkownInitialization B this) {
+        public void initImpl1(@Raw @UnknownInitialization B this) {
             //:: error: (dereference.of.nullable)
             output(field.length());                 // error (TODO: substitution)
         }
 
-        public void initExpl2(@Raw @UnkownInitialization B this) {
+        public void initExpl2(@Raw @UnknownInitialization B this) {
             //:: error: (dereference.of.nullable)
             output(this.otherField.length());       // error
         }
 
-        public void initImpl2(@Raw @UnkownInitialization B this) {
+        public void initImpl2(@Raw @UnknownInitialization B this) {
             //:: error: (dereference.of.nullable)
             output(otherField.length());            // error
         }
@@ -96,7 +96,7 @@ class RawTypes {
             this.init();                                        // valid
         }
 
-        void otherRaw(@Raw @UnkownInitialization B this) {
+        void otherRaw(@Raw @UnknownInitialization B this) {
             init();                                             // valid
             this.init();                                        // valid
         }
@@ -107,7 +107,7 @@ class RawTypes {
         @NonNull String[] strings;
 
         @Override
-        public void init(@Raw @UnkownInitialization C this) {
+        public void init(@Raw @UnknownInitialization C this) {
             //:: error: (dereference.of.nullable)
             output(this.strings.length);            // error
             System.out.println();                   // valid
@@ -120,7 +120,7 @@ class RawTypes {
 
     class D extends C {
         @Override
-        public void init(@Raw @UnkownInitialization D this) {
+        public void init(@Raw @UnknownInitialization D this) {
             this.field = "s";
             output(this.field.length());
         }
@@ -131,7 +131,7 @@ class RawTypes {
         MyTest(int i) {
             this.i = i;
         }
-        void myTest(@Raw @UnkownInitialization MyTest this) {
+        void myTest(@Raw @UnknownInitialization MyTest this) {
             i++;
         }
     }
@@ -195,12 +195,12 @@ class RawTypes {
             @NonNull String s = string();
         }
 
-        public @NonNull String string(@Raw @UnkownInitialization MethodAccess this) {
+        public @NonNull String string(@Raw @UnknownInitialization MethodAccess this) {
             return "nonnull";
         }
     }
 
-    void cast(@Raw @UnkownInitialization Object... args) {
+    void cast(@Raw @UnknownInitialization Object... args) {
 
         @SuppressWarnings("rawtypes")
         //:: error: (assignment.type.incompatible)

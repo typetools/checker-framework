@@ -25,13 +25,13 @@ public class Simple {
         System.out.println(s);
     }
 
-    void test2(@UnkownInitialization @NonNull Simple t) {
+    void test2(@UnknownInitialization @NonNull Simple t) {
         //:: error: (assignment.type.incompatible)
         @NonNull Simple a = t.f;
     }
 
     // check committed-only semantics for fields
-    void test3(@UnkownInitialization @NonNull Simple t) {
+    void test3(@UnknownInitialization @NonNull Simple t) {
         @Initialized @Nullable Simple a = t.f;
 
         //:: error: (assignment.type.incompatible)

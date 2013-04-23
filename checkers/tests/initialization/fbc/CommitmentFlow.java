@@ -9,7 +9,7 @@ public class CommitmentFlow {
         t = arg;
     }
     
-    void foo(@UnkownInitialization CommitmentFlow mystery, @Initialized CommitmentFlow triedAndTrue) {
+    void foo(@UnknownInitialization CommitmentFlow mystery, @Initialized CommitmentFlow triedAndTrue) {
         CommitmentFlow local = null;
         
         local = mystery;
