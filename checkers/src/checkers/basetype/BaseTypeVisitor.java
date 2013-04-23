@@ -315,16 +315,11 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
                     // check "no" purity
                     List<dataflow.quals.Pure.Kind> kinds = PurityUtils
                             .getPurityKinds(atypeFactory, node);
-                    if (kinds.isEmpty() && hasPurityAnnotation) {
-                        checker.report(Result
-                                .warning("pure.annotation.with.emtpy.kind"),
-                                node);
-                    }
                     if (!TreeUtils.isConstructor(node)) {
                         // check return type
                         if (node.getReturnType().toString().equals("void")
                                 && hasPurityAnnotation) {
-                            checker.report(Result.warning("pure.void.method"),
+                            checker.report(Result.warning("purity.void.method"),
                                     node);
                         }
                     }
@@ -345,10 +340,19 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
                             additionalKinds.remove(Pure.Kind.DETERMINISTIC);
                         }
                         if (additionalKinds.size() > 0) {
-                            checker.report(
-                                    Result.warning("pure.more.pure",
-                                            node.getName(),
-                                            additionalKinds.toString()), node);
+                            if (additionalKinds.size() == 2) {
+                                checker.report(
+                                        Result.warning("purity.more.pure",
+                                                node.getName()), node);
+                            } else if (additionalKinds.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
+                                checker.report(
+                                        Result.warning("purity.more.sideeffectfree",
+                                                node.getName()), node);
+                            } else {
+                                checker.report(
+                                        Result.warning("purity.more.deterministic",
+                                                node.getName()), node);
+                            }
                         }
                     }
                 }
@@ -401,17 +405,23 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
         t.removeAll(result.getTypes());
         if (t.contains(Pure.Kind.DETERMINISTIC)
                 || t.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
-            for (Pair<Tree, /*@CompilerMessageKey*/ String> r: result.getNotBothReasons()) {
-                checker.report(Result.failure(r.second), r.first);
+            String msgPrefix = "purity.not.deterministic.not.sideeffectfree.";
+            if (!t.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
+                msgPrefix = "purity.not.deterministic.";
+            } else if (!t.contains(Pure.Kind.DETERMINISTIC)) {
+                msgPrefix = "purity.not.sideeffectfree.";
+            }
+            for (Pair<Tree, String> r: result.getNotBothReasons()) {
+                checker.report(Result.failure(msgPrefix + r.second), r.first);
             }
             if (t.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
-                for (Pair<Tree, /*@CompilerMessageKey*/ String> r: result.getNotSeFreeReasons()) {
-                    checker.report(Result.failure(r.second), r.first);
+                for (Pair<Tree, String> r: result.getNotSeFreeReasons()) {
+                    checker.report(Result.failure("purity.not.sideeffectfree." + r.second), r.first);
                 }
             }
             if (t.contains(Pure.Kind.DETERMINISTIC)) {
-                for (Pair<Tree, /*@CompilerMessageKey*/ String> r: result.getNotDetReasons()) {
-                    checker.report(Result.failure(r.second), r.first);
+                for (Pair<Tree, String> r: result.getNotDetReasons()) {
+                    checker.report(Result.failure("purity.not.deterministic." + r.second), r.first);
                 }
             }
         }
