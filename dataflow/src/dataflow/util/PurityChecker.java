@@ -104,9 +104,9 @@ public class PurityChecker {
      */
     public static class PurityResult {
 
-        protected final List<Pair<Tree, /*@CompilerMessageKey*/ String>> notSeFreeReasons;
-        protected final List<Pair<Tree, /*@CompilerMessageKey*/ String>> notDetReasons;
-        protected final List<Pair<Tree, /*@CompilerMessageKey*/ String>> notBothReasons;
+        protected final List<Pair<Tree, String>> notSeFreeReasons;
+        protected final List<Pair<Tree, String>> notDetReasons;
+        protected final List<Pair<Tree, String>> notBothReasons;
         protected EnumSet<Pure.Kind> types;
 
         public PurityResult() {
@@ -128,7 +128,7 @@ public class PurityChecker {
         /**
          * Get the {@code reason}s why the method is not side-effect free.
          */
-        public List<Pair<Tree, /*@CompilerMessageKey*/ String>> getNotSeFreeReasons() {
+        public List<Pair<Tree, String>> getNotSeFreeReasons() {
             return notSeFreeReasons;
         }
 
@@ -137,14 +137,14 @@ public class PurityChecker {
          * free.
          */
         public void addNotSeFreeReason(Tree t, String msgId) {
-            notSeFreeReasons.add(Pair.of(t, "pure.not.sef." + msgId));
+            notSeFreeReasons.add(Pair.of(t, msgId));
             types.remove(Kind.SIDE_EFFECT_FREE);
         }
 
         /**
          * Get the {@code reason}s why the method is not deterministic.
          */
-        public List<Pair<Tree, /*@CompilerMessageKey*/ String>> getNotDetReasons() {
+        public List<Pair<Tree, String>> getNotDetReasons() {
             return notDetReasons;
         }
 
@@ -152,7 +152,7 @@ public class PurityChecker {
          * Add {@code reason} as a reason why the method is not deterministic.
          */
         public void addNotDetReason(Tree t, String msgId) {
-            notDetReasons.add(Pair.of(t, "pure.not.det." + msgId));
+            notDetReasons.add(Pair.of(t, msgId));
             types.remove(Kind.DETERMINISTIC);
         }
 
@@ -160,7 +160,7 @@ public class PurityChecker {
          * Get the {@code reason}s why the method is not both side-effect free
          * and deterministic.
          */
-        public List<Pair<Tree, /*@CompilerMessageKey*/ String>> getNotBothReasons() {
+        public List<Pair<Tree, String>> getNotBothReasons() {
             return notBothReasons;
         }
 
@@ -169,7 +169,7 @@ public class PurityChecker {
          * free and deterministic.
          */
         public void addNotBothReason(Tree t, String msgId) {
-            notBothReasons.add(Pair.of(t, "pure.not.det.not.sef." + msgId));
+            notBothReasons.add(Pair.of(t, msgId));
             types.remove(Kind.DETERMINISTIC);
             types.remove(Kind.SIDE_EFFECT_FREE);
         }
