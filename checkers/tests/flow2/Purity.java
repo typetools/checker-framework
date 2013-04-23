@@ -33,7 +33,7 @@ class Purity {
         return "";
     }
     
-    //:: warning: (pure.void.method)
+    //:: warning: (purity.void.method)
     @Pure void t1() {
     }
     
@@ -42,7 +42,7 @@ class Purity {
     }
     
     @Pure String t3() {
-      //:: error: (pure.not.det.not.sef.call)
+      //:: error: (purity.not.deterministic.not.sideeffectfree.call)
       nonpure();
       return "";
     }
@@ -81,27 +81,27 @@ class Purity {
     }
     
     @Pure String t10() {
-        //:: error: (pure.not.det.not.sef.assign.field)
+        //:: error: (purity.not.deterministic.not.sideeffectfree.assign.field)
         f1 = "";
-        //:: error: (pure.not.det.not.sef.assign.field)
+        //:: error: (purity.not.deterministic.not.sideeffectfree.assign.field)
         f2 = "";
         return "";
     }
     
     @Pure String t11(Purity l) {
-        //:: error: (pure.not.det.not.sef.assign.array)
+        //:: error: (purity.not.deterministic.not.sideeffectfree.assign.array)
         l.a[0] = "";
         return "";
     }
     
     @Pure String t12(String[] s) {
-        //:: error: (pure.not.det.not.sef.assign.array)
+        //:: error: (purity.not.deterministic.not.sideeffectfree.assign.array)
         s[0] = "";
         return "";
     }
     
     @Pure String t13() {
-        //:: error: (pure.not.det.object.creation)
+        //:: error: (purity.not.deterministic.object.creation)
         PureClass p = new PureClass();
         return "";
     }
@@ -112,7 +112,7 @@ class Purity {
     }
     
     @Deterministic String t13c() {
-        //:: error: (pure.not.det.object.creation)
+        //:: error: (purity.not.deterministic.object.creation)
         PureClass p = new PureClass();
         return "";
     }
@@ -131,7 +131,7 @@ class Purity {
     @Pure String t16() {
         try {
             int i = 1/0;
-            //:: error: (pure.not.det.catch)
+            //:: error: (purity.not.deterministic.catch)
         } catch (Throwable t) {
             // ..
         }
@@ -150,7 +150,7 @@ class Purity {
     @Deterministic String t16c() {
         try {
             int i = 1/0;
-            //:: error: (pure.not.det.catch)
+            //:: error: (purity.not.deterministic.catch)
         } catch (Throwable t) {
             // ..
         }
@@ -158,7 +158,7 @@ class Purity {
     }
     
     @Pure String t12() {
-        //:: error: (pure.not.det.not.sef.non.pure.object.creation)
+        //:: error: (purity.not.deterministic.not.sideeffectfree.non.pure.object.creation)
         NonPureClass p = new NonPureClass();
         return "";
     }
