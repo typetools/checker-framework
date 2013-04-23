@@ -7,6 +7,6 @@ class ValidType {
         //:: error: (type.invalid)
         @NonNull @Nullable String l1;
         //:: error: (type.invalid)
-        @NonRaw @Raw @UnderInitializion @UnkownInitialization String f;
+        @NonRaw @Raw @UnderInitializion @UnknownInitialization String f;
     }
 }

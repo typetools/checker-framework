@@ -3,7 +3,7 @@ package java.lang;
 import checkers.nullness.quals.*;
 import checkers.initialization.quals.*;
 
-import checkers.initialization.quals.UnkownInitialization;
+import checkers.initialization.quals.UnknownInitialization;
 
 
 public class Thread implements Runnable {
@@ -49,7 +49,7 @@ public class Thread implements Runnable {
   public final synchronized void join(long a1, int a2) throws InterruptedException { throw new RuntimeException("skeleton method"); }
   public final void join() throws InterruptedException { throw new RuntimeException("skeleton method"); }
   public static void dumpStack() { throw new RuntimeException("skeleton method"); }
-  public final void setDaemon(@UnkownInitialization @Raw Thread this, boolean a1) { throw new RuntimeException("skeleton method"); }
+  public final void setDaemon(@UnknownInitialization @Raw Thread this, boolean a1) { throw new RuntimeException("skeleton method"); }
   public final boolean isDaemon() { throw new RuntimeException("skeleton method"); }
   public final void checkAccess() { throw new RuntimeException("skeleton method"); }
   public String toString() { throw new RuntimeException("skeleton method"); }

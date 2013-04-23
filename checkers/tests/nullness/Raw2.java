@@ -1,4 +1,4 @@
-import checkers.initialization.quals.UnkownInitialization;
+import checkers.initialization.quals.UnknownInitialization;
 import checkers.nullness.quals.*;
 class Raw2 {
   private @NonNull Object field;
@@ -11,7 +11,7 @@ class Raw2 {
     catch (NullPointerException e) { e.printStackTrace(); }
     field = 0L;
   }
-  private void method(@Raw @UnkownInitialization Raw2 this, @Raw @UnkownInitialization Raw2 arg) {
+  private void method(@Raw @UnknownInitialization Raw2 this, @Raw @UnknownInitialization Raw2 arg) {
     //:: error: (dereference.of.nullable)
     arg.field.hashCode();
     //:: error: (dereference.of.nullable)

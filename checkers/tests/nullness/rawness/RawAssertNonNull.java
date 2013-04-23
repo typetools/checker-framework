@@ -1,4 +1,4 @@
-import checkers.initialization.quals.UnkownInitialization;
+import checkers.initialization.quals.UnknownInitialization;
 import checkers.nullness.quals.EnsuresNonNull;
 import checkers.nullness.quals.*;
 import java.util.*;
@@ -13,7 +13,7 @@ class RawAssertNonNull {
         }
 
         @EnsuresNonNull({"f", "g"})
-        private void m(@Raw @UnkownInitialization Test1 this) {
+        private void m(@Raw @UnknownInitialization Test1 this) {
             this.f = new Object();
             this.g = new Object();
         }
@@ -29,7 +29,7 @@ class RawAssertNonNull {
 
         @EnsuresNonNull({"f", "g"})
         //:: error: (contracts.postcondition.not.satisfied)
-        private void m(@Raw @UnkownInitialization Test1b this) {
+        private void m(@Raw @UnknownInitialization Test1b this) {
             this.f = new Object();
         }
     }
@@ -44,7 +44,7 @@ class RawAssertNonNull {
         }
 
         @EnsuresNonNull({"f"})
-        private void m(@Raw @UnkownInitialization Test1c this) {
+        private void m(@Raw @UnknownInitialization Test1c this) {
             this.f = new Object();
             this.g = new Object();
         }
@@ -63,7 +63,7 @@ class RawAssertNonNull {
         }
 
         @EnsuresNonNull({"f"})
-        private void m(@Raw @UnkownInitialization Test1d this) {
+        private void m(@Raw @UnknownInitialization Test1d this) {
             this.f = new Object();
             this.g = new Object();
         }
@@ -78,7 +78,7 @@ class RawAssertNonNull {
         }
 
         @EnsuresNonNull({"f", "g"})
-        private void m(@Raw @UnkownInitialization Test2 this, Global g) {
+        private void m(@Raw @UnknownInitialization Test2 this, Global g) {
             this.f = new ArrayList<String>();
             this.g = new ArrayList<String>();
             g.nonpure();
@@ -99,7 +99,7 @@ class RawAssertNonNull {
         }
 
         @EnsuresNonNull({"f", "g"})
-        private void m(@Raw @UnkownInitialization Test2b this) {
+        private void m(@Raw @UnknownInitialization Test2b this) {
             this.f = new ArrayList<String>();
             this.g = new ArrayList<String>();
         }
@@ -117,12 +117,12 @@ class RawAssertNonNull {
         }
 
         @EnsuresNonNull({"f", "g"})
-        private void m(@Raw @UnkownInitialization Test2c this) {
+        private void m(@Raw @UnknownInitialization Test2c this) {
             this.f = new ArrayList<String>();
             this.g = new ArrayList<String>();
         }
 
-        private void nonpure(@Raw @UnkownInitialization Test2c this) {
+        private void nonpure(@Raw @UnknownInitialization Test2c this) {
             //:: error: (assignment.type.incompatible)
             this.f = null;
         }
