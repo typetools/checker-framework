@@ -16,7 +16,7 @@ public class Uninit12 {
 
   static Object h;
 
-  //:: error: (commitment.fields.uninitialized)
+  //:: error: (initialization.fields.uninitialized)
   static {
     h = new Object();
   }

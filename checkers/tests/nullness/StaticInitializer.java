@@ -9,7 +9,7 @@ class Initializer {
     public static String a;
     public static String b;
     
-    //:: error: (commitment.fields.uninitialized)
+    //:: error: (initialization.fields.uninitialized)
     static {
         a = "";
     }
@@ -18,7 +18,7 @@ class Initializer {
     }
 }
 
-//:: error: (commitment.fields.uninitialized)
+//:: error: (initialization.fields.uninitialized)
 class Initializer2 {
     public static String a;
     public static String b;

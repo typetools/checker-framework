@@ -14,12 +14,12 @@ class MultiConstructorInit {
         this(true);
     }
     
-    //:: error: (commitment.fields.uninitialized)
+    //:: error: (initialization.fields.uninitialized)
     public MultiConstructorInit(int t) {
         new MultiConstructorInit();
     }
     
-    //:: error: (commitment.fields.uninitialized)
+    //:: error: (initialization.fields.uninitialized)
     public MultiConstructorInit(float t) {
     }
     

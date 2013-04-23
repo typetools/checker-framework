@@ -14,7 +14,7 @@ class RawField {
         a = this;
     }
     
-    //:: error: (commitment.fields.uninitialized)
+    //:: error: (initialization.fields.uninitialized)
     public RawField(boolean foo) {
     }
     

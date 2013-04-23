@@ -19,7 +19,7 @@ class Initializer {
         c = "";
     }
     
-    //:: error: (commitment.fields.uninitialized)
+    //:: error: (initialization.fields.uninitialized)
     public Initializer(boolean foo) {
     }
     
@@ -40,7 +40,7 @@ class Initializer {
         c = "";
     }
     
-    //:: error: (commitment.fields.uninitialized)
+    //:: error: (initialization.fields.uninitialized)
     public Initializer(double foo, boolean t) {
         if (!setFieldMaybe()) {
             // on this path, 'a' is not initialized

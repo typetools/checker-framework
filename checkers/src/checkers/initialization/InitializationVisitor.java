@@ -60,12 +60,12 @@ public class InitializationVisitor<Checker extends InitializationChecker, Value 
         extends BaseTypeVisitor<Checker> {
 
     // Error message keys
-    private static final /*@CompilerMessageKey*/ String COMMITMENT_INVALID_CAST = "commitment.invalid.cast";
-    private static final /*@CompilerMessageKey*/ String COMMITMENT_FIELDS_UNINITIALIZED = "commitment.fields.uninitialized";
-    private static final /*@CompilerMessageKey*/ String COMMITMENT_INVALID_FIELD_ANNOTATION = "commitment.invalid.field.annotation";
-    private static final /*@CompilerMessageKey*/ String COMMITMENT_INVALID_CONSTRUCTOR_RETRUN_TYPE = "commitment.invalid.constructor.return.type";
-    private static final /*@CompilerMessageKey*/ String COMMITMENT_INVALID_FIELD_WRITE_UNCLASSIFIED = "commitment.invalid.field.write.unclassified";
-    private static final /*@CompilerMessageKey*/ String COMMITMENT_INVALID_FIELD_WRITE_COMMITTED = "commitment.invalid.field.write.committed";
+    private static final /*@CompilerMessageKey*/ String COMMITMENT_INVALID_CAST = "initialization.invalid.cast";
+    private static final /*@CompilerMessageKey*/ String COMMITMENT_FIELDS_UNINITIALIZED = "initialization.fields.uninitialized";
+    private static final /*@CompilerMessageKey*/ String COMMITMENT_INVALID_FIELD_ANNOTATION = "commitment.invalid.constructor.return.type";
+    private static final /*@CompilerMessageKey*/ String COMMITMENT_INVALID_CONSTRUCTOR_RETRUN_TYPE = "initialization.invalid.constructor.return.type";
+    private static final /*@CompilerMessageKey*/ String COMMITMENT_INVALID_FIELD_WRITE_UNCLASSIFIED = "initialization.invalid.field.write.unknown";
+    private static final /*@CompilerMessageKey*/ String COMMITMENT_INVALID_FIELD_WRITE_COMMITTED = "initialization.invalid.field.write.initialized";
 
     /** A better typed version of the ATF. */
     @SuppressWarnings("unchecked")
