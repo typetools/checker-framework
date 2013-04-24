@@ -12,7 +12,10 @@ import java.lang.annotation.Target;
  * the method was called.
  * <p>
  * Only the visible side-effects are important. The method is allowed to cache
- * the answer to a computationally expensive query, for instance.
+ * the answer to a computationally expensive query, for instance.  It is also
+ * allowed to modify newly-created objects, and a constructor is
+ * side-effect-free if it does not modify any objects that existed before
+ * it was called.
  * <p>
  * This annotation is important to pluggable type-checking because if some
  * fact about an object is known before a call to such a method, then the
