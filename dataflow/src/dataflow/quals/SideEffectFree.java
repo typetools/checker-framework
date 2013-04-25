@@ -51,6 +51,6 @@ import java.lang.annotation.Target;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.METHOD })
+@Target({ ElementType.METHOD, ElementType.CONSTRUCTOR })
 public @interface SideEffectFree {
 }
