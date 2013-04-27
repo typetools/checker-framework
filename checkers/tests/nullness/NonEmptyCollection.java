@@ -33,7 +33,7 @@ public class NonEmptyCollection {
   ///
 
   public class PriorityQueue1<E> {
-    @SuppressWarnings("pure")
+    @SuppressWarnings("purity") // object creation is forbidden in pure methods
     public @Nullable @dataflow.quals.Pure E poll() { throw new RuntimeException("skeleton method"); }
     public E remove() { throw new RuntimeException("skeleton method"); }
 
