@@ -5,7 +5,7 @@ C2.java:2: error: incompatible types in assignment.
   Object o = null;
              ^
   found   : null
-  required: @Committed @NonNull Object
+  required: @Initialized @NonNull Object
 C3.java:4: error: cannot find symbol
       void bad(XXX p) {
                ^
