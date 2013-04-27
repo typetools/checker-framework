@@ -158,7 +158,7 @@ class Purity {
     }
     
     @Pure String t12() {
-        //:: error: (purity.not.deterministic.not.sideeffectfree.non.pure.object.creation)
+        //:: error: (purity.not.deterministic.not.sideeffectfree.object.creation)
         NonPureClass p = new NonPureClass();
         return "";
     }
