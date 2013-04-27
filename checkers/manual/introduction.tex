@@ -214,7 +214,6 @@ The installation process is simple!
 \begin{Verbatim}
   alias javacheck='$CHECKERS/binary/javac'
 \end{Verbatim}
-% Unconfuse Emacs LaTeX mode:  $
 
  \item
    Whenever this document tells you to run \code{javac}, instead
@@ -223,7 +222,6 @@ The installation process is simple!
 \begin{Verbatim}
   java -jar $CHECKERS/binary/checkers.jar ...
 \end{Verbatim}
-% Unconfuse Emacs LaTeX mode:  $
 
    More generally, anywhere that you use \<javac.jar>, you can substitute
    \<\$CHECKERS/binary/checkers.jar>; the result is to use the Checker
@@ -524,7 +522,6 @@ Two concrete examples (using the Nullness checker) are:
   javac -processor checkers.nullness.NullnessChecker MyFile.java
   java -jar $CHECKERS/binary/checkers.jar MyFile.java
 \end{Verbatim}
-% Unconfuse Emacs LaTeX mode: $
 %BEGIN LATEX
 \end{smaller}
 %END LATEX
