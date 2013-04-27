@@ -1,0 +1,21 @@
+Report Checker - Semantic Search
+================================
+
+The Report Checker provides mechanisms to implement semantic
+searches over a program, for example, to find all methods that override
+a specific method, all classes that inherit from a specific class, or
+all uses of do-while-loops (and not also while loops!).
+
+For most uses, see the qualifiers in
+checkers.util.report.quals.*
+The search is specified by writing a stub specification file using
+these annotations.
+
+Additionally, the reportTreeKinds option can be used to search for
+specific tree kinds.
+
+I have a few more ideas for additional searches.
+Let me know if there's something missing you think is useful!
+
+Some similar features are available from IDEs (e.g. show references),
+but this tool provides much more flexibility and a command-line tool.
