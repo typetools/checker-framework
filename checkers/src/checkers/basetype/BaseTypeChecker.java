@@ -222,6 +222,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
 
     /**
      * Returns the type qualifier hierarchy graph for a given set of type qualifiers and a factory.
+     * <p>
      *
      * The implementation builds the type qualifier hierarchy for the
      * {@code supportedTypeQualifiers}.  The current implementation returns an

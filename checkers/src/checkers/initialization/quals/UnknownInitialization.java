@@ -6,6 +6,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import checkers.nullness.NullnessChecker;
 import checkers.nullness.quals.NonNull;
 import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifier;

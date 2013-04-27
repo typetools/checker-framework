@@ -2,8 +2,10 @@ package checkers.nullness.quals;
 
 import java.lang.annotation.*;
 
+import checkers.nullness.NullnessChecker;
 import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifier;
+import dataflow.quals.Pure;
 
 /**
  * This annotation is deprecated.  {@link MonotonicNonNull} should be used
@@ -36,7 +38,7 @@ import checkers.quals.TypeQualifier;
  *
  * To indicate that a {@code LazyNonNull} or {@code Nullable} field is
  * non-null whenever a particular method is called, use
- * {@link NonNullOnEntry}.
+ * {@link RequiresNonNull}.
  * <p>
  *
  * Final fields are treated as LazyNonNull by default.

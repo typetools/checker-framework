@@ -31,12 +31,12 @@ import checkers.util.QualifierPolymorphism;
  *
  * <ol>
  *
- * <li>A &lt;: B  iff |A| &lt;: |B| && qual(A) &lt;: qual(B)
+ * <li>A &lt;: B  iff |A| &lt;: |B| &and; qual(A) &lt;: qual(B)
  *
  * <li>A[] &lt;: B[] iff A &lt;: B and qual(A[]) &lt;: qual(B[])
  *
  * <li>A&lt;A1, ..., An&gt;  &lt;: B&lt;B1, ..., Bn&gt;
- *      if A &lt;: B && A1 = B1 && ... && An = Bn
+ *      if A &lt;: B &and; A1 = B1 &and; ... &and; An = Bn
  *
  * </ol>
  *

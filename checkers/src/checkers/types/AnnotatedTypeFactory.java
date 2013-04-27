@@ -1336,7 +1336,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Most users will want to use getAnnotatedType instead; this method
      * is mostly for internal use.
      *
-     * @param node
+     * @param node the tree to analyze
      * @return the type of {@code node}, without any annotations
      */
     public AnnotatedTypeMirror type(Tree node) {

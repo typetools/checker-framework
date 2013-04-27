@@ -20,10 +20,10 @@ import java.lang.annotation.Target;
  * follows:
  *
  * <pre>
- *   T <: MonoT <: S
+ *   T &lt;: MonoT &lt;: S
  * </pre>
  *
- * where {@code <:} indicates the subtyping relation.
+ * where {@code &lt;:} indicates the subtyping relation.
  *
  * <p>
  * An expression of a monotonic type can only be assigned expressions of the

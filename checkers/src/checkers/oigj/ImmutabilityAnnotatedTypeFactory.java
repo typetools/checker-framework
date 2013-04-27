@@ -52,10 +52,11 @@ import com.sun.source.tree.TypeCastTree;
  * appearing in the source code.
  * <p>
  *
- * Implicit Annotations for literals:<br/>
- * Immutable  -  any primitive literal (e.g. integer, long, boolean, etc.)<br/>
- * OIGJMutabilityBottom  -  a null literal
- * <p>
+ * Implicit Annotations for literals:
+ * <ul>
+ * <li>Immutable  -  any primitive literal (e.g. integer, long, boolean, etc.)</li>
+ * <li>OIGJMutabilityBottom  -  a null literal</li>
+ * </ul>
  *
  * However, due to the default setting being similar to the implicit
  * annotations, there is no significant distinction between the two in

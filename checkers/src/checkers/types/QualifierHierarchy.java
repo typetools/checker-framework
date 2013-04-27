@@ -98,11 +98,14 @@ public abstract class QualifierHierarchy {
     public abstract boolean isSubtype(Collection<AnnotationMirror> rhs, Collection<AnnotationMirror> lhs);
 
     /**
-     * Returns the  least upper bound for the qualifiers a1 and a2.
+     * Returns the least upper bound for the qualifiers a1 and a2.
+     * <p>
      *
      * Examples:
-     * For NonNull, leastUpperBound('Nullable', 'NonNull') ==> Nullable
-     * For IGJ,     leastUpperBound('Immutable', 'Mutable') ==> ReadOnly
+     * <ul>
+     * <li>For NonNull, leastUpperBound('Nullable', 'NonNull') &rarr; Nullable</li>
+     * <li>For IGJ,     leastUpperBound('Immutable', 'Mutable') &rarr; ReadOnly</li>
+     * </ul>
      *
      * The two qualifiers have to be from the same qualifier hierarchy. Otherwise,
      * null will be returned.
@@ -226,11 +229,14 @@ public abstract class QualifierHierarchy {
     public abstract boolean isSubtypeTypeVariable(Collection<AnnotationMirror> rhs, Collection<AnnotationMirror> lhs);
 
     /**
-     * Returns the  least upper bound for the qualifiers a1 and a2.
+     * Returns the least upper bound for the qualifiers a1 and a2.
+     * <p>
      *
      * Examples:
-     * For NonNull, leastUpperBound('Nullable', 'NonNull') ==> Nullable
-     * For IGJ,     leastUpperBound('Immutable', 'Mutable') ==> ReadOnly
+     * <ul>
+     * <li>For NonNull, leastUpperBound('Nullable', 'NonNull') &rarr; Nullable</li>
+     * <li>For IGJ,     leastUpperBound('Immutable', 'Mutable') &rarr; ReadOnly</li>
+     * </ul>
      *
      * The two qualifiers have to be from the same qualifier hierarchy. Otherwise,
      * null will be returned.
@@ -396,11 +402,14 @@ public abstract class QualifierHierarchy {
     }
 
     /**
-     * Returns the  least upper bound for the qualifiers a1 and a2.
+     * Returns the least upper bound for the qualifiers a1 and a2.
+     * <p>
      *
      * Examples:
-     * For NonNull, leastUpperBound('Nullable', 'NonNull') ==> Nullable
-     * For IGJ,     leastUpperBound('Immutable', 'Mutable') ==> ReadOnly
+     * <ul>
+     * <li>For NonNull, leastUpperBound('Nullable', 'NonNull') &rarr; Nullable</li>
+     * <li>For IGJ,     leastUpperBound('Immutable', 'Mutable') &rarr; ReadOnly</li>
+     * </ul>
      *
      * The two qualifiers have to be from the same qualifier hierarchy. Otherwise,
      * null will be returned.
