@@ -348,7 +348,7 @@ public abstract class AnnotatedTypeMirror {
      * Returns the actual annotation mirror used to annotate this type,
      * whose name equals the passed annotationName if one exists, null otherwise.
      *
-     * @param anno annotation class
+     * @param annoClass annotation class
      * @return the annotation mirror for anno
      */
     public AnnotationMirror getAnnotation(Class<? extends Annotation> annoClass) {

@@ -38,7 +38,7 @@ import checkers.quals.TypeQualifier;
  *
  * <p>
  * At the beginning of a constructor, the fields of the object are not yet
- * initialized and thus {@link Raw(<em>supertype</em>)} is used as the type of
+ * initialized and thus {@link Raw Raw(<em>supertype</em>)} is used as the type of
  * the self-reference
  * {@code this}. Consider a class {@code B} that is a subtype of {@code A}. At
  * the beginning of the constructor of {@code B}, {@code this} has the type

@@ -31,18 +31,23 @@ import javacutils.TypesUtils;
 
 /**
  * Builds an annotation mirror that may have some values.
+ * <p>
  *
- * Constructing an {@link AnnotationMirror} requires: <br />
- * 1. Constructing the builder with the desired annotation class <br />
- * 2. Setting each value individually using {@code setValue} methods <br />
- * 3. Calling {@link #build()} to get the annotation
+ * Constructing an {@link AnnotationMirror} requires:
+ * <ol>
+ * <li>Constructing the builder with the desired annotation class</li>
+ * <li>Setting each value individually using {@code setValue} methods</li>
+ * <li>Calling {@link #build()} to get the annotation</li>
+ * </ol>
  *
  * Once an annotation is built, no further modification or calls to build can be
  * made. Otherwise, a {@link IllegalStateException} is thrown.
+ * <p>
  *
  * All setter methods throw {@link IllegalArgumentException} if the specified
  * element is not found, or if the given value is not a subtype of the
  * expected type.
+ * <p>
  *
  * TODO: Doesn't type check arrays yet
  */

@@ -70,7 +70,7 @@ import checkers.nullness.quals.*;
  *  <li>{@link SourceChecker#getMessages} (for type-qualifier specific error messages)
  *  <li>{@link SourceChecker#createSourceVisitor(CompilationUnitTree)} (for a custom {@link SourceVisitor})
  *  <li>{@link SourceChecker#createFactory} (for a custom {@link AnnotatedTypeFactory})
- *  <li>{@link SourceChecker#getSuppressWarningsKey} (for honoring
+ *  <li>{@link SourceChecker#getSuppressWarningsKeys} (for honoring
  *      {@link SuppressWarnings} annotations)
  * </ul>
  *

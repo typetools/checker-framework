@@ -52,8 +52,8 @@ import checkers.util.AnnotatedTypes;
  * appearing in the source code.
  * <p>
  *
- * Implicit Annotations for literals:<br/>
- * Immutable  -  any primitive literal (e.g. integer, long, boolean, etc.)<br/>
+ * Implicit Annotations for literals:<br>
+ * Immutable  -  any primitive literal (e.g. integer, long, boolean, etc.)<br>
  * IGJBottom  -  a null literal
  * <p>
  *

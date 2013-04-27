@@ -30,8 +30,8 @@ import com.sun.tools.javac.util.Context;
  * following purposes:
  *
  * <ol>
- * <li id="1">Debugging annotations in classfile</li>
- * <li id="2">Debugging the default annotations that are implicitly added
+ * <li value="1">Debugging annotations in classfile</li>
+ * <li value="2">Debugging the default annotations that are implicitly added
  *    by the checker</li>
  * </ol>
  *

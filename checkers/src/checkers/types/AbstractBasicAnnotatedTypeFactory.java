@@ -311,7 +311,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
      * The result of the flow analysis. Invariant:
      *
      * <pre>
-     *  scannedClasses.get(c) == FINISHED for some class c ==> flowResult != null
+     *  scannedClasses.get(c) == FINISHED for some class c &rArr; flowResult != null
      * </pre>
      *
      * Note that flowResult contains analysis results for Trees from multiple
