@@ -105,6 +105,11 @@ Disabling a test case
 Write @skip-test before a method or class -- either alone, or in a JavaDoc
 comment, or in a Java comment.
 
+To disable all tests for a given type system, temporarily move away a file;
+for example,
+  mv $CHECKERS/tests/src/tests/OIGJTest.java $CHECKERS/tests/src/tests/OIGJTest.java-SAVE
+[Is there a better way?]
+
 
 Writing tests for a new checker
 ===============================
