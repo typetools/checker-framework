@@ -1,3 +1,10 @@
+This document describes how to run and write tests for the Checker
+Framework.  Running and writing tests is useful for Checker Framework
+maintainers, checker writers, and bug submitters.  Users of the Checker
+Framework and of the checkers packaged with it should read the manual
+instead; see file ../manual/manual.html .
+
+
 How to run the tests for the Checker Framework
 ==============================================
 
@@ -25,11 +32,6 @@ the directory name but can also be determined from
 
 How to write test cases for the Checker Framework
 =================================================
-
-This document describes how to write tests for the Checker Framework.  The
-document is useful for Checker Framework maintainers, checker writers, and
-bug submitters.  Users of the framework and checkers should read the manual
-instead; see file ../manual/manual.html .
 
 The testing framework for the Checker Framework is built on top of JUnit.
 However, its tests are more like end-to-end integration tests than unit
@@ -101,11 +103,11 @@ Disabling a test case
 =====================
 
 Write @skip-test before a method or class -- either alone, or in a JavaDoc
-comment, or in a java comment.
+comment, or in a Java comment.
 
 
-Writing tests for new checkers
-==============================
+Writing tests for a new checker
+===============================
 
 Essentially, just copy an existing checker, analogously to creating a new
 test directory for testing different command-line arguments, as described
