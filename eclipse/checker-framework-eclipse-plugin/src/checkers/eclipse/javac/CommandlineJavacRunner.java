@@ -118,7 +118,7 @@ public class CommandlineJavacRunner implements CheckersRunner {
 
     /**
      * @return The implicit annotations that should be used when running the Checker Framework compiler
-     * see -Djsr308_imports in the Checker Framework manual
+     * see -Djsr308_imports in the Checker Framework Manual
      */
     private String implicitAnnotations() {
         return JavaUtils.join(File.pathSeparator, CheckerManager.getSelectedQuals());

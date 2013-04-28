@@ -141,7 +141,7 @@ def build_checker_framework_release(version, checker_framework_interm_dir, jsr30
     #build the checker framework binaries and documents, run checker framework tests
     execute("ant -Dhalt.on.test.failure=true dist", True, False, checkers_dir)
 
-    #make the checker framework manual
+    #make the Checker Framework Manual
     checkers_manual_dir = os.path.join(checkers_dir, "manual")
     execute("make manual.pdf manual.html", True, False, checkers_manual_dir)
 
