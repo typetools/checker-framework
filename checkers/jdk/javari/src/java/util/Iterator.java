@@ -4,7 +4,7 @@ import checkers.javari.quals.*;
 public interface Iterator<E> {
     boolean hasNext(@ReadOnly Iterator<E> this);
     // For a justification of this annotation, see section
-    // "Iterators and their abstract state" in the Checker Framework manual.
+    // "Iterators and their abstract state" in the Checker Framework Manual.
     E next(@ReadOnly Iterator<E> this);
     void remove();
 }

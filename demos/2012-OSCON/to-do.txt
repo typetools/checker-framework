@@ -95,7 +95,7 @@ they were bored and they didn't get to try very many things.  The wireless
 didn't work, so attendees didn't have access to the instructions -- neither
 for installing the Checker Framework nor for what to do in the tutorial.
 Werner reacted well by putting the software downloads on 7 USB sticks that
-we distributed.  Unfortunately, the Checker Framework manual and the
+we distributed.  Unfortunately, the Checker Framework Manual and the
 tutorial instructions were not on the USB keys, so attendees didn't have
 access to them.  We showed instructions on the projector, but this didn't
 really work:  they were hard to read and weren't always what people needed
@@ -197,7 +197,7 @@ We should have an automated command for this, of course.
 We also need a command that re-deploys the tutorial to the web -- maybe we
 will run this whenever we make a Checker Framework release.  This would
 include making a single zip file that contains everything needed, including
-the Checker Framework manual, the tutorial instructions, etc.
+the Checker Framework Manual, the tutorial instructions, etc.
 
 During the tutorial, people complained about having to do things on the
 command line.  The tutoral should use our Ant, Eclipse, and Maven

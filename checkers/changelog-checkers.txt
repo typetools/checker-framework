@@ -34,7 +34,7 @@ Eclipse plugin:
   All files selected from a single project can now be checked.  The previous behavior only checked the entire project or one file depending on the type of the first file selected.
   
 Documentation:
-  Fixed broken links and incomplete URLs in checker-framework manual.
+  Fixed broken links and incomplete URLs in the Checker Framework Manual.
   Update FAQ to discuss that some other tools incorrectly interpret array declarations.
   
 Bug fixes
@@ -106,7 +106,7 @@ Clarify license:
   The Checker Framework is licensed under the GPL2.  More permissive
     licenses apply to annotations, tool plugins (Maven, Eclipse),
     external libraries included with the Checker Framework, and examples in
-    the Checker Framework manual.
+    the Checker Framework Manual.
   Replaced all third-party annotations by cleanroom implementations, to
     avoid any potential problems or confusion with licensing.
 
