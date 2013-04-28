@@ -9,7 +9,8 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.element.*;
 import javax.lang.model.util.AbstractElementVisitor6;
 
-import checkers.source.AbstractTypeProcessor;
+import javacutils.AbstractTypeProcessor;
+
 import checkers.source.SourceChecker;
 import checkers.source.SourceVisitor;
 import checkers.types.AnnotatedTypeFactory;
@@ -29,8 +30,8 @@ import com.sun.tools.javac.util.Context;
  * following purposes:
  *
  * <ol>
- * <li id="1">Debugging annotations in classfile</li>
- * <li id="2">Debugging the default annotations that are implicitly added
+ * <li value="1">Debugging annotations in classfile</li>
+ * <li value="2">Debugging the default annotations that are implicitly added
  *    by the checker</li>
  * </ol>
  *

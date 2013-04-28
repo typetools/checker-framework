@@ -1,3 +1,4 @@
+import checkers.nullness.quals.EnsuresNonNull;
 import checkers.nullness.quals.*;
 
 public class ParameterExpression {
@@ -16,31 +17,19 @@ public class ParameterExpression {
   }
 
   @SuppressWarnings("assert.postcondition.not.satisfied")
-  //:: warning: (one.param.index.nullness.parse.error)
-  @AssertNonNullAfter("#0")
-  public void m2(@Nullable Object o) {
+  @EnsuresNonNull("#0")
+  //:: error: (flowexpr.parse.error)
+  public void m2(final @Nullable Object o) {
   }
 
-  @SuppressWarnings("assert.postcondition.not.satisfied")
-  @AssertNonNullAfter("#1")
-  public void m3(@Nullable Object o) {
+  @SuppressWarnings("contracts.postcondition.not.satisfied")
+  @EnsuresNonNull("#1")
+  public void m3(final @Nullable Object o) {
   }
 
-  @SuppressWarnings("assert.postcondition.not.satisfied")
-  @AssertNonNullAfter("#3")
-  public void m4(@Nullable Object x1, @Nullable Object x2, @Nullable Object x3) {
-  }
-
-  @SuppressWarnings("assert.postcondition.not.satisfied")
-  //:: warning: (zero.param.index.nullness.parse.error)
-  @AssertNonNullAfter("#0")
-  public void m5() {
-  }
-
-  @SuppressWarnings("assert.postcondition.not.satisfied")
-  //:: warning: (param.index.nullness.parse.error)
-  @AssertNonNullAfter("#0")
-  public void m6(@Nullable Object o, @Nullable Object p) {
+  @SuppressWarnings("contracts.postcondition.not.satisfied")
+  @EnsuresNonNull("#3")
+  public void m4(@Nullable Object x1, @Nullable Object x2, final @Nullable Object x3) {
   }
 
 }

@@ -16,7 +16,7 @@ public class Casts {
         Integer b = null;
         //:: error: (assignment.type.incompatible)
         int i = b;
-        //:: error: (unboxing.of.nullable)
+        // no error, because there was already a nullpointer exception
         Object o = (int)b;
     }
 
