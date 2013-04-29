@@ -68,8 +68,8 @@ context in which it is used:  the left-hand side if it is in an assignment,
 the declared formal parameter type if it is in a method call, etc.
 
 In particular, if the expression \verb|{"hello"}| were given the type
-\<@Regex String[]>, then the assignment would be illegal!  But if it is
-given the type \<String[]> based on the assignment context, then the code
+\<@Regex String[]>, then the assignment would be illegal!  But the Checker
+Framework gives the type \<String[]> based on the assignment context, so the code
 type-checks.
 
 If you prefer a specific type for a constructed array, you can indicate
