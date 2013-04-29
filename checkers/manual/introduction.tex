@@ -136,7 +136,7 @@ synonyms.
 This section describes how to install the Checker
 Framework for use from the command line, Ant, and Maven.  If you wish to
 use the Checker Framework from Eclipse, see the Checker Framework Eclipse
-Plugin webpage: \ahrefurl{http://types.cs.washington.edu/checker-framework/current/checkers.zip}.
+Plugin webpage: \ahrefurl{http://types.cs.washington.edu/checker-framework/eclipse/}.
 The Checker Framework release contains everything that you need, both to
 run checkers and to write your own checkers.  As an alternative, you can
 build the latest development version from source
@@ -173,16 +173,21 @@ The installation process is simple!
 \item
   Optionally, update your execution path or create an alias.
 
-  When doing pluggable type-checking, you need to use the ``Checker Framework compiler''.  The
-  Checker Framework compiler in turn uses an updated version of the OpenJDK javac compiler that
-  understands type annotations known as ``Type Annotations compiler''.    The Type Annotations compiler is
-  backward-compatible, so using it as your Java compiler should have no negative consequences.
+  When doing pluggable type-checking, you need to use the ``Checker
+  Framework compiler''.  The Checker Framework compiler in turn uses the
+  ``Type Annotations compiler'', an advance version of the OpenJDK 8 javac
+  compiler that understands type annotations.  The Type Annotations
+  compiler is backward-compatible, so using it as your Java compiler, even
+  when you are not doing pluggable type-checking, should have no negative
+  consequences.
 
-  You can do this in three ways.  You can use any one of them.  However, if
-  you are using the Windows command shell, you must use the last one.  The
-  instructions assume a \code{CHECKERS} environment variable that is set
-  to the \code{.../checker-framework/checkers} directory, but you can
-  use an absolute path if you prefer.
+  You can use the Checker Framework compiler in three ways.  You can use any one of them.  However, if
+  you are using the Windows command shell, you must use the last one.
+
+  First, set a \code{CHECKERS} environment variable to the
+  \code{.../checker-framework/checkers} directory.  Alternately, you can
+  use an absolute path where the below instructions use the \code{CHECKERS}
+  environment variable.
 
   % Is the last one required for Cygwin, as well as for the Windows command shell?
 
@@ -205,10 +210,10 @@ The installation process is simple!
     whenever this document tells you to run \code{javac}, instead use that
     alias.  Here is the syntax for your 
     \verb|~/.bashrc| file:
+% No Windows example because this doesn't work under Windows.
 \begin{Verbatim}
   alias javacheck='$CHECKERS/binary/javac'
 \end{Verbatim}
-% Unconfuse Emacs LaTeX mode:  $
 
  \item
    Whenever this document tells you to run \code{javac}, instead
@@ -218,16 +223,20 @@ The installation process is simple!
   java -jar $CHECKERS/binary/checkers.jar ...
 \end{Verbatim}
 
-    Note: Previous versions of these instructions required the use of
-    \$CHECKERS/binary/javac.jar and providing jsr308-all.jar on the bootclasspath.
-    This is no longer the case.  The provided javac script and checkers.jar
-    will automatically fix up the classpath and bootclasspath for use with
-    the Checker Framework and call the type-annotations compiler appropriately.
-    jsr308-all.jar no longer exists.  Finally, anywhere javac.jar might be used
-    you can substitute \$CHECKERS/binary/checkers.jar in order to use
-    the Checker Framework.
+   More generally, anywhere that you use \<javac.jar>, you can substitute
+   \<\$CHECKERS/binary/checkers.jar>; the result is to use the Checker
+   Framework compiler instead of the regular \<javac>.
 
-    You can simplify he above command by introducing an alias.  Then,
+%     Note: Previous versions of these instructions required the use of
+%     \$CHECKERS/binary/javac.jar and providing jsr308-all.jar on the bootclasspath.
+%     This is no longer the case.  The provided javac script and checkers.jar
+%     will automatically fix up the classpath and bootclasspath for use with
+%     the Checker Framework and call the type-annotations compiler appropriately.
+%     jsr308-all.jar no longer exists.  Finally, anywhere javac.jar might be used
+%     you can substitute \$CHECKERS/binary/checkers.jar in order to use
+%     the Checker Framework.
+
+    You can simplify the above command by introducing an alias.  Then,
     whenever this document tells you to run \code{javac}, instead use that
     alias.  For example:
 
@@ -513,7 +522,6 @@ Two concrete examples (using the Nullness checker) are:
   javac -processor checkers.nullness.NullnessChecker MyFile.java
   java -jar $CHECKERS/binary/checkers.jar MyFile.java
 \end{Verbatim}
-% Unconfuse Emacs LaTeX mode: $
 %BEGIN LATEX
 \end{smaller}
 %END LATEX

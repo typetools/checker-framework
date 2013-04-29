@@ -1,7 +1,7 @@
 This directory contains annotated versions of library classes (such as the
 JDK).
 
-See chapter "Annotating libraries" in the Checker Framework manual for
+See chapter "Annotating libraries" in the Checker Framework Manual for
 information on using these classes.
 
 Some generated .jar files are checked into the repository, because
