@@ -288,6 +288,25 @@ resolved.
 \<-AstubDebug> outputs debug messages while parsing stub files.
 
 
+\subsection{Troubleshooting\label{stub-troubleshooting}}
+
+An error is issued if a stub file has a typo or the API method does not
+exist.
+
+Fix this error by removing the extra L in the method name:
+\begin{Verbatim}
+StubParser: Method isLLowerCase(char) not found in type java.lang.Character
+\end{Verbatim}
+
+Fix this error by removing the method \<enableForgroundNdefPush(...)> from
+the stub file, because it is not defined in class \<android.nfc.NfcAdapter>
+in the version of the library you are using:
+\begin{Verbatim}
+StubParser: Method enableForegroundNdefPush(Activity,NdefPushCallback) 
+      not found in type android.nfc.NfcAdapter
+\end{Verbatim}
+
+
 \subsection{Limitations\label{stub-limitations}}
 
 The stub file reader has several limitations.  We will fix these in a

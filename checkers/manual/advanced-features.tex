@@ -267,9 +267,28 @@ subtype of their declared or defaulted (Section~\ref{defaults})
 type.  This functionality
 never introduces unsoundness nor causes an error to be missed.
 
-By default, all checkers, including new checkers that you write, can take
-advantage of this functionality.  Most of the time, users don't have to
-think about, and may not even notice, this feature of the framework.  The
+As an example, suppose you write
+
+\begin{Verbatim}
+  @Nullable String myVar = "hello";
+  myVar.hashCode();
+\end{Verbatim}
+
+\noindent
+Calling \<hashCode()> on a possibly-null value may result in a null pointer
+exception.  That never happens in this case, because the type-checker
+treats \<myVar> as having type \<@NonNull String>, which is a subtype of its
+declared type.
+
+Array element types and generic arguments are never changed by type
+refinement.  Changing these components of a type never yields a subtype of
+the declared type.  For example, \code{List<Number>} is \emph{not} a
+subtype of \code{List<Object>} and \code{Number[]} is not a subtype of
+\code{Object[]}.
+
+By default, all checkers, including new checkers that you write,
+automatically incorporate type refinement.  Most of the time, users don't
+have to think about, and may not even notice, type refinement.  The
 checkers simply do the right thing even when a programmer omits an
 annotation on a local variable, or when a programmer writes an
 unnecessarily general type in a declaration.
