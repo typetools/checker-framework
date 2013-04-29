@@ -9,8 +9,6 @@ sophisticated and useful types, or to understand more about how the Checker
 Framework works, you can return to it.
 
 
-\section{Array types\label{array-types}}
-
 \section{Invariant array types\label{invariant-arrays}}
 
 Java's type system is unsound with respect to arrays.  That is, the Java
@@ -39,9 +37,9 @@ arrays invariantly rather than covariantly.  This means that a type system
 built upon the Checker Framework is sound:  you get a compile-time
 guarantee without the need for any run-time checks.  But it also means that
 the Checker Framework rejects code that is similar to what Java unsoundly
-accepts.  (The guarantee and the compile-time checks are about your
+accepts.  The guarantee and the compile-time checks are about your
 extended type system.  The Checker Framework does not reject the example
-code above, in the absence of any type annotations.)
+code above, in the absence of any type annotations.
 
 
 \section{Context-sensitive type inference for array constructors\label{array-context-sensitive}}
@@ -283,8 +281,11 @@ declared type.
 Array element types and generic arguments are never changed by type
 refinement.  Changing these components of a type never yields a subtype of
 the declared type.  For example, \code{List<Number>} is \emph{not} a
-subtype of \code{List<Object>} and \code{Number[]} is not a subtype of
-\code{Object[]}.
+subtype of \code{List<Object>}.  Similarly, the Checker Framework does not
+treat \code{Number[]} as a subtype of
+\code{Object[]}; see Section~\ref{invariant-arrays} for why.
+
+
 
 By default, all checkers, including new checkers that you write,
 automatically incorporate type refinement.  Most of the time, users don't
