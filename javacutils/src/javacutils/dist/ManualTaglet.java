@@ -91,7 +91,7 @@ public class ManualTaglet implements Taglet {
      */
     private String formatHeader(String text) {
         return String.format(
-                "<DT><B>See the Checker Framework manual:</B><DD>%s<BR>",
+                "<DT><B>See the Checker Framework Manual:</B><DD>%s<BR>",
                 text);
     }
 
