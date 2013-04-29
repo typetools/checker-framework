@@ -60,7 +60,7 @@ public final class NullnessUtils {
      * not null, but the type system is unable to make this deduction.  It
      * is not intended for defensive programming, in which a programmer
      * cannot prove that the value is not null but wishes to have an
-     * earlier indication if it is.  See the Checker Framework manual for
+     * earlier indication if it is.  See the Checker Framework Manual for
      * further discussion.
      * <p>
      *

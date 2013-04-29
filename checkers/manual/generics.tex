@@ -304,6 +304,21 @@ For example, it would be incorrect to annotate the type parameter of
 operation.
 
 
+\subsection{Method type argument inference and type qualifiers\label{infer-method-type-qualifiers}}
+
+Sometimes method type argument inference does not interact well with
+type qualifiers. In such situations, you might need to provide
+explicit method type arguments, for which the syntax is as follows:
+
+\begin{alltt}
+	Collections.</*@MyTypeAnnotation*/ Object>sort(l, c);
+\end{alltt}
+
+\noindent
+This uses Java's existing syntax for specifying a method call's type arguments.
+
+
+
 \section{Qualifier polymorphism\label{qualifier-polymorphism}}
 
 The Checker Framework also supports type \emph{qualifier} polymorphism for
