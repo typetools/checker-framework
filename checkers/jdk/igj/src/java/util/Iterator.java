@@ -5,7 +5,7 @@ import checkers.igj.quals.*;
 public interface Iterator<E> {
   public abstract boolean hasNext(@ReadOnly Iterator<E> this);
   // For a justification of this annotation, see section
-  // "Iterators and their abstract state" in the Checker Framework manual.
+  // "Iterators and their abstract state" in the Checker Framework Manual.
   public abstract E next(@ReadOnly Iterator<E> this);
   public abstract void remove(@Mutable Iterator<E> this);
 }

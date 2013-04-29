@@ -11,8 +11,8 @@ import java.lang.annotation.*;
  * Non-visible benevolent side effects (e.g., caching) are possible.
  * </p>
  *
- * <!-- This text is from the Checker Framework manual and should be updated
- * whenever the Checker Framework manual is changed. -->
+ * <!-- This text is from the Checker Framework Manual and should be updated
+ * whenever the Checker Framework Manual is changed. -->
  * <p>For example, consider the following declaration and uses:</p>
  * <pre>         @Nullable Object getField(Object arg) { ... }
  * 

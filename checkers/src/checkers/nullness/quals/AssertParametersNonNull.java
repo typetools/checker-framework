@@ -14,7 +14,7 @@ import java.lang.annotation.*;
  *
  * This annotation is intended for use only on methods whose sole purpose
  * is suppressing warnings, not on methods that are used for defensive
- * programming.  See the Checker Framework manual for more details about
+ * programming.  See the Checker Framework Manual for more details about
  * the difference.
  *
  * @see NonNull
