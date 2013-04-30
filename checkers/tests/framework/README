@@ -3,3 +3,7 @@ To add a new file to the test suite, see
 
 To run the tests, do
   ant -e -find build.xml framework-tests
+
+To run a single test, do something like:
+  cd $CHECKERS/tests/framework
+  (cd $CHECKERS && ant -e jar) && javac -processor tests.util.TestChecker -classpath $CHECKERS/tests/build -Xbootclasspath/p:$CHECKERS/jdk/jdk.jar GenericTest10.java

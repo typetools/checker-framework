@@ -15,13 +15,13 @@ import java.lang.annotation.*;
  *
  * Example:
  * <!-- &nbsp; is a hack that prevents @ from being the first character on the line, which confuses Javadoc -->
- * <code><pre>
+ * <pre>
  * &nbsp; @DefaultQualifiers({
  * &nbsp;     @DefaultQualifier(NonNull.class),
  * &nbsp;     @DefaultQualifier(value = Interned.class, locations = ALL_EXCEPT_LOCALS),
  * &nbsp;     @DefaultQualifier(Tainted.class)
  * &nbsp; })
- * </pre></code>
+ * </pre>
  *
  * @see DefaultQualifier
  */

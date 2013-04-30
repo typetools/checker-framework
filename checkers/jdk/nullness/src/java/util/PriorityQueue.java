@@ -1,6 +1,8 @@
 package java.util;
-import checkers.nullness.quals.*;
-@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
+import checkers.nullness.quals.EnsuresNonNullIf;
+import checkers.nullness.quals.NonNull;
+import checkers.nullness.quals.Nullable;
+import checkers.nullness.quals.PolyNull;
 
 // doesn't permit null element
 public class PriorityQueue<E extends @NonNull Object> extends AbstractQueue<E> implements java.io.Serializable {
@@ -24,6 +26,6 @@ public class PriorityQueue<E extends @NonNull Object> extends AbstractQueue<E> i
   public @Nullable E poll() { throw new RuntimeException("skeleton method"); }
   public Comparator<? super E> comparator() { throw new RuntimeException("skeleton method"); }
 
-  @AssertNonNullIfFalse({"poll()", "peek()"})
+  @EnsuresNonNullIf(expression={"poll()", "peek()"}, result=false)
   public boolean isEmpty() { throw new RuntimeException("skeleton method"); }
 }

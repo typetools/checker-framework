@@ -1,5 +1,7 @@
 package checkers.types;
 
+import javacutils.Pair;
+
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
 
@@ -21,7 +23,8 @@ public class VisitorState {
     /** The enclosing method tree **/
     private MethodTree mt;
 
-    private AnnotatedTypeMirror assignmentcontext;
+    /** The assignment context is a tree as well as its type. */
+    private Pair<Tree, AnnotatedTypeMirror> assignmentcontext;
 
     /** The visitor's current tree path. */
     private TreePath path;
@@ -54,7 +57,7 @@ public class VisitorState {
         this.mt = mt;
     }
 
-    public void setAssignmentContext(AnnotatedTypeMirror assCtxt) {
+    public void setAssignmentContext(Pair<Tree, AnnotatedTypeMirror> assCtxt) {
         this.assignmentcontext = assCtxt;
     }
 
@@ -97,7 +100,7 @@ public class VisitorState {
         return this.mt;
     }
 
-    public AnnotatedTypeMirror getAssignmentContext() {
+    public Pair<Tree, AnnotatedTypeMirror> getAssignmentContext() {
         return assignmentcontext;
     }
 
