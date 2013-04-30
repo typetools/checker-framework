@@ -1,6 +1,6 @@
 package checkers.util.debug;
 
-import checkers.source.AbstractTypeProcessor;
+import javacutils.AbstractTypeProcessor;
 
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;

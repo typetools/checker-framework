@@ -1,6 +1,7 @@
 package java.util;
-import checkers.nullness.quals.*;
-@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
+import checkers.nullness.quals.EnsuresNonNullIf;
+import checkers.nullness.quals.KeyFor;
+import checkers.nullness.quals.Nullable;
 
 // Subclasses of this interface/class may opt to prohibit null elements
 public interface NavigableMap<K extends @Nullable Object, V extends @Nullable Object> extends SortedMap<K, V> {
@@ -26,6 +27,6 @@ public interface NavigableMap<K extends @Nullable Object, V extends @Nullable Ob
   public abstract SortedMap<K, V> headMap(K a1);
   public abstract SortedMap<K, V> tailMap(K a1);
 
-  @AssertNonNullIfFalse({"firstEntry()", "pollFirstEntry()", "lastEntry()", "pollLastEntry()"})
+  @EnsuresNonNullIf(expression={"firstEntry()", "pollFirstEntry()", "lastEntry()", "pollLastEntry()"}, result=false)
   public abstract boolean isEmpty();
 }

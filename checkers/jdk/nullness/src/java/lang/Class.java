@@ -1,8 +1,12 @@
 package java.lang;
 
-import checkers.nullness.quals.*;
+import dataflow.quals.Pure;
 
-@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
+import checkers.nullness.quals.EnsuresNonNullIf;
+import checkers.nullness.quals.NonNull;
+import checkers.nullness.quals.Nullable;
+import checkers.nullness.quals.PolyNull;
+
 public final class Class<T extends @Nullable Object> extends Object implements java.io.Serializable, java.lang.reflect.GenericDeclaration, java.lang.reflect.Type, java.lang.reflect.AnnotatedElement {
   private static final long serialVersionUID = 0;
   protected Class() {}
@@ -60,7 +64,7 @@ public final class Class<T extends @Nullable Object> extends Object implements j
   public native Object @Nullable [] getSigners();
   public native @Nullable Class<?> getDeclaringClass();
   public native boolean isPrimitive();
-  @AssertNonNullIfTrue("getComponentType()")
+  @EnsuresNonNullIf(expression="getComponentType()", result=true)
   public native @Pure boolean isArray();
   public native boolean isAssignableFrom(Class<? extends @Nullable Object> cls);
   public native boolean isInterface();

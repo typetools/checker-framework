@@ -1,6 +1,9 @@
 package java.util;
-import checkers.nullness.quals.*;
-@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
+import dataflow.quals.Pure;
+
+import checkers.nullness.quals.EnsuresNonNullIf;
+import checkers.nullness.quals.Nullable;
+import checkers.nullness.quals.PolyNull;
 
 // This class permits null elements
 public class LinkedList<E extends @Nullable Object> extends AbstractSequentialList<E> implements List<E>, Deque<E>, Cloneable, java.io.Serializable {
@@ -48,6 +51,6 @@ public class LinkedList<E extends @Nullable Object> extends AbstractSequentialLi
   public <T extends @Nullable Object> @Nullable T @PolyNull [] toArray(T @PolyNull [] a1) { throw new RuntimeException("skeleton method"); }
   public Object clone() { throw new RuntimeException("skeleton method"); }
 
-  @AssertNonNullIfFalse({"peek()", "peekFirst()", "peekLast()", "poll()", "pollFirst()", "pollLast()"})
+  @EnsuresNonNullIf(expression={"peek()", "peekFirst()", "peekLast()", "poll()", "pollFirst()", "pollLast()"}, result=false)
   public boolean isEmpty() { throw new RuntimeException("skeleton method"); }
 }
