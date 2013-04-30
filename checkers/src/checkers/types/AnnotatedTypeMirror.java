@@ -375,7 +375,7 @@ public abstract class AnnotatedTypeMirror {
             return AnnotationUtils.createAnnotationSet();
         } else {
             Set<AnnotationMirror> explicitAnnotations = AnnotationUtils.createAnnotationSet();
-            List<com.sun.tools.javac.code.Attribute.TypeCompound> typeAnnotations = ((com.sun.tools.javac.code.Symbol) this.element).getTypeAnnotationMirrors();
+            List<com.sun.tools.javac.code.Attribute.TypeCompound> typeAnnotations = ((com.sun.tools.javac.code.Symbol) this.element).getRawTypeAttributes();
             // TODO: should we instead try to go to the Checker and use getSupportedTypeQualifiers()?
             Set</*@Interned*/String> validAnnotations = atypeFactory.getQualifierHierarchy().getTypeQualifiers();
             for (com.sun.tools.javac.code.Attribute.TypeCompound explicitAnno : typeAnnotations) {

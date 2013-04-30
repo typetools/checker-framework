@@ -39,7 +39,7 @@ public class DependentTypes {
 
     private AnnotationMirror findDependent(Element element) {
         // TODO: does this work with a .astub file?
-        List<TypeCompound> tas = ((Symbol) element).getTypeAnnotationMirrors();
+        List<TypeCompound> tas = ((Symbol) element).getRawTypeAttributes();
         for (TypeCompound ta : tas) {
             if (ta.getAnnotationType().toString().equals(Dependent.class.getCanonicalName())) {
                 return ta;
