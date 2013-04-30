@@ -294,7 +294,7 @@ abstract class TypeFromTree extends
             AnnotatedExecutableType ex = f.constructorFromUse(node).first;
             ExecutableElement ctor = TreeUtils.elementFromUse(node);
             // TODO: There will be a nicer way to access this in 308 soon.
-            List<TypeCompound> decall = ((com.sun.tools.javac.code.Symbol)ctor).getTypeAnnotationMirrors();
+            List<TypeCompound> decall = ((com.sun.tools.javac.code.Symbol)ctor).getRawTypeAttributes();
             Set<AnnotationMirror> decret = AnnotationUtils.createAnnotationSet();
             for (TypeCompound da : decall) {
                 if (da.position.type == com.sun.tools.javac.code.TargetType.METHOD_RETURN) {
