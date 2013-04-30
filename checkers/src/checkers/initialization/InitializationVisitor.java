@@ -375,7 +375,7 @@ public class InitializationVisitor<Checker extends InitializationChecker, Value 
         if (TreeUtils.isConstructor(node)) {
             com.sun.tools.javac.code.Symbol meth = (com.sun.tools.javac.code.Symbol) TreeUtils
                     .elementFromDeclaration(node);
-            rcvannos = meth.getTypeAnnotationMirrors();
+            rcvannos = meth.getRawTypeAttributes();
             if (rcvannos == null) {
                 rcvannos = Collections.<AnnotationMirror> emptyList();
             }
