@@ -1755,7 +1755,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
 
                 boolean foundNN = false;
                 for (com.sun.tools.javac.code.Attribute.TypeCompound tc :
-                        ((com.sun.tools.javac.code.Symbol)m).getTypeAnnotationMirrors()) {
+                        ((com.sun.tools.javac.code.Symbol)m).getRawTypeAttributes()) {
                     if ( tc.position.type == com.sun.tools.javac.code.TargetType.METHOD_FORMAL_PARAMETER &&
                             tc.position.parameter_index == 0 &&
                             tc.type.toString().equals(checkers.nullness.quals.Nullable.class.getName()) ) {
