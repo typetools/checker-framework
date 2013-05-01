@@ -281,7 +281,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
     @Override
     public Void visitMethod(MethodTree node, Void p) {
 
-        AnnotatedExecutableType methodType = atypeFactory.getAnnotatedType(node);
+        AnnotatedExecutableType methodType = AnnotatedTypes.deepCopy(atypeFactory.getAnnotatedType(node));
         AnnotatedDeclaredType preMRT = visitorState.getMethodReceiver();
         MethodTree preMT = visitorState.getMethodTree();
         visitorState.setMethodReceiver(methodType.getReceiverType());
@@ -2200,7 +2200,6 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
             if (visitedNodes.containsKey(type)) {
                 return visitedNodes.get(type);
             }
-            visitedNodes.put(type, null);
 
             // Keep in sync with visitWildcard
             Set<AnnotationMirror> onVar = type.getAnnotations();
@@ -2256,7 +2255,6 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
             if (visitedNodes.containsKey(type)) {
                 return visitedNodes.get(type);
             }
-            visitedNodes.put(type, null);
 
             // Keep in sync with visitTypeVariable
             Set<AnnotationMirror> onVar = type.getAnnotations();
