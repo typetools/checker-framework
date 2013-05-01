@@ -1,19 +1,23 @@
+import checkers.nullness.quals.EnsuresNonNull;
+import checkers.nullness.quals.EnsuresNonNullIf;
 import checkers.nullness.quals.*;
 
 public class AssertWithStatic {
+    
+    static @Nullable String f;
 
-    @AssertNonNullIfTrue("System.out")
+    @EnsuresNonNullIf(result=true, expression="AssertWithStatic.f")
     public boolean hasSysOut(){
-        return System.out != null;
+        return AssertWithStatic.f != null;
     }
 
-    @AssertNonNullIfFalse("System.out")
+    @EnsuresNonNullIf(result=false, expression="AssertWithStatic.f")
     public boolean noSysOut(){
-        return System.out == null;
+        return AssertWithStatic.f == null;
     }
 
-    @AssertNonNullAfter("System.out")
-    //:: error: (assert.postcondition.not.satisfied)
+    @EnsuresNonNull("AssertWithStatic.f")
+    //:: error: (contracts.postcondition.not.satisfied)
     public void sysOutAfter(){
     }
 }

@@ -61,7 +61,7 @@ public class Expressions {
   }
 
   void testRawness(@Raw Object obj) {
-      @SuppressWarnings("rawness")
+      @SuppressWarnings("initialization")
       @NonRaw Object nonRaw = obj;
       this.obj = nonRaw;
   }

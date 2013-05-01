@@ -1,3 +1,4 @@
+import checkers.nullness.quals.EnsuresNonNullIf;
 import checkers.nullness.quals.*;
 
 /**
@@ -12,7 +13,7 @@ public class AssertIfTrueTest {
         if (!dbdir.isDirectory()) {
             throw new Error("Not a directory: " + dbdir);
         }
-        File1 @NonNull [] files = dbdir.listFiles(killfile_filter);
+        File1 /*@NonNull*/ [] files = dbdir.listFiles(killfile_filter);
     }
 
 
@@ -25,7 +26,7 @@ public class AssertIfTrueTest {
     // checking.
 
     public class File1 {
-        @AssertNonNullIfTrue({"list()","list(String)","listFiles()","listFiles(String)","listFiles(Double)"})
+        @EnsuresNonNullIf(result=true, expression={"list()","list(String)","listFiles()","listFiles(String)","listFiles(Double)"})
         public boolean isDirectory() { throw new RuntimeException("skeleton method"); }
 
         public String @Nullable [] list() { throw new RuntimeException("skeleton method"); }
