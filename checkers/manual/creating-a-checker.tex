@@ -370,20 +370,34 @@ and~\ref{writing-type-introduction}.
 
 \subsection{Completeness of the type hierarchy\label{bottom-and-top-qualifier}}
 
+When you define a type system, its type hierarchy should generally be a
+complete lattice --- that is, there should be a top type that is a
+supertype of all other types, and there should be a bottom type that is a
+subtype of all other types.
+
+
 \label{bottom-qualifier}
 
 \paragraph{Bottom qualifier}
 It is usually a good idea to have a bottom qualifier in your type hierarchy
 --- a qualifier that is a (direct or indirect) subtype of every other
-qualifier.  For instance, the hierarchy of Figure~\ref{fig:igj-hierarchy} lacks
-a bottom qualifier, because there is no qualifier that is a subtype of both
-\<@Immutable> and \<@Mutable>.
+qualifier.
+
 The bottom qualifier is the natural type for the \code{null}
 value, which can be viewed as having any type at all.  Without a bottom
-qualifier, type-checking becomes less precise.
+qualifier, type-checking becomes less precise.  In particular, this code
+will not type-check unless \<null> has the bottom type:
+\begin{Verbatim}
+<T> T f() {
+    return null;
+\end{Verbatim}
+
 Users should never write the bottom qualifier explicitly; it is merely used
 for the \code{null} value.
 
+The hierarchy of Figure~\ref{fig:igj-hierarchy} lacks
+a bottom qualifier, because there is no qualifier that is a subtype of both
+\<@Immutable> and \<@Mutable>.
 The actual IGJ hierarchy does contain a (non-user-visible) bottom qualifier,
 defined like this:
 
