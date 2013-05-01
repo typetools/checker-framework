@@ -23,10 +23,10 @@ class Upper2<ID, X extends List<ID>, Y extends X> {}
 class Lower2 extends Upper2<Long, List<Long>, LinkedList<Long>> {}
 
 class GenericNull {
-	/**
-	 * null has to be bottom. If not, the following legal java code
-	 * will not compile, because T may not be a super type of null's type.
-	 */
+    /**
+     * null has to be bottom. If not, the following legal java code
+     * will not compile, because T may not be a super type of null's type.
+     */
     <T> T f() {
         return null;
     }	
