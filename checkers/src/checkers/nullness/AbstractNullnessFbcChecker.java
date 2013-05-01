@@ -39,8 +39,7 @@ public class AbstractNullnessFbcChecker extends AbstractNullnessChecker {
 
     @Override
     public Collection<String> getSuppressWarningsKeys() {
-        Collection<String> result = new HashSet<>();
-        result.addAll(super.getSuppressWarningsKeys());
+        Collection<String> result = new HashSet<>(super.getSuppressWarningsKeys());
         result.add("fbc");
         return result;
     }

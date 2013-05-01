@@ -105,8 +105,7 @@ public class CFCFGBuilder extends CFGBuilder {
             ExpressionTree detail = tree.getDetail();
             if (detail != null) {
                 String msg = detail.toString();
-                Collection<String> warningKeys = checker
-                        .getSuppressWarningsKeys();
+                Collection<String> warningKeys = checker.getSuppressWarningsKeys();
                 for (String warningKey : warningKeys) {
                     String key = "@AssumeAssertion(" + warningKey + ")";
                     if (msg.contains(key)) {
