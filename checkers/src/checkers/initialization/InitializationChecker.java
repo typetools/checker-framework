@@ -6,7 +6,6 @@ import checkers.interning.quals.*;
 
 import java.lang.annotation.Annotation;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -79,7 +78,9 @@ public abstract class InitializationChecker extends BaseTypeChecker {
 
     @Override
     public Collection<String> getSuppressWarningsKeys() {
-        return Collections.singleton("initialization");
+        Collection<String> result = new HashSet<>(super.getSuppressWarningsKeys());
+        result.add("initialization");
+        return result;
     }
 
     public Set<Class<? extends Annotation>> getInitializationAnnotations() {
