@@ -35,8 +35,7 @@ public class AbstractNullnessRawnessChecker extends AbstractNullnessChecker {
 
     @Override
     public Collection<String> getSuppressWarningsKeys() {
-        Collection<String> result = new HashSet<>();
-        result.addAll(super.getSuppressWarningsKeys());
+        Collection<String> result = new HashSet<>(super.getSuppressWarningsKeys());
         result.add("rawness");
         return result;
     }
