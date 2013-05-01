@@ -290,7 +290,7 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
              */
             com.sun.tools.javac.code.Symbol meth =
                     (com.sun.tools.javac.code.Symbol)TreeUtils.elementFromDeclaration(method);
-            com.sun.tools.javac.util.List<TypeCompound> retannos = meth.getTypeAnnotationMirrors();
+            com.sun.tools.javac.util.List<TypeCompound> retannos = meth.getRawTypeAttributes();
             if (retannos == null) {
                 return false;
             }

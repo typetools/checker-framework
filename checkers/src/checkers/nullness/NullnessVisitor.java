@@ -387,7 +387,7 @@ public class NullnessVisitor extends BaseTypeVisitor<NullnessSubchecker> {
                 if (TreeUtils.isConstructor(node)) {
                     com.sun.tools.javac.code.Symbol meth =
                             (com.sun.tools.javac.code.Symbol)TreeUtils.elementFromDeclaration(node);
-                    rcvannos = meth.getTypeAnnotationMirrors();
+                    rcvannos = meth.getRawTypeAttributes();
                 } else {
                     ExecutableElement meth = TreeUtils.elementFromDeclaration(node);
                     com.sun.tools.javac.code.Type rcv = (com.sun.tools.javac.code.Type) ((ExecutableType)meth.asType()).getReceiverType();
