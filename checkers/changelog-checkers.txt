@@ -1,3 +1,10 @@
+Version 1.6.3, 02 May 2013
+
+Eclipse plugin bug fixes:
+  The javac argument files used by the Eclipse plugin now properly escape file paths.  Windows users should no longer encounter errors about missing built-in checkers.
+
+----------------------------------------------------------------------
+
 Version 1.6.2, 04 Apr 2013
 
 Eclipse plugin:
