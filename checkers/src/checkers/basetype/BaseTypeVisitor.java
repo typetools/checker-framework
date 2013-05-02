@@ -281,6 +281,11 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
     @Override
     public Void visitMethod(MethodTree node, Void p) {
 
+        // We copy the result from getAnnotatedType to ensure that
+        // circular types (e.g. K extends Comparable<K>) are represented
+        // by circular AnnotatedTypeMirrors, which avoids problems with
+        // later checks.
+        // TODO: Find a cleaner way to ensure circular AnnotatedTypeMirrors.
         AnnotatedExecutableType methodType = AnnotatedTypes.deepCopy(atypeFactory.getAnnotatedType(node));
         AnnotatedDeclaredType preMRT = visitorState.getMethodReceiver();
         MethodTree preMT = visitorState.getMethodTree();
