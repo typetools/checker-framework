@@ -114,6 +114,19 @@ public class PluginUtil {
         }
     }
 
+
+    public static List<String> readArgFile(final File argFile) throws IOException {
+        final BufferedReader br = new BufferedReader(new FileReader(argFile));
+        String line;
+
+        List<String> lines = new ArrayList<String>();
+        while((line = br.readLine()) != null) {
+            lines.add(line);
+        }
+        br.close();
+        return lines;
+    }
+
     /**
      * TODO: Either create/use a util class
      */
@@ -256,9 +269,22 @@ public class PluginUtil {
 
     public static String wrapArg(final String classpath) {
         if(classpath.contains(" ")) {
-            return '"' + classpath + '"';
+            return '"' + escapeQuotesAndSlashes(classpath) + '"';
         }
         return classpath;
+    }
+
+    public static String escapeQuotesAndSlashes(final String toEscape) {
+        final Map<String, String> replacements = new HashMap<String, String>();
+        replacements.put("\\\\", "\\\\\\\\");
+        replacements.put("\"", "\\\\\"");
+
+        String replacement = toEscape;
+        for(final Map.Entry<String, String> entry : replacements.entrySet()) {
+            replacement = replacement.replaceAll(entry.getKey(), entry.getValue());
+        }
+
+        return replacement;
     }
 
     public static String getJavaCommand(final String javaHome, final PrintStream out) {
@@ -275,7 +301,7 @@ public class PluginUtil {
         } else {
             if( out != null ) {
                 out.println("Could not find java executable at: ( " + java.getAbsolutePath()    + "," +
-                                                                      javaExe.getAbsolutePath() + ")" +
+                        javaExe.getAbsolutePath() + ")" +
                         "\n  Using \"java\" command.\n");
             }
             return "java";
