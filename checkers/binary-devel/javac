@@ -18,8 +18,12 @@ case `uname -s` in
 esac
 
 binaryDir="${mydir}"/../binary
-buildDir="${mydir}"/../build
+
+cfDir="${mydir}"/../..
+# Put "checkers" last, as "ant bindist" puts other projects
+# into the checkers/build directory.
+buildDirs="${cfDir}"/dataflow/build:"${cfDir}"/javacutils/build:"${cfDir}"/javaparser/build:"${cfDir}"/checkers/build
 
 eval "java" \
-     "-DCheckerDevelMain.cp=${buildDir} -DCheckerDevelMain.bcp= -DCheckerDevelMain.binary=${binaryDir}" \
-     "-classpath ${buildDir} checkers.util.CheckerDevelMain" "$@"
+     "-DCheckerDevelMain.cp=${buildDirs} -DCheckerDevelMain.bcp= -DCheckerDevelMain.binary=${binaryDir}" \
+     "-classpath ${buildDirs} checkers.util.CheckerDevelMain" "$@"
