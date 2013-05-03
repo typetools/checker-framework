@@ -17,6 +17,7 @@ import com.sun.tools.javac.comp.AnnotationTarget;
 /**
  * A scanner for obtaining groups of annotations from a source tree.
  */
+@SuppressWarnings("deprecation")
 class InternalAnnotationScanner extends SimpleTreeVisitor<InternalAnnotationGroup, Void> {
 
     /** The syntax tree root. */
