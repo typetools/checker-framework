@@ -1,6 +1,7 @@
 package checkers.util;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
@@ -61,6 +62,8 @@ public class CheckerMain {
 
     private final List<String> toolOpts;
 
+    private final List<File> argListFiles;
+
     /**
      * Construct all the relevant file locations and java version given the path to this jar and
      * a set of directories in which to search for jars
@@ -72,6 +75,7 @@ public class CheckerMain {
         this.checkersJar   = checkersJar;
 
         final List<String> argsList = new ArrayList<String>(Arrays.asList(args));
+        argListFiles = collectArgLists(argsList);
 
         this.javacJar = extractFileArg(PluginUtil.JAVAC_PATH_OPT, new File(searchPath, "javac.jar"), argsList);
         this.jdkJar   = extractFileArg(PluginUtil.JDK_PATH_OPT, new File(searchPath, findJdkJarName()), argsList);
@@ -105,6 +109,23 @@ public class CheckerMain {
         final List<String> extractedOps = extractCpOpts(argsList);
         extractedOps.add(0, this.checkersJar.getAbsolutePath());
         return extractedOps;
+    }
+
+    /**
+     * Record (but don't remove) the arguments that start with @ and therefore
+     * are files that contain javac arguments
+     * @param args A list of command line arguments
+     * @return A List of files representing all arguments that started with @
+     */
+    protected List<File> collectArgLists(final List<String> args) {
+        final List<File> argListFiles = new ArrayList<File>();
+        for ( final String arg : args ) {
+            if(arg.startsWith("@")) {
+                argListFiles.add( new File(arg.substring(1)) );
+            }
+        }
+
+        return argListFiles;
     }
 
     /**
@@ -293,14 +314,45 @@ public class CheckerMain {
 
         args.add("-Xbootclasspath/p:" + PluginUtil.join(File.pathSeparator, compilationBootclasspath));
 
+        if( !argsListHasClassPath(argListFiles) ) {
+            args.add("-classpath");
+            args.add(quote(PluginUtil.join(File.pathSeparator, cpOpts)));
 
-        args.add("-classpath");
-        args.add(PluginUtil.join(File.pathSeparator, cpOpts));
+        }
 
         args.addAll(toolOpts);
 
         //Actually invoke the compiler
         return ExecUtil.execute(args.toArray(new String[args.size()]), System.out, System.err);
+    }
+
+    private static boolean argsListHasClassPath(final List<File> argListFiles) {
+        for(final String arg : expandArgs(argListFiles)) {
+            if(arg.contains("-classpath ") || arg.contains("-cp ")) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Iterate through the arguments and, for every argument that starts with an @, replace it
+     * with the lines contained by that file.
+     * @param args A list of arguments, which may or may not be prefixed with an @
+     * @return A list of args with no @ symbols, where every argument that started with an @
+     * symbol has been replaced with the list of lines of the files content
+     */
+    protected static List<String> expandArgs(final List<File> args)  {
+        final List<String> actualArgs = new ArrayList<String>();
+        for(final File latest : args) {
+            try {
+                actualArgs.addAll(PluginUtil.readArgFile(latest));
+            } catch(final IOException exc) {
+                throw new RuntimeException("Could not open file: " + latest.getAbsolutePath(), exc);
+            }
+        }
+        return actualArgs;
     }
 
     /**
@@ -408,5 +460,21 @@ public class CheckerMain {
 
             throw new RuntimeException(message);
         }
+    }
+
+    private static String quote(final String str) {
+        if(str.contains(" ")) {
+            return "\"" + str + "\"";
+        }
+        return str;
+    }
+
+    private static List<String> quoteInPlace(final List<String> strings) {
+        for(int i = 0; i < strings.size(); i++) {
+            final String cur = strings.get(i);
+            strings.add(i, quote(cur));
+            strings.remove(i+1);
+        }
+        return strings;
     }
 }

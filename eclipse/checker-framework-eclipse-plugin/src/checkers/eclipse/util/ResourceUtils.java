@@ -253,11 +253,12 @@ public class ResourceUtils {
 
                 //TODO: THERE HAS TO BE A BETTER WAY TO DO THIS BECAUSE THIS IS KLUDGERIFFIC
                 if( out != null ) {
-                    return new File(
-                            project.getProject().getLocation().toOSString() +
-                            File.separator + ".." + File.separator +
-                            project.getOutputLocation().toOSString()
-                    ).getCanonicalPath();
+
+                    String path = project.getProject().getLocation().toOSString() +
+                                  File.separator + ".." + File.separator +
+                                  project.getOutputLocation().toOSString();
+
+                    return new File(path).getCanonicalPath();
                 }
 
             } catch(final Exception exc) {
