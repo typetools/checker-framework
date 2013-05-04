@@ -17,7 +17,7 @@ import checkers.nullness.NullnessChecker;
  *     }
  * </code></pre>
  *
- * You should <emph>not</em> write a formal parameter name or <tt>this</tt>
+ * You should <em>not</em> write a formal parameter name or <tt>this</tt>
  * as the argument of this annotation.  In those cases, use the {@link
  * PolyNull} annotation instead.
  *
