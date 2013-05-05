@@ -412,7 +412,7 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
 
         @Override
         public Void visitLiteral(LiteralTree tree, AnnotatedTypeMirror type) {
-            type.addAnnotation(COMMITTED);
+            if (tree.getKind() != Tree.Kind.NULL_LITERAL) type.addAnnotation(COMMITTED);
             return super.visitLiteral(tree, type);
         }
     }
