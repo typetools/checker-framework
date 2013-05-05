@@ -159,6 +159,38 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
                 upperBound.addAnnotations(qualifierHierarchy.leastUpperBounds(
                         upperBound1, upperBound2));
             }
+
+            // if only one of the input types were type variables, then we want
+            // the effective annotations and take the lub of them
+            if (type.getKind() != TypeKind.TYPEVAR || otherType.getKind() != TypeKind.TYPEVAR) {
+                if (type.getKind() != TypeKind.TYPEVAR) {
+                    AnnotatedTypeMirror tmp = otherType;
+                    otherType = type;
+                    type = tmp;
+                }
+                assert otherType.getKind() == TypeKind.NULL;
+                lubAnnotatedType.clearAnnotations();
+                lubAnnotatedType.addAnnotations(type.getAnnotations());
+                for (AnnotationMirror top : qualifierHierarchy
+                        .getTopAnnotations()) {
+                    AnnotationMirror o = otherType
+                            .getAnnotationInHierarchy(top);
+                    assert o != null : "null should have all annotations.";
+                    if (AnnotationUtils.areSame(o,
+                            qualifierHierarchy.getBottomAnnotation(top))) {
+                        // if the annotation on 'null' is the bottom annotation,
+                        // take whatever is present on the type variable (even
+                        // if it is nothing)..
+                        // (already done)
+                    } else {
+                        // .. otherwise, take the LUB of the effective
+                        // annotations.
+                        lubAnnotatedType.replaceAnnotation(qualifierHierarchy
+                                .leastUpperBound(o,
+                                        type.getEffectiveAnnotationInHierarchy(top)));
+                    }
+                }
+            }
         } else if (kind == TypeKind.ARRAY
                 && !(type.getKind() == TypeKind.ARRAY && otherType.getKind() == TypeKind.ARRAY)) {
             AnnotatedArrayType aLubAnnotatedType = (AnnotatedArrayType) lubAnnotatedType;
