@@ -34,22 +34,22 @@ public class CheckerMain {
     /**
      * The path to the annotated jdk jar to use
      */
-    private final File jdkJar;
+    protected final File jdkJar;
 
     /**
      * The path to the jsr308 Langtools Type Annotations Compiler
      */
-    private final File javacJar;
+    protected final File javacJar;
 
     /**
      * The paths to the jar containing CheckerMain.class (i.e. checkers.jar)
      */
-    private final File checkersJar;
+    protected final File checkersJar;
 
     /**
      * The current major version of the jre in the form 1.X where X is the major version of Java
      */
-    private final double jreVersion;
+    protected final double jreVersion;
 
 
     private final List<String> compilationBootclasspath;
@@ -295,6 +295,11 @@ public class CheckerMain {
         return actualArgs;
     }
 
+    protected void addMainArgs(final List<String> args) {
+        args.add("-jar");
+        args.add(javacJar.getAbsolutePath());
+    }
+
     /**
      * Invoke the JSR308 Type Annotations Compiler with all relevant jars on it's classpath or boot classpath
      */
@@ -309,15 +314,13 @@ public class CheckerMain {
 
         args.addAll(jvmOpts);
 
-        args.add("-jar");
-        args.add(javacJar.getAbsolutePath());
+        addMainArgs(args);
 
         args.add("-Xbootclasspath/p:" + PluginUtil.join(File.pathSeparator, compilationBootclasspath));
 
         if( !argsListHasClassPath(argListFiles) ) {
             args.add("-classpath");
             args.add(quote(PluginUtil.join(File.pathSeparator, cpOpts)));
-
         }
 
         args.addAll(toolOpts);
