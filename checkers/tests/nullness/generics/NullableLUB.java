@@ -10,6 +10,7 @@ public class NullableLUB<T extends @Nullable Object> {
     T m(boolean b, T p) {
         T r1 = b ? p : null;
         nt = r1;
+        //:: error: (return.type.incompatible)
         return r1;
     }
 
