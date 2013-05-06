@@ -103,7 +103,7 @@ public class InitializationVisitor<Checker extends InitializationChecker, Value 
             if (!AnnotationUtils.containsSameIgnoringValues(
                     fieldAnnotations, checker.UNCLASSIFIED)) {
                 if (!ElementUtils.isStatic(el)
-                        && !(checker.isCommitted(yType) || checker.isFree(xType))) {
+                        && !(checker.isCommitted(yType) || checker.isFree(xType) || checker.isFbcBottom(yType))) {
                     /*@CompilerMessageKey*/ String err;
                     if (checker.isCommitted(xType)) {
                         err = COMMITMENT_INVALID_FIELD_WRITE_COMMITTED;
