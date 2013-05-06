@@ -25,6 +25,13 @@ class Purity {
         }
     }
     
+    // class with a side-effect free constructor
+    private static class SEClass {
+        @SideEffectFree
+        public SEClass() {
+        }
+    }
+    
     // a method that is not pure (no annotation)
     void nonpure() {
     }
@@ -108,6 +115,11 @@ class Purity {
     
     @SideEffectFree String t13b() {
         PureClass p = new PureClass();
+        return "";
+    }
+    
+    @SideEffectFree String t13d() {
+        SEClass p = new SEClass();
         return "";
     }
     
