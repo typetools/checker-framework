@@ -1,5 +1,8 @@
 package java.util.regex;
 
+import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
+
 public class PatternSyntaxException extends IllegalArgumentException {
     private static final long serialVersionUID = -3864639126226059218L;
     @SideEffectFree public PatternSyntaxException(String desc, String regex, int index)  { throw new RuntimeException("skeleton method"); }
