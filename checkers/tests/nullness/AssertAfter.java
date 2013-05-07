@@ -1,11 +1,11 @@
+import checkers.nullness.quals.EnsuresNonNull;
 import checkers.nullness.quals.*;
 
 public class AssertAfter {
 
   protected @Nullable String value;
 
-  @AssertNonNullAfter("value")
-  @Pure
+  @EnsuresNonNull("value")
   public boolean setRepNonNull() {
     value = "";
     return true;
@@ -27,8 +27,8 @@ public class AssertAfter {
     setRepNonNull();
   }
 
-  public void withCondition() {
-    if (toString() == null) {
+  public void withCondition(@Nullable String t) {
+    if (t == null) {
       setRepNonNull();
     }
     //:: error: (dereference.of.nullable)
@@ -42,10 +42,10 @@ public class AssertAfter {
   }
 
   // skip-test: Come back when working on improved flow
-//  public void asCondition() {
-//      if (setRepNonNull()) {
-//      } else {
-//        value.toString(); // valid!
-//      }
-//  }
+  public void asCondition() {
+      if (setRepNonNull()) {
+      } else {
+        value.toString(); // valid!
+      }
+  }
 }
