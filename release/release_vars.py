@@ -74,6 +74,7 @@ ANNO_TOOLS          = os.path.join(RELEASE_DIR, 'annotation-tools')
 ANNO_FILE_UTILITIES = os.path.join(ANNO_TOOLS,  'annotation-file-utilities')
 
 PLUME_LIB = os.path.join(RELEASE_DIR, 'plume-lib')
+PLUME_BIB = os.path.join(RELEASE_DIR, 'plume-bib')
 
 MAVEN_PLUGIN_DIR = os.path.join(CHECKER_FRAMEWORK, 'maven-plugin')
 MAVEN_PLUGIN_POM = os.path.join(MAVEN_PLUGIN_DIR,  'pom.xml')
@@ -99,6 +100,7 @@ CURRENT_DATE=datetime.date.today()
 
 #Environment variables for tools needed during the build
 os.environ['PLUME_LIB'] =  PLUME_LIB
+os.environ['BIBINPUTS']=  '.:' + PLUME_BIB
 os.environ['TEXINPUTS'] =  '.:/scratch/secs-jenkins/tools/hevea-1.10/lib/hevea:/usr/share/texmf/tex/latex/hevea/:/homes/gws/mernst/tex/sty:/homes/gws/mernst/tex:..:'
 os.environ['PERLLIB']   =  getAndAppend('PERLLIB', ":")  + "/homes/gws/mernst/bin/src/perl/lib/perl5/site_perl/5.10.0:/homes/gws/jburke/perl_lib"
 os.environ['PERL5LIB']  =  getAndAppend('PERL5LIB', ":") + "/homes/gws/mernst/bin/src/perl/lib/perl5/site_perl/5.10.0:/homes/gws/jburke/perl_lib"

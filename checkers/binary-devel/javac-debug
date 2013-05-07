@@ -24,7 +24,11 @@ esac
 binaryDir="${mydir}"/../binary
 buildDir="${mydir}"/../build
 
+#Langtools bin dir
+ltBinDir="${mydir}"/../../../jsr308-langtools/build/classes
+jdkPaths="${mydir}"/../jdk/annotated
+
 eval "java" \
      "-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005" \
-     "-DCheckerDevelMain.cp=${buildDir} -DCheckerDevelMain.bcp= -DCheckerDevelMain.binary=${binaryDir}" \
+     "-DCheckerDevelMain.cp=${buildDir} -DCheckerDevelMain.compile.bcp=${jdkPaths} -DCheckerDevelMain.runtime.bcp=${ltBinDir} -DCheckerDevelMain.binary=${binaryDir}" \
      "-classpath ${buildDir} checkers.util.CheckerDevelMain" "$@"
