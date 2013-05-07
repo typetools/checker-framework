@@ -19,11 +19,15 @@ esac
 
 binaryDir="${mydir}"/../binary
 
+#Langtools bin dir
+ltBinDir="${mydir}"/../../../jsr308-langtools/build/classes
+jdkPaths="${mydir}"/../jdk/annotated
+
 cfDir="${mydir}"/../..
 # Put "checkers" last, as "ant bindist" puts other projects
 # into the checkers/build directory.
 buildDirs="${cfDir}"/dataflow/build:"${cfDir}"/javacutils/build:"${cfDir}"/javaparser/build:"${cfDir}"/checkers/build
 
 eval "java" \
-     "-DCheckerDevelMain.cp=${buildDirs} -DCheckerDevelMain.bcp= -DCheckerDevelMain.binary=${binaryDir}" \
+     "-DCheckerDevelMain.cp=${buildDirs} -DCheckerDevelMain.compile.bcp=${jdkPaths} -DCheckerDevelMain.runtime.bcp=${ltBinDir} -DCheckerDevelMain.binary=${binaryDir}" \
      "-classpath ${buildDirs} checkers.util.CheckerDevelMain" "$@"
