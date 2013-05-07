@@ -20,6 +20,10 @@ esac
 binaryDir="${mydir}"/../binary
 buildDir="${mydir}"/../build
 
+#Langtools bin dir
+ltBinDir="${mydir}"/../../../jsr308-langtools/build/classes
+jdkPaths="${mydir}"/../jdk/annotated
+
 eval "java" \
-     "-DCheckerDevelMain.cp=${buildDir} -DCheckerDevelMain.bcp= -DCheckerDevelMain.binary=${binaryDir}" \
+     "-DCheckerDevelMain.cp=${buildDir} -DCheckerDevelMain.compile.bcp=${jdkPaths} -DCheckerDevelMain.runtime.bcp=${ltBinDir} -DCheckerDevelMain.binary=${binaryDir}" \
      "-classpath ${buildDir} checkers.util.CheckerDevelMain" "$@"
