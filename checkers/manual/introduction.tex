@@ -520,7 +520,7 @@ Two concrete examples (using the Nullness checker) are:
 %END LATEX
 \begin{Verbatim}
   javac -processor checkers.nullness.NullnessChecker MyFile.java
-  java -jar $CHECKERS/binary/checkers.jar MyFile.java
+  java -jar $CHECKERS/binary/checkers.jar -processor checkers.nullness.NullnessChecker MyFile.java
 \end{Verbatim}
 %BEGIN LATEX
 \end{smaller}
