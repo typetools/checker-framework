@@ -6,14 +6,15 @@ import java.util.List;
 
 import javax.lang.model.element.AnnotationMirror;
 
+import javacutils.AnnotationUtils;
+import javacutils.TreeUtils;
+import javacutils.TypesUtils;
+
 import checkers.lock.quals.GuardedBy;
 import checkers.quals.Unqualified;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.util.AnnotationBuilder;
-import checkers.util.AnnotationUtils;
-import checkers.util.TreeUtils;
-import checkers.util.TypesUtils;
 
 import com.sun.source.tree.*;
 
