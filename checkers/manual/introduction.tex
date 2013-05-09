@@ -258,7 +258,7 @@ full pathname to \<javac> or the alias, if you did not add the Type Annotations 
 The output should be:
 
 \begin{Verbatim}
-  javac 1.7.0-jsr308-1.6.2
+  javac 1.7.0-jsr308-1.6.3
 \end{Verbatim}
 
 That's all there is to it!  Now you are ready to start using the checkers.
@@ -520,7 +520,7 @@ Two concrete examples (using the Nullness checker) are:
 %END LATEX
 \begin{Verbatim}
   javac -processor checkers.nullness.NullnessChecker MyFile.java
-  java -jar $CHECKERS/binary/checkers.jar MyFile.java
+  java -jar $CHECKERS/binary/checkers.jar -processor checkers.nullness.NullnessChecker MyFile.java
 \end{Verbatim}
 %BEGIN LATEX
 \end{smaller}

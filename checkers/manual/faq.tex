@@ -463,8 +463,8 @@ expressiveness, the Lock Checker (see Chapter~\ref{lock-checker}) uses the
 
 The \emph{receiver} of a method is the \<this> formal parameter, sometimes
 also called the ``current object''.  Within the method declaration, \<this>
-is used to refer to the receiver.  At a method call, the receiver is
-written before the method name.
+is used to refer to the receiver formal parameter.  At a method call, the
+receiver actual argument is written before the method name.
 
 The method \<compareTo> takes \emph{two} formal parameters.  At a call site
 like \<x.compareTo(y)>, the two arguments are \<x> and \<y>.  It is
@@ -502,6 +502,13 @@ Then the behavior of four different invocations is as follows:
 
 The invocation \<myA.requiresB()> does not type-check because the actual
 argument's type is not a subtype of the formal parameter's type.
+
+A top-level constructor does not have a receiver.  An inner class
+constructor does have a receiver, whose type is the same as the containing
+outer class.  The receiver is distinct from the object being constructed.
+In a method of a top-level class, the receiver is named \<this>.  In a
+constructor of an inner class, the receiver is named \<Outer.this> and the
+result is named \<this>.
 
 
 \section{What is the meaning of an annotation after a type, such as \<@NonNull Object @Nullable>?\label{faq-annotation-after-type}}
