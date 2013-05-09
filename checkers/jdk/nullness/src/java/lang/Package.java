@@ -1,8 +1,9 @@
 package java.lang;
 
-import checkers.nullness.quals.*;
+import dataflow.quals.Pure;
 
-@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
+import checkers.nullness.quals.Nullable;
+
 
 public class Package implements java.lang.reflect.AnnotatedElement{
   protected Package() {}
