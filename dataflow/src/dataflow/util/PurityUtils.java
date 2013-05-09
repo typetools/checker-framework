@@ -24,13 +24,13 @@ import dataflow.quals.SideEffectFree;
  */
 public class PurityUtils {
 
-    /** Does the method {@code tree} have a purity annotation? */
+    /** Does the method {@code tree} have any purity annotation? */
     public static boolean hasPurityAnnotation(AnnotationProvider provider,
             MethodTree tree) {
         return !getPurityKinds(provider, tree).isEmpty();
     }
 
-    /** Does the method {@code methodElement} have a purity annotation? */
+    /** Does the method {@code methodElement} have any purity annotation? */
     public static boolean hasPurityAnnotation(AnnotationProvider provider,
             Element methodElement) {
         return !getPurityKinds(provider, methodElement).isEmpty();
