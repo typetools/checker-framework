@@ -197,6 +197,8 @@ public class StubUtil {
                 for (Iterator<Parameter> i = n.getParameters().iterator(); i.hasNext();) {
                     Parameter p = i.next();
                     p.accept(this, arg);
+                    if (p.isVarArgs())
+                        sb.append("[]");
                     if (i.hasNext()) {
                         sb.append(",");
                     }
