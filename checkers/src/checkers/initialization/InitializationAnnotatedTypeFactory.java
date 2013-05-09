@@ -401,7 +401,8 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
                 boolean allCommitted = true;
                 Type type = ((JCTree) node).type;
                 for (ExpressionTree a : node.getArguments()) {
-                    allCommitted &= checker.isCommitted(getAnnotatedType(a));
+                    final AnnotatedTypeMirror t = getAnnotatedType(a);
+                    allCommitted &= (checker.isCommitted(t) || checker.isFbcBottom(t));
                 }
                 if (!allCommitted) {
                     p.replaceAnnotation(checker.createFreeAnnotation(type));
