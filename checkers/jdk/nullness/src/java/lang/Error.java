@@ -1,23 +1,24 @@
 package java.lang;
 
 import checkers.nullness.quals.Nullable;
+import dataflow.quals.SideEffectFree;
 
 public class Error extends Throwable {
     static final long serialVersionUID = 4980196508277280342L;
 
-    public Error() {
+    @SideEffectFree public Error() {
 	super();
     }
 
-    public Error(@Nullable String message) {
+    @SideEffectFree public Error(@Nullable String message) {
 	super(message);
     }
 
-    public Error(@Nullable String message, @Nullable Throwable cause) {
+    @SideEffectFree public Error(@Nullable String message, @Nullable Throwable cause) {
         super(message, cause);
     }
 
-    public Error(@Nullable Throwable cause) {
+    @SideEffectFree public Error(@Nullable Throwable cause) {
         super(cause);
     }
 }
