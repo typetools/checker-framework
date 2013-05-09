@@ -359,7 +359,7 @@ Alternately, the type system designer may specify a default procedurally,
 by calling the
 \ahref{\addAbsoluteDefaultURL}{\<QualifierDefaults.addAbsoluteDefault>}
 method.  You may do this even if you have declaratively defined the
-qualifier hierarchy; see the Nullness checker's implementation for an
+qualifier hierarchy; see the Nullness Checker's implementation for an
 example.
 
 
@@ -374,18 +374,21 @@ When you define a type system, its type hierarchy should generally be a
 complete lattice --- that is, there should be a top type that is a
 supertype of all other types, and there should be a bottom type that is a
 subtype of all other types.
+Furthermore, it is best if the top type and bottom type are defined
+explicitly for the type system, rather than (say) reusing a qualifier from the
+Checker Framework such as \<@Unqualified>.
 
 
 \label{bottom-qualifier}
 
 \paragraph{Bottom qualifier}
-It is usually a good idea to have a bottom qualifier in your type hierarchy
+Your type hierarchy should have a bottom qualifier
 --- a qualifier that is a (direct or indirect) subtype of every other
 qualifier.
 
-The bottom qualifier is the natural type for the \code{null}
-value, which can be viewed as having any type at all.  Without a bottom
-qualifier, type-checking becomes less precise.  In particular, this code
+Your type system should give \<null> the bottom type.  (The only exception
+is if the type system has special treatment for \<null> values, as the
+Nullness Checker does.)  This legal code
 will not type-check unless \<null> has the bottom type:
 \begin{Verbatim}
 <T> T f() {
@@ -395,7 +398,7 @@ will not type-check unless \<null> has the bottom type:
 Users should never write the bottom qualifier explicitly; it is merely used
 for the \code{null} value.
 
-The hierarchy of Figure~\ref{fig:igj-hierarchy} lacks
+The hierarchy shown in Figure~\ref{fig:igj-hierarchy} lacks
 a bottom qualifier, because there is no qualifier that is a subtype of both
 \<@Immutable> and \<@Mutable>.
 The actual IGJ hierarchy does contain a (non-user-visible) bottom qualifier,
@@ -419,8 +422,11 @@ hierarchy --- a qualifier that is a (direct or indirect) supertype of every
 other qualifier.  When a type system lacks a top qualifier (or any other
 qualifier), then users lose flexibility in expressing defaults.
 
-For instance, the \<@Encrypted> type system of
-Section~\ref{encrypted-example} lacks an explicit top qualifier:
+Furthermore, it is most convenient to users if the top qualifier is defined
+by the type system.  An example of a type system that does
+\emph{not} do that is the \<@Encrypted> type system of
+Section~\ref{encrypted-example}.  It lacks its own explicit top qualifier and instead
+uses \<@Unqualified>, which is shared across multiple type systems:
 
 \begin{Verbatim}
   @TypeQualifier
@@ -435,14 +441,16 @@ Section~\ref{encrypted-example} lacks an explicit top qualifier:
 % \<@\refclass{interning/quals}{Interned}>.
 
 \noindent
-The default is
-\<@Unqualified>, and there is no way for a user to change that.
-(A user could not specify \<@DefaultQualifier(Unqualified.class)>,
-because many type systems share \<@Unqualified> and it is not clear which
-type system the annotation is intended to refer to.)
+It can be convenient to use \<@Unqualified> as the top type to avoid
+having to define your own top type.  The disadvantage is that then there is no
+way for a user to change the default qualifier.  A user could not specify
+\<@DefaultQualifier(Unqualified.class)>,
+because many type systems share \<@Unqualified> and it would apply to every
+type system, which is unlikely to be desired.
 
-By contrast, the Nullness type system has an explicit qualifier for every
-possible meaning:  both \<@\refclass{nullness/quals}{Nullable}> and
+It is best if a type system as an explicit qualifier for every
+possible meaning.  For example,
+the Nullness type system has both \<@\refclass{nullness/quals}{Nullable}> and
 \<@\refclass{nullness/quals}{NonNull}>.  Because it has no built-in meaning
 for unannotated types; a user may specify a default qualifier.  This
 greater flexibility for the user is usually preferable.
@@ -695,7 +703,7 @@ type-system classes.
 
 Because the Checker Framework provides reasonable defaults, oftentimes the
 checker class has no work to do.  Here are the complete definitions of the
-checker classes for the Interning and Nullness checkers:
+checker classes for the Interning and Nullness Checkers:
 
 \begin{Verbatim}
   @TypeQualifiers({ Interned.class, PolyInterned.class })
