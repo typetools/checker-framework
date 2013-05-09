@@ -161,6 +161,7 @@ public class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor<R, P> {
         if (visitedNodes.containsKey(type)) {
             return visitedNodes.get(type);
         }
+        visitedNodes.put(type, null);
         R r = scan(type.getLowerBoundField(), p);
         visitedNodes.put(type, r);
         r = scanAndReduce(type.getUpperBoundField(), p, r);
@@ -188,6 +189,7 @@ public class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor<R, P> {
         if (visitedNodes.containsKey(type)) {
             return visitedNodes.get(type);
         }
+        visitedNodes.put(type, null);
         R r = scan(type.getExtendsBoundField(), p);
         visitedNodes.put(type, r);
         r = scanAndReduce(type.getSuperBoundField(), p, r);

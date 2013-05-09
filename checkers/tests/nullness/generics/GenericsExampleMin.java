@@ -60,7 +60,6 @@ class GenericsExampleMin {
       @NonNull T nn;
       
       public MyList3(T t, @Nullable T nble, @NonNull T nn) {
-          //:: error: (assignment.type.incompatible)
           this.t = nble;
           this.t = nn;
           //:: error: (assignment.type.incompatible)

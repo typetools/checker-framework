@@ -1,6 +1,6 @@
 package java.util;
-import checkers.nullness.quals.*;
-@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
+import checkers.nullness.quals.Nullable;
+import checkers.nullness.quals.PolyNull;
 
 // Subclasses of this interface/class may opt to prohibit null elements
 public interface Set<E extends @Nullable Object> extends Collection<E> {

@@ -1,8 +1,7 @@
 package java.io;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
-@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
 
 public class ObjectStreamField implements Comparable<Object> {
   public ObjectStreamField(String a1, Class<?> a2) { throw new RuntimeException("skeleton method"); }
