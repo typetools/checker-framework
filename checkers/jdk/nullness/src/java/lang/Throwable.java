@@ -5,6 +5,7 @@ import dataflow.quals.SideEffectFree;
 
 import checkers.nullness.quals.Nullable;
 import checkers.nullness.quals.Raw;
+import checkers.initialization.quals.UnknownInitialization;
 
 
 public class Throwable implements java.io.Serializable{
@@ -20,7 +21,7 @@ public class Throwable implements java.io.Serializable{
   // @PolyRaw is a fair amount of work, so don't bother to do so yet.  See
   // https://code.google.com/p/checker-framework/issues/detail?id=216 .
   // public synchronized @PolyRaw Throwable initCause(@PolyRaw Throwable this, @Nullable Throwable a1) { throw new RuntimeException("skeleton method"); }
-  public synchronized @Raw Throwable initCause(@Raw Throwable this, @Nullable Throwable a1) { throw new RuntimeException("skeleton method"); }
+  public synchronized @UnknownInitialization @Raw Throwable initCause(@UnknownInitialization @Raw Throwable this, @Nullable Throwable a1) { throw new RuntimeException("skeleton method"); }
   public @SideEffectFree String toString() { throw new RuntimeException("skeleton method"); }
   public void printStackTrace() { throw new RuntimeException("skeleton method"); }
   public void printStackTrace(java.io.PrintStream a1) { throw new RuntimeException("skeleton method"); }
