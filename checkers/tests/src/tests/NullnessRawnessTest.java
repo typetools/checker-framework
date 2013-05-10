@@ -18,7 +18,7 @@ public class NullnessRawnessTest extends ParameterizedCheckerTest {
         // TODO: remove arrays:forbidnonnullcomponents option once it's no
         // longer needed.
         super(testFile, checkers.nullness.NullnessRawnessChecker.class.getName(),
-                "nullness", "-Anomsgtext",
+                "nullness", "-Anomsgtext", "-Xlint:deprecation",
                 "-Alint=arrays:forbidnonnullcomponents,"
                         + AbstractNullnessChecker.LINT_REDUNDANTNULLCOMPARISON);
     }
