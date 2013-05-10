@@ -24,6 +24,7 @@ import com.sun.tools.javac.comp.Resolve;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.List;
+import com.sun.tools.javac.util.Log;
 import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.Names;
 
@@ -34,6 +35,7 @@ public class Resolver {
     private final Resolve resolve;
     private final Names names;
     private final Trees trees;
+    private final Log log;
 
     private final Method FIND_METHOD;
     private final Method FIND_IDENT_IN_TYPE;
@@ -45,6 +47,7 @@ public class Resolver {
         this.resolve = Resolve.instance(context);
         this.names = Names.instance(context);
         this.trees = Trees.instance(env);
+        this.log = Log.instance(context);
 
         try {
             FIND_METHOD = Resolve.class.getDeclaredMethod("findMethod",
@@ -90,10 +93,16 @@ public class Resolver {
      * @return The element for the field.
      */
     public Element findField(String name, TypeMirror type, TreePath path) {
-        JavacScope scope = (JavacScope) trees.getScope(path);
-        Env<AttrContext> env = scope.getEnv();
-        return wrapInvocation(FIND_IDENT_IN_TYPE, env, type,
-                names.fromString(name), VAR);
+        Log.DiagnosticHandler discardDiagnosticHandler =
+            new Log.DiscardDiagnosticHandler(log);
+        try {
+            JavacScope scope = (JavacScope) trees.getScope(path);
+            Env<AttrContext> env = scope.getEnv();
+            return wrapInvocation(FIND_IDENT_IN_TYPE, env, type,
+                    names.fromString(name), VAR);
+        } finally {
+            log.popDiagnosticHandler(discardDiagnosticHandler);
+        }
     }
 
     /**
@@ -110,9 +119,15 @@ public class Resolver {
      * @return The element for the class.
      */
     public Element findClass(String name, TreePath path) {
-        JavacScope scope = (JavacScope) trees.getScope(path);
-        Env<AttrContext> env = scope.getEnv();
-        return wrapInvocation(FIND_TYPE, env, names.fromString(name));
+        Log.DiagnosticHandler discardDiagnosticHandler =
+            new Log.DiscardDiagnosticHandler(log);
+        try {
+            JavacScope scope = (JavacScope) trees.getScope(path);
+            Env<AttrContext> env = scope.getEnv();
+            return wrapInvocation(FIND_TYPE, env, names.fromString(name));
+        } finally {
+            log.popDiagnosticHandler(discardDiagnosticHandler);
+        }
     }
 
     /**
@@ -133,34 +148,40 @@ public class Resolver {
      */
     public Element findMethod(String methodName, TypeMirror receiverType,
             TreePath path, java.util.List<TypeMirror> argumentTypes) {
-        JavacScope scope = (JavacScope) trees.getScope(path);
-        Env<AttrContext> env = scope.getEnv();
-
-        Type site = (Type) receiverType;
-        Name name = names.fromString(methodName);
-        List<Type> argtypes = List.nil();
-        for (TypeMirror a : argumentTypes) {
-            argtypes = argtypes.append((Type) a);
-        }
-        List<Type> typeargtypes = List.nil();
-        boolean allowBoxing = true;
-        boolean useVarargs = false;
-        boolean operator = true;
-
+        Log.DiagnosticHandler discardDiagnosticHandler =
+            new Log.DiscardDiagnosticHandler(log);
         try {
-            // For some reason we have to set our own method context, which is rather ugly.
-            // TODO: find a nicer way to do this.
-            Object methodContext = buildMethodContext();
-            Object oldContext = getField(resolve, "currentResolutionContext");
-            setField(resolve, "currentResolutionContext", methodContext);
-            Element result = wrapInvocation(FIND_METHOD, env, site, name, argtypes,
-                typeargtypes, allowBoxing, useVarargs, operator);
-            setField(resolve, "currentResolutionContext", oldContext);
-            return result;
-        } catch (Throwable t) {
-            Error err = new AssertionError("Unexpected Reflection error");
-            err.initCause(t);
-            throw err;
+            JavacScope scope = (JavacScope) trees.getScope(path);
+            Env<AttrContext> env = scope.getEnv();
+
+            Type site = (Type) receiverType;
+            Name name = names.fromString(methodName);
+            List<Type> argtypes = List.nil();
+            for (TypeMirror a : argumentTypes) {
+                argtypes = argtypes.append((Type) a);
+            }
+            List<Type> typeargtypes = List.nil();
+            boolean allowBoxing = true;
+            boolean useVarargs = false;
+            boolean operator = true;
+
+            try {
+                // For some reason we have to set our own method context, which is rather ugly.
+                // TODO: find a nicer way to do this.
+                Object methodContext = buildMethodContext();
+                Object oldContext = getField(resolve, "currentResolutionContext");
+                setField(resolve, "currentResolutionContext", methodContext);
+                Element result = wrapInvocation(FIND_METHOD, env, site, name, argtypes,
+                    typeargtypes, allowBoxing, useVarargs, operator);
+                setField(resolve, "currentResolutionContext", oldContext);
+                return result;
+            } catch (Throwable t) {
+                Error err = new AssertionError("Unexpected Reflection error");
+                err.initCause(t);
+                throw err;
+            }
+        } finally {
+            log.popDiagnosticHandler(discardDiagnosticHandler);
         }
     }
 
