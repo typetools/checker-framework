@@ -229,9 +229,10 @@ public class StubUtil {
             if (n.getId().getArrayCount() > 0) {
                 SourceChecker.errorAbort("StubUtil: put array brackets on the type, not the variable: " + n);
             }
+           
+            n.getType().accept(this, arg);
             if (n.isVarArgs())
                 sb.append("[]");
-            n.getType().accept(this, arg);
         }
 
         // Types
