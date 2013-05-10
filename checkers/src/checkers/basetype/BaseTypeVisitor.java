@@ -312,16 +312,18 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
 
             // check method purity if needed
             if (!abstractMethod) {
-                boolean isSideEffectFree = PurityUtils.isSideEffectFree(
+                boolean anyPurityAnnotation = PurityUtils.hasPurityAnnotation(
                         atypeFactory, node);
                 boolean checkPurityAlways = checker.getProcessingEnvironment()
                         .getOptions().containsKey("suggestPureMethods");
-                if (isSideEffectFree || checkPurityAlways) {
+                if (anyPurityAnnotation || checkPurityAlways) {
                     // check "no" purity
                     List<dataflow.quals.Pure.Kind> kinds = PurityUtils
                             .getPurityKinds(atypeFactory, node);
                     if (!TreeUtils.isConstructor(node)) {
                         // check return type
+                        boolean isSideEffectFree = PurityUtils.isSideEffectFree(
+                                atypeFactory, node);
                         if (node.getReturnType().toString().equals("void")
                                 && isSideEffectFree) {
                             checker.report(Result.warning("purity.void.method"),
