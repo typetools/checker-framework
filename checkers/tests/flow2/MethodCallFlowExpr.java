@@ -59,7 +59,7 @@ class MethodCallFlowExpr {
     }
     
     @EnsuresQualifier(expression="nonpure()", qualifier=Odd.class)
-    //:: error: (flowexpr.method.not.pure)
+    //:: error: (flowexpr.method.not.deterministic)
     void e3() {
     }
     
