@@ -241,7 +241,7 @@ public class FlowExpressionParseUtil {
             if (!PurityUtils.isDeterministic(context.atypeFactory,
                     methodElement)) {
                 throw new FlowExpressionParseException(Result.failure(
-                        "flowexpr.method.not.pure",
+                        "flowexpr.method.not.deterministic",
                         methodElement.getSimpleName()));
             }
             if (ElementUtils.isStatic(methodElement)) {
