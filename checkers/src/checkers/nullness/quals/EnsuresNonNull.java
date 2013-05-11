@@ -9,10 +9,17 @@ import java.lang.annotation.Target;
 import checkers.quals.PostconditionAnnotation;
 
 /**
- * A postcondition annotation to indicate that certain expressions are
- * {@link NonNull} on successful termination of a method.
+ * Indicates that the value expressions are non-null, if the method
+ * terminates successfully.
+ * <p>
  *
- * @author Stefan Heule
+ * This postcondidion annotation is useful for methods that initialize a
+ * field.  It can also be used for a method that fails if a given
+ * expression is null.
+ *
+ * @see NonNull
+ * @see NullnessChecker
+ * @checker.framework.manual #nullness-checker Nullness Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
