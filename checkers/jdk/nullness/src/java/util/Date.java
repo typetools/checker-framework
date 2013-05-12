@@ -1,6 +1,5 @@
 package java.util;
-import checkers.nullness.quals.*;
-@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
+import checkers.nullness.quals.Nullable;
 
 public class Date implements java.io.Serializable, Cloneable, Comparable<Date> {
   private static final long serialVersionUID = 0;

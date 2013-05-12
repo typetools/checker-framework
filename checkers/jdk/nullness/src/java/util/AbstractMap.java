@@ -1,6 +1,8 @@
 package java.util;
-import checkers.nullness.quals.*;
-@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
+import dataflow.quals.Pure;
+
+import checkers.nullness.quals.KeyFor;
+import checkers.nullness.quals.Nullable;
 
 // Subclasses of this interface/class may opt to prohibit null elements.
 public abstract class AbstractMap<K extends @Nullable Object, V extends @Nullable Object> implements Map<K, V> {
