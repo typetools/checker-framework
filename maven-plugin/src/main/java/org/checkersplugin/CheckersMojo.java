@@ -1,26 +1,31 @@
 package org.checkersplugin;
 
-import org.apache.maven.artifact.Artifact;
-import org.apache.maven.plugin.AbstractMojo;
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugin.CompilationFailureException;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.ArtifactResolver;
-import org.apache.maven.artifact.factory.ArtifactFactory;
-import org.apache.maven.project.MavenProject;
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugin.CompilationFailureException;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
+import org.apache.maven.project.MavenProject;
 import org.apache.maven.toolchain.ToolchainManager;
-
-import org.codehaus.plexus.util.StringUtils;
-import org.codehaus.plexus.util.cli.Commandline;
-import org.codehaus.plexus.util.cli.CommandLineUtils;
-import org.codehaus.plexus.util.cli.CommandLineException;
 import org.codehaus.plexus.compiler.CompilerError;
-
-import java.io.*;
-import java.util.*;
+import org.codehaus.plexus.util.StringUtils;
+import org.codehaus.plexus.util.cli.CommandLineException;
+import org.codehaus.plexus.util.cli.CommandLineUtils;
+import org.codehaus.plexus.util.cli.Commandline;
 
 /**
  * A Mojo is the main goal or task for a maven project.  CheckersMojo runs the CheckerFramework compiler with the
@@ -117,7 +122,7 @@ public class CheckersMojo extends AbstractMojo {
       * @readonly
       */
      private String outputDirectory;
-    
+
     /**
      * The source directories containing the sources to be compiled.
      *
@@ -220,7 +225,7 @@ public class CheckersMojo extends AbstractMojo {
         }
 
         log.info("Running JSR308 checkers version: " + checkersVersion);
-        
+
         if (processors.size() == 0) {
             throw new MojoExecutionException("At least one checker must be specified!");
         }
@@ -230,6 +235,11 @@ public class CheckersMojo extends AbstractMojo {
         log.info("Running processor(s): " + processor);
 
         final List<String> sources = PathUtils.scanForSources(compileSourceRoots, includes, excludes);
+
+        if (sources.size() == 0) {
+            log.info("No source files found.");
+            return;
+        }
 
         locateArtifacts();
 
@@ -340,7 +350,7 @@ public class CheckersMojo extends AbstractMojo {
         // Sanity check - if the exit code is non-zero, there should be some messages
         if (exitCode != 0 && messages.isEmpty()) {
             throw new MojoExecutionException("Exit code from the compiler was not zero (" + exitCode +
-                    "), but no messages reported. Error stream content: " + err.getOutput() + 
+                    "), but no messages reported. Error stream content: " + err.getOutput() +
                     " command line: " + Arrays.toString(cl.getCommandline()));
         }
 
