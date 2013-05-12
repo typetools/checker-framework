@@ -1,6 +1,8 @@
 package java.io;
 
-import checkers.nullness.quals.*;
+import dataflow.quals.Pure;
+
+import checkers.nullness.quals.Nullable;
 
 @checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
 
@@ -28,9 +30,9 @@ public class File implements Serializable, Comparable<File> {
   public boolean canRead() { throw new RuntimeException("skeleton method"); }
   public boolean canWrite() { throw new RuntimeException("skeleton method"); }
   public boolean exists() { throw new RuntimeException("skeleton method"); }
-  // This @AssertNonNullIfTrue is not true, since the list methods also
+  // This @EnsuresNonNullIfTrue is not true, since the list methods also
   // return null in the case of an IO error (instead of throwing IOException).
-  // @AssertNonNullIfTrue({"list()","list(FilenameFilter)","listFiles()","listFiles(FilenameFilter)","listFiles(FileFilter)"})
+  // @EnsuresNonNullIf(expression={"list()","list(FilenameFilter)","listFiles()","listFiles(FilenameFilter)","listFiles(FileFilter)"}, result=true)
   public boolean isDirectory() { throw new RuntimeException("skeleton method"); }
   public boolean isFile() { throw new RuntimeException("skeleton method"); }
   public boolean isHidden() { throw new RuntimeException("skeleton method"); }

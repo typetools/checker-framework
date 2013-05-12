@@ -185,18 +185,17 @@ apply to the method itself rather than to some particular type.
 
 \begin{description}
 
-\item[\code{@\refclass{nullness/quals}{NonNullOnEntry}}]
+\item[\code{@\refclass{nullness/quals}{RequiresNonNull}}]
   indicates a method precondition:  The annotated method expects the
   specified variables (typically field references) to be non-null when the
   method is invoked.
 
-\item[\code{@\refclass{nullness/quals}{AssertNonNullAfter}}]
-\item[\code{@\refclass{nullness/quals}{AssertNonNullIfTrue}}]
-\item[\code{@\refclass{nullness/quals}{AssertNonNullIfFalse}}]
-  indicates a method postcondition.  With \<@AssertNonNullAfter>, the given
+\item[\code{@\refclass{nullness/quals}{EnsuresNonNull}}]
+\item[\code{@\refclass{nullness/quals}{EnsuresNonNullIf}}]
+  indicates a method postcondition.  With \<@EnsuresNonNull>, the given
   expressions are non-null after the method returns; this is useful for a
   method that initializes a field, for example.  With
-  \<@AssertNonNullIfTrue> and \<@AssertNonNullIfFalse>, if the annotated
+  \<@EnsuresNonNullIf>, if the annotated
   method returns the given boolean value (true or false), then the given
   expressions are non-null.  See Section~\ref{conditional-nullness} and the
   Javadoc for examples of their use.
@@ -349,7 +348,7 @@ possible but are not as useful.
 \subsection{Conditional nullness\label{conditional-nullness}}
 
 The Nullness Checker supports a form of conditional nullness types, via the
-\code{@\refclass{nullness/quals}{AssertNonNullIfTrue}} and \code{@\refclass{nullness/quals}{AssertNonNullIfFalse}} method annotations.
+\code{@\refclass{nullness/quals}{EnsuresNonNullIf}} method annotations.
 The annotation on a method declares that some expressions are non-null, if
 the method returns true (false, respectively).
 
@@ -365,7 +364,7 @@ done for you in the annotated JDK that comes with the Checker Framework):
 
 \begin{Verbatim}
   class Class {
-    @AssertNonNullIfTrue("getComponentType()")
+    @EnsuresNonNullIf("getComponentType()")
     public native boolean isArray();
 
     public native @Nullable Class<?> getComponentType();
@@ -387,16 +386,14 @@ uses such a pattern:
 
 Another example is \sunjavadoc{java/util/Queue.html#peek()}{Queue.peek}
 and \sunjavadoc{java/util/Queue.html#poll()}{Queue.poll}, which return
-non-null if \sunjavadoc{java/util/Queue.html#isEmpty()}{Queue.isEmpty}
+non-null if \sunjavadoc{java/util/Collections.html#isEmpty()}{isEmpty}
 returns false.
 
-The argument to \code{@AssertNonNullIfTrue} and
-\code{@AssertNonNullIfFalse} is a Java expression, including method calls
+The argument to \code{@EnsuresNonNullIf} is a Java expression, including method calls
 (as shown above), method formal parameters, fields, etc.; for details, see
 Section~\ref{java-expressions-as-arguments}.
 More examples of the use of these annotations appear in the Javadoc for
-\code{@\refclass{nullness/quals}{AssertNonNullIfTrue}} and
-\code{@\refclass{nullness/quals}{AssertNonNullIfFalse}}.
+\code{@\refclass{nullness/quals}{EnsuresNonNullIf}}.
 
 
 \subsection{Nullness and arrays\label{nullness-arrays}}
@@ -424,7 +421,8 @@ each component, and then assigns the result to a non-null array:
 
 Note that the checker is currently not powerful enough to ensure that
 each array component was initialized. Therefore, the last assignment
-needs to be trusted.
+needs to be trusted:  that is, a programmer must verify that it is safe,
+then write a \<@SuppressWarnings> annotation.
 
 % TODO: explain more aspects, give more examples.
 
@@ -480,12 +478,13 @@ Section~\ref{suppressing-warnings}).  An example use is
 
 \begin{Verbatim}
     // might return null
-    @Nullable Object getObject() { ... }
+    @Nullable Object getObject(...) { ... }
 
     void myMethod() {
-      // The programmer knows that this partucular call never returns null.
+      // The programmer knows that this partucular call never returns null,
+      // perhaps based on the arguments or the state of other objects.
       @SuppressWarnings("nullness")
-      @NonNull Object o2 = getObject();
+      @NonNull Object o2 = getObject(...);
 \end{Verbatim}
 
 
@@ -510,61 +509,18 @@ suppress warnings; see below.
 Occasionally, it is inconvenient or
 verbose to use the \<@SuppressWarnings> annotation.  For example, Java does
 not permit annotations such as \<@SuppressWarnings> to appear on statements.
+In such cases, you may be able to use the \<@AssumeAssertion> comment in
+an \<assert> statement (see Section~\ref{assumeassertion}).
 
-For situations when the \<@SuppressWarnings> annotation is inconvenient,
-the Nullness Checker provides three additional ways to suppress warnings:
-via an \<assert> statement, the \<castNonNull> method, and the
+For situations when all of these approaches are inconvenient,
+the Nullness Checker provides two additional ways to suppress warnings:
+via the \<castNonNull> method and the
 \<@AssertParametersNonNull> annotation.  These are
 appropriate when the Nullness Checker issues a warning, but the programmer
 knows for sure that the warning is a false positive, because the value
 cannot ever be null at run time.
 
-  % "@SuppressWarnings(nullness)" might be a better string.
-  % That enables a programmer to search the source code to find all instances.
-\newcommand{\nullnessSuppressionString}{nullness}
-
 \begin{enumerate}
-\item
-  Use an assertion.  If the string ``\<\nullnessSuppressionString>''
-  appears in the message body, then the Nullness Checker treats the
-  assertion as suppressing a warning and assumes that the assertion always
-  succeeds.  For example, the checker assumes that no null pointer
-  exception can occur in code such as
-\begin{Verbatim}
-  assert x != null : "@SuppressWarnings(nullness)";
-  ... x.f ...
-\end{Verbatim}
-
-  If the string ``\<\nullnessSuppressionString>'' does not appear in the
-  assertion message, then the Nullness Checker treats the assertion as being
-  used for defensive programming, and it warns if the method might throw a
-  nullness-related exception.
-
-  A downside of putting the string in the assertion message is that if the
-  assertion ever fails, then a user might see the string and be confused.
-  But the string should only be used if the programmer has reasoned that
-  the assertion can never fail.
-
-% (Another way of stating the Nullness checker's use of assertions is as an
-% additional caveat to the guarantees provided by a checker
-% (Section~\ref{checker-guarantees}).  The Nullness checker prevents null
-% pointer errors in your code under the assumption that assertions are
-% enabled, and it does not guarantee that all of your assertions succeed.)
-
-
-% TODO:
-% There is a new lint option "flow:inferFromAsserts" that can be used
-% to always infer information from assert statements, even without the
-% suppression key.
-% Discuss how this influences the guarantees from the checker.
-% This is a feature of the framework, not only the nullness checker;
-% however, the nullness checker is probably the only one that infers something
-% from conditions.
-% Move the discussion somewhere else, but keep something here?
-% Maybe warnings or advanced-features.
-
-% TODO: Also discuss the whole inference over conditions somewhere.
-
 \item
   Use the \refmethod{nullness}{NullnessUtils}{castNonNull}{(T)} method.
 
@@ -929,21 +885,22 @@ default in the field declaration, or be assigned in the constructor or in a
 helper method that the constructor calls.  If
 your code initializes (some) fields in a helper method, you will need to
 annotate the helper method with an annotation such as
-\code{@\refclass{nullness/quals}{AssertNonNullAfter}(\{"field1", "field2"\})}
+\code{@\refclass{nullness/quals}{EnsuresNonNull}(\{"field1", "field2"\})}
 for all the fields that the helper method assigns.
-It's a bit odd, but you use that same annotation, \code{@AssertNonNullAfter},
+It's a bit odd, but you use that same annotation, \code{@EnsuresNonNull},
 to indicate that a primitive field has its value set in a helper method,
 which is relevant when you supply the \code{-Alint=uninitialized}
 command-line option (see Section~\ref{lint-uninitialized}).
 
 % TODO:
 % We need an
-%   @AssertInitializedAfter("b")
+%   @EnsuresInitialized("b")
 % that is analogous to
-%   @AssertNonNullAfter("b")
+%   @EnsuresNonNull("b")
 % when we are dealing with a field of primitive type.
+% But, for now just use the same annotation, @EnsuresNonNull, for both purposes.
 
-\iffalse TODO
+
 \subsection{Partial initialization\label{partial-initialization}}
 
 So far, we have discussed rawness as if it is an all-or-nothing property:
@@ -1128,8 +1085,6 @@ types.)
 \hline
 \end{tabular}
 
-TODO
-\fi
 
 
 % \urldef{\jlsconstructorbodyurl}{\url}{http://docs.oracle.com/javase/specs/jls/se7/html/jls-8.html#jls-8.8.7}
@@ -1161,8 +1116,9 @@ just the \code{@NonNull} ones.  See Section~\ref{lint-uninitialized}.
 A method with a raw receiver often assumes that a few fields (but not all
 of them) are non-null, and sometimes sets some more fields to non-null
 values.  To express these concepts, use the
-\code{@\refclass{nullness/quals}{NonNullOnEntry}} and
-\code{@\refclass{nullness/quals}{AssertNonNullAfter}} method annotations;
+\code{@\refclass{nullness/quals}{RequiresNonNull}},
+\code{@\refclass{nullness/quals}{EnsuresNonNull}}, and
+\code{@\refclass{nullness/quals}{EnsuresNonNullIf}} method annotations;
 see Section~\ref{nullness-non-qualifiers}.
 
 
@@ -1421,7 +1377,7 @@ assert var != null : "@SuppressWarnings(nullness)";
 \item
     To indicate a method precondition (a contract stating the conditions
     under which a client is allowed to call it), you can use annotations
-    such as \code{@\refclass{nullness/quals}{NonNullOnEntry}} (see Section~\ref{nullness-non-qualifiers}.
+    such as \code{@\refclass{nullness/quals}{RequiresNonNull}} (see Section~\ref{nullness-non-qualifiers}.
 \end{itemize}
 
 
@@ -1689,10 +1645,10 @@ tool like the Checker Framework.)
 % LocalWords:  NullnessAnnotatedTypeFactory NullnessVisitor LazyNonNull PolyRaw
 % LocalWords:  inferencer Nonnull CheckForNull UnknownNullness rawtypes de ch
 % LocalWords:  castNonNull NullnessUtils assertNotNull codebases checkNotNull
-% LocalWords:  Nullability typeargs nulltest AssertNonNullIfTrue listFiles faq
+% LocalWords:  Nullability typeargs nulltest EnsuresNonNullIf listFiles faq
 % LocalWords:  isDirectory AssertionError intraprocedurally SuppressWarnings rB
-% LocalWords:  FindBugs's getObject NonNullOnEntry AssertNonNullIfFalse KeyFor
-% LocalWords:  AssertParametersNonNull nonnull AssertNonNullAfter ReadOnly arg
+% LocalWords:  FindBugs's getObject RequiresNonNull EnsuresNonNull KeyFor
+% LocalWords:  AssertParametersNonNull nonnull EnsuresNonNull ReadOnly arg
 % LocalWords:  keySet getField keyfor param TypeName containsValue indexOf nraA
 % LocalWords:  lastIndexOf deref getProperty getProperties classliteral MyClass
 % LocalWords:  typeofthis nraB nrbB rO nroO nroB 5cm IGJ containsKey enum

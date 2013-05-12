@@ -1,8 +1,7 @@
 package java.lang;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
-@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
 
 public final class StringBuffer extends AbstractStringBuilder implements java.io.Serializable, CharSequence{
   static final long serialVersionUID = 0;

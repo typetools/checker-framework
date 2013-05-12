@@ -1,8 +1,7 @@
 package java.lang;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
-@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
 
 public abstract class ClassLoader{
   protected ClassLoader() {}
@@ -24,7 +23,7 @@ public abstract class ClassLoader{
   protected Class<?> defineClass(@Nullable String name, byte[] b, int off, int len) throws ClassFormatError { throw new RuntimeException("skeleton method"); }
   protected Class<?> defineClass(@Nullable String name, byte[] b, int off, int len, java.security. @Nullable ProtectionDomain protectionDomain) throws ClassFormatError { throw new RuntimeException("skeleton method"); }
   protected Class<?> defineClass(@Nullable String name, java.nio.ByteBuffer b, java.security. @Nullable ProtectionDomain protectionDomain) throws ClassFormatError { throw new RuntimeException("skeleton method"); }
-  protected void resolveClass(@NonNull Class<?> c) { throw new RuntimeException("skeleton method"); }
+  protected void resolveClass(Class<?> c) { throw new RuntimeException("skeleton method"); }
     protected final Class<?> findLoadedClass(String name) { throw new RuntimeException("skeleton method"); }
     
 }
