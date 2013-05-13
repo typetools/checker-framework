@@ -129,7 +129,7 @@ public class RegexAnnotatedTypeFactory extends AbstractBasicAnnotatedTypeFactory
      * We cannot directly use RegexUtil, because it uses type annotations
      * which cannot be used in IDEs (yet).
      */
-    /*@SuppressWarnings("pure")*/ // the checker cannot prove that the method is pure, but it is
+    /*@SuppressWarnings("purity")*/ // the checker cannot prove that the method is pure, but it is
     /*@dataflow.quals.Pure*/
     private static boolean isRegex(String s) {
         try {
