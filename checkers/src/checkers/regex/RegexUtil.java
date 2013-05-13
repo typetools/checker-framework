@@ -35,7 +35,7 @@ import checkers.regex.quals.*;
  */
 // The PurityChecker cannot show for most methods in this class that
 // they are pure, even though they are.
-@SuppressWarnings("pure")
+@SuppressWarnings("purity")
 public class RegexUtil {
 
   /**
@@ -150,7 +150,7 @@ public class RegexUtil {
    * @param s string to check for being a regular expression
    * @return true iff s is a regular expression
    */
-  @Pure
+  /*@Pure*/
   @EnsuresQualifierIf(result=true, expression="#1", qualifier=Regex.class)
   public static boolean isRegex(String s) {
     return isRegex(s, 0);
@@ -166,7 +166,7 @@ public class RegexUtil {
   /*>>>
   @SuppressWarnings("regex")    // RegexUtil
   */
-  @Pure
+  /*@Pure*/
   public static boolean isRegex(String s, int groups) {
     Pattern p;
     try {
@@ -186,7 +186,7 @@ public class RegexUtil {
   /*>>>
   @SuppressWarnings("regex")    // RegexUtil
   */
-  @Pure
+  /*@Pure*/
   public static boolean isRegex(char c) {
     return isRegex(Character.toString(c));
   }
@@ -201,7 +201,7 @@ public class RegexUtil {
   /*>>>
   @SuppressWarnings("regex")    // RegexUtil
   */
-  @SideEffectFree
+  /*@SideEffectFree*/
   public static /*@Nullable*/ String regexError(String s) {
     return regexError(s, 0);
   }
@@ -217,7 +217,7 @@ public class RegexUtil {
   /*>>>
   @SuppressWarnings("regex")    // RegexUtil
   */
-  @SideEffectFree
+  /*@SideEffectFree*/
   public static /*@Nullable*/ String regexError(String s, int groups) {
     try {
       Pattern p = Pattern.compile(s);
@@ -241,7 +241,7 @@ public class RegexUtil {
   /*>>>
   @SuppressWarnings("regex")    // RegexUtil
   */
-  @SideEffectFree
+  /*@SideEffectFree*/
   public static /*@Nullable*/ PatternSyntaxException regexException(String s) {
     return regexException(s, 0);
   }
@@ -257,7 +257,7 @@ public class RegexUtil {
   /*>>>
   @SuppressWarnings("regex")    // RegexUtil
   */
-  @SideEffectFree
+  /*@SideEffectFree*/
   public static /*@Nullable*/ PatternSyntaxException regexException(String s, int groups) {
     try {
       Pattern p = Pattern.compile(s);
@@ -280,7 +280,7 @@ public class RegexUtil {
    * @return its argument
    * @throws Error if argument is not a regex
    */
-  @SideEffectFree
+  /*@SideEffectFree*/
   public static /*@Regex*/ String asRegex(String s) {
     return asRegex(s, 0);
   }
@@ -298,7 +298,7 @@ public class RegexUtil {
   /*>>>
   @SuppressWarnings("regex")    // RegexUtil
   */
-  @SideEffectFree
+  /*@SideEffectFree*/
   public static /*@Regex*/ String asRegex(String s, int groups) {
     try {
       Pattern p = Pattern.compile(s);
@@ -329,7 +329,7 @@ public class RegexUtil {
    * @param p pattern whose groups to count
    * @return the count of groups in the argument
    */
-  @Pure
+  /*@Pure*/
   private static int getGroupCount(Pattern p) {
     return p.matcher("").groupCount();
   }
