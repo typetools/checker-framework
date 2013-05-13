@@ -50,11 +50,11 @@ import checkers.nullness.quals.Nullable;
     return delegate().setValue(value);
   }
 
-  @Override public boolean equals(@Nullable Object object) {
+  @Pure @Override public boolean equals(@Nullable Object object) {
     return delegate().equals(object);
   }
 
-  @Override public int hashCode() {
+  @Pure @Override public int hashCode() {
     return delegate().hashCode();
   }
 }

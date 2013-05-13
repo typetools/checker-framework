@@ -46,7 +46,7 @@ final class SingletonImmutableList<E> extends ImmutableList<E> {
     return element;
   }
 
-  @Override public int indexOf(@Nullable Object object) {
+  @Pure @Override public int indexOf(@Nullable Object object) {
     return element.equals(object) ? 0 : -1;
   }
 
@@ -54,7 +54,7 @@ final class SingletonImmutableList<E> extends ImmutableList<E> {
     return Iterators.singletonIterator(element);
   }
 
-  @Override public int lastIndexOf(@Nullable Object object) {
+  @Pure @Override public int lastIndexOf(@Nullable Object object) {
     return element.equals(object) ? 0 : -1;
   }
 
@@ -67,7 +67,7 @@ final class SingletonImmutableList<E> extends ImmutableList<E> {
     return Collections.singletonList(element).listIterator(start);
   }
 
-  public int size() {
+  @Pure public int size() {
     return 1;
   }
 
@@ -76,11 +76,11 @@ final class SingletonImmutableList<E> extends ImmutableList<E> {
     return (fromIndex == toIndex) ? ImmutableList.<E>of() : this;
   }
 
-  @Override public boolean contains(@Nullable Object object) {
+  @Pure @Override public boolean contains(@Nullable Object object) {
     return element.equals(object);
   }
 
-  @Override public boolean equals(/*@Nullable*/ Object object) {
+  @Pure @Override public boolean equals(/*@Nullable*/ Object object) {
     if (object == this) {
       return true;
     }
@@ -91,13 +91,13 @@ final class SingletonImmutableList<E> extends ImmutableList<E> {
     return false;
   }
 
-  @Override public int hashCode() {
+  @Pure @Override public int hashCode() {
     // not caching hash code since it could change if the element is mutable
     // in a way that modifies its hash code.
     return 31 + element.hashCode();
   }
 
-  @Override public boolean isEmpty() {
+  @Pure @Override public boolean isEmpty() {
     return false;
   }
 

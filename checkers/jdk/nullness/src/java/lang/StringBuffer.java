@@ -1,5 +1,6 @@
 package java.lang;
 
+import dataflow.quals.Pure;
 import checkers.nullness.quals.Nullable;
 
 
@@ -53,10 +54,10 @@ public final class StringBuffer extends AbstractStringBuilder implements java.io
   public StringBuffer insert(int a1, long a2) { throw new RuntimeException("skeleton method"); }
   public StringBuffer insert(int a1, float a2) { throw new RuntimeException("skeleton method"); }
   public StringBuffer insert(int a1, double a2) { throw new RuntimeException("skeleton method"); }
-  public int indexOf(String a1) { throw new RuntimeException("skeleton method"); }
-  public synchronized int indexOf(String a1, int a2) { throw new RuntimeException("skeleton method"); }
-  public int lastIndexOf(String a1) { throw new RuntimeException("skeleton method"); }
-  public synchronized int lastIndexOf(String a1, int a2) { throw new RuntimeException("skeleton method"); }
+  @Pure public int indexOf(String a1) { throw new RuntimeException("skeleton method"); }
+  @Pure public synchronized int indexOf(String a1, int a2) { throw new RuntimeException("skeleton method"); }
+  @Pure public int lastIndexOf(String a1) { throw new RuntimeException("skeleton method"); }
+  @Pure public synchronized int lastIndexOf(String a1, int a2) { throw new RuntimeException("skeleton method"); }
   public synchronized StringBuffer reverse() { throw new RuntimeException("skeleton method"); }
-  public synchronized String toString() { throw new RuntimeException("skeleton method"); }
+  @Pure public synchronized String toString() { throw new RuntimeException("skeleton method"); }
 }

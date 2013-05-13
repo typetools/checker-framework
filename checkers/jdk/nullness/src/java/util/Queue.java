@@ -1,6 +1,7 @@
 package java.util;
 import checkers.nullness.quals.EnsuresNonNullIf;
 import checkers.nullness.quals.Nullable;
+import dataflow.quals.Pure;
 
 // Subclasses of this interface/class may opt to prohibit null elements
 public interface Queue<E extends @Nullable Object> extends Collection<E> {
@@ -11,5 +12,5 @@ public interface Queue<E extends @Nullable Object> extends Collection<E> {
   public abstract E element();
   public abstract @Nullable E peek();
   @EnsuresNonNullIf(expression={"poll()", "peek()"}, result=false)
-  public abstract boolean isEmpty();
+  @Pure public abstract boolean isEmpty();
 }

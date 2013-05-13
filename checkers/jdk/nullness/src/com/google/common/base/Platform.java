@@ -34,7 +34,7 @@ final class Platform {
    *
    * <p>This method is not supported in GWT yet.
    */
-  static boolean isInstance(Class<?> clazz, Object obj) {
+  @Pure static boolean isInstance(Class<?> clazz, Object obj) {
     return clazz.isInstance(obj);
   }
 }

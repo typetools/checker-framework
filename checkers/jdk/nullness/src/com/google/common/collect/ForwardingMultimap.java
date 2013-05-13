@@ -50,15 +50,15 @@ import checkers.nullness.quals.Nullable;
     delegate().clear();
   }
 
-  public boolean containsEntry(@Nullable Object key, @Nullable Object value) {
+  @Pure public boolean containsEntry(@Nullable Object key, @Nullable Object value) {
     return delegate().containsEntry(key, value);
   }
 
-  public boolean containsKey(@Nullable Object key) {
+  @Pure public boolean containsKey(@Nullable Object key) {
     return delegate().containsKey(key);
   }
 
-  public boolean containsValue(@Nullable Object value) {
+  @Pure public boolean containsValue(@Nullable Object value) {
     return delegate().containsValue(value);
   }
 
@@ -70,7 +70,7 @@ import checkers.nullness.quals.Nullable;
     return delegate().get(key);
   }
 
-  public boolean isEmpty() {
+  @Pure public boolean isEmpty() {
     return delegate().isEmpty();
   }
 
@@ -106,7 +106,7 @@ import checkers.nullness.quals.Nullable;
     return delegate().replaceValues(key, values);
   }
 
-  public int size() {
+  @Pure public int size() {
     return delegate().size();
   }
 
@@ -114,11 +114,11 @@ import checkers.nullness.quals.Nullable;
     return delegate().values();
   }
 
-  @Override public boolean equals(@Nullable Object object) {
+  @Pure @Override public boolean equals(@Nullable Object object) {
     return object == this || delegate().equals(object);
   }
 
-  @Override public int hashCode() {
+  @Pure @Override public int hashCode() {
     return delegate().hashCode();
   }
 }

@@ -12,9 +12,9 @@ public class TreeMap<K extends @Nullable Object, V extends @Nullable Object> ext
   public TreeMap(Comparator<? super K> a1) { throw new RuntimeException("skeleton method"); }
   public TreeMap(Map<? extends K, ? extends V> a1) { throw new RuntimeException("skeleton method"); }
   public TreeMap(SortedMap<K, ? extends V> a1) { throw new RuntimeException("skeleton method"); }
-  public int size() { throw new RuntimeException("skeleton method"); }
+  @Pure public int size() { throw new RuntimeException("skeleton method"); }
   public @Pure boolean containsKey(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
-  public boolean containsValue(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
+  @Pure public boolean containsValue(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   public @Pure @Nullable V get(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   public Comparator<? super K> comparator() { throw new RuntimeException("skeleton method"); }
   public K firstKey() { throw new RuntimeException("skeleton method"); }
@@ -50,5 +50,5 @@ public class TreeMap<K extends @Nullable Object, V extends @Nullable Object> ext
   public Object clone() { throw new RuntimeException("skeleton method"); }
 
   @EnsuresNonNullIf(expression={"firstEntry()", "pollFirstEntry()", "lastEntry()", "pollLastEntry()"}, result=false)
-  public boolean isEmpty() { throw new RuntimeException("skeleton method"); }
+  @Pure public boolean isEmpty() { throw new RuntimeException("skeleton method"); }
 }

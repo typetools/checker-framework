@@ -17,8 +17,8 @@ public class LinkedList<E extends @Nullable Object> extends AbstractSequentialLi
   public E removeLast() { throw new RuntimeException("skeleton method"); }
   public void addFirst(E a1) { throw new RuntimeException("skeleton method"); }
   public void addLast(E a1) { throw new RuntimeException("skeleton method"); }
-  public boolean contains(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
-  public int size() { throw new RuntimeException("skeleton method"); }
+  @Pure public boolean contains(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
+  @Pure public int size() { throw new RuntimeException("skeleton method"); }
   public boolean add(E a1) { throw new RuntimeException("skeleton method"); }
   public boolean remove(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   public boolean addAll(Collection<? extends E> a1) { throw new RuntimeException("skeleton method"); }
@@ -28,8 +28,8 @@ public class LinkedList<E extends @Nullable Object> extends AbstractSequentialLi
   public E set(int a1, E a2) { throw new RuntimeException("skeleton method"); }
   public void add(int a1, E a2) { throw new RuntimeException("skeleton method"); }
   public E remove(int a1) { throw new RuntimeException("skeleton method"); }
-  public int indexOf(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
-  public int lastIndexOf(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
+  @Pure public int indexOf(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
+  @Pure public int lastIndexOf(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   public @Nullable E peek() { throw new RuntimeException("skeleton method"); }
   public E element() { throw new RuntimeException("skeleton method"); }
   public @Nullable E poll() { throw new RuntimeException("skeleton method"); }
@@ -52,5 +52,5 @@ public class LinkedList<E extends @Nullable Object> extends AbstractSequentialLi
   public Object clone() { throw new RuntimeException("skeleton method"); }
 
   @EnsuresNonNullIf(expression={"peek()", "peekFirst()", "peekLast()", "poll()", "pollFirst()", "pollLast()"}, result=false)
-  public boolean isEmpty() { throw new RuntimeException("skeleton method"); }
+  @Pure public boolean isEmpty() { throw new RuntimeException("skeleton method"); }
 }

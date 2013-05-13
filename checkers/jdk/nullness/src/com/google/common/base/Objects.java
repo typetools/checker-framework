@@ -57,7 +57,7 @@ public final class Objects {
    * in an object that has three properties, {@code x}, {@code y}, and
    * {@code z}, one could write:
    * <pre>
-   * public int hashCode() {
+   @Pure * public int hashCode() {
    *   return Objects.hashCode(getX(), getY(), getZ());
    * }</pre>
    *
@@ -66,7 +66,7 @@ public final class Objects {
    */
     @SuppressWarnings("nullness")
     //Arrays.hashCode can take a null parameter
-    public static int hashCode(/*@Nullable*/ Object... objects) {
+    @Pure public static int hashCode(/*@Nullable*/ Object... objects) {
     return Arrays.hashCode(objects);
   }
 }

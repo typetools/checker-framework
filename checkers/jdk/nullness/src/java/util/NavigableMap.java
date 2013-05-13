@@ -1,4 +1,5 @@
 package java.util;
+import dataflow.quals.Pure;
 import checkers.nullness.quals.EnsuresNonNullIf;
 import checkers.nullness.quals.KeyFor;
 import checkers.nullness.quals.Nullable;
@@ -28,5 +29,5 @@ public interface NavigableMap<K extends @Nullable Object, V extends @Nullable Ob
   public abstract SortedMap<K, V> tailMap(K a1);
 
   @EnsuresNonNullIf(expression={"firstEntry()", "pollFirstEntry()", "lastEntry()", "pollLastEntry()"}, result=false)
-  public abstract boolean isEmpty();
+  @Pure public abstract boolean isEmpty();
 }

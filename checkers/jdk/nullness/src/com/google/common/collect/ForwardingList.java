@@ -56,11 +56,11 @@ import checkers.nullness.quals.Nullable;
     return delegate().get(index);
   }
 
-  public int indexOf(/*@Nullable*/ Object element) {
+  @Pure public int indexOf(/*@Nullable*/ Object element) {
     return delegate().indexOf(element);
   }
 
-  public int lastIndexOf(/*@Nullable*/ Object element) {
+  @Pure public int lastIndexOf(/*@Nullable*/ Object element) {
     return delegate().lastIndexOf(element);
   }
 
@@ -85,11 +85,11 @@ import checkers.nullness.quals.Nullable;
     return Platform.subList(delegate(), fromIndex, toIndex);
   }
 
-  @Override public boolean equals(@Nullable Object object) {
+  @Pure @Override public boolean equals(@Nullable Object object) {
     return object == this || delegate().equals(object);
   }
 
-  @Override public int hashCode() {
+  @Pure @Override public int hashCode() {
     return delegate().hashCode();
   }
 }

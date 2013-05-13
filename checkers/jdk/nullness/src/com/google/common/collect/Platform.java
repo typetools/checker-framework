@@ -51,7 +51,7 @@ class Platform {
    * emulated in GWT.
    */
   @GwtIncompatible("Class.isInstance")
-  static boolean isInstance(Class<?> clazz, Object obj) {
+  @Pure static boolean isInstance(Class<?> clazz, Object obj) {
     return clazz.isInstance(obj);
   }
 

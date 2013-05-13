@@ -142,7 +142,7 @@ import checkers.nullness.quals.Nullable;
       };
     }
 
-    @Override public int size() {
+    @Pure @Override public int size() {
       return backingMap.size();
     }
 
@@ -156,7 +156,7 @@ import checkers.nullness.quals.Nullable;
       size = 0L;
     }
 
-    @Override public boolean contains(/*@Nullable*/ Object o) {
+    @Pure @Override public boolean contains(/*@Nullable*/ Object o) {
       if (o instanceof Entry) {
         Entry<?> entry = (Entry<?>) o;
         int count = count(entry.getElement());
@@ -181,7 +181,7 @@ import checkers.nullness.quals.Nullable;
 
   // Optimizations - Query Operations
 
-  @Override public int size() {
+  @Pure @Override public int size() {
     return (int) Math.min(this.size, Integer.MAX_VALUE);
   }
 

@@ -43,7 +43,7 @@ public abstract class ForwardingCollection<E extends /*@Nullable*/ Object> exten
     return delegate().iterator();
   }
 
-  public int size() {
+  @Pure public int size() {
     return delegate().size();
   }
 
@@ -51,11 +51,11 @@ public abstract class ForwardingCollection<E extends /*@Nullable*/ Object> exten
     return delegate().removeAll(collection);
   }
 
-  public boolean isEmpty() {
+  @Pure public boolean isEmpty() {
     return delegate().isEmpty();
   }
 
-  public boolean contains(/*@Nullable*/ Object object) {
+  @Pure public boolean contains(/*@Nullable*/ Object object) {
     return delegate().contains(object);
   }
 
@@ -80,7 +80,7 @@ public abstract class ForwardingCollection<E extends /*@Nullable*/ Object> exten
 
   @SuppressWarnings("nullness")
   // Suppressed due to the containsAll method in Collection
-  public boolean containsAll(Collection<? extends /*@Nullable*/ Object> collection) {
+  @Pure public boolean containsAll(Collection<? extends /*@Nullable*/ Object> collection) {
     return delegate().containsAll(collection);
   }
 
