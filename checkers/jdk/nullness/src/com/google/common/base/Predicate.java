@@ -59,5 +59,5 @@ import checkers.nullness.quals.Nullable;
    * <p>Note that it is always safe <i>not</i> to override
    * {@link Object#equals}.
    */
-  boolean equals(@Nullable Object obj);
+  @Pure boolean equals(@Nullable Object obj);
 }

@@ -502,7 +502,7 @@ public final class Multimaps {
                 : result;
           }
 
-          @Override public boolean containsValue(/*@Nullable*/ Object o) {
+          @Pure @Override public boolean containsValue(/*@Nullable*/ Object o) {
             return values().contains(o);
           }
         };
@@ -603,10 +603,10 @@ public final class Multimaps {
     @Override public <T> T[] toArray(T[] array) {
       return ObjectArrays.toArrayImpl(this, array);
     }
-    @Override public boolean contains(/*@Nullable*/ Object o) {
+    @Pure @Override public boolean contains(/*@Nullable*/ Object o) {
       return Iterators.contains(iterator(), o);
     }
-    @Override public boolean containsAll(Collection<?> c) {
+    @Pure @Override public boolean containsAll(Collection<?> c) {
       return Collections2.containsAll(this, c);
     }
   }
@@ -916,15 +916,15 @@ public final class Multimaps {
       return ObjectArrays.toArrayImpl(this, array);
     }
 
-    @Override public boolean contains(/*@Nullable*/ Object o) {
+    @Pure @Override public boolean contains(/*@Nullable*/ Object o) {
       return Maps.containsEntryImpl(delegate(), o);
     }
 
-    @Override public boolean containsAll(Collection<?> c) {
+    @Pure @Override public boolean containsAll(Collection<?> c) {
       return Collections2.containsAll(this, c);
     }
 
-    @Override public boolean equals(@Nullable Object object) {
+    @Pure @Override public boolean equals(@Nullable Object object) {
       return Collections2.setEquals(this, object);
     }
   }
@@ -960,27 +960,27 @@ public final class Multimaps {
       this.map = checkNotNull(map);
     }
 
-    public int size() {
+    @Pure public int size() {
       return map.size();
     }
 
-    public boolean isEmpty() {
+    @Pure public boolean isEmpty() {
       return map.isEmpty();
     }
 
     @SuppressWarnings("nullness")
 	//Suppressed to override annotations on Java.util.map.containsKey
-    public boolean containsKey(/*@Nullable*/ Object key) {
+    @Pure public boolean containsKey(/*@Nullable*/ Object key) {
       return map.containsKey(key);
     }
 
     @SuppressWarnings("nullness")
 	//Suppressed to override annotations on Java.util.map.containsValue
-    public boolean containsValue(/*@Nullable*/ Object value) {
+    @Pure public boolean containsValue(/*@Nullable*/ Object value) {
       return map.containsValue(value);
     }
 
-    public boolean containsEntry(/*@Nullable*/ Object key, /*@Nullable*/ Object value) {
+    @Pure public boolean containsEntry(/*@Nullable*/ Object key, /*@Nullable*/ Object value) {
       return map.entrySet().contains(Maps.immutableEntry(key, value));
     }
 
@@ -1018,7 +1018,7 @@ public final class Multimaps {
 
         @SuppressWarnings("nullness")
 	    //Suppressed due to annotations on Java.util.Map.containsKey
-        @Override public int size() {
+        @Pure @Override public int size() {
           return map.containsKey(key) ? 1 : 0;
         }
       };
@@ -1082,7 +1082,7 @@ public final class Multimaps {
       return asMap;
     }
 
-    @Override public boolean equals(@Nullable Object object) {
+    @Pure @Override public boolean equals(@Nullable Object object) {
       if (object == this) {
         return true;
       }
@@ -1093,14 +1093,14 @@ public final class Multimaps {
       return false;
     }
 
-    @Override public int hashCode() {
+    @Pure @Override public int hashCode() {
       return map.hashCode();
     }
 
     private static final MapJoiner joiner
         = Joiner.on("], ").withKeyValueSeparator("=[").useForNull("null");
 
-    @Override public String toString() {
+    @Pure @Override public String toString() {
       if (map.isEmpty()) {
         return "{}";
       }
@@ -1111,7 +1111,7 @@ public final class Multimaps {
 
     /** @see MapMultimap#asMap */
     class AsMapEntries extends AbstractSet<Entry<K, Collection<V>>> {
-      @Override public int size() {
+      @Pure @Override public int size() {
         return map.size();
       }
 
@@ -1139,7 +1139,7 @@ public final class Multimaps {
         };
       }
 
-      @Override public boolean contains(/*@Nullable*/ Object o) {
+      @Pure @Override public boolean contains(/*@Nullable*/ Object o) {
         if (!(o instanceof Entry)) {
           return false;
         }
@@ -1177,7 +1177,7 @@ public final class Multimaps {
 
       @SuppressWarnings("nullness")
 	  //Suppressed to override annotations on Java.util.Map.containsKey
-      @Override public boolean containsKey(/*@Nullable*/ Object key) {
+      @Pure @Override public boolean containsKey(/*@Nullable*/ Object key) {
         return map.containsKey(key);
       }
 

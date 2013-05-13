@@ -57,7 +57,7 @@ import checkers.nullness.quals.Nullable;
     return 0;
   }
   
-  @Override public boolean equals(/*@Nullable*/ Object object) {
+  @Pure @Override public boolean equals(/*@Nullable*/ Object object) {
     if (object == this) {
       return true;
     }
@@ -68,11 +68,11 @@ import checkers.nullness.quals.Nullable;
     return false;
   }
 
-  @Override public int hashCode() {
+  @Pure @Override public int hashCode() {
     return comparators.hashCode();
   }
 
-  @Override public String toString() {
+  @Pure @Override public String toString() {
     return "Ordering.compound(" + comparators + ")";
   }
 

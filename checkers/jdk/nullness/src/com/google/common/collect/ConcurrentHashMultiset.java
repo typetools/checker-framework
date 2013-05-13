@@ -132,7 +132,7 @@ public final class ConcurrentHashMultiset<E> extends AbstractMultiset<E>
    * method, it is undefined which (if any) of these modifications will be
    * reflected in the result.
    */
-  @Override public int size() {
+  @Pure @Override public int size() {
     long sum = 0L;
     for (Integer value : countMap.values()) {
       sum += value;
@@ -381,15 +381,15 @@ public final class ConcurrentHashMultiset<E> extends AbstractMultiset<E>
   }
 
   private class EntrySet extends AbstractSet<Multiset.Entry<E>> {
-    @Override public int size() {
+    @Pure @Override public int size() {
       return countMap.size();
     }
 
-    @Override public boolean isEmpty() {
+    @Pure @Override public boolean isEmpty() {
       return countMap.isEmpty();
     }
 
-    @Override public boolean contains(/*@Nullable*/ Object object) {
+    @Pure @Override public boolean contains(/*@Nullable*/ Object object) {
       if (object instanceof Multiset.Entry) {
         Multiset.Entry<?> entry = (Multiset.Entry<?>) object;
         Object element = entry.getElement();
@@ -462,7 +462,7 @@ public final class ConcurrentHashMultiset<E> extends AbstractMultiset<E>
     /**
      * The hash code is the same as countMap's, though the objects aren't equal.
      */
-    @Override public int hashCode() {
+    @Pure @Override public int hashCode() {
       return countMap.hashCode();
     }
   }

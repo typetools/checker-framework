@@ -1,4 +1,5 @@
 package java.util;
+import dataflow.quals.Pure;
 import checkers.nullness.quals.EnsuresNonNullIf;
 import checkers.nullness.quals.Nullable;
 
@@ -21,6 +22,6 @@ public interface NavigableSet<E extends @Nullable Object> extends SortedSet<E> {
   public abstract SortedSet<E> tailSet(E a1);
 
   @EnsuresNonNullIf(expression={"pollFirst()", "pollLast()"}, result=false)
-  public abstract boolean isEmpty();
+  @Pure public abstract boolean isEmpty();
 
 }

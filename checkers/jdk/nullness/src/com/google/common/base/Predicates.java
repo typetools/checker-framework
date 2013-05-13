@@ -226,7 +226,7 @@ public final class Predicates {
     public boolean apply(/*@Nullable*/ Object o) {
       return true;
     }
-    @Override public String toString() {
+    @Pure @Override public String toString() {
       return "AlwaysTrue";
     }
   }
@@ -239,7 +239,7 @@ public final class Predicates {
     public boolean apply(/*@Nullable*/ Object o) {
       return false;
     }
-    @Override public String toString() {
+    @Pure @Override public String toString() {
       return "AlwaysFalse";
     }
   }
@@ -255,17 +255,17 @@ public final class Predicates {
     public boolean apply(T t) {
       return !predicate.apply(t);
     }
-    @Override public int hashCode() {
+    @Pure @Override public int hashCode() {
       return ~predicate.hashCode(); /* Invert all bits. */
     }
-    @Override public boolean equals(/*@Nullable*/ Object obj) {
+    @Pure @Override public boolean equals(/*@Nullable*/ Object obj) {
       if (obj instanceof NotPredicate<?>) {
         NotPredicate<?> that = (NotPredicate<?>) obj;
         return predicate.equals(that.predicate);
       }
       return false;
     }
-    @Override public String toString() {
+    @Pure @Override public String toString() {
       return "Not(" + predicate.toString() + ")";
     }
     private static final long serialVersionUID = 0;
@@ -291,21 +291,21 @@ public final class Predicates {
       }
       return true;
     }
-    @Override public int hashCode() {
+    @Pure @Override public int hashCode() {
       int result = -1; /* Start with all bits on. */
       for (Predicate<? super T> predicate : components) {
         result &= predicate.hashCode();
       }
       return result;
     }
-    @Override public boolean equals(/*@Nullable*/ Object obj) {
+    @Pure @Override public boolean equals(/*@Nullable*/ Object obj) {
       if (obj instanceof AndPredicate<?>) {
         AndPredicate<?> that = (AndPredicate<?>) obj;
         return iterableElementsEqual(components, that.components);
       }
       return false;
     }
-    @Override public String toString() {
+    @Pure @Override public String toString() {
       return "And(" + commaJoiner.join(components) + ")";
     }
     private static final long serialVersionUID = 0;
@@ -329,21 +329,21 @@ public final class Predicates {
       }
       return false;
     }
-    @Override public int hashCode() {
+    @Pure @Override public int hashCode() {
       int result = 0; /* Start with all bits off. */
       for (Predicate<? super T> predicate : components) {
         result |= predicate.hashCode();
       }
       return result;
     }
-    @Override public boolean equals(/*@Nullable*/ Object obj) {
+    @Pure @Override public boolean equals(/*@Nullable*/ Object obj) {
       if (obj instanceof OrPredicate<?>) {
         OrPredicate<?> that = (OrPredicate<?>) obj;
         return iterableElementsEqual(components, that.components);
       }
       return false;
     }
-    @Override public String toString() {
+    @Pure @Override public String toString() {
       return "Or(" + commaJoiner.join(components) + ")";
     }
     private static final long serialVersionUID = 0;
@@ -360,17 +360,17 @@ public final class Predicates {
     public boolean apply(/*@Nullable*/ T t) {
 	return (target == null) ? t == null : target.equals(t);
     }
-    @Override public int hashCode() {
+    @Pure @Override public int hashCode() {
 	return (target == null) ? 0 : target.hashCode();
     }
-    @Override public boolean equals(/*@Nullable*/ Object obj) {
+    @Pure @Override public boolean equals(/*@Nullable*/ Object obj) {
       if (obj instanceof IsEqualToPredicate) {
         IsEqualToPredicate<?> that = (IsEqualToPredicate<?>) obj;
         return (target == null) ? (that.target == null) : target.equals(that.target);
       }
       return false;
     }
-    @Override public String toString() {
+    @Pure @Override public String toString() {
       return "IsEqualTo(" + target + ")";
     }
     private static final long serialVersionUID = 0;
@@ -387,17 +387,17 @@ public final class Predicates {
     public boolean apply(Object o) {
 	return Platform.isInstance(clazz, o);
     }
-    @Override public int hashCode() {
+    @Pure @Override public int hashCode() {
       return clazz.hashCode();
     }
-    @Override public boolean equals(/*@Nullable*/ Object obj) {
+    @Pure @Override public boolean equals(/*@Nullable*/ Object obj) {
       if (obj instanceof InstanceOfPredicate) {
         InstanceOfPredicate that = (InstanceOfPredicate) obj;
         return clazz == that.clazz;
       }
       return false;
     }
-    @Override public String toString() {
+    @Pure @Override public String toString() {
       return "IsInstanceOf(" + clazz.getName() + ")";
     }
     private static final long serialVersionUID = 0;
@@ -411,7 +411,7 @@ public final class Predicates {
     public boolean apply(/*@Nullable*/ Object o) {
       return o == null;
     }
-    @Override public String toString() {
+    @Pure @Override public String toString() {
       return "IsNull";
     }
   }
@@ -424,7 +424,7 @@ public final class Predicates {
     public boolean apply(/*@Nullable*/ Object o) {
       return o != null;
     }
-    @Override public String toString() {
+    @Pure @Override public String toString() {
       return "NotNull";
     }
   }
@@ -448,7 +448,7 @@ public final class Predicates {
       }
     }
 
-    @Override public boolean equals(/*@Nullable*/ Object obj) {
+    @Pure @Override public boolean equals(/*@Nullable*/ Object obj) {
       if (obj instanceof InPredicate<?>) {
         InPredicate<?> that = (InPredicate<?>) obj;
         return target.equals(that.target);
@@ -456,11 +456,11 @@ public final class Predicates {
       return false;
     }
 
-    @Override public int hashCode() {
+    @Pure @Override public int hashCode() {
       return target.hashCode();
     }
 
-    @Override public String toString() {
+    @Pure @Override public String toString() {
       return "In(" + target + ")";
     }
     private static final long serialVersionUID = 0;
@@ -481,7 +481,7 @@ public final class Predicates {
       return p.apply(f.apply(a));
     }
 
-    @Override public boolean equals(/*@Nullable*/ Object obj) {
+    @Pure @Override public boolean equals(/*@Nullable*/ Object obj) {
       if (obj instanceof CompositionPredicate<?, ?>) {
         CompositionPredicate<?, ?> that = (CompositionPredicate<?, ?>) obj;
         return f.equals(that.f) && p.equals(that.p);
@@ -489,7 +489,7 @@ public final class Predicates {
       return false;
     }
 
-    @Override public int hashCode() {
+    @Pure @Override public int hashCode() {
       /*
        * TODO:  To leave the door open for future enhancement, this
        * calculation should be coordinated with the hashCode() method of the
@@ -506,7 +506,7 @@ public final class Predicates {
       return f.hashCode() ^ p.hashCode();
     }
 
-    @Override public String toString() {
+    @Pure @Override public String toString() {
       return p.toString() + "(" + f.toString() + ")";
     }
 

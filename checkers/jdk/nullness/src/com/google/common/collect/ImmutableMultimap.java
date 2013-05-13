@@ -326,16 +326,16 @@ public abstract class ImmutableMultimap<K, V>
 
   // accessors
 
-  public boolean containsEntry(@Nullable Object key, @Nullable Object value) {
+  @Pure public boolean containsEntry(@Nullable Object key, @Nullable Object value) {
     Collection<V> values = map.get(key);
     return values != null && values.contains(value);
   }
 
-  public boolean containsKey(@Nullable Object key) {
+  @Pure public boolean containsKey(@Nullable Object key) {
     return map.containsKey(key);
   }
 
-  public boolean containsValue(@Nullable Object value) {
+  @Pure public boolean containsValue(@Nullable Object value) {
     for (Collection<V> valueCollection : map.values()) {
       if (valueCollection.contains(value)) {
         return true;
@@ -344,15 +344,15 @@ public abstract class ImmutableMultimap<K, V>
     return false;
   }
 
-  public boolean isEmpty() {
+  @Pure public boolean isEmpty() {
     return size == 0;
   }
 
-  public int size() {
+  @Pure public int size() {
     return size;
   }
 
-  @Override public boolean equals(@Nullable Object object) {
+  @Pure @Override public boolean equals(@Nullable Object object) {
     if (object instanceof Multimap) {
       Multimap<?, ?> that = (Multimap<?, ?>) object;
       return this.map.equals(that.asMap());
@@ -360,11 +360,11 @@ public abstract class ImmutableMultimap<K, V>
     return false;
   }
 
-  @Override public int hashCode() {
+  @Pure @Override public int hashCode() {
     return map.hashCode();
   }
 
-  @Override public String toString() {
+  @Pure @Override public String toString() {
     return map.toString();
   }
 
@@ -434,11 +434,11 @@ public abstract class ImmutableMultimap<K, V>
       };
     }
 
-    public int size() {
+    @Pure public int size() {
       return multimap.size();
     }
 
-    @Override public boolean contains(/*@Nullable*/ Object object) {
+    @Pure @Override public boolean contains(/*@Nullable*/ Object object) {
       if (object instanceof Map.Entry) {
         Map.Entry<?, ?> entry = (Map.Entry<?, ?>) object;
         return multimap.containsEntry(entry.getKey(), entry.getValue());
@@ -503,7 +503,7 @@ public abstract class ImmutableMultimap<K, V>
       };
     }
 
-    public int size() {
+    @Pure public int size() {
       return multimap.size();
     }
 

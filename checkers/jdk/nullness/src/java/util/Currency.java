@@ -1,4 +1,5 @@
 package java.util;
+import dataflow.quals.Pure;
 import checkers.nullness.quals.Nullable;
 
 public final class Currency implements java.io.Serializable {
@@ -10,5 +11,5 @@ public final class Currency implements java.io.Serializable {
   public String getSymbol() { throw new RuntimeException("skeleton method"); }
   public String getSymbol(Locale a1) { throw new RuntimeException("skeleton method"); }
   public int getDefaultFractionDigits() { throw new RuntimeException("skeleton method"); }
-  public String toString() { throw new RuntimeException("skeleton method"); }
+  @Pure public String toString() { throw new RuntimeException("skeleton method"); }
 }

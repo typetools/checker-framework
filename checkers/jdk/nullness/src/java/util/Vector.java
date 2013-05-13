@@ -16,14 +16,14 @@ public class Vector<E extends @Nullable Object> extends AbstractList<E> implemen
   public synchronized void ensureCapacity(int a1) { throw new RuntimeException("skeleton method"); }
   public synchronized void setSize(int a1) { throw new RuntimeException("skeleton method"); }
   public synchronized int capacity() { throw new RuntimeException("skeleton method"); }
-  public synchronized int size() { throw new RuntimeException("skeleton method"); }
-  public synchronized boolean isEmpty() { throw new RuntimeException("skeleton method"); }
+  @Pure public synchronized int size() { throw new RuntimeException("skeleton method"); }
+  @Pure public synchronized boolean isEmpty() { throw new RuntimeException("skeleton method"); }
   public Enumeration<E> elements() { throw new RuntimeException("skeleton method"); }
-  public boolean contains(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
-  public int indexOf(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
-  public synchronized int indexOf(@Nullable Object a1, int a2) { throw new RuntimeException("skeleton method"); }
-  public synchronized int lastIndexOf(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
-  public synchronized int lastIndexOf(@Nullable Object a1, int a2) { throw new RuntimeException("skeleton method"); }
+  @Pure public boolean contains(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
+  @Pure public int indexOf(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
+  @Pure public synchronized int indexOf(@Nullable Object a1, int a2) { throw new RuntimeException("skeleton method"); }
+  @Pure public synchronized int lastIndexOf(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
+  @Pure public synchronized int lastIndexOf(@Nullable Object a1, int a2) { throw new RuntimeException("skeleton method"); }
   public synchronized E elementAt(int a1) { throw new RuntimeException("skeleton method"); }
   public synchronized E firstElement() { throw new RuntimeException("skeleton method"); }
   public synchronized E lastElement() { throw new RuntimeException("skeleton method"); }
@@ -42,14 +42,14 @@ public class Vector<E extends @Nullable Object> extends AbstractList<E> implemen
   public void add(int a1, E a2) { throw new RuntimeException("skeleton method"); }
   public synchronized E remove(int a1) { throw new RuntimeException("skeleton method"); }
   public void clear() { throw new RuntimeException("skeleton method"); }
-  public synchronized boolean containsAll(Collection<?> a1) { throw new RuntimeException("skeleton method"); }
+  @Pure public synchronized boolean containsAll(Collection<?> a1) { throw new RuntimeException("skeleton method"); }
   public synchronized boolean addAll(Collection<? extends E> a1) { throw new RuntimeException("skeleton method"); }
   public synchronized boolean removeAll(Collection<?> a1) { throw new RuntimeException("skeleton method"); }
   public synchronized boolean retainAll(Collection<?> a1) { throw new RuntimeException("skeleton method"); }
   public synchronized boolean addAll(int a1, Collection<? extends E> a2) { throw new RuntimeException("skeleton method"); }
-  public synchronized boolean equals(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
-  public synchronized int hashCode() { throw new RuntimeException("skeleton method"); }
-  public synchronized String toString() { throw new RuntimeException("skeleton method"); }
+  @Pure public synchronized boolean equals(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
+  @Pure public synchronized int hashCode() { throw new RuntimeException("skeleton method"); }
+  @Pure public synchronized String toString() { throw new RuntimeException("skeleton method"); }
   public synchronized List<E> subList(int a1, int a2) { throw new RuntimeException("skeleton method"); }
   public synchronized Object clone() { throw new RuntimeException("skeleton method"); }
 }

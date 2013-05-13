@@ -1,4 +1,5 @@
 package java.util;
+import dataflow.quals.Pure;
 import checkers.nullness.quals.Nullable;
 
 public class GregorianCalendar extends Calendar {
@@ -14,9 +15,9 @@ public class GregorianCalendar extends Calendar {
   public GregorianCalendar(int a1, int a2, int a3, int a4, int a5, int a6) { throw new RuntimeException("skeleton method"); }
   public void setGregorianChange(Date a1) { throw new RuntimeException("skeleton method"); }
   public final Date getGregorianChange() { throw new RuntimeException("skeleton method"); }
-  public boolean isLeapYear(int a1) { throw new RuntimeException("skeleton method"); }
-  public boolean equals(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
-  public int hashCode() { throw new RuntimeException("skeleton method"); }
+  @Pure public boolean isLeapYear(int a1) { throw new RuntimeException("skeleton method"); }
+  @Pure public boolean equals(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
+  @Pure public int hashCode() { throw new RuntimeException("skeleton method"); }
   public void add(int a1, int a2) { throw new RuntimeException("skeleton method"); }
   public void roll(int a1, boolean a2) { throw new RuntimeException("skeleton method"); }
   public void roll(int a1, int a2) { throw new RuntimeException("skeleton method"); }

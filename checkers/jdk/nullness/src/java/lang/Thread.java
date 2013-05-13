@@ -1,5 +1,6 @@
 package java.lang;
 
+import dataflow.quals.Pure;
 import checkers.nullness.quals.*;
 import checkers.initialization.quals.*;
 
@@ -34,7 +35,7 @@ public class Thread implements Runnable {
   public final synchronized void stop(Throwable a1) { throw new RuntimeException("skeleton method"); }
   public void interrupt() { throw new RuntimeException("skeleton method"); }
   public static boolean interrupted() { throw new RuntimeException("skeleton method"); }
-  public boolean isInterrupted() { throw new RuntimeException("skeleton method"); }
+  @Pure public boolean isInterrupted() { throw new RuntimeException("skeleton method"); }
   public void destroy() { throw new RuntimeException("skeleton method"); }
   public final void suspend() { throw new RuntimeException("skeleton method"); }
   public final void resume() { throw new RuntimeException("skeleton method"); }
@@ -50,9 +51,9 @@ public class Thread implements Runnable {
   public final void join() throws InterruptedException { throw new RuntimeException("skeleton method"); }
   public static void dumpStack() { throw new RuntimeException("skeleton method"); }
   public final void setDaemon(@UnknownInitialization @Raw Thread this, boolean a1) { throw new RuntimeException("skeleton method"); }
-  public final boolean isDaemon() { throw new RuntimeException("skeleton method"); }
+  @Pure public final boolean isDaemon() { throw new RuntimeException("skeleton method"); }
   public final void checkAccess() { throw new RuntimeException("skeleton method"); }
-  public String toString() { throw new RuntimeException("skeleton method"); }
+  @Pure public String toString() { throw new RuntimeException("skeleton method"); }
   public @Nullable ClassLoader getContextClassLoader() { throw new RuntimeException("skeleton method"); }
   public void setContextClassLoader(ClassLoader a1) { throw new RuntimeException("skeleton method"); }
   public StackTraceElement[] getStackTrace() { throw new RuntimeException("skeleton method"); }
@@ -65,6 +66,6 @@ public class Thread implements Runnable {
   public void setUncaughtExceptionHandler(Thread. @Nullable UncaughtExceptionHandler a1) { throw new RuntimeException("skeleton method"); }
 
   public static boolean holdsLock(Object a1) { throw new RuntimeException("skeleton method"); }
-  public final native boolean isAlive();
+  @Pure public final native boolean isAlive();
   public native int countStackFrames();
 }

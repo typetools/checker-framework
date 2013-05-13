@@ -117,7 +117,7 @@ import checkers.nullness.quals.Nullable;
       this.value = value;
     }
 
-    @Override public String toString() {
+    @Pure @Override public String toString() {
       return key + "=" + value;
     }
   }
@@ -440,21 +440,21 @@ import checkers.nullness.quals.Nullable;
 
   // Query Operations
 
-  public int size() {
+  @Pure public int size() {
     return keyCount.size();
   }
 
-  public boolean isEmpty() {
+  @Pure public boolean isEmpty() {
     return head == null;
   }
 
   @SuppressWarnings("nullness")
       //Suppressed due to annotations on Java.util.Map
-  public boolean containsKey(@Nullable Object key) {
+  @Pure public boolean containsKey(@Nullable Object key) {
     return keyToKeyHead.containsKey(key);
   }
 
-  public boolean containsValue(@Nullable Object value) {
+  @Pure public boolean containsValue(@Nullable Object value) {
     for (Iterator<Node<K, V>> i = new NodeIterator(); i.hasNext();) {
       if (Objects.equal(i.next().value, value)) {
         return true;
@@ -463,7 +463,7 @@ import checkers.nullness.quals.Nullable;
     return false;
   }
 
-  public boolean containsEntry(@Nullable Object key, @Nullable Object value) {
+  @Pure public boolean containsEntry(@Nullable Object key, @Nullable Object value) {
     for (Iterator<V> i = new ValueForKeyIterator(key); i.hasNext();) {
       if (Objects.equal(i.next(), value)) {
         return true;
@@ -587,7 +587,7 @@ import checkers.nullness.quals.Nullable;
    */
   public List<V> get(final K key) {
     return new AbstractSequentialList<V>() {
-      @Override public int size() {
+      @Pure @Override public int size() {
         return keyCount.count(key);
       }
       @Override public ListIterator<V> listIterator(int index) {
@@ -607,13 +607,13 @@ import checkers.nullness.quals.Nullable;
   public Set<K> keySet() {
     if (keySet == null) {
       keySet = new AbstractSet<K>() {
-        @Override public int size() {
+        @Pure @Override public int size() {
           return keyCount.elementSet().size();
         }
         @Override public Iterator<K> iterator() {
           return new DistinctKeyIterator();
         }
-        @Override public boolean contains(/*@Nullable*/ Object key) { // for performance
+        @Pure @Override public boolean contains(/*@Nullable*/ Object key) { // for performance
           return keyCount.contains(key);
         }
       };
@@ -633,7 +633,7 @@ import checkers.nullness.quals.Nullable;
   private class MultisetView extends AbstractCollection<K>
       implements Multiset<K> {
 
-    @Override public int size() {
+    @Pure @Override public int size() {
       return keyCount.size();
     }
 
@@ -693,7 +693,7 @@ import checkers.nullness.quals.Nullable;
 
     public Set<Entry<K>> entrySet() {
       return new AbstractSet<Entry<K>>() {
-        @Override public int size() {
+        @Pure @Override public int size() {
           return keyCount.elementSet().size();
         }
 
@@ -722,15 +722,15 @@ import checkers.nullness.quals.Nullable;
       };
     }
 
-    @Override public boolean equals(@Nullable Object object) {
+    @Pure @Override public boolean equals(@Nullable Object object) {
       return keyCount.equals(object);
     }
 
-    @Override public int hashCode() {
+    @Pure @Override public int hashCode() {
       return keyCount.hashCode();
     }
 
-    @Override public String toString() {
+    @Pure @Override public String toString() {
       return keyCount.toString(); // XXX observe order?
     }
   }
@@ -746,7 +746,7 @@ import checkers.nullness.quals.Nullable;
   public Collection<V> values() {
     if (valuesCollection == null) {
       valuesCollection = new AbstractCollection<V>() {
-        @Override public int size() {
+        @Pure @Override public int size() {
           return keyCount.size();
         }
         @Override public Iterator<V> iterator() {
@@ -788,7 +788,7 @@ import checkers.nullness.quals.Nullable;
   public Collection<Entry<K, V>> entries() {
     if (entries == null) {
       entries = new AbstractCollection<Entry<K, V>>() {
-        @Override public int size() {
+        @Pure @Override public int size() {
           return keyCount.size();
         }
 
@@ -830,7 +830,7 @@ import checkers.nullness.quals.Nullable;
 
     // TODO: Override contains() and remove() for better performance.
 
-    @Override public int size() {
+    @Pure @Override public int size() {
       return keyCount.elementSet().size();
     }
 
@@ -877,7 +877,7 @@ import checkers.nullness.quals.Nullable;
 
         // The following methods are included for performance.
 
-        @Override public boolean containsKey(@Nullable Object key) {
+        @Pure @Override public boolean containsKey(@Nullable Object key) {
           return LinkedListMultimap.this.containsKey(key);
         }
 
@@ -907,7 +907,7 @@ import checkers.nullness.quals.Nullable;
    * contain the same values in the same order. If the value orderings disagree,
    * the multimaps will not be considered equal.
    */
-  @Override public boolean equals(@Nullable Object other) {
+  @Pure @Override public boolean equals(@Nullable Object other) {
     if (other == this) {
       return true;
     }
@@ -924,7 +924,7 @@ import checkers.nullness.quals.Nullable;
    * <p>The hash code of a multimap is defined as the hash code of the map view,
    * as returned by {@link Multimap#asMap}.
    */
-  @Override public int hashCode() {
+  @Pure @Override public int hashCode() {
     return asMap().hashCode();
   }
 
@@ -934,7 +934,7 @@ import checkers.nullness.quals.Nullable;
    *
    * @return a string representation of the multimap
    */
-  @Override public String toString() {
+  @Pure @Override public String toString() {
     return asMap().toString();
   }
 

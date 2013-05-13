@@ -1,5 +1,6 @@
 package java.io;
 
+import dataflow.quals.Pure;
 import checkers.nullness.quals.Nullable;
 
 @checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
@@ -16,8 +17,8 @@ public class CharArrayWriter extends Writer {
   public CharArrayWriter append(char a1) { throw new RuntimeException("skeleton method"); }
   public void reset() { throw new RuntimeException("skeleton method"); }
   public char[] toCharArray() { throw new RuntimeException("skeleton method"); }
-  public int size() { throw new RuntimeException("skeleton method"); }
-  public String toString() { throw new RuntimeException("skeleton method"); }
+  @Pure public int size() { throw new RuntimeException("skeleton method"); }
+  @Pure public String toString() { throw new RuntimeException("skeleton method"); }
   public void flush() { throw new RuntimeException("skeleton method"); }
   public void close() { throw new RuntimeException("skeleton method"); }
 }

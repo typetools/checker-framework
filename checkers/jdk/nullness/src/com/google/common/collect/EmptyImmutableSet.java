@@ -34,15 +34,15 @@ final class EmptyImmutableSet extends ImmutableSet<Object> {
 
   private EmptyImmutableSet() {}
 
-  public int size() {
+  @Pure public int size() {
     return 0;
   }
 
-  @Override public boolean isEmpty() {
+  @Pure @Override public boolean isEmpty() {
     return true;
   }
 
-  @Override public boolean contains(/*@Nullable*/ Object target) {
+  @Pure @Override public boolean contains(/*@Nullable*/ Object target) {
     return false;
   }
 
@@ -64,11 +64,11 @@ final class EmptyImmutableSet extends ImmutableSet<Object> {
     return a;
   }
 
-  @Override public boolean containsAll(Collection<?> targets) {
+  @Pure @Override public boolean containsAll(Collection<?> targets) {
     return targets.isEmpty();
   }
 
-  @Override public boolean equals(@Nullable Object object) {
+  @Pure @Override public boolean equals(@Nullable Object object) {
     if (object instanceof Set) {
       Set<?> that = (Set<?>) object;
       return that.isEmpty();
@@ -76,15 +76,15 @@ final class EmptyImmutableSet extends ImmutableSet<Object> {
     return false;
   }
 
-  @Override public final int hashCode() {
+  @Pure @Override public final int hashCode() {
     return 0;
   }
 
-  @Override boolean isHashCodeFast() {
+  @Pure @Override boolean isHashCodeFast() {
     return true;
   }
 
-  @Override public String toString() {
+  @Pure @Override public String toString() {
     return "[]";
   }
 

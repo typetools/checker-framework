@@ -1,4 +1,5 @@
 package java.util;
+import dataflow.quals.Pure;
 import checkers.nullness.quals.Nullable;
 
 public final class ServiceLoader<S> implements Iterable<S> {
@@ -8,5 +9,5 @@ public final class ServiceLoader<S> implements Iterable<S> {
   public static <S> ServiceLoader<S> load(Class<S> a1, @Nullable ClassLoader a2) { throw new RuntimeException("skeleton method"); }
   public static <S> ServiceLoader<S> load(Class<S> a1) { throw new RuntimeException("skeleton method"); }
   public static <S> ServiceLoader<S> loadInstalled(Class<S> a1) { throw new RuntimeException("skeleton method"); }
-  public String toString() { throw new RuntimeException("skeleton method"); }
+  @Pure public String toString() { throw new RuntimeException("skeleton method"); }
 }

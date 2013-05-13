@@ -130,7 +130,7 @@ public final class Iterators {
   /**
    * Returns {@code true} if {@code iterator} contains {@code element}.
    */
-  public static boolean contains(Iterator<?> iterator, @Nullable Object element)
+  @Pure public static boolean contains(Iterator<?> iterator, @Nullable Object element)
   {
     if (element == null) {
       while (iterator.hasNext()) {
@@ -246,7 +246,7 @@ public final class Iterators {
    * {@code [e1, e2, ..., en]}. The iterator will be left exhausted: its
    * {@code hasNext()} method will return {@code false}.
    */
-  public static String toString(Iterator<?> iterator) {
+  @Pure public static String toString(Iterator<?> iterator) {
     if (!iterator.hasNext()) {
       return "[]";
     }
