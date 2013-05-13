@@ -769,7 +769,7 @@ final class CustomConcurrentHashMap {
         setTable(newEntryArray(initialCapacity));
       }
 
-      AtomicReferenceArray<E> newEntryArray(int size) {
+      @Pure AtomicReferenceArray<E> newEntryArray(int size) {
         return new AtomicReferenceArray<E>(size);
       }
 
@@ -824,7 +824,7 @@ final class CustomConcurrentHashMap {
         return strategy.getValue(entry);
       }
 
-	boolean containsKey(/*@Nullable*/ Object key, int hash) {
+	@Pure boolean containsKey(/*@Nullable*/ Object key, int hash) {
         Strategy<K, V, E> s = Impl.this.strategy;
         if (count != 0) { // read-volatile
           for (/*@Nullable*/ E e = getFirst(hash); e != null; e = s.getNext(e)) {
@@ -847,7 +847,7 @@ final class CustomConcurrentHashMap {
         return false;
       }
 
-	boolean containsValue(/*@Nullable*/ Object value) {
+	@Pure boolean containsValue(/*@Nullable*/ Object value) {
         Strategy<K, V, E> s = Impl.this.strategy;
         if (count != 0) { // read-volatile
           AtomicReferenceArray<E> table = this.table;
@@ -1243,7 +1243,7 @@ final class CustomConcurrentHashMap {
      *
      * @return {@code true} if this map contains no key-value mappings
      */
-    @Override public boolean isEmpty() {
+    @Pure @Override public boolean isEmpty() {
       final Segment[] segments = this.segments;
       /*
        * We keep track of per-segment modCounts to avoid ABA
@@ -1284,7 +1284,7 @@ final class CustomConcurrentHashMap {
      *
      * @return the number of key-value mappings in this map
      */
-    @Override public int size() {
+    @Pure @Override public int size() {
       final Segment[] segments = this.segments;
       long sum = 0;
       long check = 0;
@@ -1361,7 +1361,7 @@ final class CustomConcurrentHashMap {
      *         {@code false} otherwise.
      * @throws NullPointerException if the specified key is null
      */
-    @Override public boolean containsKey(/*@Nullable*/ Object key) {
+    @Pure @Override public boolean containsKey(/*@Nullable*/ Object key) {
       if (key == null) {
         throw new NullPointerException("key");
       }
@@ -1379,7 +1379,7 @@ final class CustomConcurrentHashMap {
      *         value
      * @throws NullPointerException if the specified value is null
      */
-    @Override public boolean containsValue(/*@Nullable*/ Object value) {
+    @Pure @Override public boolean containsValue(/*@Nullable*/ Object value) {
       if (value == null) {
         throw new NullPointerException("value");
       }
@@ -1826,15 +1826,15 @@ final class CustomConcurrentHashMap {
         return new KeyIterator();
       }
 
-      @Override public int size() {
+      @Pure @Override public int size() {
         return Impl.this.size();
       }
 
-      @Override public boolean isEmpty() {
+      @Pure @Override public boolean isEmpty() {
         return Impl.this.isEmpty();
       }
 
-      @Override public boolean contains(/*@Nullable*/ Object o) {
+      @Pure @Override public boolean contains(/*@Nullable*/ Object o) {
         return Impl.this.containsKey(o);
       }
 
@@ -1853,15 +1853,15 @@ final class CustomConcurrentHashMap {
         return new ValueIterator();
       }
 
-      @Override public int size() {
+      @Pure @Override public int size() {
         return Impl.this.size();
       }
 
-      @Override public boolean isEmpty() {
+      @Pure @Override public boolean isEmpty() {
         return Impl.this.isEmpty();
       }
 
-      @Override public boolean contains(/*@Nullable*/ Object o) {
+      @Pure @Override public boolean contains(/*@Nullable*/ Object o) {
         return Impl.this.containsValue(o);
       }
 
@@ -1878,7 +1878,7 @@ final class CustomConcurrentHashMap {
 
       @SuppressWarnings("nullness")
       // Suppressed due to annotations on get
-      @Override public boolean contains(/*@Nullable*/ Object o) {
+      @Pure @Override public boolean contains(/*@Nullable*/ Object o) {
         if (!(o instanceof Entry)) {
           return false;
         }
@@ -1901,11 +1901,11 @@ final class CustomConcurrentHashMap {
         return key != null && Impl.this.remove(key, e.getValue());
       }
 
-      @Override public int size() {
+      @Pure @Override public int size() {
         return Impl.this.size();
       }
 
-      @Override public boolean isEmpty() {
+      @Pure @Override public boolean isEmpty() {
         return Impl.this.isEmpty();
       }
 

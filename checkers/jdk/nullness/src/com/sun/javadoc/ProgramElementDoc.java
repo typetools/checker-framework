@@ -9,10 +9,10 @@ public abstract interface ProgramElementDoc extends Doc {
   public abstract int modifierSpecifier();
   public abstract java.lang.String modifiers();
   public abstract com.sun.javadoc.AnnotationDesc[] annotations();
-  public abstract boolean isPublic();
-  public abstract boolean isProtected();
-  public abstract boolean isPrivate();
-  public abstract boolean isPackagePrivate();
-  public abstract boolean isStatic();
-  public abstract boolean isFinal();
+  @Pure public abstract boolean isPublic();
+  @Pure public abstract boolean isProtected();
+  @Pure public abstract boolean isPrivate();
+  @Pure public abstract boolean isPackagePrivate();
+  @Pure public abstract boolean isStatic();
+  @Pure public abstract boolean isFinal();
 }

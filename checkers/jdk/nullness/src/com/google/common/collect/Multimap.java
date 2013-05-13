@@ -64,7 +64,7 @@ import checkers.nullness.quals.Nullable;
   int size();
 
   /** Returns {@code true} if the multimap contains no key-value pairs. */
-  boolean isEmpty();
+  @Pure boolean isEmpty();
 
   /**
    * Returns {@code true} if the multimap contains any values for the specified
@@ -72,7 +72,7 @@ import checkers.nullness.quals.Nullable;
    *
    * @param key key to search for in multimap
    */
-  boolean containsKey(/*@Nullable*/ Object key);
+  @Pure boolean containsKey(/*@Nullable*/ Object key);
 
   /**
    * Returns {@code true} if the multimap contains the specified value for any
@@ -80,7 +80,7 @@ import checkers.nullness.quals.Nullable;
    *
    * @param value value to search for in multimap
    */
-  boolean containsValue(/*@Nullable*/ Object value);
+  @Pure boolean containsValue(/*@Nullable*/ Object value);
 
   /**
    * Returns {@code true} if the multimap contains the specified key-value pair.
@@ -88,7 +88,7 @@ import checkers.nullness.quals.Nullable;
    * @param key key to search for in multimap
    * @param value value to search for in multimap
    */
-  boolean containsEntry(/*@Nullable*/ Object key, /*@Nullable*/ Object value);
+  @Pure boolean containsEntry(/*@Nullable*/ Object key, /*@Nullable*/ Object value);
 
   // Modification Operations
 
@@ -252,7 +252,7 @@ import checkers.nullness.quals.Nullable;
    * collections as values. However, any two empty multimaps are equal, because
    * they both have empty {@link #asMap} views.
    */
-  boolean equals(@Nullable Object obj);
+  @Pure boolean equals(@Nullable Object obj);
 
   /**
    * Returns the hash code for this multimap.
@@ -260,5 +260,5 @@ import checkers.nullness.quals.Nullable;
    * <p>The hash code of a multimap is defined as the hash code of the map view,
    * as returned by {@link Multimap#asMap}.
    */
-  int hashCode();
+  @Pure int hashCode();
 }

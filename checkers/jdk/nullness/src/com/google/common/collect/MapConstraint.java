@@ -35,5 +35,5 @@ import checkers.nullness.quals.Nullable;
    * Returns a brief human readable description of this constraint, such as
    * "Not null".
    */
-  String toString();
+  @Pure String toString();
 }

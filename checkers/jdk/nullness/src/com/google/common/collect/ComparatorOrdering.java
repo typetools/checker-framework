@@ -51,7 +51,7 @@ final class ComparatorOrdering<T> extends Ordering<T> implements Serializable {
     return list;
   }
 
-  @Override public boolean equals(@Nullable Object object) {
+  @Pure @Override public boolean equals(@Nullable Object object) {
     if (object == this) {
       return true;
     }
@@ -62,11 +62,11 @@ final class ComparatorOrdering<T> extends Ordering<T> implements Serializable {
     return false;
   }
 
-  @Override public int hashCode() {
+  @Pure @Override public int hashCode() {
     return comparator.hashCode();
   }
 
-  @Override public String toString() {
+  @Pure @Override public String toString() {
     return comparator.toString();
   }
 

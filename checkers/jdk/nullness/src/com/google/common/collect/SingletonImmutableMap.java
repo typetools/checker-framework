@@ -58,19 +58,19 @@ final class SingletonImmutableMap<K, V> extends ImmutableMap<K, V> {
     return singleKey.equals(key) ? singleValue : null;
   }
 
-  public int size() {
+  @Pure public int size() {
     return 1;
   }
 
-  @Override public boolean isEmpty() {
+  @Pure @Override public boolean isEmpty() {
     return false;
   }
 
-  @Override public boolean containsKey(/*@Nullable*/ Object key) {
+  @Pure @Override public boolean containsKey(/*@Nullable*/ Object key) {
     return singleKey.equals(key);
   }
 
-  @Override public boolean containsValue(/*@Nullable*/ Object value) {
+  @Pure @Override public boolean containsValue(/*@Nullable*/ Object value) {
     return singleValue.equals(value);
   }
 
@@ -103,15 +103,15 @@ final class SingletonImmutableMap<K, V> extends ImmutableMap<K, V> {
       this.singleValue = singleValue;
     }
 
-    @Override public boolean contains(/*@Nullable*/ Object object) {
+    @Pure @Override public boolean contains(/*@Nullable*/ Object object) {
       return singleValue.equals(object);
     }
 
-    @Override public boolean isEmpty() {
+    @Pure @Override public boolean isEmpty() {
       return false;
     }
 
-    public int size() {
+    @Pure public int size() {
       return 1;
     }
 
@@ -120,7 +120,7 @@ final class SingletonImmutableMap<K, V> extends ImmutableMap<K, V> {
     }
   }
 
-  @Override public boolean equals(@Nullable Object object) {
+  @Pure @Override public boolean equals(@Nullable Object object) {
     if (object == this) {
       return true;
     }
@@ -136,11 +136,11 @@ final class SingletonImmutableMap<K, V> extends ImmutableMap<K, V> {
     return false;
   }
 
-  @Override public int hashCode() {
+  @Pure @Override public int hashCode() {
     return singleKey.hashCode() ^ singleValue.hashCode();
   }
 
-  @Override public String toString() {
+  @Pure @Override public String toString() {
     return new StringBuilder()
         .append('{')
         .append(singleKey.toString())

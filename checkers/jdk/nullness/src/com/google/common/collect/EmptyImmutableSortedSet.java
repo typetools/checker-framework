@@ -37,15 +37,15 @@ class EmptyImmutableSortedSet<E> extends ImmutableSortedSet<E> {
     super(comparator);
   }
 
-  public int size() {
+  @Pure public int size() {
     return 0;
   }
 
-  @Override public boolean isEmpty() {
+  @Pure @Override public boolean isEmpty() {
     return true;
   }
 
-  @Override public boolean contains(/*@Nullable*/ Object target) {
+  @Pure @Override public boolean contains(/*@Nullable*/ Object target) {
     return false;
   }
 
@@ -67,11 +67,11 @@ class EmptyImmutableSortedSet<E> extends ImmutableSortedSet<E> {
     return a;
   }
 
-  @Override public boolean containsAll(Collection<?> targets) {
+  @Pure @Override public boolean containsAll(Collection<?> targets) {
     return targets.isEmpty();
   }
 
-  @Override public boolean equals(@Nullable Object object) {
+  @Pure @Override public boolean equals(@Nullable Object object) {
     if (object instanceof Set) {
       Set<?> that = (Set<?>) object;
       return that.isEmpty();
@@ -79,11 +79,11 @@ class EmptyImmutableSortedSet<E> extends ImmutableSortedSet<E> {
     return false;
   }
 
-  @Override public int hashCode() {
+  @Pure @Override public int hashCode() {
     return 0;
   }
 
-  @Override public String toString() {
+  @Pure @Override public String toString() {
     return "[]";
   }
 

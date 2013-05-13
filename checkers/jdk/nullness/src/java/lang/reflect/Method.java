@@ -5,6 +5,7 @@ import java.lang.annotation.AnnotationFormatError;
 import java.nio.ByteBuffer;
 import java.util.Map;
 
+import dataflow.quals.Pure;
 import checkers.nullness.quals.Nullable;
 
 @SuppressWarnings("rawtypes")
@@ -85,17 +86,17 @@ public final
     }
 
 
-    public boolean equals(@Nullable Object obj) {
+    @Pure public boolean equals(@Nullable Object obj) {
         throw new RuntimeException("skeleton method");
     }
 
 
-    public int hashCode() {
+    @Pure public int hashCode() {
         throw new RuntimeException("skeleton method");
     }
 
 
-    public String toString() {
+    @Pure public String toString() {
         throw new RuntimeException("skeleton method");
     }
 
@@ -113,17 +114,17 @@ public final
     }
 
 
-    public boolean isBridge() {
+    @Pure public boolean isBridge() {
         throw new RuntimeException("skeleton method");
     }
 
 
-    public boolean isVarArgs() {
+    @Pure public boolean isVarArgs() {
         throw new RuntimeException("skeleton method");
     }
 
 
-    public boolean isSynthetic() {
+    @Pure public boolean isSynthetic() {
         throw new RuntimeException("skeleton method");
     }
 

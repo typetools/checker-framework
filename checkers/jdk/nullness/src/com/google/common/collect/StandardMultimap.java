@@ -162,20 +162,20 @@ import checkers.nullness.quals.Nullable;
 
   // Query Operations
 
-  public int size() {
+  @Pure public int size() {
     return totalSize;
   }
 
-  public boolean isEmpty() {
+  @Pure public boolean isEmpty() {
     return totalSize == 0;
   }
 
   @SuppressWarnings("nullness")
-  public boolean containsKey(@Nullable Object key) {
+  @Pure public boolean containsKey(@Nullable Object key) {
     return map.containsKey(key);
   }
 
-  public boolean containsValue(@Nullable Object value) {
+  @Pure public boolean containsValue(@Nullable Object value) {
     for (Collection<V> collection : map.values()) {
       if (collection.contains(value)) {
         return true;
@@ -187,7 +187,7 @@ import checkers.nullness.quals.Nullable;
 
   @SuppressWarnings("nullness")
       //Suppressed due to annotations on Java.util.Map
-  public boolean containsEntry(@Nullable Object key, @Nullable Object value) {
+  @Pure public boolean containsEntry(@Nullable Object key, @Nullable Object value) {
     Collection<V> collection = map.get(key);
     return collection != null && collection.contains(value);
   }
@@ -442,12 +442,12 @@ import checkers.nullness.quals.Nullable;
       }
     }
 
-    @Override public int size() {
+    @Pure @Override public int size() {
       refreshIfEmpty();
       return delegate.size();
     }
 
-    @Override public boolean equals(@Nullable Object object) {
+    @Pure @Override public boolean equals(@Nullable Object object) {
       if (object == this) {
         return true;
       }
@@ -455,12 +455,12 @@ import checkers.nullness.quals.Nullable;
       return delegate.equals(object);
     }
 
-    @Override public int hashCode() {
+    @Pure @Override public int hashCode() {
       refreshIfEmpty();
       return delegate.hashCode();
     }
 
-    @Override public String toString() {
+    @Pure @Override public String toString() {
       refreshIfEmpty();
       return delegate.toString();
     }
@@ -555,13 +555,13 @@ import checkers.nullness.quals.Nullable;
       return changed;
     }
 
-    @Override public boolean contains(/*@Nullable*/ Object o) {
+    @Pure @Override public boolean contains(/*@Nullable*/ Object o) {
       refreshIfEmpty();
       return delegate.contains(o);
     }
 
     @SuppressWarnings("nullness")
-    @Override public boolean containsAll(Collection<? extends /*@Nullable*/ Object> c) {
+    @Pure @Override public boolean containsAll(Collection<? extends /*@Nullable*/ Object> c) {
       refreshIfEmpty();
       return delegate.containsAll(c);
     }
@@ -732,12 +732,12 @@ import checkers.nullness.quals.Nullable;
       return value;
     }
 
-    public int indexOf(/*@Nullable*/ Object o) {
+    @Pure public int indexOf(/*@Nullable*/ Object o) {
       refreshIfEmpty();
       return getListDelegate().indexOf(o);
     }
 
-    public int lastIndexOf(/*@Nullable*/ Object o) {
+    @Pure public int lastIndexOf(/*@Nullable*/ Object o) {
       refreshIfEmpty();
       return getListDelegate().lastIndexOf(o);
     }
@@ -840,7 +840,7 @@ import checkers.nullness.quals.Nullable;
       this.subMap = subMap;
     }
 
-    @Override public int size() {
+    @Pure @Override public int size() {
       return subMap.size();
     }
 
@@ -869,7 +869,7 @@ import checkers.nullness.quals.Nullable;
 
     @SuppressWarnings("nullness")
     //Suppressed due to annotations on Java.util.Map
-    @Override public boolean contains(/*@Nullable*/ Object key) {
+    @Pure @Override public boolean contains(/*@Nullable*/ Object key) {
       return subMap.containsKey(key);
     }
 
@@ -886,15 +886,15 @@ import checkers.nullness.quals.Nullable;
       return count > 0;
     }
 
-    @Override public boolean containsAll(Collection<?> c) {
+    @Pure @Override public boolean containsAll(Collection<?> c) {
       return subMap.keySet().containsAll(c);
     }
 
-    @Override public boolean equals(@Nullable Object object) {
+    @Pure @Override public boolean equals(@Nullable Object object) {
       return this == object || this.subMap.keySet().equals(object);
     }
 
-    @Override public int hashCode() {
+    @Pure @Override public int hashCode() {
       return subMap.keySet().hashCode();
     }
   }
@@ -994,13 +994,13 @@ import checkers.nullness.quals.Nullable;
       @Override public Iterator<Multiset.Entry<K>> iterator() {
         return new MultisetEntryIterator();
       }
-      @Override public int size() {
+      @Pure @Override public int size() {
         return map.size();
       }
 
       // The following methods are included for better performance.
 
-      @Override public boolean contains(/*@Nullable*/ Object o) {
+      @Pure @Override public boolean contains(/*@Nullable*/ Object o) {
         if (!(o instanceof Multiset.Entry)) {
           return false;
         }
@@ -1039,7 +1039,7 @@ import checkers.nullness.quals.Nullable;
       }
     }
 
-    @Override public int size() {
+    @Pure @Override public int size() {
       return totalSize;
     }
 
@@ -1135,7 +1135,7 @@ import checkers.nullness.quals.Nullable;
     @Override public Iterator<V> iterator() {
       return new ValueIterator();
     }
-    @Override public int size() {
+    @Pure @Override public int size() {
       return totalSize;
     }
 
@@ -1145,7 +1145,7 @@ import checkers.nullness.quals.Nullable;
       StandardMultimap.this.clear();
     }
 
-    @Override public boolean contains(/*@Nullable*/ Object value) {
+    @Pure @Override public boolean contains(/*@Nullable*/ Object value) {
       return containsValue(value);
     }
   }
@@ -1192,13 +1192,13 @@ import checkers.nullness.quals.Nullable;
     @Override public Iterator<Map.Entry<K, V>> iterator() {
       return createEntryIterator();
     }
-    @Override public int size() {
+    @Pure @Override public int size() {
       return totalSize;
     }
 
     // The following methods are included to improve performance.
 
-    @Override public boolean contains(/*@Nullable*/ Object o) {
+    @Pure @Override public boolean contains(/*@Nullable*/ Object o) {
       if (!(o instanceof Map.Entry)) {
         return false;
       }
@@ -1276,10 +1276,10 @@ import checkers.nullness.quals.Nullable;
 
   /** Entry set for a {@link SetMultimap}. */
   private class EntrySet extends Entries implements Set<Map.Entry<K, V>> {
-    @Override public boolean equals(@Nullable Object object) {
+    @Pure @Override public boolean equals(@Nullable Object object) {
       return Collections2.setEquals(this, object);
     }
-    @Override public int hashCode() {
+    @Pure @Override public int hashCode() {
       return Sets.hashCodeImpl(this);
     }
   }
@@ -1318,7 +1318,7 @@ import checkers.nullness.quals.Nullable;
 
     @SuppressWarnings("nullness")
 	//Suppressed due to annotations on Java.util.Map
-    @Override public boolean containsKey(/*@Nullable*/ Object key) {
+    @Pure @Override public boolean containsKey(/*@Nullable*/ Object key) {
       return submap.containsKey(key);
     }
 
@@ -1353,15 +1353,15 @@ import checkers.nullness.quals.Nullable;
       return output;
     }
 
-    @Override public boolean equals(@Nullable Object object) {
+    @Pure @Override public boolean equals(@Nullable Object object) {
       return this == object || submap.equals(object);
     }
 
-    @Override public int hashCode() {
+    @Pure @Override public int hashCode() {
       return submap.hashCode();
     }
 
-    @Override public String toString() {
+    @Pure @Override public String toString() {
       return submap.toString();
     }
 
@@ -1370,13 +1370,13 @@ import checkers.nullness.quals.Nullable;
         return new AsMapIterator();
       }
 
-      @Override public int size() {
+      @Pure @Override public int size() {
         return submap.size();
       }
 
       // The following methods are included for performance.
       @SuppressWarnings("nullness")
-      @Override public boolean contains(/*@Nullable*/ Object o) {
+      @Pure @Override public boolean contains(/*@Nullable*/ Object o) {
         return submap.entrySet().contains(o);
       }
 
@@ -1464,7 +1464,7 @@ import checkers.nullness.quals.Nullable;
 
   // Comparison and hashing
 
-  @Override public boolean equals(@Nullable Object object) {
+  @Pure @Override public boolean equals(@Nullable Object object) {
     if (object == this) {
       return true;
     }
@@ -1483,7 +1483,7 @@ import checkers.nullness.quals.Nullable;
    *
    * @see Map#hashCode
    */
-  @Override public int hashCode() {
+  @Pure @Override public int hashCode() {
     return map.hashCode();
   }
 
@@ -1493,7 +1493,7 @@ import checkers.nullness.quals.Nullable;
    *
    * @return a string representation of the multimap
    */
-  @Override public String toString() {
+  @Pure @Override public String toString() {
     return map.toString();
   }
 }

@@ -1,4 +1,5 @@
 package java.util;
+import dataflow.quals.Pure;
 import checkers.nullness.quals.EnsuresNonNullIf;
 import checkers.nullness.quals.Nullable;
 
@@ -28,10 +29,10 @@ public interface Deque<E extends @Nullable Object> extends Queue<E> {
   public abstract void push(E a1);
   public abstract E pop();
   public abstract boolean remove(@Nullable Object a1);
-  public abstract boolean contains(@Nullable Object a1);
-  public abstract int size();
+  @Pure public abstract boolean contains(@Nullable Object a1);
+  @Pure public abstract int size();
   public abstract Iterator<E> iterator();
   public abstract Iterator<E> descendingIterator();
   @EnsuresNonNullIf(expression={"peek()", "peekFirst()", "peekLast()", "poll()", "pollFirst()", "pollLast()"}, result=false)
-  public abstract boolean isEmpty();
+  @Pure public abstract boolean isEmpty();
 }

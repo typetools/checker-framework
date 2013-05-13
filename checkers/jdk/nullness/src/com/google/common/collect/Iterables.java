@@ -62,7 +62,7 @@ public final class Iterables {
       public Iterator<T> iterator() {
         return Iterators.unmodifiableIterator(iterable.iterator());
       }
-      @Override public String toString() {
+      @Pure @Override public String toString() {
         return iterable.toString();
       }
       // no equals and hashCode; it would break the contract!
@@ -83,7 +83,7 @@ public final class Iterables {
    * any object for while {@code equals(element)} is true.
    */
     @SuppressWarnings("nullness")
-  public static boolean contains(Iterable<?> iterable, @Nullable Object element)
+  @Pure public static boolean contains(Iterable<?> iterable, @Nullable Object element)
   {
     if (iterable instanceof Collection) {
       Collection<?> collection = (Collection<?>) iterable;
@@ -198,7 +198,7 @@ public final class Iterables {
    * Returns a string representation of {@code iterable}, with the format
    * {@code [e1, e2, ..., en]}.
    */
-  public static String toString(Iterable<?> iterable) {
+  @Pure public static String toString(Iterable<?> iterable) {
     return Iterators.toString(iterable.iterator());
   }
 
@@ -300,7 +300,7 @@ public final class Iterables {
       public Iterator<T> iterator() {
         return Iterators.cycle(iterable);
       }
-      @Override public String toString() {
+      @Pure @Override public String toString() {
         return iterable.toString() + " (cycled)";
       }
     };
@@ -691,7 +691,7 @@ public final class Iterables {
    *
    * @return {@code true} if the iterable contains no elements
    */
-  public static <T> boolean isEmpty(Iterable<T> iterable) {
+  @Pure public static <T> boolean isEmpty(Iterable<T> iterable) {
     return !iterable.iterator().hasNext();
   }
 
@@ -725,7 +725,7 @@ public final class Iterables {
   }
 
     abstract static class IterableWithToString<E extends /*@Nullable*/ Object> implements Iterable<E> {
-    @Override public String toString() {
+    @Pure @Override public String toString() {
       return Iterables.toString(this);
     }
   }

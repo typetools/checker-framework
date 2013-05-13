@@ -316,7 +316,7 @@ import checkers.nullness.quals.Nullable;
    * ordering. Note that this is always true when the iterable has fewer than
    * two elements.
    */
-  public boolean isOrdered(Iterable<? extends T> iterable) {
+  @Pure public boolean isOrdered(Iterable<? extends T> iterable) {
     Iterator<? extends T> it = iterable.iterator();
     if (it.hasNext()) {
       T prev = it.next();
@@ -337,7 +337,7 @@ import checkers.nullness.quals.Nullable;
    * this ordering. Note that this is always true when the iterable has fewer
    * than two elements.
    */
-  public boolean isStrictlyOrdered(Iterable<? extends T> iterable) {
+  @Pure public boolean isStrictlyOrdered(Iterable<? extends T> iterable) {
     Iterator<? extends T> it = iterable.iterator();
     if (it.hasNext()) {
       T prev = it.next();

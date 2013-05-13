@@ -41,7 +41,7 @@ import checkers.nullness.quals.Nullable;
     throw new UnsupportedOperationException();
   }
 
-  @Override public boolean equals(@Nullable Object object) {
+  @Pure @Override public boolean equals(@Nullable Object object) {
     if (object instanceof Entry) {
       Entry<?, ?> that = (Entry<?, ?>) object;
       return Objects.equal(this.getKey(), that.getKey())
@@ -50,7 +50,7 @@ import checkers.nullness.quals.Nullable;
     return false;
   }
 
-  @Override public int hashCode() {
+  @Pure @Override public int hashCode() {
     K k = getKey();
     V v = getValue();
     return ((k == null) ? 0 : k.hashCode()) ^ ((v == null) ? 0 : v.hashCode());
@@ -59,7 +59,7 @@ import checkers.nullness.quals.Nullable;
   /**
    * Returns a string representation of the form <code>{key}={value}</code>.
    */
-  @Override public String toString() {
+  @Pure @Override public String toString() {
     return getKey() + "=" + getValue();
   }
 }

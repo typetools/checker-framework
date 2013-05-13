@@ -1,4 +1,5 @@
 package java.util;
+import dataflow.quals.Pure;
 import checkers.nullness.quals.Nullable;
 
 public final class Formatter implements java.io.Closeable, java.io.Flushable {
@@ -21,7 +22,7 @@ public final class Formatter implements java.io.Closeable, java.io.Flushable {
   public Formatter(java.io.OutputStream a1, String a2, @Nullable Locale a3)throws java.io.UnsupportedEncodingException { throw new RuntimeException("skeleton method"); }
   public @Nullable Locale locale() { throw new RuntimeException("skeleton method"); }
   public Appendable out() { throw new RuntimeException("skeleton method"); }
-  public String toString() { throw new RuntimeException("skeleton method"); }
+  @Pure public String toString() { throw new RuntimeException("skeleton method"); }
   public void flush() { throw new RuntimeException("skeleton method"); }
   public void close() { throw new RuntimeException("skeleton method"); }
   public java.io. @Nullable IOException ioException() { throw new RuntimeException("skeleton method"); }

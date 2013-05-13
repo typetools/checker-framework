@@ -79,5 +79,5 @@ import checkers.nullness.quals.Nullable;
    * contain the same values in the same order. If the value orderings disagree,
    * the multimaps will not be considered equal.
    */
-  boolean equals(@Nullable Object obj);
+  @Pure boolean equals(@Nullable Object obj);
 }

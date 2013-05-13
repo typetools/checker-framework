@@ -1,4 +1,5 @@
 package java.util;
+import dataflow.quals.Pure;
 import checkers.nullness.quals.Nullable;
 
 public final class UUID implements java.io.Serializable, Comparable<UUID> {
@@ -14,8 +15,8 @@ public final class UUID implements java.io.Serializable, Comparable<UUID> {
   public long timestamp() { throw new RuntimeException("skeleton method"); }
   public int clockSequence() { throw new RuntimeException("skeleton method"); }
   public long node() { throw new RuntimeException("skeleton method"); }
-  public String toString() { throw new RuntimeException("skeleton method"); }
-  public int hashCode() { throw new RuntimeException("skeleton method"); }
-  public boolean equals(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
-  public int compareTo(UUID a1) { throw new RuntimeException("skeleton method"); }
+  @Pure public String toString() { throw new RuntimeException("skeleton method"); }
+  @Pure public int hashCode() { throw new RuntimeException("skeleton method"); }
+  @Pure public boolean equals(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
+  @Pure public int compareTo(UUID a1) { throw new RuntimeException("skeleton method"); }
 }
