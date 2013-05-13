@@ -17,9 +17,9 @@ class Constructors {
 
   public Constructors () {
 
-    //:: (argument.type.incompatible)
+    //:: error: (argument.type.incompatible)
     Box b1 = new Box(this);
-    //:: (argument.type.incompatible)
+    //:: error: (argument.type.incompatible)
     requireInitialized(b1);
 
     Box b2 = new Box("hello");
