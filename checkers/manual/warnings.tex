@@ -21,7 +21,7 @@ You may not have
 enough knowledge to annotate poorly-documented libraries that your program uses.
 
 If annotated code uses unannotated code, then the checker may issue
-warnings.  For example, the Nullness checker (Chapter~\ref{nullness-checker}) will
+warnings.  For example, the Nullness Checker (Chapter~\ref{nullness-checker}) will
 warn whenever an unannotated method result is used in a non-null context:
 
 \begin{Verbatim}
@@ -246,9 +246,9 @@ assertion ever fails, then a user might see the string and be confused.
 But the string should only be used if the programmer has reasoned that the
 assertion can never fail.
 
-% (Another way of stating the Nullness checker's use of assertions is as an
+% (Another way of stating the Nullness Checker's use of assertions is as an
 % additional caveat to the guarantees provided by a checker
-% (Section~\ref{checker-guarantees}).  The Nullness checker prevents null
+% (Section~\ref{checker-guarantees}).  The Nullness Checker prevents null
 % pointer errors in your code under the assumption that assertions are
 % enabled, and it does not guarantee that all of your assertions succeed.)
 
