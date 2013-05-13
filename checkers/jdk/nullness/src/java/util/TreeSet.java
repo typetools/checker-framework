@@ -1,4 +1,5 @@
 package java.util;
+import dataflow.quals.Pure;
 import checkers.nullness.quals.EnsuresNonNullIf;
 import checkers.nullness.quals.Nullable;
 
@@ -12,10 +13,10 @@ public class TreeSet<E extends @Nullable Object> extends AbstractSet<E> implemen
   public Iterator<E> iterator() { throw new RuntimeException("skeleton method"); }
   public Iterator<E> descendingIterator() { throw new RuntimeException("skeleton method"); }
   public NavigableSet<E> descendingSet() { throw new RuntimeException("skeleton method"); }
-  public int size() { throw new RuntimeException("skeleton method"); }
+  @Pure public int size() { throw new RuntimeException("skeleton method"); }
   @EnsuresNonNullIf(expression={"pollFirst()", "pollLast()"}, result=false)
-  public boolean isEmpty() { throw new RuntimeException("skeleton method"); }
-  public boolean contains(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
+  @Pure public boolean isEmpty() { throw new RuntimeException("skeleton method"); }
+  @Pure public boolean contains(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   public boolean add(E a1) { throw new RuntimeException("skeleton method"); }
   public boolean remove(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   public void clear() { throw new RuntimeException("skeleton method"); }

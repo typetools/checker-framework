@@ -74,7 +74,7 @@ public abstract class ImmutableCollection<E>
     return other;
   }
 
-  public boolean contains(@Nullable Object object) {
+  @Pure public boolean contains(@Nullable Object object) {
     if (object == null) {
       return false;
     }
@@ -86,7 +86,7 @@ public abstract class ImmutableCollection<E>
     return false;
   }
 
-  public boolean containsAll(Collection<?> targets) {
+  @Pure public boolean containsAll(Collection<?> targets) {
     for (Object target : targets) {
       if (!contains(target)) {
         return false;
@@ -95,11 +95,11 @@ public abstract class ImmutableCollection<E>
     return true;
   }
 
-  public boolean isEmpty() {
+  @Pure public boolean isEmpty() {
     return size() == 0;
   }
 
-  @Override public String toString() {
+  @Pure @Override public String toString() {
     StringBuilder sb = new StringBuilder(size() * 16).append('[');
     Collections2.standardJoiner.appendTo(sb, this);
     return sb.append(']').toString();
@@ -161,15 +161,15 @@ public abstract class ImmutableCollection<E>
 
   private static class EmptyImmutableCollection
       extends ImmutableCollection<Object> {
-    public int size() {
+    @Pure public int size() {
       return 0;
     }
 
-    @Override public boolean isEmpty() {
+    @Pure @Override public boolean isEmpty() {
       return true;
     }
 
-    @Override public boolean contains(@Nullable Object object) {
+    @Pure @Override public boolean contains(@Nullable Object object) {
       return false;
     }
 
@@ -203,11 +203,11 @@ public abstract class ImmutableCollection<E>
       this.elements = elements;
     }
 
-    public int size() {
+    @Pure public int size() {
       return elements.length;
     }
 
-    @Override public boolean isEmpty() {
+    @Pure @Override public boolean isEmpty() {
       return false;
     }
 

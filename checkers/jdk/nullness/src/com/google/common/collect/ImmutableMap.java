@@ -295,16 +295,16 @@ public abstract class ImmutableMap<K, V> implements Map<K, V>, Serializable {
     throw new UnsupportedOperationException();
   }
 
-  public boolean isEmpty() {
+  @Pure public boolean isEmpty() {
     return size() == 0;
   }
 
-  public boolean containsKey(@Nullable Object key) {
+  @Pure public boolean containsKey(@Nullable Object key) {
     return get(key) != null;
   }
 
   // Overriding to mark it Nullable
-  @Override public abstract boolean containsValue(@Nullable Object value);
+  @Pure @Override public abstract boolean containsValue(@Nullable Object value);
 
   // Overriding to mark it Nullable
   @Override public abstract /*@Nullable*/ V get(@Nullable Object key);
@@ -327,7 +327,7 @@ public abstract class ImmutableMap<K, V> implements Map<K, V>, Serializable {
    */
   public abstract ImmutableCollection<V> values();
 
-  @Override public boolean equals(@Nullable Object object) {
+  @Pure @Override public boolean equals(@Nullable Object object) {
     if (object == this) {
       return true;
     }
@@ -338,13 +338,13 @@ public abstract class ImmutableMap<K, V> implements Map<K, V>, Serializable {
     return false;
   }
 
-  @Override public int hashCode() {
+  @Pure @Override public int hashCode() {
     // not caching hash code since it could change if map values are mutable
     // in a way that modifies their hash codes
     return entrySet().hashCode();
   }
 
-  @Override public String toString() {
+  @Pure @Override public String toString() {
     StringBuilder result = new StringBuilder(size() * 16).append('{');
     Maps.standardJoiner.appendTo(result, this);
     return result.append('}').toString();

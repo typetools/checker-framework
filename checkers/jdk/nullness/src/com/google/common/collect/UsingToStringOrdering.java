@@ -35,7 +35,7 @@ final class UsingToStringOrdering
     return INSTANCE;
   }
 
-  @Override public String toString() {
+  @Pure @Override public String toString() {
     return "Ordering.usingToString()";
   }
 

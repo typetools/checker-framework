@@ -282,9 +282,9 @@ public abstract class ImmutableList<E> extends ImmutableCollection<E>
 
   // Mark these two methods with @Nullable
 
-  public abstract int indexOf(@Nullable Object object);
+  @Pure public abstract int indexOf(@Nullable Object object);
 
-  public abstract int lastIndexOf(@Nullable Object object);
+  @Pure public abstract int lastIndexOf(@Nullable Object object);
 
   // constrain the return type to ImmutableList<E>
 

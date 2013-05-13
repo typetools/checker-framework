@@ -66,7 +66,7 @@ final class NaturalOrdering
     return INSTANCE;
   }
 
-  @Override public String toString() {
+  @Pure @Override public String toString() {
     return "Ordering.natural()";
   }
 

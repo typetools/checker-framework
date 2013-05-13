@@ -325,7 +325,7 @@ import checkers.nullness.quals.Nullable;
 		   final /*@Nullable*/ Object[] rest) {
     checkNotNull(rest);
     return new AbstractList</*@Nullable*/ Object>() {
-      @Override public int size() {
+      @Pure @Override public int size() {
         return rest.length + 2;
       }
       @Override public /*@Nullable*/ Object get(int index) {

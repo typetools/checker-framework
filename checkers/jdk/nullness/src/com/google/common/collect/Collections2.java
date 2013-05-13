@@ -57,7 +57,7 @@ public final class Collections2 {
    */
   // TODO: Make public?
     @SuppressWarnings("nullness")
-    static boolean containsAll(Collection<? extends /*@Nullable*/ Object> self,
+    @Pure static boolean containsAll(Collection<? extends /*@Nullable*/ Object> self,
                                Collection<? extends /*@Nullable*/ Object> c) {
     checkNotNull(self);
     for (Object o : c) {
@@ -152,7 +152,7 @@ public final class Collections2 {
 
     @SuppressWarnings("nullness")
     // Suppressed due to typing of ?
-    public boolean contains(/*@Nullable*/ Object element) {
+    @Pure public boolean contains(/*@Nullable*/ Object element) {
       try {
         // unsafe cast can result in a CCE from predicate.apply(), which we
         // will catch
@@ -166,7 +166,7 @@ public final class Collections2 {
       }
     }
 
-    public boolean containsAll(Collection<? extends /*@Nullable*/ Object> collection) {
+    @Pure public boolean containsAll(Collection<? extends /*@Nullable*/ Object> collection) {
       for (Object element : collection) {
         if (!contains(element)) {
           return false;
@@ -175,7 +175,7 @@ public final class Collections2 {
       return true;
     }
 
-    public boolean isEmpty() {
+    @Pure public boolean isEmpty() {
       return !Iterators.any(unfiltered.iterator(), predicate);
     }
 
@@ -223,7 +223,7 @@ public final class Collections2 {
       return Iterables.removeIf(unfiltered, combinedPredicate);
     }
 
-    public int size() {
+    @Pure public int size() {
       return Iterators.size(iterator());
     }
 
@@ -240,7 +240,7 @@ public final class Collections2 {
       return Lists.newArrayList(iterator()).toArray(array);
     }
 
-    @Override public String toString() {
+    @Pure @Override public String toString() {
       return Iterators.toString(iterator());
     }
   }
@@ -279,7 +279,7 @@ public final class Collections2 {
       fromCollection.clear();
     }
 
-    @Override public boolean isEmpty() {
+    @Pure @Override public boolean isEmpty() {
       return fromCollection.isEmpty();
     }
 
@@ -287,7 +287,7 @@ public final class Collections2 {
       return Iterators.transform(fromCollection.iterator(), function);
     }
 
-    @Override public int size() {
+    @Pure @Override public int size() {
       return fromCollection.size();
     }
   }

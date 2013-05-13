@@ -1,4 +1,5 @@
 package java.util;
+import dataflow.quals.Pure;
 import checkers.nullness.quals.Nullable;
 
 public class Collections {
@@ -25,8 +26,8 @@ public class Collections {
   public static <T> T max(Collection<? extends T> a1, @Nullable Comparator<? super T> a2) { throw new RuntimeException("skeleton method"); }
   public static void rotate(List<?> a1, int a2) { throw new RuntimeException("skeleton method"); }
   public static <T> boolean replaceAll(List<T> a1, @Nullable T a2, T a3) { throw new RuntimeException("skeleton method"); }
-  public static int indexOfSubList(List<?> a1, List<?> a2) { throw new RuntimeException("skeleton method"); }
-  public static int lastIndexOfSubList(List<?> a1, List<?> a2) { throw new RuntimeException("skeleton method"); }
+  @Pure public static int indexOfSubList(List<?> a1, List<?> a2) { throw new RuntimeException("skeleton method"); }
+  @Pure public static int lastIndexOfSubList(List<?> a1, List<?> a2) { throw new RuntimeException("skeleton method"); }
   public static <T> Collection<T> unmodifiableCollection(Collection<? extends T> a1) { throw new RuntimeException("skeleton method"); }
   public static <T> Set<T> unmodifiableSet(Set<? extends T> a1) { throw new RuntimeException("skeleton method"); }
   public static <T> SortedSet<T> unmodifiableSortedSet(SortedSet<T> a1) { throw new RuntimeException("skeleton method"); }

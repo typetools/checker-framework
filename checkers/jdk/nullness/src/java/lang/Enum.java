@@ -31,6 +31,7 @@ import java.io.InvalidObjectException;
 import java.io.ObjectInputStream;
 import java.io.ObjectStreamException;
 
+import dataflow.quals.Pure;
 import checkers.nullness.quals.Nullable;
 
 /**
@@ -123,7 +124,7 @@ public abstract class Enum<E extends Enum<E>>
      *
      * @return the name of this enum constant
      */
-    public String toString() {
+    @Pure public String toString() {
         return name;
     }
 
@@ -135,7 +136,7 @@ public abstract class Enum<E extends Enum<E>>
      * @return  true if the specified object is equal to this
      *          enum constant.
      */
-    public final boolean equals(@Nullable Object other) {
+    @Pure public final boolean equals(@Nullable Object other) {
         return this==other;
     }
 
@@ -144,7 +145,7 @@ public abstract class Enum<E extends Enum<E>>
      *
      * @return a hash code for this enum constant.
      */
-    public final int hashCode() {
+    @Pure public final int hashCode() {
         return super.hashCode();
     }
 

@@ -83,7 +83,7 @@ import checkers.nullness.quals.Nullable;
 
   // Query Operations (optimizations)
 
-  @Override public boolean containsValue(/*@Nullable*/ Object value) {
+  @Pure @Override public boolean containsValue(/*@Nullable*/ Object value) {
     return inverse.containsKey(value);
   }
 
@@ -256,7 +256,7 @@ import checkers.nullness.quals.Nullable;
       return ObjectArrays.toArrayImpl(this, array);
     }
 
-    @Override public String toString() {
+    @Pure @Override public String toString() {
       return Iterators.toString(iterator());
     }
   }
@@ -346,10 +346,10 @@ V oldValue = finalEntry.setValue(value);
     @Override public <T> T[] toArray(T[] array) {
       return ObjectArrays.toArrayImpl(this, array);
     }
-    @Override public boolean contains(/*@Nullable*/ Object o) {
+    @Pure @Override public boolean contains(/*@Nullable*/ Object o) {
       return Maps.containsEntryImpl(delegate(), o);
     }
-    @Override public boolean containsAll(Collection<?> c) {
+    @Pure @Override public boolean containsAll(Collection<?> c) {
       return Collections2.containsAll(this, c);
     }
     @Override public boolean removeAll(Collection<?> c) {
