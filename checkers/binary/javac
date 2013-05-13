@@ -1,0 +1,15 @@
+#!/bin/sh
+
+#
+# This file simply redirects all passed arguments
+# to checkers.util.CheckerMain
+#
+
+mydir="`dirname $0`"
+case `uname -s` in
+    CYGWIN*)
+      mydir=`cygpath -m $mydir`
+      ;;
+esac
+
+eval "java" "-jar" "${mydir}"/checkers.jar "$@"
