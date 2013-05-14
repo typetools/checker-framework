@@ -1,5 +1,6 @@
 package java.util;
 import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
 import checkers.nullness.quals.Nullable;
 import checkers.nullness.quals.PolyNull;
 
@@ -100,16 +101,16 @@ public class Arrays{
   @Pure public static int hashCode(float @Nullable [] a1) { throw new RuntimeException("skeleton method"); }
   @Pure public static int hashCode(double @Nullable [] a1) { throw new RuntimeException("skeleton method"); }
   @Pure public static int hashCode(@PolyNull Object @Nullable [] a1) { throw new RuntimeException("skeleton method"); }
-  public static int deepHashCode(@PolyNull Object @Nullable [] a1) { throw new RuntimeException("skeleton method"); }
-  public static boolean deepEquals(@PolyNull Object @Nullable [] a1, @PolyNull Object @Nullable [] a2) { throw new RuntimeException("skeleton method"); }
-  @Pure public static String toString(long @Nullable [] a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static String toString(int @Nullable [] a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static String toString(short @Nullable [] a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static String toString(char @Nullable [] a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static String toString(byte @Nullable [] a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static String toString(boolean @Nullable [] a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static String toString(float @Nullable [] a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static String toString(double @Nullable [] a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static String toString(@PolyNull Object @Nullable [] a1) { throw new RuntimeException("skeleton method"); }
-  public static String deepToString(@PolyNull Object @Nullable [] a1) { throw new RuntimeException("skeleton method"); }
+  @Pure public static int deepHashCode(@PolyNull Object @Nullable [] a1) { throw new RuntimeException("skeleton method"); }
+  @Pure public static boolean deepEquals(@PolyNull Object @Nullable [] a1, @PolyNull Object @Nullable [] a2) { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public static String toString(long @Nullable [] a1) { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public static String toString(int @Nullable [] a1) { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public static String toString(short @Nullable [] a1) { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public static String toString(char @Nullable [] a1) { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public static String toString(byte @Nullable [] a1) { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public static String toString(boolean @Nullable [] a1) { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public static String toString(float @Nullable [] a1) { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public static String toString(double @Nullable [] a1) { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public static String toString(@PolyNull Object @Nullable [] a1) { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public static String deepToString(@PolyNull Object @Nullable [] a1) { throw new RuntimeException("skeleton method"); }
 }

@@ -1,5 +1,6 @@
 package java.util;
 import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
 
 import checkers.nullness.quals.KeyFor;
 import checkers.nullness.quals.NonNull;
@@ -30,6 +31,6 @@ public class Hashtable<K extends @NonNull Object, V extends @NonNull Object> ext
   public Collection<V> values() { throw new RuntimeException("skeleton method"); }
   @Pure public synchronized boolean equals(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   @Pure public synchronized int hashCode() { throw new RuntimeException("skeleton method"); }
-  public synchronized Object clone() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public synchronized Object clone() { throw new RuntimeException("skeleton method"); }
 
 }

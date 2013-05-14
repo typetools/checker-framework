@@ -10,7 +10,7 @@ public final class StringBuffer extends AbstractStringBuilder implements java.io
   public StringBuffer(int a1) { throw new RuntimeException("skeleton method"); }
   public StringBuffer(String a1) { throw new RuntimeException("skeleton method"); }
   public StringBuffer(CharSequence a1) { throw new RuntimeException("skeleton method"); }
-  public synchronized int length() { throw new RuntimeException("skeleton method"); }
+  @Pure public synchronized int length() { throw new RuntimeException("skeleton method"); }
   public synchronized int capacity() { throw new RuntimeException("skeleton method"); }
   public synchronized void ensureCapacity(int a1) { throw new RuntimeException("skeleton method"); }
   public synchronized void trimToSize() { throw new RuntimeException("skeleton method"); }

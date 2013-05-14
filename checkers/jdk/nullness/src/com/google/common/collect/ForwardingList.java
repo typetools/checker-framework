@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.ListIterator;
 
+import dataflow.quals.SideEffectFree;
 import checkers.nullness.quals.Nullable;
 
 /**
@@ -81,7 +82,7 @@ import checkers.nullness.quals.Nullable;
   }
 
   @GwtIncompatible("List.subList")
-  public List<E> subList(int fromIndex, int toIndex) {
+  @SideEffectFree public List<E> subList(int fromIndex, int toIndex) {
     return Platform.subList(delegate(), fromIndex, toIndex);
   }
 

@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 
+import dataflow.quals.SideEffectFree;
 import checkers.nullness.quals.Nullable;
 //import javax.annotation.Nullable;
 
@@ -71,7 +72,7 @@ final class SingletonImmutableList<E> extends ImmutableList<E> {
     return 1;
   }
 
-  @Override public ImmutableList<E> subList(int fromIndex, int toIndex) {
+  @SideEffectFree @Override public ImmutableList<E> subList(int fromIndex, int toIndex) {
     Preconditions.checkPositionIndexes(fromIndex, toIndex, 1);
     return (fromIndex == toIndex) ? ImmutableList.<E>of() : this;
   }

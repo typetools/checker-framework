@@ -28,7 +28,7 @@ final class ReverseNaturalOrdering
     extends Ordering<Comparable> implements Serializable {
   static final ReverseNaturalOrdering INSTANCE = new ReverseNaturalOrdering();
 
-  public int compare(Comparable left, Comparable right) {
+  /*@Pure*/ public int compare(Comparable left, Comparable right) {
     checkNotNull(left); // right null is caught later
     if (left == right) {
       return 0;

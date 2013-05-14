@@ -247,7 +247,7 @@ public class ImmutableSortedMap<K, V>
   private static void sortEntries(Entry<?, ?>[] entryArray,
       final Comparator<?> comparator) {
     Comparator<Entry<?, ?>> entryComparator = new Comparator<Entry<?, ?>>() {
-      public int compare(Entry<?, ?> entry1, Entry<?, ?> entry2) {
+      /*@Pure*/ public int compare(Entry<?, ?> entry1, Entry<?, ?> entry2) {
         return ImmutableSortedSet.unsafeCompare(
             comparator, entry1.getKey(), entry2.getKey());
       }

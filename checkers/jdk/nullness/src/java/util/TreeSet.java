@@ -1,5 +1,6 @@
 package java.util;
 import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
 import checkers.nullness.quals.EnsuresNonNullIf;
 import checkers.nullness.quals.Nullable;
 
@@ -36,5 +37,5 @@ public class TreeSet<E extends @Nullable Object> extends AbstractSet<E> implemen
   public @Nullable E higher(E a1) { throw new RuntimeException("skeleton method"); }
   public @Nullable E pollFirst() { throw new RuntimeException("skeleton method"); }
   public @Nullable E pollLast() { throw new RuntimeException("skeleton method"); }
-  public Object clone() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public Object clone() { throw new RuntimeException("skeleton method"); }
 }

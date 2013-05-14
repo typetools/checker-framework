@@ -47,7 +47,7 @@ import checkers.nullness.quals.Nullable;
   }
   
  
-  public int compare(T left, T right) {
+  /*@Pure*/ public int compare(T left, T right) {
     for (Comparator<? super T> comparator : comparators) {
       int result = comparator.compare(left, right);
       if (result != 0) {

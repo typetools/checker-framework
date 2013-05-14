@@ -1,5 +1,6 @@
 package java.util;
 import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
 
 import checkers.nullness.quals.Nullable;
 
@@ -90,7 +91,7 @@ public abstract class Calendar implements java.io.Serializable, Cloneable, Compa
   public abstract int getLeastMaximum(int a1);
   public int getActualMinimum(int a1) { throw new RuntimeException("skeleton method"); }
   public int getActualMaximum(int a1) { throw new RuntimeException("skeleton method"); }
-  public Object clone() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public Object clone() { throw new RuntimeException("skeleton method"); }
   private static final String[] FIELD_NAME = {
         "ERA", "YEAR", "MONTH", "WEEK_OF_YEAR", "WEEK_OF_MONTH", "DAY_OF_MONTH",
         "DAY_OF_YEAR", "DAY_OF_WEEK", "DAY_OF_WEEK_IN_MONTH", "AM_PM", "HOUR",

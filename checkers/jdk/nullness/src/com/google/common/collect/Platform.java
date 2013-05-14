@@ -59,7 +59,7 @@ class Platform {
    * Clone the given array using {@link Object#clone()}.  It is factored out so
    * that it can be emulated in GWT.
    */
-    static <T extends /*@Nullable*/ Object> T[] clone(T[] array) {
+  @SideEffectFree static <T extends /*@Nullable*/ Object> T[] clone(T[] array) {
     return array.clone();
   }
 

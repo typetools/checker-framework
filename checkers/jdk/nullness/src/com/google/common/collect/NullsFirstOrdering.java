@@ -33,7 +33,7 @@ import javax.annotation.Nullable;
   }
 
   @SuppressWarnings("nullness")
-  public int compare(T left, T right) {
+    /*@Pure*/ public int compare(T left, T right) {
     if (left == right) {
       return 0;
     }
