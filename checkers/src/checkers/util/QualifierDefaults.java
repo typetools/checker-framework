@@ -397,6 +397,12 @@ public class QualifierDefaults {
                     for ( AnnotatedTypeMirror atm : ((AnnotatedExecutableType)t).getParameterTypes()) {
                         doApply(atm, qual);
                     }
+                } else if( elt.getKind() == ElementKind.CONSTRUCTOR &&
+          			    t.getKind() == TypeKind.EXECUTABLE &&
+                        t == type) {
+                    for ( AnnotatedTypeMirror atm : ((AnnotatedExecutableType)t).getParameterTypes()) {
+                        doApply(atm, qual);
+                    }
                 }
                 break;
             }

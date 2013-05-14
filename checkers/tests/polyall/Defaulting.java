@@ -52,6 +52,27 @@ class Defaulting {
             m(new Object());
         }
     }
+    @DefaultQualifiers({
+        @DefaultQualifier(value=H1Top.class, locations={DefaultLocation.LOCALS}),
+        @DefaultQualifier(value=H1S1.class, locations={DefaultLocation.PARAMETERS}),
+        @DefaultQualifier(value=H1S2.class, locations={DefaultLocation.OTHERWISE})
+    })
+    class TestConstructorParameter {
+ 
+    	TestConstructorParameter (Object p) {
+            @H1S1 Object l1 = p;
+            //:: error: (assignment.type.incompatible)
+            @H1S2 Object l2 = p;
+            Object l3 = p;
+        }
+        void call() {
+        	new TestConstructorParameter(new @H1S1 Object());
+            //:: error: (argument.type.incompatible)
+        	new TestConstructorParameter(new @H1S2 Object());
+            //:: error: (argument.type.incompatible)
+        	new TestConstructorParameter(new Object());
+        }
+    }
 
     @DefaultQualifiers({
         @DefaultQualifier(value=H1Top.class, locations={DefaultLocation.LOCALS}),
