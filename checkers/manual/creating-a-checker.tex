@@ -378,6 +378,12 @@ Furthermore, it is best if the top type and bottom type are defined
 explicitly for the type system, rather than (say) reusing a qualifier from the
 Checker Framework such as \<@Unqualified>.
 
+It is possible that a single type-checker checks multiple type hierarchies.
+An example is the Nullness Checker that has separate type hierarchies for
+nullness, initialization, and map keys.  In this case, each type hierarchy
+would have its own top qualifier and its own bottom qualifier; they don't
+all have to share a single top qualifier or a single bottom qualifier.
+
 
 \label{bottom-qualifier}
 
