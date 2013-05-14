@@ -41,7 +41,7 @@ final class ByFunctionOrdering<F, T>
     this.ordering = checkNotNull(ordering);
   }
 
-  public int compare(F left, F right) {
+  /*@Pure*/ public int compare(F left, F right) {
     return ordering.compare(function.apply(left), function.apply(right));
   }
 

@@ -1,5 +1,6 @@
 package java.util;
 import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
 
 import checkers.nullness.quals.KeyFor;
 import checkers.nullness.quals.Nullable;
@@ -22,5 +23,5 @@ public class HashMap<K extends @Nullable Object, V extends @Nullable Object> ext
   public Set<@KeyFor("this") K> keySet() { throw new RuntimeException("skeleton method"); }
   public Collection<V> values() { throw new RuntimeException("skeleton method"); }
   public Set<Map.Entry<@KeyFor("this") K, V>> entrySet() { throw new RuntimeException("skeleton method"); }
-  public Object clone() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public Object clone() { throw new RuntimeException("skeleton method"); }
 }

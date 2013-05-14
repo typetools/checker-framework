@@ -12,8 +12,8 @@ public abstract class AbstractMap<K extends @Nullable Object, V extends @Nullabl
     private static final long serialVersionUID = 0;
     public SimpleEntry(K a1, V a2) { throw new RuntimeException("skeleton method"); }
     public SimpleEntry(Map.Entry<? extends K, ? extends V> a1) { throw new RuntimeException("skeleton method"); }
-    public K getKey() { throw new RuntimeException("skeleton method"); }
-    public V getValue() { throw new RuntimeException("skeleton method"); }
+    @Pure public K getKey() { throw new RuntimeException("skeleton method"); }
+    @Pure public V getValue() { throw new RuntimeException("skeleton method"); }
     public V setValue(V a1) { throw new RuntimeException("skeleton method"); }
     @Pure public boolean equals(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
     @Pure public int hashCode() { throw new RuntimeException("skeleton method"); }
@@ -24,8 +24,8 @@ public abstract class AbstractMap<K extends @Nullable Object, V extends @Nullabl
     private static final long serialVersionUID = 0;
     public SimpleImmutableEntry(K a1, V a2) { throw new RuntimeException("skeleton method"); }
     public SimpleImmutableEntry(Map.Entry<? extends K, ? extends V> a1) { throw new RuntimeException("skeleton method"); }
-    public K getKey() { throw new RuntimeException("skeleton method"); }
-    public V getValue() { throw new RuntimeException("skeleton method"); }
+    @Pure public K getKey() { throw new RuntimeException("skeleton method"); }
+    @Pure public V getValue() { throw new RuntimeException("skeleton method"); }
     public V setValue(V a1) { throw new RuntimeException("skeleton method"); }
     @Pure public boolean equals(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
     @Pure public int hashCode() { throw new RuntimeException("skeleton method"); }

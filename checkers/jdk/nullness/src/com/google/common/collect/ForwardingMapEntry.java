@@ -38,11 +38,11 @@ import checkers.nullness.quals.Nullable;
     extends ForwardingObject implements Map.Entry<K, V> {
 
   @Override protected abstract Map.Entry<K, V> delegate();
-  public K getKey() {
+  @Pure public K getKey() {
     return delegate().getKey();
   }
 
-  public V getValue() {
+  @Pure public V getValue() {
     return delegate().getValue();
   }
 

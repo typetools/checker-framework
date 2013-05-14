@@ -1,5 +1,6 @@
 package java.util;
 import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
 
 import checkers.nullness.quals.Nullable;
 import checkers.nullness.quals.PolyNull;
@@ -50,6 +51,6 @@ public class Vector<E extends @Nullable Object> extends AbstractList<E> implemen
   @Pure public synchronized boolean equals(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   @Pure public synchronized int hashCode() { throw new RuntimeException("skeleton method"); }
   @Pure public synchronized String toString() { throw new RuntimeException("skeleton method"); }
-  public synchronized List<E> subList(int a1, int a2) { throw new RuntimeException("skeleton method"); }
-  public synchronized Object clone() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public synchronized List<E> subList(int a1, int a2) { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public synchronized Object clone() { throw new RuntimeException("skeleton method"); }
 }

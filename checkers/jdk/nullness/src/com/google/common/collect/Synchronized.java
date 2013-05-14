@@ -33,6 +33,7 @@ import java.util.RandomAccess;
 import java.util.Set;
 import java.util.SortedSet;
 
+import dataflow.quals.SideEffectFree;
 import checkers.nullness.quals.Nullable;
 //import javax.annotation.Nullable;
 
@@ -446,7 +447,7 @@ final class Synchronized {
     }
 
     @GwtIncompatible("List.subList")
-    public List<E> subList(int fromIndex, int toIndex) {
+    @SideEffectFree public List<E> subList(int fromIndex, int toIndex) {
       synchronized (mutex) {
         return list(Platform.subList(delegate(), fromIndex, toIndex), mutex);
       }

@@ -1786,11 +1786,11 @@ final class CustomConcurrentHashMap {
         this.value = value;
       }
 
-      @Override public K getKey() {
+      @Pure @Override public K getKey() {
         return key;
       }
 
-      @Override public V getValue() {
+      @Pure @Override public V getValue() {
         return value;
       }
 
@@ -2151,19 +2151,19 @@ final class CustomConcurrentHashMap {
     public void setValue(SimpleInternalEntry<K, V> entry, V value) {
       entry.value = value;
     }
-    public /*@Nullable*/ V getValue(SimpleInternalEntry<K, V> entry) {
+    @Pure public /*@Nullable*/ V getValue(SimpleInternalEntry<K, V> entry) {
       return entry.value;
     }
-    public boolean equalKeys(K a, /*@Nullable*/ Object b) {
+    @Pure public boolean equalKeys(K a, /*@Nullable*/ Object b) {
       return a.equals(b);
     }
-    public boolean equalValues(V a, /*@Nullable*/ Object b) {
+    @Pure public boolean equalValues(V a, /*@Nullable*/ Object b) {
       return a.equals(b);
     }
-    public int hashKey(Object key) {
+    @Pure public int hashKey(Object key) {
       return key.hashCode();
     }
-    public K getKey(SimpleInternalEntry<K, V> entry) {
+    @Pure public K getKey(SimpleInternalEntry<K, V> entry) {
       return entry.key;
     }
     public /*@Nullable*/ SimpleInternalEntry<K, V> getNext(/*@Nullable*/ SimpleInternalEntry<K, V> entry) {

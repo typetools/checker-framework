@@ -26,6 +26,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 
+import dataflow.quals.SideEffectFree;
+
 import javax.annotation.Nullable;
 
 /**
@@ -83,7 +85,7 @@ final class EmptyImmutableList extends ImmutableList<Object> {
     return -1;
   }
 
-  @Override public ImmutableList<Object> subList(int fromIndex, int toIndex) {
+  @SideEffectFree @Override public ImmutableList<Object> subList(int fromIndex, int toIndex) {
     checkPositionIndexes(fromIndex, toIndex, 0);
     return this;
   }

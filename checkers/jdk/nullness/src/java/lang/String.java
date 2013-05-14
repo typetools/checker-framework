@@ -23,7 +23,7 @@ public final class String implements java.io.Serializable, Comparable<String>, C
   @SideEffectFree public String(byte[] a1) { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public String(StringBuffer a1) { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public String(StringBuilder a1) { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public int length() { throw new RuntimeException("skeleton method"); }
+  @Pure @SideEffectFree public int length() { throw new RuntimeException("skeleton method"); }
   @Pure public boolean isEmpty() { throw new RuntimeException("skeleton method"); }
   @Pure public char charAt(int a1) { throw new RuntimeException("skeleton method"); }
   @Pure public int codePointAt(int a1) { throw new RuntimeException("skeleton method"); }
