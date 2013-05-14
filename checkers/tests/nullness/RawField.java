@@ -53,3 +53,22 @@ class MultiVersionControl {
   }
 
 }
+
+
+//TODO: This checks that forbidden field assignments do not occur.  (The
+//FBC type system permits arbitrary assignments in a constructor, but it
+//also makes assumptions that our implementation does not currently check.)
+// class HasStaticUnknownInitializationField {
+//     static @UnknownInitialization @Raw Object f;
+// }
+// 
+// class UseUnknownInitializationField {
+// 
+//     Object f;
+// 
+//     public UseUnknownInitializationField() {
+//         //:: (initialization.invalid.field.write.in.constructor)
+//         f = HasStaticUnknownInitializationField.f;
+//     }
+// 
+// }
