@@ -1,5 +1,6 @@
 package java.util;
 import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
 
 import checkers.nullness.quals.Nullable;
 
@@ -18,12 +19,12 @@ public class BitSet implements Cloneable, java.io.Serializable {
   public void clear() { throw new RuntimeException("skeleton method"); }
   public @Pure boolean get(int a1) { throw new RuntimeException("skeleton method"); }
   public @Pure BitSet get(int a1, int a2) { throw new RuntimeException("skeleton method"); }
-  public int nextSetBit(int a1) { throw new RuntimeException("skeleton method"); }
-  public int nextClearBit(int a1) { throw new RuntimeException("skeleton method"); }
-  public int length() { throw new RuntimeException("skeleton method"); }
+  @Pure public int nextSetBit(int a1) { throw new RuntimeException("skeleton method"); }
+  @Pure public int nextClearBit(int a1) { throw new RuntimeException("skeleton method"); }
+  @Pure public int length() { throw new RuntimeException("skeleton method"); }
   @Pure public boolean isEmpty() { throw new RuntimeException("skeleton method"); }
-  public boolean intersects(BitSet a1) { throw new RuntimeException("skeleton method"); }
-  public int cardinality() { throw new RuntimeException("skeleton method"); }
+  @Pure public boolean intersects(BitSet a1) { throw new RuntimeException("skeleton method"); }
+  @Pure public int cardinality() { throw new RuntimeException("skeleton method"); }
   public void and(BitSet a1) { throw new RuntimeException("skeleton method"); }
   public void or(BitSet a1) { throw new RuntimeException("skeleton method"); }
   public void xor(BitSet a1) { throw new RuntimeException("skeleton method"); }
@@ -32,5 +33,5 @@ public class BitSet implements Cloneable, java.io.Serializable {
   @Pure public int size() { throw new RuntimeException("skeleton method"); }
   @Pure public boolean equals(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   @Pure public String toString() { throw new RuntimeException("skeleton method"); }
-  public Object clone() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public Object clone() { throw new RuntimeException("skeleton method"); }
 }

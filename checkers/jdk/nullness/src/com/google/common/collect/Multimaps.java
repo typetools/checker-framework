@@ -838,11 +838,11 @@ public final class Multimaps {
       final Map.Entry<K, Collection<V>> entry) {
     checkNotNull(entry);
     return new AbstractMapEntry<K, Collection<V>>() {
-      @Override public K getKey() {
+      @Pure @Override public K getKey() {
         return entry.getKey();
       }
 
-      @Override public Collection<V> getValue() {
+      @Pure @Override public Collection<V> getValue() {
         return unmodifiableValueCollection(entry.getValue());
       }
     };
@@ -1125,10 +1125,10 @@ public final class Multimaps {
           public Entry<K, Collection<V>> next() {
             final K key = keys.next();
             return new AbstractMapEntry<K, Collection<V>>() {
-              @Override public K getKey() {
+              @Pure @Override public K getKey() {
                 return key;
               }
-              @Override public Collection<V> getValue() {
+              @Pure @Override public Collection<V> getValue() {
                 return get(key);
               }
             };

@@ -38,11 +38,11 @@ import checkers.nullness.quals.Nullable;
     this.value = value;
   }
 
-  @Override public K getKey() {
+  @Pure @Override public K getKey() {
     return key;
   }
 
-  @Override public V getValue() {
+  @Pure @Override public V getValue() {
     return value;
   }
   private static final long serialVersionUID = 0;

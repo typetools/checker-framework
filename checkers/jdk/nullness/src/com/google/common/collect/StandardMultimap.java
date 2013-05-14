@@ -37,6 +37,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 
+import dataflow.quals.SideEffectFree;
 import checkers.nullness.quals.Nullable;
 
 /**
@@ -753,7 +754,7 @@ import checkers.nullness.quals.Nullable;
     }
 
     @GwtIncompatible("List.subList")
-    public List<V> subList(int fromIndex, int toIndex) {
+    @SideEffectFree public List<V> subList(int fromIndex, int toIndex) {
       refreshIfEmpty();
       return wrapList(getKey(),
           Platform.subList(getListDelegate(), fromIndex, toIndex),

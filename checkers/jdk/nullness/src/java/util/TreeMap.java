@@ -1,5 +1,6 @@
 package java.util;
 import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
 
 import checkers.nullness.quals.EnsuresNonNullIf;
 import checkers.nullness.quals.KeyFor;
@@ -47,7 +48,7 @@ public class TreeMap<K extends @Nullable Object, V extends @Nullable Object> ext
   public SortedMap<K, V> subMap(K a1, K a2) { throw new RuntimeException("skeleton method"); }
   public SortedMap<K, V> headMap(K a1) { throw new RuntimeException("skeleton method"); }
   public SortedMap<K, V> tailMap(K a1) { throw new RuntimeException("skeleton method"); }
-  public Object clone() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public Object clone() { throw new RuntimeException("skeleton method"); }
 
   @EnsuresNonNullIf(expression={"firstEntry()", "pollFirstEntry()", "lastEntry()", "pollLastEntry()"}, result=false)
   @Pure public boolean isEmpty() { throw new RuntimeException("skeleton method"); }

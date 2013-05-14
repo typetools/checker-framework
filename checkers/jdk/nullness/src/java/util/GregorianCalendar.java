@@ -1,5 +1,6 @@
 package java.util;
 import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
 import checkers.nullness.quals.Nullable;
 
 public class GregorianCalendar extends Calendar {
@@ -29,5 +30,5 @@ public class GregorianCalendar extends Calendar {
   public int getActualMaximum(int a1) { throw new RuntimeException("skeleton method"); }
   public TimeZone getTimeZone() { throw new RuntimeException("skeleton method"); }
   public void setTimeZone(TimeZone a1) { throw new RuntimeException("skeleton method"); }
-  public Object clone() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public Object clone() { throw new RuntimeException("skeleton method"); }
 }

@@ -802,10 +802,10 @@ import checkers.nullness.quals.Nullable;
             public Entry<K, V> next() {
               final Node<K, V> node = nodes.next();
               return new AbstractMapEntry<K, V>() {
-                @Override public K getKey() {
+                @Pure @Override public K getKey() {
                   return node.key;
                 }
-                @Override public V getValue() {
+                @Pure @Override public V getValue() {
                   return node.value;
                 }
                 @Override public V setValue(V value) {
@@ -844,11 +844,11 @@ import checkers.nullness.quals.Nullable;
         public Entry<K, Collection<V>> next() {
           final K key = keyIterator.next();
           return new AbstractMapEntry<K, Collection<V>>() {
-            @Override public K getKey() {
+            @Pure @Override public K getKey() {
               return key;
             }
 
-            @Override public Collection<V> getValue() {
+            @Pure @Override public Collection<V> getValue() {
               return LinkedListMultimap.this.get(key);
             }
           };

@@ -1,5 +1,6 @@
 package java.util;
 import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
 import checkers.nullness.quals.Nullable;
 
 public class Date implements java.io.Serializable, Cloneable, Comparable<Date> {
@@ -36,5 +37,5 @@ public class Date implements java.io.Serializable, Cloneable, Comparable<Date> {
   public String toLocaleString() { throw new RuntimeException("skeleton method"); }
   public String toGMTString() { throw new RuntimeException("skeleton method"); }
   public int getTimezoneOffset() { throw new RuntimeException("skeleton method"); }
-  public Object clone() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public Object clone() { throw new RuntimeException("skeleton method"); }
 }

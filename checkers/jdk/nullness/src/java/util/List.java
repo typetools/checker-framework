@@ -1,5 +1,6 @@
 package java.util;
 import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
 
 import checkers.nullness.quals.Nullable;
 import checkers.nullness.quals.PolyNull;
@@ -35,5 +36,5 @@ public interface List<E extends @Nullable Object> extends Collection<E> {
   @Pure public abstract int lastIndexOf(@Nullable Object a1);
   public abstract ListIterator<E> listIterator();
   public abstract ListIterator<E> listIterator(int a1);
-  public abstract List<E> subList(int a1, int a2);
+  @SideEffectFree public abstract List<E> subList(int a1, int a2);
 }

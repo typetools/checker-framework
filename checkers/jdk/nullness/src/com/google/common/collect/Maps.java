@@ -532,10 +532,10 @@ public final class Maps {
   private static <K extends /*@Nullable*/ Object, V extends /*@Nullable*/ Object> Entry<K, V> unmodifiableEntry(final Entry<K, V> entry) {
     checkNotNull(entry);
     return new AbstractMapEntry<K, V>() {
-      @Override public K getKey() {
+      @Pure @Override public K getKey() {
         return entry.getKey();
       }
-      @Override public V getValue() {
+      @Pure @Override public V getValue() {
         return entry.getValue();
       }
     };
@@ -889,12 +889,12 @@ public final class Maps {
           public Entry<K, V2> next() {
             final Entry<K, V1> entry = mapIterator.next();
             return new AbstractMapEntry<K, V2>() {
-              @Override public K getKey() {
+              @Pure @Override public K getKey() {
                 return entry.getKey();
               }
               @SuppressWarnings("nullness")
 	      //Suppressed due to annotations on function.apply
-              @Override public V2 getValue() {
+              @Pure @Override public V2 getValue() {
                 return function.apply(entry.getValue());
               }
             };

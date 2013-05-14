@@ -1,5 +1,6 @@
 package java.util;
 import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
 
 import checkers.nullness.quals.EnsuresNonNullIf;
 import checkers.nullness.quals.Nullable;
@@ -49,7 +50,7 @@ public class LinkedList<E extends @Nullable Object> extends AbstractSequentialLi
   public Iterator<E> descendingIterator() { throw new RuntimeException("skeleton method"); }
   public @Nullable Object [] toArray() { throw new RuntimeException("skeleton method"); }
   public <T extends @Nullable Object> @Nullable T @PolyNull [] toArray(T @PolyNull [] a1) { throw new RuntimeException("skeleton method"); }
-  public Object clone() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public Object clone() { throw new RuntimeException("skeleton method"); }
 
   @EnsuresNonNullIf(expression={"peek()", "peekFirst()", "peekLast()", "poll()", "pollFirst()", "pollLast()"}, result=false)
   @Pure public boolean isEmpty() { throw new RuntimeException("skeleton method"); }

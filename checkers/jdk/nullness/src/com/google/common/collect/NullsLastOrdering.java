@@ -33,7 +33,7 @@ final class NullsLastOrdering<T extends /*@Nullable*/ Object> extends Ordering<T
   }
 
   @SuppressWarnings("nullness")
-  public int compare(T left, T right) {
+    /*@Pure*/ public int compare(T left, T right) {
     if (left == right) {
       return 0;
     }

@@ -32,6 +32,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectStreamException;
 
 import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
 import checkers.nullness.quals.Nullable;
 
 /**
@@ -156,7 +157,7 @@ public abstract class Enum<E extends Enum<E>>
      *
      * @return (never returns)
      */
-    protected final Object clone() throws CloneNotSupportedException {
+    @SideEffectFree protected final Object clone() throws CloneNotSupportedException {
         throw new CloneNotSupportedException();
     }
 
