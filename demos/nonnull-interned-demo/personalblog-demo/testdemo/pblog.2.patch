@@ -1,0 +1,13 @@
+Index: src/net/eyde/personalblog/struts/action/ReadAction.java
+===================================================================
+--- src/net/eyde/personalblog/struts/action/ReadAction.java	(revision 3589)
++++ src/net/eyde/personalblog/struts/action/ReadAction.java	(working copy)
+@@ -45,7 +45,7 @@
+         String forward = "readposts";
+ 
+         // Get request parameters
+-        String reqCategory = cleanNull(request.getParameter("cat"));
++        String reqCategory = validate(cleanNull(request.getParameter("cat")));
+ 
+         // Get instance of PersonalBlog Service
+         PersonalBlogService pblog = PersonalBlogService.getInstance();
