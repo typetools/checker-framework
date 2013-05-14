@@ -9,8 +9,8 @@ import checkers.nullness.quals.Nullable;
 public interface Map<K extends @Nullable Object, V extends @Nullable Object> {
   @Covariant(0)
   public static interface Entry<K extends @Nullable Object, V extends @Nullable Object> {
-    public abstract K getKey();
-    public abstract V getValue();
+    @Pure public abstract K getKey();
+    @Pure public abstract V getValue();
     public abstract V setValue(V a1);
     @Pure public abstract boolean equals(@Nullable Object a1);
     @Pure public abstract int hashCode();

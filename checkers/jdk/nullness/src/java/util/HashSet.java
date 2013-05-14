@@ -1,5 +1,6 @@
 package java.util;
 import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
 import checkers.nullness.quals.Nullable;
 
 public class HashSet<E extends @Nullable Object> extends AbstractSet<E> implements Set<E>, Cloneable, java.io.Serializable {
@@ -15,5 +16,5 @@ public class HashSet<E extends @Nullable Object> extends AbstractSet<E> implemen
   public boolean add(E a1) { throw new RuntimeException("skeleton method"); }
   public boolean remove(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   public void clear() { throw new RuntimeException("skeleton method"); }
-  public Object clone() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public Object clone() { throw new RuntimeException("skeleton method"); }
 }

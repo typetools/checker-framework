@@ -1,5 +1,6 @@
 package java.util;
 import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
 import checkers.nullness.quals.Nullable;
 
 public class SimpleTimeZone extends TimeZone {
@@ -31,5 +32,5 @@ public class SimpleTimeZone extends TimeZone {
   public boolean hasSameRules(TimeZone a1) { throw new RuntimeException("skeleton method"); }
   @Pure public String toString() { throw new RuntimeException("skeleton method"); }
 
-  public Object clone() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public Object clone() { throw new RuntimeException("skeleton method"); }
 }

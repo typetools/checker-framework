@@ -519,23 +519,23 @@ public final class MapMaker {
           }, TimeUnit.NANOSECONDS.toMillis(expirationNanos));
     }
 
-    public boolean equalKeys(K a, /*@Nullable*/ Object b) {
+    @Pure public boolean equalKeys(K a, /*@Nullable*/ Object b) {
       return keyStrength.equal(a, b);
     }
 
-    public boolean equalValues(V a, /*@Nullable*/ Object b) {
+    @Pure public boolean equalValues(V a, /*@Nullable*/ Object b) {
       return valueStrength.equal(a, b);
     }
 
-    public int hashKey(Object key) {
+    @Pure public int hashKey(Object key) {
       return keyStrength.hash(key);
     }
 
-    public K getKey(ReferenceEntry<K, V> entry) {
+    @Pure public K getKey(ReferenceEntry<K, V> entry) {
       return entry.getKey();
     }
 
-    public int getHash(ReferenceEntry<K, V> entry) {
+    @Pure public int getHash(ReferenceEntry<K, V> entry) {
       return entry.getHash();
     }
 
@@ -870,10 +870,10 @@ public final class MapMaker {
     /*@Nullable*/ ReferenceEntry<K, V> getNext();
 
     /** Gets the entry's hash. */
-    int getHash();
+    @Pure int getHash();
 
     /** Gets the key for this entry. */
-    public K getKey();
+    @Pure public K getKey();
   }
 
   /**
@@ -889,7 +889,7 @@ public final class MapMaker {
       this.hash = hash;
     }
 
-    public K getKey() {
+    @Pure public K getKey() {
       return this.key;
     }
 
@@ -944,7 +944,7 @@ public final class MapMaker {
       this.hash = hash;
     }
 
-    public K getKey() {
+    @Pure public K getKey() {
       return get();
     }
 
@@ -1002,7 +1002,7 @@ public final class MapMaker {
       this.hash = hash;
     }
 
-    public K getKey() {
+    @Pure public K getKey() {
       return get();
     }
 

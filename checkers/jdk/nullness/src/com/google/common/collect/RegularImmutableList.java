@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
 
+import dataflow.quals.SideEffectFree;
 import checkers.nullness.quals.Nullable;
 
 /**
@@ -112,7 +113,7 @@ final class RegularImmutableList<E> extends ImmutableList<E> {
     return -1;
   }
 
-  @Override public ImmutableList<E> subList(int fromIndex, int toIndex) {
+  @SideEffectFree @Override public ImmutableList<E> subList(int fromIndex, int toIndex) {
     Preconditions.checkPositionIndexes(fromIndex, toIndex, size);
     return (fromIndex == toIndex)
         ? ImmutableList.<E>of()

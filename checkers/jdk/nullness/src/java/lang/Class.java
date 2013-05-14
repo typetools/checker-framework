@@ -28,7 +28,7 @@ public final class Class<T extends @Nullable Object> extends Object implements j
   public @Nullable Class<?> getEnclosingClass() { throw new RuntimeException("skeleton method"); }
   public String getSimpleName() { throw new RuntimeException("skeleton method"); }
   public native @Pure @Nullable Class<? super T> getSuperclass();
-  public native Class<?>[] getInterfaces();
+  @Pure public native Class<?>[] getInterfaces();
   public @Nullable String getCanonicalName() { throw new RuntimeException("skeleton method"); }
   @Pure public boolean isAnonymousClass() { throw new RuntimeException("skeleton method"); }
   @Pure public boolean isLocalClass() { throw new RuntimeException("skeleton method"); }

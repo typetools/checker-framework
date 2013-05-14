@@ -33,9 +33,9 @@ import checkers.nullness.quals.Nullable;
     @SuppressWarnings("nullness:generic.argument")
     abstract class AbstractMapEntry<K extends /*@Nullable*/ Object, V extends /*@Nullable*/ Object> implements Entry<K, V> {
 
-  public abstract K getKey();
+  @Pure public abstract K getKey();
 
-  public abstract V getValue();
+  @Pure public abstract V getValue();
 
   public V setValue(V value) {
     throw new UnsupportedOperationException();

@@ -1,6 +1,7 @@
 package java.util;
 
 import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
 import checkers.nullness.quals.Nullable;
 
 // Subclasses of this interface/class may opt to prohibit null elements
@@ -18,7 +19,7 @@ public abstract class AbstractList<E extends @Nullable Object> extends AbstractC
   public Iterator<E> iterator() { throw new RuntimeException("skeleton method"); }
   public ListIterator<E> listIterator() { throw new RuntimeException("skeleton method"); }
   public ListIterator<E> listIterator(int a1) { throw new RuntimeException("skeleton method"); }
-  public List<E> subList(int a1, int a2) { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public List<E> subList(int a1, int a2) { throw new RuntimeException("skeleton method"); }
   @Pure public boolean equals(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   @Pure public int hashCode() { throw new RuntimeException("skeleton method"); }
 }

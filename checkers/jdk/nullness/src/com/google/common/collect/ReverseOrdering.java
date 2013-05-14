@@ -32,7 +32,7 @@ final class ReverseOrdering<T> extends Ordering<T> implements Serializable {
     this.forwardOrder = checkNotNull(forwardOrder);
   }
 
-  public int compare(T a, T b) {
+  /*@Pure*/ public int compare(T a, T b) {
     return forwardOrder.compare(b, a);
   }
 

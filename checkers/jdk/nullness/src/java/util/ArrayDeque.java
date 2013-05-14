@@ -1,5 +1,6 @@
 package java.util;
 import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
 import checkers.nullness.quals.EnsuresNonNullIf;
 import checkers.nullness.quals.Nullable;
 import checkers.nullness.quals.PolyNull;
@@ -42,5 +43,5 @@ public class ArrayDeque<E extends @Nullable Object> extends AbstractCollection<E
   public Object [] toArray() { throw new RuntimeException("skeleton method"); }
   public <T> @Nullable T @PolyNull [] toArray(T @PolyNull [] a1) { throw new RuntimeException("skeleton method"); }
 
-  public ArrayDeque<E> clone() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public ArrayDeque<E> clone() { throw new RuntimeException("skeleton method"); }
 }
