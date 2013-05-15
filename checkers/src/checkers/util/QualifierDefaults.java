@@ -11,6 +11,7 @@ import javax.lang.model.util.Elements;
 import checkers.quals.*;
 import checkers.source.SourceChecker;
 import checkers.types.*;
+import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.AnnotatedTypeMirror.*;
 import checkers.types.visitors.AnnotatedTypeScanner;
 
@@ -391,18 +392,24 @@ public class QualifierDefaults {
                 if ( elt.getKind() == ElementKind.PARAMETER &&
                         t == type) {
                     doApply(t, qual);
-                } else if (elt.getKind() == ElementKind.METHOD &&
+                } else if ((elt.getKind() == ElementKind.METHOD || elt.getKind() == ElementKind.CONSTRUCTOR) &&
                         t.getKind() == TypeKind.EXECUTABLE &&
                         t == type) {
+        
                     for ( AnnotatedTypeMirror atm : ((AnnotatedExecutableType)t).getParameterTypes()) {
                         doApply(atm, qual);
                     }
-                } else if( elt.getKind() == ElementKind.CONSTRUCTOR &&
-          			    t.getKind() == TypeKind.EXECUTABLE &&
+                }
+                break;
+            }
+            case RECEIVERS: {
+                if ( elt.getKind() == ElementKind.PARAMETER &&
+                        t == type && "this".equals(elt.getSimpleName())) {
+                    doApply(t, qual);
+                } else if ((elt.getKind() == ElementKind.METHOD )&&
+                        t.getKind() == TypeKind.EXECUTABLE &&
                         t == type) {
-                    for ( AnnotatedTypeMirror atm : ((AnnotatedExecutableType)t).getParameterTypes()) {
-                        doApply(atm, qual);
-                    }
+                        doApply(((AnnotatedExecutableType)t).getReceiverType(), qual);
                 }
                 break;
             }
