@@ -1,6 +1,9 @@
 
 public class PrintArray {
-    @SuppressWarnings("I18n") // the I18n checker correctly issues an error below, but we would like to keep this test in all-systems.
+    // the I18n checker correctly issues an error and Nullness checkers
+    // correctly issue a warning below, but we would like to keep this
+    // test in all-systems.
+    @SuppressWarnings({"I18n", "nullness:known.nonnull"})
     public static final void print(java.io.PrintStream ps, Object[][] a) {
         if (a == null) {
             ps.println("null");

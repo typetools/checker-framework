@@ -13,7 +13,7 @@ class Components extends ArrayList {}
 
 public class RawTypeAssignment {
     static Components getComponents() {
-        return null;
+        return new Components();
     }
 
     static void addTimes(Calendar calendar) {

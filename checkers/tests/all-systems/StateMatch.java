@@ -1,6 +1,7 @@
 
 public class StateMatch {
     private int num_elts = 0;
+    @SuppressWarnings("nullness")
     private double[][] elts = null;
 
     @SuppressWarnings("Interning")
