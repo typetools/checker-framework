@@ -24,7 +24,7 @@ import javacutils.TypesUtils;
 import checkers.basetype.BaseTypeChecker;
 import checkers.flow.CFAbstractAnalysis;
 import checkers.flow.CFAbstractValue;
-import checkers.initialization.quals.UnderInitializion;
+import checkers.initialization.quals.UnderInitialization;
 import checkers.initialization.quals.NotOnlyInitialized;
 import checkers.initialization.quals.UnknownInitialization;
 import checkers.nullness.NullnessChecker;
@@ -154,7 +154,7 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
             AnnotationMirror annotation = null;
 
             // If all fields are committed-only, and they are all initialized,
-            // then it is save to switch to @UnderInitializion(CurrentClass).
+            // then it is save to switch to @UnderInitialization(CurrentClass).
             if (areAllFieldsCommittedOnly(enclosingClass)) {
                 Store store = getStoreBefore(tree);
                 if (store != null) {
@@ -186,7 +186,7 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
     }
 
     /**
-     * Returns a {@link UnderInitializion} annotation (or
+     * Returns a {@link UnderInitialization} annotation (or
      * {@link UnknownInitialization} if rawness is used) that has the supertype
      * of {@code type} as type frame.
      */

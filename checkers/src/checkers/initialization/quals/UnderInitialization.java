@@ -36,10 +36,10 @@ import checkers.quals.TypeQualifier;
  * initialized and thus {@link UnknownInitialization UnknownInitialization(<em>supertype</em>)} is used
  * as the type of the self-reference {@code this}. Consider a class {@code B}
  * that is a subtype of {@code A}. At the beginning of the constructor of
- * {@code B}, {@code this} has the type {@code @UnderInitializion(A.class)},
+ * {@code B}, {@code this} has the type {@code @UnderInitialization(A.class)},
  * since all fields of {@code A} have been initialized by the super-constructor.
  * If during the constructor also all fields of {@code B} are initialized, then
- * the type of {@code this} changes to {@code @UnderInitializion(B.class)} (and
+ * the type of {@code this} changes to {@code @UnderInitialization(B.class)} (and
  * otherwise, if not all fields are initialized, an error is issued).
  *
  * <p>
@@ -80,11 +80,11 @@ import checkers.quals.TypeQualifier;
 @SubtypeOf(UnknownInitialization.class)
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
-public @interface UnderInitializion {
+public @interface UnderInitialization {
     /**
      * The type-frame down to which the expression (of this type) has been
      * initialized at least (inclusive). That is, an expression of type
-     * {@code @UnderInitializion(T.class)} has all type-frames initialized
+     * {@code @UnderInitialization(T.class)} has all type-frames initialized
      * starting at {@code Object} down to (and including) {@code T}.
      */
     Class<?> value() default Object.class;

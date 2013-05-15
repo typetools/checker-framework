@@ -6,13 +6,13 @@ public class Commitment {
     @NonNull String t;
     
     //:: error: (commitment.invalid.constructor.return.type)
-    @NonNull @UnderInitializion String a;
+    @NonNull @UnderInitialization String a;
     //:: error: (commitment.invalid.constructor.return.type)
     @Initialized String b;
     @UnknownInitialization @Nullable String c;
     
     //:: error: (initialization.invalid.constructor.return.type)
-    public @UnderInitializion Commitment(int i) {
+    public @UnderInitialization Commitment(int i) {
         a = "";
         t = "";
         b = "";
@@ -46,7 +46,7 @@ public class Commitment {
         
         t = "";
         
-        @UnderInitializion @NonNull Commitment c = this;
+        @UnderInitialization @NonNull Commitment c = this;
 
         @UnknownInitialization @NonNull Commitment c1 = this;
 
@@ -59,12 +59,12 @@ public class Commitment {
         t = "";
         
         //:: error: (argument.type.incompatible)
-        @UnderInitializion Commitment t = new Commitment(this, 1);
+        @UnderInitialization Commitment t = new Commitment(this, 1);
 
         //:: error: (assignment.type.incompatible)
         @Initialized Commitment t1 = new Commitment(this);
         
-        @UnderInitializion Commitment t2 = new Commitment(this);
+        @UnderInitialization Commitment t2 = new Commitment(this);
     }
     
     //:: error: (initialization.fields.uninitialized)
