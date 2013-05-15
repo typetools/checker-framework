@@ -19,7 +19,7 @@ import checkers.quals.TypeQualifier;
  */
 @Documented
 @TypeQualifier
-@SubtypeOf({ UnderInitializion.class, Initialized.class })
+@SubtypeOf({ UnderInitialization.class, Initialized.class })
 @Retention(RetentionPolicy.RUNTIME)
 @ImplicitFor(trees = { Tree.Kind.NULL_LITERAL })
 // empty target prevents programmers from writing this in a program
