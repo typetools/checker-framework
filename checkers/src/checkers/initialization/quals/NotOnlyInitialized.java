@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
 /**
  * A declaration annotation for fields that indicates that the values the given
  * field can store might not be {@link Initialized} (but
- * {@link UnderInitializion} or {@link UnknownInitialization} instead). This is
+ * {@link UnderInitialization} or {@link UnknownInitialization} instead). This is
  * necessary to make allow circular initialization as supported by
  * freedom-before-commitment.
  *

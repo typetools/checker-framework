@@ -13,7 +13,7 @@ public class TypeFrames2 {
             this.foo();
         }
 
-        public void foo(@UnderInitializion(A.class) A this) {}
+        public void foo(@UnderInitialization(A.class) A this) {}
     }
 
     class B extends A {
@@ -28,6 +28,6 @@ public class TypeFrames2 {
             this.bar();
         }
 
-        public void bar(@UnderInitializion(B.class) B this) {}
+        public void bar(@UnderInitialization(B.class) B this) {}
     }
 }
