@@ -1,7 +1,8 @@
+import checkers.nullness.quals.Nullable;
 
 class AssignmentContext {
     
-    void foo(String[] a) {}
+    void foo(String @Nullable [] a) {}
     
     void t1(boolean b) {
         String[] s = b ? new String[] {""} : null;
@@ -11,7 +12,7 @@ class AssignmentContext {
         foo(b ? new String[] {""} : null);
     }
     
-    String[] t3(boolean b) {
+    String @Nullable [] t3(boolean b) {
         return b ? new String[] {""} : null;
     }
     
