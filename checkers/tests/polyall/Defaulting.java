@@ -101,5 +101,32 @@ class Defaulting {
             return new Object();
         }
     }
+    
+    @DefaultQualifiers({
+        @DefaultQualifier(value=H1Top.class, locations={DefaultLocation.LOCALS}),
+        @DefaultQualifier(value=H1S1.class, locations={DefaultLocation.RECEIVERS})
+    })   
+    public class ReceiverDefaulting {
+    	public ReceiverDefaulting(){};
+    	public void m(){}
+    }
+    @DefaultQualifiers({
+        @DefaultQualifier(value=H1Top.class, locations={DefaultLocation.LOCALS}),
+    })  
+    class TestReceiver{
+    	 
+        void call() {
+        	@H1S1 ReceiverDefaulting r2 =  new @H1S1 ReceiverDefaulting();
+        	@H1S2 ReceiverDefaulting r3 = new @H1S2 ReceiverDefaulting();
+        	ReceiverDefaulting r = new ReceiverDefaulting();
+
+        	r2.m();
+            //:: error: (method.invocation.invalid)
+        	r3.m();
+            //:: error: (method.invocation.invalid)
+        	r.m();
+
+        }
+    }
 
 }

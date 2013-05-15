@@ -15,7 +15,11 @@ public enum DefaultLocation {
      * of local types (local variables, casts, and instanceof).
      */
     LOCALS,
-
+    /**
+     * Apply default annotations to all unannotated raw types
+     * of receiver types.
+     */
+    RECEIVERS,
     /**
      * Apply default annotations to all unannotated raw types
      * of parameter types.
