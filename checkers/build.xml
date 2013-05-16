@@ -497,7 +497,7 @@ ${build.version} of the 'javac.jar' library."/>
     </target>
 
     <target name="nullness-tests" depends="jar,build-tests,nullness-base-tests,nullness-skipuses-tests,nullness-skipdefs-tests,nullness-extra-tests"
-      description="Run tests for the Non-Null checker">
+      description="Run tests for the Nullness Checker">
     </target>
 
     <target name="nullness-base-tests" depends="jar,build-tests"
@@ -513,10 +513,10 @@ ${build.version} of the 'javac.jar' library."/>
     <!-- Differs from other targets in that it is defined via a Makefile and
        is not run via the "-run-tests" Antfile target, as other tests are. -->
     <target name="nullness-extra-tests" depends="bindist,build-tests,nullness-extra-tests-nojdk"
-      description="Run extra tests for the Non-Null checker"/>
+      description="Run extra tests for the Nullness Checker"/>
 
     <target name="nullness-extra-tests-nojdk" depends="bindist-nojdk,build-tests"
-      description="Run extra tests for the Non-Null checker, WITHOUT updating jdk.jar">
+      description="Run extra tests for the Nullness Checker, WITHOUT updating jdk.jar">
       <exec executable="chmod">
         <arg line="+x ${basedir}/binary/javac"/>
       </exec>
@@ -527,14 +527,14 @@ ${build.version} of the 'javac.jar' library."/>
     </target>
 
     <target name="nullness-skipuses-tests" depends="jar,build-tests"
-      description="Run skipuses tests for the Non-Null checker">
+      description="Run skipuses tests for the Nullness Checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.NullnessSkipUsesTest"/>
         </antcall>
     </target>
 
     <target name="nullness-skipdefs-tests" depends="jar,build-tests"
-      description="Run skipdefs tests for the Non-Null checker">
+      description="Run skipdefs tests for the Nullness Checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.NullnessSkipDefsTest"/>
         </antcall>
@@ -542,7 +542,7 @@ ${build.version} of the 'javac.jar' library."/>
 
     <!-- Do not include this as a dependence for nullness-tests! -->
     <target name="nullness-temp-tests" depends="jar,build-tests"
-      description="Run temporary tests for the Non-Null checker">
+      description="Run temporary tests for the Nullness Checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.NullnessTempTest"/>
         </antcall>
@@ -685,7 +685,7 @@ ${build.version} of the 'javac.jar' library."/>
     </target>
 
     <target name="check-nullness"
-      description="Run the Non-Null checker on the Framework">
+      description="Run the Nullness Checker on the Framework">
         <antcall target="-run-checker">
             <param name="checker-name" value="checkers.nullness.NullnessChecker"/>
             <param name="checker-jdk" value="jdk/nullness/src"/>
