@@ -1,3 +1,5 @@
+import java.util.*;
+
 import checkers.nullness.quals.*;
 
 class FlowConditions {
@@ -12,4 +14,26 @@ class FlowConditions {
             y.toString();
         }
     }
+
+
+    private final Map<String, Set<String>> graph = new HashMap<String, Set<String>>();
+
+    public void addEdge1(String e, String parent, String child) {
+        if ( !graph.containsKey(parent))
+            throw new NoSuchElementException();
+        if ( !graph.containsKey(child))
+            throw new NoSuchElementException();
+
+        /*@NonNull*/ Set<String> edges = graph.get(parent);
+    }
+
+    public void addEdge2(String e, String parent, String child) {
+        if ( (!graph.containsKey(parent)) ||
+             (!graph.containsKey(child)))
+            throw new NoSuchElementException();
+			
+        /*@NonNull*/ Set<String> edges = graph.get(parent);
+    }
+
+
 }
