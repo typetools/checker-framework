@@ -2,8 +2,9 @@ package tests;
 
 import org.junit.Test;
 
-import checkers.basic.BasicChecker;
-import checkers.util.test.*;
+import tests.util.Encrypted;
+import checkers.subtyping.SubtypingChecker;
+import checkers.util.test.CheckerTest;
 
 /**
  * Test suite for the basic checker, using a simple {@link Encrypted}
@@ -12,7 +13,7 @@ import checkers.util.test.*;
 public class BasicSuperSubTest extends CheckerTest {
 
     public BasicSuperSubTest() {
-        super(BasicChecker.class.getName(),
+        super(SubtypingChecker.class.getName(),
                 "basic",
                 "-Anomsgtext",
                 "-Aquals=tests.util.SubQual,tests.util.SuperQual");
