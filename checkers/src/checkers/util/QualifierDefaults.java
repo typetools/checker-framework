@@ -16,6 +16,7 @@ import javacutils.TreeUtils;
 
 import checkers.quals.*;
 import checkers.types.*;
+import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.AnnotatedTypeMirror.*;
 import checkers.types.visitors.AnnotatedTypeScanner;
 
@@ -403,12 +404,24 @@ public class QualifierDefaults {
                 if ( elt.getKind() == ElementKind.PARAMETER &&
                         t == type) {
                     doApply(t, qual);
-                } else if (elt.getKind() == ElementKind.METHOD &&
+                } else if ((elt.getKind() == ElementKind.METHOD || elt.getKind() == ElementKind.CONSTRUCTOR) &&
                         t.getKind() == TypeKind.EXECUTABLE &&
                         t == type) {
+        
                     for ( AnnotatedTypeMirror atm : ((AnnotatedExecutableType)t).getParameterTypes()) {
                         doApply(atm, qual);
                     }
+                }
+                break;
+            }
+            case RECEIVERS: {
+                if ( elt.getKind() == ElementKind.PARAMETER &&
+                        t == type && "this".equals(elt.getSimpleName())) {
+                    doApply(t, qual);
+                } else if ((elt.getKind() == ElementKind.METHOD )&&
+                        t.getKind() == TypeKind.EXECUTABLE &&
+                        t == type) {
+                        doApply(((AnnotatedExecutableType)t).getReceiverType(), qual);
                 }
                 break;
             }
