@@ -120,5 +120,13 @@ public class KeyFors {
         // TODO: add @KeyFor("leaders") to varName after put
         @KeyFor("leaders") String kf = varName;
     }
+
+    /// TODO: enable
+    public static void mapPut(String start) {
+	Map<String, Integer> n2e = new HashMap<>();
+	n2e.put(start, new Integer(0));
+	@KeyFor("n2e") String start2 = start;
+    }
+
   */
 }
