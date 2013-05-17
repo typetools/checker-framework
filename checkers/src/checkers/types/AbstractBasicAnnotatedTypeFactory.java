@@ -86,6 +86,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
 
     /** to annotate types based on the given tree */
     protected final TypeAnnotator typeAnnotator;
+
     /** to annotate types based on the given un-annotated types */
     protected final TreeAnnotator treeAnnotator;
 
@@ -95,7 +96,8 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
     /** to handle defaults specified by the user */
     protected final QualifierDefaults defaults;
 
-    // // Flow related fields
+    // Flow related fields
+
     /** Should use flow analysis? */
     protected boolean useFlow;
 
@@ -106,14 +108,10 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
      * Creates a type factory for checking the given compilation unit with
      * respect to the given annotation.
      *
-     * @param checker
-     *            the checker to which this type factory belongs
-     * @param root
-     *            the compilation unit to scan
-     * @param useFlow
-     *            whether flow analysis should be performed
+     * @param checker the checker to which this type factory belongs
+     * @param root the compilation unit to scan
+     * @param useFlow whether flow analysis should be performed
      */
-    // we alias a deprecated annotation to its replacement
     public AbstractBasicAnnotatedTypeFactory(Checker checker,
             CompilationUnitTree root, boolean useFlow) {
         super(checker, checker.getQualifierHierarchy(), checker.getTypeHierarchy(), root);
@@ -121,16 +119,13 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
         this.treeAnnotator = createTreeAnnotator(checker);
         this.typeAnnotator = createTypeAnnotator(checker);
         this.useFlow = useFlow;
-        this.poly = new QualifierPolymorphism(checker, this);
 
-        this.defaults = new QualifierDefaults(elements, this);
-        for (AnnotationMirror a : checker.getQualifierHierarchy().getTopAnnotations()) {
-            defaults.addAbsoluteDefault(a, DefaultLocation.LOCALS);
-        }
+        this.poly = createQualifierPolymorphism();
+        this.defaults = createQualifierDefaults();
+
         boolean foundDefault = false;
         // TODO: should look for a default qualifier per qualifier hierarchy.
-        for (Class<? extends Annotation> qual : checker
-                .getSupportedTypeQualifiers()) {
+        for (Class<? extends Annotation> qual : checker.getSupportedTypeQualifiers()) {
             if (qual.getAnnotation(DefaultQualifierInHierarchy.class) != null) {
                 defaults.addAbsoluteDefault(AnnotationUtils.fromClass(elements, qual),
                         DefaultLocation.OTHERWISE);
@@ -158,13 +153,10 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
      * Creates a type factory for checking the given compilation unit with
      * respect to the given annotation.
      *
-     * @param checker
-     *            the checker to which this type factory belongs
-     * @param root
-     *            the compilation unit to scan
+     * @param checker the checker to which this type factory belongs
+     * @param root the compilation unit to scan
      */
-    public AbstractBasicAnnotatedTypeFactory(Checker checker,
-            CompilationUnitTree root) {
+    public AbstractBasicAnnotatedTypeFactory(Checker checker, CompilationUnitTree root) {
         this(checker, root, FLOW_BY_DEFAULT);
     }
 
@@ -173,8 +165,8 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
     // **********************************************************************
 
     /**
-     * Returns a {@link TreeAnnotator} that adds annotations to a type based on
-     * the contents of a tree.
+     * Returns a {@link TreeAnnotator} that adds annotations to a type based
+     * on the contents of a tree.
      *
      * Subclasses may override this method to specify more appriopriate
      * {@link TreeAnnotator}
@@ -186,8 +178,8 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
     }
 
     /**
-     * Returns a {@link TypeAnnotator} that adds annotations to a type based on
-     * the content of the type itself.
+     * Returns a {@link TypeAnnotator} that adds annotations to a type based
+     * on the content of the type itself.
      *
      * @return a type annotator
      */
@@ -279,6 +271,27 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
         // default.
         return (TransferFunction) new CFTransfer(
                 (CFAbstractAnalysis<CFValue, CFStore, CFTransfer>) analysis);
+    }
+
+    /**
+     * Create {@link QualifierDefaults} which handles user specified defaults
+     * @return the QualifierDefaults class
+     */
+    protected QualifierDefaults createQualifierDefaults() {
+        QualifierDefaults defs = new QualifierDefaults(elements, this);
+        for (AnnotationMirror a : checker.getQualifierHierarchy().getTopAnnotations()) {
+            defs.addAbsoluteDefault(a, DefaultLocation.LOCALS);
+        }
+        return defs;
+    }
+
+    /**
+     * Creates {@link QualifierPolymorphism} which supports
+     * QualifierPolymorphism mechanism
+     * @return the QualifierPolymorphism class
+     */
+    protected QualifierPolymorphism createQualifierPolymorphism() {
+        return new QualifierPolymorphism(checker, this);
     }
 
     // **********************************************************************
@@ -698,10 +711,8 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
     }
 
     @Override
-    public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> methodFromUse(
-            MethodInvocationTree tree) {
-        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair =
-                super.methodFromUse(tree);
+    public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> methodFromUse(MethodInvocationTree tree) {
+        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair = super.methodFromUse(tree);
         AnnotatedExecutableType method = mfuPair.first;
         poly.annotate(tree, method);
         return mfuPair;
