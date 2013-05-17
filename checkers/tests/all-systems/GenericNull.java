@@ -6,6 +6,7 @@ class GenericNull {
      * However, in nullness type systems, null's type is not bottom, so
      * they exclude this test.
      */
+    @SuppressWarnings("nullness")
     <T> T f() {
         return null;
     }	
