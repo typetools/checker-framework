@@ -48,4 +48,30 @@ public class AssertAfter {
         value.toString(); // valid!
       }
   }
+
+}
+
+// Test that private fields can be mentioned in pre- and post-conditions.
+
+class A {
+  private @Nullable String privateField = null;
+
+  @EnsuresNonNull("privateField")
+  public void m1() {
+    privateField = "hello";
+  }
+
+  @RequiresNonNull("privateField")
+  public void m2() {
+  }
+}
+
+class B {
+
+  void f() {
+    A a = new A();
+    a.m1();
+    a.m2();
+  }
+
 }
