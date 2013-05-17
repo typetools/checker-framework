@@ -52,6 +52,27 @@ class Defaulting {
             m(new Object());
         }
     }
+    @DefaultQualifiers({
+        @DefaultQualifier(value=H1Top.class, locations={DefaultLocation.LOCALS}),
+        @DefaultQualifier(value=H1S1.class, locations={DefaultLocation.PARAMETERS}),
+        @DefaultQualifier(value=H1S2.class, locations={DefaultLocation.OTHERWISE})
+    })
+    class TestConstructorParameter {
+ 
+    	TestConstructorParameter (Object p) {
+            @H1S1 Object l1 = p;
+            //:: error: (assignment.type.incompatible)
+            @H1S2 Object l2 = p;
+            Object l3 = p;
+        }
+        void call() {
+        	new TestConstructorParameter(new @H1S1 Object());
+            //:: error: (argument.type.incompatible)
+        	new TestConstructorParameter(new @H1S2 Object());
+            //:: error: (argument.type.incompatible)
+        	new TestConstructorParameter(new Object());
+        }
+    }
 
     @DefaultQualifiers({
         @DefaultQualifier(value=H1Top.class, locations={DefaultLocation.LOCALS}),
@@ -78,6 +99,33 @@ class Defaulting {
         Object res3() {
             //:: error: (return.type.incompatible)
             return new Object();
+        }
+    }
+    
+    @DefaultQualifiers({
+        @DefaultQualifier(value=H1Top.class, locations={DefaultLocation.LOCALS}),
+        @DefaultQualifier(value=H1S1.class, locations={DefaultLocation.RECEIVERS})
+    })   
+    public class ReceiverDefaulting {
+    	public ReceiverDefaulting(){};
+    	public void m(){}
+    }
+    @DefaultQualifiers({
+        @DefaultQualifier(value=H1Top.class, locations={DefaultLocation.LOCALS}),
+    })  
+    class TestReceiver{
+    	 
+        void call() {
+        	@H1S1 ReceiverDefaulting r2 =  new @H1S1 ReceiverDefaulting();
+        	@H1S2 ReceiverDefaulting r3 = new @H1S2 ReceiverDefaulting();
+        	ReceiverDefaulting r = new ReceiverDefaulting();
+
+        	r2.m();
+            //:: error: (method.invocation.invalid)
+        	r3.m();
+            //:: error: (method.invocation.invalid)
+        	r.m();
+
         }
     }
 
