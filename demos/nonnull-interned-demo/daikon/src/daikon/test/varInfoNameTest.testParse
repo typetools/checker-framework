@@ -1,0 +1,86 @@
+;# Tests for the parsing and printing routines
+
+;# x
+parse p x
+esc_name p
+simplify_name p
+
+;# x[]
+parse p x[]
+quantify_esc_name p
+quantify_simplify_name p
+
+;# x.getClass()
+parse p x.getClass()
+esc_name p
+simplify_name p
+
+;# x[].getClass()
+parse p x[].getClass()
+quantify_esc_name p
+quantify_simplify_name p
+
+;# this.field
+parse p this.field
+esc_name p
+simplify_name p
+
+;# this.field[]
+parse p this.field[]
+quantify_esc_name p
+quantify_simplify_name p
+
+;# this.field.again
+parse p this.field.again
+esc_name p
+simplify_name p
+
+;# this.field.again[]
+parse p this.field.again[]
+quantify_esc_name p
+quantify_simplify_name p
+
+;# this.field.getClass()
+parse p this.field.getClass()
+esc_name p
+simplify_name p
+postPreConverter p
+
+;# this.field[].getClass()
+parse p this.field[].getClass()
+quantify_esc_name p
+quantify_simplify_name p
+
+;# x[].field
+parse p x[].field
+quantify_esc_name p
+quantify_simplify_name p
+
+;# x[].field.foo
+parse p x[].field.foo
+quantify_esc_name p
+quantify_simplify_name p
+postPreConverter p
+
+;# return
+parse p return
+esc_name p
+simplify_name p
+postPreConverter p
+
+;# return.field
+parse p return.field
+esc_name p
+simplify_name p
+postPreConverter p
+
+;# x[anIndex:Int]
+parse p x[anIndex:Int]
+esc_name p
+simplify_name p
+
+;# x[anIndex:Int].y
+parse p x[anIndex:Int].y
+esc_name p
+simplify_name p
+
