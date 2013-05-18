@@ -565,7 +565,9 @@ checkers support the following command-line options:
 \item \<-Awarns> Treat checker errors as warnings.  If you use this, you
   may wish to also supply \code{-Xmaxwarns 10000}, because by default
   \<javac> prints at most 100 warnings.
-\item \<-Afilenames>, \<-Anomsgtext>, <\-Adetailedmsgtext>, \<-Ashowchecks>, \<-AprintErrorStack>,
+\item \<-AsuppressWarnings> Treat checker errors as warnings; see
+  Section~\ref{suppresswarnings-command-line}
+\item \<-Afilenames>, \<-Anomsgtext>, \<-Adetailedmsgtext>, \<-Ashowchecks>, \<-AprintErrorStack>,
   \<-AprintAllQualifiers>, \<-Aignorejdkastub>
   Aids for testing or debugging a checker; see Section~\ref{debugging-options}
 \item \<-AresourceStats> Display resource usage statistics at the end of compilation

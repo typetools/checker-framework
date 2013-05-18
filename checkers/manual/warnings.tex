@@ -77,6 +77,8 @@ warnings via
 \item
   the \code{@SuppressWarnings} annotation (Section~\ref{suppresswarnings-annotation}),
 \item
+  the \code{-AsuppressWarnings} command-line option (Section~\ref{suppresswarnings-command-line}),
+\item
   the \code{@AssumeAssertion} comment in an \<assert> statement (Section~\ref{assumeassertion}),
 \item
   the \code{-AskipUses} command-line option (Section~\ref{askipuses}),
@@ -182,7 +184,8 @@ errors/warnings relating to the given message key.  For example,
 \code{cast.unsafe} is the key for warnings about an unsafe cast, and
 \code{cast.redundant} to the key for warnings about a redundant cast.
 
-Thus, the above example could have been written as:
+Thus, the above example could have been written as any one of the
+following, which would have suppressed the specific error:
 
 \begin{Verbatim}
   @SuppressWarnings("tainting")              // suppresses all tainting-related warnings
@@ -205,6 +208,18 @@ need to examine its own \code{messages.properties} file and that of
 If a checker produces a warning/error and you want to determine its message
 key, you can re-run the checker, passing the the \code{-Anomsgtext}
 command-line option (Section~\ref{debugging-options}).
+
+
+\subsection{\code{-AsuppressWarnings} command-line option\label{suppresswarnings-command-line}}
+
+Supplying the \<-AsuppressWarnings> command-line option is equivalent to
+writing a \<@SuppressWarnings> annotation on every class that the compiler
+type-checks.  The argument to \<-AsuppressWarnings> is a comma-separated
+list of warning suppression keys, as in
+\<-AsuppressWarnings=purity,uninitialized>.
+
+When possible, it is better to write a \<@SuppressWarnings> annotation with a
+smaller scope, rather than using the \<-AsuppressWarnings> command-line option.
 
 
 \subsection{\code{@AssumeAssertion} comment in an \<assert> statement\label{assumeassertion}}
