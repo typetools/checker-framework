@@ -45,7 +45,7 @@ there are several ways to eliminate the compiler warnings.
   file (see Section~\ref{suppressing-warnings}).
 \item Suppress all warnings related to uses of \code{unannotated\_method}
   via the \code{skipUses} processor option
-  (see Section~\ref{suppressing-warnings}).
+  (see Section~\ref{askipuses}).
   Since this can suppress more warnings than you may expect,
   it is usually better to annotate at least the method's signature.  If you
   choose the boundary between the annotated and unannotated code wisely,
@@ -75,19 +75,19 @@ guarantees provided by a checker, or for other reasons.  You can suppress
 warnings via
 \begin{enumerate}
 \item
-  the \code{@SuppressWarnings} annotation,
+  the \code{@SuppressWarnings} annotation (Section~\ref{suppresswarnings-annotation}),
 \item
-  the \code{@AssumeAssertion} comment in an \<assert> statement,
+  the \code{@AssumeAssertion} comment in an \<assert> statement (Section~\ref{assumeassertion}),
 \item
-  the \code{-AskipUses} command-line option,
+  the \code{-AskipUses} command-line option (Section~\ref{askipuses}),
 \item
-  the \code{-AskipDefs} command-line option,
+  the \code{-AskipDefs} command-line option (Section~\ref{askipdefs}),
 \item
-  the \code{-Alint} command-line option,
+  the \code{-Alint} command-line option (Section~\ref{alint}),
 \item
-  not using the \code{-processor} command-line option, or
+  not using the \code{-processor} command-line option (Section~\ref{no-processor}), or
 \item
-  checker-specific mechanisms.
+  checker-specific mechanisms (Section~\ref{checker-specific-suppression}).
 \end{enumerate}
 
 \noindent
