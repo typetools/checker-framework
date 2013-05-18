@@ -6,7 +6,11 @@ import checkers.nullness.NullnessChecker;
 
 /**
  * Specifies the argument that this checker recognizes for suppressing warnings
- * via the {@link SuppressWarnings} annotation. In order for this annotation to
+ * via the {@link SuppressWarnings} annotation.  The given argument suppresses
+ * all warnings related to the checker. 
+ * <p>
+ *
+ * In order for this annotation to
  * have an effect, it must be placed on the declaration of a class that extends
  * {@link SourceChecker}.
  *

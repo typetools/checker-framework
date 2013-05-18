@@ -200,7 +200,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
      * Subclasses have to override this method to create the appropriate
      * analysis if they do not follow the checker naming convention.
      */
-    // there is a bug about raw types in the Checker Framework, making it
+    // TODO There is a bug about raw types in the Checker Framework, making it
     // necessary to suppress argument.type.incompatible
     @SuppressWarnings({ "unchecked", "rawtypes", "argument.type.incompatible" })
     protected FlowAnalysis createFlowAnalysis(Checker checker,
