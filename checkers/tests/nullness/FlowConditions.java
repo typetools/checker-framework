@@ -23,17 +23,16 @@ class FlowConditions {
             throw new NoSuchElementException();
         if ( !graph.containsKey(child))
             throw new NoSuchElementException();
-
         /*@NonNull*/ Set<String> edges = graph.get(parent);
     }
 
-    public void addEdge2(String e, String parent, String child) {
-        if ( (!graph.containsKey(parent)) ||
-             (!graph.containsKey(child)))
-            throw new NoSuchElementException();
-			
-        /*@NonNull*/ Set<String> edges = graph.get(parent);
-    }
+    // TODO: Re-enable when issue 221 is resolved.
+    // public void addEdge2(String e, String parent, String child) {
+    //     if ( (!graph.containsKey(parent)) ||
+    //          (!graph.containsKey(child)))
+    //         throw new NoSuchElementException();
+    //     /*@NonNull*/ Set<String> edges = graph.get(parent);
+    // }
 
 
 }
