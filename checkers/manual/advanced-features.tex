@@ -581,6 +581,16 @@ You may optionally omit a leading ``\<this.>'', just as in Java.  Thus,
 \<this.next> and \<next> are equivalent, assuming that there is no
 shadowing definition of \<next>.
 
+The expression may refer to private fields and method calls.  The client
+cannot directly make use of these private fields and method calls, but they
+may be useful in establishing a precondition that itself refers to private
+fields or methods.  This exposure of implementation details is unfortunate,
+but it enables more expressive and useful specifications to be written, it does not jeopardize soundness nor let the client manipulate the
+representation, and it is much simpler and more usable than alternative
+approaches.
+% such as defining specification fields or ghost fields
+
+
 \textbf{Limitation:}  Currently, only one level of field access can be
 checked; the checker cannot handle, for example, \code{"this.field1.field2"}.
 
