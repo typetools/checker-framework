@@ -177,7 +177,7 @@ public class NonNullMapValue {
   private static final String KEY = "key";
   private static final String KEY2 = "key2";
 
-  // Disabled.  Re-enable when bug 67 is fixed.
+  // TODO: Disabled.  Re-enable when bug 67 is fixed.
 //   void testAnd(MyMap<String, String> map, MyMap<String, @Nullable String> map2) {
 //     if (map.containsKey(KEY)) {
 //       map.get(KEY).toString();
