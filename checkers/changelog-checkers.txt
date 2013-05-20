@@ -2,7 +2,6 @@ Version 1.6.4, 01 June 2013
 
 User-visible framework improvements:
     StubGenerator now generates stubs that can be read by the StubParser.
-    New DefaultLocations for receivers and class declarations.
 
 
 ----------------------------------------------------------------------
