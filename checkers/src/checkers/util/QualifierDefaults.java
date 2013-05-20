@@ -378,7 +378,6 @@ public class QualifierDefaults {
             if ( !shouldBeAnnotated(t, qual) )  {
                 return super.scan(t, qual);
             }
-
             switch (location) {
             case LOCALS: {
                 if (elt.getKind() == ElementKind.LOCAL_VARIABLE &&
@@ -420,6 +419,13 @@ public class QualifierDefaults {
                     doApply(((AnnotatedExecutableType)t).getReturnType(), qual);
                 }
                 break;
+            }
+            case CLASS_DECLARATION:
+            {
+            	 if (elt.getKind() == ElementKind.CLASS && t.getKind() == TypeKind.DECLARED &&
+                         t == type) 
+                     doApply(t, qual);
+            	break;
             }
             case UPPER_BOUNDS: {
                 if (this.isTypeVarExtends) {
