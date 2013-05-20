@@ -31,12 +31,6 @@ public enum DefaultLocation {
      * of return types.
      */
     RETURNS,
-    
-    /**
-     * Apply default annotations to all unannotated raw types
-     *  on declaration of classes
-     */
-    CLASS_DECLARATION,
 
     /**
      * Apply default annotations to unannotated upper bounds:  both
