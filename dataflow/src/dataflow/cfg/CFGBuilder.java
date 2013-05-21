@@ -1571,6 +1571,50 @@ public class CFGBuilder {
         }
 
         /**
+         * Insert <code>node</code> after <code>pred</code> in
+         * the list of extended nodes, or append to the list if
+         * <code>pred</code> is not present.
+         *
+         * @param node
+         *            The node to add.
+         * @param pred
+         *            The desired predecessor of node.
+         * @return The node holder.
+         */
+        protected <T extends Node> T insertNodeAfter(T node, Node pred) {
+            addToLookupMap(node);
+            insertExtendedNodeAfter(new NodeHolder(node), pred);
+            return node;
+        }
+
+        /**
+         * Insert a <code>node</code> that might throw the exception
+         * <code>cause</code> after <code>pred</code> in the list of
+         * extended nodes, or append to the list if <code>pred</code>
+         * is not present.
+         *
+         * @param node
+         *            The node to add.
+         * @param causes
+         *            Set of exceptions that the node might throw.
+         * @param pred
+         *            The desired predecessor of node.
+         * @return The node holder.
+         */
+        protected NodeWithExceptionsHolder insertNodeWithExceptionsAfter(Node node,
+                Set<TypeMirror> causes, Node pred) {
+            addToLookupMap(node);
+            Map<TypeMirror, Set<Label>> exceptions = new HashMap<>();
+            for (TypeMirror cause : causes) {
+                exceptions.put(cause, tryStack.possibleLabels(cause));
+            }
+            NodeWithExceptionsHolder exNode = new NodeWithExceptionsHolder(
+                    node, exceptions);
+            insertExtendedNodeAfter(exNode, pred);
+            return exNode;
+        }
+
+        /**
          * Extend the list of extended nodes with an extended node.
          *
          * @param n
@@ -1578,6 +1622,35 @@ public class CFGBuilder {
          */
         protected void extendWithExtendedNode(ExtendedNode n) {
             nodeList.add(n);
+        }
+
+        /**
+         * Insert <code>n</code> after the node <code>pred</code> in the
+         * list of extended nodes, or append <code>n</code> if <code>pred</code>
+         * is not present.
+         *
+         * @param n
+         *            The extended node.
+         * @param pred
+         *            The desired predecessor.
+         */
+        protected void insertExtendedNodeAfter(ExtendedNode n, Node pred) {
+            int index = -1;
+            for (int i = 0; i < nodeList.size(); i++) {
+                ExtendedNode inList = nodeList.get(i);
+                if (inList instanceof NodeHolder ||
+                    inList instanceof NodeWithExceptionsHolder) {
+                    if (inList.getNode() == pred) {
+                        index = i;
+                        break;
+                    }
+                }
+            }
+            if (index != -1) {
+                nodeList.add(index + 1, n);
+            } else {
+                nodeList.add(n);
+            }
         }
 
         /**
@@ -1614,11 +1687,13 @@ public class CFGBuilder {
                         .getKind());
                 TypeMirror boxedType = types.getDeclaredType(types
                         .boxedClass(primitive));
-                node = new BoxingNode(node.getTree(), node, boxedType);
-                replaceInLookupMap(node);
-                extendWithNode(node);
+                Node boxed = new BoxingNode(node.getTree(), node, boxedType);
+                replaceInLookupMap(boxed);
+                insertNodeAfter(boxed, node);
+                return boxed;
+            } else {
+                return node;
             }
-            return node;
         }
 
         /**
@@ -1632,14 +1707,18 @@ public class CFGBuilder {
          */
         protected Node unbox(Node node) {
             if (TypesUtils.isBoxedPrimitive(node.getType())) {
-                node = new UnboxingNode(node.getTree(), node,
+                Node unboxed = new UnboxingNode(node.getTree(), node,
                         types.unboxedType(node.getType()));
-                replaceInLookupMap(node);
+                replaceInLookupMap(unboxed);
                 TypeElement npeElement = elements
                     .getTypeElement("java.lang.NullPointerException");
-                extendWithNodeWithException(node, npeElement.asType());
+                Set<TypeMirror> causes = new HashSet<>();
+                causes.add(npeElement.asType());
+                insertNodeWithExceptionsAfter(unboxed, causes, node);
+                return unboxed;
+            } else {
+                return node;
             }
-            return node;
         }
 
         /**
@@ -1655,12 +1734,14 @@ public class CFGBuilder {
             TypeElement stringElement =
                 elements.getTypeElement("java.lang.String");
             if (!TypesUtils.isString(node.getType())) {
-                node = new StringConversionNode(node.getTree(), node,
+                Node converted = new StringConversionNode(node.getTree(), node,
                         stringElement.asType());
-                replaceInLookupMap(node);
-                extendWithNode(node);
+                replaceInLookupMap(converted);
+                insertNodeAfter(converted, node);
+                return converted;
+            } else {
+                return node;
             }
-            return node;
         }
 
         /**
@@ -1681,10 +1762,10 @@ public class CFGBuilder {
             case CHAR:
             case SHORT: {
                 TypeMirror intType = types.getPrimitiveType(TypeKind.INT);
-                node = new WideningConversionNode(node.getTree(), node, intType);
-                replaceInLookupMap(node);
-                extendWithNode(node);
-                break;
+                Node widened = new WideningConversionNode(node.getTree(), node, intType);
+                replaceInLookupMap(widened);
+                insertNodeAfter(widened, node);
+                return widened;
             }
             default:
                 // Nothing to do.
@@ -1742,12 +1823,14 @@ public class CFGBuilder {
             node = unbox(node);
 
             if (!types.isSameType(node.getType(), exprType)) {
-                node = new WideningConversionNode(node.getTree(), node,
+                Node widened = new WideningConversionNode(node.getTree(), node,
                         exprType);
-                replaceInLookupMap(node);
-                extendWithNode(node);
+                replaceInLookupMap(widened);
+                insertNodeAfter(widened, node);
+                return widened;
+            } else {
+                return node;
             }
-            return node;
         }
 
         /**
@@ -1767,13 +1850,14 @@ public class CFGBuilder {
                     && TypesUtils.isPrimitive(destType) : "widening must be applied to primitive types";
             if (types.isSubtype(node.getType(), destType)
                     && !types.isSameType(node.getType(), destType)) {
-                node = new WideningConversionNode(node.getTree(), node,
+                Node widened = new WideningConversionNode(node.getTree(), node,
                         destType);
-                replaceInLookupMap(node);
-                extendWithNode(node);
+                replaceInLookupMap(widened);
+                insertNodeAfter(widened, node);
+                return widened;
+            } else {
+                return node;
             }
-
-            return node;
         }
 
         /**
@@ -1793,13 +1877,14 @@ public class CFGBuilder {
                     && TypesUtils.isPrimitive(destType) : "narrowing must be applied to primitive types";
             if (types.isSubtype(destType, node.getType())
                     && !types.isSameType(destType, node.getType())) {
-                node = new NarrowingConversionNode(node.getTree(), node,
+                Node narrowed = new NarrowingConversionNode(node.getTree(), node,
                         destType);
-                replaceInLookupMap(node);
-                extendWithNode(node);
+                replaceInLookupMap(narrowed);
+                insertNodeAfter(narrowed, node);
+                return narrowed;
+            } else {
+                return node;
             }
-
-            return node;
         }
 
         /**
@@ -3049,7 +3134,7 @@ public class CFGBuilder {
             ConditionalJump cjump = null;
             if (conditionalMode) {
                 cjump = new ConditionalJump(thenTargetL, elseTargetL);
-        }
+            }
             boolean outerConditionalMode = conditionalMode;
 
             conditionalMode = true;
@@ -3288,20 +3373,20 @@ public class CFGBuilder {
             conditionalMode = true;
             thenTargetL = thenEntry;
             elseTargetL = elseEntry;
-            tree.getCondition().accept(this, null);
+            unbox(scan(tree.getCondition(), p));
             conditionalMode = false;
 
             // then branch
             addLabelForNextNode(thenEntry);
             StatementTree thenStatement = tree.getThenStatement();
-            thenStatement.accept(this, null);
+            scan(thenStatement, p);
             extendWithExtendedNode(new UnconditionalJump(endIf));
 
             // else branch
             addLabelForNextNode(elseEntry);
             StatementTree elseStatement = tree.getElseStatement();
             if (elseStatement != null) {
-                elseStatement.accept(this, null);
+                scan(elseStatement, p);
             }
 
             // label the end of the if statement
@@ -3491,22 +3576,40 @@ public class CFGBuilder {
 
         @Override
         public Node visitMemberSelect(MemberSelectTree tree, Void p) {
+            ConditionalJump cjump = null;
+            if (conditionalMode) {
+                cjump = new ConditionalJump(thenTargetL, elseTargetL);
+            }
+            boolean outerConditionalMode = conditionalMode;
+            conditionalMode = false;
+
             Node expr = scan(tree.getExpression(), p);
             if (!TreeUtils.isFieldAccess(tree)) {
                 // Could be a selector of a class or package
+                Node result = null;
                 Element element = TreeUtils.elementFromUse(tree);
                 switch (element.getKind()) {
                 case ANNOTATION_TYPE:
                 case CLASS:
                 case ENUM:
                 case INTERFACE:
-                    return extendWithNode(new ClassNameNode(tree, expr));
+                    result = extendWithNode(new ClassNameNode(tree, expr));
+                    break;
                 case PACKAGE:
-                    return extendWithNode(new PackageNameNode(tree, (PackageNameNode) expr));
+                    result = extendWithNode(new PackageNameNode(tree, (PackageNameNode) expr));
+                    break;
                 default:
                     assert false : "Unexpected element kind: " + element.getKind();
                     return null;
                 }
+
+                conditionalMode = outerConditionalMode;
+
+                if (conditionalMode) {
+                    extendWithExtendedNode(cjump);
+                }
+
+                return result;
             }
 
             Node node = new FieldAccessNode(tree, expr);
@@ -3521,6 +3624,12 @@ public class CFGBuilder {
                 TypeElement npeElement = elements
                     .getTypeElement("java.lang.NullPointerException");
                 extendWithNodeWithException(node, npeElement.asType());
+            }
+
+            conditionalMode = outerConditionalMode;
+
+            if (conditionalMode) {
+                extendWithExtendedNode(cjump);
             }
 
             return node;
