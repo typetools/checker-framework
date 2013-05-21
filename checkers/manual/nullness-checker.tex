@@ -1138,14 +1138,32 @@ annotation has nothing to do with the raw types of Java Generics.
 Java's
 \sunjavadoc{java/util/Map.html#get(java.lang.Object)}{\code{Map.get}}
 method always has the possibility to return null, if the key is not in the
-map.  Thus, to guarantee that the value returned from \code{Map.get} is
+map.
+
+A call \<mymap.get(mykey)> returns non-null if two conditions are satisfied:
+\begin{enumerate}
+\item \<mymap>'s values are all non-null; that is, \<mymap> was
+  declared as \code{Map<\emph{KeyType}, @NonNull \emph{ValueType}>}.  Note
+  that \<@NonNull> is the default type, so it need not be written explicitly.
+\item \<mykey> is a key in \<mymap>; that is, \<mymap.containsKey(mykey)>
+  returns \<true>.  You express this fact to the Nullness Checker by
+  declaring \<mykey> as \<@KeyFor("mymap") \emph{KeyType} mykey>.  For a
+  local variable, the \<@KeyFor("mymap")> type qualifier can generally be
+  inferred.
+\end{enumerate}
+\noindent
+If either of these two conditions is violated, then \<mymap.get(mykey)> has
+the possibility of returning null.
+
+
+  Thus, to guarantee that the value returned from \code{Map.get} is
 non-null, it is necessary that the map contains only non-null values,
 \emph{and} the key is in the map.
 The \code{@\refclass{nullness/quals}{KeyFor}} annotation states the latter
 property.
 
 If a type is annotated as \code{@KeyFor("m")}, then any value v with that type
-is a key in Map m.  Another way of saying this is that the expression
+is a key in Map \<m>.  Another way of saying this is that the expression
 \code{m.containsKey(v)} evaluates to true.
 
 You usually do not have to write \code{@KeyFor} explicitly, because the
