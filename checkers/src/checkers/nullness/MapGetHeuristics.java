@@ -344,7 +344,7 @@ import com.sun.source.util.TreePath;
     private boolean isInvocationOf(ExecutableElement method, Element key, VariableElement map, ExpressionTree tree) {
         if (TreeUtils.skipParens(tree) instanceof MethodInvocationTree) {
             MethodInvocationTree invok = (MethodInvocationTree)TreeUtils.skipParens(tree);
-            if (TreeUtils.isMethodInvocation(invok, mapContains, processingEnv)) {
+            if (TreeUtils.isMethodInvocation(invok, method, processingEnv)) {
                 Element containsArgument = InternalUtils.symbol(invok.getArguments().get(0));
                 if (key.equals(containsArgument) && map.equals(getReceiver(invok)))
                     return true;
