@@ -1,0 +1,19 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <packaging>jar</packaging>
+    <name>Type Annotations Compiler</name>
+    <groupId>types.checkers</groupId>
+    <artifactId>compiler</artifactId>
+
+    <!-- The comments in the version number are used to do a text substitution. Don't remove them
+         see checker-framework/binary/poms/updateVersion.sh -->
+    <version><!-- checkers-version -->1.6.3<!-- /checkers-version --></version>
+
+    <distributionManagement>
+        <repository>
+            <id>checker-releases</id>
+            <url>file:///cse/www2/types/m2-repo</url>
+        </repository>
+    </distributionManagement>
+</project>
