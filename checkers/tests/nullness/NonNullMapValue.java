@@ -3,8 +3,6 @@ import checkers.nullness.quals.*;
 import java.util.*;
 import java.io.*;
 
-import org.junit.Ignore;
-
 public class NonNullMapValue {
 
   // Discussion:
@@ -154,7 +152,7 @@ public class NonNullMapValue {
       if (map.containsKey(key)) {
       } else {
           //:: error: (assignment.type.incompatible)
-          @NonNull Object v = map.get(key);
+          @NonNull Object v = map.get(key); // should issue warning
       }
   }
 
