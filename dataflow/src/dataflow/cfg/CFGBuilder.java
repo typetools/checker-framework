@@ -224,10 +224,10 @@ import dataflow.quals.TerminatesExecution;
  */
 public class CFGBuilder {
 
-    /** Can assertions assumed to be disabled? */
+    /** Can assertions be assumed to be disabled? */
     protected final boolean assumeAssertionsDisabled;
 
-    /** Can assertions assumed to be disabled? */
+    /** Can assertions be assumed to be enabled? */
     protected final boolean assumeAssertionsEnabled;
 
     public CFGBuilder(boolean assumeAssertionsEnabled, boolean assumeAssertionsDisabled) {
