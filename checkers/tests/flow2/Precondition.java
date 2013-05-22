@@ -103,11 +103,8 @@ class Precondition {
         requiresParams(p1, p1);
     }
     
-    // TODO: Resolver does not find a field in the enclosing class
-    // (cf. issue http://code.google.com/p/checker-framework/issues/detail?id=213) 
     class inner {
         @RequiresQualifier(expression="f1", qualifier=Odd.class)
-        //:: error: (flowexpr.parse.error)
         void foo() {}
     }
     

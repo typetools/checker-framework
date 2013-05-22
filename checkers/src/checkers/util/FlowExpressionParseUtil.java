@@ -12,6 +12,7 @@ import javacutils.TreeUtils;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
@@ -169,9 +170,24 @@ public class FlowExpressionParseUtil {
             Resolver resolver = new Resolver(env);
             try {
                 // field access
-                Element fieldElem = resolver.findField(s,
-                        context.receiver.getType(), path);
-                TypeMirror fieldType = ElementUtils.getType(fieldElem);
+                TypeMirror receiverType = context.receiver.getType();
+                Element fieldElem = null;
+                TypeMirror fieldType = null;
+
+                // Search for field in each enclosing class.
+                while (receiverType.getKind() != TypeKind.NONE) {
+                    fieldElem = resolver.findField(s, receiverType, path);
+                    fieldType = ElementUtils.getType(fieldElem);
+                    if (fieldType != null) {
+                        break;
+                    }
+                    if (receiverType instanceof DeclaredType) {
+                        receiverType = ((DeclaredType)receiverType).getEnclosingType();
+                    } else {
+                        break;
+                    }
+                }
+
                 if (fieldType == null) {
                     // Unknown fields result in a valid Element with a null type
                     throw constructParserException(s);
