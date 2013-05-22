@@ -11,6 +11,7 @@ import javacutils.Resolver;
 import javacutils.TreeUtils;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
@@ -172,26 +173,20 @@ public class FlowExpressionParseUtil {
                 // field access
                 TypeMirror receiverType = context.receiver.getType();
                 Element fieldElem = null;
-                TypeMirror fieldType = null;
 
                 // Search for field in each enclosing class.
-                while (receiverType.getKind() != TypeKind.NONE) {
+                while (receiverType.getKind() == TypeKind.DECLARED) {
                     fieldElem = resolver.findField(s, receiverType, path);
-                    fieldType = ElementUtils.getType(fieldElem);
-                    if (fieldType != null) {
+                    if (fieldElem.getKind() == ElementKind.FIELD) {
                         break;
                     }
-                    if (receiverType instanceof DeclaredType) {
-                        receiverType = ((DeclaredType)receiverType).getEnclosingType();
-                    } else {
-                        break;
-                    }
+                    receiverType = ((DeclaredType)receiverType).getEnclosingType();
                 }
 
-                if (fieldType == null) {
-                    // Unknown fields result in a valid Element with a null type
+                if (fieldElem == null || fieldElem.getKind() != ElementKind.FIELD) {
                     throw constructParserException(s);
                 }
+                TypeMirror fieldType = ElementUtils.getType(fieldElem);
                 if (ElementUtils.isStatic(fieldElem)) {
                     Element classElem = fieldElem.getEnclosingElement();
                     Receiver staticClassReceiver = new ClassName(
@@ -247,8 +242,21 @@ public class FlowExpressionParseUtil {
             try {
                 // try to find the correct method
                 Resolver resolver = new Resolver(env);
-                methodElement = resolver.findMethod(methodName,
-                        context.receiver.getType(), path, parameterTypes);
+                TypeMirror receiverType = context.receiver.getType();
+                
+                // Search for method in each enclosing class.
+                while (receiverType.getKind() == TypeKind.DECLARED) {
+                    methodElement = resolver.findMethod(methodName, receiverType,
+                            path, parameterTypes);
+                    if (methodElement.getKind() == ElementKind.METHOD) {
+                        break;
+                    }
+                    receiverType = ((DeclaredType)receiverType).getEnclosingType();
+                }
+
+                if (methodElement == null || methodElement.getKind() != ElementKind.METHOD) {
+                    throw constructParserException(s);
+                }
             } catch (Throwable t) {
                 throw constructParserException(s);
             }

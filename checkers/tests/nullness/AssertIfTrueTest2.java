@@ -42,4 +42,16 @@ public class AssertIfTrueTest2 {
         id.toString();
     }
 
+    // Expressions referring to enclosing classes should be resolved.
+    class Inner {
+        @EnsuresNonNullIf(result=true, expression="getId()")
+        public boolean innerHasGetIdMethod(){
+            return getId() != null;
+        }
+
+        @EnsuresNonNullIf(result=true, expression="id")
+        public boolean innerHasIdField(){
+            return id != null;
+        }
+    }
 }
