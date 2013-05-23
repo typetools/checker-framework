@@ -39,6 +39,16 @@ public class LockVisitor extends BaseTypeVisitor<LockChecker> {
         this.atypeFactory = (LockAnnotatedTypeFactory)super.atypeFactory;
     }
 
+    public Void visitVariable(VariableTree node, Void p) {
+        Void r = scan(node.getModifiers(), p);
+        r = reduce(scan(node.getType(), p), r);
+        // We do not want a call for visitIdentifier if a
+        // receiver parameter is given. 
+        // r = scanAndReduce(node.getNameExpression(), p, r);
+        r = reduce(scan(node.getInitializer(), p), r);
+        return r;
+    }
+
     @Override
     public Void visitIdentifier(IdentifierTree node, Void p) {
         AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(node);
