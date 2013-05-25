@@ -273,6 +273,9 @@ ${build.version} of the 'javac.jar' library."/>
             description="Create a jar file for annotations">
         <jar destfile="${checkers-quals.jar.file}" basedir="${build}">
             <include name="**/quals/*"/>
+            <!-- Exclude test-only qualifiers -->
+            <exclude name="lubglb/quals/*"/>
+            <exclude name="polyall/quals/*"/>
             <!-- Watch out for inner anonymous class within utilities -->
             <include name="**/NullnessUtils*"/>
             <include name="**/RegexUtil*"/>
