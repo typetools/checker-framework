@@ -8,11 +8,11 @@ Install the plugin locally
 
   mvn install
 
-Install the checker-framework and the maven plugin locally
+Install the Checker Framework and the Maven plugin locally
 ==========================================================
 
-This is useful if you built the checker-framework yourself (e.g. because you
-added your own checker), and would like to apply it to a maven project.
+This is useful if you built the Checker Framework yourself (e.g. because you
+added your own checker), and would like to apply it to a Maven project.
 
 Install the plugin pom locally:
 
@@ -26,6 +26,8 @@ Install the checker framework poms locally:
 Add the following lines to the maven project's pom:
 
   <plugins>
+      ... existing <plugin> items go here ...
+
       <plugin>
           <groupId>types.checkers</groupId>
           <artifactId>checkers-maven-plugin</artifactId>
@@ -44,8 +46,6 @@ Add the following lines to the maven project's pom:
               </processors> 
           </configuration>
       </plugin> 
-  
-      <!-- more plugins -->
   </plugins>
 
 
