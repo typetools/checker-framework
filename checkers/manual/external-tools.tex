@@ -242,7 +242,7 @@ Set the \code{jsr308javac} property:
 
   <presetdef name="jsr308.javac">
     <javac fork="yes" executable="${checkers}/binary/${cfJavac}" >
-      <!-- JSR308 related compiler arguments -->
+      <!-- JSR-308-related compiler arguments -->
       <compilerarg value="-version"/>
       <!-- optional, so .class files work with older JVMs: <compilerarg line="-target 5"/> -->
       <compilerarg value="-implicit:class"/>
@@ -329,13 +329,13 @@ run.  You can supply additional arguments to the checker as well.
 
 \section{Maven plugin\label{maven-plugin}}
 
-If you use the \ahref{http://maven.apache.org/}{Maven} project tool,
-then you can specify the distributed checkers as part of your build
+If you use the \ahref{http://maven.apache.org/}{Maven} tool,
+then you can specify pluggable type-checking as part of your build
 process.
 
 \begin{enumerate}
 
-\item First, you need to add the repositories in your \code{pom.xml} file:
+\item Add the repositories to your \code{pom.xml} file:
 
 \begin{Verbatim}
     <repositories>
@@ -352,27 +352,33 @@ process.
     </pluginRepositories>
 \end{Verbatim}
 
-\item Then, to use the annotations used by the distributed checkers, you'll
-have to declared as a dependency:
+\item Declare a dependency on the type qualifier annotations.  Find the
+  existing \code{<dependencies>} section and add a new
+  \code{<dependencies>} item:
 
 \begin{Verbatim}
     <dependencies>
-        <!-- annotations for the standard checkers: nullness, interning, mutability -->
+        ... existing <dependency> items ...
+
+        <!-- annotations for the standard checkers: nullness, interning, locking, ... -->
         <dependency>
             <groupId>types.checkers</groupId>
             <artifactId>checkers-quals</artifactId>
             <version>1.4.3</version>
         </dependency>
 
-        <!-- other dependencies -->
     </dependencies>
 \end{Verbatim}
 
-\item And finally, you need to attach the plugin to your build lifecycle:
+\item Attach the plugin to your build lifecycle by adding a new
+  \code{<plugin>} item within \code{<plugins>}, or a new \code{<plugins>}
+  item if necessary.
 
 \begin{Verbatim}
     <build>
         <plugins>
+            ... existing <plugin> items ...
+
             <plugin>
                 <groupId>types.checkers</groupId>
                 <artifactId>checkers-maven-plugin</artifactId>
