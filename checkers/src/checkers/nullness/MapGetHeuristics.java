@@ -14,17 +14,18 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 
+import javacutils.AnnotationUtils;
+import javacutils.ElementUtils;
+import javacutils.InternalUtils;
+import javacutils.TreeUtils;
+
 import checkers.nullness.quals.KeyFor;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
-import checkers.util.AnnotationUtils;
-import checkers.util.ElementUtils;
 import checkers.util.Heuristics.Matcher;
-import checkers.util.InternalUtils;
-import checkers.util.TreeUtils;
-import checkers.util.Resolver;
+import checkers.util.Resolver2;
 
 import com.sun.source.tree.AssertTree;
 import com.sun.source.tree.BinaryTree;
@@ -86,7 +87,7 @@ import com.sun.source.util.TreePath;
     private final ProcessingEnvironment processingEnv;
     private final NullnessAnnotatedTypeFactory atypeFactory;
     private final AnnotatedTypeFactory keyForFactory;
-    private final Resolver resolver;
+    private final Resolver2 resolver;
 
     private final ExecutableElement mapGet;
     private final ExecutableElement mapPut;
@@ -99,7 +100,7 @@ import com.sun.source.util.TreePath;
         this.processingEnv = env;
         this.atypeFactory = factory;
         this.keyForFactory = keyForFactory;
-        this.resolver = new Resolver(env);
+        this.resolver = new Resolver2(env);
 
         mapGet = TreeUtils.getMethod("java.util.Map", "get", 1, env);
         mapPut = TreeUtils.getMethod("java.util.Map", "put", 2, env);
@@ -113,22 +114,27 @@ import com.sun.source.util.TreePath;
      * @param path a path to a method invocation
      */
     public void handle(TreePath path, AnnotatedExecutableType method) {
+        try {
+            MethodInvocationTree tree = (MethodInvocationTree) path.getLeaf();
+            if (TreeUtils.isMethodInvocation(tree, mapGet, processingEnv)) {
+                AnnotatedTypeMirror type = method.getReturnType();
+                if (!isSuppressable(path)) {
+                    type.replaceAnnotation(atypeFactory.NULLABLE);
+                } else {
+                    type.replaceAnnotation(atypeFactory.NONNULL);
+                }
         MethodInvocationTree tree = (MethodInvocationTree)path.getLeaf();
         if (TreeUtils.isMethodInvocation(tree, mapGet, processingEnv)) {
             AnnotatedTypeMirror type = method.getReturnType();
-            if (mapGetReturnsNonNull(path)) {
-                type.replaceAnnotation(atypeFactory.NONNULL);
-            } else {
+            if (!isSuppressable(path)) {
                 type.replaceAnnotation(atypeFactory.NULLABLE);
-            }
-        }
-        if (TreeUtils.isMethodInvocation(tree, mapPut, processingEnv)) {
-            AnnotatedTypeMirror type = method.getParameterTypes().get(0);
-            if (mapGetReturnsNonNull(path)) {
-                type.replaceAnnotation(atypeFactory.NONNULL);
             } else {
-                type.replaceAnnotation(atypeFactory.NULLABLE);
+                type.replaceAnnotation(atypeFactory.NONNULL);
             }
+        } catch (Throwable t) {
+            // TODO: this is an ugly hack to suppress some problems in Resolver2
+            // that cause an exception. See tests/nullness/KeyFors.java for an
+            // example that might be affected.
         }
     }
 

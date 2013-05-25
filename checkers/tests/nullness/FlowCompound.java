@@ -1,4 +1,5 @@
 import checkers.nullness.quals.*;
+
 import java.util.*;
 
 class FlowCompound {
@@ -7,11 +8,10 @@ class FlowCompound {
         return o != null && this.getClass() != o.getClass();
     }
 
-    void test() {
-
-        String s = "foo";
+    void test(@Nullable String s) {
 
         if (s == null || s.length() > 0) {
+            //:: error: (assignment.type.incompatible)
             @NonNull String test = s;
         }
 

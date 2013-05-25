@@ -1,27 +1,69 @@
-The following simple commands allow you to build the plugin, install it locally, and install it to a repository.
+Build the plugin
+================
 
-To build the plugin:
+  mvn clean package
 
-mvn clean package
+Install the plugin locally
+==========================
 
-To install the plugin locally:
+  mvn install
 
-mvn install
+Install the Checker Framework and the Maven plugin locally
+==========================================================
 
-To install the plugin to a repository:
-    //Install the plugin locally
-    mvn install
-    
-    //deploy it to a location
-    mvn deploy:deploy-file \
-    -DartifactId=checkersplugin \         
-    -Dfile=<your path>/jsr308/checker-framework/maven-plugin/target/checkers-maven-plugin-<latest-version>.jar \        
-    -Dversion=<latest-version> \
-    -Durl=file://<your path>/maven/m2-repo \
-    -DgroupId=types.checkers \
-    -Dpackaging=jar \
-    -DpomFile=<your path>/jsr308/checker-framework/maven-plugin/pom.xml \
-    -DgeneratePom=false \
+This is useful if you built the Checker Framework yourself (e.g. because you
+added your own checker), and would like to apply it to a Maven project.
+
+Install the plugin pom locally:
+
+  mvn install
+
+Install the checker framework poms locally:
+
+  cd checker-framework/checkers/binary/poms
+  ./localInstall.sh
+
+Add the following lines to the maven project's pom:
+
+  <plugins>
+      ... existing <plugin> items go here ...
+
+      <plugin>
+          <groupId>types.checkers</groupId>
+          <artifactId>checkers-maven-plugin</artifactId>
+          <version>1.6.2</version>
+          <executions>
+              <execution>
+                  <phase>process-classes</phase>
+                  <goals>
+                      <goal>check</goal>
+                  </goals>
+              </execution> 
+          </executions>
+          <configuration>
+              <processors>
+                  <processor>checkers.formatter.FormatterChecker</processor> 
+              </processors> 
+          </configuration>
+      </plugin> 
+  </plugins>
+
+
+To install the plugin to a repository
+=====================================
+
+  //Install the plugin locally
+  mvn install    
+  //deploy it to a location
+  mvn deploy:deploy-file \
+  -DartifactId=checkersplugin \         
+  -Dfile=<your path>/jsr308/checker-framework/maven-plugin/target/checkers-maven-plugin-<latest-version>.jar \        
+  -Dversion=<latest-version> \
+  -Durl=file://<your path>/maven/m2-repo \
+  -DgroupId=types.checkers \
+  -Dpackaging=jar \
+  -DpomFile=<your path>/jsr308/checker-framework/maven-plugin/pom.xml \
+  -DgeneratePom=false \
 
 Note:  Before releasing the plugin you should update the default plugin version in the plugin and manual.
 

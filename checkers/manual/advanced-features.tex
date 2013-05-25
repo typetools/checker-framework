@@ -9,6 +9,72 @@ sophisticated and useful types, or to understand more about how the Checker
 Framework works, you can return to it.
 
 
+\section{Invariant array types\label{invariant-arrays}}
+
+Java's type system is unsound with respect to arrays.  That is, the Java
+type-checker approves code that is unsafe and will cause a run-time crash.
+Technically, the problem is that Java has ``covariant array types'', such
+as treating \<String[]> as a subtype of \<Object[]>.  Consider the
+following example:
+
+\begin{Verbatim}
+  String[] strings = new String[] {"hello"};
+  Object[] objects = strings;
+  objects[0] = new Object();
+  String myString = strs[0];
+\end{Verbatim}
+
+\noindent
+The above code puts an \<Object> in the array \<strings> and thence in
+\<myString>, even though \<myString = new Object()> should be, and is,
+rejected by the Java type system.  Java prevents corruption of the JVM by
+doing a costly run-time check at every array assignment; nonetheless, it is
+undesirable to learn about a type error only via a run-time crash rather
+than at compile time.
+
+The Checker Framework is stricter than Java, in the sense that it treats
+arrays invariantly rather than covariantly.  This means that a type system
+built upon the Checker Framework is sound:  you get a compile-time
+guarantee without the need for any run-time checks.  But it also means that
+the Checker Framework rejects code that is similar to what Java unsoundly
+accepts.  The guarantee and the compile-time checks are about your
+extended type system.  The Checker Framework does not reject the example
+code above, in the absence of any type annotations.
+
+
+\section{Context-sensitive type inference for array constructors\label{array-context-sensitive}}
+
+When you write an expression, the Checker Framework gives it the most
+precise possible type, depending on the particular expression or value.
+For example, when using the Regex Checker (\chapterpageref{regex-checker}),
+the string \<"hello"> is given type \<@Regex String> because it is a legal
+regular expression (whether it is meant to be used as one or not) and the
+string \<"(foo"> is given the type \<@Unqualified String> because it is not
+a legal regular expression.
+
+Array constructors work differently.  When you create an array with the
+array constructor syntax, such as the right-hand side of this assignmant:
+
+\begin{Verbatim}
+String[] myStrings = {"hello"};
+\end{Verbatim}
+
+\noindent
+then the expression does not get the most precise possible type, because
+doing so could cause inconvenience.  Rather, its type is determined by the
+context in which it is used:  the left-hand side if it is in an assignment,
+the declared formal parameter type if it is in a method call, etc.
+
+In particular, if the expression \verb|{"hello"}| were given the type
+\<@Regex String[]>, then the assignment would be illegal!  But the Checker
+Framework gives the type \<String[]> based on the assignment context, so the code
+type-checks.
+
+If you prefer a specific type for a constructed array, you can indicate
+that either in the context (change the declaration of \<myStrings>) or in a
+\<new> construct (change the expression to \<new @Regex String[] >\verb|{"hello"}|).
+
+
 \section{The effective qualifier on a type (defaults and inference)\label{effective-qualifier}}
 
 A checker sometimes treats a type as having a slightly different qualifier
@@ -215,8 +281,11 @@ declared type.
 Array element types and generic arguments are never changed by type
 refinement.  Changing these components of a type never yields a subtype of
 the declared type.  For example, \code{List<Number>} is \emph{not} a
-subtype of \code{List<Object>} and \code{Number[]} is not a subtype of
-\code{Object[]}.
+subtype of \code{List<Object>}.  Similarly, the Checker Framework does not
+treat \code{Number[]} as a subtype of
+\code{Object[]}; see Section~\ref{invariant-arrays} for why.
+
+
 
 By default, all checkers, including new checkers that you write,
 automatically incorporate type refinement.  Most of the time, users don't
@@ -231,7 +300,7 @@ sometimes just ``flow''.
 
 If you are curious or want more details about this feature, then read on.
 
-As an example, the Nullness checker (Chapter~\ref{nullness-checker}) can automatically
+As an example, the Nullness Checker (Chapter~\ref{nullness-checker}) can automatically
 determine that certain variables are non-null, even if they were explicitly
 or by default annotated as nullable.
 The checker treats a variable or expression as \code{@\refclass{nullness/quals}{NonNull}}
@@ -251,7 +320,7 @@ dereferences and assignments to non-null types, without
 compiler warnings.
 
 Consider this code, along with comments indicating whether the
-Nullness checker (Chapter~\ref{nullness-checker}) issues a warning.  Note that the same expression may yield a
+Nullness Checker (Chapter~\ref{nullness-checker}) issues a warning.  Note that the same expression may yield a
 warning or not depending on its context.
 
 \begin{Verbatim}
@@ -464,10 +533,9 @@ expression as an argument are:
 
 \begin{itemize}
 \item \code{@\refclass{nullness/quals}{KeyFor}}
-\item \code{@\refclass{nullness/quals}{NonNullOnEntry}}
-\item \code{@\refclass{nullness/quals}{AssertNonNullAfter}}
-\item \code{@\refclass{nullness/quals}{AssertNonNullIfTrue}}
-\item \code{@\refclass{nullness/quals}{AssertNonNullIfFalse}}
+\item \code{@\refclass{nullness/quals}{RequiresNonNull}}
+\item \code{@\refclass{nullness/quals}{EnsuresNonNull}}
+\item \code{@\refclass{nullness/quals}{EnsuresNonNullIf}}
 \end{itemize}
 
 The expression is a subset of legal Java expressions:
@@ -512,6 +580,16 @@ The expression is a subset of legal Java expressions:
 You may optionally omit a leading ``\<this.>'', just as in Java.  Thus, 
 \<this.next> and \<next> are equivalent, assuming that there is no
 shadowing definition of \<next>.
+
+The expression may refer to private fields and method calls.  The client
+cannot directly make use of these private fields and method calls, but they
+may be useful in establishing a precondition that itself refers to private
+fields or methods.  This exposure of implementation details is unfortunate,
+but it enables more expressive and useful specifications to be written, it does not jeopardize soundness nor let the client manipulate the
+representation, and it is much simpler and more usable than alternative
+approaches.
+% such as defining specification fields or ghost fields
+
 
 \textbf{Limitation:}  Currently, only one level of field access can be
 checked; the checker cannot handle, for example, \code{"this.field1.field2"}.
@@ -664,6 +742,6 @@ should use it instead of \code{@Dependent}.
 % LocalWords:  DefaultQualifiers actuals toArray CollectionToArrayHeuristics nn
 % LocalWords:  MyList Nullness DefaultLocation nullness PolyNull util java TODO
 % LocalWords:  QualifierDefaults nullable lub persistData updatedAt nble KeyFor
-% LocalWords:  subtype's NonNullOnEntry AssertNonNullAfter AssertNonNullIfTrue
-% LocalWords:  AssertNonNullIfFalse myLocalVar myClass getPackage getSuperclass
+% LocalWords:  subtype's RequiresNonNull EnsuresNonNull EnsuresNonNullIf
+% LocalWords:  myLocalVar myClass getPackage getSuperclass
 % LocalWords:  getComponentType enum implementers dereferenced superclasses
