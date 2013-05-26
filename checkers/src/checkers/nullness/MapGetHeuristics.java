@@ -122,14 +122,6 @@ import com.sun.source.util.TreePath;
                 type.replaceAnnotation(atypeFactory.NULLABLE);
             }
         }
-        if (TreeUtils.isMethodInvocation(tree, mapPut, processingEnv)) {
-            AnnotatedTypeMirror type = method.getParameterTypes().get(0);
-            if (mapGetReturnsNonNull(path)) {
-                type.replaceAnnotation(atypeFactory.NONNULL);
-            } else {
-                type.replaceAnnotation(atypeFactory.NULLABLE);
-            }
-        }
     }
 
     /**
