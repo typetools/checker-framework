@@ -118,18 +118,11 @@ import com.sun.source.util.TreePath;
             MethodInvocationTree tree = (MethodInvocationTree) path.getLeaf();
             if (TreeUtils.isMethodInvocation(tree, mapGet, processingEnv)) {
                 AnnotatedTypeMirror type = method.getReturnType();
-                if (!isSuppressable(path)) {
-                    type.replaceAnnotation(atypeFactory.NULLABLE);
-                } else {
+                if (mapGetReturnsNonNull(path)) {
                     type.replaceAnnotation(atypeFactory.NONNULL);
+                } else {
+                    type.replaceAnnotation(atypeFactory.NULLABLE);
                 }
-        MethodInvocationTree tree = (MethodInvocationTree)path.getLeaf();
-        if (TreeUtils.isMethodInvocation(tree, mapGet, processingEnv)) {
-            AnnotatedTypeMirror type = method.getReturnType();
-            if (!isSuppressable(path)) {
-                type.replaceAnnotation(atypeFactory.NULLABLE);
-            } else {
-                type.replaceAnnotation(atypeFactory.NONNULL);
             }
         } catch (Throwable t) {
             // TODO: this is an ugly hack to suppress some problems in Resolver2
