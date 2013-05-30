@@ -73,44 +73,39 @@ public class StubParser {
     private final Map<FieldAccessExpr, VariableElement> faexprcache;
     /**
      * Annotation to add to every method in the stub file.
+     * If null, no annotation is added
      */
 	private AnnotationMirror declAnnotation = null;
 	
-	/**
-	 * 
-	 * @param filename name of the stub file 
-	 * @param inputStream of the stub file to parse
-	 * @param factory AnnotatedtypeFactory to use 
-	 * @param env ProcessingEnviroment to use
-	 * @param declAnnotation Declaration annotation to add to every method in the stub file
-	 */
-    public StubParser(String filename, InputStream inputStream, AnnotatedTypeFactory factory, 
-    		ProcessingEnvironment env, AnnotationMirror declAnnotation) {
-    	this(filename, inputStream, factory, env);
-    	this.declAnnotation  = declAnnotation;
-    }
-	/**
-	 * 
-	 * @param filename name of the stub file 
-	 * @param inputStream of the stub file to parse
-	 * @param factory AnnotatedtypeFactory to use 
-	 * @param env ProcessingEnviroment to use
-	 */
-    public StubParser(String filename, InputStream inputStream, AnnotatedTypeFactory factory, ProcessingEnvironment env) {
+    /**
+     * 
+     * @param filename name of stub file
+     * @param inputStream of stub file to parse
+     * @param factory  AnnotatedtypeFactory to use
+     * @param env ProcessingEnviroment to use
+     * @param declAnnotation
+     *            Declaration annotation to add to every method in the stub file
+     */
+    public StubParser(String filename, InputStream inputStream,
+            AnnotatedTypeFactory factory, ProcessingEnvironment env,
+            AnnotationMirror declAnnotation) {
         this.filename = filename;
         IndexUnit parsedindex;
         try {
             parsedindex = JavaParser.parse(inputStream);
         } catch (Exception e) {
-            SourceChecker.errorAbort("StubParser: exception from JavaParser.parse", e);
-            parsedindex = null; // dead code, but needed for def. assignment checks
+            SourceChecker.errorAbort(
+                    "StubParser: exception from JavaParser.parse", e);
+            parsedindex = null; // dead code, but needed for def. assignment
+                                // checks
         }
         this.index = parsedindex;
         this.atypeFactory = factory;
         this.processingEnv = env;
         this.elements = env.getElementUtils();
         imports = new ArrayList<String>();
-        // getSupportedAnnotations also sets imports. This should be refactored to be nicer.
+        // getSupportedAnnotations also sets imports. This should be refactored
+        // to be nicer.
         supportedAnnotations = getSupportedAnnotations();
         if (supportedAnnotations.isEmpty()) {
             stubWarning("No supported annotations found! This likely means your stub file doesn't import them correctly.");
@@ -119,6 +114,19 @@ public class StubParser {
         Map<String, String> options = env.getOptions();
         this.warnIfNotFound = options.containsKey("stubWarnIfNotFound");
         this.debugStubParser = options.containsKey("stubDebug");
+        this.declAnnotation = declAnnotation;
+    }
+
+    /**
+     * 
+     * @param filename name of stub file
+     * @param inputStream of stub file to parse
+     * @param factory  AnnotatedtypeFactory to use
+     * @param env ProcessingEnviroment to use
+     */
+    public StubParser(String filename, InputStream inputStream,
+            AnnotatedTypeFactory factory, ProcessingEnvironment env) {
+        this(filename, inputStream, factory, env, null);
     }
 
     /** All annotations defined in the package.  Keys are simple names. */
@@ -367,27 +375,29 @@ public class StubParser {
 
         putNew(atypes, elt, methodType);
     }
-/**
- * Adds a declAnnotation to every method in the stub file.
- * @param declAnnos
- * @param elt
- */
-    
-	private void addDeclAnnotations(Map<String, Set<AnnotationMirror>> declAnnos, ExecutableElement elt) {
-		if (declAnnotation != null) {
-			Set<AnnotationMirror> annos = declAnnos.get(ElementUtils.getVerboseName(elt));
-			if (annos == null) {
-				annos = AnnotationUtils.createAnnotationSet();
-				declAnnos.put(ElementUtils.getVerboseName(elt), annos);
-			}
-			annos.add(declAnnotation);
-		}
-	}
 
-	/**
-     * List of all array component types.
-     * Example input: int[][]
-     * Example output: int, int[], int[][]
+    /**
+     * Adds a declAnnotation to every method in the stub file.
+     * 
+     * @param declAnnos
+     * @param elt
+     */
+    private void addDeclAnnotations(
+            Map<String, Set<AnnotationMirror>> declAnnos, ExecutableElement elt) {
+        if (declAnnotation != null) {
+            Set<AnnotationMirror> annos = declAnnos.get(ElementUtils
+                    .getVerboseName(elt));
+            if (annos == null) {
+                annos = AnnotationUtils.createAnnotationSet();
+                declAnnos.put(ElementUtils.getVerboseName(elt), annos);
+            }
+            annos.add(declAnnotation);
+        }
+    }
+
+    /**
+     * List of all array component types. Example input: int[][] Example output:
+     * int, int[], int[][]
      */
     private List<AnnotatedTypeMirror> arrayAllComponents(AnnotatedArrayType atype) {
         LinkedList<AnnotatedTypeMirror> arrays = new LinkedList<AnnotatedTypeMirror>();
