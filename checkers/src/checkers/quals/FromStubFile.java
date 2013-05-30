@@ -8,8 +8,9 @@ import java.lang.annotation.Target;
 
 
     /**
-     * A special annotation intended solely for indicating that a method is written
-     * in a stub file. It should only be used by the StubParser.
+     * If a method is annotated with this declaration annotation, then 
+     * its signature was read from a stub file.  It is added by the StubParser 
+     * and is not visible to the end user.  
      */
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ElementType.METHOD, ElementType.CONSTRUCTOR,
