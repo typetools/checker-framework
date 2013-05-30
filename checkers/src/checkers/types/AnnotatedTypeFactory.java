@@ -368,10 +368,8 @@ public class AnnotatedTypeFactory {
         Tree decl = declarationFromElement(elt);
 
         if (decl == null && indexTypes != null && indexTypes.containsKey(elt)) {
-            //Add @FromStubFile
             type = indexTypes.get(elt);
         } else if (decl == null && (indexTypes == null || !indexTypes.containsKey(elt))) {
-            //Adde @FromBinary
             type = toAnnotatedType(elt.asType());
             type.setElement(elt);
             TypeFromElement.annotate(type, elt);
