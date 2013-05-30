@@ -71,7 +71,31 @@ public class StubParser {
      * to the resolved variable element.
      */
     private final Map<FieldAccessExpr, VariableElement> faexprcache;
-
+    /**
+     * Annotation to add to every method in the stub file.
+     */
+	private AnnotationMirror declAnnotation = null;
+	
+	/**
+	 * 
+	 * @param filename name of the stub file 
+	 * @param inputStream of the stub file to parse
+	 * @param factory AnnotatedtypeFactory to use 
+	 * @param env ProcessingEnviroment to use
+	 * @param declAnnotation Declaration annotation to add to every method in the stub file
+	 */
+    public StubParser(String filename, InputStream inputStream, AnnotatedTypeFactory factory, 
+    		ProcessingEnvironment env, AnnotationMirror declAnnotation) {
+    	this(filename, inputStream, factory, env);
+    	this.declAnnotation  = declAnnotation;
+    }
+	/**
+	 * 
+	 * @param filename name of the stub file 
+	 * @param inputStream of the stub file to parse
+	 * @param factory AnnotatedtypeFactory to use 
+	 * @param env ProcessingEnviroment to use
+	 */
     public StubParser(String filename, InputStream inputStream, AnnotatedTypeFactory factory, ProcessingEnvironment env) {
         this.filename = filename;
         IndexUnit parsedindex;
@@ -311,6 +335,9 @@ public class StubParser {
         annotateDecl(declAnnos, elt, decl.getAnnotations());
         // StubParser parses all annotations in type annotation position as type annotations
         annotateDecl(declAnnos, elt, decl.getType().getAnnotations());
+        addDeclAnnotations(declAnnos, elt);
+
+
         AnnotatedExecutableType methodType = atypeFactory.fromElement(elt);
         annotateParameters(methodType.getTypeVariables(), decl.getTypeParameters());
         annotate(methodType.getReturnType(), decl.getType());
@@ -340,8 +367,24 @@ public class StubParser {
 
         putNew(atypes, elt, methodType);
     }
+/**
+ * Adds a declAnnotation to every method in the stub file.
+ * @param declAnnos
+ * @param elt
+ */
+    
+	private void addDeclAnnotations(Map<String, Set<AnnotationMirror>> declAnnos, ExecutableElement elt) {
+		if (declAnnotation != null) {
+			Set<AnnotationMirror> annos = declAnnos.get(ElementUtils.getVerboseName(elt));
+			if (annos == null) {
+				annos = AnnotationUtils.createAnnotationSet();
+				declAnnos.put(ElementUtils.getVerboseName(elt), annos);
+			}
+			annos.add(declAnnotation);
+		}
+	}
 
-    /**
+	/**
      * List of all array component types.
      * Example input: int[][]
      * Example output: int, int[], int[][]

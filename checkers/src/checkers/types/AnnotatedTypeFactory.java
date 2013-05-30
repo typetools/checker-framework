@@ -135,6 +135,13 @@ public class AnnotatedTypeFactory {
 
     /** Unique ID of the current object; for debugging purposes. */
     public final int uid;
+    
+    /**
+     * Annotation to add to every method in the sub files.
+     * If null, not annotation is added to every method in
+     * the stub files
+     */
+    protected AnnotationMirror declaAnnotation;
 
     /**
      * Constructs a factory from the given {@link ProcessingEnvironment}
@@ -170,6 +177,7 @@ public class AnnotatedTypeFactory {
         this.indexDeclAnnos = null; // will be set by postInit()
         // TODO: why is the option not used?
         this.annotatedTypeParams = true; // env.getOptions().containsKey("annotatedTypeParams");
+        this.declaAnnotation = null; //if desired, subclass should set
     }
 
     /**
@@ -1655,7 +1663,7 @@ public class AnnotatedTypeFactory {
                 if (resourceClass != null)
                     in = resourceClass.getResourceAsStream(stubPath);
                 if (in != null) {
-                    StubParser stubParser = new StubParser(stubPath, in, this, processingEnv);
+                    StubParser stubParser = new StubParser(stubPath, in, this, processingEnv, declaAnnotation);
                     stubParser.parse(indexTypes, indexDeclAnnos);
                     // We could handle the stubPath -> continue.
                     continue;
@@ -1671,7 +1679,7 @@ public class AnnotatedTypeFactory {
                     System.err.println("Could not read stub resource: " + resource.getDescription());
                     continue;
                 }
-                StubParser stubParser = new StubParser(resource.getDescription(), stubStream, this, processingEnv);
+                StubParser stubParser = new StubParser(resource.getDescription(), stubStream, this, processingEnv, declaAnnotation);
                 stubParser.parse(indexTypes, indexDeclAnnos);
             }
         }
