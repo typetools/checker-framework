@@ -5,12 +5,13 @@ import java.util.*;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.*;
-import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 
+
+import checkers.quals.FromStubFile;
 import checkers.source.SourceChecker;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
@@ -83,12 +84,9 @@ public class StubParser {
      * @param inputStream of stub file to parse
      * @param factory  AnnotatedtypeFactory to use
      * @param env ProcessingEnviroment to use
-     * @param declAnnotation
-     *            Declaration annotation to add to every method in the stub file
      */
     public StubParser(String filename, InputStream inputStream,
-            AnnotatedTypeFactory factory, ProcessingEnvironment env,
-            AnnotationMirror declAnnotation) {
+            AnnotatedTypeFactory factory, ProcessingEnvironment env) {
         this.filename = filename;
         IndexUnit parsedindex;
         try {
@@ -114,20 +112,10 @@ public class StubParser {
         Map<String, String> options = env.getOptions();
         this.warnIfNotFound = options.containsKey("stubWarnIfNotFound");
         this.debugStubParser = options.containsKey("stubDebug");
-        this.declAnnotation = declAnnotation;
+        this.declAnnotation =   AnnotationUtils.fromClass(elements, FromStubFile.class);
     }
 
-    /**
-     * 
-     * @param filename name of stub file
-     * @param inputStream of stub file to parse
-     * @param factory  AnnotatedtypeFactory to use
-     * @param env ProcessingEnviroment to use
-     */
-    public StubParser(String filename, InputStream inputStream,
-            AnnotatedTypeFactory factory, ProcessingEnvironment env) {
-        this(filename, inputStream, factory, env, null);
-    }
+
 
     /** All annotations defined in the package.  Keys are simple names. */
     private Map<String, AnnotationMirror> annosInPackage(String packageName) {

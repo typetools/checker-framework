@@ -136,11 +136,6 @@ public class AnnotatedTypeFactory {
     /** Unique ID of the current object; for debugging purposes. */
     public final int uid;
     
-    /**
-     * Annotation to add to every method in the stub files.
-     * If null, no annotation is added to every method
-     */
-    protected AnnotationMirror declAnnotation;
 
     /**
      * Constructs a factory from the given {@link ProcessingEnvironment}
@@ -176,7 +171,6 @@ public class AnnotatedTypeFactory {
         this.indexDeclAnnos = null; // will be set by postInit()
         // TODO: why is the option not used?
         this.annotatedTypeParams = true; // env.getOptions().containsKey("annotatedTypeParams");
-        this.declAnnotation = null; //if desired, subclass should set
     }
 
     /**
@@ -374,8 +368,10 @@ public class AnnotatedTypeFactory {
         Tree decl = declarationFromElement(elt);
 
         if (decl == null && indexTypes != null && indexTypes.containsKey(elt)) {
+            //Add @FromStubFile
             type = indexTypes.get(elt);
         } else if (decl == null && (indexTypes == null || !indexTypes.containsKey(elt))) {
+            //Adde @FromBinary
             type = toAnnotatedType(elt.asType());
             type.setElement(elt);
             TypeFromElement.annotate(type, elt);
@@ -1662,7 +1658,7 @@ public class AnnotatedTypeFactory {
                 if (resourceClass != null)
                     in = resourceClass.getResourceAsStream(stubPath);
                 if (in != null) {
-                    StubParser stubParser = new StubParser(stubPath, in, this, processingEnv, declAnnotation);
+                    StubParser stubParser = new StubParser(stubPath, in, this, processingEnv);
                     stubParser.parse(indexTypes, indexDeclAnnos);
                     // We could handle the stubPath -> continue.
                     continue;
@@ -1678,7 +1674,7 @@ public class AnnotatedTypeFactory {
                     System.err.println("Could not read stub resource: " + resource.getDescription());
                     continue;
                 }
-                StubParser stubParser = new StubParser(resource.getDescription(), stubStream, this, processingEnv, declAnnotation);
+                StubParser stubParser = new StubParser(resource.getDescription(), stubStream, this, processingEnv);
                 stubParser.parse(indexTypes, indexDeclAnnos);
             }
         }
