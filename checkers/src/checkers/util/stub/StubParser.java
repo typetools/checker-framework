@@ -72,11 +72,11 @@ public class StubParser {
      * to the resolved variable element.
      */
     private final Map<FieldAccessExpr, VariableElement> faexprcache;
+    
     /**
-     * Annotation to add to every method in the stub file.
-     * If null, no annotation is added
+     * Annotation to added to every method in the stub file.
      */
-	private AnnotationMirror declAnnotation = null;
+	private final AnnotationMirror fromStubFile;
 	
     /**
      * 
@@ -112,7 +112,7 @@ public class StubParser {
         Map<String, String> options = env.getOptions();
         this.warnIfNotFound = options.containsKey("stubWarnIfNotFound");
         this.debugStubParser = options.containsKey("stubDebug");
-        this.declAnnotation =   AnnotationUtils.fromClass(elements, FromStubFile.class);
+        this.fromStubFile =   AnnotationUtils.fromClass(elements, FromStubFile.class);
     }
 
 
@@ -372,14 +372,14 @@ public class StubParser {
      */
     private void addDeclAnnotations(
             Map<String, Set<AnnotationMirror>> declAnnos, ExecutableElement elt) {
-        if (declAnnotation != null) {
+        if (fromStubFile != null) {
             Set<AnnotationMirror> annos = declAnnos.get(ElementUtils
                     .getVerboseName(elt));
             if (annos == null) {
                 annos = AnnotationUtils.createAnnotationSet();
                 declAnnos.put(ElementUtils.getVerboseName(elt), annos);
             }
-            annos.add(declAnnotation);
+            annos.add(fromStubFile);
         }
     }
 
@@ -471,6 +471,7 @@ public class StubParser {
             ExecutableElement elt, Map<Element, AnnotatedTypeMirror> atypes, Map<String, Set<AnnotationMirror>> declAnnos) {
         annotateDecl(declAnnos, elt, decl.getAnnotations());
         AnnotatedExecutableType methodType = atypeFactory.fromElement(elt);
+        addDeclAnnotations(declAnnos, elt);
 
         for (int i = 0; i < methodType.getParameterTypes().size(); ++i) {
             AnnotatedTypeMirror paramType = methodType.getParameterTypes().get(i);
