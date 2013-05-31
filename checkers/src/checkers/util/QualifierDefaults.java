@@ -405,8 +405,10 @@ public class QualifierDefaults {
             case RECEIVERS: {
                 if ( elt.getKind() == ElementKind.PARAMETER &&
                         t == type && "this".equals(elt.getSimpleName())) {
+                    // TODO: comparison against "this" is ugly, won't work
+                    // for all possible names for receiver parameter.
                     doApply(t, qual);
-                } else if ((elt.getKind() == ElementKind.METHOD )&&
+                } else if ((elt.getKind() == ElementKind.METHOD) &&
                         t.getKind() == TypeKind.EXECUTABLE &&
                         t == type) {
                         doApply(((AnnotatedExecutableType)t).getReceiverType(), qual);
