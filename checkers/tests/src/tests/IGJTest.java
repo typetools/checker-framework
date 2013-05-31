@@ -36,6 +36,7 @@ public class IGJTest extends CheckerTest {
             }
             temp.flush();
             runTest(expectedFileName, shouldSucceed, tempFile);
+            scanner.close();
             temp.close();
         } catch (IOException exp) {
             assertFalse("Couldn't compile file! ", true);
