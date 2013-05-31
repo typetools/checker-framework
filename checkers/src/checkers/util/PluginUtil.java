@@ -332,7 +332,7 @@ public class PluginUtil {
 
         if(procOnly) {
             cmd.add("-proc:only");
-        } else {
+        } else if( outputDirectory != null ) {
             cmd.add("-d");
             cmd.add(outputDirectory);
         }
