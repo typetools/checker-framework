@@ -334,13 +334,6 @@ import com.sun.source.util.TreePath;
         return type.getElement();
     }
 
-    /** Given a method invocation tree, return the Element for its first argument. */
-    private Element getFirstArg(MethodInvocationTree tree) {
-        AnnotatedDeclaredType type =
-            (AnnotatedDeclaredType)atypeFactory.getAnnotatedType(tree.getArguments().get(0));
-        return type.getElement();
-    }
-
     private boolean isInvocationOf(ExecutableElement method, Element key, VariableElement map, ExpressionTree tree) {
         if (TreeUtils.skipParens(tree) instanceof MethodInvocationTree) {
             MethodInvocationTree invok = (MethodInvocationTree)TreeUtils.skipParens(tree);
