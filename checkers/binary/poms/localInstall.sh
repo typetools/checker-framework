@@ -9,8 +9,7 @@ esac
 
 binDir="${mydir}/.."
 
-eval "mvn install:install-file -DpomFile=checkerQualsPom.xml -Dfile=${binDir}/checkers-quals.jar"
-eval "mvn install:install-file -DpomFile=checkersPom.xml -Dfile=${binDir}/checkers.jar"
-eval "mvn install:install-file -DpomFile=compilerPom.xml -Dfile=${binDir}/javac.jar"
-eval "mvn install:install-file -DpomFile=jdk6Pom.xml -Dfile=${binDir}/jdk6.jar"
-eval "mvn install:install-file -DpomFile=jdk7Pom.xml -Dfile=${binDir}/jdk7.jar"
+eval "mvn install:install-file -DpomFile=${mydir}/checkersQualsPom.xml -Dfile=${binDir}/checkers-quals.jar"
+eval "mvn install:install-file -DpomFile=${mydir}/checkersPom.xml -Dfile=${binDir}/checkers.jar"
+eval "mvn install:install-file -DpomFile=${mydir}/compilerPom.xml -Dfile=${binDir}/javac.jar"
+eval "mvn install:install-file -DpomFile=${mydir}/jdk7Pom.xml -Dfile=${binDir}/jdk7.jar"

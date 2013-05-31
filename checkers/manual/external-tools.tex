@@ -410,13 +410,8 @@ the "compile" phase (see \url{http://maven.apache.org/guides/introduction/introd
 This means that any maven target that exercises that phase will also run the Checker Framework
 (e.g. mvn package, mvn verify).
 
-To run just compilation and checking you can run:
-mvn compile checkers:check
-
-%We can relax this and force the Checker Framework to either make or omit the destination directory
-%which is currently causing javac to fail if we don't run the compilation phase first
-If class files have already been generated, you can run:
-mvn checkers:check
+To run only checking:
+\code{mvn checkers:check}
 
 \item Add Optional Parameters
 
@@ -425,12 +420,15 @@ Within the configuration element you can add a number of parameters.
 \begin{Verbatim}
     <procOnly>false</procOnly>
 \end{Verbatim}
-By default, the Checker Framework Maven plugin will only check source files and will not produced
+By default, the Checker Framework Maven plugin will only check source files but will not produce
 class files for the source files it checks (see -proc:only at \url{http://docs.oracle.com/javase/6/docs/technotes/tools/solaris/javac.html}).
 Setting \code{procOnly} to false will cause the Checker Framework compiler to generate class files.
+Note: If your Maven project's output directory has not been created then the plugin will attempt to
+create it and all required directories preceding it.  The check task will fail
+in the event that these directories cannot be created.
 
 You may want to check only a subset of source files in your project.  To do so you can use the \code{includes} and \code{excludes}
-elements using the standard maven syntax.  The semantics of including/excluding files are also described
+elements using the standard Maven syntax.  The semantics of including/excluding files are also described
 by DirectoryScanner documentation found at:
 \url{http://plexus.codehaus.org/plexus-utils/apidocs/org/codehaus/plexus/util/DirectoryScanner.html} (see setIncludes/setExcludes)
 
@@ -446,7 +444,7 @@ by DirectoryScanner documentation found at:
 \end{Verbatim}
 
 By default, an error reported by the Checker Framework Maven plugin will cause your build to fail.  To prevent
-a build from failing and still produce error and warning output, set \code{failOError} to false.
+a build from failing and still produce error and warning output set \code{failOError} to false.
 
 \begin{Verbatim}
     <failOnError>false</failOnError>
@@ -461,8 +459,9 @@ You may want to run the Checker Framework using a Java version that differs from
 
 The version of the Checker Framework run by the Maven plugin will share the same version as the Maven plugin
 by default.  That is, if you are using the Checker Framework Maven plugin version 1.6.3 then it will run the
-Checker Framework version 1.6.3 when checking source code.  However, you can specify an earlier (as early as 1.5.0)
+Checker Framework version 1.6.3 when checking source code.  However, you can specify an earlier
 or later version of the Checker Framework using the \code{checkersVersion} element.
+Note: The Checker Framework Maven plugin will only work with Checker Framework versions 1.5.0 and higher.
 
 \begin{Verbatim}
     <checkersVersion>1.6.2</checkersVersion>
@@ -485,6 +484,9 @@ element.  To provide JVM arguments you can use the \code{javaParams} element.
 \end{Verbatim}
 
 \end{enumerate}
+
+You can find an example Maven project that uses the Checker Framework Maven plugin at:
+\url{http://types.cs.washington.edu/checker-framework/current/mvn-examples.zip}
 
 The plugin was contributed by Adam Warski.
 % [Thanks Adam!]
