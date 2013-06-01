@@ -169,7 +169,12 @@ public class PathUtils {
 
         ds.addDefaultExcludes();
 
-        ds.scan();
+        try {
+            ds.scan();
+        } catch (IllegalStateException e) {
+            // the source directory (java/) does not exist
+            return new String[0];
+        }
 
         return ds.getIncludedFiles();
     }
