@@ -317,7 +317,6 @@ public class AnnotatedTypes {
             if (!ElementUtils.isStatic(elem))
                 atypeFactory.postAsMemberOf(type, t, elem);
             return type;
-        default:
         }
     }
 
