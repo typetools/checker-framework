@@ -159,6 +159,8 @@ public class UnitsAnnotatedTypeFactory extends
                     //     @Length int r = q - (q / 3) * 3;
                     // TODO: We agreed to treat remainder like division.
                     break;
+                default:
+                    // Nothing to do.
                 }
             }
 
@@ -193,6 +195,8 @@ public class UnitsAnnotatedTypeFactory extends
                 case MULTIPLY:
                     res = ur.multiplication(lht, rht);
                     break;
+                default:
+                    // Nothing to do.
                 }
             }
             return res;

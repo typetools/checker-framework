@@ -169,6 +169,7 @@ public class FactoryTestChecker extends SourceChecker {
                 }
                 line = reader.readLine();
             }
+            reader.close();
         } catch (IOException e) {
             e.printStackTrace();
         }

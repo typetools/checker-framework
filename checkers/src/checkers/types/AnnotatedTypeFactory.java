@@ -334,6 +334,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         // case VARIABLE:
             if (shouldCache)
                 treeCache.put(tree, AnnotatedTypes.deepCopy(type));
+            break;
+        default:
+            // Don't cache rest.
         }
         // System.out.println("AnnotatedTypeFactory::getAnnotatedType(Tree) result: " + type);
         return type;
@@ -1621,8 +1624,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             case OTHER:
             case PACKAGE:
                 return false;
+            default:
+                return true;
         }
-        return true;
     }
 
     /**

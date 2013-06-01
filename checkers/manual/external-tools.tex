@@ -365,7 +365,7 @@ process.
         <dependency>
             <groupId>types.checkers</groupId>
             <artifactId>checkers-quals</artifactId>
-            <version>1.4.3</version>
+            <version>1.6.3</version>
         </dependency>
 
     </dependencies>
@@ -383,7 +383,7 @@ process.
             <plugin>
                 <groupId>types.checkers</groupId>
                 <artifactId>checkers-maven-plugin</artifactId>
-                <version>1.4.4</version>
+                <version>1.6.3</version>
                 <executions>
                     <execution>
                         <!-- run the checkers after compilation; this can also be any later phase -->
@@ -400,34 +400,94 @@ process.
                         <processor>checkers.nullness.NullnessChecker</processor>
                         <processor>checkers.interning.InterningChecker</processor>
                     </processors>
-
-
-                    <!-- other optional configuration -->
-                    <!-- full path to a java executable that should be used to create the forked JVM -->
-                    <executable>/opt/java1.6/bin/java</executable>
-                    <!-- should an error reported by a checker cause a build failure, or only be logged as a warning; defaults to true -->
-                    <failOnError>true|false</failOnError>
-                    <!-- a list of patterns to include, in the standard maven syntax; defaults to **/*.java -->
-                    <includes>
-                        <include>org/company/important/**/*.java</include>
-                    </includes>
-                    <!-- a list of patterns to exclude, in the standard maven syntax; defaults to an empty list -->
-                    <excludes>
-                        <exclude>org/company/notimportant/**/*.java</exclude>
-                    </excludes>
-                    <!-- additional parameters passed to the JSR308 java compiler -->
-                    <javacParams>-Alint</javacParams>
-                    <!-- additional parameters to pass to the forked JVM -->
-                    <javaParams>-Xdebug</javaParams>
-                    <!-- versions of checkers to use; defaults to the current newest version: 1.4.5 -->
-                    <checkersVersion>1.4.1</checkersVersion>
                 </configuration>
-            </plugin>
+              </plugin>
         </plugins>
     </build>
 \end{Verbatim}
 
+The above example attaches the "check" goal to the "process-lifecycle" phase which occurs directly after
+the "compile" phase (see \url{http://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html}).
+This means that any maven target that exercises that phase will also run the Checker Framework
+(e.g. mvn package, mvn verify).
+
+To run only checking:
+\code{mvn checkers:check}
+
+\item Add Optional Parameters
+
+Within the configuration element you can add a number of parameters.
+
+\begin{Verbatim}
+    <procOnly>false</procOnly>
+\end{Verbatim}
+By default, the Checker Framework Maven plugin will only check source files but will not produce
+class files for the source files it checks (see -proc:only at \url{http://docs.oracle.com/javase/6/docs/technotes/tools/solaris/javac.html}).
+Setting \code{procOnly} to false will cause the Checker Framework compiler to generate class files.
+Note: If your Maven project's output directory has not been created then the plugin will attempt to
+create it and all required directories preceding it.  The check task will fail
+in the event that these directories cannot be created.
+
+You may want to check only a subset of source files in your project.  To do so you can use the \code{includes} and \code{excludes}
+elements using the standard Maven syntax.  The semantics of including/excluding files are also described
+by DirectoryScanner documentation found at:
+\url{http://plexus.codehaus.org/plexus-utils/apidocs/org/codehaus/plexus/util/DirectoryScanner.html} (see setIncludes/setExcludes)
+
+\begin{Verbatim}
+    <!-- a list of patterns to include, in the standard maven syntax; defaults to **/*.java -->
+    <includes>
+        <include>org/company/important/**/*.java</include>
+    </includes>
+    <!-- a list of patterns to exclude, in the standard maven syntax; defaults to an empty list -->
+    <excludes>
+        <exclude>org/company/notimportant/**/*.java</exclude>
+    </excludes>
+\end{Verbatim}
+
+By default, an error reported by the Checker Framework Maven plugin will cause your build to fail.  To prevent
+a build from failing and still produce error and warning output set \code{failOError} to false.
+
+\begin{Verbatim}
+    <failOnError>false</failOnError>
+\end{Verbatim}
+
+You may want to run the Checker Framework using a Java version that differs from the version running Maven.  The
+\code{executable} element specifies a Java executable to use when running the Checker Framework.
+
+\begin{Verbatim}
+    <executable>/usr/bin/java</executable>
+\end{Verbatim}
+
+The version of the Checker Framework run by the Maven plugin will share the same version as the Maven plugin
+by default.  That is, if you are using the Checker Framework Maven plugin version 1.6.3 then it will run the
+Checker Framework version 1.6.3 when checking source code.  However, you can specify an earlier
+or later version of the Checker Framework using the \code{checkersVersion} element.
+Note: The Checker Framework Maven plugin will only work with Checker Framework versions 1.5.0 and higher.
+
+\begin{Verbatim}
+    <checkersVersion>1.6.2</checkersVersion>
+\end{Verbatim}
+
+To disable the Checker Framework check without removing it from your pom file you can use the /code{skip} option.
+\begin{Verbatim}
+    <skip>true</skip>
+\end{Verbatim}
+
+Finally, the Checker Framework compiler is an extension of the javac compiler and therefore excepts any parameter
+that can be provided to javac or the JVM.  To provide javac parameters you can use the \code{javacParams}
+element.  To provide JVM arguments you can use the \code{javaParams} element.
+
+\begin{Verbatim}
+    <!-- additional parameters passed to the JSR308 java compiler -->
+    <javacParams>-Alint</javacParams>
+    <!-- additional parameters to pass to the forked JVM -->
+    <javaParams>-Xdebug</javaParams>
+\end{Verbatim}
+
 \end{enumerate}
+
+You can find an example Maven project that uses the Checker Framework Maven plugin at:
+\url{http://types.cs.washington.edu/checker-framework/current/mvn-examples.zip}
 
 The plugin was contributed by Adam Warski.
 % [Thanks Adam!]
