@@ -1,4 +1,7 @@
 The following simple commands allow you to build the plugin, install it locally, and install it to a repository.
+This is useful if you built the Checker Framework yourself (e.g., because you
+added your own checker), and would like to apply it to a Maven project.
+
 
 To build the plugin:
 
@@ -8,8 +11,9 @@ To install the plugin when you have built locally:
 
 mvn install
 
-Note:  If you had a plugin of the same version that you downloaded from our Checker Framework repository
-then it will be overwritten and your locally built version will be run.
+Note:  Maven will use the plugin of the highest version number it can find,
+with any locally-installed version taking precedence over downloads from
+the Checker Framework Maven repository.
 
 To install the plugin to a repository:
     //Install the plugin locally
