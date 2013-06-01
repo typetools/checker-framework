@@ -21,7 +21,7 @@ import com.google.common.annotations.GwtCompatible;
 import java.util.Map;
 import java.util.Set;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 //import javax.annotation.Nullable;
 
 /**

@@ -1,6 +1,8 @@
 package java.util;
-import checkers.nullness.quals.*;
-@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
+import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
+
+import checkers.nullness.quals.Nullable;
 
 public abstract class Calendar implements java.io.Serializable, Cloneable, Comparable<Calendar> {
   protected Calendar() {}
@@ -64,21 +66,21 @@ public abstract class Calendar implements java.io.Serializable, Cloneable, Compa
   public final void set(int a1, int a2, int a3, int a4, int a5, int a6) { throw new RuntimeException("skeleton method"); }
   public final void clear() { throw new RuntimeException("skeleton method"); }
   public final void clear(int a1) { throw new RuntimeException("skeleton method"); }
-  public final boolean isSet(int a1) { throw new RuntimeException("skeleton method"); }
+  @Pure public final boolean isSet(int a1) { throw new RuntimeException("skeleton method"); }
   public @Nullable String getDisplayName(int a1, int a2, Locale a3) { throw new RuntimeException("skeleton method"); }
   public @Nullable Map<String, Integer> getDisplayNames(int a1, int a2, Locale a3) { throw new RuntimeException("skeleton method"); }
-  public boolean equals(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
-  public int hashCode() { throw new RuntimeException("skeleton method"); }
+  @Pure public boolean equals(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
+  @Pure public int hashCode() { throw new RuntimeException("skeleton method"); }
   public boolean before(Object a1) { throw new RuntimeException("skeleton method"); }
   public boolean after(Object a1) { throw new RuntimeException("skeleton method"); }
-  public int compareTo(Calendar a1) { throw new RuntimeException("skeleton method"); }
+  @Pure public int compareTo(Calendar a1) { throw new RuntimeException("skeleton method"); }
   public abstract void add(int a1, int a2);
   public abstract void roll(int a1, boolean a2);
   public void roll(int a1, int a2) { throw new RuntimeException("skeleton method"); }
   public void setTimeZone(TimeZone a1) { throw new RuntimeException("skeleton method"); }
   public TimeZone getTimeZone() { throw new RuntimeException("skeleton method"); }
   public void setLenient(boolean a1) { throw new RuntimeException("skeleton method"); }
-  public boolean isLenient() { throw new RuntimeException("skeleton method"); }
+  @Pure public boolean isLenient() { throw new RuntimeException("skeleton method"); }
   public void setFirstDayOfWeek(int a1) { throw new RuntimeException("skeleton method"); }
   public int getFirstDayOfWeek() { throw new RuntimeException("skeleton method"); }
   public void setMinimalDaysInFirstWeek(int a1) { throw new RuntimeException("skeleton method"); }
@@ -89,7 +91,7 @@ public abstract class Calendar implements java.io.Serializable, Cloneable, Compa
   public abstract int getLeastMaximum(int a1);
   public int getActualMinimum(int a1) { throw new RuntimeException("skeleton method"); }
   public int getActualMaximum(int a1) { throw new RuntimeException("skeleton method"); }
-  public Object clone() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public Object clone() { throw new RuntimeException("skeleton method"); }
   private static final String[] FIELD_NAME = {
         "ERA", "YEAR", "MONTH", "WEEK_OF_YEAR", "WEEK_OF_MONTH", "DAY_OF_MONTH",
         "DAY_OF_YEAR", "DAY_OF_WEEK", "DAY_OF_WEEK_IN_MONTH", "AM_PM", "HOUR",
@@ -97,5 +99,5 @@ public abstract class Calendar implements java.io.Serializable, Cloneable, Compa
         "DST_OFFSET"
   };
   static final String getFieldName(int field)  { throw new RuntimeException("skeleton method"); }
-  public String toString() { throw new RuntimeException("skeleton method"); }
+  @Pure public String toString() { throw new RuntimeException("skeleton method"); }
 }

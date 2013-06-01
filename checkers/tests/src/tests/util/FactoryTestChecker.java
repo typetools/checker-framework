@@ -21,9 +21,10 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
 import com.sun.tools.javac.tree.JCTree;
 
+import javacutils.TreeUtils;
+
 import checkers.source.*;
 import checkers.types.AnnotatedTypeFactory;
-import checkers.util.TreeUtils;
 
 /**
  * A specialized checker for testing purposes.  It compares an expression's

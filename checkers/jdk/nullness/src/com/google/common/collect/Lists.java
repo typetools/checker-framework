@@ -36,7 +36,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.RandomAccess;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 //import javax.annotation.Nullable;
 
 /**
@@ -248,7 +248,7 @@ public final class Lists {
       this.first = first;
       this.rest = checkNotNull(rest);
     }
-    @Override public int size() {
+    @Pure @Override public int size() {
       return rest.length + 1;
     }
     @Override public E get(int index) {
@@ -293,7 +293,7 @@ private static class TwoPlusArrayList<E extends /*@Nullable*/ Object> extends Ab
       this.second = second;
       this.rest = checkNotNull(rest);
     }
-    @Override public int size() {
+    @Pure @Override public int size() {
       return rest.length + 2;
     }
     @Override public E get(int index) {
@@ -365,7 +365,7 @@ private static class TwoPlusArrayList<E extends /*@Nullable*/ Object> extends Ab
     @Override public void clear() {
       fromList.clear();
     }
-    @Override public int size() {
+    @Pure @Override public int size() {
       return fromList.size();
     }
     @Override public ListIterator<T> listIterator(final int index) {
@@ -444,7 +444,7 @@ private static class TwoPlusArrayList<E extends /*@Nullable*/ Object> extends Ab
       return function.apply(fromList.get(index));
     }
 
-    @Override public boolean isEmpty() {
+    @Pure @Override public boolean isEmpty() {
       return fromList.isEmpty();
     }
 
@@ -454,7 +454,7 @@ private static class TwoPlusArrayList<E extends /*@Nullable*/ Object> extends Ab
       return function.apply(fromList.remove(index));
     }
 
-    @Override public int size() {
+    @Pure @Override public int size() {
       return fromList.size();
     }
     private static final long serialVersionUID = 0;
@@ -503,11 +503,11 @@ private static class TwoPlusArrayList<E extends /*@Nullable*/ Object> extends Ab
       return Platform.subList(list, start, end);
     }
 
-    @Override public int size() {
+    @Pure @Override public int size() {
       return (list.size() + size - 1) / size;
     }
 
-    @Override public boolean isEmpty() {
+    @Pure @Override public boolean isEmpty() {
       return list.isEmpty();
     }
   }

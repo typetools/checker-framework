@@ -1,6 +1,8 @@
 package java.util;
-import checkers.nullness.quals.*;
-@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
+import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
+import checkers.nullness.quals.EnsuresNonNullIf;
+import checkers.nullness.quals.Nullable;
 
 // Subclasses of this interface/class may opt to prohibit null elements
 public class TreeSet<E extends @Nullable Object> extends AbstractSet<E> implements NavigableSet<E>, Cloneable, java.io.Serializable {
@@ -12,10 +14,10 @@ public class TreeSet<E extends @Nullable Object> extends AbstractSet<E> implemen
   public Iterator<E> iterator() { throw new RuntimeException("skeleton method"); }
   public Iterator<E> descendingIterator() { throw new RuntimeException("skeleton method"); }
   public NavigableSet<E> descendingSet() { throw new RuntimeException("skeleton method"); }
-  public int size() { throw new RuntimeException("skeleton method"); }
-  @AssertNonNullIfFalse({"pollFirst()", "pollLast()"})
-  public boolean isEmpty() { throw new RuntimeException("skeleton method"); }
-  public boolean contains(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
+  @Pure public int size() { throw new RuntimeException("skeleton method"); }
+  @EnsuresNonNullIf(expression={"pollFirst()", "pollLast()"}, result=false)
+  @Pure public boolean isEmpty() { throw new RuntimeException("skeleton method"); }
+  @Pure public boolean contains(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   public boolean add(E a1) { throw new RuntimeException("skeleton method"); }
   public boolean remove(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   public void clear() { throw new RuntimeException("skeleton method"); }
@@ -35,5 +37,5 @@ public class TreeSet<E extends @Nullable Object> extends AbstractSet<E> implemen
   public @Nullable E higher(E a1) { throw new RuntimeException("skeleton method"); }
   public @Nullable E pollFirst() { throw new RuntimeException("skeleton method"); }
   public @Nullable E pollLast() { throw new RuntimeException("skeleton method"); }
-  public Object clone() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public Object clone() { throw new RuntimeException("skeleton method"); }
 }
