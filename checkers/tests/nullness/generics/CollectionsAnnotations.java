@@ -1,3 +1,4 @@
+import checkers.initialization.quals.Initialized;
 import checkers.nullness.quals.*;
 
 /**

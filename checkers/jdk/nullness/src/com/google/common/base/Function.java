@@ -18,7 +18,7 @@ package com.google.common.base;
 
 import com.google.common.annotations.GwtCompatible;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
 /**
  * A transformation from one object to another. For example, a
@@ -63,5 +63,5 @@ import checkers.nullness.quals.*;
    * <p>Note that it is always safe <em>not</em> to override
    * {@link Object#equals}.
    */
-  boolean equals(@Nullable Object obj);
+  @Pure boolean equals(@Nullable Object obj);
 }
