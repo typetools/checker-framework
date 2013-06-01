@@ -1,0 +1,50 @@
+The following simple commands allow you to build the plugin, install it locally, and install it to a repository.
+
+To build the plugin:
+
+mvn clean package
+
+To install the plugin when you have built locally:
+
+mvn install
+
+Note:  If you had a plugin of the same version that you downloaded from our Checker Framework repository
+then it will be overwritten and your locally built version will be run.
+
+To install the plugin to a repository:
+    //Install the plugin locally
+    mvn install
+    
+    //deploy it to a location
+    mvn deploy:deploy-file \
+    -DartifactId=checkersplugin \         
+    -Dfile=<your path>/jsr308/checker-framework/maven-plugin/target/checkers-maven-plugin-<latest-version>.jar \        
+    -Dversion=<latest-version> \
+    -Durl=file://<your path>/maven/m2-repo \
+    -DgroupId=types.checkers \
+    -Dpackaging=jar \
+    -DpomFile=<your path>/jsr308/checker-framework/maven-plugin/pom.xml \
+    -DgeneratePom=false \
+
+Unless you are testing from a local Maven repository it is unlikely you will need to deploy the
+Maven plugin to a repository.  The Checker Framework release script will deploy the Maven plugin and
+related artifacts to the Checker Framework Maven repository automatically.
+
+Dependencies:
+The plugin requires various Checker Framework Maven artifacts to run (e.g. the checkers.jar artifact).  If these
+artifacts aren't present then at run time the plugin attempts to download them using Maven.  The version of the
+Checker Framework that is downloaded is either the version of your Maven plugin OR the version specified by
+the checkersVersion element in your pom.xml.
+see http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#maven-plugin.
+If you have built a version of the Checker Framework and incremented the version number within the various Maven poms
+then these artifacts will NOT be available at our Checker Framework Maven repository. You can install the
+Checker Framework jars as artifact using the localinstall.sh script.  It can be found at
+checker-framework/checkers/binary/poms/localInstall.sh.
+
+Note:  The version numbers of the various pom files are automatically updated when the Checker Framework is
+released.
+
+Helpful notes:
+If you are using Maven 3 then it might be useful to remember that adding -U to any command will
+force Maven to overwrite any existing dependencies with newly downloaded dependencies.  This can be
+useful when debugging a deployed plugin for which you don't want to increase it's version number.
