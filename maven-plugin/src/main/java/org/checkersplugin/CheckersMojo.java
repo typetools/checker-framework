@@ -231,6 +231,11 @@ public class CheckersMojo extends AbstractMojo {
 
         final List<String> sources = PathUtils.scanForSources(compileSourceRoots, includes, excludes);
 
+        if (sources.size() == 0) {
+            log.info("No source files found.");
+            return;
+        }
+
         locateArtifacts();
 
         final Commandline cl = new Commandline();
