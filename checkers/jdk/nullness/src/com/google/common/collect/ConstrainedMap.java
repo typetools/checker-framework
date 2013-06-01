@@ -122,10 +122,10 @@ import javax.annotation.Nullable;
     @Override public <T> T[] toArray(T[] array) {
       return ObjectArrays.toArrayImpl(this, array);
     }
-    @Override public boolean contains(/*@Nullable*/ Object o) {
+    @Pure @Override public boolean contains(/*@Nullable*/ Object o) {
       return Maps.containsEntryImpl(delegate(), o);
     }
-    @Override public boolean containsAll(Collection<?> c) {
+    @Pure @Override public boolean containsAll(Collection<?> c) {
       return Collections2.containsAll(this, c);
     }
     @Override public boolean remove(/*@Nullable*/ Object o) {
@@ -148,11 +148,11 @@ import javax.annotation.Nullable;
 
     // See Collections.CheckedMap.CheckedEntrySet for details on attacks.
 
-    @Override public boolean equals(@Nullable Object object) {
+    @Pure @Override public boolean equals(@Nullable Object object) {
       return Collections2.setEquals(this, object);
     }
 
-    @Override public int hashCode() {
+    @Pure @Override public int hashCode() {
       return Sets.hashCodeImpl(this);
     }
   }
