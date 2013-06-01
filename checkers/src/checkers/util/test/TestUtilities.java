@@ -6,6 +6,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Scanner;
 
@@ -104,7 +106,14 @@ public final class TestUtilities {
 
         List<File> javaFiles = new ArrayList<File>();
 
-        for (File file : directory.listFiles()) {
+        File[] in = directory.listFiles();
+        Arrays.sort(in, new Comparator<File>() {
+            @Override
+            public int compare(File o1, File o2) {
+                return o1.getName().compareTo(o2.getName());
+            }
+        });
+        for (File file : in) {
             if (file.isDirectory())
                 javaFiles.addAll(deeplyEnclosedJavaTestFiles(file));
             else if (isJavaTestFile(file))

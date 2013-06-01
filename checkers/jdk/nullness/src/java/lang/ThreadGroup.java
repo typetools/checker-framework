@@ -1,8 +1,8 @@
 package java.lang;
 
-import checkers.nullness.quals.*;
+import dataflow.quals.Pure;
+import checkers.nullness.quals.Nullable;
 
-@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
 
 public class ThreadGroup implements Thread.UncaughtExceptionHandler {
   public ThreadGroup(@Nullable String a1) { throw new RuntimeException("skeleton method"); }
@@ -10,8 +10,8 @@ public class ThreadGroup implements Thread.UncaughtExceptionHandler {
   public final @Nullable String getName() { throw new RuntimeException("skeleton method"); }
   public final @Nullable  ThreadGroup getParent() { throw new RuntimeException("skeleton method"); }
   public final int getMaxPriority() { throw new RuntimeException("skeleton method"); }
-  public final boolean isDaemon() { throw new RuntimeException("skeleton method"); }
-  public synchronized boolean isDestroyed() { throw new RuntimeException("skeleton method"); }
+  @Pure public final boolean isDaemon() { throw new RuntimeException("skeleton method"); }
+  @Pure public synchronized boolean isDestroyed() { throw new RuntimeException("skeleton method"); }
   public final void setDaemon(boolean a1) { throw new RuntimeException("skeleton method"); }
   public final void setMaxPriority(int a1) { throw new RuntimeException("skeleton method"); }
   public final boolean parentOf(ThreadGroup a1) { throw new RuntimeException("skeleton method"); }
@@ -30,5 +30,5 @@ public class ThreadGroup implements Thread.UncaughtExceptionHandler {
   public void list() { throw new RuntimeException("skeleton method"); }
   public void uncaughtException(Thread a1, Throwable a2) { throw new RuntimeException("skeleton method"); }
   public boolean allowThreadSuspension(boolean a1) { throw new RuntimeException("skeleton method"); }
-  public String toString() { throw new RuntimeException("skeleton method"); }
+  @Pure public String toString() { throw new RuntimeException("skeleton method"); }
 }

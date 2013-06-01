@@ -1,6 +1,7 @@
 package java.util;
-import checkers.nullness.quals.*;
-@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
+import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
+import checkers.nullness.quals.Nullable;
 
 public final class Locale implements Cloneable, java.io.Serializable {
     private static final long serialVersionUID = 0L;
@@ -37,7 +38,7 @@ public final class Locale implements Cloneable, java.io.Serializable {
   public String getLanguage() { throw new RuntimeException("skeleton method"); }
   public String getCountry() { throw new RuntimeException("skeleton method"); }
   public String getVariant() { throw new RuntimeException("skeleton method"); }
-  public final String toString() { throw new RuntimeException("skeleton method"); }
+  @Pure public final String toString() { throw new RuntimeException("skeleton method"); }
   public String getISO3Language()throws MissingResourceException { throw new RuntimeException("skeleton method"); }
   public String getISO3Country()throws MissingResourceException { throw new RuntimeException("skeleton method"); }
   public final String getDisplayLanguage() { throw new RuntimeException("skeleton method"); }
@@ -48,7 +49,7 @@ public final class Locale implements Cloneable, java.io.Serializable {
   public String getDisplayVariant(Locale a1) { throw new RuntimeException("skeleton method"); }
   public final String getDisplayName() { throw new RuntimeException("skeleton method"); }
   public String getDisplayName(Locale a1) { throw new RuntimeException("skeleton method"); }
-  public int hashCode() { throw new RuntimeException("skeleton method"); }
-  public boolean equals(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
-  public Object clone() { throw new RuntimeException("skeleton method"); }
+  @Pure public int hashCode() { throw new RuntimeException("skeleton method"); }
+  @Pure public boolean equals(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public Object clone() { throw new RuntimeException("skeleton method"); }
 }

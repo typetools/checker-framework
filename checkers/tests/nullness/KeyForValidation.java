@@ -8,8 +8,11 @@ public class KeyForValidation {
 
   @KeyFor("this") Object g;
 
+  // TODO: invalid index (it's a common mistake to assume indexing is zero-based)
+  void m(@KeyFor("#0") Object p) {}
+
   // TODO: invalid index
-  void m(@KeyFor("#5") Object p) {}
+  void m(@KeyFor("#4") Object p) {}
 
   // TODO: check names for fields
   @KeyFor("INVALID") Object h;
