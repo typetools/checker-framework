@@ -12,13 +12,13 @@ import com.sun.source.tree.Tree.Kind;
 
 /**
  * A node for the numerical addition:
- * 
+ *
  * <pre>
  *   <em>expression</em> + <em>expression</em>
  * </pre>
- * 
+ *
  * @author Stefan Heule
- * 
+ *
  */
 public class NumericalAdditionNode extends Node {
 

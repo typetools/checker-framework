@@ -17,15 +17,15 @@ import com.sun.source.tree.Tree;
 /**
  * A node representing a package name used in an expression such as a
  * constructor invocation
- * 
+ *
  * <p>
  * <em>package</em>.class.object(...)
  * <p>
  * parent.<em>package</em>.class.object(...)
- * 
+ *
  * @author Stefan Heule
  * @author Charlie Garrett
- * 
+ *
  */
 public class PackageNameNode extends Node {
 
@@ -34,7 +34,7 @@ public class PackageNameNode extends Node {
     protected final Element element;
 
     /** The parent name, if any. */
-    protected final/* @Nullable */PackageNameNode parent;
+    protected final /*@Nullable*/ PackageNameNode parent;
 
     public PackageNameNode(IdentifierTree tree) {
         super(InternalUtils.typeOf(tree));

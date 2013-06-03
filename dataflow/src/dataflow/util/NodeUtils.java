@@ -11,9 +11,9 @@ import com.sun.tools.javac.tree.JCTree;
 
 /**
  * A utility class to operate on a given {@link Node}.
- * 
+ *
  * @author Stefan Heule
- * 
+ *
  */
 public class NodeUtils {
 

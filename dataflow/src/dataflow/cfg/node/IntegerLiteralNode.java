@@ -8,13 +8,13 @@ import com.sun.source.tree.Tree;
 
 /**
  * A node for an integer literal. For example:
- * 
+ *
  * <pre>
  *   <em>42</em>
  * </pre>
- * 
+ *
  * @author Stefan Heule
- * 
+ *
  */
 public class IntegerLiteralNode extends ValueLiteralNode {
 

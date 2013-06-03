@@ -32,7 +32,7 @@ import com.sun.tools.javac.util.List;
 /**
  * Class to generate the DOT representation of the control flow graph of a given
  * method.
- * 
+ *
  * @author Stefan Heule
  */
 public class JavaSource2CFGDOT {
@@ -114,7 +114,7 @@ public class JavaSource2CFGDOT {
 
     /**
      * Generate the DOT representation of the CFG for a method.
-     * 
+     *
      * @param inputFile
      *            Java source input file.
      * @param outputFile
@@ -129,14 +129,14 @@ public class JavaSource2CFGDOT {
      */
     public static <A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<A, S>> void generateDOTofCFG(
             String inputFile, String outputFile, String method, String clas,
-            boolean pdf, /* @Nullable */Analysis<A, S, T> analysis) {
+            boolean pdf, /*@Nullable*/ Analysis<A, S, T> analysis) {
         Entry<MethodTree, CompilationUnitTree> m = getMethodTreeAndCompilationUnit(inputFile, method, clas);
         generateDOTofCFG(inputFile, outputFile, method, clas, pdf, analysis, m.getKey(), m.getValue());
     }
 
     public static <A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<A, S>> void generateDOTofCFG(
             String inputFile, String outputFile, String method, String clas,
-            boolean pdf, /* @Nullable */Analysis<A, S, T> analysis, MethodTree m,
+            boolean pdf, /*@Nullable*/ Analysis<A, S, T> analysis, MethodTree m,
             CompilationUnitTree r) {
         String fileName = (new File(inputFile)).getName();
         System.out.println("Working on " + fileName + "...");
@@ -187,7 +187,7 @@ public class JavaSource2CFGDOT {
      * @return The AST of a specific method in a specific class in a specific
      *         file (or null if no such method exists).
      */
-    public static/* @Nullable */MethodTree getMethodTree(String file,
+    public static /*@Nullable*/ MethodTree getMethodTree(String file,
             final String method, String clas) {
         return getMethodTreeAndCompilationUnit(file, method, clas).getKey();
     }
@@ -197,7 +197,7 @@ public class JavaSource2CFGDOT {
      *         {@link CompilationUnitTree} in a specific file (or null they do
      *         not exist).
      */
-    public static Entry</* @Nullable */MethodTree, /* @Nullable */CompilationUnitTree> getMethodTreeAndCompilationUnit(
+    public static Entry</*@Nullable*/ MethodTree, /*@Nullable*/ CompilationUnitTree> getMethodTreeAndCompilationUnit(
             String file, final String method, String clas) {
         final Holder<MethodTree> m = new Holder<>();
         final Holder<CompilationUnitTree> c = new Holder<>();

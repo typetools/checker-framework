@@ -7,9 +7,9 @@ import com.sun.source.tree.Tree;
 /**
  * Represents an abstract syntax tree of type {@link Tree} that underlies a
  * given control flow graph.
- * 
+ *
  * @author Stefan Heule
- * 
+ *
  */
 public abstract class UnderlyingAST {
     public enum Kind {
@@ -44,7 +44,7 @@ public abstract class UnderlyingAST {
 
         /** The method declaration */
         protected final MethodTree method;
-        
+
         /** The class tree this method belongs to. */
         protected final ClassTree classTree;
 
@@ -62,7 +62,7 @@ public abstract class UnderlyingAST {
         public MethodTree getMethod() {
             return method;
         }
-        
+
         public ClassTree getClassTree() {
             return classTree;
         }

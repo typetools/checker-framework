@@ -7,9 +7,9 @@ package dataflow.cfg.block;
  * <li>Regular exit block of a method.</li>
  * <li>Exceptional exit block of a method.</li>
  * </ul>
- * 
+ *
  * @author Stefan Heule
- * 
+ *
  */
 public interface SpecialBlock extends SingleSuccessorBlock {
 

@@ -2,9 +2,9 @@ package dataflow.cfg.block;
 
 /**
  * Represents a basic block in a control flow graph.
- * 
+ *
  * @author Stefan Heule
- * 
+ *
  */
 public interface Block {
 

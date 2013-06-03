@@ -5,9 +5,9 @@ import dataflow.cfg.node.Node;
 /**
  * Represents a conditional basic block that contains exactly one boolean
  * {@link Node}.
- * 
+ *
  * @author Stefan Heule
- * 
+ *
  */
 public interface ConditionalBlock extends Block {
 

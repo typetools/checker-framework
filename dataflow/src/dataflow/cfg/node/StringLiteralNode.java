@@ -8,13 +8,13 @@ import com.sun.source.tree.Tree;
 
 /**
  * A node for an string literal. For example:
- * 
+ *
  * <pre>
  *   <em>"abc"</em>
  * </pre>
- * 
+ *
  * @author Stefan Heule
- * 
+ *
  */
 public class StringLiteralNode extends ValueLiteralNode {
 

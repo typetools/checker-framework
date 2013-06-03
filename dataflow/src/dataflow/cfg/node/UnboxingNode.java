@@ -12,17 +12,17 @@ import com.sun.source.tree.Tree;
 /**
  * A node for the unboxing conversion operation. See JLS 5.1.8 for the
  * definition of unboxing.
- * 
+ *
  * An {@link UnboxingNode} does not correspond to any tree node in the parsed
  * AST. It is introduced when a value of reference type appears in a context
  * that requires a primitive type.
- * 
+ *
  * Unboxing a null value throws a {@link NullPointerException} while unboxing
  * any other value succeeds.
- * 
+ *
  * @author Stefan Heule
  * @author Charlie Garrett
- * 
+ *
  */
 public class UnboxingNode extends Node {
 

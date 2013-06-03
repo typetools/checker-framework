@@ -6,17 +6,17 @@ import dataflow.cfg.node.Node;
 
 /**
  * A regular basic block that contains a sequence of {@link Node}s.
- * 
+ *
  * <p>
- * 
+ *
  * The following invariant holds.
- * 
+ *
  * <pre>
  * forall n in getContents() :: n.getBlock() == this
  * </pre>
- * 
+ *
  * @author Stefan Heule
- * 
+ *
  */
 public interface RegularBlock extends SingleSuccessorBlock {
 

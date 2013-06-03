@@ -8,15 +8,15 @@ import com.sun.source.tree.Tree;
 
 /**
  * A node for a float literal. For example:
- * 
+ *
  * <pre>
  *   <em>8.0f</em>
  *   <em>6.022137e+23F</em>
  * </pre>
- * 
+ *
  * @author Stefan Heule
  * @author Charlie Garrett
- * 
+ *
  */
 public class FloatLiteralNode extends ValueLiteralNode {
 
