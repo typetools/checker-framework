@@ -320,6 +320,9 @@ public class AnnotatedTypeFactory {
         // case VARIABLE:
             if (SHOULD_CACHE)
                 treeCache.put(tree, AnnotatedTypes.deepCopy(type));
+            break;
+        default:
+            // Don't cache rest.
         }
         // System.out.println("AnnotatedTypeFactory::getAnnotatedType(Tree) result: " + type);
         return type;
@@ -1604,8 +1607,9 @@ public class AnnotatedTypeFactory {
             case OTHER:
             case PACKAGE:
                 return false;
+            default:
+                return true;
         }
-        return true;
     }
 
     /**
