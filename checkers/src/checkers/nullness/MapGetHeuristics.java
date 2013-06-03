@@ -122,14 +122,6 @@ import com.sun.source.util.TreePath;
                 type.replaceAnnotation(atypeFactory.NULLABLE);
             }
         }
-        if (TreeUtils.isMethodInvocation(tree, mapPut, processingEnv)) {
-            AnnotatedTypeMirror type = method.getParameterTypes().get(0);
-            if (mapGetReturnsNonNull(path)) {
-                type.replaceAnnotation(atypeFactory.NONNULL);
-            } else {
-                type.replaceAnnotation(atypeFactory.NULLABLE);
-            }
-        }
     }
 
     /**
@@ -331,13 +323,6 @@ import com.sun.source.util.TreePath;
     private Element getReceiver(MethodInvocationTree tree) {
         AnnotatedDeclaredType type =
             (AnnotatedDeclaredType)atypeFactory.getReceiverType(tree);
-        return type.getElement();
-    }
-
-    /** Given a method invocation tree, return the Element for its first argument. */
-    private Element getFirstArg(MethodInvocationTree tree) {
-        AnnotatedDeclaredType type =
-            (AnnotatedDeclaredType)atypeFactory.getAnnotatedType(tree.getArguments().get(0));
         return type.getElement();
     }
 
