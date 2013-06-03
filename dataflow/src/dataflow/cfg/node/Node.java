@@ -39,7 +39,7 @@ public abstract class Node {
      * The basic block this node belongs to (see invariant about this field
      * above).
      */
-    protected/* @Nullable */Block block;
+    protected /*@Nullable*/ Block block;
 
     /**
      * Is this node an l-value?
@@ -49,7 +49,7 @@ public abstract class Node {
     /**
      * The assignment context of this node. See {@link AssignmentContext}.
      */
-    protected/* @Nullable */AssignmentContext assignmentContext;
+    protected /*@Nullable*/ AssignmentContext assignmentContext;
 
     /**
      * The type of this node. For {@link Node}s with {@link Tree}s, this type is
@@ -67,7 +67,7 @@ public abstract class Node {
      * @return The basic block this node belongs to (or {@code null} if it
      *         represents the parameter of a method).
      */
-    public/* @Nullable */Block getBlock() {
+    public /*@Nullable*/ Block getBlock() {
         return block;
     }
 
@@ -83,7 +83,7 @@ public abstract class Node {
      *
      * @return The corresponding {@link Tree} or <code>null</code>.
      */
-    abstract public/* @Nullable */Tree getTree();
+    abstract public /*@Nullable*/ Tree getTree();
 
     /**
      * Returns a {@link TypeMirror} representing the type of a {@link Node} A

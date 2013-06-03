@@ -11,16 +11,16 @@ import com.sun.source.tree.VariableTree;
 
 /**
  * A node for a local variable declaration:
- * 
+ *
  * <pre>
  *   <em>modifier</em> <em>type</em> <em>identifier</em>;
  * </pre>
- * 
+ *
  * Note: Does not have an initializer block, as that will be translated to a
  * separate {@link AssignmentNode}.
- * 
+ *
  * @author Stefan Heule
- * 
+ *
  */
 public class VariableDeclarationNode extends Node {
     static long uid = 0;

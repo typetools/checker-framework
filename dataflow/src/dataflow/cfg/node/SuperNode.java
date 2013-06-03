@@ -12,14 +12,14 @@ import com.sun.source.tree.Tree;
 
 /**
  * A node for a reference to 'super'.
- * 
+ *
  * <pre>
  *   <em>super</em>
  * </pre>
- * 
+ *
  * @author Stefan Heule
  * @author Charlie Garrett
- * 
+ *
  */
 public class SuperNode extends Node {
 

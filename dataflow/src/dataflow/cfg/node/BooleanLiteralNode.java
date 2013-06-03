@@ -8,14 +8,14 @@ import com.sun.source.tree.Tree;
 
 /**
  * A node for a boolean literal:
- * 
+ *
  * <pre>
  *   <em>true</em>
  *   <em>false</em>
  * </pre>
- * 
+ *
  * @author Stefan Heule
- * 
+ *
  */
 public class BooleanLiteralNode extends ValueLiteralNode {
 

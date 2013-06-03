@@ -12,13 +12,13 @@ import com.sun.source.tree.Tree.Kind;
 
 /**
  * A node for a conditional or expression:
- * 
+ *
  * <pre>
  *   <em>expression</em> || <em>expression</em>
  * </pre>
- * 
+ *
  * @author Stefan Heule
- * 
+ *
  */
 public class ConditionalOrNode extends Node {
 

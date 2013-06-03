@@ -12,14 +12,14 @@ import com.sun.source.tree.UnaryTree;
 
 /**
  * A node for a conditional not expression:
- * 
+ *
  * <pre>
  *   ! <em>expression</em>
  * </pre>
- * 
+ *
  * @author Stefan Heule
  * @author Charlie Garrett
- * 
+ *
  */
 public class ConditionalNotNode extends Node {
 

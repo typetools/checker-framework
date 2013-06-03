@@ -8,16 +8,16 @@ import com.sun.source.tree.Tree;
 
 /**
  * A node for a character literal. For example:
- * 
+ *
  * <pre>
  *   <em>'a'</em>
  *   <em>'\t'</em>
  *   <em>'\u03a9'</em>
  * </pre>
- * 
+ *
  * @author Stefan Heule
  * @author Charlie Garrett
- * 
+ *
  */
 public class CharacterLiteralNode extends ValueLiteralNode {
 

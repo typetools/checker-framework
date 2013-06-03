@@ -6,14 +6,14 @@ import dataflow.cfg.node.Node;
  * {@code TransferInput} is used as the input type of the individual transfer
  * functions of a {@link TransferFunction}. It also contains a reference to the
  * node for which the transfer function will be applied.
- * 
+ *
  * <p>
- * 
+ *
  * A {@code TransferInput} contains one or two stores. If two stores are
  * present, one belongs to 'then', and the other to 'else'.
- * 
+ *
  * @author Stefan Heule
- * 
+ *
  * @param <S>
  *            The {@link Store} used to keep track of intermediate results.
  */
@@ -27,32 +27,32 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
     /**
      * The regular result store (or {@code null} if none is present). The
      * following invariant is maintained:
-     * 
+     *
      * <pre>
      * store == null <==> thenStore != null && elseStore != null
      * </pre>
      */
-    protected final/* @Nullable */S store;
+    protected final /*@Nullable*/ S store;
 
     /**
      * The 'then' result store (or {@code null} if none is present). The
      * following invariant is maintained:
-     * 
+     *
      * <pre>
      * store == null <==> thenStore != null && elseStore != null
      * </pre>
      */
-    protected final/* @Nullable */S thenStore;
+    protected final /*@Nullable*/ S thenStore;
 
     /**
      * The 'else' result store (or {@code null} if none is present). The
      * following invariant is maintained:
-     * 
+     *
      * <pre>
      * store == null <==> thenStore != null && elseStore != null
      * </pre>
      */
-    protected final/* @Nullable */S elseStore;
+    protected final /*@Nullable*/ S elseStore;
 
     /**
      * The corresponding analysis class to get intermediate flow results.
@@ -62,15 +62,15 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
     /**
      * Create a {@link TransferInput}, given a {@link TransferResult} and a
      * node-value mapping.
-     * 
+     *
      * <p>
-     * 
+     *
      * <em>Aliasing</em>: The stores returned by any methods of {@code to} will
      * be stored internally and are not allowed to be used elsewhere. Full
      * control of them is transfered to this object.
-     * 
+     *
      * <p>
-     * 
+     *
      * The node-value mapping {@code nodeValues} is provided by the analysis and
      * is only read from within this {@link TranferInput}.
      */
@@ -90,15 +90,15 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
 
     /**
      * Create a {@link TransferInput}, given a store and a node-value mapping.
-     * 
+     *
      * <p>
-     * 
+     *
      * <em>Aliasing</em>: The store {@code s} will be stored internally and is
      * not allowed to be used elsewhere. Full control over {@code s} is
      * transfered to this object.
-     * 
+     *
      * <p>
-     * 
+     *
      * The node-value mapping {@code nodeValues} is provided by the analysis and
      * is only read from within this {@link TranferInput}.
      */
@@ -112,9 +112,9 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
     /**
      * Create a {@link TransferInput}, given two stores and a node-value
      * mapping.
-     * 
+     *
      * <p>
-     * 
+     *
      * <em>Aliasing</em>: The two stores {@code s1} and {@code s2} will be
      * stored internally and are not allowed to be used elsewhere. Full control
      * of them is transfered to this object.
@@ -150,7 +150,7 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
      *         {@code n} cannot be a l-value node. Returns {@code null} if no
      *         value if available.
      */
-    public/* @Nullable */A getValueOfSubNode(Node n) {
+    public /*@Nullable*/ A getValueOfSubNode(Node n) {
         return analysis.getValue(n);
     }
 
@@ -212,9 +212,9 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
 
     /**
      * Compute the least upper bound of two stores.
-     * 
+     *
      * <p>
-     * 
+     *
      * <em>Important</em>: This method must fulfill the same contract as
      * {@code leastUpperBound} of {@link Store}.
      */

@@ -13,14 +13,14 @@ import com.sun.source.tree.Tree;
 
 /**
  * A node for exception throws:
- * 
+ *
  * <pre>
  *   <em>throw</em> expr
  * </pre>
- * 
+ *
  * @author Stefan Heule
  * @author Charlie Garrett
- * 
+ *
  */
 public class ThrowNode extends Node {
 

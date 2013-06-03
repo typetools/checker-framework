@@ -25,9 +25,9 @@ import dataflow.cfg.node.Node;
 
 /**
  * Generate a graph description in the DOT language of a control graph.
- * 
+ *
  * @author Stefan Heule
- * 
+ *
  */
 public class CFGDOTVisualizer {
 
@@ -38,7 +38,7 @@ public class CFGDOTVisualizer {
     /**
      * Output a graph description in the DOT language, representing the control
      * flow graph starting at <code>entry</code>.
-     * 
+     *
      * @param entry
      *            The entry node of the control flow graph to be represented.
      * @param analysis
@@ -52,7 +52,7 @@ public class CFGDOTVisualizer {
      */
     public static <A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<A, S>> String visualize(
             Block entry,
-            /* @Nullable */Analysis<A, S, T> analysis) {
+            /*@Nullable*/ Analysis<A, S, T> analysis) {
         StringBuilder sb1 = new StringBuilder();
         StringBuilder sb2 = new StringBuilder();
         Set<Block> visited = new HashSet<>();
@@ -111,7 +111,7 @@ public class CFGDOTVisualizer {
                     if (exception.startsWith("java.lang.")) {
                         exception = exception.replace("java.lang.", "");
                     }
-                    
+
                     for (Block b : blocks) {
                         sb2.append("    " + cur.getId() + " -> " + b.getId());
                         sb2.append(" [label=\"" + exception + "\"];\n");
@@ -150,14 +150,14 @@ public class CFGDOTVisualizer {
 
     /**
      * Produce a string representation of the contests of a basic block.
-     * 
+     *
      * @param bb
      *            Basic block to visualize.
      * @return String representation.
      */
     protected static <A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<A, S>> String visualizeContent(
             Block bb,
-            /* @Nullable */Analysis<A, S, T> analysis) {
+            /*@Nullable*/ Analysis<A, S, T> analysis) {
         StringBuilder sb = new StringBuilder();
 
         // loop over contents

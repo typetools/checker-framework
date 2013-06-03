@@ -12,14 +12,14 @@ import com.sun.source.tree.Tree.Kind;
 
 /**
  * A node for the greater than or equal comparison:
- * 
+ *
  * <pre>
  *   <em>expression</em> >= <em>expression</em>
  * </pre>
- * 
+ *
  * @author Stefan Heule
  * @author Charlie Garrett
- * 
+ *
  */
 public class GreaterThanOrEqualNode extends Node {
 

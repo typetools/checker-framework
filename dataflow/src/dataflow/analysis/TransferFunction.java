@@ -10,9 +10,9 @@ import dataflow.cfg.node.NodeVisitor;
 /**
  * Interface of a transfer function for the abstract interpretation used for the
  * flow analysis.
- * 
+ *
  * <p>
- * 
+ *
  * A transfer function consists of the following components:
  * <ul>
  * <li>A method {@code initialStore} that determines which initial store should
@@ -21,15 +21,15 @@ import dataflow.cfg.node.NodeVisitor;
  * the dataflow analysis in that case. This method takes a {@link Node} and an
  * incoming store, and produces a {@link RegularTransferResult}.</li>
  * </ul>
- * 
+ *
  * <p>
- * 
+ *
  * <em>Important</em>: The individual transfer functions ( {@code visit*}) are
  * allowed to use (and modify) the stores contained in the argument passed; the
  * ownership is transfered from the caller to that function.
- * 
+ *
  * @author Stefan Heule
- * 
+ *
  * @param <S>
  *            The {@link Store} used to keep track of intermediate results.
  */

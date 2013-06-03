@@ -16,16 +16,16 @@ import com.sun.source.tree.VariableTree;
 
 /**
  * A node for a local variable or a parameter:
- * 
+ *
  * <pre>
  *   <em>identifier</em>
  * </pre>
- * 
+ *
  * We allow local variable uses introduced by the {@link CFGBuilder} without
  * corresponding AST {@link Tree}s.
- * 
+ *
  * @author Stefan Heule
- * 
+ *
  */
 // TODO: don't use for parameters, as they don't have a tree
 public class LocalVariableNode extends Node {

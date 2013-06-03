@@ -13,15 +13,15 @@ import com.sun.source.tree.Tree;
 
 /**
  * A node for new array creation
- * 
+ *
  * <pre>
  *   <em>new type [1][2]</em>
  *   <em>new type [] = { expr1, expr2, ... }</em>
  * </pre>
- * 
+ *
  * @author Stefan Heule
  * @author Charlie Garrett
- * 
+ *
  */
 public class ArrayCreationNode extends Node {
 
