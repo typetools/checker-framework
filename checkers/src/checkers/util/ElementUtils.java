@@ -13,6 +13,8 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 
+import com.sun.tools.javac.code.Symbol;
+
 /**
  * A Utility class for analyzing {@code Element}s.
  */
@@ -170,6 +172,19 @@ public class ElementUtils {
         return elt != null
             && elt.getKind() == ElementKind.FIELD
             && ((VariableElement)elt).getConstantValue() != null;
+    }
+    /**
+     * Returns true if the element is declared in ByteCode.
+     * Always return false if elt is a package.
+     */
+    public static boolean isElementFromByteCode(Element elt){
+        if(elt == null)
+            return false;
+        if(elt instanceof Symbol.ClassSymbol){
+            Symbol.ClassSymbol clss = (Symbol.ClassSymbol) elt;
+            return (null != clss.classfile) ;
+        }
+        return isElementFromByteCode(elt.getEnclosingElement());
     }
 
     /**
