@@ -1,0 +1,7 @@
+NonDefaultConstructor.java:15: warning: constructor does not initialize fields [nullObject]
+  public NonDefaultConstructor() { }
+         ^
+NonDefaultConstructor.java:18: warning: constructor does not initialize fields [nullObject]
+  public NonDefaultConstructor(int i) {
+         ^
+2 warnings
