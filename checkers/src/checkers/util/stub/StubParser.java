@@ -74,7 +74,7 @@ public class StubParser {
     private final Map<FieldAccessExpr, VariableElement> faexprcache;
     
     /**
-     * Annotation to added to every method in the stub file.
+     * Annotation to added to every method and constructor in the stub file.
      */
 	private final AnnotationMirror fromStubFile;
 	
@@ -384,8 +384,9 @@ public class StubParser {
     }
 
     /**
-     * List of all array component types. Example input: int[][] Example output:
-     * int, int[], int[][]
+     * List of all array component types. 
+     * Example input: int[][] 
+     * Example output: int, int[], int[][]
      */
     private List<AnnotatedTypeMirror> arrayAllComponents(AnnotatedArrayType atype) {
         LinkedList<AnnotatedTypeMirror> arrays = new LinkedList<AnnotatedTypeMirror>();
