@@ -184,7 +184,26 @@ public class ElementUtils {
             Symbol.ClassSymbol clss = (Symbol.ClassSymbol) elt;
             return (null != clss.classfile) ;
         }
-        return isElementFromByteCode(elt.getEnclosingElement());
+        return isElementFromByteCode(elt.getEnclosingElement(), elt);
+    }
+    /**
+     * Returns true if the element is declared in ByteCode.
+     * Always return false if elt is a package.
+     */
+    private static boolean isElementFromByteCode(Element elt, Element orig){
+        if(elt == null)
+            return false;
+        if(elt instanceof Symbol.ClassSymbol){
+            Symbol.ClassSymbol clss = (Symbol.ClassSymbol) elt;
+            if(null != clss.classfile){
+                //The class file could be a .java file
+                return clss.classfile.toString().endsWith(".class");
+            }else{
+                return false;
+            }
+            
+        }
+        return isElementFromByteCode(elt.getEnclosingElement(), elt);
     }
 
     /**
