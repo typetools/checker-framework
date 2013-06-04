@@ -414,18 +414,21 @@ public class AnnotatedTypeFactory {
             elementCache.put(elt, AnnotatedTypes.deepCopy(type));
         return type;
     }
-/**
- * Adds @FromByteCode to methods and constructors declared in class files
- * that are not already annotated with @FromStubFile
- * @param elt
- */
+
+    /**
+     * Adds @FromByteCode to methods and constructors declared in class files
+     * that are not already annotated with @FromStubFile
+     * 
+     * @param elt
+     */
     private void addFromByteCode(Element elt) {
-        if (indexDeclAnnos == null){
-            //Parsing stub files, don't add @FromByteCode
+        if (indexDeclAnnos == null){// || trees.getTree(elt) != null) {
+            // Parsing stub files, don't add @FromByteCode
             return;
         }
+
         if (elt instanceof Symbol.MethodSymbol) {
-            //Only add @FromByteCode to Methods and Constructors
+            // Only add @FromByteCode to Methods and Constructors
             if (ElementUtils.isElementFromByteCode(elt)) {
                 Set<AnnotationMirror> annos = indexDeclAnnos.get(ElementUtils
                         .getVerboseName(elt));
@@ -434,8 +437,11 @@ public class AnnotatedTypeFactory {
                     indexDeclAnnos.put(ElementUtils.getVerboseName(elt), annos);
                 }
                 if (!annos.contains(AnnotationUtils.fromClass(elements,
-                        FromStubFile.class)))
+                        FromStubFile.class))) {
                     annos.add(fromByteCode);
+
+                }
+
             }
         }
     }
