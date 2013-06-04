@@ -12,6 +12,8 @@ import javax.lang.model.type.*;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
+import checkers.quals.FromByteCode;
+import checkers.quals.FromStubFile;
 /*>>>
 import checkers.javari.quals.Mutable;
 import checkers.nullness.quals.Nullable;
@@ -36,6 +38,7 @@ import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeInfo;
 
@@ -135,6 +138,12 @@ public class AnnotatedTypeFactory {
 
     /** Unique ID of the current object; for debugging purposes. */
     public final int uid;
+    
+    /**Annotation added to every method defined in a class file 
+     * that is not in a stub file
+     */
+    private final AnnotationMirror fromByteCode;
+    
 
     /**
      * Constructs a factory from the given {@link ProcessingEnvironment}
@@ -170,6 +179,7 @@ public class AnnotatedTypeFactory {
         this.indexDeclAnnos = null; // will be set by postInit()
         // TODO: why is the option not used?
         this.annotatedTypeParams = true; // env.getOptions().containsKey("annotatedTypeParams");
+        this.fromByteCode = AnnotationUtils.fromClass(elements, FromByteCode.class);
     }
 
     /**
@@ -368,6 +378,8 @@ public class AnnotatedTypeFactory {
             return toAnnotatedType(elt.asType());
         AnnotatedTypeMirror type;
         Tree decl = declarationFromElement(elt);
+        
+        addFromByteCode(elt);
 
         if (decl == null && indexTypes != null && indexTypes.containsKey(elt)) {
             type = indexTypes.get(elt);
@@ -380,6 +392,7 @@ public class AnnotatedTypeFactory {
                     || elt instanceof VariableElement) {
                 annotateInheritedFromClass(type);
             }
+
         } else if (decl instanceof ClassTree) {
             type = fromClass((ClassTree)decl);
         } else if (decl instanceof VariableTree) {
@@ -401,6 +414,39 @@ public class AnnotatedTypeFactory {
             elementCache.put(elt, AnnotatedTypes.deepCopy(type));
         return type;
     }
+
+    /**
+     * Adds @FromByteCode to methods and constructors declared in class files
+     * that are not already annotated with @FromStubFile
+     * 
+     * @param elt
+     */
+    private void addFromByteCode(Element elt) {
+        if (indexDeclAnnos == null){// || trees.getTree(elt) != null) {
+            // Parsing stub files, don't add @FromByteCode
+            return;
+        }
+
+        if (elt instanceof Symbol.MethodSymbol) {
+            // Only add @FromByteCode to Methods and Constructors
+            if (ElementUtils.isElementFromByteCode(elt)) {
+                Set<AnnotationMirror> annos = indexDeclAnnos.get(ElementUtils
+                        .getVerboseName(elt));
+                if (annos == null) {
+                    annos = AnnotationUtils.createAnnotationSet();
+                    indexDeclAnnos.put(ElementUtils.getVerboseName(elt), annos);
+                }
+                if (!annos.contains(AnnotationUtils.fromClass(elements,
+                        FromStubFile.class))) {
+                    annos.add(fromByteCode);
+
+                }
+
+            }
+        }
+    }
+
+
 
     /**
      * Determines the annotated type of a class from its declaration.
