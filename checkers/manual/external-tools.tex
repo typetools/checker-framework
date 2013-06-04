@@ -360,7 +360,7 @@ process.
     <dependencies>
         ... existing <dependency> items ...
 
-        <!-- annotations for the standard checkers: nullness, interning, locking, ... -->
+        <!-- annotations from the Checker Framework: nullness, interning, locking, ... -->
         <dependency>
             <groupId>types.checkers</groupId>
             <artifactId>checkers-quals</artifactId>
@@ -399,6 +399,7 @@ process.
                         <processor>checkers.nullness.NullnessChecker</processor>
                         <processor>checkers.interning.InterningChecker</processor>
                     </processors>
+                    <!-- optional configuration options go here -->
                 </configuration>
               </plugin>
         </plugins>
