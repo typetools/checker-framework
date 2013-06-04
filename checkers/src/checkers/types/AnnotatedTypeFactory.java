@@ -139,6 +139,9 @@ public class AnnotatedTypeFactory {
     /** Unique ID of the current object; for debugging purposes. */
     public final int uid;
     
+    /**Annotation added to every method defined in a class file 
+     * that is not in a stub file
+     */
     private final AnnotationMirror fromByteCode;
     
 
@@ -412,7 +415,8 @@ public class AnnotatedTypeFactory {
         return type;
     }
 /**
- * Adds @FromByteCode to methods declared in class files
+ * Adds @FromByteCode to methods and constructors declared in class files
+ * that are not already annotated with @FromStubFile
  * @param elt
  */
     private void addFromByteCode(Element elt) {
@@ -421,7 +425,7 @@ public class AnnotatedTypeFactory {
             return;
         }
         if (elt instanceof Symbol.MethodSymbol) {
-            //Only add @FromByteCode to Methodds and Constructors
+            //Only add @FromByteCode to Methods and Constructors
             if (ElementUtils.isElementFromByteCode(elt)) {
                 Set<AnnotationMirror> annos = indexDeclAnnos.get(ElementUtils
                         .getVerboseName(elt));
