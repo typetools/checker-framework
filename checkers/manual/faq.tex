@@ -24,6 +24,7 @@ There is a separate FAQ for the type annotations syntax
 \ref{faq-no-absolute-guarantee}: Can a pluggable type-checker give an absolute guarantee of correctness? \\
 \ref{faq-concurrency}: What guarantee does the Checker Framework give for concurrent code? \\
 \ref{faq-awarns}: How do I make compilation succeed even if a checker issues errors? \\
+\ref{faq-100-warnings}: Why does the checker always say there are 100 errors or warnings? \\
 \ref{faq-slowdown}: Will using the Checker Framework slow down my program?  Will it slow down the compiler? \\
 \ref{faq-run-time-checking}: How can I do run-time monitoring of properties that were not statically checked? \\
 \ref{faq-annotate-existing-program}: How do I get started annotating an existing program? \\
@@ -244,6 +245,19 @@ and prevent certain concurrency errors.
 Section~\ref{running} describes the \<-Awarns> command-line
 option that turns checker errors into warnings, so type-checking errors
 will not cause \<javac> to exit with a failure status.
+
+
+\section{Why does the checker always say there are 100 errors or warnings?\label{faq-100-warnings}}
+
+By default, javac only reports the first 100 errors or warnings.
+Furthermore, once javac encounters an error, it doesn't try compiling any
+more files (but does complete compilation of all the ones that it has
+started so far).
+
+To see more than 100 errors or warnings, use the javac options \<-Xmaxerrs>
+and \<-Xmaxwarns>.  To convert Checker Framework errors into warnings so
+that javac will process all your source files, use the option \<-Awarns>.
+See Section~\ref{running} for more details.
 
 
 \section{Will using the Checker Framework slow down my program?  Will it slow down the compiler?\label{faq-slowdown}}
