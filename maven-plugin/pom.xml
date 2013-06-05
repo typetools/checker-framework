@@ -7,9 +7,9 @@
     <groupId>types.checkers</groupId>
     <artifactId>checkers-maven-plugin</artifactId>
 
-    <!-- The comments in the version number are used to do a text substitution. Don't remove them
-         see checker-framework/binary/poms/updateVersion.sh -->
-    <version><!-- checkers-version -->1.6.3<!-- /checkers-version --></version>
+    <!-- The comments in the version number are used to do a text substitution. Don't remove them.
+         See checker-framework/binary/poms/updateVersion.sh -->
+    <version><!-- checkers-version -->1.6.4<!-- /checkers-version --></version>
 
     <build>
         <plugins>
