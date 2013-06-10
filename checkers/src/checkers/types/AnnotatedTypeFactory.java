@@ -424,7 +424,6 @@ public class AnnotatedTypeFactory {
                     || elt instanceof VariableElement) {
                 annotateInheritedFromClass(type);
             }
-
         } else if (decl instanceof ClassTree) {
             type = fromClass((ClassTree)decl);
         } else if (decl instanceof VariableTree) {
