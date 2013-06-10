@@ -1,5 +1,6 @@
 package checkers.util.stub;
 
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -56,7 +57,24 @@ public class StubGenerator {
     public StubGenerator(PrintStream out) {
         this.out = out;
     }
-
+    /**
+     * Constructs an instance of {@code IndexGenerator} that outputs to
+     * the provided output stream.
+     *
+     * @param out   the output stream
+     */
+    public StubGenerator(OutputStream out) {
+        this.out = new PrintStream(out);
+    }
+    /**
+     * Constructs an instance of {@code IndexGenerator} that outputs to
+     * the provided output stream.
+     *
+     * @param out   the output stream
+     */
+//    public StubGenerator(PrintStream out) {
+//        this.out = out;
+//    }
     /**
      * Generate the skeleton file for all the classes within the provided
      * package.
@@ -78,7 +96,28 @@ public class StubGenerator {
             }
         }
     }
+    /**
+     * Generate the skeleton file for all the classes within the provided
+     * package.
+     */
+    public void skeletonFromMethod(Element elt) {
+        if(!(elt.getKind() == ElementKind.CONSTRUCTOR ||elt.getKind() == ElementKind.METHOD) )
+                return;
+        
+        TypeElement conclass = (TypeElement) elt.getEnclosingElement();
 
+            String fullClassName = conclass.getQualifiedName().toString();
+            if (fullClassName.indexOf('.') != -1) {
+                int index = fullClassName.lastIndexOf('.');
+                currentPackage = fullClassName.substring(0, index);
+                this.currentIndention = "    ";
+                indent();
+            }
+            ExecutableElement method = (ExecutableElement) elt;
+           
+            printMethodDecl(method); 
+
+    }
     /**
      * Generate the skeleton file for provided class.  The generated file
      * includes the package name.
