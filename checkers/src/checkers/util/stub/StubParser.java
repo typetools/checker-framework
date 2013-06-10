@@ -10,6 +10,8 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 
+
+import checkers.quals.FromStubFile;
 import checkers.source.SourceChecker;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
@@ -70,8 +72,21 @@ public class StubParser {
      * to the resolved variable element.
      */
     private final Map<FieldAccessExpr, VariableElement> faexprcache;
-
-    public StubParser(String filename, InputStream inputStream, AnnotatedTypeFactory factory, ProcessingEnvironment env) {
+    
+    /**
+     * Annotation to added to every method and constructor in the stub file.
+     */
+	private final AnnotationMirror fromStubFile;
+	
+    /**
+     * 
+     * @param filename name of stub file
+     * @param inputStream of stub file to parse
+     * @param factory  AnnotatedtypeFactory to use
+     * @param env ProcessingEnviroment to use
+     */
+    public StubParser(String filename, InputStream inputStream,
+            AnnotatedTypeFactory factory, ProcessingEnvironment env) {
         this.filename = filename;
         IndexUnit parsedindex;
         try {
@@ -94,7 +109,10 @@ public class StubParser {
         Map<String, String> options = env.getOptions();
         this.warnIfNotFound = options.containsKey("stubWarnIfNotFound");
         this.debugStubParser = options.containsKey("stubDebug");
+        this.fromStubFile =   AnnotationUtils.fromClass(elements, FromStubFile.class);
     }
+
+
 
     /** All annotations defined in the package.  Keys are simple names. */
     private Map<String, AnnotationMirror> annosInPackage(String packageName) {
@@ -310,6 +328,9 @@ public class StubParser {
         annotateDecl(declAnnos, elt, decl.getAnnotations());
         // StubParser parses all annotations in type annotation position as type annotations
         annotateDecl(declAnnos, elt, decl.getType().getAnnotations());
+        addDeclAnnotations(declAnnos, elt);
+
+
         AnnotatedExecutableType methodType = atypeFactory.fromElement(elt);
         annotateParameters(methodType.getTypeVariables(), decl.getTypeParameters());
         annotate(methodType.getReturnType(), decl.getType());
@@ -341,8 +362,27 @@ public class StubParser {
     }
 
     /**
-     * List of all array component types.
-     * Example input: int[][]
+     * Adds a declAnnotation to every method in the stub file.
+     * 
+     * @param declAnnos
+     * @param elt
+     */
+    private void addDeclAnnotations(
+            Map<String, Set<AnnotationMirror>> declAnnos, ExecutableElement elt) {
+        if (fromStubFile != null) {
+            Set<AnnotationMirror> annos = declAnnos.get(ElementUtils
+                    .getVerboseName(elt));
+            if (annos == null) {
+                annos = AnnotationUtils.createAnnotationSet();
+                declAnnos.put(ElementUtils.getVerboseName(elt), annos);
+            }
+            annos.add(fromStubFile);
+        }
+    }
+
+    /**
+     * List of all array component types. 
+     * Example input: int[][] 
      * Example output: int, int[], int[][]
      */
     private List<AnnotatedTypeMirror> arrayAllComponents(AnnotatedArrayType atype) {
@@ -429,6 +469,7 @@ public class StubParser {
             ExecutableElement elt, Map<Element, AnnotatedTypeMirror> atypes, Map<String, Set<AnnotationMirror>> declAnnos) {
         annotateDecl(declAnnos, elt, decl.getAnnotations());
         AnnotatedExecutableType methodType = atypeFactory.fromElement(elt);
+        addDeclAnnotations(declAnnos, elt);
 
         for (int i = 0; i < methodType.getParameterTypes().size(); ++i) {
             AnnotatedTypeMirror paramType = methodType.getParameterTypes().get(i);
