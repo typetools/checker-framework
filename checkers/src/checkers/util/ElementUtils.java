@@ -12,8 +12,11 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
+import javax.tools.JavaFileObject.Kind;
 
 import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.file.ZipFileIndexArchive;
+import com.sun.tools.javac.file.ZipFileIndexArchive.ZipFileIndexFileObject;
 
 /**
  * A Utility class for analyzing {@code Element}s.
@@ -182,7 +185,12 @@ public class ElementUtils {
             return false;
         if(elt instanceof Symbol.ClassSymbol){
             Symbol.ClassSymbol clss = (Symbol.ClassSymbol) elt;
-            return (null != clss.classfile) ;
+            if(null != clss.classfile){
+                //The class file could be a .java file
+                return clss.classfile.getName().endsWith(".class");
+            }else{
+                return false;
+            }      
         }
         return isElementFromByteCode(elt.getEnclosingElement(), elt);
     }
@@ -197,11 +205,10 @@ public class ElementUtils {
             Symbol.ClassSymbol clss = (Symbol.ClassSymbol) elt;
             if(null != clss.classfile){
                 //The class file could be a .java file
-                return clss.classfile.toString().endsWith(".class");
+                return (clss.classfile.getName().endsWith(".class") || clss.classfile.getName().endsWith(".class)") || clss.classfile.getName().endsWith(".class)]"));
             }else{
                 return false;
-            }
-            
+            }      
         }
         return isElementFromByteCode(elt.getEnclosingElement(), elt);
     }
