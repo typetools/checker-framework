@@ -92,18 +92,15 @@ public class StubParser {
         try {
             parsedindex = JavaParser.parse(inputStream);
         } catch (Exception e) {
-            SourceChecker.errorAbort(
-                    "StubParser: exception from JavaParser.parse", e);
-            parsedindex = null; // dead code, but needed for def. assignment
-                                // checks
+            SourceChecker.errorAbort("StubParser: exception from JavaParser.parse", e);
+            parsedindex = null; // dead code, but needed for def. assignment checks
         }
         this.index = parsedindex;
         this.atypeFactory = factory;
         this.processingEnv = env;
         this.elements = env.getElementUtils();
         imports = new ArrayList<String>();
-        // getSupportedAnnotations also sets imports. This should be refactored
-        // to be nicer.
+        // getSupportedAnnotations also sets imports. This should be refactored to be nicer.
         supportedAnnotations = getSupportedAnnotations();
         if (supportedAnnotations.isEmpty()) {
             stubWarning("No supported annotations found! This likely means your stub file doesn't import them correctly.");
