@@ -19,6 +19,7 @@ import checkers.types.AnnotatedTypeMirror.*;
 import checkers.util.AnnotationBuilder;
 import checkers.util.AnnotationUtils;
 import checkers.util.ElementUtils;
+import checkers.util.Pair;
 
 import japa.parser.JavaParser;
 import japa.parser.ast.*;
@@ -72,12 +73,18 @@ public class StubParser {
      * to the resolved variable element.
      */
     private final Map<FieldAccessExpr, VariableElement> faexprcache;
-    
+   
     /**
+     * Mapping of a name access expression that has already been encountered
+     * to the resolved variable element.
+     */
+     private final Map<NameExpr, VariableElement> nexprcache;
+     /**
      * Annotation to added to every method and constructor in the stub file.
      */
-	private final AnnotationMirror fromStubFile;
-	
+     private final AnnotationMirror fromStubFile;
+
+
     /**
      * 
      * @param filename name of stub file
@@ -100,38 +107,66 @@ public class StubParser {
         this.processingEnv = env;
         this.elements = env.getElementUtils();
         imports = new ArrayList<String>();
+        
+        // getSupportedAnnotations uses these for warnings
+        Map<String, String> options = env.getOptions();
+        this.warnIfNotFound = options.containsKey("stubWarnIfNotFound");
+        this.debugStubParser = options.containsKey("stubDebug");
+        
         // getSupportedAnnotations also sets imports. This should be refactored to be nicer.
         supportedAnnotations = getSupportedAnnotations();
         if (supportedAnnotations.isEmpty()) {
             stubWarning("No supported annotations found! This likely means your stub file doesn't import them correctly.");
         }
         faexprcache = new HashMap<FieldAccessExpr, VariableElement>();
-        Map<String, String> options = env.getOptions();
-        this.warnIfNotFound = options.containsKey("stubWarnIfNotFound");
-        this.debugStubParser = options.containsKey("stubDebug");
+        nexprcache = new HashMap<NameExpr, VariableElement>();
+        
         this.fromStubFile =   AnnotationUtils.fromClass(elements, FromStubFile.class);
     }
 
 
 
     /** All annotations defined in the package.  Keys are simple names. */
-    private Map<String, AnnotationMirror> annosInPackage(String packageName) {
+    private Map<String, AnnotationMirror> annosInPackage(PackageElement packageElement) {
+        return createImportedAnnotationsMap(ElementFilter.typesIn(packageElement.getEnclosedElements()));
+    }
+    /** All annotations declarations nested inside of a class. */
+    private Map<String, AnnotationMirror> annosInType(TypeElement typeElement) {
+        return createImportedAnnotationsMap(ElementFilter.typesIn(typeElement.getEnclosedElements()));
+    }
+
+    private Map<String, AnnotationMirror>  createImportedAnnotationsMap(List<TypeElement> typeElements) {
         Map<String, AnnotationMirror> r = new HashMap<String, AnnotationMirror>();
-
-        PackageElement pkg = this.elements.getPackageElement(packageName);
-        if (pkg == null)
-            return r;
-
-        for (TypeElement typeElm : ElementFilter.typesIn(pkg.getEnclosedElements())) {
+        for (TypeElement typeElm : typeElements) {
             if (typeElm.getKind() == ElementKind.ANNOTATION_TYPE) {
                 AnnotationMirror anno = AnnotationUtils.fromName(elements, typeElm.getQualifiedName());
                 putNew(r, typeElm.getSimpleName().toString(), anno);
             }
         }
-
         return r;
     }
-
+    
+    /**
+     * Get all members of a Type that are useful in a stub file.
+     * Currently these are values of enums, or compile time constants.
+     * 
+     * @return a list fully qualified member names
+     */
+    private List<String> getImportableMembers(TypeElement typeElement) {
+        List<String> result = new ArrayList<String>();
+        List<VariableElement> memberElements = ElementFilter.fieldsIn(typeElement.getEnclosedElements());
+        for (VariableElement varElement : memberElements) {
+            if (varElement.getConstantValue() != null 
+                    || varElement.getKind() == ElementKind.ENUM_CONSTANT) {
+            	
+                result.add(String.format("%s.%s", typeElement.getQualifiedName().toString(), 
+                		varElement.getSimpleName().toString()));
+            }
+        }
+        
+        return result;
+    }
+    
     /** @see #supportedAnnotations */
     private Map<String, AnnotationMirror> getSupportedAnnotations() {
         assert !index.getCompilationUnits().isEmpty();
@@ -146,33 +181,70 @@ public class StubParser {
             String imported = importDecl.getName().toString();
             try {
                 if (importDecl.isAsterisk()) {
-                    putAllNew(result, annosInPackage(imported));
-                    // We currently don't support asterisks for enum imports.
-                    // One should have similar logic to add any enum types
-                    // to field "imported".
+                	// Members of a Type (according to jls)
+                    if(importDecl.isStatic()) {
+                    	TypeElement element = findType(imported, "Imported type not found");
+                    	if (element != null) {
+                    		// Find nested annotations
+                            // Find compile time constant fields, or values of an enum
+                    		putAllNew(result, annosInType(element));
+                    		imports.addAll(getImportableMembers(element));
+                    	}
+                    // Members of a package (according to jls)
+                    } else {
+                    	PackageElement element = findPackage(imported);
+                    	if (element != null) {
+                    		putAllNew(result, annosInPackage(element));
+                    	}
+                    }
                 } else {
-                    final TypeElement annoType = elements.getTypeElement(imported);
-                    if (annoType.getKind() == ElementKind.ANNOTATION_TYPE) {
-                        AnnotationMirror anno = AnnotationUtils.fromName(elements, imported);
+                    final TypeElement importType = elements.getTypeElement(imported);
+                    
+                    // Class or nested class (according to jls), but we can't resolve
+                    if (importType == null && !importDecl.isStatic()) {
+                    	if (warnIfNotFound || debugStubParser) {
+                            stubWarning("Imported type not found: " + imported);
+                		}
+                    
+                    // Nested Field
+                    } else if (importType == null) {
+                		Pair<String, String> typeParts = partitionQualifiedName(imported);
+                		String type = typeParts.first;
+                		String fieldName = typeParts.second;
+                        TypeElement enclType = findType(type, 
+                        		String.format("Enclosing type of static field %s not found", fieldName));
+                        
+                        if (enclType != null) {
+                        	if (findFieldElement(enclType, fieldName) != null) {
+                        		imports.add(imported);
+                        	}
+                        }
+                        
+                    // Single annotation or nested annotation
+                    } else if (importType.getKind() == ElementKind.ANNOTATION_TYPE) {
+                    	AnnotationMirror anno = AnnotationUtils.fromName(elements, imported);
                         if (anno != null ) {
                             Element annoElt = anno.getAnnotationType().asElement();
                             putNew(result, annoElt.getSimpleName().toString(), anno);
                         } else {
-                            if (warnIfNotFound || debugStubParser)
+                            if (warnIfNotFound || debugStubParser) {
                                 stubWarning("Could not load import: " + imported);
-                        }
+                            }
+                        }	
+                        
+                    // Class or nested class
                     } else {
-                        imports.add(imported);
-                    }
+                		imports.add(imported);
+                	}
                 }
             } catch (AssertionError error) {
                 stubWarning("" + error);
             }
         }
         return result;
-    }
-
-    // The main entry point.  Side-effects the arguments.
+    }	
+    
+	// The main entry point.  Side-effects the arguments.
     public void parse(Map<Element, AnnotatedTypeMirror> atypes, Map<String, Set<AnnotationMirror>> declAnnos) {
         parse(this.index, atypes, declAnnos);
     }
@@ -646,6 +718,37 @@ public class StubParser {
                 System.err.printf("  %s%n", field);
         return null;
     }
+    
+    private TypeElement findType(String typeName, String... msg) {
+   	 TypeElement classElement = elements.getTypeElement(typeName);
+        if (classElement == null) {
+        	if (warnIfNotFound || debugStubParser) {
+        		if (msg.length == 0) {
+        			stubWarning("Type not found: " + typeName);
+        		} else {
+        			stubWarning(msg[0] + ": " + typeName);
+        		}
+        	}
+        } 
+        return classElement;
+	}
+
+    private PackageElement findPackage(String packageName) {
+    	PackageElement packageElement = elements.getPackageElement(packageName);
+    	if (packageElement == null) {
+    		if (warnIfNotFound || debugStubParser) {
+    			stubWarning("Imported package not found: " + packageName);
+    		}
+    	}
+    	return packageElement;
+    }
+    
+    private Pair<String, String> partitionQualifiedName(String imported) {
+		String typeName = imported.substring(0, imported.lastIndexOf("."));
+		String name = imported.substring(imported.lastIndexOf(".") + 1);
+		Pair<String,String> typeParts = Pair.of(typeName, name);
+		return typeParts;
+	}
 
     /** The line separator */
     private final static String LINE_SEPARATOR = System.getProperty("line.separator").intern();
@@ -725,11 +828,16 @@ public class StubParser {
         return annoMirror;
     }
 
+    // TODO: The only compile time constants supported here are Strings
     private void handleExpr(AnnotationBuilder builder, String name,
             Expression expr) {
-        if (expr instanceof FieldAccessExpr) {
-            FieldAccessExpr faexpr = (FieldAccessExpr) expr;
-            VariableElement elem = findVariableElement(faexpr);
+        if (expr instanceof FieldAccessExpr || expr instanceof NameExpr) {
+            VariableElement elem;
+            if (expr instanceof FieldAccessExpr) {
+                elem = findVariableElement((FieldAccessExpr)expr);
+            } else {
+                elem = findVariableElement((NameExpr)expr);
+            }
 
             if (elem == null) {
                 // A warning was already issued by findVariableElement;
@@ -753,7 +861,7 @@ public class StubParser {
                     builder.setValue(name, arr);
                 }
             } else {
-                SourceChecker.errorAbort("StubParser: unhandled annotation attribute type: " + faexpr + " and expected: " + expected);
+                SourceChecker.errorAbort("StubParser: unhandled annotation attribute type: " + expr + " and expected: " + expected);
             }
         } else if (expr instanceof StringLiteralExpr) {
             StringLiteralExpr slexpr = (StringLiteralExpr) expr;
@@ -782,8 +890,15 @@ public class StubParser {
             Expression anaiexpr;
             for (int i = 0; i < aiexprvals.size(); ++i) {
                 anaiexpr = aiexprvals.get(i);
-                if (anaiexpr instanceof FieldAccessExpr) {
-                    elemarr[i] = findVariableElement((FieldAccessExpr) anaiexpr);
+                if (anaiexpr instanceof FieldAccessExpr
+                        || anaiexpr instanceof NameExpr) {
+                    
+                    if (anaiexpr instanceof FieldAccessExpr) {
+                        elemarr[i] = findVariableElement((FieldAccessExpr) anaiexpr);
+                    } else {
+                        elemarr[i] = findVariableElement((NameExpr) anaiexpr);
+                    }
+                    
                     if (elemarr[i] == null) {
                         // A warning was already issued by findVariableElement;
                         return;
@@ -804,7 +919,44 @@ public class StubParser {
             SourceChecker.errorAbort("StubParser: unhandled annotation attribute type: " + expr + " class: " + expr.getClass());
         }
     }
+    
+    private /*@Nullable*/ VariableElement findVariableElement(NameExpr nexpr) {
+        if (nexprcache.containsKey(nexpr)) {
+            return nexprcache.get(nexpr);
+        }
+        
+        VariableElement res = null;
+        boolean importFound = false;
+        for (String imp: imports) {
+            Pair<String, String> partitionedName = partitionQualifiedName(imp);
+            String typeName = partitionedName.first;
+            String fieldName = partitionedName.second;
+            if (fieldName.equals(nexpr.getName())) {
+                TypeElement enclType = findType(typeName, 
+                		String.format("Enclosing type of static import %s not found", fieldName));
+                
+                if (enclType == null) {
+                    return null;
+                } else {
+                	importFound = true;
+                	res = findFieldElement(enclType, fieldName);
+                	break;
+                }
+            }
+        }
 
+        // Imported but invalid types or fields will have warnings from above,
+        // only warn on fields missing an import
+        if (res == null && !importFound) {
+            if (warnIfNotFound || debugStubParser) {
+                stubWarning("Static field " + nexpr.getName() + " is not imported");
+            }
+        }
+        
+        nexprcache.put(nexpr, res);
+        return res;
+    }
+    
     private /*@Nullable*/ VariableElement findVariableElement(FieldAccessExpr faexpr) {
         if (faexprcache.containsKey(faexpr)) {
             return faexprcache.get(faexpr);
