@@ -12,6 +12,11 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
+import javax.tools.JavaFileObject.Kind;
+
+import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.file.ZipFileIndexArchive;
+import com.sun.tools.javac.file.ZipFileIndexArchive.ZipFileIndexFileObject;
 
 /**
  * A Utility class for analyzing {@code Element}s.
@@ -170,6 +175,42 @@ public class ElementUtils {
         return elt != null
             && elt.getKind() == ElementKind.FIELD
             && ((VariableElement)elt).getConstantValue() != null;
+    }
+    /**
+     * Returns true if the element is declared in ByteCode.
+     * Always return false if elt is a package.
+     */
+    public static boolean isElementFromByteCode(Element elt){
+        if(elt == null)
+            return false;
+        if(elt instanceof Symbol.ClassSymbol){
+            Symbol.ClassSymbol clss = (Symbol.ClassSymbol) elt;
+            if(null != clss.classfile){
+                //The class file could be a .java file
+                return clss.classfile.getName().endsWith(".class");
+            }else{
+                return false;
+            }      
+        }
+        return isElementFromByteCode(elt.getEnclosingElement(), elt);
+    }
+    /**
+     * Returns true if the element is declared in ByteCode.
+     * Always return false if elt is a package.
+     */
+    private static boolean isElementFromByteCode(Element elt, Element orig){
+        if(elt == null)
+            return false;
+        if(elt instanceof Symbol.ClassSymbol){
+            Symbol.ClassSymbol clss = (Symbol.ClassSymbol) elt;
+            if(null != clss.classfile){
+                //The class file could be a .java file
+                return (clss.classfile.getName().endsWith(".class") || clss.classfile.getName().endsWith(".class)") || clss.classfile.getName().endsWith(".class)]"));
+            }else{
+                return false;
+            }      
+        }
+        return isElementFromByteCode(elt.getEnclosingElement(), elt);
     }
 
     /**

@@ -204,7 +204,7 @@ def retrieve_changes(root, prev_version, prefix):
                 capture_output=True)
 
 def clone_or_update_repo(src_repo, dst_repo):
-    if os.path.isdir(dst_repo):
+    if os.path.isdir(os.path.abspath(dst_repo)):
         update_project( dst_repo )
     else:
         execute('hg clone %s %s' % (src_repo, dst_repo))

@@ -8,11 +8,28 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.*;
-import javax.lang.model.type.*;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.PrimitiveType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
@@ -26,27 +43,45 @@ import javacutils.TreeUtils;
 import javacutils.trees.DetachedVarSymbol;
 
 import checkers.basetype.BaseTypeChecker;
-/*>>>
-import checkers.javari.quals.Mutable;
-import checkers.nullness.quals.Nullable;
-*/
+import checkers.quals.FromByteCode;
+import checkers.quals.FromStubFile;
 import checkers.quals.StubFiles;
 import checkers.quals.Unqualified;
 import checkers.source.SourceChecker;
-import checkers.types.AnnotatedTypeMirror.*;
-import checkers.types.TypeFromTree;
+import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
 import checkers.types.visitors.AnnotatedTypeScanner;
 import checkers.util.AnnotatedTypes;
 import checkers.util.stub.StubParser;
 import checkers.util.stub.StubResource;
 import checkers.util.stub.StubUtil;
 
-import com.sun.source.tree.*;
+import com.sun.source.tree.AnnotatedTypeTree;
+import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeInfo;
+/*>>>
+import checkers.javari.quals.Mutable;
+import checkers.nullness.quals.Nullable;
+*/
 
 /**
  * The methods of this class take an element or AST node, and return the
@@ -149,6 +184,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /** Unique ID of the current object; for debugging purposes. */
     public final int uid;
+    
+    /**Annotation added to every method defined in a class file 
+     * that is not in a stub file
+     */
+    private final AnnotationMirror fromByteCode;
+    
 
     /**
      * Constructs a factory from the given {@link ProcessingEnvironment}
@@ -186,6 +227,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         this.indexDeclAnnos = null; // will be set by postInit()
         // TODO: why is the option not used?
         this.annotatedTypeParams = true; // env.getOptions().containsKey("annotatedTypeParams");
+        this.fromByteCode = AnnotationUtils.fromClass(elements, FromByteCode.class);
     }
 
     /**
@@ -389,6 +431,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             return toAnnotatedType(elt.asType());
         AnnotatedTypeMirror type;
         Tree decl = declarationFromElement(elt);
+        
+        addFromByteCode(elt);
 
         if (decl == null && indexTypes != null && indexTypes.containsKey(elt)) {
             type = indexTypes.get(elt);
@@ -422,6 +466,39 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             elementCache.put(elt, AnnotatedTypes.deepCopy(type));
         return type;
     }
+
+    /**
+     * Adds @FromByteCode to methods and constructors declared in class files
+     * that are not already annotated with @FromStubFile
+     * 
+     * @param elt
+     */
+    private void addFromByteCode(Element elt) {
+        if (indexDeclAnnos == null){// || trees.getTree(elt) != null) {
+            // Parsing stub files, don't add @FromByteCode
+            return;
+        }
+
+        if (elt instanceof Symbol.MethodSymbol) {
+            // Only add @FromByteCode to Methods and Constructors
+            if (ElementUtils.isElementFromByteCode(elt)) {
+                Set<AnnotationMirror> annos = indexDeclAnnos.get(ElementUtils
+                        .getVerboseName(elt));
+                if (annos == null) {
+                    annos = AnnotationUtils.createAnnotationSet();
+                    indexDeclAnnos.put(ElementUtils.getVerboseName(elt), annos);
+                }
+                if (!annos.contains(AnnotationUtils.fromClass(elements,
+                        FromStubFile.class))) {
+                    annos.add(fromByteCode);
+
+                }
+
+            }
+        }
+    }
+
+
 
     /**
      * Determines the annotated type of a class from its declaration.
@@ -1780,7 +1857,23 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         List<? extends AnnotationMirror> annotationMirrors = elt.getAnnotationMirrors();
         return getDeclAnnotation(eltName, annoName, annotationMirrors, true);
     }
-
+    /**
+     * Returns true if the element appears in a stub file
+     * (Currently only works for methods and constructors )
+     */
+    public boolean isFromStubFile(Element element){
+        return this.getDeclAnnotation(element, FromStubFile.class) != null;
+    }
+    
+    /**
+     * Returns true if the element is from byte code 
+     * and the if the element did not appear in a stub file
+     * (Currently only works for methods and constructors )
+     */
+    public boolean isFromByteCode(Element element){
+        if(isFromStubFile(element)) return false;
+        return this.getDeclAnnotation(element, FromByteCode.class) != null;
+    }
     /**
      * Returns the actual annotation mirror used to annotate this type, whose
      * name equals the passed annotationName if one exists, null otherwise. This
