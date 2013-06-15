@@ -33,7 +33,7 @@ final class NullsLastOrdering<T extends /*@Nullable*/ Object> extends Ordering<T
   }
 
   @SuppressWarnings("nullness")
-  public int compare(T left, T right) {
+    /*@Pure*/ public int compare(T left, T right) {
     if (left == right) {
       return 0;
     }
@@ -60,7 +60,7 @@ final class NullsLastOrdering<T extends /*@Nullable*/ Object> extends Ordering<T
     return (Ordering) this;
   }
 
-  @Override public boolean equals(@Nullable Object object) {
+  @Pure @Override public boolean equals(@Nullable Object object) {
     if (object == this) {
       return true;
     }
@@ -71,11 +71,11 @@ final class NullsLastOrdering<T extends /*@Nullable*/ Object> extends Ordering<T
     return false;
   }
 
-  @Override public int hashCode() {
+  @Pure @Override public int hashCode() {
     return ordering.hashCode() ^ -921210296; // meaningless
   }
 
-  @Override public String toString() {
+  @Pure @Override public String toString() {
     return ordering + ".nullsLast()";
   }
 

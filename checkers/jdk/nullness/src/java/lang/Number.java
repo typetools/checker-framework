@@ -1,15 +1,15 @@
 package java.lang;
 
-import checkers.nullness.quals.*;
+import dataflow.quals.Pure;
+import checkers.nullness.quals.Nullable;
 
-@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
 
 public abstract class Number implements java.io.Serializable {
   public Number() { throw new RuntimeException("skeleton method"); }
-  public abstract int intValue();
-  public abstract long longValue();
-  public abstract float floatValue();
-  public abstract double doubleValue();
-  public byte byteValue() { throw new RuntimeException("skeleton method"); }
-  public short shortValue() { throw new RuntimeException("skeleton method"); }
+  @Pure public abstract int intValue();
+  @Pure public abstract long longValue();
+  @Pure public abstract float floatValue();
+  @Pure public abstract double doubleValue();
+  @Pure public byte byteValue() { throw new RuntimeException("skeleton method"); }
+  @Pure public short shortValue() { throw new RuntimeException("skeleton method"); }
 }
