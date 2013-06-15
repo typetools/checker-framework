@@ -13,6 +13,7 @@ import javax.lang.model.util.Elements;
 import javacutils.AnnotationUtils;
 import javacutils.ElementUtils;
 import javacutils.ErrorReporter;
+import javacutils.Pair;
 
 import checkers.quals.FromStubFile;
 import checkers.source.SourceChecker;
@@ -941,13 +942,7 @@ public class StubParser {
                     builder.setValue(name, arr);
                 }
             } else {
-<<<<<<< variant A
-                SourceChecker.errorAbort("StubParser: unhandled annotation attribute type: " + expr + " and expected: " + expected);
->>>>>>> variant B
-                ErrorReporter.errorAbort("StubParser: unhandled annotation attribute type: " + faexpr + " and expected: " + expected);
-####### Ancestor
-                SourceChecker.errorAbort("StubParser: unhandled annotation attribute type: " + faexpr + " and expected: " + expected);
-======= end
+                ErrorReporter.errorAbort("StubParser: unhandled annotation attribute type: " + expr + " and expected: " + expected);
             }
         } else if (expr instanceof StringLiteralExpr) {
             StringLiteralExpr slexpr = (StringLiteralExpr) expr;
