@@ -11,10 +11,6 @@ Documentation:
   Improved the discussion of why to define both a bottom and a top qualifier in the Checker Framework manual.
   Update FAQ to discuss that some other tools incorrectly interpret array declarations.
 
-Format String Checker (new):
-  Ensures that format methods (such as System.out.printf) are invoked
-  with correct arguments.
-
 ----------------------------------------------------------------------
 
 Version 1.6.3, 01 May 2013
