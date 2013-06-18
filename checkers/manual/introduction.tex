@@ -595,8 +595,11 @@ checker is a type of ``annotation processor''.
   see Section~\ref{skeleton-using}
 \item \<-implicit:class> Suppresses warnings about implicitly compiled files
   (not named on the command line); see Section~\ref{ant-task}
-\item \<-XDTA:spacesincomments> parse annotation comments even when they
-  contain spaces; applicable only to the Type Annotations compiler; see Section~\ref{annotations-in-comments}
+\item \<-XDTA:noannotationsincomments> and \<-XDTA:spacesincomments>
+  to turn off parsing annotation comments and
+  to turn on parsing annotation comments even when they
+  contain spaces; applicable only to the Type Annotations compiler;
+  see Section~\ref{annotations-in-comments}
 \item \<-J> Supply an argument to the JVM that is running javac; example:
   \<-J-Djsr308\_imports=checkers.nullness.quals.*>; see Section~\ref{implicit-import-statements}
 \end{itemize}
