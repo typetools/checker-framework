@@ -12,7 +12,7 @@ public class AssertIfNonNullTest {
     }
 
     @AssertNonNullIfNonNull("id")
-    public @Pure @Nullable Long getId(){
+    public @Pure @Nullable Long getId() {
         return id;
     }
 
