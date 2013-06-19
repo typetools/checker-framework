@@ -9,7 +9,7 @@ import checkers.nullness.NullnessChecker;
  * expressions are also non-null.
  * <p>
  *
- * Here is an example use::
+ * Here is an example use:
  *
  * <pre><code>           @AssertNonNullIfNonNull("id")
  *     public @Pure @Nullable Long getId(){
