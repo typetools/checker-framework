@@ -1,8 +1,7 @@
 package java.io;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
-@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
 
 public class ObjectOutputStream extends OutputStream implements ObjectOutput, ObjectStreamConstants{
   public static abstract class PutField{

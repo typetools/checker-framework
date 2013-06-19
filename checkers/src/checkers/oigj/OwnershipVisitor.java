@@ -8,11 +8,18 @@ import com.sun.source.tree.ExpressionTree;
 import checkers.basetype.BaseTypeVisitor;
 import checkers.oigj.quals.Dominator;
 import checkers.types.AnnotatedTypeMirror;
+import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 
 public class OwnershipVisitor extends BaseTypeVisitor<OwnershipSubchecker> {
 
     public OwnershipVisitor(OwnershipSubchecker checker, CompilationUnitTree root) {
         super(checker, root);
+    }
+
+    @Override
+    public boolean isValidUse(AnnotatedDeclaredType declarationType,
+            AnnotatedDeclaredType useType) {
+        return true;
     }
 
     @Override
