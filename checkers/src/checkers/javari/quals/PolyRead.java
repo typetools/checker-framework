@@ -29,7 +29,7 @@ import checkers.quals.*;
  * <pre>
  *  &#064;PolyRead aTestMethod(String a,
  *                            &#064;PolyRead Object b,
- *                            List<&#064;PolyRead Date> c) &#064;PolyRead
+ *                            List&lt;&#064;PolyRead Date&gt; c) &#064;PolyRead
  * </pre>
  * has a readonly return type if the argument passed as b is readonly,
  * or if the argument passed as c is a list of readonly Dates, or if
@@ -44,7 +44,7 @@ import checkers.quals.*;
  * <pre>
  *  public Something(String a,
  *                   &#064;PolyRead Object b,
- *                   List<&#064;PolyRead Date> c) &#064;PolyRead
+ *                   List&lt;&#064;PolyRead Date&gt; c) &#064;PolyRead
  * </pre>
  * instantiates a readonly Something if a readonly argument is passed
  * as b, or if the argument passed as c is a list of readonly
@@ -58,7 +58,7 @@ import checkers.quals.*;
  * <pre>
  *  aTestMethod(String a,
  *              &#064;PolyRead Object b,
- *              List<&#064;PolyRead Date> c) &#064;PolyRead
+ *              List&lt;&#064;PolyRead Date&gt; c) &#064;PolyRead
  * </pre>
  * when invoked from a mutable reference will only accept mutable
  * arguments as b, and lists of mutable Dates as c. When aTestMethod

@@ -1,4 +1,4 @@
-// import checkers.nullness.quals.AssertNonNullAfter;
+// import checkers.nullness.quals.EnsuresNonNull;
 
 public class Imports2 {
   void call() {

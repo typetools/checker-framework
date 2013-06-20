@@ -1,8 +1,8 @@
 package java.lang;
 
-import checkers.nullness.quals.*;
+import dataflow.quals.Pure;
+import checkers.nullness.quals.Nullable;
 
-@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
 
 public final class StringBuilder
     extends AbstractStringBuilder
@@ -41,10 +41,10 @@ public final class StringBuilder
   public StringBuilder insert(int a1, long a2) { throw new RuntimeException("skeleton method"); }
   public StringBuilder insert(int a1, float a2) { throw new RuntimeException("skeleton method"); }
   public StringBuilder insert(int a1, double a2) { throw new RuntimeException("skeleton method"); }
-  public int indexOf(String a1) { throw new RuntimeException("skeleton method"); }
-  public int indexOf(String a1, int a2) { throw new RuntimeException("skeleton method"); }
-  public int lastIndexOf(String a1) { throw new RuntimeException("skeleton method"); }
-  public int lastIndexOf(String a1, int a2) { throw new RuntimeException("skeleton method"); }
+  @Pure public int indexOf(String a1) { throw new RuntimeException("skeleton method"); }
+  @Pure public int indexOf(String a1, int a2) { throw new RuntimeException("skeleton method"); }
+  @Pure public int lastIndexOf(String a1) { throw new RuntimeException("skeleton method"); }
+  @Pure public int lastIndexOf(String a1, int a2) { throw new RuntimeException("skeleton method"); }
   public StringBuilder reverse() { throw new RuntimeException("skeleton method"); }
-  public String toString() { throw new RuntimeException("skeleton method"); }
+  @Pure public String toString() { throw new RuntimeException("skeleton method"); }
 }

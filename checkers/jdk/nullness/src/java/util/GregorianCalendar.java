@@ -1,6 +1,7 @@
 package java.util;
-import checkers.nullness.quals.*;
-@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
+import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
+import checkers.nullness.quals.Nullable;
 
 public class GregorianCalendar extends Calendar {
     private static final long serialVersionUID = 0L;
@@ -15,9 +16,9 @@ public class GregorianCalendar extends Calendar {
   public GregorianCalendar(int a1, int a2, int a3, int a4, int a5, int a6) { throw new RuntimeException("skeleton method"); }
   public void setGregorianChange(Date a1) { throw new RuntimeException("skeleton method"); }
   public final Date getGregorianChange() { throw new RuntimeException("skeleton method"); }
-  public boolean isLeapYear(int a1) { throw new RuntimeException("skeleton method"); }
-  public boolean equals(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
-  public int hashCode() { throw new RuntimeException("skeleton method"); }
+  @Pure public boolean isLeapYear(int a1) { throw new RuntimeException("skeleton method"); }
+  @Pure public boolean equals(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
+  @Pure public int hashCode() { throw new RuntimeException("skeleton method"); }
   public void add(int a1, int a2) { throw new RuntimeException("skeleton method"); }
   public void roll(int a1, boolean a2) { throw new RuntimeException("skeleton method"); }
   public void roll(int a1, int a2) { throw new RuntimeException("skeleton method"); }
@@ -29,5 +30,5 @@ public class GregorianCalendar extends Calendar {
   public int getActualMaximum(int a1) { throw new RuntimeException("skeleton method"); }
   public TimeZone getTimeZone() { throw new RuntimeException("skeleton method"); }
   public void setTimeZone(TimeZone a1) { throw new RuntimeException("skeleton method"); }
-  public Object clone() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public Object clone() { throw new RuntimeException("skeleton method"); }
 }
