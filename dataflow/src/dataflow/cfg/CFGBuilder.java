@@ -1,6 +1,7 @@
 package dataflow.cfg;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
@@ -119,7 +120,6 @@ import dataflow.cfg.node.BitwiseOrNode;
 import dataflow.cfg.node.BitwiseXorAssignmentNode;
 import dataflow.cfg.node.BitwiseXorNode;
 import dataflow.cfg.node.BooleanLiteralNode;
-import dataflow.cfg.node.BoxingNode;
 import dataflow.cfg.node.CaseNode;
 import dataflow.cfg.node.CharacterLiteralNode;
 import dataflow.cfg.node.ClassNameNode;
@@ -1485,6 +1485,14 @@ public class CFGBuilder {
                     bindings, leaders, returnNodes);
         }
 
+        /**
+         * Perform any actions required when CFG translation creates a
+         * new Tree that is not part of the original AST.
+         *
+         * @param tree  the newly created Tree
+         */
+        public void handleArtificialTree(Tree tree) {}
+
         /* --------------------------------------------------------- */
         /* Nodes and Labels Management */
         /* --------------------------------------------------------- */
@@ -1541,9 +1549,7 @@ public class CFGBuilder {
          */
         protected NodeWithExceptionsHolder extendWithNodeWithException(Node node, TypeMirror cause) {
             addToLookupMap(node);
-            Set<TypeMirror> causes = new HashSet<>();
-            causes.add(cause);
-            return extendWithNodeWithExceptions(node, causes);
+            return extendWithNodeWithExceptions(node, Collections.singleton(cause));
         }
 
         /**
@@ -1672,8 +1678,8 @@ public class CFGBuilder {
         }
 
         /**
-         * If the input node is an unboxed primitive type, box it, otherwise
-         * leave it alone.
+         * If the input node is an unboxed primitive type, insert a call to the
+         * appropriate valueOf method, otherwise leave it alone.
          *
          * @param node
          *            in input node
@@ -1687,9 +1693,31 @@ public class CFGBuilder {
                         .getKind());
                 TypeMirror boxedType = types.getDeclaredType(types
                         .boxedClass(primitive));
-                Node boxed = new BoxingNode(node.getTree(), node, boxedType);
+
+                TypeElement boxedElement = (TypeElement)((DeclaredType)boxedType).asElement();
+                IdentifierTree classTree = treeBuilder.buildClassUse(boxedElement);
+                handleArtificialTree(classTree);
+                ClassNameNode className = new ClassNameNode(classTree);
+                insertNodeAfter(className, node);
+
+                MemberSelectTree valueOfSelect = treeBuilder.buildValueOfMethodAccess(classTree);
+                handleArtificialTree(valueOfSelect);
+                MethodAccessNode valueOfAccess = new MethodAccessNode(valueOfSelect, className);
+                insertNodeAfter(valueOfAccess, className);
+
+                MethodInvocationTree valueOfCall =
+                    treeBuilder.buildMethodInvocation(valueOfSelect, (ExpressionTree)node.getTree());
+                handleArtificialTree(valueOfCall);
+                Node boxed = new MethodInvocationNode(valueOfCall, valueOfAccess,
+                                                      Collections.singletonList(node),
+                                                      getCurrentPath());
                 replaceInLookupMap(boxed);
-                insertNodeAfter(boxed, node);
+
+                // Add Throwable to account for unchecked exceptions
+                TypeElement throwableElement = elements
+                    .getTypeElement("java.lang.Throwable");
+                insertNodeWithExceptionsAfter(boxed,
+                        Collections.singleton(throwableElement.asType()), valueOfAccess);
                 return boxed;
             } else {
                 return node;
@@ -1707,14 +1735,29 @@ public class CFGBuilder {
          */
         protected Node unbox(Node node) {
             if (TypesUtils.isBoxedPrimitive(node.getType())) {
-                Node unboxed = new UnboxingNode(node.getTree(), node,
-                        types.unboxedType(node.getType()));
-                replaceInLookupMap(unboxed);
+
+                MemberSelectTree primValueSelect =
+                    treeBuilder.buildPrimValueMethodAccess(node.getTree());
+                handleArtificialTree(primValueSelect);
+                MethodAccessNode primValueAccess = new MethodAccessNode(primValueSelect, node);
+                // Method access may throw NullPointerException
                 TypeElement npeElement = elements
                     .getTypeElement("java.lang.NullPointerException");
-                Set<TypeMirror> causes = new HashSet<>();
-                causes.add(npeElement.asType());
-                insertNodeWithExceptionsAfter(unboxed, causes, node);
+                insertNodeWithExceptionsAfter(primValueAccess,
+                        Collections.singleton(npeElement.asType()), node);
+
+                MethodInvocationTree primValueCall =
+                    treeBuilder.buildMethodInvocation(primValueSelect);
+                handleArtificialTree(primValueCall);
+                Node unboxed = new MethodInvocationNode(primValueCall, primValueAccess,
+                                                        Collections.emptyList(),
+                                                        getCurrentPath());
+                replaceInLookupMap(unboxed);
+                // Add Throwable to account for unchecked exceptions
+                TypeElement throwableElement = elements
+                    .getTypeElement("java.lang.Throwable");
+                insertNodeWithExceptionsAfter(unboxed,
+                        Collections.singleton(throwableElement.asType()), primValueAccess);
                 return unboxed;
             } else {
                 return node;
@@ -1906,6 +1949,30 @@ public class CFGBuilder {
             }
         }
 
+
+        /**
+         * Return whether a conversion from the type of the node to varType
+         * requires narrowing.
+         *
+         * @param varType  the type of a variable (or general LHS) to be converted to
+         * @param node     a node whose value is being converted
+         * @return  whether this conversion requires narrowing to succeed
+         */
+        protected boolean conversionRequiresNarrowing(TypeMirror varType, Node node) {
+            // Narrowing is restricted to cases where the left hand side
+            // is byte, char, short or Byte, Char, Short and the right
+            // hand side is a constant.
+            TypeMirror unboxedVarType = TypesUtils.isBoxedPrimitive(varType) ? types
+                .unboxedType(varType) : varType;
+            TypeKind unboxedVarKind = unboxedVarType.getKind();
+            boolean isLeftNarrowableTo = unboxedVarKind == TypeKind.BYTE
+                || unboxedVarKind == TypeKind.SHORT
+                || unboxedVarKind == TypeKind.CHAR;
+            boolean isRightConstant = node instanceof ValueLiteralNode;
+            return isLeftNarrowableTo && isRightConstant;
+        }
+
+
         /**
          * Assignment conversion and method invocation conversion are almost
          * identical, except that assignment conversion allows narrowing. We
@@ -1915,14 +1982,14 @@ public class CFGBuilder {
          *            a Node producing a value
          * @param varType
          *            the type of a variable
-         * @param allowNarrowing
+         * @param contextAllowsNarrowing
          *            whether to allow narrowing (for assignment conversion) or
          *            not (for method invocation conversion)
          * @return a Node with the value converted to the type of the variable,
          *         which may be the input node itself
          */
         protected Node commonConvert(Node node, TypeMirror varType,
-                boolean allowNarrowing) {
+                boolean contextAllowsNarrowing) {
             // For assignment conversion, see JLS 5.2
             // For method invocation conversion, see JLS 5.3
 
@@ -1950,8 +2017,13 @@ public class CFGBuilder {
                 // widening reference conversion is a no-op, but if it
                 // applies, then later conversions do not.
             } else if (isRightPrimitive && isLeftReference) {
-                node = box(node);
-                nodeType = node.getType();
+                if (contextAllowsNarrowing && conversionRequiresNarrowing(varType, node)) {
+                    node = narrowAndBox(node, varType);
+                    nodeType = node.getType();
+                } else {
+                    node = box(node);
+                    nodeType = node.getType();
+                }
             } else if (isRightBoxed && isLeftPrimitive) {
                 node = unbox(node);
                 nodeType = node.getType();
@@ -1961,36 +2033,10 @@ public class CFGBuilder {
                     node = widen(node, varType);
                     nodeType = node.getType();
                 }
-            }
-
-            // Unchecked conversion of raw types
-            boolean isRightRaw = (nodeType instanceof DeclaredType)
-                    && ((DeclaredType) nodeType).getTypeArguments().isEmpty();
-            if (isRightRaw) {
-                // TODO: if checkers need to know about unchecked conversions
-                // add a Node class for them. Otherwise, we can omit this
-                // case.
-            }
-
-            if (allowNarrowing) {
-                // Narrowing is restricted to cases where the left hand side
-                // is byte, char, short or Byte, Char, Short and the right
-                // hand side is a constant.
-                TypeMirror unboxedVarType = isLeftBoxed ? types
-                        .unboxedType(varType) : varType;
-                TypeKind unboxedVarKind = unboxedVarType.getKind();
-                boolean isLeftNarrowableTo = unboxedVarKind == TypeKind.BYTE
-                        || unboxedVarKind == TypeKind.SHORT
-                        || unboxedVarKind == TypeKind.CHAR;
-                boolean isRightConstant = node instanceof ValueLiteralNode;
-                if (isLeftNarrowableTo && isRightConstant) {
-                    if (isLeftBoxed) {
-                        node = narrowAndBox(node, varType);
-                        nodeType = node.getType();
-                    } else {
-                        node = narrow(node, varType);
-                        nodeType = node.getType();
-                    }
+            } else if (isRightPrimitive && isLeftPrimitive) {
+                if (contextAllowsNarrowing && conversionRequiresNarrowing(varType, node)) {
+                    node = narrow(node, varType);
+                    nodeType = node.getType();
                 }
             }
 

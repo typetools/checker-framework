@@ -1,5 +1,7 @@
 package javacutils.trees;
 
+import java.util.List;
+
 import javacutils.InternalUtils;
 import javacutils.TypesUtils;
 
@@ -8,6 +10,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
@@ -244,6 +247,20 @@ public class TreeBuilder {
     }
 
     /**
+     * Builds an AST Tree to call a method designated by methodExpr,
+     * with one argument designated by argExpr.
+     *
+     * @param methodExpr  an expression denoting a method with one argument
+     * @param argExpr  an expression denoting an argument to the method
+     * @return  a MethodInvocationTree to call the argument method
+     */
+    public MethodInvocationTree buildMethodInvocation(ExpressionTree methodExpr,
+            ExpressionTree argExpr) {
+        return maker.App((JCTree.JCExpression)methodExpr,
+                com.sun.tools.javac.util.List.of((JCTree.JCExpression)argExpr));
+    }
+
+    /**
      * Builds an AST Tree to declare and initialize a variable, with no modifiers.
      *
      * @param type  the type of the variable
@@ -377,5 +394,99 @@ public class TreeBuilder {
             maker.Unary(JCTree.Tag.POSTINC, (JCTree.JCExpression)expression);
         unary.setType((Type)InternalUtils.typeOf(expression));
         return unary;
+    }
+
+    /**
+     * Builds an AST Tree to refer to a class name.
+     *
+     * @param elt  an element representing the class
+     * @return  an IdentifierTree referring to the class
+     */
+    public IdentifierTree buildClassUse(Element elt) {
+        return (IdentifierTree)maker.Ident((Symbol)elt);
+    }
+
+    /**
+     * Builds an AST Tree to access the valueOf() method of boxed type
+     * such as Short or Float.
+     *
+     * @param expr  an expression whose type is a boxed type
+     * @return  a MemberSelectTree that accesses the valueOf() method of
+     *    the expression
+     */
+    public MemberSelectTree buildValueOfMethodAccess(Tree expr) {
+        TypeMirror boxedType = InternalUtils.typeOf(expr);
+        TypeElement boxedElement = (TypeElement)((DeclaredType)boxedType).asElement();
+
+        assert TypesUtils.isBoxedPrimitive(boxedType);
+        TypeMirror unboxedType = modelTypes.unboxedType(boxedType);
+
+        // Find the valueOf(unboxedType) method of the boxed type
+        Symbol.MethodSymbol valueOfMethod = null;
+
+        for (ExecutableElement method :
+                 ElementFilter.methodsIn(elements.getAllMembers(boxedElement))) {
+            Name methodName = method.getSimpleName();
+
+            if (methodName.contentEquals("valueOf")) {
+                List<? extends VariableElement> params = method.getParameters();
+                if (params.size() == 1 && modelTypes.isSameType(params.get(0).asType(), unboxedType)) {
+                    valueOfMethod = (Symbol.MethodSymbol)method;
+                }
+            }
+        }
+
+        assert valueOfMethod != null : "no valueOf method declared for boxed type";
+
+        Type.MethodType methodType = (Type.MethodType)valueOfMethod.asType();
+
+        JCTree.JCFieldAccess valueOfAccess =
+            (JCTree.JCFieldAccess)
+            maker.Select((JCTree.JCExpression)expr, valueOfMethod);
+        valueOfAccess.setType(methodType);
+
+        return valueOfAccess;
+    }
+
+    /**
+     * Builds an AST Tree to access the *Value() method of a
+     * boxed type such as Short or Float, where * is the corresponding
+     * primitive type (i.e. shortValue or floatValue).
+     *
+     * @param expr  an expression whose type is a boxed type
+     * @return  a MemberSelectTree that accesses the *Value() method of
+     *    the expression
+     */
+    public MemberSelectTree buildPrimValueMethodAccess(Tree expr) {
+        TypeMirror boxedType = InternalUtils.typeOf(expr);
+        TypeElement boxedElement = (TypeElement)((DeclaredType)boxedType).asElement();
+
+        assert TypesUtils.isBoxedPrimitive(boxedType);
+        TypeMirror unboxedType = modelTypes.unboxedType(boxedType);
+
+        // Find the *Value() method of the boxed type
+        String primValueName = unboxedType.toString() + "Value";
+        Symbol.MethodSymbol primValueMethod = null;
+
+        for (ExecutableElement method :
+                 ElementFilter.methodsIn(elements.getAllMembers(boxedElement))) {
+            Name methodName = method.getSimpleName();
+
+            if (methodName.contentEquals(primValueName) &&
+                method.getParameters().size() == 0) {
+                primValueMethod = (Symbol.MethodSymbol)method;
+            }
+        }
+
+        assert primValueMethod != null : "no *Value method declared for boxed type";
+
+        Type.MethodType methodType = (Type.MethodType)primValueMethod.asType();
+
+        JCTree.JCFieldAccess primValueAccess =
+            (JCTree.JCFieldAccess)
+            maker.Select((JCTree.JCExpression)expr, primValueMethod);
+        primValueAccess.setType(methodType);
+
+        return primValueAccess;
     }
 }
