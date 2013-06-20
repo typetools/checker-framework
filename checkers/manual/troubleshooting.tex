@@ -251,7 +251,7 @@ If the compiler reports that it cannot find a method from the
 JDK or another external library, then maybe the stub/skeleton file for that
 class is incomplete.  You can edit it to add the missing method.  The
 libraries appear, for example, at \code{checkers/jdk/nullness/src/} for the
-Nullness checker.
+Nullness Checker.
 
 The error might take one of these forms:
 
@@ -326,11 +326,11 @@ that are created, such as \<javac -target 6 ...>.
 % 
 % \end{itemize}
 % 
-% \subsection{Known problems in the Nullness checker}
+% \subsection{Known problems in the Nullness Checker}
 % 
 % \begin{itemize}
 % \item
-%   The Nullness checker is often able to determine that a call to
+%   The Nullness Checker is often able to determine that a call to
 %   \code{Map.get()} will not return null.  This enables the checker to avoid
 %   issuing false positive warnings, in circumstances like the following.
 % 
@@ -344,7 +344,7 @@ that are created, such as \<javac -target 6 ...>.
 %     }
 % \end{Verbatim}
 % 
-%   The Nullness checker can sometimes fail to issue a warning if the map is
+%   The Nullness Checker can sometimes fail to issue a warning if the map is
 %   modified or re-assigned between the check of \code{containsKey} and the
 %   call to \code{get}.
 % 
@@ -571,7 +571,7 @@ Run \code{ant} to create \<checkers.jar>:
 \end{Verbatim}
 % $ to unconfuse Emacs LaTeX mode
 
-  \item Run the Nullness checker examples (see
+  \item Run the Nullness Checker examples (see
     Section~\refwithpage{nullness-example}).
 
   \end{itemize}

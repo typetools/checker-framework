@@ -1,11 +1,11 @@
 import checkers.nullness.quals.*;
+import dataflow.quals.Pure;
 
-// @skip-test
 public class AssertIfFalseTest2 {
 
   public static void usePriorityQueue(PriorityQueue1<@NonNull Object> active) {
     while (!(active.isEmpty())) {
-      @NonNull Object queueMinPathNode = active.poll();
+      @NonNull Object queueMinPathNode = active.peek();
     }
   }
 
@@ -14,10 +14,9 @@ public class AssertIfFalseTest2 {
   ///
 
   public class PriorityQueue1<E extends @NonNull Object> {
-    @AssertNonNullIfFalse({"poll()", "peek()"})
-    public boolean isEmpty() { throw new RuntimeException("skeleton method"); }
-    public @Nullable E poll() { throw new RuntimeException("skeleton method"); }
-    public @Nullable E peek() { throw new RuntimeException("skeleton method"); }
+    @EnsuresNonNullIf(result=false, expression={"peek()"})
+    @Pure public boolean isEmpty() { return true; }
+    @Pure public @Nullable E peek() { return null; }
   }
 
 }

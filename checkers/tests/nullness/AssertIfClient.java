@@ -1,10 +1,10 @@
 import checkers.nullness.quals.*;
+import dataflow.quals.*;
 
 public class AssertIfClient {
 
-  @NonNullOnEntry("#1.rpcResponse()")
+  @RequiresNonNull("#1.rpcResponse()")
   void rpcResponseNonNull(Proxy proxy) {
-    // non-DFF branch issues a false alarm (problem parsing "#1. ...")
     @NonNull Object response = proxy.rpcResponse();
   }
 
@@ -16,7 +16,6 @@ public class AssertIfClient {
     Proxy proxy = new Proxy();
     //:: error: (assignment.type.incompatible)
     @NonNull Object response1 = proxy.rpcResponse();
-    // non-DFF branch suffers a missed alarm (problem parsing "#1. ...")
     //:: error: (argument.type.incompatible)
     rpcResponseNonNull(proxy);
     rpcResponseNullable(proxy);
@@ -34,16 +33,18 @@ public class AssertIfClient {
 class Proxy {
 
   // the RPC response, or null if not yet received
-  @LazyNonNull Object response = null;
+  @MonotonicNonNull Object response = null;
 
-  @AssertNonNullAfter("rpcResponse()")
+  @SuppressWarnings("contracts.postcondition.not.satisfied")
+  @EnsuresNonNull({"response", "rpcResponse()"})
   void issueRpc() {
     response = new Object();
   }
 
   // If this method returns true,
   // then response is non-null and rpcResponse() returns non-null
-  @AssertNonNullIfTrue("rpcResponse()")
+  @SuppressWarnings("contracts.conditional.postcondition.not.satisfied")
+  @EnsuresNonNullIf(expression={"response", "rpcResponse()"}, result=true)
   boolean rpcResponseReceived() {
     return response != null;
   }
