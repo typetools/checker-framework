@@ -18,10 +18,11 @@ import checkers.nullness.NullnessChecker;
  * </code></pre>
  *
  * Note the direction of the implication.  This annotation says that if the
- * result is non-null, then the variable "id" is also non-null.  The
- * annotation does not say that if "id" is non-null, then 
+ * result is non-null, then the variable <tt>id</tt> is also non-null.  The
+ * annotation does not say that if <tt>id</tt> is non-null, then the result
+ * is non-null.
  * <p>
-
+ *
  * You should <em>not</em> write a formal parameter name or <tt>this</tt>
  * as the argument of this annotation.  In those cases, use the {@link
  * PolyNull} annotation instead.
