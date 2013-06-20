@@ -10,6 +10,7 @@ import dataflow.quals.Pure;
 /**
  * This annotation is deprecated.  {@link MonotonicNonNull} should be used
  * instead.
+ * <p>
  *
  * Indicates that a field (or variable) is lazily initialized to a non-null
  * value.  Once the field becomes non-null, it never becomes null again.
