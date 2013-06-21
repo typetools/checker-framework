@@ -11,7 +11,7 @@ The Format String Checker warns you if you write an invalid format string,
 and it warns you if the other arguments are not consistent with the format
 string (in number of arguments or in their types).  Here are examples of
 errors that the Format String Checker detects at compile time.
-Section~\ref{formatter-bugs} provides more details.
+Section~\ref{formatter-guarantees} provides more details.
 
 % BUG FINDER
 % The Format String Checker helps to prevent bugs that are the result of an
@@ -32,22 +32,18 @@ Section~\ref{formatter-bugs} provides more details.
 %
 % \noindent
 % Following are examples of common errors that the Format String Checker detects at
-% compile time, more details are provided in Section~\ref{formatter-bugs}.
+% compile time, more details are provided in Section~\ref{formatter-guarantees}.
 
 \begin{Verbatim}
-    String.format("%y", 7);           // invalid format string
+    String.format("%y", 7);           // error: invalid format string
 
-    String.format("%d", "a string");  // invalid argument type for %d
+    String.format("%d", "a string");  // error: invalid argument type for %d
 
-    String.format("{0}", "a string"); // unused argument, {0} is wrong syntax
-    String.format("%d", 7, 3);        // unused argument 3
-    String.format("%d %s", 7);        // missing argument for %s
+    String.format("%d %s", 7);        // error: missing argument for %s
+    String.format("{0}", "a string"); // warning: unused argument, {0} is wrong syntax
+    String.format("%d", 7, 3);        // warning: unused argument 3
 \end{Verbatim}
 
-The Format String Checker's most important annotation is
-\code{@\refclass{checker/quals}{Format}} (see
-Section~\ref{formatter-annotations}). Yet, a programmer rarely writes this annotation, as it is inferred if a string literal is directly passed as
-a format method's first parameter.
 
 To run the Format String Checker, supply the \code{-processor
 checkers.formatter.FormatterChecker} command-line option to javac. 
@@ -73,15 +69,13 @@ the format string, \code{"\%s"} and \code{"\%d"} are the format specifiers;
 
 \section{Format String Checker annotations\label{formatter-annotations}}
 
-
-The Format String Checker assigns a qualifier of
-\code{@\refclass{formatter/quals}{Format}} or \code{@\refclass{formatter/quals}{InvalidFormat}} to every string, in addition to the
-regular Java type. These qualifiers make up the Format String type system.
-
-The \code{@\refclass{formatter/quals}{Format}} qualifier indicates a
-\emph{valid} format string.  The Formatter documentation explains the
-requirements for a \sunjavadoc{java/util/Formatter.html#syntax}{\textrm{valid
-  format string}}.
+The \code{@\refclass{formatter/quals}{Format}} qualifier on a string type
+indicates a \emph{valid} format string.  The JDK documentation for the
+\<Formatter> class explains the requirements for a
+\sunjavadoc{java/util/Formatter.html#syntax}{\textrm{valid format string}}.
+A programmer rarely writes the \<@Format> annotation, as it is inferred for
+string literals.  A programmer may need to write it on fields and on method
+signatures.
 
 %% This is premature; it is not discussed here, and it was already
 %% mentioned briefly to introduce readers to the idea, so that isn't
@@ -96,45 +90,56 @@ Conversion categories are explained in more detail in
 Section~\ref{formatter-categories}.  The type qualifier for \code{"\%d \%f"} is
 for example \code{@Format(\{INT, FLOAT\})}.
 
-The following example shows how to use the \code{@Format} annotation to
-enforces that the function's parameter is a format string that, when
-passed to a format method, requires the first format argument to be ``float like'',
-and the second format argument to be ``integer like'':
+Consider the below \<printFloatAndInt> method.  Its parameter must be a
+format string that can be used in a format method, where the first format
+argument is ``float-like'' and the second format argument is
+``integer-like''.  The type of its parameter, \<@Format(\{FLOAT, INT\})
+String>, expresses that contract.
 
 \begin{Verbatim}
-    void printFloatAndInt(@Format({FLOAT, INT}) format) {
-        System.out.printf(format, 3.1415, 42);
+    void printFloatAndInt(@Format({FLOAT, INT}) String fs) {
+        System.out.printf(fs, 3.1415, 42);
     } 
 
     printFloatAndInt("Float %f, Number %d");  // ok
     printFloatAndInt("Float %f");             // error
 \end{Verbatim}
 
-\noindent All other annotations in the Format String type system are only used
+\begin{figure}[thbp]
+\includeimage{formatter-hierarchy}{2.5cm}
+\caption{The Format String Checker type qualifier hierarchy.  The figure
+  does not show the subtyping rules among different \code{@Format}
+  qualifiers; see TODO. }
+\label{fig:formatter-hierarchy}
+\end{figure}
+
+Figure~\ref{fig:formatter-hierarchy} shows all the type qualifiers.
+The annotations other than \<@Format> are only used
 internally and cannot be written in your code.
 \code{@\refclass{formatter/quals}{InvalidFormat}} indicates an invalid format
-string. The annotation is attached to \code{"\%y"}
-for example.  \code{@\refclass{formatter/quals}{FormatBottom}} is assigned to the
-\code{null} literal. All other terms are assigned the
-\code{@\refclass{formatter/quals}{Unqualified}} qualifier.
+string --- that is, a string that cannot be used as a format string.  The
+type of \code{"\%y"} is \<@InvalidFormat String>, for example.
+\code{@\refclass{formatter/quals}{FormatBottom}} is the type of the
+\code{null} literal.
+\code{@\refclass{formatter/quals}{Unqualified}} is the default that is
+applied to strings that are not literals and on which the user has not
+written a \<@Format> annotation.
 
 \subsection{Conversion Categories\label{formatter-categories}}
 
-A format specifier's conversion component consists of its last, or the last two,
-characters.  For example, the conversion component of \code{"\%d"} is \code{d}.
-
-The format argument used to replace a format specifier may be restricted 
-by the format specifier's conversion component. In the following example, the
-format specifier's conversion component \code{d} restricts the first format argument
-to be ``integer like'':
+Given a format specifier, only certain format arguments are compatible with
+it, depending on its ``conversion'' --- its last, or last two,
+characters.  For example, in in the format specifier \code{"\%d"}, the
+conversion \code{d} restricts the corresponding format argument
+to be ``integer-like'':
 
 \begin{Verbatim}
     String.format("%d", 5);         // ok
-    String.format("%d", "hello");  // warning
+    String.format("%d", "hello");   // error
 \end{Verbatim}
 
-\noindent Many conversion components enforce the same restrictions. We represent
-these restrictions as a set of allowed values called \emph{conversion
+\noindent Many conversions enforce the same restrictions. We represent
+these restrictions as a set of allowed values called a \emph{conversion
 category}. The ``integer like'' restriction is for example the conversion
 category INT.  The following conversion categories are defined in the
 \code{\refclass{formatter/quals}{ConversionCategory}} enumeration:
@@ -148,7 +153,10 @@ category INT.  The following conversion categories are defined in the
     \code{Byte}, \code{short}, and \code{Short} are allowed.
     \code{int} or \code{Integer} are allowed if
     \code{Character.isValidCodePoint(argument)} would return \code{true}
-    for the format argument. Applicable for conversions c, C.
+    for the format argument. (The Format String Checker permits any \<int>
+    or \<Integer> without issuing a warning or error --- see Section~\ref{formatter-limitations
+
+Applicable for conversions c, C.
 
 \item{INT} requires that a format argument represents an integral type. Specifically,
     \code{byte}, \code{Byte}, \code{short}, \code{Short},
@@ -223,21 +231,12 @@ Figure~\ref{fig:formatter-cat} summarizes the subset
 relationship among all conversion categories.
 
 \begin{figure}[thbp]
-    \includeimage{formatter-categories}{2.5cm}
+    \includeimage{formatter-categories}{4cm}
     \caption{The subset relationship among conversion categories.}
     \label{fig:formatter-cat}
 \end{figure}
 
-\subsection{Type Hierarchy}
 
-\begin{figure}[thbp]
-\includeimage{formatter-hierarchy}{2.5cm}
-\caption{The Format String Checker type hierarchy.}
-\label{fig:formatter-th}
-\end{figure}
-
-\noindent Figure~\ref{fig:formatter-th} summarizes the subtype relation among all type
-qualifiers.  
 
 % THIS SHOULD BE IN A MORE GENERAL DESCRIPTION OF THE FRAMEWORK
 % \code{@Unqualified} is at the top of the hierarchy, which reduces
@@ -253,8 +252,7 @@ qualifiers.
 %     }
 % \end{Verbatim}
 
-Not shown in the figure are the subtyping rules among \code{@Format} qualifiers
-with different conversion categories. It is legal to:
+It is legal to:
 
 \begin{itemize}
 \item use a format string with a weaker (less restrictive) conversion category than required.
@@ -276,7 +274,7 @@ The following example shows the subtyping rules in action:
     String.format(f, 0.8, 42);
 \end{Verbatim}
 
-\section{What does the Format String Checker check\label{formatter-bugs}}
+\section{What the Format String Checker checks\label{formatter-guarantees}}
 
 % VERIFICATION
 If the Format String Checker issues no errors, it provides the following guarantees:
@@ -393,7 +391,7 @@ specifier with \code{"null"}. In the example above, this would result in
 %     String.format("%1$d %1$f",new Object[]{1});  // warning (III 1)
 % \end{Verbatim}
 
-\subsection{Limitations}
+\subsection{Limitations\label{formatter-limitations}}
 
 The Format String Checker helps prevent bugs by detecting, at compile time,
 which invocations of format methods will fail. While the Format String Checker
@@ -464,14 +462,14 @@ warnings. These cases are:
 % \end{Verbatim} 
 
 
-\section{Implicit qualifiers}
+\section{Implicit qualifiers\label{formatter-implicit}}
 
 As described in Section~\ref{effective-qualifier}, the Format String Checker adds implicit
 qualifiers, reducing the number of annotations that must appear in your code.
 The checker implicitly adds the \code{@Format} qualifier with the appropriate
 conversion categories to any String literal that is a valid format string.
 
-\section{Testing if a format string is valid}
+\section{Testing if a format string is valid\label{formatter-run-time-tests}}
 
 % Copied from the Regex Checker.
 % When one is improved, improve the other as well.
