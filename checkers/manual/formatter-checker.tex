@@ -4,8 +4,15 @@
 % VERIFICATION
 The Format String Checker detects and prevents use of incorrect format strings
 in format methods such as 
-\sunjavadoc{java/io/PrintStream.html#printf(java.lang.String,java.lang.Object...)}{System.out.printf}
+\sunjavadoc{java/io/PrintStream.html#printf(java.lang.String, java.lang.Object...)}{System.out.printf}
 and \sunjavadoc{java/lang/String.html#format(java.lang.String, java.lang.Object...)}{String.format}.
+
+The Format String Checker warns you if you write an invalid format string,
+and it warns you if the other arguments are not consistent with the format
+string (in number of arguments or in their types).  Here are examples of
+errors that the Format String Checker detects at compile time.
+Section~\ref{formatter-bugs} provides more details.
+
 % BUG FINDER
 % The Format String Checker helps to prevent bugs that are the result of an
 % incorrect use of format methods such as 
@@ -24,54 +31,64 @@ and \sunjavadoc{java/lang/String.html#format(java.lang.String, java.lang.Object.
 % \end{itemize}
 %
 % \noindent
-Following are examples of common errors that the Format String Checker detects at
-compile time, more details are provided in Section~\ref{formatter-bugs}.
+% Following are examples of common errors that the Format String Checker detects at
+% compile time, more details are provided in Section~\ref{formatter-bugs}.
 
 \begin{Verbatim}
-    String.format("%d", "String");  // invalid argument for %d
-    String.format("%y", 7);         // invalid format string
-    String.format("{0}", "String"); // unused argument, {0} is wrong syntax
-    String.format("%d", 7, 3);      // unused argument 3
-    String.format("%d %s", 7);      // missing argument for %s
+    String.format("%y", 7);           // invalid format string
+
+    String.format("%d", "a string");  // invalid argument type for %d
+
+    String.format("{0}", "a string"); // unused argument, {0} is wrong syntax
+    String.format("%d", 7, 3);        // unused argument 3
+    String.format("%d %s", 7);        // missing argument for %s
 \end{Verbatim}
 
 The Format String Checker's most important annotation is
-\code{@\refclass{checker/quals}{Format}}. Yet, it is rare that this annotation
-has to be written, as it is inferred if a string literal is directly passed as
-a format method's first parameter. The Format String Checker's annotations are
-explained in Section~\ref{formatter-annotations}.
+\code{@\refclass{checker/quals}{Format}} (see
+Section~\ref{formatter-annotations}). Yet, a programmer rarely writes this annotation, as it is inferred if a string literal is directly passed as
+a format method's first parameter.
 
 To run the Format String Checker, supply the \code{-processor
 checkers.formatter.FormatterChecker} command-line option to javac. 
 
+\section{Formatting terminology\label{formatter-terminology}}
+
+Printf-style formatting takes as an argument a \emph{format string} and a
+list of arguments.  It produces a new string in which each \emph{format
+  specifier} has been replaced by the corresponding argument.
+The format specifier determines how the format argument is converted to a
+string.
+%% Redundant
+%  The Java standard library provides printf-style formatting in \emph{format methods} such as
+% \sunjavadoc{java/lang/String.html#format(java.lang.String, java.lang.Object...)}{String.format}
+% and 
+% \sunjavadoc{java/io/PrintStream.html#printf(java.lang.String,java.lang.Object...)}{System.out.printf}.
+A format specifier is introduced by a \code{\%} character. For example,
+\code{String.format("The \%s is \%d.","answer",42)} yields
+\code{"The answer is 42."}.  \code{"\%s \%d"} is
+the format string, \code{"\%s"} and \code{"\%d"} are the format specifiers;
+\code{"hello"} and \code{42} are format arguments.
+
+
 \section{Format String Checker annotations\label{formatter-annotations}}
 
-Printf-style formatting is the process of replacing \emph{format specifiers} in
-a \emph{format string}. The replacements are taken from a \emph{format argument}
-list, and the format specifier determines how the format argument is converted to a
-string. The Java standard library provides printf-style formatting in \emph{format methods} such as
-\sunjavadoc{java/lang/String.html#format(java.lang.String, java.lang.Object...)}{String.format}
-and 
-\sunjavadoc{java/io/PrintStream.html#printf(java.lang.String,java.lang.Object...)}{System.out.printf}.
-Format specifiers are introduced by a \code{\%} character. For example,
-\code{String.format("\%s \%d","str",1)} yields \code{"str 1"}.  \code{"\%s \%d"} is
-the format string, \code{"\%s"} and \code{"\%d"} are the format specifiers;
-\code{"str"} and \code{1} are format arguments.  All of Java's format
-methods use the \sunjavadoc{java/util/Formatter.html}{Formatter} class internally.
 
-The Formatter Checker assigns a qualifier to every term, in addition to the
+The Format String Checker assigns a qualifier of
+\code{@\refclass{formatter/quals}{Format}} or \code{@\refclass{formatter/quals}{InvalidFormat}} to every string, in addition to the
 regular Java type. These qualifiers make up the Format String type system.
 
 The \code{@\refclass{formatter/quals}{Format}} qualifier indicates a
-\emph{valid} format string. A format string \code{s} is valid if there exists a
-list of format arguments \code{l}, such that \code{String.format(s,l)}
-does not throw an exception. 
+\emph{valid} format string.  The Formatter documentation explains the
+requirements for a \sunjavadoc{java/util/Formatter.html#syntax}{\textrm{valid
+  format string}}.
 
-Passing a valid format string to a format method does not guarantee that the 
-invocation will succeed. The format method invocation \code{String.format("\%d","String")}
-for example, will fail despite the fact that \code{"\%d"} is valid. Passing
-a valid format string to a format method with all format arguments being \code{null}, will
-never throw an exception.
+%% This is premature; it is not discussed here, and it was already
+%% mentioned briefly to introduce readers to the idea, so that isn't
+%% necessary either.
+% Passing a valid format string to a format method does not guarantee that the 
+% invocation will succeed. The format method invocation \code{String.format("\%d","hello")}
+% for example, will fail despite the fact that \code{"\%d"} is valid.
 
 The \code{@\refclass{formatter/quals}{Format}} qualifier is parameterized with
 a list of conversion categories that impose restricts on the format arguments.
@@ -85,12 +102,12 @@ passed to a format method, requires the first format argument to be ``float like
 and the second format argument to be ``integer like'':
 
 \begin{Verbatim}
-    void print(@Format({FLOAT, INT}) format) {
-        System.out.printf(format, 7.8, 7);
+    void printFloatAndInt(@Format({FLOAT, INT}) format) {
+        System.out.printf(format, 3.1415, 42);
     } 
 
-    print("Float %f, Number %d");  // ok
-    print("Float %f");             // error
+    printFloatAndInt("Float %f, Number %d");  // ok
+    printFloatAndInt("Float %f");             // error
 \end{Verbatim}
 
 \noindent All other annotations in the Format String type system are only used
@@ -104,16 +121,16 @@ for example.  \code{@\refclass{formatter/quals}{FormatBottom}} is assigned to th
 \subsection{Conversion Categories\label{formatter-categories}}
 
 A format specifier's conversion component consists of its last, or the last two,
-characters. The conversion component of \code{"\%d"} is for example \code{d}.
+characters.  For example, the conversion component of \code{"\%d"} is \code{d}.
 
-The format argument used to replace a format specifier, may be restricted 
+The format argument used to replace a format specifier may be restricted 
 by the format specifier's conversion component. In the following example, the
 format specifier's conversion component \code{d} restricts the first format argument
 to be ``integer like'':
 
 \begin{Verbatim}
     String.format("%d", 5);         // ok
-    String.format("%d", "String");  // warning
+    String.format("%d", "hello");  // warning
 \end{Verbatim}
 
 \noindent Many conversion components enforce the same restrictions. We represent
@@ -162,6 +179,7 @@ category INT.  The following conversion categories are defined in the
 % Objects that implement the \code{Formattable} interface and throw an
 % exception in \code{formatTo} are also not allowed.
 
+\noindent The same format argument may serve as replacement for multiple format specifiers. 
 Until now, we have assumed that the format specifiers simply consume format arguments left to right.
 But there are two other ways for a format specifier to select a format argument:
 
@@ -175,24 +193,17 @@ But there are two other ways for a format specifier to select a format argument:
     format argument.
 \end{itemize}
 
-\noindent The same format argument may serve as replacement for multiple format specifiers. In
-this case, the format argument is restricted by multiple conversions, and is therefore the
-\emph{intersection} of the associated conversion categories. 
-
-In the following example, the format argument is restricted by CHAR and
-INT.  The format argument must therefore be compatible with both conversion
-categories, and can therefore neither be a \code{Character} nor \code{Long}.
-This particular intersection of conversion categories is called
-\code{CHAR\_AND\_INT}:
+In the following example,
+the format argument must be compatible with both conversion
+categories, and can therefore neither be a \code{Character} nor a \code{long}.
 
 \begin{Verbatim}
     format("Char %1$c, Int %1$d", (int)42);   // ok
     format("Char %1$c, Int %1$d", (long)42);  // error
 \end{Verbatim}
  
-\noindent Many of these intersections lead to already existing conversion categories,
-for example \code{GENERAL} $\cap$ \code{CHAR} $=$ \code{CHAR} and 
-\code{UNUSED} $\cap$ \code{GENERAL} $=$ \code{GENERAL}. But some do not:
+Only three additional conversion categories are needed represent all possible
+intersections of previously-mentioned conversion categories:
 
 \begin{description}
 \item{NULL} is used if no object of any type can be
@@ -204,8 +215,11 @@ for example \code{GENERAL} $\cap$ \code{CHAR} $=$ \code{CHAR} and
 \item{INT\_AND\_TIME} is used if a format argument is restricted by an \code{INT} and \code{TIME} conversion category (\code{INT} $\cap$ \code{TIME}).
 \end{description}
 
-\noindent All intersections of more than two conversion categories lead to an already
-existing conversion category. Figure~\ref{fig:formatter-cat} summarizes the subset 
+\noindent All other intersections lead to already existing conversion categories.
+For example, \code{GENERAL} $\cap$ \code{CHAR} $=$ \code{CHAR} and 
+\code{UNUSED} $\cap$ \code{GENERAL} $=$ \code{GENERAL}.
+
+Figure~\ref{fig:formatter-cat} summarizes the subset 
 relationship among all conversion categories.
 
 \begin{figure}[thbp]
@@ -286,7 +300,7 @@ Format String Checker guarantees the following additional properties:
 \end{enumerate}
 
 \noindent III.) If the format arguments are passed to the format method as array, 
-an warning is issued by the Format String Checker.
+a warning is issued by the Format String Checker.
 
 \noindent Following are examples for every guarantee:
 
@@ -303,10 +317,11 @@ an warning is issued by the Format String Checker.
     String.format("%c",4.2);                     // error (II 3)
     String.format("%c",(String)null);            // error (II 3)
     String.format("%1$d %1$f",new Object[]{1});  // warning (III)
-    String.format("%s",new Object[]{"String"});  // warning (III)
+    String.format("%s",new Object[]{"hello"});   // warning (III)
 \end{Verbatim}
 
 Unused format arguments issue a warning, as we found them to be a very common source of bugs.
+[TODO: Write a better justification.]
 Use a \code{@SuppressWarnings} annotation if you are intentionally ignoring format arguments.
 
 Format arguments that can only be \code{null} issue an error. This means that it
@@ -387,7 +402,7 @@ will fail even though the Format String Checker issued neither errors nor
 warnings. These cases are:
 
 \begin{enumerate}
-\item The format string is \code{null}. Use the Nullness Checker to prevent this.
+\item The format string is \code{null}. Use the \ahrefloc{nullness-checker}{Nullness Checker} to prevent this.
 \item A format argument's toString methods throws an exception.
 \item A format argument implements the \code{Formattable} interface and throws an
     exception in the \code{formatTo} method.
@@ -416,8 +431,8 @@ warnings. These cases are:
         }
     }
 
-    // the checker issues no errors or warnings for the
-    // following illegal invocations of format methods
+    // The checker issues no errors or warnings for the
+    // following illegal invocations of format methods.
     String.format(null);          // NullPointerException (1)
     String.format("%s", new A()); // Error (2)
     String.format("%s", new B()); // Error (3)
@@ -453,16 +468,21 @@ warnings. These cases are:
 
 As described in Section~\ref{effective-qualifier}, the Format String Checker adds implicit
 qualifiers, reducing the number of annotations that must appear in your code.
-The checker implicitly adds the \code{@Format} qualifier with the correct
+The checker implicitly adds the \code{@Format} qualifier with the appropriate
 conversion categories to any String literal that is a valid format string.
 
 \section{Testing if a format string is valid}
 
-% Copied from the Regex Checker
+% Copied from the Regex Checker.
+% When one is improved, improve the other as well.
+
+[TODO: Whenever a string is computed rather than written as a literal, it
+must be tested or trusted.]
+
 
 Sometimes, the Format String Checker cannot infer whether a particular
 expression is a valid format string. In these cases, you can call the
-\refmethod{checker/formatter}{FormatterUtil}{asFormat} 
+\refmethod{checker/formatter}{FormatterUtil}{asFormat}{(String, ConversionCategory...)} 
 method to check if the format string is valid, and whether the
 format string's format specifiers match certain conversion categories.
 If this is not the case, an exception is raised.
@@ -472,8 +492,7 @@ The following code, for example, does not type check:
 \begin{Verbatim}
     Scanner s = new Scanner(System.in);    
     String format = s.next();
-    // ... much later in the code
-    System.out.printf(format,"String",1337); 
+    System.out.printf(format,"hello",1337); 
 \end{Verbatim}
 
 \noindent Change it to the following to make it work:
@@ -483,15 +502,20 @@ The following code, for example, does not type check:
     String format = s.next()
     try {
         format = FormatterUtil.asFormat(format,GENERAL,INT); 
-    } catch(IllegalFormatException e) {
+    } catch (IllegalFormatException e) {
         System.err.println("The user entered the following invalid format string: "+format);
         return
     }
     // ... much later in the code
-    System.out.printf(format,"String",1337); 
+    System.out.printf(format,"hello",1337); 
 \end{Verbatim}
 
 \noindent A potential disadvantage of using the \code{FormatterUtil} class is that your code becomes
 dependent on the Checker Framework at run time as well as at compile time. You
 can avoid this by adding the Checker Framework to your project, or by copying
 the \code{FormatterUtil} class into your own code.
+
+%  LocalWords:  printf InvalidFormat Formatter FormatBottom specifier's
+%  LocalWords:  ConversionCategory isValidCodePoint BigInteger BigDecimal
+%  LocalWords:  5cm varargs TODO Formattable formatTo FormatterUtil
+%  LocalWords:  asFormat
