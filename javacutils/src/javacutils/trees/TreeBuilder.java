@@ -20,6 +20,7 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
 import com.sun.source.tree.ArrayAccessTree;
+import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
@@ -345,6 +346,18 @@ public class TreeBuilder {
     }
 
     /**
+     * Builds an AST Tree to assign an RHS expression to an LHS expression.
+     *
+     * @param lhs  the expression to be assigned to
+     * @param rhs  the expression to be assigned
+     * @return  a statement assigning the expression to the variable
+     */
+    public AssignmentTree buildAssignment(ExpressionTree lhs,
+                                          ExpressionTree rhs) {
+        return maker.Assign((JCTree.JCExpression)lhs, (JCTree.JCExpression)rhs);
+    }
+
+    /**
      * Builds an AST Tree representing a literal value of primitive
      * or String type.
      */
@@ -489,4 +502,189 @@ public class TreeBuilder {
 
         return primValueAccess;
     }
+
+    /**
+     * Map public AST Tree.Kinds to internal javac JCTree.Tags.
+     */
+    public JCTree.Tag kindToTag(Tree.Kind kind) {
+        switch (kind) {
+        case AND:
+            return JCTree.Tag.BITAND;
+        case AND_ASSIGNMENT:
+            return JCTree.Tag.BITAND_ASG;
+        case ANNOTATION:
+            return JCTree.Tag.ANNOTATION;
+        case ANNOTATION_TYPE:
+            return JCTree.Tag.TYPE_ANNOTATION;
+        case ARRAY_ACCESS:
+            return JCTree.Tag.INDEXED;
+        case ARRAY_TYPE:
+            return JCTree.Tag.TYPEARRAY;
+        case ASSERT:
+            return JCTree.Tag.ASSERT;
+        case ASSIGNMENT:
+            return JCTree.Tag.ASSIGN;
+        case BITWISE_COMPLEMENT:
+            return JCTree.Tag.COMPL;
+        case BLOCK:
+            return JCTree.Tag.BLOCK;
+        case BREAK:
+            return JCTree.Tag.BREAK;
+        case CASE:
+            return JCTree.Tag.CASE;
+        case CATCH:
+            return JCTree.Tag.CATCH;
+        case CLASS:
+            return JCTree.Tag.CLASSDEF;
+        case CONDITIONAL_AND:
+            return JCTree.Tag.AND;
+        case CONDITIONAL_EXPRESSION:
+            return JCTree.Tag.CONDEXPR;
+        case CONDITIONAL_OR:
+            return JCTree.Tag.OR;
+        case CONTINUE:
+            return JCTree.Tag.CONTINUE;
+        case DIVIDE:
+            return JCTree.Tag.DIV;
+        case DIVIDE_ASSIGNMENT:
+            return JCTree.Tag.DIV_ASG;
+        case DO_WHILE_LOOP:
+            return JCTree.Tag.DOLOOP;
+        case ENHANCED_FOR_LOOP:
+            return JCTree.Tag.FOREACHLOOP;
+        case EQUAL_TO:
+            return JCTree.Tag.EQ;
+        case EXPRESSION_STATEMENT:
+            return JCTree.Tag.EXEC;
+        case FOR_LOOP:
+            return JCTree.Tag.FORLOOP;
+        case GREATER_THAN:
+            return JCTree.Tag.GT;
+        case GREATER_THAN_EQUAL:
+            return JCTree.Tag.GE;
+        case IDENTIFIER:
+            return JCTree.Tag.IDENT;
+        case IF:
+            return JCTree.Tag.IF;
+        case IMPORT:
+            return JCTree.Tag.IMPORT;
+        case INSTANCE_OF:
+            return JCTree.Tag.TYPETEST;
+        case LABELED_STATEMENT:
+            return JCTree.Tag.LABELLED;
+        case LEFT_SHIFT:
+            return JCTree.Tag.SL;
+        case LEFT_SHIFT_ASSIGNMENT:
+            return JCTree.Tag.SL_ASG;
+        case LESS_THAN:
+            return JCTree.Tag.LT;
+        case LESS_THAN_EQUAL:
+            return JCTree.Tag.LE;
+        case LOGICAL_COMPLEMENT:
+            return JCTree.Tag.NOT;
+        case MEMBER_SELECT:
+            return JCTree.Tag.SELECT;
+        case METHOD:
+            return JCTree.Tag.METHODDEF;
+        case METHOD_INVOCATION:
+            return JCTree.Tag.APPLY;
+        case MINUS:
+            return JCTree.Tag.MINUS;
+        case MINUS_ASSIGNMENT:
+            return JCTree.Tag.MINUS_ASG;
+        case MODIFIERS:
+            return JCTree.Tag.MODIFIERS;
+        case MULTIPLY:
+            return JCTree.Tag.MUL;
+        case MULTIPLY_ASSIGNMENT:
+            return JCTree.Tag.MUL_ASG;
+        case NEW_ARRAY:
+            return JCTree.Tag.NEWARRAY;
+        case NEW_CLASS:
+            return JCTree.Tag.NEWCLASS;
+        case NOT_EQUAL_TO:
+            return JCTree.Tag.NE;
+        case OR:
+            return JCTree.Tag.BITOR;
+        case OR_ASSIGNMENT:
+            return JCTree.Tag.BITOR_ASG;
+        case PARENTHESIZED:
+            return JCTree.Tag.PARENS;
+        case PLUS:
+            return JCTree.Tag.PLUS;
+        case PLUS_ASSIGNMENT:
+            return JCTree.Tag.PLUS_ASG;
+        case POSTFIX_DECREMENT:
+            return JCTree.Tag.POSTDEC;
+        case POSTFIX_INCREMENT:
+            return JCTree.Tag.POSTINC;
+        case PREFIX_DECREMENT:
+            return JCTree.Tag.PREDEC;
+        case PREFIX_INCREMENT:
+            return JCTree.Tag.PREINC;
+        case REMAINDER:
+            return JCTree.Tag.MOD;
+        case REMAINDER_ASSIGNMENT:
+            return JCTree.Tag.MOD_ASG;
+        case RETURN:
+            return JCTree.Tag.RETURN;
+        case RIGHT_SHIFT:
+            return JCTree.Tag.SR;
+        case RIGHT_SHIFT_ASSIGNMENT:
+            return JCTree.Tag.SR_ASG;
+        case SWITCH:
+            return JCTree.Tag.SWITCH;
+        case SYNCHRONIZED:
+            return JCTree.Tag.SYNCHRONIZED;
+        case THROW:
+            return JCTree.Tag.THROW;
+        case TRY:
+            return JCTree.Tag.TRY;
+        case TYPE_CAST:
+            return JCTree.Tag.TYPECAST;
+        case TYPE_PARAMETER:
+            return JCTree.Tag.TYPEPARAMETER;
+        case UNARY_MINUS:
+            return JCTree.Tag.NEG;
+        case UNARY_PLUS:
+            return JCTree.Tag.POS;
+        case UNION_TYPE:
+            return JCTree.Tag.TYPEUNION;
+        case UNSIGNED_RIGHT_SHIFT:
+            return JCTree.Tag.USR;
+        case UNSIGNED_RIGHT_SHIFT_ASSIGNMENT:
+            return JCTree.Tag.USR_ASG;
+        case VARIABLE:
+            return JCTree.Tag.VARDEF;
+        case WHILE_LOOP:
+            return JCTree.Tag.WHILELOOP;
+        case XOR:
+            return JCTree.Tag.BITXOR;
+        case XOR_ASSIGNMENT:
+            return JCTree.Tag.BITXOR_ASG;
+        default:
+            return JCTree.Tag.NO_TAG;
+        }
+    }
+
+    /**
+     * Builds an AST Tree to perform a binary operation.
+     *
+     * @param type  result type of the operation
+     * @param op    AST Tree operator
+     * @param left  the left operand tree
+     * @param right  the right operand tree
+     * @return  a Tree representing "left < right"
+     */
+    public BinaryTree buildBinary(TypeMirror type, Tree.Kind op, ExpressionTree left, ExpressionTree right) {
+        JCTree.Tag jcOp = kindToTag(op);
+        JCTree.JCBinary binary =
+            maker.Binary(jcOp, (JCTree.JCExpression)left,
+                         (JCTree.JCExpression)right);
+        binary.setType((Type)type);
+        return binary;
+    }
+
+
+    
 }
