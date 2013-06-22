@@ -354,7 +354,10 @@ public class TreeBuilder {
      */
     public AssignmentTree buildAssignment(ExpressionTree lhs,
                                           ExpressionTree rhs) {
-        return maker.Assign((JCTree.JCExpression)lhs, (JCTree.JCExpression)rhs);
+        JCTree.JCAssign assign =
+            maker.Assign((JCTree.JCExpression)lhs, (JCTree.JCExpression)rhs);
+        assign.setType((Type)InternalUtils.typeOf(lhs));
+        return assign;
     }
 
     /**
@@ -394,19 +397,6 @@ public class TreeBuilder {
             maker.Indexed((JCTree.JCExpression)array, (JCTree.JCExpression)index);
         access.setType((Type)arrayType.getComponentType());
         return access;
-    }
-
-    /**
-     * Builds an AST Tree to postincrement an expression (++).
-     *
-     * @param expression  the value to be postincremented
-     * @return  a Tree representing the postincrement
-     */
-    public UnaryTree buildPostfixIncrement(ExpressionTree expression) {
-        JCTree.JCUnary unary =
-            maker.Unary(JCTree.Tag.POSTINC, (JCTree.JCExpression)expression);
-        unary.setType((Type)InternalUtils.typeOf(expression));
-        return unary;
     }
 
     /**
