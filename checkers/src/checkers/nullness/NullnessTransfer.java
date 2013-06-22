@@ -38,7 +38,6 @@ import dataflow.cfg.node.Node;
 import dataflow.cfg.node.NullLiteralNode;
 import dataflow.cfg.node.ReturnNode;
 import dataflow.cfg.node.ThrowNode;
-import dataflow.cfg.node.UnboxingNode;
 
 /**
  * Transfer function for the non-null type system. Performs the following
@@ -216,15 +215,6 @@ public class NullnessTransfer extends
                 makeNonNull(result, n.getArgument(i));
             }
         }
-        return result;
-    }
-
-    @Override
-    public TransferResult<NullnessValue, NullnessStore> visitUnboxing(
-            UnboxingNode n, TransferInput<NullnessValue, NullnessStore> p) {
-        TransferResult<NullnessValue, NullnessStore> result = super
-                .visitUnboxing(n, p);
-        makeNonNull(result, n);
         return result;
     }
 

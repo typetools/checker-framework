@@ -14,7 +14,6 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
 import dataflow.cfg.node.ArrayAccessNode;
-import dataflow.cfg.node.BoxingNode;
 import dataflow.cfg.node.ClassNameNode;
 import dataflow.cfg.node.FieldAccessNode;
 import dataflow.cfg.node.LocalVariableNode;
@@ -23,7 +22,6 @@ import dataflow.cfg.node.NarrowingConversionNode;
 import dataflow.cfg.node.Node;
 import dataflow.cfg.node.StringConversionNode;
 import dataflow.cfg.node.ThisLiteralNode;
-import dataflow.cfg.node.UnboxingNode;
 import dataflow.cfg.node.ValueLiteralNode;
 import dataflow.cfg.node.WideningConversionNode;
 import dataflow.util.HashCodeUtils;
@@ -74,11 +72,11 @@ public class FlowExpressions {
     }
 
     /**
-     * We ignore operations such as boxing, unboxing, widening and
+     * We ignore operations such as widening and
      * narrowing when computing the internal representation.  This
      * is because compound assignments may have such Nodes as their
      * LHS operands and the value assigned to is the operand of
-     * the boxing, unboxing, etc. node.
+     * the widening or narrowing node.
      *
      * @return The internal representation (as {@link Receiver}) of any
      *         {@link Node}. Might contain {@link Unknown}.
@@ -97,14 +95,6 @@ public class FlowExpressions {
         } else if (receiverNode instanceof ArrayAccessNode) {
             ArrayAccessNode a = (ArrayAccessNode) receiverNode;
             receiver = internalReprOfArrayAccess(provider, a);
-        } else if (receiverNode instanceof BoxingNode) {
-            // ignore boxing
-            return internalReprOf(provider,
-                    ((BoxingNode) receiverNode).getOperand());
-        } else if (receiverNode instanceof UnboxingNode) {
-            // ignore unboxing
-            return internalReprOf(provider,
-                    ((UnboxingNode) receiverNode).getOperand());
         } else if (receiverNode instanceof StringConversionNode) {
             // ignore string conversion
             return internalReprOf(provider,

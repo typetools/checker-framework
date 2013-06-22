@@ -169,7 +169,6 @@ import dataflow.cfg.node.TernaryExpressionNode;
 import dataflow.cfg.node.ThisLiteralNode;
 import dataflow.cfg.node.ThrowNode;
 import dataflow.cfg.node.TypeCastNode;
-import dataflow.cfg.node.UnboxingNode;
 import dataflow.cfg.node.UnsignedRightShiftNode;
 import dataflow.cfg.node.ValueLiteralNode;
 import dataflow.cfg.node.VariableDeclarationNode;
