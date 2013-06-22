@@ -158,10 +158,6 @@ import dataflow.cfg.node.NumericalSubtractionNode;
 import dataflow.cfg.node.ObjectCreationNode;
 import dataflow.cfg.node.PackageNameNode;
 import dataflow.cfg.node.ParameterizedTypeNode;
-import dataflow.cfg.node.PostfixDecrementNode;
-import dataflow.cfg.node.PostfixIncrementNode;
-import dataflow.cfg.node.PrefixDecrementNode;
-import dataflow.cfg.node.PrefixIncrementNode;
 import dataflow.cfg.node.PrimitiveTypeNode;
 import dataflow.cfg.node.ReturnNode;
 import dataflow.cfg.node.SignedRightShiftNode;
@@ -2673,6 +2669,8 @@ public class CFGBuilder {
                     TypeCastNode castNode = new TypeCastNode(castTree, operNode, leftType);
                     extendWithNode(castNode);
 
+                    // Map the compound assignment tree to an assignment node, which
+                    // will have the correct type.
                     AssignmentNode assignNode = new AssignmentNode(tree, targetLHS, castNode);
                     extendWithNode(assignNode);
                     return assignNode;
@@ -3920,18 +3918,13 @@ public class CFGBuilder {
             boolean outerConditionalMode = conditionalMode;
             conditionalMode = false;
 
-            Node expr = scan(tree.getExpression(), p);
-
             Tree.Kind kind = tree.getKind();
             switch (kind) {
             case BITWISE_COMPLEMENT:
-            case POSTFIX_DECREMENT:
-            case POSTFIX_INCREMENT:
-            case PREFIX_DECREMENT:
-            case PREFIX_INCREMENT:
             case UNARY_MINUS:
             case UNARY_PLUS: {
                 // see JLS 15.14 and 15.15
+                Node expr = scan(tree.getExpression(), p);
                 expr = unaryNumericPromotion(expr);
 
                 TypeMirror exprType = InternalUtils.typeOf(tree);
@@ -3941,30 +3934,6 @@ public class CFGBuilder {
                     result = extendWithNode(new BitwiseComplementNode(tree,
                             expr));
                     break;
-                case POSTFIX_DECREMENT: {
-                    Node node = extendWithNode(new PostfixDecrementNode(tree,
-                            expr));
-                    result = narrowAndBox(node, exprType);
-                    break;
-                }
-                case POSTFIX_INCREMENT: {
-                    Node node = extendWithNode(new PostfixIncrementNode(tree,
-                            expr));
-                    result = narrowAndBox(node, exprType);
-                    break;
-                }
-                case PREFIX_DECREMENT: {
-                    Node node = extendWithNode(new PrefixDecrementNode(tree,
-                            expr));
-                    result = narrowAndBox(node, exprType);
-                    break;
-                }
-                case PREFIX_INCREMENT: {
-                    Node node = extendWithNode(new PrefixIncrementNode(tree,
-                            expr));
-                    result = narrowAndBox(node, exprType);
-                    break;
-                }
                 case UNARY_MINUS:
                     result = extendWithNode(new NumericalMinusNode(tree, expr));
                     break;
@@ -3975,10 +3944,12 @@ public class CFGBuilder {
                     assert false;
                     break;
                 }
-            }
                 break;
+            }
+
             case LOGICAL_COMPLEMENT: {
                 // see JLS 15.15.6
+                Node expr = scan(tree.getExpression(), p);
                 result = extendWithNode(new ConditionalNotNode(tree,
                         unbox(expr)));
                 if (conditionalMode) {
@@ -3988,9 +3959,86 @@ public class CFGBuilder {
                 break;
             }
 
+            case POSTFIX_DECREMENT:
+            case POSTFIX_INCREMENT: {
+                ExpressionTree exprTree = tree.getExpression();
+                TypeMirror exprType = InternalUtils.typeOf(exprTree);
+                TypeMirror oneType = types.getPrimitiveType(TypeKind.INT);
+                Node expr = scan(exprTree, p);
+
+                TypeMirror promotedType = binaryPromotedType(exprType, oneType);
+
+                LiteralTree oneTree = treeBuilder.buildLiteral(Integer.valueOf(1));
+                handleArtificialTree(oneTree);
+
+                Node exprRHS = binaryNumericPromotion(expr, promotedType);
+                Node one = new IntegerLiteralNode(oneTree);
+                extendWithNode(one);
+                one = binaryNumericPromotion(one, promotedType);
+                
+                BinaryTree operTree = treeBuilder.buildBinary(promotedType,
+                        (kind == Tree.Kind.POSTFIX_INCREMENT ? Tree.Kind.PLUS : Tree.Kind.MINUS),
+                        exprTree, oneTree);
+                handleArtificialTree(operTree);
+                Node operNode;
+                if (kind == Tree.Kind.POSTFIX_INCREMENT) {
+                    operNode = new NumericalAdditionNode(operTree, exprRHS, one);
+                } else {
+                    assert kind == Tree.Kind.POSTFIX_DECREMENT;
+                    operNode = new NumericalSubtractionNode(operTree, exprRHS, one);
+                }
+                extendWithNode(operNode);
+
+                Node narrowed = narrowAndBox(operNode, exprType);
+                // TODO: By using the assignment as the result of the expression, we
+                // act like a pre-increment/decrement.  Fix this by saving the initial
+                // value of the expression in a temporary.
+                AssignmentNode assignNode = new AssignmentNode(tree, expr, narrowed);
+                extendWithNode(assignNode);
+                result = assignNode;
+                break;
+            }
+            case PREFIX_DECREMENT:
+            case PREFIX_INCREMENT: {
+                ExpressionTree exprTree = tree.getExpression();
+                TypeMirror exprType = InternalUtils.typeOf(exprTree);
+                TypeMirror oneType = types.getPrimitiveType(TypeKind.INT);
+                Node expr = scan(exprTree, p);
+
+                TypeMirror promotedType = binaryPromotedType(exprType, oneType);
+
+                LiteralTree oneTree = treeBuilder.buildLiteral(Integer.valueOf(1));
+                handleArtificialTree(oneTree);
+
+                Node exprRHS = binaryNumericPromotion(expr, promotedType);
+                Node one = new IntegerLiteralNode(oneTree);
+                extendWithNode(one);
+                one = binaryNumericPromotion(one, promotedType);
+                
+                BinaryTree operTree = treeBuilder.buildBinary(promotedType,
+                        (kind == Tree.Kind.PREFIX_INCREMENT ? Tree.Kind.PLUS : Tree.Kind.MINUS),
+                        exprTree, oneTree);
+                handleArtificialTree(operTree);
+                Node operNode;
+                if (kind == Tree.Kind.PREFIX_INCREMENT) {
+                    operNode = new NumericalAdditionNode(operTree, exprRHS, one);
+                } else {
+                    assert kind == Tree.Kind.PREFIX_DECREMENT;
+                    operNode = new NumericalSubtractionNode(operTree, exprRHS, one);
+                }
+                extendWithNode(operNode);
+
+                Node narrowed = narrowAndBox(operNode, exprType);
+                AssignmentNode assignNode = new AssignmentNode(tree, expr, narrowed);
+                extendWithNode(assignNode);
+                result = assignNode;
+                break;
+            }
+
             case OTHER: {
                 // special node NLLCHK
                 if (tree.toString().startsWith("<*nullchk*>")) {
+                    Node expr = scan(tree.getExpression(), p);
                     result = extendWithNode(new NullChkNode(tree, expr));
                     break;
                 }

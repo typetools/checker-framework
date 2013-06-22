@@ -51,7 +51,6 @@ import dataflow.cfg.node.AssignmentNode;
 import dataflow.cfg.node.BoxingNode;
 import dataflow.cfg.node.CaseNode;
 import dataflow.cfg.node.ClassNameNode;
-import dataflow.cfg.node.CompoundAssignmentNode;
 import dataflow.cfg.node.ConditionalNotNode;
 import dataflow.cfg.node.EqualToNode;
 import dataflow.cfg.node.FieldAccessNode;
@@ -61,6 +60,7 @@ import dataflow.cfg.node.MethodInvocationNode;
 import dataflow.cfg.node.NarrowingConversionNode;
 import dataflow.cfg.node.Node;
 import dataflow.cfg.node.NotEqualNode;
+import dataflow.cfg.node.StringConcatenateAssignmentNode;
 import dataflow.cfg.node.StringConversionNode;
 import dataflow.cfg.node.TernaryExpressionNode;
 import dataflow.cfg.node.UnboxingNode;
@@ -556,9 +556,9 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
     }
 
     @Override
-    public TransferResult<V, S> visitCompoundAssignment(
-            CompoundAssignmentNode n, TransferInput<V, S> in) {
-        TransferResult<V, S> result = super.visitCompoundAssignment(n, in);
+    public TransferResult<V, S> visitStringConcatenateAssignment(
+            StringConcatenateAssignmentNode n, TransferInput<V, S> in) {
+        TransferResult<V, S> result = super.visitStringConcatenateAssignment(n, in);
         Node lhs = n.getLeftOperand();
         Node rhs = n.getRightOperand();
 

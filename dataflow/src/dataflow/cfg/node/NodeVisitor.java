@@ -70,47 +70,8 @@ public interface NodeVisitor<R, P> {
 
     R visitBitwiseXor(BitwiseXorNode n, P p);
 
-    // Increment and decrement operations
-    R visitPrefixIncrement(PrefixIncrementNode n, P p);
-
-    R visitPrefixDecrement(PrefixDecrementNode n, P p);
-
-    R visitPostfixIncrement(PostfixIncrementNode n, P p);
-
-    R visitPostfixDecrement(PostfixDecrementNode n, P p);
-
     // Compound assignments
-    R visitCompoundAssignment(CompoundAssignmentNode n, P p);
-
     R visitStringConcatenateAssignment(StringConcatenateAssignmentNode n, P p);
-
-    R visitNumericalAdditionAssignment(NumericalAdditionAssignmentNode n, P p);
-
-    R visitNumericalSubtractionAssignment(NumericalSubtractionAssignmentNode n,
-            P p);
-
-    R visitNumericalMultiplicationAssignment(
-            NumericalMultiplicationAssignmentNode n, P p);
-
-    R visitIntegerDivisionAssignment(IntegerDivisionAssignmentNode n, P p);
-
-    R visitFloatingDivisionAssignment(FloatingDivisionAssignmentNode n, P p);
-
-    R visitIntegerRemainderAssignment(IntegerRemainderAssignmentNode n, P p);
-
-    R visitFloatingRemainderAssignment(FloatingRemainderAssignmentNode n, P p);
-
-    R visitLeftShiftAssignment(LeftShiftAssignmentNode n, P p);
-
-    R visitSignedRightShiftAssignment(SignedRightShiftAssignmentNode n, P p);
-
-    R visitUnsignedRightShiftAssignment(UnsignedRightShiftAssignmentNode n, P p);
-
-    R visitBitwiseAndAssignment(BitwiseAndAssignmentNode n, P p);
-
-    R visitBitwiseOrAssignment(BitwiseOrAssignmentNode n, P p);
-
-    R visitBitwiseXorAssignment(BitwiseXorAssignmentNode n, P p);
 
     // Comparison operations
     R visitLessThan(LessThanNode n, P p);
