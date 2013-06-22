@@ -21,6 +21,7 @@ import dataflow.cfg.CFGBuilder;
 import dataflow.cfg.ControlFlowGraph;
 import dataflow.cfg.UnderlyingAST;
 import dataflow.cfg.node.ArrayAccessNode;
+import dataflow.cfg.node.AssignmentNode;
 import dataflow.cfg.node.FieldAccessNode;
 import dataflow.cfg.node.IntegerLiteralNode;
 import dataflow.cfg.node.LessThanNode;
@@ -28,7 +29,7 @@ import dataflow.cfg.node.LocalVariableNode;
 import dataflow.cfg.node.MethodAccessNode;
 import dataflow.cfg.node.MethodInvocationNode;
 import dataflow.cfg.node.Node;
-import dataflow.cfg.node.PostfixIncrementNode;
+import dataflow.cfg.node.NumericalAdditionNode;
 import dataflow.cfg.node.VariableDeclarationNode;
 
 import checkers.basetype.BaseTypeChecker;
@@ -36,6 +37,7 @@ import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 
 import com.sun.source.tree.ArrayAccessTree;
+import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.AssertTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompilationUnitTree;
@@ -387,11 +389,22 @@ public class CFCFGBuilder extends CFGBuilder {
                 LocalVariableNode indexNode3 =
                     extendWithNode(new LocalVariableNode(indexUse3));
 
-                UnaryTree postfixIncrement =
-                    treeBuilder.buildPostfixIncrement(indexUse3);
-                handleArtificialTree(postfixIncrement);
-                extendWithNode(new PostfixIncrementNode(postfixIncrement,
-                                                            indexNode3));
+                LiteralTree oneTree = treeBuilder.buildLiteral(Integer.valueOf(1));
+                handleArtificialTree(oneTree);
+                Node one = new IntegerLiteralNode(oneTree);
+                extendWithNode(one);
+
+                BinaryTree addOneTree = treeBuilder.buildBinary(intType, Tree.Kind.PLUS,
+                        indexUse3, oneTree);
+                handleArtificialTree(addOneTree);
+                Node addOneNode = new NumericalAdditionNode(addOneTree, indexNode3, one);
+                extendWithNode(addOneNode);
+
+                AssignmentTree assignTree = treeBuilder.buildAssignment(indexUse3, addOneTree);
+                handleArtificialTree(assignTree);
+                Node assignNode = new AssignmentNode(assignTree, indexNode3, addOneNode);
+                extendWithNode(assignNode);
+
                 extendWithExtendedNode(new UnconditionalJump(conditionStart));
             }
 
