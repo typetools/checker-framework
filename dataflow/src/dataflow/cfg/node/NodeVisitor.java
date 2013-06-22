@@ -117,10 +117,6 @@ public interface NodeVisitor<R, P> {
 
     R visitStringConversion(StringConversionNode n, P p);
 
-    R visitBoxing(BoxingNode n, P p);
-
-    R visitUnboxing(UnboxingNode n, P p);
-
     R visitNarrowingConversion(NarrowingConversionNode n, P p);
 
     R visitWideningConversion(WideningConversionNode n, P p);
