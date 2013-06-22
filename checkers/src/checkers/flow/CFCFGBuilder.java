@@ -122,9 +122,11 @@ public class CFCFGBuilder extends CFGBuilder {
             // Record the method that encloses the newly created tree.
             MethodTree enclosingMethod = TreeUtils
                 .enclosingMethod(getCurrentPath());
-            Element methodElement = TreeUtils
-                .elementFromDeclaration(enclosingMethod);
-            factory.setPathHack(tree, methodElement);
+            if (enclosingMethod != null) {
+                Element methodElement = TreeUtils
+                    .elementFromDeclaration(enclosingMethod);
+                factory.setPathHack(tree, methodElement);
+            }
         }
         
         @Override
