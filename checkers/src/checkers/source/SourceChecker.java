@@ -4,10 +4,30 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryPoolMXBean;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.Stack;
 import java.util.regex.Pattern;
 
-import javax.annotation.processing.*;
+import javacutils.AbstractTypeProcessor;
+import javacutils.ElementUtils;
+import javacutils.ErrorHandler;
+import javacutils.ErrorReporter;
+import javacutils.InternalUtils;
+import javacutils.TreeUtils;
+
+import javax.annotation.processing.AbstractProcessor;
+import javax.annotation.processing.Messager;
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.annotation.processing.Processor;
+import javax.annotation.processing.RoundEnvironment;
+import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
@@ -18,22 +38,22 @@ import checkers.basetype.BaseTypeChecker;
 import checkers.quals.TypeQualifiers;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.GeneralAnnotatedTypeFactory;
-import checkers.util.ElementUtils;
-import checkers.util.InternalUtils;
-import checkers.util.TreeUtils;
+
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreePath;
+import com.sun.source.util.Trees;
+import com.sun.tools.javac.processing.JavacProcessingEnvironment;
+import com.sun.tools.javac.util.Context;
+import com.sun.tools.javac.util.Log;
 
 /*>>>
 import checkers.compilermsgs.quals.CompilerMessageKey;
 import checkers.nullness.quals.*;
 */
-
-import com.sun.source.tree.*;
-import com.sun.source.util.TreePath;
-import com.sun.source.util.Trees;
-import com.sun.tools.javac.processing.JavacMessager;
-import com.sun.tools.javac.processing.JavacProcessingEnvironment;
-import com.sun.tools.javac.util.Context;
-import com.sun.tools.javac.util.Log;
 
 /**
  * An abstract annotation processor designed for implementing a
@@ -50,7 +70,7 @@ import com.sun.tools.javac.util.Log;
  *  <li>{@link SourceChecker#getMessages} (for type-qualifier specific error messages)
  *  <li>{@link SourceChecker#createSourceVisitor(CompilationUnitTree)} (for a custom {@link SourceVisitor})
  *  <li>{@link SourceChecker#createFactory} (for a custom {@link AnnotatedTypeFactory})
- *  <li>{@link SourceChecker#getSuppressWarningsKey} (for honoring
+ *  <li>{@link SourceChecker#getSuppressWarningsKeys} (for honoring
  *      {@link SuppressWarnings} annotations)
  * </ul>
  *
@@ -61,7 +81,8 @@ import com.sun.tools.javac.util.Log;
  * {@link AbstractProcessor} (or even this class) as the Checker Framework is
  * not designed for such checkers.
  */
-public abstract class SourceChecker extends AbstractTypeProcessor {
+public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
+    extends AbstractTypeProcessor implements ErrorHandler {
 
     // TODO checkers should export themselves through a separate interface,
     // and maybe have an interface for all the methods for which it's safe
@@ -133,8 +154,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
      * @param root the AST root for the factory
      * @return an {@link AnnotatedTypeFactory} for use by typecheckers
      */
-    public AnnotatedTypeFactory createFactory(CompilationUnitTree root) {
-        return new GeneralAnnotatedTypeFactory(this, root);
+    @SuppressWarnings("unchecked") // unchecked cast to type variable
+    public Factory createFactory(CompilationUnitTree root) {
+        return (Factory) new GeneralAnnotatedTypeFactory(this, root);
     }
 
     /**
@@ -144,7 +166,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
      * @param root the AST root
      * @return a {@link SourceVisitor} to use to scan source trees
      */
-    protected abstract SourceVisitor<?, ?> createSourceVisitor(CompilationUnitTree root);
+    protected abstract SourceVisitor<?, ?, ?, ?> createSourceVisitor(CompilationUnitTree root);
 
     /**
      * Provides a mapping of error keys to custom error messages.
@@ -259,11 +281,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
      *
      * @param msg The error message to log.
      */
-    public static void errorAbort(String msg) {
+    @Override
+    public void errorAbort(String msg) {
         throw new CheckerError(msg, new Throwable());
     }
 
-    public static void errorAbort(String msg, Throwable cause) {
+    @Override
+    public void errorAbort(String msg, Throwable cause) {
         throw new CheckerError(msg, cause);
     }
 
@@ -307,7 +331,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
             super.typeProcessingStart();
             initChecker();
             if (this.messager == null) {
-                messager = (JavacMessager) processingEnv.getMessager();
+                messager = processingEnv.getMessager();
                 messager.printMessage(
                         javax.tools.Diagnostic.Kind.WARNING,
                         "You have forgotten to call super.initChecker in your "
@@ -322,11 +346,25 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
                 });
             }
         } catch (CheckerError ce) {
+            if (this.messager == null) {
+                messager = processingEnv.getMessager();
+            }
+
             logCheckerError(ce);
         } catch (Throwable t) {
+            String stackTraceHelp;
+            if (processingEnv.getOptions().containsKey("printErrorStack")) {
+                stackTraceHelp = "";
+            } else {
+                stackTraceHelp = "; invoke the compiler with -AprintErrorStack to see the stack trace.";
+            }
+            if (this.messager == null) {
+                messager = processingEnv.getMessager();
+            }
             logCheckerError(new CheckerError("SourceChecker.init: unexpected Throwable (" +
-                    t.getClass().getSimpleName() + "); message: " + t.getMessage() +
-                    "; invoke the compiler with -AprintErrorStack to see the stack trace.", t));
+                    t.getClass().getSimpleName() + ")" +
+                    (t.getMessage() != null ? "; message: " + t.getMessage() : "") +
+                    stackTraceHelp, t));
         }
     }
 
@@ -336,9 +374,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
      * @see AbstractProcessor#init(ProcessingEnvironment)
      */
     public void initChecker() {
-        this.skipUsesPattern = getSkipUsesPattern(processingEnv.getOptions());
-        this.skipDefsPattern = getSkipDefsPattern(processingEnv.getOptions());
-
         // Grab the Trees and Messager instances now; other utilities
         // (like Types and Elements) can be retrieved by subclasses.
         /*@Nullable*/ Trees trees = Trees.instance(processingEnv);
@@ -349,6 +384,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         this.messages = getMessages();
         this.warns = processingEnv.getOptions().containsKey("warns");
         this.activeLints = createActiveLints(processingEnv.getOptions());
+
+        this.skipUsesPattern = getSkipUsesPattern(processingEnv.getOptions());
+        this.skipDefsPattern = getSkipDefsPattern(processingEnv.getOptions());
     }
 
     /**
@@ -425,7 +463,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         currentRoot = p.getCompilationUnit();
         currentPath = p;
         // Visit the attributed tree.
-        SourceVisitor<?, ?> visitor = null;
+        SourceVisitor<?, ?, ?, ?> visitor = null;
         try {
             visitor = createSourceVisitor(currentRoot);
             visitor.scan(p, null);
@@ -433,7 +471,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
             logCheckerError(ce);
         } catch (Throwable t) {
             logCheckerError(new CheckerError("SourceChecker.typeProcess: unexpected Throwable (" +
-                    t.getClass().getSimpleName() + ")  when processing "
+                    t.getClass().getSimpleName() + ") when processing "
                     + currentRoot.getSourceFile().getName() +
                     (t.getMessage() != null ? "; message: " + t.getMessage() : "") +
                     "; invoke the compiler with -AprintErrorStack to see the stack trace.", t));
@@ -571,7 +609,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
             Trees.instance(processingEnv).printMessage(kind, messageText, (Tree) source,
                     currentRoot);
         else
-            SourceChecker.errorAbort("invalid position source: "
+            ErrorReporter.errorAbort("invalid position source: "
                     + source.getClass().getName());
     }
 
@@ -608,7 +646,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         if (anno == null)
             return false;
 
-        Collection<String> swkeys = this.getSuppressWarningsKey();
+        Collection<String> swkeys = this.getSuppressWarningsKeys();
 
         // For all the method's annotations, check for a @SuppressWarnings
         // annotation. If one is found, check its values for this checker's
@@ -641,7 +679,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
     private boolean shouldSuppressWarnings(Tree tree, String err) {
 
         // Don't suppress warnings if there's no key.
-        Collection<String> swKeys = this.getSuppressWarningsKey();
+        Collection<String> swKeys = this.getSuppressWarningsKeys();
         if (swKeys.isEmpty())
             return false;
 
@@ -748,7 +786,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
     public final boolean getLintOption(String name, boolean def) {
 
         if (!this.getSupportedLintOptions().contains(name)) {
-            errorAbort("Illegal lint option: " + name);
+            ErrorReporter.errorAbort("Illegal lint option: " + name);
         }
 
         if (activeLints.isEmpty())
@@ -788,7 +826,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
      */
     protected final void setLintOption(String name, boolean val) {
         if (!this.getSupportedLintOptions().contains(name)) {
-            errorAbort("Illegal lint option: " + name);
+            ErrorReporter.errorAbort("Illegal lint option: " + name);
         }
 
         /* TODO: warn if the option is also provided on the command line(?)
@@ -912,6 +950,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         options.add("annotatedTypeParams");
         options.add("printErrorStack");
         options.add("printAllQualifiers");
+        options.add("flowdotdir");
+        options.add("assumeAssertionsAreEnabled");
+        options.add("assumeAssertionsAreDisabled");
+        options.add("concurrentSemantics");
+        options.add("suggestPureMethods");
         options.add("resourceStats");
         options.add("stubWarnIfNotFound");
         options.add("stubDebug");
@@ -948,7 +991,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
         SupportedAnnotationTypes supported = this.getClass().getAnnotation(
                 SupportedAnnotationTypes.class);
         if (supported != null)
-            errorAbort("@SupportedAnnotationTypes should not be written on any checker;"
+            ErrorReporter.errorAbort("@SupportedAnnotationTypes should not be written on any checker;"
                             + " supported annotation types are inherited from SourceChecker.");
         return Collections.singleton("*");
     }
@@ -957,14 +1000,14 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
      * @return String keys that a checker honors for suppressing warnings
      *         and errors that it issues
      *
-     * @see SuppressWarningsKey
+     * @see SuppressWarningsKeys
      */
-    public Collection<String> getSuppressWarningsKey() {
-        SuppressWarningsKey annotation =
-            this.getClass().getAnnotation(SuppressWarningsKey.class);
+    public Collection<String> getSuppressWarningsKeys() {
+        SuppressWarningsKeys annotation =
+            this.getClass().getAnnotation(SuppressWarningsKeys.class);
 
         if (annotation != null)
-            return Collections.singleton(annotation.value());
+            return Arrays.asList(annotation.value());
 
         // Inferring key from class name
         String className = this.getClass().getSimpleName();

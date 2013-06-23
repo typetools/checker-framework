@@ -7,19 +7,30 @@
       Builds the Checker Framework for the JSR 308 compiler.
     </description>
 
+    <property file="build.${os.name}.properties"/>
+    <property file="build.properties"/>
+
     <property name="src" value="src"/>
     <property name="tests" value="tests"/>
     <property name="tests.junit" value="${tests}/junit-4.7.jar"/>
+
     <property name="build" value="build"/>
     <property name="build.reports" value="${build}/reports"/>
     <property name="build.tests" value="tests/build"/>
-    <property file="build.${os.name}.properties"/>
-    <property file="build.properties"/>
+
     <property name="checkers.jar.file" value="binary/checkers.jar"/>
     <property name="checkers-quals.jar.file" value="binary/checkers-quals.jar"/>
+
     <property name="dist.doc" value="doc"/>
+
     <property name="javaparser.loc" value="../javaparser"/>
+    <property name="javacutils.loc" value="../javacutils"/>
+    <property name="dataflow.loc" value="../dataflow"/>
+
     <property name="checkers.rel.jp" value="../checkers"/>
+    <property name="checkers.rel.javacutils" value="../checkers"/>
+    <property name="checkers.rel.dataflow" value="../checkers"/>
+
     <property name="build.jtreg.dir" value="${build}/jtreg"/>
 
     <property name="tmpdir" value="${java.io.tmpdir}/${user.name}/${ant.project.name}" />
@@ -28,8 +39,6 @@
     <property name="run.tests.should.fork" value="true"/>
     <property name="halt.on.test.failure" value="true"/>
 
-    <!-- THERE IS BOTH A javac.lib and a javac.lib -->
-    <property name="javac.lib" value="${jsr308.langtools}/dist/lib/javac.jar"/>
     <property environment="env"/>
 
     <property name="JAVA_6_HOME" value="${env.JAVA_6_HOME}" />
@@ -74,6 +83,14 @@
         <available property="jp.project"
                    file="${javaparser.loc}/build.xml"/>
         <antcall target="-prep-jp-compile"/>
+
+        <available property="javacutils.project"
+                   file="${javacutils.loc}/build.xml"/>
+        <antcall target="-prep-javacutils-compile"/>
+
+        <available property="dataflow.project"
+                   file="${dataflow.loc}/build.xml"/>
+        <antcall target="-prep-dataflow-compile"/>
     </target>
 
     <target name="-prep-jp-compile" if="jp.project"
@@ -81,6 +98,24 @@
       <ant dir="${javaparser.loc}">
         <property name="dist.file"
                   value="${checkers.rel.jp}/${javaparser.lib}"/>
+        <target name="dist"/>
+      </ant>
+    </target>
+
+    <target name="-prep-javacutils-compile" if="javacutils.project"
+            description="compile javacutils utilities project if available">
+      <ant dir="${javacutils.loc}">
+        <property name="dist.file"
+                  value="${checkers.rel.javacutils}/${javacutils.lib}"/>
+        <target name="dist"/>
+      </ant>
+    </target>
+
+    <target name="-prep-dataflow-compile" if="dataflow.project"
+            description="compile dataflow utilities project if available">
+      <ant dir="${dataflow.loc}">
+        <property name="dist.file"
+                  value="${checkers.rel.dataflow}/${dataflow.lib}"/>
         <target name="dist"/>
       </ant>
     </target>
@@ -123,18 +158,24 @@
           <srcfiles refid="src.astub.files"/>
         </uptodate>
         <uptodate property="javaparser.lib.uptodate" targetfile="${build}" srcfile="${javaparser.lib}"/>
+        <uptodate property="javacutils.lib.uptodate" targetfile="${build}" srcfile="${javacutils.lib}"/>
+        <uptodate property="dataflow.lib.uptodate" targetfile="${build}" srcfile="${dataflow.lib}"/>
 
         <condition property="build.uptodate">
           <and>
             <isset property="src.files.uptodate"/>
             <isset property="src.astub.files.uptodate"/>
             <isset property="javaparser.lib.uptodate"/>
+            <isset property="javacutils.lib.uptodate"/>
+            <isset property="dataflow.lib.uptodate"/>
           </and>
         </condition>
         <!--
         <echo message="src.files.uptodate: ${src.files.uptodate}"/>
         <echo message="src.astub.files.uptodate: ${src.astub.files.uptodate}"/>
         <echo message="javaparser.lib.uptodate: ${javaparser.lib.uptodate}"/>
+        <echo message="javacutils.lib.uptodate: ${javacutils.lib.uptodate}"/>
+        <echo message="dataflow.lib.uptodate: ${dataflow.lib.uptodate}"/>
         <echo message="build.uptodate: ${build.uptodate}"/>
         -->
     </target>
@@ -156,13 +197,12 @@ ${build.version} of the 'javac.jar' library."/>
             <path>
                 <fileset dir="${src}">
                     <include name="**/*.java"/>
-                    <exclude name="checkers/util/dist/**"/>
                 </fileset>
             </path>
         </pathconvert>
         <java fork="true"
               failonerror="true"
-              classpath="${javac.lib}:${annotation-utils.lib}:${javaparser.lib}:${jna.lib}:${tests.junit}"
+              classpath="${javac.lib}:${annotation-utils.lib}:${javaparser.lib}:${javacutils.lib}:${dataflow.lib}:${tests.junit}"
               classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
@@ -170,8 +210,11 @@ ${build.version} of the 'javac.jar' library."/>
             <arg line="-d ${build}"/>
             <arg line="${src.files.spaceseparated}"/>
             <arg line="-version"/>
+            <arg line="-XDTA:noannotationsincomments"/>
         </java>
         <unjar src="${javaparser.lib}" dest="${build}" />
+        <unjar src="${javacutils.lib}" dest="${build}" />
+        <unjar src="${dataflow.lib}" dest="${build}" />
         <!--
         Touch doesn't work on a directory, so can't do:
            <touch file="${build}"/>
@@ -180,6 +223,9 @@ ${build.version} of the 'javac.jar' library."/>
         <touch file="${build}/.timestamp"/>
         <delete file="${build}/.timestamp"/>
     </target>
+
+    <!-- TODO: add a type-checking target that doesn't use
+         -XDTA:noannotations in comments. -->
 
     <target name="docs" depends="javadoc"/>
 
@@ -196,20 +242,20 @@ ${build.version} of the 'javac.jar' library."/>
             <jvmarg line="-Xbootclasspath/p:${javac.lib}:${javadoc.lib}"/>
             <arg value="-g"/>
             <arg line="-d ${build}"/>
-            <arg line="src/checkers/util/dist/ManualTaglet.java"/>
+            <arg line="${javacutils.loc}/src/javacutils/dist/ManualTaglet.java"/>
             <arg line="-version"/>
         </java>
         <!-- This relative path is wrong; running "ant -find" from a
         subdirectory fails. -->
         <javadoc sourcepath="${src}" destdir="${dist.doc}" failonerror="false"
             executable="${jsr308.langtools}/dist/bin/javadoc"
-          classpath="${build}:${javac.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar:${jna.lib}:tests/junit-4.7.jar"
-          excludepackagenames="checkers.util.stub,checkers.util.dist"
+          classpath="${build}:${javac.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar:tests/junit-4.7.jar"
+          excludepackagenames="checkers.util.stub"
           bootclasspath="${javac.lib}:${javadoc.lib}:${java.home}/lib/rt.jar">
           <package name="checkers.*"/>
           <link href="http://types.cs.washington.edu/checker-framework/api/jdk/"/>
           <link href="http://types.cs.washington.edu/checker-framework/api/javac/tree/"/>
-          <taglet name="checkers.util.dist.ManualTaglet" path="${build}"/>
+          <taglet name="javacutils.dist.ManualTaglet" path="${build}"/>
         </javadoc>
     </target>
 
@@ -268,7 +314,7 @@ ${build.version} of the 'javac.jar' library."/>
         </pathconvert>
         <java fork="true"
               failonerror="true"
-              classpath="${javac.lib}:${tests.junit}:${build}"
+              classpath="${javac.lib}:${tests.junit}:${build}:${javacutils.lib}:${dataflow.lib}"
               classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
@@ -296,6 +342,8 @@ ${build.version} of the 'javac.jar' library."/>
                 <pathelement path="${build.tests}"/>
                 <pathelement path="${tests.junit}"/>
                 <pathelement path="${build}"/>
+                <pathelement path="${javacutils.lib}"/>
+                <pathelement path="${dataflow.lib}"/>
             </classpath>
             <formatter type="xml"/>
             <formatter type="brief" usefile="false"/>
@@ -334,6 +382,8 @@ ${build.version} of the 'javac.jar' library."/>
               <pathelement path="${build.tests}"/>
               <pathelement path="${tests.junit}"/>
               <pathelement path="${build}"/>
+              <pathelement path="${javacutils.lib}"/>
+              <pathelement path="${dataflow.lib}"/>
           </classpath>
           <formatter type="xml"/>
           <formatter type="brief" usefile="false"/>
@@ -379,9 +429,23 @@ ${build.version} of the 'javac.jar' library."/>
     </target>
 
     <target name="flow-tests" depends="jar,build-tests"
-      description="Run tests for the Checker Framework">
+      description="Run tests for the Checker Framework (flow)">
         <antcall target="-run-tests">
             <param name="param" value="tests.FlowTest"/>
+        </antcall>
+    </target>
+
+    <target name="flow2-tests" depends="jar,build-tests"
+      description="Run tests for the Checker Framework (flow2)">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.Flow2Test"/>
+        </antcall>
+    </target>
+
+    <target name="all-flow-tests" depends="jar,build-tests"
+      description="Run tests for the Checker Framework (all-flow)">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.AllFlowTests"/>
         </antcall>
     </target>
 
@@ -441,31 +505,27 @@ ${build.version} of the 'javac.jar' library."/>
         </antcall>
     </target>
 
-    <target name="nullness-tests" depends="jar,build-tests,nullness-base-tests,nullness-skipuses-tests,nullness-skipdefs-tests,nullness-uninit-tests,nullness-extra-tests"
-      description="Run tests for the Nullness checker">
+    <target name="nullness-tests" depends="jar,build-tests,nullness-base-tests,nullness-skipuses-tests,nullness-skipdefs-tests,nullness-extra-tests"
+      description="Run tests for the Nullness Checker">
     </target>
 
     <target name="nullness-base-tests" depends="jar,build-tests"
       description="Run base tests for the Nullness checker">
         <antcall target="-run-tests">
-            <param name="param" value="tests.NullnessTest"/>
+            <param name="param" value="tests.NullnessFbcTest"/>
         </antcall>
-    </target>
-
-    <target name="nullness-uninit-tests" depends="jar,build-tests"
-      description="Run uninit tests for the Nullness checker">
         <antcall target="-run-tests">
-            <param name="param" value="tests.NullnessUninitializedTest"/>
+            <param name="param" value="tests.NullnessRawnessTest"/>
         </antcall>
     </target>
 
     <!-- Differs from other targets in that it is defined via a Makefile and
        is not run via the "-run-tests" Antfile target, as other tests are. -->
     <target name="nullness-extra-tests" depends="bindist,build-tests,nullness-extra-tests-nojdk"
-      description="Run extra tests for the Nullness checker"/>
+      description="Run extra tests for the Nullness Checker"/>
 
     <target name="nullness-extra-tests-nojdk" depends="bindist-nojdk,build-tests"
-      description="Run extra tests for the Nullness checker, WITHOUT updating jdk.jar">
+      description="Run extra tests for the Nullness Checker, WITHOUT updating jdk.jar">
       <exec executable="chmod">
         <arg line="+x ${basedir}/binary/javac"/>
       </exec>
@@ -476,14 +536,14 @@ ${build.version} of the 'javac.jar' library."/>
     </target>
 
     <target name="nullness-skipuses-tests" depends="jar,build-tests"
-      description="Run skipuses tests for the Nullness checker">
+      description="Run skipuses tests for the Nullness Checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.NullnessSkipUsesTest"/>
         </antcall>
     </target>
 
     <target name="nullness-skipdefs-tests" depends="jar,build-tests"
-      description="Run skipdefs tests for the Nullness checker">
+      description="Run skipdefs tests for the Nullness Checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.NullnessSkipDefsTest"/>
         </antcall>
@@ -491,7 +551,7 @@ ${build.version} of the 'javac.jar' library."/>
 
     <!-- Do not include this as a dependence for nullness-tests! -->
     <target name="nullness-temp-tests" depends="jar,build-tests"
-      description="Run temporary tests for the Nullness checker">
+      description="Run temporary tests for the Nullness Checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.NullnessTempTest"/>
         </antcall>
@@ -619,7 +679,7 @@ ${build.version} of the 'javac.jar' library."/>
 
         <java fork="true"
               failonerror="true"
-              classpath="${javac.lib}:${annotation-utils.lib}:${javaparser.lib}:${jna.lib}:${checkers.jar.file}"
+              classpath="${javac.lib}:${checkers.jar.file}:${annotation-utils.lib}:${javaparser.lib}:${javacutils.lib}:${dataflow.lib}"
               classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
@@ -634,7 +694,7 @@ ${build.version} of the 'javac.jar' library."/>
     </target>
 
     <target name="check-nullness"
-      description="Run the nullness checker on the Framework">
+      description="Run the Nullness Checker on the Framework">
         <antcall target="-run-checker">
             <param name="checker-name" value="checkers.nullness.NullnessChecker"/>
             <param name="checker-jdk" value="jdk/nullness/src"/>
@@ -655,7 +715,7 @@ ${build.version} of the 'javac.jar' library."/>
       description="Run the compiler message keys checker on the Framework">
         <antcall target="-run-checker">
             <param name="checker-name" value="checkers.compilermsgs.CompilerMessagesChecker"/>
-            <param name="checker-args" value="-Awarns -Apropfiles=./src/checkers/lock/messages.properties:./src/checkers/javari/messages.properties:./src/checkers/interning/messages.properties:./src/checkers/basetype/messages.properties:./src/checkers/nullness/messages.properties:./src/checkers/linear/messages.properties:./src/checkers/regex/messages.properties:./src/checkers/util/report/messages.properties"/>
+            <param name="checker-args" value="-Awarns -Apropfiles=./src/checkers/lock/messages.properties:./src/checkers/javari/messages.properties:./src/checkers/interning/messages.properties:./src/checkers/basetype/messages.properties:./src/checkers/nullness/messages.properties:./src/checkers/initialization/messages.properties:./src/checkers/linear/messages.properties:./src/checkers/regex/messages.properties:./src/checkers/util/report/messages.properties"/>
         </antcall>
     </target>
 

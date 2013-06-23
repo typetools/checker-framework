@@ -1,35 +1,35 @@
 package tests.util;
 
-import javax.annotation.processing.*;
+import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Elements;
 
-import com.sun.source.tree.CompilationUnitTree;
+import javacutils.AnnotationUtils;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.quals.Bottom;
 import checkers.quals.TypeQualifiers;
 import checkers.quals.Unqualified;
-import checkers.types.AnnotatedTypeFactory;
 import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.types.QualifierHierarchy;
-import checkers.util.AnnotationUtils;
 import checkers.util.GraphQualifierHierarchy;
 import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 
+import com.sun.source.tree.CompilationUnitTree;
+
 /**
- * A simple checker used for testing the Checker Framework.  It treats the
- * {@code @Odd} and {@code @Even} annotations as a subtype-style qualifiers with no special
- * semantics.
+ * A simple checker used for testing the Checker Framework. It treats the
+ * {@code @Odd} and {@code @Even} annotations as a subtype-style qualifiers with
+ * no special semantics.
  *
  * <p>
- *
  * This checker should only be used for testing the framework.
  */
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
-@TypeQualifiers( { Odd.class, Even.class, Unqualified.class, Bottom.class } )
-public final class TestChecker extends BaseTypeChecker {
+@TypeQualifiers({ Odd.class, MonotonicOdd.class, Even.class, Unqualified.class,
+        Bottom.class })
+public final class TestChecker extends BaseTypeChecker<tests.util.TestChecker.FrameworkTestAnnotatedTypeFactory> {
 
     protected AnnotationMirror BOTTOM;
 
@@ -41,11 +41,11 @@ public final class TestChecker extends BaseTypeChecker {
     }
 
     @Override
-    public AnnotatedTypeFactory createFactory(CompilationUnitTree tree) {
+    public FrameworkTestAnnotatedTypeFactory createFactory(CompilationUnitTree tree) {
         return new FrameworkTestAnnotatedTypeFactory(this, tree);
     }
 
-    private class FrameworkTestAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<TestChecker> {
+    class FrameworkTestAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<TestChecker> {
         public FrameworkTestAnnotatedTypeFactory(TestChecker checker, CompilationUnitTree root) {
             super(checker, root, true);
             AnnotationMirror ODD = AnnotationUtils.fromClass(elements, Odd.class);

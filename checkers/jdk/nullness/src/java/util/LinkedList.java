@@ -1,6 +1,10 @@
 package java.util;
-import checkers.nullness.quals.*;
-@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
+import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
+
+import checkers.nullness.quals.EnsuresNonNullIf;
+import checkers.nullness.quals.Nullable;
+import checkers.nullness.quals.PolyNull;
 
 // This class permits null elements
 public class LinkedList<E extends @Nullable Object> extends AbstractSequentialList<E> implements List<E>, Deque<E>, Cloneable, java.io.Serializable {
@@ -14,8 +18,8 @@ public class LinkedList<E extends @Nullable Object> extends AbstractSequentialLi
   public E removeLast() { throw new RuntimeException("skeleton method"); }
   public void addFirst(E a1) { throw new RuntimeException("skeleton method"); }
   public void addLast(E a1) { throw new RuntimeException("skeleton method"); }
-  public boolean contains(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
-  public int size() { throw new RuntimeException("skeleton method"); }
+  @Pure public boolean contains(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
+  @Pure public int size() { throw new RuntimeException("skeleton method"); }
   public boolean add(E a1) { throw new RuntimeException("skeleton method"); }
   public boolean remove(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   public boolean addAll(Collection<? extends E> a1) { throw new RuntimeException("skeleton method"); }
@@ -25,8 +29,8 @@ public class LinkedList<E extends @Nullable Object> extends AbstractSequentialLi
   public E set(int a1, E a2) { throw new RuntimeException("skeleton method"); }
   public void add(int a1, E a2) { throw new RuntimeException("skeleton method"); }
   public E remove(int a1) { throw new RuntimeException("skeleton method"); }
-  public int indexOf(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
-  public int lastIndexOf(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
+  @Pure public int indexOf(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
+  @Pure public int lastIndexOf(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   public @Nullable E peek() { throw new RuntimeException("skeleton method"); }
   public E element() { throw new RuntimeException("skeleton method"); }
   public @Nullable E poll() { throw new RuntimeException("skeleton method"); }
@@ -46,8 +50,8 @@ public class LinkedList<E extends @Nullable Object> extends AbstractSequentialLi
   public Iterator<E> descendingIterator() { throw new RuntimeException("skeleton method"); }
   public @Nullable Object [] toArray() { throw new RuntimeException("skeleton method"); }
   public <T extends @Nullable Object> @Nullable T @PolyNull [] toArray(T @PolyNull [] a1) { throw new RuntimeException("skeleton method"); }
-  public Object clone() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public Object clone() { throw new RuntimeException("skeleton method"); }
 
-  @AssertNonNullIfFalse({"peek()", "peekFirst()", "peekLast()", "poll()", "pollFirst()", "pollLast()"})
-  public boolean isEmpty() { throw new RuntimeException("skeleton method"); }
+  @EnsuresNonNullIf(expression={"peek()", "peekFirst()", "peekLast()", "poll()", "pollFirst()", "pollLast()"}, result=false)
+  @Pure public boolean isEmpty() { throw new RuntimeException("skeleton method"); }
 }
