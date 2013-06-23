@@ -90,6 +90,7 @@ public class FenumChecker extends BaseTypeChecker<FenumAnnotatedTypeFactory> {
     }
 
     /** Copied from SubtypingChecker; cannot reuse it, because SubtypingChecker is final.
+     * @see SubtypingChecker#getSuppressWarningsKeys()
      */
     @Override
     public Collection<String> getSuppressWarningsKeys() {
