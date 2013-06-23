@@ -10,7 +10,7 @@ import checkers.oigj.quals.Dominator;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 
-public class OwnershipVisitor extends BaseTypeVisitor<OwnershipSubchecker> {
+public class OwnershipVisitor extends BaseTypeVisitor<OwnershipSubchecker, OwnershipAnnotatedTypeFactory> {
 
     public OwnershipVisitor(OwnershipSubchecker checker, CompilationUnitTree root) {
         super(checker, root);

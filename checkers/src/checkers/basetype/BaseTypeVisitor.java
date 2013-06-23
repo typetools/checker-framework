@@ -155,10 +155,9 @@ import com.sun.tools.javac.tree.TreeInfo;
  * DFF version. TODO: missing assignment context: - array initializer
  * expressions should have the component type as context
  */
-public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisitor<Void, Void> {
-
-    /** The checker corresponding to this visitor. */
-    protected final Checker checker;
+public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
+        Factory extends AbstractBasicAnnotatedTypeFactory<?, ?, ?, ?, ?>>
+    extends SourceVisitor<Checker, Factory, Void, Void> {
 
     /** The options that were provided to the checker using this visitor. */
     protected final Map<String, String> options;
@@ -173,12 +172,6 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
     protected final ContractsUtils contractsUtils;
 
     /**
-     * The annotated-type factory (with a more specific type than
-     * super.atypeFactory).
-     */
-    protected final AbstractBasicAnnotatedTypeFactory<?, ?, ?, ?, ?> atypeFactory;
-
-    /**
      * @param checker
      *            the typechecker associated with this visitor (for callbacks to
      *            {@link TypeHierarchy#isSubtype})
@@ -187,10 +180,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
      */
     public BaseTypeVisitor(Checker checker, CompilationUnitTree root) {
         super(checker, root);
-        this.checker = checker;
 
-        assert super.atypeFactory instanceof AbstractBasicAnnotatedTypeFactory;
-        atypeFactory = (AbstractBasicAnnotatedTypeFactory<?, ?, ?, ?, ?>) super.atypeFactory;
         contractsUtils = ContractsUtils.getInstance(atypeFactory);
         ProcessingEnvironment env = checker.getProcessingEnvironment();
         this.options = env.getOptions();
@@ -594,15 +584,14 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
     protected void checkFlowExprParameters(MethodTree method, String stringExpr) {
         // check that all parameters used in the expression are
         // final, so that they cannot be modified
-        List<Integer> parameterIndices = FlowExpressionParseUtil
-                .parameterIndices(stringExpr);
+        List<Integer> parameterIndices = FlowExpressionParseUtil.parameterIndices(stringExpr);
         for (Integer idx : parameterIndices) {
             VariableTree parameter = method.getParameters().get(idx - 1);
             Element element = TreeUtils.elementFromDeclaration(parameter);
             if (!ElementUtils.isFinal(element)) {
                 checker.report(
-                        Result.failure("flowexpr.parameter.not.final", "#"
-                                + idx, stringExpr), method);
+                        Result.failure("flowexpr.parameter.not.final",
+                                "#" + idx, stringExpr), method);
             }
         }
     }

@@ -26,7 +26,7 @@ import com.sun.source.tree.Tree;
  *
  * @see BaseTypeVisitor
  */
-public class JavariVisitor extends BaseTypeVisitor<JavariChecker> {
+public class JavariVisitor extends BaseTypeVisitor<JavariChecker, JavariAnnotatedTypeFactory> {
 
     final private AnnotationMirror READONLY, MUTABLE, POLYREAD, QREADONLY;
 

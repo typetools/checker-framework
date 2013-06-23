@@ -28,7 +28,7 @@ import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
  */
 @TypeQualifiers({ Regex.class, PartialRegex.class, RegexBottom.class,
     Unqualified.class, PolyRegex.class, PolyAll.class })
-public class RegexChecker extends BaseTypeChecker {
+public class RegexChecker extends BaseTypeChecker<RegexAnnotatedTypeFactory> {
 
     protected AnnotationMirror REGEX, REGEXBOTTOM, PARTIALREGEX;
     protected ExecutableElement regexValueElement;

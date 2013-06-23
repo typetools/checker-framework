@@ -44,10 +44,10 @@ import com.sun.tools.javac.util.Context;
  * 3. Apply a simple diff on the two outputs
  *
  */
-public class TypeOutputtingChecker extends SourceChecker {
+public class TypeOutputtingChecker extends SourceChecker<AnnotatedTypeFactory> {
 
     @Override
-    protected SourceVisitor<?, ?> createSourceVisitor(CompilationUnitTree root) {
+    protected SourceVisitor<?, ?, ?, ?> createSourceVisitor(CompilationUnitTree root) {
         return new Visitor(this, root);
     }
 
@@ -55,10 +55,10 @@ public class TypeOutputtingChecker extends SourceChecker {
      * Prints the types of the class and all of its enclosing
      * fields, methods, and inner classes
      */
-    public static class Visitor extends SourceVisitor<Void, Void> {
+    public static class Visitor extends SourceVisitor<TypeOutputtingChecker, AnnotatedTypeFactory, Void, Void> {
         String currentClass;
 
-        public Visitor(SourceChecker checker, CompilationUnitTree root) {
+        public Visitor(TypeOutputtingChecker checker, CompilationUnitTree root) {
             super(checker, root);
         }
 

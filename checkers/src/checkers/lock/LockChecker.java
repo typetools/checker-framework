@@ -21,7 +21,7 @@ import checkers.util.MultiGraphQualifierHierarchy;
  * @see GuardedBy
  */
 @TypeQualifiers( { GuardedBy.class, Unqualified.class, GuardedByTop.class } )
-public class LockChecker extends BaseTypeChecker {
+public class LockChecker extends BaseTypeChecker<LockAnnotatedTypeFactory> {
 
     protected AnnotationMirror GUARDEDBY, GUARDEDBYTOP, UNQUALIFIED;
 

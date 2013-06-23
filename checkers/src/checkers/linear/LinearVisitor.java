@@ -20,7 +20,7 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
  *
  * @see LinearChecker
  */
-public class LinearVisitor extends BaseTypeVisitor<LinearChecker> {
+public class LinearVisitor extends BaseTypeVisitor<LinearChecker, LinearAnnotatedTypeFactory> {
 
     public LinearVisitor(LinearChecker checker, CompilationUnitTree root) {
         super(checker, root);

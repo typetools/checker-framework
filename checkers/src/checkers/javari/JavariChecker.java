@@ -30,7 +30,7 @@ import checkers.util.MultiGraphQualifierHierarchy;
  */
 @TypeQualifiers( { ReadOnly.class, ThisMutable.class, Mutable.class,
     PolyRead.class, QReadOnly.class, PolyAll.class })
-public class JavariChecker extends BaseTypeChecker {
+public class JavariChecker extends BaseTypeChecker<JavariAnnotatedTypeFactory> {
 
     protected AnnotationMirror READONLY, THISMUTABLE, MUTABLE, POLYREAD, QREADONLY, ASSIGNABLE;
 

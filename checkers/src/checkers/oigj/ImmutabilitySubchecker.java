@@ -18,7 +18,7 @@ import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 
 @TypeQualifiers({ ReadOnly.class, Mutable.class, Immutable.class, I.class,
     AssignsFields.class, OIGJMutabilityBottom.class })
-public class ImmutabilitySubchecker extends BaseTypeChecker {
+public class ImmutabilitySubchecker extends BaseTypeChecker<ImmutabilityAnnotatedTypeFactory> {
 
     /** Supported annotations for IGJ.  Used for subtyping rules. **/
     protected AnnotationMirror READONLY, MUTABLE, IMMUTABLE, I, ASSIGNS_FIELDS, BOTTOM_QUAL;

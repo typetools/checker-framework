@@ -37,7 +37,7 @@ import com.sun.source.tree.*;
  *
  * @see BaseTypeVisitor
  */
-public final class InterningVisitor extends BaseTypeVisitor<InterningChecker> {
+public final class InterningVisitor extends BaseTypeVisitor<InterningChecker, InterningAnnotatedTypeFactory> {
 
     /** The interned annotation. */
     private final AnnotationMirror INTERNED;

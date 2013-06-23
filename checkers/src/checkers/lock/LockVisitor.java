@@ -31,13 +31,10 @@ import com.sun.source.tree.*;
  * This visitor reports errors ("unguarded.access") or warnings for violations
  * for accessing a field or calling a method without holding their locks.
  */
-public class LockVisitor extends BaseTypeVisitor<LockChecker> {
-
-    LockAnnotatedTypeFactory atypeFactory;
+public class LockVisitor extends BaseTypeVisitor<LockChecker, LockAnnotatedTypeFactory> {
 
     public LockVisitor(LockChecker checker, CompilationUnitTree root) {
         super(checker, root);
-        this.atypeFactory = (LockAnnotatedTypeFactory)super.atypeFactory;
     }
 
     @Override
