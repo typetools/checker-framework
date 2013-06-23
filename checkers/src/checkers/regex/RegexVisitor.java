@@ -38,7 +38,7 @@ import com.sun.source.tree.Tree.Kind;
  * 
  * @see RegexChecker
  */
-public class RegexVisitor extends BaseTypeVisitor<RegexChecker> {
+public class RegexVisitor extends BaseTypeVisitor<RegexChecker, RegexAnnotatedTypeFactory> {
 
     private final ExecutableElement matchResultEnd;
     private final ExecutableElement matchResultGroup;

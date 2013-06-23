@@ -16,7 +16,7 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.Tree;
 
-public class FenumVisitor extends BaseTypeVisitor<FenumChecker> {
+public class FenumVisitor extends BaseTypeVisitor<FenumChecker, FenumAnnotatedTypeFactory> {
     public FenumVisitor(FenumChecker checker, CompilationUnitTree root) {
         super(checker, root);
     }
