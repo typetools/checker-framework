@@ -990,6 +990,10 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
         options.add("assumeAssertionsAreEnabled");
         options.add("assumeAssertionsAreDisabled");
         options.add("concurrentSemantics");
+        // Checking of bodies of @Pure methods is temporarily disabled
+        // unless -AenablePurity is supplied on the command line; re-enable
+        // it after making the analysis more precise.
+        options.add("enablePurity");
         options.add("suggestPureMethods");
         options.add("resourceStats");
         options.add("stubWarnIfNotFound");

@@ -69,12 +69,11 @@ public class CFCFGBuilder extends CFGBuilder {
 
     public CFCFGBuilder(BaseTypeChecker<?> checker, AnnotatedTypeFactory factory) {
         super(checker.getProcessingEnvironment().getOptions()
-                .containsKey("assumeAssertionsAreEnabled"), checker
-                .getProcessingEnvironment().getOptions()
+                .containsKey("assumeAssertionsAreEnabled"),
+              checker.getProcessingEnvironment().getOptions()
                 .containsKey("assumeAssertionsAreDisabled"));
         if (assumeAssertionsEnabled && assumeAssertionsDisabled) {
-            ErrorReporter
-                    .errorAbort("Assertions cannot be assumed to be enabled and disabled at the same time.");
+            ErrorReporter.errorAbort("Assertions cannot be assumed to be enabled and disabled at the same time.");
         }
         this.checker = checker;
         this.factory = factory;

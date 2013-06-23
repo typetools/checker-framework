@@ -170,6 +170,7 @@ public class FactoryTestChecker extends SourceChecker<AnnotatedTypeFactory> {
                 }
                 line = reader.readLine();
             }
+            reader.close();
         } catch (IOException e) {
             e.printStackTrace();
         }

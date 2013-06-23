@@ -536,16 +536,16 @@ of that field before the next use, potentially changing its type.
     has been added, the dataflow framework will already provide support for this flag.
 \end{workinprogress}
 
-An exception to this are monotonic type properties, such as the \code{@LazyNonNull} annotation
+An exception to this are monotonic type properties, such as the \code{@MonotonicNonNull} annotation
 of the non-null type system.
 
 \begin{workinprogress}
-    It might be useful to think about an abstraction for monotonic types (such as \code{@LazyNonNull}).
+    It might be useful to think about an abstraction for monotonic types (such as \code{@MonotonicNonNull}).
     I could see an annotation for the declaration of annotations that indicates this property, and the
     dataflow framework can then use this information to automatically give better analysis results (even
     in the presence of concurrency).  Potentially, the monotonicity construct could even be added
     to the Checker Framework in general, such that an implementation does not have to do anything
-    to implement annotations like \code{@LazyNonNull}.
+    to implement annotations like \code{@MonotonicNonNull}.
 \end{workinprogress}
 
 
@@ -715,7 +715,7 @@ assignment are more precise than those on the left hand side.
     At a later point in time, we want to add tracking of type annotations of fields, and
     potentially also of array expressions.  In general, both of these extensions need to be
     rather conservative to be sound, but can still yield useful results in certain cases.
-    Furthermore, for monotonic annotations (such as \code{@LazyNonNull}), the analysis can be
+    Furthermore, for monotonic annotations (such as \code{@MonotonicNonNull}), the analysis can be
     fairly precise.
 \end{workinprogress}
 

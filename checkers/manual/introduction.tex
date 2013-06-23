@@ -258,7 +258,7 @@ full pathname to \<javac> or the alias, if you did not add the Type Annotations 
 The output should be:
 
 \begin{Verbatim}
-  javac 1.7.0-jsr308-1.6.3
+  javac 1.7.0-jsr308-1.6.4
 \end{Verbatim}
 
 That's all there is to it!  Now you are ready to start using the checkers.
@@ -565,7 +565,7 @@ checkers support the following command-line options:
 \item \<-Awarns> Treat checker errors as warnings.  If you use this, you
   may wish to also supply \code{-Xmaxwarns 10000}, because by default
   \<javac> prints at most 100 warnings.
-\item \<-AsuppressWarnings> Treat checker errors as warnings; see
+\item \<-AsuppressWarnings> Suppress all warnings matching the given key; see
   Section~\ref{suppresswarnings-command-line}
 \item \<-Afilenames>, \<-Anomsgtext>, \<-Adetailedmsgtext>, \<-Ashowchecks>, \<-AprintErrorStack>,
   \<-AprintAllQualifiers>, \<-Aignorejdkastub>
@@ -597,8 +597,11 @@ checker is a type of ``annotation processor''.
   see Section~\ref{skeleton-using}
 \item \<-implicit:class> Suppresses warnings about implicitly compiled files
   (not named on the command line); see Section~\ref{ant-task}
-\item \<-XDTA:spacesincomments> parse annotation comments even when they
-  contain spaces; applicable only to the Type Annotations compiler; see Section~\ref{annotations-in-comments}
+\item \<-XDTA:noannotationsincomments> and \<-XDTA:spacesincomments>
+  to turn off parsing annotation comments and
+  to turn on parsing annotation comments even when they
+  contain spaces; applicable only to the Type Annotations compiler;
+  see Section~\ref{annotations-in-comments}
 \item \<-J> Supply an argument to the JVM that is running javac; example:
   \<-J-Djsr308\_imports=checkers.nullness.quals.*>; see Section~\ref{implicit-import-statements}
 \end{itemize}

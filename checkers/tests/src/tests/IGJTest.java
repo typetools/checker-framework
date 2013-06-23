@@ -37,6 +37,7 @@ public class IGJTest extends CheckerTest {
             }
             temp.flush();
             runTest(expectedFileName, shouldSucceed, tempFile);
+            scanner.close();
             temp.close();
             scanner.close();
         } catch (IOException exp) {

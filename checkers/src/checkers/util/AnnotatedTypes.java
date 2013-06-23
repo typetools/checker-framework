@@ -312,11 +312,11 @@ public class AnnotatedTypes {
         case TYPE_PARAMETER:
             return atypeFactory.fromElement(elem);
         default:
+            AnnotatedTypeMirror type = asMemberOfImpl(types, atypeFactory, t, elem);
+            if (!ElementUtils.isStatic(elem))
+                atypeFactory.postAsMemberOf(type, t, elem);
+            return type;
         }
-        AnnotatedTypeMirror type = asMemberOfImpl(types, atypeFactory, t, elem);
-        if (!ElementUtils.isStatic(elem))
-            atypeFactory.postAsMemberOf(type, t, elem);
-        return type;
     }
 
     private static AnnotatedTypeMirror asMemberOfImpl(final Types types, final AnnotatedTypeFactory atypeFactory,
