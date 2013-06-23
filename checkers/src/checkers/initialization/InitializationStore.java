@@ -58,8 +58,7 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
             return;
         }
         super.insertValue(r, value);
-        InitializationChecker checker = (InitializationChecker) analysis
-                .getFactory().getChecker();
+        InitializationChecker<?> checker = (InitializationChecker<?>) analysis.getFactory().getChecker();
         QualifierHierarchy qualifierHierarchy = checker.getQualifierHierarchy();
         AnnotationMirror invariantAnno = checker.getFieldInvariantAnnotation();
         for (AnnotationMirror a : value.getType().getAnnotations()) {
@@ -85,21 +84,16 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
     @Override
     public void updateForMethodCall(MethodInvocationNode n,
             AnnotatedTypeFactory atypeFactory, V val) {
-        InitializationChecker checker = (InitializationChecker) analysis
-                .getFactory().getChecker();
-        AnnotationMirror fieldInvariantAnnotation = checker
-                .getFieldInvariantAnnotation();
+        InitializationChecker<?> checker = (InitializationChecker<?>) analysis.getFactory().getChecker();
+        AnnotationMirror fieldInvariantAnnotation = checker.getFieldInvariantAnnotation();
 
         // Are there fields that have the 'invariant' annotations and are in the
         // store?
         Set<FlowExpressions.FieldAccess> invariantFields = new HashSet<>();
-        for (Entry<FlowExpressions.FieldAccess, V> e : fieldValues
-                .entrySet()) {
+        for (Entry<FlowExpressions.FieldAccess, V> e : fieldValues.entrySet()) {
             FlowExpressions.FieldAccess fieldAccess = e.getKey();
-            Set<AnnotationMirror> declaredAnnos = atypeFactory
-                    .getAnnotatedType(fieldAccess.getField()).getAnnotations();
-            if (AnnotationUtils.containsSame(declaredAnnos,
-                    fieldInvariantAnnotation)) {
+            Set<AnnotationMirror> declaredAnnos = atypeFactory.getAnnotatedType(fieldAccess.getField()).getAnnotations();
+            if (AnnotationUtils.containsSame(declaredAnnos, fieldInvariantAnnotation)) {
                 invariantFields.add(fieldAccess);
             }
         }
