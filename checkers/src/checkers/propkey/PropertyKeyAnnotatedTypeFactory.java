@@ -60,7 +60,7 @@ public class PropertyKeyAnnotatedTypeFactory<Checker extends PropertyKeyChecker>
     protected class KeyLookupTreeAnnotator extends TreeAnnotator {
         Class<? extends Annotation> theAnnot;
 
-        public KeyLookupTreeAnnotator(BaseTypeChecker checker,
+        public KeyLookupTreeAnnotator(BaseTypeChecker<?> checker,
                 BasicAnnotatedTypeFactory<?> tf, Class<? extends Annotation> annot) {
             super(checker, tf);
             theAnnot = annot;

@@ -88,7 +88,7 @@ public class UnitsAnnotatedTypeFactory extends
      */
     private class UnitsTreeAnnotator extends TreeAnnotator {
 
-        UnitsTreeAnnotator(BaseTypeChecker checker) {
+        UnitsTreeAnnotator(BaseTypeChecker<?> checker) {
             super(checker, UnitsAnnotatedTypeFactory.this);
         }
 
@@ -159,6 +159,8 @@ public class UnitsAnnotatedTypeFactory extends
                     //     @Length int r = q - (q / 3) * 3;
                     // TODO: We agreed to treat remainder like division.
                     break;
+                default:
+                    // do nothing
                 }
             }
 
@@ -193,6 +195,8 @@ public class UnitsAnnotatedTypeFactory extends
                 case MULTIPLY:
                     res = ur.multiplication(lht, rht);
                     break;
+                default:
+                    // do nothing
                 }
             }
             return res;

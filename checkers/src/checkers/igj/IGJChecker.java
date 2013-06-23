@@ -31,7 +31,7 @@ import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
  */
 @TypeQualifiers({ ReadOnly.class, Mutable.class, Immutable.class, I.class,
     AssignsFields.class, IGJBottom.class })
-public class IGJChecker extends BaseTypeChecker {
+public class IGJChecker extends BaseTypeChecker<IGJAnnotatedTypeFactory> {
     //
     // IGJ tries to adhere to the various rules specified by the
     // type system and the conventions of the framework, except for two
