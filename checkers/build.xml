@@ -210,6 +210,7 @@ ${build.version} of the 'javac.jar' library."/>
             <arg line="-d ${build}"/>
             <arg line="${src.files.spaceseparated}"/>
             <arg line="-version"/>
+            <arg line="-XDTA:noannotationsincomments"/>
         </java>
         <unjar src="${javaparser.lib}" dest="${build}" />
         <unjar src="${javacutils.lib}" dest="${build}" />
@@ -222,6 +223,9 @@ ${build.version} of the 'javac.jar' library."/>
         <touch file="${build}/.timestamp"/>
         <delete file="${build}/.timestamp"/>
     </target>
+
+    <!-- TODO: add a type-checking target that doesn't use
+         -XDTA:noannotations in comments. -->
 
     <target name="docs" depends="javadoc"/>
 
