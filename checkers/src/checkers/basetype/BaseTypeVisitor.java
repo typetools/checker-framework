@@ -306,7 +306,9 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
                         atypeFactory, node);
                 boolean checkPurityAlways = checker.getProcessingEnvironment()
                         .getOptions().containsKey("suggestPureMethods");
-                if (anyPurityAnnotation || checkPurityAlways) {
+                boolean enablePurity = checker.getProcessingEnvironment()
+                        .getOptions().containsKey("enablePurity");
+                if (enablePurity && (anyPurityAnnotation || checkPurityAlways)) {
                     // check "no" purity
                     List<dataflow.quals.Pure.Kind> kinds = PurityUtils
                             .getPurityKinds(atypeFactory, node);

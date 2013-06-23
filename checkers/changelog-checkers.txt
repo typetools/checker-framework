@@ -3,6 +3,13 @@ Version 1.6.4, 01 June 2013
 User-visible framework improvements:
     StubGenerator now generates stubs that can be read by the StubParser.
 
+Maven plugin:
+    The Maven plugin no longer requires the Maven project's output directory to exist in order to run the Checker Framework.  However, if you ask the Checker Framework to generate class files then the output directory will be created.
+
+Documentation:
+  Improved the Maven plugin instructions in the Checker Framework manual.
+  Improved the discussion of why to define both a bottom and a top qualifier in the Checker Framework manual.
+  Update FAQ to discuss that some other tools incorrectly interpret array declarations.
 
 ----------------------------------------------------------------------
 
@@ -1484,7 +1491,7 @@ Checkers Framework API
 
 Interned Checker
   Fixed some failing test cases
-  Fixed a bug related to auto-boxing/unboxing
+  Fixed a bug related to autoboxing/unboxing
   Added experimental flow-sensitive qualifier inference (use
     "-Alint=flow" to enable)
   Improved subtype testing, removing some spurious errors

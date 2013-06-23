@@ -42,4 +42,10 @@ public class VoidUse {
       ms.scan(new Object(), null);
     }
   }
+
+  // Test case for issue #230
+  Class<?> voidClass() {
+    return void.class;
+  }
+
 }

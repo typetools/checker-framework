@@ -160,7 +160,7 @@ public class UnitsAnnotatedTypeFactory extends
                     // TODO: We agreed to treat remainder like division.
                     break;
                 default:
-                    // do nothing
+                    // Do nothing
                 }
             }
 
@@ -196,7 +196,7 @@ public class UnitsAnnotatedTypeFactory extends
                     res = ur.multiplication(lht, rht);
                     break;
                 default:
-                    // do nothing
+                    // Do nothing
                 }
             }
             return res;

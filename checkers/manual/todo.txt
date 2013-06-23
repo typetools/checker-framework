@@ -83,6 +83,10 @@ Explanations on what flow expressions are supported (i.e. strings in pre/postcon
 Changelog
 ===========================================================================
 
+Format String Checker (new):
+  Ensures that format methods (such as System.out.printf) are invoked
+  with correct arguments.
+
 Renamed method annotations used by the Nullness Checker:
   @AssertNonNullAfter => @EnsuresNonNull
   @NonNullOnEntry => @RequiresNonNull

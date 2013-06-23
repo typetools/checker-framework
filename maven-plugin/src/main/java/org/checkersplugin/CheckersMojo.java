@@ -271,6 +271,12 @@ public class CheckersMojo extends AbstractMojo {
             throw new MojoExecutionException("Exception trying to write command file fofn!", e);
         }
 
+        final File outputDirFile = new File( outputDirectory );
+        if( !procOnly && !outputDirFile.exists() )  {
+            if( ! outputDirFile.mkdirs() ) {
+                throw new MojoExecutionException("Could not create output directory: " + outputDirFile.getAbsolutePath());
+            }
+        }
 
         final Map<PluginUtil.CheckerProp, Object> props = makeProps();
 

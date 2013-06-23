@@ -4,8 +4,6 @@ import checkers.nullness.quals.*;
 import java.util.*;
 import java.io.*;
 
-import org.junit.Ignore;
-
 public class NonNullMapValue {
 
   // Discussion:
@@ -155,7 +153,7 @@ public class NonNullMapValue {
       if (map.containsKey(key)) {
       } else {
           //:: error: (assignment.type.incompatible)
-          @NonNull Object v = map.get(key);
+          @NonNull Object v = map.get(key); // should issue warning
       }
   }
 
@@ -177,7 +175,7 @@ public class NonNullMapValue {
   private static final String KEY = "key";
   private static final String KEY2 = "key2";
 
-  // Disabled.  Re-enable when bug 67 is fixed.
+  // TODO: Disabled.  Re-enable when bug 67 is fixed.
 //   void testAnd(MyMap<String, String> map, MyMap<String, @Nullable String> map2) {
 //     if (map.containsKey(KEY)) {
 //       map.get(KEY).toString();
