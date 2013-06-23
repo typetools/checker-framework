@@ -13,7 +13,7 @@ import checkers.formatter.quals.ConversionCategory;
 import checkers.formatter.quals.ReturnsFormat;
 
 /**
- * This class provides a collection of utilitis to ease working
+ * This class provides a collection of utilities to ease working
  * with format strings.
  *
  * @author Konstantin Weitz
@@ -197,8 +197,8 @@ public class FormatUtil {
          */
         public IllegalFormatConversionCategoryException(ConversionCategory expected,
                 ConversionCategory found) {
-            super(expected.chars.length()==0? '-': expected.chars.charAt(0),
-                  found.types==null? Object.class: found.types[0]);
+            super(expected.chars.length() == 0 ? '-' : expected.chars.charAt(0),
+                  found.types == null ? Object.class : found.types[0]);
             this.expected = expected;
             this.found = found;
         }
