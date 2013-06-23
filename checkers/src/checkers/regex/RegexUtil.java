@@ -281,7 +281,7 @@ public class RegexUtil {
    * @throws Error if argument is not a regex
    */
   /*@SideEffectFree*/
-  public static /*@Regex*/ String asRegex(String s) {
+  public static @Regex String asRegex(String s) {
     return asRegex(s, 0);
   }
 
@@ -301,7 +301,7 @@ public class RegexUtil {
   /*@SideEffectFree*/
   // The return type annotation is irrelevant; it is special-cased by
   // RegexAnnotatedTypeFactory.
-  public static /*@Regex*/ String asRegex(String s, int groups) {
+  public static @Regex String asRegex(String s, int groups) {
     try {
       Pattern p = Pattern.compile(s);
       int actualGroups = getGroupCount(p);
