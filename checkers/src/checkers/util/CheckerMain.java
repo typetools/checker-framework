@@ -471,13 +471,4 @@ public class CheckerMain {
         }
         return str;
     }
-
-    private static List<String> quoteInPlace(final List<String> strings) {
-        for(int i = 0; i < strings.size(); i++) {
-            final String cur = strings.get(i);
-            strings.add(i, quote(cur));
-            strings.remove(i+1);
-        }
-        return strings;
-    }
 }

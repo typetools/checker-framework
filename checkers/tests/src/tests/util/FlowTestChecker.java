@@ -11,7 +11,6 @@ import checkers.basetype.BaseTypeChecker;
 import checkers.quals.Bottom;
 import checkers.quals.TypeQualifiers;
 import checkers.quals.Unqualified;
-import checkers.types.AnnotatedTypeFactory;
 import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.types.QualifierHierarchy;
 import checkers.util.GraphQualifierHierarchy;
@@ -21,7 +20,7 @@ import com.sun.source.tree.CompilationUnitTree;
 
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 @TypeQualifiers( { Value.class, Odd.class, MonotonicOdd.class, Unqualified.class, Bottom.class } )
-public final class FlowTestChecker extends BaseTypeChecker {
+public final class FlowTestChecker extends BaseTypeChecker<tests.util.FlowTestChecker.FlowAnnotatedTypeFactory> {
 
     protected AnnotationMirror VALUE, BOTTOM;
 
@@ -35,11 +34,11 @@ public final class FlowTestChecker extends BaseTypeChecker {
     }
 
     @Override
-    public AnnotatedTypeFactory createFactory(CompilationUnitTree tree) {
+    public FlowAnnotatedTypeFactory createFactory(CompilationUnitTree tree) {
         return new FlowAnnotatedTypeFactory(this, tree);
     }
 
-    private class FlowAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<FlowTestChecker> {
+    class FlowAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<FlowTestChecker> {
         public FlowAnnotatedTypeFactory(FlowTestChecker checker, CompilationUnitTree root) {
             super(checker, root, true);
             AnnotationMirror ODD = AnnotationUtils.fromClass(elements, Odd.class);
