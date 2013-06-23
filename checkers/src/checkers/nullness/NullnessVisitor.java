@@ -142,7 +142,7 @@ public class NullnessVisitor
         boolean foundInit = false;
         boolean foundNonNull = false;
         Set<Class<? extends Annotation>> initQuals = checker.getInitializationAnnotations();
-        Set<Class<? extends Annotation>> nonNullQuals = checker.getNonNullAnnotations();
+        Set<Class<? extends Annotation>> nonNullQuals = checker.getNullnessAnnotations();
 
         for (AnnotationMirror anno : useType.getAnnotations()) {
             if (QualifierPolymorphism.isPolyAll(anno)) {
@@ -536,7 +536,7 @@ public class NullnessVisitor
             for (AnnotationMirror a : atypeFactory.getAnnotatedType(t).getAnnotations()) {
                 // is this an annotation of the nullness checker?
                 boolean nullnessCheckerAnno = containsSameIgnoringValues(
-                                checker.getNonNullAnnotations(), a);
+                                checker.getNullnessAnnotations(), a);
                 if (nullnessCheckerAnno && !AnnotationUtils.areSame(NONNULL, a)) {
                     // The type is not non-null => warning
                     checker.report(
