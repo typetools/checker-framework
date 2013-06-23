@@ -71,7 +71,7 @@ public class QualifierPolymorphism {
      * @param checker the current checker
      * @param factory the factory for the current checker
      */
-    public QualifierPolymorphism(BaseTypeChecker checker, AnnotatedTypeFactory factory) {
+    public QualifierPolymorphism(BaseTypeChecker<?> checker, AnnotatedTypeFactory factory) {
         this.atypeFactory = factory;
 
         final ProcessingEnvironment env = checker.getProcessingEnvironment();
