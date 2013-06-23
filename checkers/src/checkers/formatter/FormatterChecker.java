@@ -16,7 +16,7 @@ import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
  * @author Konstantin Weitz
  */
 @TypeQualifiers({ Unqualified.class, Format.class, FormatBottom.class, InvalidFormat.class })
-public class FormatterChecker extends BaseTypeChecker {
+public class FormatterChecker extends BaseTypeChecker<FormatterAnnotatedTypeFactory> {
     public FormatterTreeUtil treeUtil;
 
     @Override

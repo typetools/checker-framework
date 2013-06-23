@@ -22,17 +22,16 @@ import com.sun.source.tree.Tree;
  * {@code char} literal that represents a satisfiable format. The annotation's
  * value is set to be a list of appropriate {@link ConversionCategory} values
  * for every parameter of the format.
- * 
+ *
  * @see ConversionCategory
- * 
+ *
  * @author Konstantin Weitz
  */
 public class FormatterAnnotatedTypeFactory extends
 AbstractBasicAnnotatedTypeFactory<FormatterChecker, CFValue, CFStore, FormatterTransfer, FormatterAnalysis> {
 
     public FormatterAnnotatedTypeFactory(FormatterChecker checker,
-            CompilationUnitTree root)
-    {
+            CompilationUnitTree root) {
         super(checker, root);
         this.postInit();
     }
@@ -43,7 +42,7 @@ AbstractBasicAnnotatedTypeFactory<FormatterChecker, CFValue, CFStore, FormatterT
     }
 
     private class FormatterTreeAnnotator extends TreeAnnotator {
-        public FormatterTreeAnnotator(BaseTypeChecker checker) {
+        public FormatterTreeAnnotator(BaseTypeChecker<?> checker) {
             super(checker, FormatterAnnotatedTypeFactory.this);
         }
 

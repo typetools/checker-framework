@@ -17,7 +17,7 @@ import com.sun.source.tree.MethodInvocationTree;
  *
  * @author Konstantin Weitz
  */
-public class FormatterVisitor extends BaseTypeVisitor<FormatterChecker> {
+public class FormatterVisitor extends BaseTypeVisitor<FormatterChecker, FormatterAnnotatedTypeFactory> {
     public FormatterVisitor(FormatterChecker checker, CompilationUnitTree root) {
         super(checker, root);
     }
@@ -25,12 +25,12 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterChecker> {
     @Override
     public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
         FormatterTreeUtil tu = checker.treeUtil;
-        if (tu.isFormatCall(node,atypeFactory)) {
-            FormatCall fc = checker.treeUtil.new FormatCall(node,atypeFactory);
+        if (tu.isFormatCall(node, atypeFactory)) {
+            FormatCall fc = checker.treeUtil.new FormatCall(node, atypeFactory);
 
             Result<String> sat = fc.isIllegalFormat();
             if (sat.value() != null){
-            	// I.1
+                // I.1
                 tu.failure(sat,"format.string.invalid",sat.value());
             } else {
                 Result<InvocationType> invc = fc.getInvocationType();
@@ -42,11 +42,11 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterChecker> {
                     int formatl = formatCats.length;
                     if (paraml < formatl) {
                         // II.1
-                    	tu.failure(invc,"format.missing.arguments",formatl,paraml);
+                        tu.failure(invc,"format.missing.arguments",formatl,paraml);
                     } else {
                         if (paraml > formatl) {
                             // II.2
-                        	tu.warning(invc,"format.excess.arguments",formatl,paraml);
+                            tu.warning(invc,"format.excess.arguments",formatl,paraml);
                         }
                         for (int i=0; i<formatl; ++i) {
                             ConversionCategory formatCat = formatCats[i];
@@ -55,19 +55,19 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterChecker> {
 
                             switch (formatCat) {
                             case UNUSED:
-                            	// I.2
+                                // I.2
                                 tu.warning(param, "format.argument.unused");
                                 break;
                             case NULL:
-                            	// I.3
-                            	tu.failure(param, "format.argument.null");
+                                // I.3
+                                tu.failure(param, "format.argument.null");
                                 break;
                             case GENERAL:
                                 break;
                             default:
                                 if (!fc.isValidParameter(formatCat,paramType)) {
-                                	// II.3
-                                    tu.failure(param, "argument.type.incompatible",paramType,
+                                    // II.3
+                                    tu.failure(param, "argument.type.incompatible", paramType,
                                             formatCat);
                                 }
                                 break;
@@ -80,11 +80,11 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterChecker> {
                 case ARRAY:
                     for (ConversionCategory cat : formatCats) {
                         if (cat == ConversionCategory.NULL){
-                        	// I.3
+                            // I.3
                             tu.failure(invc, "format.argument.null");
                         }
                         if (cat == ConversionCategory.UNUSED){
-                        	// I.2
+                            // I.2
                             tu.warning(invc, "format.argument.unused");
                         }
                     }
