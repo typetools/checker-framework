@@ -2,6 +2,7 @@ package checkers.nullness;
 
 import java.lang.annotation.Annotation;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -17,7 +18,6 @@ import checkers.nullness.quals.NonNull;
 import checkers.nullness.quals.Nullable;
 import checkers.nullness.quals.PolyNull;
 import checkers.quals.PolyAll;
-import checkers.types.AnnotatedTypeFactory;
 import checkers.types.QualifierHierarchy;
 import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 
@@ -27,18 +27,18 @@ import com.sun.source.tree.CompilationUnitTree;
  * An implementation of the nullness type-system based on an initialization
  * type-system for safe initialization.
  */
-public abstract class AbstractNullnessChecker extends InitializationChecker {
+public abstract class AbstractNullnessChecker extends InitializationChecker<NullnessAnnotatedTypeFactory> {
 
     /** Annotation constants */
     public AnnotationMirror NONNULL, NULLABLE, MONOTONICNONNULL;
 
     /**
-     * Default for {@link #LINT_REDUNDANTNULLCOMPARISON}.
+     * Should we be strict about initialization of {@link MonotonicNonNull} variables.
      */
     public static final String LINT_STRICTMONOTONICNONNULLINIT = "strictMonotonicNonNullInit";
 
     /**
-     * Should we be strict about initialization of {@link MonotonicNonNull} variables.
+     * Default for {@link #LINT_STRICTMONOTONICNONNULLINIT}.
      */
     public static final boolean LINT_DEFAULT_STRICTMONOTONICNONNULLINIT = false;
 
@@ -51,7 +51,7 @@ public abstract class AbstractNullnessChecker extends InitializationChecker {
     /**
      * Default for {@link #LINT_REDUNDANTNULLCOMPARISON}.
      */
-    public static final boolean LINT_DEFAULT_STRICTNULLCOMPARISON = false;
+    public static final boolean LINT_DEFAULT_REDUNDANTNULLCOMPARISON = false;
 
     public AbstractNullnessChecker(boolean useFbc) {
         super(useFbc);
@@ -75,38 +75,39 @@ public abstract class AbstractNullnessChecker extends InitializationChecker {
     }
 
     @Override
-    protected BaseTypeVisitor<?> createSourceVisitor(CompilationUnitTree root) {
+    protected BaseTypeVisitor<?, ?> createSourceVisitor(CompilationUnitTree root) {
         return new NullnessVisitor(this, root);
     }
 
     @Override
-    public AnnotatedTypeFactory createFactory(CompilationUnitTree root) {
+    public NullnessAnnotatedTypeFactory createFactory(CompilationUnitTree root) {
         return new NullnessAnnotatedTypeFactory(this, root);
     }
+
+    // Cache for the nullness annotations
+    protected Set<Class<? extends Annotation>> nullnessAnnos;
 
     /**
      * @return The list of annotations of the non-null type system.
      */
-    public Set<AnnotationMirror> getNonNullAnnotations() {
-        Set<AnnotationMirror> result = new HashSet<>();
-        result.add(NONNULL);
-        result.add(MONOTONICNONNULL);
-        result.add(NULLABLE);
-        Elements elements = processingEnv.getElementUtils();
-        result.add(AnnotationUtils.fromClass(elements, PolyNull.class));
-        result.add(AnnotationUtils.fromClass(elements, PolyAll.class));
-        return result;
+    public Set<Class<? extends Annotation>> getNullnessAnnotations() {
+        if (nullnessAnnos == null) {
+            Set<Class<? extends Annotation>> result = new HashSet<>();
+            result.add(NonNull.class);
+            result.add(MonotonicNonNull.class);
+            result.add(Nullable.class);
+            result.add(PolyNull.class);
+            result.add(PolyAll.class);
+            nullnessAnnos = Collections.unmodifiableSet(result);
+        }
+        return nullnessAnnos;
     }
 
     @Override
     public Set<Class<? extends Annotation>> getInvalidConstructorReturnTypeAnnotations() {
         Set<Class<? extends Annotation>> l = new HashSet<>(
                 super.getInvalidConstructorReturnTypeAnnotations());
-        l.add(NonNull.class);
-        l.add(Nullable.class);
-        l.add(MonotonicNonNull.class);
-        l.add(PolyNull.class);
-        l.add(PolyAll.class);
+        l.addAll(getNullnessAnnotations());
         return l;
     }
 
@@ -116,15 +117,32 @@ public abstract class AbstractNullnessChecker extends InitializationChecker {
     }
 
     @Override
-    protected QualifierHierarchy getChildQualifierHierarchy() {
-        MultiGraphFactory factory = new MultiGraphFactory(this);
-        Set<Class<? extends Annotation>> supportedTypeQualifiers = new HashSet<>();
-        supportedTypeQualifiers.add(NonNull.class);
-        supportedTypeQualifiers.add(Nullable.class);
-        supportedTypeQualifiers.add(MonotonicNonNull.class);
-        supportedTypeQualifiers.add(PolyNull.class);
-        supportedTypeQualifiers.add(PolyAll.class);
-        return createQualifierHierarchy(processingEnv.getElementUtils(),
-                supportedTypeQualifiers, factory);
+    public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
+        return new NullnessQualifierHierarchy(factory, (Object[]) null);
+    }
+
+    protected class NullnessQualifierHierarchy extends InitializationQualifierHierarchy {
+
+        public NullnessQualifierHierarchy(MultiGraphFactory f, Object[] arg) {
+            super(f, arg);
+        }
+
+        @Override
+        public boolean isSubtype(AnnotationMirror anno1, AnnotationMirror anno2) {
+            if (isInitializationAnnotation(anno1) ||
+                    isInitializationAnnotation(anno2)) {
+                return this.isSubtypeInitialization(anno1, anno2);
+            }
+            return super.isSubtype(anno1, anno2);
+        }
+
+        @Override
+        public AnnotationMirror leastUpperBound(AnnotationMirror anno1, AnnotationMirror anno2) {
+            if (isInitializationAnnotation(anno1) ||
+                    isInitializationAnnotation(anno2)) {
+                return this.leastUpperBoundInitialization(anno1, anno2);
+            }
+            return super.leastUpperBound(anno1, anno2);
+        }
     }
 }

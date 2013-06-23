@@ -83,9 +83,9 @@ public abstract class QualifierHierarchy {
      * type qualifier hierarchy.  This checks only the qualifiers, not the
      * Java type.
      *
-     * @return true iff anno1 is a sub qualifier of anno2
+     * @return true iff rhs is a sub qualifier of lhs
      */
-    public abstract boolean isSubtype(AnnotationMirror anno1, AnnotationMirror anno2);
+    public abstract boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs);
 
     /**
      * Tests whether there is any annotation in lhs that is a super qualifier
