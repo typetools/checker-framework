@@ -42,13 +42,16 @@ public final class TestUtilities {
         boolean seenKeyword = false;
         while (in.hasNext()) {
             String nextLine = in.nextLine();
-            if (nextLine.contains("@skip-test"))
+            if (nextLine.contains("@skip-test")) {
+                in.close();
                 return false;
+            }
             if (nextLine.contains("class")
                     || nextLine.contains("interface")
                     || nextLine.contains("enum"))
                 seenKeyword = true;
         }
+        in.close();
         return seenKeyword;
     }
 
@@ -66,9 +69,12 @@ public final class TestUtilities {
         try {
             Scanner in = new Scanner(new FileReader(expectedFile));
             while (in.hasNextLine()) {
-                if (!in.nextLine().contains("warning"))
+                if (!in.nextLine().contains("warning")) {
+                    in.close();
                     return false;
+                }
             }
+            in.close();
             return true;
         } catch (Exception e) {
             throw new Error(e);
@@ -146,6 +152,7 @@ public final class TestUtilities {
                     }
                 }
             }
+            reader.close();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
