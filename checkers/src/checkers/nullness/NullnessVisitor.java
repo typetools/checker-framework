@@ -61,8 +61,7 @@ import com.sun.source.tree.WhileLoopTree;
  * The visitor for the nullness type-system.
  */
 public class NullnessVisitor
-        extends
-        InitializationVisitor<AbstractNullnessChecker, NullnessValue, NullnessStore> {
+    extends InitializationVisitor<AbstractNullnessChecker, NullnessValue, NullnessStore> {
 
     // Error message keys
     private static final /*@CompilerMessageKey*/ String ASSIGNMENT_TYPE_INCOMPATIBLE = "assignment.type.incompatible";
@@ -76,8 +75,6 @@ public class NullnessVisitor
     // Annotation and type constants
     private final AnnotationMirror NONNULL, NULLABLE, MONOTONICNONNULL;
     private final TypeMirror stringType;
-
-    protected NullnessAnnotatedTypeFactory factory = (NullnessAnnotatedTypeFactory) super.factory;
 
     /**
      * The element for java.util.Collection.size().
@@ -124,7 +121,7 @@ public class NullnessVisitor
             Tree context) {
         if (type.hasAnnotation(PolyNull.class)
                 || type.hasAnnotation(PolyAll.class)) {
-            NullnessValue inferred = factory.getInferredValueFor(context);
+            NullnessValue inferred = atypeFactory.getInferredValueFor(context);
             if (inferred != null && inferred.isPolyNullNull) {
                 type.replaceAnnotation(NULLABLE);
             }
@@ -144,9 +141,9 @@ public class NullnessVisitor
         // annotation.
         boolean foundInit = false;
         boolean foundNonNull = false;
-        Set<Class<? extends Annotation>> initQuals = checker
-                .getInitializationAnnotations();
-        Set<AnnotationMirror> nonNullQuals = checker.getNonNullAnnotations();
+        Set<Class<? extends Annotation>> initQuals = checker.getInitializationAnnotations();
+        Set<Class<? extends Annotation>> nonNullQuals = checker.getNonNullAnnotations();
+
         for (AnnotationMirror anno : useType.getAnnotations()) {
             if (QualifierPolymorphism.isPolyAll(anno)) {
                 // ok.
@@ -155,14 +152,14 @@ public class NullnessVisitor
                     return false;
                 }
                 foundInit = true;
-            } else if (AnnotationUtils.containsSameIgnoringValues(nonNullQuals,
-                    anno)) {
+            } else if (containsSameIgnoringValues(nonNullQuals, anno)) {
                 if (foundNonNull) {
                     return false;
                 }
                 foundNonNull = true;
             }
         }
+
         // The super implementation checks that useType is a subtype
         // of declarationType. However, declarationType by default
         // is NonNull, which would then forbid Nullable uses.
@@ -377,7 +374,7 @@ public class NullnessVisitor
         // respect command line option
         if (!checker.getLintOption(
                 AbstractNullnessChecker.LINT_REDUNDANTNULLCOMPARISON,
-                AbstractNullnessChecker.LINT_DEFAULT_STRICTNULLCOMPARISON)) {
+                AbstractNullnessChecker.LINT_DEFAULT_REDUNDANTNULLCOMPARISON)) {
             return;
         }
 
@@ -536,11 +533,9 @@ public class NullnessVisitor
         ExpressionTree identifier = node.getIdentifier();
         if (identifier instanceof AnnotatedTypeTree) {
             AnnotatedTypeTree t = (AnnotatedTypeTree) identifier;
-            for (AnnotationMirror a : atypeFactory.getAnnotatedType(t)
-                    .getAnnotations()) {
+            for (AnnotationMirror a : atypeFactory.getAnnotatedType(t).getAnnotations()) {
                 // is this an annotation of the nullness checker?
-                boolean nullnessCheckerAnno = AnnotationUtils
-                        .containsSameIgnoringValues(
+                boolean nullnessCheckerAnno = containsSameIgnoringValues(
                                 checker.getNonNullAnnotations(), a);
                 if (nullnessCheckerAnno && !AnnotationUtils.areSame(NONNULL, a)) {
                     // The type is not non-null => warning
