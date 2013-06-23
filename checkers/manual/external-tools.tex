@@ -242,7 +242,7 @@ Set the \code{jsr308javac} property:
 
   <presetdef name="jsr308.javac">
     <javac fork="yes" executable="${checkers}/binary/${cfJavac}" >
-      <!-- JSR308 related compiler arguments -->
+      <!-- JSR-308-related compiler arguments -->
       <compilerarg value="-version"/>
       <!-- optional, so .class files work with older JVMs: <compilerarg line="-target 5"/> -->
       <compilerarg value="-implicit:class"/>
@@ -310,9 +310,10 @@ is one that was not specified on the command line, but for which the source
 code is newer than the \code{.class} file.)  This is the default, but
 supplying the argument explicitly suppresses a compiler warning.
 
-The \code{-Awarns ...} compiler argument is optional, and causes the checker to
-treat errors as warnings so that compilation does not fail even if
-pluggable type-checking fails; see Section~\ref{checker-options}.
+%% -Awarns was removed above without removing it here.
+% The \code{-Awarns} compiler argument is optional, and causes the checker to
+% treat errors as warnings so that compilation does not fail even if
+% pluggable type-checking fails; see Section~\ref{checker-options}.
 
 \item The \code{check-nullness} target:
 

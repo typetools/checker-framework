@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryPoolMXBean;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -106,6 +107,9 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
 
     /** issue errors as warnings */
     private boolean warns;
+
+    /** Keys for warning suppressions specified on the command line */
+    private String /*@Nullable*/ [] suppressWarnings;
 
     /**
      * Regular expression pattern to specify Java classes that are not
@@ -262,6 +266,19 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
         return Collections.unmodifiableSet(activeLint);
     }
 
+    private String /*@Nullable*/ [] createSuppressWarnings(Map<String, String> options) {
+        if (!options.containsKey("suppressWarnings"))
+            return null;
+
+        String swString = options.get("suppressWarnings");
+        if (swString == null) {
+            return null;
+        }
+
+        return swString.split(",");
+    }
+
+
     /**
      * Exception type used only internally to abort
      * processing.
@@ -269,7 +286,7 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
      * this class should be private. TODO: nicer way?
      */
     @SuppressWarnings("serial")
-	public static class CheckerError extends RuntimeException {
+    public static class CheckerError extends RuntimeException {
         public CheckerError(String msg, Throwable cause) {
             super(msg, cause);
         }
@@ -384,7 +401,7 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
         this.messages = getMessages();
         this.warns = processingEnv.getOptions().containsKey("warns");
         this.activeLints = createActiveLints(processingEnv.getOptions());
-
+        this.suppressWarnings = createSuppressWarnings(processingEnv.getOptions());
         this.skipUsesPattern = getSkipUsesPattern(processingEnv.getOptions());
         this.skipDefsPattern = getSkipDefsPattern(processingEnv.getOptions());
     }
@@ -616,47 +633,63 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
     public static final String DETAILS_SEPARATOR = " $$ ";
 
     /**
-     * Determines if an error (whose error key is {@code err}), should
-     * be suppressed according to the user explicitly written
-     * {@code anno} Suppress annotation.
+     * Determines whether an error (whose error key is {@code err}) should
+     * be suppressed, according to the user's explicitly-written
+     * SuppressWarnings annotation {@code anno} or the -AsuppressWarnings
+     * command-line argument.
      * <p>
      *
-     * A suppress warnings value may be of the following pattern:
+     * A @SuppressWarnings value may be of the following pattern:
      *
      * <ol>
-     * <li>{@code "suppress-key"}, where suppress-key is a supported warnings key, as
-     * specified by {@link #getSuppressWarningsKey()},
-     * e.g. {@code "nullness"} for nullness, {@code "igj"} for igj
-     * test</li>
+     * <li>{@code "suppress-key"}, where suppress-key is a supported warnings
+     * key, as specified by {@link #getSuppressWarningsKey()}
+     * (e.g., {@code "nullness"} for Nullness, {@code "igj"} for IGJ)</li>
      *
      * <li>{@code "suppress-key:error-key}, where the suppress-key
      * is as above, and error-key is a prefix of the errors
      * that it may suppress.  So "nullness:generic.argument", would
-     * suppress any errors in nullness checker related to
-     * generic.argument.
+     * suppress any errors in the Nullness Checker related to
+     * generic.argument.</li>
+     * </ol>
      *
-     * @param annos the annotations to search
+     * @param anno  the @SuppressWarnings annotation written by the user
      * @param err   the error key the checker is emitting
      * @return true if one of {@code annos} is a {@link SuppressWarnings}
      *         annotation with the key returned by {@link
      *         SourceChecker#getSuppressWarningsKey}
      */
-    private boolean checkSuppressWarnings(SuppressWarnings anno, String err) {
+    private boolean checkSuppressWarnings(/*@Nullable*/ SuppressWarnings anno, String err) {
 
-        if (anno == null)
+        // Don't suppress warnings if this checker provides no key to do so.
+        Collection<String> checkerSwKeys = this.getSuppressWarningsKeys();
+        if (checkerSwKeys.isEmpty())
             return false;
 
-        Collection<String> swkeys = this.getSuppressWarningsKeys();
+        String[] userSwKeys = (anno == null ? null : anno.value());
+        String[] cmdLineSwKeys = this.suppressWarnings;
 
-        // For all the method's annotations, check for a @SuppressWarnings
-        // annotation. If one is found, check its values for this checker's
-        // SuppressWarnings key.
-        for (String suppressWarningValue : anno.value()) {
-            for (String swKey : swkeys) {
-                if (suppressWarningValue.equalsIgnoreCase(swKey))
+        return (checkSuppressWarnings(userSwKeys, err)
+                || checkSuppressWarnings(cmdLineSwKeys, err));
+    }
+
+    /**
+     * Return true if the given error should be suppressed, based on the
+     * user-supplied @SuppressWarnings keys.
+     */
+    private boolean checkSuppressWarnings(String /*@Nullable*/ [] userSwKeys, String err) {
+        if (userSwKeys == null)
+            return false;
+
+        Collection<String> checkerSwKeys = this.getSuppressWarningsKeys();
+
+        // Check each value of the user-written @SuppressWarnings annotation.
+        for (String suppressWarningValue : userSwKeys) {
+            for (String checkerKey : checkerSwKeys) {
+                if (suppressWarningValue.equalsIgnoreCase(checkerKey))
                     return true;
 
-                String expected = swKey + ":" + err;
+                String expected = checkerKey + ":" + err;
                 if (expected.toLowerCase().contains(suppressWarningValue.toLowerCase()))
                     return true;
             }
@@ -666,21 +699,23 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
     }
 
     /**
-     * Determines whether the warnings pertaining to a given tree should be
-     * suppressed (namely, if its containing method has a @SuppressWarnings
-     * annotation for which one of the values is the key provided by the {@link
-     * SourceChecker#getSuppressWarningsKey} method).
+     * Determines whether all the warnings pertaining to a given tree
+     * should be suppressed.  Returns true if the tree is within the scope
+     * of a @SuppressWarnings annotation, one of whose values suppresses
+     * the checker's warnings.  The list of keys that suppress a checker's
+     * wornings is provided by the {@link
+     * SourceChecker#getSuppressWarningsKey} method.
      *
      * @param tree the tree that might be a source of a warning
      * @return true if no warning should be emitted for the given tree because
-     *         it is contained by a method with an appropriately-valued
+     *         it is contained by a declaration with an appropriately-valued
      *         @SuppressWarnings annotation; false otherwise
      */
     private boolean shouldSuppressWarnings(Tree tree, String err) {
 
-        // Don't suppress warnings if there's no key.
-        Collection<String> swKeys = this.getSuppressWarningsKeys();
-        if (swKeys.isEmpty())
+        // Don't suppress warnings if this checker provides no key to do so.
+        Collection<String> checkerKeys = this.getSuppressWarningsKeys();
+        if (checkerKeys.isEmpty())
             return false;
 
         /*@Nullable*/ TreePath path = trees.getPath(this.currentRoot, tree);
@@ -947,6 +982,7 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
         options.add("ignorejdkastub");
         options.add("nocheckjdk");
         options.add("warns");
+        options.add("suppressWarnings");
         options.add("annotatedTypeParams");
         options.add("printErrorStack");
         options.add("printAllQualifiers");
@@ -998,7 +1034,8 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
 
     /**
      * @return String keys that a checker honors for suppressing warnings
-     *         and errors that it issues
+     *         and errors that it issues.  Each such key suppresses all
+     *         warnings issued by the checker.
      *
      * @see SuppressWarningsKeys
      */
