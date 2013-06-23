@@ -69,19 +69,9 @@ public class TypeFromElement {
         } else if (element.getKind() == ElementKind.TYPE_PARAMETER) {
             annotateTypeParam(type, element);
         } else if (element.getKind() == ElementKind.EXCEPTION_PARAMETER) {
-            // Or is this like a local variable?
-            // TODO: annotateExceptionParam(type, element);
-            /*
-            if (strict) {
-                System.out.println("TypeFromElement.annotate: unhandled element: " + element +
-                        " [" + element.getKind() + "]");
-            }*/
+            annotateLocal(type, (VariableElement) element);
         } else if (element.getKind() == ElementKind.RESOURCE_VARIABLE) {
-            // TODO;
-            if (strict) {
-                System.out.println("TypeFromElement.annotate: unhandled element: " + element +
-                        " [" + element.getKind() + "]");
-            }
+            annotateLocal(type, (VariableElement) element);
         } else {
             ErrorReporter.errorAbort("TypeFromElement.annotate: illegal argument: " + element +
                     " [" + element.getKind() + "]");
@@ -310,7 +300,9 @@ public class TypeFromElement {
      * @param element the element of a field
      */
     private static void annotateLocal(AnnotatedTypeMirror type, VariableElement element) {
-        if (element.getKind() != ElementKind.LOCAL_VARIABLE) {
+        if (element.getKind() != ElementKind.LOCAL_VARIABLE &&
+                element.getKind() != ElementKind.RESOURCE_VARIABLE &&
+                element.getKind() != ElementKind.EXCEPTION_PARAMETER) {
             ErrorReporter.errorAbort("TypeFromElement.annotateLocal: " +
                     "invalid non-local-variable element " + element + " [" + element.getKind() + "]");
         }
@@ -324,6 +316,8 @@ public class TypeFromElement {
             TypeAnnotationPosition pos = anno.position;
             switch (pos.type) {
             case LOCAL_VARIABLE:
+            case RESOURCE_VARIABLE:
+            case EXCEPTION_PARAMETER:
                 annotate(type, anno);
                 break;
             case NEW:
