@@ -262,6 +262,12 @@ public class AnnotationBuilder {
     // Keep this version synchronized with the VariableElement[] version below
     public AnnotationBuilder setValue(CharSequence elementName, Enum<?>[] values) {
         assertNotBuilt();
+
+        if (values.length == 0) {
+            setValue(elementName, Collections.emptyList());
+            return this;
+        }
+
         VariableElement enumElt = findEnumElement(values[0]);
         ExecutableElement var = findElement(elementName);
 
