@@ -22,7 +22,7 @@ public class DependentTypes {
     private final Elements elements;
     private final GeneralAnnotatedTypeFactory atypeFactory;
 
-    public DependentTypes(SourceChecker checker, CompilationUnitTree root) {
+    public DependentTypes(SourceChecker<?> checker, CompilationUnitTree root) {
         this.elements = checker.getProcessingEnvironment().getElementUtils();
         this.atypeFactory = new GeneralAnnotatedTypeFactory(checker, root);
     }
