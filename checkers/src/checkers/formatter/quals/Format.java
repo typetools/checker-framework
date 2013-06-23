@@ -12,10 +12,10 @@ import checkers.quals.Unqualified;
  * indicates that the String may be legally passed to
  * {@link java.util.Formatter#format(String, Object...) Formatter.format}, or
  * similar functions.
- * 
- * The annotation's value represents the valid paramters that may be passed to
+ *
+ * The annotation's value represents the valid parameters that may be passed to
  * the format function. For example:
- * 
+ *
  * <blockquote>
  * <pre>
  * {@literal @}Format({ConversionCategory.GENERAL, ConversionCategory.INT})
@@ -23,14 +23,14 @@ import checkers.quals.Unqualified;
  * String.format(f, "Example", 7);
  * </pre>
  * </blockquote>
- * 
+ *
  * The annotation describes that the format string requires any Object as the
  * first parameter ({@link ConversionCategory.GENERAL
  * ConversionCategory.GENERAL}) and an integer as the second parameter (
  * {@link ConversionCategory.INT ConversionCategory.INT}).
- * 
+ *
  * @see ConversionCategory
- * 
+ *
  * @author Konstantin Weitz
  */
 @TypeQualifier
