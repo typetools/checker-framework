@@ -20,9 +20,8 @@ import com.sun.source.tree.CompilationUnitTree;
  * 
  * @author Stefan Heule
  */
-public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker>
-        extends
-        AbstractBasicAnnotatedTypeFactory<Checker, CFValue, CFStore, CFTransfer, CFAnalysis> {
+public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker<?>>
+    extends AbstractBasicAnnotatedTypeFactory<Checker, CFValue, CFStore, CFTransfer, CFAnalysis> {
 
     public BasicAnnotatedTypeFactory(Checker checker, CompilationUnitTree root,
             boolean useFlow) {

@@ -57,7 +57,7 @@ public class TypeAnnotator extends AnnotatedTypeScanner<Void, ElementKind> {
      *
      * @param checker the type checker to which this annotator belongs
      */
-    public TypeAnnotator(BaseTypeChecker checker, AnnotatedTypeFactory atypeFactory) {
+    public TypeAnnotator(BaseTypeChecker<?> checker, AnnotatedTypeFactory atypeFactory) {
 
         this.typeKinds = new EnumMap<TypeKind, Set<AnnotationMirror>>(TypeKind.class);
         this.typeClasses = new HashMap<Class<? extends AnnotatedTypeMirror>, Set<AnnotationMirror>>();

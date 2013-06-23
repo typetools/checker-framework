@@ -75,8 +75,12 @@ import com.sun.source.tree.VariableTree;
  * annotations via {@link ImplicitFor}, and user-specified defaults via
  * {@link DefaultQualifier}.
  */
-public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseTypeChecker, Value extends CFAbstractValue<Value>, Store extends CFAbstractStore<Value, Store>, TransferFunction extends CFAbstractTransfer<Value, Store, TransferFunction>, FlowAnalysis extends CFAbstractAnalysis<Value, Store, TransferFunction>>
-        extends AnnotatedTypeFactory {
+public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseTypeChecker<?>,
+        Value extends CFAbstractValue<Value>,
+        Store extends CFAbstractStore<Value, Store>,
+        TransferFunction extends CFAbstractTransfer<Value, Store, TransferFunction>,
+        FlowAnalysis extends CFAbstractAnalysis<Value, Store, TransferFunction>>
+    extends AnnotatedTypeFactory {
 
     /** The type checker to use. */
     protected Checker checker;
@@ -200,9 +204,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
      * Subclasses have to override this method to create the appropriate
      * analysis if they do not follow the checker naming convention.
      */
-    // there is a bug about raw types in the Checker Framework, making it
-    // necessary to suppress argument.type.incompatible
-    @SuppressWarnings({ "unchecked", "rawtypes", "argument.type.incompatible" })
+    @SuppressWarnings({ "unchecked", "rawtypes"})
     protected FlowAnalysis createFlowAnalysis(Checker checker,
             List<Pair<VariableElement, Value>> fieldValues) {
 

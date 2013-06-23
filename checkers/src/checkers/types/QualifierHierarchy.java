@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Name;
 import javax.lang.model.type.TypeKind;
 
 import javacutils.AnnotationUtils;
@@ -73,7 +72,7 @@ public abstract class QualifierHierarchy {
      *
      * @return the fully qualified name represented in this hierarchy
      */
-    public abstract Set</*@Interned*/String> getTypeQualifiers();
+    public abstract Set</*@Interned*/ String> getTypeQualifiers();
 
     // **********************************************************************
     // Qualifier Hierarchy Queries
