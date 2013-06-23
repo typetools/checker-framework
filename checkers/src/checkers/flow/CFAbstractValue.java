@@ -86,7 +86,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
      */
     public AnnotatedTypeMirror leastUpperBound(AnnotatedTypeMirror type,
             AnnotatedTypeMirror otherType) {
-        AbstractBasicAnnotatedTypeFactory<? extends BaseTypeChecker, V, ?, ?, ?> factory = analysis
+        AbstractBasicAnnotatedTypeFactory<? extends BaseTypeChecker<?>, V, ?, ?, ?> factory = analysis
                 .getFactory();
         ProcessingEnvironment processingEnv = factory.getProcessingEnv();
         QualifierHierarchy qualifierHierarchy = factory.getQualifierHierarchy();

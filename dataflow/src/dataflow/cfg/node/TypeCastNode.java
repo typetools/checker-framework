@@ -11,12 +11,12 @@ import com.sun.source.tree.Tree;
 
 /**
  * A node for the cast operator:
- * 
+ *
  * (<em>Point</em>) <em>x</em>
- * 
+ *
  * @author Stefan Heule
  * @author Charlie Garrett
- * 
+ *
  */
 public class TypeCastNode extends Node {
 

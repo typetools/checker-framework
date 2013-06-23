@@ -9,14 +9,14 @@ import dataflow.util.HashCodeUtils;
 
 /**
  * A node for a reference to 'this', either implicit or explicit.
- * 
+ *
  * <pre>
  *   <em>this</em>
  * </pre>
- * 
+ *
  * @author Stefan Heule
  * @author Charlie Garrett
- * 
+ *
  */
 public abstract class ThisLiteralNode extends Node {
 

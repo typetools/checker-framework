@@ -14,20 +14,20 @@ import com.sun.source.tree.Tree;
  * MarkerNodes are no-op Nodes used for debugging information.
  * They can hold a Tree and a message, which will be part of the
  * String representation of the MarkerNode.
- * 
+ *
  * Two initial use cases for MarkerNodes are representing switch
  * statements and the start and end of synchronized regions.
- * 
+ *
  * @author Stefan Heule
  * @author Charlie Garrett
- * 
+ *
  */
 public class MarkerNode extends Node {
 
-    protected/* @Nullable */Tree tree;
+    protected /*@Nullable*/ Tree tree;
     protected String message;
 
-    public MarkerNode(/* @Nullable */Tree tree, String message, Types types) {
+    public MarkerNode(/*@Nullable*/ Tree tree, String message, Types types) {
         super(types.getNoType(TypeKind.NONE));
         this.tree = tree;
         this.message = message;

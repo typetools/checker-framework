@@ -8,20 +8,20 @@ import com.sun.source.tree.Tree;
 
 /**
  * A node for a short literal. For example:
- * 
+ *
  * <pre>
  *   <em>5</em>
  *   <em>0x8fff</em>
  * </pre>
- * 
+ *
  * Java source and the AST representation do not have "short" literals. They
  * have integer literals that may be narrowed to shorts depending on context. If
  * we use explicit NarrowingConversionNodes, do we need ShortLiteralNodes too?
  * TODO: Decide this question.
- * 
+ *
  * @author Stefan Heule
  * @author Charlie Garrett
- * 
+ *
  */
 public class ShortLiteralNode extends ValueLiteralNode {
 

@@ -2,17 +2,17 @@ package dataflow.analysis;
 
 /**
  * An abstract value used in the dataflow analysis.
- * 
+ *
  * @author Stefan Heule
- * 
+ *
  */
 public interface AbstractValue<V extends AbstractValue<V>> {
 
     /**
      * Compute the least upper bound of two stores.
-     * 
+     *
      * <p>
-     * 
+     *
      * <em>Important</em>: This method must fulfill the following contract:
      * <ul>
      * <li>Does not change {@code this}.</li>

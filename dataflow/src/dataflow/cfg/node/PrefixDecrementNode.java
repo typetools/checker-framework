@@ -10,18 +10,18 @@ import com.sun.source.tree.Tree.Kind;
 
 /**
  * A node for the prefix decrement operations:
- * 
+ *
  * <pre>
  *   --<em>expression</em>
  * </pre>
- * 
+ *
  * NOTE: If widening of the operand and narrowing of the result
  * are required, they are separate Nodes, so the decrement takes
  * place at the type of the operand.
  *
  * @author Stefan Heule
  * @author Charlie Garrett
- * 
+ *
  */
 public class PrefixDecrementNode extends Node {
 

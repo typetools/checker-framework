@@ -56,7 +56,7 @@ import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 @TypeQualifiers( {PropertyKey.class, Unqualified.class, Bottom.class} )
 // Subclasses need exactly this:
 @SupportedOptions( {"propfiles", "bundlenames"} )
-public class PropertyKeyChecker extends BaseTypeChecker {
+public class PropertyKeyChecker extends BaseTypeChecker<PropertyKeyAnnotatedTypeFactory<?>> {
 
     private Set<String> lookupKeys;
 

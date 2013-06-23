@@ -12,16 +12,16 @@ import com.sun.source.tree.Tree;
 
 /**
  * A node for an array access:
- * 
+ *
  * <pre>
  *   <em>array ref</em> [ <em>index</em> ]
  * </pre>
- * 
+ *
  * We allow array accesses without corresponding AST {@link Tree}s.
- * 
+ *
  * @author Stefan Heule
  * @author Charlie Garrett
- * 
+ *
  */
 
 public class ArrayAccessNode extends Node {

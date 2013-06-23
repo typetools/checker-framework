@@ -142,7 +142,7 @@ public class RegexAnnotatedTypeFactory extends AbstractBasicAnnotatedTypeFactory
 
     private class RegexTreeAnnotator extends TreeAnnotator {
 
-        public RegexTreeAnnotator(BaseTypeChecker checker) {
+        public RegexTreeAnnotator(BaseTypeChecker<?> checker) {
             super(checker, RegexAnnotatedTypeFactory.this);
         }
 

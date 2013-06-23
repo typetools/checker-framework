@@ -177,7 +177,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * class names (canonical names) for annotations with the same meaning
      * (i.e., aliases), as well as the annotation mirror that should be used.
      */
-    private final Map<String, Pair<AnnotationMirror, Set</*@Interned*/String>>> declAliases = new HashMap<>();
+    private final Map<String, Pair<AnnotationMirror, Set</*@Interned*/ String>>> declAliases = new HashMap<>();
 
 	/** Unique ID counter; for debugging purposes. */
     private static int uidCounter = 0;
@@ -206,7 +206,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *            annotated types for
      * @throws IllegalArgumentException if either argument is {@code null}
      */
-    public AnnotatedTypeFactory(SourceChecker checker,
+    public AnnotatedTypeFactory(SourceChecker<?> checker,
             QualifierHierarchy qualHierarchy,
             /*@Nullable*/ TypeHierarchy typeHierarchy,
             /*@Nullable*/ CompilationUnitTree root) {
@@ -378,7 +378,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 treeCache.put(tree, AnnotatedTypes.deepCopy(type));
             break;
         default:
-            // Don't cache rest.
+            // No caching otherwise
         }
         // System.out.println("AnnotatedTypeFactory::getAnnotatedType(Tree) result: " + type);
         return type;
@@ -1350,7 +1350,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     public boolean isSupportedQualifier(/*@Nullable*/ AnnotationMirror a) {
         if (a == null) return false;
-        /*@Interned*/String name = AnnotationUtils.annotationName(a);
+        /*@Interned*/ String name = AnnotationUtils.annotationName(a);
         return this.qualHierarchy.getTypeQualifiers().contains(name);
     }
 
@@ -1386,8 +1386,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             Class<? extends Annotation> annotation,
             AnnotationMirror annotationToUse) {
         String aliasName = alias.getCanonicalName();
-        /*@Interned*/String annotationName = annotation.getCanonicalName();
-        Set</*@Interned*/String> set = new HashSet<>();
+        /*@Interned*/ String annotationName = annotation.getCanonicalName();
+        Set</*@Interned*/ String> set = new HashSet<>();
         if (declAliases.containsKey(annotationName)) {
             set.addAll(declAliases.get(annotationName).second);
         }
@@ -1859,9 +1859,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
     /**
      * Returns true if the element appears in a stub file
-     * (Currently only works for methods and constructors )
+     * (Currently only works for methods and constructors)
      */
-    public boolean isFromStubFile(Element element){
+    public boolean isFromStubFile(Element element) {
         return this.getDeclAnnotation(element, FromStubFile.class) != null;
     }
     
@@ -1870,8 +1870,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * and the if the element did not appear in a stub file
      * (Currently only works for methods and constructors )
      */
-    public boolean isFromByteCode(Element element){
-        if(isFromStubFile(element)) return false;
+    public boolean isFromByteCode(Element element) {
+        if (isFromStubFile(element)) return false;
         return this.getDeclAnnotation(element, FromByteCode.class) != null;
     }
     /**
@@ -1880,11 +1880,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * is the private implementation of the same-named, public method.
      */
     private AnnotationMirror getDeclAnnotation(String eltName,
-            /*@Interned*/String annoName,
+            /*@Interned*/ String annoName,
             List<? extends AnnotationMirror> annotationMirrors,
             boolean checkAliases) {
 
-        Pair<AnnotationMirror, Set</*@Interned*/String>> aliases = checkAliases ? declAliases.get(annoName) : null;
+        Pair<AnnotationMirror, Set</*@Interned*/ String>> aliases = checkAliases ? declAliases.get(annoName) : null;
 
         // 1. Look in the stub files.
         if (indexDeclAnnos != null) {

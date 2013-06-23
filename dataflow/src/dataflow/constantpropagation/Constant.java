@@ -8,7 +8,7 @@ public class Constant implements AbstractValue<Constant> {
     protected Type type;
 
     /** The value of this abstract value (or null) */
-    protected/* @Nullable */Integer value;
+    protected /*@Nullable*/ Integer value;
 
     public enum Type {
         CONSTANT, TOP, BOTTOM,

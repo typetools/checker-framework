@@ -13,12 +13,12 @@ import com.sun.source.tree.Tree;
 /**
  * A node representing a array type used in an expression
  * such as a field access
- * 
+ *
  * <em>type</em> .class
- * 
+ *
  * @author Stefan Heule
  * @author Charlie Garrett
- * 
+ *
  */
 public class ArrayTypeNode extends Node {
 
@@ -33,7 +33,7 @@ public class ArrayTypeNode extends Node {
     public Tree getTree() {
         return tree;
     }
-    
+
     @Override
     public <R, P> R accept(NodeVisitor<R, P> visitor, P p) {
         return visitor.visitArrayType(this, p);

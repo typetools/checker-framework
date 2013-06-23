@@ -28,10 +28,10 @@ import com.sun.source.tree.CompilationUnitTree;
  *
  */
 @SupportedOptions( { "quals" })
-public final class SubtypingChecker extends BaseTypeChecker {
+public final class SubtypingChecker extends BaseTypeChecker<BasicAnnotatedTypeFactory<SubtypingChecker>> {
 
     @Override
-    public AnnotatedTypeFactory createFactory(CompilationUnitTree root) {
+    public BasicAnnotatedTypeFactory<SubtypingChecker> createFactory(CompilationUnitTree root) {
         return new BasicAnnotatedTypeFactory<SubtypingChecker>(this, root);
     }
 

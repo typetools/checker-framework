@@ -62,35 +62,38 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
     /**
      * A type factory that can provide static type annotations for AST Trees.
      */
-    protected final AbstractBasicAnnotatedTypeFactory<? extends BaseTypeChecker, V, S, T, ? extends CFAbstractAnalysis<V, S, T>> atypeFactory;
+    protected final AbstractBasicAnnotatedTypeFactory<? extends BaseTypeChecker<?>, V, S, T, ? extends CFAbstractAnalysis<V, S, T>> atypeFactory;
 
     /**
      * A checker used to do error reporting.
+     * TODO: if it's only for error reporting, should it be an (extended) ErrorHandler?
      */
-    protected final BaseTypeChecker checker;
+    protected final BaseTypeChecker<?> checker;
 
-    protected List<Pair<VariableElement, V>> fieldValues;
+    // TODO: document.
+    protected final List<Pair<VariableElement, V>> fieldValues;
 
+    // TODO: document.
     protected final int expectedNumberOfAnnotations;
 
-    public <Checker extends BaseTypeChecker> CFAbstractAnalysis(
+    public <Checker extends BaseTypeChecker<?>> CFAbstractAnalysis(
             AbstractBasicAnnotatedTypeFactory<Checker, V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory,
             ProcessingEnvironment env, Checker checker) {
+        this(factory, env, checker, Collections.<Pair<VariableElement, V>>emptyList());
+    }
+
+    public <Checker extends BaseTypeChecker<?>> CFAbstractAnalysis(
+            AbstractBasicAnnotatedTypeFactory<Checker, V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory,
+            ProcessingEnvironment env, Checker checker,
+            List<Pair<VariableElement, V>> fieldValues) {
         super(env);
+
         qualifierHierarchy = factory.getQualifierHierarchy();
         typeHierarchy = factory.getChecker().getTypeHierarchy();
         this.atypeFactory = factory;
         this.checker = checker;
         transferFunction = createTransferFunction();
-        fieldValues = Collections.emptyList();
         expectedNumberOfAnnotations = qualifierHierarchy.getWidth();
-    }
-
-    public <Checker extends BaseTypeChecker> CFAbstractAnalysis(
-            AbstractBasicAnnotatedTypeFactory<Checker, V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory,
-            ProcessingEnvironment env, Checker checker,
-            List<Pair<VariableElement, V>> fieldValues) {
-        this(factory, env, checker);
         this.fieldValues = fieldValues;
     }
 
@@ -101,9 +104,7 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
     /**
      * @return The transfer function to be used by the analysis.
      */
-    // there is a bug about raw types in the Checker Framework, making it
-    // necessary to suppress argument.type.incompatible
-    @SuppressWarnings( { "unchecked", "argument.type.incompatible" } )
+    @SuppressWarnings("unchecked")
     public T createTransferFunction() {
         @SuppressWarnings("rawtypes")
         AbstractBasicAnnotatedTypeFactory f = atypeFactory;
@@ -123,7 +124,7 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
     /**
      * @return An abstract value containing the given annotated {@code type}.
      */
-    public abstract/* @Nullable */V createAbstractValue(AnnotatedTypeMirror type);
+    public abstract /*@Nullable*/ V createAbstractValue(AnnotatedTypeMirror type);
 
     /**
      * Default implementation for
@@ -144,7 +145,7 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
         return typeHierarchy;
     }
 
-    public AbstractBasicAnnotatedTypeFactory<? extends BaseTypeChecker, V, S, T, ? extends CFAbstractAnalysis<V, S, T>> getFactory() {
+    public AbstractBasicAnnotatedTypeFactory<? extends BaseTypeChecker<?>, V, S, T, ? extends CFAbstractAnalysis<V, S, T>> getFactory() {
         return atypeFactory;
     }
 

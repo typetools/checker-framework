@@ -12,14 +12,14 @@ import com.sun.source.tree.Tree.Kind;
 
 /**
  * A node for string concatenation:
- * 
+ *
  * <pre>
  *   <em>expression</em> + <em>expression</em>
  * </pre>
- * 
+ *
  * @author Stefan Heule
  * @author Charlie Garrett
- * 
+ *
  */
 public class StringConcatenateNode extends Node {
 

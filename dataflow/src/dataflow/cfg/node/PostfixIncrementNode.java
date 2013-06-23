@@ -10,20 +10,20 @@ import com.sun.source.tree.Tree.Kind;
 
 /**
  * A node for the postfix increment operations:
- * 
+ *
  * <pre>
  *   ++<em>expression</em>
  * </pre>
- * 
+ *
  * We allow postfix increment nodes without corresponding AST {@link Tree}s.
- * 
+ *
  * NOTE: If widening of the operand and narrowing of the result
  * are required, they are separate Nodes, so the increment takes
  * place at the type of the operand.
  *
  * @author Stefan Heule
  * @author Charlie Garrett
- * 
+ *
  */
 public class PostfixIncrementNode extends Node {
 

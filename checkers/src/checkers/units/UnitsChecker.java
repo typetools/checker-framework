@@ -28,7 +28,7 @@ import checkers.basetype.BaseTypeChecker;
  * Supports "units" option to add support for additional units.
  */
 @SupportedOptions( { "units" } )
-public class UnitsChecker extends BaseTypeChecker {
+public class UnitsChecker extends BaseTypeChecker<UnitsAnnotatedTypeFactory> {
 
     protected Elements elements;
 

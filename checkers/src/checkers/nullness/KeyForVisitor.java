@@ -18,7 +18,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.Tree.Kind;
 
-public class KeyForVisitor extends BaseTypeVisitor<KeyForSubchecker> {
+public class KeyForVisitor extends BaseTypeVisitor<KeyForSubchecker, KeyForAnnotatedTypeFactory> {
     public KeyForVisitor(KeyForSubchecker checker, CompilationUnitTree root) {
         super(checker, root);
     }

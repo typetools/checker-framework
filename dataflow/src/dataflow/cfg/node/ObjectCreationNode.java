@@ -13,14 +13,14 @@ import com.sun.source.tree.Tree;
 
 /**
  * A node for new object creation
- * 
+ *
  * <pre>
  *   <em>new constructor(arg1, arg2, ...)</em>
  * </pre>
- * 
+ *
  * @author Stefan Heule
  * @author Charlie Garrett
- * 
+ *
  */
 public class ObjectCreationNode extends Node {
 

@@ -3,9 +3,9 @@ package dataflow.analysis;
 /**
  * A store is used to keep track of the information that the dataflow analysis
  * has accumulated at any given point in time.
- * 
+ *
  * @author Stefan Heule
- * 
+ *
  * @param <S>
  *            The type of the store returned by {@code copy} and that is used in
  *            {@code leastUpperBound}. Usually it is the implementing class
@@ -18,9 +18,9 @@ public interface Store<S extends Store<S>> {
 
     /**
      * Compute the least upper bound of two stores.
-     * 
+     *
      * <p>
-     * 
+     *
      * <em>Important</em>: This method must fulfill the following contract:
      * <ul>
      * <li>Does not change {@code this}.</li>

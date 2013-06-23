@@ -7,10 +7,11 @@
       Builds a library of utilities shared by sub-projects in the Checker Framework.
     </description>
 
-    <property name="src" value="src"/>
-    <property name="build" value="build"/>
     <property file="build.${os.name}.properties"/>
     <property file="build.properties"/>
+
+    <property name="src" value="src"/>
+    <property name="build" value="build"/>
 
     <property name="dist.file" value="javacutils.jar"/>
     <property name="dist.doc" value="doc"/>
@@ -20,7 +21,7 @@
     <property name="compiler.version.goal" value="javac 1.7.0-jsr308-${build.version}"/>
 
     <path id="build.path">
-        <pathelement location="${compiler.lib}"/>
+        <pathelement location="${javac.lib}"/>
     </path>
 
     <!-- Used to have:
@@ -32,7 +33,7 @@
         <java fork="true"
               outputproperty="compiler.version"
               classname="com.sun.tools.javac.Main">
-          <jvmarg line="-Xbootclasspath/p:${compiler.lib}"/>
+          <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
           <arg line="-version"/>
         </java>
 
@@ -69,7 +70,7 @@
 Needed version ${compiler.version.goal} of the JSR 308 compiler,
 but found version ${compiler.version} on your classpath.
 ${line.separator}${line.separator}
-Check that the 'compiler.lib' property in 'build.properties' points to version
+Check that the 'javac.lib' property in 'build.properties' points to version
 ${build.version} of the 'javac.jar' library."/>
 
         <pathconvert pathsep=" " property="src.files.spaceseparated_jc">
@@ -82,9 +83,9 @@ ${build.version} of the 'javac.jar' library."/>
         </pathconvert>
         <java fork="true"
               failonerror="true"
-              classpath="${compiler.lib}:${annotation-utils.lib}:${jna.lib}:${tests.junit}"
+              classpath="${javac.lib}:${annotation-utils.lib}:${tests.junit}"
               classname="com.sun.tools.javac.Main">
-            <jvmarg line="-Xbootclasspath/p:${compiler.lib}"/>
+            <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
             <arg line="-sourcepath ${src}"/>
             <arg line="-d ${build}"/>
@@ -114,9 +115,9 @@ ${build.version} of the 'javac.jar' library."/>
     <target name="javadoc" depends="prep" description="Create Javadoc documentation">
         <java fork="true"
               failonerror="true"
-              classpath="${compiler.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar"
+              classpath="${javac.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar"
               classname="com.sun.tools.javac.Main">
-            <jvmarg line="-Xbootclasspath/p:${compiler.lib}:${javadoc.lib}"/>
+            <jvmarg line="-Xbootclasspath/p:${javac.lib}:${javadoc.lib}"/>
             <arg value="-g"/>
             <arg line="-d ${build}"/>
             <arg line="src/javacutils/dist/ManualTaglet.java"/>
@@ -126,7 +127,7 @@ ${build.version} of the 'javac.jar' library."/>
         subdirectory fails. -->
         <javadoc sourcepath="${src}" destdir="${dist.doc}" failonerror="true"
             executable="${jsr308.langtools}/dist/bin/javadoc"
-          classpath="${build}:${compiler.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar:${jna.lib}:tests/junit-4.7.jar"
+          classpath="${build}:${compiler.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar:${tests.junit}"
           bootclasspath="${compiler.lib}:${javadoc.lib}:${java.home}/lib/rt.jar">
           <package name="javacutils.*"/>
           <link href="http://docs.oracle.com/javase/7/docs/api/"/>

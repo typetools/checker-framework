@@ -60,7 +60,7 @@ import com.sun.tools.javac.util.Context;
 @SupportedOptions("checker")
 public class SignaturePrinter extends AbstractTypeProcessor {
 
-    private SourceChecker checker;
+    private SourceChecker<?> checker;
 
     ///////// Initialization /////////////
     private void init(ProcessingEnvironment env, String checkerName) {
@@ -68,15 +68,15 @@ public class SignaturePrinter extends AbstractTypeProcessor {
             try {
                 Class<?> checkerClass = Class.forName(checkerName);
                 Constructor<?> cons = checkerClass.getConstructor();
-                checker = (SourceChecker)cons.newInstance();
+                checker = (SourceChecker<?>) cons.newInstance();
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         } else {
-            checker = new SourceChecker() {
+            checker = new SourceChecker<AnnotatedTypeFactory>() {
 
                 @Override
-                protected SourceVisitor<?, ?> createSourceVisitor(
+                protected SourceVisitor<?, ?, ?, ?> createSourceVisitor(
                         CompilationUnitTree root) {
                     return null;
                 }

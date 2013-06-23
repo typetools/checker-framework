@@ -16,7 +16,7 @@ import checkers.util.GraphQualifierHierarchy;
 import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 
 @TypeQualifiers({ Dominator.class, Modifier.class, World.class, O.class})
-public class OwnershipSubchecker extends BaseTypeChecker {
+public class OwnershipSubchecker extends BaseTypeChecker<OwnershipAnnotatedTypeFactory> {
     protected AnnotationMirror BOTTOM_QUAL;
 
     @Override

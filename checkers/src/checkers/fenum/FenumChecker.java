@@ -40,7 +40,7 @@ import checkers.basetype.BaseTypeChecker;
  * @author wmdietl
  */
 @SupportedOptions( { "quals" } )
-public class FenumChecker extends BaseTypeChecker {
+public class FenumChecker extends BaseTypeChecker<FenumAnnotatedTypeFactory> {
     protected AnnotationMirror FENUM, BOTTOM;
 
     @Override

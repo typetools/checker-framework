@@ -17,12 +17,12 @@ import com.sun.source.tree.Tree;
 /**
  * A node representing a class name used in an expression
  * such as a static method invocation.
- * 
+ *
  * parent.<em>class</em> .forName(...)
- * 
+ *
  * @author Stefan Heule
  * @author Charlie Garrett
- * 
+ *
  */
 public class ClassNameNode extends Node {
 
@@ -31,7 +31,7 @@ public class ClassNameNode extends Node {
     protected final Element element;
 
     /** The parent name, if any. */
-    protected final/* @Nullable */Node parent;
+    protected final /*@Nullable*/ Node parent;
 
     public ClassNameNode(IdentifierTree tree) {
         super(InternalUtils.typeOf(tree));
@@ -60,7 +60,7 @@ public class ClassNameNode extends Node {
     public Tree getTree() {
         return tree;
     }
-    
+
     @Override
     public <R, P> R accept(NodeVisitor<R, P> visitor, P p) {
         return visitor.visitClassName(this, p);

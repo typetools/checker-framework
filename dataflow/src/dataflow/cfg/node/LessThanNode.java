@@ -12,16 +12,16 @@ import com.sun.source.tree.Tree.Kind;
 
 /**
  * A node for the less than comparison:
- * 
+ *
  * <pre>
  *   <em>expression</em> < <em>expression</em>
  * </pre>
  *
  * We allow less than nodes without corresponding AST {@link Tree}s.
- * 
+ *
  * @author Stefan Heule
  * @author Charlie Garrett
- * 
+ *
  */
 public class LessThanNode extends Node {
 

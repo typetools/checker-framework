@@ -13,12 +13,12 @@ import com.sun.source.tree.Tree;
 /**
  * A node representing a primitive type used in an expression
  * such as a field access
- * 
+ *
  * <em>type</em> .class
- * 
+ *
  * @author Stefan Heule
  * @author Charlie Garrett
- * 
+ *
  */
 public class PrimitiveTypeNode extends Node {
 
@@ -33,7 +33,7 @@ public class PrimitiveTypeNode extends Node {
     public Tree getTree() {
         return tree;
     }
-    
+
     @Override
     public <R, P> R accept(NodeVisitor<R, P> visitor, P p) {
         return visitor.visitPrimitiveType(this, p);

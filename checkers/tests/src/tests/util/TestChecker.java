@@ -11,7 +11,6 @@ import checkers.basetype.BaseTypeChecker;
 import checkers.quals.Bottom;
 import checkers.quals.TypeQualifiers;
 import checkers.quals.Unqualified;
-import checkers.types.AnnotatedTypeFactory;
 import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.types.QualifierHierarchy;
 import checkers.util.GraphQualifierHierarchy;
@@ -30,7 +29,7 @@ import com.sun.source.tree.CompilationUnitTree;
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 @TypeQualifiers({ Odd.class, MonotonicOdd.class, Even.class, Unqualified.class,
         Bottom.class })
-public final class TestChecker extends BaseTypeChecker {
+public final class TestChecker extends BaseTypeChecker<tests.util.TestChecker.FrameworkTestAnnotatedTypeFactory> {
 
     protected AnnotationMirror BOTTOM;
 
@@ -42,11 +41,11 @@ public final class TestChecker extends BaseTypeChecker {
     }
 
     @Override
-    public AnnotatedTypeFactory createFactory(CompilationUnitTree tree) {
+    public FrameworkTestAnnotatedTypeFactory createFactory(CompilationUnitTree tree) {
         return new FrameworkTestAnnotatedTypeFactory(this, tree);
     }
 
-    private class FrameworkTestAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<TestChecker> {
+    class FrameworkTestAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<TestChecker> {
         public FrameworkTestAnnotatedTypeFactory(TestChecker checker, CompilationUnitTree root) {
             super(checker, root, true);
             AnnotationMirror ODD = AnnotationUtils.fromClass(elements, Odd.class);

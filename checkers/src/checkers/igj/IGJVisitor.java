@@ -30,7 +30,7 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
  *
  * @see BaseTypeVisitor
  */
-public class IGJVisitor extends BaseTypeVisitor<IGJChecker> {
+public class IGJVisitor extends BaseTypeVisitor<IGJChecker, IGJAnnotatedTypeFactory> {
 
     public IGJVisitor(IGJChecker checker, CompilationUnitTree root) {
         super(checker, root);
