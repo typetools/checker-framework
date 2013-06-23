@@ -62,12 +62,12 @@ import com.sun.source.tree.VariableTree;
 public class CFCFGBuilder extends CFGBuilder {
 
     /** The associated checker. */
-    protected final BaseTypeChecker checker;
+    protected final BaseTypeChecker<?> checker;
 
     /** Type factory to provide types used during CFG building. */
     protected final AnnotatedTypeFactory factory;
 
-    public CFCFGBuilder(BaseTypeChecker checker, AnnotatedTypeFactory factory) {
+    public CFCFGBuilder(BaseTypeChecker<?> checker, AnnotatedTypeFactory factory) {
         super(checker.getProcessingEnvironment().getOptions()
                 .containsKey("assumeAssertionsAreEnabled"), checker
                 .getProcessingEnvironment().getOptions()
