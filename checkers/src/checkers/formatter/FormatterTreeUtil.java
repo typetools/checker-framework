@@ -370,11 +370,7 @@ public class FormatterTreeUtil {
     public AnnotationMirror categoriesToFormatAnnotation(ConversionCategory[] args) {
         AnnotationBuilder builder =
                 new AnnotationBuilder(processingEnv, Format.class.getCanonicalName());
-        if (args.length == 0) {    // TODO circumvents Issue 228
-            builder.setValue("value", new Object[0]);
-        } else {
-            builder.setValue("value", args);
-        }
+        builder.setValue("value", args);
         return builder.build();
     }
 
