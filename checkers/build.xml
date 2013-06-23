@@ -7,23 +7,30 @@
       Builds the Checker Framework for the JSR 308 compiler.
     </description>
 
+    <property file="build.${os.name}.properties"/>
+    <property file="build.properties"/>
+
     <property name="src" value="src"/>
     <property name="tests" value="tests"/>
     <property name="tests.junit" value="${tests}/junit-4.7.jar"/>
+
     <property name="build" value="build"/>
     <property name="build.reports" value="${build}/reports"/>
     <property name="build.tests" value="tests/build"/>
-    <property file="build.${os.name}.properties"/>
-    <property file="build.properties"/>
+
     <property name="checkers.jar.file" value="binary/checkers.jar"/>
     <property name="checkers-quals.jar.file" value="binary/checkers-quals.jar"/>
+
     <property name="dist.doc" value="doc"/>
+
     <property name="javaparser.loc" value="../javaparser"/>
     <property name="javacutils.loc" value="../javacutils"/>
     <property name="dataflow.loc" value="../dataflow"/>
+
     <property name="checkers.rel.jp" value="../checkers"/>
     <property name="checkers.rel.javacutils" value="../checkers"/>
     <property name="checkers.rel.dataflow" value="../checkers"/>
+
     <property name="build.jtreg.dir" value="${build}/jtreg"/>
 
     <property name="tmpdir" value="${java.io.tmpdir}/${user.name}/${ant.project.name}" />
@@ -32,8 +39,6 @@
     <property name="run.tests.should.fork" value="true"/>
     <property name="halt.on.test.failure" value="true"/>
 
-    <!-- THERE IS BOTH A javac.lib and a javac.lib -->
-    <property name="javac.lib" value="${jsr308.langtools}/dist/lib/javac.jar"/>
     <property environment="env"/>
 
     <property name="JAVA_6_HOME" value="${env.JAVA_6_HOME}" />
