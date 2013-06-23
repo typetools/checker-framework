@@ -17,16 +17,15 @@ import checkers.types.AnnotatedTypeMirror;
  * @author Stefan Heule
  *
  */
-public class CFAnalysis extends
-        CFAbstractAnalysis<CFValue, CFStore, CFTransfer> {
+public class CFAnalysis extends CFAbstractAnalysis<CFValue, CFStore, CFTransfer> {
 
-    public <Checker extends BaseTypeChecker> CFAnalysis(
+    public <Checker extends BaseTypeChecker<?>> CFAnalysis(
             AbstractBasicAnnotatedTypeFactory<Checker, CFValue, CFStore, CFTransfer, CFAnalysis> factory,
             ProcessingEnvironment env, Checker checker) {
         super(factory, env, checker);
     }
 
-    public <Checker extends BaseTypeChecker> CFAnalysis(
+    public <Checker extends BaseTypeChecker<?>> CFAnalysis(
             AbstractBasicAnnotatedTypeFactory<Checker, CFValue, CFStore, CFTransfer, CFAnalysis> factory,
             ProcessingEnvironment env, Checker checker,
             List<Pair<VariableElement, CFValue>> fieldValues) {
