@@ -81,7 +81,8 @@ import checkers.nullness.quals.*;
  * {@link AbstractProcessor} (or even this class) as the Checker Framework is
  * not designed for such checkers.
  */
-public abstract class SourceChecker extends AbstractTypeProcessor implements ErrorHandler {
+public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
+    extends AbstractTypeProcessor implements ErrorHandler {
 
     // TODO checkers should export themselves through a separate interface,
     // and maybe have an interface for all the methods for which it's safe
@@ -153,8 +154,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Err
      * @param root the AST root for the factory
      * @return an {@link AnnotatedTypeFactory} for use by typecheckers
      */
-    public AnnotatedTypeFactory createFactory(CompilationUnitTree root) {
-        return new GeneralAnnotatedTypeFactory(this, root);
+    @SuppressWarnings("unchecked") // unchecked cast to type variable
+    public Factory createFactory(CompilationUnitTree root) {
+        return (Factory) new GeneralAnnotatedTypeFactory(this, root);
     }
 
     /**
@@ -164,7 +166,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Err
      * @param root the AST root
      * @return a {@link SourceVisitor} to use to scan source trees
      */
-    protected abstract SourceVisitor<?, ?> createSourceVisitor(CompilationUnitTree root);
+    protected abstract SourceVisitor<?, ?, ?, ?> createSourceVisitor(CompilationUnitTree root);
 
     /**
      * Provides a mapping of error keys to custom error messages.
@@ -344,16 +346,24 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Err
                 });
             }
         } catch (CheckerError ce) {
+            if (this.messager == null) {
+                messager = processingEnv.getMessager();
+            }
+
             logCheckerError(ce);
         } catch (Throwable t) {
             String stackTraceHelp;
-            if (! processingEnv.getOptions().containsKey("printErrorStack")) {
+            if (processingEnv.getOptions().containsKey("printErrorStack")) {
                 stackTraceHelp = "";
             } else {
                 stackTraceHelp = "; invoke the compiler with -AprintErrorStack to see the stack trace.";
             }
+            if (this.messager == null) {
+                messager = processingEnv.getMessager();
+            }
             logCheckerError(new CheckerError("SourceChecker.init: unexpected Throwable (" +
-                    t.getClass().getSimpleName() + "); message: " + t.getMessage() +
+                    t.getClass().getSimpleName() + ")" +
+                    (t.getMessage() != null ? "; message: " + t.getMessage() : "") +
                     stackTraceHelp, t));
         }
     }
@@ -364,9 +374,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Err
      * @see AbstractProcessor#init(ProcessingEnvironment)
      */
     public void initChecker() {
-        this.skipUsesPattern = getSkipUsesPattern(processingEnv.getOptions());
-        this.skipDefsPattern = getSkipDefsPattern(processingEnv.getOptions());
-
         // Grab the Trees and Messager instances now; other utilities
         // (like Types and Elements) can be retrieved by subclasses.
         /*@Nullable*/ Trees trees = Trees.instance(processingEnv);
@@ -377,6 +384,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Err
         this.messages = getMessages();
         this.warns = processingEnv.getOptions().containsKey("warns");
         this.activeLints = createActiveLints(processingEnv.getOptions());
+
+        this.skipUsesPattern = getSkipUsesPattern(processingEnv.getOptions());
+        this.skipDefsPattern = getSkipDefsPattern(processingEnv.getOptions());
     }
 
     /**
@@ -453,7 +463,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Err
         currentRoot = p.getCompilationUnit();
         currentPath = p;
         // Visit the attributed tree.
-        SourceVisitor<?, ?> visitor = null;
+        SourceVisitor<?, ?, ?, ?> visitor = null;
         try {
             visitor = createSourceVisitor(currentRoot);
             visitor.scan(p, null);
@@ -461,7 +471,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Err
             logCheckerError(ce);
         } catch (Throwable t) {
             logCheckerError(new CheckerError("SourceChecker.typeProcess: unexpected Throwable (" +
-                    t.getClass().getSimpleName() + ")  when processing "
+                    t.getClass().getSimpleName() + ") when processing "
                     + currentRoot.getSourceFile().getName() +
                     (t.getMessage() != null ? "; message: " + t.getMessage() : "") +
                     "; invoke the compiler with -AprintErrorStack to see the stack trace.", t));
