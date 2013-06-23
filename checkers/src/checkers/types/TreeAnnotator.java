@@ -65,7 +65,7 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
      *
      * @param checker the type checker to which this annotator belongs
      */
-    public TreeAnnotator(BaseTypeChecker checker, AnnotatedTypeFactory atypeFactory) {
+    public TreeAnnotator(BaseTypeChecker<?> checker, AnnotatedTypeFactory atypeFactory) {
 
         this.treeKinds = new EnumMap<Kind, Set<AnnotationMirror>>(Kind.class);
         this.treeClasses = new HashMap<Class<?>, Set<AnnotationMirror>>();

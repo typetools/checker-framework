@@ -17,11 +17,11 @@ import com.sun.source.tree.CompilationUnitTree;
 
 /**
  * A "general" annotated type factory that supports qualifiers from any type hierarchy.
- * One big limitation is that it does not support annotations coming from a stub files.
+ * One big limitation is that it does not support annotations coming from a stub file.
  */
 public class GeneralAnnotatedTypeFactory extends AnnotatedTypeFactory {
 
-    public GeneralAnnotatedTypeFactory(SourceChecker checker, CompilationUnitTree root) {
+    public GeneralAnnotatedTypeFactory(SourceChecker<? extends AnnotatedTypeFactory> checker, CompilationUnitTree root) {
         super(checker, new GeneralQualifierHierarchy(), null, root);
         postInit();
     }
@@ -76,7 +76,7 @@ class GeneralQualifierHierarchy extends QualifierHierarchy {
 
     // Not needed - raises error.
     @Override
-    public Set</*@Interned*/String> getTypeQualifiers() {
+    public Set</*@Interned*/ String> getTypeQualifiers() {
         ErrorReporter.errorAbort("GeneralQualifierHierarchy.getTypeQualifiers() was called! It shouldn't be called.");
         return null;
     }
