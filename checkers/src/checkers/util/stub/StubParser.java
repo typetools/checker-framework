@@ -16,7 +16,6 @@ import javacutils.ErrorReporter;
 import javacutils.Pair;
 
 import checkers.quals.FromStubFile;
-import checkers.source.SourceChecker;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.*;
