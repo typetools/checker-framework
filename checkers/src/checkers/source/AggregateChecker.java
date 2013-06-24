@@ -17,11 +17,19 @@ import com.sun.tools.javac.util.Log;
 
 /**
  * An aggregate checker that packages multiple checkers together.  The
- * resulting checker invokes the individual checkers together on the processed
+ * resulting checker invokes the compontent checkers in turn on the processed
  * files.
+ * <p>
+ *
+ * There is no communication, interaction, or cooperation between the
+ * component checkers, even to the extent of being able to read one
+ * another's qualifiers.  An aggregate checker is merely shorthand to
+ * invoke a sequence of checkers.
+ * <p>
  *
  * This class delegates {@code AbstractTypeProcessor} responsibilities to each
- * of the checkers.
+ * component checker.
+ * <p>
  *
  * Checker writers need to subclass this class and only override
  * {@link #getSupportedCheckers()} to indicate the classes of the checkers
