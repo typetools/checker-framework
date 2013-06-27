@@ -110,12 +110,10 @@ public abstract class InitializationChecker<Factory extends InitializationAnnota
      */
     protected boolean isInitializationAnnotation(AnnotationMirror anno) {
         assert anno != null;
-        for (Class<? extends Annotation> ic : getInitializationAnnotations()) {
-            if (anno.getAnnotationType().toString().equals(ic.getCanonicalName())) {
-                return true;
-            }
-        }
-        return false;
+        return AnnotationUtils.areSameIgnoringValues(anno, UNCLASSIFIED) ||
+                AnnotationUtils.areSameIgnoringValues(anno, FREE) ||
+                AnnotationUtils.areSameIgnoringValues(anno, COMMITTED) ||
+                AnnotationUtils.areSameIgnoringValues(anno, FBCBOTTOM);
     }
 
     /*
