@@ -10,4 +10,4 @@ import checkers.quals.TypeQualifiers;
  * of type {@code @Unusable}, and any further use is a compile-time error.
  */
 @TypeQualifiers({Normal.class, Linear.class, Unusable.class})
-public class LinearChecker extends BaseTypeChecker { }
+public class LinearChecker extends BaseTypeChecker<LinearAnnotatedTypeFactory> { }

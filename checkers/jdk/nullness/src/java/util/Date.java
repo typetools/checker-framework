@@ -1,6 +1,7 @@
 package java.util;
-import checkers.nullness.quals.*;
-@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
+import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
+import checkers.nullness.quals.Nullable;
 
 public class Date implements java.io.Serializable, Cloneable, Comparable<Date> {
   private static final long serialVersionUID = 0;
@@ -29,12 +30,12 @@ public class Date implements java.io.Serializable, Cloneable, Comparable<Date> {
   public void setTime(long a1) { throw new RuntimeException("skeleton method"); }
   public boolean before(Date a1) { throw new RuntimeException("skeleton method"); }
   public boolean after(Date a1) { throw new RuntimeException("skeleton method"); }
-  public boolean equals(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
-  public int compareTo(Date a1) { throw new RuntimeException("skeleton method"); }
-  public int hashCode() { throw new RuntimeException("skeleton method"); }
-  public String toString() { throw new RuntimeException("skeleton method"); }
+  @Pure public boolean equals(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
+  @Pure public int compareTo(Date a1) { throw new RuntimeException("skeleton method"); }
+  @Pure public int hashCode() { throw new RuntimeException("skeleton method"); }
+  @Pure public String toString() { throw new RuntimeException("skeleton method"); }
   public String toLocaleString() { throw new RuntimeException("skeleton method"); }
   public String toGMTString() { throw new RuntimeException("skeleton method"); }
   public int getTimezoneOffset() { throw new RuntimeException("skeleton method"); }
-  public Object clone() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public Object clone() { throw new RuntimeException("skeleton method"); }
 }

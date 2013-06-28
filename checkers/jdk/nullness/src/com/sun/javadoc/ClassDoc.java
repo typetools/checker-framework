@@ -1,11 +1,12 @@
 package com.sun.javadoc;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.NonNull;
+import checkers.nullness.quals.Nullable;
 
 public interface ClassDoc extends ProgramElementDoc, Type {
-    boolean isAbstract();
-    boolean isSerializable();
-    boolean isExternalizable();
+    @Pure boolean isAbstract();
+    @Pure boolean isSerializable();
+    @Pure boolean isExternalizable();
     MethodDoc[] serializationMethods();
     FieldDoc[] serializableFields();
     boolean definesSerializableFields();

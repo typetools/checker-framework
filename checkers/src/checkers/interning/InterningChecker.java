@@ -31,7 +31,7 @@ import checkers.source.SupportedLintOptions;
     PolyInterned.class, PolyAll.class})
 @SupportedLintOptions({"dotequals"})
 @SupportedOptions({"checkclass"})
-public final class InterningChecker extends BaseTypeChecker {
+public final class InterningChecker extends BaseTypeChecker<InterningAnnotatedTypeFactory> {
 
     /**
      * Returns the declared type of which the equality tests should be tested,
