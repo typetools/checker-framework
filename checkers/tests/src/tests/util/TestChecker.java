@@ -48,8 +48,8 @@ public final class TestChecker extends BaseTypeChecker<tests.util.TestChecker.Fr
     class FrameworkTestAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<TestChecker> {
         public FrameworkTestAnnotatedTypeFactory(TestChecker checker, CompilationUnitTree root) {
             super(checker, root, true);
-            AnnotationMirror ODD = AnnotationUtils.fromClass(elements, Odd.class);
-            this.typeAnnotator.addTypeName(java.lang.Void.class, ODD);
+            this.typeAnnotator.addTypeName(java.lang.Void.class, BOTTOM);
+            this.treeAnnotator.addTreeKind(com.sun.source.tree.Tree.Kind.NULL_LITERAL, BOTTOM);
             this.postInit();
         }
     }
