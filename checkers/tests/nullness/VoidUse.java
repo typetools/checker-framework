@@ -48,4 +48,16 @@ public class VoidUse {
     return void.class;
   }
 
+  Class<?> VoidClass() {
+    return Void.class;
+  }
+
+  Class<?> intClass() {
+    return int.class;
+  }
+
+  Class<?> ListClass() {
+    return java.util.List.class;
+  }
+
 }
