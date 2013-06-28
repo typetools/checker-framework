@@ -1095,7 +1095,7 @@ public class AnnotatedTypes {
             alub = ((AnnotatedWildcardType)alub).getExtendsBound();
             // TODO using the getEffective versions copies objects, losing side-effects.
         }
-        if (alub.getKind() == TypeKind.TYPEVAR) {
+        while (alub.getKind() == TypeKind.TYPEVAR) {
             alub = ((AnnotatedTypeVariable)alub).getUpperBound();
         }
 
