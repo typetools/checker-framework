@@ -12,11 +12,8 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
-import javax.tools.JavaFileObject.Kind;
 
 import com.sun.tools.javac.code.Symbol;
-import com.sun.tools.javac.file.ZipFileIndexArchive;
-import com.sun.tools.javac.file.ZipFileIndexArchive.ZipFileIndexFileObject;
 
 /**
  * A Utility class for analyzing {@code Element}s.
