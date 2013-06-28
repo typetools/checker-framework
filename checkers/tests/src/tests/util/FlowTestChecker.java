@@ -41,8 +41,8 @@ public final class FlowTestChecker extends BaseTypeChecker<tests.util.FlowTestCh
     class FlowAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<FlowTestChecker> {
         public FlowAnnotatedTypeFactory(FlowTestChecker checker, CompilationUnitTree root) {
             super(checker, root, true);
-            AnnotationMirror ODD = AnnotationUtils.fromClass(elements, Odd.class);
-            this.typeAnnotator.addTypeName(java.lang.Void.class, ODD);
+            this.typeAnnotator.addTypeName(java.lang.Void.class, BOTTOM);
+            this.treeAnnotator.addTreeKind(com.sun.source.tree.Tree.Kind.NULL_LITERAL, BOTTOM);
             this.postInit();
         }
     }
