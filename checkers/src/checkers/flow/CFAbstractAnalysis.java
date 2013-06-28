@@ -29,6 +29,10 @@ import checkers.types.QualifierHierarchy;
 import checkers.types.TypeHierarchy;
 import checkers.util.AnnotatedTypes;
 
+/*>>>
+import checkers.nullness.quals.*;
+*/
+
 /**
  * {@link CFAbstractAnalysis} is an extensible dataflow analysis for the Checker
  * Framework that tracks the annotations using a flow-sensitive analysis. It
