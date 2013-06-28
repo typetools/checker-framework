@@ -9,5 +9,5 @@ class GenericNull {
     @SuppressWarnings("nullness")
     <T> T f() {
         return null;
-    }	
+    }
 }
