@@ -1,9 +1,10 @@
 package java.util;
-import checkers.nullness.quals.*;
-@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
+import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
+import checkers.nullness.quals.Nullable;
 
-public class SimpleTimeZone extends TimeZone{
-    private static final long serialVersionUID = 0L;
+public class SimpleTimeZone extends TimeZone {
+  private static final long serialVersionUID = 0L;
   public final static int WALL_TIME = 0;
   public final static int STANDARD_TIME = 1;
   public final static int UTC_TIME = 2;
@@ -26,10 +27,10 @@ public class SimpleTimeZone extends TimeZone{
   public int getDSTSavings() { throw new RuntimeException("skeleton method"); }
   public boolean useDaylightTime() { throw new RuntimeException("skeleton method"); }
   public boolean inDaylightTime(Date a1) { throw new RuntimeException("skeleton method"); }
-  public synchronized int hashCode() { throw new RuntimeException("skeleton method"); }
-  public boolean equals(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
+  @Pure public synchronized int hashCode() { throw new RuntimeException("skeleton method"); }
+  @Pure public boolean equals(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   public boolean hasSameRules(TimeZone a1) { throw new RuntimeException("skeleton method"); }
-  public String toString() { throw new RuntimeException("skeleton method"); }
+  @Pure public String toString() { throw new RuntimeException("skeleton method"); }
 
-  public Object clone() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public Object clone() { throw new RuntimeException("skeleton method"); }
 }

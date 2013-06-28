@@ -6,7 +6,7 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 
-import checkers.util.trees.TreeParser;
+import javacutils.trees.TreeParser;
 
 import com.sun.source.tree.*;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;

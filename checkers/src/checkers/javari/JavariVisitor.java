@@ -4,13 +4,14 @@ package checkers.javari;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 
+import javacutils.TreeUtils;
+
 import checkers.basetype.BaseTypeVisitor;
 import checkers.javari.quals.Assignable;
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
-import checkers.util.TreeUtils;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
@@ -25,7 +26,7 @@ import com.sun.source.tree.Tree;
  *
  * @see BaseTypeVisitor
  */
-public class JavariVisitor extends BaseTypeVisitor<JavariChecker> {
+public class JavariVisitor extends BaseTypeVisitor<JavariChecker, JavariAnnotatedTypeFactory> {
 
     final private AnnotationMirror READONLY, MUTABLE, POLYREAD, QREADONLY;
 

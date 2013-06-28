@@ -10,16 +10,16 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 
+import javacutils.AnnotationUtils;
+import javacutils.ElementUtils;
+import javacutils.ErrorReporter;
+import javacutils.Pair;
 
 import checkers.quals.FromStubFile;
-import checkers.source.SourceChecker;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.*;
 import checkers.util.AnnotationBuilder;
-import checkers.util.AnnotationUtils;
-import checkers.util.ElementUtils;
-import checkers.util.Pair;
 
 import japa.parser.JavaParser;
 import japa.parser.ast.*;
@@ -99,7 +99,7 @@ public class StubParser {
         try {
             parsedindex = JavaParser.parse(inputStream);
         } catch (Exception e) {
-            SourceChecker.errorAbort("StubParser: exception from JavaParser.parse", e);
+            ErrorReporter.errorAbort("StubParser: exception from JavaParser.parse for file " + filename, e);
             parsedindex = null; // dead code, but needed for def. assignment checks
         }
         this.index = parsedindex;
@@ -760,12 +760,92 @@ public class StubParser {
         if (m.containsKey(key) && !m.get(key).equals(value)) {
             // TODO: instead of failing, can we try merging the information from
             // multiple stub files?
-            SourceChecker.errorAbort("StubParser: key is already in map: " + LINE_SEPARATOR
+            ErrorReporter.errorAbort("StubParser: key is already in map: " + LINE_SEPARATOR
                             + "  " + key + " => " + m.get(key) + LINE_SEPARATOR
                             + "while adding: " + LINE_SEPARATOR
                             + "  " + key + " => " + value);
         }
         m.put(key, value);
+    }
+
+    /** Just like Map.put, but does not throw an error if the key with the same value is already in the map. */
+    private static void putNew(Map<Element, AnnotatedTypeMirror> m, Element key, AnnotatedTypeMirror value) {
+        if (key == null)
+            return;
+        if (m.containsKey(key)) {
+            AnnotatedTypeMirror value2 = m.get(key);
+            // Are the two values the same?
+            if (AnnotationUtils.areSame(value.getAnnotations(), value2.getAnnotations())) {
+                return;
+            }
+            AnnotatedTypeMirror prev = m.get(key);
+            mergeATM(value, prev);
+        }
+        m.put(key, value);
+    }
+
+    /**
+     * Merge the qualifiers from the second parameter into the first parameter.
+     * Modifies the first parameter directly.
+     * Raises an exception if both types have a qualifier in a given hierarchy.
+     * 
+     * @param into target type
+     * @param from source type
+     */
+    // Should we move this to AnnotationUtils? The way collisions are handled is specific.
+    private static void mergeATM(AnnotatedTypeMirror into, AnnotatedTypeMirror from) {
+        assert into.getClass() == from.getClass();
+        // Everybody needs to merge the main qualifier.
+        for (AnnotationMirror afrom : from.getAnnotations()) {
+            if (into.isAnnotatedInHierarchy(afrom) &&
+                    !AnnotationUtils.areSame(into.getAnnotationInHierarchy(afrom), afrom)) {
+                // TODO: raise error on the caller, this message might not help in debugging.
+                ErrorReporter.errorAbort("StubParser: key is already in map: " + LINE_SEPARATOR
+                        + " existing: " + into + " new: " + from);
+                return; // dead code
+            } else {
+                into.addAnnotation(afrom);
+            }
+        }
+
+        if (from instanceof AnnotatedArrayType) {
+            AnnotatedArrayType cinto = (AnnotatedArrayType) into;
+            AnnotatedArrayType cfrom = (AnnotatedArrayType) from;
+            // Also merge the component types.
+            mergeATM(cinto.getComponentType(), cfrom.getComponentType());
+        } else if (from instanceof AnnotatedDeclaredType) {
+            AnnotatedDeclaredType cinto = (AnnotatedDeclaredType) into;
+            AnnotatedDeclaredType cfrom = (AnnotatedDeclaredType) from;
+            mergeATMs(cinto.getTypeArguments(), cfrom.getTypeArguments());
+        } else if (from instanceof AnnotatedExecutableType) {
+            AnnotatedExecutableType cinto = (AnnotatedExecutableType) into;
+            AnnotatedExecutableType cfrom = (AnnotatedExecutableType) from;
+            mergeATMs(cinto.getTypeVariables(), cinto.getTypeVariables());
+            mergeATM(cinto.getReturnType(), cfrom.getReturnType());
+            mergeATM(cinto.getReceiverType(), cfrom.getReceiverType());
+            mergeATMs(cinto.getParameterTypes(), cfrom.getParameterTypes());
+            mergeATMs(cinto.getThrownTypes(), cfrom.getThrownTypes());
+        } else if (from instanceof AnnotatedTypeVariable) {
+            AnnotatedTypeVariable cinto = (AnnotatedTypeVariable) into;
+            AnnotatedTypeVariable cfrom = (AnnotatedTypeVariable) from;
+            mergeATM(cinto.getLowerBound(), cfrom.getLowerBound());
+            mergeATM(cinto.getUpperBound(), cfrom.getUpperBound());
+        } else if (from instanceof AnnotatedWildcardType) {
+            AnnotatedWildcardType cinto = (AnnotatedWildcardType) into;
+            AnnotatedWildcardType cfrom = (AnnotatedWildcardType) from;
+            mergeATM(cinto.getSuperBound(), cfrom.getSuperBound());
+            mergeATM(cinto.getExtendsBound(), cfrom.getExtendsBound());
+        } else {
+            // Remainder: No, Null, Primitive
+            // Nothing to do.
+        }
+    }
+
+    private static void mergeATMs(List<? extends AnnotatedTypeMirror> into, List<? extends AnnotatedTypeMirror> from) {
+        assert into.size() == from.size();
+        for (int i=0; i<into.size(); ++i) {
+            mergeATM(into.get(i), from.get(i));
+        }
     }
 
     /** Just like Map.putAll, but errs if any key is already in the map. */
@@ -822,7 +902,7 @@ public class StubParser {
             handleExpr(builder, "value", valexpr);
             return builder.build();
         } else {
-            SourceChecker.errorAbort("StubParser: unknown annotation type: " + annotation);
+            ErrorReporter.errorAbort("StubParser: unknown annotation type: " + annotation);
             annoMirror = null; // dead code
         }
         return annoMirror;
@@ -861,7 +941,7 @@ public class StubParser {
                     builder.setValue(name, arr);
                 }
             } else {
-                SourceChecker.errorAbort("StubParser: unhandled annotation attribute type: " + expr + " and expected: " + expected);
+                ErrorReporter.errorAbort("StubParser: unhandled annotation attribute type: " + expr + " and expected: " + expected);
             }
         } else if (expr instanceof StringLiteralExpr) {
             StringLiteralExpr slexpr = (StringLiteralExpr) expr;
@@ -873,13 +953,13 @@ public class StubParser {
                 String[] arr = { slexpr.getValue() };
                 builder.setValue(name, arr);
             } else {
-                SourceChecker.errorAbort("StubParser: unhandled annotation attribute type: " + slexpr + " and expected: " + expected);
+                ErrorReporter.errorAbort("StubParser: unhandled annotation attribute type: " + slexpr + " and expected: " + expected);
             }
         } else if (expr instanceof ArrayInitializerExpr) {
             ExecutableElement var = builder.findElement(name);
             TypeMirror expected = var.getReturnType();
             if (expected.getKind() != TypeKind.ARRAY) {
-                SourceChecker.errorAbort("StubParser: unhandled annotation attribute type: " + expr + " and expected: " + expected);
+                ErrorReporter.errorAbort("StubParser: unhandled annotation attribute type: " + expr + " and expected: " + expected);
             }
 
             ArrayInitializerExpr aiexpr = (ArrayInitializerExpr) expr;
@@ -910,13 +990,13 @@ public class StubParser {
                 } else if (anaiexpr instanceof StringLiteralExpr) {
                     elemarr[i] = ((StringLiteralExpr) anaiexpr).getValue();
                 } else {
-                    SourceChecker.errorAbort("StubParser: unhandled annotation attribute type: " + anaiexpr);
+                    ErrorReporter.errorAbort("StubParser: unhandled annotation attribute type: " + anaiexpr);
                 }
             }
 
             builder.setValue(name, elemarr);
         } else {
-            SourceChecker.errorAbort("StubParser: unhandled annotation attribute type: " + expr + " class: " + expr.getClass());
+            ErrorReporter.errorAbort("StubParser: unhandled annotation attribute type: " + expr + " class: " + expr.getClass());
         }
     }
     
