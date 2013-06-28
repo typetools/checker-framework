@@ -14,6 +14,7 @@ import checkers.quals.DefaultQualifierInHierarchy;
 import checkers.quals.ImplicitFor;
 import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifier;
+import checkers.types.AnnotatedTypeMirror.AnnotatedNoType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 
 import com.sun.source.tree.Tree;
@@ -48,7 +49,9 @@ import com.sun.source.tree.Tree;
 @SubtypeOf(MonotonicNonNull.class)
 @DefaultQualifierInHierarchy
 @Retention(RetentionPolicy.RUNTIME)
-@ImplicitFor(types = { TypeKind.PACKAGE }, typeClasses = { AnnotatedPrimitiveType.class }, trees = {
+@ImplicitFor(types = { TypeKind.PACKAGE },
+    typeClasses = { AnnotatedPrimitiveType.class, AnnotatedNoType.class },
+    trees = {
         Tree.Kind.NEW_CLASS,
         Tree.Kind.NEW_ARRAY,
         Tree.Kind.PLUS, // for String concatenation
