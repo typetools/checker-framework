@@ -48,10 +48,8 @@ import dataflow.cfg.UnderlyingAST.Kind;
 import dataflow.cfg.node.AbstractNodeVisitor;
 import dataflow.cfg.node.ArrayAccessNode;
 import dataflow.cfg.node.AssignmentNode;
-import dataflow.cfg.node.BoxingNode;
 import dataflow.cfg.node.CaseNode;
 import dataflow.cfg.node.ClassNameNode;
-import dataflow.cfg.node.CompoundAssignmentNode;
 import dataflow.cfg.node.ConditionalNotNode;
 import dataflow.cfg.node.EqualToNode;
 import dataflow.cfg.node.FieldAccessNode;
@@ -61,9 +59,9 @@ import dataflow.cfg.node.MethodInvocationNode;
 import dataflow.cfg.node.NarrowingConversionNode;
 import dataflow.cfg.node.Node;
 import dataflow.cfg.node.NotEqualNode;
+import dataflow.cfg.node.StringConcatenateAssignmentNode;
 import dataflow.cfg.node.StringConversionNode;
 import dataflow.cfg.node.TernaryExpressionNode;
-import dataflow.cfg.node.UnboxingNode;
 import dataflow.cfg.node.VariableDeclarationNode;
 import dataflow.cfg.node.WideningConversionNode;
 
@@ -556,9 +554,9 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
     }
 
     @Override
-    public TransferResult<V, S> visitCompoundAssignment(
-            CompoundAssignmentNode n, TransferInput<V, S> in) {
-        TransferResult<V, S> result = super.visitCompoundAssignment(n, in);
+    public TransferResult<V, S> visitStringConcatenateAssignment(
+            StringConcatenateAssignmentNode n, TransferInput<V, S> in) {
+        TransferResult<V, S> result = super.visitStringConcatenateAssignment(n, in);
         Node lhs = n.getLeftOperand();
         Node rhs = n.getRightOperand();
 
@@ -778,27 +776,6 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
             VariableDeclarationNode n, TransferInput<V, S> p) {
         S store = p.getRegularStore();
         return new RegularTransferResult<>(finishValue(null, store), store);
-    }
-
-    @Override
-    public TransferResult<V, S> visitUnboxing(UnboxingNode n,
-            TransferInput<V, S> p) {
-        TransferResult<V, S> result = super.visitUnboxing(n, p);
-        // Combine annotations from the operand with the unboxed type
-        V operandValue = p.getValueOfSubNode(n.getOperand());
-        V unboxedValue = getValueWithSameAnnotations(n.getType(), operandValue);
-        result.setResultValue(unboxedValue);
-        return result;
-    }
-
-    @Override
-    public TransferResult<V, S> visitBoxing(BoxingNode n, TransferInput<V, S> p) {
-        TransferResult<V, S> result = super.visitBoxing(n, p);
-        // Combine annotations from the operand with the boxed type
-        V operandValue = p.getValueOfSubNode(n.getOperand());
-        V boxedValue = getValueWithSameAnnotations(n.getType(), operandValue);
-        result.setResultValue(boxedValue);
-        return result;
     }
 
     @Override

@@ -1,6 +1,7 @@
 package dataflow.cfg;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
@@ -111,15 +112,11 @@ import dataflow.cfg.node.ArrayCreationNode;
 import dataflow.cfg.node.ArrayTypeNode;
 import dataflow.cfg.node.AssertionErrorNode;
 import dataflow.cfg.node.AssignmentNode;
-import dataflow.cfg.node.BitwiseAndAssignmentNode;
 import dataflow.cfg.node.BitwiseAndNode;
 import dataflow.cfg.node.BitwiseComplementNode;
-import dataflow.cfg.node.BitwiseOrAssignmentNode;
 import dataflow.cfg.node.BitwiseOrNode;
-import dataflow.cfg.node.BitwiseXorAssignmentNode;
 import dataflow.cfg.node.BitwiseXorNode;
 import dataflow.cfg.node.BooleanLiteralNode;
-import dataflow.cfg.node.BoxingNode;
 import dataflow.cfg.node.CaseNode;
 import dataflow.cfg.node.CharacterLiteralNode;
 import dataflow.cfg.node.ClassNameNode;
@@ -131,20 +128,15 @@ import dataflow.cfg.node.EqualToNode;
 import dataflow.cfg.node.ExplicitThisLiteralNode;
 import dataflow.cfg.node.FieldAccessNode;
 import dataflow.cfg.node.FloatLiteralNode;
-import dataflow.cfg.node.FloatingDivisionAssignmentNode;
 import dataflow.cfg.node.FloatingDivisionNode;
-import dataflow.cfg.node.FloatingRemainderAssignmentNode;
 import dataflow.cfg.node.FloatingRemainderNode;
 import dataflow.cfg.node.GreaterThanNode;
 import dataflow.cfg.node.GreaterThanOrEqualNode;
 import dataflow.cfg.node.ImplicitThisLiteralNode;
 import dataflow.cfg.node.InstanceOfNode;
-import dataflow.cfg.node.IntegerDivisionAssignmentNode;
 import dataflow.cfg.node.IntegerDivisionNode;
 import dataflow.cfg.node.IntegerLiteralNode;
-import dataflow.cfg.node.IntegerRemainderAssignmentNode;
 import dataflow.cfg.node.IntegerRemainderNode;
-import dataflow.cfg.node.LeftShiftAssignmentNode;
 import dataflow.cfg.node.LeftShiftNode;
 import dataflow.cfg.node.LessThanNode;
 import dataflow.cfg.node.LessThanOrEqualNode;
@@ -158,24 +150,16 @@ import dataflow.cfg.node.Node;
 import dataflow.cfg.node.NotEqualNode;
 import dataflow.cfg.node.NullChkNode;
 import dataflow.cfg.node.NullLiteralNode;
-import dataflow.cfg.node.NumericalAdditionAssignmentNode;
 import dataflow.cfg.node.NumericalAdditionNode;
 import dataflow.cfg.node.NumericalMinusNode;
-import dataflow.cfg.node.NumericalMultiplicationAssignmentNode;
 import dataflow.cfg.node.NumericalMultiplicationNode;
 import dataflow.cfg.node.NumericalPlusNode;
-import dataflow.cfg.node.NumericalSubtractionAssignmentNode;
 import dataflow.cfg.node.NumericalSubtractionNode;
 import dataflow.cfg.node.ObjectCreationNode;
 import dataflow.cfg.node.PackageNameNode;
 import dataflow.cfg.node.ParameterizedTypeNode;
-import dataflow.cfg.node.PostfixDecrementNode;
-import dataflow.cfg.node.PostfixIncrementNode;
-import dataflow.cfg.node.PrefixDecrementNode;
-import dataflow.cfg.node.PrefixIncrementNode;
 import dataflow.cfg.node.PrimitiveTypeNode;
 import dataflow.cfg.node.ReturnNode;
-import dataflow.cfg.node.SignedRightShiftAssignmentNode;
 import dataflow.cfg.node.SignedRightShiftNode;
 import dataflow.cfg.node.StringConcatenateAssignmentNode;
 import dataflow.cfg.node.StringConcatenateNode;
@@ -185,8 +169,6 @@ import dataflow.cfg.node.TernaryExpressionNode;
 import dataflow.cfg.node.ThisLiteralNode;
 import dataflow.cfg.node.ThrowNode;
 import dataflow.cfg.node.TypeCastNode;
-import dataflow.cfg.node.UnboxingNode;
-import dataflow.cfg.node.UnsignedRightShiftAssignmentNode;
 import dataflow.cfg.node.UnsignedRightShiftNode;
 import dataflow.cfg.node.ValueLiteralNode;
 import dataflow.cfg.node.VariableDeclarationNode;
@@ -1485,6 +1467,14 @@ public class CFGBuilder {
                     bindings, leaders, returnNodes);
         }
 
+        /**
+         * Perform any actions required when CFG translation creates a
+         * new Tree that is not part of the original AST.
+         *
+         * @param tree  the newly created Tree
+         */
+        public void handleArtificialTree(Tree tree) {}
+
         /* --------------------------------------------------------- */
         /* Nodes and Labels Management */
         /* --------------------------------------------------------- */
@@ -1541,9 +1531,7 @@ public class CFGBuilder {
          */
         protected NodeWithExceptionsHolder extendWithNodeWithException(Node node, TypeMirror cause) {
             addToLookupMap(node);
-            Set<TypeMirror> causes = new HashSet<>();
-            causes.add(cause);
-            return extendWithNodeWithExceptions(node, causes);
+            return extendWithNodeWithExceptions(node, Collections.singleton(cause));
         }
 
         /**
@@ -1672,8 +1660,8 @@ public class CFGBuilder {
         }
 
         /**
-         * If the input node is an unboxed primitive type, box it, otherwise
-         * leave it alone.
+         * If the input node is an unboxed primitive type, insert a call to the
+         * appropriate valueOf method, otherwise leave it alone.
          *
          * @param node
          *            in input node
@@ -1687,9 +1675,30 @@ public class CFGBuilder {
                         .getKind());
                 TypeMirror boxedType = types.getDeclaredType(types
                         .boxedClass(primitive));
-                Node boxed = new BoxingNode(node.getTree(), node, boxedType);
-                replaceInLookupMap(boxed);
-                insertNodeAfter(boxed, node);
+
+                TypeElement boxedElement = (TypeElement)((DeclaredType)boxedType).asElement();
+                IdentifierTree classTree = treeBuilder.buildClassUse(boxedElement);
+                handleArtificialTree(classTree);
+                ClassNameNode className = new ClassNameNode(classTree);
+                insertNodeAfter(className, node);
+
+                MemberSelectTree valueOfSelect = treeBuilder.buildValueOfMethodAccess(classTree);
+                handleArtificialTree(valueOfSelect);
+                MethodAccessNode valueOfAccess = new MethodAccessNode(valueOfSelect, className);
+                insertNodeAfter(valueOfAccess, className);
+
+                MethodInvocationTree valueOfCall =
+                    treeBuilder.buildMethodInvocation(valueOfSelect, (ExpressionTree)node.getTree());
+                handleArtificialTree(valueOfCall);
+                Node boxed = new MethodInvocationNode(valueOfCall, valueOfAccess,
+                                                      Collections.singletonList(node),
+                                                      getCurrentPath());
+
+                // Add Throwable to account for unchecked exceptions
+                TypeElement throwableElement = elements
+                    .getTypeElement("java.lang.Throwable");
+                insertNodeWithExceptionsAfter(boxed,
+                        Collections.singleton(throwableElement.asType()), valueOfAccess);
                 return boxed;
             } else {
                 return node;
@@ -1707,14 +1716,29 @@ public class CFGBuilder {
          */
         protected Node unbox(Node node) {
             if (TypesUtils.isBoxedPrimitive(node.getType())) {
-                Node unboxed = new UnboxingNode(node.getTree(), node,
-                        types.unboxedType(node.getType()));
-                replaceInLookupMap(unboxed);
+
+                MemberSelectTree primValueSelect =
+                    treeBuilder.buildPrimValueMethodAccess(node.getTree());
+                handleArtificialTree(primValueSelect);
+                MethodAccessNode primValueAccess = new MethodAccessNode(primValueSelect, node);
+                // Method access may throw NullPointerException
                 TypeElement npeElement = elements
                     .getTypeElement("java.lang.NullPointerException");
-                Set<TypeMirror> causes = new HashSet<>();
-                causes.add(npeElement.asType());
-                insertNodeWithExceptionsAfter(unboxed, causes, node);
+                insertNodeWithExceptionsAfter(primValueAccess,
+                        Collections.singleton(npeElement.asType()), node);
+
+                MethodInvocationTree primValueCall =
+                    treeBuilder.buildMethodInvocation(primValueSelect);
+                handleArtificialTree(primValueCall);
+                Node unboxed = new MethodInvocationNode(primValueCall, primValueAccess,
+                                                        Collections.emptyList(),
+                                                        getCurrentPath());
+
+                // Add Throwable to account for unchecked exceptions
+                TypeElement throwableElement = elements
+                    .getTypeElement("java.lang.Throwable");
+                insertNodeWithExceptionsAfter(unboxed,
+                        Collections.singleton(throwableElement.asType()), primValueAccess);
                 return unboxed;
             } else {
                 return node;
@@ -1906,6 +1930,30 @@ public class CFGBuilder {
             }
         }
 
+
+        /**
+         * Return whether a conversion from the type of the node to varType
+         * requires narrowing.
+         *
+         * @param varType  the type of a variable (or general LHS) to be converted to
+         * @param node     a node whose value is being converted
+         * @return  whether this conversion requires narrowing to succeed
+         */
+        protected boolean conversionRequiresNarrowing(TypeMirror varType, Node node) {
+            // Narrowing is restricted to cases where the left hand side
+            // is byte, char, short or Byte, Char, Short and the right
+            // hand side is a constant.
+            TypeMirror unboxedVarType = TypesUtils.isBoxedPrimitive(varType) ? types
+                .unboxedType(varType) : varType;
+            TypeKind unboxedVarKind = unboxedVarType.getKind();
+            boolean isLeftNarrowableTo = unboxedVarKind == TypeKind.BYTE
+                || unboxedVarKind == TypeKind.SHORT
+                || unboxedVarKind == TypeKind.CHAR;
+            boolean isRightConstant = node instanceof ValueLiteralNode;
+            return isLeftNarrowableTo && isRightConstant;
+        }
+
+
         /**
          * Assignment conversion and method invocation conversion are almost
          * identical, except that assignment conversion allows narrowing. We
@@ -1915,14 +1963,14 @@ public class CFGBuilder {
          *            a Node producing a value
          * @param varType
          *            the type of a variable
-         * @param allowNarrowing
+         * @param contextAllowsNarrowing
          *            whether to allow narrowing (for assignment conversion) or
          *            not (for method invocation conversion)
          * @return a Node with the value converted to the type of the variable,
          *         which may be the input node itself
          */
         protected Node commonConvert(Node node, TypeMirror varType,
-                boolean allowNarrowing) {
+                boolean contextAllowsNarrowing) {
             // For assignment conversion, see JLS 5.2
             // For method invocation conversion, see JLS 5.3
 
@@ -1950,8 +1998,13 @@ public class CFGBuilder {
                 // widening reference conversion is a no-op, but if it
                 // applies, then later conversions do not.
             } else if (isRightPrimitive && isLeftReference) {
-                node = box(node);
-                nodeType = node.getType();
+                if (contextAllowsNarrowing && conversionRequiresNarrowing(varType, node)) {
+                    node = narrowAndBox(node, varType);
+                    nodeType = node.getType();
+                } else {
+                    node = box(node);
+                    nodeType = node.getType();
+                }
             } else if (isRightBoxed && isLeftPrimitive) {
                 node = unbox(node);
                 nodeType = node.getType();
@@ -1961,36 +2014,10 @@ public class CFGBuilder {
                     node = widen(node, varType);
                     nodeType = node.getType();
                 }
-            }
-
-            // Unchecked conversion of raw types
-            boolean isRightRaw = (nodeType instanceof DeclaredType)
-                    && ((DeclaredType) nodeType).getTypeArguments().isEmpty();
-            if (isRightRaw) {
-                // TODO: if checkers need to know about unchecked conversions
-                // add a Node class for them. Otherwise, we can omit this
-                // case.
-            }
-
-            if (allowNarrowing) {
-                // Narrowing is restricted to cases where the left hand side
-                // is byte, char, short or Byte, Char, Short and the right
-                // hand side is a constant.
-                TypeMirror unboxedVarType = isLeftBoxed ? types
-                        .unboxedType(varType) : varType;
-                TypeKind unboxedVarKind = unboxedVarType.getKind();
-                boolean isLeftNarrowableTo = unboxedVarKind == TypeKind.BYTE
-                        || unboxedVarKind == TypeKind.SHORT
-                        || unboxedVarKind == TypeKind.CHAR;
-                boolean isRightConstant = node instanceof ValueLiteralNode;
-                if (isLeftNarrowableTo && isRightConstant) {
-                    if (isLeftBoxed) {
-                        node = narrowAndBox(node, varType);
-                        nodeType = node.getType();
-                    } else {
-                        node = narrow(node, varType);
-                        nodeType = node.getType();
-                    }
+            } else if (isRightPrimitive && isLeftPrimitive) {
+                if (contextAllowsNarrowing && conversionRequiresNarrowing(varType, node)) {
+                    node = narrow(node, varType);
+                    nodeType = node.getType();
                 }
             }
 
@@ -2509,170 +2536,234 @@ public class CFGBuilder {
             }
         }
 
+        /**
+         * Map an operation with assignment to the corresponding operation
+         * without assignment.
+         *
+         * @param kind  a Tree.Kind representing an operation with assignment
+         * @return the Tree.Kind for the same operation without assignment
+         */
+        protected Tree.Kind withoutAssignment(Tree.Kind kind) {
+            switch (kind) {
+            case DIVIDE_ASSIGNMENT:
+                return Tree.Kind.DIVIDE;
+            case MULTIPLY_ASSIGNMENT:
+                return Tree.Kind.MULTIPLY;
+            case REMAINDER_ASSIGNMENT:
+                return Tree.Kind.REMAINDER;
+            case MINUS_ASSIGNMENT:
+                return Tree.Kind.MINUS;
+            case PLUS_ASSIGNMENT:
+                return Tree.Kind.PLUS;
+            case LEFT_SHIFT_ASSIGNMENT:
+                return Tree.Kind.LEFT_SHIFT;
+            case RIGHT_SHIFT_ASSIGNMENT:
+                return Tree.Kind.RIGHT_SHIFT;
+            case UNSIGNED_RIGHT_SHIFT_ASSIGNMENT:
+                return Tree.Kind.UNSIGNED_RIGHT_SHIFT;
+            case AND_ASSIGNMENT:
+                return Tree.Kind.AND;
+            case OR_ASSIGNMENT:
+                return Tree.Kind.OR;
+            case XOR_ASSIGNMENT:
+                return Tree.Kind.XOR;
+            default:
+                return Tree.Kind.ERRONEOUS;
+            }
+        }
+            
+
         @Override
         public Node visitCompoundAssignment(CompoundAssignmentTree tree, Void p) {
             // According the JLS 15.26.2, E1 op= E2 is equivalent to
             // E1 = (T) ((E1) op (E2)), where T is the type of E1,
             // except that E1 is evaluated only once.
             //
-            // We do not separate compound assignments into separate
-            // operation and assignment nodes. For example, += is not
-            // split into a + followed by an =. We do perform
-            // promotions of operands to compound assignments,
-            // though. So our representation of E1 op= E2 will be:
-            //
-            // ... nodes for E1 ...
-            // N1: optional promotion of E1
-            // ... nodes for E2 ...
-            // N2: optional promotion of E2
-            // op= N1 N2
-            //
-            // This has several consequences. First, the variable
-            // being assigned to may not be the immediate left operand
-            // of op=. If promotion or conversion happens, the
-            // variable will have to be extracted from those nodes.
-            // Second, the type cast (T) will not be explicitly
-            // represented. The transfer function for op= will need
-            // to account for that possible type cast.
-
-            // TODO: correct evaluation rules (e.g. arrays)
 
             assert !conditionalMode;
-            Node r = null;
             Tree.Kind kind = tree.getKind();
             switch (kind) {
             case DIVIDE_ASSIGNMENT:
             case MULTIPLY_ASSIGNMENT:
             case REMAINDER_ASSIGNMENT: {
                 // see JLS 15.17 and 15.26.2
-                Node target = scan(tree.getVariable(), p);
+                Node targetLHS = scan(tree.getVariable(), p);
                 Node value = scan(tree.getExpression(), p);
 
                 TypeMirror exprType = InternalUtils.typeOf(tree);
                 TypeMirror leftType = InternalUtils.typeOf(tree.getVariable());
                 TypeMirror rightType = InternalUtils.typeOf(tree.getExpression());
                 TypeMirror promotedType = binaryPromotedType(leftType, rightType);
-                target = binaryNumericPromotion(target, promotedType);
+                Node targetRHS = binaryNumericPromotion(targetLHS, promotedType);
                 value = binaryNumericPromotion(value, promotedType);
 
+                BinaryTree operTree = treeBuilder.buildBinary(promotedType, withoutAssignment(kind),
+                        tree.getVariable(), tree.getExpression());
+                handleArtificialTree(operTree);
+                Node operNode;
                 if (kind == Tree.Kind.MULTIPLY_ASSIGNMENT) {
-                    r = new NumericalMultiplicationAssignmentNode(tree, target,
-                            value);
+                    operNode = new NumericalMultiplicationNode(operTree, targetRHS, value);
                 } else if (kind == Tree.Kind.DIVIDE_ASSIGNMENT) {
                     if (TypesUtils.isIntegral(exprType)) {
-                        r = new IntegerDivisionAssignmentNode(tree, target,
-                                value);
+                        operNode = new IntegerDivisionNode(operTree, targetRHS, value);
                     } else {
-                        r = new FloatingDivisionAssignmentNode(tree, target,
-                                value);
+                        operNode = new FloatingDivisionNode(operTree, targetRHS, value);
                     }
                 } else {
                     assert kind == Kind.REMAINDER_ASSIGNMENT;
                     if (TypesUtils.isIntegral(exprType)) {
-                        r = new IntegerRemainderAssignmentNode(tree, target,
-                                value);
+                        operNode = new IntegerRemainderNode(operTree, targetRHS, value);
                     } else {
-                        r = new FloatingRemainderAssignmentNode(tree, target,
-                                value);
+                        operNode = new FloatingRemainderNode(operTree, targetRHS, value);
                     }
                 }
-                break;
+                extendWithNode(operNode);
+
+                TypeCastTree castTree = treeBuilder.buildTypeCast(leftType, operTree);
+                handleArtificialTree(castTree);
+                TypeCastNode castNode = new TypeCastNode(castTree, operNode, leftType);
+                extendWithNode(castNode);
+
+                AssignmentNode assignNode = new AssignmentNode(tree, targetLHS, castNode);
+                extendWithNode(assignNode);
+                return assignNode;
             }
 
             case MINUS_ASSIGNMENT:
             case PLUS_ASSIGNMENT: {
                 // see JLS 15.18 and 15.26.2
 
-                Node target = scan(tree.getVariable(), p);
+                Node targetLHS = scan(tree.getVariable(), p);
                 Node value = scan(tree.getExpression(), p);
 
-                // TypeMirror exprType = InternalUtils.typeOf(tree);
                 TypeMirror leftType = InternalUtils.typeOf(tree.getVariable());
                 TypeMirror rightType = InternalUtils.typeOf(tree.getExpression());
 
                 if (TypesUtils.isString(leftType) || TypesUtils.isString(rightType)) {
                     assert (kind == Tree.Kind.PLUS_ASSIGNMENT);
-                    target = stringConversion(target);
+                    Node targetRHS = stringConversion(targetLHS);
                     value = stringConversion(value);
-                    r = new StringConcatenateAssignmentNode(tree, target, value);
+                    Node r = new StringConcatenateAssignmentNode(tree, targetRHS, value);
+                    extendWithNode(r);
+                    return r;
                 } else {
                     TypeMirror promotedType = binaryPromotedType(leftType, rightType);
-                    target = binaryNumericPromotion(target, promotedType);
+                    Node targetRHS = binaryNumericPromotion(targetLHS, promotedType);
                     value = binaryNumericPromotion(value, promotedType);
 
+                    BinaryTree operTree = treeBuilder.buildBinary(promotedType, withoutAssignment(kind),
+                            tree.getVariable(), tree.getExpression());
+                    handleArtificialTree(operTree);
+                    Node operNode;
                     if (kind == Tree.Kind.PLUS_ASSIGNMENT) {
-                        r = new NumericalAdditionAssignmentNode(tree, target,
-                                value);
+                        operNode = new NumericalAdditionNode(operTree, targetRHS, value);
                     } else {
                         assert kind == Kind.MINUS_ASSIGNMENT;
-                        r = new NumericalSubtractionAssignmentNode(tree,
-                                target, value);
+                        operNode = new NumericalSubtractionNode(operTree, targetRHS, value);
                     }
+                    extendWithNode(operNode);
+
+                    TypeCastTree castTree = treeBuilder.buildTypeCast(leftType, operTree);
+                    handleArtificialTree(castTree);
+                    TypeCastNode castNode = new TypeCastNode(castTree, operNode, leftType);
+                    extendWithNode(castNode);
+
+                    // Map the compound assignment tree to an assignment node, which
+                    // will have the correct type.
+                    AssignmentNode assignNode = new AssignmentNode(tree, targetLHS, castNode);
+                    extendWithNode(assignNode);
+                    return assignNode;
                 }
-                break;
             }
 
             case LEFT_SHIFT_ASSIGNMENT:
             case RIGHT_SHIFT_ASSIGNMENT:
             case UNSIGNED_RIGHT_SHIFT_ASSIGNMENT: {
                 // see JLS 15.19 and 15.26.2
-                Node target = scan(tree.getVariable(), p);
+                Node targetLHS = scan(tree.getVariable(), p);
                 Node value = scan(tree.getExpression(), p);
 
-                target = unaryNumericPromotion(target);
+                TypeMirror leftType = InternalUtils.typeOf(tree.getVariable());
+
+                Node targetRHS = unaryNumericPromotion(targetLHS);
                 value = unaryNumericPromotion(value);
 
+                BinaryTree operTree = treeBuilder.buildBinary(leftType, withoutAssignment(kind),
+                        tree.getVariable(), tree.getExpression());
+                handleArtificialTree(operTree);
+                Node operNode;
                 if (kind == Tree.Kind.LEFT_SHIFT_ASSIGNMENT) {
-                    r = new LeftShiftAssignmentNode(tree, target, value);
+                    operNode = new LeftShiftNode(operTree, targetRHS, value);
                 } else if (kind == Tree.Kind.RIGHT_SHIFT_ASSIGNMENT) {
-                    r = new SignedRightShiftAssignmentNode(tree, target, value);
+                    operNode = new SignedRightShiftNode(operTree, targetRHS, value);
                 } else {
                     assert kind == Kind.UNSIGNED_RIGHT_SHIFT_ASSIGNMENT;
-                    r = new UnsignedRightShiftAssignmentNode(tree, target,
-                            value);
+                    operNode = new UnsignedRightShiftNode(operTree, targetRHS, value);
                 }
-                break;
+                extendWithNode(operNode);
+
+                TypeCastTree castTree = treeBuilder.buildTypeCast(leftType, operTree);
+                handleArtificialTree(castTree);
+                TypeCastNode castNode = new TypeCastNode(castTree, operNode, leftType);
+                extendWithNode(castNode);
+
+                AssignmentNode assignNode = new AssignmentNode(tree, targetLHS, castNode);
+                extendWithNode(assignNode);
+                return assignNode;
             }
 
             case AND_ASSIGNMENT:
             case OR_ASSIGNMENT:
             case XOR_ASSIGNMENT:
                 // see JLS 15.22
-                Node target = scan(tree.getVariable(), p);
+                Node targetLHS = scan(tree.getVariable(), p);
                 Node value = scan(tree.getExpression(), p);
 
                 TypeMirror leftType = InternalUtils.typeOf(tree.getVariable());
                 TypeMirror rightType = InternalUtils.typeOf(tree.getExpression());
 
+                Node targetRHS = null;
                 if (isNumericOrBoxed(leftType) && isNumericOrBoxed(rightType)) {
                     TypeMirror promotedType = binaryPromotedType(leftType, rightType);
-                    target = binaryNumericPromotion(target, promotedType);
+                    targetRHS = binaryNumericPromotion(targetLHS, promotedType);
                     value = binaryNumericPromotion(value, promotedType);
                 } else if (TypesUtils.isBooleanType(leftType) &&
                            TypesUtils.isBooleanType(rightType)) {
-                    target = unbox(target);
+                    targetRHS = unbox(targetLHS);
                     value = unbox(value);
                 } else {
                     assert false :
                         "Both argument to logical operation must be numeric or boolean";
                 }
 
+                BinaryTree operTree = treeBuilder.buildBinary(leftType, withoutAssignment(kind),
+                        tree.getVariable(), tree.getExpression());
+                handleArtificialTree(operTree);
+                Node operNode;
                 if (kind == Tree.Kind.AND_ASSIGNMENT) {
-                    r = new BitwiseAndAssignmentNode(tree, target, value);
+                    operNode = new BitwiseAndNode(operTree, targetRHS, value);
                 } else if (kind == Tree.Kind.OR_ASSIGNMENT) {
-                    r = new BitwiseOrAssignmentNode(tree, target, value);
+                    operNode = new BitwiseOrNode(operTree, targetRHS, value);
                 } else {
                     assert kind == Kind.XOR_ASSIGNMENT;
-                    r = new BitwiseXorAssignmentNode(tree, target, value);
+                    operNode = new BitwiseXorNode(operTree, targetRHS, value);
                 }
-                break;
+                extendWithNode(operNode);
+
+                TypeCastTree castTree = treeBuilder.buildTypeCast(leftType, operTree);
+                handleArtificialTree(castTree);
+                TypeCastNode castNode = new TypeCastNode(castTree, operNode, leftType);
+                extendWithNode(castNode);
+
+                AssignmentNode assignNode = new AssignmentNode(tree, targetLHS, castNode);
+                extendWithNode(assignNode);
+                return assignNode;
             default:
                 assert false : "unexpected compound assignment type";
                 break;
             }
-            assert r != null : "unexpected compound assignment type";
-            extendWithNode(r);
-            return r;
+            assert false : "unexpected compound assignment type";
+            return null;
         }
 
         @Override
@@ -3826,18 +3917,13 @@ public class CFGBuilder {
             boolean outerConditionalMode = conditionalMode;
             conditionalMode = false;
 
-            Node expr = scan(tree.getExpression(), p);
-
             Tree.Kind kind = tree.getKind();
             switch (kind) {
             case BITWISE_COMPLEMENT:
-            case POSTFIX_DECREMENT:
-            case POSTFIX_INCREMENT:
-            case PREFIX_DECREMENT:
-            case PREFIX_INCREMENT:
             case UNARY_MINUS:
             case UNARY_PLUS: {
                 // see JLS 15.14 and 15.15
+                Node expr = scan(tree.getExpression(), p);
                 expr = unaryNumericPromotion(expr);
 
                 TypeMirror exprType = InternalUtils.typeOf(tree);
@@ -3847,30 +3933,6 @@ public class CFGBuilder {
                     result = extendWithNode(new BitwiseComplementNode(tree,
                             expr));
                     break;
-                case POSTFIX_DECREMENT: {
-                    Node node = extendWithNode(new PostfixDecrementNode(tree,
-                            expr));
-                    result = narrowAndBox(node, exprType);
-                    break;
-                }
-                case POSTFIX_INCREMENT: {
-                    Node node = extendWithNode(new PostfixIncrementNode(tree,
-                            expr));
-                    result = narrowAndBox(node, exprType);
-                    break;
-                }
-                case PREFIX_DECREMENT: {
-                    Node node = extendWithNode(new PrefixDecrementNode(tree,
-                            expr));
-                    result = narrowAndBox(node, exprType);
-                    break;
-                }
-                case PREFIX_INCREMENT: {
-                    Node node = extendWithNode(new PrefixIncrementNode(tree,
-                            expr));
-                    result = narrowAndBox(node, exprType);
-                    break;
-                }
                 case UNARY_MINUS:
                     result = extendWithNode(new NumericalMinusNode(tree, expr));
                     break;
@@ -3881,10 +3943,12 @@ public class CFGBuilder {
                     assert false;
                     break;
                 }
-            }
                 break;
+            }
+
             case LOGICAL_COMPLEMENT: {
                 // see JLS 15.15.6
+                Node expr = scan(tree.getExpression(), p);
                 result = extendWithNode(new ConditionalNotNode(tree,
                         unbox(expr)));
                 if (conditionalMode) {
@@ -3894,9 +3958,86 @@ public class CFGBuilder {
                 break;
             }
 
+            case POSTFIX_DECREMENT:
+            case POSTFIX_INCREMENT: {
+                ExpressionTree exprTree = tree.getExpression();
+                TypeMirror exprType = InternalUtils.typeOf(exprTree);
+                TypeMirror oneType = types.getPrimitiveType(TypeKind.INT);
+                Node expr = scan(exprTree, p);
+
+                TypeMirror promotedType = binaryPromotedType(exprType, oneType);
+
+                LiteralTree oneTree = treeBuilder.buildLiteral(Integer.valueOf(1));
+                handleArtificialTree(oneTree);
+
+                Node exprRHS = binaryNumericPromotion(expr, promotedType);
+                Node one = new IntegerLiteralNode(oneTree);
+                extendWithNode(one);
+                one = binaryNumericPromotion(one, promotedType);
+                
+                BinaryTree operTree = treeBuilder.buildBinary(promotedType,
+                        (kind == Tree.Kind.POSTFIX_INCREMENT ? Tree.Kind.PLUS : Tree.Kind.MINUS),
+                        exprTree, oneTree);
+                handleArtificialTree(operTree);
+                Node operNode;
+                if (kind == Tree.Kind.POSTFIX_INCREMENT) {
+                    operNode = new NumericalAdditionNode(operTree, exprRHS, one);
+                } else {
+                    assert kind == Tree.Kind.POSTFIX_DECREMENT;
+                    operNode = new NumericalSubtractionNode(operTree, exprRHS, one);
+                }
+                extendWithNode(operNode);
+
+                Node narrowed = narrowAndBox(operNode, exprType);
+                // TODO: By using the assignment as the result of the expression, we
+                // act like a pre-increment/decrement.  Fix this by saving the initial
+                // value of the expression in a temporary.
+                AssignmentNode assignNode = new AssignmentNode(tree, expr, narrowed);
+                extendWithNode(assignNode);
+                result = assignNode;
+                break;
+            }
+            case PREFIX_DECREMENT:
+            case PREFIX_INCREMENT: {
+                ExpressionTree exprTree = tree.getExpression();
+                TypeMirror exprType = InternalUtils.typeOf(exprTree);
+                TypeMirror oneType = types.getPrimitiveType(TypeKind.INT);
+                Node expr = scan(exprTree, p);
+
+                TypeMirror promotedType = binaryPromotedType(exprType, oneType);
+
+                LiteralTree oneTree = treeBuilder.buildLiteral(Integer.valueOf(1));
+                handleArtificialTree(oneTree);
+
+                Node exprRHS = binaryNumericPromotion(expr, promotedType);
+                Node one = new IntegerLiteralNode(oneTree);
+                extendWithNode(one);
+                one = binaryNumericPromotion(one, promotedType);
+                
+                BinaryTree operTree = treeBuilder.buildBinary(promotedType,
+                        (kind == Tree.Kind.PREFIX_INCREMENT ? Tree.Kind.PLUS : Tree.Kind.MINUS),
+                        exprTree, oneTree);
+                handleArtificialTree(operTree);
+                Node operNode;
+                if (kind == Tree.Kind.PREFIX_INCREMENT) {
+                    operNode = new NumericalAdditionNode(operTree, exprRHS, one);
+                } else {
+                    assert kind == Tree.Kind.PREFIX_DECREMENT;
+                    operNode = new NumericalSubtractionNode(operTree, exprRHS, one);
+                }
+                extendWithNode(operNode);
+
+                Node narrowed = narrowAndBox(operNode, exprType);
+                AssignmentNode assignNode = new AssignmentNode(tree, expr, narrowed);
+                extendWithNode(assignNode);
+                result = assignNode;
+                break;
+            }
+
             case OTHER: {
                 // special node NLLCHK
                 if (tree.toString().startsWith("<*nullchk*>")) {
+                    Node expr = scan(tree.getExpression(), p);
                     result = extendWithNode(new NullChkNode(tree, expr));
                     break;
                 }

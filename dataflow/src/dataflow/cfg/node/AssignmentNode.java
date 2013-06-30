@@ -8,6 +8,7 @@ import javacutils.InternalUtils;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 
 import dataflow.cfg.node.AssignmentContext.AssignmentLhsContext;
@@ -36,7 +37,7 @@ public class AssignmentNode extends Node {
     public AssignmentNode(Tree tree, Node target, Node expression) {
         super(InternalUtils.typeOf(tree));
         assert tree instanceof AssignmentTree || tree instanceof VariableTree
-                || tree instanceof CompoundAssignmentTree;
+                || tree instanceof CompoundAssignmentTree || tree instanceof UnaryTree;
         assert target instanceof FieldAccessNode
                 || target instanceof LocalVariableNode
                 || target instanceof ArrayAccessNode;
