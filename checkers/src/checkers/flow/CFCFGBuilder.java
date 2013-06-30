@@ -21,6 +21,7 @@ import dataflow.cfg.CFGBuilder;
 import dataflow.cfg.ControlFlowGraph;
 import dataflow.cfg.UnderlyingAST;
 import dataflow.cfg.node.ArrayAccessNode;
+import dataflow.cfg.node.AssignmentNode;
 import dataflow.cfg.node.FieldAccessNode;
 import dataflow.cfg.node.IntegerLiteralNode;
 import dataflow.cfg.node.LessThanNode;
@@ -28,7 +29,7 @@ import dataflow.cfg.node.LocalVariableNode;
 import dataflow.cfg.node.MethodAccessNode;
 import dataflow.cfg.node.MethodInvocationNode;
 import dataflow.cfg.node.Node;
-import dataflow.cfg.node.PostfixIncrementNode;
+import dataflow.cfg.node.NumericalAdditionNode;
 import dataflow.cfg.node.VariableDeclarationNode;
 
 import checkers.basetype.BaseTypeChecker;
@@ -36,6 +37,7 @@ import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 
 import com.sun.source.tree.ArrayAccessTree;
+import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.AssertTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompilationUnitTree;
@@ -116,6 +118,18 @@ public class CFCFGBuilder extends CFGBuilder {
         }
 
         @Override
+        public void handleArtificialTree(Tree tree) {
+            // Record the method that encloses the newly created tree.
+            MethodTree enclosingMethod = TreeUtils
+                .enclosingMethod(getCurrentPath());
+            if (enclosingMethod != null) {
+                Element methodElement = TreeUtils
+                    .elementFromDeclaration(enclosingMethod);
+                factory.setPathHack(tree, methodElement);
+            }
+        }
+        
+        @Override
         public Node visitEnhancedForLoop(EnhancedForLoopTree tree, Void p) {
             // see JLS 14.14.2
             assert !conditionalMode;
@@ -155,12 +169,6 @@ public class CFCFGBuilder extends CFGBuilder {
 
             TypeMirror exprType = InternalUtils.typeOf(expression);
 
-            // Find enclosing method tree.
-            MethodTree enclosingMethod = TreeUtils
-                    .enclosingMethod(getCurrentPath());
-            Element methodElement = TreeUtils
-                    .elementFromDeclaration(enclosingMethod);
-
             if (types.isSubtype(exprType, iterableType)) {
                 // Take the upper bound of a type variable or wildcard
                 exprType = TypesUtils.upperBound(exprType);
@@ -171,18 +179,18 @@ public class CFCFGBuilder extends CFGBuilder {
 
                 MemberSelectTree iteratorSelect =
                     treeBuilder.buildIteratorMethodAccess(expression);
-                factory.setPathHack(iteratorSelect, methodElement);
+                handleArtificialTree(iteratorSelect);
 
                 MethodInvocationTree iteratorCall =
                     treeBuilder.buildMethodInvocation(iteratorSelect);
-                factory.setPathHack(iteratorCall, methodElement);
+                handleArtificialTree(iteratorCall);
 
                 AnnotatedTypeMirror annotatedIteratorType =
                     factory.getAnnotatedType(iteratorCall);
 
                 Tree annotatedIteratorTypeTree =
                     ((CFTreeBuilder)treeBuilder).buildAnnotatedType(annotatedIteratorType);
-                factory.setPathHack(annotatedIteratorTypeTree, methodElement);
+                handleArtificialTree(annotatedIteratorTypeTree);
 
                 // Declare and initialize a new, unique iterator variable
                 VariableTree iteratorVariable =
@@ -190,7 +198,7 @@ public class CFCFGBuilder extends CFGBuilder {
                                                   uniqueName("iter"),
                                                   variableElement.getEnclosingElement(),
                                                   iteratorCall);
-                factory.setPathHack(iteratorVariable, methodElement);
+                handleArtificialTree(iteratorVariable);
 
                 extendWithNode(new VariableDeclarationNode(iteratorVariable));
 
@@ -210,21 +218,21 @@ public class CFCFGBuilder extends CFGBuilder {
                 addLabelForNextNode(conditionStart);
                 IdentifierTree iteratorUse1 =
                     treeBuilder.buildVariableUse(iteratorVariable);
-                factory.setPathHack(iteratorUse1, methodElement);
+                handleArtificialTree(iteratorUse1);
 
                 LocalVariableNode iteratorReceiverNode =
                     extendWithNode(new LocalVariableNode(iteratorUse1));
 
                 MemberSelectTree hasNextSelect =
                     treeBuilder.buildHasNextMethodAccess(iteratorUse1);
-                factory.setPathHack(hasNextSelect, methodElement);
+                handleArtificialTree(hasNextSelect);
 
                 MethodAccessNode hasNextAccessNode =
                     extendWithNode(new MethodAccessNode(hasNextSelect, iteratorReceiverNode));
 
                 MethodInvocationTree hasNextCall =
                     treeBuilder.buildMethodInvocation(hasNextSelect);
-                factory.setPathHack(hasNextCall, methodElement);
+                handleArtificialTree(hasNextCall);
 
                 extendWithNode(new MethodInvocationNode(hasNextCall, hasNextAccessNode,
                                                         Collections.<Node>emptyList(), getCurrentPath()));
@@ -236,21 +244,21 @@ public class CFCFGBuilder extends CFGBuilder {
 
                 IdentifierTree iteratorUse2 =
                     treeBuilder.buildVariableUse(iteratorVariable);
-                factory.setPathHack(iteratorUse2, methodElement);
+                handleArtificialTree(iteratorUse2);
 
                 LocalVariableNode iteratorReceiverNode2 =
                     extendWithNode(new LocalVariableNode(iteratorUse2));
 
                 MemberSelectTree nextSelect =
                     treeBuilder.buildNextMethodAccess(iteratorUse2);
-                factory.setPathHack(nextSelect, methodElement);
+                handleArtificialTree(nextSelect);
 
                 MethodAccessNode nextAccessNode =
                     extendWithNode(new MethodAccessNode(nextSelect, iteratorReceiverNode2));
 
                 MethodInvocationTree nextCall =
                     treeBuilder.buildMethodInvocation(nextSelect);
-                factory.setPathHack(nextCall, methodElement);
+                handleArtificialTree(nextCall);
 
                 extendWithNode(new MethodInvocationNode(nextCall, nextAccessNode,
                     Collections.<Node>emptyList(), getCurrentPath()));
@@ -279,7 +287,7 @@ public class CFCFGBuilder extends CFGBuilder {
 
                 Tree annotatedArrayTypeTree =
                     ((CFTreeBuilder)treeBuilder).buildAnnotatedType(annotatedArrayType);
-                factory.setPathHack(annotatedArrayTypeTree, methodElement);
+                handleArtificialTree(annotatedArrayTypeTree);
 
                 // Declare and initialize a temporary array variable
                 VariableTree arrayVariable =
@@ -287,7 +295,7 @@ public class CFCFGBuilder extends CFGBuilder {
                                                   uniqueName("array"),
                                                   variableElement.getEnclosingElement(),
                                                   expression);
-                factory.setPathHack(arrayVariable, methodElement);
+                handleArtificialTree(arrayVariable);
 
                 extendWithNode(new VariableDeclarationNode(arrayVariable));
                 Node expressionNode = scan(expression, p);
@@ -301,14 +309,14 @@ public class CFCFGBuilder extends CFGBuilder {
 
                 LiteralTree zero =
                     treeBuilder.buildLiteral(new Integer(0));
-                factory.setPathHack(zero, methodElement);
+                handleArtificialTree(zero);
 
                 VariableTree indexVariable =
                     treeBuilder.buildVariableDecl(intType,
                                                   uniqueName("index"),
                                                   variableElement.getEnclosingElement(),
                                                   zero);
-                factory.setPathHack(indexVariable, methodElement);
+                handleArtificialTree(indexVariable);
                 extendWithNode(new VariableDeclarationNode(indexVariable));
                 IntegerLiteralNode zeroNode =
                     extendWithNode(new IntegerLiteralNode(zero));
@@ -321,25 +329,25 @@ public class CFCFGBuilder extends CFGBuilder {
                 addLabelForNextNode(conditionStart);
                 IdentifierTree indexUse1 =
                     treeBuilder.buildVariableUse(indexVariable);
-                factory.setPathHack(indexUse1, methodElement);
+                handleArtificialTree(indexUse1);
                 LocalVariableNode indexNode1 =
                     extendWithNode(new LocalVariableNode(indexUse1));
 
                 IdentifierTree arrayUse1 =
                     treeBuilder.buildVariableUse(arrayVariable);
-                factory.setPathHack(arrayUse1, methodElement);
+                handleArtificialTree(arrayUse1);
                 LocalVariableNode arrayNode1 =
                     extendWithNode(new LocalVariableNode(arrayUse1));
 
                 MemberSelectTree lengthSelect =
                     treeBuilder.buildArrayLengthAccess(arrayUse1);
-                factory.setPathHack(lengthSelect, methodElement);
+                handleArtificialTree(lengthSelect);
                 FieldAccessNode lengthAccessNode =
                     extendWithNode(new FieldAccessNode(lengthSelect, arrayNode1));
 
                 BinaryTree lessThan =
                     treeBuilder.buildLessThan(indexUse1, lengthSelect);
-                factory.setPathHack(lessThan, methodElement);
+                handleArtificialTree(lessThan);
 
                 extendWithNode(new LessThanNode(lessThan, indexNode1, lengthAccessNode));
                 extendWithExtendedNode(new ConditionalJump(loopEntry, loopExit));
@@ -350,19 +358,19 @@ public class CFCFGBuilder extends CFGBuilder {
 
                 IdentifierTree arrayUse2 =
                     treeBuilder.buildVariableUse(arrayVariable);
-                factory.setPathHack(arrayUse2, methodElement);
+                handleArtificialTree(arrayUse2);
                 LocalVariableNode arrayNode2 =
                     extendWithNode(new LocalVariableNode(arrayUse2));
 
                 IdentifierTree indexUse2 =
                     treeBuilder.buildVariableUse(indexVariable);
-                factory.setPathHack(indexUse2, methodElement);
+                handleArtificialTree(indexUse2);
                 LocalVariableNode indexNode2 =
                     extendWithNode(new LocalVariableNode(indexUse2));
 
                 ArrayAccessTree arrayAccess =
                     treeBuilder.buildArrayAccess(arrayUse2, indexUse2);
-                factory.setPathHack(arrayAccess, methodElement);
+                handleArtificialTree(arrayAccess);
                 ArrayAccessNode arrayAccessNode =
                     extendWithNode(new ArrayAccessNode(arrayAccess, arrayNode2,
                                                        indexNode2));
@@ -379,15 +387,26 @@ public class CFCFGBuilder extends CFGBuilder {
 
                 IdentifierTree indexUse3 =
                     treeBuilder.buildVariableUse(indexVariable);
-                factory.setPathHack(indexUse3, methodElement);
+                handleArtificialTree(indexUse3);
                 LocalVariableNode indexNode3 =
                     extendWithNode(new LocalVariableNode(indexUse3));
 
-                UnaryTree postfixIncrement =
-                    treeBuilder.buildPostfixIncrement(indexUse3);
-                factory.setPathHack(postfixIncrement, methodElement);
-                extendWithNode(new PostfixIncrementNode(postfixIncrement,
-                                                            indexNode3));
+                LiteralTree oneTree = treeBuilder.buildLiteral(Integer.valueOf(1));
+                handleArtificialTree(oneTree);
+                Node one = new IntegerLiteralNode(oneTree);
+                extendWithNode(one);
+
+                BinaryTree addOneTree = treeBuilder.buildBinary(intType, Tree.Kind.PLUS,
+                        indexUse3, oneTree);
+                handleArtificialTree(addOneTree);
+                Node addOneNode = new NumericalAdditionNode(addOneTree, indexNode3, one);
+                extendWithNode(addOneNode);
+
+                AssignmentTree assignTree = treeBuilder.buildAssignment(indexUse3, addOneTree);
+                handleArtificialTree(assignTree);
+                Node assignNode = new AssignmentNode(assignTree, indexNode3, addOneNode);
+                extendWithNode(assignNode);
+
                 extendWithExtendedNode(new UnconditionalJump(conditionStart));
             }
 

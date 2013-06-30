@@ -1,5 +1,10 @@
 package dataflow.cfg.node;
 
+import java.util.Collection;
+import java.util.LinkedList;
+
+import javacutils.InternalUtils;
+
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 
@@ -14,11 +19,30 @@ import com.sun.source.tree.Tree.Kind;
  * @author Charlie Garrett
  *
  */
-public class StringConcatenateAssignmentNode extends CompoundAssignmentNode {
+public class StringConcatenateAssignmentNode extends Node {
+    protected Tree tree;
+    protected Node left;
+    protected Node right;
 
     public StringConcatenateAssignmentNode(Tree tree, Node left, Node right) {
-        super(tree, left, right);
+        super(InternalUtils.typeOf(tree));
         assert tree.getKind() == Kind.PLUS_ASSIGNMENT;
+        this.tree = tree;
+        this.left = left;
+        this.right = right;
+    }
+
+    public Node getLeftOperand() {
+        return left;
+    }
+
+    public Node getRightOperand() {
+        return right;
+    }
+
+    @Override
+    public Tree getTree() {
+        return tree;
     }
 
     @Override
@@ -27,8 +51,10 @@ public class StringConcatenateAssignmentNode extends CompoundAssignmentNode {
     }
 
     @Override
-    public String getOperator() {
-        return "+";
+    public Collection<Node> getOperands() {
+        LinkedList<Node> list = new LinkedList<Node>();
+        list.add(getLeftOperand());
+        list.add(getRightOperand());
+        return list;
     }
-
 }

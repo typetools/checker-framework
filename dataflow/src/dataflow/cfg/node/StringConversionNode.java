@@ -21,8 +21,7 @@ import com.sun.source.tree.Tree;
  * because null is converted to the string "null".
  *
  * Conversion of primitive types to Strings requires first boxing and then
- * string conversion. We represent that as two separate {@link Node}s, first a
- * {@link BoxingNode} and then a {@link StringConversionNode}.
+ * string conversion.
  *
  * @author Stefan Heule
  * @author Charlie Garrett

@@ -166,110 +166,11 @@ public abstract class AbstractNodeVisitor<R, P> implements NodeVisitor<R, P> {
         return visitNode(n, p);
     }
 
-    // Increment and decrement operations
-    @Override
-    public R visitPrefixIncrement(PrefixIncrementNode n, P p) {
-        return visitNode(n, p);
-    }
-
-    @Override
-    public R visitPrefixDecrement(PrefixDecrementNode n, P p) {
-        return visitNode(n, p);
-    }
-
-    @Override
-    public R visitPostfixIncrement(PostfixIncrementNode n, P p) {
-        return visitNode(n, p);
-    }
-
-    @Override
-    public R visitPostfixDecrement(PostfixDecrementNode n, P p) {
-        return visitNode(n, p);
-    }
-
     // Compound assignments
     @Override
-    public R visitCompoundAssignment(CompoundAssignmentNode n, P p) {
-        return visitNode(n, p);
-    };
-
-    @Override
     public R visitStringConcatenateAssignment(
-            StringConcatenateAssignmentNode n, P p) {
-        return visitCompoundAssignment(n, p);
-    }
-
-    @Override
-    public R visitNumericalAdditionAssignment(
-            NumericalAdditionAssignmentNode n, P p) {
-        return visitCompoundAssignment(n, p);
-    }
-
-    @Override
-    public R visitNumericalSubtractionAssignment(
-            NumericalSubtractionAssignmentNode n, P p) {
-        return visitCompoundAssignment(n, p);
-    }
-
-    @Override
-    public R visitNumericalMultiplicationAssignment(
-            NumericalMultiplicationAssignmentNode n, P p) {
-        return visitCompoundAssignment(n, p);
-    }
-
-    @Override
-    public R visitIntegerDivisionAssignment(IntegerDivisionAssignmentNode n, P p) {
-        return visitCompoundAssignment(n, p);
-    }
-
-    @Override
-    public R visitFloatingDivisionAssignment(FloatingDivisionAssignmentNode n,
-            P p) {
-        return visitCompoundAssignment(n, p);
-    }
-
-    @Override
-    public R visitIntegerRemainderAssignment(IntegerRemainderAssignmentNode n,
-            P p) {
-        return visitCompoundAssignment(n, p);
-    }
-
-    @Override
-    public R visitFloatingRemainderAssignment(
-            FloatingRemainderAssignmentNode n, P p) {
-        return visitCompoundAssignment(n, p);
-    }
-
-    @Override
-    public R visitLeftShiftAssignment(LeftShiftAssignmentNode n, P p) {
-        return visitCompoundAssignment(n, p);
-    }
-
-    @Override
-    public R visitSignedRightShiftAssignment(SignedRightShiftAssignmentNode n,
-            P p) {
-        return visitCompoundAssignment(n, p);
-    }
-
-    @Override
-    public R visitUnsignedRightShiftAssignment(
-            UnsignedRightShiftAssignmentNode n, P p) {
-        return visitCompoundAssignment(n, p);
-    }
-
-    @Override
-    public R visitBitwiseAndAssignment(BitwiseAndAssignmentNode n, P p) {
-        return visitCompoundAssignment(n, p);
-    }
-
-    @Override
-    public R visitBitwiseOrAssignment(BitwiseOrAssignmentNode n, P p) {
-        return visitCompoundAssignment(n, p);
-    }
-
-    @Override
-    public R visitBitwiseXorAssignment(BitwiseXorAssignmentNode n, P p) {
-        return visitCompoundAssignment(n, p);
+           StringConcatenateAssignmentNode n, P p) {
+        return visitNode(n, p);
     }
 
     // Comparison operations
@@ -380,16 +281,6 @@ public abstract class AbstractNodeVisitor<R, P> implements NodeVisitor<R, P> {
 
     @Override
     public R visitStringConversion(StringConversionNode n, P p) {
-        return visitNode(n, p);
-    };
-
-    @Override
-    public R visitBoxing(BoxingNode n, P p) {
-        return visitNode(n, p);
-    };
-
-    @Override
-    public R visitUnboxing(UnboxingNode n, P p) {
         return visitNode(n, p);
     };
 
