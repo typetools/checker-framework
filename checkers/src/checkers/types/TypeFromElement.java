@@ -15,7 +15,6 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
-import checkers.util.AnnotatedTypes;
 
 import com.sun.tools.javac.code.Attribute;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
@@ -69,19 +68,9 @@ public class TypeFromElement {
         } else if (element.getKind() == ElementKind.TYPE_PARAMETER) {
             annotateTypeParam(type, element);
         } else if (element.getKind() == ElementKind.EXCEPTION_PARAMETER) {
-            // Or is this like a local variable?
-            // TODO: annotateExceptionParam(type, element);
-            /*
-            if (strict) {
-                System.out.println("TypeFromElement.annotate: unhandled element: " + element +
-                        " [" + element.getKind() + "]");
-            }*/
+            annotateLocal(type, (VariableElement) element);
         } else if (element.getKind() == ElementKind.RESOURCE_VARIABLE) {
-            // TODO;
-            if (strict) {
-                System.out.println("TypeFromElement.annotate: unhandled element: " + element +
-                        " [" + element.getKind() + "]");
-            }
+            annotateLocal(type, (VariableElement) element);
         } else {
             ErrorReporter.errorAbort("TypeFromElement.annotate: illegal argument: " + element +
                     " [" + element.getKind() + "]");
@@ -271,7 +260,6 @@ public class TypeFromElement {
         }
 
         VarSymbol symbol = (VarSymbol) element;
-        addAnnotationsToElt(type, symbol.getAnnotationMirrors());
 
         for (Attribute.TypeCompound anno : symbol.getRawTypeAttributes()) {
             TypeAnnotationPosition pos = anno.position;
@@ -310,12 +298,12 @@ public class TypeFromElement {
      * @param element the element of a field
      */
     private static void annotateLocal(AnnotatedTypeMirror type, VariableElement element) {
-        if (element.getKind() != ElementKind.LOCAL_VARIABLE) {
+        if (element.getKind() != ElementKind.LOCAL_VARIABLE &&
+                element.getKind() != ElementKind.RESOURCE_VARIABLE &&
+                element.getKind() != ElementKind.EXCEPTION_PARAMETER) {
             ErrorReporter.errorAbort("TypeFromElement.annotateLocal: " +
                     "invalid non-local-variable element " + element + " [" + element.getKind() + "]");
         }
-
-        addAnnotationsToElt(type, element.getAnnotationMirrors());
 
         VarSymbol symbol = (VarSymbol) element;
 
@@ -324,6 +312,8 @@ public class TypeFromElement {
             TypeAnnotationPosition pos = anno.position;
             switch (pos.type) {
             case LOCAL_VARIABLE:
+            case RESOURCE_VARIABLE:
+            case EXCEPTION_PARAMETER:
                 annotate(type, anno);
                 break;
             case NEW:
@@ -487,14 +477,7 @@ public class TypeFromElement {
         // System.out.println("AnnotateExec: " + element);
         MethodSymbol symbol = (MethodSymbol) element;
 
-        // Add annotations on the return type
-        addAnnotationsToElt(type.getReturnType(), symbol.getAnnotationMirrors());
-
-        // Add annotations on the param raws
         final List<AnnotatedTypeMirror> params = type.getParameterTypes();
-        for (int i = 0; i < params.size(); ++i) {
-            addAnnotationsToElt(params.get(i), element.getParameters().get(i).getAnnotationMirrors());
-        }
 
         // Used in multiple cases below
         final List<AnnotatedTypeVariable> typeParams = type.getTypeVariables();
@@ -590,12 +573,6 @@ public class TypeFromElement {
             }
             }
         }
-    }
-
-    private static void addAnnotationsToElt(AnnotatedTypeMirror type,
-            List<? extends AnnotationMirror> annotations) {
-        AnnotatedTypeMirror innerType = AnnotatedTypes.innerMostType(type);
-        innerType.addAnnotations(annotations);
     }
 
     private static void annotate(AnnotatedTypeMirror type, Attribute.TypeCompound anno) {

@@ -7,14 +7,14 @@ import com.sun.source.tree.Tree;
 
 /**
  * A node for a reference to 'this'.
- * 
+ *
  * <pre>
  *   <em>this</em>
  * </pre>
- * 
+ *
  * @author Stefan Heule
  * @author Charlie Garrett
- * 
+ *
  */
 public class ExplicitThisLiteralNode extends ThisLiteralNode {
 

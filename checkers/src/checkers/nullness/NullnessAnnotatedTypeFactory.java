@@ -51,8 +51,7 @@ import com.sun.tools.javac.code.Attribute.TypeCompound;
  * The annotated type factory for the nullness type-system.
  */
 public class NullnessAnnotatedTypeFactory
-        extends
-        InitializationAnnotatedTypeFactory<AbstractNullnessChecker, NullnessValue, NullnessStore, NullnessTransfer, NullnessAnalysis> {
+    extends InitializationAnnotatedTypeFactory<AbstractNullnessChecker, NullnessValue, NullnessStore, NullnessTransfer, NullnessAnalysis> {
 
     /** Annotation constants */
     protected final AnnotationMirror NONNULL, NULLABLE, POLYNULL;
@@ -272,9 +271,9 @@ public class NullnessAnnotatedTypeFactory
     }
 
     protected class NonNullTreeAnnotator
-            extends
-            InitializationAnnotatedTypeFactory<AbstractNullnessChecker, NullnessValue, NullnessStore, NullnessTransfer, NullnessAnalysis>.CommitmentTreeAnnotator {
-        public NonNullTreeAnnotator(BaseTypeChecker checker) {
+        extends InitializationAnnotatedTypeFactory<AbstractNullnessChecker, NullnessValue, NullnessStore, NullnessTransfer, NullnessAnalysis>.CommitmentTreeAnnotator {
+
+        public NonNullTreeAnnotator(BaseTypeChecker<?> checker) {
             super(checker);
         }
 
@@ -341,9 +340,9 @@ public class NullnessAnnotatedTypeFactory
     }
 
     protected class NonNullTypeAnnotator
-            extends
-            InitializationAnnotatedTypeFactory<AbstractNullnessChecker, NullnessValue, NullnessStore, NullnessTransfer, NullnessAnalysis>.CommitmentTypeAnnotator {
-        public NonNullTypeAnnotator(BaseTypeChecker checker) {
+        extends InitializationAnnotatedTypeFactory<AbstractNullnessChecker, NullnessValue, NullnessStore, NullnessTransfer, NullnessAnalysis>.CommitmentTypeAnnotator {
+
+        public NonNullTypeAnnotator(BaseTypeChecker<?> checker) {
             super(checker);
         }
     }

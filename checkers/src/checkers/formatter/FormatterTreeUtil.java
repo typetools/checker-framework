@@ -43,9 +43,9 @@ import dataflow.cfg.node.MethodInvocationNode;
 import dataflow.cfg.node.Node;
 
 /**
- * This class provides a collection of utilitis to ease working
+ * This class provides a collection of utilities to ease working
  * with syntax trees that have something to do with Formatters.
- * 
+ *
  * @author Konstantin Weitz
  */
 public class FormatterTreeUtil {
@@ -218,33 +218,33 @@ public class FormatterTreeUtil {
                         new SimpleTypeVisitor7<InvocationType, Class<Void>>() {
                             @Override
                             protected InvocationType defaultAction(TypeMirror e, Class<Void> p) {
-                            	// not an array
+                                // not an array
                                 return InvocationType.VARARG;
                             }
 
                             @Override
                             public InvocationType visitArray(ArrayType t,
                                     Class<Void> p) {
-                            	// it's an array, now figure out if it's a (Object[])null array
-                                return first.accept(new SimpleTreeVisitor<InvocationType,Class<Void>>() {
+                                // it's an array, now figure out if it's a (Object[])null array
+                                return first.accept(new SimpleTreeVisitor<InvocationType, Class<Void>>() {
                                     @Override
                                     protected InvocationType defaultAction(
                                             Tree node, Class<Void> p) {
-                                    	// just a normal array
+                                        // just a normal array
                                         return InvocationType.ARRAY;
                                     }
 
                                     @Override
                                     public InvocationType visitTypeCast(
                                             TypeCastTree node, Class<Void> p) {
-                                    	// it's a (Object[])null
+                                        // it's a (Object[])null
                                         return atypeFactory.getAnnotatedType(
                                                 node.getExpression()).getUnderlyingType().
-                                                getKind() == TypeKind.NULL?
-                                                        InvocationType.NULLARRAY:
+                                                getKind() == TypeKind.NULL ?
+                                                        InvocationType.NULLARRAY :
                                                             InvocationType.ARRAY;
                                     }
-                                },p);
+                                }, p);
                             }
 
                             @Override
@@ -312,14 +312,14 @@ public class FormatterTreeUtil {
                     new SimpleTypeVisitor7<Boolean, Class<Void>>() {
                         @Override
                         protected Boolean defaultAction(TypeMirror e, Class<Void> p) {
-                        	// it's not the null literal
+                            // it's not the null literal
                             return false;
                         }
 
                         @Override
                         public Boolean visitNull(NullType t,
                                 Class<Void> p) {
-                        	// it's the null literal
+                            // it's the null literal
                             return true;
                         }
                     }, Void.TYPE);
@@ -370,11 +370,7 @@ public class FormatterTreeUtil {
     public AnnotationMirror categoriesToFormatAnnotation(ConversionCategory[] args) {
         AnnotationBuilder builder =
                 new AnnotationBuilder(processingEnv, Format.class.getCanonicalName());
-        if (args.length == 0) {    // TODO circumvents Issue 228
-            builder.setValue("value", new Object[0]);
-        } else {
-            builder.setValue("value", args);
-        }
+        builder.setValue("value", args);
         return builder.build();
     }
 

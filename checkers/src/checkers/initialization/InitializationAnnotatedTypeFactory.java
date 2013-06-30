@@ -58,9 +58,12 @@ import com.sun.tools.javac.tree.JCTree;
  *
  * @author Stefan Heule
  */
-public abstract class InitializationAnnotatedTypeFactory<Checker extends InitializationChecker, Value extends CFAbstractValue<Value>, Store extends InitializationStore<Value, Store>, Transfer extends InitializationTransfer<Value, Transfer, Store>, Flow extends CFAbstractAnalysis<Value, Store, Transfer>>
-        extends
-        AbstractBasicAnnotatedTypeFactory<Checker, Value, Store, Transfer, Flow> {
+public abstract class InitializationAnnotatedTypeFactory<Checker extends InitializationChecker<?>,
+        Value extends CFAbstractValue<Value>,
+        Store extends InitializationStore<Value, Store>,
+        Transfer extends InitializationTransfer<Value, Transfer, Store>,
+        Flow extends CFAbstractAnalysis<Value, Store, Transfer>>
+    extends AbstractBasicAnnotatedTypeFactory<Checker, Value, Store, Transfer, Flow> {
 
     /** The annotations */
     public final AnnotationMirror COMMITTED, NOT_ONLY_COMMITTED;
@@ -357,7 +360,7 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
     }
 
     protected class CommitmentTypeAnnotator extends TypeAnnotator {
-        public CommitmentTypeAnnotator(BaseTypeChecker checker) {
+        public CommitmentTypeAnnotator(BaseTypeChecker<?> checker) {
             super(checker, InitializationAnnotatedTypeFactory.this);
         }
 
@@ -376,7 +379,7 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
 
     protected class CommitmentTreeAnnotator extends TreeAnnotator {
 
-        public CommitmentTreeAnnotator(BaseTypeChecker checker) {
+        public CommitmentTreeAnnotator(BaseTypeChecker<?> checker) {
             super(checker, InitializationAnnotatedTypeFactory.this);
         }
 

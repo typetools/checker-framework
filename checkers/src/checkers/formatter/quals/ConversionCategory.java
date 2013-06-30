@@ -32,7 +32,7 @@ import java.util.Set;
  */
 public enum ConversionCategory {
     /**
-     * Use if the parameter can be of any type. Applicable for coversions b, B,
+     * Use if the parameter can be of any type. Applicable for conversions b, B,
      * h, H, s, S.
      */
     GENERAL(null /* everything */, "bBhHsS"),
@@ -41,8 +41,8 @@ public enum ConversionCategory {
      * Use if the parameter is of a basic types which represent Unicode
      * characters: char, Character, byte, Byte, short, and Short. This
      * conversion may also be applied to the types int and Integer when
-     * Character.isValidCodePoint(int) returns true. Applicable for coversions
-     * c,C.
+     * Character.isValidCodePoint(int) returns true. Applicable for conversions
+     * c, C.
      */
     @SuppressWarnings("unchecked")
     CHAR(new Class[] { Character.class, Byte.class, Short.class,
@@ -50,7 +50,7 @@ public enum ConversionCategory {
 
     /**
      * Use if the parameter is is an integral type: byte, Byte, short, Short,
-     * int and Integer, long, Long, and BigInteger. Applicable for coversions d,
+     * int and Integer, long, Long, and BigInteger. Applicable for conversions d,
      * o, x, X.
      */
     @SuppressWarnings("unchecked")
@@ -59,7 +59,7 @@ public enum ConversionCategory {
 
     /**
      * Use if the parameter is is a floating-point type: float, Float, double,
-     * Double, and BigDecimal. Applicable for coversions e, E, f, g, G, a, A.
+     * Double, and BigDecimal. Applicable for conversions e, E, f, g, G, a, A.
      */
     @SuppressWarnings("unchecked")
     FLOAT(new Class[] { Float.class, Double.class, BigDecimal.class },
@@ -67,7 +67,7 @@ public enum ConversionCategory {
 
     /**
      * Use if the parameter is is a type which is capable of encoding a date or
-     * time: long, Long, Calendar, and Date. Applicable for coversions t, T.
+     * time: long, Long, Calendar, and Date. Applicable for conversions t, T.
      */
     @SuppressWarnings("unchecked")
     TIME(new Class[] { Long.class, Calendar.class, Date.class }, "tT"),
@@ -90,7 +90,7 @@ public enum ConversionCategory {
      * CHAR_AND_INT.
      *
      * One other conversion intersection
-     * is interestring, namely the intersection of INT and TIME,
+     * is interesting, namely the intersection of INT and TIME,
      * resulting in INT_AND_TIME.
      *
      * All other intersection either lead to an already existing type,

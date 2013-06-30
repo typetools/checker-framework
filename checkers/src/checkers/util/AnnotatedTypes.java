@@ -47,7 +47,6 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
 import checkers.types.TypeHierarchy;
-import checkers.types.visitors.AnnotatedTypeScanner;
 import checkers.types.visitors.SimpleAnnotatedTypeVisitor;
 
 /*>>>
@@ -1096,7 +1095,7 @@ public class AnnotatedTypes {
             alub = ((AnnotatedWildcardType)alub).getExtendsBound();
             // TODO using the getEffective versions copies objects, losing side-effects.
         }
-        if (alub.getKind() == TypeKind.TYPEVAR) {
+        while (alub.getKind() == TypeKind.TYPEVAR) {
             alub = ((AnnotatedTypeVariable)alub).getUpperBound();
         }
 

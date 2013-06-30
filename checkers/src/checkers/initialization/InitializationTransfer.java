@@ -31,7 +31,6 @@ import dataflow.cfg.node.ThisLiteralNode;
 import checkers.flow.CFAbstractAnalysis;
 import checkers.flow.CFAbstractTransfer;
 import checkers.flow.CFAbstractValue;
-import checkers.flow.CFValue;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 
@@ -62,18 +61,16 @@ import com.sun.source.tree.MethodTree;
  * @author Stefan Heule
  * @see InitializationStore
  *
- * @param <T>
- *            The type of the transfer function.
+ * @param <T> The type of the transfer function.
  */
 public class InitializationTransfer<V extends CFAbstractValue<V>, T extends InitializationTransfer<V, T, S>, S extends InitializationStore<V, S>>
         extends CFAbstractTransfer<V, S, T> {
 
-    protected final InitializationChecker checker;
+    protected final InitializationChecker<?> checker;
 
     public InitializationTransfer(CFAbstractAnalysis<V, S, T> analysis) {
         super(analysis);
-        this.checker = (InitializationChecker) analysis.getFactory()
-                .getChecker();
+        this.checker = (InitializationChecker<?>) analysis.getFactory().getChecker();
     }
 
     @Override

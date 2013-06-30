@@ -74,7 +74,7 @@ abstract public class TransferResult<A extends AbstractValue<A>, S extends Store
      *         with {@code exception} (or {@code null} if no special handling is
      *         required for exceptional edges).
      */
-    public/* @Nullable */S getExceptionalStore(
+    public /*@Nullable*/ S getExceptionalStore(
             TypeMirror exception) {
         if (exceptionalStores == null) {
             return null;

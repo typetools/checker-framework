@@ -15,7 +15,7 @@ import checkers.oigj.quals.Assignable;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 
-public class ImmutabilityVisitor extends BaseTypeVisitor<ImmutabilitySubchecker> {
+public class ImmutabilityVisitor extends BaseTypeVisitor<ImmutabilitySubchecker, ImmutabilityAnnotatedTypeFactory> {
 
     public ImmutabilityVisitor(ImmutabilitySubchecker checker, CompilationUnitTree root) {
         super(checker, root);

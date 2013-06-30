@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
  * - The second parameter is a vararg that takes conversion categories.
  * - The method throws an exception if the format string's
  *   format specifiers do not match the passed conversion categories.
- * - On success, the method returns the passed format string unmodifed.
+ * - On success, the method returns the passed format string unmodified.
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

@@ -12,14 +12,14 @@ import com.sun.source.tree.Tree.Kind;
 
 /**
  * A node for bitwise right shift operations with sign extension:
- * 
+ *
  * <pre>
  *   <em>expression</em> >> <em>expression</em>
  * </pre>
- * 
+ *
  * @author Stefan Heule
  * @author Charlie Garrett
- * 
+ *
  */
 public class SignedRightShiftNode extends Node {
 

@@ -3,7 +3,7 @@
 
 \urldef{\jlsboxingurl}{\url}{http://docs.oracle.com/javase/specs/jls/se7/html/jls-5.html#jls-5.1.7}
 
-If the Interning checker issues no warnings for a given program, then all
+If the Interning checker issues no errors for a given program, then all
 reference equality tests (i.e., all uses of ``\code{==}'') are proper;
 that is,
 \code{==} is not misused where \code{equals()} should have been used instead.
@@ -72,8 +72,9 @@ this property could hold:
   known to be in the array can use \code{==}.
 \end{enumerate}
 
-To eliminate Interning Checker warnings, you will need to annotate your
-code regarding all legal uses of \code{==}.  Thus, the Interning Checker
+To eliminate Interning Checker errors, you will need to annotate the
+declarations of any expression used as an argument to \code{==}.
+Thus, the Interning Checker
 could also have been called the Reference Equality Checker.  In the
 future, the checker will include annotations that target the non-interning
 cases above, but for now you need to use \<@Interned>, \<@UsesObjectEquals>
@@ -106,7 +107,7 @@ These qualifiers are part of the Interning type system:
   neither this class nor any of its superclasses overrides the \<equals>
   method.  Since \<Object.equals> uses reference equality, this means that
   for such a class, \<==> and \<equals> are equivalent, and so the
-  Interning Checker does not issue warnings for either one.
+  Interning Checker does not issue errors or warnings for either one.
 
 \end{description}
 
@@ -171,7 +172,7 @@ Javadoc for \refclass{interning}{InterningAnnotatedTypeFactory}.
 Objects of an \code{@\refclass{interning/quals}{Interned}} type may be safely compared using the ``\code{==}''
 operator.
 
-The checker issues a warning in two cases:
+The checker issues an error in two cases:
 
 \begin{enumerate}
 
@@ -191,8 +192,8 @@ This example shows both sorts of problems:
             Object  obj;
   @Interned Object iobj;
   ...
-  if (obj == iobj) { ... }  // checker warning: reference equality test is unsafe
-  iobj = obj;               // checker warning: iobj's referent may no longer be interned
+  if (obj == iobj) { ... }  // error: reference equality test is unsafe
+  iobj = obj;               // error: iobj's referent may no longer be interned
 \end{Verbatim}
 
 \label{lint-dotequals}
@@ -223,7 +224,7 @@ and \<Short> \<valueOf> methods return a non-interned value.  In fact, these
 methods sometimse return an interned value and sometimes a non-interned
 value, depending on the run-time argument (\ahref{\jlsboxingurl}{JLS
 \S5.1.7}).  If you know that the run-time argument to \<valueOf> implies that
-the result is interned, then you will need to suppress a warning.  (An
+the result is interned, then you will need to suppress an error.  (An
 alternative would be to enhance the Interning Checker to estimate the upper
 and lower bounds on char, int, and short values so that it can more
 precisely determine whether the result of a given \<valueOf> call is
@@ -242,7 +243,7 @@ is distributed with the Checker Framework):
 \end{Verbatim}
 
 \noindent
-Compilation will complete without warnings.
+Compilation will complete without errors or warnings.
 
 To see the checker warn about incorrect usage of annotations, use the following
 command:
@@ -252,7 +253,7 @@ command:
 \end{Verbatim}
 
 \noindent
-The compiler will issue a warning regarding violation of the semantics of
+The compiler will issue an error regarding violation of the semantics of
 \code{@\refclass{interning/quals}{Interned}}.
 % in the \code{InterningExampleWithWarnings.java} file.
 

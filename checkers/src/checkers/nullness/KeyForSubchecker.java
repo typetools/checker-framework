@@ -25,14 +25,13 @@ import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
  * TODO: doc
  */
 @TypeQualifiers({ KeyFor.class, Unqualified.class, KeyForBottom.class})
-public class KeyForSubchecker extends BaseTypeChecker {
+public class KeyForSubchecker extends BaseTypeChecker<KeyForAnnotatedTypeFactory> {
     protected AnnotationMirror KEYFOR;
 
     @Override
     public void initChecker() {
-        super.initChecker();
-
         KEYFOR = AnnotationUtils.fromClass(processingEnv.getElementUtils(), KeyFor.class);
+        super.initChecker();
     }
 
     @Override

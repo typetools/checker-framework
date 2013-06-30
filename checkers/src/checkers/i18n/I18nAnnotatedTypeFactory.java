@@ -28,7 +28,7 @@ public class I18nAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<I18nSubc
     /** Do not propagate types through binary/compound operations.
      */
     private class I18nTreeAnnotator extends TreeAnnotator {
-        public I18nTreeAnnotator(BaseTypeChecker checker) {
+        public I18nTreeAnnotator(BaseTypeChecker<?> checker) {
             super(checker, I18nAnnotatedTypeFactory.this);
         }
 

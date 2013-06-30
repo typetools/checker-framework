@@ -10,12 +10,10 @@ import com.sun.source.tree.Tree;
 
 /**
  * Represents the bottom of the Formatter type hierarchy. 
- * This is not yet used.
- * <p>
  *
  * This annotation may not be written in source code; it is an
  * implementation detail of the checker.
- * 
+ *
  * @author Konstantin Weitz
  */
 @TypeQualifier

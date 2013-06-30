@@ -21,6 +21,7 @@ import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifiers;
 import checkers.source.SourceChecker;
 import checkers.source.SourceVisitor;
+import checkers.types.AbstractBasicAnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.types.QualifierHierarchy;
@@ -90,7 +91,8 @@ import checkers.igj.quals.*;
  *
  * @see checkers.quals
  */
-public abstract class BaseTypeChecker extends SourceChecker {
+public abstract class BaseTypeChecker<Factory extends AbstractBasicAnnotatedTypeFactory<?, ?, ?, ?, ?>>
+    extends SourceChecker<Factory> {
 
     /** To cache the supported type qualifiers. */
     private Set<Class<? extends Annotation>> supportedQuals;
@@ -320,7 +322,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
      * @return the type-checking visitor
      */
     @Override
-    protected SourceVisitor<?, ?> createSourceVisitor(CompilationUnitTree root) {
+    protected SourceVisitor<?, ?, ?, ?> createSourceVisitor(CompilationUnitTree root) {
 
         // Try to reflectively load the visitor.
         Class<?> checkerClass = this.getClass();
@@ -329,7 +331,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
             final String classToLoad =
                 checkerClass.getName().replace("Checker", "Visitor")
                 .replace("Subchecker", "Visitor");
-            BaseTypeVisitor<?> result = invokeConstructorFor(classToLoad,
+            BaseTypeVisitor<?, ?> result = invokeConstructorFor(classToLoad,
                     new Class<?>[] { checkerClass, CompilationUnitTree.class },
                     new Object[] { this, root });
             if (result != null)
@@ -338,7 +340,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
         }
 
         // If a visitor couldn't be loaded reflectively, return the default.
-        return new BaseTypeVisitor<BaseTypeChecker>(this, root);
+        return new BaseTypeVisitor<BaseTypeChecker<Factory>, Factory>(this, root);
     }
 
     /**
@@ -357,8 +359,9 @@ public abstract class BaseTypeChecker extends SourceChecker {
      * @param root  the currently visited compilation unit
      * @return the appropriate type factory
      */
+    @SuppressWarnings("unchecked") // unchecked casts to type parameter
     @Override
-    public AnnotatedTypeFactory createFactory(CompilationUnitTree root) {
+    public Factory createFactory(CompilationUnitTree root) {
 
         // Try to reflectively load the type factory.
         Class<?> checkerClass = this.getClass();
@@ -370,10 +373,12 @@ public abstract class BaseTypeChecker extends SourceChecker {
             AnnotatedTypeFactory result = invokeConstructorFor(classToLoad,
                     new Class<?>[] { checkerClass, CompilationUnitTree.class },
                     new Object[] { this, root });
-            if (result != null) return result;
+            if (result != null) {
+                return (Factory) result;
+            }
             checkerClass = checkerClass.getSuperclass();
         }
-        return new BasicAnnotatedTypeFactory<BaseTypeChecker>(this, root);
+        return (Factory) new BasicAnnotatedTypeFactory<BaseTypeChecker<Factory>>(this, root);
     }
 
 

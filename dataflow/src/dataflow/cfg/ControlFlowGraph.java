@@ -35,7 +35,7 @@ public class ControlFlowGraph {
     /** The regular exit block of the control flow graph. */
     protected final SpecialBlock regularExitBlock;
 
-    /** The exceptiona exit block of the control flow graph. */
+    /** The exceptional exit block of the control flow graph. */
     protected final SpecialBlock exceptionalExitBlock;
 
     /** The AST this CFG corresponds to. */
@@ -149,7 +149,7 @@ public class ControlFlowGraph {
      * Get the {@link MethodTree} of the CFG if the argument {@link Tree} maps
      * to a {@link Node} in the CFG or null otherwise.
      */
-    public/* @Nullable */MethodTree getContainingMethod(Tree t) {
+    public /*@Nullable*/ MethodTree getContainingMethod(Tree t) {
         if (treeLookup.containsKey(t)) {
             if (underlyingAST.getKind() == UnderlyingAST.Kind.METHOD) {
                 UnderlyingAST.CFGMethod cfgMethod = (UnderlyingAST.CFGMethod) underlyingAST;
@@ -163,7 +163,7 @@ public class ControlFlowGraph {
      * Get the {@link ClassTree} of the CFG if the argument {@link Tree} maps
      * to a {@link Node} in the CFG or null otherwise.
      */
-    public/* @Nullable */ClassTree getContainingClass(Tree t) {
+    public /*@Nullable*/ ClassTree getContainingClass(Tree t) {
         if (treeLookup.containsKey(t)) {
             if (underlyingAST.getKind() == UnderlyingAST.Kind.METHOD) {
                 UnderlyingAST.CFGMethod cfgMethod = (UnderlyingAST.CFGMethod) underlyingAST;

@@ -12,7 +12,7 @@ import com.sun.source.tree.Tree;
 
 /**
  * A node for a parameterized type occurring in an expression:
- * 
+ *
  * <pre>
  *   <em>type<arg1, arg2></em>
  * </pre>
@@ -21,10 +21,10 @@ import com.sun.source.tree.Tree;
  * at runtime, so we might choose to represent them differently by
  * modifying the {@Link Node}s in which parameterized types can occur, such
  * as {@link ObjectCreationNode}s.
- * 
+ *
  * @author Stefan Heule
  * @author Charlie Garrett
- * 
+ *
  */
 
 public class ParameterizedTypeNode extends Node {

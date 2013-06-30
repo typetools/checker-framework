@@ -12,9 +12,9 @@ import dataflow.cfg.node.Node;
 
 /**
  * Base class of the {@link Block} implementation hierarchy.
- * 
+ *
  * @author Stefan Heule
- * 
+ *
  */
 public class ExceptionBlockImpl extends SingleSuccessorBlockImpl implements
         ExceptionBlock {

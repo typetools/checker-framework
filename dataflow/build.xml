@@ -7,14 +7,17 @@
       Builds the Dataflow Framework for the JSR 308 compiler.
     </description>
 
+    <property file="build.${os.name}.properties"/>
+    <property file="build.properties"/>
+
     <property name="src" value="src"/>
     <property name="tests" value="tests"/>
     <property name="tests.junit" value="${tests}/junit-4.7.jar"/>
+
     <property name="build" value="build"/>
     <property name="build.reports" value="${build}/reports"/>
     <property name="build.tests" value="tests/build"/>
-    <property file="build.${os.name}.properties"/>
-    <property file="build.properties"/>
+
     <property name="dist.file" value="dataflow.jar"/>
     <property name="dist.doc" value="doc"/>
     <property name="javacutils.loc" value="../javacutils"/>
@@ -25,7 +28,7 @@
     <property name="compiler.version.goal" value="javac 1.7.0-jsr308-${build.version}"/>
 
     <path id="build.path">
-        <pathelement location="${compiler.lib}"/>
+        <pathelement location="${javac.lib}"/>
     </path>
 
     <!-- Used to have:
@@ -38,7 +41,7 @@
         <java fork="true"
               outputproperty="compiler.version"
               classname="com.sun.tools.javac.Main">
-          <jvmarg line="-Xbootclasspath/p:${compiler.lib}"/>
+          <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
           <arg line="-version"/>
         </java>
 
@@ -107,7 +110,7 @@
 Needed version ${compiler.version.goal} of the JSR 308 compiler,
 but found version ${compiler.version} on your classpath.
 ${line.separator}${line.separator}
-Check that the 'compiler.lib' property in 'build.properties' points to version
+Check that the 'javac.lib' property in 'build.properties' points to version
 ${build.version} of the 'javac.jar' library."/>
 
         <pathconvert pathsep=" " property="src.files.spaceseparated_df">
@@ -119,14 +122,15 @@ ${build.version} of the 'javac.jar' library."/>
         </pathconvert>
         <java fork="true"
               failonerror="true"
-              classpath="${compiler.lib}:${annotation-utils.lib}:${javacutils.lib}:${jna.lib}:${tests.junit}"
+              classpath="${javac.lib}:${annotation-utils.lib}:${javacutils.lib}:${tests.junit}"
               classname="com.sun.tools.javac.Main">
-            <jvmarg line="-Xbootclasspath/p:${compiler.lib}"/>
+            <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
             <arg line="-sourcepath ${src}"/>
             <arg line="-d ${build}"/>
             <arg line="${src.files.spaceseparated_df}"/>
             <arg line="-version"/>
+            <arg line="-XDTA:noannotationsincomments"/>
         </java>
         <!--
         Touch doesn't work on a directory, so can't do:
@@ -136,6 +140,9 @@ ${build.version} of the 'javac.jar' library."/>
         <touch file="${build}/.timestamp"/>
         <delete file="${build}/.timestamp"/>
     </target>
+
+    <!-- TODO: add a type-checking target that doesn't use
+         -XDTA:noannotations in comments. -->
 
     <target name="docs" depends="javadoc"/>
 
@@ -147,9 +154,9 @@ ${build.version} of the 'javac.jar' library."/>
     <target name="javadoc" depends="prep" description="Create Javadoc documentation">
         <java fork="true"
               failonerror="true"
-              classpath="${compiler.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar"
+              classpath="${javac.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar"
               classname="com.sun.tools.javac.Main">
-            <jvmarg line="-Xbootclasspath/p:${compiler.lib}:${javadoc.lib}"/>
+            <jvmarg line="-Xbootclasspath/p:${javac.lib}:${javadoc.lib}"/>
             <arg value="-g"/>
             <arg line="-d ${build}"/>
             <arg line="${javacutils.loc}/src/javacutils/dist/ManualTaglet.java"/>
@@ -159,9 +166,9 @@ ${build.version} of the 'javac.jar' library."/>
         subdirectory fails. -->
         <javadoc sourcepath="${src}" destdir="${dist.doc}" failonerror="true"
             executable="${jsr308.langtools}/dist/bin/javadoc"
-          classpath="${build}:${compiler.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar:${jna.lib}:tests/junit-4.7.jar"
+          classpath="${build}:${javac.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar:${tests.junit}"
           excludepackagenames="checkers.util.stub,checkers.util.dist"
-          bootclasspath="${compiler.lib}:${javadoc.lib}:${java.home}/lib/rt.jar">
+          bootclasspath="${javac.lib}:${javadoc.lib}:${java.home}/lib/rt.jar">
           <package name="dataflow.*"/>
           <link href="http://docs.oracle.com/javase/7/docs/api/"/>
           <link href="http://docs.oracle.com/javase/7/docs/jdk/api/javac/tree/"/>
@@ -170,7 +177,7 @@ ${build.version} of the 'javac.jar' library."/>
     </target>
 
     <target name="dist" depends="jar"
-            description="Create .jar">
+            description="Create jar file">
     </target>
 
     <!-- This creates dataflow.jar -->

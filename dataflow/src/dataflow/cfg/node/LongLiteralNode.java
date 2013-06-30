@@ -8,15 +8,15 @@ import com.sun.source.tree.Tree;
 
 /**
  * A node for a long literal. For example:
- * 
+ *
  * <pre>
  *   <em>-3l</em>
  *   <em>0x80808080L</em>
  * </pre>
- * 
+ *
  * @author Stefan Heule
  * @author Charlie Garrett
- * 
+ *
  */
 public class LongLiteralNode extends ValueLiteralNode {
 

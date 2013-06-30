@@ -14,14 +14,14 @@ import com.sun.source.tree.Tree;
 /**
  * A node for the widening primitive conversion operation. See JLS 5.1.2 for the
  * definition of widening primitive conversion.
- * 
+ *
  * A {@link WideningConversionNode} does not correspond to any tree node in the
  * parsed AST. It is introduced when a value of some primitive type appears in a
  * context that requires a different primitive with more bits of precision.
- * 
+ *
  * @author Stefan Heule
  * @author Charlie Garrett
- * 
+ *
  */
 public class WideningConversionNode extends Node {
 

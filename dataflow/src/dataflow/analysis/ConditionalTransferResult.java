@@ -9,9 +9,9 @@ import javax.lang.model.type.TypeMirror;
  * one for the 'then' edge and one for 'else'. The result of
  * {@code getRegularStore} will be the least upper bound of the two underlying
  * stores.
- * 
+ *
  * @author Stefan Heule
- * 
+ *
  * @param <S>
  *            The {@link Store} used to keep track of intermediate results.
  */
@@ -28,16 +28,16 @@ public class ConditionalTransferResult<A extends AbstractValue<A>, S extends Sto
      * Create a {@code ConditionalTransferResult} with {@code thenStore} as the
      * resulting store if the corresponding {@link Node} evaluates to
      * {@code true} and {@code elseStore} otherwise.
-     * 
+     *
      * <p>
-     * 
+     *
      * <em>Exceptions</em>: If the corresponding {@link Node} throws an
      * exception, then it is assumed that no special handling is necessary and
      * the store before the corresponding {@link Node} will be passed along any
      * exceptional edge.
-     * 
+     *
      * <p>
-     * 
+     *
      * <em>Aliasing</em>: {@code thenStore} and {@code elseStore} are not
      * allowed to be used anywhere outside of this class (including use through
      * aliases). Complete control over the objects is transfered to this class.
@@ -52,17 +52,17 @@ public class ConditionalTransferResult<A extends AbstractValue<A>, S extends Sto
      * Create a {@code ConditionalTransferResult} with {@code thenStore} as the
      * resulting store if the corresponding {@link Node} evaluates to
      * {@code true} and {@code elseStore} otherwise.
-     * 
+     *
      * <p>
-     * 
+     *
      * <em>Exceptions</em>: If the corresponding {@link Node} throws an
      * exception, then the corresponding store in {@code exceptionalStores} is
      * used. If no exception is found in {@code exceptionalStores}, then it is
      * assumed that no special handling is necessary and the store before the
      * corresponding {@link Node} will be passed along any exceptional edge.
-     * 
+     *
      * <p>
-     * 
+     *
      * <em>Aliasing</em>: {@code thenStore}, {@code elseStore}, and any store in
      * {@code exceptionalStores} are not allowed to be used anywhere outside of
      * this class (including use through aliases). Complete control over the
@@ -95,7 +95,7 @@ public class ConditionalTransferResult<A extends AbstractValue<A>, S extends Sto
     public boolean containsTwoStores() {
         return true;
     }
-    
+
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder();

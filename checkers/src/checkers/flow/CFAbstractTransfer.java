@@ -122,7 +122,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
      *         by the {@link AnnotatedTypeFactory}.
      */
     protected V getValueFromFactory(Tree tree, Node node) {
-        AbstractBasicAnnotatedTypeFactory<? extends BaseTypeChecker, V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory = analysis.atypeFactory;
+        AbstractBasicAnnotatedTypeFactory<? extends BaseTypeChecker<?>, V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory = analysis.atypeFactory;
         analysis.setCurrentTree(tree);
         // is there an assignment context node available?
         if (node != null && node.getAssignmentContext() != null) {
@@ -159,7 +159,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
      *         from {@code annotatedValue}.
      */
     protected V getValueWithSameAnnotations(TypeMirror type, V annotatedValue) {
-        AbstractBasicAnnotatedTypeFactory<? extends BaseTypeChecker, V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory = analysis.atypeFactory;
+        AbstractBasicAnnotatedTypeFactory<? extends BaseTypeChecker<?>, V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory = analysis.atypeFactory;
         AnnotatedTypeMirror at = factory.toAnnotatedType(type);
         at.replaceAnnotations(annotatedValue.getType().getAnnotations());
         return analysis.createAbstractValue(at);
@@ -353,7 +353,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
         Tree tree = n.getTree();
         if (tree != null) {
             if (TreeUtils.canHaveTypeAnnotation(tree)) {
-                AbstractBasicAnnotatedTypeFactory<? extends BaseTypeChecker, V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory = analysis.atypeFactory;
+                AbstractBasicAnnotatedTypeFactory<? extends BaseTypeChecker<?>, V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory = analysis.atypeFactory;
                 analysis.setCurrentTree(tree);
                 AnnotatedTypeMirror at = factory
                         .getAnnotatedTypeFromTypeTree(tree);

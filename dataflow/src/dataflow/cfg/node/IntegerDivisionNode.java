@@ -12,14 +12,14 @@ import com.sun.source.tree.Tree.Kind;
 
 /**
  * A node for the integer division:
- * 
+ *
  * <pre>
  *   <em>expression</em> / <em>expression</em>
  * </pre>
- * 
+ *
  * @author Stefan Heule
  * @author Charlie Garrett
- * 
+ *
  */
 public class IntegerDivisionNode extends Node {
 

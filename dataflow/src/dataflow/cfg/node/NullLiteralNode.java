@@ -8,14 +8,14 @@ import com.sun.source.tree.Tree;
 
 /**
  * A node for the null literal.
- * 
+ *
  * <pre>
  *   <em>null</em>
  * </pre>
- * 
+ *
  * @author Stefan Heule
  * @author Charlie Garrett
- * 
+ *
  */
 public class NullLiteralNode extends ValueLiteralNode {
 

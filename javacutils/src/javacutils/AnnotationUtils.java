@@ -53,16 +53,16 @@ public class AnnotationUtils {
      * Cache names of AnnotationMirrors for faster access.  Values in
      * the map are interned Strings, so they can be compared with ==.
      */
-    private static final Map<AnnotationMirror, /*@Interned*/String> annotationMirrorNames
-        = new HashMap<AnnotationMirror, /*@Interned*/String>();
+    private static final Map<AnnotationMirror, /*@Interned*/ String> annotationMirrorNames
+        = new HashMap<AnnotationMirror, /*@Interned*/ String>();
 
     /**
      * Cache names of classes representing AnnotationMirrors for
      * faster access.  Values in the map are interned Strings, so they
      * can be compared with ==.
      */
-    private static final Map<Class<? extends Annotation>, /*@Interned*/String> annotationClassNames
-        = new HashMap<Class<? extends Annotation>, /*@Interned*/String>();
+    private static final Map<Class<? extends Annotation>, /*@Interned*/ String> annotationClassNames
+        = new HashMap<Class<? extends Annotation>, /*@Interned*/ String>();
 
     /**
      * Creates an {@link AnnotationMirror} given by a particular
@@ -142,13 +142,13 @@ public class AnnotationUtils {
     /**
      * @return the fully-qualified name of an annotation as a Name
      */
-    public static final/*@Interned*/String annotationName(AnnotationMirror annotation) {
+    public static final /*@Interned*/ String annotationName(AnnotationMirror annotation) {
         if (annotationMirrorNames.containsKey(annotation))
             return annotationMirrorNames.get(annotation);
 
         final DeclaredType annoType = annotation.getAnnotationType();
         final TypeElement elm = (TypeElement) annoType.asElement();
-        /*@Interned*/String name = elm.getQualifiedName().toString().intern();
+        /*@Interned*/ String name = elm.getQualifiedName().toString().intern();
         annotationMirrorNames.put(annotation, name);
         return name;
     }
@@ -194,7 +194,7 @@ public class AnnotationUtils {
      * Checks that the annotation {@code am} has the name {@code aname}. Values
      * are ignored.
      */
-    public static boolean areSameByName(AnnotationMirror am, /*@Interned*/String aname) {
+    public static boolean areSameByName(AnnotationMirror am, /*@Interned*/ String aname) {
         // Both strings are interned.
         return annotationName(am) == aname;
     }
@@ -205,7 +205,7 @@ public class AnnotationUtils {
      */
     public static boolean areSameByClass(AnnotationMirror am,
             Class<? extends Annotation> anno) {
-        /*@Interned*/String canonicalName;
+        /*@Interned*/ String canonicalName;
         if (annotationClassNames.containsKey(anno)) {
             canonicalName = annotationClassNames.get(anno).intern();
         } else {

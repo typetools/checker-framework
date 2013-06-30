@@ -73,10 +73,7 @@ public class FlowExpressions {
 
     /**
      * We ignore operations such as widening and
-     * narrowing when computing the internal representation.  This
-     * is because compound assignments may have such Nodes as their
-     * LHS operands and the value assigned to is the operand of
-     * the widening or narrowing node.
+     * narrowing when computing the internal representation.
      *
      * @return The internal representation (as {@link Receiver}) of any
      *         {@link Node}. Might contain {@link Unknown}.

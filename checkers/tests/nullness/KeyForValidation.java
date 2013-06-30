@@ -12,7 +12,7 @@ public class KeyForValidation {
   void m(@KeyFor("#0") Object p) {}
 
   // TODO: invalid index
-  void m(@KeyFor("#4") Object p) {}
+  void m2(@KeyFor("#4") Object p) {}
 
   // TODO: check names for fields
   @KeyFor("INVALID") Object h;

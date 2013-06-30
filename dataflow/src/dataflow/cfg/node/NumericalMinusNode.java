@@ -12,14 +12,14 @@ import com.sun.source.tree.Tree.Kind;
 
 /**
  * A node for the unary minus operation:
- * 
+ *
  * <pre>
  *   - <em>expression</em>
  * </pre>
- * 
+ *
  * @author Stefan Heule
  * @author Charlie Garrett
- * 
+ *
  */
 public class NumericalMinusNode extends Node {
 

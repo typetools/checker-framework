@@ -6,6 +6,7 @@ import checkers.interning.quals.*;
 
 import java.lang.annotation.Annotation;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -29,19 +30,21 @@ import checkers.types.AnnotatedTypeMirror;
 import checkers.types.QualifierHierarchy;
 import checkers.util.AnnotationBuilder;
 import checkers.util.MultiGraphQualifierHierarchy;
+import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 
 /**
- * The checker for the freedom-before-commitement type-system. Also supports
+ * The checker for the freedom-before-commitment type-system. Also supports
  * rawness as a type-system for tracking initialization, though FBC is
  * preferred.
  *
  * @author Stefan Heule
  */
-public abstract class InitializationChecker extends BaseTypeChecker {
+public abstract class InitializationChecker<Factory extends InitializationAnnotatedTypeFactory<?, ?, ?, ?, ?>>
+    extends BaseTypeChecker<Factory> {
 
     /** Annotation constants */
     public AnnotationMirror COMMITTED, FREE, FBCBOTTOM, NOT_ONLY_COMMITTED, UNCLASSIFIED;
@@ -63,8 +66,7 @@ public abstract class InitializationChecker extends BaseTypeChecker {
         if (useFbc) {
             COMMITTED = AnnotationUtils.fromClass(elements, Initialized.class);
             FREE = AnnotationUtils.fromClass(elements, UnderInitialization.class);
-            NOT_ONLY_COMMITTED = AnnotationUtils.fromClass(elements,
-                    NotOnlyInitialized.class);
+            NOT_ONLY_COMMITTED = AnnotationUtils.fromClass(elements, NotOnlyInitialized.class);
             FBCBOTTOM = AnnotationUtils.fromClass(elements, FBCBottom.class);
             UNCLASSIFIED = AnnotationUtils.fromClass(elements, UnknownInitialization.class);
         } else {
@@ -83,18 +85,35 @@ public abstract class InitializationChecker extends BaseTypeChecker {
         return result;
     }
 
+    // Cache for the initialization annotations
+    protected Set<Class<? extends Annotation>> initAnnos;
+
     public Set<Class<? extends Annotation>> getInitializationAnnotations() {
-        Set<Class<? extends Annotation>> result = new HashSet<>();
-        if (useFbc) {
-            result.add(UnderInitialization.class);
-            result.add(Initialized.class);
-            result.add(UnknownInitialization.class);
-            result.add(FBCBottom.class);
-        } else {
-            result.add(Raw.class);
-            result.add(NonRaw.class);
+        if (initAnnos == null) {
+            Set<Class<? extends Annotation>> result = new HashSet<>();
+            if (useFbc) {
+                result.add(UnderInitialization.class);
+                result.add(Initialized.class);
+                result.add(UnknownInitialization.class);
+                result.add(FBCBottom.class);
+            } else {
+                result.add(Raw.class);
+                result.add(NonRaw.class);
+            }
+            initAnnos = Collections.unmodifiableSet(result);
         }
-        return result;
+        return initAnnos;
+    }
+
+    /**
+     * Is the annotation {@code anno} an initialization qualifier?
+     */
+    protected boolean isInitializationAnnotation(AnnotationMirror anno) {
+        assert anno != null;
+        return AnnotationUtils.areSameIgnoringValues(anno, UNCLASSIFIED) ||
+                AnnotationUtils.areSameIgnoringValues(anno, FREE) ||
+                AnnotationUtils.areSameIgnoringValues(anno, COMMITTED) ||
+                AnnotationUtils.areSameIgnoringValues(anno, FBCBOTTOM);
     }
 
     /*
@@ -128,16 +147,6 @@ public abstract class InitializationChecker extends BaseTypeChecker {
             }
         }
         return fields;
-    }
-
-    /**
-     * Returns the {@link QualifierHierarchy} of the child type system.
-     */
-    protected abstract QualifierHierarchy getChildQualifierHierarchy();
-
-    @Override
-    protected QualifierHierarchy createQualifierHierarchy() {
-        return new InitializationQualifierHierarchy();
     }
 
     /**
@@ -271,129 +280,63 @@ public abstract class InitializationChecker extends BaseTypeChecker {
         return anno.hasEffectiveAnnotation(clazz);
     }
 
+    @Override
+    protected MultiGraphFactory createQualifierHierarchyFactory() {
+        return new MultiGraphQualifierHierarchy.MultiGraphFactory(this);
+    }
+
     /**
      * The {@link QualifierHierarchy} for the initialization type system. This
      * hierarchy also includes the child type system, whose hierarchy is
      * provided through {@link #getChildQualifierHierarchy()}.
      */
-    protected class InitializationQualifierHierarchy extends
-            MultiGraphQualifierHierarchy {
-
-        protected Set<AnnotationMirror> tops;
-        protected Set<AnnotationMirror> bottoms;
-        protected Set</*@Interned*/String> typeQualifiers;
-        protected QualifierHierarchy childHierarchy = getChildQualifierHierarchy();
+    protected abstract class InitializationQualifierHierarchy extends MultiGraphQualifierHierarchy {
         protected Types types = processingEnv.getTypeUtils();
 
-        public InitializationQualifierHierarchy() {
-            super();
-
-            tops = new HashSet<>();
-            tops.add(createUnclassifiedAnnotation(Object.class));
-            tops.addAll(childHierarchy.getTopAnnotations());
-
-            bottoms = new HashSet<>();
-            Class<? extends Annotation> clazz = useFbc ? FBCBottom.class
-                    : NonRaw.class;
-            bottoms.add(AnnotationUtils.fromClass(
-                    processingEnv.getElementUtils(), clazz));
-            bottoms.addAll(childHierarchy.getBottomAnnotations());
+        public InitializationQualifierHierarchy(MultiGraphFactory f, Object... arg) {
+            super(f, arg);
         }
 
-        @Override
-        public Set<AnnotationMirror> getTopAnnotations() {
-            return tops;
-        }
-
-        @Override
-        public AnnotationMirror getTopAnnotation(AnnotationMirror start) {
-            for (AnnotationMirror top : tops) {
-                if (AnnotationUtils.areSame(start, top)
-                        || isSubtype(start, top)) {
-                    return top;
-                }
-            }
-            assert false : "invalid start annotation provided (" + start + ")";
-            return null;
-        }
-
-        @Override
-        public AnnotationMirror getBottomAnnotation(AnnotationMirror start) {
-            for (AnnotationMirror bot : bottoms) {
-                if (AnnotationUtils.areSame(start, bot)
-                        || isSubtype(bot, start)) {
-                    return bot;
-                }
-            }
-            assert false : "invalid start annotation provided (" + start + ")";
-            return null;
-        }
-
-        @Override
-        public Set<AnnotationMirror> getBottomAnnotations() {
-            return bottoms;
-        }
-
-        @Override
-        @SuppressWarnings({ "rawtypes", "unchecked" })
-        public Set</*@Interned*/String> getTypeQualifiers() {
-            if (typeQualifiers != null)
-                return typeQualifiers;
-            Set</*@Interned*/String> names = new HashSet<>();
-            Set<Class<?>> clazzes = new HashSet<>();
-            clazzes.addAll(getInitializationAnnotations());
-            // Add qualifiers from the initialization type system.
-            for (Class<?> clazz : clazzes) {
-                Elements elements = processingEnv.getElementUtils();
-                AnnotationMirror anno = AnnotationUtils.fromClass(elements,
-                        (Class) clazz);
-                names.add(AnnotationUtils.annotationName(anno));
-            }
-            // Add qualifiers from the child type system.
-            names.addAll(childHierarchy.getTypeQualifiers());
-
-            typeQualifiers = names;
-            return typeQualifiers;
-        }
-
-        @Override
-        public boolean isSubtype(AnnotationMirror anno1, AnnotationMirror anno2) {
-            boolean isChild1 = isChildAnnotation(anno1);
-            boolean isChild2 = isChildAnnotation(anno2);
-            // If both annotations are from the child hierarchy, use
-            // childHierarchy.isSubtyp.
-            if (isChild1 && isChild2) {
-                return childHierarchy.isSubtype(anno1, anno2);
-            }
-            // If one annotation is from the child hierarchy, but the other is
-            // not, then they cannot be subtypes of each other.
-            if (isChild1 || isChild2) {
+        /**
+         * Subtype testing for initialization annotations.
+         * Will return false if either qualifier is not an initialization annotation.
+         * Subclasses should override isSubtype and call this method for
+         * initialization qualifiers.
+         *
+         * @param rhs
+         * @param lhs
+         * @return
+         */
+        public boolean isSubtypeInitialization(AnnotationMirror rhs, AnnotationMirror lhs) {
+            if (!isInitializationAnnotation(rhs) ||
+                    !isInitializationAnnotation(lhs)) {
                 return false;
             }
+
             // 't' is always a subtype of 't'
-            if (AnnotationUtils.areSame(anno1, anno2)) {
+            if (AnnotationUtils.areSame(rhs, lhs)) {
                 return true;
             }
             // @Initialized is only a supertype of @FBCBottom.
-            if (isCommitted(anno2)) {
-                return isFbcBottom(anno1);
+            if (isCommitted(lhs)) {
+                return isFbcBottom(rhs);
             }
             // @Initialized is only a subtype of @UnknownInitialization.
-            boolean unc2 = isUnclassified(anno2);
-            if (isCommitted(anno1)) {
+            boolean unc2 = isUnclassified(lhs);
+            if (isCommitted(rhs)) {
                 return unc2;
             }
             // @FBCBottom is a supertype of nothing.
-            if (isFbcBottom(anno2)) {
+            if (isFbcBottom(lhs)) {
                 return false;
             }
             // @FBCBottom is a subtype of everything.
-            if (isFbcBottom(anno1)) {
+            if (isFbcBottom(rhs)) {
                 return true;
             }
-            boolean unc1 = isUnclassified(anno1);
-            boolean free1 = isFree(anno1);
-            boolean free2 = isFree(anno2);
+            boolean unc1 = isUnclassified(rhs);
+            boolean free1 = isFree(rhs);
+            boolean free2 = isFree(lhs);
             // @UnknownInitialization is not a subtype of @UnderInitialization.
             if (unc1 && free2) {
                 return false;
@@ -402,44 +345,32 @@ public abstract class InitializationChecker extends BaseTypeChecker {
             // @UnknownInitialization or anno1 is @UnderInitialization and anno2 is @UnknownInitialization.
             assert (free1 && free2) || (unc1 && unc2) || (free1 && unc2);
             // Thus, we only need to look at the type frame.
-            TypeMirror frame1 = getTypeFrameFromAnnotation(anno1);
-            TypeMirror frame2 = getTypeFrameFromAnnotation(anno2);
+            TypeMirror frame1 = getTypeFrameFromAnnotation(rhs);
+            TypeMirror frame2 = getTypeFrameFromAnnotation(lhs);
             return types.isSubtype(frame1, frame2);
         }
 
         /**
-         * Is the annotation {@code anno} part of the child type system?
+         * Compute the least upper bound of two initialization qualifiers.
+         * Returns null if one of the qualifiers is not in the initialization hierarachy.
+         * Subclasses should override leastUpperBound and call this method for
+         * initialization qualifiers.
+         *
+         * @param anno1 an initialization qualifier
+         * @param anno2 an initialization qualifier
+         * @return the lub of anno1 and anno2
          */
-        protected boolean isChildAnnotation(AnnotationMirror anno) {
-            assert anno != null;
-            for (/*@Interned*/ String c : childHierarchy.getTypeQualifiers()) {
-                if (AnnotationUtils.areSameByName(anno, c)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        @Override
-        public AnnotationMirror leastUpperBound(AnnotationMirror anno1,
+        protected AnnotationMirror leastUpperBoundInitialization(AnnotationMirror anno1,
                 AnnotationMirror anno2) {
-            boolean isChild1 = isChildAnnotation(anno1);
-            boolean isChild2 = isChildAnnotation(anno2);
-            // If both annotations are from the child hierarchy, use
-            // childHierarchy.leastUpperBound.
-            if (isChild1 && isChild2) {
-                return childHierarchy.leastUpperBound(anno1, anno2);
-            }
-            // If the two annotations are not from the same hierarchy, then null
-            // should be returned.
-            if (isChild1 || isChild2) {
+            if (!isInitializationAnnotation(anno1) ||
+                    !isInitializationAnnotation(anno2)) {
                 return null;
             }
 
             // Handle the case where one is a subtype of the other.
-            if (isSubtype(anno1, anno2)) {
+            if (isSubtypeInitialization(anno1, anno2)) {
                 return anno2;
-            } else if (isSubtype(anno2, anno1)) {
+            } else if (isSubtypeInitialization(anno2, anno1)) {
                 return anno1;
             }
             boolean unc1 = isUnclassified(anno1);
@@ -489,10 +420,6 @@ public abstract class InitializationChecker extends BaseTypeChecker {
             return null;
         }
 
-        @Override
-        public AnnotationMirror getPolymorphicAnnotation(AnnotationMirror start) {
-            return childHierarchy.getPolymorphicAnnotation(start);
-        }
-
     }
+
 }

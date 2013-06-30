@@ -8,9 +8,9 @@ import dataflow.cfg.node.Node;
 
 /**
  * Implementation of a regular basic block.
- * 
+ *
  * @author Stefan Heule
- * 
+ *
  */
 public class RegularBlockImpl extends SingleSuccessorBlockImpl implements
         RegularBlock {

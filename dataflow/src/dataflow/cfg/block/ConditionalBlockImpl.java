@@ -2,9 +2,9 @@ package dataflow.cfg.block;
 
 /**
  * Implementation of a conditional basic block.
- * 
+ *
  * @author Stefan Heule
- * 
+ *
  */
 public class ConditionalBlockImpl extends BlockImpl implements ConditionalBlock {
 

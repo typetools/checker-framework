@@ -15,13 +15,13 @@ import com.sun.source.tree.Tree;
 
 /**
  * A node for a method access, including a method accesses:
- * 
+ *
  * <pre>
  *   <em>expression</em> . <em>method</em> ()
  * </pre>
- * 
+ *
  * @author Stefan Heule
- * 
+ *
  */
 public class MethodAccessNode extends Node {
 
