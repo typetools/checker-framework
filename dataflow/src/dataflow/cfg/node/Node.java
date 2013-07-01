@@ -52,6 +52,12 @@ public abstract class Node {
     protected /*@Nullable*/ AssignmentContext assignmentContext;
 
     /**
+     * Does this node represent a tree that appears in the source code (true)
+     * or one that the CFG builder added while desugaring (false).
+     */
+    protected boolean inSource = true;
+
+    /**
      * The type of this node. For {@link Node}s with {@link Tree}s, this type is
      * the type of the {@link Tree}. Otherwise, it is the type is set by the
      * {@link CFGBuilder}.
@@ -118,6 +124,14 @@ public abstract class Node {
      */
     public void setLValue() {
         lvalue = true;
+    }
+
+    public boolean getInSource() {
+        return inSource;
+    }
+
+    public void setInSource(boolean inSrc) {
+        inSource = inSrc;
     }
 
     public AssignmentContext getAssignmentContext() {

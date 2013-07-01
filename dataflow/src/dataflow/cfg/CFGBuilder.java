@@ -1680,11 +1680,13 @@ public class CFGBuilder {
                 IdentifierTree classTree = treeBuilder.buildClassUse(boxedElement);
                 handleArtificialTree(classTree);
                 ClassNameNode className = new ClassNameNode(classTree);
+                className.setInSource(false);
                 insertNodeAfter(className, node);
 
                 MemberSelectTree valueOfSelect = treeBuilder.buildValueOfMethodAccess(classTree);
                 handleArtificialTree(valueOfSelect);
                 MethodAccessNode valueOfAccess = new MethodAccessNode(valueOfSelect, className);
+                valueOfAccess.setInSource(false);
                 insertNodeAfter(valueOfAccess, className);
 
                 MethodInvocationTree valueOfCall =
@@ -1693,7 +1695,7 @@ public class CFGBuilder {
                 Node boxed = new MethodInvocationNode(valueOfCall, valueOfAccess,
                                                       Collections.singletonList(node),
                                                       getCurrentPath());
-
+                boxed.setInSource(false);
                 // Add Throwable to account for unchecked exceptions
                 TypeElement throwableElement = elements
                     .getTypeElement("java.lang.Throwable");
@@ -1721,6 +1723,7 @@ public class CFGBuilder {
                     treeBuilder.buildPrimValueMethodAccess(node.getTree());
                 handleArtificialTree(primValueSelect);
                 MethodAccessNode primValueAccess = new MethodAccessNode(primValueSelect, node);
+                primValueAccess.setInSource(false);
                 // Method access may throw NullPointerException
                 TypeElement npeElement = elements
                     .getTypeElement("java.lang.NullPointerException");
@@ -1733,6 +1736,7 @@ public class CFGBuilder {
                 Node unboxed = new MethodInvocationNode(primValueCall, primValueAccess,
                                                         Collections.emptyList(),
                                                         getCurrentPath());
+                unboxed.setInSource(false);
 
                 // Add Throwable to account for unchecked exceptions
                 TypeElement throwableElement = elements
@@ -2622,6 +2626,7 @@ public class CFGBuilder {
                 TypeCastTree castTree = treeBuilder.buildTypeCast(leftType, operTree);
                 handleArtificialTree(castTree);
                 TypeCastNode castNode = new TypeCastNode(castTree, operNode, leftType);
+                castNode.setInSource(false);
                 extendWithNode(castNode);
 
                 AssignmentNode assignNode = new AssignmentNode(tree, targetLHS, castNode);
@@ -2666,6 +2671,7 @@ public class CFGBuilder {
                     TypeCastTree castTree = treeBuilder.buildTypeCast(leftType, operTree);
                     handleArtificialTree(castTree);
                     TypeCastNode castNode = new TypeCastNode(castTree, operNode, leftType);
+                    castNode.setInSource(false);
                     extendWithNode(castNode);
 
                     // Map the compound assignment tree to an assignment node, which
@@ -2705,6 +2711,7 @@ public class CFGBuilder {
                 TypeCastTree castTree = treeBuilder.buildTypeCast(leftType, operTree);
                 handleArtificialTree(castTree);
                 TypeCastNode castNode = new TypeCastNode(castTree, operNode, leftType);
+                castNode.setInSource(false);
                 extendWithNode(castNode);
 
                 AssignmentNode assignNode = new AssignmentNode(tree, targetLHS, castNode);
@@ -2753,6 +2760,7 @@ public class CFGBuilder {
                 TypeCastTree castTree = treeBuilder.buildTypeCast(leftType, operTree);
                 handleArtificialTree(castTree);
                 TypeCastNode castNode = new TypeCastNode(castTree, operNode, leftType);
+                castNode.setInSource(false);
                 extendWithNode(castNode);
 
                 AssignmentNode assignNode = new AssignmentNode(tree, targetLHS, castNode);
@@ -3972,6 +3980,7 @@ public class CFGBuilder {
 
                 Node exprRHS = binaryNumericPromotion(expr, promotedType);
                 Node one = new IntegerLiteralNode(oneTree);
+                one.setInSource(false);
                 extendWithNode(one);
                 one = binaryNumericPromotion(one, promotedType);
                 
@@ -4011,6 +4020,7 @@ public class CFGBuilder {
 
                 Node exprRHS = binaryNumericPromotion(expr, promotedType);
                 Node one = new IntegerLiteralNode(oneTree);
+                one.setInSource(false);
                 extendWithNode(one);
                 one = binaryNumericPromotion(one, promotedType);
                 
