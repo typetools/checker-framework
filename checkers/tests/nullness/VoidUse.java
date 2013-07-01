@@ -43,9 +43,4 @@ public class VoidUse {
     }
   }
 
-  // Test case for issue #230
-  Class<?> voidClass() {
-    return void.class;
-  }
-
 }
