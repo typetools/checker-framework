@@ -67,43 +67,6 @@ any \code{String} literal that is a valid regex. The Regex checker allows
 the \code{null} literal to be assigned to any type qualified with the
 \code{Regex} qualifier.
 
-In rare cases, you will need to override the implicit qualifiers, most
-notably because of type inference for type parameters.  For
-example, the following code does not type-check
-
-\begin{Verbatim}
-    List<String> list1 = Arrays.asList("a", "b", "c");
-\end{Verbatim}
-
-\noindent
-because of invariant subtyping for type parameters, which is the same reason that
-
-\begin{Verbatim}
-    List<Object> objlist = Arrays.asList(2.718, 3.14);
-\end{Verbatim}
-
-\noindent
-does not type-check in ordinary Java.
-
-Depending on your intention, you should rewrite your code in one of the
-following ways (alternately, you can just suppress the warning):
-
-\begin{Verbatim}
-    List<@Regex String> list2 = Arrays.asList("a", "b", "c");
-
-    List<String> list3 = Arrays.<String>asList("a", "b", "c");
-
-    List<? extends String> list4 = Arrays.asList("a", "b", "c");
-\end{Verbatim}
-
-\noindent
-For the latter two variants, you might want to add a comment explaining
-that you used \code{<String>asList()} instead of just \code{aslist()}, or
-\code{List<?\ extends String>} instead of just \code{List<String>}, because
-of invariant subtyping for type parameters and \<@Regex> type inference.
-That will keep some other developer from undoing your change because it
-looks silly.
-
 
 \subsection{Capturing groups\label{regex-capturing-groups}}
 

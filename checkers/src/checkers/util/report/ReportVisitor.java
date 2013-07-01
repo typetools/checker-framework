@@ -10,17 +10,19 @@ import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 
+import javacutils.ElementUtils;
+import javacutils.TreeUtils;
+
 import checkers.basetype.BaseTypeVisitor;
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.util.AnnotatedTypes;
-import checkers.util.ElementUtils;
-import checkers.util.TreeUtils;
 import checkers.util.report.quals.*;
 
 import com.sun.source.tree.*;
 
-public class ReportVisitor extends BaseTypeVisitor<ReportChecker> {
+public class ReportVisitor extends BaseTypeVisitor<ReportChecker, BasicAnnotatedTypeFactory<ReportChecker>> {
 
     /**
      * The tree kinds that should be reported.
