@@ -2,11 +2,11 @@ import checkers.nullness.quals.*;
 
 class FlowSelf {
 
-    void test() {
+    void test(@Nullable String s) {
 
-        String s = "foo";
         if (s == null)
             return;
+        //:: warning: (known.nonnull)
         assert s != null;
 
         s = s.substring(1);

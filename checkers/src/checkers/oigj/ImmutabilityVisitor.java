@@ -7,14 +7,15 @@ import javax.lang.model.element.Element;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
 
+import javacutils.InternalUtils;
+import javacutils.TreeUtils;
+
 import checkers.basetype.BaseTypeVisitor;
 import checkers.oigj.quals.Assignable;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import checkers.util.InternalUtils;
-import checkers.util.TreeUtils;
 
-public class ImmutabilityVisitor extends BaseTypeVisitor<ImmutabilitySubchecker> {
+public class ImmutabilityVisitor extends BaseTypeVisitor<ImmutabilitySubchecker, ImmutabilityAnnotatedTypeFactory> {
 
     public ImmutabilityVisitor(ImmutabilitySubchecker checker, CompilationUnitTree root) {
         super(checker, root);

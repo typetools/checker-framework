@@ -9,16 +9,16 @@ import checkers.quals.*;
  * Template annotation over IGJ Immutability annotations. It acts
  * somewhat similar to Type Variables in Generics. The annotation
  * value is used to distinguish between multiple instances of
- * {@code @I}.<br />
+ * {@code @I}.<p>
  *
- * <b>Usage On classes</b><br />
+ * <b>Usage On classes</b><p>
  * A class annotated with {@code I} could be declared with any IGJ
  * Immutability annotation. The actual immutability that {@code @I} is
  * resolved dectates the immutability type for all the non-static
  * appearances of {@code @I} with the same value as the class
- * declaration.<br />
+ * declaration.<p>
  *
- * Example: <br />
+ * Example:
  *
  * <pre>
  *     &#064;I
@@ -42,12 +42,12 @@ import checkers.quals.*;
  * In the last example, {@code @I} was resolved to {@code @Mutable} for
  * the instance file.
  *
- * <b>Usage On Methods</b><br />
+ * <b>Usage On Methods</b><p>
  * For example, it could be used for method parameters, return values,
  * and the actual IGJ immutability value would be resolved based on
- * the method invocation.<br />
+ * the method invocation.<p>
  *
- * Example: <br />
+ * Example:
  * <pre>
  *      static &#064;I Point getMidPoint(@I Point p1, @I Point p2)
  *          { ...}
