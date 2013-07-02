@@ -31,8 +31,8 @@
         <fail unless="release.ver" message="release.ver property is not set!"/>
 
         <property name="jsr308WebPage"   value="${langtools}/doc/jsr308-webpage.html" />
-        <property name="jsr308Readme"    value="${langtools}/doc/README-jsr308.html"   />
-        <property name="langtools.make"  value="${langtools}/make"                        />
+        <property name="jsr308Readme"    value="${langtools}/doc/README-jsr308.html"  />
+        <property name="langtools.make"  value="${langtools}/make"                    />
 
         <update file="${jsr308WebPage}"
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
@@ -143,6 +143,7 @@
         <fail unless="dest.dir"    message="dest.dir property is not set!"  />
         <fail unless="file.name"   message="file.name property is not set!" />
 
+        <!-- Todo: Make this use the version number for the unzipped checker-framework dir -->
         <chmod file="${checkers}/binary/javac" perm="+x"/>
         <zip destfile="${dest.dir}/${file.name}">
             <zipfileset dir="${checkers}" prefix="checker-framework/checkers"
@@ -152,6 +153,16 @@
                         includes="**/javac" filemode="755"/>
         </zip>
 
+    </target>
+
+    <target name="zip-maven-examples" description="Create a zip archive for the directory maven-plugin/mvn-examples.">
+        <fail unless="checkers"    message="checkers property is not set!" />
+        <fail unless="dest.dir"    message="dest.dir property is not set!"  />
+        <fail unless="file.name"   message="file.name property is not set!" />
+
+        <zip destfile="${dest.dir}/${file.name}">
+            <zipfileset dir="${checkers}/../maven-plugin/mvn-examples" filemode="755"/>
+        </zip>
     </target>
 
     <target name="langtools-website-docs" description="Copies the relevant JSR308 Langtools files to the given directory">
