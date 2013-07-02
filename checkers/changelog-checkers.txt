@@ -1508,7 +1508,7 @@ Checkers Framework API
 
 Interned Checker
   Fixed some failing test cases
-  Fixed a bug related to auto-boxing/unboxing
+  Fixed a bug related to autoboxing/unboxing
   Added experimental flow-sensitive qualifier inference (use
     "-Alint=flow" to enable)
   Improved subtype testing, removing some spurious errors

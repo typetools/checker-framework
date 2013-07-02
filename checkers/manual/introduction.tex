@@ -11,7 +11,7 @@ The Checker Framework comes with checkers for specific types of errors:
 \begin{enumerate}
 
 \item
-  \ahrefloc{nullness-checker}{Nullness checker} for null pointer errors
+  \ahrefloc{nullness-checker}{Nullness Checker} for null pointer errors
   (see \chapterpageref{nullness-checker})
 \item
   \ahrefloc{interning-checker}{Interning checker} for errors in equality
@@ -328,7 +328,7 @@ public class GetStarted {
 \end{Verbatim}
 
 \item
-  Run the nullness checker on the class.
+  Run the Nullness Checker on the class.
   Either run this command:
 \begin{Verbatim}
   javac -processor checkers.nullness.NullnessChecker GetStarted.java
@@ -347,7 +347,7 @@ Checker Framework compiler and to pass the extra arguments.
 \end{Verbatim}
 
 \item
-  Run the nullness checker again, just as before.  This run should emit
+  Run the Nullness Checker again, just as before.  This run should emit
   the following error:
 \begin{Verbatim}
 GetStarted.java:5: incompatible types.
@@ -513,7 +513,7 @@ tIDE (Section~\ref{tide}), and about customizing other IDEs and build tools.)
 Remember that you must be using the
 Type Annotations version of \<javac>, which you already installed (see Section~\ref{installation}).
 
-Two concrete examples (using the Nullness checker) are:
+Two concrete examples (using the Nullness Checker) are:
 
 %BEGIN LATEX
 \begin{smaller}
@@ -555,9 +555,9 @@ checkers support the following command-line options:
 
 \begin{itemize}
 \item \<-AskipUses> Suppress all errors and warnings at all uses of a
-  given class; see Section~\ref{suppressing-warnings}
+  given class; see Section~\ref{askipuses}
 \item \<-AskipDefs> Suppress all errors and warnings within the definition of a
-  given class; see Section~\ref{suppressing-warnings}
+  given class; see Section~\ref{askipdefs}
 \item \<-Astubs> List of stub files or directories; see Section~\ref{stub-using}
 \item \<-AstubWarnIfNotFound> Warn if a stub file entry could not be found; see Section~\ref{stub-using}
 \item \<-AstubDebug> Output debug messages while parsing stub files; see Section~\ref{stub-using}
@@ -565,7 +565,9 @@ checkers support the following command-line options:
 \item \<-Awarns> Treat checker errors as warnings.  If you use this, you
   may wish to also supply \code{-Xmaxwarns 10000}, because by default
   \<javac> prints at most 100 warnings.
-\item \<-Afilenames>, \<-Anomsgtext>, <\-Adetailedmsgtext>, \<-Ashowchecks>, \<-AprintErrorStack>,
+\item \<-AsuppressWarnings> Suppress all warnings matching the given key; see
+  Section~\ref{suppresswarnings-command-line}
+\item \<-Afilenames>, \<-Anomsgtext>, \<-Adetailedmsgtext>, \<-Ashowchecks>, \<-AprintErrorStack>,
   \<-AprintAllQualifiers>, \<-Aignorejdkastub>
   Aids for testing or debugging a checker; see Section~\ref{debugging-options}
 \item \<-AresourceStats> Display resource usage statistics at the end of compilation
@@ -646,7 +648,7 @@ annotation processing including all pluggable type-checking.
 \section{What the checker guarantees\label{checker-guarantees}}
 
 A checker can guarantee that a particular property holds throughout the
-code.  For example, the Nullness checker (Chapter~\ref{nullness-checker})
+code.  For example, the Nullness Checker (Chapter~\ref{nullness-checker})
 guarantees that every expression whose type is a \code{@\refclass{nullness/quals}{NonNull}} type never
 evaluates to null.  The Interning checker (Chapter~\ref{interning-checker})
 guarantees that every expression whose type is an \code{@\refclass{interning/quals}{Interned}} type
@@ -1013,7 +1015,7 @@ could otherwise be statically dispatched.
 When you first run a type-checker on your code, it is likely to issue
 warnings or errors.  For each warning, try to understand why the checker
 issues it.  (For example, if you are using the
-\ahrefloc{nullness-checker}{Nullness checker}
+\ahrefloc{nullness-checker}{Nullness Checker}
 (\chapterpageref{nullness-checker}), try to understand why it cannot prove
 that no null pointer exception ever occurs.)  The reason will sometimes be
 an actually possible null dereference, sometimes be a weakness of the

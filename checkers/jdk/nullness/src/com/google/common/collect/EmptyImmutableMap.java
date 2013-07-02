@@ -39,19 +39,19 @@ final class EmptyImmutableMap extends ImmutableMap<Object, Object> {
     return null;
   }
 
-  public int size() {
+  @Pure public int size() {
     return 0;
   }
 
-  @Override public boolean isEmpty() {
+  @Pure @Override public boolean isEmpty() {
     return true;
   }
 
-  @Override public boolean containsKey(/*@Nullable*/ Object key) {
+  @Pure @Override public boolean containsKey(/*@Nullable*/ Object key) {
     return false;
   }
 
-  @Override public boolean containsValue(/*@Nullable*/ Object value) {
+  @Pure @Override public boolean containsValue(/*@Nullable*/ Object value) {
     return false;
   }
 
@@ -67,7 +67,7 @@ final class EmptyImmutableMap extends ImmutableMap<Object, Object> {
     return ImmutableCollection.EMPTY_IMMUTABLE_COLLECTION;
   }
 
-  @Override public boolean equals(@Nullable Object object) {
+  @Pure @Override public boolean equals(@Nullable Object object) {
     if (object instanceof Map) {
       Map<?, ?> that = (Map<?, ?>) object;
       return that.isEmpty();
@@ -75,11 +75,11 @@ final class EmptyImmutableMap extends ImmutableMap<Object, Object> {
     return false;
   }
 
-  @Override public int hashCode() {
+  @Pure @Override public int hashCode() {
     return 0;
   }
 
-  @Override public String toString() {
+  @Pure @Override public String toString() {
     return "{}";
   }
 

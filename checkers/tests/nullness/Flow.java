@@ -6,6 +6,7 @@ public class Flow {
 
         String str = "foo";
         @NonNull String a;
+        //:: warning: (known.nonnull)
         if (str != null) {
             a = str;
         }
@@ -19,6 +20,7 @@ public class Flow {
 
         String str = "foo";
         @NonNull String a;
+        //:: warning: (known.nonnull)
         if (str != null)
             a = str;
 
@@ -31,6 +33,7 @@ public class Flow {
 
         String str = "foo";
         @NonNull String a;
+        //:: warning: (known.nonnull)
         if (str == null) {
             testAssert();
         } else {
@@ -46,6 +49,7 @@ public class Flow {
 
         String str = "foo";
         @NonNull String a;
+        //:: warning: (known.nonnull)
         if (str == null)
             testAssert();
         else
@@ -59,6 +63,7 @@ public class Flow {
     public void testReturnIf() {
 
         String str = "foo";
+        //:: warning: (known.nonnull)
         if (str == null) {
             testAssert();
             return;
@@ -74,6 +79,7 @@ public class Flow {
     public void testReturnElse() {
 
         String str = "foo";
+        //:: warning: (known.nonnull)
         if (str != null) {
             testAssert();
         } else
@@ -89,6 +95,7 @@ public class Flow {
     public void testThrowIf() {
 
         String str = "foo";
+        //:: warning: (known.nonnull)
         if (str == null) {
             testAssert();
             throw new RuntimeException("foo");
@@ -104,6 +111,7 @@ public class Flow {
     public void testThrowElse() {
 
         String str = "foo";
+        //:: warning: (known.nonnull)
         if (str != null) {
             testAssert();
         } else
@@ -119,6 +127,7 @@ public class Flow {
     public void testAssert() {
 
         String str = "foo";
+        //:: warning: (known.nonnull)
         assert str != null;
 
         @NonNull String a = str;
@@ -131,6 +140,7 @@ public class Flow {
     public void testWhile() {
 
         String str = "foo";
+        //:: warning: (known.nonnull)
         while (str != null) {
             @NonNull String a = str;
             break;
@@ -170,6 +180,7 @@ public class Flow {
     public void testExit() {
 
         String str = "foo";
+        //:: warning: (known.nonnull)
         if (str == null) {
             System.exit(0);
         }
@@ -300,10 +311,11 @@ public class Flow {
         }
     }
 
-    private double @LazyNonNull [] intersect = null;
+    private double @MonotonicNonNull [] intersect;// = null; TODO: do we want to allow assignments of null to MonotonicNonNull?
 
     public void add_modified(double[] a, int count) {
         // System.out.println ("common: " + ArraysMDE.toString (a));
+        //:: warning: (known.nonnull)
         if (a == null) {
             return;
         } else if (intersect==null) {

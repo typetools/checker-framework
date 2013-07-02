@@ -10,5 +10,5 @@ import checkers.quals.Unqualified;
  * to the user.
  */
 @TypeQualifiers( {Localized.class, Unqualified.class} )
-public class I18nSubchecker extends BaseTypeChecker {
+public class I18nSubchecker extends BaseTypeChecker<I18nAnnotatedTypeFactory> {
 }
