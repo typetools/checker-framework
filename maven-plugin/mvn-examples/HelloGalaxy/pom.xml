@@ -25,7 +25,7 @@
     <dependency>
       <groupId>types.checkers</groupId>
       <artifactId>checkers-quals</artifactId>
-      <version>1.6.3</version>
+      <version>1.6.4</version>
     </dependency>
 
     <dependency>
@@ -62,7 +62,7 @@
       <plugin>
         <groupId>types.checkers</groupId>
         <artifactId>checkers-maven-plugin</artifactId>
-        <version>1.6.3</version>
+        <version>1.6.4</version>
         <executions>
            <execution>
              <!-- run the checkers after compilation; this can also be any later phase -->
@@ -79,7 +79,7 @@
               <processor>checkers.nullness.NullnessChecker</processor>
           </processors>
 
-            <checkersVersion>1.6.3</checkersVersion>
+            <checkersVersion>1.6.4</checkersVersion>
 
           <!-- setting procOnly to false will result in actual generation of class files -->
           <procOnly>false</procOnly>
