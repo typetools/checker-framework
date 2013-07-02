@@ -31,22 +31,20 @@ import checkers.tainting.quals.Untainted;
  *
  * When a user selects a month, they will get all the posts for the month.
  */
-
-
 public class PersonalBlogService {
-    //Installation State
+    // Installation State
     public static final String INSTALLATION_STATE = "installation_state";
     public static final String STATE_UNDEFINED = "undefined";
     public static final String STATE_NO_HIBERNATE_FILE = "no_hibernate_file";
-	public static final String STATE_DATABASE_OFF= "database_off";
+    public static final String STATE_DATABASE_OFF= "database_off";
     public static final String STATE_HIBERNATE_FILE_INVALID = "hibernate_file_invalid";
     public static final String STATE_TABLES_NOT_CREATED = "tables_not_created_yet";
     public static final String STATE_MISSING_PROPERTIES = "missing_properties";
-	public static final String STATE_OK = "ok";
+    public static final String STATE_OK = "ok";
     private static Log log = LogFactory.getLog(PersonalBlogService.class);
     private static PersonalBlogService service = null;
 
-    //Property Name Constants
+    // Property Name Constants
     public static final String WEBLOG_TITLE = "weblog.title";
     public static final String WEBLOG_DESCRIPTION = "weblog.description";
     public static final String WEBLOG_PICTURE = "weblog.ownerpicture";
@@ -62,11 +60,11 @@ public class PersonalBlogService {
     public static final String EDITOR = "weblog.editor";
     public static final String EMAIL_HOST = "mail.smtp.host";
     public static final String EMAIL_TRANSPORT = "mail.transport";
-	public static final String EMAIL_USERNAME = "mail.username";
-	public static final String EMAIL_PASSWORD = "mail.password";
-	public static final String CATEGORY_TITLES = "category.titles";
-	public static final String CATEGORY_VALUES = "category.values";
-	public static final String CATEGORY_IMAGES = "category.images";
+    public static final String EMAIL_USERNAME = "mail.username";
+    public static final String EMAIL_PASSWORD = "mail.password";
+    public static final String CATEGORY_TITLES = "category.titles";
+    public static final String CATEGORY_VALUES = "category.values";
+    public static final String CATEGORY_IMAGES = "category.images";
     Configuration cfg;
     SessionFactory sf;
 
@@ -154,12 +152,12 @@ public class PersonalBlogService {
     public List<?> getPosts() throws ServiceException {
         List<?> posts = null;
 
-		Calendar cal = Calendar.getInstance();
-		cal.add(Calendar.MONTH, -1);
-		/*@SuppressWarnings("untainted")*/
-		String startdate = (/*@Untainted*/ String)qf.format(cal.getTime());
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.MONTH, -1);
+        /*@SuppressWarnings("untainted")*/
+        String startdate = (/*@Untainted*/ String) qf.format(cal.getTime());
 
-		posts = executeQuery(constructQuery(
+        posts = executeQuery(constructQuery(
                     "from post in class net.eyde.personalblog.beans.Post ",
                     "where post.created > '", startdate,
                     "' order by post.created desc"));
@@ -180,30 +178,30 @@ public class PersonalBlogService {
 
     /**
      * Constructs an untainted query from untainted strings.
-     * It is a simple concatination operation.
+     * It is a simple concatenation operation.
      *
      * This method is helpful only when using the Basic Checker,
-     * which cannot detect the type of string concatination, unlike
+     * which cannot detect the type of string concatenation, unlike
      * the Tainting checker.
      */
     @SuppressWarnings("untainted")
     private @Untainted String constructQuery(@Untainted String ...strings) {
-    	StringBuilder sb = new StringBuilder();
-    	for (String s : strings)
-    		sb.append(s);
-    	return (/*@Untainted*/ String)sb.toString();
+        StringBuilder sb = new StringBuilder();
+        for (String s : strings)
+            sb.append(s);
+        return (/*@Untainted*/ String) sb.toString();
     }
 
     @SuppressWarnings({"unchecked"})
     private <T> List<T> executeQuery(@Untainted String query) {
-    	try {
-        	Session session = sf.openSession();
-        	List<T> lst = (List<T>) session.find(query);
-    		session.close();
-    		return lst;
-    	} catch (Exception e) {
-    		log.error("Error while importing data", e);
-    		return null;
-    	}
+        try {
+            Session session = sf.openSession();
+            List<T> lst = (List<T>) session.find(query);
+            session.close();
+            return lst;
+        } catch (Exception e) {
+            log.error("Error while importing data", e);
+            return null;
+        }
     }
 }
