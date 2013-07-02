@@ -1,0 +1,136 @@
+Notes for the NonNull demos.
+
+
+1. nonnull
+[Not in the Emacs bookmarks.]
+
+Open checkers/src/checkers/nonnull/NonNullAnnotatedTypeFactory.java:201.
+
+Note that the default is @NonNull -- all unannotated types are @NonNull types,
+and this default is overridden via the @Nullable annotation.
+
+(The method we're looking at is part of the NonNull typechecker itself. It's
+responsible for putting an implicit @NonNull on enum constants.)
+
+Run the checker and see that the checker issues one error on the assignment of
+a @Nullable Element to a @NonNull (by default) Element; the symbol() method,
+contrary to the programmer's understanding, returns a @Nullable Element.
+
+Add a @Nullable to the declaration of elt on 201, and re-run the checker. Now,
+the checker issues one error, since we're dereferencing "elt", which is
+@Nullable. We can fix it by adding an (elt != null) if in the if condition,
+and re-run the checker to ensure that there are no more nullness errors.
+
+2. framework
+
+(I realize that this one isn't really that different from the previous example,
+so it can be omitted for a shorter demo.
+However, I don't think many people at the MIT JUG thought that the second
+example was basically the same as the first.  At least a couple of audience
+members at the MIT JUG demo were somewhat confused and/or unconvinced after
+the first example. It seemed to me that after that first example, some
+people thought it was simpler, like a heuristics-based tool, and not a full
+type-checker, but after the second example, more of them "got it".)
+
+* Open checkers/src/checkers/types/InternalAnnotationScanner.java:205.
+  This is the code for visitNewArray.
+
+* Run the checker.  There is an error in visitNewArray:
+   * "method" is nullable because enclosingSymbol() might return null
+     (contrary to the programmer's expectations again).
+   * "method" is passed to annotationsFromElement which expects a non-null value.
+
+  The main idea for this example is that we're verifying against a method
+  specification, versus simply finding null dereferences.
+
+* Fix the error by adding:
+
+       if (method == null)
+            return InternalAnnotationGroup.EMPTY;
+
+* Re-run the checker; you should no longer see any errors.            
+
+
+NOTE:  Sometimes you may see another, spurious error:
+
+annotations/demos/nonnull-interned-demo/checkers/src/checkers/types/InternalAnnotationScanner.java:20: invalid type argument;
+class InternalAnnotationScanner extends SimpleTreeVisitor<InternalAnnotationGroup, Void> {
+                                                                                   ^
+  found   : @Nullable Void
+  required: @NonNull Object
+
+To fix it, do
+  touch $t/checker-framework/demos/nonnull-interned-demo/checkers/src/com/sun/source/util/SimpleTreeVisitor.java
+and the error will go away and will not recur.  (This is weird behavior
+that suggests there is a bug somewhere.)
+
+
+3. lookup
+[Not in the Emacs bookmarks.]
+
+* Open lookup/src/utilMDE/UtilMDE.java:563.
+  We have the "deleteDir" method, which takes a directory (as a java.io.File) and
+  deletes all of the files it contains and then the directory itself.
+
+* You could ask the audience to identify the error in the code.
+
+* Run the checker to show the error:  dir.listFiles returns a possibly-null
+  array of non-null Files.  Pull up the Javadoc for listFiles here if
+  possible to see that it returns null, not an empty array, if the file is
+  not a directory.  Here, the programmer probably thought that the method
+  would return an empty array.
+
+* Fix the problem by adding a null check:
+
+    if (files == null)
+      throw new IllegalArgumentException(dir + " is not a directory");
+
+  This appears at the end of the file if you want to cut and paste; but it
+  doesn't appear commented out inline because that gives away the error to
+  the audience.
+
+* You can also change
+    File[] files
+  to 
+    File @Nullable [] files
+  but note that the proper types are inferred by the checker.  This reduces
+  clutter.
+
+* Re-run the checker to verify that there are no errors.
+
+4. junit
+
+Open file JUnitTests.java.  Ask the audience what happens when you run the
+code:  does the test pass or does it fail?
+
+Now run the "test" task of build.xml.
+JUnit itself throws a null pointer exception!
+
+
+Open junit/src/org/junit/Assert.java
+
+Note that @Nullable is the default in this file.  Or don't mention it
+explicitly and discuss it only if it comes up in the course of a question?
+[Discussing defaults during the demo may be confusing and distracting.
+Would it be possible to not override the defaults during the demo?
+A problem might be that that increases clutter. -MDE]
+
+These were all real problems in a previous version of JUnit (4.3, I think).
+(They have since been corrected.)
+
+Run the checker.  There are three errors
+ - at line 105 - expected parameter might be null
+    Fix: add @NonNull to 'Object expected'
+
+ - at line 152 - o1 and o2 might be null
+    assertEquals checks the nullness of array parameters but not the array
+    elements
+    Fix: uncomment the commened code which checks for o1 and o2 nullness
+
+ - at line 359,362 - expected and actual parameters might be null
+    format() tries to output a meaningful message if both parameters have
+    the same toString() representation but are of different classes.
+    Fix: replace .getClass().getName() lines with the commented lines
+
+
+Verify the correctness of the fixes by re-running the 'test' task of build.xml.
