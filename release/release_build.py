@@ -154,6 +154,10 @@ def build_checker_framework_release(version, checker_framework_interm_dir, jsr30
     ant_cmd   = "ant -f release.xml %s zip-checker-framework " % ant_props
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
+    ant_props = "-Dcheckers=%s -Ddest.dir=%s -Dfile.name=%s" % (checkers_dir, checker_framework_interm_dir, "mvn-examples.zip")
+    ant_cmd   = "ant -f release.xml %s zip-maven-examples " % ant_props
+    execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
+
     #copy the remaining checker-framework website files to release_interm_dir
     ant_props = "-Dcheckers=%s -Ddest.dir=%s -Dmanual.name=%s -Dcheckers.webpage=%s" % (
                  checkers_dir, checker_framework_interm_dir, "checkers-manual", "checkers-webpage.html"
@@ -202,6 +206,9 @@ def main(argv):
 
     ensure_group_access(checker_framework_interm_dir)
     ensure_group_access(jsr308_interm_dir)
+
+    print("Please remember to go through the Checker Framework and Annotation Tools issue trackers and change any " +
+          "issues that are marked 'pushed' to 'fixed'")
 
 if __name__ == "__main__":
     sys.exit(main(sys.argv))
