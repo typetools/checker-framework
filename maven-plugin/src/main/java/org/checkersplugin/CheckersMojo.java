@@ -220,14 +220,16 @@ public class CheckersMojo extends AbstractMojo {
         }
 
         log.info("Running JSR308 checkers version: " + checkersVersion);
-        
-        if (processors.size() == 0) {
-            throw new MojoExecutionException("At least one checker must be specified!");
+
+
+        final String processor = ( processors.size() > 0 ) ? StringUtils.join(processors.iterator(), ",") : null;
+
+
+        if ( processors.size() == 0 ) {
+            log.warn("No checkers have been specified.");
+        } else {
+            log.info("Running processor(s): " + processor);
         }
-
-        final String processor = StringUtils.join(processors.iterator(), ",");
-
-        log.info("Running processor(s): " + processor);
 
         final List<String> sources = PathUtils.scanForSources(compileSourceRoots, includes, excludes);
 
