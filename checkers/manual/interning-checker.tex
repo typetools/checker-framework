@@ -221,7 +221,7 @@ subclasses and superclasses of the given class.
 
 The Interning Checker conservatively assumes that the \<Character>, \<Integer>,
 and \<Short> \<valueOf> methods return a non-interned value.  In fact, these
-methods sometimse return an interned value and sometimes a non-interned
+methods sometimes return an interned value and sometimes a non-interned
 value, depending on the run-time argument (\ahref{\jlsboxingurl}{JLS
 \S5.1.7}).  If you know that the run-time argument to \<valueOf> implies that
 the result is interned, then you will need to suppress an error.  (An
