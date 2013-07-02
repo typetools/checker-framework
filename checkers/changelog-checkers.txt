@@ -1,3 +1,20 @@
+Version 1.6.5, 01 July 2013
+
+User-visible framework improvements:
+  Stub files now support static imports.
+
+Maven plugin:
+  Maven plugin will now issue a warning rather than quit when zero checkers are specified in a project's pom.xml.
+
+Documentation:
+  Improved the Maven plugin instructions in the Checker Framework manual.
+  Added documentation for the -XDTA:noannotationsincomments compiler flag.
+
+Internal framework improvements:
+  Improved Maven-plugin developer documentation.
+
+----------------------------------------------------------------------
+
 Version 1.6.4, 01 June 2013
 
 User-visible framework improvements:
