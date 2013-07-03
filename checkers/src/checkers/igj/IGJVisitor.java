@@ -8,15 +8,16 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
 
+import javacutils.ElementUtils;
+import javacutils.InternalUtils;
+import javacutils.TreeUtils;
+
 import checkers.basetype.BaseTypeVisitor;
 import checkers.igj.quals.Assignable;
 import checkers.igj.quals.AssignsFields;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
-import checkers.util.ElementUtils;
-import checkers.util.InternalUtils;
-import checkers.util.TreeUtils;
 
 /**
  * A type-checking visitor for the IGJ type
@@ -29,7 +30,7 @@ import checkers.util.TreeUtils;
  *
  * @see BaseTypeVisitor
  */
-public class IGJVisitor extends BaseTypeVisitor<IGJChecker> {
+public class IGJVisitor extends BaseTypeVisitor<IGJChecker, IGJAnnotatedTypeFactory> {
 
     public IGJVisitor(IGJChecker checker, CompilationUnitTree root) {
         super(checker, root);

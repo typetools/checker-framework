@@ -117,7 +117,7 @@ public class CheckersMojo extends AbstractMojo {
       * @readonly
       */
      private String outputDirectory;
-    
+
     /**
      * The source directories containing the sources to be compiled.
      *
@@ -221,9 +221,7 @@ public class CheckersMojo extends AbstractMojo {
 
         log.info("Running Checker Framework version: " + checkerFrameworkVersion);
 
-
         final String processor = ( processors.size() > 0 ) ? StringUtils.join(processors.iterator(), ",") : null;
-
 
         if ( processors.size() == 0 ) {
             log.warn("No checkers have been specified.");
@@ -353,7 +351,7 @@ public class CheckersMojo extends AbstractMojo {
         // Sanity check - if the exit code is non-zero, there should be some messages
         if (exitCode != 0 && messages.isEmpty()) {
             throw new MojoExecutionException("Exit code from the compiler was not zero (" + exitCode +
-                    "), but no messages reported. Error stream content: " + err.getOutput() + 
+                    "), but no messages reported. Error stream content: " + err.getOutput() +
                     " command line: " + Arrays.toString(cl.getCommandline()));
         }
 

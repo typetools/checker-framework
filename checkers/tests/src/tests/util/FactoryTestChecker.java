@@ -21,9 +21,10 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
 import com.sun.tools.javac.tree.JCTree;
 
+import javacutils.TreeUtils;
+
 import checkers.source.*;
 import checkers.types.AnnotatedTypeFactory;
-import checkers.util.TreeUtils;
 
 /**
  * A specialized checker for testing purposes.  It compares an expression's
@@ -75,8 +76,8 @@ import checkers.util.TreeUtils;
  */
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 @SupportedOptions( { "checker" } )
-public class FactoryTestChecker extends SourceChecker {
-    SourceChecker checker;
+public class FactoryTestChecker extends SourceChecker<AnnotatedTypeFactory> {
+    SourceChecker<?> checker;
 
     @Override
     public void initChecker() {
@@ -89,8 +90,9 @@ public class FactoryTestChecker extends SourceChecker {
                 Class<?> checkerClass = Class.forName(checkerClassName);
                 Constructor<?> constructor = checkerClass.getConstructor();
                 Object o = constructor.newInstance();
-                if (o instanceof SourceChecker)
-                    checker = (SourceChecker)o;
+                if (o instanceof SourceChecker) {
+                    checker = (SourceChecker<?>) o;
+                }
             }
         } catch (Exception e) {
             errorAbort("Couldn't load " + checkerClassName + " class.");
@@ -116,7 +118,7 @@ public class FactoryTestChecker extends SourceChecker {
     }
 
     @Override
-    protected SourceVisitor<Void, Void> createSourceVisitor(CompilationUnitTree root) {
+    protected SourceVisitor<FactoryTestChecker, AnnotatedTypeFactory, Void, Void> createSourceVisitor(CompilationUnitTree root) {
         return new ToStringVisitor(this, root);
     }
 
@@ -246,14 +248,13 @@ public class FactoryTestChecker extends SourceChecker {
      * A specialized visitor that compares the actual and expected types
      * for the specified trees and report an error if they differ
      */
-    private class ToStringVisitor extends SourceVisitor<Void, Void> {
+    private class ToStringVisitor extends SourceVisitor<FactoryTestChecker, AnnotatedTypeFactory, Void, Void> {
         Map<TreeSpec, String> expected;
 
-        public ToStringVisitor(SourceChecker checker, CompilationUnitTree root) {
+        public ToStringVisitor(FactoryTestChecker checker, CompilationUnitTree root) {
             super(checker, root);
             this.expected = buildExpected(root);
         }
-
 
         @Override
         public Void scan(Tree tree, Void p) {

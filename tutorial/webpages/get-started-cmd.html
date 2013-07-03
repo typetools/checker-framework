@@ -97,11 +97,11 @@ public class NullnessExample {
 						manual</a> for an explanation.
 				</p>
 
-				<pre> 
+				<pre>
 javacheck -processor checkers.nullness.NullnessChecker NullnessExample.java
 </pre>
 
-				<p>The following error with be produced.</p>
+				<p>The following error will be produced.</p>
 
 				<pre>
 NullnessExample.java:4: error: dereference of possibly-null reference myObject
@@ -113,7 +113,7 @@ NullnessExample.java:4: error: dereference of possibly-null reference myObject
 				<h4>3. Correct the error</h4>
 
 				<p>
-					<b>Change <code>ref</code></b> to some non-null value
+					<b>Change <code>myObject</code></b> to some non-null value
 				</p>
 
 				<pre>
@@ -131,8 +131,8 @@ public class NullnessExample {
 
 				<p>No errors should be produced.</p>
 
-				<pre> 
- javacheck -processor checkers.nullness.NullnessChecker NullnessExample.java
+				<pre>
+javacheck -processor checkers.nullness.NullnessChecker NullnessExample.java
 </pre>
 			</section>
 

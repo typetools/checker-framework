@@ -19,9 +19,9 @@ import checkers.source.SourceChecker;
 public class OIGJChecker extends AggregateChecker {
 
     @Override
-    protected Collection<Class<? extends SourceChecker>> getSupportedCheckers() {
-        Collection<Class<? extends SourceChecker>> checkers
-            = new ArrayList<Class<? extends SourceChecker>>();
+    protected Collection<Class<? extends SourceChecker<?>>> getSupportedCheckers() {
+        Collection<Class<? extends SourceChecker<?>>> checkers
+            = new ArrayList<Class<? extends SourceChecker<?>>>();
         checkers.add(ImmutabilitySubchecker.class);
         checkers.add(OwnershipSubchecker.class);
         return checkers;

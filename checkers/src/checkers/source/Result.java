@@ -93,7 +93,7 @@ public final class Result {
      *            the result to merge with this result
      * @return a result that is the success result if both this and
      *         {@code r} are success results, or a result that has the
-     *         more significant type (failure > warning > success) and
+     *         more significant type (failure &gt; warning &gt; success) and
      *         the message keys of both this result and {@code r}
      */
     public Result merge(Result r) {
