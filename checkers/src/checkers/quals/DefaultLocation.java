@@ -22,7 +22,7 @@ public enum DefaultLocation {
     RECEIVERS,
     /**
      * Apply default annotations to all unannotated raw types
-     * of parameter types.
+     * of formal parameter types.
      */
     PARAMETERS,
 
@@ -50,7 +50,7 @@ public enum DefaultLocation {
     OTHERWISE,
 
     /**
-     * Apply default annotations to all unannotated types.
+     * Apply default annotations to all type uses other than uses of type parameters.
      * Does not allow any of the other constants. Usually you want OTHERWISE.
      */
     ALL;
