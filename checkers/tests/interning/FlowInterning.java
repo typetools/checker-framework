@@ -16,7 +16,7 @@ public class FlowInterning {
       String arg = "";
       arg += ' ';
 
-      // Interning checker should NOT suggest == here.
+      // Interning Checker should NOT suggest == here.
       if (!arg.equals (""));
     }
 
@@ -48,7 +48,7 @@ public class FlowInterning {
         arg += ch;
       }
     }
-    // Interning checker should NOT suggest == here.
+    // Interning Checker should NOT suggest == here.
     if (!arg.equals (""))
       arg_list.add (arg);
 

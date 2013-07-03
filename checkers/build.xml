@@ -221,7 +221,7 @@ ${build.version} of the 'javac.jar' library."/>
 
     <!-- This creates checkers.jar -->
     <target name="jar" depends="build,checkers-quals-jar"
-            description="Create jar file">
+            description="Create checkers.jar file">
         <delete dir="${build.reports}"/>
         <jar destfile="${checkers.jar.file}" basedir="${build}">
             <manifest>
@@ -233,7 +233,7 @@ ${build.version} of the 'javac.jar' library."/>
     <!-- This creates checkers-quals.jar -->
     <!-- TODO: include jdk dependencies for qualifiers. -->
     <target name="checkers-quals-jar" depends="build"
-            description="Create a jar file for annotations">
+            description="Create checkers-quals.jar file for annotations">
         <jar destfile="${checkers-quals.jar.file}" basedir="${build}">
             <include name="**/quals/*"/>
             <!-- Exclude test-only qualifiers -->
@@ -396,67 +396,67 @@ ${build.version} of the 'javac.jar' library."/>
     </target>
 
     <target name="interning-tests" depends="jar,build-tests"
-      description="Run tests for the Interning checker">
+      description="Run tests for the Interning Checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.InterningTest"/>
         </antcall>
     </target>
 
     <target name="lock-tests" depends="jar,build-tests"
-      description="Run tests for the Lock checker">
+      description="Run tests for the Lock Checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.LockTest"/>
         </antcall>
     </target>
 
     <target name="igj-tests" depends="jar,build-tests"
-      description="Run tests for the IGJ checker">
+      description="Run tests for the IGJ Checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.IGJTest"/>
         </antcall>
     </target>
 
     <target name="oigj-tests" depends="jar,build-tests"
-      description="Run tests for the OIGJ checker">
+      description="Run tests for the OIGJ Checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.OIGJTest"/>
         </antcall>
     </target>
 
     <target name="javari-tests" depends="jar,build-tests"
-      description="Run tests for the Javari checker">
+      description="Run tests for the Javari Checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.JavariTest"/>
         </antcall>
     </target>
 
     <target name="lubglb-tests" depends="jar,build-tests"
-      description="Run tests for the lubglb checker">
+      description="Run tests for the Lubglb Checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.LubGlbTest"/>
         </antcall>
     </target>
 
     <target name="polyall-tests" depends="jar,build-tests"
-      description="Run tests for the polyall checker">
+      description="Run tests for the Polyall Checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.PolyAllTest"/>
         </antcall>
     </target>
 
     <target name="nullness-tests" depends="jar,build-tests,nullness-base-tests,nullness-skipuses-tests,nullness-skipdefs-tests,nullness-uninit-tests,nullness-extra-tests"
-      description="Run tests for the Nullness checker">
+      description="Run tests for the Nullness Checker">
     </target>
 
     <target name="nullness-base-tests" depends="jar,build-tests"
-      description="Run base tests for the Nullness checker">
+      description="Run base tests for the Nullness Checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.NullnessTest"/>
         </antcall>
     </target>
 
     <target name="nullness-uninit-tests" depends="jar,build-tests"
-      description="Run uninit tests for the Nullness checker">
+      description="Run uninit tests for the Nullness Checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.NullnessUninitializedTest"/>
         </antcall>
@@ -465,10 +465,10 @@ ${build.version} of the 'javac.jar' library."/>
     <!-- Differs from other targets in that it is defined via a Makefile and
        is not run via the "-run-tests" Antfile target, as other tests are. -->
     <target name="nullness-extra-tests" depends="bindist,build-tests,nullness-extra-tests-nojdk"
-      description="Run extra tests for the Nullness checker"/>
+      description="Run extra tests for the Nullness Checker"/>
 
     <target name="nullness-extra-tests-nojdk" depends="bindist-nojdk,build-tests"
-      description="Run extra tests for the Nullness checker, WITHOUT updating jdk.jar">
+      description="Run extra tests for the Nullness Checker, WITHOUT updating jdk.jar">
       <exec executable="chmod">
         <arg line="+x ${basedir}/binary/javac"/>
       </exec>
@@ -479,14 +479,14 @@ ${build.version} of the 'javac.jar' library."/>
     </target>
 
     <target name="nullness-skipuses-tests" depends="jar,build-tests"
-      description="Run skipuses tests for the Nullness checker">
+      description="Run skipuses tests for the Nullness Checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.NullnessSkipUsesTest"/>
         </antcall>
     </target>
 
     <target name="nullness-skipdefs-tests" depends="jar,build-tests"
-      description="Run skipdefs tests for the Nullness checker">
+      description="Run skipdefs tests for the Nullness Checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.NullnessSkipDefsTest"/>
         </antcall>
@@ -494,35 +494,35 @@ ${build.version} of the 'javac.jar' library."/>
 
     <!-- Do not include this as a dependence for nullness-tests! -->
     <target name="nullness-temp-tests" depends="jar,build-tests"
-      description="Run temporary tests for the Nullness checker">
+      description="Run temporary tests for the Nullness Checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.NullnessTempTest"/>
         </antcall>
     </target>
 
     <target name="regex-tests" depends="jar,build-tests"
-      description="Run tests for the Signature checker">
+      description="Run tests for the Signature Checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.RegexTest"/>
         </antcall>
     </target>
 
     <target name="signature-tests" depends="jar,build-tests"
-      description="Run tests for the Signature checker">
+      description="Run tests for the Signature Checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.SignatureTest"/>
         </antcall>
     </target>
 
     <target name="tainting-tests" depends="jar,build-tests"
-      description="Run tests for the Tainting checker">
+      description="Run tests for the Tainting Checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.TaintingTest"/>
         </antcall>
     </target>
 
     <target name="units-tests" depends="jar,build-tests"
-      description="Run tests for the Units checker">
+      description="Run tests for the Units Checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.UnitsTest"/>
         </antcall>
@@ -606,7 +606,7 @@ ${build.version} of the 'javac.jar' library."/>
         <property name="jtreg.defined" value="true"/>
     </target>
 
-    <!-- Type Check the Checkers -->
+    <!-- Type-check the checker implementations -->
 
     <!-- depends on jar, needs classfile of the checker itself -->
     <target name="-run-checker" depends="jar"
@@ -637,7 +637,7 @@ ${build.version} of the 'javac.jar' library."/>
     </target>
 
     <target name="check-nullness"
-      description="Run the nullness checker on the Framework">
+      description="Run the Nullness Checker on the Checker Framework source code">
         <antcall target="-run-checker">
             <param name="checker-name" value="checkers.nullness.NullnessChecker"/>
             <param name="checker-jdk" value="jdk/nullness/src"/>
@@ -646,7 +646,7 @@ ${build.version} of the 'javac.jar' library."/>
     </target>
 
     <target name="check-igj"
-      description="Run the IGJ checker on the Framework">
+      description="Run the IGJ Checker on the Framework">
         <antcall target="-run-checker">
             <param name="checker-name" value="checkers.igj.IGJChecker"/>
             <param name="checker-jdk" value="jdk/igj/src"/>

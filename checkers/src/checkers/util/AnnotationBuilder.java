@@ -42,7 +42,7 @@ import checkers.source.SourceChecker;
  * element is not found, or if the given value is not a subtype of the
  * expected type.
  *
- * TODO: Doesn't type check arrays yet
+ * TODO: Doesn't type-check arrays yet
  */
 public class AnnotationBuilder {
 

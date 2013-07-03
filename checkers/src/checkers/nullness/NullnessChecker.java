@@ -8,7 +8,7 @@ import checkers.source.AggregateChecker;
 import checkers.source.SourceChecker;
 
 /**
- * A typechecker plug-in for the Rawness type system qualifier that finds (and
+ * A type-checker plug-in for the Rawness type system qualifier that finds (and
  * verifies the absence of) null-pointer errors.
  *
  * @see NonNull

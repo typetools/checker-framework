@@ -95,7 +95,7 @@ import com.sun.tools.javac.tree.TreeInfo;
  *
  * This implementation does the following checks:
  * 1. <b>Assignment and Pseudo-Assignment Check</b>:
- *    It verifies that any assignment type check, using
+ *    It verifies that any assignment type-checks, using
  *    {@code Checker.isSubtype} method. This includes method invocation and
  *    method overriding checks.
  *
@@ -133,7 +133,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker> extends SourceVisi
     protected final VisitorState visitorState;
 
     /**
-     * @param checker the typechecker associated with this visitor (for
+     * @param checker the type-checker associated with this visitor (for
      *        callbacks to {@link BaseTypeChecker#isSubtype})
      * @param root the root of the AST that this visitor operates on
      */

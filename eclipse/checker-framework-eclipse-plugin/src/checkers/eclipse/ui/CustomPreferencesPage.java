@@ -158,8 +158,8 @@ public class CustomPreferencesPage extends PreferencePage implements
     {
         OpenTypeSelectionDialog dialog = new OpenTypeSelectionDialog(
                 getShell(), true, null, null, IJavaSearchConstants.CLASS);
-        dialog.setTitle("Search for Checker Classes");
-        dialog.setMessage("Select additional Checkers to use.");
+        dialog.setTitle("Search for checker classes");
+        dialog.setMessage("Select additional checkers to use.");
 
         if (dialog.open() == SelectionDialog.OK)
         {

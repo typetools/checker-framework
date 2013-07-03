@@ -27,11 +27,11 @@ Open personalblog-demo/src/net/eyde/personalblog/service/PersonalBlogService.jav
 * Run the checker one more time.  There are no errors.
 
 
-When you finish demoing the basic checker, as with previous scripts,  
+When you finish demoing the Basic Checker, as with previous scripts,  
 you can do the following:
 
 1. Note that constructQuery is only a helper function to suppress a  
-tainting false error, because the basic checker doesn't handle it.
+tainting false error, because the Basic Checker doesn't handle it.
 2. Replace both occurrences of constructQuery (at lines 162, 173) to  
 simple string concatenation.
 3. Run 'ant pblog', and you will get two errors related to using the  

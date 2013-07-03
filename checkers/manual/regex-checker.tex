@@ -1,5 +1,5 @@
 \htmlhr
-\chapter{Regex checker for regular expression syntax\label{regex-checker}}
+\chapter{Regex Checker for regular expression syntax\label{regex-checker}}
 
 The Regex Checker prevents, at compile-time, use of syntactically invalid
 regular expressions and access of invalid capturing groups.
@@ -16,7 +16,7 @@ mistake.  It is also easy to accidentally use a regex feature from another
 language that is not supported by Java (see section ``Comparison to Perl
 5'' in the \sunjavadoc{java/util/regex/Pattern.html}{Pattern} Javadoc).
 Ordinarily, the programmer does not learn of these errors until run time.
-The Regex checker warns about these problems at compile time.
+The Regex Checker warns about these problems at compile time.
 
 To run the Regex Checker, supply the \code{-processor
   checkers.regex.RegexChecker} command-line option to javac.
@@ -40,12 +40,12 @@ These qualifiers make up the Regex type system:
 
 \end{description}
 
-The subtyping hierarchy of the Regex checker's qualifiers is shown in
+The subtyping hierarchy of the Regex Checker's qualifiers is shown in
 Figure~\ref{fig:regex-hierarchy}.
 
 \begin{figure}
 \includeimage{regex}{9cm}
-\caption{The subtyping relationship of the Regex checkers's qualifiers.
+\caption{The subtyping relationship of the Regex Checker's qualifiers.
   Because the parameter to a \<@Regex> qualifier is at least the number of
   capturing groups in a regular expression, a \<@Regex> qualifier with more
   capturing groups is a subtype of a \<@Regex> qualifier with fewer capturing
@@ -59,11 +59,11 @@ Figure~\ref{fig:regex-hierarchy}.
 
 \subsection{Implicit qualifiers\label{regex-implicit-qualifiers}}
 
-As described in Section~\ref{effective-qualifier}, the Regex checker adds
+As described in Section~\ref{effective-qualifier}, the Regex Checker adds
 implicit qualifiers, reducing the number of annotations that must appear
 in your code. The checker implicitly adds the \code{Regex} qualifier with
 the parameter set to the correct number of capturing groups to
-any \code{String} literal that is a valid regex. The Regex checker allows
+any \code{String} literal that is a valid regex. The Regex Checker allows
 the \code{null} literal to be assigned to any type qualified with the
 \code{Regex} qualifier.
 
@@ -107,14 +107,14 @@ looks silly.
 
 \subsection{Capturing groups\label{regex-capturing-groups}}
 
-The Regex checker validates that a legal capturing group number is passed
+The Regex Checker validates that a legal capturing group number is passed
 to \sunjavadoc{java/util/regex/Matcher.html}{Matcher}'s
 \sunjavadoc{java/util/regex/Matcher.html#group(int)}{group},
 \sunjavadoc{java/util/regex/Matcher.html#start(int)}{start} and
 \sunjavadoc{java/util/regex/Matcher.html#end(int)}{end} methods. To do this,
 the type of \<Matcher> must be qualified with a \<@Regex> annotation
 with the number of capturing groups in the regular expression. This is
-handled implicitly by the Regex checker for local variables (see
+handled implicitly by the Regex Checker for local variables (see
 Section~\ref{type-refinement}), but you may need to add \<@Regex> annotations
 with a capturing group count to \<Pattern> and \<Matcher> fields and
 parameters.

@@ -79,7 +79,7 @@
               <processor>checkers.nullness.NullnessChecker</processor>
           </processors>
 
-            <checkersVersion>1.6.4</checkersVersion>
+            <checkerFrameworkVersion>1.6.4</checkerFrameworkVersion>
 
           <!-- setting procOnly to false will result in actual generation of class files -->
           <procOnly>false</procOnly>
@@ -91,7 +91,7 @@
 
 
           <procOnly>false</procOnly>
-          <!-- additional parameters passed to the JSR308 java compiler -->
+          <!-- additional parameters passed to the JSR 308 Java compiler -->
           <!--<javacParams>-Awarns -Xmaxwarns 10000</javacParams>-->
           <javacParams>-Alint</javacParams>
           <!-- additional parameters to pass to the forked JVM -->

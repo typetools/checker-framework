@@ -1,7 +1,7 @@
 \htmlhr
-\chapter{Nullness checker\label{nullness-checker}}
+\chapter{Nullness Checker\label{nullness-checker}}
 
-If the Nullness checker issues no warnings for a given program, then
+If the Nullness Checker issues no warnings for a given program, then
 running that program will never throw a null pointer exception.  This
 guarantee enables a programmer to prevent errors from occurring when a
 program is run.  See Section~\ref{nullness-checks} for more details about
@@ -19,7 +19,7 @@ To run the Nullness Checker, supply the \code{-processor
 examples, see Section~\ref{nullness-example}.
 
 
-\section{What the Nullness checker checks\label{nullness-checks}}
+\section{What the Nullness Checker checks\label{nullness-checks}}
 
 The checker issues a warning in these cases:
 
@@ -31,7 +31,7 @@ The checker issues a warning in these cases:
   Dereferences occur not only when a field is accessed, but when an array
   is indexed, an exception is thrown, a lock is taken in a synchronized
   block, and more.  For a complete description of all checks performed by
-  the Nullness checker, see the Javadoc for
+  the Nullness Checker, see the Javadoc for
   \refclass{nullness}{NullnessVisitor}.
 
 \item
@@ -100,10 +100,10 @@ command-line option.)
 
 \section{Nullness annotations\label{nullness-annotations}}
 
-The Nullness checker uses three separate type hierarchies:  one for nullness,
+The Nullness Checker uses three separate type hierarchies:  one for nullness,
 one for rawness (Section~\ref{raw-partially-initialized}),
 and one for map keys (Section~\ref{map-keys})
-The Nullness checker has four varieties of annotations:  nullness
+The Nullness Checker has four varieties of annotations:  nullness
 type qualifiers, nullness method annotations, rawness type qualifiers, and
 map key type
 qualifiers.
@@ -145,7 +145,7 @@ The nullness hierarchy contains these qualifiers:
   assigned, its type is treated as
   \code{@\refclass{nullness/quals}{NonNull}}.
 
-  Because the Nullness checker works intraprocedurally (it analyzes one
+  Because the Nullness Checker works intraprocedurally (it analyzes one
   method at a time), when a \code{LazyNonNull} field is first read within a
   method, the field cannot be assumed to be non-null.  The benefit of
   LazyNonNull over Nullable is its different interaction with
@@ -179,7 +179,7 @@ another type hierarchy for map keys (Section~\ref{map-key-qualifiers}).}
 
 \subsection{Nullness method annotations\label{nullness-non-qualifiers}}
 
-The Nullness checker supports several annotations that specify method
+The Nullness Checker supports several annotations that specify method
 behavior.  These are declaration annotations, not type annotations:  they
 apply to the method itself rather than to some particular type.
 
@@ -286,7 +286,7 @@ see Section~\ref{map-keys}.
 
 \subsection{Implicit qualifiers\label{nullness-implicit-qualifiers}}
 
-As described in Section~\ref{effective-qualifier}, the Nullness checker
+As described in Section~\ref{effective-qualifier}, the Nullness Checker
 adds implicit qualifiers, reducing the number of annotations that must
 appear in your code.
 For example, enum types are implicitly non-null, so you never need to write
@@ -545,9 +545,9 @@ cannot ever be null at run time.
   But the string should only be used if the programmer has reasoned that
   the assertion can never fail.
 
-% (Another way of stating the Nullness checker's use of assertions is as an
+% (Another way of stating the Nullness Checker's use of assertions is as an
 % additional caveat to the guarantees provided by a checker
-% (Section~\ref{checker-guarantees}).  The Nullness checker prevents null
+% (Section~\ref{checker-guarantees}).  The Nullness Checker prevents null
 % pointer errors in your code under the assumption that assertions are
 % enabled, and it does not guarantee that all of your assertions succeed.)
 
@@ -557,9 +557,7 @@ cannot ever be null at run time.
 % to always infer information from assert statements, even without the
 % suppression key.
 % Discuss how this influences the guarantees from the checker.
-% This is a feature of the framework, not only the nullness checker;
-% however, the nullness checker is probably the only one that infers something
-% from conditions.
+% This is a feature of the framework, not only the Nullness Checker.
 % Move the discussion somewhere else, but keep something here?
 % Maybe warnings or advanced-features.
 
@@ -800,7 +798,7 @@ parameter in comments (see Section~\ref{annotations-in-comments}):
 
 % Most readers can
 % skip this section on first reading; you can return to it once you have
-% mastered the rest of the nullness checker.
+% mastered the rest of the Nullness Checker.
 
 \subsection{Rawness qualifiers\label{rawness-qualifiers}}
 
@@ -905,7 +903,7 @@ have been initialized, then \code{this} is treated as non-raw.
 % Section~\ref{becoming-non-raw-clarification} for a slight clarification of
 % this rule.)
 
-The Nullness checker issues an error if the constructor fails to initialize
+The Nullness Checker issues an error if the constructor fails to initialize
 any \code{@NonNull} field.  This ensures that the object is in a legal (non-raw)
 state by the time that the constructor exits.
 \urldef{\jlsdefiniteassignmenturl}{\url}{http://docs.oracle.com/javase/specs/jls/se7/html/jls-16.html}
@@ -1265,7 +1263,7 @@ pattern does not happen.)
 
 \subsection{Tiny examples\label{nullness-tiny-examples}}
 
-To try the Nullness checker on a source file that uses the \code{@\refclass{nullness/quals}{NonNull}} qualifier,
+To try the Nullness Checker on a source file that uses the \code{@\refclass{nullness/quals}{NonNull}} qualifier,
 use the following command (where \code{javac} is the JSR 308 compiler that
 is distributed with the Checker Framework):
 
@@ -1295,7 +1293,7 @@ Some libraries that are annotated with nullness qualifiers are:
 
 \begin{itemize}
 \item
-The Nullness checker itself.
+The Nullness Checker itself.
 
 \item
 The
@@ -1310,11 +1308,11 @@ Run the command \code{make check-nullness}.
 
 % \item
 % The annotation scene library.
-% To run the Nullness checker on the annotation scene library,
+% To run the Nullness Checker on the annotation scene library,
 % % TODO: how does one do this?
 % first download the scene library suite (which includes build
 % dependencies for the scene library as well as its source code) and extract it
-% into your checkers installation. The checker can then be run on the annotation
+% into your Checker Framework installation. The checker can then be run on the annotation
 % scene library with Apache Ant using the following commands:
 %
 % \begin{Verbatim}
