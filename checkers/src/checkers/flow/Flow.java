@@ -8,8 +8,8 @@ import javax.lang.model.element.AnnotationMirror;
 import com.sun.source.tree.Tree;
 
 /**
- * Interface for a generalized flow-sensitive qualifier inference for the checkers
- * framework.
+ * Interface for a generalized flow-sensitive qualifier inference for the Checker
+ * Framework.
  */
 public interface Flow {
 

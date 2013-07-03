@@ -106,7 +106,7 @@ public class AnnotatedTypeFactory {
 
     /** Optional! The AST of the source file being operated on. */
     // TODO: when should root be null? What are the use cases?
-    // None of the existing test checkers have a null root.
+    // None of the existing test checkers has a null root.
     protected final /*@Nullable*/ CompilationUnitTree root;
 
     /** The processing environment to use for accessing compiler internals. */

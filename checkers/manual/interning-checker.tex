@@ -1,7 +1,7 @@
 \htmlhr
-\chapter{Interning checker\label{interning-checker}}
+\chapter{Interning Checker\label{interning-checker}}
 
-If the Interning checker issues no warnings for a given program, then all
+If the Interning Checker issues no warnings for a given program, then all
 reference equality tests (i.e., all uses of ``\code{==}'') are proper;
 that is,
 \code{==} is not misused where \code{equals()} should have been used instead.
@@ -13,7 +13,7 @@ pattern.
 Interning has two benefits:  it can save memory, and it can speed up testing for
 equality by permitting use of \code{==}.
 
-The Interning checker prevents two types of errors in your code.  First, 
+The Interning Checker prevents two types of errors in your code.  First, 
 \code{==} should be used
 only on interned values; using \code{==} on
 non-interned values can result in subtle bugs.  For example:
@@ -25,9 +25,9 @@ non-interned values can result in subtle bugs.  For example:
 \end{Verbatim}
 
 \noindent
-The Interning checker helps programmers to prevent such bugs.
+The Interning Checker helps programmers to prevent such bugs.
 Second, 
-the Interning checker also helps to prevent performance problems that result
+the Interning Checker also helps to prevent performance problems that result
 from failure to use interning.
 (See Section~\ref{checker-guarantees} for caveats to the checker's guarantees.)
 
@@ -139,7 +139,7 @@ so annotated.
 
 \subsection{Implicit qualifiers\label{interning-implicit-qualifiers}}
 
-As described in Section~\ref{effective-qualifier}, the Interning checker
+As described in Section~\ref{effective-qualifier}, the Interning Checker
 adds implicit qualifiers, reducing the number of annotations that must
 appear in your code.
 For example, String literals and the null literal are always considered interned, and
@@ -160,7 +160,7 @@ For a complete description of all implicit interning qualifiers, see the
 Javadoc for \refclass{interning}{InterningAnnotatedTypeFactory}.
 
 
-\section{What the Interning checker checks\label{interning-checks}}
+\section{What the Interning Checker checks\label{interning-checks}}
 
 Objects of an \code{@\refclass{interning/quals}{Interned}} type may be safely compared using the ``\code{==}''
 operator.
@@ -203,13 +203,13 @@ For a complete description of all checks performed by
 You can also restrict which types the checker should examine and type-check,
 using the \code{-Acheckclass} option.  For example, to find only the
 interning errors related to uses of \code{String}, you can pass
-\code{-Acheckclass=java.lang.String}.  The Interning checker always checks all
+\code{-Acheckclass=java.lang.String}.  The Interning Checker always checks all
 subclasses and superclasses of the given class.
 
 
 \section{Examples\label{interning-example}}
 
-To try the Interning checker on a source file that uses the \code{@\refclass{interning/quals}{Interned}} qualifier,
+To try the Interning Checker on a source file that uses the \code{@\refclass{interning/quals}{Interned}} qualifier,
 use the following command (where \code{javac} is the JSR 308 compiler that
 is distributed with the Checker Framework):
 

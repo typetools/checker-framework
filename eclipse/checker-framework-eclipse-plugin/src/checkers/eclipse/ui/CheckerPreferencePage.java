@@ -168,7 +168,7 @@ public class CheckerPreferencePage extends PreferencePage implements
         final Label skipLabel = new Label(procGroup, SWT.None);
         skipLabel.setText("Classes to skip (-AskipUses):");
         optSkipUses = new Text(procGroup, SWT.SINGLE | SWT.BORDER);
-        optSkipUses.setToolTipText("Classes to skip during type checking (-AskipUses)");
+        optSkipUses.setToolTipText("Classes to skip during type-checking (-AskipUses)");
 
         final Label lintLabel = new Label(procGroup, SWT.None);
         lintLabel.setText("Lint options:");
@@ -235,7 +235,7 @@ public class CheckerPreferencePage extends PreferencePage implements
             column.setText (header);
         }
 
-        //Add built in Checkers to the table
+        //Add built-in checkers to the table
         for ( final CheckerInfo checkerInfo : CheckerManager.getCheckerInfos() ) {
             addProcTableItem(checkerInfo, true);
         }
@@ -544,8 +544,8 @@ public class CheckerPreferencePage extends PreferencePage implements
     private void searchForClass() {
         OpenTypeSelectionDialog dialog = new OpenTypeSelectionDialog(
                 getShell(), true, null, null, IJavaSearchConstants.CLASS);
-        dialog.setTitle("Search for Checker Classes");
-        dialog.setMessage("Select additional Checkers to use.");
+        dialog.setTitle("Search for checker classes");
+        dialog.setMessage("Select additional checkers to use.");
 
         if (dialog.open() == SelectionDialog.OK) {
             Object[] results = dialog.getResult();

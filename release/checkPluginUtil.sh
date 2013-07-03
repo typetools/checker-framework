@@ -28,13 +28,13 @@ rm ".PluginUtil_maven.java"
 rm ".PluginUtil_master.java"
 
 if [[ $rcEclipse != 0 ]] ; then
-    echo "Eclipse PluginUtil.java differs from checkers version"
+    echo "Eclipse PluginUtil.java differs from Checker Framework version"
     echo $ECLIPSE" differs from\n"$MASTER
     exit 1
 fi
 
 if [[ $rcMaven != 0 ]] ; then
-    echo "Maven PluginUtil.java differs from checkers version"
+    echo "Maven PluginUtil.java differs from Checker Framework version"
     echo $MAVEN" differs from\n"$MASTER
     exit 1
 fi

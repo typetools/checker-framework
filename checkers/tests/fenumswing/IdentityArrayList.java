@@ -2,7 +2,7 @@ import java.util.Arrays;
 
 /*
 * This test case violates an assertion in the compiler.
-* It does not depend on the fenum checker, it breaks for any checker.
+* It does not depend on the Fenum Checker, it breaks for any checker.
 */
 public class IdentityArrayList {
     public <T> T[] toArray(T[] a) {

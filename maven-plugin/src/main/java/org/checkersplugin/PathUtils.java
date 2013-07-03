@@ -23,17 +23,17 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * A set of utility methods to find the necessary JSR308 jars and to resolve any sources/classes needed
+ * A set of utility methods to find the necessary JSR 308 jars and to resolve any sources/classes needed
  * for compilation and checking
  * @author Adam Warski (adam at warski dot org)
  */
 public class PathUtils {
-    private final static String CHECKERS_GROUPD_ID = "types.checkers";
+    private final static String CHECKER_FRAMEWORK_GROUPD_ID = "types.checkers";
     private final static String DEFAULT_INCLUSION_PATTERN = "**/*.java";
 
     /**
      * Gets the path to the jsr308-all jar.
-     * @param checkersVersion Version of checkers to use.
+     * @param checkerFrameworkVersion Version of the Checker Framework to use.
      * @param artifactFactory Dependency.
      * @param artifactResolver Dependency.
      * @param remoteArtifactRepositories Dependency.
@@ -41,23 +41,23 @@ public class PathUtils {
      * @return Path to the jsr308-all jar.
      * @throws MojoExecutionException
      */
-    public static File getFrameworkJar(final String artifactId, final String checkersVersion, final ArtifactFactory artifactFactory,
+    public static File getFrameworkJar(final String artifactId, final String checkerFrameworkVersion, final ArtifactFactory artifactFactory,
                                          final ArtifactResolver artifactResolver, final List<?> remoteArtifactRepositories,
                                          final ArtifactRepository localRepository) throws MojoExecutionException {
         final Artifact checkersArtifact;
         try {
-            checkersArtifact = artifactFactory.createExtensionArtifact(CHECKERS_GROUPD_ID, artifactId,
-                    VersionRange.createFromVersionSpec(checkersVersion));
+            checkersArtifact = artifactFactory.createExtensionArtifact(CHECKER_FRAMEWORK_GROUPD_ID, artifactId,
+                    VersionRange.createFromVersionSpec(checkerFrameworkVersion));
         } catch (InvalidVersionSpecificationException e) {
-            throw new MojoExecutionException("Wrong version: " + checkersVersion + " of checkers specifed.", e);
+            throw new MojoExecutionException("Wrong version: " + checkerFrameworkVersion + " of Checker Framework specified.", e);
         }
 
         try {
             artifactResolver.resolve(checkersArtifact, remoteArtifactRepositories, localRepository);
         } catch (ArtifactResolutionException e) {
-            throw new MojoExecutionException("Unable to find version " + checkersVersion + " of checkers.", e);
+            throw new MojoExecutionException("Unable to find version " + checkerFrameworkVersion + " of Checker Framework.", e);
         } catch (ArtifactNotFoundException e) {
-            throw new MojoExecutionException("Unable to resolve version " + checkersVersion + " of checkers.", e);
+            throw new MojoExecutionException("Unable to resolve version " + checkerFrameworkVersion + " of Checker Framework.", e);
         }
 
         return checkersArtifact.getFile();

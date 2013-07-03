@@ -184,7 +184,7 @@ public class PersonalBlogService {
      *
      * This method is helpful only when using the Basic Checker,
      * which cannot detect the type of string concatination, unlike
-     * the Tainting checker.
+     * the Tainting Checker.
      */
     @SuppressWarnings("untainted")
     private @Untainted String constructQuery(@Untainted String ...strings) {

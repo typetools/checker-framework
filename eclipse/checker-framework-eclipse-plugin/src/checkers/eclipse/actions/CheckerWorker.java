@@ -89,7 +89,7 @@ public class CheckerWorker extends Job {
 
     private void work(final IProgressMonitor pm) throws CoreException {
     	if(checkerNames != null) {
-    		pm.beginTask("Running checkers " + checkerNames.toString() + " on "
+    		pm.beginTask("Running checker(s) " + checkerNames.toString() + " on "
     				+ sourceFiles.toString(), 10);
     	} else {
     		pm.beginTask("Running custom single checker "+ " on " + sourceFiles.toString(), 10);

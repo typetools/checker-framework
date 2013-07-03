@@ -19,7 +19,7 @@ How to write test cases for the Checker Framework
 
 This document describes how to write tests for the Checker Framework.  The
 document is useful for Checker Framework maintainers, checker writers, and
-bug submitters.  Users of the framework and checkers should read the manual
+bug submitters.  Users of the Checker Framework should read the manual
 instead; see file ../manual/manual.html .
 
 The testing framework for the Checker Framework is built on top of JUnit.
@@ -88,8 +88,8 @@ this:
  * change checkers/build.xml to run those tests
 
 
-Writing tests for new checkers
-==============================
+Writing tests for a new checker
+===============================
 
 Essentially, just copy an existing checker, analogously to creating a new
 test directory for testing different command-line arguments, as described

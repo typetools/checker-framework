@@ -71,7 +71,7 @@ public class JavariChecker extends BaseTypeChecker {
     }
 
     /**
-     * Provides specific error messages to the Javari checker, from a file or from default values.
+     * Provides specific error messages to the Javari Checker, from a file or from default values.
      *
      * @return a Properties object with the error messages set.
      */

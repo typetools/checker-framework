@@ -1,12 +1,12 @@
 \htmlhr
-\chapter{Basic checker\label{basic-checker}}
+\chapter{Basic Checker\label{basic-checker}}
 
-The Basic checker enforces only subtyping rules.  It operates over
+The Basic Checker enforces only subtyping rules.  It operates over
 annotations specified by a user on the command line.  Thus, users can
-create a simple type checker without writing any code beyond definitions of
+create a simple type-checker without writing any code beyond definitions of
 the type qualifier annotations.
 
-The Basic checker can accommodate all of the type system enhancements that
+The Basic Checker can accommodate all of the type system enhancements that
 can be declaratively specified (see Chapter~\ref{writing-a-checker}).
 This includes type introduction rules (implicit
 annotations, e.g., literals are implicitly considered \code{@\refclass{nullness/quals}{NonNull}}) via
@@ -14,8 +14,8 @@ the \code{@\refclass{quals}{ImplicitFor}} meta-annotation, and other features su
 flow-sensitive type qualifier inference (Section~\ref{type-refinement}) and
 qualifier polymorphism (Section~\ref{qualifier-polymorphism}).
 
-The Basic checker is also useful to type system designers who wish to
-experiment with a checker before writing code; the Basic checker
+The Basic Checker is also useful to type system designers who wish to
+experiment with a checker before writing code; the Basic Checker
 demonstrates the functionality that a checker inherits from the Checker
 Framework.
 
@@ -29,9 +29,9 @@ dereferences of possibly-null values), you will need to write code and
 extend the framework as discussed in Chapter~\ref{writing-a-checker}.
 
 
-\section{Using the Basic checker\label{basic-using}}
+\section{Using the Basic Checker\label{basic-using}}
 
-The Basic checker is used in the same way as other checkers (using the
+The Basic Checker is used in the same way as other checkers (using the
 \code{-processor checkers.basic.BasicChecker} option; see Chapter~\ref{using-a-checker}), except that it
 requires an additional annotation processor argument via the standard
 ``\code{-A}'' switch:
@@ -56,7 +56,7 @@ annotation used by other checkers (see section
 The annotations listed in \code{-Aquals} must be accessible to
 the compiler during compilation in the classpath.  In other words, they must
 already be compiled (and, typically, be on the javac bootclasspath)
-before you run the Basic checker with \code{javac}.  It
+before you run the Basic Checker with \code{javac}.  It
 is not sufficient to supply their source files on the command line.
 
 \end{itemize}
@@ -71,11 +71,11 @@ as your \code{@SuppressWarnings} key and stick with it for that entire type
 hierarchy.)
 
 
-\section{Basic checker example\label{basic-example}\label{encrypted-example}}
+\section{Basic Checker example\label{basic-example}\label{encrypted-example}}
 
 Consider a hypothetical \code{Encrypted} type qualifier, which denotes that the
 representation of an object (such as a \code{String}, \code{CharSequence}, or
-\code{byte[]}) is encrypted. To use the Basic checker for the \code{Encrypted}
+\code{byte[]}) is encrypted. To use the Basic Checker for the \code{Encrypted}
 type system, follow three steps.
 
 \begin{enumerate}
@@ -144,7 +144,7 @@ You may also need to add \code{@SuppressWarnings} annotations to the
 capability of any realistic type system.
 
 \item
-  Invoke the compiler with the Basic checker, specifying the
+  Invoke the compiler with the Basic Checker, specifying the
   \code{@Encrypted} annotation using the \code{-Aquals} option.
   You should add the \code{Encrypted} classfile to the processor classpath:
 
@@ -177,8 +177,8 @@ the file will lead to a run-time error.  It would be better for the type
 system to warn about such problems, or guarantee their absence, at compile
 time.
 
-Just as you can extend the Basic Checker to create a type checker, you can
-extend a typestate checker to create a type checker that supports typestate
+Just as you can extend the Basic Checker to create a type-checker, you can
+extend a typestate checker to create a type-checker that supports typestate
 analysis.  Two extensible typestate analyses that build on the Checker
 Framework are available.  One is by Adam Warski:
 \myurl{http://www.warski.org/typestate.html}.

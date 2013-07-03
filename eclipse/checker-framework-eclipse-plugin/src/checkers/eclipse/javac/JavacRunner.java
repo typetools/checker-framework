@@ -36,7 +36,7 @@ import com.sun.tools.javac.file.JavacFileManager;
  */
 public class JavacRunner implements CheckersRunner
 {
-    public static final String CHECKERS_LOCATION = "lib/checkers.jar";
+    public static final String CHECKERS_JAR_LOCATION = "lib/checkers.jar";
     public static final String JAVAC_LOCATION = "lib/javac.jar";
     public static final String JDK_LOCATION = "lib/jdk.jar";
     public static final List<String> IMPLICIT_ARGS = Arrays.asList(
@@ -60,7 +60,7 @@ public class JavacRunner implements CheckersRunner
      * Runs the compiler on the selected files using the given processor
      * 
      * @param fileNames
-     *            files that need to be type checked
+     *            files that need to be type-checked
      * @param processors
      *            Type processors to run
      * @param classpath

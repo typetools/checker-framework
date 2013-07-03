@@ -23,7 +23,7 @@ import checkers.quals.*;
  * is a nonnull reference.
  *
  * <p>
- * <b>Limitation</b>: The Nullness checker trusts the user and doesn't
+ * <b>Limitation</b>: The Nullness Checker trusts the user and doesn't
  * validate the annotations.  Future releases will check for the presence of
  * the key in the map (when possible).
  */

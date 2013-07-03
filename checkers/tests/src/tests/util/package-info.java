@@ -1,6 +1,6 @@
 /**
- * A minimal checker and simple annotation used for testing the checkers
- * framework without the semantics of any particular (meaningful) checker.
+ * A minimal checker and simple annotation used for testing the Checker
+ * Framework without the semantics of any particular (meaningful) checker.
  *
  * <p>
  *

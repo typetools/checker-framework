@@ -108,8 +108,8 @@ def current_distribution(site):
     Reads the checker framework version from the checker framework website and
     returns the version of the current release
     """
-    print 'Looking up Checkers-Version from %s\n' % site
-    ver_re = re.compile(r"<!-- checkers-version -->(.*),")
+    print 'Looking up checker-framework-version from %s\n' % site
+    ver_re = re.compile(r"<!-- checker-framework-version -->(.*),")
     text = urllib2.urlopen(url=site).read()
     result = ver_re.search(text)
     return result.group(1)

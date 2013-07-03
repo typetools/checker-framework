@@ -8,9 +8,9 @@ import checkers.nullness.quals.*;
 import java.util.*;
 
 /**
- * Represents the outcome of a typechecking operation (success,
+ * Represents the outcome of a type-checking operation (success,
  * warning, or failure, plus a list of explanatory messages).
- * {@link Result}s created during typechecking can be reported using
+ * {@link Result}s created during type-checking can be reported using
  * {@link SourceChecker#report}, which ultimately delivers an error
  * or warning message via the JSR 199 compiler interface.
  *

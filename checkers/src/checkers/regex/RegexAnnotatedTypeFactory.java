@@ -327,7 +327,7 @@ public class RegexAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<RegexCh
         }
 
 //         This won't work correctly until flow sensitivity is supported by the
-//         the regex checker. For example:
+//         the Regex Checker. For example:
 //
 //         char @Regex [] arr = {'r', 'e'};
 //         arr[0] = '('; // type is still "char @Regex []", but this is no longer correct

@@ -3,7 +3,7 @@
 
 IGJ is a Java language extension that helps programmers to avoid mutation errors
 (unintended side effects).
-If the IGJ checker issues no warnings for a given program, then that program
+If the IGJ Checker issues no warnings for a given program, then that program
 will never change objects that should not be changed.  This guarantee
 enables a programmer to detect and prevent mutation-related errors.
 (See Section~\ref{checker-guarantees} for caveats to the guarantee.)
@@ -30,7 +30,7 @@ bugs or to guarantee that the code contains no such bugs.
 To learn more details of the IGJ language and type system, please see the
 ESEC/FSE 2007 paper ``\ahref{http://homes.cs.washington.edu/~mernst/pubs/immutability-generics-fse2007-abstract.html}{Object and reference immutability using Java
 generics}''~\cite{ZibinPAAKE2007}.
-The IGJ checker supports Annotation IGJ (Section~\ref{annotation-igj-dialect}),
+The IGJ Checker supports Annotation IGJ (Section~\ref{annotation-igj-dialect}),
 which is a slightly different dialect
 of IGJ than that described in the ESEC/FSE paper.
 
@@ -75,9 +75,9 @@ can be modified).  The following qualifiers are part of the IGJ type system.
 For additional details, see~\cite{ZibinPAAKE2007}.
 
 
-\section{What the IGJ checker checks\label{igj-checks}}
+\section{What the IGJ Checker checks\label{igj-checks}}
 
-The IGJ checker issues an error whenever mutation happens through a
+The IGJ Checker issues an error whenever mutation happens through a
 readonly reference, when fields of a readonly reference which are not
 explicitly marked with \code{@\refclass{igj/quals}{Assignable}} are
 reassigned, or when a readonly reference is assigned to a mutable
@@ -91,7 +91,7 @@ mutability access of a reference.
 
 \section{Implicit and default qualifiers\label{igj-implicit-qualifiers}}
 
-As described in Section~\ref{effective-qualifier}, the IGJ checker
+As described in Section~\ref{effective-qualifier}, the IGJ Checker
 adds implicit qualifiers, reducing the number of annotations that must
 appear in your code.
 % For example, ...
@@ -136,13 +136,13 @@ client code to type-check (otherwise a client could not write
 
 \section{Annotation IGJ Dialect\label{annotation-igj-dialect}}
 
-The IGJ checker supports the Annotation IGJ dialect of IGJ\@.  The syntax of
+The IGJ Checker supports the Annotation IGJ dialect of IGJ\@.  The syntax of
 Annotation IGJ is based on type annotations.
 
 The syntax of the original IGJ
 dialect~\cite{ZibinPAAKE2007} was based on Java 5's generics and annotation mechanisms. The original
 IGJ dialect was not backward-compatible with Java (either syntactically or
-semantically). The dialect of IGJ checked by the IGJ checker corrects these
+semantically). The dialect of IGJ checked by the IGJ Checker corrects these
 problems.
 
 The differences between the Annotation IGJ dialect and the original IGJ dialect
@@ -294,7 +294,7 @@ the index, then there would be no way to express, or check, that
 
 \section{Examples\label{igj-example}}
 
-To try the IGJ checker on a source file that uses the IGJ qualifier, use
+To try the IGJ Checker on a source file that uses the IGJ qualifier, use
 the following command (where \code{javac} is the Checker Framework compiler that
 is distributed with the Checker Framework).
 
@@ -302,7 +302,7 @@ is distributed with the Checker Framework).
   javac -processor checkers.igj.IGJChecker examples/IGJExample.java
 \end{Verbatim}
 
-The IGJ checker itself is also annotated with IGJ annotations.
+The IGJ Checker itself is also annotated with IGJ annotations.
 
 
 % LocalWords:  plugin ReadOnly AssignsFields im templating getMidpoint cp TODO
