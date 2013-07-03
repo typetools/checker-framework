@@ -7,14 +7,14 @@ import com.sun.tools.doclets.Taglet;
 
 /**
  * A taglet for processing the {@code @checker.framework.manual} javadoc block tag, which inserts
- * references to the JSR 308 checkers and framework manual into javadoc.
+ * references to the Checker Framework manual into javadoc.
  *
  * <p>
  *
  * The {@code @checker.framework.manual} tag is used as follows:
  *
  * <ul>
- * <li>{@code @checker.framework.manual #} expands to a top-level link to the JSR 308 manual
+ * <li>{@code @checker.framework.manual #} expands to a top-level link to the Checker Framework manual
  * <li>{@code @checker.framework.manual #anchor text} expands to a link with some text to a
  * particular part of the manual
  * </ul>
@@ -72,7 +72,7 @@ public class ManualTaglet implements Taglet {
         String anchor, text;
         if (parts.length < 2) {
             anchor = "";
-            text = "JSR 308 Type-checkers and Framework";
+            text = "Checker Framework";
         } else {
             anchor = parts[0];
             text = parts[1];

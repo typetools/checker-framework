@@ -9,7 +9,7 @@ import checkers.source.SourceChecker;
 
 /**
  * An aggregated checker for the nullness type-system (with
- * freedom-before-commitment) and {@link KeyFor}.
+ * freedom-before-commitment) and {@link KeyFor}).
  */
 public class NullnessChecker extends AggregateChecker {
 

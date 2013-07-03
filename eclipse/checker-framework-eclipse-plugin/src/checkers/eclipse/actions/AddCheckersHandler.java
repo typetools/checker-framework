@@ -46,14 +46,14 @@ public class AddCheckersHandler extends CheckerHandler
                 } catch (FileNotFoundException e) {
                     StatusManager manager = StatusManager.getManager();
                     CheckerErrorStatus status = new CheckerErrorStatus(
-                            "Could not find plugin checkers file.");
+                            "Could not find file checkers-quals.jar.");
                     manager.handle(status, StatusManager.SHOW);
                     return null;
                 }catch (CoreException e)
                 {
                     StatusManager manager = StatusManager.getManager();
                     CheckerErrorStatus status = new CheckerErrorStatus(
-                            "Could not create checkers file in project.");
+                            "Could not create file checkers-quals.jar in project.");
                     manager.handle(status, StatusManager.SHOW);
                     return null;
                 }
@@ -73,7 +73,7 @@ public class AddCheckersHandler extends CheckerHandler
                 {
                     StatusManager manager = StatusManager.getManager();
                     CheckerErrorStatus status = new CheckerErrorStatus(
-                            "Could not add checkers library to project classpath.");
+                            "Could not add checkers-quals.jar library to project classpath.");
                     manager.handle(status, StatusManager.SHOW);
                     return null;
                 }
@@ -82,7 +82,7 @@ public class AddCheckersHandler extends CheckerHandler
             {
                 StatusManager manager = StatusManager.getManager();
                 CheckerErrorStatus status = new CheckerErrorStatus(
-                        "Checkers library already found in project.");
+                        "checkers-quals.jar library already found in project.");
                 manager.handle(status, StatusManager.SHOW);
             }
         }

@@ -12,7 +12,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * This class functions essentially the same as the JSR308 javac script EXCEPT that it adds the appropriate jdk.jar
+ * This class functions essentially the same as the jsr308-langtools javac script EXCEPT that it adds the appropriate jdk.jar
  * to the bootclasspath and adds checkers.jar to the classpath passed to javac
  */
 public class CheckerMain {

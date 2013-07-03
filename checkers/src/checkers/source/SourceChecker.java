@@ -75,7 +75,7 @@ import checkers.nullness.quals.*;
  * </ul>
  *
  * Most type-checker plug-ins will want to extend {@link BaseTypeChecker},
- * instead of this class.  Only checkers which require annotated types but not
+ * instead of this class.  Only checkers that require annotated types but not
  * subtype checking (e.g. for testing purposes) should extend this.
  * Non-type checkers (e.g. for enforcing coding styles) should extend
  * {@link AbstractProcessor} (or even this class) as the Checker Framework is
@@ -84,9 +84,9 @@ import checkers.nullness.quals.*;
 public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
     extends AbstractTypeProcessor implements ErrorHandler {
 
-    // TODO checkers should export themselves through a separate interface,
+    // TODO A checker should export itself through a separate interface,
     // and maybe have an interface for all the methods for which it's safe
-    // to override
+    // to override.
 
     /** file name of the localized messages */
     private static final String MSGS_FILE = "messages.properties";
@@ -155,7 +155,7 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
 
     /**
      * @param root the AST root for the factory
-     * @return an {@link AnnotatedTypeFactory} for use by typecheckers
+     * @return an {@link AnnotatedTypeFactory} for use by type-checkers
      */
     @SuppressWarnings("unchecked") // unchecked cast to type variable
     public Factory createFactory(CompilationUnitTree root) {
@@ -333,7 +333,7 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
     /**
      * {@inheritDoc}
      *
-     * Type checkers are not supposed to override this.
+     * Type-checkers are not supposed to override this.
      * Instead use initChecker.
      * This allows us to handle CheckerError only here and doesn't
      * require all overriding implementations to be aware of CheckerError.

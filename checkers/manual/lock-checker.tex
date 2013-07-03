@@ -1,7 +1,7 @@
 \htmlhr
-\chapter{Lock checker\label{lock-checker}}
+\chapter{Lock Checker\label{lock-checker}}
 
-The Lock checker prevents certain kinds of concurrency errors.  If the Lock
+The Lock Checker prevents certain kinds of concurrency errors.  If the Lock
 checker issues no warnings for a given program, then the program holds the
 appropriate lock every time that it accesses a variable.
 
@@ -21,7 +21,7 @@ To run the Lock Checker, supply the \code{-processor
 
 \section{Lock annotations\label{lock-annotations}}
 
-The Lock checker uses two annotations.  One is a type qualifier, and the
+The Lock Checker uses two annotations.  One is a type qualifier, and the
 other is a method annotation.
 
 \begin{description}
@@ -103,7 +103,7 @@ is legal to access such a reference after the lock is acquired.
 
 A programmer might choose to use the \code{@Holding} method annotation in
 two different ways:  to specify a higher-level protocol, or to summarize
-intended usage.  Both of these approaches are useful, and the Lock checker
+intended usage.  Both of these approaches are useful, and the Lock Checker
 supports both.
 
 \paragraph{Higher-level synchronization protocol}
@@ -236,7 +236,7 @@ invokeinterface).  In both cases, \code{@GuardedBy} creates preconditions
 for accessing so-annotated members.  This informal intuition is
 inappropriate for a tool that requires precise semantics.
 
-The Lock checker renames the method annotation to
+The Lock Checker renames the method annotation to
 \code{@\refclass{lock/quals}{Holding}}, and it generalizes the 
 \code{@\refclass{lock/quals}{GuardedBy}} annotation into a type qualifier
 that can apply not just to a field but to an arbitrary type (including the

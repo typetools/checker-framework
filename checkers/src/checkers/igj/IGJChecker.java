@@ -106,7 +106,7 @@ public class IGJChecker extends BaseTypeChecker<IGJAnnotatedTypeFactory> {
     // different from ReadOnly.
     //
     // It's only because the existence of un-annotated code that we need this
-    // annotation, and IGJ's promise that un-annotated code should type check.
+    // annotation, and IGJ's promise that un-annotated code should type-check.
     //
     // TODO: Explain these cases more
     //

@@ -23,11 +23,11 @@ import java.io.*;
 import java.util.*;
 
 /**
- * A Mojo is the main goal or task for a maven project.  CheckersMojo runs the CheckerFramework compiler with the
+ * A Mojo is the main goal or task for a maven project.  CheckersMojo runs the Checker Framework with the
  * checkers specified in the plugin configuration in the pom.xml.
  *
  * Note: requiresDependencyResolution ensures that the dependencies required for compilation are included in the
- * classPathElements which gets passed to the classpath of the JSR308 compiler
+ * classPathElements which gets passed to the classpath of the JSR 308 compiler
  * @requiresDependencyResolution compile
  * @goal check
  */
@@ -37,7 +37,7 @@ public class CheckersMojo extends AbstractMojo {
      */
 
     /**
-     * The list of checkers to pass to the checker compiler
+     * The list of checkers for the Checker Framework to run
      *
      * @parameter
      * @required
@@ -72,25 +72,25 @@ public class CheckersMojo extends AbstractMojo {
 
     /**
      * The path to the java executable to use, default is "java"
-     * This executable is used to call the jsr308 compiler jar
+     * This executable is used to call the JSR 308 compiler jar
      * @parameter
      */
     private String executable;
 
     /**
-     * Which version of the JSR308 checkers to use
+     * Which version of the Checker Framework to use
      * @parameter default-value="${plugin.version}"
      */
-    private String checkersVersion;
+    private String checkerFrameworkVersion;
 
     /**
-     * Java runtime parameters added when running the JSR308 compiler jar
+     * Java runtime parameters added when running the JSR 308 compiler jar
      * @parameter
      */
     private String javaParams;
 
     /**
-     * Javac params passed to the JSR308 compiler jar
+     * Javac params passed to the JSR 308 compiler jar
      * @parameter
      */
     private String javacParams;
@@ -188,12 +188,12 @@ public class CheckersMojo extends AbstractMojo {
 
 
     /**
-     * The location of the Framework jar
+     * The location of the Checker Framework jar
      */
     private File checkersJar;
 
     /**
-     * The location of the Compiler Jar
+     * The location of the compiler jar
      */
     private File javacJar;
 
@@ -219,7 +219,7 @@ public class CheckersMojo extends AbstractMojo {
             return;
         }
 
-        log.info("Running JSR308 checkers version: " + checkersVersion);
+        log.info("Running Checker Framework version: " + checkerFrameworkVersion);
 
         final String processor = ( processors.size() > 0 ) ? StringUtils.join(processors.iterator(), ",") : null;
 
@@ -336,7 +336,7 @@ public class CheckersMojo extends AbstractMojo {
         try {
             exitCode = CommandLineUtils.executeCommandLine(cl, out, err);
         } catch (CommandLineException e) {
-            throw new MojoExecutionException("Unable to execute checkers, executable: " + executable +
+            throw new MojoExecutionException("Unable to execute the Checker Framework, executable: " + executable +
                     ", command line: " + Arrays.toString(cl.getCommandline()), e);
         }
 
@@ -396,7 +396,7 @@ public class CheckersMojo extends AbstractMojo {
     private static final void logErrors(final List<CompilerError> errors, final String label,
                                         boolean warn, final Log log) {
         log.info("-------------------------------------------------------------");
-        log.warn("CHECKERS " + label.toUpperCase() + ": ");
+        log.warn("CHECKER FRAMEWORK " + label.toUpperCase() + ": ");
         log.info("-------------------------------------------------------------");
         for (final CompilerError error : errors) {
             final String msg = error.toString().trim();
@@ -420,13 +420,13 @@ public class CheckersMojo extends AbstractMojo {
      */
     private final void locateArtifacts() throws MojoExecutionException {
 
-        checkersJar = PathUtils.getFrameworkJar("framework", checkersVersion,
+        checkersJar = PathUtils.getFrameworkJar("framework", checkerFrameworkVersion,
                 artifactFactory, artifactResolver, remoteArtifactRepositories, localRepository);
 
-        javacJar    = PathUtils.getFrameworkJar("compiler", checkersVersion,
+        javacJar    = PathUtils.getFrameworkJar("compiler", checkerFrameworkVersion,
                 artifactFactory, artifactResolver, remoteArtifactRepositories, localRepository);
 
-        jdk7Jar    = PathUtils.getFrameworkJar("jdk7", checkersVersion,
+        jdk7Jar    = PathUtils.getFrameworkJar("jdk7", checkerFrameworkVersion,
                 artifactFactory, artifactResolver, remoteArtifactRepositories, localRepository);
     }
 }

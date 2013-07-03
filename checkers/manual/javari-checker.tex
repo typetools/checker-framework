@@ -6,20 +6,20 @@ Nonetheless, it may still be useful to you.
 
 Javari~\cite{TschantzE2005,QuinonezTE2008} is a Java language extension that helps programmers to avoid mutation
 errors that result from unintended side effects.
-If the Javari checker issues no warnings for a given program, then that
+If the Javari Checker issues no warnings for a given program, then that
 program will never change objects that should not be changed.  This
 guarantee enables a programmer to detect and prevent mutation-related
 errors.  (See Section~\ref{checker-guarantees} for caveats to the guarantee.)
 The Javari webpage (\myurl{http://types.cs.washington.edu/javari/}) contains
 papers that explain the Javari language and type system.
-By contrast to those papers, the Javari checker uses an annotation-based
+By contrast to those papers, the Javari Checker uses an annotation-based
 dialect of the Javari language.
 
 The Javarifier tool infers Javari types for an existing program; see
 Section~\ref{javari-inference}.
 
-Also consider the IGJ checker (Chapter~\ref{igj-checker}).  The IGJ type
-system is more expressive than that of Javari, and the IGJ checker is a bit
+Also consider the IGJ Checker (Chapter~\ref{igj-checker}).  The IGJ type
+system is more expressive than that of Javari, and the IGJ Checker is a bit
 more robust.  However, IGJ lacks a type inference tool such as Javarifier.
 
 To run the Javari Checker, supply the \code{-processor
@@ -79,7 +79,7 @@ The following six annotations make up the Javari type system.
 
 \subsection{Implicit qualifiers\label{javari-implicit-qualifiers}}
 
-As described in Section~\ref{effective-qualifier}, the Javari checker
+As described in Section~\ref{effective-qualifier}, the Javari Checker
 adds implicit qualifiers, reducing the number of annotations that must
 appear in your code.
 % For example, ...
@@ -103,7 +103,7 @@ that use those libraries.
 
 
 
-\section{What the Javari checker checks\label{javari-checks}}
+\section{What the Javari Checker checks\label{javari-checks}}
 
 The checker issues an error whenever mutation happens through a readonly
 reference, when fields of a readonly reference which are not explicitly
@@ -126,7 +126,7 @@ as \<@ReadOnly>, see Section~\ref{igj-library-annotations}.
 
 \section{Examples\label{javari-examples}}
 
-To try the Javari checker on a source file that uses the Javari
+To try the Javari Checker on a source file that uses the Javari
 qualifier, use the following command (where \code{javac} is the JSR 308
 compiler  that
 is distributed with the Checker Framework).  Alternately, you may
@@ -140,9 +140,9 @@ specify just one of the test files.
 The compiler should issue the errors and warnings (if any) specified in the
 \code{.out} files with same name.
 
-To run the test suite for the Javari checker, use \code{ant javari-tests}.
+To run the test suite for the Javari Checker, use \code{ant javari-tests}.
 
-The Javari checker itself is also annotated with Javari annotations.
+The Javari Checker itself is also annotated with Javari annotations.
 
 
 % LocalWords:  PolyRead javari cp plugin ReadOnly QReadOnly romaybe Javarifier

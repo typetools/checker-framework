@@ -9,7 +9,7 @@ import checkers.nullness.AbstractNullnessChecker;
 import checkers.util.test.ParameterizedCheckerTest;
 
 /**
- * JUnit tests for the nullness checker.
+ * JUnit tests for the Nullness Checker.
  */
 public class NullnessTempTest extends ParameterizedCheckerTest {
 

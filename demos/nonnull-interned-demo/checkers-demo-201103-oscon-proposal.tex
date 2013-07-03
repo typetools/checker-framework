@@ -275,19 +275,19 @@ errors in every codebase to which it has been applied.
 
 The framework ships with the following checkers:
 \begin{itemize}    \itemsep 0pt \parskip 0pt
-\item Nullness checker for null pointer errors
-\item Interning checker for errors in equality testing and interning
-\item IGJ checker for mutation errors (incorrect side effects), based on the IGJ type system
-\item Javari checker for mutation errors (incorrect side effects), based on the Javari type system
-\item Lock checker for concurrency and lock errors, inspired by the Java Concurrency in Practice (JCIP)~\cite{Goetz2006} annotations
-\item Fake enum checker for integers used as enumerations
-\item Tainting checker for trust and security errors
-\item Linear checker to control aliasing and prevent re-use
-\item Regex checker to prevent use of syntactically invalid regular expressions
-\item Internationalization checker to ensure that code is properly internationalized: user-visible text is obtained from a localization resource, and proper keys are used for a localization resource
-\item Property file checker to check keys used for property files and
+\item Nullness Checker for null pointer errors
+\item Interning Checker for errors in equality testing and interning
+\item IGJ Checker for mutation errors (incorrect side effects), based on the IGJ type system
+\item Javari Checker for mutation errors (incorrect side effects), based on the Javari type system
+\item Lock Checker for concurrency and lock errors, inspired by the Java Concurrency in Practice (JCIP)~\cite{Goetz2006} annotations
+\item Fake enum Checker for integers used as enumerations
+\item Tainting Checker for trust and security errors
+\item Linear Checker to control aliasing and prevent re-use
+\item Regex Checker to prevent use of syntactically invalid regular expressions
+\item Internationalization Checker to ensure that code is properly internationalized: user-visible text is obtained from a localization resource, and proper keys are used for a localization resource
+\item Property file Checker to check keys used for property files and
   resource bundles, and to check internationalization and compiler messages
-\item Basic checker for customized checking without writing any code
+\item Basic Checker for customized checking without writing any code
 \end{itemize}
 Additional checkers written by third parties are also available.
 The Checker Framework comes with a 100-page manual, mostly describing each
@@ -391,7 +391,7 @@ programs --- either in terms of program size or of language features.
 The JastAdd extensible Java compiler~\cite{EkmanH2007:JastAdd} includes a
 module for checking and inferencing of non-null
 types~\cite{EkmanH2007:NonNull}, though it is less featureful and correct
-than our nullness checker.  JastAdd could theoretically be used as a
+than our Nullness Checker.  JastAdd could theoretically be used as a
 framework to build other type systems.
 
 The goal of a bug-finder such as FindBugs~\cite{HovemeyerSP2005} is to find

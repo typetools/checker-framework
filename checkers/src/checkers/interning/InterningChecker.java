@@ -13,7 +13,7 @@ import checkers.quals.Unqualified;
 import checkers.source.SupportedLintOptions;
 
 /**
- * A typechecker plug-in for the {@link Interned} qualifier that
+ * A type-checker plug-in for the {@link Interned} qualifier that
  * finds (and verifies the absence of) equality-testing and interning errors.
  *
  * <p>
@@ -25,7 +25,7 @@ import checkers.source.SupportedLintOptions;
  * {@link Interned}.  Optionally, it suggests using "=="
  * instead of ".equals" where possible.
  *
- * @checker.framework.manual #interning-checker Interning checker
+ * @checker.framework.manual #interning-checker Interning Checker
  */
 @TypeQualifiers({ Interned.class, Unqualified.class,
     PolyInterned.class, PolyAll.class})

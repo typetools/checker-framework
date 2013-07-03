@@ -78,7 +78,7 @@ import com.sun.source.util.Trees;
  */
 public abstract class AbstractTypeProcessor extends AbstractProcessor {
     /**
-     * The set of fully-qualified element names that should be type checked.
+     * The set of fully-qualified element names that should be type-checked.
      * We store the names of the elements, in order to prevent
      * possible confusion between different Element instantiations.
      */

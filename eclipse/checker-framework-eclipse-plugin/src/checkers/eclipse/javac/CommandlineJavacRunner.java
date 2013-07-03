@@ -23,15 +23,15 @@ import checkers.eclipse.util.Command;
 import checkers.eclipse.util.JavaUtils;
 
 /**
- * Runs the Checker Framework compiler (i.e. the JSR308 compiler with the
- * appropriate bootclasspath, classpath, and option arguments.
+ * Runs the Checker Framework (i.e. javac with the
+ * appropriate bootclasspath, classpath, and option arguments).
  */
 public class CommandlineJavacRunner implements CheckersRunner {
 
     /**
      * The location of the checkers.jar relative to the plugin directory
      */
-    public static final String CHECKERS_LOCATION = "lib/checkers.jar";
+    public static final String CHECKERS_JAR_LOCATION = "lib/checkers.jar";
 
     public boolean verbose = false;
 
@@ -71,7 +71,7 @@ public class CommandlineJavacRunner implements CheckersRunner {
         this.processors = processors;
 
         //TODO: SEEMS THAT WHEN WE ARE USING @ ARGS THE CLASSPATH FROM THE JAR IS OVERRIDDEN - FIX THIS
-        this.checkersJar = locatePluginFile(CHECKERS_LOCATION);
+        this.checkersJar = locatePluginFile(CHECKERS_JAR_LOCATION);
         this.classpath = checkersJar.getAbsolutePath() + File.pathSeparator + classpath;
         this.bootClasspath = bootClasspath;
 

@@ -42,7 +42,7 @@ import checkers.igj.quals.*;
  * include method overriding checks, parameter passing, and method invocation.
  *
  * Most type-checker plug-ins will want to extend this class, instead of
- * {@link SourceChecker}.  Checkers which require annotated types but not
+ * {@link SourceChecker}.  Checkers that require annotated types but not
  * subtype checking (e.g. for testing purposes)
  * should extend {@link SourceChecker}.
  *
@@ -290,7 +290,7 @@ public abstract class BaseTypeChecker<Factory extends AbstractBasicAnnotatedType
      * Creates the type subtyping checker using the current type qualifier
      * hierarchy.
      *
-     * Subclasses may override this method to specify new type checking
+     * Subclasses may override this method to specify new type-checking
      * rules beyond the typical java subtyping rules.
      *
      * @return  the type relations class to check type subtyping
@@ -306,7 +306,7 @@ public abstract class BaseTypeChecker<Factory extends AbstractBasicAnnotatedType
     }
 
     /**
-     * Returns the appropriate visitor that type checks the compilation unit
+     * Returns the appropriate visitor that type-checks the compilation unit
      * according to the type system rules.
      *
      * This implementation uses the checker naming convention to create the
