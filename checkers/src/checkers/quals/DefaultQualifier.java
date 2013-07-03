@@ -7,8 +7,10 @@ import java.lang.annotation.Target;
 /**
  * Applied to a declaration of a package, type, method, variable, etc.,
  * specifies that the given annotation should be the default.  The default is
- * applied to all types within the declaration for which no other
+ * applied to type uses within the declaration for which no other
  * annotation is explicitly written.
+ * (The default is not applied to the "non-defaultable locations":  class
+ * declarations, type parameter declarations, and type parameter uses.)
  * If multiple DefaultQualifier annotations are in scope, the innermost one
  * takes precedence.
  * DefaultQualifier takes precedence over {@link DefaultQualifierInHierarchy}.
