@@ -7,7 +7,6 @@ import checkers.quals.*;
 
 /**
  * Denotes that the representation of an object is encrypted.
- * ...
  */
 @TypeQualifier
 @SubtypeOf(Unqualified.class)

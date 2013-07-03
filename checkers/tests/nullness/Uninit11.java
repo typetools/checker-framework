@@ -4,7 +4,7 @@ import java.lang.annotation.*;
 
 @TypeQualifier
 @SubtypeOf({})
-@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@Target(ElementType.TYPE_USE)
 @interface DoesNotUseF {}
 
 public class Uninit11 {

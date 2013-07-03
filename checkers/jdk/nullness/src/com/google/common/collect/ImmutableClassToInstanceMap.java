@@ -20,7 +20,7 @@ import static com.google.common.collect.MutableClassToInstanceMap.cast;
 
 import java.util.Map;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
 /**
  * A class-to-instance map backed by an {@link ImmutableMap}. See also {@link

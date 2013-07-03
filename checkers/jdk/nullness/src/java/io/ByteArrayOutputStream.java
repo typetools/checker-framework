@@ -1,5 +1,6 @@
 package java.io;
 
+import dataflow.quals.Pure;
 import checkers.nullness.quals.*;
 
 @checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
@@ -12,9 +13,9 @@ public class ByteArrayOutputStream extends OutputStream {
   public synchronized void writeTo(OutputStream a1) throws IOException { throw new RuntimeException("skeleton method"); }
   public synchronized void reset() { throw new RuntimeException("skeleton method"); }
   public synchronized byte[] toByteArray() { throw new RuntimeException("skeleton method"); }
-  public synchronized int size() { throw new RuntimeException("skeleton method"); }
-  public synchronized String toString() { throw new RuntimeException("skeleton method"); }
-  public synchronized String toString(String a1) throws UnsupportedEncodingException { throw new RuntimeException("skeleton method"); }
-  public synchronized String toString(int a1) { throw new RuntimeException("skeleton method"); }
+  @Pure public synchronized int size() { throw new RuntimeException("skeleton method"); }
+  @Pure public synchronized String toString() { throw new RuntimeException("skeleton method"); }
+  @Pure public synchronized String toString(String a1) throws UnsupportedEncodingException { throw new RuntimeException("skeleton method"); }
+  @Pure public synchronized String toString(int a1) { throw new RuntimeException("skeleton method"); }
   public void close() throws IOException { throw new RuntimeException("skeleton method"); }
 }

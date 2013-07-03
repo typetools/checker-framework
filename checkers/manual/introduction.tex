@@ -555,9 +555,9 @@ checkers support the following command-line options:
 
 \begin{itemize}
 \item \<-AskipUses> Suppress all errors and warnings at all uses of a
-  given class; see Section~\ref{suppressing-warnings}
+  given class; see Section~\ref{askipuses}
 \item \<-AskipDefs> Suppress all errors and warnings within the definition of a
-  given class; see Section~\ref{suppressing-warnings}
+  given class; see Section~\ref{askipdefs}
 \item \<-Astubs> List of stub files or directories; see Section~\ref{stub-using}
 \item \<-AstubWarnIfNotFound> Warn if a stub file entry could not be found; see Section~\ref{stub-using}
 \item \<-AstubDebug> Output debug messages while parsing stub files; see Section~\ref{stub-using}
@@ -565,7 +565,9 @@ checkers support the following command-line options:
 \item \<-Awarns> Treat checker errors as warnings.  If you use this, you
   may wish to also supply \code{-Xmaxwarns 10000}, because by default
   \<javac> prints at most 100 warnings.
-\item \<-Afilenames>, \<-Anomsgtext>, <\-Adetailedmsgtext>, \<-Ashowchecks>, \<-AprintErrorStack>,
+\item \<-AsuppressWarnings> Suppress all warnings matching the given key; see
+  Section~\ref{suppresswarnings-command-line}
+\item \<-Afilenames>, \<-Anomsgtext>, \<-Adetailedmsgtext>, \<-Ashowchecks>, \<-AprintErrorStack>,
   \<-AprintAllQualifiers>, \<-Aignorejdkastub>
   Aids for testing or debugging a checker; see Section~\ref{debugging-options}
 \item \<-AresourceStats> Display resource usage statistics at the end of compilation

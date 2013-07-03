@@ -21,7 +21,7 @@ import com.google.common.base.Objects;
 
 import java.util.Map.Entry;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
 /**
  * Implementation of the {@code equals}, {@code hashCode}, and {@code toString}
@@ -33,15 +33,15 @@ import checkers.nullness.quals.*;
     @SuppressWarnings("nullness:generic.argument")
     abstract class AbstractMapEntry<K extends /*@Nullable*/ Object, V extends /*@Nullable*/ Object> implements Entry<K, V> {
 
-  public abstract K getKey();
+  @Pure public abstract K getKey();
 
-  public abstract V getValue();
+  @Pure public abstract V getValue();
 
   public V setValue(V value) {
     throw new UnsupportedOperationException();
   }
 
-  @Override public boolean equals(@Nullable Object object) {
+  @Pure @Override public boolean equals(@Nullable Object object) {
     if (object instanceof Entry) {
       Entry<?, ?> that = (Entry<?, ?>) object;
       return Objects.equal(this.getKey(), that.getKey())
@@ -50,7 +50,7 @@ import checkers.nullness.quals.*;
     return false;
   }
 
-  @Override public int hashCode() {
+  @Pure @Override public int hashCode() {
     K k = getKey();
     V v = getValue();
     return ((k == null) ? 0 : k.hashCode()) ^ ((v == null) ? 0 : v.hashCode());
@@ -59,7 +59,7 @@ import checkers.nullness.quals.*;
   /**
    * Returns a string representation of the form <code>{key}={value}</code>.
    */
-  @Override public String toString() {
+  @Pure @Override public String toString() {
     return getKey() + "=" + getValue();
   }
 }

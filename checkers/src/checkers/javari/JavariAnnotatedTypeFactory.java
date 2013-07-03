@@ -9,8 +9,12 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 
+import javacutils.InternalUtils;
+import javacutils.Pair;
+import javacutils.TreeUtils;
+import javacutils.TypesUtils;
+
 import checkers.javari.quals.*;
-import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -18,13 +22,10 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
+import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.types.visitors.AnnotatedTypeScanner;
 import checkers.types.visitors.SimpleAnnotatedTypeScanner;
 import checkers.util.AnnotatedTypes;
-import checkers.util.InternalUtils;
-import checkers.util.Pair;
-import checkers.util.TreeUtils;
-import checkers.util.TypesUtils;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
@@ -73,7 +74,7 @@ import com.sun.source.util.SimpleTreeVisitor;
  * In all other cases, the {@link Mutable} annotation is inserted by default.
  * </ul>
  */
-public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
+public class JavariAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<JavariChecker> {
 
     /** Adds annotations from tree context before type resolution. */
     private final JavariTreePreAnnotator treePre;
@@ -93,7 +94,7 @@ public class JavariAnnotatedTypeFactory extends AnnotatedTypeFactory {
      */
     public JavariAnnotatedTypeFactory(JavariChecker checker,
         CompilationUnitTree root) {
-        super(checker, checker.getQualifierHierarchy(), root);
+        super(checker, root);
         this.treePre = new JavariTreePreAnnotator();
         this.typePost = new JavariTypePostAnnotator();
         this.READONLY = checker.READONLY;

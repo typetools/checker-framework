@@ -8,7 +8,7 @@ import checkers.nullness.quals.*;
 
 public class DefaultConstructor {
   Object nullObject;
-  @LazyNonNull Object lazyField;
+  @MonotonicNonNull Object lazyField;
 
   public Object getNull() { return nullObject; }
 }
