@@ -1,5 +1,5 @@
 /**
- * Contains qualifiers for type annotations used by the IGJ checker.
+ * Contains qualifiers for type annotations used by the IGJ Checker.
  *
  * @see checkers.igj.IGJChecker
  *

@@ -181,8 +181,8 @@ public class PersonalBlogService {
      * It is a simple concatenation operation.
      *
      * This method is helpful only when using the Basic Checker,
-     * which cannot detect the type of string concatenation, unlike
-     * the Tainting checker.
+     * which cannot detect the type of string concatination, unlike
+     * the Tainting Checker.
      */
     @SuppressWarnings("untainted")
     private @Untainted String constructQuery(@Untainted String ...strings) {

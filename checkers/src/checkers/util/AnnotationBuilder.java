@@ -49,7 +49,7 @@ import javacutils.TypesUtils;
  * expected type.
  * <p>
  *
- * TODO: Doesn't type check arrays yet
+ * TODO: Doesn't type-check arrays yet
  */
 public class AnnotationBuilder {
 

@@ -604,7 +604,7 @@ public abstract class AnnotatedTypeMirror {
         // removed.
         // TODO: however, this also means that if we are annotated with "@I(1)" and
         // remove "@I(2)" it will be removed. Is this what we want?
-        // It's currently necessary for the IGJ and Lock Checkers.
+        // It's currently necessary for the IGJ Checker and Lock Checker.
         AnnotationMirror anno = getAnnotation(AnnotationUtils.annotationName(a));
         if (anno != null) {
             return annotations.remove(anno);
@@ -2282,7 +2282,7 @@ public abstract class AnnotatedTypeMirror {
         public String toString(boolean printInvisible) {
             StringBuilder sb = new StringBuilder();
             // Prevent an infinite recursion that might happen when calling toString
-            // within deepCopy, caused by postAsSuper in (at least) the IGJ checker.
+            // within deepCopy, caused by postAsSuper in (at least) the IGJ Checker.
             // if (this.supertypes == null) { return; }
 
             boolean isFirst = true;

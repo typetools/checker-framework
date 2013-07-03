@@ -32,7 +32,7 @@ public class CheckerPlugin extends AbstractUIPlugin
     private static CheckerPlugin plugin;
 
     /** The console name to use for this plugin */
-    private static final String consoleName = "Checkers Plugin Console";
+    private static final String consoleName = "Checker Framework Plugin Console";
     
 
     public CheckerPlugin()

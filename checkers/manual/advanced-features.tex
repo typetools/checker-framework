@@ -513,8 +513,8 @@ locations where the programmer did not write an annotation:
 
 These \<.class> file defaulting rules are very strict.  If your code uses a
 library that was not created when running the checker, then your uses of
-that library probably will not type check.  This is intentional --- it is
-better than the type checker silently permitting such uses.
+that library probably will not type-check.  This is intentional --- it is
+better than the type-checker silently permitting such uses.
 To eliminate the errors, you should either re-compile the library while
 running the checker to create new \<.class> and/or \<.jar> files, or you
 should suppress the warnings (see Section~\ref{suppressing-warnings}).

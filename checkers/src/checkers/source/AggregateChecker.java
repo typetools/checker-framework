@@ -19,7 +19,7 @@ import com.sun.tools.javac.util.Log;
 
 /**
  * An aggregate checker that packages multiple checkers together.  The
- * resulting checker invokes the compontent checkers in turn on the processed
+ * resulting checker invokes the component checkers in turn on the processed
  * files.
  * <p>
  *

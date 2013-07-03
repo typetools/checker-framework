@@ -1,5 +1,5 @@
 /**
- * Provides a typechecker plug-in for the Javari type system that finds (and
+ * Provides a type-checker plug-in for the Javari type system that finds (and
  * verifies the absence of) immutability errors.
  *
  * @see checkers.javari.quals.ReadOnly

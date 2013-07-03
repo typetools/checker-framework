@@ -15,7 +15,7 @@ import checkers.util.GraphQualifierHierarchy;
 import checkers.util.MultiGraphQualifierHierarchy;
 
 /**
- * A typechecker plug-in for the JCIP type system qualifier that finds (and
+ * A type-checker plug-in for the JCIP type system qualifier that finds (and
  * verifies the absence of) locking and concurrency errors.
  *
  * @see GuardedBy

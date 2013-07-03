@@ -19,7 +19,7 @@ There is a separate FAQ for the type annotations syntax
 \textbf{Contents:} \\
 \ref{faq-ease-of-use}: Are type annotations easy to read and write? \\
 \ref{faq-code-clutter}: Will my code become cluttered with type annotations? \\
-\ref{never-make-type-errors}: I don't make type errors, so would pluggable type checking help me? \\
+\ref{never-make-type-errors}: I don't make type errors, so would pluggable type-checking help me? \\
 \ref{faq-handling-warnings}: What should I do if a checker issues a warning about my code? \\
 \ref{faq-no-absolute-guarantee}: Can a pluggable type-checker give an absolute guarantee of correctness? \\
 \ref{faq-concurrency}: What guarantee does the Checker Framework give for concurrent code? \\
@@ -109,14 +109,14 @@ less frequently than generic types, which Java programmers find acceptable;
 and they reduce the overall volume of documentation that a codebase needs.
 
 
-\section{I don't make type errors, so would pluggable type checking help me?\label{never-make-type-errors}}
+\section{I don't make type errors, so would pluggable type-checking help me?\label{never-make-type-errors}}
 
-Occasionally, a developer says that he makes no errors that typechecking
+Occasionally, a developer says that he makes no errors that type-checking
 could catch, or that any such errors are unimportant because they have low
 impact and are easy to fix.  When I investigate the claim, I invariably
 find that the developer is mistaken.
 
-Very frequently, the developer has underestimated what typechecking can
+Very frequently, the developer has underestimated what type-checking can
 discover.  Not every type error leads to an exception being thrown; and
 even if an exception is thrown, it may not seem related to classical types.
 Remember that a type system can discover
@@ -134,8 +134,8 @@ debugging.  You should continue to use these.
 But type-checking is a good complement to these.  Type-checking is more
 effective for some problems, and less effective for other problems.  It can
 reduce (but not eliminate) the time and effort that you spend on other
-approaches.  There are many important errors that type checking and other
-automated approaches cannot find; pluggable typechecking gives you more
+approaches.  There are many important errors that type-checking and other
+automated approaches cannot find; pluggable type-checking gives you more
 time to focus on those.
 
 
@@ -229,7 +229,7 @@ and prevent certain concurrency errors.
 % 
 % does not fix the concurrency error, because no locking has been introduced.
 % The code still has a data race that can lose updates or corrupt data
-% structures.  The code has been transformed so that the nullness checker
+% structures.  The code has been transformed so that the Nullness Checker
 % does not issue a warning, but this is scant comfort since the code is no
 % more correct than it was before.
 % 
@@ -341,7 +341,7 @@ API documentation (Javadoc)} and the source code of the distributed
 checkers.
 
 To whet your interest and demonstrate how easy it is to get started, here
-is an example of a complete, useful type checker.
+is an example of a complete, useful type-checker.
 
 \begin{Verbatim}
   @TypeQualifier
@@ -388,7 +388,7 @@ prints no warnings, your code might still have errors --- maybe the
 analysis was too weak to find them, or the tool's heuristics classified the
 warnings as likely false positives and discarded them.
 
-A type checker aims to find \emph{all} the bugs (of certain varieties).
+A type-checker aims to find \emph{all} the bugs (of certain varieties).
 It requires you to write type qualifiers in your program, or to use a tool
 that infers types.  Thus, it requires more work from the programmer, and in
 return it gives stronger guarantees.

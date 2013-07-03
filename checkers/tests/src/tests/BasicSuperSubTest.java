@@ -7,7 +7,7 @@ import checkers.subtyping.SubtypingChecker;
 import checkers.util.test.CheckerTest;
 
 /**
- * Test suite for the basic checker, using a simple {@link Encrypted}
+ * Test suite for the Basic Checker, using a simple {@link Encrypted}
  * annotation.
  */
 public class BasicSuperSubTest extends CheckerTest {

@@ -15,7 +15,7 @@ If you only want to \emph{use} a checker, you do not need to read this
 chapter.
 
 Writing a simple checker is easy!  For example, here is a complete, useful
-type checker:
+type-checker:
 
 \begin{Verbatim}
 @TypeQualifier
@@ -723,7 +723,7 @@ type-system classes.
 
 Because the Checker Framework provides reasonable defaults, oftentimes the
 checker class has no work to do.  Here are the complete definitions of the
-checker classes for the Interning and Nullness Checkers:
+checker classes for the Interning Checker and the Nullness Checker:
 
 \begin{Verbatim}
   @TypeQualifiers({ Interned.class, PolyInterned.class })
@@ -1127,7 +1127,7 @@ There is a \code{TypeMirror} interface to represent each type kind,
 e.g., \code{PrimitiveType} for primitive types, \code{ExecutableType}
 for method types, and \code{NullType} for the type of the \code{null} literal.
 
-\code{TypeMirror} does not represent annotated types though.  Checkers
+\code{TypeMirror} does not represent annotated types though.  A checker
 should use the Checker Framework types API,
 \refclass{types}{AnnotatedTypeMirror}, instead.  \code{AnnotatedTypeMirror}
 parallels the \code{TypeMirror} API, but also present the type annotations
@@ -1171,7 +1171,7 @@ There is a Tree interface for each Java source structure, e.g.,
 for a method invocation, and \code{ForEachTree} for an enhanced-for-loop
 statement.
 
-You should limit your use of trees. Checkers use Trees mainly to
+You should limit your use of trees. A checkers uses Trees mainly to
 traverse the source code and retrieve the types/elements corresponding to
 them.  Then, the checker performs any needed checks on the types/elements instead.
 

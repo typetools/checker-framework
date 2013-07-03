@@ -93,7 +93,7 @@ If you get an error like the following when using the Ant task
 %END LATEX
 
 \noindent
-then the problem may be that you have not set the CHECKERS environment
+then the problem may be that you have not set the \code{CHECKERS} environment
 variable, as described in Section~\ref{windows-installation}.  Or, maybe
 you made it a user variable instead of a system variable.
 
@@ -704,7 +704,7 @@ differs from a bug detector in several ways:
 \begin{itemize}
 \item
   A type-checker aims to find \emph{all} errors.  Thus, it can verify the
-  \emph{absence} of errors:  if the type checker says there are no null
+  \emph{absence} of errors:  if the type-checker says there are no null
   pointer errors in your code, then there are none.  (This guarantee only
   holds for the code it checks, of course; see
   Section~\ref{checker-guarantees}.)
@@ -756,12 +756,12 @@ grateful.
 %% Not so accurate, since Mahmood is really an author of the nullness and
 %% interned checkers too.
 % The Checker Framework was implemented by 
-% The nullness checker was implemented by Matthew M. Papi.
-% The interning checker was implemented by Matthew M. Papi.
-% The Javari checker was implemented by Telmo Correa.
-% The IGJ checker was implemented by Mahmood Ali.
-% The basic checker was implemented by Matthew M. Papi.
-% The Fake enum checker was written by Werner M. Dietl.
+% The Nullness Checker was implemented by Matthew M. Papi.
+% The Interning Checker was implemented by Matthew M. Papi.
+% The Javari Checker was implemented by Telmo Correa.
+% The IGJ Checker was implemented by Mahmood Ali.
+% The Basic Checker was implemented by Matthew M. Papi.
+% The Fake Enum Checker was written by Werner M. Dietl.
 % ... many others ...
 
 Differences from previous versions of the checkers and framework can be found

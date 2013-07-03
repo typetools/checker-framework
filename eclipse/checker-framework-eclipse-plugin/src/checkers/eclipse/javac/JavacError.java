@@ -171,12 +171,12 @@ public class JavacError
             if (procMatcher.group(1).equals("''"))
             {
                 status = new CheckerErrorStatus(
-                        "No checkers configured. Try configuring checkers to use in the plugin preferences.");
+                        "No checkers configured. Use the plugin preferences to configure checkers to use.");
             }
             else
             {
                 status = new CheckerErrorStatus(
-                        "Checker processor "
+                        "Annotation processor "
                                 + procMatcher.group(1)
                                 + " could not be found. Try adding checkers.jar to your project build path.");
             }

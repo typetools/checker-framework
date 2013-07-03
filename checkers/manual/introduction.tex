@@ -14,52 +14,52 @@ The Checker Framework comes with checkers for specific types of errors:
   \ahrefloc{nullness-checker}{Nullness Checker} for null pointer errors
   (see \chapterpageref{nullness-checker})
 \item
-  \ahrefloc{interning-checker}{Interning checker} for errors in equality
+  \ahrefloc{interning-checker}{Interning Checker} for errors in equality
   testing and interning (see \chapterpageref{interning-checker})
 \item
-  \ahrefloc{lock-checker}{Lock checker} for concurrency and lock errors,
+  \ahrefloc{lock-checker}{Lock Checker} for concurrency and lock errors,
   inspired by the Java Concurrency in Practice (JCIP) annotations (see
   \chapterpageref{lock-checker})
 \item
-  \ahrefloc{fenum-checker}{Fake enum checker} to allow type-safe fake enum
+  \ahrefloc{fenum-checker}{Fake Enum Checker} to allow type-safe fake enum
   patterns (see \chapterpageref{fenum-checker})
 \item
-  \ahrefloc{tainting-checker}{Tainting checker} for trust and security errors
+  \ahrefloc{tainting-checker}{Tainting Checker} for trust and security errors
   (see \chapterpageref{tainting-checker})
 \item
-  \ahrefloc{regex-checker}{Regex checker} to prevent use of syntactically
+  \ahrefloc{regex-checker}{Regex Checker} to prevent use of syntactically
   invalid regular expressions (see \chapterpageref{regex-checker})
 \item
-  \ahrefloc{propkey-checker}{Property file checker} to ensure that valid
+  \ahrefloc{propkey-checker}{Property File Checker} to ensure that valid
   keys are used for property files and resource bundles (see
   \chapterpageref{propkey-checker}).
   Also includes a checker that code is properly internationalized.
   %% Not interesting enough to go at the beginning of the introduction.
   % and a checker for compiler message keys as used in the Checker Framework.
 \item
-  \ahrefloc{signature-checker}{Signature string checker} to ensure that the
+  \ahrefloc{signature-checker}{Signature String Checker} to ensure that the
   string representation of a type is properly used, for example in
   \<Class.forName> (see \chapterpageref{signature-checker}).
   Also includes a checker that code is properly internationalized.
   %% Not interesting enough to go at the beginning of the introduction.
   % and a checker for compiler message keys as used in the Checker Framework.
 \item
-  \ahrefloc{units-checker}{Units checker} to ensure operations are
+  \ahrefloc{units-checker}{Units Checker} to ensure operations are
   performed on correct units of measurement
   (see \chapterpageref{units-checker})
 \item
-  \ahrefloc{linear-checker}{Linear checker} to control aliasing and prevent
+  \ahrefloc{linear-checker}{Linear Checker} to control aliasing and prevent
   re-use (see \chapterpageref{linear-checker})
 \item
-  \ahrefloc{igj-checker}{IGJ checker} for mutation errors (incorrect
+  \ahrefloc{igj-checker}{IGJ Checker} for mutation errors (incorrect
   side effects), based on the IGJ type system (see
   \chapterpageref{igj-checker})
 \item
-  \ahrefloc{javari-checker}{Javari checker} for mutation errors
+  \ahrefloc{javari-checker}{Javari Checker} for mutation errors
   (incorrect side effects), based on the Javari type system (see
   \chapterpageref{javari-checker})
 \item
-  \ahrefloc{basic-checker}{Basic checker} for customized checking without
+  \ahrefloc{basic-checker}{Basic Checker} for customized checking without
   writing any code (see \chapterpageref{basic-checker})
 \item
   \ahrefloc{typestate-checker}{Typestate checker} to ensure operations are
@@ -85,9 +85,9 @@ own; see Chapters~\ref{basic-checker} and~\ref{writing-a-checker}.
 
 The Checker Framework supports adding
 pluggable type systems to the Java language in a backward-compatible way.
-Java's built-in typechecker finds and prevents many errors --- but it
+Java's built-in type-checker finds and prevents many errors --- but it
 doesn't find and prevent \emph{enough} errors.  The Checker Framework lets you
-run an additional typechecker as a plug-in to the javac compiler.  Your
+run an additional type-checker as a plug-in to the javac compiler.  Your
 code stays completely backward-compatible:  your code compiles with any
 Java compiler, it runs on any JVM, and your coworkers don't have to use the
 enhanced type system if they don't want to.  You can check only part of
@@ -144,7 +144,7 @@ build the latest development version from source
 
 % Not "\ahrefurl" because it looks bad in the printed manual.
 \textbf{Requirement:}
-You must have \textbf{JDK 6} or later installed.  You can get JDK 6 from
+You must have \textbf{JDK 7} or later installed.  You can get JDK 7 from
 \ahref{http://www.oracle.com/technetwork/java/javase/downloads/index.html}{Oracle}
 or elsewhere.  If you are using Apple Mac OS X, you can use
 \ahref{http://developer.apple.com/search/index.php?q=java}{Apple's implementation},
@@ -617,8 +617,8 @@ that your code is checked even if you forget the command-line option.
 To enable auto-discovery, place a configuration file named
 \code{META-INF/services/javax.annotation.processing.Processor}
 in your classpath.  The file contains the names of the checker plugins to
-be used, listed one per line.  For instance, to run the Nullness and the
-Interning checkers automatically, the configuration file should contain:
+be used, listed one per line.  For instance, to run the Nullness Checker and the
+Interning Checker automatically, the configuration file should contain:
 
 %BEGIN LATEX
 \begin{smaller}
@@ -637,7 +637,7 @@ annotation processing including all pluggable type-checking.
 
 %% Auto-discovering all the distributed checkers by default would be
 %% problematic.  So, leave it up to the user to enable auto-discovery.
-%%  1. We don't want to auto-discover both the Javari & IGJ type checkers,
+%%  1. We don't want to auto-discover both the Javari & IGJ type-checkers,
 %%     as then the user would see multiple, possibly contradictory, types
 %%     of mutability diagnostics.
 %%  2. The nullness and mutability checkers would issue lots of errors for
@@ -650,7 +650,7 @@ annotation processing including all pluggable type-checking.
 A checker can guarantee that a particular property holds throughout the
 code.  For example, the Nullness Checker (Chapter~\ref{nullness-checker})
 guarantees that every expression whose type is a \code{@\refclass{nullness/quals}{NonNull}} type never
-evaluates to null.  The Interning checker (Chapter~\ref{interning-checker})
+evaluates to null.  The Interning Checker (Chapter~\ref{interning-checker})
 guarantees that every expression whose type is an \code{@\refclass{interning/quals}{Interned}} type
 evaluates to an interned value.  The checker makes its guarantee by
 examining every part of your program and verifying that no part of the
@@ -1051,7 +1051,7 @@ bug in the checker; in this case, please report the bug (see
 % LocalWords:  deserialization Mahmood Telmo Correa changelog txt nullness ESC
 % LocalWords:  Nullness Xspacesincomments unselect checkbox unsetting PolyNull
 % LocalWords:  bashrc IDE xml buildfile PolymorphicQualifier enum API elts INF
-% LocalWords:  typechecker proc discoverable Xlint util QualifierDefaults Foo
+% LocalWords:  type-checker proc discoverable Xlint util QualifierDefaults Foo
 % LocalWords:  DefaultQualifier DefaultQualifiers SoyLatte GetStarted Formatter
 % LocalWords:  Dcheckers Warski MyClass ProcessorName compareTo toString myDate
 % LocalWords:  ReadOnly readonlyObject int XDTA spacesincomments newdir Awarns

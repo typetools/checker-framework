@@ -180,7 +180,7 @@ public class Simple {
 //        String @Regex [] s2;    // error
 //    }
 
-//    TODO: This is not supported until the regex checker supports flow
+//    TODO: This is not supported until the Regex Checker supports flow
 //    sensitivity. See the associated comment at
 //    checkers/regex/RegexAnnotatedTypeFactory.java:visitNewArray
 //    void testCharArrays(char c, @Regex char r) {

@@ -522,6 +522,45 @@ cannot ever be null at run time.
 
 \begin{enumerate}
 \item
+  Use an assertion.  If the string ``\<\nullnessSuppressionString>''
+  appears in the message body, then the Nullness Checker treats the
+  assertion as suppressing a warning and assumes that the assertion always
+  succeeds.  For example, the checker assumes that no null pointer
+  exception can occur in code such as
+\begin{Verbatim}
+  assert x != null : "@SuppressWarnings(nullness)";
+  ... x.f ...
+\end{Verbatim}
+
+  If the string ``\<\nullnessSuppressionString>'' does not appear in the
+  assertion message, then the Nullness Checker treats the assertion as being
+  used for defensive programming, and it warns if the method might throw a
+  nullness-related exception.
+
+  A downside of putting the string in the assertion message is that if the
+  assertion ever fails, then a user might see the string and be confused.
+  But the string should only be used if the programmer has reasoned that
+  the assertion can never fail.
+
+% (Another way of stating the Nullness Checker's use of assertions is as an
+% additional caveat to the guarantees provided by a checker
+% (Section~\ref{checker-guarantees}).  The Nullness Checker prevents null
+% pointer errors in your code under the assumption that assertions are
+% enabled, and it does not guarantee that all of your assertions succeed.)
+
+
+% TODO:
+% There is a new lint option "flow:inferFromAsserts" that can be used
+% to always infer information from assert statements, even without the
+% suppression key.
+% Discuss how this influences the guarantees from the checker.
+% This is a feature of the framework, not only the Nullness Checker.
+% Move the discussion somewhere else, but keep something here?
+% Maybe warnings or advanced-features.
+
+% TODO: Also discuss the whole inference over conditions somewhere.
+
+\item
   Use the \refmethod{nullness}{NullnessUtils}{castNonNull}{(T)} method.
 
 The Nullness
@@ -756,7 +795,7 @@ parameter in comments (see Section~\ref{annotations-in-comments}):
 
 % Most readers can
 % skip this section on first reading; you can return to it once you have
-% mastered the rest of the nullness checker.
+% mastered the rest of the Nullness Checker.
 
 \subsection{Rawness qualifiers\label{rawness-qualifiers}}
 
@@ -1288,7 +1327,7 @@ Run the command \code{make check-nullness}.
 % % TODO: how does one do this?
 % first download the scene library suite (which includes build
 % dependencies for the scene library as well as its source code) and extract it
-% into your checkers installation. The checker can then be run on the annotation
+% into your Checker Framework installation. The checker can then be run on the annotation
 % scene library with Apache Ant using the following commands:
 %
 % \begin{Verbatim}

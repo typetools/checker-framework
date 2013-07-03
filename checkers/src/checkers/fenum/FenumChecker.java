@@ -22,7 +22,7 @@ import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import checkers.basetype.BaseTypeChecker;
 
 /**
- * The main checker class for the fake enum checker.
+ * The main checker class for the Fake Enum Checker.
  *
  * There are two options to distinguish different enumerators:
  *
