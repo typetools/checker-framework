@@ -1,0 +1,65 @@
+import checkers.interning.quals.*;
+
+import java.util.ArrayList;
+import java.util.List;
+
+class Raw3 {
+
+  // We would like behavior that is as similar as possible between the
+  // versions with no raw types and those with raw types.
+
+  // no raw types
+  List<String> foo1() {
+    List<String> sl = new ArrayList<>();
+    return (List<String>) sl;
+  }
+
+  // with raw types
+  List<String> foo2() {
+    List<String> sl = new ArrayList<>();
+    return (List) sl;
+  }
+
+
+  // no raw types
+  List<String> foo3() {
+    List<@Interned String> sl = new ArrayList<>();
+    //:: error: (return.type.incompatible)
+    return (List<@Interned String>) sl;
+  }
+
+  // with raw types
+  List<String> foo4() {
+    List<@Interned String> sl = new ArrayList<>();
+    //:: error: (return.type.incompatible)
+    return (List) sl;
+  }
+
+
+  // no raw types
+  List<@Interned String> foo6() {
+    List<String> sl = new ArrayList<>();
+    //:: error: (return.type.incompatible)
+    return (List<String>) sl;
+  }
+
+  // with raw types
+  List<@Interned String> foo5() {
+    List<String> sl = new ArrayList<>();
+    //:: error: (return.type.incompatible)
+    return (List) sl;
+  }
+
+
+  class TestList<T> {
+    List<String> bar1() {
+      List<String> sl = new ArrayList<>();
+      return (List<String>) sl;
+    }
+    List<String> bar2() {
+      List<String> sl = new ArrayList<>();
+      return (List) sl;
+    }
+  }
+
+}

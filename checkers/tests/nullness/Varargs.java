@@ -24,7 +24,7 @@ public class Varargs {
         test2("foo", "bar");
     }
 
-    public void format1(java.lang.String a1, java.lang.@Nullable Object... a2) {
+    public void format1(java.lang.String a1, java.lang. @Nullable Object... a2) {
         int x = a2.length;           // no warning
         //:: error: (enhancedfor.type.incompatible)
         for (@NonNull Object p : a2) // warning
@@ -46,5 +46,5 @@ public class Varargs {
     }
 
     // printf declaration is taken from PrintStream
-    public java.io.PrintStream printf(java.lang.String a1, java.lang.@Nullable Object ... a2) { throw new RuntimeException("skeleton method"); }
+    public java.io.PrintStream printf(java.lang.String a1, java.lang. @Nullable Object ... a2) { throw new RuntimeException("skeleton method"); }
 }

@@ -6,13 +6,16 @@ import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 
-import checkers.source.SourceChecker;
+import javacutils.AnnotationUtils;
+import javacutils.ErrorReporter;
+
 import checkers.types.QualifierHierarchy;
 
 /**
 * Represents the type qualifier hierarchy of a type system.
 *
-* This class is immutable and can be only created through {@link GraphFactory}.
+* This class is immutable and can be only created through
+* {@link MultiGraphQualifierHierarchy.MultiGraphFactory}.
 */
 public class GraphQualifierHierarchy extends MultiGraphQualifierHierarchy {
 
@@ -56,7 +59,7 @@ public class GraphQualifierHierarchy extends MultiGraphQualifierHierarchy {
     @Override
     public Set<AnnotationMirror> getTopAnnotations() {
         if (tops.size() != 1) {
-            SourceChecker.errorAbort("Expected 1 possible top qualifier, found "
+            ErrorReporter.errorAbort("Expected 1 possible top qualifier, found "
                                + tops.size()
                                + " (does the checker know about all type qualifiers?): "
                                + tops);
@@ -73,13 +76,13 @@ public class GraphQualifierHierarchy extends MultiGraphQualifierHierarchy {
     @Override
     public boolean isSubtype(Collection<AnnotationMirror> rhs, Collection<AnnotationMirror> lhs) {
         if (lhs.isEmpty() || rhs.isEmpty()) {
-            SourceChecker.errorAbort("GraphQualifierHierarchy: Empty annotations in lhs: " + lhs + " or rhs: " + rhs);
+            ErrorReporter.errorAbort("GraphQualifierHierarchy: Empty annotations in lhs: " + lhs + " or rhs: " + rhs);
         }
         if (lhs.size() > 1) {
-            SourceChecker.errorAbort("GraphQualifierHierarchy: Type with more than one annotation found: " + lhs);
+            ErrorReporter.errorAbort("GraphQualifierHierarchy: Type with more than one annotation found: " + lhs);
         }
         if (rhs.size() > 1) {
-            SourceChecker.errorAbort("GraphQualifierHierarchy: Type with more than one annotation found: " + rhs);
+            ErrorReporter.errorAbort("GraphQualifierHierarchy: Type with more than one annotation found: " + rhs);
         }
         for (AnnotationMirror lhsAnno : lhs) {
             for (AnnotationMirror rhsAnno : rhs) {

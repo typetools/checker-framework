@@ -14,12 +14,13 @@ import java.util.Set;
 import javax.annotation.processing.SupportedOptions;
 import javax.lang.model.util.Elements;
 
+import javacutils.AnnotationUtils;
+
 import checkers.basetype.BaseTypeChecker;
 import checkers.quals.Bottom;
 import checkers.propkey.quals.PropertyKey;
 import checkers.quals.TypeQualifiers;
 import checkers.quals.Unqualified;
-import checkers.util.AnnotationUtils;
 import checkers.util.GraphQualifierHierarchy;
 import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 
@@ -55,7 +56,7 @@ import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 @TypeQualifiers( {PropertyKey.class, Unqualified.class, Bottom.class} )
 // Subclasses need exactly this:
 @SupportedOptions( {"propfiles", "bundlenames"} )
-public class PropertyKeyChecker extends BaseTypeChecker {
+public class PropertyKeyChecker extends BaseTypeChecker<PropertyKeyAnnotatedTypeFactory<?>> {
 
     private Set<String> lookupKeys;
 

@@ -1,6 +1,6 @@
 package java.lang;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
 abstract public
 class VirtualMachineError extends Error {

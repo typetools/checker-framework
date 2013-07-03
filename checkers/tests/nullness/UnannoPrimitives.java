@@ -4,7 +4,6 @@ class UnannoPrimitives {
   //:: error: (type.invalid)
   @Nullable int f;
 
-  //:: error: (type.invalid)
   @NonNull int g;
 
   void local() {
@@ -18,7 +17,6 @@ class UnannoPrimitives {
     //:: error: (type.invalid)
     @Nullable int f;
 
-    //:: error: (type.invalid)
     @NonNull int g;
   }
 
