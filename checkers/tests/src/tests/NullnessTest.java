@@ -8,7 +8,7 @@ import org.junit.runners.Parameterized.Parameters;
 import checkers.util.test.ParameterizedCheckerTest;
 
 /**
- * JUnit tests for the Nullness checker.
+ * JUnit tests for the Nullness Checker.
  */
 public class NullnessTest extends ParameterizedCheckerTest {
 

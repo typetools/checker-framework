@@ -1,6 +1,6 @@
 /**
  * Contains the essential functionality for interfacing a compile-time (source)
- * typechecker plug-in to the Java compiler. This allows a checker to use
+ * type-checker plug-in to the Java compiler. This allows a checker to use
  * the compiler's error reporting mechanism and to access abstract syntax trees
  * and compiler utility classes.
  *

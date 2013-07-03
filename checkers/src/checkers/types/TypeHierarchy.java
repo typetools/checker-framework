@@ -54,14 +54,14 @@ public class TypeHierarchy {
     /** Prevent infinite loops in cases of recursive type bound */
     protected final Set<AnnotatedTypeMirror> visited;
 
-    /** The type checker to use. */
+    /** The type-checker to use. */
     protected final BaseTypeChecker checker;
 
     /**
      * Constructs an instance of {@code TypeHierarchy} for the type system
      * whose qualifiers represented in qualifierHierarchy.
      *
-     * @param checker The type checker to use
+     * @param checker The type-checker to use
      * @param qualifierHierarchy The qualifier hierarchy to use
      */
     public TypeHierarchy(BaseTypeChecker checker, QualifierHierarchy qualifierHierarchy) {

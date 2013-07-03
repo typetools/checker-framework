@@ -13,7 +13,7 @@ import com.sun.source.util.*;
 
 /**
  * An AST visitor that provides a variety of compiler utilities and interfaces
- * to facilitate typechecking.
+ * to facilitate type-checking.
  */
 public abstract class SourceVisitor<R, P> extends TreePathScanner<R, P> {
 

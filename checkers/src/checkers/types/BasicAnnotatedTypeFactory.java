@@ -41,7 +41,7 @@ import com.sun.source.tree.Tree;
  */
 public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker> extends AnnotatedTypeFactory {
 
-    /** The type checker to use. */
+    /** The type-checker to use. */
     protected Checker checker;
 
     /** should use flow by default */

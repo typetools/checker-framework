@@ -30,13 +30,13 @@ The artifacts have a shared group id of "types.checkers".
 
 The artifact names are:
   checkers-maven-plugin - the Checker Framework maven plugin itself
-  checkers-quals - checker-quals.jar
+  checkers-quals - checkers-quals.jar
   compiler - jsr308-langtools compiler's javac.jar
   framework - checkers.jar
   jdk7 - jdk7.jar
 
-The version number is specified by the checkersVersion element in your
-pom.xml or, if the checkersVersion element is missing, is the version of
+The version number is specified by the checkerFrameworkVersion element in your
+pom.xml or, if the checkerFrameworkVersion element is missing, is the version of
 your Maven plugin.  See
 http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#maven-plugin.
 
@@ -63,7 +63,7 @@ your "local repository" (the local cache of downloaded artifacts) using the
 version number found in the corresponding pom file in $CHECKERS/binary/poms .
 
 3.  For the project on which you are applying the Checker Framework, make
-sure the element "checkersVersion" matches the version created in step 1.
+sure the element "checkerFrameworkVersion" matches the version created in step 1.
 
 You can now run
   mvn checkers:check

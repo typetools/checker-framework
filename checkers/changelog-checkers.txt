@@ -90,7 +90,7 @@ User-visible framework improvements:
 
 Adapt to underlying jsr308-langtools changes.
   The most visible change is syntax for fully-qualified types, from @A java.lang.Object to java.lang.@A Object.
-  The Checker Framework does not build or run on JDK 6.
+  JDK 7 is now required.  The Checker Framework does not build or run on JDK 6.
 
 Documentation:
   A new tutorial is available at http://types.cs.washington.edu/checker-framework/tutorial/
@@ -341,7 +341,7 @@ Regex Checker:
 Internal bug fixes:
   Improve flow's support of annotations with parameters.
   Fix generics corner cases (Issues 131, 132, 133, 135).
-  Support type annotations in annotations and type check annotations.
+  Support type annotations in annotations and type-check annotations.
   Improve reflective look-up of visitors and factories.
   Small cleanups.
 
@@ -540,8 +540,8 @@ Implementation details:
   BaseTypeChecker that should be used. This gives a more concrete type
   to field "checker" and is similar to BasicAnnotatedTypeFactory.
 
-- Added method AnnotatedTypeFactory.typeVariablesFromUse to allow type
-  checkers to adapt the upper bounds of a type variable depending on
+- Added method AnnotatedTypeFactory.typeVariablesFromUse to allow
+  type-checkers to adapt the upper bounds of a type variable depending on
   the type instantiation.
 
 - Method type argument inference:
@@ -655,7 +655,7 @@ Fixed a bug related to running binary release in JDK 6
 Version 1.1.0, 13 Jun 2010
 
 Checkers
-  Introduced a new simple mechanism for running the Checkers
+  Introduced a new simple mechanism for running a checker
   Added one annotated JDK for all checkers
 
 Nullness Checker
@@ -704,7 +704,7 @@ Interning Checker
 
 Bug fixes
   Fix a bug related to array implicit types
-  Lock checker: Treat null as a bottom type
+  Lock Checker: Treat null as a bottom type
 
 Manual
   Added a new section about Flow inference and fields
@@ -719,8 +719,6 @@ Checkers
 
 ----------------------------------------------------------------------
 Version 1.0.6, 24 Feb 2009
-
-Checkers
 
 Nullness Checker
   Added support for new annotations:
@@ -793,7 +791,7 @@ Manual
 Version 1.0.2, 16 Nov 2009
 
 Checkers
-  Renamed Regex checker's @ValidRegex annotation to @Regex
+  Renamed Regex Checker's @ValidRegex annotation to @Regex
   Improved Collection.toArray() heuristics to be more sound
 
 Bug fixes
@@ -814,7 +812,7 @@ Functionality
   nullness: Added support for netbeans nullness annotations
   nullness: better semantics for redundant nullness tests
 	related to redundant tests in assertions
-  lock: Added support for JCIP annotation in Lock checker
+  lock: Added support for JCIP annotation in the Lock Checker
   tainting: Added support for polymorphism
   Lock Checker supports the JCIP GuardedBy annotation
 
@@ -826,10 +824,10 @@ Bug fixes
 
 Manual
   Tweak installation instructions
-  Reference units checkers
+  Reference Units Checker
   Added new sections for new checkers
     RegEx checker (S 10)
-    Internationalization checker (S 11)
+    Internationalization Checker (S 11)
 
 ----------------------------------------------------------------------
 Version 1.0.0, 30 Sep 2009
@@ -942,7 +940,7 @@ Manual
 Version 0.9.4, 30 Jun 2009
 
 Functionality
-  Added Lock checker
+  Added Lock Checker
 
 Bug fixes
   Handle more patterns for determining Map.get() return type
@@ -969,7 +967,7 @@ Manual Documentations
   Improved discussion of effective and implicit qualifiers and defaults
   Added a discussion about the need for bottom qualifiers
   Added sections for how-to
-    . suppress basic checker warnings
+    . suppress Basic Checker warnings
     . troubleshoot skeleton files
 
 ----------------------------------------------------------------------
@@ -1272,7 +1270,7 @@ Basic Checker
   Moved to its own checkers.basic package
 
 Framework
-  Enhanced type checking within qualifier-polymorphic method bodies
+  Enhanced type-checking within qualifier-polymorphic method bodies
   Fixed a bug causing StackOverflowError when type-checking wildcards
   Fixed a bug causing a NullPointerException when type-checking
     compound assignments, in the form of +=
@@ -1410,7 +1408,7 @@ Basic Checker
 ----------------------------------------------------------------------
 Version 0.6.1, 26 Apr 2008
 
-Checkers Framework API
+Checker Framework API
   Added support for @ImplicitFor meta-annotations via the new TypeAnnotator
     and TreeAnnotator classes
   Improved documentation and specifications
@@ -1443,7 +1441,7 @@ Custom Checker
 ----------------------------------------------------------------------
 Version 0.6, 11 Apr 2008
 
-Checkers Framework API
+Checker Framework API
   Introduced AnnotationRelations and TypeRelations, more robust classes to
     represent type and annotation hierarchies, and deprecated
     SimpleSubtypeRelation
@@ -1492,10 +1490,10 @@ Miscellaneous
 ----------------------------------------------------------------------
 Version 0.5.1, 21 Mar 2008
 
-Checkers Framework API
+Checker Framework API
   Added support for conditional expression
   Added checks for type validity and assignability
-  Added support for checkers customization of asMemberOf
+  Added support for per-checker customization of asMemberOf
   Added support for type parameters in method invocation,
     including type inference
   Enhanced performance of AnnotatedTypeFactory
@@ -1545,7 +1543,7 @@ NonNull Checker
   Improved subtype testing, removing some spurious errors
 
 Custom Checker
-  Added a new type checker for type systems with no special semantics, for
+  Added a new type-checker for type systems with no special semantics, for
     which annotations can be provided via the command line
 
 Miscellaneous
@@ -1556,7 +1554,7 @@ Miscellaneous
 ----------------------------------------------------------------------
 Version 0.5, 7 Mar 2008
 
-Checkers Framework API
+Checker Framework API
   Enhanced the supertype finder to take annotations on extends and
     implements clauses of a class type
   Fixed a bug related to checking an empty array initializer ("{}")
@@ -1596,7 +1594,7 @@ Miscellaneous
 ----------------------------------------------------------------------
 Version 0.4.1, 22 Feb 2008
 
-Checkers Framework API
+Checker Framework API
   Introduced AnnotatedTypeFactory.directSupertypes() which finds the
     supertypes as annotated types, which can be used by the framework.
   Introduced default error messages analogous to javac's error messages.
@@ -1624,7 +1622,7 @@ Interned Checker
 ----------------------------------------------------------------------
 Version 0.4, 11 Feb 2008
 
-Checkers Framework API
+Checker Framework API
   Added checkers.flow, an improved and generalized flow-sensitive type
     qualifier inference, and removed redundant parts from
     checkers.nonnull.flow.
@@ -1639,7 +1637,7 @@ NonNull Checker
 ----------------------------------------------------------------------
 Version 0.3.99, 20 Nov 2007
 
-Checkers Framework API
+Checker Framework API
   Deprecated AnnotatedClassType, AnnotatedMethodType, and AnnotationLocation
     in favor of AnnotatedTypeMirror (a new representation of annotated types
     based on the javax.lang.model.type hierarchy).
@@ -1649,11 +1647,11 @@ Checkers Framework API
   Added options for debugging output from checkers: -Afilenames, -Ashowchecks
 
 Interned Checker
-  Adopted the new checkers framework API.
+  Adopted the new Checker Framework API.
   Fixed a bug in which "new" expressions had an incorrect type.
 
 NonNull Checker
-  Adopted the new checkers framework API.
+  Adopted the new Checker Framework API.
 
 Javari Checker
 IGJ Checker
@@ -1694,7 +1692,7 @@ Interned Checker
     The checker honors @Interned annotations on method receivers.
     java.lang.Class types are treated as @Interned.
 
-Checkers Framework API
+Checker Framework API
   New features:
     Added support for default annotations and warning suppression in checkers
 
@@ -1722,7 +1720,7 @@ Javari Checker
       annotations
 
   Bug fixes:
-    fixed readonly inner class bug on Javari checker
+    fixed readonly inner class bug on Javari Checker
 
 NonNull Checker
   New features:
@@ -1737,7 +1735,7 @@ NonNull Checker
     fixed a bug in the flow-sensitive analysis when a variable was used on
       both sides of the "=" operator
 
-Checkers Framework API
+Checker Framework API
   New features:
     added the TypesUtils.toString() method for pretty-printing annotated types
     added AnnotationUtils, a utility class for working with annotations and
@@ -1790,7 +1788,7 @@ Code Changes
 
 * tests
     modified output to print only missing and unexpected diagnostics
-    added new test cases for the Javari checker
+    added new test cases for the Javari Checker
 
 
 Documentation Changes
@@ -1823,7 +1821,7 @@ Code Changes
     fixed mutability type handling for type casts and field access
     fixed bug, ensuring no primitives can be ReadOnly
     a method receiver type is now based on the correct annotation
-    fixed parameter type checking for overriden methods
+    fixed parameter type-checking for overriden methods
     fixed bug on readonly field initialization
     added handling for unary trees
 
@@ -1904,7 +1902,7 @@ Code Changes
     added checks for prefix and postfix increment and decrement operations
 
 * checkers.javari
-    added initial implementation of a typechecker for the Javari language
+    added initial implementation of a type-checker for the Javari language
 
 ----------------------------------------------------------------------
 Version 0.1.1, 7 Jun 2007
@@ -1920,7 +1918,7 @@ Documentation Changes
     various minor corrections and clarifications
 
 * checkers/README-checkers.html
-    added cross-references to other checkers documents
+    added cross-references to other Checker Framework documents
     removed redundant text
     moved instructions for unannotated code from nonnull-checker.html
     various minor corrections and clarifications
@@ -1972,8 +1970,8 @@ Code Changes
 
 Miscellaneous Changes
 
-    improved documentation of checkers examples
-    checkers build file now only attempts to compile .java files
+    improved documentation of ch examples
+    Checker Framework build file now only attempts to compile .java files
 
 
 ----------------------------------------------------------------------

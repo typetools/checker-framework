@@ -8,7 +8,7 @@ import checkers.nullness.quals.*;
 import checkers.quals.TypeQualifiers;
 
 /**
- * A typechecker that is part of the Nullness type system.
+ * A type-checker that is part of the Nullness type system.
  * The Rawness Subchecker checks whether an object has been fully
  * initialized by the constructor.  If not, then some fields (that are
  * annotated as @NonNull may still be null.

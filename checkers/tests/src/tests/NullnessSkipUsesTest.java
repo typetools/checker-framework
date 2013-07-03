@@ -8,7 +8,7 @@ import org.junit.runners.Parameterized.Parameters;
 import checkers.util.test.ParameterizedCheckerTest;
 
 /**
- * JUnit tests for the Nullness checker -- testing -AskipUses command-line argument.
+ * JUnit tests for the Nullness Checker -- testing -AskipUses command-line argument.
  */
 public class NullnessSkipUsesTest extends ParameterizedCheckerTest {
 

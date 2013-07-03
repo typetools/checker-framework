@@ -12,7 +12,7 @@ import checkers.nullness.NullnessChecker;
  *
  * <p>
  *
- * For example, warnings issued by the Nullness checker can be suppressed using
+ * For example, warnings issued by the Nullness Checker can be suppressed using
  * {@code @SuppressWarnings("nullness")} because {@link NullnessChecker} is
  * annotated with {@code @SuppressWarningsKey("nullness")}.
  */

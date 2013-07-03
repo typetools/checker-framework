@@ -1,32 +1,32 @@
 \htmlhr
-\chapter{Property file checker\label{propkey-checker}}
+\chapter{Property File Checker\label{propkey-checker}}
 
-The property file checker ensures that a property file or resource bundle (both
+The Property File Checker ensures that a property file or resource bundle (both
 of which act like maps from keys to values) is only accessed with valid keys.
 Accesses without a valid key either return \code{null} or a default value, which
 can lead to a \code{NullPointerException} or hard-to-trace behavior.
-The property file checker (Section \refwithpage{genpropkey-checker}) ensures
+The Property File Checker (Section \refwithpage{genpropkey-checker}) ensures
 that the used keys are found in the corresponding property file or resource
 bundle.
 
 We also provide two specialized checkers.
-An internationalization checker (Section \refwithpage{i18n-checker})
+An Internationalization Checker (Section \refwithpage{i18n-checker})
 verifies that code is properly internationalized.
-A compiler message key checker (Section \refwithpage{compilermsgs-checker})
+A Compiler Message Key Checker (Section \refwithpage{compilermsgs-checker})
 verifies that compiler message keys used in the Checker Framework are
 declared in a property file;
 This is an example of a simple specialization of the property
 file checker, and the Checker Framework source code shows how it is used.
 
 It is easy to customize the property key checker for other related purposes.
-Take a look at the source code of the compiler message key checker and adapt it for
+Take a look at the source code of the Compiler Message Key Checker and adapt it for
 your purposes.
 
 
 
-\section{Generic property file checker\label{genpropkey-checker}}
+\section{Generic Property File Checker\label{genpropkey-checker}}
 
-The generic property file checker ensures that a resource key is located
+The generic Property File Checker ensures that a resource key is located
 in a specified property file or resource bundle.
 
 
@@ -81,9 +81,9 @@ following two command-line options:
 
 
 
-\section{Internationalization checker\label{i18n-checker}}
+\section{Internationalization Checker\label{i18n-checker}}
 
-The Internationalization Checker verifies that your code is properly
+The Internationalization Checker, or I18n Checker, verifies that your code is properly
 internationalized.  Internationalization is the process of adapting
 software to different languages and locales.  Internationalization is
 sometimes called localization (though the terms are not
@@ -131,7 +131,7 @@ respect to the used locale.
 qualified \code{String} or \code{Object} is a valid key found in the
 localization resource.
 This annotation is a specialization of the \code{@PropertyKey} annotation, that
-gets checked by the generic property key checker.
+gets checked by the generic Property Key Checker.
 \end{enumerate}
 
 You may need to add the \code{@Localized} annotation to more methods in the
@@ -148,7 +148,7 @@ command:
 \end{Verbatim}
 
 You must specify the localization resource, which maps keys to user-visible
-strings.  Like the generic property key checker, the internationalization checker
+strings.  Like the generic Property Key Checker, the Internationalization Checker
 supports two types of localization resource:
 \code{ResourceBundle}s using the 
 \code{-Abundlenames=\emph{resource\_name}} option
@@ -157,16 +157,16 @@ or property files using the
 
 
 
-\section{Compiler Message Key checker\label{compilermsgs-checker}}
+\section{Compiler Message Key Checker\label{compilermsgs-checker}}
 
 The Checker Framework uses compiler message keys to output error messages.
 These keys are substituted by localized strings for user-visible error messages.
 Using keys instead of the localized strings in the source code enables easier
 testing, as the expected error keys can stay unchanged while the localized
 strings can still be modified. 
-We use the compiler message key checker to ensure that all internal
+We use the Compiler Message Key Checker to ensure that all internal
 keys are correctly localized.
-Instead of using the property file checker, we use a specialized checker,
+Instead of using the Property File Checker, we use a specialized checker,
 giving us more precise documentation of the intended use of \code{String}s.
 
 The single annotation used by this checker is 
@@ -178,7 +178,7 @@ For most users of the Checker Framework there will be no need to annotate any
 \code{String}s, as the checker looks up all \code{String} literals and adds
 annotations as appropriate.
 
-The compiler message key checker can be invoked by running the following
+The Compiler Message Key Checker can be invoked by running the following
 command:
 
 \begin{Verbatim}

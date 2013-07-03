@@ -8,7 +8,7 @@ import org.junit.runners.Parameterized.Parameters;
 import checkers.util.test.ParameterizedCheckerTest;
 
 /**
- * JUnit tests for the Interning checker, which tests the Interned annotation.
+ * JUnit tests for the Interning Checker, which tests the Interned annotation.
  */
 public class InterningTest extends ParameterizedCheckerTest {
 

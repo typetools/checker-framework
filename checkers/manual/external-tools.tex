@@ -151,7 +151,7 @@ The output should be:
 \item
   In order to use the updated compiler when you type \code{javac}, add the
   directory \<C:\ttbs{}Program Files\ttbs{}checker-framework\ttbs{}checkers\ttbs{}binary> to the
-  beginning of your path variable.  Also set a CHECKERS variable.
+  beginning of your path variable.  Also set a \code{CHECKERS} variable.
 
 % Instructions stolen from http://www.webreference.com/js/tips/020429.html
 
@@ -191,7 +191,7 @@ dialog box, move the cursor to the beginning of the string in the
 semicolon (\<;>).
 
 % This is for the benefit of the Ant task.
-Similarly, set the CHECKERS variable.
+Similarly, set the \code{CHECKERS} variable.
 
 This is a permanent change that only needs to be done once ever.
 \end{itemize}
@@ -461,11 +461,11 @@ You may want to run the Checker Framework using a Java version that differs from
 The version of the Checker Framework run by the Maven plugin will share the same version as the Maven plugin
 by default.  That is, if you are using the Checker Framework Maven plugin version 1.6.3 then it will run the
 Checker Framework version 1.6.3 when checking source code.  However, you can specify an earlier
-or later version of the Checker Framework using the \code{checkersVersion} element.
+or later version of the Checker Framework using the \code{checkerFrameworkVersion} element.
 Note: The Checker Framework Maven plugin will only work with Checker Framework versions 1.5.0 and higher.
 
 \begin{Verbatim}
-    <checkersVersion>1.6.2-johndoe</checkersVersion>
+    <checkerFrameworkVersion>1.6.2-johndoe</checkerFrameworkVersion>
 \end{Verbatim}
 
 To disable the Checker Framework check without removing it from your pom file you can use the /code{skip} option.
@@ -478,7 +478,7 @@ that can be provided to javac or the JVM.  To provide javac parameters you can u
 element.  To provide JVM arguments you can use the \code{javaParams} element.
 
 \begin{Verbatim}
-    <!-- additional parameters passed to the JSR308 java compiler -->
+    <!-- additional parameters passed to the Java compiler -->
     <javacParams>-Alint</javacParams>
     <!-- additional parameters to pass to the forked JVM -->
     <javaParams>-Xdebug</javaParams>
@@ -613,12 +613,12 @@ There are two different tasks that are commonly called ``type inference''.
 
 \begin{enumerate}
 \item
-  Type inference during type checking (Section~\ref{type-refinement}):
-  During type checking, if certain variables have no type qualifier, the
+  Type inference during type-checking (Section~\ref{type-refinement}):
+  During type-checking, if certain variables have no type qualifier, the
   type-checker determines whether there is some type qualifier that would
-  permit the program to type check.  If so, the type checker uses that type
+  permit the program to type-check.  If so, the type-checker uses that type
   qualifier, but never tells the programmer what it was.  Each time the
-  type checker runs, it re-infers the type qualifier for that variable.  If
+  type-checker runs, it re-infers the type qualifier for that variable.  If
   no type qualifier exists that permits the program to type-check, the
   type-checker issues a type warning.
 
@@ -641,11 +641,11 @@ There are two different tasks that are commonly called ``type inference''.
 
 \item
   Type inference to annotate a program (Section~\ref{type-inference-to-annotate}):
-  As a separate step before type checking, a type inference tool takes the
+  As a separate step before type-checking, a type inference tool takes the
   program as input, and outputs a set of type qualifiers that would
   type-check.  These qualifiers are inserted into the source code or the
   class file.  They can be viewed and adjusted by the programmer, and can
-  be used by tools such as the type checker.
+  be used by tools such as the type-checker.
 
   This variety of type inference must be provided by a separate tool.  It
   is not built into the Checker Framework.
@@ -657,7 +657,7 @@ There are two different tasks that are commonly called ``type inference''.
     which can aid programmer understanding.
   \item
     Error messages may be more comprehensible.  With type inference
-    during type checking, error messages can be obscure, because the
+    during type-checking, error messages can be obscure, because the
     compiler has already inferred (possibly incorrect) types for a number
     of variables.
   \item
@@ -679,10 +679,10 @@ Advantages of both varieties of inference include:
 
 
 Each variety of type inference has its place.  When using the Checker
-Framework, type inference during type checking is performed only
+Framework, type inference during type-checking is performed only
 \emph{within} a method (Section~\ref{type-refinement}).  Every method
 signature (arguments and return values) and field must be explicitly annotated,
-either by the programmer or by a separate type checking tool
+either by the programmer or by a separate type-checking tool
 (Section~\ref{type-inference-to-annotate}).  This choice reduces programmer
 effort (typically, a programmer does not have to write any qualifiers
 inside the body of a method) while still retaining modular checking and

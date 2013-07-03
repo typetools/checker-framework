@@ -63,8 +63,8 @@ public class CustomCheckersMenu extends ContributionItem {
 			final String [] customCheckers = customClasses.split(",");
 			for(int i = 0; i < customCheckers.length; i++) {
 				//final String text = customCheckers[i];
-                final CheckerInfo checkerInfo = CheckerInfo.fromClassPath(customCheckers[i], null);
-                MenuItem runCustomChecker = new MenuItem(checkersMenu, SWT.CHECK, i);
+				final CheckerInfo checkerInfo = CheckerInfo.fromClassPath(customCheckers[i], null);
+				MenuItem runCustomChecker = new MenuItem(checkersMenu, SWT.CHECK, i);
 				runCustomChecker.setText(checkerInfo.getLabel());
 				runCustomChecker.addSelectionListener(new SelectionAdapter() {
 					public void widgetSelected(SelectionEvent e) {

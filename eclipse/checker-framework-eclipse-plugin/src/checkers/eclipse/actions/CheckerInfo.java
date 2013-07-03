@@ -52,17 +52,17 @@ public class CheckerInfo
     public static List<CheckerInfo> getCheckers() {
         if(checkers == null) {
             checkers = Arrays.asList(
-                    new CheckerInfo("Nullness checker",  NullnessChecker.class.getCanonicalName(),  "checkers.nullness.quals.*"),
-                    new CheckerInfo("Javari checker",    JavariChecker.class.getCanonicalName(),    "checkers.javari.quals.*"),
-                    new CheckerInfo("Interning checker", InterningChecker.class.getCanonicalName(), "checkers.interning.quals.*"),
-                    new CheckerInfo("Fenum checker",     FenumChecker.class.getCanonicalName(),     "checkers.fenum.quals.*"),
+                    new CheckerInfo("Nullness Checker",  NullnessChecker.class.getCanonicalName(),  "checkers.nullness.quals.*"),
+                    new CheckerInfo("Javari Checker",    JavariChecker.class.getCanonicalName(),    "checkers.javari.quals.*"),
+                    new CheckerInfo("Interning Checker", InterningChecker.class.getCanonicalName(), "checkers.interning.quals.*"),
+                    new CheckerInfo("Fenum Checker",     FenumChecker.class.getCanonicalName(),     "checkers.fenum.quals.*"),
 
-                    new CheckerInfo("Linear checker",    LinearChecker.class.getCanonicalName(),    "checkers.linear.quals.*"),
-                    new CheckerInfo("Lock checker",      LockChecker.class.getCanonicalName(),      "checkers.lock.quals.*"),
-                    new CheckerInfo("Regex checker",     RegexChecker.class.getCanonicalName(),     "checkers.regex.quals.*"),
-                    new CheckerInfo("Tainting checker",  TaintingChecker.class.getCanonicalName(),  "checkers.tainting.quals.*"),
+                    new CheckerInfo("Linear Checker",    LinearChecker.class.getCanonicalName(),    "checkers.linear.quals.*"),
+                    new CheckerInfo("Lock Checker",      LockChecker.class.getCanonicalName(),      "checkers.lock.quals.*"),
+                    new CheckerInfo("Regex Checker",     RegexChecker.class.getCanonicalName(),     "checkers.regex.quals.*"),
+                    new CheckerInfo("Tainting Checker",  TaintingChecker.class.getCanonicalName(),  "checkers.tainting.quals.*"),
 
-                    new CheckerInfo("I18n checker",      I18nChecker.class.getCanonicalName(),      "checkers.i18n.quals.*")
+                    new CheckerInfo("I18n Checker",      I18nChecker.class.getCanonicalName(),      "checkers.i18n.quals.*")
             );
         }
 

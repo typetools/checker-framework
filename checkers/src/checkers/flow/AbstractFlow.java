@@ -68,8 +68,8 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 
 /**
- * Provides a generalized flow-sensitive qualifier inference for the checkers
- * framework.
+ * Provides a generalized flow-sensitive qualifier inference for the Checker
+ * Framework.
  *
  * <p>
  *
