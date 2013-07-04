@@ -4,11 +4,12 @@ import javax.lang.model.element.Element;
 
 import com.sun.source.tree.*;
 
+import javacutils.TreeUtils;
+
 import checkers.basetype.BaseTypeVisitor;
 import checkers.linear.quals.Unusable;
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
-import checkers.util.TreeUtils;
 
 /**
  * A type-checking visitor for the Linear type system.  The visitor reports
@@ -19,7 +20,7 @@ import checkers.util.TreeUtils;
  *
  * @see LinearChecker
  */
-public class LinearVisitor extends BaseTypeVisitor<LinearChecker> {
+public class LinearVisitor extends BaseTypeVisitor<LinearChecker, LinearAnnotatedTypeFactory> {
 
     public LinearVisitor(LinearChecker checker, CompilationUnitTree root) {
         super(checker, root);

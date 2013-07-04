@@ -9,15 +9,16 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 
+import javacutils.AnnotationUtils;
+import javacutils.ErrorReporter;
+import javacutils.TreeUtils;
+
 import checkers.basetype.BaseTypeVisitor;
 import checkers.lock.quals.Holding;
 import checkers.source.Result;
-import checkers.source.SourceChecker;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
-import checkers.util.AnnotationUtils;
-import checkers.util.TreeUtils;
 
 import com.sun.source.tree.*;
 
@@ -30,13 +31,10 @@ import com.sun.source.tree.*;
  * This visitor reports errors ("unguarded.access") or warnings for violations
  * for accessing a field or calling a method without holding their locks.
  */
-public class LockVisitor extends BaseTypeVisitor<LockChecker> {
-
-    LockAnnotatedTypeFactory atypeFactory;
+public class LockVisitor extends BaseTypeVisitor<LockChecker, LockAnnotatedTypeFactory> {
 
     public LockVisitor(LockChecker checker, CompilationUnitTree root) {
         super(checker, root);
-        this.atypeFactory = (LockAnnotatedTypeFactory)super.atypeFactory;
     }
 
     public Void visitVariable(VariableTree node, Void p) {
@@ -125,7 +123,7 @@ public class LockVisitor extends BaseTypeVisitor<LockChecker> {
         } else if (methodSel.getKind() == Tree.Kind.MEMBER_SELECT) {
             return ((MemberSelectTree)methodSel).getExpression().toString();
         } else {
-            SourceChecker.errorAbort("LockVisitor found unknown receiver tree type: " + methodSel);
+            ErrorReporter.errorAbort("LockVisitor found unknown receiver tree type: " + methodSel);
             return null;
         }
     }

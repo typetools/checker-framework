@@ -1,6 +1,6 @@
 package java.lang;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
 public abstract interface Appendable{
   public abstract Appendable append(@Nullable CharSequence a1) throws java.io.IOException;

@@ -8,8 +8,13 @@ import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Elements;
 
+import javacutils.AnnotationUtils;
+import javacutils.ErrorReporter;
+import javacutils.InternalUtils;
+import javacutils.Pair;
+import javacutils.TreeUtils;
+
 import checkers.quals.*;
-import checkers.source.SourceChecker;
 import checkers.types.*;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.AnnotatedTypeMirror.*;
@@ -70,8 +75,8 @@ public class QualifierDefaults {
             new IdentityHashMap<Element, AMLocTreeSet>();
 
     /**
-     * @param factory the factory for this checker
-     * @param annoFactory an annotation factory, used to get annotations by name
+     * @param elements interface to Element data in the current processing environment
+     * @param atypeFactory factory for the current checker
      */
     public QualifierDefaults(Elements elements, AnnotatedTypeFactory atypeFactory) {
         this.elements = elements;
@@ -109,7 +114,7 @@ public class QualifierDefaults {
             if (!newanno.equals(anno) &&
                     qh.isSubtype(newanno, qh.getTopAnnotation(anno))) {
                 if (newloc == def.second) {
-                    SourceChecker.errorAbort("Only one qualifier from a hierarchy can be the default! Existing: "
+                    ErrorReporter.errorAbort("Only one qualifier from a hierarchy can be the default! Existing: "
                             + prevset + " and new: " + newanno);
                 }
             }
@@ -150,7 +155,14 @@ public class QualifierDefaults {
      */
     private Element nearestEnclosingExceptLocal(Tree tree) {
         TreePath path = atypeFactory.getPath(tree);
-        if (path == null) return InternalUtils.symbol(tree);
+        if (path == null) {
+            Element method = atypeFactory.getEnclosingMethod(tree);
+            if (method != null) {
+                return method;
+            } else {
+                return InternalUtils.symbol(tree);
+            }
+        }
 
         Tree prev = null;
 
@@ -251,7 +263,7 @@ public class QualifierDefaults {
                 Class<? extends Annotation> clscast = (Class<? extends Annotation>) Class.forName(mte.getTypeMirror().toString());
                 cls = clscast;
             } catch (ClassNotFoundException e) {
-                SourceChecker.errorAbort("Could not load qualifier: " + e.getMessage(), e);
+                ErrorReporter.errorAbort("Could not load qualifier: " + e.getMessage(), e);
                 cls = null;
             }
         }
@@ -436,7 +448,7 @@ public class QualifierDefaults {
                 break;
             }
             default: {
-                SourceChecker.errorAbort("QualifierDefaults.DefaultApplier: unhandled location: " + location);
+                ErrorReporter.errorAbort("QualifierDefaults.DefaultApplier: unhandled location: " + location);
                 return null;
             }
             }

@@ -1,8 +1,8 @@
 package java.io;
 
-import checkers.nullness.quals.*;
+import dataflow.quals.Pure;
+import checkers.nullness.quals.Nullable;
 
-@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
 
 public class ObjectStreamClass implements Serializable {
   private static final long serialVersionUID = 0;
@@ -15,5 +15,5 @@ public class ObjectStreamClass implements Serializable {
   public @Nullable Class<?> forClass() { throw new RuntimeException("skeleton method"); }
   public ObjectStreamField[] getFields() { throw new RuntimeException("skeleton method"); }
   public @Nullable ObjectStreamField getField(String a1) { throw new RuntimeException("skeleton method"); }
-  public String toString() { throw new RuntimeException("skeleton method"); }
+  @Pure public String toString() { throw new RuntimeException("skeleton method"); }
 }

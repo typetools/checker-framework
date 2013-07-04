@@ -1,8 +1,8 @@
 package java.util;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
+import checkers.nullness.quals.Covariant;
 
-@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
 // This @Covariant annotation is sound, but it would not be sound on
 // ListIterator (a subclass of Iterator), which supports a set operation.
 @Covariant(0)
