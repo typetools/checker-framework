@@ -20,7 +20,7 @@ import com.google.common.annotations.GwtCompatible;
 
 import java.util.Map;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 //import javax.annotation.Nullable;
 
 /**
@@ -68,7 +68,7 @@ import checkers.nullness.quals.*;
    * #entriesOnlyOnRight()}, {@link #entriesInCommon()} and {@link
    * #entriesDiffering()} of the two instances are equal.
    */
-  boolean equals(@Nullable Object object);
+  @Pure boolean equals(@Nullable Object object);
 
   /**
    * Returns the hash code for this instance. This is defined as the hash code
@@ -77,7 +77,7 @@ import checkers.nullness.quals.*;
    *   Arrays.asList(entriesOnlyOnLeft(), entriesOnlyOnRight(),
    *       entriesInCommon(), entriesDiffering())}</pre>
    */
-  int hashCode();
+  @Pure int hashCode();
 
   /**
    * A difference between the mappings from two maps with the same key. The
@@ -99,13 +99,13 @@ import checkers.nullness.quals.*;
      * Two instances are considered equal if their {@link #leftValue()}
      * values are equal and their {@link #rightValue()} values are also equal.
      */
-    @Override boolean equals(@Nullable Object other);
+    @Pure @Override boolean equals(@Nullable Object other);
 
     /**
      * The hash code equals the value
      * {@code Arrays.asList(leftValue(), rightValue()).hashCode()}.
      */
-    @Override int hashCode();
+    @Pure @Override int hashCode();
   }
 
 }
