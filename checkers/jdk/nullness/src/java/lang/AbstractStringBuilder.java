@@ -28,7 +28,8 @@ package java.lang;
 // import sun.misc.FloatingDecimal;
 import java.util.Arrays;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
+import dataflow.quals.Pure;
 
 /**
  * A mutable sequence of characters.
@@ -70,7 +71,7 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
      * @return  the length of the sequence of characters currently
      *          represented by this object
      */
-    public int length() {
+    @Pure public int length() {
         return count;
     }
 
@@ -1214,7 +1215,7 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
      * @throws  NullPointerException if <code>str</code> is
      *          <code>null</code>.
      */
-    public int indexOf(String str) {
+    @Pure public int indexOf(String str) {
         return indexOf(str, 0);
     }
 
@@ -1235,7 +1236,7 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
      * @throws  NullPointerException if <code>str</code> is
      *            <code>null</code>.
      */
-    public int indexOf(String str, int fromIndex) {
+    @Pure public int indexOf(String str, int fromIndex) {
         throw new RuntimeException("skeleton method");
     }
 
@@ -1257,7 +1258,7 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
      * @throws  NullPointerException  if <code>str</code> is
      *          <code>null</code>.
      */
-    public int lastIndexOf(String str) {
+    @Pure public int lastIndexOf(String str) {
         return lastIndexOf(str, count);
     }
 
@@ -1278,7 +1279,7 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
      * @throws  NullPointerException if <code>str</code> is
      *          <code>null</code>.
      */
-    public int lastIndexOf(String str, int fromIndex) {
+    @Pure public int lastIndexOf(String str, int fromIndex) {
         throw new RuntimeException("skeleton method");
     }
 
@@ -1343,7 +1344,7 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
      *
      * @return  a string representation of this sequence of characters.
      */
-    public abstract String toString();
+    @Pure public abstract String toString();
 
     /**
      * Needed by <tt>String</tt> for the contentEquals method.

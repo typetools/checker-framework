@@ -11,10 +11,12 @@ import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
+import javacutils.AnnotationUtils;
+import javacutils.ErrorReporter;
+
 import checkers.basetype.BaseTypeChecker;
 import checkers.quals.PolyAll;
 import checkers.quals.PolymorphicQualifier;
-import checkers.source.SourceChecker;
 import checkers.types.*;
 import checkers.types.AnnotatedTypeMirror.*;
 import checkers.types.visitors.AnnotatedTypeScanner;
@@ -69,7 +71,7 @@ public class QualifierPolymorphism {
      * @param checker the current checker
      * @param factory the factory for the current checker
      */
-    public QualifierPolymorphism(BaseTypeChecker checker, AnnotatedTypeFactory factory) {
+    public QualifierPolymorphism(BaseTypeChecker<?> checker, AnnotatedTypeFactory factory) {
         this.atypeFactory = factory;
 
         final ProcessingEnvironment env = checker.getProcessingEnvironment();
@@ -93,7 +95,7 @@ public class QualifierPolymorphism {
                     if (PolymorphicQualifier.class.getCanonicalName().contentEquals(plval)) {
                         Set<AnnotationMirror> tops = qualhierarchy.getTopAnnotations();
                         if (tops.size() != 1) {
-                            SourceChecker.errorAbort(
+                            ErrorReporter.errorAbort(
                                     "QualifierPolymorphism: PolymorphicQualifier has to specify type hierarchy, if more than one exist; top types: " +
                                     tops);
                         }
@@ -103,7 +105,7 @@ public class QualifierPolymorphism {
                         ttreetop = qualhierarchy.getTopAnnotation(ttree);
                     }
                     if (polys.containsKey(ttreetop)) {
-                        SourceChecker.errorAbort(
+                        ErrorReporter.errorAbort(
                                 "QualifierPolymorphism: checker has multiple polymorphic qualifiers: " +
                                 polys.get(ttreetop) + " and " + a);
                     }
@@ -136,7 +138,7 @@ public class QualifierPolymorphism {
     }
 
     public static boolean isPolyAll(AnnotationMirror qual) {
-        return qual.getAnnotationType().toString().equals(PolyAll.class.getCanonicalName());
+        return AnnotationUtils.areSameByClass(qual, PolyAll.class);
     }
 
     // Returns null if the qualifier is not polymorphic.

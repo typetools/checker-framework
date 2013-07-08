@@ -43,4 +43,21 @@ public class VoidUse {
     }
   }
 
+  // Test case for issue #230
+  Class<?> voidClass() {
+    return void.class;
+  }
+
+  Class<?> VoidClass() {
+    return Void.class;
+  }
+
+  Class<?> intClass() {
+    return int.class;
+  }
+
+  Class<?> ListClass() {
+    return java.util.List.class;
+  }
+
 }
