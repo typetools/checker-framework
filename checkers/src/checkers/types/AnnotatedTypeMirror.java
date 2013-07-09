@@ -75,7 +75,6 @@ public abstract class AnnotatedTypeMirror {
      * provided type
      *
      * @param type
-     * @param env
      * @param atypeFactory
      * @return [to document]
      */
