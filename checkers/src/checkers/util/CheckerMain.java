@@ -19,10 +19,10 @@ public class CheckerMain {
 
     /**
      * Most logic of the CheckerMain main method is delegated to the CheckerMain class.  This method
-     * just determines the relevant parameters to CheckerMain then tells it to invoke the JSR308
+     * just determines the relevant parameters to CheckerMain then tells it to invoke the JSR 308
      * Type Annotations Compiler
      * @param args Command line arguments, eventually passed to the jsr308 type annotations compiler
-     * @throws Exception Any exception thrown by the Checker Framework escape to the command line
+     * @throws Exception Any exception thrown by the Checker Framework escapes to the command line
      */
     public static void main(String[] args)  {
         final File pathToThisJar     = new File(findPathTo(CheckerMain.class, false));

@@ -34,7 +34,7 @@ import checkers.basetype.BaseTypeChecker;
  * <li> Alternatively, you can specify the annotation to use with the
  * {@code -Aqual} command line argument.
  * </li>
- * </ul>
+ * </ol>
  *
  * @author wmdietl
  */
