@@ -77,10 +77,8 @@ public enum ConversionCategory {
      * the same parameter. This is seldomly needed, but the following
      * is an example of such use:
      *
-     * <blockquote>
      * <pre>
-     * format("Test %1$c %1$d", (int)42);
-     * </blockquote>
+     *   format("Test %1$c %1$d", (int)42);
      * </pre>
      *
      * In this example, the first parameter is interpreted as both
@@ -110,10 +108,8 @@ public enum ConversionCategory {
      * This is seldomly needed, and indicates an error in most cases.
      * For example:
      *
-     * <blockquote>
      * <pre>
-     * format("Test %1$f %1$d", null);
-     * </blockquote>
+     *   format("Test %1$f %1$d", null);
      * </pre>
      *
      * Only null can be legally passed, passing a value such as 4 or 4.2
@@ -127,10 +123,8 @@ public enum ConversionCategory {
      * This is seldomly needed, and indicates an error in most cases.
      * For example:
      *
-     * <blockquote>
      * <pre>
-     * format("Test %1$s %3$s", "a","unused","b");
-     * </blockquote>
+     *   format("Test %1$s %3$s", "a","unused","b");
      * </pre>
      *
      * Only the first "a" and third "b" parameters are used,
