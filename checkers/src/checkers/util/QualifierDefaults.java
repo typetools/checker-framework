@@ -76,7 +76,7 @@ public class QualifierDefaults {
 
     /**
      * @param elements interface to Element data in the current processing environment
-     * @param atypeFactory factory for the current checker
+     * @param atypeFactory an annotation factory, used to get annotations by name
      */
     public QualifierDefaults(Elements elements, AnnotatedTypeFactory atypeFactory) {
         this.elements = elements;

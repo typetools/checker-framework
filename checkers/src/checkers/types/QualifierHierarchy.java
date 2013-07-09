@@ -102,8 +102,8 @@ public abstract class QualifierHierarchy {
      *
      * Examples:
      * <ul>
-     * <li>For NonNull, leastUpperBound('Nullable', 'NonNull') &rarr; Nullable</li>
-     * <li>For IGJ,     leastUpperBound('Immutable', 'Mutable') &rarr; ReadOnly</li>
+     * <li>For NonNull, leastUpperBound('Nullable', 'NonNull') &rArr; Nullable</li>
+     * <li>For IGJ,     leastUpperBound('Immutable', 'Mutable') &rArr; ReadOnly</li>
      * </ul>
      *
      * The two qualifiers have to be from the same qualifier hierarchy. Otherwise,
