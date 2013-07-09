@@ -1,11 +1,13 @@
 // Test case for issue #234.
-// Some of the lines in this file should issue warnings, but not all should.
 
 import checkers.nullness.quals.*;
 
 import java.util.List;
 import java.util.Iterator;
 
+// TODO
+// Some of the lines in this file should issue warnings, but not all should.
+// @skip-test
 public class Wildcards {
 
   public static void client1(List<String> strings) {
