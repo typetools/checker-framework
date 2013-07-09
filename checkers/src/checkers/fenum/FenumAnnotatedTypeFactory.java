@@ -1,10 +1,11 @@
 package checkers.fenum;
 
+import javacutils.AnnotationUtils;
+
 import checkers.fenum.quals.FenumTop;
 import checkers.fenum.quals.FenumUnqualified;
 import checkers.quals.DefaultLocation;
 import checkers.types.BasicAnnotatedTypeFactory;
-import checkers.util.AnnotationUtils;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;

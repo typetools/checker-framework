@@ -18,7 +18,7 @@ package com.google.common.collect;
 
 import com.google.common.annotations.GwtCompatible;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 //import javax.annotation.Nullable;
 
 @GwtCompatible
@@ -35,5 +35,5 @@ import checkers.nullness.quals.*;
    * Returns a brief human readable description of this constraint, such as
    * "Not null".
    */
-  String toString();
+  @Pure String toString();
 }

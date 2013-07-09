@@ -29,7 +29,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 //import javax.annotation.Nullable;
 
 /**
@@ -190,11 +190,11 @@ public class ImmutableMultiset<E> extends ImmutableCollection<E>
     };
   }
 
-  public int size() {
+  @Pure public int size() {
     return size;
   }
 
-  @Override public boolean contains(@Nullable Object element) {
+  @Pure @Override public boolean contains(@Nullable Object element) {
     return map.containsKey(element);
   }
 
@@ -234,7 +234,7 @@ public class ImmutableMultiset<E> extends ImmutableCollection<E>
     throw new UnsupportedOperationException();
   }
 
-  @Override public boolean equals(@Nullable Object object) {
+  @Pure @Override public boolean equals(@Nullable Object object) {
     if (object == this) {
       return true;
     }
@@ -253,12 +253,12 @@ public class ImmutableMultiset<E> extends ImmutableCollection<E>
     return false;
   }
 
-  @Override public int hashCode() {
+  @Pure @Override public int hashCode() {
     // could cache this, but not considered worthwhile to do so
     return map.hashCode();
   }
 
-  @Override public String toString() {
+  @Pure @Override public String toString() {
     return entrySet().toString();
   }
 
@@ -299,11 +299,11 @@ public class ImmutableMultiset<E> extends ImmutableCollection<E>
       };
     }
 
-    public int size() {
+    @Pure public int size() {
       return multiset.map.size();
     }
 
-    @Override public boolean contains(/*@Nullable*/ Object o) {
+    @Pure @Override public boolean contains(/*@Nullable*/ Object o) {
       if (o instanceof Entry) {
         Entry<?> entry = (Entry<?>) o;
         if (entry.getCount() <= 0) {
@@ -315,7 +315,7 @@ public class ImmutableMultiset<E> extends ImmutableCollection<E>
       return false;
     }
 
-    @Override public int hashCode() {
+    @Pure @Override public int hashCode() {
       return multiset.map.hashCode();
     }
 

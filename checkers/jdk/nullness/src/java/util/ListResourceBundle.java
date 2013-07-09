@@ -1,6 +1,5 @@
 package java.util;
-import checkers.nullness.quals.*;
-@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
+import checkers.nullness.quals.Nullable;
 
 public abstract class ListResourceBundle extends ResourceBundle {
   public ListResourceBundle() { throw new RuntimeException("skeleton method"); }

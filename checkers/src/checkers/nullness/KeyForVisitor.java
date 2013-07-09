@@ -5,11 +5,12 @@ import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Modifier;
 
+import javacutils.AnnotationUtils;
+
 import checkers.basetype.BaseTypeVisitor;
 import checkers.nullness.quals.KeyFor;
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import checkers.util.AnnotationUtils;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ModifiersTree;
@@ -17,7 +18,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.Tree.Kind;
 
-public class KeyForVisitor extends BaseTypeVisitor<KeyForSubchecker> {
+public class KeyForVisitor extends BaseTypeVisitor<KeyForSubchecker, KeyForAnnotatedTypeFactory> {
     public KeyForVisitor(KeyForSubchecker checker, CompilationUnitTree root) {
         super(checker, root);
     }

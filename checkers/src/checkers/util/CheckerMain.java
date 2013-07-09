@@ -20,9 +20,9 @@ public class CheckerMain {
     /**
      * Most logic of the CheckerMain main method is delegated to the CheckerMain class.  This method
      * just determines the relevant parameters to CheckerMain then tells it to invoke the JSR 308
-     * Type Annotations Compiler
-     * @param args Command line arguments, eventually passed to the jsr308 type annotations compiler
-     * @throws Exception Any exception thrown by the Checker Framework escapes to the command line
+     * Type Annotations Compiler.
+     * Any exception thrown by the Checker Framework escapes to the command line
+     * @param args command-line arguments, eventually passed to the JSR 308 Type Annotations compiler
      */
     public static void main(String[] args)  {
         final File pathToThisJar     = new File(findPathTo(CheckerMain.class, false));
@@ -470,14 +470,5 @@ public class CheckerMain {
             return "\"" + str + "\"";
         }
         return str;
-    }
-
-    private static List<String> quoteInPlace(final List<String> strings) {
-        for(int i = 0; i < strings.size(); i++) {
-            final String cur = strings.get(i);
-            strings.add(i, quote(cur));
-            strings.remove(i+1);
-        }
-        return strings;
     }
 }
