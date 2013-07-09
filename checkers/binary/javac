@@ -12,4 +12,4 @@ case `uname -s` in
       ;;
 esac
 
-eval "java" "-cp /Users/garrett/Projects/JavaTypes/jsr308/checker-framework-dff-boxing/checkers/tests/build" "-jar" "${mydir}"/checkers.jar "$@"
+eval "java" "-jar" "${mydir}"/checkers.jar "$@"
