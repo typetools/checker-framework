@@ -9,7 +9,8 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.element.*;
 import javax.lang.model.util.AbstractElementVisitor6;
 
-import checkers.source.AbstractTypeProcessor;
+import javacutils.AbstractTypeProcessor;
+
 import checkers.source.SourceChecker;
 import checkers.source.SourceVisitor;
 import checkers.types.AnnotatedTypeFactory;
@@ -29,8 +30,8 @@ import com.sun.tools.javac.util.Context;
  * following purposes:
  *
  * <ol>
- * <li id="1">Debugging annotations in classfile</li>
- * <li id="2">Debugging the default annotations that are implicitly added
+ * <li value="1">Debugging annotations in classfile</li>
+ * <li value="2">Debugging the default annotations that are implicitly added
  *    by the checker</li>
  * </ol>
  *
@@ -59,7 +60,7 @@ import com.sun.tools.javac.util.Context;
 @SupportedOptions("checker")
 public class SignaturePrinter extends AbstractTypeProcessor {
 
-    private SourceChecker checker;
+    private SourceChecker<?> checker;
 
     ///////// Initialization /////////////
     private void init(ProcessingEnvironment env, String checkerName) {
@@ -67,15 +68,15 @@ public class SignaturePrinter extends AbstractTypeProcessor {
             try {
                 Class<?> checkerClass = Class.forName(checkerName);
                 Constructor<?> cons = checkerClass.getConstructor();
-                checker = (SourceChecker)cons.newInstance();
+                checker = (SourceChecker<?>) cons.newInstance();
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         } else {
-            checker = new SourceChecker() {
+            checker = new SourceChecker<AnnotatedTypeFactory>() {
 
                 @Override
-                protected SourceVisitor<?, ?> createSourceVisitor(
+                protected SourceVisitor<?, ?, ?, ?> createSourceVisitor(
                         CompilationUnitTree root) {
                     return null;
                 }

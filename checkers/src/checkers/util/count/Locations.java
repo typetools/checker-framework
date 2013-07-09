@@ -1,6 +1,7 @@
 package checkers.util.count;
 
 import checkers.source.*;
+import checkers.types.AnnotatedTypeFactory;
 
 import com.sun.source.tree.*;
 import com.sun.source.util.*;
@@ -46,14 +47,14 @@ import javax.lang.model.SourceVersion;
  */
 @SupportedOptions({"nolocations", "annotations"})
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
-public class Locations extends SourceChecker {
+public class Locations extends SourceChecker<AnnotatedTypeFactory> {
 
     @Override
-    protected SourceVisitor<?, ?> createSourceVisitor(CompilationUnitTree root) {
+    protected SourceVisitor<?, ?, ?, ?> createSourceVisitor(CompilationUnitTree root) {
         return new Visitor(this, root);
     }
 
-    static class Visitor extends SourceVisitor<Void, Void> {
+    static class Visitor extends SourceVisitor<Locations, AnnotatedTypeFactory, Void, Void> {
 
         /** Whether annotation locations should be printed. */
         private final boolean locations;

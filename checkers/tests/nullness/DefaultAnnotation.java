@@ -9,7 +9,7 @@ public class DefaultAnnotation {
 
     }
 
-    @DefaultQualifiers(@DefaultQualifier(value=NonNull.class, locations={DefaultLocation.ALL}))
+    @DefaultQualifiers(@DefaultQualifier(value=checkers.nullness.quals.NonNull.class, locations={DefaultLocation.ALL}))
     public void testDefault() {
 
         //:: error: (assignment.type.incompatible)
@@ -19,7 +19,7 @@ public class DefaultAnnotation {
         lst.add(null);                                  // error
     }
 
-    @DefaultQualifier(value=NonNull.class, locations={DefaultLocation.ALL})
+    @DefaultQualifier(value=checkers.nullness.quals.NonNull.class, locations={DefaultLocation.ALL})
     public class InnerDefault {
 
         public void testDefault() {
@@ -38,7 +38,7 @@ public class DefaultAnnotation {
         }
     }
 
-    @DefaultQualifier(value=NonNull.class, locations={DefaultLocation.ALL})
+    @DefaultQualifier(value=checkers.nullness.quals.NonNull.class, locations={DefaultLocation.ALL})
     public static class DefaultDefs {
 
         public String getNNString() {
@@ -85,7 +85,7 @@ public class DefaultAnnotation {
 
     }
 
-    @DefaultQualifier(value=NonNull.class)
+    @DefaultQualifier(value=checkers.nullness.quals.NonNull.class)
     static class DefaultExtends implements Iterator<String>, Iterable<String> {
 
         @Override public boolean hasNext() { throw new UnsupportedOperationException(); }
