@@ -6,7 +6,7 @@ import checkers.nullness.quals.*;
 import java.util.List;
 import java.util.Iterator;
 
-public class GuavaErrorSimple {
+public class Wildcards {
 
   public static void client1(List<String> strings) {
     join1(strings.iterator());
