@@ -1,0 +1,15 @@
+TODO: add instructions/build scripts how to build the different .zip files.
+
+You need to copy over a few .jar files for the personal-blog demos.
+Files:
+
+commons-lang.jar
+commons-logging.jar
+hibernate2.jar
+personalblog.jar
+servlet-api.jar
+struts.jar
+
+Destinations:
+eclipse-projects/personalblog-demo/lib/
+src/personalblog-demo/lib/
