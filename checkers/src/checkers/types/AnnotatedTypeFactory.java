@@ -1865,7 +1865,7 @@ public class AnnotatedTypeFactory {
      * Returns all of the actual annotation mirrors used to annotate this element
      * (includes stub files).
      *
-     * @param element
+     * @param elt
      *            The element for which to determine annotations.
      */
     public Set<AnnotationMirror> getDeclAnnotations(Element elt) {

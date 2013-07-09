@@ -17,15 +17,14 @@ import checkers.types.AnnotatedTypeMirror.*;
  * NullPointerException if the additional parameter p is null; see
  * documentation of the implementing class for details.
  *
- * @param &lt;R&gt;
+ * @param <R>
  *            the return type of this visitor's methods. Use Void for
  *            visitors that do not need to return results.
  *
- * @param &lt;P&gt;
+ * @param <P>
  *            the type of the additional parameter to this visitor's
  *            methods. Use Void for visitors that do not need an
  *            additional parameter.
- *            <P>
  */
 public interface AnnotatedTypeVisitor<R, P> {
 
