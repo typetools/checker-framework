@@ -1,0 +1,13 @@
+PircBot Nullness Checker Demo
+
+PircBot is a popular Java IRC API:
+http://www.jibble.org/pircbot.php
+
+
+This directory contains the source code of PircBot 1.5.0.
+The source code can also be obtained from:
+http://www.jibble.org/files/pircbot-1.5.0.zip
+
+
+In this demo we find bugs in the PircBot source code using the nullness
+checker distributed with the Checker Framework.
