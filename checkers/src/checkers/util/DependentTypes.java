@@ -8,6 +8,10 @@ import com.sun.tools.javac.code.Attribute.TypeCompound;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.util.List;
 
+import javacutils.AnnotationUtils;
+import javacutils.InternalUtils;
+import javacutils.TreeUtils;
+
 import checkers.quals.Dependent;
 import checkers.source.SourceChecker;
 import checkers.types.AnnotatedTypeMirror;
@@ -18,7 +22,7 @@ public class DependentTypes {
     private final Elements elements;
     private final GeneralAnnotatedTypeFactory atypeFactory;
 
-    public DependentTypes(SourceChecker checker, CompilationUnitTree root) {
+    public DependentTypes(SourceChecker<?> checker, CompilationUnitTree root) {
         this.elements = checker.getProcessingEnvironment().getElementUtils();
         this.atypeFactory = new GeneralAnnotatedTypeFactory(checker, root);
     }

@@ -14,7 +14,7 @@ public class NullnessSkipDefsTest extends ParameterizedCheckerTest {
 
     public NullnessSkipDefsTest(File testFile) {
         super(testFile, checkers.nullness.NullnessChecker.class.getName(),
-                "nullness", "-Anomsgtext", "-AskipDefs=SkipMe", "-Alint=advancedchecks");
+                "nullness", "-Anomsgtext", "-AskipDefs=SkipMe");
     }
 
     @Parameters

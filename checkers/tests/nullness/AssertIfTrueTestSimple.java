@@ -1,20 +1,21 @@
+import checkers.nullness.quals.EnsuresNonNullIf;
 import checkers.nullness.quals.*;
 
 /*
- * These tests ensure that AssertNonNullIfTrue methods
+ * These tests ensure that EnsuresNonNullIf methods
  * are verified.
  */
 public class AssertIfTrueTestSimple {
 
   protected int @Nullable [] values;
 
-  @AssertNonNullIfTrue("values")
+  @EnsuresNonNullIf(result=true, expression="values")
   public boolean repNulledBAD() {
-    //:: error: (assertiftrue.postcondition.not.satisfied)
+    //:: error: (contracts.conditional.postcondition.not.satisfied)
     return values == null;
   }
 
-  @AssertNonNullIfFalse("values")
+  @EnsuresNonNullIf(result=false, expression="values")
   public boolean repNulled() {
     return values == null;
   }

@@ -136,7 +136,7 @@ The nullness hierarchy contains these qualifiers:
   \<@\refclass{nullness/quals}{PolyNull}>, see
   Section~\ref{qualifier-polymorphism}.
 
-\item[\code{@\refclass{nullness/quals}{LazyNonNull}}]
+\item[\code{@\refclass{nullness/quals}{MonotonicNonNull}}]
   indicates a reference that may be \code{null}, but if it ever becomes
   non-\code{null}, then it never becomes \code{null} again.  This is
   appropriate for lazily-initialized fields, among other uses.  When the
@@ -146,11 +146,11 @@ The nullness hierarchy contains these qualifiers:
   \code{@\refclass{nullness/quals}{NonNull}}.
 
   Because the Nullness Checker works intraprocedurally (it analyzes one
-  method at a time), when a \code{LazyNonNull} field is first read within a
+  method at a time), when a \code{MonotonicNonNull} field is first read within a
   method, the field cannot be assumed to be non-null.  The benefit of
-  LazyNonNull over Nullable is its different interaction with
+  MonotonicNonNull over Nullable is its different interaction with
   flow-sensitive type qualifier refinement (Section~\ref{type-refinement}).
-  After a check of a LazyNonNull
+  After a check of a MonotonicNonNull
   field, all subsequent accesses \emph{within that method} can be assumed
   to be NonNull, even after arbitrary external method calls that have
   access to the given field.
@@ -185,18 +185,17 @@ apply to the method itself rather than to some particular type.
 
 \begin{description}
 
-\item[\code{@\refclass{nullness/quals}{NonNullOnEntry}}]
+\item[\code{@\refclass{nullness/quals}{RequiresNonNull}}]
   indicates a method precondition:  The annotated method expects the
   specified variables (typically field references) to be non-null when the
   method is invoked.
 
-\item[\code{@\refclass{nullness/quals}{AssertNonNullAfter}}]
-\item[\code{@\refclass{nullness/quals}{AssertNonNullIfTrue}}]
-\item[\code{@\refclass{nullness/quals}{AssertNonNullIfFalse}}]
-  indicates a method postcondition.  With \<@AssertNonNullAfter>, the given
+\item[\code{@\refclass{nullness/quals}{EnsuresNonNull}}]
+\item[\code{@\refclass{nullness/quals}{EnsuresNonNullIf}}]
+  indicates a method postcondition.  With \<@EnsuresNonNull>, the given
   expressions are non-null after the method returns; this is useful for a
   method that initializes a field, for example.  With
-  \<@AssertNonNullIfTrue> and \<@AssertNonNullIfFalse>, if the annotated
+  \<@EnsuresNonNullIf>, if the annotated
   method returns the given boolean value (true or false), then the given
   expressions are non-null.  See Section~\ref{conditional-nullness} and the
   Javadoc for examples of their use.
@@ -349,7 +348,7 @@ possible but are not as useful.
 \subsection{Conditional nullness\label{conditional-nullness}}
 
 The Nullness Checker supports a form of conditional nullness types, via the
-\code{@\refclass{nullness/quals}{AssertNonNullIfTrue}} and \code{@\refclass{nullness/quals}{AssertNonNullIfFalse}} method annotations.
+\code{@\refclass{nullness/quals}{EnsuresNonNullIf}} method annotations.
 The annotation on a method declares that some expressions are non-null, if
 the method returns true (false, respectively).
 
@@ -365,7 +364,7 @@ done for you in the annotated JDK that comes with the Checker Framework):
 
 \begin{Verbatim}
   class Class {
-    @AssertNonNullIfTrue("getComponentType()")
+    @EnsuresNonNullIf("getComponentType()")
     public native boolean isArray();
 
     public native @Nullable Class<?> getComponentType();
@@ -387,16 +386,14 @@ uses such a pattern:
 
 Another example is \sunjavadoc{java/util/Queue.html#peek()}{Queue.peek}
 and \sunjavadoc{java/util/Queue.html#poll()}{Queue.poll}, which return
-non-null if \sunjavadoc{java/util/Queue.html#isEmpty()}{Queue.isEmpty}
+non-null if \sunjavadoc{java/util/Collections.html#isEmpty()}{isEmpty}
 returns false.
 
-The argument to \code{@AssertNonNullIfTrue} and
-\code{@AssertNonNullIfFalse} is a Java expression, including method calls
+The argument to \code{@EnsuresNonNullIf} is a Java expression, including method calls
 (as shown above), method formal parameters, fields, etc.; for details, see
 Section~\ref{java-expressions-as-arguments}.
 More examples of the use of these annotations appear in the Javadoc for
-\code{@\refclass{nullness/quals}{AssertNonNullIfTrue}} and
-\code{@\refclass{nullness/quals}{AssertNonNullIfFalse}}.
+\code{@\refclass{nullness/quals}{EnsuresNonNullIf}}.
 
 
 \subsection{Nullness and arrays\label{nullness-arrays}}
@@ -414,7 +411,7 @@ Instead, one creates a nullable or lazy-nonnull array, initializes
 each component, and then assigns the result to a non-null array:
 
 \begin{Verbatim}
-  @LazyNonNull Object [] temp = new @LazyNonNull Object[10];
+  @MonotonicNonNull Object [] temp = new @MonotonicNonNull Object[10];
   for (int i = 0; i < temp.length; ++i) {
     temp[i] = new Object();
   }
@@ -424,7 +421,8 @@ each component, and then assigns the result to a non-null array:
 
 Note that the checker is currently not powerful enough to ensure that
 each array component was initialized. Therefore, the last assignment
-needs to be trusted.
+needs to be trusted:  that is, a programmer must verify that it is safe,
+then write a \<@SuppressWarnings> annotation.
 
 % TODO: explain more aspects, give more examples.
 
@@ -480,12 +478,13 @@ Section~\ref{suppressing-warnings}).  An example use is
 
 \begin{Verbatim}
     // might return null
-    @Nullable Object getObject() { ... }
+    @Nullable Object getObject(...) { ... }
 
     void myMethod() {
-      // The programmer knows that this partucular call never returns null.
+      // The programmer knows that this partucular call never returns null,
+      // perhaps based on the arguments or the state of other objects.
       @SuppressWarnings("nullness")
-      @NonNull Object o2 = getObject();
+      @NonNull Object o2 = getObject(...);
 \end{Verbatim}
 
 
@@ -510,18 +509,16 @@ suppress warnings; see below.
 Occasionally, it is inconvenient or
 verbose to use the \<@SuppressWarnings> annotation.  For example, Java does
 not permit annotations such as \<@SuppressWarnings> to appear on statements.
+In such cases, you may be able to use the \<@AssumeAssertion> comment in
+an \<assert> statement (see Section~\ref{assumeassertion}).
 
-For situations when the \<@SuppressWarnings> annotation is inconvenient,
-the Nullness Checker provides three additional ways to suppress warnings:
-via an \<assert> statement, the \<castNonNull> method, and the
+For situations when all of these approaches are inconvenient,
+the Nullness Checker provides two additional ways to suppress warnings:
+via the \<castNonNull> method and the
 \<@AssertParametersNonNull> annotation.  These are
 appropriate when the Nullness Checker issues a warning, but the programmer
 knows for sure that the warning is a false positive, because the value
 cannot ever be null at run time.
-
-  % "@SuppressWarnings(nullness)" might be a better string.
-  % That enables a programmer to search the source code to find all instances.
-\newcommand{\nullnessSuppressionString}{nullness}
 
 \begin{enumerate}
 \item
@@ -836,7 +833,7 @@ The rawness hierarchy contains these qualifiers:
 
 If a reference has
 \code{@Raw} type, then all of its \code{@NonNull} fields are treated as
-\code{@\refclass{nullness/quals}{LazyNonNull}}:  when read, they are
+\code{@\refclass{nullness/quals}{MonotonicNonNull}}:  when read, they are
 treated as being \code{@\refclass{nullness/quals}{Nullable}}, but when
 written, they are treated as being
 \code{@\refclass{nullness/quals}{NonNull}}.
@@ -871,7 +868,7 @@ class C {
 & \<a.g> & \<@Nullable> \\ \cline{2-3}
 \<@NonNull @Raw C b;>
 & \<b> & \<@NonNull> \\
-& \<b.f> & \<@LazyNonNull> \\
+& \<b.f> & \<@MonotonicNonNull> \\
 & \<b.g> & \<@Nullable> \\ \cline{2-3}
 \<@Nullable @NonRaw C c;>
 & \<c> & \<@Nullable> \\
@@ -927,21 +924,22 @@ default in the field declaration, or be assigned in the constructor or in a
 helper method that the constructor calls.  If
 your code initializes (some) fields in a helper method, you will need to
 annotate the helper method with an annotation such as
-\code{@\refclass{nullness/quals}{AssertNonNullAfter}(\{"field1", "field2"\})}
+\code{@\refclass{nullness/quals}{EnsuresNonNull}(\{"field1", "field2"\})}
 for all the fields that the helper method assigns.
-It's a bit odd, but you use that same annotation, \code{@AssertNonNullAfter},
+It's a bit odd, but you use that same annotation, \code{@EnsuresNonNull},
 to indicate that a primitive field has its value set in a helper method,
 which is relevant when you supply the \code{-Alint=uninitialized}
 command-line option (see Section~\ref{lint-uninitialized}).
 
 % TODO:
 % We need an
-%   @AssertInitializedAfter("b")
+%   @EnsuresInitialized("b")
 % that is analogous to
-%   @AssertNonNullAfter("b")
+%   @EnsuresNonNull("b")
 % when we are dealing with a field of primitive type.
+% But, for now just use the same annotation, @EnsuresNonNull, for both purposes.
 
-\iffalse TODO
+
 \subsection{Partial initialization\label{partial-initialization}}
 
 So far, we have discussed rawness as if it is an all-or-nothing property:
@@ -1126,8 +1124,6 @@ types.)
 \hline
 \end{tabular}
 
-TODO
-\fi
 
 
 % \urldef{\jlsconstructorbodyurl}{\url}{http://docs.oracle.com/javase/specs/jls/se7/html/jls-8.html#jls-8.8.7}
@@ -1159,8 +1155,9 @@ just the \code{@NonNull} ones.  See Section~\ref{lint-uninitialized}.
 A method with a raw receiver often assumes that a few fields (but not all
 of them) are non-null, and sometimes sets some more fields to non-null
 values.  To express these concepts, use the
-\code{@\refclass{nullness/quals}{NonNullOnEntry}} and
-\code{@\refclass{nullness/quals}{AssertNonNullAfter}} method annotations;
+\code{@\refclass{nullness/quals}{RequiresNonNull}},
+\code{@\refclass{nullness/quals}{EnsuresNonNull}}, and
+\code{@\refclass{nullness/quals}{EnsuresNonNullIf}} method annotations;
 see Section~\ref{nullness-non-qualifiers}.
 
 
@@ -1180,14 +1177,32 @@ annotation has nothing to do with the raw types of Java Generics.
 Java's
 \sunjavadoc{java/util/Map.html#get(java.lang.Object)}{\code{Map.get}}
 method always has the possibility to return null, if the key is not in the
-map.  Thus, to guarantee that the value returned from \code{Map.get} is
+map.
+
+A call \<mymap.get(mykey)> returns non-null if two conditions are satisfied:
+\begin{enumerate}
+\item \<mymap>'s values are all non-null; that is, \<mymap> was
+  declared as \code{Map<\emph{KeyType}, @NonNull \emph{ValueType}>}.  Note
+  that \<@NonNull> is the default type, so it need not be written explicitly.
+\item \<mykey> is a key in \<mymap>; that is, \<mymap.containsKey(mykey)>
+  returns \<true>.  You express this fact to the Nullness Checker by
+  declaring \<mykey> as \<@KeyFor("mymap") \emph{KeyType} mykey>.  For a
+  local variable, the \<@KeyFor("mymap")> type qualifier can generally be
+  inferred.
+\end{enumerate}
+\noindent
+If either of these two conditions is violated, then \<mymap.get(mykey)> has
+the possibility of returning null.
+
+
+  Thus, to guarantee that the value returned from \code{Map.get} is
 non-null, it is necessary that the map contains only non-null values,
 \emph{and} the key is in the map.
 The \code{@\refclass{nullness/quals}{KeyFor}} annotation states the latter
 property.
 
 If a type is annotated as \code{@KeyFor("m")}, then any value v with that type
-is a key in Map m.  Another way of saying this is that the expression
+is a key in Map \<m>.  Another way of saying this is that the expression
 \code{m.containsKey(v)} evaluates to true.
 
 You usually do not have to write \code{@KeyFor} explicitly, because the
@@ -1370,7 +1385,7 @@ corresponding annotation:
   \code{\emph{TypeName} \emph{field} = null;}:  when a field is initialized to
   \code{null} in its declaration, then it needs either a
   \code{@\refclass{nullness/quals}{Nullable}} or a
-  \code{@\refclass{nullness/quals}{LazyNonNull}} annotation.  If the field
+  \code{@\refclass{nullness/quals}{MonotonicNonNull}} annotation.  If the field
   is always set to a non-null value in the constructor, then you can just
   change the declaration to \code{\emph{Type} \emph{field};}, without an
   initializer, and write no type annotation (because the default is
@@ -1419,7 +1434,7 @@ assert var != null : "@SuppressWarnings(nullness)";
 \item
     To indicate a method precondition (a contract stating the conditions
     under which a client is allowed to call it), you can use annotations
-    such as \code{@\refclass{nullness/quals}{NonNullOnEntry}} (see Section~\ref{nullness-non-qualifiers}.
+    such as \code{@\refclass{nullness/quals}{RequiresNonNull}} (see Section~\ref{nullness-non-qualifiers}.
 \end{itemize}
 
 
@@ -1684,14 +1699,14 @@ tool like the Checker Framework.)
 % LocalWords:  NotNull IntelliJ FindBugs Nullable TODO Alint nullable NNEL JSR
 % LocalWords:  DefaultLocation Nullness PolyNull nullness AnnotateNullable JLS
 % LocalWords:  Daikon JastAdd javac DefaultQualifier boolean MyEnumType NonRaw
-% LocalWords:  NullnessAnnotatedTypeFactory NullnessVisitor LazyNonNull PolyRaw
+% LocalWords:  NullnessAnnotatedTypeFactory NullnessVisitor MonotonicNonNull
 % LocalWords:  inferencer Nonnull CheckForNull UnknownNullness rawtypes de ch
 % LocalWords:  castNonNull NullnessUtils assertNotNull codebases checkNotNull
-% LocalWords:  Nullability typeargs nulltest AssertNonNullIfTrue listFiles faq
+% LocalWords:  Nullability typeargs nulltest EnsuresNonNullIf listFiles faq
 % LocalWords:  isDirectory AssertionError intraprocedurally SuppressWarnings rB
-% LocalWords:  FindBugs's getObject NonNullOnEntry AssertNonNullIfFalse KeyFor
-% LocalWords:  AssertParametersNonNull nonnull AssertNonNullAfter ReadOnly arg
+% LocalWords:  FindBugs's getObject RequiresNonNull EnsuresNonNull KeyFor
+% LocalWords:  AssertParametersNonNull nonnull EnsuresNonNull ReadOnly arg
 % LocalWords:  keySet getField keyfor param TypeName containsValue indexOf nraA
 % LocalWords:  lastIndexOf deref getProperty getProperties classliteral MyClass
 % LocalWords:  typeofthis nraB nrbB rO nroO nroB 5cm IGJ containsKey enum
-%  LocalWords:  JUnit's 5in field1 field2 superclasses Foo C1 C2 2in 75in
+% LocalWords:  JUnit's 5in field1 field2 superclasses Foo C1 C2 2in 75in PolyRaw
