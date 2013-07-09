@@ -25,7 +25,6 @@ import checkers.types.AnnotatedTypeMirror.*;
  *            the type of the additional parameter to this visitor's
  *            methods. Use Void for visitors that do not need an
  *            additional parameter.
- *            <P>
  */
 public interface AnnotatedTypeVisitor<R, P> {
 

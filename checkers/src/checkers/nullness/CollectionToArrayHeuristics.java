@@ -30,10 +30,10 @@ import com.sun.source.tree.Tree;
  * component depends on the receiver type argument.  So
  *
  * <pre>
- *     Collection&lt;@NonNull String&gt; c1 = ...
+ *     Collection&lt;@NonNull String&gt; c1 = ...;
  *     c1.toArray();    // returns @NonNull Object []
  *
- *     Collection&lt;@Nullable String&gt; c2 = ...
+ *     Collection&lt;@Nullable String&gt; c2 = ...;
  *     c2.toArray();    // returns @Nullable Object []
  * </pre>
  *
