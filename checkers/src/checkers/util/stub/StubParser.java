@@ -152,7 +152,7 @@ public class StubParser {
      * 
      * @return a list fully qualified member names
      */
-    private List<String> getImportableMembers(TypeElement typeElement) {
+    private static List<String> getImportableMembers(TypeElement typeElement) {
         List<String> result = new ArrayList<String>();
         List<VariableElement> memberElements = ElementFilter.fieldsIn(typeElement.getEnclosedElements());
         for (VariableElement varElement : memberElements) {
@@ -181,8 +181,11 @@ public class StubParser {
             String imported = importDecl.getName().toString();
             try {
                 if (importDecl.isAsterisk()) {
-                	// Members of a Type (according to jls)
+                    // Static determines if we are importing members 
+                    // of a type (class or interface) or of a package
                     if(importDecl.isStatic()) {
+                        // Members of a type (according to JLS)
+
                     	TypeElement element = findType(imported, "Imported type not found");
                     	if (element != null) {
                     		// Find nested annotations
@@ -190,25 +193,28 @@ public class StubParser {
                     		putAllNew(result, annosInType(element));
                     		imports.addAll(getImportableMembers(element));
                     	}
-                    // Members of a package (according to jls)
                     } else {
+                        // Members of a package (according to JLS)
+                        
                     	PackageElement element = findPackage(imported);
                     	if (element != null) {
                     		putAllNew(result, annosInPackage(element));
                     	}
                     }
                 } else {
+                    // Process a single import
+
                     final TypeElement importType = elements.getTypeElement(imported);
-                    
-                    // Class or nested class (according to jls), but we can't resolve
                     if (importType == null && !importDecl.isStatic()) {
+                        // Class or nested class (according to JSL), but we can't resolve
+                        
                     	if (warnIfNotFound || debugStubParser) {
                             stubWarning("Imported type not found: " + imported);
                 		}
-                    
-                    // Nested Field
                     } else if (importType == null) {
-                		Pair<String, String> typeParts = partitionQualifiedName(imported);
+                        // Nested Field
+                        
+                		Pair<String, String> typeParts = StubUtil.partitionQualifiedName(imported);
                 		String type = typeParts.first;
                 		String fieldName = typeParts.second;
                         TypeElement enclType = findType(type, 
@@ -220,9 +226,10 @@ public class StubParser {
                         	}
                         }
                         
-                    // Single annotation or nested annotation
                     } else if (importType.getKind() == ElementKind.ANNOTATION_TYPE) {
-                    	AnnotationMirror anno = AnnotationUtils.fromName(elements, imported);
+                        // Single annotation or nested annotation
+                        
+                        AnnotationMirror anno = AnnotationUtils.fromName(elements, imported);
                         if (anno != null ) {
                             Element annoElt = anno.getAnnotationType().asElement();
                             putNew(result, annoElt.getSimpleName().toString(), anno);
@@ -231,9 +238,9 @@ public class StubParser {
                                 stubWarning("Could not load import: " + imported);
                             }
                         }	
-                        
-                    // Class or nested class
                     } else {
+                        // Class or nested class
+
                 		imports.add(imported);
                 	}
                 }
@@ -743,13 +750,6 @@ public class StubParser {
     	return packageElement;
     }
     
-    private Pair<String, String> partitionQualifiedName(String imported) {
-		String typeName = imported.substring(0, imported.lastIndexOf("."));
-		String name = imported.substring(imported.lastIndexOf(".") + 1);
-		Pair<String,String> typeParts = Pair.of(typeName, name);
-		return typeParts;
-	}
-
     /** The line separator */
     private final static String LINE_SEPARATOR = System.getProperty("line.separator").intern();
 
@@ -928,7 +928,7 @@ public class StubParser {
         VariableElement res = null;
         boolean importFound = false;
         for (String imp: imports) {
-            Pair<String, String> partitionedName = partitionQualifiedName(imp);
+            Pair<String, String> partitionedName = StubUtil.partitionQualifiedName(imp);
             String typeName = partitionedName.first;
             String fieldName = partitionedName.second;
             if (fieldName.equals(nexpr.getName())) {
