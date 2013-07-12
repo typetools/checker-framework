@@ -14,9 +14,11 @@ When instantiating a generic type,
 clients supply the qualifier along with the type argument, as in
 \code{List<@NonNull String>}.
 
-Before running any checker, we recommend that you eliminate
+Before running any pluggable type-checker, we recommend that you eliminate
 raw types from your code (e.g., your code should use \code{List<...>} as
 opposed to \code{List}).
+Your code should compile without warnings when using the standard Java
+compiler and the \<-Xlint:unchecked -Xlint:rawtypes> command-line options.
 Using generics helps prevent type errors just as using a pluggable
 type-checker does, and makes the Checker Framework's warnings easier to
 understand.
