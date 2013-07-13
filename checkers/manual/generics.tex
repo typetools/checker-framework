@@ -66,30 +66,22 @@ required on the actual type argument, rather than just a bound.  For example:
   MyClassNble<@Nullable Number> v3;  // OK
 \end{Verbatim}
 
-\subsection{A qualifier on a type parameter is like two bounds\label{qualifier-is-like-two-bounds}}
+\subsection{A qualifier on a type parameter declaration is like two bounds\label{qualifier-is-like-two-bounds}}
 
-A way to view a type annotation on a generic type parameter declaration is
-as syntactic sugar for the annotation on both the \<extends> and the
-\<super> clauses of the declaration.  For example, these two declarations
-have the same effect:
+A type annotation on a generic type parameter declaration can be thought of
+as syntactic sugar for writing the annotation on both the \<extends> and the
+\<super> clauses of the declaration.
 
-\begin{Verbatim}
-  class MyClassNN<@NonNull T> { ... }
-  class MyClassNN<T extends @NonNull Object super @NonNull void> { ... }
-\end{Verbatim}
+Suppose that a type parameter declaration or a wildcard is annotated.  Then
+the annotation applies to all bounds that have no explicit annotation.  In
+other words, the
+annotation applies to both the upper and lower bounds, except that any
+explicitly-written bound annotation takes precedence.
 
-\noindent
-except that the latter is not legal Java syntax.  The syntactic sugar is
-necessary because of two limitations in Java syntax:  it is illegal to
-specify both the upper and the
-lower bound, and it is impossible to specify a type annotation for a lower
-bound without also specifying a type (use of \<void> is illegal).
+\subsubsection{Type parameter declaration annotation examples\label{type-parameter-examples}}
 
-Suppose that a type parameter declaration is annotated with \code{@A}, and
-a bound is also given.  Then the annotation \<@A> applies to all bounds
-that have no
-explicit annotation.  For example, the following pairs of declarations are
-identical.
+For example, the following pairs of declarations have the same meaning
+(except that the second declaration in each pair is not legal syntax).
 
 \begin{Verbatim}
   class MyClass<@A T> { ... }
@@ -107,6 +99,27 @@ identical.
   class MyClass<@A T super @B Number> { ... }
   class MyClass<T extends @A Object super @B Number> { ... }
 \end{Verbatim}
+
+
+\subsubsection{Type parameter declaration annotation rationale\label{type-parameter-rationale}}
+
+It is desirable to be able to constrain both the upper and the lower bound
+of a type, as in
+
+\begin{Verbatim}
+  class MyClass<T extends @C MyUpperBound super @D void> { ... }
+\end{Verbatim}
+
+However, doing so is not possible due to two limitations of Java's syntax.
+First, it is illegal to specify both the upper and the lower bound of a
+type parameter or wildcard.
+Second, it is impossible to specify a type annotation for a lower
+bound without also specifying a type (use of \<void> is illegal).
+
+Thus, when you wish to specify both bounds, you write one of them
+explicitly, and you write the other one in front of the type variable name
+or \<?>.  When you wish to specify two identical bounds, you write a
+single annotation in front of the type variable name or \<?>.
 
 
 \subsection{Examples of qualifiers on a type parameter}
