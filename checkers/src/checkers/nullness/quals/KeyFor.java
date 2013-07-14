@@ -21,6 +21,17 @@ import checkers.quals.*;
  * indicates that "HOSTNAME" is a key in config.  The Nullness
  * checker deduce this information to deduce that {@code hostname} reference
  * is a nonnull reference.
+ * <p>
+ *
+ * Here is a non-trivial example use:
+ * <pre>
+ * // Return a sorted version of the Map's key set
+ * public static &lt;K,V&gt; Collection&lt;@KeyFor("#1") K&gt; sortedKeySet(Map&lt;K,V&gt; m, Comparator&lt;K&gt; comparator) {
+ *   ArrayList&lt;@KeyFor("#1") K&gt; theKeys = new ArrayList&lt;@KeyFor("#1") K&gt; (m.keySet());
+ *   Collections.sort (theKeys, comparator);
+ *   return theKeys;
+ * }
+ * </pre>
  *
  * <p>
  * <b>Limitation</b>: The Nullness Checker trusts the user and doesn't
