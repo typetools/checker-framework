@@ -175,26 +175,25 @@ class Purity {
         return "";
     }
 
-// TODO: This checks that each overriding implementation maintains any
-// @Pure annotations on the overridden implementation.
-//     class Super {
-//         @Pure int m1(int arg) { return 0; }
-//         @Pure int m2(int arg) { return 0; }
-//         int m3(int arg) { return 0; }
-//         int m4(int arg) { return 0; }
-//     }
-//     class Sub extends Super {
-//         @Pure int m1(int arg) { return 0; }
-//         //:: (purity.invalid.overriding)
-//         int m2(int arg) { return 0; }
-//         @Pure int m3(int arg) { return 0; }
-//         int m4(int arg) { return 0; }
-//     }
-// 
-//     class MyClass extends Object {
-//         //:: (purity.invalid.overriding)
-//         public boolean equals(Object other) { return true; }
-//     }
+     // @Pure annotations on the overridden implementation.
+     class Super {
+         @Pure int m1(int arg) { return 0; }
+         @Pure int m2(int arg) { return 0; }
+         int m3(int arg) { return 0; }
+         int m4(int arg) { return 0; }
+     }
+     class Sub extends Super {
+         @Pure int m1(int arg) { return 0; }
+         //:: error: (purity.invalid.overriding)
+         int m2(int arg) { return 0; }
+         @Pure int m3(int arg) { return 0; }
+         int m4(int arg) { return 0; }
+     }
+ 
+     class MyClass extends Object {
+         //:: error: (purity.invalid.overriding)
+         public boolean equals(Object other) { return true; }
+     }
 
 }
 
