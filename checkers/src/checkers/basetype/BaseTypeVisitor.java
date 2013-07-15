@@ -1701,6 +1701,18 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
         checkContractsSubset(superCPostFalse2, subCPostFalse2,
                 "contracts.conditional.postcondition.false.override.invalid");
 
+        // check purity annotations
+        Set<dataflow.quals.Pure.Kind> superPurity = new HashSet<dataflow.quals.Pure.Kind>(
+                PurityUtils.getPurityKinds(atypeFactory,
+                        overridden.getElement()));
+        Set<dataflow.quals.Pure.Kind> subPurity = new HashSet<dataflow.quals.Pure.Kind>(
+                PurityUtils.getPurityKinds(atypeFactory, overrider.getElement()));
+        if (!subPurity.containsAll(superPurity)) {
+            checker.report(Result.failure("purity.invalid.overriding",
+                    overriderMeth, overriderTyp, overriddenMeth, overriddenTyp,
+                    subPurity, superPurity), overriderTree);
+        }
+
         return result;
     }
 
