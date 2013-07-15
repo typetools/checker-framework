@@ -12,15 +12,15 @@ import checkers.util.test.ParameterizedCheckerTest;
  * Tests for the flow-sensitive part of the framework. These tests complement
  * the tests of {@link FlowTest} and have been written when the dataflow
  * analysis has been completely rewritten.
- * 
+ *
  * @author Stefan Heule
- * 
+ *
  */
 public class Flow2Test extends ParameterizedCheckerTest {
 
     public Flow2Test(File testFile) {
         super(testFile, FlowTestChecker.class.getName(),
-                "flow", "-Anomsgtext");
+                "flow", "-Anomsgtext", "-AenablePurity");
     }
 
     @Parameters
