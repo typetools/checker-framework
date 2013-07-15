@@ -1691,9 +1691,9 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
         checkContractsSubset(superCPostTrue2, subCPostTrue2,
                 "contracts.conditional.postcondition.true.override.invalid");
         Set<Pair<String, String>> superCPostFalse = filterConditionalPostconditions(
-                superCPost, true);
+                superCPost, false);
         Set<Pair<String, String>> subCPostFalse = filterConditionalPostconditions(
-                subCPost, true);
+                subCPost, false);
         Set<Pair<Receiver, AnnotationMirror>> superCPostFalse2 = resolveContracts(
                 superCPostFalse, overridden);
         Set<Pair<Receiver, AnnotationMirror>> subCPostFalse2 = resolveContracts(
