@@ -7,7 +7,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * A meta annotation to allow multiple conditional postcondition annotations.
+ * A meta-annotation to allow multiple conditional postcondition annotations.
  *
  * @author Stefan Heule
  * @see EnsuresQualifierIf
