@@ -252,7 +252,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningChecker> {
      * Specifically, this method tests if:  the comparison is a == comparison,
      * it is the test of an if statement that's the first statement in the
      * method, and one of the following is true:
-     *<ol>
+     * <ol>
      * <li> the method overrides {@link Comparator#compare}, the "then" branch
      *    of the if statement returns zero, and the comparison tests equality
      *    of the method's two parameters</li>
