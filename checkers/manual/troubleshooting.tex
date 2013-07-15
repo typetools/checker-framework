@@ -1,8 +1,8 @@
 \htmlhr
 \chapter{Troubleshooting and getting help\label{troubleshooting}}
 
-Please read the entire manual, including this chapter and the FAQ
-(Chapter~\ref{faq}), because the manual might already answer your question.
+The manual might already answer your question, so please peruse it first,
+including this chapter and the FAQ (Chapter~\ref{faq}).
 If not, you can use the mailing list,
 \code{checker-framework-discuss@googlegroups.com}, to ask other users for
 help.  For archives and to subscribe, see \url{http://groups.google.com/group/checker-framework-discuss}.
@@ -79,8 +79,7 @@ package 'checkers.nullness.quals does not exist
 supplying the \code{jsr308\_imports} environment variable.
 
 \item
-If you get an error like the following when using the Ant task
-(Section~\ref{ant-task}),
+If you get an error like one of the following,
 
 %BEGIN LATEX
 \begin{smaller}
@@ -88,13 +87,17 @@ If you get an error like the following when using the Ant task
 \begin{Verbatim}
 ...\build.xml:59: Error running ${env.CHECKERS}\binary\javac.bat compiler
 \end{Verbatim}
+
+\begin{Verbatim}
+.../binary/javac: Command not found
+\end{Verbatim}
 %BEGIN LATEX
 \end{smaller}
 %END LATEX
 
 \noindent
 then the problem may be that you have not set the \code{CHECKERS} environment
-variable, as described in Section~\ref{windows-installation}.  Or, maybe
+variable, as described in Section~\ref{javac-installation}.  Or, maybe
 you made it a user variable instead of a system variable.
 
 \item
