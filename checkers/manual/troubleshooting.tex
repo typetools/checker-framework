@@ -107,7 +107,7 @@ If you get one of these errors:
 The hierarchy of the type \emph{ClassName} is inconsistent
 
 The type com.sun.source.util.AbstractTypeProcessor cannot be resolved.
-  It is indirectly referenced from required .class files", 
+  It is indirectly referenced from required .class files
 \end{alltt}
 
 \noindent
@@ -120,6 +120,18 @@ If you get the error
 \begin{Verbatim}
   java.lang.ArrayStoreException: sun.reflect.annotation.TypeNotPresentExceptionProxy
 \end{Verbatim}
+
+\noindent
+If you get an error such as
+
+\begin{Verbatim}
+  java.lang.NoClassDefFoundError: java/util/Objects
+\end{Verbatim}
+
+\noindent
+then you are trying to run the compiler using a JDK 6 or earlier JVM\@.
+Install and use a Java 7 or 8 JDK, at least for running the Checker
+Framework.
 
 \noindent
 % I'm not 100% sure of the following explanation and solution.
@@ -140,7 +152,9 @@ previous version of the JDK but has subsequently been removed, such as:
   java.lang.NoClassDefFoundError: java/util/Hashtable$EmptyEnumerator
 \end{Verbatim}
 
-Or, you might be using JDK 6, but you get an error that refers to a class
+Or, 
+% you might be using JDK 6, but
+you get an error that refers to a class
 that has been introduced in a newer version of the JDK, such as:
 
 \begin{Verbatim}
