@@ -1,5 +1,29 @@
 package checkers.igj;
 
+import checkers.igj.quals.I;
+import checkers.igj.quals.Immutable;
+import checkers.igj.quals.Mutable;
+import checkers.igj.quals.ReadOnly;
+import checkers.types.AnnotatedTypeFactory;
+import checkers.types.AnnotatedTypeMirror;
+import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
+import checkers.types.BasicAnnotatedTypeFactory;
+import checkers.types.TreeAnnotator;
+import checkers.types.TypeAnnotator;
+import checkers.types.visitors.AnnotatedTypeScanner;
+import checkers.types.visitors.SimpleAnnotatedTypeVisitor;
+import checkers.util.AnnotatedTypes;
+
+import javacutils.AnnotationUtils;
+import javacutils.ElementUtils;
+import javacutils.Pair;
+import javacutils.TreeUtils;
+import javacutils.TypesUtils;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -21,29 +45,6 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
-
-import javacutils.AnnotationUtils;
-import javacutils.ElementUtils;
-import javacutils.Pair;
-import javacutils.TreeUtils;
-import javacutils.TypesUtils;
-
-import checkers.igj.quals.I;
-import checkers.igj.quals.Immutable;
-import checkers.igj.quals.Mutable;
-import checkers.igj.quals.ReadOnly;
-import checkers.types.AnnotatedTypeMirror;
-import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
-import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
-import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
-import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
-import checkers.types.BasicAnnotatedTypeFactory;
-import checkers.types.TreeAnnotator;
-import checkers.types.TypeAnnotator;
-import checkers.types.visitors.AnnotatedTypeScanner;
-import checkers.types.visitors.SimpleAnnotatedTypeVisitor;
-import checkers.util.AnnotatedTypes;
 
 /**
  * Adds implicit and default IGJ annotations, only if the user does not
@@ -109,8 +110,6 @@ import checkers.util.AnnotatedTypes;
 // Should change that
 public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecker> {
 
-    static {  FLOW_BY_DEFAULT = true;  }
-
     /** The various IGJ annotations. */
     private final AnnotationMirror READONLY, MUTABLE, IMMUTABLE, I,
             BOTTOM_QUAL, ASSIGNS_FIELDS;
@@ -142,6 +141,7 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
 
         // TODO: Add an alias for the Pure JML annotation. It's not a type qualifier, I think adding
         // it above does not work. Also see NullnessAnnotatedTypeFactory.
+        // this.addAliasedDeclAnnotation(org.jmlspecs.annotation.Pure.class, Pure.class, annotationToUse);
 
         this.postInit();
     }
@@ -394,6 +394,14 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
     public void postAsMemberOf(AnnotatedTypeMirror elementType,
             AnnotatedTypeMirror owner, Element element) {
         resolveImmutabilityTypeVar(elementType, owner);
+    }
+
+    @Override
+    protected void annotateInheritedFromClass(/*@Mutable*/ AnnotatedTypeMirror type,
+            Set<AnnotationMirror> fromClass) {
+        // Ignore annotations inherited from a class.
+        // TODO: this mechanism is implemented in special IGJ logic and
+        // should be cleaned up.
     }
 
     /**
@@ -723,8 +731,6 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecke
      *          false otherwise
      */
     private boolean hasImmutabilityAnnotation(AnnotatedTypeMirror type) {
-        // return type.hasAnnotation(READONLY) || type.hasAnnotation(MUTABLE) ||
-        //        type.hasAnnotation(IMMUTABLE) || type.hasAnnotation(I);
-        return type.isAnnotated();
+        return type.isAnnotatedInHierarchy(READONLY);
     }
 }

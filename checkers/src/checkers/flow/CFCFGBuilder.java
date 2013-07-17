@@ -1,22 +1,14 @@
 package checkers.flow;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedList;
-
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.Name;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
+import checkers.basetype.BaseTypeChecker;
+import checkers.types.AnnotatedTypeFactory;
+import checkers.types.AnnotatedTypeMirror;
 
 import javacutils.ErrorReporter;
 import javacutils.InternalUtils;
 import javacutils.TreeUtils;
 import javacutils.TypesUtils;
+
 import dataflow.cfg.CFGBuilder;
 import dataflow.cfg.ControlFlowGraph;
 import dataflow.cfg.UnderlyingAST;
@@ -32,13 +24,22 @@ import dataflow.cfg.node.Node;
 import dataflow.cfg.node.NumericalAdditionNode;
 import dataflow.cfg.node.VariableDeclarationNode;
 
-import checkers.basetype.BaseTypeChecker;
-import checkers.types.AnnotatedTypeFactory;
-import checkers.types.AnnotatedTypeMirror;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedList;
+
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.Name;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 
 import com.sun.source.tree.ArrayAccessTree;
-import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.AssertTree;
+import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.EnhancedForLoopTree;
@@ -50,7 +51,6 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 
 
@@ -128,7 +128,7 @@ public class CFCFGBuilder extends CFGBuilder {
                 factory.setPathHack(tree, methodElement);
             }
         }
-        
+
         @Override
         public Node visitEnhancedForLoop(EnhancedForLoopTree tree, Void p) {
             // see JLS 14.14.2
@@ -200,7 +200,7 @@ public class CFCFGBuilder extends CFGBuilder {
                                                   iteratorCall);
                 handleArtificialTree(iteratorVariable);
 
-                VariableDeclarationNode iteratorVariableDecl = 
+                VariableDeclarationNode iteratorVariableDecl =
                     new VariableDeclarationNode(iteratorVariable);
                 iteratorVariableDecl.setInSource(false);
 
@@ -279,7 +279,7 @@ public class CFCFGBuilder extends CFGBuilder {
                     treeBuilder.buildMethodInvocation(nextSelect);
                 handleArtificialTree(nextCall);
 
-                MethodInvocationNode nextCallNode = 
+                MethodInvocationNode nextCallNode =
                     new MethodInvocationNode(nextCall, nextAccessNode,
                                              Collections.<Node>emptyList(), getCurrentPath());
                 nextCallNode.setInSource(false);
@@ -342,7 +342,7 @@ public class CFCFGBuilder extends CFGBuilder {
                                                   variableElement.getEnclosingElement(),
                                                   zero);
                 handleArtificialTree(indexVariable);
-                VariableDeclarationNode indexVariableNode = 
+                VariableDeclarationNode indexVariableNode =
                     new VariableDeclarationNode(indexVariable);
                 indexVariableNode.setInSource(false);
                 extendWithNode(indexVariableNode);

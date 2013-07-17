@@ -1,23 +1,29 @@
 package checkers.types;
 
-import java.lang.annotation.Annotation;
-import java.util.*;
-
-import com.sun.source.tree.Tree;
-
-import javax.lang.model.element.*;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeKind;
-
-import javacutils.AnnotationUtils;
-import javacutils.ErrorReporter;
-import javacutils.TypesUtils;
-
 import checkers.basetype.BaseTypeChecker;
 import checkers.quals.ImplicitFor;
 import checkers.quals.TypeQualifiers;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.visitors.AnnotatedTypeScanner;
+
+import javacutils.AnnotationUtils;
+import javacutils.ErrorReporter;
+import javacutils.TypesUtils;
+
+import java.lang.annotation.Annotation;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.Map;
+import java.util.Set;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
+
+import com.sun.source.tree.Tree;
 
 /**
  * Adds annotations to a type based on the contents of a type. By default, this
@@ -134,32 +140,20 @@ public class TypeAnnotator extends AnnotatedTypeScanner<Void, ElementKind> {
         qname = (qname == null) ? null : qname.intern();
         if (qname != null && typeNames.containsKey(qname)) {
             Set<AnnotationMirror> fnd = typeNames.get(qname);
-            for (AnnotationMirror f : fnd) {
-                if (!type.isAnnotatedInHierarchy(f)) {
-                    type.addAnnotation(f);
-                }
-            }
+            type.addMissingAnnotations(fnd);
         }
 
         // If the type's kind or class is in the appropriate map, annotate the
         // type.
 
         if (typeKinds.containsKey(type.getKind())) {
-            Set<AnnotationMirror> fnd = typeKinds.get(type.getKind()); 
-            for (AnnotationMirror f : fnd) {
-                if (!type.isAnnotatedInHierarchy(f)) {
-                    type.addAnnotation(f);
-                }
-            }
+            Set<AnnotationMirror> fnd = typeKinds.get(type.getKind());
+            type.addMissingAnnotations(fnd);
         } else if (!typeClasses.isEmpty()) {
             Class<? extends AnnotatedTypeMirror> t = type.getClass();
             if (typeClasses.containsKey(t)) {
                 Set<AnnotationMirror> fnd = typeClasses.get(t);
-                for (AnnotationMirror f : fnd) {
-                    if (!type.isAnnotatedInHierarchy(f)) {
-                        type.addAnnotation(f);
-                    }
-                }
+                type.addMissingAnnotations(fnd);
             }
         }
 
