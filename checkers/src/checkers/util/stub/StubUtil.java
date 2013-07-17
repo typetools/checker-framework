@@ -3,9 +3,22 @@ package checkers.util.stub;
 import japa.parser.ast.CompilationUnit;
 import japa.parser.ast.IndexUnit;
 import japa.parser.ast.Node;
-import japa.parser.ast.body.*;
-import japa.parser.ast.type.*;
+import japa.parser.ast.body.BodyDeclaration;
+import japa.parser.ast.body.ConstructorDeclaration;
+import japa.parser.ast.body.FieldDeclaration;
+import japa.parser.ast.body.MethodDeclaration;
+import japa.parser.ast.body.Parameter;
+import japa.parser.ast.body.TypeDeclaration;
+import japa.parser.ast.body.VariableDeclarator;
+import japa.parser.ast.type.ClassOrInterfaceType;
+import japa.parser.ast.type.PrimitiveType;
+import japa.parser.ast.type.ReferenceType;
+import japa.parser.ast.type.VoidType;
+import japa.parser.ast.type.WildcardType;
 import japa.parser.ast.visitor.SimpleVoidVisitor;
+
+import javacutils.ErrorReporter;
+import javacutils.Pair;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,14 +29,14 @@ import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-import javax.lang.model.element.*;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
-
-import javacutils.ErrorReporter;
-import checkers.util.Pair;
 
 /**
  * Utility class for skeleton files
@@ -161,7 +174,7 @@ public class StubUtil {
         Pair<String,String> typeParts = Pair.of(typeName, name);
         return typeParts;
     }
-    
+
     /**
      * A helper method that standarize type by printing simple names
      * instead of fully qualified names.
@@ -206,7 +219,7 @@ public class StubUtil {
                 for (Iterator<Parameter> i = n.getParameters().iterator(); i.hasNext();) {
                     Parameter p = i.next();
                     p.accept(this, arg);
-                    
+
                     if (i.hasNext()) {
                         sb.append(",");
                     }
@@ -224,7 +237,7 @@ public class StubUtil {
                 for (Iterator<Parameter> i = n.getParameters().iterator(); i.hasNext();) {
                     Parameter p = i.next();
                     p.accept(this, arg);
-         
+
                     if (i.hasNext()) {
                         sb.append(",");
                     }
@@ -238,7 +251,7 @@ public class StubUtil {
             if (n.getId().getArrayCount() > 0) {
                 ErrorReporter.errorAbort("StubUtil: put array brackets on the type, not the variable: " + n);
             }
-           
+
             n.getType().accept(this, arg);
             if (n.isVarArgs())
                 sb.append("[]");
