@@ -66,6 +66,7 @@ public class ComplexComparison {
 
     class C {
         @Override
+        @dataflow.quals.Pure
         public boolean equals(Object other) {
             // Heuristic: permit "this == arg1" in a test in the first statement
             // of a "Comparator.compare" method, if the body just returns true.

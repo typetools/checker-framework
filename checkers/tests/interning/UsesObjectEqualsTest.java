@@ -25,6 +25,7 @@ public class UsesObjectEqualsTest {
     //:: error: (overrides.equals)
     @UsesObjectEquals class TestEquals {
 
+        @dataflow.quals.Pure
         public boolean equals(Object o){
             return true;
         }
