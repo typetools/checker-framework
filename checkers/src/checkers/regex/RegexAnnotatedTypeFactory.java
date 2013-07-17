@@ -1,14 +1,5 @@
 package checkers.regex;
 
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.ExecutableElement;
-
-import javacutils.AnnotationUtils;
-import javacutils.TreeUtils;
-
 import checkers.basetype.BaseTypeChecker;
 import checkers.flow.CFStore;
 import checkers.flow.CFValue;
@@ -20,6 +11,15 @@ import checkers.types.AbstractBasicAnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.TreeAnnotator;
 import checkers.util.AnnotationBuilder;
+
+import javacutils.AnnotationUtils;
+import javacutils.TreeUtils;
+
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
 
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompilationUnitTree;
@@ -153,7 +153,7 @@ public class RegexAnnotatedTypeFactory extends AbstractBasicAnnotatedTypeFactory
          */
         @Override
         public Void visitLiteral(LiteralTree tree, AnnotatedTypeMirror type) {
-            if (!type.isAnnotated()) {
+            if (!type.isAnnotatedInHierarchy(REGEX)) {
                 String regex = null;
                 if (tree.getKind() == Tree.Kind.STRING_LITERAL) {
                     regex = (String) tree.getValue();
@@ -178,8 +178,8 @@ public class RegexAnnotatedTypeFactory extends AbstractBasicAnnotatedTypeFactory
          */
         @Override
         public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
-            if (!type.isAnnotated()
-                && TreeUtils.isStringConcatenation(tree)) {
+            if (!type.isAnnotatedInHierarchy(REGEX) &&
+                    TreeUtils.isStringConcatenation(tree)) {
                 AnnotatedTypeMirror lExpr = getAnnotatedType(tree.getLeftOperand());
                 AnnotatedTypeMirror rExpr = getAnnotatedType(tree.getRightOperand());
 
