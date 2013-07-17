@@ -364,7 +364,7 @@ done for you in the annotated JDK that comes with the Checker Framework):
 
 \begin{Verbatim}
   class Class {
-    @EnsuresNonNullIf("getComponentType()")
+    @EnsuresNonNullIf(expression="getComponentType()", result=true)
     public native boolean isArray();
 
     public native @Nullable Class<?> getComponentType();
