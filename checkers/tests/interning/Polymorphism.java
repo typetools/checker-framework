@@ -70,6 +70,7 @@ public class Polymorphism {
     // test anonymous classes
     private void testAnonymous() {
         new Object() {
+            @dataflow.quals.Pure
             public boolean equals(Object o) { return true; }
         }.equals(null);
 
