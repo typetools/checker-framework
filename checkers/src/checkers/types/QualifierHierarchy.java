@@ -4,14 +4,14 @@ package checkers.types;
 import checkers.interning.quals.*;
 */
 
+import javacutils.AnnotationUtils;
+
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
-
-import javacutils.AnnotationUtils;
 
 /**
  * Represents a type qualifier hierarchy.
@@ -518,7 +518,7 @@ public abstract class QualifierHierarchy {
             }
         }
         return null;
-	}
+    }
 
     /**
      * Returns the annotation from the hierarchy identified by its 'top' annotation
