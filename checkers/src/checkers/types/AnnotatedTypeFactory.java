@@ -2,7 +2,36 @@ package checkers.types;
 
 /*>>>
 import checkers.interning.quals.*;
+import checkers.javari.quals.Mutable;
+import checkers.nullness.quals.Nullable;
 */
+
+import checkers.basetype.BaseTypeChecker;
+import checkers.quals.FromByteCode;
+import checkers.quals.FromStubFile;
+import checkers.quals.StubFiles;
+import checkers.quals.Unqualified;
+import checkers.source.SourceChecker;
+import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
+import checkers.types.visitors.AnnotatedTypeScanner;
+import checkers.util.AnnotatedTypes;
+import checkers.util.stub.StubParser;
+import checkers.util.stub.StubResource;
+import checkers.util.stub.StubUtil;
+
+import javacutils.AnnotationProvider;
+import javacutils.AnnotationUtils;
+import javacutils.ElementUtils;
+import javacutils.ErrorReporter;
+import javacutils.InternalUtils;
+import javacutils.Pair;
+import javacutils.TreeUtils;
+import javacutils.trees.DetachedVarSymbol;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,33 +62,6 @@ import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
-import javacutils.AnnotationProvider;
-import javacutils.AnnotationUtils;
-import javacutils.ElementUtils;
-import javacutils.ErrorReporter;
-import javacutils.InternalUtils;
-import javacutils.Pair;
-import javacutils.TreeUtils;
-import javacutils.trees.DetachedVarSymbol;
-
-import checkers.basetype.BaseTypeChecker;
-import checkers.quals.FromByteCode;
-import checkers.quals.FromStubFile;
-import checkers.quals.StubFiles;
-import checkers.quals.Unqualified;
-import checkers.source.SourceChecker;
-import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
-import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
-import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
-import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
-import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
-import checkers.types.visitors.AnnotatedTypeScanner;
-import checkers.util.AnnotatedTypes;
-import checkers.util.stub.StubParser;
-import checkers.util.stub.StubResource;
-import checkers.util.stub.StubUtil;
-
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
@@ -78,10 +80,6 @@ import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeInfo;
-/*>>>
-import checkers.javari.quals.Mutable;
-import checkers.nullness.quals.Nullable;
-*/
 
 /**
  * The methods of this class take an element or AST node, and return the
@@ -179,17 +177,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     private final Map<String, Pair<AnnotationMirror, Set</*@Interned*/ String>>> declAliases = new HashMap<>();
 
-	/** Unique ID counter; for debugging purposes. */
+    /** Unique ID counter; for debugging purposes. */
     private static int uidCounter = 0;
 
     /** Unique ID of the current object; for debugging purposes. */
     public final int uid;
-    
-    /**Annotation added to every method defined in a class file 
+
+    /**Annotation added to every method defined in a class file
      * that is not in a stub file
      */
     private final AnnotationMirror fromByteCode;
-    
 
     /**
      * Constructs a factory from the given {@link ProcessingEnvironment}
@@ -431,7 +428,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             return toAnnotatedType(elt.asType());
         AnnotatedTypeMirror type;
         Tree decl = declarationFromElement(elt);
-        
+
         addFromByteCode(elt);
 
         if (decl == null && indexTypes != null && indexTypes.containsKey(elt)) {
@@ -470,7 +467,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /**
      * Adds @FromByteCode to methods and constructors declared in class files
      * that are not already annotated with @FromStubFile
-     * 
+     *
      * @param elt
      */
     private void addFromByteCode(Element elt) {
@@ -749,6 +746,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         InheritedFromClassAnnotator.INSTANCE.visit(type, this);
     }
 
+    /** 
+     * Callback to determine what to do with the annotations from a class declaration.
+     */
+    protected void annotateInheritedFromClass(/*@Mutable*/ AnnotatedTypeMirror type,
+            Set<AnnotationMirror> fromClass) {
+        type.addMissingAnnotations(fromClass);
+    }
+
     /**
      * A singleton utility class for pulling annotations down from a class
      * type.
@@ -782,16 +787,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             Element classElt = type.getUnderlyingType().asElement();
 
             // Only add annotations from the class declaration if there
-            // are no annotations already on the type.
+            // are no annotations from that hierarchy already on the type.
 
-            if (classElt != null && !type.isAnnotated()) {
+            if (classElt != null) {
                 AnnotatedTypeMirror classType = p.fromElement(classElt);
                 assert classType != null : "Unexpected null type for class element: " + classElt;
-                for (AnnotationMirror anno : classType.getAnnotations()) {
-                    if (AnnotationUtils.hasInheritedMeta(anno)) {
-                        type.addAnnotation(anno);
-                    }
-                }
+
+                p.annotateInheritedFromClass(type, classType.getAnnotations());
             }
 
             return super.visitDeclared(type, p);
@@ -805,10 +807,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             TypeParameterElement tpelt = (TypeParameterElement) type.getUnderlyingType().asElement();
             if (!visited.containsKey(tpelt)) {
                 visited.put(tpelt, type);
-                if (!type.isAnnotated() &&
-                        !type.getUpperBound().isAnnotated() &&
-                        tpelt.getEnclosingElement().getKind()!=ElementKind.TYPE_PARAMETER) {
-                        TypeFromElement.annotate(type, tpelt);
+                if (type.getAnnotations().isEmpty() &&
+                        type.getUpperBound().getAnnotations().isEmpty() &&
+                        tpelt.getEnclosingElement().getKind() != ElementKind.TYPE_PARAMETER) {
+                    // TODO does this ever happen?
+                    TypeFromElement.annotate(type, tpelt);
                 }
                 super.visitTypeVariable(type, p);
                 visited.remove(tpelt);
@@ -1857,6 +1860,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         List<? extends AnnotationMirror> annotationMirrors = elt.getAnnotationMirrors();
         return getDeclAnnotation(eltName, annoName, annotationMirrors, true);
     }
+
     /**
      * Returns true if the element appears in a stub file
      * (Currently only works for methods and constructors)
@@ -1864,9 +1868,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     public boolean isFromStubFile(Element element) {
         return this.getDeclAnnotation(element, FromStubFile.class) != null;
     }
-    
+
     /**
-     * Returns true if the element is from byte code 
+     * Returns true if the element is from byte code
      * and the if the element did not appear in a stub file
      * (Currently only works for methods and constructors )
      */
@@ -1874,6 +1878,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (isFromStubFile(element)) return false;
         return this.getDeclAnnotation(element, FromByteCode.class) != null;
     }
+
     /**
      * Returns the actual annotation mirror used to annotate this type, whose
      * name equals the passed annotationName if one exists, null otherwise. This

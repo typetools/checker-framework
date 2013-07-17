@@ -6,6 +6,10 @@ import checkers.types.AnnotatedTypeMirror;
 import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.types.TreeAnnotator;
 
+import javacutils.AnnotationUtils;
+
+import javax.lang.model.element.AnnotationMirror;
+
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.CompoundAssignmentTree;
@@ -44,7 +48,8 @@ public class I18nAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<I18nSubc
 
         @Override
         public Void visitLiteral(LiteralTree tree, AnnotatedTypeMirror type) {
-            if (!type.isAnnotated()) {
+            AnnotationMirror LOCALIZED = AnnotationUtils.fromClass(elements, Localized.class);
+            if (!type.isAnnotatedInHierarchy(LOCALIZED)) {
                 if (tree.getKind() == Tree.Kind.STRING_LITERAL && tree.getValue().equals("")) {
                     type.addAnnotation(Localized.class);
                 }

@@ -1,6 +1,30 @@
 package checkers.util;
 
-import static javax.lang.model.util.ElementFilter.methodsIn;
+/*>>>
+import checkers.nullness.quals.*;
+*/
+
+import checkers.quals.PolyAll;
+import checkers.quals.TypeQualifier;
+import checkers.types.AnnotatedTypeFactory;
+import checkers.types.AnnotatedTypeMirror;
+import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedIntersectionType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
+import checkers.types.QualifierHierarchy;
+import checkers.types.TypeHierarchy;
+import checkers.types.visitors.SimpleAnnotatedTypeVisitor;
+
+import javacutils.AnnotationUtils;
+import javacutils.ElementUtils;
+import javacutils.ErrorReporter;
+import javacutils.InternalUtils;
+import javacutils.Pair;
+import javacutils.TreeUtils;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -24,36 +48,21 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
-import javacutils.AnnotationUtils;
-import javacutils.ElementUtils;
-import javacutils.ErrorReporter;
-import javacutils.InternalUtils;
-import javacutils.Pair;
-import javacutils.TreeUtils;
-
-import checkers.quals.PolyAll;
-import checkers.quals.TypeQualifier;
-import checkers.types.AnnotatedTypeFactory;
-import checkers.types.AnnotatedTypeMirror;
-import checkers.types.QualifierHierarchy;
-import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
-import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
-import checkers.types.AnnotatedTypeMirror.AnnotatedIntersectionType;
-import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
-import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
-import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
-import checkers.types.TypeHierarchy;
-import checkers.types.visitors.SimpleAnnotatedTypeVisitor;
-
-/*>>>
-import checkers.nullness.quals.*;
-*/
-
-import com.sun.source.tree.*;
+import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.CompoundAssignmentTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.ReturnTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 
 /**
@@ -83,7 +92,8 @@ public class AnnotatedTypes {
                 asSuper.atypeFactory != atypeFactory) {
             asSuper = new AsSuperTypeVisitor(types, atypeFactory);
         }
-        return asSuper.visit(t, superType);
+        AnnotatedTypeMirror result = asSuper.visit(t, superType);
+        return result;
     }
 
     private static AsSuperTypeVisitor asSuper;
@@ -119,11 +129,11 @@ public class AnnotatedTypes {
                 return type;
             // Operate on the effective upper bound
             AnnotatedTypeMirror res = asSuper(types, atypeFactory, type.getEffectiveUpperBound(), p);
-            if (res != null && !res.isAnnotated()) {
+            if (res != null) {
+                res.addMissingAnnotations(atypeFactory.getQualifierHierarchy().getTopAnnotations());
                 // TODO: or should it be the default?
                 // Test MultiBoundTypeVar fails otherwise.
                 // Is there a better place for this?
-                res.addAnnotations(atypeFactory.getQualifierHierarchy().getTopAnnotations());
             }
             return res;
         }
@@ -563,7 +573,7 @@ public class AnnotatedTypes {
             assert superElement != null; /*nninvariant*/
             // For all method in the supertype, add it to the set if
             // it overrides the given method.
-            for (ExecutableElement supermethod : methodsIn(superElement.getEnclosedElements())) {
+            for (ExecutableElement supermethod : ElementFilter.methodsIn(superElement.getEnclosedElements())) {
                 if (elements.overrides(method, supermethod,
                         superElement)) {
                     overrides.put(supertype, supermethod);
@@ -1129,8 +1139,10 @@ public class AnnotatedTypes {
 
         boolean isFirst = true;
         for (AnnotatedTypeMirror type : types) {
-            if (type.getKind() == TypeKind.NULL && !type.isAnnotated()) continue;
-            if (type.getAnnotations().isEmpty()) continue;
+            if (type.getKind() == TypeKind.NULL && type.getAnnotations().isEmpty())
+                continue;
+            if (type.getAnnotations().isEmpty())
+                continue;
             // TODO: unification fails with an empty set of annotations.
             // Why are they sometimes empty, e.g. in the FlowNegation test case.
 

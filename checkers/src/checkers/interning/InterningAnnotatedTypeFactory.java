@@ -85,7 +85,7 @@ public class InterningAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Int
 
     @Override
     public void annotateImplicit(Element element, AnnotatedTypeMirror type) {
-        if (!type.isAnnotated() && ElementUtils.isCompileTimeConstant(element))
+        if (!type.isAnnotatedInHierarchy(INTERNED) && ElementUtils.isCompileTimeConstant(element))
             type.addAnnotation(INTERNED);
         super.annotateImplicit(element, type);
     }
