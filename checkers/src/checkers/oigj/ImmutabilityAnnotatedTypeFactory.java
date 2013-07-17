@@ -1,5 +1,29 @@
 package checkers.oigj;
 
+import checkers.oigj.quals.I;
+import checkers.oigj.quals.Immutable;
+import checkers.oigj.quals.Mutable;
+import checkers.oigj.quals.ReadOnly;
+import checkers.types.AnnotatedTypeFactory;
+import checkers.types.AnnotatedTypeMirror;
+import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
+import checkers.types.BasicAnnotatedTypeFactory;
+import checkers.types.TreeAnnotator;
+import checkers.types.TypeAnnotator;
+import checkers.types.visitors.AnnotatedTypeScanner;
+import checkers.types.visitors.SimpleAnnotatedTypeVisitor;
+import checkers.util.AnnotatedTypes;
+
+import javacutils.AnnotationUtils;
+import javacutils.ElementUtils;
+import javacutils.Pair;
+import javacutils.TreeUtils;
+import javacutils.TypesUtils;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -14,29 +38,6 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeVariable;
-
-import javacutils.AnnotationUtils;
-import javacutils.ElementUtils;
-import javacutils.Pair;
-import javacutils.TreeUtils;
-import javacutils.TypesUtils;
-
-import checkers.oigj.quals.I;
-import checkers.oigj.quals.Immutable;
-import checkers.oigj.quals.Mutable;
-import checkers.oigj.quals.ReadOnly;
-import checkers.types.AnnotatedTypeMirror;
-import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
-import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
-import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
-import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
-import checkers.types.BasicAnnotatedTypeFactory;
-import checkers.types.TreeAnnotator;
-import checkers.types.TypeAnnotator;
-import checkers.types.visitors.AnnotatedTypeScanner;
-import checkers.types.visitors.SimpleAnnotatedTypeVisitor;
-import checkers.util.AnnotatedTypes;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
@@ -722,6 +723,6 @@ public class ImmutabilityAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<
      *          false otherwise
      */
     private boolean hasImmutabilityAnnotation(AnnotatedTypeMirror type) {
-        return type.isAnnotated();
+        return type.isAnnotatedInHierarchy(READONLY);
     }
 }

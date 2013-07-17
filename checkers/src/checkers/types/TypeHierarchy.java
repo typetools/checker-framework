@@ -1,16 +1,5 @@
 package checkers.types;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeVariable;
-
-import javacutils.AnnotationUtils;
-import javacutils.InternalUtils;
-
 import checkers.basetype.BaseTypeChecker;
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -18,6 +7,17 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
 import checkers.util.AnnotatedTypes;
 import checkers.util.QualifierPolymorphism;
+
+import javacutils.AnnotationUtils;
+import javacutils.InternalUtils;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeVariable;
 
 /**
  * Class to test {@link AnnotatedTypeMirror} subtype relationships.
@@ -144,7 +144,7 @@ public class TypeHierarchy {
             return true;
 
         // An intersection type on the RHS is a subtype,
-        // iff any of its bounds is. 
+        // iff any of its bounds is.
         if (rhs.getKind() == TypeKind.INTERSECTION) {
             for (AnnotatedTypeMirror atm : rhs.directSuperTypes()) {
                 if (isSubtypeImpl(atm, lhs)) {
@@ -173,7 +173,7 @@ public class TypeHierarchy {
                         && isSubtypeImpl(rhs, wildcard.getEffectiveSuperBound())) {
                     return true;
                 }
-                if (wildcard.isAnnotated()
+                if (!wildcard.getAnnotations().isEmpty()
                         && qualifierHierarchy.isSubtype(lhs, rhs, rhs.getEffectiveAnnotations(), wildcard.getAnnotations())) {
                     return true;
                 } else {
@@ -230,9 +230,9 @@ public class TypeHierarchy {
             Set<AnnotationMirror> lhsAnnos = lhsBase.getEffectiveAnnotations();
             Set<AnnotationMirror> rhsAnnos = rhsBase.getEffectiveAnnotations();
 
-            assert lhsAnnos.size() == qualifierHierarchy.getWidth() : "Found invalid number of annotations on "
+            assert lhsAnnos.size() == qualifierHierarchy.getWidth() : "Found invalid number of annotations on lhsBase "
                     + lhsBase + "; comparing lhs: " + lhs + " rhs: " + rhs;
-            assert rhsAnnos.size() == qualifierHierarchy.getWidth() : "Found invalid number of annotations on "
+            assert rhsAnnos.size() == qualifierHierarchy.getWidth() : "Found invalid number of annotations on rhsBase "
                     + rhsBase + "; comparing lhs: " + lhs + " rhs: " + rhs;
             if (!qualifierHierarchy.isSubtype(rhsAnnos, lhsAnnos)) {
                 return false;

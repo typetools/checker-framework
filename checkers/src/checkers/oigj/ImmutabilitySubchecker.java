@@ -1,23 +1,30 @@
 package checkers.oigj;
 
+import checkers.basetype.BaseTypeChecker;
+import checkers.oigj.quals.AssignsFields;
+import checkers.oigj.quals.I;
+import checkers.oigj.quals.Immutable;
+import checkers.oigj.quals.Mutable;
+import checkers.oigj.quals.ReadOnly;
+import checkers.quals.TypeQualifiers;
+import checkers.source.SuppressWarningsKeys;
+import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import checkers.types.QualifierHierarchy;
+import checkers.types.TypeHierarchy;
+import checkers.util.GraphQualifierHierarchy;
+import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+
+import javacutils.AnnotationUtils;
+import javacutils.ErrorReporter;
+
 import java.util.Collection;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Elements;
 
-import javacutils.AnnotationUtils;
-import javacutils.ErrorReporter;
-
-import checkers.basetype.BaseTypeChecker;
-import checkers.oigj.quals.*;
-import checkers.quals.TypeQualifiers;
-import checkers.types.*;
-import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import checkers.util.GraphQualifierHierarchy;
-import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
-
 @TypeQualifiers({ ReadOnly.class, Mutable.class, Immutable.class, I.class,
     AssignsFields.class, OIGJMutabilityBottom.class })
+@SuppressWarningsKeys({ "immutability", "oigj" })
 public class ImmutabilitySubchecker extends BaseTypeChecker<ImmutabilityAnnotatedTypeFactory> {
 
     /** Supported annotations for IGJ.  Used for subtyping rules. **/
