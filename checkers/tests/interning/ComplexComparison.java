@@ -77,4 +77,18 @@ public class ComplexComparison {
         }
     }
 
+    // // TODO
+    // class D {
+    //     @Override
+    //     public boolean equals(Object other) {
+    //         // Don't suppress warnings at "this == arg1" if arg1 has been reassigned
+    //         other = new Object();
+    //
+    //         if (this == other) {
+    //             return true;
+    //         }
+    //         return super.equals(other);
+    //     }
+    // }
+    
 }
