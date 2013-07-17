@@ -1,5 +1,7 @@
 package checkers.util.stub;
 
+import javacutils.TypesUtils;
+
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -7,11 +9,15 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.*;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.PackageElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
-
-import javacutils.TypesUtils;
 
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
@@ -26,13 +32,13 @@ import com.sun.tools.javac.util.Context;
  * Framework Manual</a>.
  */
 public class StubGenerator {
-    /** The used indention for the class */
+    /** The indentation for the class */
     private final static String INDENTION = "    ";
 
     /** The output stream */
     private final PrintStream out;
 
-    /** the current indention for the line being processsed */
+    /** the current indentation for the line being processed */
     private String currentIndention = "";
 
     /** the package of the class being processed */
@@ -57,6 +63,7 @@ public class StubGenerator {
     public StubGenerator(PrintStream out) {
         this.out = out;
     }
+
     /**
      * Constructs an instance of {@code IndexGenerator} that outputs to
      * the provided output stream.
@@ -66,15 +73,7 @@ public class StubGenerator {
     public StubGenerator(OutputStream out) {
         this.out = new PrintStream(out);
     }
-    /**
-     * Constructs an instance of {@code IndexGenerator} that outputs to
-     * the provided output stream.
-     *
-     * @param out   the output stream
-     */
-//    public StubGenerator(PrintStream out) {
-//        this.out = out;
-//    }
+
     /**
      * Generate the skeleton file for all the classes within the provided
      * package.
@@ -92,32 +91,33 @@ public class StubGenerator {
                 : ElementFilter.typesIn(packageElement.getEnclosedElements())) {
             if (isPublicOrProtected(element)) {
                 out.println();
-                printClass((TypeElement)element);
+                printClass(element);
             }
         }
     }
+
     /**
      * Generate the skeleton file for all the classes within the provided
      * package.
      */
     public void skeletonFromMethod(Element elt) {
-        if(!(elt.getKind() == ElementKind.CONSTRUCTOR ||elt.getKind() == ElementKind.METHOD) )
-                return;
-        
+        if(!(elt.getKind() == ElementKind.CONSTRUCTOR || elt.getKind() == ElementKind.METHOD) )
+            return;
+
         TypeElement conclass = (TypeElement) elt.getEnclosingElement();
 
-            String fullClassName = conclass.getQualifiedName().toString();
-            if (fullClassName.indexOf('.') != -1) {
-                int index = fullClassName.lastIndexOf('.');
-                currentPackage = fullClassName.substring(0, index);
-                this.currentIndention = "    ";
-                indent();
-            }
-            ExecutableElement method = (ExecutableElement) elt;
-           
-            printMethodDecl(method); 
+        String fullClassName = conclass.getQualifiedName().toString();
+        if (fullClassName.indexOf('.') != -1) {
+            int index = fullClassName.lastIndexOf('.');
+            currentPackage = fullClassName.substring(0, index);
+            this.currentIndention = "    ";
+            indent();
+        }
+        ExecutableElement method = (ExecutableElement) elt;
 
+        printMethodDecl(method);
     }
+
     /**
      * Generate the skeleton file for provided class.  The generated file
      * includes the package name.
@@ -152,18 +152,17 @@ public class StubGenerator {
      * @param typeElement
      */
     private void printClass(TypeElement typeElement) {
-    	printClass(typeElement, null);
+        printClass(typeElement, null);
     }
-        /**
-         * helper method that outputs the index for the provided class.
-         *
-         * @param typeElement
-         */
-        private void printClass(TypeElement typeElement, String outerClass) {
-        	
-        
+
+    /**
+     * helper method that outputs the index for the provided class.
+     *
+     * @param typeElement
+     */
+    private void printClass(TypeElement typeElement, String outerClass) {
         List<TypeElement> innerClass = new ArrayList<TypeElement>();
-     
+
         indent();
         if (typeElement.getKind() == ElementKind.INTERFACE)
             out.print("interface");
@@ -173,12 +172,10 @@ public class StubGenerator {
             return;
 
         out.print(' ');
-        if(outerClass !=null){
-        	out.print(outerClass+"$");
+        if(outerClass != null){
+            out.print(outerClass + "$");
         }
-            out.print(typeElement.getSimpleName());
-
-        
+        out.print(typeElement.getSimpleName());
 
         // Type parameters
         if (!typeElement.getTypeParameters().isEmpty()) {
@@ -206,17 +203,16 @@ public class StubGenerator {
 
         currentIndention = currentIndention + INDENTION;
 
-
         printTypeMembers(typeElement.getEnclosedElements(), innerClass);
 
         currentIndention = tempIndention;
         indent();
         out.println("}");
-        
+
         for(TypeElement element: innerClass){
-        	printClass(element,typeElement.getSimpleName().toString());
+            printClass(element,typeElement.getSimpleName().toString());
         }
-        
+
     }
 
     /**
@@ -224,7 +220,7 @@ public class StubGenerator {
      * a class.
      *
      * @param members list of the class members
-     * @param innerClass 
+     * @param innerClass
      */
     private void printTypeMembers(List<? extends Element> members, List<TypeElement> innerClass) {
         for (Element element : members) {
@@ -235,7 +231,7 @@ public class StubGenerator {
 
     /**
      * Helper method that outputs the declaration of the member
-     * @param innerClass 
+     * @param innerClass
      */
     private void printMember(Element member, List<TypeElement> innerClass) {
         if (member.getKind().isField())
@@ -244,7 +240,6 @@ public class StubGenerator {
             printMethodDecl((ExecutableElement)member);
         else if (member instanceof TypeElement)
             innerClass.add((TypeElement) member);
-       
     }
 
     /**
@@ -292,8 +287,9 @@ public class StubGenerator {
             out.print(formatType(method.getReturnType()));
             out.print(" ");
             out.print(method.getSimpleName());
-        } else
+        } else {
             out.print(method.getEnclosingElement().getSimpleName());
+        }
 
         out.print('(');
 
