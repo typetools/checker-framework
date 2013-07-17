@@ -227,13 +227,9 @@ public class QualifierPolymorphism {
 
                     if (type.hasAnnotation(poly)) {
                         type.removeAnnotation(poly);
-                        if (top==null) {
+                        if (top == null) {
                             // poly is PolyAll -> add all tops not explicitly given
-                            for (AnnotationMirror atop : topQuals) {
-                                if (!type.isAnnotatedInHierarchy(atop)) {
-                                    type.addAnnotation(atop);
-                                }
-                            }
+                            type.addMissingAnnotations(topQuals);
                         } else if (type.getKind()!=TypeKind.TYPEVAR && type.getKind()!=TypeKind.WILDCARD) {
                             // Do not add the top qualifiers to type variables and wildcards
                             type.addAnnotation(top);
