@@ -1,35 +1,74 @@
 package checkers.util.stub;
 
-import java.io.InputStream;
-import java.util.*;
+/*>>>
+import checkers.nullness.quals.*;
+*/
 
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.*;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.ElementFilter;
-import javax.lang.model.util.Elements;
+import checkers.quals.FromStubFile;
+import checkers.types.AnnotatedTypeFactory;
+import checkers.types.AnnotatedTypeMirror;
+import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
+import checkers.util.AnnotationBuilder;
+
+import japa.parser.JavaParser;
+import japa.parser.ast.CompilationUnit;
+import japa.parser.ast.ImportDeclaration;
+import japa.parser.ast.IndexUnit;
+import japa.parser.ast.PackageDeclaration;
+import japa.parser.ast.TypeParameter;
+import japa.parser.ast.body.BodyDeclaration;
+import japa.parser.ast.body.ClassOrInterfaceDeclaration;
+import japa.parser.ast.body.ConstructorDeclaration;
+import japa.parser.ast.body.FieldDeclaration;
+import japa.parser.ast.body.MethodDeclaration;
+import japa.parser.ast.body.Parameter;
+import japa.parser.ast.body.TypeDeclaration;
+import japa.parser.ast.body.VariableDeclarator;
+import japa.parser.ast.expr.AnnotationExpr;
+import japa.parser.ast.expr.ArrayInitializerExpr;
+import japa.parser.ast.expr.Expression;
+import japa.parser.ast.expr.FieldAccessExpr;
+import japa.parser.ast.expr.MarkerAnnotationExpr;
+import japa.parser.ast.expr.MemberValuePair;
+import japa.parser.ast.expr.NameExpr;
+import japa.parser.ast.expr.NormalAnnotationExpr;
+import japa.parser.ast.expr.SingleMemberAnnotationExpr;
+import japa.parser.ast.expr.StringLiteralExpr;
+import japa.parser.ast.type.ClassOrInterfaceType;
+import japa.parser.ast.type.ReferenceType;
+import japa.parser.ast.type.Type;
+import japa.parser.ast.type.WildcardType;
 
 import javacutils.AnnotationUtils;
 import javacutils.ElementUtils;
 import javacutils.ErrorReporter;
 import javacutils.Pair;
 
-import checkers.quals.FromStubFile;
-import checkers.types.AnnotatedTypeFactory;
-import checkers.types.AnnotatedTypeMirror;
-import checkers.types.AnnotatedTypeMirror.*;
-import checkers.util.AnnotationBuilder;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import japa.parser.JavaParser;
-import japa.parser.ast.*;
-import japa.parser.ast.body.*;
-import japa.parser.ast.expr.*;
-import japa.parser.ast.type.*;
-
-/*>>>
-import checkers.nullness.quals.*;
-*/
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.PackageElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
+import javax.lang.model.util.Elements;
 
 // Main entry point is:
 // parse(Map<Element, AnnotatedTypeMirror>, Map<Element, Set<AnnotationMirror>>)
@@ -86,7 +125,7 @@ public class StubParser {
 
 
     /**
-     * 
+     *
      * @param filename name of stub file
      * @param inputStream of stub file to parse
      * @param factory  AnnotatedtypeFactory to use
@@ -149,17 +188,17 @@ public class StubParser {
     /**
      * Get all members of a Type that are useful in a stub file.
      * Currently these are values of enums, or compile time constants.
-     * 
+     *
      * @return a list fully qualified member names
      */
     private static List<String> getImportableMembers(TypeElement typeElement) {
         List<String> result = new ArrayList<String>();
         List<VariableElement> memberElements = ElementFilter.fieldsIn(typeElement.getEnclosedElements());
         for (VariableElement varElement : memberElements) {
-            if (varElement.getConstantValue() != null 
+            if (varElement.getConstantValue() != null
                     || varElement.getKind() == ElementKind.ENUM_CONSTANT) {
 
-                result.add(String.format("%s.%s", typeElement.getQualifiedName().toString(), 
+                result.add(String.format("%s.%s", typeElement.getQualifiedName().toString(),
                         varElement.getSimpleName().toString()));
             }
         }
@@ -181,7 +220,7 @@ public class StubParser {
             String imported = importDecl.getName().toString();
             try {
                 if (importDecl.isAsterisk()) {
-                    // Static determines if we are importing members 
+                    // Static determines if we are importing members
                     // of a type (class or interface) or of a package
                     if(importDecl.isStatic()) {
                         // Members of a type (according to JLS)
@@ -217,7 +256,7 @@ public class StubParser {
                         Pair<String, String> typeParts = StubUtil.partitionQualifiedName(imported);
                         String type = typeParts.first;
                         String fieldName = typeParts.second;
-                        TypeElement enclType = findType(type, 
+                        TypeElement enclType = findType(type,
                                 String.format("Enclosing type of static field %s not found", fieldName));
 
                         if (enclType != null) {
@@ -442,7 +481,7 @@ public class StubParser {
 
     /**
      * Adds a declAnnotation to every method in the stub file.
-     * 
+     *
      * @param declAnnos
      * @param elt
      */
@@ -460,8 +499,8 @@ public class StubParser {
     }
 
     /**
-     * List of all array component types. 
-     * Example input: int[][] 
+     * List of all array component types.
+     * Example input: int[][]
      * Example output: int, int[], int[][]
      */
     private List<AnnotatedTypeMirror> arrayAllComponents(AnnotatedArrayType atype) {
@@ -788,7 +827,7 @@ public class StubParser {
      * Merge the qualifiers from the second parameter into the first parameter.
      * Modifies the first parameter directly.
      * Raises an exception if both types have a qualifier in a given hierarchy.
-     * 
+     *
      * @param into target type
      * @param from source type
      */
@@ -1012,7 +1051,7 @@ public class StubParser {
             String typeName = partitionedName.first;
             String fieldName = partitionedName.second;
             if (fieldName.equals(nexpr.getName())) {
-                TypeElement enclType = findType(typeName, 
+                TypeElement enclType = findType(typeName,
                         String.format("Enclosing type of static import %s not found", fieldName));
 
                 if (enclType == null) {
