@@ -1,24 +1,36 @@
 package checkers.types;
 
+import checkers.basetype.BaseTypeChecker;
+import checkers.quals.ImplicitFor;
+import checkers.quals.TypeQualifiers;
+import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
+
+import javacutils.AnnotationUtils;
+import javacutils.ErrorReporter;
+import javacutils.Pair;
+
 import java.lang.annotation.Annotation;
-import java.util.*;
+import java.util.Collection;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
 
-import javacutils.AnnotationUtils;
-import javacutils.ErrorReporter;
-import javacutils.Pair;
-
-import checkers.basetype.BaseTypeChecker;
-import checkers.quals.ImplicitFor;
-import checkers.quals.TypeQualifiers;
-import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
-
-import com.sun.source.tree.*;
+import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.CompoundAssignmentTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.TypeCastTree;
+import com.sun.source.tree.UnaryTree;
 import com.sun.source.util.SimpleTreeVisitor;
 
 
@@ -134,29 +146,17 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
 
         if (treeKinds.containsKey(tree.getKind())) {
             Set<AnnotationMirror> fnd = treeKinds.get(tree.getKind());
-            for (AnnotationMirror f : fnd) {
-                if (!type.isAnnotatedInHierarchy(f)) {
-                    type.addAnnotation(f);
-                }
-            }
+            type.addMissingAnnotations(fnd);
         } else if (!treeClasses.isEmpty()) {
             Class<? extends Tree> t = tree.getClass();
             if (treeClasses.containsKey(t)) {
                 Set<AnnotationMirror> fnd = treeClasses.get(t);
-                for (AnnotationMirror f : fnd) {
-                    if (!type.isAnnotatedInHierarchy(f)) {
-                        type.addAnnotation(f);
-                    }
-                }
+                type.addMissingAnnotations(fnd);
             }
             for (Class<?> c : t.getInterfaces()) {
                 if (treeClasses.containsKey(c)) {
                     Set<AnnotationMirror> fnd = treeClasses.get(c);
-                    for (AnnotationMirror f : fnd) {
-                        if (!type.isAnnotatedInHierarchy(f)) {
-                            type.addAnnotation(f);
-                        }
-                    }
+                    type.addMissingAnnotations(fnd);
                     treeClasses.put(t, treeClasses.get(c));
                 }
             }
@@ -248,11 +248,7 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
             // No context is available - simply use what we have.
             post = prev;
         }
-        for (AnnotationMirror an : post) {
-            if (!componentType.isAnnotatedInHierarchy(an)) {
-                componentType.addAnnotation(an);
-            }
-        }
+        componentType.addMissingAnnotations(post);
 
         return super.visitNewArray(tree, type);
     }
@@ -261,12 +257,10 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
     public Void visitCompoundAssignment(CompoundAssignmentTree node, AnnotatedTypeMirror type) {
         // TODO: should we perform default action to get trees/tree kinds/...?
         // defaultAction(node, type);
-        if (!type.isAnnotated()) {
-            AnnotatedTypeMirror rhs = atypeFactory.getAnnotatedType(node.getExpression());
-            AnnotatedTypeMirror lhs = atypeFactory.getAnnotatedType(node.getVariable());
-            Set<AnnotationMirror> lubs = qualHierarchy.leastUpperBounds(rhs.getAnnotations(), lhs.getAnnotations());
-            type.replaceAnnotations(lubs);
-        }
+        AnnotatedTypeMirror rhs = atypeFactory.getAnnotatedType(node.getExpression());
+        AnnotatedTypeMirror lhs = atypeFactory.getAnnotatedType(node.getVariable());
+        Set<AnnotationMirror> lubs = qualHierarchy.leastUpperBounds(rhs.getAnnotations(), lhs.getAnnotations());
+        type.addMissingAnnotations(lubs);
         return super.visitCompoundAssignment(node, type);
     }
 
@@ -274,12 +268,10 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
     public Void visitBinary(BinaryTree node, AnnotatedTypeMirror type) {
         // TODO: should we perform default action to get trees/tree kinds/...?
         // defaultAction(node, type);
-        if (!type.isAnnotated()) {
-            AnnotatedTypeMirror a = atypeFactory.getAnnotatedType(node.getLeftOperand());
-            AnnotatedTypeMirror b = atypeFactory.getAnnotatedType(node.getRightOperand());
-            Set<AnnotationMirror> lubs = qualHierarchy.leastUpperBounds(a.getEffectiveAnnotations(), b.getEffectiveAnnotations());
-            type.replaceAnnotations(lubs);
-        }
+        AnnotatedTypeMirror a = atypeFactory.getAnnotatedType(node.getLeftOperand());
+        AnnotatedTypeMirror b = atypeFactory.getAnnotatedType(node.getRightOperand());
+        Set<AnnotationMirror> lubs = qualHierarchy.leastUpperBounds(a.getEffectiveAnnotations(), b.getEffectiveAnnotations());
+        type.addMissingAnnotations(lubs);
         return super.visitBinary(node, type);
     }
 
@@ -287,10 +279,8 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
     public Void visitUnary(UnaryTree node, AnnotatedTypeMirror type) {
         // TODO: should we perform default action to get trees/tree kinds/...?
         // defaultAction(node, type);
-        if (!type.isAnnotated()) {
-            AnnotatedTypeMirror exp = atypeFactory.getAnnotatedType(node.getExpression());
-            type.replaceAnnotations(exp.getAnnotations());
-        }
+        AnnotatedTypeMirror exp = atypeFactory.getAnnotatedType(node.getExpression());
+        type.addMissingAnnotations(exp.getAnnotations());
         return super.visitUnary(node, type);
     }
 
@@ -311,21 +301,20 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
     public Void visitTypeCast(TypeCastTree node, AnnotatedTypeMirror type) {
         // TODO: should we perform default action to get trees/tree kinds/...?
         // defaultAction(node, type);
-        if (!type.isAnnotated()) {
-            AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(node.getExpression());
-            if (type.getKind() == TypeKind.TYPEVAR ) {
-                if (exprType.getKind() == TypeKind.TYPEVAR) {
-                    // If both types are type variables, take the direct annotations.
-                    type.addAnnotations(exprType.getAnnotations());
-                }
-                // else do nothing
-                // TODO: What should we do if the type is a type variable, but the expression
-                // is not?
-            } else {
-                // Use effective annotations from the expression, to get upper bound
-                // of type variables.
-                type.addAnnotations(exprType.getEffectiveAnnotations());
+
+        AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(node.getExpression());
+        if (type.getKind() == TypeKind.TYPEVAR ) {
+            if (exprType.getKind() == TypeKind.TYPEVAR) {
+                // If both types are type variables, take the direct annotations.
+                type.addMissingAnnotations(exprType.getAnnotations());
             }
+            // else do nothing
+            // TODO: What should we do if the type is a type variable, but the expression
+            // is not?
+        } else {
+            // Use effective annotations from the expression, to get upper bound
+            // of type variables.
+            type.addMissingAnnotations(exprType.getEffectiveAnnotations());
         }
         return super.visitTypeCast(node, type);
     }

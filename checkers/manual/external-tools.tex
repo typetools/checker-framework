@@ -410,12 +410,12 @@ process.
 The above example attaches the "check" goal to the "process-lifecycle" phase which occurs directly after
 the "compile" phase (see \url{http://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html}).
 This means that any maven target that exercises that phase will also run the Checker Framework
-(e.g. mvn package, mvn verify).
+(e.g., \<mvn package>, \<mvn verify>).
 
 To run only checking:
 \code{mvn checkers:check}
 
-\item Add Optional Parameters
+\item Add optional parameters
 
 Within the configuration element you can add a number of parameters.
 

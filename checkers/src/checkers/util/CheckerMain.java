@@ -310,6 +310,8 @@ public class CheckerMain {
         args.add(java);
 
         args.add("-Xbootclasspath/p:" + PluginUtil.join(File.pathSeparator, runtimeBootClasspath));
+        args.add("-ea");
+        // com.sun.tools needs to be enabled separately
         args.add("-ea:com.sun.tools...");
 
         args.addAll(jvmOpts);

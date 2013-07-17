@@ -164,8 +164,9 @@ public class NonNullMapValue {
 
   interface MyMap<K, V> extends Map<K, V> {
     //TODO: @AssertGenericNullnessIfTrue("get(#1)")
+    @dataflow.quals.Pure
     public abstract boolean containsKey(@Nullable Object a1);
-    
+
     // We get an override warning, because we do not use the annotated JDK in the
     // test suite. Ignore this.
     @SuppressWarnings("override.return.invalid")
@@ -199,7 +200,7 @@ public class NonNullMapValue {
   }
 
   interface MyMap2<K, V> {
-      @dataflow.quals.Pure
+    @dataflow.quals.Pure
     // This annotation is not legal on containsKey in general.
     // If the Map is declared as (say) Map<Object, @Nullable Object>,
     // then get returns a nullable value.  We really want to say that if

@@ -111,6 +111,8 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
 
         /**
          * Adds a subtype relationship between the two type qualifiers.
+         * Assumes that both qualifiers are part of the same qualifier hierarchy;
+         * callers should ensure this.
          *
          * @param sub   the sub type qualifier
          * @param sup   the super type qualifier

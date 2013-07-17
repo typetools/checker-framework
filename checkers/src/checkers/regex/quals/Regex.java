@@ -1,8 +1,14 @@
 package checkers.regex.quals;
 
-import java.lang.annotation.*;
+import checkers.quals.SubtypeOf;
+import checkers.quals.TypeQualifier;
+import checkers.quals.Unqualified;
 
-import checkers.quals.*;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * For char, char[], {@link Character} and subtypes of {@link CharSequence}
@@ -13,14 +19,12 @@ import checkers.quals.*;
  * {@link java.util.regex.MatchResult MatchResult} indicates the number of regular
  * expression groups.
  */
-@Documented
 @TypeQualifier
-@Inherited
 @SubtypeOf(Unqualified.class)
+@Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface Regex {
-  
     /**
      * The number of groups in the regular expression.
      * Defaults to 0.

@@ -22,13 +22,21 @@ case `uname -s` in
 esac
 
 binaryDir="${mydir}"/../binary
-buildDir="${mydir}"/../build
 
 #Langtools bin dir
 ltBinDir="${mydir}"/../../../jsr308-langtools/build/classes
 jdkPaths="${mydir}"/../jdk/annotated
 
+cfDir="${mydir}"/../..
+# Put "checkers" last, as "ant bindist" puts other projects
+# into the checkers/build directory.
+buildDirs="${cfDir}"/dataflow/build:"${cfDir}"/javacutils/build:"${cfDir}"/javaparser/build:"${cfDir}"/checkers/build
+
 eval "java" \
      "-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005" \
-     "-DCheckerDevelMain.cp=${buildDir} -DCheckerDevelMain.compile.bcp=${jdkPaths} -DCheckerDevelMain.runtime.bcp=${ltBinDir} -DCheckerDevelMain.binary=${binaryDir}" \
-     "-classpath ${buildDir} checkers.util.CheckerDevelMain" "$@"
+     "-DCheckerDevelMain.cp=${buildDirs} " \
+     "-DCheckerDevelMain.compile.bcp=${jdkPaths} " \
+     "-DCheckerDevelMain.runtime.bcp=${ltBinDir} " \
+     "-DCheckerDevelMain.binary=${binaryDir}" \
+     "-classpath ${buildDirs} " \
+     "checkers.util.CheckerDevelMain" "$@"
