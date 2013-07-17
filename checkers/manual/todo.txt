@@ -101,3 +101,5 @@ New manual section about array types
 
 Suppress warnings using assert statements with the string
 @AssumeAssertion(warningkey); previously, just the warning key sufficed.
+
+Purity analysis:  uses new annotations @SideEffectFree and ...
