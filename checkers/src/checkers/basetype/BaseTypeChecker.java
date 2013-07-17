@@ -1,19 +1,8 @@
 package checkers.basetype;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.util.Elements;
-
-import javacutils.AbstractTypeProcessor;
-import javacutils.AnnotationUtils;
-import javacutils.ErrorReporter;
+/*>>>
+import checkers.igj.quals.*;
+*/
 
 import checkers.quals.MonotonicQualifier;
 import checkers.quals.PolymorphicQualifier;
@@ -30,10 +19,22 @@ import checkers.util.GraphQualifierHierarchy;
 import checkers.util.MultiGraphQualifierHierarchy;
 import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 
+import javacutils.AbstractTypeProcessor;
+import javacutils.AnnotationUtils;
+import javacutils.ErrorReporter;
+
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.util.Elements;
+
 import com.sun.source.tree.CompilationUnitTree;
-/*>>>
-import checkers.igj.quals.*;
-*/
 
 /**
  * An abstract {@link SourceChecker} that provides a simple {@link
@@ -259,6 +260,9 @@ public abstract class BaseTypeChecker<Factory extends AbstractBasicAnnotatedType
             Class<? extends Annotation>[] superQualifiers =
                 typeQualifier.getAnnotation(SubtypeOf.class).value();
             for (Class<? extends Annotation> superQualifier : superQualifiers) {
+                if (!supportedTypeQualifiers.contains(superQualifier)) {
+                    continue;
+                }
                 AnnotationMirror superAnno = null;
                 superAnno = AnnotationUtils.fromClass(elements, superQualifier);
                 factory.addSubtype(typeQualifierAnno, superAnno);
