@@ -23,6 +23,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 
 import javacutils.ErrorReporter;
+import checkers.util.Pair;
 
 /**
  * Utility class for skeleton files
@@ -153,6 +154,14 @@ public class StubUtil {
         else
             return null;
     }
+
+    /*package-scope*/ static Pair<String, String> partitionQualifiedName(String imported) {
+        String typeName = imported.substring(0, imported.lastIndexOf("."));
+        String name = imported.substring(imported.lastIndexOf(".") + 1);
+        Pair<String,String> typeParts = Pair.of(typeName, name);
+        return typeParts;
+    }
+    
     /**
      * A helper method that standarize type by printing simple names
      * instead of fully qualified names.

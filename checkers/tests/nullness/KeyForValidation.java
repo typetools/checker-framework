@@ -1,5 +1,7 @@
 import checkers.nullness.quals.*;
 
+import java.util.Map;
+
 @SuppressWarnings("fields.uninitialized")
 public class KeyForValidation {
 
@@ -13,6 +15,15 @@ public class KeyForValidation {
 
   // TODO: invalid index
   void m2(@KeyFor("#4") Object p) {}
+
+  // OK
+  void m3(@KeyFor("#2") Object p, Map m) {}
+
+  // TODO: index for a non-map
+  void m4(@KeyFor("#1") Object p, Map m) {}
+
+  // TODO: index with wrong type
+  void m4(@KeyFor("#2") String p, Map<Integer,Integer> m) {}
 
   // TODO: check names for fields
   @KeyFor("INVALID") Object h;
