@@ -473,6 +473,13 @@ ${build.version} of the 'javac.jar' library."/>
         </antcall>
     </target>
 
+    <target name="i18n-tests" depends="jar,build-tests"
+      description="Run tests for the I18n Checker">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.I18nTest"/>
+        </antcall>
+    </target>
+
     <target name="igj-tests" depends="jar,build-tests"
       description="Run tests for the IGJ Checker">
         <antcall target="-run-tests">
@@ -729,7 +736,8 @@ ${build.version} of the 'javac.jar' library."/>
       description="Run the compiler message keys checker on the Framework">
         <antcall target="-run-checker">
             <param name="checker-name" value="checkers.compilermsgs.CompilerMessagesChecker"/>
-            <param name="checker-args" value="-Awarns -Apropfiles=./src/checkers/lock/messages.properties:./src/checkers/javari/messages.properties:./src/checkers/interning/messages.properties:./src/checkers/basetype/messages.properties:./src/checkers/nullness/messages.properties:./src/checkers/initialization/messages.properties:./src/checkers/linear/messages.properties:./src/checkers/regex/messages.properties:./src/checkers/util/report/messages.properties"/>
+            <!-- TODO: also check purity -->
+            <param name="checker-args" value="-Awarns -AsuppressWarnings=purity -Apropfiles=./src/checkers/lock/messages.properties:./src/checkers/javari/messages.properties:./src/checkers/interning/messages.properties:./src/checkers/basetype/messages.properties:./src/checkers/nullness/messages.properties:./src/checkers/initialization/messages.properties:./src/checkers/linear/messages.properties:./src/checkers/regex/messages.properties:./src/checkers/util/report/messages.properties"/>
         </antcall>
     </target>
 
@@ -801,7 +809,7 @@ ${build.version} of the 'javac.jar' library."/>
 
         <copy todir="binary" file="${javac.lib}"      overwrite="true" failonerror="true" />
 
-        <fail message="No jdk jars were found in the jdk directory.  At least one jdk (jdk6.jar or jdk7.jar) must be built!">
+        <fail message="No jdk jars were found in the jdk directory.  At least one annotated JDK (jdk/jdk[678].jar) must be built!">
             <condition>
                 <and>
                     <not><available file="jdk/jdk6.jar"></available></not>

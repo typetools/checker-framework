@@ -1,41 +1,5 @@
 package checkers.types;
 
-import java.lang.annotation.Annotation;
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.IdentityHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
-
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeKind;
-
-import javacutils.AnnotationUtils;
-import javacutils.InternalUtils;
-import javacutils.Pair;
-import javacutils.TreeUtils;
-
-import dataflow.analysis.AnalysisResult;
-import dataflow.analysis.TransferInput;
-import dataflow.analysis.TransferResult;
-import dataflow.cfg.CFGBuilder;
-import dataflow.cfg.ControlFlowGraph;
-import dataflow.cfg.UnderlyingAST;
-import dataflow.cfg.UnderlyingAST.CFGMethod;
-import dataflow.cfg.UnderlyingAST.CFGStatement;
-import dataflow.cfg.node.Node;
-import dataflow.cfg.node.ReturnNode;
-
 import checkers.basetype.BaseTypeChecker;
 import checkers.flow.CFAbstractAnalysis;
 import checkers.flow.CFAbstractStore;
@@ -55,6 +19,42 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.util.QualifierDefaults;
 import checkers.util.QualifierPolymorphism;
+
+import javacutils.AnnotationUtils;
+import javacutils.InternalUtils;
+import javacutils.Pair;
+import javacutils.TreeUtils;
+
+import dataflow.analysis.AnalysisResult;
+import dataflow.analysis.TransferInput;
+import dataflow.analysis.TransferResult;
+import dataflow.cfg.CFGBuilder;
+import dataflow.cfg.ControlFlowGraph;
+import dataflow.cfg.UnderlyingAST;
+import dataflow.cfg.UnderlyingAST.CFGMethod;
+import dataflow.cfg.UnderlyingAST.CFGStatement;
+import dataflow.cfg.node.Node;
+import dataflow.cfg.node.ReturnNode;
+
+import java.lang.annotation.Annotation;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
+
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
 
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BlockTree;

@@ -915,6 +915,13 @@ Finally, the message key for the expected message is given.
 
 Multiple expected messages can be given using the "//:: A :: B :: C"
 syntax.
+This example expects both an error and a warning from the same line of code:
+
+\begin{Verbatim}
+  @Regex String s1 = null;
+  //:: error: (assignment.type.incompatible) :: warning: (cast.unsafe)
+  @Regex(3) String s2 = (@Regex(2) String) s;
+\end{Verbatim}
 
 As an alternative, expected errors can be specified in a separate file
 using the \code{.out} file extension.

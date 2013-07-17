@@ -1,8 +1,8 @@
 \htmlhr
 \chapter{Troubleshooting and getting help\label{troubleshooting}}
 
-Please read the entire manual, including this chapter and the FAQ
-(Chapter~\ref{faq}), because the manual might already answer your question.
+The manual might already answer your question, so please peruse it first,
+including this chapter and the FAQ (Chapter~\ref{faq}).
 If not, you can use the mailing list,
 \code{checker-framework-discuss@googlegroups.com}, to ask other users for
 help.  For archives and to subscribe, see \url{http://groups.google.com/group/checker-framework-discuss}.
@@ -79,8 +79,7 @@ package 'checkers.nullness.quals does not exist
 supplying the \code{jsr308\_imports} environment variable.
 
 \item
-If you get an error like the following when using the Ant task
-(Section~\ref{ant-task}),
+If you get an error like one of the following,
 
 %BEGIN LATEX
 \begin{smaller}
@@ -88,13 +87,17 @@ If you get an error like the following when using the Ant task
 \begin{Verbatim}
 ...\build.xml:59: Error running ${env.CHECKERS}\binary\javac.bat compiler
 \end{Verbatim}
+
+\begin{Verbatim}
+.../binary/javac: Command not found
+\end{Verbatim}
 %BEGIN LATEX
 \end{smaller}
 %END LATEX
 
 \noindent
 then the problem may be that you have not set the \code{CHECKERS} environment
-variable, as described in Section~\ref{windows-installation}.  Or, maybe
+variable, as described in Section~\ref{javac-installation}.  Or, maybe
 you made it a user variable instead of a system variable.
 
 \item
@@ -104,7 +107,7 @@ If you get one of these errors:
 The hierarchy of the type \emph{ClassName} is inconsistent
 
 The type com.sun.source.util.AbstractTypeProcessor cannot be resolved.
-  It is indirectly referenced from required .class files", 
+  It is indirectly referenced from required .class files
 \end{alltt}
 
 \noindent
@@ -117,6 +120,18 @@ If you get the error
 \begin{Verbatim}
   java.lang.ArrayStoreException: sun.reflect.annotation.TypeNotPresentExceptionProxy
 \end{Verbatim}
+
+\noindent
+If you get an error such as
+
+\begin{Verbatim}
+  java.lang.NoClassDefFoundError: java/util/Objects
+\end{Verbatim}
+
+\noindent
+then you are trying to run the compiler using a JDK 6 or earlier JVM\@.
+Install and use a Java 7 or 8 JDK, at least for running the Checker
+Framework.
 
 \noindent
 % I'm not 100% sure of the following explanation and solution.
@@ -137,7 +152,9 @@ previous version of the JDK but has subsequently been removed, such as:
   java.lang.NoClassDefFoundError: java/util/Hashtable$EmptyEnumerator
 \end{Verbatim}
 
-Or, you might be using JDK 6, but you get an error that refers to a class
+Or, 
+% you might be using JDK 6, but
+you get an error that refers to a class
 that has been introduced in a newer version of the JDK, such as:
 
 \begin{Verbatim}

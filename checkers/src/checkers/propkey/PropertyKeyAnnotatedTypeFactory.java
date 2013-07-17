@@ -1,5 +1,14 @@
 package checkers.propkey;
 
+import checkers.basetype.BaseTypeChecker;
+import checkers.propkey.quals.PropertyKey;
+import checkers.quals.Bottom;
+import checkers.types.AnnotatedTypeMirror;
+import checkers.types.BasicAnnotatedTypeFactory;
+import checkers.types.TreeAnnotator;
+
+import javacutils.AnnotationUtils;
+
 import java.lang.annotation.Annotation;
 import java.util.Set;
 
@@ -10,15 +19,6 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.Tree;
-
-import javacutils.AnnotationUtils;
-
-import checkers.basetype.BaseTypeChecker;
-import checkers.propkey.quals.PropertyKey;
-import checkers.quals.Bottom;
-import checkers.types.AnnotatedTypeMirror;
-import checkers.types.BasicAnnotatedTypeFactory;
-import checkers.types.TreeAnnotator;
 
 /**
  * This AnnotatedTypeFactory adds PropertyKey annotations to String literals
@@ -58,17 +58,17 @@ public class PropertyKeyAnnotatedTypeFactory<Checker extends PropertyKeyChecker>
      * annotation as parameter.
      */
     protected class KeyLookupTreeAnnotator extends TreeAnnotator {
-        Class<? extends Annotation> theAnnot;
+        AnnotationMirror theAnnot;
 
         public KeyLookupTreeAnnotator(BaseTypeChecker<?> checker,
                 BasicAnnotatedTypeFactory<?> tf, Class<? extends Annotation> annot) {
             super(checker, tf);
-            theAnnot = annot;
+            theAnnot = AnnotationUtils.fromClass(elements, annot);
         }
 
         @Override
         public Void visitLiteral(LiteralTree tree, AnnotatedTypeMirror type) {
-            if (!type.isAnnotated()
+            if (!type.isAnnotatedInHierarchy(theAnnot)
                 && tree.getKind() == Tree.Kind.STRING_LITERAL
                 && strContains(lookupKeys, tree.getValue().toString())) {
                 type.addAnnotation(theAnnot);

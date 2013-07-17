@@ -1,20 +1,8 @@
 package checkers.javari;
 
-import java.util.Iterator;
-import java.util.List;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.TypeKind;
-
-import javacutils.InternalUtils;
-import javacutils.Pair;
-import javacutils.TreeUtils;
-import javacutils.TypesUtils;
-
-import checkers.javari.quals.*;
+import checkers.javari.quals.Mutable;
+import checkers.javari.quals.ReadOnly;
+import checkers.javari.quals.ThisMutable;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -26,6 +14,20 @@ import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.types.visitors.AnnotatedTypeScanner;
 import checkers.types.visitors.SimpleAnnotatedTypeScanner;
 import checkers.util.AnnotatedTypes;
+
+import javacutils.InternalUtils;
+import javacutils.Pair;
+import javacutils.TreeUtils;
+import javacutils.TypesUtils;
+
+import java.util.Iterator;
+import java.util.List;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
@@ -109,9 +111,7 @@ public class JavariAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Javari
      * Returns the annotation specifying the immutability type of {@code type}.
      */
     private AnnotationMirror getImmutabilityAnnotation(/*@ReadOnly*/ AnnotatedTypeMirror type) {
-       if (!type.isAnnotated())
-            return null;
-       return type.getAnnotations().iterator().next();
+       return type.getAnnotationInHierarchy(READONLY);
     }
 
     /**
@@ -131,7 +131,7 @@ public class JavariAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Javari
      * <ul>
      *
      *   <li> 1. Resolves qualified types from MemberSelectTree,
-     *   inheritting from the expression to the identifier if the
+     *   inheriting from the expression to the identifier if the
      *   identifier is {@code @ThisMutable}.
      *
      *   <li> 2. Qualified class types without annotations receive the
@@ -175,7 +175,7 @@ public class JavariAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Javari
         typePost.visit(type, elt != null ? elt.getKind() : ElementKind.OTHER);
 
         // 6 - resolve ThisMutable from fields
-        if (elt!=null && elt.getKind()==ElementKind.FIELD &&
+        if (elt != null && elt.getKind() == ElementKind.FIELD &&
                  type.hasEffectiveAnnotation(THISMUTABLE)) {
             AnnotatedDeclaredType selfType = getSelfType(tree);
             if (selfType != null) {

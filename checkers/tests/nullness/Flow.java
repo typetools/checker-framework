@@ -195,6 +195,7 @@ public class Flow {
 
     void orderOfEvaluation() {
         class MyClass {
+            @dataflow.quals.Pure
             public boolean equals(@Nullable Object o) { return true; }
             void test(@Nullable Object a, @Nullable Object b) { }
         }
@@ -258,9 +259,7 @@ public class Flow {
 
 
 
-
-
-
+    @dataflow.quals.Pure
     public boolean equals(@Nullable Object o) {
         if (!(o instanceof Integer))
             return false;

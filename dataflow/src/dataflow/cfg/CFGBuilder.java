@@ -1734,7 +1734,7 @@ public class CFGBuilder {
                     treeBuilder.buildMethodInvocation(primValueSelect);
                 handleArtificialTree(primValueCall);
                 Node unboxed = new MethodInvocationNode(primValueCall, primValueAccess,
-                                                        Collections.emptyList(),
+                                                        Collections.<Node>emptyList(),
                                                         getCurrentPath());
                 unboxed.setInSource(false);
 
@@ -1991,7 +1991,7 @@ public class CFGBuilder {
             boolean isRightReference = nodeType instanceof ReferenceType;
             boolean isLeftNumeric = TypesUtils.isNumeric(varType);
             boolean isLeftPrimitive = TypesUtils.isPrimitive(varType);
-            boolean isLeftBoxed = TypesUtils.isBoxedPrimitive(varType);
+            // boolean isLeftBoxed = TypesUtils.isBoxedPrimitive(varType);
             boolean isLeftReference = varType instanceof ReferenceType;
             boolean isSubtype = types.isSubtype(nodeType, varType);
 
@@ -3934,7 +3934,7 @@ public class CFGBuilder {
                 Node expr = scan(tree.getExpression(), p);
                 expr = unaryNumericPromotion(expr);
 
-                TypeMirror exprType = InternalUtils.typeOf(tree);
+                // TypeMirror exprType = InternalUtils.typeOf(tree);
 
                 switch (kind) {
                 case BITWISE_COMPLEMENT:
