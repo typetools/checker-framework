@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
 /**
  * A collection that supports order-independent equality, like {@link Set}, but
@@ -278,7 +278,7 @@ public interface Multiset<E extends /*@Nullable*/ Object> extends Collection<E> 
      *      ? (b.getElement() == null) : a.getElement().equals(b.getElement()))
      *    && (a.getCount() == b.getCount())</pre>
      */
-    boolean equals(/*@Nullable*/ Object o);
+    @Pure boolean equals(/*@Nullable*/ Object o);
 
     /**
      * {@inheritDoc}
@@ -288,7 +288,7 @@ public interface Multiset<E extends /*@Nullable*/ Object> extends Collection<E> 
      *
      * <pre>  (element == null ? 0 : element.hashCode()) ^ count</pre>
      */
-    int hashCode();
+    @Pure int hashCode();
 
     /**
      * Returns the canonical string representation of this entry, defined as
@@ -297,7 +297,7 @@ public interface Multiset<E extends /*@Nullable*/ Object> extends Collection<E> 
      * representation of the element, followed by the three characters {@code
      * " x "} (space, letter x, space), followed by the count.
      */
-    String toString();
+    @Pure String toString();
   }
 
   // Comparison and hashing
@@ -309,7 +309,7 @@ public interface Multiset<E extends /*@Nullable*/ Object> extends Collection<E> 
    *
    * TODO: caveats about equivalence-relation.
    */
-  boolean equals(@Nullable Object object);
+  @Pure boolean equals(@Nullable Object object);
 
   /**
    * Returns the hash code for this multiset. This is defined as the sum of
@@ -319,7 +319,7 @@ public interface Multiset<E extends /*@Nullable*/ Object> extends Collection<E> 
    * over all distinct elements in the multiset. It follows that a multiset and
    * its entry set always have the same hash code.
    */
-  int hashCode();
+  @Pure int hashCode();
 
   /**
    * {@inheritDoc}
@@ -331,7 +331,7 @@ public interface Multiset<E extends /*@Nullable*/ Object> extends Collection<E> 
    *     [a x 3, c, d x 2, e]
    * </pre>
    */
-  String toString();
+  @Pure String toString();
 
   // Refined Collection Methods
 
@@ -354,7 +354,7 @@ public interface Multiset<E extends /*@Nullable*/ Object> extends Collection<E> 
    * @return {@code true} if this multiset contains at least one occurrence of
    *     the element
    */
-  boolean contains(/*@Nullable*/ Object element);
+  @Pure boolean contains(/*@Nullable*/ Object element);
 
   /**
    * Returns {@code true} if this multiset contains at least one occurrence of
@@ -377,7 +377,7 @@ public interface Multiset<E extends /*@Nullable*/ Object> extends Collection<E> 
    *     each element contained in {@code elements}
    * @throws NullPointerException if {@code elements} is null
    */
-  boolean containsAll(Collection<? extends /*@Nullable*/ Object> elements);
+  @Pure boolean containsAll(Collection<? extends /*@Nullable*/ Object> elements);
 
   /**
    * Adds a single occurrence of the specified element to this multiset.

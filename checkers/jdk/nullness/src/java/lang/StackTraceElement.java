@@ -1,8 +1,8 @@
 package java.lang;
 
-import checkers.nullness.quals.*;
+import dataflow.quals.Pure;
+import checkers.nullness.quals.Nullable;
 
-@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
 
 public final class StackTraceElement implements java.io.Serializable {
     private static final long serialVersionUID = 0L;
@@ -11,8 +11,8 @@ public final class StackTraceElement implements java.io.Serializable {
   public int getLineNumber() { throw new RuntimeException("skeleton method"); }
   public String getClassName() { throw new RuntimeException("skeleton method"); }
   public String getMethodName() { throw new RuntimeException("skeleton method"); }
-  public boolean isNativeMethod() { throw new RuntimeException("skeleton method"); }
-  public String toString() { throw new RuntimeException("skeleton method"); }
-  public boolean equals(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
-  public int hashCode() { throw new RuntimeException("skeleton method"); }
+  @Pure public boolean isNativeMethod() { throw new RuntimeException("skeleton method"); }
+  @Pure public String toString() { throw new RuntimeException("skeleton method"); }
+  @Pure public boolean equals(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
+  @Pure public int hashCode() { throw new RuntimeException("skeleton method"); }
 }

@@ -1,23 +1,31 @@
 package checkers.oigj;
 
+import checkers.basetype.BaseTypeChecker;
+import checkers.oigj.quals.AssignsFields;
+import checkers.oigj.quals.I;
+import checkers.oigj.quals.Immutable;
+import checkers.oigj.quals.Mutable;
+import checkers.oigj.quals.ReadOnly;
+import checkers.quals.TypeQualifiers;
+import checkers.source.SuppressWarningsKeys;
+import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import checkers.types.QualifierHierarchy;
+import checkers.types.TypeHierarchy;
+import checkers.util.GraphQualifierHierarchy;
+import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+
+import javacutils.AnnotationUtils;
+import javacutils.ErrorReporter;
+
 import java.util.Collection;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Elements;
 
-import checkers.basetype.BaseTypeChecker;
-import checkers.oigj.quals.*;
-import checkers.quals.TypeQualifiers;
-import checkers.source.SourceChecker;
-import checkers.types.*;
-import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import checkers.util.AnnotationUtils;
-import checkers.util.GraphQualifierHierarchy;
-import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
-
 @TypeQualifiers({ ReadOnly.class, Mutable.class, Immutable.class, I.class,
     AssignsFields.class, OIGJMutabilityBottom.class })
-public class ImmutabilitySubchecker extends BaseTypeChecker {
+@SuppressWarningsKeys({ "immutability", "oigj" })
+public class ImmutabilitySubchecker extends BaseTypeChecker<ImmutabilityAnnotatedTypeFactory> {
 
     /** Supported annotations for IGJ.  Used for subtyping rules. **/
     protected AnnotationMirror READONLY, MUTABLE, IMMUTABLE, I, ASSIGNS_FIELDS, BOTTOM_QUAL;
@@ -87,7 +95,7 @@ public class ImmutabilitySubchecker extends BaseTypeChecker {
         @Override
         public boolean isSubtype(Collection<AnnotationMirror> rhs, Collection<AnnotationMirror> lhs) {
             if (lhs.isEmpty() || rhs.isEmpty()) {
-                SourceChecker.errorAbort("GraphQualifierHierarchy: Empty annotations in lhs: " + lhs + " or rhs: " + rhs);
+                ErrorReporter.errorAbort("GraphQualifierHierarchy: Empty annotations in lhs: " + lhs + " or rhs: " + rhs);
             }
             // TODO: sometimes there are multiple mutability annotations in a type and
             // the check in the superclass that the sets contain exactly one annotation

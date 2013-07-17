@@ -5,19 +5,21 @@
 # To regenerate this list, run:   latex-process-inputs -makefilelist manual.tex
 TEX_FILES = \
 manual.tex \
+manual-style.tex \
 introduction.tex \
 nullness-checker.tex \
 interning-checker.tex \
-igj-checker.tex \
-javari-checker.tex \
 lock-checker.tex \
 fenum-checker.tex \
 tainting-checker.tex \
-linear-checker.tex \
 regex-checker.tex \
-propkey-checker.tex \
 signature-checker.tex \
+formatter-checker.tex \
+propkey-checker.tex \
 units-checker.tex \
+linear-checker.tex \
+igj-checker.tex \
+javari-checker.tex \
 basic-checker.tex \
 external-checkers.tex \
 generics.tex \

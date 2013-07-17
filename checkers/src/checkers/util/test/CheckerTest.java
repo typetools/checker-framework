@@ -243,6 +243,7 @@ abstract public class CheckerTest {
                     // colon?  Should it always be in the first column?
                 }
             }
+            reader.close();
             assertDiagnostics("", actualDiagnostics, lines, javaFile, checkerOptions);
         } catch (IOException e) {
             fail(e.getMessage());

@@ -1,21 +1,27 @@
 package checkers.oigj;
 
+import checkers.basetype.BaseTypeChecker;
+import checkers.oigj.quals.Dominator;
+import checkers.oigj.quals.Modifier;
+import checkers.oigj.quals.O;
+import checkers.oigj.quals.World;
+import checkers.quals.TypeQualifiers;
+import checkers.source.SuppressWarningsKeys;
+import checkers.types.QualifierHierarchy;
+import checkers.util.GraphQualifierHierarchy;
+import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+
+import javacutils.AnnotationUtils;
+import javacutils.ErrorReporter;
+
 import java.util.Collection;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Elements;
 
-import checkers.basetype.BaseTypeChecker;
-import checkers.oigj.quals.*;
-import checkers.quals.TypeQualifiers;
-import checkers.source.SourceChecker;
-import checkers.types.QualifierHierarchy;
-import checkers.util.AnnotationUtils;
-import checkers.util.GraphQualifierHierarchy;
-import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
-
-@TypeQualifiers({ Dominator.class, Modifier.class, World.class, O.class})
-public class OwnershipSubchecker extends BaseTypeChecker {
+@TypeQualifiers({ Dominator.class, Modifier.class, World.class, O.class, OIGJMutabilityBottom.class })
+@SuppressWarningsKeys({ "ownership", "oigj" })
+public class OwnershipSubchecker extends BaseTypeChecker<OwnershipAnnotatedTypeFactory> {
     protected AnnotationMirror BOTTOM_QUAL;
 
     @Override
@@ -32,13 +38,14 @@ public class OwnershipSubchecker extends BaseTypeChecker {
 
     private final class OwnershipQualifierHierarchy extends GraphQualifierHierarchy {
         public OwnershipQualifierHierarchy(MultiGraphFactory factory) {
+            // TODO warn if bottom is not supported.
             super(factory, BOTTOM_QUAL);
         }
 
         @Override
         public boolean isSubtype(Collection<AnnotationMirror> rhs, Collection<AnnotationMirror> lhs) {
             if (lhs.isEmpty() || rhs.isEmpty()) {
-                SourceChecker.errorAbort("GraphQualifierHierarchy: Empty annotations in lhs: " + lhs + " or rhs: " + rhs);
+                ErrorReporter.errorAbort("OwnershipQualifierHierarchy: Empty annotations in lhs: " + lhs + " or rhs: " + rhs);
             }
             // TODO: sometimes there are multiple mutability annotations in a type and
             // the check in the superclass that the sets contain exactly one annotation

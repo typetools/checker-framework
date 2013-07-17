@@ -1,12 +1,12 @@
 package java.lang;
 
-import checkers.nullness.quals.*;
+import dataflow.quals.Pure;
+import checkers.nullness.quals.Nullable;
 
-@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
 
 public abstract interface CharSequence{
-  public abstract int length();
+  @Pure public abstract int length();
   public abstract char charAt(int a1);
   public abstract CharSequence subSequence(int a1, int a2);
-  public abstract String toString();
+  @Pure public abstract String toString();
 }
