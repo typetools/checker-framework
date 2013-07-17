@@ -2,6 +2,7 @@ import checkers.interning.quals.*;
 
 import java.util.*;
 
+import dataflow.quals.Pure;
 
 /**
  * Data structure for storing triples of a sequence and start and
@@ -26,6 +27,7 @@ public final class SequenceAndIndices<T extends @Interned Object> {
   }
 
   @SuppressWarnings("unchecked")
+  @Pure
   public boolean equals (Object other) {
     if (other instanceof SequenceAndIndices) {
       // Warning only with -Alint:cast:strict.
@@ -42,11 +44,13 @@ public final class SequenceAndIndices<T extends @Interned Object> {
       this.end == other.end;
   }
 
+  @Pure
   public int hashCode() {
     return seq.hashCode() + start * 30 - end * 2;
   }
 
   // For debugging
+  @Pure
   public String toString() {
     // return "SAI(" + start + "," + end + ") from: " + ArraysMDE.toString(seq);
     return "SAI(" + start + "," + end + ") from: " + seq;

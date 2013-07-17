@@ -4,6 +4,7 @@ import java.util.*;
 
 class FlowCompound {
 
+    @dataflow.quals.Pure
     public boolean equals(@Nullable Object o) {
         return o != null && this.getClass() != o.getClass();
     }

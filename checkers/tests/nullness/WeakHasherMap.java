@@ -11,6 +11,7 @@ public abstract class WeakHasherMap<K, V> extends AbstractMap<K, V> implements
         Map<K, V> {
     private Map<Object, V> hash;
 
+    @dataflow.quals.Pure
     //:: error: (override.param.invalid)
     public boolean containsKey(Object key) {
         K kkey = (K) key;
