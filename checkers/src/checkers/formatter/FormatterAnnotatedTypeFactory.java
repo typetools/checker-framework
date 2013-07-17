@@ -1,9 +1,5 @@
 package checkers.formatter;
 
-import java.util.IllegalFormatException;
-
-import javax.lang.model.element.AnnotationMirror;
-
 import checkers.basetype.BaseTypeChecker;
 import checkers.flow.CFStore;
 import checkers.flow.CFValue;
@@ -12,6 +8,12 @@ import checkers.formatter.quals.Format;
 import checkers.types.AbstractBasicAnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.TreeAnnotator;
+
+import javacutils.AnnotationUtils;
+
+import java.util.IllegalFormatException;
+
+import javax.lang.model.element.AnnotationMirror;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.LiteralTree;
@@ -30,9 +32,12 @@ import com.sun.source.tree.Tree;
 public class FormatterAnnotatedTypeFactory extends
 AbstractBasicAnnotatedTypeFactory<FormatterChecker, CFValue, CFStore, FormatterTransfer, FormatterAnalysis> {
 
+    private final AnnotationMirror FORMAT;
+
     public FormatterAnnotatedTypeFactory(FormatterChecker checker,
             CompilationUnitTree root) {
         super(checker, root);
+        FORMAT = AnnotationUtils.fromClass(elements, Format.class);
         this.postInit();
     }
 
@@ -48,7 +53,7 @@ AbstractBasicAnnotatedTypeFactory<FormatterChecker, CFValue, CFStore, FormatterT
 
         @Override
         public Void visitLiteral(LiteralTree tree, AnnotatedTypeMirror type) {
-            if (!type.isAnnotated()) {
+            if (!type.isAnnotatedInHierarchy(FORMAT)) {
                 String format = null;
                 if (tree.getKind() == Tree.Kind.STRING_LITERAL) {
                     format = (String) tree.getValue();
