@@ -22,7 +22,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
 /**
  * A {@code Multimap} that can hold duplicate key-value pairs and that maintains
@@ -79,5 +79,5 @@ import checkers.nullness.quals.*;
    * contain the same values in the same order. If the value orderings disagree,
    * the multimaps will not be considered equal.
    */
-  boolean equals(@Nullable Object obj);
+  @Pure boolean equals(@Nullable Object obj);
 }

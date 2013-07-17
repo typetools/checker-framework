@@ -10,12 +10,13 @@ import javax.annotation.processing.SupportedOptions;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Elements;
 
+import javacutils.AnnotationUtils;
+
 import checkers.fenum.quals.FenumTop;
 import checkers.fenum.quals.Fenum;
 import checkers.fenum.quals.FenumUnqualified;
 import checkers.quals.Bottom;
 import checkers.types.QualifierHierarchy;
-import checkers.util.AnnotationUtils;
 import checkers.util.GraphQualifierHierarchy;
 import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import checkers.basetype.BaseTypeChecker;
@@ -39,7 +40,7 @@ import checkers.basetype.BaseTypeChecker;
  * @author wmdietl
  */
 @SupportedOptions( { "quals" } )
-public class FenumChecker extends BaseTypeChecker {
+public class FenumChecker extends BaseTypeChecker<FenumAnnotatedTypeFactory> {
     protected AnnotationMirror FENUM, BOTTOM;
 
     @Override
@@ -50,7 +51,7 @@ public class FenumChecker extends BaseTypeChecker {
         super.initChecker();
     }
 
-    /** Copied from BasicChecker.
+    /** Copied from SubtypingChecker.
      * Instead of returning an empty set if no "quals" option is given,
      * we return Fenum as the only qualifier.
      */
@@ -88,14 +89,15 @@ public class FenumChecker extends BaseTypeChecker {
         return Collections.unmodifiableSet(qualSet);
     }
 
-    /** Copied from BasicChecker; cannot reuse it, because BasicChecker is final.
+    /** Copied from SubtypingChecker; cannot reuse it, because SubtypingChecker is final.
+     * @see SubtypingChecker#getSuppressWarningsKeys()
      */
     @Override
-    public Collection<String> getSuppressWarningsKey() {
+    public Collection<String> getSuppressWarningsKeys() {
         Set<String> swKeys = new HashSet<String>();
         Set<Class<? extends Annotation>> annos = getSupportedTypeQualifiers();
         if (annos.isEmpty())
-            return super.getSuppressWarningsKey();
+            return super.getSuppressWarningsKeys();
 
         for (Class<? extends Annotation> anno : annos)
             swKeys.add(anno.getSimpleName().toLowerCase());

@@ -1,4 +1,5 @@
 package java.lang;
+
 import checkers.javari.quals.*;
 
 import java.lang.reflect.Array;
@@ -33,8 +34,8 @@ import java.lang.annotation.Annotation;
 public final @ReadOnly class Class<T> implements java.io.Serializable,
                   java.lang.reflect.GenericDeclaration,
                   java.lang.reflect.Type,
-                              java.lang.reflect.AnnotatedElement {
-    private static final long serialVersionUID = 0L;                                 
+                  java.lang.reflect.AnnotatedElement {
+    private static final long serialVersionUID = 0L;
     private Class() { throw new RuntimeException("skeleton method"); }
 
     public String toString() {
@@ -42,19 +43,18 @@ public final @ReadOnly class Class<T> implements java.io.Serializable,
     }
 
     public static Class<?> forName(String className)
-                throws ClassNotFoundException {
+            throws ClassNotFoundException {
         throw new RuntimeException("skeleton method");
     }
 
     public static Class<?> forName(String name, boolean initialize,
                    ClassLoader loader)
-        throws ClassNotFoundException {
+            throws ClassNotFoundException {
         throw new RuntimeException("skeleton method");
     }
 
     public T newInstance()
-        throws InstantiationException, IllegalAccessException
-    {
+            throws InstantiationException, IllegalAccessException {
         throw new RuntimeException("skeleton method");
     }
 
@@ -160,12 +160,12 @@ public final @ReadOnly class Class<T> implements java.io.Serializable,
     }
 
     public Method getMethod( String name,  Class<?> ... parameterTypes)
-        throws NoSuchMethodException, SecurityException {
+            throws NoSuchMethodException, SecurityException {
         throw new RuntimeException("skeleton method");
     }
 
     public Constructor<T> getConstructor( Class<?> ... parameterTypes)
-        throws NoSuchMethodException, SecurityException {
+            throws NoSuchMethodException, SecurityException {
         throw new RuntimeException("skeleton method");
     }
 
@@ -186,17 +186,17 @@ public final @ReadOnly class Class<T> implements java.io.Serializable,
     }
 
     public Field getDeclaredField(String name)
-        throws NoSuchFieldException, SecurityException {
+            throws NoSuchFieldException, SecurityException {
         throw new RuntimeException("skeleton method");
     }
 
     public Method getDeclaredMethod(String name, Class<?> ... parameterTypes)
-        throws NoSuchMethodException, SecurityException {
+            throws NoSuchMethodException, SecurityException {
         throw new RuntimeException("skeleton method");
     }
 
     public Constructor<T> getDeclaredConstructor(Class<?> ... parameterTypes)
-        throws NoSuchMethodException, SecurityException {
+            throws NoSuchMethodException, SecurityException {
         throw new RuntimeException("skeleton method");
     }
 
@@ -238,7 +238,7 @@ public final @ReadOnly class Class<T> implements java.io.Serializable,
     }
 
     public boolean isAnnotationPresent(
-         Class<? extends Annotation> annotationClass) {
+            Class<? extends Annotation> annotationClass) {
         throw new RuntimeException("skeleton method");
     }
 
