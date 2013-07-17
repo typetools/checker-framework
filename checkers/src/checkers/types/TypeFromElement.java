@@ -1,20 +1,25 @@
 package checkers.types;
 
-import java.util.Collections;
-import java.util.List;
-
-import javax.lang.model.element.*;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.WildcardType;
-
-import javacutils.ElementUtils;
-import javacutils.ErrorReporter;
-
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
+
+import javacutils.ElementUtils;
+import javacutils.ErrorReporter;
+
+import java.util.Collections;
+import java.util.List;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
 
 import com.sun.tools.javac.code.Attribute;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
@@ -153,7 +158,7 @@ public class TypeFromElement {
                     }
                 }
             } else if (strict) {
-                ErrorReporter.errorAbort("TypeFromElement.annotateTypeParam(method): " + 
+                ErrorReporter.errorAbort("TypeFromElement.annotateTypeParam(method): " +
                         "not found in enclosing element: " + ElementUtils.getVerboseName(element));
             }
         } else if (((com.sun.tools.javac.code.Symbol)enclosing).kind == com.sun.tools.javac.code.Kinds.NIL) {
@@ -171,7 +176,7 @@ public class TypeFromElement {
             if (execElt.getParameters().contains(element)) {
                 int param_index = execElt.getParameters().indexOf(element);
                 for (Attribute.TypeCompound typeAnno : ((MethodSymbol) execElt).getRawTypeAttributes()) {
-                    switch (typeAnno.position.type) { 
+                    switch (typeAnno.position.type) {
                     case METHOD_FORMAL_PARAMETER:
                         if (typeAnno.position.parameter_index == param_index) {
                             annotate(type, typeAnno);
@@ -206,7 +211,7 @@ public class TypeFromElement {
                 // TODO: Should the ExecutableElement have a way to get the receiver element?
                 // Is there such a thing as the receiver element?
                 for (Attribute.TypeCompound typeAnno : ((MethodSymbol) execElt).getRawTypeAttributes()) {
-                    switch (typeAnno.position.type) { 
+                    switch (typeAnno.position.type) {
                     case METHOD_RECEIVER:
                         annotate(type, typeAnno);
                         break;
@@ -249,7 +254,7 @@ public class TypeFromElement {
      * type of the element.
      *
      * The element needs to be that of a field.
-     * 
+     *
      * @param type  the type of the field
      * @param element the element of a field
      */
@@ -293,7 +298,7 @@ public class TypeFromElement {
      * type of the element.
      *
      * The element needs to be that of a local variable.
-     * 
+     *
      * @param type  the type of the field
      * @param element the element of a field
      */
@@ -769,7 +774,7 @@ public class TypeFromElement {
             bound = ((AnnotatedTypeVariable)type).getUpperBound();
         } else if (type.getKind() == TypeKind.WILDCARD) {
             AnnotatedWildcardType wt = (AnnotatedWildcardType)type;
-            if (((WildcardType)wt.getUnderlyingType()).getExtendsBound() != null) {
+            if (wt.getUnderlyingType().getExtendsBound() != null) {
                 bound = wt.getExtendsBound();
             } else {
                 bound = wt.getSuperBound();
