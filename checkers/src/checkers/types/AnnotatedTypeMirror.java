@@ -1,8 +1,24 @@
 package checkers.types;
 
 /*>>>
+import checkers.nullness.quals.NonNull;
 import checkers.interning.quals.*;
 */
+
+import checkers.initialization.quals.FBCBottom;
+import checkers.initialization.quals.Initialized;
+import checkers.quals.InvisibleQualifier;
+import checkers.quals.TypeQualifier;
+import checkers.quals.Unqualified;
+import checkers.types.visitors.AnnotatedTypeScanner;
+import checkers.types.visitors.AnnotatedTypeVisitor;
+import checkers.types.visitors.SimpleAnnotatedTypeVisitor;
+import checkers.util.AnnotatedTypes;
+
+import javacutils.AnnotationUtils;
+import javacutils.ElementUtils;
+import javacutils.ErrorReporter;
+import javacutils.TreeUtils;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -18,10 +34,10 @@ import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.VariableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
@@ -35,24 +51,6 @@ import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
-
-import javacutils.AnnotationUtils;
-import javacutils.ElementUtils;
-import javacutils.ErrorReporter;
-import javacutils.TreeUtils;
-
-import checkers.initialization.quals.Initialized;
-import checkers.initialization.quals.FBCBottom;
-import checkers.quals.InvisibleQualifier;
-import checkers.quals.TypeQualifier;
-import checkers.quals.Unqualified;
-import checkers.types.visitors.AnnotatedTypeScanner;
-import checkers.types.visitors.AnnotatedTypeVisitor;
-import checkers.types.visitors.SimpleAnnotatedTypeVisitor;
-import checkers.util.AnnotatedTypes;
-/*>>>
-import checkers.nullness.quals.NonNull;
-*/
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.Tree;
@@ -211,17 +209,6 @@ public abstract class AnnotatedTypeMirror {
      */
     public TypeMirror getUnderlyingType() {
         return actualType;
-    }
-
-    /**
-     * Returns true if an annotation targets this type location.
-     *
-     * It doesn't account for annotations in deep types (type arguments,
-     * array components, etc).
-     *
-     */
-    public boolean isAnnotated() {
-        return !annotations.isEmpty();
     }
 
     /**
@@ -575,6 +562,20 @@ public abstract class AnnotatedTypeMirror {
     public void addAnnotations(Iterable<? extends AnnotationMirror> annotations) {
         for (AnnotationMirror a : annotations) {
             this.addAnnotation(a);
+        }
+    }
+
+    /**
+     * Adds those annotations to the current type, for which no annotation
+     * from the same qualifier hierarchy is present.
+     *
+     * @param annotations the annotations to add
+     */
+    public void addMissingAnnotations(Iterable<? extends AnnotationMirror> annotations) {
+        for (AnnotationMirror a : annotations) {
+            if (!this.isAnnotatedInHierarchy(a)) {
+                this.addAnnotation(a);
+            }
         }
     }
 
@@ -990,9 +991,9 @@ public abstract class AnnotatedTypeMirror {
         @Override
         public List<AnnotatedDeclaredType> directSuperTypes() {
             if (supertypes == null) {
-                supertypes = directSuperTypes(this);
+                supertypes = Collections.unmodifiableList(directSuperTypes(this));
             }
-            return Collections.unmodifiableList(supertypes);
+            return supertypes;
         }
 
         /*
@@ -1743,7 +1744,7 @@ public abstract class AnnotatedTypeMirror {
             AnnotatedTypeVariable type =
                 new AnnotatedTypeVariable(actualType, atypeFactory);
             copyFields(type, copyAnnotations);
-            if (!inUpperBounds && getUpperBound().isAnnotated()) {
+            if (!inUpperBounds) {
                 inUpperBounds = true;
                 type.inUpperBounds = true;
                 type.setUpperBound(getUpperBound());
@@ -2318,9 +2319,9 @@ public abstract class AnnotatedTypeMirror {
                 for (TypeMirror bnd : ubounds) {
                     res.add((AnnotatedDeclaredType) createType(bnd, atypeFactory));
                 }
-                supertypes = res;
+                supertypes = Collections.unmodifiableList(res);
             }
-            return Collections.unmodifiableList(supertypes);
+            return supertypes;
         }
 
         public List<AnnotatedDeclaredType> directSuperTypesField() {
