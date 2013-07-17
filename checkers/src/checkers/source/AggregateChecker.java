@@ -141,4 +141,10 @@ public abstract class AggregateChecker extends SourceChecker<AnnotatedTypeFactor
         errorAbort("AggregateChecker.createSourceVisitor should never be called!");
         return null;
     }
+
+    // TODO some methods in a component checker should behave differently if they
+    // are part of an aggregate, e.g. getSuppressWarningKeys should additionally
+    // return the name of the aggregate checker.
+    // We could add a query method in SourceChecker that refers to the aggregate, if present.
+    // At the moment, all the component checkers manually need to add the name of the aggregate.
 }
