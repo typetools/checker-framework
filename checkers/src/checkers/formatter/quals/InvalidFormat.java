@@ -14,9 +14,11 @@ import checkers.quals.Unqualified;
  * similar functions.
  * Passing it will lead to the exception message indicated in the annotation's
  * value.
+ * <p>
  *
  * This annotation is used internally only.
  *
+ * @checker.framework.manual #formatter-checker Format String Checker
  * @author Konstantin Weitz
  */
 @TypeQualifier

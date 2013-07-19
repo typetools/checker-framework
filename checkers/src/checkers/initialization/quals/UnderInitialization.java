@@ -74,6 +74,8 @@ import checkers.quals.TypeQualifier;
  *   }
  * </code>
  * </pre>
+ *
+ * @checker.framework.manual #nullness-checker Nullness Checker
  */
 @Documented
 @TypeQualifier

@@ -22,6 +22,8 @@ import checkers.quals.TypeQualifier;
  * This type qualifier indicates that the object has been fully initialized;
  * reading fields from such objects is fully safe and yields objects of the
  * correct type.
+ *
+ * @checker.framework.manual #nullness-checker Nullness Checker
  */
 @Documented
 @TypeQualifier

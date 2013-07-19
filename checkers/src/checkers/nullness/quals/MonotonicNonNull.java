@@ -51,6 +51,7 @@ import checkers.quals.TypeQualifier;
  * @see Nullable
  * @see MonotonicQualifier
  * @see AbstractNullnessChecker
+ * @checker.framework.manual #nullness-checker Nullness Checker
  */
 @Documented
 @TypeQualifier

@@ -15,6 +15,7 @@ import checkers.quals.TypeQualifier;
  * {@link FBCBottom} marks the bottom of the Freedom Before Commitment type
  * hierarchy. It cannot be used in client code and is only used internally.
  *
+ * @checker.framework.manual #nullness-checker Nullness Checker
  * @author Stefan Heule
  */
 @Documented

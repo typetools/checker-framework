@@ -27,7 +27,7 @@ import java.util.Set;
  * ({@link ConversionCategory.INT ConversionCategory.INT}).
  *
  * @see Format
- *
+ * @checker.framework.manual #formatter-checker Format String Checker
  * @author Konstantin Weitz
  */
 public enum ConversionCategory {

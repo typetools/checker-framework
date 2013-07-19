@@ -31,6 +31,8 @@ import checkers.quals.PreconditionAnnotation;
  *    method1();                // error, does not satisfy method precondition
  *  }
  * </pre>
+ *
+ * @checker.framework.manual #nullness-checker Nullness Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
