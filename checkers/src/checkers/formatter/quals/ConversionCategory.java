@@ -1,5 +1,7 @@
 package checkers.formatter.quals;
 
+import dataflow.quals.Pure;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
@@ -166,9 +168,9 @@ public enum ConversionCategory {
 
     public static boolean isSubsetOf(ConversionCategory a,
             ConversionCategory b) {
-        return intersect(a,b) == a; 
+        return intersect(a,b) == a;
     }
-    
+
     /**
      * Use this function to get the intersection of two categories.
      * This is seldomly needed.
@@ -208,6 +210,7 @@ public enum ConversionCategory {
     /**
      * Returns a pretty printed {@link ConversionCategory}.
      */
+    @Pure
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(this.name());
