@@ -18,6 +18,8 @@ import java.lang.annotation.Target;
  * For {@link java.util.regex.Pattern Pattern} and subtypes of
  * {@link java.util.regex.MatchResult MatchResult} indicates the number of regular
  * expression groups.
+ *
+ * @checker.framework.manual #regex-checker Regex Checker
  */
 @TypeQualifier
 @SubtypeOf(Unqualified.class)

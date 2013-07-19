@@ -37,6 +37,8 @@ import checkers.quals.*;
  * <b>Limitation</b>: The Nullness Checker trusts the user and doesn't
  * validate the annotations.  Future releases will check for the presence of
  * the key in the map (when possible).
+ *
+ * @checker.framework.manual #nullness-checker Nullness Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

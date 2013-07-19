@@ -12,7 +12,11 @@ import checkers.quals.TypeQualifier;
  * A source name is a string that is a valid {@linkplain FullyQualifiedName
  * fully qualified name} and a valid {@linkplain BinaryName binary name}.
  * <p>
- * Not to be used by the programmer, only used internally.
+ *
+ * This annotation may not be written in source code; it is an
+ * implementation detail of the checker.
+ *
+ * @checker.framework.manual #signature-checker Signature Checker
  */
 @TypeQualifier
 @SubtypeOf({BinaryName.class, FullyQualifiedName.class})

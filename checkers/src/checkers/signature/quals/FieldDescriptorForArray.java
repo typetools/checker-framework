@@ -14,8 +14,12 @@ import checkers.quals.TypeQualifier;
  * Virtual Machine Specification, section 4.3.2</a>, but <b>not</b> for all
  * array types:  only for an array type whose base type is either a
  * primitive or in the unnamed package.
+ *
  * <p>
- * Not to be used by the programmer, only used internally.
+ * This annotation may not be written in source code; it is an
+ * implementation detail of the checker.
+ *
+ * @checker.framework.manual #signature-checker Signature Checker
  */
 @TypeQualifier
 @SubtypeOf({ClassGetName.class, FieldDescriptor.class})

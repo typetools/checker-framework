@@ -16,6 +16,8 @@ import com.sun.source.tree.Tree.Kind;
 /**
  * Indicates that the {@code String} type has been localized and
  * formatted for the target output locale.
+ *
+ * @checker.framework.manual #i18n-checker Internationalization Checker
  */
 @TypeQualifier
 @SubtypeOf(Unqualified.class)

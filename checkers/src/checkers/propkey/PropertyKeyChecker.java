@@ -51,6 +51,7 @@ import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
  *
  * </ol>
  *
+ * @checker.framework.manual #propkey-checker Property File Checker
  */
 // Subclasses need something similar to this:
 @TypeQualifiers( {PropertyKey.class, Unqualified.class, Bottom.class} )

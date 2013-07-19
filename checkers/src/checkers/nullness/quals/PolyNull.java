@@ -12,6 +12,8 @@ import checkers.quals.*;
  * in which every instance of {@link PolyNull} has been replaced by
  * {@link NonNull}, and one in which every instance of {@link PolyNull} has been
  * replaced by {@link Nullable}.
+ *
+ * @checker.framework.manual #nullness-checker Nullness Checker
  */
 @Documented
 @TypeQualifier

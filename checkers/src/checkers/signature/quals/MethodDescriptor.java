@@ -10,6 +10,7 @@ import checkers.quals.TypeQualifier;
  * Represents a method descriptor (JVM representation of method signature)
  * as defined in the <a
  * href="http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.3.3">Java Virtual Machine Specification, section 4.3.3</a>.
+ *
  * <p>
  * Example:
  * <pre>
@@ -21,6 +22,8 @@ import checkers.quals.TypeQualifier;
  *  }
  * </pre>
  * In this example method descriptor for method 'method': (Ljava/lang/Object;I)Z
+ *
+ * @checker.framework.manual #signature-checker Signature Checker
  */
 @TypeQualifier
 @SubtypeOf(UnannotatedString.class)

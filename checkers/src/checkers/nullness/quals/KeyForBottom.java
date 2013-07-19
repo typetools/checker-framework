@@ -7,7 +7,9 @@ import com.sun.source.tree.Tree;
 import checkers.quals.*;
 
 /**
- * TODO: the bottom type for the KeyFor system.
+ * TODO: document that this is the bottom type for the KeyFor system.
+ *
+ * @checker.framework.manual #nullness-checker Nullness Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

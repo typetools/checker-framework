@@ -12,6 +12,8 @@ import com.sun.source.tree.Tree;
  *
  * This annotation may not be written in source code; it is an
  * implementation detail of the checker.
+ *
+ * @checker.framework.manual #signature-checker Signature Checker
  */
 @TypeQualifier
 @SubtypeOf({SourceNameForNonArray.class,

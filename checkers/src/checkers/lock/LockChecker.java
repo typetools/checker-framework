@@ -19,6 +19,8 @@ import checkers.util.MultiGraphQualifierHierarchy;
  * verifies the absence of) locking and concurrency errors.
  *
  * @see GuardedBy
+ * @see Holding
+ * @checker.framework.manual #lock-checker Lock Checker
  */
 @TypeQualifiers( { GuardedBy.class, Unqualified.class, GuardedByTop.class } )
 public class LockChecker extends BaseTypeChecker<LockAnnotatedTypeFactory> {

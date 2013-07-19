@@ -12,6 +12,7 @@ import checkers.quals.TypeQualifier;
  * href="http://docs.oracle.com/javase/specs/jls/se7/html/jls-13.html#jls-13.1">Java
  * Language Specification, section 13.1</a>.
  * <p>
+ *
  * For example, in
  * <pre>
  *  package checkers.signature;
@@ -22,8 +23,11 @@ import checkers.quals.TypeQualifier;
  * the binary names for the two types are checkers.signature.SignatureChecker
  * and checkers.signature.SignatureChecker$Inner.
  * <p>
+ *
  * Binary names and {@linkplain FullyQualifiedName fully qualified names} are the
  * same for top-level classes and only differ by a '$' vs. '.' for inner classes.
+ *
+ * @checker.framework.manual #signature-checker Signature Checker
  */
 @TypeQualifier
 @SubtypeOf(UnannotatedString.class)
