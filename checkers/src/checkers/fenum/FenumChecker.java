@@ -37,6 +37,7 @@ import checkers.basetype.BaseTypeChecker;
  * </ol>
  *
  * @author wmdietl
+ * @checker.framework.manual #fenum-checker Fake Enum Checker
  */
 @SupportedOptions( { "quals" } )
 public class FenumChecker extends BaseTypeChecker {

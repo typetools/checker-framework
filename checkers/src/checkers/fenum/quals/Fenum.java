@@ -9,6 +9,8 @@ import checkers.quals.*;
  * It is written in source code as, for example,
  * <tt>@Fenum("cardSuit")</tt> and <tt>@Fenum("faceValue")</tt>, which
  * would be distinct fake enumerations.
+ *
+ * @checker.framework.manual #fenum-checker Fake Enum Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

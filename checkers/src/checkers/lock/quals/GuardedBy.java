@@ -59,6 +59,7 @@ import checkers.quals.TypeQualifier;
  * </ul>
  *
  * @see Holding
+ * @checker.framework.manual #lock-checker Lock Checker
  */
 @Documented
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})

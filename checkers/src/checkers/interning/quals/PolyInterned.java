@@ -11,6 +11,8 @@ import checkers.quals.*;
  * Any method written using @PolyInterned conceptually has two versions:  one
  * in which every instance of @PolyInterned has been replaced by @Interned, and
  * one in which every instance of @PolyInterned has been erased.
+ *
+ * @checker.framework.manual #interning-checker Interning Checker
  */
 @Documented
 @TypeQualifier

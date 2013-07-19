@@ -11,6 +11,8 @@ import checkers.quals.*;
  * Any method written using @PolyNull conceptually has two versions:  one
  * in which every instance of @PolyNull has been replaced by @NonNull, and
  * one in which every instance of @PolyNull has been replaced by @Nullable.
+ *
+ * @checker.framework.manual #nullness-checker Nullness Checker
  */
 @Documented
 @TypeQualifier

@@ -11,6 +11,8 @@ import checkers.quals.*;
  * Any method written using @PolyRaw conceptually has two versions:  one
  * in which every instance of @PolyRaw has been replaced by @Raw, and
  * one in which every instance of @PolyRaw has been replaced by @NonRaw.
+ *
+ * @checker.framework.manual #nullness-checker Nullness Checker
  */
 @Documented
 @TypeQualifier
