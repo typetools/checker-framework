@@ -4,6 +4,18 @@ package checkers.util;
 import checkers.interning.quals.*;
 */
 
+import checkers.basetype.BaseTypeChecker;
+import checkers.nullness.quals.NonNull;
+import checkers.nullness.quals.Nullable;
+import checkers.nullness.quals.PolyNull;
+import checkers.quals.PolymorphicQualifier;
+import checkers.types.QualifierHierarchy;
+
+import dataflow.quals.Pure;
+
+import javacutils.AnnotationUtils;
+import javacutils.ErrorReporter;
+
 import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.Collections;
@@ -13,18 +25,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import javacutils.AnnotationUtils;
-import javacutils.ErrorReporter;
-
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Elements;
-
-import checkers.basetype.BaseTypeChecker;
-import checkers.nullness.quals.NonNull;
-import checkers.nullness.quals.Nullable;
-import checkers.nullness.quals.PolyNull;
-import checkers.quals.PolymorphicQualifier;
-import checkers.types.QualifierHierarchy;
 
 /**
  * Represents the type qualifier hierarchy of a type system.
@@ -240,6 +242,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
             Set<AnnotationMirror> tops, Set<AnnotationMirror> bottoms,
             Object... args) { }
 
+    @Pure
     @Override
     public String toString() {
         // TODO: it would be easier to debug if the graph and map were sorted by the key.
@@ -789,6 +792,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
             this.a2 = a2;
         }
 
+        @Pure
         @Override
         public int hashCode() {
             if (hashCode == -1) {
@@ -815,6 +819,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
             return false;
         }
 
+        @Pure
         @Override
         public String toString() {
             return "AnnotationPair(" + a1 + ", " + a2 + ")";
