@@ -37,6 +37,8 @@ import checkers.quals.TypeQualifier;
  * initialized (e.g., to a non-null value in the {@link NullnessChecker}).
  * Just {@code @Raw} is equivalent to {@code @UnknownInitialization
  * Object.class} .
+ *
+ * @checker.framework.manual #nullness-checker Nullness Checker
  */
 @Documented
 @SubtypeOf({})

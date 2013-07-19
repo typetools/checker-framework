@@ -24,6 +24,7 @@ import com.sun.source.tree.Tree;
  * @see NonNull
  * @see MonotonicNonNull
  * @see AbstractNullnessChecker
+ * @checker.framework.manual #nullness-checker Nullness Checker
  */
 @Documented
 @SubtypeOf({})

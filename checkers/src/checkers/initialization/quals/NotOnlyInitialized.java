@@ -13,6 +13,7 @@ import java.lang.annotation.Target;
  * necessary to make allow circular initialization as supported by
  * freedom-before-commitment.
  *
+ * @checker.framework.manual #nullness-checker Nullness Checker
  * @author Stefan Heule
  */
 @Documented
