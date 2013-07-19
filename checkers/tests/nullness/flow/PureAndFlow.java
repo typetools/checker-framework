@@ -6,11 +6,12 @@ public class PureAndFlow {
     @Nullable String s2;
 
     void nonpure(String s1) {}
+
     //:: warning: (purity.void.method)
     @dataflow.quals.Pure void pure(String s2) {}
 
     //:: warning: (purity.void.method)
-    @dataflow.quals.Pure void abstractpure(String s2) {}
+    @dataflow.quals.Pure abstract void abstractpure(String s2);
 
     void withNonRow() {
         if (s2 != null) {
@@ -26,4 +27,10 @@ public class PureAndFlow {
             pure(s2);
         }
     }
+
+    interface IFace {
+        //:: warning: (purity.void.method)
+        @dataflow.quals.Pure void ifacepure(String s2);
+    }
+
 }
