@@ -8,11 +8,15 @@ import java.lang.annotation.Target;
 
 /**
  * Attach this annotation to a method with the following properties:
- * - The first parameter is a format string.
- * - The second parameter is a vararg that takes conversion categories.
- * - The method throws an exception if the format string's
- *   format specifiers do not match the passed conversion categories.
- * - On success, the method returns the passed format string unmodified.
+ * <ul>
+ *   <li>The first parameter is a format string.</li>
+ *   <li>The second parameter is a vararg that takes conversion categories.</li>
+ *   <li>The method throws an exception if the format string's
+ *   format specifiers do not match the passed conversion categories.</li>
+ *   <li>On success, the method returns the passed format string unmodified.</li>
+ * </ul>
+ *
+ * @checker.framework.manual #formatter-checker Format String Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

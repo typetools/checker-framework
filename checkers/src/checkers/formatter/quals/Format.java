@@ -30,7 +30,7 @@ import checkers.quals.Unqualified;
  * {@link ConversionCategory.INT ConversionCategory.INT}).
  *
  * @see ConversionCategory
- *
+ * @checker.framework.manual #formatter-checker Format String Checker
  * @author Konstantin Weitz
  */
 @TypeQualifier

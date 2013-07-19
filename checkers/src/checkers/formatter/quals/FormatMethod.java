@@ -12,6 +12,7 @@ import java.lang.annotation.Target;
  * method, the framework checks that that the parameters passed as var-args are
  * compatible with the format string.
  * 
+ * @checker.framework.manual #formatter-checker Format String Checker
  * @author Konstantin Weitz
  */
 @Documented

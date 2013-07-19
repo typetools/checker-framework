@@ -43,6 +43,7 @@ import com.sun.source.tree.Tree;
  * @see Nullable
  * @see MonotonicNonNull
  * @see AbstractNullnessChecker
+ * @checker.framework.manual #nullness-checker Nullness Checker
  */
 @Documented
 @TypeQualifier

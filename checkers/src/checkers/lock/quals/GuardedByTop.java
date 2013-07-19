@@ -8,6 +8,8 @@ import checkers.quals.TypeQualifier;
 
 /**
  * The top of the guarded-by qualifier hierarchy (used internally only).
+ *
+ * @checker.framework.manual #lock-checker Lock Checker
  */
 @Documented
 @Target({}) // not necessary to be used by the programmer
