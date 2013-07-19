@@ -26,6 +26,7 @@ import com.sun.source.tree.CompilationUnitTree;
  * hierarchy can be passed.</li>
  * </ul>
  *
+ * @checker.framework.manual #basic-checker Basic Checker
  */
 @SupportedOptions( { "quals" })
 public final class BasicChecker extends BaseTypeChecker {

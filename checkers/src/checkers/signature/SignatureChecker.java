@@ -8,6 +8,9 @@ import checkers.quals.PolyAll;
 import checkers.types.AnnotatedTypeFactory;
 import com.sun.source.tree.CompilationUnitTree;
 
+/**
+ * @checker.framework.manual #signature-checker Signature Checker
+ */   
 @TypeQualifiers({
     UnannotatedString.class,
     FullyQualifiedName.class,

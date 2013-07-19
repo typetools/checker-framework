@@ -22,6 +22,7 @@ import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 
 /**
  * TODO: doc
+ * @checker.framework.manual #nullness-checker Nullness Checker
  */
 @TypeQualifiers({ KeyFor.class, Unqualified.class, KeyForBottom.class})
 public class KeyForSubchecker extends BaseTypeChecker {

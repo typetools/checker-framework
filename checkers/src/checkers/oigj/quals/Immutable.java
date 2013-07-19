@@ -11,6 +11,7 @@ import checkers.quals.*;
  * An Immutable object cannot be modified. Its fields may be reassigned or
  * mutated only if they are explicitly marked as Mutable or Assignable.
  *
+ * @checker.framework.manual #oigj-checker OIGJ Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

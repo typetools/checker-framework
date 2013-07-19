@@ -15,7 +15,9 @@ import checkers.quals.Unqualified;
  * <p>
  *
  * This annotation may not be written in source code; it is an
- * implementation detail of the checker.
+ * implementation detail of the Regex Checker.
+ *
+ * @checker.framework.manual #regex-checker Regex Checker
  */
 @TypeQualifier
 @InvisibleQualifier
