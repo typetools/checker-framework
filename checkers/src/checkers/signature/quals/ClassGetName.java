@@ -16,6 +16,7 @@ import checkers.quals.TypeQualifier;
  *   <li>for any array type, a format like the {@link FieldDescriptor field descriptor}, but using '.' where the field descriptor uses '/'</li>
  * </ul>
  * <p>
+ *
  * Examples include
  * <pre>
  *   java.lang.String
@@ -23,6 +24,8 @@ import checkers.quals.TypeQualifier;
  *   int
  *   [[[I
  * </pre>
+ *
+ * @checker.framework.manual #signature-checker Signature Checker
  */
 @TypeQualifier
 @SubtypeOf(UnannotatedString.class)

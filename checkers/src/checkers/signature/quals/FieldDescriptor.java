@@ -11,6 +11,7 @@ import checkers.quals.TypeQualifier;
  * Represents a field descriptor (JVM type format) as defined in the <a
  * href="http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.3.2">Java Virtual Machine Specification, section 4.3.2</a>.
  * <p>
+ *
  * For example, in
  * <pre>
  *  package checkers.signature;
@@ -21,6 +22,8 @@ import checkers.quals.TypeQualifier;
  * the field descriptors for the two types are
  * Lcheckers/signature/SignatureChecker; and
  * Lcheckers/signature/SignatureChecker$Inner;.
+ *
+ * @checker.framework.manual #signature-checker Signature Checker
  */
 @TypeQualifier
 @SubtypeOf(UnannotatedString.class)

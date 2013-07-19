@@ -13,6 +13,8 @@ import checkers.quals.TypeQualifier;
  * Language Specification, section 13.1</a>, but only for a non-array type.
  * <p>
  * Not to be used by the programmer, only used internally.
+ *
+ * @checker.framework.manual #signature-checker Signature Checker
  */
 @TypeQualifier
 @SubtypeOf({BinaryName.class, ClassGetName.class})

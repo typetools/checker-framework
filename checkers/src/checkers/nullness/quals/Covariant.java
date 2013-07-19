@@ -2,6 +2,7 @@ package checkers.nullness.quals;
 
 import java.lang.annotation.*;
 
+// TODO: move to checkers.quals package.
 /**
  * A marker annotation, written on a class declaration, that signifies that
  * one or more of the class's type parameters can be treated covariantly.
@@ -24,7 +25,7 @@ import java.lang.annotation.*;
  * The argument to <tt>@Covariant</tt> is the zero-based indices of the 
  * type parameters that should be treated covariantly.
  *
- * <!-- TODO: move to checkers.quals package. -->
+ * @checker.framework.manual #nullness-checker Nullness Checker
  */
 @Documented
 @Target({ElementType.TYPE})

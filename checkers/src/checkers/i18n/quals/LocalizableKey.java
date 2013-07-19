@@ -9,6 +9,8 @@ import checkers.quals.TypeQualifier;
 /**
  * Indicates that the {@code String} is a key into a property file
  * or resource bundle containing Localized Strings.
+ *
+ * @checker.framework.manual #i18n-checker Internationalization Checker
  */
 @TypeQualifier
 @SubtypeOf(PropertyKey.class)

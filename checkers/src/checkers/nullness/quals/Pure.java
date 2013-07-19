@@ -30,6 +30,8 @@ import java.lang.annotation.*;
  * the two invocations <tt>x.getField(y)</tt> have the same value, and
  * therefore that <tt>x.getField(y)</tt> is non-null within the then branch
  * of the if statement.</p>
+ *
+ * @checker.framework.manual #nullness-checker Nullness Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
