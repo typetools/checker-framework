@@ -1,12 +1,18 @@
 package checkers.util;
 
-import java.lang.annotation.Annotation;
-import java.util.*;
-
-import javax.lang.model.element.*;
-import javax.lang.model.type.MirroredTypeException;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.util.Elements;
+import checkers.quals.DefaultLocation;
+import checkers.quals.DefaultQualifier;
+import checkers.quals.DefaultQualifiers;
+import checkers.types.AnnotatedTypeFactory;
+import checkers.types.AnnotatedTypeMirror;
+import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedIntersectionType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedNoType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
+import checkers.types.QualifierHierarchy;
+import checkers.types.visitors.AnnotatedTypeScanner;
 
 import javacutils.AnnotationUtils;
 import javacutils.ErrorReporter;
@@ -14,13 +20,31 @@ import javacutils.InternalUtils;
 import javacutils.Pair;
 import javacutils.TreeUtils;
 
-import checkers.quals.*;
-import checkers.types.*;
-import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
-import checkers.types.AnnotatedTypeMirror.*;
-import checkers.types.visitors.AnnotatedTypeScanner;
+import java.lang.annotation.Annotation;
+import java.util.Comparator;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
-import com.sun.source.tree.*;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.type.MirroredTypeException;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.util.Elements;
+
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol;
 
@@ -386,7 +410,6 @@ public class QualifierDefaults {
         @Override
         public Void scan(AnnotatedTypeMirror t, AnnotationMirror qual) {
 
-
             if ( !shouldBeAnnotated(t, qual) )  {
                 return super.scan(t, qual);
             }
@@ -407,7 +430,7 @@ public class QualifierDefaults {
                 } else if ((elt.getKind() == ElementKind.METHOD || elt.getKind() == ElementKind.CONSTRUCTOR) &&
                         t.getKind() == TypeKind.EXECUTABLE &&
                         t == type) {
-        
+
                     for ( AnnotatedTypeMirror atm : ((AnnotatedExecutableType)t).getParameterTypes()) {
                         doApply(atm, qual);
                     }
