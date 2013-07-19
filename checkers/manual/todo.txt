@@ -101,3 +101,9 @@ New manual section about array types
 
 Suppress warnings using assert statements with the string
 @AssumeAssertion(warningkey); previously, just the warning key sufficed.
+
+
+Eclipse setup
+-------------
+Describe checker-framework.importorder and formatter.
+Should these developer-focused configs be moved somewhere else?
