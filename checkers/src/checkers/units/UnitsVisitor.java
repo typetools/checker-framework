@@ -14,7 +14,7 @@ import checkers.types.AnnotatedTypeMirror;
  *
  * Ensure consistent use of compound assignments.
  */
-public class UnitsVisitor extends BaseTypeVisitor<UnitsChecker> {
+public class UnitsVisitor extends BaseTypeVisitor<UnitsChecker, UnitsAnnotatedTypeFactory> {
     public UnitsVisitor(UnitsChecker checker, CompilationUnitTree root) {
         super(checker, root);
     }

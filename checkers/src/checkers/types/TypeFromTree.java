@@ -1,5 +1,18 @@
 package checkers.types;
 
+import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedIntersectionType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
+import checkers.util.AnnotatedTypes;
+
+import javacutils.AnnotationUtils;
+import javacutils.ErrorReporter;
+import javacutils.InternalUtils;
+import javacutils.Pair;
+import javacutils.TreeUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -8,23 +21,44 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.lang.model.element.*;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeVariable;
 
-import checkers.source.SourceChecker;
-import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
-import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
-import checkers.types.AnnotatedTypeMirror.AnnotatedIntersectionType;
-import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
-import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
-import checkers.util.AnnotatedTypes;
-import checkers.util.AnnotationUtils;
-import checkers.util.InternalUtils;
-import checkers.util.TreeUtils;
-
-import com.sun.source.tree.*;
+import com.sun.source.tree.AnnotatedTypeTree;
+import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.ArrayAccessTree;
+import com.sun.source.tree.ArrayTypeTree;
+import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompoundAssignmentTree;
+import com.sun.source.tree.ConditionalExpressionTree;
+import com.sun.source.tree.ErroneousTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.InstanceOfTree;
+import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.ParameterizedTypeTree;
+import com.sun.source.tree.ParenthesizedTree;
+import com.sun.source.tree.PrimitiveTypeTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.TypeCastTree;
+import com.sun.source.tree.TypeParameterTree;
+import com.sun.source.tree.UnaryTree;
+import com.sun.source.tree.UnionTypeTree;
+import com.sun.source.tree.VariableTree;
+import com.sun.source.tree.WildcardTree;
 import com.sun.source.util.SimpleTreeVisitor;
 import com.sun.tools.javac.code.Attribute.TypeCompound;
 
@@ -41,10 +75,10 @@ abstract class TypeFromTree extends
     @Override
     public AnnotatedTypeMirror defaultAction(Tree node, AnnotatedTypeFactory f) {
         if (node == null) {
-            SourceChecker.errorAbort("TypeFromTree.defaultAction: null tree");
+            ErrorReporter.errorAbort("TypeFromTree.defaultAction: null tree");
             return null; // dead code
         }
-        SourceChecker.errorAbort("TypeFromTree.defaultAction: conversion undefined for tree type " + node.getKind());
+        ErrorReporter.errorAbort("TypeFromTree.defaultAction: conversion undefined for tree type " + node.getKind());
         return null; // dead code
     }
 
@@ -79,7 +113,7 @@ abstract class TypeFromTree extends
         public AnnotatedTypeMirror visitArrayAccess(ArrayAccessTree node,
                 AnnotatedTypeFactory f) {
 
-            AnnotatedTypeMirror preAssCtxt = f.visitorState.getAssignmentContext();
+            Pair<Tree, AnnotatedTypeMirror> preAssCtxt = f.visitorState.getAssignmentContext();
             try {
                 // TODO: what other trees shouldn't maintain the context?
                 f.visitorState.setAssignmentContext(null);
@@ -482,14 +516,12 @@ abstract class TypeFromTree extends
             List<? extends AnnotationMirror> annos = InternalUtils.annotationsFromTree(node);
             type.addAnnotations(annos);
 
-            if (type.getKind() == TypeKind.TYPEVAR &&
-                    !((AnnotatedTypeVariable)type).getUpperBound().isAnnotated()) {
-                ((AnnotatedTypeVariable)type).getUpperBound().addAnnotations(annos);
+            if (type.getKind() == TypeKind.TYPEVAR) {
+                ((AnnotatedTypeVariable)type).getUpperBound().addMissingAnnotations(annos);
             }
 
-            if (type.getKind() == TypeKind.WILDCARD &&
-                    !((AnnotatedWildcardType)type).getExtendsBound().isAnnotated()) {
-                ((AnnotatedWildcardType)type).getExtendsBound().addAnnotations(annos);
+            if (type.getKind() == TypeKind.WILDCARD) {
+                ((AnnotatedWildcardType)type).getExtendsBound().addMissingAnnotations(annos);
             }
 
             return type;
@@ -593,19 +625,24 @@ abstract class TypeFromTree extends
         private AnnotatedTypeMirror forTypeVariable(AnnotatedTypeMirror type,
                 AnnotatedTypeFactory f) {
             if (type.getKind() != TypeKind.TYPEVAR) {
-                SourceChecker.errorAbort("TypeFromTree.forTypeVariable: should only be called on type variables");
+                ErrorReporter.errorAbort("TypeFromTree.forTypeVariable: should only be called on type variables");
                 return null; // dead code
             }
 
-            TypeParameterElement tpe = (TypeParameterElement)
-                    ((TypeVariable)type.getUnderlyingType()).asElement();
+            TypeVariable typeVar = (TypeVariable)type.getUnderlyingType();
+            TypeParameterElement tpe = (TypeParameterElement)typeVar.asElement();
             Element elt = tpe.getGenericElement();
             if (elt instanceof TypeElement) {
                 TypeElement typeElt = (TypeElement)elt;
                 int idx = typeElt.getTypeParameters().indexOf(tpe);
-                ClassTree cls = (ClassTree)f.declarationFromElement(typeElt);
-                AnnotatedTypeMirror result = visit(cls.getTypeParameters().get(idx), f);
-                return result;
+                ClassTree cls = (ClassTree) f.declarationFromElement(typeElt);
+                if (cls != null) {
+                    AnnotatedTypeMirror result = visit(cls.getTypeParameters().get(idx), f);
+                    return result;
+                } else {
+                    // We already have all info from the element -> nothing to do.
+                    return type;
+                }
             } else if (elt instanceof ExecutableElement) {
                 ExecutableElement exElt = (ExecutableElement)elt;
                 int idx = exElt.getTypeParameters().indexOf(tpe);
@@ -613,8 +650,14 @@ abstract class TypeFromTree extends
                 AnnotatedTypeMirror result = visit(meth.getTypeParameters().get(idx), f);
                 return result;
             } else {
-                SourceChecker.errorAbort("TypeFromTree.forTypeVariable: not a supported element: " + elt);
-                return null; // dead code
+                // Captured types can have a generic element (owner) that is
+                // not an element at all, namely Symtab.noSymbol.
+                if (InternalUtils.isCaptured(typeVar)) {
+                    return type;
+                } else {
+                    ErrorReporter.errorAbort("TypeFromTree.forTypeVariable: not a supported element: " + elt);
+                    return null; // dead code
+                }
             }
         }
 

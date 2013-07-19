@@ -6,7 +6,11 @@ public class PureAndFlow {
     @Nullable String s2;
 
     void nonpure(String s1) {}
-    @Pure void pure(String s2) {}
+    //:: warning: (purity.void.method)
+    @dataflow.quals.Pure void pure(String s2) {}
+
+    //:: warning: (purity.void.method)
+    @dataflow.quals.Pure void abstractpure(String s2) {}
 
     void withNonRow() {
         if (s2 != null) {

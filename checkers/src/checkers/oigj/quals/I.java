@@ -1,8 +1,13 @@
 package checkers.oigj.quals;
 
-import java.lang.annotation.*;
+import checkers.quals.SubtypeOf;
+import checkers.quals.TypeQualifier;
 
-import checkers.quals.*;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  *
@@ -59,12 +64,12 @@ import checkers.quals.*;
  *
  * @checker.framework.manual #oigj-checker OIGJ Checker
  */
-@Documented
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @TypeQualifier
 //@PolymorphicQualifier // TODO: uncomment later
 @SubtypeOf(ReadOnly.class)
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface I {
     String value() default "I";
 }

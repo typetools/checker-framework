@@ -1,8 +1,13 @@
 package checkers.igj.quals;
 
-import java.lang.annotation.*;
+import checkers.quals.SubtypeOf;
+import checkers.quals.TypeQualifier;
 
-import checkers.quals.*;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  *
@@ -11,10 +16,10 @@ import checkers.quals.*;
  * value is used to distinguish between multiple instances of
  * {@code @I}.<p>
  *
- * <b>Usage On classes</b><p>
+ * <b>Usage on classes</b><p>
  * A class annotated with {@code I} could be declared with any IGJ
  * Immutability annotation. The actual immutability that {@code @I} is
- * resolved dectates the immutability type for all the non-static
+ * resolved dictates the immutability type for all the non-static
  * appearances of {@code @I} with the same value as the class
  * declaration.<p>
  *
@@ -42,7 +47,7 @@ import checkers.quals.*;
  * In the last example, {@code @I} was resolved to {@code @Mutable} for
  * the instance file.
  *
- * <b>Usage On Methods</b><p>
+ * <b>Usage on methods</b><p>
  * For example, it could be used for method parameters, return values,
  * and the actual IGJ immutability value would be resolved based on
  * the method invocation.<p>
@@ -60,12 +65,12 @@ import checkers.quals.*;
  *
  * @checker.framework.manual #igj-checker IGJ Checker
  */
-@Documented
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @TypeQualifier
 //@PolymorphicQualifier // TODO: uncomment later
 @SubtypeOf(ReadOnly.class)
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface I {
     String value() default "I";
 }
