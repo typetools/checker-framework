@@ -16,17 +16,18 @@ import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifier;
 
 /**
- * The field (or other reference) to which this annotation is applied can only be accessed
- * when holding a particular lock, which may be a built-in (synchronization) lock,
- * or may be an explicit {@link java.util.concurrent.locks.Lock}.
+ * The field (or other variable) to which this annotation is applied can
+ * only be accessed when holding a particular lock, which may be a built-in
+ * (synchronization) lock, or may be an explicit {@link
+ * java.util.concurrent.locks.Lock}.
  * <p>
  * 
  * This annotation does <b>not</b> indicate whether or not the given lock
  * is held at the moment that execution reaches the annotation.
  * It merely indicates that the lock must be held when the
- * reference is accessed.  An unannotated reference is a subtype of a
- * <code>@GuardedBy</code> one, because the unannotated reference may be
- * used in any context where the <code>@GuardedBy</code> reference is.
+ * variable is accessed.  An unannotated type is a subtype of a
+ * <code>@GuardedBy</code> one, because the unannotated type may be
+ * used in any context where the <code>@GuardedBy</code> one is.
  * <p>
  * 
  * The argument is a string that indicates which lock guards the annotated variable:
@@ -39,7 +40,7 @@ import checkers.quals.TypeQualifier;
  * the <code><em>class-name</em>.this</code> designation allows you to specify which 'this' reference is intended
  * </li>
  * <li>
- * <code>itself</code> : For reference fields only; the object to which the field refers.
+ * <code>itself</code> : For reference (non-primitive) fields only; the object to which the field refers.
  * </li>
  * <li>
  * <code><em>field-name</em></code> : The lock object is referenced by the (instance or static) field
