@@ -15,7 +15,7 @@ import java.lang.annotation.Target;
  * <p>
  *
  * This annotation may not be written in source code; it is an
- * implementation detail of the checker.
+ * implementation detail of the Checker Framework.
  * 
  * @see checkers.types.QualifierHierarchy#getBottomAnnotations()
  */

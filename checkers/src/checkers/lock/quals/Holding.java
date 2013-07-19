@@ -9,6 +9,7 @@ import java.lang.annotation.*;
  * The possible annotation parameter values are explained in {@link GuardedBy}.
  *
  * @see GuardedBy
+ * @checker.framework.manual #lock-checker Lock Checker
  */
 @Documented
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})

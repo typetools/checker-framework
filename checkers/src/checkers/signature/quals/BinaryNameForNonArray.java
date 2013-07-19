@@ -12,7 +12,11 @@ import checkers.quals.TypeQualifier;
  * href="http://docs.oracle.com/javase/specs/jls/se7/html/jls-13.html#jls-13.1">Java
  * Language Specification, section 13.1</a>, but only for a non-array type.
  * <p>
- * Not to be used by the programmer, only used internally.
+ *
+ * This annotation may not be written in source code; it is an
+ * implementation detail of the checker.
+ *
+ * @checker.framework.manual #signature-checker Signature Checker
  */
 @TypeQualifier
 @SubtypeOf({BinaryName.class, ClassGetName.class})

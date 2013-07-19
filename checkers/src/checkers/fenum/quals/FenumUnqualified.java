@@ -11,6 +11,8 @@ import checkers.quals.*;
  *
  * This annotation may not be written in source code; it is an
  * implementation detail of the checker.
+ *
+ * @checker.framework.manual #fenum-checker Fake Enum Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

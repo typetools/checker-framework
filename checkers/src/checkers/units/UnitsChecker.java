@@ -24,8 +24,11 @@ import checkers.basetype.BaseTypeChecker;
 
 /**
  * Units Checker main class.
+ * <p>
  *
  * Supports "units" option to add support for additional units.
+ *
+ * @checker.framework.manual #units-checker Units Checker
  */
 @SupportedOptions( { "units" } )
 public class UnitsChecker extends BaseTypeChecker<UnitsAnnotatedTypeFactory> {

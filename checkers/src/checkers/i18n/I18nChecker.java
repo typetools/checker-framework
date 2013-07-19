@@ -17,6 +17,7 @@ import checkers.source.SourceChecker;
  *
  * @see I18nSubchecker
  * @see LocalizableKeyChecker
+ * @checker.framework.manual #i18n-checker Internationalization Checker
  */
 public class I18nChecker extends AggregateChecker {
 

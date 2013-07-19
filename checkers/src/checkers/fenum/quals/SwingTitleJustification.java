@@ -13,6 +13,7 @@ import checkers.quals.*;
  * @see javax.swing.border.TitledBorder#RIGHT
  * @see javax.swing.border.TitledBorder#LEADING
  * @see javax.swing.border.TitledBorder#TRAILING
+ * @checker.framework.manual #fenum-checker Fake Enum Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

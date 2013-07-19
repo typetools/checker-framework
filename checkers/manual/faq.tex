@@ -40,6 +40,7 @@ There is a separate FAQ for the type annotations syntax
 \ref{faq-array-syntax-meaning}: What is the meaning of array annotations such as \<@NonNull Object @Nullable []>? \\
 \ref{faq-list-map-nonnull-typeargs}: Why are the type parameters to \<List> and \<Map> annotated as \<@NonNull>? \\
 \ref{faq-checker-framework-part-of-java}: Is the Checker Framework an official part of Java? \\
+\ref{faq-jsr-305}: What is the relationship between the Checker Framework and JSR 305?
 
 
 
@@ -553,7 +554,7 @@ objects.
 
 Some older tools interpret a declaration like \<@NonEmpty String[] var> as
 ``non-empty array of strings''.  This is in conflict with the Java type
-annotations specification, which defines it as meanning ``array of
+annotations specification, which defines it as meaning ``array of
 non-empty strings''.
 % (and has since October 2007)
 If you use one of these
@@ -729,13 +730,41 @@ Section~\ref{suppressing-warnings-nullness}.
 
 \section{Is the Checker Framework an official part of Java?\label{faq-checker-framework-part-of-java}}
 
-The Checker Framework is not an official part of Java, though it relies on
+The Checker Framework is not an official part of Java.
+The Checker Framework relies on
 type annotations, which are part of Java 8.  See the
 \ahref{http://types.cs.washington.edu/jsr308/jsr308-faq.html#checkers-in-java}{Type
   Annotations (JSR 308) FAQ} for more details.
 
 
+\section{What is the relationship between the Checker Framework and JSR 305?\label{faq-jsr-305}}
+
+JSR 305 aimed to define official Java names for some annotations, such as
+\<@NonNull> and \<@Nullable>.  However, it did not aim to precisely define
+the semantics of those annotations nor to provide a reference
+implementation of an annotation processor that validated their use.
+
+By contrast, the Checker Framework precisely defines the meaning of a set
+of annotations and provides powerful type-checkers that validate them.
+However, the Checker Framework is not an official part of the Java
+language; it chooses one set of names, but another tool might choose other
+names.
+
+JSR 305 has been abandoned; there has been
+no activity by its expert group since
+% January
+2009.
+In the future, the Java Community Process might standardize the names and
+meanings of specific annotations, after there is more experience with their
+use in practice.
+
+The Checker Framework defines annotations \<@NonNull> and \<@Nullable> that
+are compatible with annotations defined by JSR 305, FindBugs, IntelliJ, and
+other tools; see Section~\ref{nullness-related-work}.
+
+
 % LocalWords:  IGJ toolset AbstractCollection ConcurrentHashMap NullnessUtils
 % LocalWords:  castNonNull createWidget backporting JCIP's GuardedBy Awarns PMD
 % LocalWords:  ElementType nullness bytecodes Jlint Hashtable SuppressWarnings
-%  LocalWords:  RegexUtil compareTo myA requiresB nullable java
+%  LocalWords:  RegexUtil compareTo myA requiresB nullable java myobject
+%  LocalWords:  multithreading myfield Regex NonEmpty

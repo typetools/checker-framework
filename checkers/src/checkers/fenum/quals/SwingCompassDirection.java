@@ -5,7 +5,7 @@ import java.lang.annotation.*;
 import checkers.quals.*;
 
 /**
- * @author wmdietl
+ * @checker.framework.manual #fenum-checker Fake Enum Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

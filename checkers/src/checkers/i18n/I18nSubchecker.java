@@ -6,8 +6,10 @@ import checkers.quals.TypeQualifiers;
 import checkers.quals.Unqualified;
 
 /**
- * A type-checker that checks that only localized {@code String} are visible
+ * A type-checker that checks that only localized {@code String}s are visible
  * to the user.
+ *
+ * @checker.framework.manual #i18n-checker Internationalization Checker
  */
 @TypeQualifiers( {Localized.class, Unqualified.class} )
 public class I18nSubchecker extends BaseTypeChecker<I18nAnnotatedTypeFactory> {

@@ -62,7 +62,7 @@ import java.lang.annotation.Target;
  * the same immutability type as the passed parameters if p1 and p2 match in
  * immutability, otherwise {@code @I} is resolved to {@code @ReadOnly}.
  *
- *
+ * @checker.framework.manual #oigj-checker OIGJ Checker
  */
 @TypeQualifier
 //@PolymorphicQualifier // TODO: uncomment later

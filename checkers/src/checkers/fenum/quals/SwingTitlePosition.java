@@ -14,6 +14,7 @@ import checkers.quals.*;
  * @see javax.swing.border.TitledBorder#ABOVE_BOTTOM
  * @see javax.swing.border.TitledBorder#BOTTOM
  * @see javax.swing.border.TitledBorder#BELOW_BOTTOM
+ * @checker.framework.manual #fenum-checker Fake Enum Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
