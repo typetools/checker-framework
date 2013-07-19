@@ -7,6 +7,7 @@ import java.lang.annotation.*;
 /**
  * Declares that the field may not be accessed if the receiver is of the
  * specified qualifier type (or any supertype).
+ * <p>
  *
  * This property is verified by the checker that type-checks the {@code
  * when} element value qualifier.
@@ -15,6 +16,7 @@ import java.lang.annotation.*;
  * Consider a class, {@code Table}, with a locking field, {@code lock}.  The
  * lock is used when a {@code Table} instance is shared across threads.  When
  * running in a local thread, the {@code lock} field ought not to be used.
+ * <p>
  *
  * You can declare this behavior in the following way:
  *
