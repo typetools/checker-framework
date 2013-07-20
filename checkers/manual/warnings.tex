@@ -81,9 +81,9 @@ warnings via
 \item
   the \code{@AssumeAssertion} comment in an \<assert> statement (Section~\ref{assumeassertion}),
 \item
-  the \code{-AskipUses} command-line option (Section~\ref{askipuses}),
+  the \code{-AskipUses} and \code{-AonlyUses} command-line options (Section~\ref{askipuses}),
 \item
-  the \code{-AskipDefs} command-line option (Section~\ref{askipdefs}),
+  the \code{-AskipDefs} and \code{-AonlyDefs} command-line options (Section~\ref{askipdefs}),
 \item
   the \code{-Alint} command-line option (Section~\ref{alint}),
 \item
@@ -283,14 +283,21 @@ assertion can never fail.
 
 
 
-\subsection{\code{-AskipUses} command-line option\label{askipuses}}
+\subsection{\code{-AskipUses} and \code{-AonlyUses} command-line options\label{askipuses}}
 
 You can suppress all errors and warnings at all \emph{uses} of a given
-class (but the class itself is still type-checked, unless you also use
-the \code{-AskipDefs} command-line option, see~\ref{askipdefs}).
+class, or suppress all errors and warnings except those at uses of a given
+class.  (The class itself is still type-checked, unless you also use
+the \code{-AskipDefs} or \code{-AonlyDefs} command-line option, see~\ref{askipdefs}).
+
 Set the \code{-AskipUses} command-line option to a
 regular expression that matches class names (not file names) for which warnings and errors
-should be suppressed.  For example, suppose that you use
+should be suppressed.
+Or, set the \code{-AonlyUses} command-line option to a
+regular expression that matches class names (not file names) for which warnings and errors
+should be emitted; warnings about uses of all other classes will be suppressed.
+
+For example, suppose that you use
 ``{\codesize\verb|-AskipUses=^java\.|}'' on the command line
 (with appropriate quoting) when invoking
 \code{javac}.  Then the checkers will suppress all warnings related to
@@ -304,29 +311,64 @@ the regular expression alternative operator ``\code{|}'', as in
 all warnings related to uses of classes belong to the \code{java.lang} or
 \code{java.util} packages.
 
+You can supply both \code{-AskipUses} and \code{-AonlyUses}, in which case
+the \code{-AskipUses} argument takes precedence, and \code{-AonlyUses} does
+further filtering but does not add anything that \code{-AskipUses} removed.
 
-\subsection{\code{-AskipDefs} command-line option\label{askipdefs}}
+Warning:  Use the \code{-AonlyUses} command-line option with care,
+because it can have unexpected results.  For example, if the
+given regular expression does not match classes in the JDK, then the
+Checker Framework will suppress every warning that involves a JDK class
+such as \<Object> or \<String>.  The meaning of \code{-AonlyUses} may be
+refined in the future.  Oftentimes \code{-AskipUses} is more useful.
+
+% The desired meaning of -AonlyUses is tricky, because what is a "use"?
+% Maybe only check calls of methods on the class (though don't check
+% argument expressions) and field accesses, but nothing else (such as
+% extends clauses that happen to use the class).  But then we would also
+% want to suppress warnings related to assignments where a method use or
+% field access is the right-hand side.  I'm going to punt on this for now.
+
+
+\subsection{\code{-AskipDefs} and \code{-AonlyDefs} command-line options\label{askipdefs}}
 
 You can suppress all errors and warnings in the \emph{definition} of a given
-class (but uses of the class are still type-checked, unless you also use
-the \code{-AskipUses} command-line option, see~\ref{askipuses}).
+class, or suppress all errors and warnings except those in the definition
+of a given class.  (Uses of the class are still type-checked, unless you also use
+the \code{-AskipUses} or \code{-AonlyUses} command-line option,
+see~\ref{askipuses}).
+
 Set the \code{-AskipDefs} command-line option to a
 regular expression that matches class names (not file names) in whose definition warnings and errors
-should be suppressed.  For example, if you use
+should be suppressed.
+Or, set the \code{-AonlyDefs} command-line option to a
+regular expression that matches class names (not file names) whose
+definitions should be type-checked.
+
+For example, if you use
 ``{\codesize\verb|-AskipDefs=^mypackage\.|}'' on the command line
 (with appropriate quoting) when invoking
 \code{javac}, then the definitions of 
 classes whose fully-qualified name starts with \codesize\verb|mypackage.|
 will not be checked.
 
+If you supply both \code{-AskipDefs} and \code{-AonlyDefs}, then
+\code{-AskipDefs} takes precedence.
+
 Another way not to type-check a file is not to pass it on the compiler
 command-line:  the Checker Framework type-checks only files that are passed
 to the compiler on the command line, and does not type-check any file that
-is not passed to the compiler.  The \code{-AskipDefs} command-line option
-is intended for situations in which the build system is hard to understand
+is not passed to the compiler.  The \code{-AskipDefs} and \code{-AonlyDefs}
+command-line options
+are intended for situations in which the build system is hard to understand
 or change.  In such a situation, a programmer may find it easier to supply
 an extra command-line argument, than to change the set of files that is
 compiled.
+
+A common scenario for using the arguments is when you are starting out by
+type-checking only part of a legacy codebase.  After you have verified the
+most important parts, you can incrementally check more classes until you
+are type-checking the whole thing.
 
 
 \subsection{\code{-Alint} command-line option\label{alint}}
