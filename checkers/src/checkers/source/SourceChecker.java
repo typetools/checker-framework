@@ -121,6 +121,17 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
     private Pattern skipUsesPattern;
 
     /**
+     * Regular expression pattern to specify Java classes that are
+     * annotated, so warnings about them should be issued but warnings
+     * about all other classes should be suppressed.
+     *
+     * It contains the pattern specified by the user, through the option
+     * {@code checkers.onlyUses}; otherwise it contains a pattern 
+     * matches every class.
+     */
+    private Pattern onlyUsesPattern;
+
+    /**
      * Regular expression pattern to specify Java classes whose
      * definition should not be checked.
      *
@@ -129,6 +140,16 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
      * match no class.
      */
     private Pattern skipDefsPattern;
+
+    /**
+     * Regular expression pattern to specify Java classes whose
+     * definition should be checked.
+     *
+     * It contains the pattern specified by the user, through the option
+     * {@code checkers.onlyDefs}; otherwise it contains a pattern that
+     * matches every class.
+     */
+    private Pattern onlyDefsPattern;
 
     /** The supported lint options */
     private Set<String> supportedLints;
@@ -202,6 +223,17 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
     }
 
     private Pattern getSkipPattern(String patternName, Map<String, String> options) {
+        // default is an illegal Java identifier character
+        // so that it won't match anything
+        return getPattern(patternName, options, "\\(");
+    }
+
+    private Pattern getOnlyPattern(String patternName, Map<String, String> options) {
+        // default matches everything
+        return getPattern(patternName, options, ".");
+    }
+
+    private Pattern getPattern(String patternName, Map<String, String> options, String defaultPattern) {
         String pattern = "";
 
         if (options.containsKey(patternName))
@@ -216,10 +248,8 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
               "The " + patternName + " property contains \"/\", which will never match a class name: " + pattern);
         }
 
-        // return a pattern of an illegal Java identifier character
-        // so that it won't match anything
         if (pattern.equals(""))
-            pattern = "\\(";
+            pattern = defaultPattern;
 
         return Pattern.compile(pattern);
     }
@@ -228,8 +258,16 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
         return getSkipPattern("skipUses", options);
     }
 
+    private Pattern getOnlyUsesPattern(Map<String, String> options) {
+        return getOnlyPattern("onlyUses", options);
+    }
+
     private Pattern getSkipDefsPattern(Map<String, String> options) {
         return getSkipPattern("skipDefs", options);
+    }
+
+    private Pattern getOnlyDefsPattern(Map<String, String> options) {
+        return getOnlyPattern("onlyDefs", options);
     }
 
     // TODO: do we want this?
@@ -402,7 +440,9 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
         this.activeLints = createActiveLints(processingEnv.getOptions());
         this.suppressWarnings = createSuppressWarnings(processingEnv.getOptions());
         this.skipUsesPattern = getSkipUsesPattern(processingEnv.getOptions());
+        this.onlyUsesPattern = getOnlyUsesPattern(processingEnv.getOptions());
         this.skipDefsPattern = getSkipDefsPattern(processingEnv.getOptions());
+        this.onlyDefsPattern = getOnlyDefsPattern(processingEnv.getOptions());
     }
 
     /**
@@ -971,7 +1011,9 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
     public Set<String> getSupportedOptions() {
         Set<String> options = new HashSet<String>();
         options.add("skipUses");
+        options.add("onlyUses");
         options.add("skipDefs");
+        options.add("onlyDefs");
         options.add("lint");
         options.add("nomsgtext");
         options.add("detailedmsgtext");
@@ -1071,7 +1113,20 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
             return false;
         TypeElement typeElement = ElementUtils.enclosingClass(element);
         String name = typeElement.getQualifiedName().toString();
-        return skipUsesPattern.matcher(name).find();
+        // System.out.printf("shouldSkipUses(%s) %s%nskipUses %s%nonlyUses %s%nresult %s%n",
+        //                   element,
+        //                   name,
+        //                   skipUsesPattern.matcher(name).find(),
+        //                   onlyUsesPattern.matcher(name).find(),
+        //                   (skipUsesPattern.matcher(name).find()
+        //                    || ! onlyUsesPattern.matcher(name).find()));
+        // StackTraceElement[] stea = new Throwable().getStackTrace();
+        // for (int i=0; i<3; i++) {
+        //     System.out.println("  " + stea[i]);
+        // }
+        // System.out.println();
+        return (skipUsesPattern.matcher(name).find()
+                || ! onlyUsesPattern.matcher(name).find());
     }
 
     /**
@@ -1083,7 +1138,15 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
      */
     public final boolean shouldSkipDefs(ClassTree node) {
         String qualifiedName = InternalUtils.typeOf(node).toString();
-        return skipDefsPattern.matcher(qualifiedName).find();
+        // System.out.printf("shouldSkipDefs(%s) %s%nskipDefs %s%nonlyDefs %s%nresult %s%n%n",
+        //                   node,
+        //                   qualifiedName,
+        //                   skipDefsPattern.matcher(qualifiedName).find(),
+        //                   onlyDefsPattern.matcher(qualifiedName).find(),
+        //                   (skipDefsPattern.matcher(qualifiedName).find()
+        //                    || ! onlyDefsPattern.matcher(qualifiedName).find()));
+        return (skipDefsPattern.matcher(qualifiedName).find()
+                || ! onlyDefsPattern.matcher(qualifiedName).find());
     }
 
     /**

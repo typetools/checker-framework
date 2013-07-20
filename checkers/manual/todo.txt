@@ -97,6 +97,9 @@ Renamed method annotations used by the Nullness Checker:
 Renamed method annotations used by all checkers:
   @SuppressWarnings => @AssumeAssertion
 
+New -AonlyDefs and -AonlyUses command-line options complement existing
+-AskipDefs and -AskipUses command-line options
+
 New manual section about array types
 
 Suppress warnings using assert statements with the string
