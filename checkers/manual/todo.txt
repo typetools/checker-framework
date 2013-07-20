@@ -10,6 +10,7 @@ What would a good place be for this?  At the beginning/end?  Split into multiple
 - Purity annotation
   - Explain the annotation and its semantics (can probably mostly taken from the Javadoc of @Pure).
   - Explain the command line parameter -AsuggestPureMethods, as well as what the purity analysis does (again, see Javadoc of @Pure).
+  - Explain the command line parameter -AenablePurity (maybe this ambiguous option, which enables checking whether method bodies are compatible with the method declaration annotation, should be renamed, such as to -AcheckPurity)
 
 - Pre-/postconditions from a user perspective:
   - Explain the generic pre- and postcondition annotations: @EnsuresAnnotation/@EnsuresAnnotations, @EnsuresAnnotationIf/@EnsuresAnnotationsIf and @RequiresAnnotation/@RequiresAnnotations.
