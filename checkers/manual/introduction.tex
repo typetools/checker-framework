@@ -557,7 +557,11 @@ checkers support the following command-line options:
 \begin{itemize}
 \item \<-AskipUses> Suppress all errors and warnings at all uses of a
   given class; see Section~\ref{askipuses}
+\item \<-AonlyUses> Suppress all errors and warnings at all uses except those of a
+  given class; see Section~\ref{askipuses}
 \item \<-AskipDefs> Suppress all errors and warnings within the definition of a
+  given class; see Section~\ref{askipdefs}
+\item \<-AonlyDefs> Suppress all errors and warnings except within the definition of a
   given class; see Section~\ref{askipdefs}
 \item \<-Astubs> List of stub files or directories; see Section~\ref{stub-using}
 \item \<-AstubWarnIfNotFound> Warn if a stub file entry could not be found; see Section~\ref{stub-using}
@@ -674,7 +678,7 @@ There are some limitations to the guarantee.
     Code compiled without the \code{-processor} switch, including any
     external library supplied as a \code{.class} file.
   \item
-    Code compiled with the \code{-AskipUses} or \code{-AskipDefs}
+    Code compiled with the \code{-AskipUses}, \code{-AonlyUses}, \code{-AskipDefs} or \code{-AonlyDefs}
     properties (see Section~\ref{suppressing-warnings}).
   \item
     Suppression of warnings, such as via the \code{@SuppressWarnings}
