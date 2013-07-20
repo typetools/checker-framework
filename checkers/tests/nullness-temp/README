@@ -1,4 +1,4 @@
-This directory is for temporary tests for the NonNull Checker
+This directory is for temporary tests for the Nullness Checker
 
 The point is that putting them here permits them to be run quickly, rather
 than (say) putting them in the main nullness test suite and having to run
@@ -13,4 +13,4 @@ For more details, see
   ../README
 
 To run the tests, do
-  ant -e -find build.xml nonnull-temp
+  ant -e -find build.xml nullness-temp
