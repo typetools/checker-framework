@@ -77,8 +77,8 @@ import checkers.compilermsgs.quals.CompilerMessageKey;
 */
 
 /**
- * A visitor that checks the purity (as defined by {@link dataflow.quals.Pure})
- * of a statement or expression.
+ * A visitor that determines the purity (as defined by {@link dataflow.quals.Pure})
+ * of a statement or expression.  The entry point is method {@link #checkPurity}.
  *
  * @see The annotation {@link Pure} for more details on what is checked and the
  *      semantics of purity.
@@ -89,8 +89,9 @@ import checkers.compilermsgs.quals.CompilerMessageKey;
 public class PurityChecker {
 
     /**
-     * Check the method {@code method} whether it is pure of the type
-     * {@code type}.
+     * Compute whether the given statement is pure (that is,
+     * side-effect-free, deterministic, or both).
+     * Returns a result that can be queried.
      */
     public static PurityResult checkPurity(Tree statement,
             AnnotationProvider annoProvider) {
@@ -101,6 +102,9 @@ public class PurityChecker {
 
     /**
      * Result of the {@link PurityChecker}.
+     * Can be queried queried regarding whether a given tree was
+     * side-effect-free, deterministic, or both; also gives reasons if
+     * the answer is "no".
      */
     public static class PurityResult {
 
