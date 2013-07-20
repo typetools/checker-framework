@@ -40,8 +40,15 @@ class Purity {
         return "";
     }
     
-    //:: warning: (purity.void.method)
+    //:: warning: (purity.deterministic.void.method)
     @Pure void t1() {
+    }
+    
+    @SideEffectFree void t1b() {
+    }
+    
+    //:: warning: (purity.deterministic.void.method)
+    @Deterministic void t1c() {
     }
     
     @Pure String t2() {
