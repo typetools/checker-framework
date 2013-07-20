@@ -313,12 +313,12 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
                     List<dataflow.quals.Pure.Kind> kinds = PurityUtils
                             .getPurityKinds(atypeFactory, node);
                     if (!TreeUtils.isConstructor(node)) {
-                        // check return type
-                        boolean isSideEffectFree = PurityUtils.isSideEffectFree(
+                        // @Deterministic makes no sense for a void method
+                        boolean isDeterministic = PurityUtils.isDeterministic(
                                 atypeFactory, node);
                         if (node.getReturnType().toString().equals("void")
-                                && isSideEffectFree) {
-                            checker.report(Result.warning("purity.void.method"),
+                                && isDeterministic) {
+                            checker.report(Result.warning("purity.deterministic.void.method"),
                                     node);
                         }
                     }
