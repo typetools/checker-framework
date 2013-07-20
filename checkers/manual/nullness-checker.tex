@@ -157,7 +157,7 @@ The nullness hierarchy contains these qualifiers:
 
 \end{description}
 
-Figure~\ref{fig:nonnull-hierarchy} shows part of the type hierarchy for the
+Figure~\ref{fig:nullness-hierarchy} shows part of the type hierarchy for the
 Nullness type system.
 (The annotations exist only at compile time; at run time, Java has no
 multiple inheritance.)
@@ -173,7 +173,7 @@ indicates whether
 initialization has completed.  The two type hierarchies are independent but
 inter-related.  The Nullness Checker verifies both of these, as well as
 another type hierarchy for map keys (Section~\ref{map-key-qualifiers}).}
-\label{fig:nonnull-hierarchy}
+\label{fig:nullness-hierarchy}
 \end{figure}
 
 
@@ -263,7 +263,7 @@ been assigned.
 \end{description}
 
 Use of these annotations can help you to type-check more
-code.  Figure~\ref{fig:nonnull-hierarchy} shows its type hierarchy.  For
+code.  Figure~\ref{fig:nullness-hierarchy} shows its type hierarchy.  For
 details, see Section~\ref{raw-partially-initialized}.
 
 
@@ -804,7 +804,7 @@ parameter in comments (see Section~\ref{annotations-in-comments}):
 
 \subsection{Rawness qualifiers\label{rawness-qualifiers}}
 
-The rawness hierarchy is shown in Figure~\ref{fig:nonnull-hierarchy}.
+The rawness hierarchy is shown in Figure~\ref{fig:nullness-hierarchy}.
 The rawness hierarchy contains these qualifiers:
 
 \begin{description}
