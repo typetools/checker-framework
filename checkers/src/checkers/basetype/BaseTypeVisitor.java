@@ -329,8 +329,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
                         reportPurityErrors(r, node, kinds);
                     }
                     // Issue a warning if the method is pure, but not annotated
-                    // as
-                    // such (if the feature is activated).
+                    // as such (if the feature is activated).
                     if (checkPurityAlways) {
                         Collection<Pure.Kind> additionalKinds = new HashSet<>(
                                 r.getTypes());
