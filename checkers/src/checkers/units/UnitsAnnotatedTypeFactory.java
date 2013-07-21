@@ -1,14 +1,5 @@
 package checkers.units;
 
-import java.lang.annotation.Annotation;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-
-import javax.lang.model.element.AnnotationMirror;
-
-import javacutils.AnnotationUtils;
-
 import checkers.basetype.BaseTypeChecker;
 import checkers.quals.Bottom;
 import checkers.types.AnnotatedTypeMirror;
@@ -18,6 +9,15 @@ import checkers.units.quals.MixedUnits;
 import checkers.units.quals.Prefix;
 import checkers.units.quals.UnitsMultiple;
 import checkers.util.AnnotationBuilder;
+
+import javacutils.AnnotationUtils;
+
+import java.lang.annotation.Annotation;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
+import javax.lang.model.element.AnnotationMirror;
 
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompilationUnitTree;
@@ -178,8 +178,7 @@ public class UnitsAnnotatedTypeFactory extends
             ExpressionTree var = node.getVariable();
             AnnotatedTypeMirror varType = getAnnotatedType(var);
 
-            type.clearAnnotations();
-            type.addAnnotations(varType.getAnnotations());
+            type.replaceAnnotations(varType.getAnnotations());
             return super.visitCompoundAssignment(node, type);
         }
 
