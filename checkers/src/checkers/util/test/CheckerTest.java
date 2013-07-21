@@ -1,17 +1,27 @@
 package checkers.util.test;
 
-import javax.tools.*;
-
-
-import java.io.*;
-import java.util.*;
-
-import static org.junit.Assert.*;
-
 /*>>>
 import checkers.quals.*;
 import checkers.javari.quals.*;
 */
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+
+import javax.annotation.processing.AbstractProcessor;
+import javax.tools.Diagnostic;
+import javax.tools.JavaCompiler;
+import javax.tools.JavaFileObject;
+import javax.tools.StandardJavaFileManager;
+import javax.tools.ToolProvider;
+
+import org.junit.Assert;
 
 /**
  * Abstract class for testing a checker in the Checker Framework.
@@ -30,10 +40,27 @@ abstract public class CheckerTest {
     /**
      * Creates a new checker test.
      *
+     * @param checker the class for the checker to use
+     * @param checkerDir the path to the directory of test inputs
+     * @param checkerOptions options to pass to the compiler when running tests
+     */
+    public CheckerTest(Class<? extends AbstractProcessor> checker,
+            String checkerDir, String... checkerOptions) {
+        this.checkerName = checker.getName();
+        this.checkerDir = "tests" + File.separator + checkerDir;
+        this.checkerOptions = Arrays.copyOf(checkerOptions, checkerOptions.length);
+    }
+
+    /**
+     * Creates a new checker test.
+     * This constructor is deprecated, use
+     * {@link #CheckerTest(Class, String, String...)} instead.
+     *
      * @param checkerName the fully-qualified class name of the checker to use
      * @param checkerDir the path to the directory of test inputs
      * @param checkerOptions options to pass to the compiler when running tests
      */
+    @Deprecated
     public CheckerTest(String checkerName, String checkerDir, String... checkerOptions) {
         this.checkerName = checkerName;
         this.checkerDir = "tests" + File.separator + checkerDir;
@@ -246,7 +273,7 @@ abstract public class CheckerTest {
             reader.close();
             assertDiagnostics("", actualDiagnostics, lines, javaFile, checkerOptions);
         } catch (IOException e) {
-            fail(e.getMessage());
+            Assert.fail(e.getMessage());
         }
     }
 
@@ -298,7 +325,7 @@ abstract public class CheckerTest {
 
         String failMessage = "";
 
-        if ( foundList.size() != expectedList.size() ) {
+        if (foundList.size() != expectedList.size()) {
             failMessage = foundList.size() + " out of "
                 + expectedList.size() + " expected diagnostics "
                 + (foundList.size() == 1 ? "was" : "were") +" found.\n";
@@ -343,13 +370,13 @@ abstract public class CheckerTest {
         if (failed) {
             String failPrefix;
 
-            if (msg!="") {
+            if (msg != "") {
                 failPrefix = msg + "\n";
             } else {
                 failPrefix = "";
             }
             failPrefix += "While type-checking " + filename + ":\n";
-            fail(failPrefix + failMessage);
+            Assert.fail(failPrefix + failMessage);
         }
 
     }
