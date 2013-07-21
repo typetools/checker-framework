@@ -16,7 +16,7 @@ public class ErrorReporter {
     public static void setHandler(ErrorHandler h) {
         handler = h;
     }
-    
+
     /**
      * Log an error message and abort processing.
      * Call this method instead of raising an exception.
