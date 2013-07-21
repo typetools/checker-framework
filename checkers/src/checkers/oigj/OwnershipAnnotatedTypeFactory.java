@@ -9,6 +9,7 @@ import checkers.types.TypeAnnotator;
 
 import javacutils.TypesUtils;
 
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 
 import com.sun.source.tree.BinaryTree;
@@ -40,13 +41,15 @@ public class OwnershipAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Own
         }
 
         @Override
-        public Void visitDeclared(AnnotatedDeclaredType type, ElementKind p) {
+        public Void visitDeclared(AnnotatedDeclaredType type, Element elem) {
             if (type.isAnnotatedInHierarchy(checker.BOTTOM_QUAL))
-                return super.visitDeclared(type, p);
+                return super.visitDeclared(type, elem);
 
-            if (p == ElementKind.CLASS && TypesUtils.isObject(type.getUnderlyingType()))
+            if (elem != null &&
+                    elem.getKind() == ElementKind.CLASS &&
+                    TypesUtils.isObject(type.getUnderlyingType()))
                 type.addAnnotation(World.class);
-            return super.visitDeclared(type, p);
+            return super.visitDeclared(type, elem);
         }
     }
 
