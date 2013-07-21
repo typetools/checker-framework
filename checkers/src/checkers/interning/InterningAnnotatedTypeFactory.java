@@ -1,15 +1,8 @@
 package checkers.interning;
 
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-
-import com.sun.source.tree.BinaryTree;
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.CompoundAssignmentTree;
-
 import checkers.basetype.BaseTypeChecker;
-import checkers.interning.quals.*;
+import checkers.interning.quals.Interned;
+import checkers.interning.quals.PolyInterned;
 import checkers.quals.DefaultQualifier;
 import checkers.quals.ImplicitFor;
 import checkers.quals.Unqualified;
@@ -20,10 +13,18 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.types.TreeAnnotator;
 import checkers.types.TypeAnnotator;
-import javacutils.AnnotationUtils;
-import javacutils.TreeUtils;
-import javacutils.ElementUtils;
 
+import javacutils.AnnotationUtils;
+import javacutils.ElementUtils;
+import javacutils.TreeUtils;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+
+import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.Tree;
 
 /**
@@ -135,7 +136,7 @@ public class InterningAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Int
         }
 
         @Override
-        public Void visitDeclared(AnnotatedDeclaredType t, ElementKind p) {
+        public Void visitDeclared(AnnotatedDeclaredType t, Element elem) {
 
             // case 3: Enum types, and the Enum class itself, are interned
             Element elt = t.getUnderlyingType().asElement();
@@ -144,7 +145,7 @@ public class InterningAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Int
                 t.replaceAnnotation(INTERNED);
             }
 
-            return super.visitDeclared(t, p);
+            return super.visitDeclared(t, elem);
         }
     }
 
