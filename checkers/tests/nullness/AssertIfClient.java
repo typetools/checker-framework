@@ -11,12 +11,12 @@ public class AssertIfClient {
   void rpcResponseNullable(Proxy proxy) {
     @Nullable Object response = proxy.rpcResponse();
   }
-    
+
   void rpcResponseTypestate() {
     Proxy proxy = new Proxy();
     //:: error: (assignment.type.incompatible)
     @NonNull Object response1 = proxy.rpcResponse();
-    //:: error: (argument.type.incompatible)
+    //:: error: (contracts.precondition.not.satisfied)
     rpcResponseNonNull(proxy);
     rpcResponseNullable(proxy);
 
@@ -26,7 +26,7 @@ public class AssertIfClient {
     rpcResponseNonNull(proxy);
     rpcResponseNullable(proxy);
   }
-    
+
 }
 
 
