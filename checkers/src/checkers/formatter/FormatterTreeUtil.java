@@ -1,5 +1,9 @@
 package checkers.formatter;
 
+/*>>>
+import checkers.compilermsgs.quals.CompilerMessageKey;
+*/
+
 import checkers.formatter.quals.ConversionCategory;
 import checkers.formatter.quals.Format;
 import checkers.formatter.quals.FormatMethod;
@@ -330,7 +334,7 @@ public class FormatterTreeUtil {
     /**
      * Reports an error. Takes a {@link Result} to report the location.
      */
-    public final <E> void failure(Result<E> res, String msg, Object... args) {
+    public final <E> void failure(Result<E> res, /*@CompilerMessageKey*/ String msg, Object... args) {
         ResultImpl<E> impl = (ResultImpl<E>)res;
         checker.report(checkers.source.Result.failure(msg, args), impl.location);
     }
@@ -338,9 +342,9 @@ public class FormatterTreeUtil {
     /**
      * Reports an warning. Takes a {@link Result} to report the location.
      */
-    public final <E> void warning(Result<E> res, String msg, Object... args) {
+    public final <E> void warning(Result<E> res, /*@CompilerMessageKey*/ String msg, Object... args) {
         ResultImpl<E> impl = (ResultImpl<E>)res;
-        checker.report(checkers.source.Result.warning(msg,args), impl.location);
+        checker.report(checkers.source.Result.warning(msg, args), impl.location);
     }
 
     /**
