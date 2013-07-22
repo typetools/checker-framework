@@ -1,6 +1,6 @@
 import checkers.nullness.quals.*;
 
-public class PureAndFlow {
+public abstract class PureAndFlow {
 
     @Nullable String s1;
     @Nullable String s2;
