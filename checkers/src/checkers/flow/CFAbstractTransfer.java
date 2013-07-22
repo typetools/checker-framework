@@ -358,7 +358,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
                 AbstractBasicAnnotatedTypeFactory<? extends BaseTypeChecker<?>, V, S, T,
                         ? extends CFAbstractAnalysis<V, S, T>> factory = analysis.atypeFactory;
                 analysis.setCurrentTree(tree);
-                AnnotatedTypeMirror at = factory.getAnnotatedType(tree);
+                AnnotatedTypeMirror at = factory.getAnnotatedTypeFromTypeTree(tree);
                 analysis.setCurrentTree(null);
                 value = analysis.createAbstractValue(at);
             }
