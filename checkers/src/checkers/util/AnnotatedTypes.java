@@ -643,7 +643,7 @@ public class AnnotatedTypes {
 
             for (int i = 0; i < elt.getTypeParameters().size(); ++i) {
                 AnnotatedTypeVariable typeVar = (AnnotatedTypeVariable) atypeFactory.getAnnotatedType(tvars.get(i));
-                AnnotatedTypeMirror typeArg = atypeFactory.getAnnotatedType(targs.get(i));
+                AnnotatedTypeMirror typeArg = atypeFactory.getAnnotatedTypeFromTypeTree(targs.get(i));
                 typeArguments.put(typeVar, typeArg);
             }
             return typeArguments;
