@@ -61,10 +61,6 @@ public class FormatterTreeUtil {
                 "value", 0, processingEnv);
     }
 
-    public interface Result<E> {
-        E value();
-    }
-
     /**
      * Describes the ways a format method may be invoked.
      */
@@ -105,9 +101,13 @@ public class FormatterTreeUtil {
         NULLARRAY;
     }
 
+    public interface Result<E> {
+        E value();
+    }
+
     private static class ResultImpl<E> implements Result<E> {
         private final E value;
-        public ExpressionTree location;
+        public final ExpressionTree location;
 
         public ResultImpl(E value, ExpressionTree location) {
             this.value = value;
@@ -163,7 +163,7 @@ public class FormatterTreeUtil {
      */
     public class FormatCall {
         private final AnnotatedTypeMirror formatAnno;
-        private List<? extends ExpressionTree> args;
+        private final List<? extends ExpressionTree> args;
         private final MethodInvocationTree node;
         private final ExpressionTree formatArg;
         private final AnnotatedTypeFactory atypeFactory;
@@ -173,17 +173,18 @@ public class FormatterTreeUtil {
             // TODO figure out how to make passing of environment
             // objects such as atypeFactory, processingEnv, ... nicer
             this.atypeFactory = atypeFactory;
-            args = node.getArguments();
+            List<? extends ExpressionTree> theargs;
+            theargs = node.getArguments();
 
-            if (typeMirrorToClass(atypeFactory.getAnnotatedType(args.get(0)).getUnderlyingType()) == Locale.class) {
+            if (typeMirrorToClass(atypeFactory.getAnnotatedType(theargs.get(0)).getUnderlyingType()) == Locale.class) {
                 // call with Locale as first argument
-                args = args.subList(1, args.size());
+                theargs = theargs.subList(1, theargs.size());
             }
 
             // TODO check that the first parameter exists and is a string
-            formatArg = args.get(0);
+            formatArg = theargs.get(0);
             formatAnno = atypeFactory.getAnnotatedType(formatArg);
-            args = args.subList(1, args.size());
+            this.args = theargs.subList(1, theargs.size());
         }
 
         /**
@@ -331,7 +332,7 @@ public class FormatterTreeUtil {
      */
     public final <E> void failure(Result<E> res, String msg, Object... args) {
         ResultImpl<E> impl = (ResultImpl<E>)res;
-        checker.report(checkers.source.Result.failure(msg,args), impl.location);
+        checker.report(checkers.source.Result.failure(msg, args), impl.location);
     }
 
     /**
