@@ -20,11 +20,6 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.util.QualifierDefaults;
 import checkers.util.QualifierPolymorphism;
 
-import javacutils.AnnotationUtils;
-import javacutils.InternalUtils;
-import javacutils.Pair;
-import javacutils.TreeUtils;
-
 import dataflow.analysis.AnalysisResult;
 import dataflow.analysis.TransferInput;
 import dataflow.analysis.TransferResult;
@@ -35,6 +30,11 @@ import dataflow.cfg.UnderlyingAST.CFGMethod;
 import dataflow.cfg.UnderlyingAST.CFGStatement;
 import dataflow.cfg.node.Node;
 import dataflow.cfg.node.ReturnNode;
+
+import javacutils.AnnotationUtils;
+import javacutils.InternalUtils;
+import javacutils.Pair;
+import javacutils.TreeUtils;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -50,7 +50,6 @@ import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
@@ -60,6 +59,7 @@ import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
@@ -255,7 +255,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
     public TransferFunction createFlowTransferFunction(FlowAnalysis analysis) {
 
         // Try to reflectively load the visitor.
-        Class<?> checkerClass = checker.getClass();
+        Class<?> checkerClass = this.resourceClass;
 
         while (checkerClass != BaseTypeChecker.class) {
             final String classToLoad = checkerClass.getName()
@@ -281,7 +281,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
      */
     protected QualifierDefaults createQualifierDefaults() {
         QualifierDefaults defs = new QualifierDefaults(elements, this);
-        for (AnnotationMirror a : checker.getQualifierHierarchy().getTopAnnotations()) {
+        for (AnnotationMirror a : this.qualHierarchy.getTopAnnotations()) {
             defs.addAbsoluteDefault(a, DefaultLocation.LOCALS);
         }
         return defs;
@@ -293,7 +293,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
      * @return the QualifierPolymorphism class
      */
     protected QualifierPolymorphism createQualifierPolymorphism() {
-        return new QualifierPolymorphism(checker, this);
+        return new QualifierPolymorphism(processingEnv, this);
     }
 
     // **********************************************************************
@@ -590,15 +590,30 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
         return null;
     }
 
-    @Override
-    public AnnotatedTypeMirror getDefaultedAnnotatedType(Tree tree) {
+
+    /**
+     * Get the defaulted type of a variable, without considering
+     * flow inference from the initializer expression.
+     * This is needed to determine the type of the assignment context,
+     * which should have the "default" meaning, without flow inference.
+     * TODO: describe and generalize
+     */
+    public AnnotatedTypeMirror getDefaultedAnnotatedType(Tree tree, ExpressionTree valueTree) {
         AnnotatedTypeMirror res = null;
         if (tree instanceof VariableTree) {
             res = fromMember(tree);
-            annotateImplicit(((VariableTree) tree).getType(), res, false);
+            annotateImplicit(tree, res, false);
         } else if (tree instanceof AssignmentTree) {
             res = fromExpression(((AssignmentTree) tree).getVariable());
             annotateImplicit(tree, res, false);
+        } else if (tree instanceof CompoundAssignmentTree) {
+            res = fromExpression(((CompoundAssignmentTree) tree).getVariable());
+            annotateImplicit(tree, res, false);
+        } else if (TreeUtils.isExpressionTree(tree)) {
+            res = fromExpression((ExpressionTree) tree);
+            annotateImplicit(tree, res, false);
+        } else {
+            assert false;
         }
         return res;
     }
@@ -621,14 +636,18 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
         } else {
             treeAnnotator.visit(tree, type);
             Element elt = InternalUtils.symbol(tree);
-            typeAnnotator.visit(type, elt != null ? elt.getKind()
-                    : ElementKind.OTHER);
+            typeAnnotator.visit(type, elt);
             defaults.annotate(tree, type);
         }
     }
 
+    /**
+     * This method is final. Override
+     * {@link #annotateImplicit(Tree, AnnotatedTypeMirror, boolean)}
+     * instead.
+     */
     @Override
-    public void annotateImplicit(Tree tree, AnnotatedTypeMirror type) {
+    public final void annotateImplicit(Tree tree, AnnotatedTypeMirror type) {
         annotateImplicit(tree, type, this.useFlow);
     }
 
@@ -653,8 +672,8 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
         treeAnnotator.visit(tree, type);
 
         Element elt = InternalUtils.symbol(tree);
-        typeAnnotator.visit(type, elt != null ? elt.getKind()
-                : ElementKind.OTHER);
+
+        typeAnnotator.visit(type, elt);
         defaults.annotate(tree, type);
 
         Value as = getInferredValueFor(tree);
@@ -708,7 +727,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
 
     @Override
     public void annotateImplicit(Element elt, AnnotatedTypeMirror type) {
-        typeAnnotator.visit(type, elt.getKind());
+        typeAnnotator.visit(type, elt);
         defaults.annotate(elt, type);
     }
 
