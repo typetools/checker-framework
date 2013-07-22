@@ -1,21 +1,21 @@
 package checkers.util.stub;
 
-import japa.parser.ast.CompilationUnit;
-import japa.parser.ast.IndexUnit;
-import japa.parser.ast.Node;
-import japa.parser.ast.body.BodyDeclaration;
-import japa.parser.ast.body.ConstructorDeclaration;
-import japa.parser.ast.body.FieldDeclaration;
-import japa.parser.ast.body.MethodDeclaration;
-import japa.parser.ast.body.Parameter;
-import japa.parser.ast.body.TypeDeclaration;
-import japa.parser.ast.body.VariableDeclarator;
-import japa.parser.ast.type.ClassOrInterfaceType;
-import japa.parser.ast.type.PrimitiveType;
-import japa.parser.ast.type.ReferenceType;
-import japa.parser.ast.type.VoidType;
-import japa.parser.ast.type.WildcardType;
-import japa.parser.ast.visitor.SimpleVoidVisitor;
+import cfjapa.parser.ast.CompilationUnit;
+import cfjapa.parser.ast.IndexUnit;
+import cfjapa.parser.ast.Node;
+import cfjapa.parser.ast.body.BodyDeclaration;
+import cfjapa.parser.ast.body.ConstructorDeclaration;
+import cfjapa.parser.ast.body.FieldDeclaration;
+import cfjapa.parser.ast.body.MethodDeclaration;
+import cfjapa.parser.ast.body.Parameter;
+import cfjapa.parser.ast.body.TypeDeclaration;
+import cfjapa.parser.ast.body.VariableDeclarator;
+import cfjapa.parser.ast.type.ClassOrInterfaceType;
+import cfjapa.parser.ast.type.PrimitiveType;
+import cfjapa.parser.ast.type.ReferenceType;
+import cfjapa.parser.ast.type.VoidType;
+import cfjapa.parser.ast.type.WildcardType;
+import cfjapa.parser.ast.visitor.SimpleVoidVisitor;
 
 import javacutils.ErrorReporter;
 import javacutils.Pair;
