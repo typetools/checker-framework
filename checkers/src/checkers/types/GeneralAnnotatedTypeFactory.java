@@ -4,14 +4,14 @@ package checkers.types;
 import checkers.interning.quals.*;
 */
 
+import checkers.source.SourceChecker;
+
+import javacutils.ErrorReporter;
+
 import java.util.Collection;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
-
-import javacutils.ErrorReporter;
-
-import checkers.source.SourceChecker;
 
 import com.sun.source.tree.CompilationUnitTree;
 
@@ -56,7 +56,7 @@ class GeneralQualifierHierarchy extends QualifierHierarchy {
     // Never find a corresponding qualifier.
     @Override
     public AnnotationMirror findCorrespondingAnnotation(
-            AnnotationMirror aliased, Collection<AnnotationMirror> annotations) {
+            AnnotationMirror aliased, Collection<? extends AnnotationMirror> annotations) {
         return null;
     }
 
@@ -76,7 +76,7 @@ class GeneralQualifierHierarchy extends QualifierHierarchy {
 
     // Not needed - raises error.
     @Override
-    public Set</*@Interned*/ String> getTypeQualifiers() {
+    public Set<? extends AnnotationMirror> getTypeQualifiers() {
         ErrorReporter.errorAbort("GeneralQualifierHierarchy.getTypeQualifiers() was called! It shouldn't be called.");
         return null;
     }
@@ -97,16 +97,16 @@ class GeneralQualifierHierarchy extends QualifierHierarchy {
 
     // Not needed - raises error.
     @Override
-    public boolean isSubtype(Collection<AnnotationMirror> rhs,
-            Collection<AnnotationMirror> lhs) {
+    public boolean isSubtype(Collection<? extends AnnotationMirror> rhs,
+            Collection<? extends AnnotationMirror> lhs) {
         ErrorReporter.errorAbort("GeneralQualifierHierarchy.isSubtype() was called! It shouldn't be called.");
         return false;
     }
 
     // Not needed - raises error.
     @Override
-    public boolean isSubtypeTypeVariable(Collection<AnnotationMirror> rhs,
-            Collection<AnnotationMirror> lhs) {
+    public boolean isSubtypeTypeVariable(Collection<? extends AnnotationMirror> rhs,
+            Collection<? extends AnnotationMirror> lhs) {
         ErrorReporter.errorAbort("GeneralQualifierHierarchy.isSubtypeTypeVariable() was called! It shouldn't be called.");
         return false;
     }
