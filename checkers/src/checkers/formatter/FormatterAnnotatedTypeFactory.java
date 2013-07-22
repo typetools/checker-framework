@@ -65,11 +65,9 @@ AbstractBasicAnnotatedTypeFactory<FormatterChecker, CFValue, CFStore, FormatterT
                     try {
                         ConversionCategory[] cs = FormatUtil
                                 .formatParameterCategories(format);
-                        anno = checker.treeUtil
-                                .categoriesToFormatAnnotation(cs);
+                        anno = checker.treeUtil.categoriesToFormatAnnotation(cs);
                     } catch (IllegalFormatException e) {
-                        anno = checker.treeUtil
-                                .exceptionToInvalidFormatAnnotation(e);
+                        anno = checker.treeUtil.exceptionToInvalidFormatAnnotation(e);
                     }
                     type.addAnnotation(anno);
                 }

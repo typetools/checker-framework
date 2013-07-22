@@ -1,16 +1,16 @@
 package checkers.formatter;
 
-import java.util.List;
-
-import javacutils.Pair;
-
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.VariableElement;
-
 import checkers.flow.CFAbstractAnalysis;
 import checkers.flow.CFStore;
 import checkers.flow.CFValue;
 import checkers.types.AnnotatedTypeMirror;
+
+import javacutils.Pair;
+
+import java.util.List;
+
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.VariableElement;
 
 /**
  * Needed for flow analysis, to implement the {@link FormatUtil#asFormat} method.
