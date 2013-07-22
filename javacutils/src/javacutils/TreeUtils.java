@@ -631,10 +631,13 @@ public final class TreeUtils {
     }
 
     /**
-     * Is the given tree kind a type instantiation?
+     * Is the given tree a type instantiation?
+     *
+     * TODO: this is an under-approximation: e.g. an identifier could
+     * be either a type use or an expression. How can we distinguish.
      *
      * @param kind The kind to test
-     * @return true, iff the given kind is a type kind
+     * @return true, iff the given tree is a type
      */
     public static boolean isTypeTree(Tree tree) {
         return typeTreeKinds().contains(tree.getKind());
