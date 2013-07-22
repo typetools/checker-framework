@@ -1,12 +1,12 @@
 package checkers.formatter;
 
-import javax.lang.model.type.TypeMirror;
-
 import checkers.basetype.BaseTypeVisitor;
 import checkers.formatter.FormatterTreeUtil.FormatCall;
 import checkers.formatter.FormatterTreeUtil.InvocationType;
 import checkers.formatter.FormatterTreeUtil.Result;
 import checkers.formatter.quals.ConversionCategory;
+
+import javax.lang.model.type.TypeMirror;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodInvocationTree;

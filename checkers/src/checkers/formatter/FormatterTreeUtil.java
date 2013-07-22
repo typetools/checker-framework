@@ -1,11 +1,25 @@
 package checkers.formatter;
 
-import java.util.IllegalFormatException;
-import java.util.List;
-import java.util.Locale;
+import checkers.formatter.quals.ConversionCategory;
+import checkers.formatter.quals.Format;
+import checkers.formatter.quals.FormatMethod;
+import checkers.formatter.quals.InvalidFormat;
+import checkers.formatter.quals.ReturnsFormat;
+import checkers.types.AnnotatedTypeFactory;
+import checkers.types.AnnotatedTypeMirror;
+import checkers.util.AnnotationBuilder;
+
+import dataflow.cfg.node.ArrayCreationNode;
+import dataflow.cfg.node.FieldAccessNode;
+import dataflow.cfg.node.MethodInvocationNode;
+import dataflow.cfg.node.Node;
 
 import javacutils.AnnotationUtils;
 import javacutils.TreeUtils;
+
+import java.util.IllegalFormatException;
+import java.util.List;
+import java.util.Locale;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
@@ -22,25 +36,11 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.SimpleElementVisitor7;
 import javax.lang.model.util.SimpleTypeVisitor7;
 
-import checkers.formatter.quals.ConversionCategory;
-import checkers.formatter.quals.Format;
-import checkers.formatter.quals.FormatMethod;
-import checkers.formatter.quals.InvalidFormat;
-import checkers.formatter.quals.ReturnsFormat;
-import checkers.types.AnnotatedTypeFactory;
-import checkers.types.AnnotatedTypeMirror;
-import checkers.util.AnnotationBuilder;
-
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.util.SimpleTreeVisitor;
-
-import dataflow.cfg.node.ArrayCreationNode;
-import dataflow.cfg.node.FieldAccessNode;
-import dataflow.cfg.node.MethodInvocationNode;
-import dataflow.cfg.node.Node;
 
 /**
  * This class provides a collection of utilities to ease working
@@ -51,7 +51,7 @@ import dataflow.cfg.node.Node;
 public class FormatterTreeUtil {
     public final FormatterChecker checker;
     public final ProcessingEnvironment processingEnv;
-    private ExecutableElement formatArgTypesElement;
+    private final ExecutableElement formatArgTypesElement;
 
     public FormatterTreeUtil(FormatterChecker checker, ProcessingEnvironment env) {
         this.checker = checker;
@@ -71,7 +71,7 @@ public class FormatterTreeUtil {
     public enum InvocationType {
         /**
          * The parameters are passed as varargs. For example:
-         * 
+         *
          * <blockquote>
          * <pre>
          * String.format("%s %d", "Example", 7);
@@ -82,7 +82,7 @@ public class FormatterTreeUtil {
 
         /**
          * The parameters are passed as array. For example:
-         * 
+         *
          * <blockquote>
          * <pre>
          * Object[] a = new Object[]{"Example",7};
@@ -95,7 +95,7 @@ public class FormatterTreeUtil {
         /**
          * A null array is passed to the format method.
          * This happens seldomly.
-         * 
+         *
          * <blockquote>
          * <pre>
          * String.format("%s %d", (Object[])null);
@@ -106,7 +106,7 @@ public class FormatterTreeUtil {
     }
 
     private static class ResultImpl<E> implements Result<E> {
-        private E value;
+        private final E value;
         public ExpressionTree location;
 
         public ResultImpl(E value, ExpressionTree location) {
@@ -162,11 +162,11 @@ public class FormatterTreeUtil {
      * Represents a format method invocation in the syntax tree.
      */
     public class FormatCall {
-        private AnnotatedTypeMirror formatAnno;
+        private final AnnotatedTypeMirror formatAnno;
         private List<? extends ExpressionTree> args;
-        private MethodInvocationTree node;
-        private ExpressionTree formatArg;
-        private AnnotatedTypeFactory atypeFactory;
+        private final MethodInvocationTree node;
+        private final ExpressionTree formatArg;
+        private final AnnotatedTypeFactory atypeFactory;
 
         public FormatCall(MethodInvocationTree node, AnnotatedTypeFactory atypeFactory) {
             this.node = node;
@@ -213,7 +213,7 @@ public class FormatterTreeUtil {
             if (args.size() == 1){
                 final ExpressionTree first = args.get(0);
                 TypeMirror argType = atypeFactory.getAnnotatedType(first).getUnderlyingType();
-        		// figure out if argType is an array
+                // figure out if argType is an array
                 type = argType.accept(
                         new SimpleTypeVisitor7<InvocationType, Class<Void>>() {
                             @Override
@@ -259,12 +259,12 @@ public class FormatterTreeUtil {
 
         /**
          * Returns the conversion category for every parameter.
-         * 
+         *
          * @see ConversionCategory
          */
         public final ConversionCategory[] getFormatCategories() {
             AnnotationMirror anno = formatAnno.getAnnotation(Format.class);
-            return checker.treeUtil.formatAnnotationToCategories(anno);
+            return formatAnnotationToCategories(anno);
         }
 
         /**
@@ -291,7 +291,7 @@ public class FormatterTreeUtil {
         public final boolean isValidParameter(ConversionCategory formatCat, TypeMirror paramType) {
             Class<? extends Object> type = typeMirrorToClass(paramType);
             if (type == null){
-                // we did not recongnize the param type
+                // we did not recognize the parameter type
                 return false;
             }
             for (Class<? extends Object> c : formatCat.types) {
@@ -307,7 +307,7 @@ public class FormatterTreeUtil {
          * {@code null} expression.
          */
         public final boolean isParameterNull(TypeMirror type) {
-        	// is it the null literal
+            // is it the null literal
             return type.accept(
                     new SimpleTypeVisitor7<Boolean, Class<Void>>() {
                         @Override
