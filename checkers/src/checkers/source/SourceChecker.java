@@ -351,6 +351,7 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
                 processingEnv.getOptions() == null ||
                 processingEnv.getOptions().containsKey("printErrorStack")) &&
                 ce.getCause() != null) {
+            msg.append("\nCompilation unit: " + this.currentRoot.getSourceFile().getName());
             msg.append("\nException: " +
                             ce.getCause().toString() + ": " + formatStackTrace(ce.getCause().getStackTrace()));
             Throwable cause = ce.getCause().getCause();
