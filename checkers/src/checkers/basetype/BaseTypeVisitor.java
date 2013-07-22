@@ -1,5 +1,10 @@
 package checkers.basetype;
 
+/*>>>
+import checkers.compilermsgs.quals.CompilerMessageKey;
+import checkers.nullness.quals.Nullable;
+*/
+
 import checkers.compilermsgs.quals.CompilerMessageKey;
 import checkers.flow.CFAbstractStore;
 import checkers.flow.CFAbstractValue;
@@ -96,12 +101,6 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeInfo;
-
-/*>>>
- import dataflow.util.PurityChecker.PurityResult;
- import checkers.compilermsgs.quals.CompilerMessageKey;
- import checkers.nullness.quals.Nullable;
- */
 
 /**
  * A {@link SourceVisitor} that performs assignment and pseudo-assignment
@@ -407,16 +406,22 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
                 msgPrefix = "purity.not.sideeffectfree.";
             }
             for (Pair<Tree, String> r: result.getNotBothReasons()) {
-                checker.report(Result.failure(msgPrefix + r.second), r.first);
+                @SuppressWarnings("CompilerMessages")
+                /*@CompilerMessageKey*/ String msg = msgPrefix + r.second;
+                checker.report(Result.failure(msg), r.first);
             }
             if (t.contains(Pure.Kind.SIDE_EFFECT_FREE)) {
                 for (Pair<Tree, String> r: result.getNotSeFreeReasons()) {
-                    checker.report(Result.failure("purity.not.sideeffectfree." + r.second), r.first);
+                    @SuppressWarnings("CompilerMessages")
+                    /*@CompilerMessageKey*/ String msg = "purity.not.sideeffectfree." + r.second;
+                    checker.report(Result.failure(msg), r.first);
                 }
             }
             if (t.contains(Pure.Kind.DETERMINISTIC)) {
                 for (Pair<Tree, String> r: result.getNotDetReasons()) {
-                    checker.report(Result.failure("purity.not.deterministic." + r.second), r.first);
+                    @SuppressWarnings("CompilerMessages")
+                    /*@CompilerMessageKey*/ String msg = "purity.not.deterministic." + r.second;
+                    checker.report(Result.failure(msg), r.first);
                 }
             }
         }
