@@ -1,22 +1,5 @@
 package checkers.flow;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-
-import javacutils.AnnotationUtils;
-import javacutils.ElementUtils;
-import javacutils.InternalUtils;
-import javacutils.Pair;
-import javacutils.TreeUtils;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeMirror;
-
 import checkers.basetype.BaseTypeChecker;
 import checkers.types.AbstractBasicAnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeFactory;
@@ -26,11 +9,6 @@ import checkers.util.ContractsUtils;
 import checkers.util.FlowExpressionParseUtil;
 import checkers.util.FlowExpressionParseUtil.FlowExpressionContext;
 import checkers.util.FlowExpressionParseUtil.FlowExpressionParseException;
-
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.VariableTree;
 
 import dataflow.analysis.ConditionalTransferResult;
 import dataflow.analysis.FlowExpressions;
@@ -65,6 +43,28 @@ import dataflow.cfg.node.TernaryExpressionNode;
 import dataflow.cfg.node.VariableDeclarationNode;
 import dataflow.cfg.node.WideningConversionNode;
 
+import javacutils.AnnotationUtils;
+import javacutils.ElementUtils;
+import javacutils.InternalUtils;
+import javacutils.Pair;
+import javacutils.TreeUtils;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeMirror;
+
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
+
 /**
  * The default analysis transfer function for the Checker Framework propagates
  * information through assignments and uses the {@link AnnotatedTypeFactory} to
@@ -75,7 +75,9 @@ import dataflow.cfg.node.WideningConversionNode;
  * @author Charlie Garrett
  * @author Stefan Heule
  */
-public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends CFAbstractStore<V, S>, T extends CFAbstractTransfer<V, S, T>>
+public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
+            S extends CFAbstractStore<V, S>,
+            T extends CFAbstractTransfer<V, S, T>>
         extends AbstractNodeVisitor<TransferResult<V, S>, TransferInput<V, S>>
         implements TransferFunction<V, S> {
 
@@ -353,10 +355,10 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>, S extends
         Tree tree = n.getTree();
         if (tree != null) {
             if (TreeUtils.canHaveTypeAnnotation(tree)) {
-                AbstractBasicAnnotatedTypeFactory<? extends BaseTypeChecker<?>, V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory = analysis.atypeFactory;
+                AbstractBasicAnnotatedTypeFactory<? extends BaseTypeChecker<?>, V, S, T,
+                        ? extends CFAbstractAnalysis<V, S, T>> factory = analysis.atypeFactory;
                 analysis.setCurrentTree(tree);
-                AnnotatedTypeMirror at = factory
-                        .getAnnotatedTypeFromTypeTree(tree);
+                AnnotatedTypeMirror at = factory.getAnnotatedType(tree);
                 analysis.setCurrentTree(null);
                 value = analysis.createAbstractValue(at);
             }

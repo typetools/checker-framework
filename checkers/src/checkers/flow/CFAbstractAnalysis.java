@@ -1,5 +1,21 @@
 package checkers.flow;
 
+import checkers.basetype.BaseTypeChecker;
+import checkers.types.AbstractBasicAnnotatedTypeFactory;
+import checkers.types.AnnotatedTypeFactory;
+import checkers.types.AnnotatedTypeMirror;
+import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
+import checkers.types.QualifierHierarchy;
+import checkers.types.TypeHierarchy;
+import checkers.util.AnnotatedTypes;
+
+import dataflow.analysis.Analysis;
+import dataflow.cfg.CFGDOTVisualizer;
+
+import javacutils.Pair;
+
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -12,22 +28,6 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-
-import javacutils.Pair;
-
-import dataflow.analysis.Analysis;
-import dataflow.cfg.CFGDOTVisualizer;
-
-import checkers.basetype.BaseTypeChecker;
-import checkers.types.AbstractBasicAnnotatedTypeFactory;
-import checkers.types.AnnotatedTypeFactory;
-import checkers.types.AnnotatedTypeMirror;
-import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
-import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
-import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
-import checkers.types.QualifierHierarchy;
-import checkers.types.TypeHierarchy;
-import checkers.util.AnnotatedTypes;
 
 /*>>>
 import checkers.nullness.quals.*;
@@ -179,7 +179,7 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
             TypeMirror underlyingType) {
         AnnotatedTypeMirror type = AnnotatedTypeMirror.createType(
                 underlyingType, getFactory());
-        Set<AnnotationMirror> tops = getFactory().getQualifierHierarchy()
+        Set<? extends AnnotationMirror> tops = getFactory().getQualifierHierarchy()
                 .getTopAnnotations();
         makeTop(type, tops);
         type.replaceAnnotation(anno);
@@ -189,7 +189,7 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
     /**
      * Adds top as the annotation on all locations of a given type.
      */
-    private void makeTop(AnnotatedTypeMirror type, Set<AnnotationMirror> tops) {
+    private void makeTop(AnnotatedTypeMirror type, Set<? extends AnnotationMirror> tops) {
         TypeKind kind = type.getKind();
         if (kind == TypeKind.ARRAY) {
             AnnotatedArrayType a = (AnnotatedArrayType) type;
