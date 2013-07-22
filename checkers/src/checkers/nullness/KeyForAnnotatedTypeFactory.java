@@ -1,6 +1,23 @@
 package checkers.nullness;
 
-import java.util.*;
+import checkers.nullness.quals.KeyFor;
+import checkers.quals.DefaultLocation;
+import checkers.quals.Unqualified;
+import checkers.types.AnnotatedTypeMirror;
+import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
+import checkers.types.BasicAnnotatedTypeFactory;
+import checkers.util.AnnotationBuilder;
+
+import javacutils.AnnotationUtils;
+import javacutils.ErrorReporter;
+import javacutils.Pair;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -11,20 +28,6 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
-
-import javacutils.AnnotationUtils;
-import javacutils.ErrorReporter;
-import javacutils.Pair;
-
-import checkers.nullness.quals.KeyFor;
-import checkers.quals.DefaultLocation;
-import checkers.quals.Unqualified;
-import checkers.types.AnnotatedTypeMirror;
-import checkers.types.BasicAnnotatedTypeFactory;
-import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
-import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
-import checkers.util.AnnotationBuilder;
 
 public class KeyForAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<KeyForSubchecker> {
 
@@ -134,6 +137,8 @@ public class KeyForAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<KeyFor
   }
 
   // TODO: doc
+  // TODO: "this" should be implicitly prepended
+  // TODO: substitutions also need to be applied to argument types
   private AnnotatedTypeMirror substituteCall(MethodInvocationTree call, AnnotatedTypeMirror inType) {
 
     // System.out.println("input type: " + inType);
