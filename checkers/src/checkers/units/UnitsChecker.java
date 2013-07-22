@@ -1,9 +1,42 @@
 package checkers.units;
 
+import checkers.basetype.BaseTypeChecker;
+import checkers.quals.Bottom;
+import checkers.quals.Unqualified;
+import checkers.types.QualifierHierarchy;
+import checkers.units.quals.A;
+import checkers.units.quals.Area;
+import checkers.units.quals.C;
+import checkers.units.quals.Current;
+import checkers.units.quals.K;
+import checkers.units.quals.Length;
+import checkers.units.quals.Luminance;
+import checkers.units.quals.Mass;
+import checkers.units.quals.Speed;
+import checkers.units.quals.Substance;
+import checkers.units.quals.Temperature;
+import checkers.units.quals.Time;
+import checkers.units.quals.cd;
+import checkers.units.quals.g;
+import checkers.units.quals.h;
+import checkers.units.quals.km2;
+import checkers.units.quals.kmPERh;
+import checkers.units.quals.m;
+import checkers.units.quals.m2;
+import checkers.units.quals.mPERs;
+import checkers.units.quals.min;
+import checkers.units.quals.mm2;
+import checkers.units.quals.mol;
+import checkers.units.quals.s;
+import checkers.util.GraphQualifierHierarchy;
+import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+
+import javacutils.AnnotationUtils;
+
 import java.lang.annotation.Annotation;
-import java.util.HashMap;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -11,16 +44,6 @@ import java.util.Set;
 import javax.annotation.processing.SupportedOptions;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Elements;
-
-import javacutils.AnnotationUtils;
-
-import checkers.quals.Bottom;
-import checkers.quals.Unqualified;
-import checkers.types.QualifierHierarchy;
-import checkers.units.quals.*;
-import checkers.util.GraphQualifierHierarchy;
-import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
-import checkers.basetype.BaseTypeChecker;
 
 /**
  * Units Checker main class.
@@ -62,7 +85,7 @@ public class UnitsChecker extends BaseTypeChecker<UnitsAnnotatedTypeFactory> {
                     addUnitsRelations(q);
                 } catch (ClassNotFoundException e) {
                     messager.printMessage(javax.tools.Diagnostic.Kind.WARNING,
-                    		"Could not find class for unit: " + qualName + ". Ignoring unit.");
+                            "Could not find class for unit: " + qualName + ". Ignoring unit.");
                 }
             }
         }
