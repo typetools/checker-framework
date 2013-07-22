@@ -1,5 +1,27 @@
 package checkers.nullness;
 
+import checkers.basetype.BaseTypeChecker;
+import checkers.initialization.InitializationAnnotatedTypeFactory;
+import checkers.nullness.quals.MonotonicNonNull;
+import checkers.nullness.quals.NonNull;
+import checkers.nullness.quals.Nullable;
+import checkers.nullness.quals.PolyNull;
+import checkers.quals.PolyAll;
+import checkers.quals.Unused;
+import checkers.types.AnnotatedTypeMirror;
+import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
+import checkers.types.GeneralAnnotatedTypeFactory;
+import checkers.types.TreeAnnotator;
+import checkers.types.TypeAnnotator;
+import checkers.util.DependentTypes;
+
+import javacutils.AnnotationUtils;
+import javacutils.ElementUtils;
+import javacutils.InternalUtils;
+import javacutils.Pair;
+import javacutils.TreeUtils;
+import javacutils.TypesUtils;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -11,27 +33,6 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.Elements;
 
-import javacutils.AnnotationUtils;
-import javacutils.ElementUtils;
-import javacutils.InternalUtils;
-import javacutils.Pair;
-import javacutils.TreeUtils;
-import javacutils.TypesUtils;
-
-import checkers.basetype.BaseTypeChecker;
-import checkers.initialization.InitializationAnnotatedTypeFactory;
-import checkers.nullness.quals.MonotonicNonNull;
-import checkers.nullness.quals.NonNull;
-import checkers.nullness.quals.Nullable;
-import checkers.nullness.quals.PolyNull;
-import checkers.quals.Unused;
-import checkers.types.AnnotatedTypeMirror;
-import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
-import checkers.types.GeneralAnnotatedTypeFactory;
-import checkers.types.TreeAnnotator;
-import checkers.types.TypeAnnotator;
-import checkers.util.DependentTypes;
-
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.CompoundAssignmentTree;
@@ -41,6 +42,7 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
@@ -129,10 +131,35 @@ public class NullnessAnnotatedTypeFactory
 
     // handle dependent types
     @Override
-    public void annotateImplicit(Tree tree, AnnotatedTypeMirror type) {
-        super.annotateImplicit(tree, type);
+    public void annotateImplicit(Tree tree, AnnotatedTypeMirror type, boolean useFlow) {
+        super.annotateImplicit(tree, type, useFlow);
         substituteUnused(tree, type);
         dependentTypes.handle(tree, type);
+    }
+
+
+    @Override
+    public AnnotatedTypeMirror getDefaultedAnnotatedType(Tree varTree,
+            ExpressionTree valueTree) {
+        AnnotatedTypeMirror result = super.getDefaultedAnnotatedType(varTree, valueTree);
+        return handlePolyNull(result, valueTree);
+    }
+
+    /**
+     * Replaces {@link PolyNull} with {@link Nullable} to be more permissive
+     * (because {@code type} is usually a left-hand side) if the dataflow
+     * analysis has determined that this is allowed soundly.
+     */
+    protected AnnotatedTypeMirror handlePolyNull(AnnotatedTypeMirror type,
+            Tree context) {
+        if (type.hasAnnotation(PolyNull.class)
+                || type.hasAnnotation(PolyAll.class)) {
+            NullnessValue inferred = getInferredValueFor(context);
+            if (inferred != null && inferred.isPolyNullNull) {
+                type.replaceAnnotation(NULLABLE);
+            }
+        }
+        return type;
     }
 
     // handle dependent types
@@ -200,6 +227,11 @@ public class NullnessAnnotatedTypeFactory
         systemGetPropertyHandler.handle(tree, method);
         collectionToArrayHeuristics.handle(tree, method);
         return mfuPair;
+    }
+
+    @Override
+    public AnnotatedTypeMirror getMethodReturnType(MethodTree m, ReturnTree r) {
+        return handlePolyNull(super.getMethodReturnType(m, r), r);
     }
 
     protected AnnotatedTypeMirror getDeclaredAndDefaultedAnnotatedType(Tree tree) {
@@ -298,10 +330,6 @@ public class NullnessAnnotatedTypeFactory
             // case 8. static method access
             annotateIfStatic(elt, type);
 
-            // Workaround: exception parameters should be implicitly
-            // NonNull, but due to a compiler bug they have
-            // kind PARAMETER instead of EXCEPTION_PARAMETER. Until it's
-            // fixed we manually inspect enclosing catch blocks.
             // case 9. exception parameter
             if (isExceptionParameter(node))
                 type.replaceAnnotation(NONNULL);
@@ -321,7 +349,8 @@ public class NullnessAnnotatedTypeFactory
         public Void visitCompoundAssignment(CompoundAssignmentTree node,
                 AnnotatedTypeMirror type) {
             type.replaceAnnotation(NONNULL);
-            return null; // super.visitCompoundAssignment(node, type);
+            // call super for initialization defaults
+            return super.visitCompoundAssignment(node, type);
         }
 
         // The result of a unary operation is always non-null.
