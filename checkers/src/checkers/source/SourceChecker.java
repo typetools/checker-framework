@@ -619,7 +619,12 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
         } else {
             fmtString = fullMessageOf(msgKey, defaultFormat);
         }
-        String messageText = String.format(fmtString, args);
+        String messageText;
+        try {
+            messageText = String.format(fmtString, args);
+        } catch (Exception e) {
+            messageText = "Invalid format string: \"" + fmtString + "\" args: " + Arrays.toString(args);
+        }
 
         // Replace '\n' with the proper line separator
         if (LINE_SEPARATOR != "\n") // interned
@@ -988,7 +993,6 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
         options.add("nocheckjdk");
         options.add("warns");
         options.add("suppressWarnings");
-        options.add("annotatedTypeParams");
         options.add("printErrorStack");
         options.add("printAllQualifiers");
         options.add("flowdotdir");
