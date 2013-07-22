@@ -66,7 +66,7 @@ public class InitializationVisitor<Checker extends InitializationChecker<? exten
     // Error message keys
     private static final /*@CompilerMessageKey*/ String COMMITMENT_INVALID_CAST = "initialization.invalid.cast";
     private static final /*@CompilerMessageKey*/ String COMMITMENT_FIELDS_UNINITIALIZED = "initialization.fields.uninitialized";
-    private static final /*@CompilerMessageKey*/ String COMMITMENT_INVALID_FIELD_ANNOTATION = "commitment.invalid.constructor.return.type";
+    private static final /*@CompilerMessageKey*/ String COMMITMENT_INVALID_FIELD_ANNOTATION = "initialization.invalid.field.annotation";
     private static final /*@CompilerMessageKey*/ String COMMITMENT_INVALID_CONSTRUCTOR_RETURN_TYPE = "initialization.invalid.constructor.return.type";
     private static final /*@CompilerMessageKey*/ String COMMITMENT_INVALID_FIELD_WRITE_UNCLASSIFIED = "initialization.invalid.field.write.unknown";
     private static final /*@CompilerMessageKey*/ String COMMITMENT_INVALID_FIELD_WRITE_COMMITTED = "initialization.invalid.field.write.initialized";
