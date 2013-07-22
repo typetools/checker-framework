@@ -12,12 +12,13 @@ import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 /**
  * A type-checker plug-in for the {@link Format} qualifier that finds
  * syntactically invalid formatter calls.
- * 
+ *
  * @author Konstantin Weitz
  */
 @TypeQualifiers({ Unqualified.class, Format.class, FormatBottom.class, InvalidFormat.class })
 public class FormatterChecker extends BaseTypeChecker<FormatterAnnotatedTypeFactory> {
-    public FormatterTreeUtil treeUtil;
+
+    protected FormatterTreeUtil treeUtil;
 
     @Override
     public void initChecker() {
