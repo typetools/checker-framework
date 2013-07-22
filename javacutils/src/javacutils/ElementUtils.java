@@ -1,12 +1,26 @@
 package javacutils;
 
-import java.util.*;
-
 /*>>>
 import checkers.nullness.quals.Nullable;
 */
 
-import javax.lang.model.element.*;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Deque;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.Name;
+import javax.lang.model.element.PackageElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -173,39 +187,44 @@ public class ElementUtils {
             && elt.getKind() == ElementKind.FIELD
             && ((VariableElement)elt).getConstantValue() != null;
     }
+
     /**
      * Returns true if the element is declared in ByteCode.
      * Always return false if elt is a package.
      */
     public static boolean isElementFromByteCode(Element elt){
-        if(elt == null)
+        if (elt == null)
             return false;
-        if(elt instanceof Symbol.ClassSymbol){
+
+        if (elt instanceof Symbol.ClassSymbol){
             Symbol.ClassSymbol clss = (Symbol.ClassSymbol) elt;
-            if(null != clss.classfile){
+            if (null != clss.classfile){
                 //The class file could be a .java file
                 return clss.classfile.getName().endsWith(".class");
-            }else{
+            } else {
                 return false;
-            }      
+            }
         }
         return isElementFromByteCode(elt.getEnclosingElement(), elt);
     }
+
     /**
      * Returns true if the element is declared in ByteCode.
      * Always return false if elt is a package.
      */
     private static boolean isElementFromByteCode(Element elt, Element orig){
-        if(elt == null)
+        if (elt == null)
             return false;
-        if(elt instanceof Symbol.ClassSymbol){
+        if (elt instanceof Symbol.ClassSymbol){
             Symbol.ClassSymbol clss = (Symbol.ClassSymbol) elt;
-            if(null != clss.classfile){
-                //The class file could be a .java file
-                return (clss.classfile.getName().endsWith(".class") || clss.classfile.getName().endsWith(".class)") || clss.classfile.getName().endsWith(".class)]"));
-            }else{
+            if (null != clss.classfile){
+                // The class file could be a .java file
+                return (clss.classfile.getName().endsWith(".class") ||
+                        clss.classfile.getName().endsWith(".class)") ||
+                        clss.classfile.getName().endsWith(".class)]"));
+            } else {
                 return false;
-            }      
+            }
         }
         return isElementFromByteCode(elt.getEnclosingElement(), elt);
     }
