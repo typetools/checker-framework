@@ -6,6 +6,18 @@ import static checkers.util.Heuristics.Matchers.preceededBy;
 import static checkers.util.Heuristics.Matchers.whenTrue;
 import static checkers.util.Heuristics.Matchers.withIn;
 
+import checkers.nullness.quals.KeyFor;
+import checkers.types.AnnotatedTypeFactory;
+import checkers.types.AnnotatedTypeMirror;
+import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
+import checkers.util.Heuristics.Matcher;
+import checkers.util.Resolver2;
+
+import javacutils.AnnotationUtils;
+import javacutils.ElementUtils;
+import javacutils.InternalUtils;
+import javacutils.TreeUtils;
+
 import java.util.List;
 
 import javax.annotation.processing.ProcessingEnvironment;
@@ -13,19 +25,6 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
-
-import javacutils.AnnotationUtils;
-import javacutils.ElementUtils;
-import javacutils.InternalUtils;
-import javacutils.TreeUtils;
-
-import checkers.nullness.quals.KeyFor;
-import checkers.types.AnnotatedTypeFactory;
-import checkers.types.AnnotatedTypeMirror;
-import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
-import checkers.util.Heuristics.Matcher;
-import checkers.util.Resolver2;
 
 import com.sun.source.tree.AssertTree;
 import com.sun.source.tree.BinaryTree;
@@ -328,9 +327,15 @@ import com.sun.source.util.TreePath;
 
     /** Given a method invocation tree, return the Element for its receiver. */
     private Element getReceiver(MethodInvocationTree tree) {
-        AnnotatedDeclaredType type =
-            (AnnotatedDeclaredType)atypeFactory.getReceiverType(tree);
-        return type.getElement();
+        Element element = InternalUtils.symbol(tree);
+        assert element != null : "Unexpected null element for tree: " + tree;
+        // Return null if the element kind has no receiver.
+        if (!ElementUtils.hasReceiver(element)) {
+            return null;
+        }
+        ExpressionTree receiver = TreeUtils.getReceiverTree(tree);
+        Element rcvelem = InternalUtils.symbol(receiver);
+        return rcvelem;
     }
 
     private boolean isInvocationOf(ExecutableElement method, Element key, VariableElement map, ExpressionTree tree) {

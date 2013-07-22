@@ -1,22 +1,25 @@
 package checkers.nullness;
 
+import checkers.basetype.BaseTypeChecker;
+import checkers.basetype.BaseTypeValidator;
+import checkers.basetype.BaseTypeVisitor;
+import checkers.nullness.quals.KeyFor;
+import checkers.source.Result;
+import checkers.types.AnnotatedTypeFactory;
+import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
+
+import javacutils.AnnotationUtils;
+
 import java.util.List;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Modifier;
 
-import javacutils.AnnotationUtils;
-
-import checkers.basetype.BaseTypeVisitor;
-import checkers.nullness.quals.KeyFor;
-import checkers.source.Result;
-import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
-
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.VariableTree;
 
 public class KeyForVisitor extends BaseTypeVisitor<KeyForSubchecker, KeyForAnnotatedTypeFactory> {
     public KeyForVisitor(KeyForSubchecker checker, CompilationUnitTree root) {
@@ -27,11 +30,16 @@ public class KeyForVisitor extends BaseTypeVisitor<KeyForSubchecker, KeyForAnnot
      * The type validator to ensure correct usage of ownership modifiers.
      */
     @Override
-    protected TypeValidator createTypeValidator() {
-        return new KeyForTypeValidator();
+    protected BaseTypeValidator createTypeValidator() {
+        return new KeyForTypeValidator(checker, this, atypeFactory);
     }
 
-    private final class KeyForTypeValidator extends TypeValidator {
+    private final static class KeyForTypeValidator extends BaseTypeValidator {
+
+        public KeyForTypeValidator(BaseTypeChecker<?> checker,
+                BaseTypeVisitor<?, ?> visitor, AnnotatedTypeFactory atypeFactory) {
+            super(checker, visitor, atypeFactory);
+        }
 
         @Override
         public Void visitDeclared(AnnotatedDeclaredType type, Tree p) {
@@ -51,7 +59,7 @@ public class KeyForVisitor extends BaseTypeVisitor<KeyForSubchecker, KeyForAnnot
                     if (map.equals("this")) {
                         // this is not valid in static context
                         if (inStatic) {
-                            KeyForVisitor.this.checker.report(
+                            checker.report(
                                     Result.failure("keyfor.type.invalid",
                                             type.getAnnotations(),
                                             type.toString()), p);

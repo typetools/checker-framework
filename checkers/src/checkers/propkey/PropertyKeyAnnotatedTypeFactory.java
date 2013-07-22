@@ -83,14 +83,14 @@ public class PropertyKeyAnnotatedTypeFactory<Checker extends PropertyKeyChecker>
         // Result of binary op might not be a property key.
         @Override
         public Void visitBinary(BinaryTree node, AnnotatedTypeMirror type) {
-            type.clearAnnotations();
+            type.removeAnnotation(theAnnot);
             return null; // super.visitBinary(node, type);
         }
 
         // Result of unary op might not be a property key.
         @Override
         public Void visitCompoundAssignment(CompoundAssignmentTree node, AnnotatedTypeMirror type) {
-            type.clearAnnotations();
+            type.removeAnnotation(theAnnot);
             return null; // super.visitCompoundAssignment(node, type);
         }
     }

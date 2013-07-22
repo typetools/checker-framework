@@ -138,6 +138,7 @@ abstract class TypeFromTree extends
         public AnnotatedTypeMirror visitBinary(BinaryTree node,
                 AnnotatedTypeFactory f) {
             AnnotatedTypeMirror res = f.type(node);
+            // TODO: why do we need to clear the type?
             res.clearAnnotations();
             return res;
         }
@@ -148,6 +149,7 @@ abstract class TypeFromTree extends
 
             // Recurse on the type of the variable.
             AnnotatedTypeMirror res = visit(node.getVariable(), f);
+            // TODO: why do we need to clear the type?
             res.clearAnnotations();
             return res;
         }
@@ -439,7 +441,6 @@ abstract class TypeFromTree extends
             // the VarSymbol of a local variable :-(
             // TODO: fix this!
             Element elt = TreeUtils.elementFromDeclaration(node);
-            result.setElement(elt);
 
             TypeFromElement.annotate(result, elt);
             return result;
@@ -481,7 +482,6 @@ abstract class TypeFromTree extends
                 AnnotatedTypeFactory f) {
             TypeElement elt = TreeUtils.elementFromDeclaration(node);
             AnnotatedTypeMirror result = f.toAnnotatedType(elt.asType());
-            result.setElement(elt);
 
             TypeFromElement.annotate(result, elt);
 
@@ -585,10 +585,11 @@ abstract class TypeFromTree extends
             AnnotatedTypeVariable result = (AnnotatedTypeVariable) f.type(node);
             List<? extends AnnotationMirror> annotations = InternalUtils.annotationsFromTree(node);
 
-            if (f.canHaveAnnotatedTypeParameters())
-                result.addAnnotations(annotations);
+            result.addAnnotations(annotations);
             result.getUpperBound().addAnnotations(annotations);
+
             assert result instanceof AnnotatedTypeVariable;
+
             switch (bounds.size()) {
             case 0: break;
             case 1:

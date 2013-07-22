@@ -1,5 +1,8 @@
 package checkers.formatter;
 
+import checkers.formatter.quals.ConversionCategory;
+import checkers.formatter.quals.ReturnsFormat;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.IllegalFormatConversionException;
@@ -9,9 +12,6 @@ import java.util.MissingFormatArgumentException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import checkers.formatter.quals.ConversionCategory;
-import checkers.formatter.quals.ReturnsFormat;
-
 /**
  * This class provides a collection of utilities to ease working
  * with format strings.
@@ -20,8 +20,8 @@ import checkers.formatter.quals.ReturnsFormat;
  */
 public class FormatUtil {
     private static class Conversion {
-        private int index;
-        private ConversionCategory cath;
+        private final int index;
+        private final ConversionCategory cath;
 
         public Conversion(char c, int index){
             this.index = index;
@@ -41,7 +41,7 @@ public class FormatUtil {
      * Returns if the format string is satisfiable, and if the
      * format's parameters match the passed @link{ConversionCategory}s.
      * Otherwise an @link{Error} is thrown.
-     * 
+     *
      * TODO introduce more such functions, see RegexUtil for examples
      */
     @ReturnsFormat
@@ -158,8 +158,8 @@ public class FormatUtil {
     public static class ExcessiveOrMissingFormatArgumentException extends MissingFormatArgumentException {
         private static final long serialVersionUID = 17000126L;
 
-        private int expected;
-        private int found;
+        private final int expected;
+        private final int found;
 
         /**
          * Constructs an instance of this class with the actual argument length and
@@ -188,8 +188,8 @@ public class FormatUtil {
     public static class IllegalFormatConversionCategoryException extends IllegalFormatConversionException {
         private static final long serialVersionUID = 17000126L;
 
-        private ConversionCategory expected;
-        private ConversionCategory found;
+        private final ConversionCategory expected;
+        private final ConversionCategory found;
 
         /**
          * Constructs an instance of this class with the mismatched conversion and

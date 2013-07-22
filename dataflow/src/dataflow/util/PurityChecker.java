@@ -1,19 +1,23 @@
 package dataflow.util;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.List;
+/*>>>
+import checkers.compilermsgs.quals.CompilerMessageKey;
+*/
 
-import javax.lang.model.element.Element;
+import dataflow.quals.Pure;
+import dataflow.quals.Pure.Kind;
 
 import javacutils.AnnotationProvider;
 import javacutils.InternalUtils;
 import javacutils.Pair;
 import javacutils.TreeUtils;
 
-import dataflow.quals.Pure;
-import dataflow.quals.Pure.Kind;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.List;
+
+import javax.lang.model.element.Element;
 
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
@@ -71,10 +75,6 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.tree.WildcardTree;
 import com.sun.tools.javac.tree.TreeScanner;
-
-/*>>>
-import checkers.compilermsgs.quals.CompilerMessageKey;
-*/
 
 /**
  * A visitor that determines the purity (as defined by {@link dataflow.quals.Pure})
@@ -190,7 +190,7 @@ public class PurityChecker {
             TreeVisitor<PurityResult, PurityResult> {
 
         protected final AnnotationProvider annoProvider;
-        protected/* @Nullable */List<Element> methodParameter;
+        protected /*@Nullable*/ List<Element> methodParameter;
 
         public PurityCheckerHelper(AnnotationProvider annoProvider) {
             this.annoProvider = annoProvider;

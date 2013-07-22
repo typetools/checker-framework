@@ -479,6 +479,8 @@ public class TypeFromElement {
      * @param element the element of a method
      */
     private static void annotateExec(AnnotatedExecutableType type, ExecutableElement element) {
+        type.setElement(element);
+
         // System.out.println("AnnotateExec: " + element);
         MethodSymbol symbol = (MethodSymbol) element;
 

@@ -1,12 +1,11 @@
 package tests;
 
+import checkers.util.test.ParameterizedCheckerTest;
+
 import java.io.File;
 import java.util.Collection;
 
 import org.junit.runners.Parameterized.Parameters;
-
-import tests.util.FlowTestChecker;
-import checkers.util.test.ParameterizedCheckerTest;
 
 /**
  * Tests for the flow-sensitive part of the framework. These tests complement
@@ -19,8 +18,10 @@ import checkers.util.test.ParameterizedCheckerTest;
 public class Flow2Test extends ParameterizedCheckerTest {
 
     public Flow2Test(File testFile) {
-        super(testFile, FlowTestChecker.class.getName(),
-                "flow", "-Anomsgtext", "-AenablePurity");
+        super(testFile,
+                tests.util.FlowTestChecker.class,
+                "flow",
+                "-Anomsgtext", "-AenablePurity");
     }
 
     @Parameters

@@ -4,11 +4,6 @@ import checkers.basetype.BaseTypeChecker;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 
-import javacutils.ErrorReporter;
-import javacutils.InternalUtils;
-import javacutils.TreeUtils;
-import javacutils.TypesUtils;
-
 import dataflow.cfg.CFGBuilder;
 import dataflow.cfg.ControlFlowGraph;
 import dataflow.cfg.UnderlyingAST;
@@ -23,6 +18,11 @@ import dataflow.cfg.node.MethodInvocationNode;
 import dataflow.cfg.node.Node;
 import dataflow.cfg.node.NumericalAdditionNode;
 import dataflow.cfg.node.VariableDeclarationNode;
+
+import javacutils.ErrorReporter;
+import javacutils.InternalUtils;
+import javacutils.TreeUtils;
+import javacutils.TypesUtils;
 
 import java.util.Collection;
 import java.util.Collections;
