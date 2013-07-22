@@ -93,7 +93,7 @@ public class ImmutabilitySubchecker extends BaseTypeChecker<ImmutabilityAnnotate
         }
 
         @Override
-        public boolean isSubtype(Collection<AnnotationMirror> rhs, Collection<AnnotationMirror> lhs) {
+        public boolean isSubtype(Collection<? extends AnnotationMirror> rhs, Collection<? extends AnnotationMirror> lhs) {
             if (lhs.isEmpty() || rhs.isEmpty()) {
                 ErrorReporter.errorAbort("GraphQualifierHierarchy: Empty annotations in lhs: " + lhs + " or rhs: " + rhs);
             }
