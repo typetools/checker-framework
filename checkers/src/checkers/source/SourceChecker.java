@@ -126,7 +126,7 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
      * about all other classes should be suppressed.
      *
      * It contains the pattern specified by the user, through the option
-     * {@code checkers.onlyUses}; otherwise it contains a pattern 
+     * {@code checkers.onlyUses}; otherwise it contains a pattern
      * matches every class.
      */
     private Pattern onlyUsesPattern;
@@ -1149,7 +1149,7 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
         // }
         // System.out.println();
         return (skipUsesPattern.matcher(typeName).find()
-                || ! onlyUsesPattern.matcher(name).find());
+                || ! onlyUsesPattern.matcher(typeName).find());
     }
 
     /**
