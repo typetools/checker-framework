@@ -1,12 +1,13 @@
 package javacutils;
 
-import java.util.EnumSet;
-import java.util.Set;
-
 /*>>>
 import checkers.nullness.quals.*;
 */
 
+import java.util.EnumSet;
+import java.util.Set;
+
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -15,9 +16,30 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.ElementFilter;
 
-import javax.annotation.processing.ProcessingEnvironment;
-
-import com.sun.source.tree.*;
+import com.sun.source.tree.AnnotatedTypeTree;
+import com.sun.source.tree.ArrayAccessTree;
+import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompoundAssignmentTree;
+import com.sun.source.tree.ExpressionStatementTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.ParameterizedTypeTree;
+import com.sun.source.tree.ParenthesizedTree;
+import com.sun.source.tree.PrimitiveTypeTree;
+import com.sun.source.tree.ReturnTree;
+import com.sun.source.tree.StatementTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.TypeCastTree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Flags;
@@ -582,10 +604,44 @@ public final class TreeUtils {
         return classTreeKinds;
     }
 
-    public static boolean isClassTree(Tree.Kind kind) {
-        return classTreeKinds().contains(kind);
+    /**
+     * Is the given tree kind a class, i.e. a class, enum,
+     * interface, or annotation type.
+     *
+     * @param kind The kind to test
+     * @return true, iff the given kind is a class kind
+     */
+    public static boolean isClassTree(Tree tree) {
+        return classTreeKinds().contains(tree.getKind());
     }
 
+    private final static Set<Tree.Kind> typeTreeKinds = EnumSet.of(
+            Tree.Kind.PRIMITIVE_TYPE,
+            Tree.Kind.PARAMETERIZED_TYPE,
+            Tree.Kind.TYPE_PARAMETER,
+            Tree.Kind.ARRAY_TYPE,
+            Tree.Kind.UNBOUNDED_WILDCARD,
+            Tree.Kind.EXTENDS_WILDCARD,
+            Tree.Kind.SUPER_WILDCARD,
+            Tree.Kind.ANNOTATED_TYPE
+    );
+
+    public static Set<Tree.Kind> typeTreeKinds() {
+        return typeTreeKinds;
+    }
+
+    /**
+     * Is the given tree a type instantiation?
+     *
+     * TODO: this is an under-approximation: e.g. an identifier could
+     * be either a type use or an expression. How can we distinguish.
+     *
+     * @param kind The kind to test
+     * @return true, iff the given tree is a type
+     */
+    public static boolean isTypeTree(Tree tree) {
+        return typeTreeKinds().contains(tree.getKind());
+    }
 
     /**
      * Returns true if the given element is an invocation of the method, or

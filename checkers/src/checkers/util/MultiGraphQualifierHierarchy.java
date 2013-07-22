@@ -4,27 +4,28 @@ package checkers.util;
 import checkers.interning.quals.*;
 */
 
-import java.lang.annotation.Annotation;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-
-import javacutils.AnnotationUtils;
-import javacutils.ErrorReporter;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.util.Elements;
-
 import checkers.basetype.BaseTypeChecker;
 import checkers.nullness.quals.NonNull;
 import checkers.nullness.quals.Nullable;
 import checkers.nullness.quals.PolyNull;
 import checkers.quals.PolymorphicQualifier;
 import checkers.types.QualifierHierarchy;
+
+import dataflow.quals.Pure;
+
+import javacutils.AnnotationUtils;
+import javacutils.ErrorReporter;
+
+import java.lang.annotation.Annotation;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.util.Elements;
 
 /**
  * Represents the type qualifier hierarchy of a type system.
@@ -240,6 +241,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
             Set<AnnotationMirror> tops, Set<AnnotationMirror> bottoms,
             Object... args) { }
 
+    @Pure
     @Override
     public String toString() {
         // TODO: it would be easier to debug if the graph and map were sorted by the key.
@@ -251,7 +253,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
     }
 
     @Override
-    public Set<AnnotationMirror> getTopAnnotations() {
+    public Set<? extends AnnotationMirror> getTopAnnotations() {
         return this.tops;
     }
 
@@ -269,7 +271,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
     }
 
     @Override
-    public Set<AnnotationMirror> getBottomAnnotations() {
+    public Set<? extends AnnotationMirror> getBottomAnnotations() {
         return this.bottoms;
     }
 
@@ -301,7 +303,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
     }
 
     @Override
-    public boolean isSubtype(Collection<AnnotationMirror> rhs, Collection<AnnotationMirror> lhs) {
+    public boolean isSubtype(Collection<? extends AnnotationMirror> rhs, Collection<? extends AnnotationMirror> lhs) {
         if (lhs.isEmpty() || rhs.isEmpty()) {
             ErrorReporter.errorAbort("MultiGraphQualifierHierarchy: empty annotations in lhs: " + lhs + " or rhs: " + rhs);
         }
@@ -321,7 +323,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
     }
 
     @Override
-    public boolean isSubtypeTypeVariable(Collection<AnnotationMirror> rhs, Collection<AnnotationMirror> lhs) {
+    public boolean isSubtypeTypeVariable(Collection<? extends AnnotationMirror> rhs, Collection<? extends AnnotationMirror> lhs) {
         for (AnnotationMirror top : getTopAnnotations()) {
             AnnotationMirror rhsForTop = getAnnotationInHierarchy(rhs, top);
             AnnotationMirror lhsForTop = getAnnotationInHierarchy(lhs, top);
@@ -335,14 +337,8 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
     protected Set</*@Interned*/ String> typeQualifiers = null;
 
     @Override
-    public Set</*@Interned*/ String> getTypeQualifiers() {
-        if (typeQualifiers != null)
-            return typeQualifiers;
-        Set</*@Interned*/ String> names = new HashSet</*@Interned*/ String>();
-        for (AnnotationMirror anno : supertypesMap.keySet())
-            names.add(AnnotationUtils.annotationName(anno));
-        typeQualifiers = names;
-        return typeQualifiers;
+    public Set<AnnotationMirror> getTypeQualifiers() {
+        return Collections.unmodifiableSet(supertypesMap.keySet());
     }
 
 
@@ -789,6 +785,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
             this.a2 = a2;
         }
 
+        @Pure
         @Override
         public int hashCode() {
             if (hashCode == -1) {
@@ -815,6 +812,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
             return false;
         }
 
+        @Pure
         @Override
         public String toString() {
             return "AnnotationPair(" + a1 + ", " + a2 + ")";

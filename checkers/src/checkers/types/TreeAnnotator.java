@@ -170,14 +170,14 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
     @Override
     public Void visitLiteral(LiteralTree tree, AnnotatedTypeMirror type) {
         if (!stringPatterns.isEmpty() && tree.getKind() == Tree.Kind.STRING_LITERAL) {
-            Set<AnnotationMirror> res = null;
+            Set<? extends AnnotationMirror> res = null;
             String string = (String) tree.getValue();
             for (Pattern pattern : stringPatterns.keySet()) {
                 if (pattern.matcher(string).matches()) {
                     if (res == null) {
                         res = stringPatterns.get(pattern);
                     } else {
-                        Set<AnnotationMirror> newres = stringPatterns.get(pattern);
+                        Set<? extends AnnotationMirror> newres = stringPatterns.get(pattern);
                         res = qualHierarchy.greatestLowerBounds(res, newres);
                     }
                 }
@@ -198,7 +198,7 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
         assert type.getKind() == TypeKind.ARRAY : "TreeAnnotator.visitNewArray: should be an array type";
         AnnotatedTypeMirror componentType = ((AnnotatedArrayType)type).getComponentType();
 
-        Collection<AnnotationMirror> prev = null;
+        Collection<? extends AnnotationMirror> prev = null;
         if (tree.getInitializers() != null &&
                 tree.getInitializers().size() != 0) {
             // We have initializers, either with or without an array type.
@@ -216,7 +216,7 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
         assert prev != null : "TreeAnnotator.visitNewArray: violated assumption about qualifiers";
 
         Pair<Tree, AnnotatedTypeMirror> context = atypeFactory.getVisitorState().getAssignmentContext();
-        Collection<AnnotationMirror> post;
+        Collection<? extends AnnotationMirror> post;
 
         if (context != null && context.second != null && context.second instanceof AnnotatedArrayType) {
             AnnotatedTypeMirror contextComponentType = ((AnnotatedArrayType) context.second).getComponentType();
@@ -259,7 +259,7 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
         // defaultAction(node, type);
         AnnotatedTypeMirror rhs = atypeFactory.getAnnotatedType(node.getExpression());
         AnnotatedTypeMirror lhs = atypeFactory.getAnnotatedType(node.getVariable());
-        Set<AnnotationMirror> lubs = qualHierarchy.leastUpperBounds(rhs.getAnnotations(), lhs.getAnnotations());
+        Set<? extends AnnotationMirror> lubs = qualHierarchy.leastUpperBounds(rhs.getAnnotations(), lhs.getAnnotations());
         type.addMissingAnnotations(lubs);
         return super.visitCompoundAssignment(node, type);
     }
@@ -270,7 +270,7 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
         // defaultAction(node, type);
         AnnotatedTypeMirror a = atypeFactory.getAnnotatedType(node.getLeftOperand());
         AnnotatedTypeMirror b = atypeFactory.getAnnotatedType(node.getRightOperand());
-        Set<AnnotationMirror> lubs = qualHierarchy.leastUpperBounds(a.getEffectiveAnnotations(), b.getEffectiveAnnotations());
+        Set<? extends AnnotationMirror> lubs = qualHierarchy.leastUpperBounds(a.getEffectiveAnnotations(), b.getEffectiveAnnotations());
         type.addMissingAnnotations(lubs);
         return super.visitBinary(node, type);
     }

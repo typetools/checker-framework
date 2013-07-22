@@ -32,26 +32,30 @@ public class I18nAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<I18nSubc
     /** Do not propagate types through binary/compound operations.
      */
     private class I18nTreeAnnotator extends TreeAnnotator {
+        private final AnnotationMirror LOCALIZED;
+
         public I18nTreeAnnotator(BaseTypeChecker<?> checker) {
             super(checker, I18nAnnotatedTypeFactory.this);
+            LOCALIZED = AnnotationUtils.fromClass(elements, Localized.class);
         }
 
         @Override
         public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
+            type.removeAnnotation(LOCALIZED);
             return null;
         }
 
         @Override
         public Void visitCompoundAssignment(CompoundAssignmentTree node, AnnotatedTypeMirror type) {
+            type.removeAnnotation(LOCALIZED);
             return null;
         }
 
         @Override
         public Void visitLiteral(LiteralTree tree, AnnotatedTypeMirror type) {
-            AnnotationMirror LOCALIZED = AnnotationUtils.fromClass(elements, Localized.class);
             if (!type.isAnnotatedInHierarchy(LOCALIZED)) {
                 if (tree.getKind() == Tree.Kind.STRING_LITERAL && tree.getValue().equals("")) {
-                    type.addAnnotation(Localized.class);
+                    type.addAnnotation(LOCALIZED);
                 }
             }
             return super.visitLiteral(tree, type);

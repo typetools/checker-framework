@@ -1,13 +1,5 @@
 package checkers.nullness;
 
-import java.util.List;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.TypeKind;
-
-import javacutils.AnnotationUtils;
-
 import checkers.basetype.BaseTypeChecker;
 import checkers.nullness.quals.Covariant;
 import checkers.nullness.quals.KeyFor;
@@ -20,6 +12,14 @@ import checkers.types.QualifierHierarchy;
 import checkers.types.TypeHierarchy;
 import checkers.util.GraphQualifierHierarchy;
 import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+
+import javacutils.AnnotationUtils;
+
+import java.util.List;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
 
 /**
  * TODO: doc

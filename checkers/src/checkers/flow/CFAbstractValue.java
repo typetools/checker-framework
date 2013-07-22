@@ -1,19 +1,8 @@
 package checkers.flow;
 
-import java.util.Collection;
-import java.util.Set;
-
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.Elements;
-
-import javacutils.AnnotationUtils;
-import javacutils.InternalUtils;
-import javacutils.TypesUtils;
-import dataflow.analysis.AbstractValue;
-import dataflow.util.HashCodeUtils;
+/*>>>
+import checkers.nullness.quals.Nullable;
+*/
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.types.AbstractBasicAnnotatedTypeFactory;
@@ -24,6 +13,23 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
 import checkers.types.QualifierHierarchy;
 import checkers.types.TypeHierarchy;
 import checkers.util.AnnotatedTypes;
+
+import dataflow.analysis.AbstractValue;
+import dataflow.quals.Pure;
+import dataflow.util.HashCodeUtils;
+
+import javacutils.AnnotationUtils;
+import javacutils.InternalUtils;
+import javacutils.TypesUtils;
+
+import java.util.Collection;
+import java.util.Set;
+
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Elements;
 
 /**
  * An implementation of an abstract value used by the Checker Framework dataflow
@@ -56,12 +62,13 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
         this.typeHierarchy = analysis.getTypeHierarchy();
     }
 
+    @Pure
     public AnnotatedTypeMirror getType() {
         return type;
     }
 
     @Override
-    public V leastUpperBound(/* @Nullable */V other) {
+    public V leastUpperBound(/*@Nullable*/ V other) {
         if (other == null) {
             @SuppressWarnings("unchecked")
             V v = (V) this;
@@ -275,7 +282,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
      * TODO: The code in this method is rather similar to
      * {@link #leastUpperBound(CFAbstractValue)}. Can code be reused?
      */
-    public V mostSpecific(/* @Nullable */V other, /* @Nullable */V backup) {
+    public V mostSpecific(/*@Nullable*/ V other, /*@Nullable*/ V backup) {
         if (other == null) {
             @SuppressWarnings("unchecked")
             V v = (V) this;
@@ -436,6 +443,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
         return result;
     }
 
+    @Pure
     @Override
     public int hashCode() {
         return HashCodeUtils.hash(type);
@@ -444,6 +452,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
     /**
      * @return The string representation as a comma-separated list.
      */
+    @Pure
     @Override
     public String toString() {
         return getType().toString();

@@ -1,15 +1,15 @@
 package checkers.util;
 
+import checkers.types.QualifierHierarchy;
+
+import javacutils.AnnotationUtils;
+import javacutils.ErrorReporter;
+
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
-
-import javacutils.AnnotationUtils;
-import javacutils.ErrorReporter;
-
-import checkers.types.QualifierHierarchy;
 
 /**
 * Represents the type qualifier hierarchy of a type system.
@@ -57,7 +57,7 @@ public class GraphQualifierHierarchy extends MultiGraphQualifierHierarchy {
      * one without any super qualifiers
      */
     @Override
-    public Set<AnnotationMirror> getTopAnnotations() {
+    public Set<? extends AnnotationMirror> getTopAnnotations() {
         if (tops.size() != 1) {
             ErrorReporter.errorAbort("Expected 1 possible top qualifier, found "
                                + tops.size()
@@ -68,13 +68,13 @@ public class GraphQualifierHierarchy extends MultiGraphQualifierHierarchy {
     }
 
     @Override
-    public Set<AnnotationMirror> getBottomAnnotations() {
+    public Set<? extends AnnotationMirror> getBottomAnnotations() {
         // TODO: checks?
         return this.bottoms;
     }
 
     @Override
-    public boolean isSubtype(Collection<AnnotationMirror> rhs, Collection<AnnotationMirror> lhs) {
+    public boolean isSubtype(Collection<? extends AnnotationMirror> rhs, Collection<? extends AnnotationMirror> lhs) {
         if (lhs.isEmpty() || rhs.isEmpty()) {
             ErrorReporter.errorAbort("GraphQualifierHierarchy: Empty annotations in lhs: " + lhs + " or rhs: " + rhs);
         }

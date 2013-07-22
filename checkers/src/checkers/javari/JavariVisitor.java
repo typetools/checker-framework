@@ -1,17 +1,17 @@
 package checkers.javari;
 
 
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-
-import javacutils.TreeUtils;
-
 import checkers.basetype.BaseTypeVisitor;
 import checkers.javari.quals.Assignable;
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
+
+import javacutils.TreeUtils;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
@@ -65,8 +65,9 @@ public class JavariVisitor extends BaseTypeVisitor<JavariChecker, JavariAnnotate
     */
     @Override
     protected void checkAssignability(AnnotatedTypeMirror varType, Tree varTree) {
-        if (!TreeUtils.isExpressionTree(varTree)) return;
-        Element varElt = varType.getElement();
+        if (!TreeUtils.isExpressionTree(varTree))
+            return;
+        Element varElt = TreeUtils.elementFromUse((ExpressionTree) varTree);
         if (varElt != null && atypeFactory.getDeclAnnotation(varElt, Assignable.class) != null)
             return;
 

@@ -1,12 +1,12 @@
 package tests;
 
+import checkers.nullness.AbstractNullnessChecker;
+import checkers.util.test.ParameterizedCheckerTest;
+
 import java.io.File;
 import java.util.Collection;
 
 import org.junit.runners.Parameterized.Parameters;
-
-import checkers.nullness.AbstractNullnessChecker;
-import checkers.util.test.ParameterizedCheckerTest;
 
 /**
  * JUnit tests for the Nullness checker (that uses the rawness type system for
@@ -17,8 +17,10 @@ public class NullnessRawnessTest extends ParameterizedCheckerTest {
     public NullnessRawnessTest(File testFile) {
         // TODO: remove arrays:forbidnonnullcomponents option once it's no
         // longer needed.
-        super(testFile, checkers.nullness.NullnessRawnessChecker.class.getName(),
-                "nullness", "-Anomsgtext", "-Xlint:deprecation",
+        super(testFile,
+                checkers.nullness.NullnessRawnessChecker.class,
+                "nullness",
+                "-Anomsgtext", "-Xlint:deprecation",
                 "-Alint=arrays:forbidnonnullcomponents,"
                         + AbstractNullnessChecker.LINT_REDUNDANTNULLCOMPARISON);
     }

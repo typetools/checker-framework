@@ -9,6 +9,7 @@ import checkers.util.AnnotatedTypes;
 import checkers.util.QualifierPolymorphism;
 
 import javacutils.AnnotationUtils;
+import javacutils.ErrorReporter;
 import javacutils.InternalUtils;
 
 import java.util.HashSet;
@@ -78,12 +79,19 @@ public class TypeHierarchy {
      * @return  a true iff rhs a subtype of lhs
      */
     public boolean isSubtype(AnnotatedTypeMirror rhs, AnnotatedTypeMirror lhs) {
-        rhs = handlePolyAll(rhs);
-        lhs = handlePolyAll(lhs);
+        try {
+            rhs = handlePolyAll(rhs);
+            lhs = handlePolyAll(lhs);
 
-        boolean result = isSubtypeImpl(rhs, lhs);
-        this.visited.clear();
-        return result;
+            boolean result = isSubtypeImpl(rhs, lhs);
+            this.visited.clear();
+            return result;
+        } catch (Throwable t) {
+            ErrorReporter.errorAbort("Found exception during TypeHierarchy.isSubtype of " +
+                    rhs + " and " + lhs, t);
+            // Dead code
+            return false;
+        }
     }
 
     /**
@@ -249,7 +257,7 @@ public class TypeHierarchy {
             // System.out.printf("lhsBase (%s underlying=%s), rhsBase (%s underlying=%s), equals=%s%n", lhsBase.hashCode(), lhsBase.getUnderlyingType(), rhsBase.hashCode(), rhsBase.getUnderlyingType(), lhsBase.equals(rhsBase));
 
             if (areCorrespondingTypeVariables(lhsBase, rhsBase)) {
-                Set<AnnotationMirror> tops = qualifierHierarchy.getTopAnnotations();
+                Set<? extends AnnotationMirror> tops = qualifierHierarchy.getTopAnnotations();
                 int good = 0;
                 // Go through annotations for each hierarchy separately.
                 for (AnnotationMirror top : tops) {
