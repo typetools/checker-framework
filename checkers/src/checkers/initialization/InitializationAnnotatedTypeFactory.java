@@ -1,5 +1,25 @@
 package checkers.initialization;
 
+import checkers.basetype.BaseTypeChecker;
+import checkers.flow.CFAbstractAnalysis;
+import checkers.flow.CFAbstractValue;
+import checkers.initialization.quals.NotOnlyInitialized;
+import checkers.initialization.quals.UnderInitialization;
+import checkers.initialization.quals.UnknownInitialization;
+import checkers.nullness.NullnessChecker;
+import checkers.quals.Unused;
+import checkers.types.AbstractBasicAnnotatedTypeFactory;
+import checkers.types.AnnotatedTypeMirror;
+import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
+import checkers.types.TreeAnnotator;
+import checkers.types.TypeAnnotator;
+
+import javacutils.AnnotationUtils;
+import javacutils.ElementUtils;
+import javacutils.TreeUtils;
+import javacutils.TypesUtils;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -15,26 +35,6 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
-
-import javacutils.AnnotationUtils;
-import javacutils.ElementUtils;
-import javacutils.TreeUtils;
-import javacutils.TypesUtils;
-
-import checkers.basetype.BaseTypeChecker;
-import checkers.flow.CFAbstractAnalysis;
-import checkers.flow.CFAbstractValue;
-import checkers.initialization.quals.UnderInitialization;
-import checkers.initialization.quals.NotOnlyInitialized;
-import checkers.initialization.quals.UnknownInitialization;
-import checkers.nullness.NullnessChecker;
-import checkers.quals.Unused;
-import checkers.types.AbstractBasicAnnotatedTypeFactory;
-import checkers.types.AnnotatedTypeMirror;
-import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
-import checkers.types.TreeAnnotator;
-import checkers.types.TypeAnnotator;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
@@ -81,10 +81,6 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
         COMMITTED = checker.COMMITTED;
         NOT_ONLY_COMMITTED = checker.NOT_ONLY_COMMITTED;
         useFbc = checker.useFbc;
-    }
-
-    public AnnotatedTypeMirror getUnalteredAnnotatedType(Tree tree) {
-        return super.getAnnotatedType(tree);
     }
 
     /**
@@ -165,11 +161,9 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
                     if (getUninitializedInvariantFields(store, path, false,
                             annos).size() == 0) {
                         if (useFbc) {
-                            annotation = checker
-                                    .createFreeAnnotation(classType);
+                            annotation = checker.createFreeAnnotation(classType);
                         } else {
-                            annotation = checker
-                                    .createUnclassifiedAnnotation(classType);
+                            annotation = checker.createUnclassifiedAnnotation(classType);
                         }
                         selfType.replaceAnnotation(annotation);
                     }
@@ -365,13 +359,12 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
         }
 
         @Override
-        public Void visitExecutable(AnnotatedExecutableType t, ElementKind p) {
-            Void result = super.visitExecutable(t, p);
-            if (p == ElementKind.CONSTRUCTOR) {
+        public Void visitExecutable(AnnotatedExecutableType t, Element elem) {
+            Void result = super.visitExecutable(t, elem);
+            if (elem.getKind() == ElementKind.CONSTRUCTOR) {
                 AnnotatedDeclaredType receiverType = t.getReceiverType();
                 DeclaredType underlyingType = receiverType.getUnderlyingType();
-                receiverType
-                        .replaceAnnotation(getFreeOrRawAnnotationOfSuperType(underlyingType));
+                receiverType.replaceAnnotation(getFreeOrRawAnnotationOfSuperType(underlyingType));
             }
             return result;
         }
