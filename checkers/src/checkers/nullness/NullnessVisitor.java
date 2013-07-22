@@ -1,25 +1,8 @@
 package checkers.nullness;
 
-import java.lang.annotation.Annotation;
-import java.util.Set;
-
-import javacutils.AnnotationUtils;
-import javacutils.InternalUtils;
-import javacutils.TreeUtils;
-import javacutils.TypesUtils;
-
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.type.TypeMirror;
-
 import checkers.compilermsgs.quals.CompilerMessageKey;
 import checkers.initialization.InitializationVisitor;
 import checkers.nullness.quals.NonNull;
-import checkers.nullness.quals.Nullable;
-import checkers.nullness.quals.PolyNull;
-import checkers.quals.PolyAll;
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -27,6 +10,20 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import checkers.util.QualifierPolymorphism;
+
+import javacutils.AnnotationUtils;
+import javacutils.InternalUtils;
+import javacutils.TreeUtils;
+import javacutils.TypesUtils;
+
+import java.lang.annotation.Annotation;
+import java.util.Set;
+
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.TypeMirror;
 
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.ArrayAccessTree;
@@ -44,10 +41,8 @@ import com.sun.source.tree.IfTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
-import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.ThrowTree;
@@ -61,7 +56,8 @@ import com.sun.source.tree.WhileLoopTree;
  * The visitor for the nullness type-system.
  */
 public class NullnessVisitor
-    extends InitializationVisitor<AbstractNullnessChecker, NullnessValue, NullnessStore> {
+    extends InitializationVisitor<AbstractNullnessChecker, NullnessAnnotatedTypeFactory,
+            NullnessValue, NullnessStore> {
 
     // Error message keys
     private static final /*@CompilerMessageKey*/ String ASSIGNMENT_TYPE_INCOMPATIBLE = "assignment.type.incompatible";
@@ -102,36 +98,6 @@ public class NullnessVisitor
                 "toArray", 1, env);
 
         checkForAnnotatedJdk();
-    }
-
-    @Override
-    protected AnnotatedTypeMirror getAnnotatedTypeOfLhs(Tree varTree,
-            ExpressionTree valueTree) {
-        AnnotatedTypeMirror result = super.getAnnotatedTypeOfLhs(varTree,
-                valueTree);
-        return handlePolyNull(result, valueTree);
-    }
-
-    /**
-     * Replaces {@link PolyNull} with {@link Nullable} to be more permissive
-     * (because {@code type} is usually a left-hand side) if the dataflow
-     * analysis has determined that this is allowed soundly.
-     */
-    protected AnnotatedTypeMirror handlePolyNull(AnnotatedTypeMirror type,
-            Tree context) {
-        if (type.hasAnnotation(PolyNull.class)
-                || type.hasAnnotation(PolyAll.class)) {
-            NullnessValue inferred = atypeFactory.getInferredValueFor(context);
-            if (inferred != null && inferred.isPolyNullNull) {
-                type.replaceAnnotation(NULLABLE);
-            }
-        }
-        return type;
-    }
-
-    @Override
-    protected AnnotatedTypeMirror getMethodReturnType(MethodTree m, ReturnTree r) {
-        return handlePolyNull(super.getMethodReturnType(m, r), r);
     }
 
     @Override
@@ -205,12 +171,10 @@ public class NullnessVisitor
         }
 
         if (TreeUtils.isFieldAccess(varTree)) {
-            AnnotatedTypeMirror valueType = atypeFactory
-                    .getAnnotatedType(valueExp);
+            AnnotatedTypeMirror valueType = atypeFactory.getAnnotatedType(valueExp);
             // special case writing to NonNull field for free/unc receivers
             // cast is safe, because varTree is a field
-            AnnotatedTypeMirror annos = getNonNullFactory()
-                    .getDeclaredAndDefaultedAnnotatedType(varTree);
+            AnnotatedTypeMirror annos = atypeFactory.getDeclaredAndDefaultedAnnotatedType(varTree);
             // receiverType is null for static field accesses
             AnnotatedTypeMirror receiverType = atypeFactory
                     .getReceiverType((ExpressionTree) varTree);
@@ -226,10 +190,6 @@ public class NullnessVisitor
             }
         }
         super.commonAssignmentCheck(varTree, valueExp, errorKey);
-    }
-
-    private NullnessAnnotatedTypeFactory getNonNullFactory() {
-        return (NullnessAnnotatedTypeFactory) atypeFactory;
     }
 
     /** Case 1: Check for null dereferencing */
