@@ -257,7 +257,7 @@ public class TypeHierarchy {
             // System.out.printf("lhsBase (%s underlying=%s), rhsBase (%s underlying=%s), equals=%s%n", lhsBase.hashCode(), lhsBase.getUnderlyingType(), rhsBase.hashCode(), rhsBase.getUnderlyingType(), lhsBase.equals(rhsBase));
 
             if (areCorrespondingTypeVariables(lhsBase, rhsBase)) {
-                Set<AnnotationMirror> tops = qualifierHierarchy.getTopAnnotations();
+                Set<? extends AnnotationMirror> tops = qualifierHierarchy.getTopAnnotations();
                 int good = 0;
                 // Go through annotations for each hierarchy separately.
                 for (AnnotationMirror top : tops) {
