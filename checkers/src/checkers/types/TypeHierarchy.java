@@ -436,6 +436,7 @@ public class TypeHierarchy {
                     return false;
                 }
             }
+
             lhs = ((AnnotatedWildcardType)lhs).getEffectiveExtendsBound();
             if (lhs == null)
                 return true;
@@ -451,6 +452,14 @@ public class TypeHierarchy {
             if (visited.contains(rhs))
                 return true;
             visited.add(rhs);
+
+            if (((AnnotatedWildcardType)lhs).getExtendsBoundField() == null ||
+                    ((AnnotatedWildcardType)lhs).getExtendsBoundField().getAnnotations().isEmpty()) {
+                // TODO: the LHS extends bound hasn't been unfolded or defaulted.
+                // Stop looking, we should be fine.
+                // See tests/nullness/generics/WildcardSubtyping.java
+                return true;
+            }
 
             AnnotatedTypeMirror rhsbnd = ((AnnotatedWildcardType)rhs).getEffectiveExtendsBound();
             AnnotatedTypeMirror lhsbnd = ((AnnotatedWildcardType)lhs).getEffectiveExtendsBound();
