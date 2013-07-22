@@ -1,5 +1,9 @@
 package checkers.basetype;
 
+/*>>>
+import checkers.compilermsgs.quals.CompilerMessageKey;
+*/
+
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
