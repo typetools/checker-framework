@@ -39,7 +39,7 @@ public abstract class QualifierHierarchy {
     /**
      * @return  the top (ultimate super) type qualifiers in the type system
      */
-    public abstract Set<AnnotationMirror> getTopAnnotations();
+    public abstract Set<? extends AnnotationMirror> getTopAnnotations();
 
     /**
      * Return the top qualifier for the given qualifier, that is, the qualifier
@@ -56,7 +56,7 @@ public abstract class QualifierHierarchy {
     /**
      * @return the bottom type qualifier in the hierarchy
      */
-    public abstract Set<AnnotationMirror> getBottomAnnotations();
+    public abstract Set<? extends AnnotationMirror> getBottomAnnotations();
 
     /**
      *
@@ -66,13 +66,12 @@ public abstract class QualifierHierarchy {
     public abstract AnnotationMirror getPolymorphicAnnotation(AnnotationMirror start);
 
     /**
-     * Returns the names of all type qualifiers in this type qualifier
-     * hierarchy.
-     * TODO: What is the relation to {@link checkers.basetype.BaseTypeChecker#getSupportedTypeQualifiers()}?
+     * Returns all type qualifiers in this type qualifier hierarchy.
      *
      * @return the fully qualified name represented in this hierarchy
      */
-    public abstract Set</*@Interned*/ String> getTypeQualifiers();
+    public abstract Set<? extends AnnotationMirror> getTypeQualifiers();
+
 
     // **********************************************************************
     // Qualifier Hierarchy Queries
@@ -94,7 +93,7 @@ public abstract class QualifierHierarchy {
      *
      * @return true iff an annotation in lhs is a super of one in rhs
      **/
-    public abstract boolean isSubtype(Collection<AnnotationMirror> rhs, Collection<AnnotationMirror> lhs);
+    public abstract boolean isSubtype(Collection<? extends AnnotationMirror> rhs, Collection<? extends AnnotationMirror> lhs);
 
     /**
      * Returns the least upper bound for the qualifiers a1 and a2.
@@ -136,8 +135,8 @@ public abstract class QualifierHierarchy {
      *
      * @return the least upper bound of annos1 and annos2
      */
-    public Set<AnnotationMirror>
-    leastUpperBounds(Collection<AnnotationMirror> annos1, Collection<AnnotationMirror> annos2) {
+    public Set<? extends AnnotationMirror>
+    leastUpperBounds(Collection<? extends AnnotationMirror> annos1, Collection<? extends AnnotationMirror> annos2) {
         assert annos1.size() == annos2.size() :
             "QualifierHierarchy.leastUpperBounds: tried to determine LUB with sets of different sizes!\n" +
                     "    Set 1: " + annos1 + " Set 2: " + annos2;
@@ -171,8 +170,8 @@ public abstract class QualifierHierarchy {
      * @param annos2 Second collection of qualifiers
      * @return Greatest lower bound of the two collections of qualifiers
      */
-    public Set<AnnotationMirror>
-    greatestLowerBounds(Collection<AnnotationMirror> annos1, Collection<AnnotationMirror> annos2) {
+    public Set<? extends AnnotationMirror>
+    greatestLowerBounds(Collection<? extends AnnotationMirror> annos1, Collection<? extends AnnotationMirror> annos2) {
         assert annos1.size() == annos2.size() :
             "QualifierHierarchy.greatestLowerBounds: tried to determine GLB with sets of different sizes!\n" +
                     "    Set 1: " + annos1 + " Set 2: " + annos2;
@@ -225,7 +224,8 @@ public abstract class QualifierHierarchy {
     // The only case were rhs and lhs have more than one qualifier is in IGJ
     // where the type of 'this' is '@AssignsFields @I FOO'.  Subtyping for
     // this case, requires subtyping with respect to one qualifier only.
-    public abstract boolean isSubtypeTypeVariable(Collection<AnnotationMirror> rhs, Collection<AnnotationMirror> lhs);
+    public abstract boolean isSubtypeTypeVariable(Collection<? extends AnnotationMirror> rhs,
+            Collection<? extends AnnotationMirror> lhs);
 
     /**
      * Returns the least upper bound for the qualifiers a1 and a2.
@@ -282,8 +282,8 @@ public abstract class QualifierHierarchy {
      *
      * @return the least upper bound of annos1 and annos2
      */
-    public Set<AnnotationMirror>
-    leastUpperBoundsTypeVariable(Collection<AnnotationMirror> annos1, Collection<AnnotationMirror> annos2) {
+    public Set<? extends AnnotationMirror>
+    leastUpperBoundsTypeVariable(Collection<? extends AnnotationMirror> annos1, Collection<? extends AnnotationMirror> annos2) {
         Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
         for (AnnotationMirror top : getTopAnnotations()) {
             AnnotationMirror anno1ForTop = null;
@@ -322,8 +322,8 @@ public abstract class QualifierHierarchy {
      * @param annos2 Second collection of qualifiers
      * @return Greatest lower bound of the two collections of qualifiers
      */
-    public Set<AnnotationMirror>
-    greatestLowerBoundsTypeVariable(Collection<AnnotationMirror> annos1, Collection<AnnotationMirror> annos2) {
+    public Set<? extends AnnotationMirror>
+    greatestLowerBoundsTypeVariable(Collection<? extends AnnotationMirror> annos1, Collection<? extends AnnotationMirror> annos2) {
         Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
         for (AnnotationMirror top : getTopAnnotations()) {
             AnnotationMirror anno1ForTop = null;
@@ -390,7 +390,7 @@ public abstract class QualifierHierarchy {
      * @return true iff an annotation in lhs is a super of one in rhs
      **/
     public boolean isSubtype(AnnotatedTypeMirror type1,
-            AnnotatedTypeMirror type2, Collection<AnnotationMirror> rhs,
+            AnnotatedTypeMirror type2, Collection<? extends AnnotationMirror> rhs,
             Collection<AnnotationMirror> lhs) {
         if (canHaveEmptyAnnotationSet(type1)
                 || canHaveEmptyAnnotationSet(type2)) {
@@ -471,8 +471,8 @@ public abstract class QualifierHierarchy {
      *
      * @return the least upper bound of annos1 and annos2
      */
-    public Set<AnnotationMirror> leastUpperBounds(AnnotatedTypeMirror type1,
-            AnnotatedTypeMirror type2, Collection<AnnotationMirror> annos1,
+    public Set<? extends AnnotationMirror> leastUpperBounds(AnnotatedTypeMirror type1,
+            AnnotatedTypeMirror type2, Collection<? extends AnnotationMirror> annos1,
             Collection<AnnotationMirror> annos2) {
         if (canHaveEmptyAnnotationSet(type1)
                 || canHaveEmptyAnnotationSet(type2)) {
@@ -498,8 +498,8 @@ public abstract class QualifierHierarchy {
      * @param annos2 Second collection of qualifiers
      * @return Greatest lower bound of the two collections of qualifiers
      */
-    public Set<AnnotationMirror> greatestLowerBounds(AnnotatedTypeMirror type1,
-            AnnotatedTypeMirror type2, Collection<AnnotationMirror> annos1,
+    public Set<? extends AnnotationMirror> greatestLowerBounds(AnnotatedTypeMirror type1,
+            AnnotatedTypeMirror type2, Collection<? extends AnnotationMirror> annos1,
             Collection<AnnotationMirror> annos2) {
         if (canHaveEmptyAnnotationSet(type1)
                 || canHaveEmptyAnnotationSet(type2)) {
@@ -510,7 +510,7 @@ public abstract class QualifierHierarchy {
     }
 
     public AnnotationMirror findCorrespondingAnnotation(
-            AnnotationMirror aliased, Collection<AnnotationMirror> a) {
+            AnnotationMirror aliased, Collection<? extends AnnotationMirror> a) {
         AnnotationMirror top = this.getTopAnnotation(aliased);
         for(AnnotationMirror anno : a) {
             if (this.isSubtype(anno, top)) {
@@ -530,7 +530,7 @@ public abstract class QualifierHierarchy {
      *            The top annotation of the hierarchy to consider.
      */
     public AnnotationMirror getAnnotationInHierarchy(
-            Collection<AnnotationMirror> annos, AnnotationMirror top) {
+            Collection<? extends AnnotationMirror> annos, AnnotationMirror top) {
         AnnotationMirror annoInHierarchy = null;
         for (AnnotationMirror rhsAnno : annos) {
             if (isSubtype(rhsAnno, top)) {

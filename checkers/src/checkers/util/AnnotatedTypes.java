@@ -25,6 +25,7 @@ import javacutils.ErrorReporter;
 import javacutils.InternalUtils;
 import javacutils.Pair;
 import javacutils.TreeUtils;
+import javacutils.TypesUtils;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -165,8 +166,15 @@ public class AnnotatedTypes {
         @Override
         public AnnotatedTypeMirror visitDeclared(AnnotatedDeclaredType type, AnnotatedTypeMirror p) {
             // If visited Element is the desired one, we are done
-            if (p.getKind().isPrimitive())
-                return visit(atypeFactory.getUnboxedType(type), p);
+            if (p.getKind().isPrimitive()) {
+                if (TypesUtils.isBoxedPrimitive(type.getUnderlyingType())) {
+                    return visit(atypeFactory.getUnboxedType(type), p);
+                } else {
+                    // TODO: is there something better we could do?
+                    // See tests/framework/Unboxing.java
+                    return null;
+                }
+            }
 
             /* Something like the following seemed sensible for intersection types,
              * which came up in the Ternary test case with classes MethodSymbol and ClassSymbol.
@@ -1135,7 +1143,7 @@ public class AnnotatedTypes {
             }
         }
 
-        Collection<AnnotationMirror> unification = Collections.emptySet();
+        Collection<? extends AnnotationMirror> unification = Collections.emptySet();
 
         boolean isFirst = true;
         for (AnnotatedTypeMirror type : types) {

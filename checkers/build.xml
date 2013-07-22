@@ -741,6 +741,14 @@ ${build.version} of the 'javac.jar' library."/>
         </antcall>
     </target>
 
+    <target name="check-purity"
+      description="Run the Purity Checker on the Framework">
+        <antcall target="-run-checker">
+            <param name="checker-name" value="checkers.util.PurityChecker"/>
+            <param name="checker-args" value="-Awarns -AprintErrorStack"/>
+        </antcall>
+    </target>
+
     <!-- This throws off dependency tracking and causes rebuilding.
          When is it truly necessary? -->
     <!-- Why all JDK files?  Why not just source files? -->

@@ -1,5 +1,17 @@
 package checkers.source;
 
+import checkers.basetype.BaseTypeChecker;
+import checkers.quals.TypeQualifiers;
+import checkers.types.AnnotatedTypeFactory;
+import checkers.types.GeneralAnnotatedTypeFactory;
+
+import javacutils.AbstractTypeProcessor;
+import javacutils.ElementUtils;
+import javacutils.ErrorHandler;
+import javacutils.ErrorReporter;
+import javacutils.InternalUtils;
+import javacutils.TreeUtils;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.management.ManagementFactory;
@@ -15,13 +27,6 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.regex.Pattern;
 
-import javacutils.AbstractTypeProcessor;
-import javacutils.ElementUtils;
-import javacutils.ErrorHandler;
-import javacutils.ErrorReporter;
-import javacutils.InternalUtils;
-import javacutils.TreeUtils;
-
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -33,11 +38,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
 import javax.tools.Diagnostic.Kind;
-
-import checkers.basetype.BaseTypeChecker;
-import checkers.quals.TypeQualifiers;
-import checkers.types.AnnotatedTypeFactory;
-import checkers.types.GeneralAnnotatedTypeFactory;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
@@ -406,12 +406,8 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
 
             logCheckerError(ce);
         } catch (Throwable t) {
-            String stackTraceHelp;
-            if (processingEnv.getOptions().containsKey("printErrorStack")) {
-                stackTraceHelp = "";
-            } else {
-                stackTraceHelp = "; invoke the compiler with -AprintErrorStack to see the stack trace.";
-            }
+            String stackTraceHelp = getStackTraceHelp(processingEnv);
+
             if (this.messager == null) {
                 messager = processingEnv.getMessager();
             }
@@ -419,6 +415,14 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
                     t.getClass().getSimpleName() + ")" +
                     (t.getMessage() != null ? "; message: " + t.getMessage() : "") +
                     stackTraceHelp, t));
+        }
+    }
+
+    private static String getStackTraceHelp(ProcessingEnvironment processingEnv) {
+        if (processingEnv.getOptions().containsKey("printErrorStack")) {
+            return "";
+        } else {
+            return "; invoke the compiler with -AprintErrorStack to see the stack trace.";
         }
     }
 
@@ -526,11 +530,13 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
         } catch (CheckerError ce) {
             logCheckerError(ce);
         } catch (Throwable t) {
+            String stackTraceHelp = getStackTraceHelp(processingEnv);
+
             logCheckerError(new CheckerError("SourceChecker.typeProcess: unexpected Throwable (" +
                     t.getClass().getSimpleName() + ") when processing "
                     + currentRoot.getSourceFile().getName() +
                     (t.getMessage() != null ? "; message: " + t.getMessage() : "") +
-                    "; invoke the compiler with -AprintErrorStack to see the stack trace.", t));
+                    stackTraceHelp, t));
         } finally {
             // Also add possibly deferred diagnostics, which will get published back in
             // AbstractTypeProcessor.
@@ -653,7 +659,12 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
         } else {
             fmtString = fullMessageOf(msgKey, defaultFormat);
         }
-        String messageText = String.format(fmtString, args);
+        String messageText;
+        try {
+            messageText = String.format(fmtString, args);
+        } catch (Exception e) {
+            messageText = "Invalid format string: \"" + fmtString + "\" args: " + Arrays.toString(args);
+        }
 
         // Replace '\n' with the proper line separator
         if (LINE_SEPARATOR != "\n") // interned
@@ -1024,7 +1035,6 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
         options.add("nocheckjdk");
         options.add("warns");
         options.add("suppressWarnings");
-        options.add("annotatedTypeParams");
         options.add("printErrorStack");
         options.add("printAllQualifiers");
         options.add("flowdotdir");
@@ -1113,6 +1123,19 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
             return false;
         TypeElement typeElement = ElementUtils.enclosingClass(element);
         String name = typeElement.getQualifiedName().toString();
+        return shouldSkipUses(name);
+    }
+
+    /**
+     * Tests whether the class owner of the passed type matches
+     * the pattern specified in the {@code checker.skipUses} property.
+     * In contrast to {@link #shouldSkipUses(Element)} this version
+     * can also be used from primitive types, which don't have an element.
+     *
+     * @param typeName   the fully-qualified name of a type
+     * @return  true iff the enclosing class of element should be skipped
+     */
+    public final boolean shouldSkipUses(String typeName) {
         // System.out.printf("shouldSkipUses(%s) %s%nskipUses %s%nonlyUses %s%nresult %s%n",
         //                   element,
         //                   name,
@@ -1125,7 +1148,7 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
         //     System.out.println("  " + stea[i]);
         // }
         // System.out.println();
-        return (skipUsesPattern.matcher(name).find()
+        return (skipUsesPattern.matcher(typeName).find()
                 || ! onlyUsesPattern.matcher(name).find());
     }
 

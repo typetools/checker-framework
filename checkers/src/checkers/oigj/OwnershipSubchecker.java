@@ -43,7 +43,7 @@ public class OwnershipSubchecker extends BaseTypeChecker<OwnershipAnnotatedTypeF
         }
 
         @Override
-        public boolean isSubtype(Collection<AnnotationMirror> rhs, Collection<AnnotationMirror> lhs) {
+        public boolean isSubtype(Collection<? extends AnnotationMirror> rhs, Collection<? extends AnnotationMirror> lhs) {
             if (lhs.isEmpty() || rhs.isEmpty()) {
                 ErrorReporter.errorAbort("OwnershipQualifierHierarchy: Empty annotations in lhs: " + lhs + " or rhs: " + rhs);
             }

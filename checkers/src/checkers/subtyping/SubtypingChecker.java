@@ -1,12 +1,15 @@
 package checkers.subtyping;
 
-import java.lang.annotation.Annotation;
-import java.util.*;
-
-import javax.annotation.processing.*;
-
 import checkers.basetype.BaseTypeChecker;
-import checkers.types.*;
+import checkers.types.BasicAnnotatedTypeFactory;
+
+import java.lang.annotation.Annotation;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.annotation.processing.SupportedOptions;
 
 import com.sun.source.tree.CompilationUnitTree;
 
@@ -36,7 +39,8 @@ public final class SubtypingChecker extends BaseTypeChecker<BasicAnnotatedTypeFa
         return new BasicAnnotatedTypeFactory<SubtypingChecker>(this, root);
     }
 
-    @Override @SuppressWarnings("unchecked")
+    @Override
+    @SuppressWarnings("unchecked")
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
 
         String qualNames = processingEnv.getOptions().get("quals");

@@ -107,3 +107,9 @@ Suppress warnings using assert statements with the string
 @AssumeAssertion(warningkey); previously, just the warning key sufficed.
 
 Purity analysis:  uses new annotations @SideEffectFree and ...
+
+
+Eclipse setup
+-------------
+Describe checker-framework.importorder and formatter.
+Should these developer-focused configs be moved somewhere else?
