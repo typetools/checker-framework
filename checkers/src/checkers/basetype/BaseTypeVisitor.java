@@ -1300,7 +1300,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
      *            variable?
      */
     protected void commonAssignmentCheck(AnnotatedTypeMirror varType,
-            AnnotatedTypeMirror valueType, Tree valueTree, /*@CompilerMessageKey*/String errorKey,
+            AnnotatedTypeMirror valueType, Tree valueTree, /*@CompilerMessageKey*/ String errorKey,
             boolean isLocalVariableAssignement) {
 
         String valueTypeString = valueType.toString();
