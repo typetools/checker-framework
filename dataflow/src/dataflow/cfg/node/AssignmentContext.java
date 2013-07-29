@@ -77,6 +77,8 @@ public abstract class AssignmentContext {
 
         @Override
         public Tree getContextTree() {
+            // TODO: what is the right assignment context? We might not have
+            // a tree for the invoked method.
             return null;
         }
     }
@@ -87,9 +89,11 @@ public abstract class AssignmentContext {
     public static class MethodReturnContext extends AssignmentContext {
 
         protected final ExecutableElement method;
+        protected final Tree ret;
 
         public MethodReturnContext(MethodTree method) {
             this.method = TreeUtils.elementFromDeclaration(method);
+            this.ret = method.getReturnType();
         }
 
         @Override
@@ -99,7 +103,7 @@ public abstract class AssignmentContext {
 
         @Override
         public Tree getContextTree() {
-            return null;
+            return ret;
         }
     }
 
