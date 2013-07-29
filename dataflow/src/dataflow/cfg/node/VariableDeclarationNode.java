@@ -1,11 +1,11 @@
 package dataflow.cfg.node;
 
-import java.util.Collection;
-import java.util.Collections;
+import dataflow.util.HashCodeUtils;
 
 import javacutils.InternalUtils;
 
-import dataflow.util.HashCodeUtils;
+import java.util.Collection;
+import java.util.Collections;
 
 import com.sun.source.tree.VariableTree;
 
@@ -23,7 +23,6 @@ import com.sun.source.tree.VariableTree;
  *
  */
 public class VariableDeclarationNode extends Node {
-    static long uid = 0;
 
     protected VariableTree tree;
     protected String name;

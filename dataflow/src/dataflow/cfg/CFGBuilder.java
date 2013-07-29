@@ -1,100 +1,8 @@
 package dataflow.cfg;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.IdentityHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
-import javacutils.AnnotationProvider;
-import javacutils.BasicAnnotationProvider;
-import javacutils.ElementUtils;
-import javacutils.InternalUtils;
-import javacutils.Pair;
-import javacutils.TreeUtils;
-import javacutils.TypesUtils;
-import javacutils.trees.TreeBuilder;
-
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Name;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.ArrayType;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.PrimitiveType;
-import javax.lang.model.type.ReferenceType;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.type.TypeVariable;
-import javax.lang.model.type.UnionType;
-import javax.lang.model.util.Elements;
-import javax.lang.model.util.Types;
-
-import com.sun.source.tree.AnnotatedTypeTree;
-import com.sun.source.tree.AnnotationTree;
-import com.sun.source.tree.ArrayAccessTree;
-import com.sun.source.tree.ArrayTypeTree;
-import com.sun.source.tree.AssertTree;
-import com.sun.source.tree.AssignmentTree;
-import com.sun.source.tree.BinaryTree;
-import com.sun.source.tree.BlockTree;
-import com.sun.source.tree.BreakTree;
-import com.sun.source.tree.CaseTree;
-import com.sun.source.tree.CatchTree;
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.CompoundAssignmentTree;
-import com.sun.source.tree.ConditionalExpressionTree;
-import com.sun.source.tree.ContinueTree;
-import com.sun.source.tree.DoWhileLoopTree;
-import com.sun.source.tree.EmptyStatementTree;
-import com.sun.source.tree.EnhancedForLoopTree;
-import com.sun.source.tree.ErroneousTree;
-import com.sun.source.tree.ExpressionStatementTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.ForLoopTree;
-import com.sun.source.tree.IdentifierTree;
-import com.sun.source.tree.IfTree;
-import com.sun.source.tree.ImportTree;
-import com.sun.source.tree.InstanceOfTree;
-import com.sun.source.tree.LabeledStatementTree;
-import com.sun.source.tree.LambdaExpressionTree;
-import com.sun.source.tree.LiteralTree;
-import com.sun.source.tree.MemberReferenceTree;
-import com.sun.source.tree.MemberSelectTree;
-import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.ModifiersTree;
-import com.sun.source.tree.NewArrayTree;
-import com.sun.source.tree.NewClassTree;
-import com.sun.source.tree.ParameterizedTypeTree;
-import com.sun.source.tree.ParenthesizedTree;
-import com.sun.source.tree.PrimitiveTypeTree;
-import com.sun.source.tree.ReturnTree;
-import com.sun.source.tree.StatementTree;
-import com.sun.source.tree.SwitchTree;
-import com.sun.source.tree.SynchronizedTree;
-import com.sun.source.tree.ThrowTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
-import com.sun.source.tree.TryTree;
-import com.sun.source.tree.TypeCastTree;
-import com.sun.source.tree.TypeParameterTree;
-import com.sun.source.tree.UnaryTree;
-import com.sun.source.tree.UnionTypeTree;
-import com.sun.source.tree.VariableTree;
-import com.sun.source.tree.WhileLoopTree;
-import com.sun.source.tree.WildcardTree;
-import com.sun.source.util.TreePath;
-import com.sun.source.util.TreePathScanner;
-import com.sun.source.util.Trees;
+/*>>>
+import checkers.nullness.quals.Nullable;
+*/
 
 import dataflow.cfg.CFGBuilder.ExtendedNode.ExtendedNodeType;
 import dataflow.cfg.UnderlyingAST.CFGMethod;
@@ -174,6 +82,102 @@ import dataflow.cfg.node.ValueLiteralNode;
 import dataflow.cfg.node.VariableDeclarationNode;
 import dataflow.cfg.node.WideningConversionNode;
 import dataflow.quals.TerminatesExecution;
+
+import javacutils.AnnotationProvider;
+import javacutils.BasicAnnotationProvider;
+import javacutils.ElementUtils;
+import javacutils.InternalUtils;
+import javacutils.Pair;
+import javacutils.TreeUtils;
+import javacutils.TypesUtils;
+import javacutils.trees.TreeBuilder;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.PrimitiveType;
+import javax.lang.model.type.ReferenceType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
+import javax.lang.model.type.UnionType;
+import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
+
+import com.sun.source.tree.AnnotatedTypeTree;
+import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.ArrayAccessTree;
+import com.sun.source.tree.ArrayTypeTree;
+import com.sun.source.tree.AssertTree;
+import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.BreakTree;
+import com.sun.source.tree.CaseTree;
+import com.sun.source.tree.CatchTree;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.CompoundAssignmentTree;
+import com.sun.source.tree.ConditionalExpressionTree;
+import com.sun.source.tree.ContinueTree;
+import com.sun.source.tree.DoWhileLoopTree;
+import com.sun.source.tree.EmptyStatementTree;
+import com.sun.source.tree.EnhancedForLoopTree;
+import com.sun.source.tree.ErroneousTree;
+import com.sun.source.tree.ExpressionStatementTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.ForLoopTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.IfTree;
+import com.sun.source.tree.ImportTree;
+import com.sun.source.tree.InstanceOfTree;
+import com.sun.source.tree.LabeledStatementTree;
+import com.sun.source.tree.LambdaExpressionTree;
+import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.MemberReferenceTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.ParameterizedTypeTree;
+import com.sun.source.tree.ParenthesizedTree;
+import com.sun.source.tree.PrimitiveTypeTree;
+import com.sun.source.tree.ReturnTree;
+import com.sun.source.tree.StatementTree;
+import com.sun.source.tree.SwitchTree;
+import com.sun.source.tree.SynchronizedTree;
+import com.sun.source.tree.ThrowTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.TryTree;
+import com.sun.source.tree.TypeCastTree;
+import com.sun.source.tree.TypeParameterTree;
+import com.sun.source.tree.UnaryTree;
+import com.sun.source.tree.UnionTypeTree;
+import com.sun.source.tree.VariableTree;
+import com.sun.source.tree.WhileLoopTree;
+import com.sun.source.tree.WildcardTree;
+import com.sun.source.util.TreePath;
+import com.sun.source.util.TreePathScanner;
+import com.sun.source.util.Trees;
 
 /**
  * Builds the control flow graph of some Java code (either a method, or an
@@ -1354,27 +1358,27 @@ public class CFGBuilder {
          * Current {@link Label} to which a break statement with no label should
          * jump, or null if there is no valid destination.
          */
-        protected/* @Nullable */Label breakTargetL;
+        protected /*@Nullable*/ Label breakTargetL;
 
         /**
          * Map from AST label Names to CFG {@link Label}s for breaks. Each
          * labeled statement creates two CFG {@link Label}s, one for break and
          * one for continue.
          */
-        protected HashMap<Name, Label> breakLabels;
+        protected Map<Name, Label> breakLabels;
 
         /**
          * Current {@link Label} to which a continue statement with no label
          * should jump, or null if there is no valid destination.
          */
-        protected/* @Nullable */Label continueTargetL;
+        protected /*@Nullable*/ Label continueTargetL;
 
         /**
          * Map from AST label Names to CFG {@link Label}s for continues. Each
          * labeled statement creates two CFG {@link Label}s, one for break and
          * one for continue.
          */
-        protected HashMap<Name, Label> continueLabels;
+        protected Map<Name, Label> continueLabels;
 
         /**
          * Node yielding the value for the lexically enclosing switch statement,
@@ -2205,7 +2209,7 @@ public class CFGBuilder {
          * Returns the label {@link Name} of the leaf in the argument path, or
          * null if the leaf is not a labeled statement.
          */
-        protected/* @Nullable */Name getLabel(TreePath path) {
+        protected /*@Nullable*/ Name getLabel(TreePath path) {
             if (path.getParentPath() != null) {
                 Tree parent = path.getParentPath().getLeaf();
                 if (parent.getKind() == Tree.Kind.LABELED_STATEMENT) {
@@ -2575,7 +2579,7 @@ public class CFGBuilder {
                 return Tree.Kind.ERRONEOUS;
             }
         }
-            
+
 
         @Override
         public Node visitCompoundAssignment(CompoundAssignmentTree tree, Void p) {
@@ -3983,7 +3987,7 @@ public class CFGBuilder {
                 one.setInSource(false);
                 extendWithNode(one);
                 one = binaryNumericPromotion(one, promotedType);
-                
+
                 BinaryTree operTree = treeBuilder.buildBinary(promotedType,
                         (kind == Tree.Kind.POSTFIX_INCREMENT ? Tree.Kind.PLUS : Tree.Kind.MINUS),
                         exprTree, oneTree);
@@ -4023,7 +4027,7 @@ public class CFGBuilder {
                 one.setInSource(false);
                 extendWithNode(one);
                 one = binaryNumericPromotion(one, promotedType);
-                
+
                 BinaryTree operTree = treeBuilder.buildBinary(promotedType,
                         (kind == Tree.Kind.PREFIX_INCREMENT ? Tree.Kind.PLUS : Tree.Kind.MINUS),
                         exprTree, oneTree);
