@@ -900,7 +900,11 @@ public abstract class AnnotatedTypeMirror {
         // WMD
         public
         void setTypeArguments(List<? extends AnnotatedTypeMirror> ts) {
-            typeArgs = Collections.unmodifiableList(new ArrayList<AnnotatedTypeMirror>(ts));
+            if (ts == null || ts.isEmpty()) {
+                typeArgs = Collections.emptyList();
+            } else {
+                typeArgs = Collections.unmodifiableList(new ArrayList<AnnotatedTypeMirror>(ts));
+            }
         }
 
         /**
