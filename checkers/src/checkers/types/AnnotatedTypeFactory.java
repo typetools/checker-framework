@@ -539,22 +539,26 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             AnnotatedDeclaredType dt = (AnnotatedDeclaredType)result;
             if (dt.getTypeArguments().isEmpty()
                     && !((TypeElement)dt.getUnderlyingType().asElement()).getTypeParameters().isEmpty()) {
-                List<AnnotatedTypeMirror> typeArgs = new ArrayList<AnnotatedTypeMirror>();
-                AnnotatedDeclaredType declaration = fromElement((TypeElement)dt.getUnderlyingType().asElement());
-                for (AnnotatedTypeMirror typeParam : declaration.getTypeArguments()) {
-                    AnnotatedTypeVariable typeParamVar = (AnnotatedTypeVariable)typeParam;
-                    AnnotatedTypeMirror upperBound = typeParamVar.getEffectiveUpperBound();
-                    while (upperBound.getKind() == TypeKind.TYPEVAR)
-                        upperBound = ((AnnotatedTypeVariable)upperBound).getEffectiveUpperBound();
 
-                    WildcardType wc = processingEnv.getTypeUtils().getWildcardType(upperBound.getUnderlyingType(), null);
-                    AnnotatedWildcardType wctype = (AnnotatedWildcardType) AnnotatedTypeMirror.createType(wc, this);
-                    wctype.setExtendsBound(upperBound);
-                    wctype.addAnnotations(typeParam.getAnnotations());
-                    // This hack allows top-level wildcards to be supertypes of non-wildcards
-                    // wctype.setMethodTypeArgHack();
-
-                    typeArgs.add(wctype);
+                List<AnnotatedTypeMirror> typeArgs;
+                Pair<Tree, AnnotatedTypeMirror> ctx = this.visitorState.getAssignmentContext();
+                if (ctx != null) {
+                    if (ctx.second.getKind() == TypeKind.DECLARED &&
+                            types.isSameType(types.erasure(ctx.second.actualType), types.erasure(dt.actualType))) {
+                        typeArgs = ((AnnotatedDeclaredType) ctx.second).getTypeArguments();
+                    } else {
+                        // TODO: we want a way to go from the raw type to an instantiation of the raw type
+                        // that is compatible with the context.
+                        typeArgs = null;
+                    }
+                } else {
+                    // TODO: the context is null, use uninstantiated wildcards instead.
+                    typeArgs = new ArrayList<AnnotatedTypeMirror>();
+                    AnnotatedDeclaredType declaration = fromElement((TypeElement)dt.getUnderlyingType().asElement());
+                    for (AnnotatedTypeMirror typeParam : declaration.getTypeArguments()) {
+                        AnnotatedTypeMirror wct = getUninferredWildcardType((AnnotatedTypeVariable) typeParam, false);
+                        typeArgs.add(wct);
+                    }
                 }
                 dt.setTypeArguments(typeArgs);
             }
@@ -2018,8 +2022,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * The main point for introducing this method was to better separate
      * AnnotatetTypes from the classes in this package.
      */
-    public AnnotatedTypeMirror getUninferredMethodTypeArgument(
-            AnnotatedTypeVariable typeVar) {
+    public AnnotatedTypeMirror getUninferredMethodTypeArgument(AnnotatedTypeVariable typeVar) {
+        return getUninferredWildcardType(typeVar, true);
+    }
+
+    protected AnnotatedTypeMirror getUninferredWildcardType(AnnotatedTypeVariable typeVar, boolean useHack) {
         AnnotatedTypeMirror upperBound = typeVar.getEffectiveUpperBound();
         while (upperBound.getKind() == TypeKind.TYPEVAR)
             upperBound = ((AnnotatedTypeVariable)upperBound).getEffectiveUpperBound();
@@ -2027,7 +2034,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         AnnotatedWildcardType wctype = (AnnotatedWildcardType) AnnotatedTypeMirror.createType(wc, this);
         wctype.setExtendsBound(upperBound);
         wctype.addAnnotations(typeVar.getAnnotations());
-        wctype.setMethodTypeArgHack();
+        if (useHack) {
+            wctype.setMethodTypeArgHack();
+        }
         return wctype;
     }
 
