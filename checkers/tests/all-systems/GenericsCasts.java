@@ -3,6 +3,7 @@ import java.util.*;
 // Clone of oigj/GenericsCasts
 class GenericsCasts {
   // Cast from a raw type to a generic type
+  //:: warning: [unchecked] unchecked cast
   List<Object>[] o = (List<Object>[]) new List[] { new ArrayList() };
 
   class Data<T> {}
@@ -13,6 +14,7 @@ class GenericsCasts {
       // Cast from a wildcard to a normal type argument.
       // Warning only with -Alint:cast:strict.
       //TODO:: warning: (cast.unsafe)
+      //:: warning: [unchecked] unchecked cast
       Data<GenericsCasts> c = (Data<GenericsCasts>) forName("HaHa!");
   }
 
@@ -28,6 +30,7 @@ class GenericsCasts {
           Queue<K> queue = new Queue<K>();
           // Warning only with -Alint:cast:strict.
           //TODO:: warning: (cast.unsafe)
+          //:: warning: [unchecked] unchecked cast
           Entry<K, V> e = (Entry<K, V>) queue.poll();
       }
   }
