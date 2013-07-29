@@ -1,17 +1,17 @@
 package dataflow.cfg.node;
 
+import dataflow.cfg.node.AssignmentContext.MethodParameterContext;
+import dataflow.util.HashCodeUtils;
+
+import javacutils.InternalUtils;
+
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
-import javacutils.InternalUtils;
-
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
-
-import dataflow.cfg.node.AssignmentContext.MethodParameterContext;
-import dataflow.util.HashCodeUtils;
 
 /**
  * A node for method invocation
@@ -45,7 +45,7 @@ public class MethodInvocationNode extends Node {
         // set assignment contexts for parameters
         int i = 0;
         for (Node arg : arguments) {
-            AssignmentContext ctx = new MethodParameterContext(target.getMethod() ,i++);
+            AssignmentContext ctx = new MethodParameterContext(target.getMethod(), i++);
             arg.setAssignmentContext(ctx);
         }
     }
@@ -121,7 +121,7 @@ public class MethodInvocationNode extends Node {
 
     @Override
     public Collection<Node> getOperands() {
-        LinkedList<Node> list = new LinkedList<Node>();
+        List<Node> list = new LinkedList<Node>();
         list.add(target);
         list.addAll(arguments);
         return list;
