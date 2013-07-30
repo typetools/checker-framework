@@ -1502,7 +1502,22 @@ public class CFGBuilder {
          */
         protected void replaceInLookupMap(Node node) {
             Tree tree = node.getTree();
-            assert tree != null && treeLookupMap.containsKey(tree);
+            replaceInLookupMap(tree, node);
+        }
+
+        /**
+         * Replace a node in the lookup map. The tree argument should already be
+         * in the lookup map. This method is used to update the Tree-Node mapping
+         * with conversion nodes.
+         *
+         * @param tree
+         *            The tree used as a key in the map.
+         * @param node
+         *            The node to add to the lookup map.
+         */
+        protected void replaceInLookupMap(Tree tree, Node node) {
+            assert tree != null;
+            assert treeLookupMap.containsKey(tree);
             treeLookupMap.put(tree, node);
         }
 
@@ -1699,6 +1714,7 @@ public class CFGBuilder {
                 // Add Throwable to account for unchecked exceptions
                 TypeElement throwableElement = elements
                     .getTypeElement("java.lang.Throwable");
+                replaceInLookupMap(node.getTree(), boxed);
                 insertNodeWithExceptionsAfter(boxed,
                         Collections.singleton(throwableElement.asType()), valueOfAccess);
                 return boxed;
@@ -1741,6 +1757,7 @@ public class CFGBuilder {
                 // Add Throwable to account for unchecked exceptions
                 TypeElement throwableElement = elements
                     .getTypeElement("java.lang.Throwable");
+                replaceInLookupMap(node.getTree(), unboxed);
                 insertNodeWithExceptionsAfter(unboxed,
                         Collections.singleton(throwableElement.asType()), primValueAccess);
                 return unboxed;
