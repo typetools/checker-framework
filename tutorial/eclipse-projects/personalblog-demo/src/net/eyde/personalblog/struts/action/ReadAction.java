@@ -17,30 +17,30 @@ import javax.servlet.http.HttpServletResponse;
 
 
 /**
- *  Description of the Class
+ * Description of the Class
  *
- *@author     NEyde
- *@created    September 17, 2002
+ * @author     NEyde
+ * @created    September 17, 2002
  */
 public final class ReadAction extends BlogGeneralAction {
-	/**
-	 *  Process the specified HTTP request, and create the corresponding HTTP
-	 *  response (or forward to another web component that will create it). Return
-	 *  an ActionForward instance describing where and how control should be
-	 *  forwarded, or null if the response has already been completed.
-	 *
-	 *@param  mapping               The ActionMapping used to select this instance
-	 *@param  request               The HTTP request we are processing
-	 *@param  response              The HTTP response we are creating
-	 *@param  form                  Description of the Parameter
-	 *@return                       Description of the Return Value
-	 *@exception  IOException       if an input/output error occurs
-	 *@exception  ServletException  if a servlet exception occurs
-	 */
-  @Override
-	public ActionForward executeSub(ActionMapping mapping, ActionForm form,
-        HttpServletRequest request, HttpServletResponse response)
-        throws Exception {
+    /**
+     * Process the specified HTTP request, and create the corresponding HTTP
+     * response (or forward to another web component that will create it). Return
+     * an ActionForward instance describing where and how control should be
+     * forwarded, or null if the response has already been completed.
+     *
+     * @param  mapping               The ActionMapping used to select this instance
+     * @param  request               The HTTP request we are processing
+     * @param  response              The HTTP response we are creating
+     * @param  form                  Description of the Parameter
+     * @return                       Description of the Return Value
+     * @exception  IOException       if an input/output error occurs
+     * @exception  ServletException  if a servlet exception occurs
+     */
+    @Override
+    public ActionForward executeSub(ActionMapping mapping, ActionForm form,
+            HttpServletRequest request, HttpServletResponse response)
+                    throws Exception {
         ActionErrors errors = new ActionErrors();
         String forward = "readposts";
 
@@ -53,9 +53,9 @@ public final class ReadAction extends BlogGeneralAction {
         // Set Request Parameters
         // Depending on the parameters, call the appropriate method
         try {
-        	if (!reqCategory.equals("")) {
+            if (!reqCategory.equals("")) {
                 request.setAttribute("posts",
-                  	pblog.getPostsByCategory(reqCategory));
+                        pblog.getPostsByCategory(reqCategory));
             } else {
                 request.setAttribute("posts", pblog.getPosts());
             }
@@ -88,15 +88,15 @@ public final class ReadAction extends BlogGeneralAction {
      * @throws IllegalArgumentException  if userInput is not valid
      *
      */
-   @SuppressWarnings("untainted")
+    @SuppressWarnings("untainted")
     /*@Untainted*/ String validate(String userInput) {
-    	for (int i = 0; i < userInput.length(); ++i) {
-    		char ch = userInput.charAt(i);
-    		if (!Character.isLetter(ch)
-    				&& !Character.isDigit(ch)
-    				&& !Character.isWhitespace(ch))
-    			throw new IllegalArgumentException("Illegal user input");
-    	}
-    	return (/*@Untainted*/ String)userInput;
+        for (int i = 0; i < userInput.length(); ++i) {
+            char ch = userInput.charAt(i);
+            if (!Character.isLetter(ch)
+                    && !Character.isDigit(ch)
+                    && !Character.isWhitespace(ch))
+                throw new IllegalArgumentException("Illegal user input");
+        }
+        return (/*@Untainted*/ String) userInput;
     }
 }
