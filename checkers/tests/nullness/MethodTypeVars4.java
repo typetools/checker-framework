@@ -1,7 +1,10 @@
 import checkers.nullness.quals.*;
+import checkers.quals.*;
+
 import java.util.List;
 
 class MethodTypeVars4 {
+    @DefaultQualifier(value=NonNull.class, locations=DefaultLocation.IMPLICIT_UPPER_BOUNDS)
     interface I {
         <T> T doit();
         <T> List<T> doit2();

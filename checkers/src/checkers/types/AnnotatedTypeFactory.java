@@ -601,6 +601,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param tree an AST node
      * @param type the type obtained from {@code tree}
      */
+    // TODO: make this method protected. At the moment there is one use in
+    // AnnotatedTypes that is actually not desirable.
+    // TODO: rename the method; it's not just implicits, but also defaulting, etc.
     public void annotateImplicit(Tree tree, /*@Mutable*/ AnnotatedTypeMirror type) {
         // Pass.
     }
@@ -613,7 +616,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param elt an element
      * @param type the type obtained from {@code elt}
      */
-    public void annotateImplicit(Element elt, /*@Mutable*/ AnnotatedTypeMirror type) {
+    protected void annotateImplicit(Element elt, /*@Mutable*/ AnnotatedTypeMirror type) {
         // Pass.
     }
 
@@ -788,6 +791,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 visited.remove(tpelt);
             }
             return null;
+        }
+
+        @Override
+        public void reset() {
+            visited.clear();
+            super.reset();
         }
     }
 
@@ -1208,11 +1217,26 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         AnnotatedDeclaredType type = (AnnotatedDeclaredType)toAnnotatedType(((JCTree)tree).type);
         if (tree.getIdentifier().getKind() == Tree.Kind.ANNOTATED_TYPE)
             type.addAnnotations(InternalUtils.annotationsFromTree((AnnotatedTypeTree)tree));
+        Pair<Tree, AnnotatedTypeMirror> ctx = this.visitorState.getAssignmentContext();
+        if (ctx != null) {
+            AnnotatedTypeMirror ctxtype = ctx.second;
+            if (ctxtype.getKind() == TypeKind.DECLARED) {
+                if (types.isSameType(types.erasure(ctxtype.actualType), types.erasure(type.actualType))) {
+                    AnnotatedDeclaredType adctx = (AnnotatedDeclaredType) ctxtype;
+                    assert type.getTypeArguments().size() == adctx.getTypeArguments().size() :
+                        "Strange type argument size mismatch";
+                    type.setTypeArguments(adctx.getTypeArguments());
+                } else {
+                    // TODO: the LHS is some supertype of the created object.
+                    // Find a way to determine type arguments.
+                }
+            }
+        }
         return type;
     }
 
     /**
-     * returns the annotated boxed type of the given primitive type.
+     * Returns the annotated boxed type of the given primitive type.
      * The returned type would only have the annotations on the given type.
      *
      * Subclasses may override this method safely to override this behavior.
@@ -2044,6 +2068,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     public Elements getElementUtils() {
         return this.elements;
+    }
+
+    /** Accessor for the tree utilities.
+     */
+    public Trees getTreeUtils() {
+        return this.trees;
     }
 
     /** Accessor for the processing environment.
