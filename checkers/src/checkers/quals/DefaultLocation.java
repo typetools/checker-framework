@@ -40,8 +40,24 @@ public enum DefaultLocation {
      *
      * Especially useful for parametrized classes that provide a lot of
      * static methods with the same generic parameters as the class.
+     *
+     * TODO: more doc, relation to other UPPER_BOUNDS
      */
     UPPER_BOUNDS,
+    /**
+     * Apply default annotations to unannotated, but explicit upper bounds:
+     * @code{&lt;T extends Object&gt;}
+     *
+     * TODO: more doc, relation to other UPPER_BOUNDS
+     */
+    EXPLICIT_UPPER_BOUNDS,
+    /**
+     * Apply default annotations to unannotated type variables:
+     * @code{&lt;T&gt;}
+     *
+     * TODO: more doc, relation to other UPPER_BOUNDS
+     */
+    IMPLICIT_UPPER_BOUNDS,
 
     /**
      * Apply if nothing more concrete is provided.
