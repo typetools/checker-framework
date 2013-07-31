@@ -75,7 +75,7 @@ public class Casts {
         @NonNull String s2 = (String) x;
     }
 
-    class Generics<T> {
+    class Generics<T extends Object> {
         T t;
         @Nullable T nt;
         Generics(T t) {
