@@ -21,9 +21,9 @@ class GenericsCasts {
   // Casts from something with one type argument to two type arguments
   // are currently problematic.
   // TODO: try to find a problem with skipping this check.
-  class Test<K, V> {
-      class Entry<K, V> extends LinkedList<K> {}
-      class Queue<T> {
+  class Test<K extend Object, V extend Object> {
+      class Entry<K extend Object, V extend Object> extends LinkedList<K> {}
+      class Queue<T extend Object> {
           List<? extends T> poll() { throw new Error(""); }
       }
       void trouble() {
@@ -35,11 +35,12 @@ class GenericsCasts {
       }
   }
   
-  public static <T> int indexOf(T[] a) {
+  public static <T extends Object> int indexOf(T[] a) {
       return indexOfEq(a);
   }
+
   public static int indexOfEq(Object[] a) {
       return 0;
   }
 
-}  
+}
