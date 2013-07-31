@@ -486,13 +486,11 @@ public class AnnotatedTypes {
         AnnotatedDeclaredType iterableElmType = atypeFactory.getAnnotatedType(iterableElement);
         AnnotatedDeclaredType dt = (AnnotatedDeclaredType) asSuper(processingEnv.getTypeUtils(), atypeFactory, iterableType, iterableElmType);
         if (dt == null) {
-            ErrorReporter.errorAbort("AnnotatedTypes.getIteratedType: not iterable type: " + iterableType);
+            ErrorReporter.errorAbort("AnnotatedTypes.getIteratedType: not an iterable type: " + iterableType);
             return null; // dead code
         } else if (dt.getTypeArguments().isEmpty()) {
             TypeElement e = processingEnv.getElementUtils().getTypeElement("java.lang.Object");
-            AnnotatedDeclaredType t = atypeFactory.fromElement(e);
-            t.clearAnnotations();
-            atypeFactory.annotateImplicit(e, t);
+            AnnotatedDeclaredType t = atypeFactory.getAnnotatedType(e);
             return t;
         } else {
             return dt.getTypeArguments().get(0);
@@ -1452,8 +1450,9 @@ public class AnnotatedTypes {
 
         // treat types that have polyall like type variables
         boolean hasPolyAll = type.hasAnnotation(PolyAll.class);
-        boolean canHaveEmptyAnnotationSet = QualifierHierarchy
-                .canHaveEmptyAnnotationSet(type) || hasPolyAll;
+        boolean canHaveEmptyAnnotationSet =
+                QualifierHierarchy.canHaveEmptyAnnotationSet(type) ||
+                hasPolyAll;
 
         // wrong number of annotations
         if (!canHaveEmptyAnnotationSet && n != expectedN) {
