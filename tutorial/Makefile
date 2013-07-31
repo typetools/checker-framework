@@ -3,6 +3,7 @@
 -include Makefile.user
 
 CHECKERS_QUALS_JAR=../checkers/binary/checkers-quals.jar
+PB_DEMO_LIBS=../demos/nonnull-interned-demo/personalblog-demo/lib/*
 
 all: eclipse-projects.zip sourcefiles.zip 
 
@@ -10,11 +11,15 @@ eclipse-projects.zip: copy-checkers-quals clean-classes
 	zip -r eclipse-projects.zip eclipse-projects/
 
 copy-checkers-quals:
-	cp ${CHECKERS_QUALS_JAR} eclipse-projects/checker-framework-tutorial/lib
-	cp ${CHECKERS_QUALS_JAR} eclipse-projects/encryption-checker/lib
-	cp ${CHECKERS_QUALS_JAR} eclipse-projects/personalblog-demo/lib
+	mkdir -p eclipse-projects/checker-framework-tutorial/lib
+	mkdir -p eclipse-projects/personalblog-demo/lib
+	mkdir -p eclipse-projects/encryption-checker/lib
+	cp ${CHECKERS_QUALS_JAR} eclipse-projects/checker-framework-tutorial/lib/
+	cp ${CHECKERS_QUALS_JAR} eclipse-projects/encryption-checker/lib/
+	cp ${CHECKERS_QUALS_JAR} eclipse-projects/personalblog-demo/lib/
+	cp ${PB_DEMO_LIBS} eclipse-projects/personalblog-demo/lib/
 
-sourcefiles.zip: clean-classes copy-files-from-eclipse
+sourcefiles.zip: copy-checkers-quals clean-classes copy-files-from-eclipse
 	zip -r sourcefiles.zip src/
 
 copy-files-from-eclipse:
@@ -26,11 +31,8 @@ copy-files-from-eclipse:
 clean-classes: 
 	find . -name '*.class' ! -name '.*' -exec rm {} +
 
-
 clean: clean-classes
 	@\rm -f  eclipse-projects.zip sourcefiles.zip 
-	rm -f    eclipse-projects/checker-framework-tutorial/lib/checkers-quals.jar\
-                 eclipse-projects/encryption-checker/lib/checkers-quals.jar\
-                 eclipse-projects/personalblog-demo/lib/checkers-quals.jar
-
-
+	rm -rf   eclipse-projects/checker-framework-tutorial/lib/\
+                 eclipse-projects/encryption-checker/lib/\
+                 eclipse-projects/personalblog-demo/lib/
