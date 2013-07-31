@@ -1,14 +1,16 @@
 package checkers.nullness.quals;
 
+import checkers.nullness.NullnessRawnessChecker;
+import checkers.quals.DefaultFor;
+import checkers.quals.DefaultLocation;
+import checkers.quals.SubtypeOf;
+import checkers.quals.TypeQualifier;
+
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-
-import checkers.nullness.NullnessRawnessChecker;
-import checkers.quals.SubtypeOf;
-import checkers.quals.TypeQualifier;
 
 /**
  * This type qualifier belongs to the rawness type-system for tracking
@@ -83,9 +85,10 @@ import checkers.quals.TypeQualifier;
  *
  * @checker.framework.manual #nullness-checker Nullness Checker
  */
-@Documented
-@SubtypeOf({})
 @TypeQualifier
+@SubtypeOf({})
+@DefaultFor(DefaultLocation.LOCALS)
+@Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
 public @interface Raw {
