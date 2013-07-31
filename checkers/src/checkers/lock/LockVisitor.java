@@ -1,5 +1,16 @@
 package checkers.lock;
 
+import checkers.basetype.BaseTypeVisitor;
+import checkers.lock.quals.Holding;
+import checkers.source.Result;
+import checkers.types.AnnotatedTypeMirror;
+import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
+
+import javacutils.AnnotationUtils;
+import javacutils.ErrorReporter;
+import javacutils.TreeUtils;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -9,17 +20,15 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 
-import checkers.basetype.BaseTypeVisitor;
-import checkers.lock.quals.Holding;
-import checkers.source.Result;
-import checkers.source.SourceChecker;
-import checkers.types.AnnotatedTypeMirror;
-import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
-import checkers.util.AnnotationUtils;
-import checkers.util.TreeUtils;
-
-import com.sun.source.tree.*;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.SynchronizedTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 
 //Disclaimer:
 //This class is currently in its alpha form.  For sample code on how to write
@@ -30,20 +39,18 @@ import com.sun.source.tree.*;
  * This visitor reports errors ("unguarded.access") or warnings for violations
  * for accessing a field or calling a method without holding their locks.
  */
-public class LockVisitor extends BaseTypeVisitor<LockChecker> {
-
-    LockAnnotatedTypeFactory atypeFactory;
+public class LockVisitor extends BaseTypeVisitor<LockChecker, LockAnnotatedTypeFactory> {
 
     public LockVisitor(LockChecker checker, CompilationUnitTree root) {
         super(checker, root);
-        this.atypeFactory = (LockAnnotatedTypeFactory)super.atypeFactory;
     }
 
+    @Override
     public Void visitVariable(VariableTree node, Void p) {
         Void r = scan(node.getModifiers(), p);
         r = reduce(scan(node.getType(), p), r);
         // We do not want a call for visitIdentifier if a
-        // receiver parameter is given. 
+        // receiver parameter is given.
         // r = scanAndReduce(node.getNameExpression(), p, r);
         r = reduce(scan(node.getInitializer(), p), r);
         return r;
@@ -125,7 +132,7 @@ public class LockVisitor extends BaseTypeVisitor<LockChecker> {
         } else if (methodSel.getKind() == Tree.Kind.MEMBER_SELECT) {
             return ((MemberSelectTree)methodSel).getExpression().toString();
         } else {
-            SourceChecker.errorAbort("LockVisitor found unknown receiver tree type: " + methodSel);
+            ErrorReporter.errorAbort("LockVisitor found unknown receiver tree type: " + methodSel);
             return null;
         }
     }
@@ -171,8 +178,7 @@ public class LockVisitor extends BaseTypeVisitor<LockChecker> {
         if (!isValid) {
             checker.report(Result.failure("override.holding.invalid",
                     TreeUtils.elementFromDeclaration(overriderTree),
-                    enclosingType.getElement(), overridden.getElement(),
-                    overriddenType.getElement(),
+                    overridden.getElement(),
                     overriderLocks, overriddenLocks), overriderTree);
         }
 

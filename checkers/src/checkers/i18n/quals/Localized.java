@@ -1,10 +1,17 @@
 package checkers.i18n.quals;
 
-import static com.sun.source.tree.Tree.Kind.*;
+import checkers.quals.ImplicitFor;
+import checkers.quals.SubtypeOf;
+import checkers.quals.TypeQualifier;
+import checkers.quals.Unqualified;
 
-import java.lang.annotation.*;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-import checkers.quals.*;
+import com.sun.source.tree.Tree.Kind;
 
 /**
  * Indicates that the {@code String} type has been localized and
@@ -16,16 +23,18 @@ import checkers.quals.*;
 @SubtypeOf(Unqualified.class)
 @ImplicitFor( trees = {
         /* All integer literals */
-        INT_LITERAL,
-        LONG_LITERAL,
-        FLOAT_LITERAL,
-        DOUBLE_LITERAL,
-        BOOLEAN_LITERAL
+        Kind.INT_LITERAL,
+        Kind.LONG_LITERAL,
+        Kind.FLOAT_LITERAL,
+        Kind.DOUBLE_LITERAL,
+        Kind.BOOLEAN_LITERAL,
+
+        /* null should be the bottom type */
+        Kind.NULL_LITERAL
 
         //CHAR_LITERAL,
         //STRING_LITERAL,
-        //NULL_LITERAL
-        }
+    }
 )
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

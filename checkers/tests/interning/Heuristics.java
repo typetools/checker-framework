@@ -13,6 +13,7 @@ public class Heuristics implements Comparable<Heuristics> {
    }
 
   @Override
+  @dataflow.quals.Pure
   public boolean equals(Object o) {
     // Using == is OK if it's the first statement in the equals method
     // and it compares "this" against the argument.
@@ -22,6 +23,7 @@ public class Heuristics implements Comparable<Heuristics> {
   }
 
   @Override
+  @dataflow.quals.Pure
   public int compareTo(Heuristics o) {
     // Using == is OK if it's the first statement in the equals method
     // and it compares "this" against the argument.

@@ -1,17 +1,18 @@
 import checkers.nullness.quals.*;
+
 import java.util.*;
 
 class FlowCompound {
 
+    @dataflow.quals.Pure
     public boolean equals(@Nullable Object o) {
         return o != null && this.getClass() != o.getClass();
     }
 
-    void test() {
-
-        String s = "foo";
+    void test(@Nullable String s) {
 
         if (s == null || s.length() > 0) {
+            //:: error: (assignment.type.incompatible)
             @NonNull String test = s;
         }
 

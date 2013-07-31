@@ -28,6 +28,8 @@ public class PolymorphismArrays {
 
     // from OneOfStringSequence.java
     private String[][] elts;
+
+    @dataflow.quals.Pure
     public PolymorphismArrays clone() {
         PolymorphismArrays result = new PolymorphismArrays(elts.clone());
         for (int i=0; i < elts.length; i++) {

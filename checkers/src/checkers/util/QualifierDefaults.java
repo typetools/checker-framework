@@ -1,21 +1,51 @@
 package checkers.util;
 
-import java.lang.annotation.Annotation;
-import java.util.*;
+import checkers.quals.DefaultLocation;
+import checkers.quals.DefaultQualifier;
+import checkers.quals.DefaultQualifiers;
+import checkers.types.AnnotatedTypeFactory;
+import checkers.types.AnnotatedTypeMirror;
+import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedIntersectionType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedNoType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
+import checkers.types.QualifierHierarchy;
+import checkers.types.visitors.AnnotatedTypeScanner;
 
-import javax.lang.model.element.*;
+import javacutils.AnnotationUtils;
+import javacutils.ErrorReporter;
+import javacutils.InternalUtils;
+import javacutils.Pair;
+import javacutils.TreeUtils;
+
+import java.lang.annotation.Annotation;
+import java.util.Comparator;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Elements;
 
-import checkers.quals.*;
-import checkers.source.SourceChecker;
-import checkers.types.*;
-import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
-import checkers.types.AnnotatedTypeMirror.*;
-import checkers.types.visitors.AnnotatedTypeScanner;
-
-import com.sun.source.tree.*;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.TypeParameterTree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol;
 
@@ -70,7 +100,7 @@ public class QualifierDefaults {
             new IdentityHashMap<Element, AMLocTreeSet>();
 
     /**
-     * @param elements
+     * @param elements interface to Element data in the current processing environment
      * @param atypeFactory an annotation factory, used to get annotations by name
      */
     public QualifierDefaults(Elements elements, AnnotatedTypeFactory atypeFactory) {
@@ -87,7 +117,13 @@ public class QualifierDefaults {
         absoluteDefaults.add(Pair.of(absoluteDefaultAnno, location));
     }
 
-	/**
+    public void addAbsoluteDefaults(AnnotationMirror absoluteDefaultAnno, DefaultLocation[] locations) {
+        for (DefaultLocation location : locations) {
+            addAbsoluteDefault(absoluteDefaultAnno, location);
+        }
+    }
+
+    /**
      * Sets the default annotations for a certain Element.
      */
     public void addElementDefault(Element elem, AnnotationMirror elementDefaultAnno, DefaultLocation location) {
@@ -109,7 +145,7 @@ public class QualifierDefaults {
             if (!newanno.equals(anno) &&
                     qh.isSubtype(newanno, qh.getTopAnnotation(anno))) {
                 if (newloc == def.second) {
-                    SourceChecker.errorAbort("Only one qualifier from a hierarchy can be the default! Existing: "
+                    ErrorReporter.errorAbort("Only one qualifier from a hierarchy can be the default! Existing: "
                             + prevset + " and new: " + newanno);
                 }
             }
@@ -123,7 +159,7 @@ public class QualifierDefaults {
      * @param type the type to annotate
      */
     public void annotate(Element elt, AnnotatedTypeMirror type) {
-        applyDefaults(elt, type);
+        applyDefaultsElement(elt, type);
     }
 
     /**
@@ -150,7 +186,14 @@ public class QualifierDefaults {
      */
     private Element nearestEnclosingExceptLocal(Tree tree) {
         TreePath path = atypeFactory.getPath(tree);
-        if (path == null) return InternalUtils.symbol(tree);
+        if (path == null) {
+            Element method = atypeFactory.getEnclosingMethod(tree);
+            if (method != null) {
+                return method;
+            } else {
+                return InternalUtils.symbol(tree);
+            }
+        }
 
         Tree prev = null;
 
@@ -203,7 +246,7 @@ public class QualifierDefaults {
      * @param tree the tree associated with the type
      * @param type the type to which defaults will be applied
      *
-     * @see #applyDefaults(Element, AnnotatedTypeMirror)
+     * @see #applyDefaultsElement(Element, AnnotatedTypeMirror)
      */
     private void applyDefaults(Tree tree, AnnotatedTypeMirror type) {
 
@@ -233,8 +276,9 @@ public class QualifierDefaults {
                 // elt = nearestEnclosing(tree);
         }
         // System.out.println("applyDefaults on tree " + tree + " gives elt: " + elt);
-        if (elt != null)
-            applyDefaults(elt, type);
+        if (elt != null) {
+            applyDefaultsElement(elt, type);
+        }
     }
 
     private Set<Pair<AnnotationMirror, DefaultLocation>> fromDefaultQualifier(DefaultQualifier dq) {
@@ -251,7 +295,7 @@ public class QualifierDefaults {
                 Class<? extends Annotation> clscast = (Class<? extends Annotation>) Class.forName(mte.getTypeMirror().toString());
                 cls = clscast;
             } catch (ClassNotFoundException e) {
-                SourceChecker.errorAbort("Could not load qualifier: " + e.getMessage(), e);
+                ErrorReporter.errorAbort("Could not load qualifier: " + e.getMessage(), e);
                 cls = null;
             }
         }
@@ -347,101 +391,40 @@ public class QualifierDefaults {
      *        default annotation scope for the type
      * @param type the type to which defaults will be applied
      */
-    private void applyDefaults(final Element annotationScope, final AnnotatedTypeMirror type) {
+    private void applyDefaultsElement(final Element annotationScope, final AnnotatedTypeMirror type) {
         AMLocTreeSet defaults = defaultsAt(annotationScope);
+        DefaultApplierElement applier = new DefaultApplierElement(atypeFactory, annotationScope, type);
 
         for (Pair<AnnotationMirror, DefaultLocation> def : defaults) {
-            new DefaultApplier(annotationScope, def.second, type).scan(type, def.first);
+            applier.apply(def.first, def.second);
         }
 
         for (Pair<AnnotationMirror, DefaultLocation> def : absoluteDefaults) {
-            new DefaultApplier(annotationScope, def.second, type).scan(type, def.first);
+            applier.apply(def.first, def.second);
         }
     }
 
-    public static class DefaultApplier
-    extends AnnotatedTypeScanner<Void, AnnotationMirror> {
-        private final Element elt;
-        private final DefaultLocation location;
+    public static class DefaultApplierElement {
+
+        private final AnnotatedTypeFactory atypeFactory;
+        private final Element scope;
         private final AnnotatedTypeMirror type;
 
-        public DefaultApplier(Element elt, DefaultLocation location, AnnotatedTypeMirror type) {
-            this.elt = elt;
-            this.location = location;
+        // Should only be set by {@link apply}
+        private DefaultLocation location;
+
+        private final DefaultApplierElementImpl impl;
+
+        public DefaultApplierElement(AnnotatedTypeFactory atypeFactory, Element scope, AnnotatedTypeMirror type) {
+            this.atypeFactory = atypeFactory;
+            this.scope = scope;
             this.type = type;
+            this.impl = new DefaultApplierElementImpl();
         }
 
-        @Override
-        public Void scan(AnnotatedTypeMirror t, AnnotationMirror qual) {
-
-
-            if ( !shouldBeAnnotated(t, qual) )  {
-                return super.scan(t, qual);
-            }
-
-            switch (location) {
-            case LOCALS: {
-                if (elt.getKind() == ElementKind.LOCAL_VARIABLE &&
-                        t == type) {
-                    // TODO: how do we determine that we are in a cast or instanceof type?
-                    doApply(t, qual);
-                }
-                break;
-            }
-            case PARAMETERS: {
-                if ( elt.getKind() == ElementKind.PARAMETER &&
-                        t == type) {
-                    doApply(t, qual);
-                } else if ((elt.getKind() == ElementKind.METHOD || elt.getKind() == ElementKind.CONSTRUCTOR) &&
-                        t.getKind() == TypeKind.EXECUTABLE &&
-                        t == type) {
-        
-                    for ( AnnotatedTypeMirror atm : ((AnnotatedExecutableType)t).getParameterTypes()) {
-                        doApply(atm, qual);
-                    }
-                }
-                break;
-            }
-            case RECEIVERS: {
-                if ( elt.getKind() == ElementKind.PARAMETER &&
-                        t == type && "this".equals(elt.getSimpleName())) {
-                    // TODO: comparison against "this" is ugly, won't work
-                    // for all possible names for receiver parameter.
-                    doApply(t, qual);
-                } else if ((elt.getKind() == ElementKind.METHOD) &&
-                        t.getKind() == TypeKind.EXECUTABLE &&
-                        t == type) {
-                        doApply(((AnnotatedExecutableType)t).getReceiverType(), qual);
-                }
-                break;
-            }
-            case RETURNS: {
-                if (elt.getKind() == ElementKind.METHOD &&
-                        t.getKind() == TypeKind.EXECUTABLE &&
-                        t == type) {
-                    doApply(((AnnotatedExecutableType)t).getReturnType(), qual);
-                }
-                break;
-            }
-            case UPPER_BOUNDS: {
-                if (this.isTypeVarExtends) {
-                    doApply(t, qual);
-                }
-                break;
-            }
-            case OTHERWISE:
-            case ALL: {
-                // TODO: forbid ALL if anything else was given.
-                doApply(t, qual);
-                break;
-            }
-            default: {
-                SourceChecker.errorAbort("QualifierDefaults.DefaultApplier: unhandled location: " + location);
-                return null;
-            }
-            }
-
-            return super.scan(t, qual);
+        public void apply(AnnotationMirror toApply, DefaultLocation location) {
+            this.location = location;
+            impl.visit(type, toApply);
         }
 
         /**
@@ -451,26 +434,28 @@ public class QualifierDefaults {
          * @param qual A default qualifier to apply
          * @return true if this application should proceed
          */
-        protected static boolean shouldBeAnnotated( final AnnotatedTypeMirror type,
-                                                    final AnnotationMirror    qual  ) {
+        private static boolean shouldBeAnnotated(final AnnotatedTypeMirror type,
+                final AnnotationMirror qual) {
 
-            return !( type  == null || type.getKind() == TypeKind.NONE ||
-                      type.getKind() == TypeKind.WILDCARD ||
-                      type.getKind() == TypeKind.TYPEVAR  ||
-                      type instanceof AnnotatedNoType );
+            return !( type == null ||
+                    type.getKind() == TypeKind.NONE ||
+                    type.getKind() == TypeKind.WILDCARD ||
+                    type.getKind() == TypeKind.TYPEVAR  ||
+                    type instanceof AnnotatedNoType );
 
         }
 
         private static void doApply(AnnotatedTypeMirror type, AnnotationMirror qual) {
 
-            if ( !shouldBeAnnotated(type, qual) ) {
+            if (!shouldBeAnnotated(type, qual)) {
                 return;
             }
 
             // Add the default annotation, but only if no other
             // annotation is present.
-            if (!type.isAnnotatedInHierarchy(qual))
+            if (!type.isAnnotatedInHierarchy(qual)) {
                 type.addAnnotation(qual);
+            }
 
             /* Intersection types, list the types in the direct supertypes.
              * Make sure to apply the default there too.
@@ -489,43 +474,168 @@ public class QualifierDefaults {
             }
         }
 
-        private boolean isTypeVarExtends = false;
 
-        @Override
-        public Void visitTypeVariable(AnnotatedTypeVariable type, AnnotationMirror qual) {
-            if (visitedNodes.containsKey(type)) {
-                return visitedNodes.get(type);
-            }
-            Void r = scan(type.getLowerBoundField(), qual);
-            visitedNodes.put(type, r);
-            boolean prevIsTypeVarExtends = isTypeVarExtends;
-            isTypeVarExtends = true;
-            try {
-                r = scanAndReduce(type.getUpperBoundField(), qual, r);
-            } finally {
-                isTypeVarExtends = prevIsTypeVarExtends;
-            }
-            visitedNodes.put(type, r);
-            return r;
-        }
+        private class DefaultApplierElementImpl extends AnnotatedTypeScanner<Void, AnnotationMirror> {
 
-        @Override
-        public Void visitWildcard(AnnotatedWildcardType type, AnnotationMirror qual) {
-            if (visitedNodes.containsKey(type)) {
-                return visitedNodes.get(type);
+            @Override
+            public Void scan(AnnotatedTypeMirror t, AnnotationMirror qual) {
+                if (!shouldBeAnnotated(t, qual)) {
+                    return super.scan(t, qual);
+                }
+
+                switch (location) {
+                case LOCALS: {
+                    if (scope.getKind() == ElementKind.LOCAL_VARIABLE &&
+                            t == type) {
+                        // TODO: how do we determine that we are in a cast or instanceof type?
+                        doApply(t, qual);
+                    }
+                    break;
+                }
+                case PARAMETERS: {
+                    if (scope.getKind() == ElementKind.PARAMETER &&
+                            t == type) {
+                        doApply(t, qual);
+                    } else if ((scope.getKind() == ElementKind.METHOD || scope.getKind() == ElementKind.CONSTRUCTOR) &&
+                            t.getKind() == TypeKind.EXECUTABLE &&
+                            t == type) {
+
+                        for (AnnotatedTypeMirror atm : ((AnnotatedExecutableType)t).getParameterTypes()) {
+                            doApply(atm, qual);
+                        }
+                    }
+                    break;
+                }
+                case RECEIVERS: {
+                    if (scope.getKind() == ElementKind.PARAMETER &&
+                            t == type && "this".equals(scope.getSimpleName())) {
+                        // TODO: comparison against "this" is ugly, won't work
+                        // for all possible names for receiver parameter.
+                        doApply(t, qual);
+                    } else if ((scope.getKind() == ElementKind.METHOD) &&
+                            t.getKind() == TypeKind.EXECUTABLE &&
+                            t == type) {
+                        doApply(((AnnotatedExecutableType)t).getReceiverType(), qual);
+                    }
+                    break;
+                }
+                case RETURNS: {
+                    if (scope.getKind() == ElementKind.METHOD &&
+                            t.getKind() == TypeKind.EXECUTABLE &&
+                            t == type) {
+                        doApply(((AnnotatedExecutableType)t).getReturnType(), qual);
+                    }
+                    break;
+                }
+                case IMPLICIT_UPPER_BOUNDS: {
+                    if (this.isTypeVarExtendsImplicit) {
+                        doApply(t, qual);
+                    }
+                    break;
+                }
+                case EXPLICIT_UPPER_BOUNDS: {
+                    if (this.isTypeVarExtendsExplicit) {
+                        doApply(t, qual);
+                    }
+                    break;
+                }
+                case UPPER_BOUNDS: {
+                    if (this.isTypeVarExtendsImplicit || this.isTypeVarExtendsExplicit) {
+                        doApply(t, qual);
+                    }
+                    break;
+                }
+                case OTHERWISE:
+                case ALL: {
+                    // TODO: forbid ALL if anything else was given.
+                    doApply(t, qual);
+                    break;
+                }
+                default: {
+                    ErrorReporter
+                            .errorAbort("QualifierDefaults.DefaultApplierElement: unhandled location: " +
+                                    location);
+                    return null;
+                }
+                }
+
+                return super.scan(t, qual);
             }
-            Void r;
-            boolean prevIsTypeVarExtends = isTypeVarExtends;
-            isTypeVarExtends = true;
-            try {
-                r = scan(type.getExtendsBoundField(), qual);
-            } finally {
-                isTypeVarExtends = prevIsTypeVarExtends;
+
+            @Override
+            public void reset() {
+                super.reset();
+                impl.isTypeVarExtendsImplicit = false;
+                impl.isTypeVarExtendsExplicit = false;
             }
-            visitedNodes.put(type, r);
-            r = scanAndReduce(type.getSuperBoundField(), qual, r);
-            visitedNodes.put(type, r);
-            return r;
+
+            private boolean isTypeVarExtendsImplicit = false;
+            private boolean isTypeVarExtendsExplicit = false;
+
+            @Override
+            public Void visitTypeVariable(AnnotatedTypeVariable type,
+                    AnnotationMirror qual) {
+                if (visitedNodes.containsKey(type)) {
+                    return visitedNodes.get(type);
+                }
+
+                Void r = scan(type.getLowerBoundField(), qual);
+                visitedNodes.put(type, r);
+                Element tvel = type.getUnderlyingType().asElement();
+                // TODO: find a better way to do this
+                TreePath treepath = atypeFactory.getTreeUtils().getPath(tvel);
+                Tree tree = treepath == null ? null : treepath.getLeaf();
+
+                boolean prevIsTypeVarExtendsImplicit = isTypeVarExtendsImplicit;
+                boolean prevIsTypeVarExtendsExplicit = isTypeVarExtendsExplicit;
+
+                if (tree == null) {
+                    // Is this the right combination for binary-only TVs?
+                    isTypeVarExtendsImplicit = false;
+                    isTypeVarExtendsExplicit = true;
+                } else {
+                    if (tree.getKind() == Tree.Kind.TYPE_PARAMETER) {
+                        TypeParameterTree tptree = (TypeParameterTree) tree;
+
+                        List<? extends Tree> bnds = tptree.getBounds();
+                        if (bnds != null && !bnds.isEmpty()) {
+                            isTypeVarExtendsImplicit = false;
+                            isTypeVarExtendsExplicit = true;
+                        } else {
+                            isTypeVarExtendsImplicit = true;
+                            isTypeVarExtendsExplicit = false;
+                        }
+                    }
+                }
+                try {
+                    r = scanAndReduce(type.getUpperBoundField(), qual, r);
+                } finally {
+                    isTypeVarExtendsImplicit = prevIsTypeVarExtendsImplicit;
+                    isTypeVarExtendsExplicit = prevIsTypeVarExtendsExplicit;
+                }
+                visitedNodes.put(type, r);
+                return r;
+            }
+
+            @Override
+            public Void visitWildcard(AnnotatedWildcardType type,
+                    AnnotationMirror qual) {
+                if (visitedNodes.containsKey(type)) {
+                    return visitedNodes.get(type);
+                }
+                Void r;
+                boolean prevIsTypeVarExtendsImplicit = isTypeVarExtendsImplicit;
+                isTypeVarExtendsImplicit = true;
+                try {
+                    r = scan(type.getExtendsBoundField(), qual);
+                } finally {
+                    isTypeVarExtendsImplicit = prevIsTypeVarExtendsImplicit;
+                }
+                visitedNodes.put(type, r);
+                r = scanAndReduce(type.getSuperBoundField(), qual, r);
+                visitedNodes.put(type, r);
+                return r;
+            }
         }
     }
 }

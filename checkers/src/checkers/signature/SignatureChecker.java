@@ -5,7 +5,6 @@ import checkers.signature.quals.*;
 import checkers.basetype.BaseTypeChecker;
 import checkers.quals.TypeQualifiers;
 import checkers.quals.PolyAll;
-import checkers.types.AnnotatedTypeFactory;
 import com.sun.source.tree.CompilationUnitTree;
 
 /**
@@ -28,11 +27,11 @@ import com.sun.source.tree.CompilationUnitTree;
     PolySignature.class,
     PolyAll.class
 })
-public final class SignatureChecker extends BaseTypeChecker {
+public final class SignatureChecker extends BaseTypeChecker<SignatureAnnotatedTypeFactory> {
 
   // This method is needed only under MacOS, perhaps as a result of the
   // broken Apple Java distribution.
-  public AnnotatedTypeFactory createFactory(CompilationUnitTree root) {
+  public SignatureAnnotatedTypeFactory createFactory(CompilationUnitTree root) {
     return new SignatureAnnotatedTypeFactory(this, root);
   }
 

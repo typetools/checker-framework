@@ -9,6 +9,8 @@ import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.TypeElement;
 
+import checkers.types.AnnotatedTypeFactory;
+
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
@@ -35,23 +37,23 @@ import com.sun.tools.javac.util.Log;
  * {@link #getSupportedCheckers()} to indicate the classes of the checkers
  * to be bundled.
  */
-public abstract class AggregateChecker extends SourceChecker {
+public abstract class AggregateChecker extends SourceChecker<AnnotatedTypeFactory> {
 
-    protected List<SourceChecker> checkers;
+    protected List<SourceChecker<?>> checkers;
 
     /**
      * Returns the list of supported checkers to be run together.
      * Subclasses need to override this method.
      */
-    protected abstract Collection<Class<? extends SourceChecker>> getSupportedCheckers();
+    protected abstract Collection<Class<? extends SourceChecker<?>>> getSupportedCheckers();
 
     public AggregateChecker() {
-        Collection<Class<? extends SourceChecker>> checkerClasses = getSupportedCheckers();
+        Collection<Class<? extends SourceChecker<?>>> checkerClasses = getSupportedCheckers();
 
-        checkers = new ArrayList<SourceChecker>(checkerClasses.size());
-        for (Class<? extends SourceChecker> checkerClass : checkerClasses) {
+        checkers = new ArrayList<SourceChecker<?>>(checkerClasses.size());
+        for (Class<? extends SourceChecker<?>> checkerClass : checkerClasses) {
             try {
-                SourceChecker instance = checkerClass.newInstance();
+                SourceChecker<?> instance = checkerClass.newInstance();
                 checkers.add(instance);
             } catch (Exception e) {
                 System.err.println("Couldn't instantiate an instance of " + checkerClass);
@@ -62,7 +64,7 @@ public abstract class AggregateChecker extends SourceChecker {
     @Override
     public final void init(ProcessingEnvironment env) {
         super.init(env);
-        for (SourceChecker checker : checkers) {
+        for (SourceChecker<?> checker : checkers) {
             checker.setProcessingEnvironment(env);
         }
     }
@@ -70,13 +72,17 @@ public abstract class AggregateChecker extends SourceChecker {
     @Override
     public void initChecker() {
         super.initChecker();
-        for (SourceChecker checker : checkers) {
+        for (SourceChecker<?> checker : checkers) {
             // Each checker should "support" all possible lint options - otherwise
             // subchecker A would complain about an lint option for subchecker B.
             checker.setSupportedLintOptions(this.getSupportedLintOptions());
             checker.initChecker();
         }
+        allCheckersInited = true;
     }
+
+    // Whether all checkers were successfully initialized. 
+    private boolean allCheckersInited = false;
 
     // Same functionality as the same field in SourceChecker
     int errsOnLastExit = 0;
@@ -93,7 +99,12 @@ public abstract class AggregateChecker extends SourceChecker {
             this.errsOnLastExit = log.nerrors;
             return;
         }
-        for (SourceChecker checker : checkers) {
+        if (!allCheckersInited) {
+            // If there was an initialization problem, an
+            // error was already output. Just quit.
+            return;
+        }
+        for (SourceChecker<?> checker : checkers) {
             checker.errsOnLastExit = this.errsOnLastExit;
             checker.typeProcess(element, tree);
             this.errsOnLastExit = checker.errsOnLastExit;
@@ -102,7 +113,7 @@ public abstract class AggregateChecker extends SourceChecker {
 
     @Override
     public void typeProcessingOver() {
-        for (SourceChecker checker : checkers) {
+        for (SourceChecker<?> checker : checkers) {
             checker.typeProcessingOver();
         }
     }
@@ -110,7 +121,7 @@ public abstract class AggregateChecker extends SourceChecker {
     @Override
     public final Set<String> getSupportedOptions() {
         Set<String> options = new HashSet<String>();
-        for (SourceChecker checker : checkers) {
+        for (SourceChecker<?> checker : checkers) {
             options.addAll(checker.getSupportedOptions());
         }
         return options;
@@ -119,15 +130,21 @@ public abstract class AggregateChecker extends SourceChecker {
     @Override
     public final Set<String> getSupportedLintOptions() {
         Set<String> lints = new HashSet<String>();
-        for (SourceChecker checker : checkers) {
+        for (SourceChecker<?> checker : checkers) {
             lints.addAll(checker.getSupportedLintOptions());
         }
         return lints;
     }
 
     @Override
-    protected SourceVisitor<?, ?> createSourceVisitor(CompilationUnitTree root) {
+    protected SourceVisitor<?, ?, ?, ?> createSourceVisitor(CompilationUnitTree root) {
         errorAbort("AggregateChecker.createSourceVisitor should never be called!");
         return null;
     }
+
+    // TODO some methods in a component checker should behave differently if they
+    // are part of an aggregate, e.g. getSuppressWarningKeys should additionally
+    // return the name of the aggregate checker.
+    // We could add a query method in SourceChecker that refers to the aggregate, if present.
+    // At the moment, all the component checkers manually need to add the name of the aggregate.
 }

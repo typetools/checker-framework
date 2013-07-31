@@ -1,5 +1,22 @@
 package checkers.javari;
 
+import checkers.basetype.BaseTypeChecker;
+import checkers.javari.quals.Assignable;
+import checkers.javari.quals.Mutable;
+import checkers.javari.quals.PolyRead;
+import checkers.javari.quals.QReadOnly;
+import checkers.javari.quals.ReadOnly;
+import checkers.javari.quals.ThisMutable;
+import checkers.quals.PolyAll;
+import checkers.quals.TypeQualifiers;
+import checkers.types.AnnotatedTypeMirror;
+import checkers.types.QualifierHierarchy;
+import checkers.types.TypeHierarchy;
+import checkers.util.GraphQualifierHierarchy;
+import checkers.util.MultiGraphQualifierHierarchy;
+
+import javacutils.AnnotationUtils;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -8,17 +25,6 @@ import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Elements;
-
-import checkers.basetype.BaseTypeChecker;
-import checkers.javari.quals.*;
-import checkers.quals.PolyAll;
-import checkers.quals.TypeQualifiers;
-import checkers.types.AnnotatedTypeMirror;
-import checkers.types.QualifierHierarchy;
-import checkers.types.TypeHierarchy;
-import checkers.util.AnnotationUtils;
-import checkers.util.GraphQualifierHierarchy;
-import checkers.util.MultiGraphQualifierHierarchy;
 
 /**
  * An annotation processor that checks a program's use of the Javari
@@ -29,7 +35,7 @@ import checkers.util.MultiGraphQualifierHierarchy;
  */
 @TypeQualifiers( { ReadOnly.class, ThisMutable.class, Mutable.class,
     PolyRead.class, QReadOnly.class, PolyAll.class })
-public class JavariChecker extends BaseTypeChecker {
+public class JavariChecker extends BaseTypeChecker<JavariAnnotatedTypeFactory> {
 
     protected AnnotationMirror READONLY, THISMUTABLE, MUTABLE, POLYREAD, QREADONLY, ASSIGNABLE;
 
@@ -67,8 +73,8 @@ public class JavariChecker extends BaseTypeChecker {
          * annotation that is a supertype of the annotations on both collections.
          */
         @Override
-        public Set<AnnotationMirror> leastUpperBounds(Collection<AnnotationMirror> c1,
-                Collection<AnnotationMirror> c2) {
+        public Set<AnnotationMirror> leastUpperBounds(Collection<? extends AnnotationMirror> c1,
+                Collection<? extends AnnotationMirror> c2) {
             Map<String, AnnotationMirror> ann =
                 new HashMap<String, AnnotationMirror>();
             for (AnnotationMirror anno : c1)

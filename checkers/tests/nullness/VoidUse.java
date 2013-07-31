@@ -21,11 +21,11 @@ public class VoidUse {
 
   // Void is treated as Nullable.  Is there a value on having it be
   // NonNull?
-  public static abstract class VoidTestNode<T> { }
+  public static abstract class VoidTestNode<T extends Object> { }
 
   public static class VoidTestInvNode extends VoidTestNode<@NonNull Void> { }
 
-  class Scanner<P> {
+  class Scanner<P extends Object> {
     public void scan(Object tree, P p) {}
   }
 
@@ -41,6 +41,23 @@ public class VoidUse {
     void use(MyScanner2 ms) {
       ms.scan(new Object(), null);
     }
+  }
+
+  // Test case for issue #230
+  Class<?> voidClass() {
+    return void.class;
+  }
+
+  Class<?> VoidClass() {
+    return Void.class;
+  }
+
+  Class<?> intClass() {
+    return int.class;
+  }
+
+  Class<?> ListClass() {
+    return java.util.List.class;
   }
 
 }
