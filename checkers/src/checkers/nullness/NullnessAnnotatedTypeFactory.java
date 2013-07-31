@@ -131,7 +131,7 @@ public class NullnessAnnotatedTypeFactory
 
     // handle dependent types
     @Override
-    public void annotateImplicit(Tree tree, AnnotatedTypeMirror type, boolean useFlow) {
+    protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type, boolean useFlow) {
         super.annotateImplicit(tree, type, useFlow);
         substituteUnused(tree, type);
         dependentTypes.handle(tree, type);
