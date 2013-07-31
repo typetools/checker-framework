@@ -10,6 +10,7 @@ import checkers.flow.CFCFGBuilder;
 import checkers.flow.CFStore;
 import checkers.flow.CFTransfer;
 import checkers.flow.CFValue;
+import checkers.quals.DefaultFor;
 import checkers.quals.DefaultLocation;
 import checkers.quals.DefaultQualifier;
 import checkers.quals.DefaultQualifierInHierarchy;
@@ -32,6 +33,7 @@ import dataflow.cfg.node.Node;
 import dataflow.cfg.node.ReturnNode;
 
 import javacutils.AnnotationUtils;
+import javacutils.ErrorReporter;
 import javacutils.InternalUtils;
 import javacutils.Pair;
 import javacutils.TreeUtils;
@@ -127,30 +129,12 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
         this.poly = createQualifierPolymorphism();
         this.defaults = createQualifierDefaults();
 
-        boolean foundDefault = false;
-        // TODO: should look for a default qualifier per qualifier hierarchy.
-        for (Class<? extends Annotation> qual : checker.getSupportedTypeQualifiers()) {
-            if (qual.getAnnotation(DefaultQualifierInHierarchy.class) != null) {
-                defaults.addAbsoluteDefault(AnnotationUtils.fromClass(elements, qual),
-                        DefaultLocation.OTHERWISE);
-                foundDefault = true;
-            }
-        }
-
-        AnnotationMirror unqualified = AnnotationUtils.fromClass(elements, Unqualified.class);
-        if (!foundDefault && this.isSupportedQualifier(unqualified)) {
-            defaults.addAbsoluteDefault(unqualified,
-                    DefaultLocation.OTHERWISE);
-        }
-
         // Add common aliases.
         // addAliasedDeclAnnotation(checkers.nullness.quals.Pure.class,
         //         Pure.class, AnnotationUtils.fromClass(elements, Pure.class));
 
-        // every subclass must call postInit!
-        if (this.getClass().equals(BasicAnnotatedTypeFactory.class)) {
-            this.postInit();
-        }
+        // Every subclass must call postInit, but it must be called after
+        // all other initialization is finished.
     }
 
     /**
@@ -278,12 +262,54 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
     /**
      * Create {@link QualifierDefaults} which handles user specified defaults
      * @return the QualifierDefaults class
+     *
+     * TODO: should this be split in two methods to allow separate reuse?
      */
     protected QualifierDefaults createQualifierDefaults() {
         QualifierDefaults defs = new QualifierDefaults(elements, this);
-        for (AnnotationMirror a : this.qualHierarchy.getTopAnnotations()) {
-            defs.addAbsoluteDefault(a, DefaultLocation.LOCALS);
+
+        // TODO: this should be per qualifier hierarchy.
+        boolean foundDefaultOtherwise = false;
+
+        for (Class<? extends Annotation> qual : checker.getSupportedTypeQualifiers()) {
+            DefaultFor defaultFor = qual.getAnnotation(DefaultFor.class);
+            boolean hasDefaultFor = false;
+            if (defaultFor != null) {
+                defs.addAbsoluteDefaults(AnnotationUtils.fromClass(elements,qual),
+                        defaultFor.value());
+                hasDefaultFor = true;
+                for (DefaultLocation dl : defaultFor.value()) {
+                    if (dl == DefaultLocation.OTHERWISE) {
+                        foundDefaultOtherwise = true;
+                    }
+                }
+            }
+
+            if (qual.getAnnotation(DefaultQualifierInHierarchy.class) != null) {
+                if (hasDefaultFor) {
+                    // A type qualifier should either have a DefaultFor or
+                    // a DefaultQualifierInHierarchy annotation
+                    ErrorReporter.errorAbort("AbstractBasicAnnotatedTypeFactory.createQualifierDefaults: " +
+                            "qualifier has both @DefaultFor and @DefaultQualifierInHierarchy annotations: " +
+                            qual.getCanonicalName());
+                // } else if (foundDefaultOtherwise) {
+                    // TODO: raise an error once we know whether the previous
+                    // occurrence was in the same hierarchy
+                } else {
+                    defs.addAbsoluteDefault(AnnotationUtils.fromClass(elements, qual),
+                            DefaultLocation.OTHERWISE);
+                    foundDefaultOtherwise = true;
+                }
+            }
         }
+
+        AnnotationMirror unqualified = AnnotationUtils.fromClass(elements, Unqualified.class);
+        if (!foundDefaultOtherwise &&
+                this.isSupportedQualifier(unqualified)) {
+            defs.addAbsoluteDefault(unqualified,
+                    DefaultLocation.OTHERWISE);
+        }
+
         return defs;
     }
 
