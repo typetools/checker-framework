@@ -565,7 +565,7 @@ public class StubParser {
             AnnotatedDeclaredType adeclType = (AnnotatedDeclaredType)atype;
             if (declType.getTypeArgs() != null
                     && !declType.getTypeArgs().isEmpty()
-                    && adeclType.isParameterized()) {
+                    && !adeclType.getTypeArguments().isEmpty()) {
                 assert declType.getTypeArgs().size() == adeclType.getTypeArguments().size();
                 for (int i = 0; i < declType.getTypeArgs().size(); ++i) {
                     annotate(adeclType.getTypeArguments().get(i),
