@@ -373,6 +373,11 @@ public class TypeHierarchy {
         return false;
     }
 
+    protected boolean ignoreRawTypeArguments(AnnotatedDeclaredType rhs, AnnotatedDeclaredType lhs) {
+        return checker.getProcessingEnvironment().getOptions().containsKey("ignoreRawTypeArguments") &&
+                (rhs.wasRaw() || lhs.wasRaw());
+    }
+
     /**
      * Checks that rhs and lhs are subtypes with respect to type arguments only.
      * Returns true if any of the provided types is not a parameterized type.
@@ -390,6 +395,10 @@ public class TypeHierarchy {
      * @return  true iff the type arguments of lhs and rhs are invariant.
      */
     protected boolean isSubtypeTypeArguments(AnnotatedDeclaredType rhs, AnnotatedDeclaredType lhs) {
+        if (ignoreRawTypeArguments(rhs, lhs)) {
+            return true;
+        }
+
         List<AnnotatedTypeMirror> rhsTypeArgs = rhs.getTypeArguments();
         List<AnnotatedTypeMirror> lhsTypeArgs = lhs.getTypeArguments();
 
