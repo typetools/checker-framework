@@ -82,9 +82,9 @@ public class StubParser {
      * packages that are not on the classpath, this can be OK, so default to
      * false.
      */
-    private boolean warnIfNotFound = false;
+    private final boolean warnIfNotFound;
 
-    private boolean debugStubParser = false;
+    private final boolean debugStubParser;
 
     /** The file being parsed (makes error messages more informative). */
     private final String filename;
