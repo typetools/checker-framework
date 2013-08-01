@@ -65,6 +65,10 @@ public class KeyForSubchecker extends BaseTypeChecker<KeyForAnnotatedTypeFactory
 
         @Override
         protected boolean isSubtypeTypeArguments(AnnotatedDeclaredType rhs, AnnotatedDeclaredType lhs) {
+            if (ignoreRawTypeArguments(rhs, lhs)) {
+                return true;
+            }
+
             List<AnnotatedTypeMirror> rhsTypeArgs = rhs.getTypeArguments();
             List<AnnotatedTypeMirror> lhsTypeArgs = lhs.getTypeArguments();
 
