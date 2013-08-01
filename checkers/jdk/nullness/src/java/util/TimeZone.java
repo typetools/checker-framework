@@ -1,6 +1,6 @@
 package java.util;
-import checkers.nullness.quals.*;
-@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
+import dataflow.quals.SideEffectFree;
+import checkers.nullness.quals.Nullable;
 
 public abstract class TimeZone implements java.io.Serializable, Cloneable{
   public final static int SHORT = 0;
@@ -25,5 +25,5 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable{
   public static TimeZone getDefault() { throw new RuntimeException("skeleton method"); }
   public static void setDefault(@Nullable TimeZone a1) { throw new RuntimeException("skeleton method"); }
   public boolean hasSameRules(@Nullable TimeZone a1) { throw new RuntimeException("skeleton method"); }
-  public Object clone() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public Object clone() { throw new RuntimeException("skeleton method"); }
 }

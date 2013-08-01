@@ -1,12 +1,5 @@
 package checkers.regex;
 
-import java.util.regex.Pattern;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.AnnotationValue;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.util.Elements;
-
 import checkers.basetype.BaseTypeChecker;
 import checkers.quals.PolyAll;
 import checkers.quals.TypeQualifiers;
@@ -16,10 +9,18 @@ import checkers.regex.quals.PolyRegex;
 import checkers.regex.quals.Regex;
 import checkers.regex.quals.RegexBottom;
 import checkers.types.QualifierHierarchy;
-import checkers.util.AnnotationUtils;
 import checkers.util.GraphQualifierHierarchy;
 import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
-import checkers.util.TreeUtils;
+
+import javacutils.AnnotationUtils;
+import javacutils.TreeUtils;
+
+import java.util.regex.Pattern;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.util.Elements;
 
 /**
  * A type-checker plug-in for the {@link Regex} qualifier that finds
@@ -29,7 +30,7 @@ import checkers.util.TreeUtils;
  */
 @TypeQualifiers({ Regex.class, PartialRegex.class, RegexBottom.class,
     Unqualified.class, PolyRegex.class, PolyAll.class })
-public class RegexChecker extends BaseTypeChecker {
+public class RegexChecker extends BaseTypeChecker<RegexAnnotatedTypeFactory> {
 
     protected AnnotationMirror REGEX, REGEXBOTTOM, PARTIALREGEX;
     protected ExecutableElement regexValueElement;

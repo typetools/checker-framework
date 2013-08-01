@@ -1,31 +1,31 @@
 import checkers.nullness.quals.*;
 
 class PureTest {
-    @Pure @Nullable Object puremethod(@Nullable Object a) {
+    @dataflow.quals.Pure @Nullable Object puremethod(@Nullable Object a) {
         return a;
     }
 
     public void test() {
-        //:: error: (dereference.of.nullable)
-        puremethod(null).toString();
+        //:: error: (assignment.type.incompatible)
+        @NonNull Object l0 = puremethod(null);
 
         if (puremethod(null) == null) {
-            //:: error: (dereference.of.nullable)
-            puremethod(null).toString();
+            //:: error: (assignment.type.incompatible)
+            @NonNull Object l1 = puremethod(null);
         }
 
         if (puremethod("m") != null) {
-            puremethod("m").toString();
+            @NonNull Object l1 = puremethod("m");
         }
 
         if (puremethod("m") != null) {
-            //:: error: (dereference.of.nullable)
-            puremethod(null).toString();
+            //:: error: (assignment.type.incompatible)
+            @NonNull Object l1 = puremethod(null);
         }
 
         if (puremethod("m") != null) {
-            //:: error: (dereference.of.nullable)
-            puremethod("n").toString();
+            //:: error: (assignment.type.incompatible)
+            @NonNull Object l1 = puremethod("n");
         }
 
         Object x = new Object();
@@ -34,21 +34,19 @@ class PureTest {
             return;
         }
 
-        puremethod(x).toString();
-        puremethod(x).toString();
-        puremethod(x).toString();
+        @NonNull Object l2 = puremethod(x);
 
         x = new Object();
-        
-        //:: error: (dereference.of.nullable)
-        puremethod(x).toString();
-        
-        //:: error: (dereference.of.nullable)
-        puremethod("n").toString();
+
+        //:: error: (assignment.type.incompatible)
+        @NonNull Object l3 = puremethod(x);
+
+        //:: error: (assignment.type.incompatible)
+        @NonNull Object l4 = puremethod("n");
 
     }
 
-    public @Pure @Nullable Object getSuperclass() {
+    public @dataflow.quals.Pure @Nullable Object getSuperclass() {
         return null;
     }
 
@@ -93,7 +91,6 @@ class PureTest {
         } else {
             return;
         }
-        //:: error: (dereference.of.nullable)
         pt.getSuperclass().toString();
     }
 
@@ -117,7 +114,7 @@ class PureTest {
     void setSuperclass(@Nullable Object no) {
         // set the field returned by getSuperclass.
     }
-    
+
     static void testInstanceofPositive3(PureTest pt) {
         if (!(pt.getSuperclass() instanceof Object)) {
             return;

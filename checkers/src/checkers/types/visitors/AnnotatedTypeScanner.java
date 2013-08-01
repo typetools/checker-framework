@@ -1,10 +1,18 @@
 package checkers.types.visitors;
 
+import checkers.types.AnnotatedTypeMirror;
+import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedIntersectionType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedNoType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedNullType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
+
 import java.util.IdentityHashMap;
 import java.util.Map;
-
-import checkers.types.AnnotatedTypeMirror;
-import checkers.types.AnnotatedTypeMirror.*;
 
 
 /**
@@ -57,8 +65,17 @@ import checkers.types.AnnotatedTypeMirror.*;
 public class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor<R, P> {
 
     // To prevent infinite loops
-    protected Map<AnnotatedTypeMirror, R> visitedNodes =
+    protected final Map<AnnotatedTypeMirror, R> visitedNodes =
         new IdentityHashMap<AnnotatedTypeMirror, R>();
+
+    /**
+     * Reset the scanner to allow reuse of the same instance.
+     * Subclasses should override this method to clear their additional
+     * state; they must call the super implementation.
+     */
+    public void reset() {
+        visitedNodes.clear();
+    }
 
     @Override
     public final R visit(AnnotatedTypeMirror t) {
@@ -67,13 +84,8 @@ public class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor<R, P> {
 
     @Override
     public final R visit(AnnotatedTypeMirror type, P p) {
-        Map<AnnotatedTypeMirror, R> prev = visitedNodes;
-        visitedNodes = new IdentityHashMap<AnnotatedTypeMirror, R>();
-        try {
-            return scan(type, p);
-        } finally {
-            visitedNodes = prev;
-        }
+        reset();
+        return scan(type, p);
     }
 
     /**
@@ -161,6 +173,7 @@ public class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor<R, P> {
         if (visitedNodes.containsKey(type)) {
             return visitedNodes.get(type);
         }
+        visitedNodes.put(type, null);
         R r = scan(type.getLowerBoundField(), p);
         visitedNodes.put(type, r);
         r = scanAndReduce(type.getUpperBoundField(), p, r);
@@ -188,6 +201,7 @@ public class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor<R, P> {
         if (visitedNodes.containsKey(type)) {
             return visitedNodes.get(type);
         }
+        visitedNodes.put(type, null);
         R r = scan(type.getExtendsBoundField(), p);
         visitedNodes.put(type, r);
         r = scanAndReduce(type.getSuperBoundField(), p, r);

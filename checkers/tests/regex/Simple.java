@@ -56,7 +56,7 @@ public class Simple {
 
     void testCompoundConcatenation() {
         takesRegex(regex);
-        //:: error: (assignment.type.incompatible)
+        //:: error: (compound.assignment.type.incompatible)
         regex += ")";    // error
         takesRegex(regex);
 

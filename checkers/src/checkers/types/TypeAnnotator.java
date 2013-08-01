@@ -1,22 +1,28 @@
 package checkers.types;
 
-import java.lang.annotation.Annotation;
-import java.util.*;
-
-import com.sun.source.tree.Tree;
-
-import javax.lang.model.element.*;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeKind;
-
 import checkers.basetype.BaseTypeChecker;
 import checkers.quals.ImplicitFor;
 import checkers.quals.TypeQualifiers;
-import checkers.source.SourceChecker;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.visitors.AnnotatedTypeScanner;
-import checkers.util.AnnotationUtils;
-import checkers.util.TypesUtils;
+
+import javacutils.AnnotationUtils;
+import javacutils.ErrorReporter;
+import javacutils.TypesUtils;
+
+import java.lang.annotation.Annotation;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.Map;
+import java.util.Set;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
+
+import com.sun.source.tree.Tree;
 
 /**
  * Adds annotations to a type based on the contents of a type. By default, this
@@ -37,9 +43,12 @@ import checkers.util.TypesUtils;
  * This class takes care of two of the attributes of {@link ImplicitFor};
  * the others are handled in {@link TreeAnnotator}.
  *
+ * The Element parameter is the use-site of the type.
+ * TODO: the parameter is null if no Element is available, e.g. for a cast.
+ *
  * @see TreeAnnotator
  */
-public class TypeAnnotator extends AnnotatedTypeScanner<Void, ElementKind> {
+public class TypeAnnotator extends AnnotatedTypeScanner<Void, Element> {
 
     // TODO: like in TreeAnnotator, these should be maps to Set<AM>.
     private final Map<TypeKind, Set<AnnotationMirror>> typeKinds;
@@ -56,7 +65,7 @@ public class TypeAnnotator extends AnnotatedTypeScanner<Void, ElementKind> {
      *
      * @param checker the type-checker to which this annotator belongs
      */
-    public TypeAnnotator(BaseTypeChecker checker, AnnotatedTypeFactory atypeFactory) {
+    public TypeAnnotator(BaseTypeChecker<?> checker, AnnotatedTypeFactory atypeFactory) {
 
         this.typeKinds = new EnumMap<TypeKind, Set<AnnotationMirror>>(TypeKind.class);
         this.typeClasses = new HashMap<Class<? extends AnnotatedTypeMirror>, Set<AnnotationMirror>>();
@@ -90,35 +99,35 @@ public class TypeAnnotator extends AnnotatedTypeScanner<Void, ElementKind> {
     }
 
     public void addTypeKind(TypeKind typeKind, AnnotationMirror theQual) {
-        boolean res = AnnotationUtils.updateMappingToMutableSet(qualHierarchy, typeKinds, typeKind, theQual);
+        boolean res = qualHierarchy.updateMappingToMutableSet(typeKinds, typeKind, theQual);
         if (!res) {
-            SourceChecker.errorAbort("TypeAnnotator: invalid update of typeKinds " +
+            ErrorReporter.errorAbort("TypeAnnotator: invalid update of typeKinds " +
                     typeKinds + " at " + typeKind + " with " + theQual);
         }
     }
 
     public void addTypeClass(Class<? extends AnnotatedTypeMirror> typeClass, AnnotationMirror theQual) {
-        boolean res = AnnotationUtils.updateMappingToMutableSet(qualHierarchy, typeClasses, typeClass, theQual);
+        boolean res = qualHierarchy.updateMappingToMutableSet(typeClasses, typeClass, theQual);
         if (!res) {
-            SourceChecker.errorAbort("TypeAnnotator: invalid update of typeClasses " +
+            ErrorReporter.errorAbort("TypeAnnotator: invalid update of typeClasses " +
                     typeClasses + " at " + typeClass + " with " + theQual);
         }
     }
 
     public void addTypeName(Class<?> typeName, AnnotationMirror theQual) {
         String typeNameString = typeName.getCanonicalName().intern();
-        boolean res = AnnotationUtils.updateMappingToMutableSet(qualHierarchy, typeNames, typeNameString, theQual);
+        boolean res = qualHierarchy.updateMappingToMutableSet(typeNames, typeNameString, theQual);
         if (!res) {
-            SourceChecker.errorAbort("TypeAnnotator: invalid update of typeNames " +
+            ErrorReporter.errorAbort("TypeAnnotator: invalid update of typeNames " +
                     typeNames + " at " + typeName + " with " + theQual);
         }
     }
 
     @Override
-    protected Void scan(AnnotatedTypeMirror type, ElementKind p) {
+    protected Void scan(AnnotatedTypeMirror type, Element elem) {
 
         if (type == null) // on bounds, etc.
-            return super.scan(type, p);
+            return super.scan(type, elem);
 
         // If the type's fully-qualified name is in the appropriate map, annotate
         // the type. Do this before looking at kind or class, as this information
@@ -133,45 +142,33 @@ public class TypeAnnotator extends AnnotatedTypeScanner<Void, ElementKind> {
         qname = (qname == null) ? null : qname.intern();
         if (qname != null && typeNames.containsKey(qname)) {
             Set<AnnotationMirror> fnd = typeNames.get(qname);
-            for (AnnotationMirror f : fnd) {
-                if (!type.isAnnotatedInHierarchy(f)) {
-                    type.addAnnotation(f);
-                }
-            }
+            type.addMissingAnnotations(fnd);
         }
 
         // If the type's kind or class is in the appropriate map, annotate the
         // type.
 
         if (typeKinds.containsKey(type.getKind())) {
-            Set<AnnotationMirror> fnd = typeKinds.get(type.getKind()); 
-            for (AnnotationMirror f : fnd) {
-                if (!type.isAnnotatedInHierarchy(f)) {
-                    type.addAnnotation(f);
-                }
-            }
+            Set<AnnotationMirror> fnd = typeKinds.get(type.getKind());
+            type.addMissingAnnotations(fnd);
         } else if (!typeClasses.isEmpty()) {
             Class<? extends AnnotatedTypeMirror> t = type.getClass();
             if (typeClasses.containsKey(t)) {
                 Set<AnnotationMirror> fnd = typeClasses.get(t);
-                for (AnnotationMirror f : fnd) {
-                    if (!type.isAnnotatedInHierarchy(f)) {
-                        type.addAnnotation(f);
-                    }
-                }
+                type.addMissingAnnotations(fnd);
             }
         }
 
-        return super.scan(type, p);
+        return super.scan(type, elem);
     }
 
     @Override
-    public Void visitExecutable(AnnotatedExecutableType t, ElementKind p) {
+    public Void visitExecutable(AnnotatedExecutableType t, Element elem) {
         // skip the receiver
-        scan(t.getReturnType(), p);
-        scanAndReduce(t.getParameterTypes(), p, null);
-        scanAndReduce(t.getThrownTypes(), p, null);
-        scanAndReduce(t.getTypeVariables(), p, null);
+        scan(t.getReturnType(), elem);
+        scanAndReduce(t.getParameterTypes(), elem, null);
+        scanAndReduce(t.getThrownTypes(), elem, null);
+        scanAndReduce(t.getTypeVariables(), elem, null);
         return null;
     }
 }

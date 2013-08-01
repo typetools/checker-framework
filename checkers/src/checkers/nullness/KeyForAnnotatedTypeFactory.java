@@ -1,6 +1,23 @@
 package checkers.nullness;
 
-import java.util.*;
+import checkers.nullness.quals.KeyFor;
+import checkers.quals.DefaultLocation;
+import checkers.quals.Unqualified;
+import checkers.types.AnnotatedTypeMirror;
+import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
+import checkers.types.BasicAnnotatedTypeFactory;
+import checkers.util.AnnotationBuilder;
+
+import javacutils.AnnotationUtils;
+import javacutils.ErrorReporter;
+import javacutils.Pair;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -12,24 +29,11 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 
-import checkers.nullness.quals.KeyFor;
-import checkers.quals.DefaultLocation;
-import checkers.quals.Unqualified;
-import checkers.source.SourceChecker;
-import checkers.types.AnnotatedTypeMirror;
-import checkers.types.BasicAnnotatedTypeFactory;
-import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
-import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
-import checkers.util.AnnotationBuilder;
-import checkers.util.AnnotationUtils;
-import checkers.util.Pair;
-
 public class KeyForAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<KeyForSubchecker> {
 
   public KeyForAnnotatedTypeFactory(KeyForSubchecker checker,
                                     CompilationUnitTree root) {
-    super(checker, root);
+    super(checker, root, false);
 
     AnnotationMirror UNQUALIFIED = AnnotationUtils.fromClass(elements, Unqualified.class);
     this.defaults.addAbsoluteDefault(UNQUALIFIED, DefaultLocation.ALL);
@@ -128,11 +132,13 @@ public class KeyForAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<KeyFor
       return "";
     else if (sel.getKind() == Tree.Kind.MEMBER_SELECT)
       return ((MemberSelectTree)sel).getExpression().toString();
-    SourceChecker.errorAbort("KeyForAnnotatedTypeFactory.receiver: cannot be here");
+    ErrorReporter.errorAbort("KeyForAnnotatedTypeFactory.receiver: cannot be here");
     return null; // dead code
   }
 
   // TODO: doc
+  // TODO: "this" should be implicitly prepended
+  // TODO: substitutions also need to be applied to argument types
   private AnnotatedTypeMirror substituteCall(MethodInvocationTree call, AnnotatedTypeMirror inType) {
 
     // System.out.println("input type: " + inType);

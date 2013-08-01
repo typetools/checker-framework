@@ -1,8 +1,9 @@
 package java.lang;
 
-import checkers.nullness.quals.*;
+import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
+import checkers.nullness.quals.Nullable;
 
-@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
 
 public final class Float extends Number implements Comparable<Float> {
   private static final long serialVersionUID = 0;
@@ -16,30 +17,30 @@ public final class Float extends Number implements Comparable<Float> {
   public final static int MIN_EXPONENT = 0;
   public final static int SIZE = 32;
   public final static Class<Float> TYPE;
-  public static String toString(float a1) { throw new RuntimeException("skeleton method"); }
-  public static String toHexString(float a1) { throw new RuntimeException("skeleton method"); }
-  public static Float valueOf(String a1) throws NumberFormatException { throw new RuntimeException("skeleton method"); }
-  public static Float valueOf(float a1) { throw new RuntimeException("skeleton method"); }
-  public static float parseFloat(String a1) throws NumberFormatException { throw new RuntimeException("skeleton method"); }
-  public static boolean isNaN(float a1) { throw new RuntimeException("skeleton method"); }
-  public static boolean isInfinite(float a1) { throw new RuntimeException("skeleton method"); }
+  @Pure public static String toString(float a1) { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public static String toHexString(float a1) { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public static Float valueOf(String a1) throws NumberFormatException { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public static Float valueOf(float a1) { throw new RuntimeException("skeleton method"); }
+  @Pure public static float parseFloat(String a1) throws NumberFormatException { throw new RuntimeException("skeleton method"); }
+  @Pure public static boolean isNaN(float a1) { throw new RuntimeException("skeleton method"); }
+  @Pure public static boolean isInfinite(float a1) { throw new RuntimeException("skeleton method"); }
   public Float(float a1) { throw new RuntimeException("skeleton method"); }
   public Float(double a1) { throw new RuntimeException("skeleton method"); }
   public Float(String a1) throws NumberFormatException { throw new RuntimeException("skeleton method"); }
-  public boolean isNaN() { throw new RuntimeException("skeleton method"); }
-  public boolean isInfinite() { throw new RuntimeException("skeleton method"); }
-  public String toString() { throw new RuntimeException("skeleton method"); }
-  public byte byteValue() { throw new RuntimeException("skeleton method"); }
-  public short shortValue() { throw new RuntimeException("skeleton method"); }
-  public int intValue() { throw new RuntimeException("skeleton method"); }
-  public long longValue() { throw new RuntimeException("skeleton method"); }
-  public float floatValue() { throw new RuntimeException("skeleton method"); }
-  public double doubleValue() { throw new RuntimeException("skeleton method"); }
-  public int hashCode() { throw new RuntimeException("skeleton method"); }
-  public boolean equals(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
-  public static int floatToIntBits(float a1) { throw new RuntimeException("skeleton method"); }
-  public int compareTo(Float a1) { throw new RuntimeException("skeleton method"); }
-  public static int compare(float a1, float a2) { throw new RuntimeException("skeleton method"); }
+  @Pure public boolean isNaN() { throw new RuntimeException("skeleton method"); }
+  @Pure public boolean isInfinite() { throw new RuntimeException("skeleton method"); }
+  @Pure public String toString() { throw new RuntimeException("skeleton method"); }
+  @Pure public byte byteValue() { throw new RuntimeException("skeleton method"); }
+  @Pure public short shortValue() { throw new RuntimeException("skeleton method"); }
+  @Pure public int intValue() { throw new RuntimeException("skeleton method"); }
+  @Pure public long longValue() { throw new RuntimeException("skeleton method"); }
+  @Pure public float floatValue() { throw new RuntimeException("skeleton method"); }
+  @Pure public double doubleValue() { throw new RuntimeException("skeleton method"); }
+  @Pure public int hashCode() { throw new RuntimeException("skeleton method"); }
+  @Pure public boolean equals(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
+  @Pure public static int floatToIntBits(float a1) { throw new RuntimeException("skeleton method"); }
+  @Pure public int compareTo(Float a1) { throw new RuntimeException("skeleton method"); }
+  @Pure public static int compare(float a1, float a2) { throw new RuntimeException("skeleton method"); }
 
   public static native float intBitsToFloat(int a1);
   public static native int floatToRawIntBits(float a1);

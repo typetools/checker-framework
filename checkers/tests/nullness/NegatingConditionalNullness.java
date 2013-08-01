@@ -1,11 +1,12 @@
+import checkers.nullness.quals.EnsuresNonNullIf;
 import checkers.nullness.quals.*;
 import java.util.*;
 
 class PptTopLevel {
     /** List of all of the splitters for this ppt. */
-    public @LazyNonNull List<Object> splitters = null;
+    public @MonotonicNonNull List<Object> splitters = null;
 
-    @AssertNonNullIfTrue("splitters")
+    @EnsuresNonNullIf(result=true, expression="splitters")
     public boolean has_splitters() {
         return (splitters != null);
     }
@@ -17,7 +18,7 @@ class PptTopLevel {
     }
 
     static void testPptTopLevelAssert(PptTopLevel ppt) {
-        assert ppt.has_splitters() : "@SuppressWarnings(nullness)";
+        assert ppt.has_splitters() : "@AssumeAssertion(nullness)";
         @NonNull Object s2 = ppt.splitters;
     }
 
