@@ -500,7 +500,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
                         ExpressionTree initializer = vt.getInitializer();
                         // analyze initializer if present
                         if (initializer != null) {
-                            analyze(queue, new CFGStatement(initializer),
+                            analyze(queue, new CFGStatement(vt),
                                     fieldValues);
                             Value value = flowResult.getValue(initializer);
                             if (value != null) {
