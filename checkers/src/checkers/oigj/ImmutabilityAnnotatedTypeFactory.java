@@ -598,8 +598,9 @@ public class ImmutabilityAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<
                     result.put(immutableString, immutability);
             }
 
-            if (type != dcType && type.isParameterized() && dcType.isParameterized())
+            if (type != dcType && !type.wasRaw() && !dcType.wasRaw()) {
                 result = reduce(result, visit(type.getTypeArguments(), dcType.getTypeArguments()));
+            }
             return result;
         }
 
