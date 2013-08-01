@@ -28,6 +28,8 @@ What would a good place be for this?  At the beginning/end?  Split into multiple
 
 - Document @Covariant annotation [Mike/Werner].
 
+- Document -AignoreRawTypeArguments (rename the option?)
+
 
 Changes throughout the manual to existing sections
 ===========================================================================
