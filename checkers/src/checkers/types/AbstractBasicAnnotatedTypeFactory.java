@@ -1,5 +1,9 @@
 package checkers.types;
 
+/*>>>
+import checkers.nullness.quals.Nullable;
+*/
+
 import checkers.basetype.BaseTypeChecker;
 import checkers.flow.CFAbstractAnalysis;
 import checkers.flow.CFAbstractStore;
