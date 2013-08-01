@@ -464,6 +464,9 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
      */
     protected void shutdownHook() {
         if (processingEnv.getOptions().containsKey("resourceStats")) {
+            // Check for the "resourceStats" option and don't call shouldAddShutdownHook
+            // to allow subclasses to override shouldXXX and shutdownHook and simply
+            // call the super implementations.
             printStats();
         }
     }
@@ -1022,34 +1025,110 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
     @Override
     public Set<String> getSupportedOptions() {
         Set<String> options = new HashSet<String>();
+
+        // When adding a new standard option, add a brief blurb about
+        // the use case and a pointer to one prominent use of the option.
+        // Update the Checker Framework manual,
+        // introduction.tex contains an overview of all options;
+        // a specific section should contain a detailed discussion.
+
+        // Set inclusion/exclusion of type uses or definitions
+        // checkers.source.SourceChecker.shouldSkipUses and similar
         options.add("skipUses");
         options.add("onlyUses");
         options.add("skipDefs");
         options.add("onlyDefs");
+
+        // Lint options
+        // checkers.source.SourceChecker.getSupportedLintOptions() and similar
         options.add("lint");
+
+        // Only output error code, useful for testing framework
+        // checkers.source.SourceChecker.message(Kind, Object, String, Object...)
         options.add("nomsgtext");
+
+        // Output detailed message in simple-to-parse format, useful
+        // for tools parsing our output
+        // checkers.source.SourceChecker.message(Kind, Object, String, Object...)
         options.add("detailedmsgtext");
+
+        // Output file names before checking
+        // TODO: it looks like support for this was lost!
         options.add("filenames");
+
+        // Output all subtyping checks
+        // checkers.basetype.BaseTypeVisitor
         options.add("showchecks");
+
+        // Additional stub files to use
+        // checkers.types.AnnotatedTypeFactory.buildIndexTypes()
         options.add("stubs");
+        // Ignore the standard jdk.astub file
+        // checkers.types.AnnotatedTypeFactory.buildIndexTypes()
         options.add("ignorejdkastub");
+
+        // Whether to print warnings about types/members in a stub file
+        // that were not found on the class path
+        // checkers.util.stub.StubParser.warnIfNotFound
+        options.add("stubWarnIfNotFound");
+
+        // Whether to print debugging messages while processing the stub files
+        // checkers.util.stub.StubParser.debugStubParser
+        options.add("stubDebug");
+
+        // Whether to check that the annotated JDK is correctly provided
+        // checkers.basetype.BaseTypeVisitor.checkForAnnotatedJdk()
         options.add("nocheckjdk");
+
+        // Whether to output errors or warnings only
+        // checkers.source.SourceChecker.report
         options.add("warns");
+
+        // A comma-separated list of warnings to suppress
+        // checkers.source.SourceChecker.createSuppressWarnings
         options.add("suppressWarnings");
+
+        // Whether to output a stack trace for a framework error
+        // checkers.source.SourceChecker.logCheckerError
         options.add("printErrorStack");
+
+        // Whether to print @InvisibleQualifier marked annotations
+        // checkers.types.AnnotatedTypeMirror.toString()
         options.add("printAllQualifiers");
+
+        // Directory for .dot files generated from the CFG
+        // checkers.types.AbstractBasicAnnotatedTypeFactory.analyze
         options.add("flowdotdir");
+
+        // Whether to assume that assertions are enabled or disabled
+        // checkers.flow.CFCFGBuilder.CFCFGBuilder
         options.add("assumeAssertionsAreEnabled");
         options.add("assumeAssertionsAreDisabled");
+
+        // Whether to assume sound concurrent semantics or
+        // simplified sequential semantics
+        // checkers.flow.CFAbstractTransfer.sequentialSemantics
         options.add("concurrentSemantics");
-        // Checking of bodies of @Pure methods is temporarily disabled
+
+        // TODO: Checking of bodies of @Pure methods is temporarily disabled
         // unless -AenablePurity is supplied on the command line; re-enable
         // it after making the analysis more precise.
+        // checkers.basetype.BaseTypeVisitor.visitMethod(MethodTree, Void)
         options.add("enablePurity");
+
+        // Whether to suggest methods that could be marked @Pure
+        // checkers.basetype.BaseTypeVisitor.visitMethod(MethodTree, Void)
         options.add("suggestPureMethods");
+
+        // Whether to output resource statistics at JVM shutdown
+        // checkers.source.SourceChecker.shutdownHook()
         options.add("resourceStats");
-        options.add("stubWarnIfNotFound");
-        options.add("stubDebug");
+
+        // Whether to ignore all subtype tests for type arguments that
+        // were inferred for a raw type
+        // checkers.types.TypeHierarchy.isSubtypeTypeArguments
+        options.add("ignoreRawTypeArguments");
+
         options.addAll(super.getSupportedOptions());
         return Collections.</*@NonNull*/ String>unmodifiableSet(options);
     }

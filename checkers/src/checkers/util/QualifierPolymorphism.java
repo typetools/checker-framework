@@ -378,7 +378,7 @@ public class QualifierPolymorphism {
                 }
             }
 
-            if (type.isParameterized() && dcType.isParameterized()) {
+            if (!type.wasRaw() && !dcType.wasRaw()) {
                 result = reduce(result, visit(type.getTypeArguments(), dcType.getTypeArguments()));
             }
 

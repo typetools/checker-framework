@@ -79,7 +79,9 @@ class Raw3 {
     class DuoList<S, T> extends ArrayList<S> {}
 
     List<String> bar4(List<String> sl) {
-      //:: warning: [unchecked] unchecked conversion
+      // This error goes away by using -AignoreRawTypeArguments or by
+      // improving our inference.
+      //:: error: (return.type.incompatible) :: warning: [unchecked] unchecked conversion
       return (DuoList) sl;
     }
   }
