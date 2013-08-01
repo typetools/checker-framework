@@ -385,7 +385,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
      *         store (because the method cannot exit through the regular exit
      *         block).
      */
-    public/* @Nullable */Store getRegularExitStore(Tree t) {
+    public /*@Nullable*/ Store getRegularExitStore(Tree t) {
         return regularExitStores.get(t);
     }
 
@@ -716,7 +716,11 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
         if (!analyses.isEmpty() && tree != null) {
             as = analyses.getFirst().getValue(tree);
         }
-        if (as == null && tree != null) {
+        if (as == null &&
+                tree != null &&
+                // TODO: this comparison shouldn't be needed, but
+                // Daikon check-nullness started failing without it.
+                flowResult != null) {
             as = flowResult.getValue(tree);
         }
         return as;
