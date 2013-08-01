@@ -537,9 +537,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         // e.g. class Pair<Y extends List<Y>> { ... }
         if (result.getKind() == TypeKind.DECLARED) {
             AnnotatedDeclaredType dt = (AnnotatedDeclaredType)result;
-            if (dt.getTypeArguments().isEmpty()
-                    && !((TypeElement)dt.getUnderlyingType().asElement()).getTypeParameters().isEmpty()) {
-
+            if (dt.wasRaw()) {
                 List<AnnotatedTypeMirror> typeArgs;
                 Pair<Tree, AnnotatedTypeMirror> ctx = this.visitorState.getAssignmentContext();
                 if (ctx != null) {
