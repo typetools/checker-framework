@@ -3,19 +3,27 @@
 """
 release_build.py
 
-Created by Jonathan Burke on 2013-02-05.
+Created by Jonathan Burke on 2013-08-01.
 
 Copyright (c) 2013 University of Washington. All rights reserved.
 """
 
+#TODO: NEED TO MODULARIZE BASED ON PROJECT, i.e. in release_vars create project defs for each project
+#TODO: RATHER than referring to individual variables we can then refer to the projects props
+#TODO: Need a script to build the basic structure of the site for people who want to build
+#TODO: them on their local machines
+
+#TODO: CURL THE RELEVANT UTILS BEFORE IMPORTING THEM
+
 from release_vars  import *
 from release_utils import *
 
+def print_usage():
+    print( "Usage:    python release_build.py [projects]" )
+    print_projects( True, 1, 4 )
+
 #TODO: CREATE A VERSION THAT WOULD RUN ON JENKINS
 #TODO: FAIL THAT VERSION IF IT HITS ANY PROMPT (AND GUARD PROMPTS WITH --auto)
-
-#TODO: Split build into PHASES that can be run individually so you don't have
-#TODO: to redo everything in case of an error
 
 #If the relevant repos do not exist, clone them, otherwise, update them.
 def update_repos():
@@ -28,7 +36,7 @@ def update_repos():
     clone_or_update_repo( LIVE_PLUME_LIB, PLUME_LIB )
 
 def jsr308_checker_framework_version():
-    curr_version = current_distribution(HTTP_PATH_TO_LIVE_SITE)
+    curr_version = current_distribution( os.path.join( HTTP_PATH_TO_LIVE_SITE, "checker-framework" ) )
 
     print "Current JSR308/Checker Framework: " + curr_version
     new_version = prompt_w_suggestion("Enter new version", increment_version(curr_version), "^\\d+\\.\\d+(?:\\.\\d+){0,2}$")
@@ -47,7 +55,7 @@ def create_interm_version_dirs(version):
     prompt_to_delete(jsr308_interm_dir)
     execute("mkdir -p %s" % jsr308_interm_dir, True, False)
 
-    return (checker_framework_interm_dir, jsr308_interm_dir)
+    return ( checker_framework_interm_dir, jsr308_interm_dir )
 
 def build_jsr308_langtools_release(version, checker_framework_interm_dir, jsr308_interm_dir):
 
@@ -61,7 +69,7 @@ def build_jsr308_langtools_release(version, checker_framework_interm_dir, jsr308
     execute("ant -Dhalt.on.test.failure=true clean-and-build-all-tools build-javadoc build-doclets", True, False, JSR308_MAKE)
 
     #zip up jsr308-langtools project and place it in jsr308_interm_dir
-    ant_props = "-Dlangtools=%s -Ddest.dir=%s -Dfile.name=%s" % (JSR308_LANGTOOLS, jsr308_interm_dir, "jsr308-langtools.zip")
+    ant_props = "-Dlangtools=%s -Ddest.dir=%s -Dfile.name=%s -Dversion=%s" % (JSR308_LANGTOOLS, jsr308_interm_dir, "jsr308-langtools.zip", version)
     ant_cmd   = "ant -f release.xml %s zip-langtools " % ant_props
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
@@ -150,11 +158,11 @@ def build_checker_framework_release(version, checker_framework_interm_dir, jsr30
     execute("make", True, False, checkers_tutorial_dir)
 
     #zip up checkers.zip and put it in releases_iterm_dir
-    ant_props = "-Dcheckers=%s -Ddest.dir=%s -Dfile.name=%s" % (checkers_dir, checker_framework_interm_dir, "checkers.zip")
+    ant_props = "-Dcheckers=%s -Ddest.dir=%s -Dfile.name=%s -Dversion=%s" % (checkers_dir, checker_framework_interm_dir, "checkers.zip", version)
     ant_cmd   = "ant -f release.xml %s zip-checker-framework " % ant_props
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
-    ant_props = "-Dcheckers=%s -Ddest.dir=%s -Dfile.name=%s" % (checkers_dir, checker_framework_interm_dir, "mvn-examples.zip")
+    ant_props = "-Dcheckers=%s -Ddest.dir=%s -Dfile.name=%s -Dversion=%s" % (checkers_dir, checker_framework_interm_dir, "mvn-examples.zip", version)
     ant_cmd   = "ant -f release.xml %s zip-maven-examples " % ant_props
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
@@ -164,7 +172,7 @@ def build_checker_framework_release(version, checker_framework_interm_dir, jsr30
     )
 
     ant_cmd   = "ant -f release.xml %s checker-framework-website-docs " % ant_props
-    execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
+    execute( ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE )
 
     build_and_locally_deploy_maven(version, checker_framework_interm_dir)
 
@@ -173,6 +181,11 @@ def build_checker_framework_release(version, checker_framework_interm_dir, jsr30
     return
 
 def main(argv):
+    projects_to_release = read_args( argv, print_usage )
+    add_project_dependencies( projects_to_release )
+
+    #For each project, build what is necessary but don't push
+
     #Check for a --auto
     #If --auto then no prompt and just build a full release
     #Otherwise provide all prompts
@@ -193,19 +206,25 @@ def main(argv):
     if continue_script == "no" or continue_script == "No":
         raise Exception("No prompt")
 
-    check_tools(TOOLS)
+    check_tools( TOOLS )
 
     version = jsr308_checker_framework_version()
-    version_dirs = create_interm_version_dirs(version)
+    version_dirs = create_interm_version_dirs( version )
     checker_framework_interm_dir = version_dirs[0]
     jsr308_interm_dir            = version_dirs[1]
 
-    build_jsr308_langtools_release(version, checker_framework_interm_dir, jsr308_interm_dir)
-    build_annotation_tools_release()  #annotation tools has it's own version
-    build_checker_framework_release(version, checker_framework_interm_dir, jsr308_interm_dir)
+    print( projects_to_release )
+    if projects_to_release[LT_OPT]:
+        build_jsr308_langtools_release(version, checker_framework_interm_dir, jsr308_interm_dir)
 
-    ensure_group_access(checker_framework_interm_dir)
-    ensure_group_access(jsr308_interm_dir)
+    if projects_to_release[AFU_OPT]:
+        build_annotation_tools_release()  #annotation tools has it's own version
+
+    if projects_to_release[CF_OPT]:
+        build_checker_framework_release(version, checker_framework_interm_dir, jsr308_interm_dir)
+
+    ensure_group_access( checker_framework_interm_dir )
+    ensure_group_access( jsr308_interm_dir )
 
     print("Please remember to go through the Checker Framework and Annotation Tools issue trackers and change any " +
           "issues that are marked 'pushed' to 'fixed'")
