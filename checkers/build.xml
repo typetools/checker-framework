@@ -28,7 +28,6 @@
     <property name="run.tests.should.fork" value="true"/>
     <property name="halt.on.test.failure" value="true"/>
 
-    <!-- THERE IS BOTH A javac.lib and a javac.lib -->
     <property name="javac.lib" value="${jsr308.langtools}/dist/lib/javac.jar"/>
     <property environment="env"/>
 
@@ -98,6 +97,7 @@
         <delete file="binary/jdk6.jar"/>
         <delete file="binary/jdk7.jar"/>
         <delete file="binary/jdk8.jar"/>
+        <delete file="binary/javac.jar"/>
         <delete file="jdk/jdk6.jar"/>
         <delete file="jdk/jdk7.jar"/>
         <delete file="jdk/jdk8.jar"/>
