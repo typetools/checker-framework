@@ -543,10 +543,36 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
     }
 
     /**
+     * @return The post-conversion abstract value for {@link Tree}
+     *         {@code t}, or {@code null} if no information is
+     *         available. Note that if the analysis has not finished
+     *         yet, this value might not represent the final value for
+     *         this node.
+     */
+    public/* @Nullable */A getConvertedValue(Tree t) {
+        // we do not yet have a dataflow fact about the current node
+        if (t == currentTree) {
+            return null;
+        }
+        Node nodeCorrespondingToTree = getConvertedNodeForTree(t);
+        if (nodeCorrespondingToTree == null || nodeCorrespondingToTree.isLValue()) {
+            return null;
+        }
+        return getValue(nodeCorrespondingToTree);
+    }
+
+    /**
      * Get the {@link Node} for a given {@link Tree}.
      */
     public Node getNodeForTree(Tree t) {
         return cfg.getNodeCorrespondingToTree(t);
+    }
+
+    /**
+     * Get the post-conversion {@link Node} for a given {@link Tree}.
+     */
+    public Node getConvertedNodeForTree(Tree t) {
+        return cfg.getConvertedNodeCorrespondingToTree(t);
     }
 
     /**
@@ -578,7 +604,8 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
     public AnalysisResult<A, S> getResult() {
         assert !isRunning;
         IdentityHashMap<Tree, Node> treeLookup = cfg.getTreeLookup();
-        return new AnalysisResult<>(nodeValues, stores, treeLookup);
+        IdentityHashMap<Tree, Node> convertedTreeLookup = cfg.getConvertedTreeLookup();
+        return new AnalysisResult<>(nodeValues, stores, treeLookup, convertedTreeLookup);
     }
 
     /**

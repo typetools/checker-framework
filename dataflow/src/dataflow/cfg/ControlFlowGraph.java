@@ -41,8 +41,18 @@ public class ControlFlowGraph {
     /** The AST this CFG corresponds to. */
     protected UnderlyingAST underlyingAST;
 
-    /** Map from AST {@link Tree}s to {@link Node}s. */
+    /**
+     * Maps from AST {@link Tree}s to {@link Node}s.  Every Tree that produces
+     * a value will have at least one corresponding Node.  Trees
+     * that undergo conversions, such as boxing or unboxing, can map to two
+     * distinct Nodes.  The Node for the pre-conversion value is stored
+     * in treeLookup, while the Node for the post-conversion value
+     * is stored in convertedTreeLookup.
+     */
     protected IdentityHashMap<Tree, Node> treeLookup;
+
+    /** Map from AST {@link Tree}s to post-conversion {@link Node}s. */
+    protected IdentityHashMap<Tree, Node> convertedTreeLookup;
 
     /**
      * All return nodes (if any) encountered. Only includes return
@@ -51,11 +61,14 @@ public class ControlFlowGraph {
     protected final List<ReturnNode> returnNodes;
 
     public ControlFlowGraph(SpecialBlock entryBlock, SpecialBlockImpl regularExitBlock, SpecialBlockImpl exceptionalExitBlock, UnderlyingAST underlyingAST,
-            IdentityHashMap<Tree, Node> treeLookup, List<ReturnNode> returnNodes) {
+            IdentityHashMap<Tree, Node> treeLookup,
+            IdentityHashMap<Tree, Node> convertedTreeLookup,
+            List<ReturnNode> returnNodes) {
         super();
         this.entryBlock = entryBlock;
         this.underlyingAST = underlyingAST;
         this.treeLookup = treeLookup;
+        this.convertedTreeLookup = convertedTreeLookup;
         this.regularExitBlock = regularExitBlock;
         this.exceptionalExitBlock = exceptionalExitBlock;
         this.returnNodes = returnNodes;
@@ -67,6 +80,20 @@ public class ControlFlowGraph {
      */
     public Node getNodeCorrespondingToTree(Tree t) {
         return treeLookup.get(t);
+    }
+
+    /**
+     * @return The post-conversion {@link Node} to which the {@link
+     *         Tree} <code>t</code> corresponds, or if no conversion
+     *         was performed, the unique {@link Node} to which the
+     *         {@link Tree} corresponds.
+     */
+    public Node getConvertedNodeCorrespondingToTree(Tree t) {
+        if (convertedTreeLookup.containsKey(t)) {
+            return convertedTreeLookup.get(t);
+        } else {
+            return getNodeCorrespondingToTree(t);
+        }
     }
 
     /** @return The entry block of the control flow graph. */
@@ -143,6 +170,13 @@ public class ControlFlowGraph {
      */
     public IdentityHashMap<Tree, Node> getTreeLookup() {
         return new IdentityHashMap<>(treeLookup);
+    }
+
+    /**
+     * @return The post-conversion tree-lookup map.
+     */
+    public IdentityHashMap<Tree, Node> getConvertedTreeLookup() {
+        return new IdentityHashMap<>(convertedTreeLookup);
     }
 
     /**
