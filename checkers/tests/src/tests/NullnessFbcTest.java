@@ -21,6 +21,7 @@ public class NullnessFbcTest extends ParameterizedCheckerTest {
                 checkers.nullness.NullnessChecker.class,
                 "nullness",
                 "-Anomsgtext", "-Xlint:deprecation",
+                "-AenablePurity",
                 "-Alint=arrays:forbidnonnullcomponents,"
                         + AbstractNullnessChecker.LINT_REDUNDANTNULLCOMPARISON);
     }

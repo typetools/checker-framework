@@ -21,6 +21,7 @@ public class NullnessRawnessTest extends ParameterizedCheckerTest {
                 checkers.nullness.NullnessRawnessChecker.class,
                 "nullness",
                 "-Anomsgtext", "-Xlint:deprecation",
+                "-AenablePurity",
                 "-Alint=arrays:forbidnonnullcomponents,"
                         + AbstractNullnessChecker.LINT_REDUNDANTNULLCOMPARISON);
     }

@@ -10,67 +10,67 @@ import dataflow.quals.Pure.Kind;
 
 // various tests for the @Pure annotation
 class Purity {
-    
+
     String f1, f2, f3;
     String[] a;
-    
+
     // class with a (potentially) non-pure constructor
     private static class NonPureClass {
     }
-    
+
     // class with a pure constructor
     private static class PureClass {
-        @Pure
-        public PureClass() {
+        //:: warning: (purity.deterministic.constructor)
+        @Pure public PureClass() {
         }
     }
-    
+
     // class with a side-effect free constructor
     private static class SEClass {
         @SideEffectFree
         public SEClass() {
         }
     }
-    
+
     // a method that is not pure (no annotation)
     void nonpure() {
     }
-    
+
     @Pure String pure() {
         return "";
     }
-    
+
     //:: warning: (purity.deterministic.void.method)
     @Pure void t1() {
     }
-    
+
     @SideEffectFree void t1b() {
     }
-    
+
     //:: warning: (purity.deterministic.void.method)
     @Deterministic void t1c() {
     }
-    
+
     @Pure String t2() {
         return "";
     }
-    
+
     @Pure String t3() {
       //:: error: (purity.not.deterministic.not.sideeffectfree.call)
       nonpure();
       return "";
     }
-    
+
     @Pure String t4() {
         pure();
         return "";
     }
-    
+
     @Pure int t5() {
         int i = 1;
         return i;
     }
-    
+
     @Pure int t6() {
         int j = 0;
         for (int i = 0; i < 10; i++) {
@@ -78,22 +78,22 @@ class Purity {
         }
         return j;
     }
-    
+
     @Pure String t7() {
         if (true) {
             return "a";
         }
         return "";
     }
-    
+
     @Pure int t8() {
         return 1 - 2 / 3 * 2 % 2;
     }
-    
+
     @Pure String t9() {
         return "b" + "a";
     }
-    
+
     @Pure String t10() {
         //:: error: (purity.not.deterministic.not.sideeffectfree.assign.field)
         f1 = "";
@@ -101,47 +101,47 @@ class Purity {
         f2 = "";
         return "";
     }
-    
+
     @Pure String t11(Purity l) {
         //:: error: (purity.not.deterministic.not.sideeffectfree.assign.array)
         l.a[0] = "";
         return "";
     }
-    
+
     @Pure String t12(String[] s) {
         //:: error: (purity.not.deterministic.not.sideeffectfree.assign.array)
         s[0] = "";
         return "";
     }
-    
+
     @Pure String t13() {
         //:: error: (purity.not.deterministic.object.creation)
         PureClass p = new PureClass();
         return "";
     }
-    
+
     @SideEffectFree String t13b() {
         PureClass p = new PureClass();
         return "";
     }
-    
+
     @SideEffectFree String t13d() {
         SEClass p = new SEClass();
         return "";
     }
-    
+
     @Deterministic String t13c() {
         //:: error: (purity.not.deterministic.object.creation)
         PureClass p = new PureClass();
         return "";
     }
-    
+
     @Pure String t14() {
         String i = "";
         i = "a";
         return i;
     }
-    
+
     @Pure String t15() {
         String[] s = new String[1];
         return s[0];
@@ -156,7 +156,7 @@ class Purity {
         }
         return "";
     }
-    
+
     @SideEffectFree String t16b() {
         try {
             int i = 1/0;
@@ -165,7 +165,7 @@ class Purity {
         }
         return "";
     }
-    
+
     @Deterministic String t16c() {
         try {
             int i = 1/0;
@@ -175,7 +175,7 @@ class Purity {
         }
         return "";
     }
-    
+
     @Pure String t12() {
         //:: error: (purity.not.deterministic.not.sideeffectfree.object.creation)
         NonPureClass p = new NonPureClass();
