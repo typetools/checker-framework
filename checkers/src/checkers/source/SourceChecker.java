@@ -657,9 +657,23 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
                 // Output 0 for null arguments.
                 sb.append(0);
                 sb.append(DETAILS_SEPARATOR);
+
             }
+
+            final Tree tree;
+            if( source instanceof Element) {
+                tree = trees.getTree( (Element) source );
+            } else if (source instanceof Tree) {
+                tree = (Tree) source;
+            } else {
+                tree = null;
+            }
+            sb.append( treeToFilePositionString( tree, currentRoot, processingEnv ) );
+            sb.append(DETAILS_SEPARATOR);
+
             sb.append(fullMessageOf(msgKey, defaultFormat));
             fmtString = sb.toString();
+
         } else {
             fmtString = fullMessageOf(msgKey, defaultFormat);
         }
@@ -682,6 +696,27 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
         else
             ErrorReporter.errorAbort("invalid position source: "
                     + source.getClass().getName());
+    }
+
+    /**
+     * For the given tree, compute the source positions for that tree.  Return a "tuple" like string
+     * (e.g. "( 1, 200 )" ) that contains the start and end position of the tree in the current compilation unit.
+     *
+     * @param tree Tree to locate within the current compilation unit
+     * @param currentRoot The current compilation unit
+     * @param processingEnv The current processing environment
+     * @return A tuple string representing the range of characters that tree occupies in the source file
+     */
+    public static String treeToFilePositionString(Tree tree, CompilationUnitTree currentRoot, ProcessingEnvironment processingEnv) {
+        if( tree == null ) {
+            return null;
+        }
+
+        SourcePositions sourcePositions = Trees.instance(processingEnv).getSourcePositions();
+        long start = sourcePositions.getStartPosition( currentRoot, tree);
+        long end   = sourcePositions.getEndPosition( currentRoot, tree );
+
+        return "( " + start + ", " + end  + " )";
     }
 
     public static final String DETAILS_SEPARATOR = " $$ ";

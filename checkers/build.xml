@@ -133,6 +133,7 @@
         <delete file="binary/jdk6.jar"/>
         <delete file="binary/jdk7.jar"/>
         <delete file="binary/jdk8.jar"/>
+        <delete file="binary/javac.jar"/>
         <delete file="jdk/jdk6.jar"/>
         <delete file="jdk/jdk7.jar"/>
         <delete file="jdk/jdk8.jar"/>

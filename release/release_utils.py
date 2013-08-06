@@ -10,6 +10,7 @@ Created by Jonathan Burke 11/21/2012
 Copyright (c) 2012 University of Washington
 """
 
+from release_vars  import *
 from xml.dom import minidom
 import sys
 import getopt
@@ -21,6 +22,82 @@ import os
 import pwd
 import re
 import shutil
+
+#=========================================================================================
+# Parse Args Utils #TODO: Perhaps use argparse module
+def match_arg( arg ):
+    matched_project = None
+    for project in PROJECTS_TO_SHORTNAMES:
+        if arg == project[0] or arg == project[1]:
+            matched_project = project
+    return matched_project
+
+def read_args( argv, error_call_back ):
+    matched_projects = {LT_OPT  : False,
+                        AFU_OPT : False,
+                        CF_OPT  : False}
+
+    arg_length = len(sys.argv)
+
+    if arg_length < 2:
+        print("You  must select at least one project!")
+        error_call_back()
+        sys.exit(1)
+
+    error = False
+    for index in range( 1, arg_length ):
+        arg = argv[index]
+
+        if arg == ALL_OPT:
+            for project in PROJECTS_TO_SHORTNAMES:
+                matched_projects[project[0]] = True
+            return matched_projects
+
+        matched_project = match_arg( argv[index] )
+        if matched_project == None:
+            println( "Unmatched project: " + argv[index] )
+            error = True
+        else:
+            matched_projects[ matched_project[0] ] = True
+
+    if error:
+        error_call_back()
+        sys.exit(1)
+
+    return matched_projects
+
+def add_project_dependencies( matched_projects ):
+    if matched_projects[CF_OPT]:
+        matched_projects[AFU_OPT] = True
+        matched_projects[LT_OPT]  = True
+    else:
+        if matched_projects[AFU_OPT]:
+            matched_projects[LT_OPT] = True
+
+
+def print_projects( print_error_label, indent_level, indent_size ):
+    indentation = duplicate( duplicate( " ", indent_size ), indent_level )
+    project_to_short_cols = 27
+
+    if( print_error_label ):
+        print("projects:   You must specify at least one of the following projects or \"all\"")
+
+    print( indentation + pad_to( "project", " ", project_to_short_cols ) + "short-name" )
+
+    for project in PROJECTS_TO_SHORTNAMES:
+        print(indentation + pad_to( project[0], " ", project_to_short_cols ) + project[1])
+
+    print(indentation + ALL_OPT)
+
+def duplicate( str, times ):
+    dup_str = ""
+    for index in range(0, times):
+        dup_str += str
+    return dup_str
+
+def pad_to( original_str, filler, size ):
+    missing = size - len(original_str)
+    return original_str + duplicate( filler, missing )
 
 #=========================================================================================
 # Command utils
@@ -103,6 +180,26 @@ def match_one(toTest, patternStrings):
         
 #=========================================================================================
 # Version Utils
+
+def max_version( strs ):
+    pattern = re.compile(r"""^\d+\.\d+(\.\d+)?(\.\d+)?""")
+    version_as_str = None
+    version_as_int = None
+
+    for str in strs:
+        if pattern.match( str ) is not None:
+            if version_as_str == None:
+                version_as_str = str
+                version_as_int = version_to_integer( str )
+            else:
+                cur_version_as_int = version_to_integer( str )
+                if cur_version_as_int > version_as_int:
+                    version_as_str = str
+                    version_as_int = cur_version_as_int
+
+    return version_as_str
+
+
 def current_distribution(site):
     """
     Reads the checker framework version from the checker framework website and
@@ -173,9 +270,16 @@ def integer_to_version(intVer):
 
 def is_version_increased(old_version, new_version):
     return version_to_integer(new_version) > version_to_integer(old_version)
+
+def find_latest_version( version_dir ):
+    return max_version( filter( os.path.isdir, os.listdir(version_dir) ) )
+
     
 #=========================================================================================
 # Mercurial Utils
+
+def hg_push( repo_root ):
+    execute('hg -R %s push' % repo_root)
 
 #Pull the latest changes and update
 def update_project(path):
@@ -323,6 +427,14 @@ def prompt_to_delete(path):
         if result == "Yes" or result == "yes":
             shutil.rmtree(path)
 
+def force_symlink( source, symlink_path ):
+    try:
+        os.symlink( source, symlink_path )
+    except OSError, e:
+        if e.errno == errno.EEXIST:
+            os.remove( symlink_path )
+            os.symlink( source, symlink_path )
+
 #=========================================================================================
 # Change Log utils
 
@@ -398,7 +510,7 @@ def edit_langtools_changelog(version, openJdkReleaseSite, path, editor, changes=
 def mvn_deploy_file(name, binary, version, dest_repo, group_id, pom=None):
     pomOps = "" 
     if pom is None:
-        pomOps= "-DgeneratePom=true"
+        pomOps= "-DgeneratePom=True"
     else:
         pomOps="""-DgeneratePom=false -DpomFile=%s""" % (pom)
 
@@ -456,36 +568,7 @@ def mvn_deploy_mvn_plugin(pluginDir, pom, version, mavenRepo):
     return mvn_deploy(jarFile, pom, mavenRepo)
 
 #=========================================================================================
-# Ant utils
-
-def site_copy(ant_args):
-    execute("ant -e -f release.xml %s site-copy" % ant_args)
-
-def make_release(version, ant_args, real=False, sanitycheck=True):
-    command = 'ant -e -f release.xml %s -Drelease.ver=%s %s clean web %s' % (
-        '-Drelease.is.real=true' if real else '',
-        version,
-        ant_args,
-        'sanitycheck' if sanitycheck else '',
-    )
-    print("Actually making the release")
-    return execute(command)
-
-
-#=========================================================================================
 # Misc. Utils
-
-def getAndAppend(name, append):
-    if os.environ.has_key(name):
-        return os.environ[name] + append
-
-    else:
-        return ""
-
-def append_to_PATH(paths):
-    current_PATH = os.getenv('PATH')
-    new_PATH = current_PATH + ':' + ':'.join(paths)
-    os.environ['PATH'] = new_PATH
 
 def checklinks(makeFile, site_url=None):
     os.putenv('jsr308_www_online', site_url) # set environment var for subshell
@@ -499,6 +582,43 @@ def format_email(version, to, checkersLog, jsr308Log, checkers_header=None, lang
         langtools_header = changelog_header(jsr308Log)
 
     template = """
+
+def find_project_locations( ):
+    afu_version       = max_version( AFU_INTERM_RELEASES_DIR    )
+    jsr308_cf_version = max_version( JSR308_INTERM_RELEASES_DIR )
+
+    return {
+        LT_OPT : {
+            project_name : LT_OPT,
+
+            repo_source  : INTERM_JSR308_REPO,
+            repo_dest    : LIVE_JSR308_REPO,
+
+            deployment_source : os.path.join( JSR308_INTERM_RELEASES_DIR, jsr308_cf_version )
+            deployment_dest   : os.path.join( JSR308_LIVE_RELEASES_DIR,   jsr308_cf_version )
+        },
+
+        AFU_OPT : {
+            project_name : AFU_OPT,
+
+            repo_source  : INTERM_AFU_REPO,
+            repo_dest    : LIVE_AFU_REPO,
+
+            deployment_source : os.path.join( AFU_INTERM_RELEASES_DIR, afu_version )
+            deployment_dest   : os.path.join( AFU_LIVE_RELEASES_DIR,   afu_version )
+        },
+
+        CF_OPT : {
+            project_name : CF_OPT,
+
+            repo_source : INTERM_CHECKER_REPO,
+            repo_dest   : LIVE_CHECKER_REPO,
+
+            deployment_source : os.path.join( CHECKER_INTERM_RELEASES_DIR, jsr308_cf_version )
+            deployment_dest   : os.path.join( CHECKER_LIVE_RELEASES_DIR,   jsr308_cf_version )
+        }
+    }
+     #project_name, repo_source, repo_dest, deployment_source, deployment_dest
 =================== BEGINING OF EMAIL =====================
 
 To:  %s
