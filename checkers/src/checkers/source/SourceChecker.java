@@ -1,5 +1,10 @@
 package checkers.source;
 
+/*>>>
+import checkers.compilermsgs.quals.CompilerMessageKey;
+import checkers.nullness.quals.*;
+*/
+
 import checkers.basetype.BaseTypeChecker;
 import checkers.quals.TypeQualifiers;
 import checkers.types.AnnotatedTypeFactory;
@@ -44,16 +49,12 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Log;
-
-/*>>>
-import checkers.compilermsgs.quals.CompilerMessageKey;
-import checkers.nullness.quals.*;
-*/
 
 /**
  * An abstract annotation processor designed for implementing a
@@ -657,11 +658,10 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
                 // Output 0 for null arguments.
                 sb.append(0);
                 sb.append(DETAILS_SEPARATOR);
-
             }
 
             final Tree tree;
-            if( source instanceof Element) {
+            if (source instanceof Element) {
                 tree = trees.getTree( (Element) source );
             } else if (source instanceof Tree) {
                 tree = (Tree) source;
@@ -707,12 +707,12 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
      * @param processingEnv The current processing environment
      * @return A tuple string representing the range of characters that tree occupies in the source file
      */
-    public static String treeToFilePositionString(Tree tree, CompilationUnitTree currentRoot, ProcessingEnvironment processingEnv) {
-        if( tree == null ) {
+    public String treeToFilePositionString(Tree tree, CompilationUnitTree currentRoot, ProcessingEnvironment processingEnv) {
+        if (tree == null) {
             return null;
         }
 
-        SourcePositions sourcePositions = Trees.instance(processingEnv).getSourcePositions();
+        SourcePositions sourcePositions = trees.getSourcePositions();
         long start = sourcePositions.getStartPosition( currentRoot, tree);
         long end   = sourcePositions.getEndPosition( currentRoot, tree );
 
