@@ -1213,7 +1213,7 @@ public class CFGBuilder {
             }
 
             return new ControlFlowGraph(startBlock, regularExitBlock, exceptionalExitBlock, in.underlyingAST,
-                    in.treeLookupMap, in.returnNodes);
+                    in.treeLookupMap, /*in.convertedTreeLookupMap,*/ in.returnNodes);
         }
     }
 
@@ -1228,6 +1228,7 @@ public class CFGBuilder {
     protected static class PhaseOneResult {
 
         private final IdentityHashMap<Tree, Node> treeLookupMap;
+        private final IdentityHashMap<Tree, Node> convertedTreeLookupMap;
         private final UnderlyingAST underlyingAST;
         private final Map<Label, Integer> bindings;
         private final ArrayList<ExtendedNode> nodeList;
@@ -1236,10 +1237,12 @@ public class CFGBuilder {
 
         public PhaseOneResult(UnderlyingAST underlyingAST,
                 IdentityHashMap<Tree, Node> treeLookupMap,
+                IdentityHashMap<Tree, Node> convertedTreeLookupMap,
                 ArrayList<ExtendedNode> nodeList, Map<Label, Integer> bindings,
                 Set<Integer> leaders, List<ReturnNode> returnNodes) {
             this.underlyingAST = underlyingAST;
             this.treeLookupMap = treeLookupMap;
+            this.convertedTreeLookupMap = convertedTreeLookupMap;
             this.nodeList = nodeList;
             this.bindings = bindings;
             this.leaders = leaders;
@@ -1382,8 +1385,18 @@ public class CFGBuilder {
          */
         protected Node switchExpr;
 
-        /** Map from AST {@link Tree}s to {@link Node}s. */
+        /**
+         * Maps from AST {@link Tree}s to {@link Node}s.  Every Tree that produces
+         * a value will have at least one corresponding Node.  Trees
+         * that undergo conversions, such as boxing or unboxing, can map to two
+         * distinct Nodes.  The Node for the pre-conversion value is stored
+         * in the treeLookupMap, while the Node for the post-conversion value
+         * is stored in the convertedTreeLookupMap.
+         */
         protected IdentityHashMap<Tree, Node> treeLookupMap;
+
+        /** Map from AST {@link Tree}s to post-conversion {@link Node}s. */
+        protected IdentityHashMap<Tree, Node> convertedTreeLookupMap;
 
         /** The list of extended nodes. */
         protected ArrayList<ExtendedNode> nodeList;
@@ -1444,6 +1457,7 @@ public class CFGBuilder {
 
             // initialize lists and maps
             treeLookupMap = new IdentityHashMap<>();
+            convertedTreeLookupMap = new IdentityHashMap<>();
             nodeList = new ArrayList<>();
             bindings = new HashMap<>();
             leaders = new HashSet<>();
@@ -1463,7 +1477,8 @@ public class CFGBuilder {
             // removed in a later phase.
             nodeList.add(new UnconditionalJump(regularExitLabel));
 
-            return new PhaseOneResult(underlyingAST, treeLookupMap, nodeList,
+            return new PhaseOneResult(underlyingAST, treeLookupMap,
+                    convertedTreeLookupMap, nodeList,
                     bindings, leaders, returnNodes);
         }
 
@@ -1493,21 +1508,23 @@ public class CFGBuilder {
         }
 
         /**
-         * Replace a node in the lookup map. The node should refer to a Tree and
-         * that Tree should already be in the lookup map. This method is used to
+         * Add a node in the post-conversion lookup map. The node
+         * should refer to a Tree and that Tree should already be in
+         * the pre-conversion lookup map. This method is used to
          * update the Tree-Node mapping with conversion nodes.
          *
          * @param node
          *            The node to add to the lookup map.
          */
-        protected void replaceInLookupMap(Node node) {
+        protected void addToConvertedLookupMap(Node node) {
             Tree tree = node.getTree();
-            replaceInLookupMap(tree, node);
+            addToConvertedLookupMap(tree, node);
         }
 
         /**
-         * Replace a node in the lookup map. The tree argument should already be
-         * in the lookup map. This method is used to update the Tree-Node mapping
+         * Add a node in the post-conversion lookup map. The tree
+         * argument should already be in the pre-conversion lookup
+         * map. This method is used to update the Tree-Node mapping
          * with conversion nodes.
          *
          * @param tree
@@ -1515,10 +1532,10 @@ public class CFGBuilder {
          * @param node
          *            The node to add to the lookup map.
          */
-        protected void replaceInLookupMap(Tree tree, Node node) {
+        protected void addToConvertedLookupMap(Tree tree, Node node) {
             assert tree != null;
             assert treeLookupMap.containsKey(tree);
-            treeLookupMap.put(tree, node);
+            convertedTreeLookupMap.put(tree, node);
         }
 
         /**
@@ -1714,7 +1731,7 @@ public class CFGBuilder {
                 // Add Throwable to account for unchecked exceptions
                 TypeElement throwableElement = elements
                     .getTypeElement("java.lang.Throwable");
-                replaceInLookupMap(node.getTree(), boxed);
+                addToConvertedLookupMap(node.getTree(), boxed);
                 insertNodeWithExceptionsAfter(boxed,
                         Collections.singleton(throwableElement.asType()), valueOfAccess);
                 return boxed;
@@ -1757,7 +1774,7 @@ public class CFGBuilder {
                 // Add Throwable to account for unchecked exceptions
                 TypeElement throwableElement = elements
                     .getTypeElement("java.lang.Throwable");
-                replaceInLookupMap(node.getTree(), unboxed);
+                addToConvertedLookupMap(node.getTree(), unboxed);
                 insertNodeWithExceptionsAfter(unboxed,
                         Collections.singleton(throwableElement.asType()), primValueAccess);
                 return unboxed;
@@ -1781,7 +1798,7 @@ public class CFGBuilder {
             if (!TypesUtils.isString(node.getType())) {
                 Node converted = new StringConversionNode(node.getTree(), node,
                         stringElement.asType());
-                replaceInLookupMap(converted);
+                addToConvertedLookupMap(converted);
                 insertNodeAfter(converted, node);
                 return converted;
             } else {
@@ -1808,7 +1825,7 @@ public class CFGBuilder {
             case SHORT: {
                 TypeMirror intType = types.getPrimitiveType(TypeKind.INT);
                 Node widened = new WideningConversionNode(node.getTree(), node, intType);
-                replaceInLookupMap(widened);
+                addToConvertedLookupMap(widened);
                 insertNodeAfter(widened, node);
                 return widened;
             }
@@ -1870,7 +1887,7 @@ public class CFGBuilder {
             if (!types.isSameType(node.getType(), exprType)) {
                 Node widened = new WideningConversionNode(node.getTree(), node,
                         exprType);
-                replaceInLookupMap(widened);
+                addToConvertedLookupMap(widened);
                 insertNodeAfter(widened, node);
                 return widened;
             } else {
@@ -1897,7 +1914,7 @@ public class CFGBuilder {
                     && !types.isSameType(node.getType(), destType)) {
                 Node widened = new WideningConversionNode(node.getTree(), node,
                         destType);
-                replaceInLookupMap(widened);
+                addToConvertedLookupMap(widened);
                 insertNodeAfter(widened, node);
                 return widened;
             } else {
@@ -1924,7 +1941,7 @@ public class CFGBuilder {
                     && !types.isSameType(destType, node.getType())) {
                 Node narrowed = new NarrowingConversionNode(node.getTree(), node,
                         destType);
-                replaceInLookupMap(narrowed);
+                addToConvertedLookupMap(narrowed);
                 insertNodeAfter(narrowed, node);
                 return narrowed;
             } else {
