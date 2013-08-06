@@ -1213,7 +1213,7 @@ public class CFGBuilder {
             }
 
             return new ControlFlowGraph(startBlock, regularExitBlock, exceptionalExitBlock, in.underlyingAST,
-                    in.treeLookupMap, /*in.convertedTreeLookupMap,*/ in.returnNodes);
+                    in.treeLookupMap, in.convertedTreeLookupMap, in.returnNodes);
         }
     }
 
