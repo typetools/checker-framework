@@ -7,11 +7,15 @@ public abstract class PureAndFlow {
 
     void nonpure(String s1) {}
 
-    //:: warning: (purity.void.method)
+    //:: warning: (purity.deterministic.void.method)
     @dataflow.quals.Pure void pure(String s2) {}
+    //:: warning: (purity.deterministic.void.method)
+    @dataflow.quals.Deterministic void det(String s3) {}
 
-    //:: warning: (purity.void.method)
-    @dataflow.quals.Pure abstract void abstractpure(String s2);
+    //:: warning: (purity.deterministic.void.method)
+    @dataflow.quals.Pure abstract void abstractpure(String s4);
+    //:: warning: (purity.deterministic.void.method)
+    @dataflow.quals.Deterministic abstract void abstractdet(String s4);
 
     void withNonRow() {
         if (s2 != null) {
@@ -29,8 +33,16 @@ public abstract class PureAndFlow {
     }
 
     interface IFace {
-        //:: warning: (purity.void.method)
-        @dataflow.quals.Pure void ifacepure(String s2);
+        //:: warning: (purity.deterministic.void.method)
+        @dataflow.quals.Pure void ifacepure(String s);
+        //:: warning: (purity.deterministic.void.method)
+        @dataflow.quals.Deterministic void ifacedet(String s);
     }
 
+    class Cons {
+        //:: warning: (purity.deterministic.constructor)
+        @dataflow.quals.Pure Cons(String s) {}
+        //:: warning: (purity.deterministic.constructor)
+        @dataflow.quals.Deterministic Cons(int i) {}
+    }
 }

@@ -27,7 +27,9 @@ class Other {
 
 class Entry<K,V> implements Map.Entry<K,V> {
     public V setValue(V newValue) { throw new RuntimeException(); }
+    @SuppressWarnings("purity") // new and throw are not allowed, ignore
     @Pure public K getKey() { throw new RuntimeException(); }
+    @SuppressWarnings("purity") // new and throw are not allowed, ignore
     @Pure public V getValue() { throw new RuntimeException(); }
 }
 
