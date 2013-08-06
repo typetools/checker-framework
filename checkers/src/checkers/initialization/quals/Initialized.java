@@ -1,16 +1,16 @@
 package checkers.initialization.quals;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
 import checkers.nullness.NullnessChecker;
 import checkers.nullness.quals.NonNull;
 import checkers.quals.DefaultQualifierInHierarchy;
 import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifier;
+
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * This type qualifier belongs to the freedom-before-commitment initialization
@@ -26,10 +26,10 @@ import checkers.quals.TypeQualifier;
  *
  * @checker.framework.manual #nullness-checker Nullness Checker
  */
-@Documented
 @TypeQualifier
-@DefaultQualifierInHierarchy
 @SubtypeOf(UnknownInitialization.class)
+@DefaultQualifierInHierarchy
+@Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
 public @interface Initialized {

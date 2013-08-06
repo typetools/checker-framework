@@ -1,18 +1,7 @@
 package checkers.flow;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Name;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.Types;
-
-import javacutils.AnnotationUtils;
-import javacutils.Pair;
+import checkers.quals.MonotonicQualifier;
+import checkers.types.AnnotatedTypeFactory;
 
 import dataflow.analysis.FlowExpressions;
 import dataflow.analysis.FlowExpressions.ArrayAccess;
@@ -26,10 +15,23 @@ import dataflow.cfg.node.FieldAccessNode;
 import dataflow.cfg.node.LocalVariableNode;
 import dataflow.cfg.node.MethodInvocationNode;
 import dataflow.cfg.node.Node;
+import dataflow.quals.Pure;
 import dataflow.util.PurityUtils;
 
-import checkers.quals.MonotonicQualifier;
-import checkers.types.AnnotatedTypeFactory;
+import javacutils.AnnotationUtils;
+import javacutils.Pair;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Types;
 
 /**
  * A store for the checker framework analysis tracks the annotations of memory
@@ -833,11 +835,13 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         }
     }
 
+    @Pure
     @Override
     public String toString() {
         return toDOToutput().replace("\\n", "\n");
     }
 
+    @Pure
     @Override
     public boolean hasDOToutput() {
         return true;

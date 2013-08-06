@@ -1,26 +1,48 @@
 package checkers.util.report;
 
+import checkers.basetype.BaseTypeChecker;
+import checkers.basetype.BaseTypeValidator;
+import checkers.basetype.BaseTypeVisitor;
+import checkers.source.Result;
+import checkers.types.AnnotatedTypeFactory;
+import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import checkers.types.BasicAnnotatedTypeFactory;
+import checkers.util.AnnotatedTypes;
+import checkers.util.report.quals.ReportCall;
+import checkers.util.report.quals.ReportCreation;
+import checkers.util.report.quals.ReportInherit;
+import checkers.util.report.quals.ReportOverride;
+import checkers.util.report.quals.ReportReadWrite;
+import checkers.util.report.quals.ReportUse;
+import checkers.util.report.quals.ReportWrite;
+
+import javacutils.ElementUtils;
+import javacutils.TreeUtils;
+
 import java.util.List;
 import java.util.Map;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 
-import javacutils.ElementUtils;
-import javacutils.TreeUtils;
-
-import checkers.basetype.BaseTypeVisitor;
-import checkers.source.Result;
-import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import checkers.types.BasicAnnotatedTypeFactory;
-import checkers.util.AnnotatedTypes;
-import checkers.util.report.quals.*;
-
-import com.sun.source.tree.*;
+import com.sun.source.tree.ArrayAccessTree;
+import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.InstanceOfTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.TypeCastTree;
 
 public class ReportVisitor extends BaseTypeVisitor<ReportChecker, BasicAnnotatedTypeFactory<ReportChecker>> {
 
@@ -280,11 +302,16 @@ public class ReportVisitor extends BaseTypeVisitor<ReportChecker, BasicAnnotated
     }
 
     @Override
-    protected TypeValidator createTypeValidator() {
-        return new ReportTypeValidator();
+    protected BaseTypeValidator createTypeValidator() {
+        return new ReportTypeValidator(checker, this, atypeFactory);
     }
 
-    protected class ReportTypeValidator extends TypeValidator {
+    protected class ReportTypeValidator extends BaseTypeValidator {
+        public ReportTypeValidator(BaseTypeChecker<?> checker,
+                BaseTypeVisitor<?, ?> visitor, AnnotatedTypeFactory atypeFactory) {
+            super(checker, visitor, atypeFactory);
+        }
+
         @Override
         public Void visitDeclared(AnnotatedDeclaredType type, Tree tree) {
             Element member = type.getUnderlyingType().asElement();

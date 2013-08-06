@@ -1,12 +1,12 @@
 package checkers.formatter;
 
-import javax.lang.model.type.TypeMirror;
-
 import checkers.basetype.BaseTypeVisitor;
 import checkers.formatter.FormatterTreeUtil.FormatCall;
 import checkers.formatter.FormatterTreeUtil.InvocationType;
 import checkers.formatter.FormatterTreeUtil.Result;
 import checkers.formatter.quals.ConversionCategory;
+
+import javax.lang.model.type.TypeMirror;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -31,7 +31,7 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterChecker, Formatte
             Result<String> sat = fc.isIllegalFormat();
             if (sat.value() != null){
                 // I.1
-                tu.failure(sat,"format.string.invalid",sat.value());
+                tu.failure(sat, "format.string.invalid", sat.value());
             } else {
                 Result<InvocationType> invc = fc.getInvocationType();
                 ConversionCategory[] formatCats = fc.getFormatCategories();
@@ -42,11 +42,11 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterChecker, Formatte
                     int formatl = formatCats.length;
                     if (paraml < formatl) {
                         // II.1
-                        tu.failure(invc,"format.missing.arguments",formatl,paraml);
+                        tu.failure(invc, "format.missing.arguments", formatl,paraml);
                     } else {
                         if (paraml > formatl) {
                             // II.2
-                            tu.warning(invc,"format.excess.arguments",formatl,paraml);
+                            tu.warning(invc, "format.excess.arguments", formatl,paraml);
                         }
                         for (int i=0; i<formatl; ++i) {
                             ConversionCategory formatCat = formatCats[i];

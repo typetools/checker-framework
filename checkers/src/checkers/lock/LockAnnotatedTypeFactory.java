@@ -1,22 +1,25 @@
 package checkers.lock;
 
+import checkers.lock.quals.GuardedBy;
+import checkers.types.AnnotatedTypeMirror;
+import checkers.types.BasicAnnotatedTypeFactory;
+import checkers.util.AnnotationBuilder;
+
+import javacutils.AnnotationUtils;
+import javacutils.TreeUtils;
+import javacutils.TypesUtils;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import javax.lang.model.element.AnnotationMirror;
 
-import javacutils.AnnotationUtils;
-import javacutils.TreeUtils;
-import javacutils.TypesUtils;
-
-import checkers.lock.quals.GuardedBy;
-import checkers.quals.Unqualified;
-import checkers.types.AnnotatedTypeMirror;
-import checkers.types.BasicAnnotatedTypeFactory;
-import checkers.util.AnnotationBuilder;
-
-import com.sun.source.tree.*;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.Tree;
 
 // Disclaimer:
 // This class is currently in its alpha form.  For sample code on how to write
@@ -33,12 +36,13 @@ public class LockAnnotatedTypeFactory
     extends BasicAnnotatedTypeFactory<LockChecker> {
 
     private List<String> heldLocks = new ArrayList<String>();
-    private final AnnotationMirror GUARDED_BY;
+    private final AnnotationMirror GUARDED_BY, UNQUALIFIED;
 
     public LockAnnotatedTypeFactory(LockChecker checker,
             CompilationUnitTree root) {
         super(checker, root);
-        GUARDED_BY = AnnotationUtils.fromClass(elements, GuardedBy.class);
+        GUARDED_BY = checker.GUARDEDBY;
+        UNQUALIFIED = checker.UNQUALIFIED;
 
         addAliasedAnnotation(net.jcip.annotations.GuardedBy.class, GUARDED_BY);
 
@@ -61,8 +65,7 @@ public class LockAnnotatedTypeFactory
 
         String lock = AnnotationUtils.getElementValue(guarded, "value", String.class, false);
         if (heldLocks.contains(lock)) {
-            type.clearAnnotations();
-            type.addAnnotation(Unqualified.class);
+            type.replaceAnnotation(UNQUALIFIED);
         }
     }
 
@@ -100,8 +103,7 @@ public class LockAnnotatedTypeFactory
         assert receiver != null;
         if (receiver != null) {
             AnnotationMirror newAnno = createGuarded(receiver.toString());
-            type.clearAnnotations();
-            type.addAnnotation(newAnno);
+            type.replaceAnnotation(newAnno);
         }
     }
 
@@ -120,8 +122,7 @@ public class LockAnnotatedTypeFactory
             return;
 
         AnnotationMirror newAnno = createGuarded(expr.toString());
-        type.clearAnnotations();
-        type.addAnnotation(newAnno);
+        type.replaceAnnotation(newAnno);
     }
 
     // TODO: Aliasing is not handled nicely by getAnnotation.
@@ -133,7 +134,7 @@ public class LockAnnotatedTypeFactory
     }
 
     @Override
-    public void annotateImplicit(Tree tree, AnnotatedTypeMirror type) {
+    protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type, boolean useFlow) {
         if (!hasGuardedBy(type)) {
             /* TODO: I added STRING_LITERAL to the list of types that should get defaulted.
              * This resulted in Flow inference to infer Unqualified for strings, which is a
@@ -141,7 +142,7 @@ public class LockAnnotatedTypeFactory
              * This check ensures that an existing annotation doesn't get removed by flow.
              * However, I'm not sure this is the nicest way to do things.
              */
-            super.annotateImplicit(tree, type);
+            super.annotateImplicit(tree, type, useFlow);
         }
         replaceThis(type, tree);
         replaceItself(type, tree);

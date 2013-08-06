@@ -1,15 +1,17 @@
 package checkers.nullness.quals;
 
+import checkers.nullness.AbstractNullnessChecker;
+import checkers.quals.DefaultFor;
+import checkers.quals.DefaultLocation;
+import checkers.quals.ImplicitFor;
+import checkers.quals.SubtypeOf;
+import checkers.quals.TypeQualifier;
+
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-
-import checkers.nullness.AbstractNullnessChecker;
-import checkers.quals.ImplicitFor;
-import checkers.quals.SubtypeOf;
-import checkers.quals.TypeQualifier;
 
 import com.sun.source.tree.Tree;
 
@@ -26,11 +28,12 @@ import com.sun.source.tree.Tree;
  * @see AbstractNullnessChecker
  * @checker.framework.manual #nullness-checker Nullness Checker
  */
-@Documented
-@SubtypeOf({})
 @TypeQualifier
-@Retention(RetentionPolicy.RUNTIME)
+@SubtypeOf({})
 @ImplicitFor(trees = { Tree.Kind.NULL_LITERAL }, typeNames = { java.lang.Void.class })
+@DefaultFor({ DefaultLocation.LOCALS, DefaultLocation.IMPLICIT_UPPER_BOUNDS })
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
 public @interface Nullable {
 }

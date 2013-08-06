@@ -1,5 +1,12 @@
 package dataflow.cfg.node;
 
+/*>>>
+import checkers.nullness.quals.Nullable;
+*/
+
+import dataflow.cfg.node.AssignmentContext.MethodReturnContext;
+import dataflow.util.HashCodeUtils;
+
 import java.util.Collection;
 import java.util.Collections;
 
@@ -8,9 +15,6 @@ import javax.lang.model.util.Types;
 
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ReturnTree;
-
-import dataflow.cfg.node.AssignmentContext.MethodReturnContext;
-import dataflow.util.HashCodeUtils;
 
 /**
  * A node for a return statement:
@@ -26,9 +30,9 @@ import dataflow.util.HashCodeUtils;
 public class ReturnNode extends Node {
 
     protected ReturnTree tree;
-    protected/* @Nullable */Node result;
+    protected /*@Nullable*/ Node result;
 
-    public ReturnNode(ReturnTree t, /* @Nullable */Node result, Types types, MethodTree methodTree) {
+    public ReturnNode(ReturnTree t, /*@Nullable*/ Node result, Types types, MethodTree methodTree) {
         super(types.getNoType(TypeKind.NONE));
         this.result = result;
         tree = t;

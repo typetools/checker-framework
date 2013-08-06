@@ -1,15 +1,15 @@
-TODO: add instructions/build scripts how to build the different .zip files.
+TODO: explain how the website is created 
 
-You need to copy over a few .jar files for the personal-blog demos.
-Files:
+To build eclipse-projects.zip 
+  make eclipse-projects.zip
+(this copies the required jars before zipping and removes any class files
+before zipping)
 
-commons-lang.jar
-commons-logging.jar
-hibernate2.jar
-personalblog.jar
-servlet-api.jar
-struts.jar
+To build sourcefiles.zip:
+  make sourcefiles.zip
+(this copies the source files from the eclipse-projects, copies required jars, 
+and removes any class files before zipping.) 
 
-Destinations:
-eclipse-projects/personalblog-demo/lib/
-src/personalblog-demo/lib/
+To build both:
+  make
+

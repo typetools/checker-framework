@@ -19,7 +19,6 @@ import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 
@@ -44,9 +43,12 @@ import com.sun.source.tree.Tree;
  * This class takes care of two of the attributes of {@link ImplicitFor};
  * the others are handled in {@link TreeAnnotator}.
  *
+ * The Element parameter is the use-site of the type.
+ * TODO: the parameter is null if no Element is available, e.g. for a cast.
+ *
  * @see TreeAnnotator
  */
-public class TypeAnnotator extends AnnotatedTypeScanner<Void, ElementKind> {
+public class TypeAnnotator extends AnnotatedTypeScanner<Void, Element> {
 
     // TODO: like in TreeAnnotator, these should be maps to Set<AM>.
     private final Map<TypeKind, Set<AnnotationMirror>> typeKinds;
@@ -122,10 +124,10 @@ public class TypeAnnotator extends AnnotatedTypeScanner<Void, ElementKind> {
     }
 
     @Override
-    protected Void scan(AnnotatedTypeMirror type, ElementKind p) {
+    protected Void scan(AnnotatedTypeMirror type, Element elem) {
 
         if (type == null) // on bounds, etc.
-            return super.scan(type, p);
+            return super.scan(type, elem);
 
         // If the type's fully-qualified name is in the appropriate map, annotate
         // the type. Do this before looking at kind or class, as this information
@@ -157,16 +159,16 @@ public class TypeAnnotator extends AnnotatedTypeScanner<Void, ElementKind> {
             }
         }
 
-        return super.scan(type, p);
+        return super.scan(type, elem);
     }
 
     @Override
-    public Void visitExecutable(AnnotatedExecutableType t, ElementKind p) {
+    public Void visitExecutable(AnnotatedExecutableType t, Element elem) {
         // skip the receiver
-        scan(t.getReturnType(), p);
-        scanAndReduce(t.getParameterTypes(), p, null);
-        scanAndReduce(t.getThrownTypes(), p, null);
-        scanAndReduce(t.getTypeVariables(), p, null);
+        scan(t.getReturnType(), elem);
+        scanAndReduce(t.getParameterTypes(), elem, null);
+        scanAndReduce(t.getThrownTypes(), elem, null);
+        scanAndReduce(t.getTypeVariables(), elem, null);
         return null;
     }
 }

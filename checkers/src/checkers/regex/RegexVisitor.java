@@ -1,12 +1,6 @@
 package checkers.regex;
 
 
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.VariableElement;
-
-import javacutils.TreeUtils;
-
 import checkers.basetype.BaseTypeVisitor;
 import checkers.regex.quals.Regex;
 import checkers.source.Result;
@@ -14,8 +8,13 @@ import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 
+import javacutils.TreeUtils;
+
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
+
 import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
@@ -24,9 +23,9 @@ import com.sun.source.tree.Tree.Kind;
 
 /**
  * A type-checking visitor for the Regex type system.
- * 
+ *
  * This visitor does the following:
- * 
+ *
  * <ol>
  * <li value="1">Allows any String to be passed to Pattern.compile if the
  *    Pattern.LITERAL flag is passed.</li>
@@ -35,7 +34,7 @@ import com.sun.source.tree.Tree.Kind;
  * <li value="3">Checks calls to {@code MatchResult.start}, {@code MatchResult.end}
  * and {@code MatchResult.group} to ensure that a valid group number is passed.</li>
  * </ol>
- * 
+ *
  * @see RegexChecker
  */
 public class RegexVisitor extends BaseTypeVisitor<RegexChecker, RegexAnnotatedTypeFactory> {
@@ -111,18 +110,10 @@ public class RegexVisitor extends BaseTypeVisitor<RegexChecker, RegexAnnotatedTy
      * Case 2: Check String compound concatenation for valid Regex use.
      */
     // TODO: Remove this. This should be handled by flow.
-    @Override
+    /*@Override
     public Void visitCompoundAssignment(CompoundAssignmentTree node, Void p) {
-        if (TreeUtils.isStringCompoundConcatenation(node)) {
-            AnnotatedTypeMirror rhs = atypeFactory.getAnnotatedType(node.getExpression());
-            AnnotatedTypeMirror lhs = atypeFactory.getAnnotatedType(node.getVariable());
-
-            if (lhs.hasExplicitAnnotation(Regex.class) && !rhs.hasAnnotation(Regex.class)) {
-                checker.report(Result.failure("assignment.type.incompatible", rhs.toString(), lhs.toString()), node.getExpression());
-            }
-        }
-        return super.visitCompoundAssignment(node, p);
-    }
+        // Default behavior from superclass
+    }*/
 
     @Override
     public boolean isValidUse(AnnotatedDeclaredType declarationType,

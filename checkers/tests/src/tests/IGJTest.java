@@ -2,6 +2,8 @@ package tests;
 
 import static org.junit.Assert.assertFalse;
 
+import checkers.util.test.CheckerTest;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -10,8 +12,6 @@ import java.util.Scanner;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import checkers.util.test.CheckerTest;
-
 // Also see file FailedTests, that contains currently-failing tests.
 /**
  * JUnit tests for the IGJ annotation checker.
@@ -19,7 +19,9 @@ import checkers.util.test.CheckerTest;
 public class IGJTest extends CheckerTest {
 
     public IGJTest() {
-        super(checkers.igj.IGJChecker.class.getName(), "igj", "-Anomsgtext");
+        super(checkers.igj.IGJChecker.class,
+                "igj",
+                "-Anomsgtext");
     }
 
     void runTestWithDefault(String expectedFileName, boolean shouldSucceed, String javaFile) {

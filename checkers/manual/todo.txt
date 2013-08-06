@@ -28,6 +28,8 @@ What would a good place be for this?  At the beginning/end?  Split into multiple
 
 - Document @Covariant annotation [Mike/Werner].
 
+- Document -AignoreRawTypeArguments (rename the option?)
+
 
 Changes throughout the manual to existing sections
 ===========================================================================
@@ -115,3 +117,9 @@ Suppress warnings using assert statements with the string
 @AssumeAssertion(warningkey); previously, just the warning key sufficed.
 
 Purity analysis:  uses new annotations @SideEffectFree and ...
+
+
+Eclipse setup
+-------------
+Describe checker-framework.importorder and formatter.
+Should these developer-focused configs be moved somewhere else?

@@ -20,6 +20,7 @@ public class RawTypeAssignment {
         // In this method, we compute the greatest lower bound of
         // ArrayList<Component> and the return type of getComponents.
         // Currently, this GLB is an error type, which is a bug.
+        //:: warning: [unchecked] unchecked conversion
         ArrayList<Component> clist = getComponents();
         clist.get(0);
     }

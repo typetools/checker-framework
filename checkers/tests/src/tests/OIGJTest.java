@@ -1,5 +1,7 @@
 package tests;
 
+import checkers.util.test.ParameterizedCheckerTest;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -7,20 +9,22 @@ import java.util.LinkedList;
 
 import org.junit.runners.Parameterized.Parameters;
 
-import checkers.util.test.ParameterizedCheckerTest;
-
 /**
  * JUnit tests for the Interning Checker, which tests the Interned annotation.
  */
 public class OIGJTest extends ParameterizedCheckerTest {
 
     public OIGJTest(File testFile) {
-        super(testFile, checkers.oigj.OIGJChecker.class.getName(), "oigj",
+        super(testFile,
+                checkers.oigj.OIGJChecker.class,
+                "oigj",
                 "-Anomsgtext");
     }
 
     @Parameters
-    public static Collection<Object[]> data() { return filter(testFiles("oigj", "all-systems")); }
+    public static Collection<Object[]> data() {
+        return filter(testFiles("oigj", "all-systems"));
+    }
 
     // Duplicate from JavariTest.
     protected static Collection<Object[]> filter(Collection<Object[]> in) {
