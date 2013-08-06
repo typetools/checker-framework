@@ -4,9 +4,9 @@
 
 DIA?=dia
 
-EPSFILES = fenum.eps igj.eps interning.eps javari.eps nullness.eps nullness-and-raw.eps regex.eps signature-types.eps formatter-hierarchy.eps formatter-categories.eps
-PDFFILES = fenum.pdf igj.pdf interning.pdf javari.pdf nullness.pdf nullness-and-raw.pdf regex.pdf signature-types.pdf formatter-hierarchy.pdf formatter-categories.pdf
-PNGFILES = fenum.png igj.png interning.png javari.png nullness.png nullness-and-raw.png regex.png signature-types.png formatter-hierarchy.png formatter-categories.png
+EPSFILES = fenum.eps guardedby.eps igj.eps interning.eps javari.eps nullness.eps nullness-and-raw.eps regex.eps signature-types.eps formatter-hierarchy.eps formatter-categories.eps
+PDFFILES = fenum.pdf guardedby.pdf igj.pdf interning.pdf javari.pdf nullness.pdf nullness-and-raw.pdf regex.pdf signature-types.pdf formatter-hierarchy.pdf formatter-categories.pdf
+PNGFILES = fenum.png guardedby.png igj.png interning.png javari.png nullness.png nullness-and-raw.png regex.png signature-types.png formatter-hierarchy.png formatter-categories.png
 
 all: ${EPSFILES} ${PDFFILES} ${PNGFILES} png-copy
 
