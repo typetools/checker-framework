@@ -37,10 +37,10 @@ class PureTest {
         @NonNull Object l2 = puremethod(x);
 
         x = new Object();
-        
+
         //:: error: (assignment.type.incompatible)
         @NonNull Object l3 = puremethod(x);
-        
+
         //:: error: (assignment.type.incompatible)
         @NonNull Object l4 = puremethod("n");
 
@@ -114,7 +114,7 @@ class PureTest {
     void setSuperclass(@Nullable Object no) {
         // set the field returned by getSuperclass.
     }
-    
+
     static void testInstanceofPositive3(PureTest pt) {
         if (!(pt.getSuperclass() instanceof Object)) {
             return;

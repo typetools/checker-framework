@@ -72,6 +72,10 @@ public class ImmutabilitySubchecker extends BaseTypeChecker<ImmutabilityAnnotate
         // TODO: Handle CoVariant(X_i, C)
         @Override
         protected boolean isSubtypeTypeArguments(AnnotatedDeclaredType rhs, AnnotatedDeclaredType lhs) {
+            if (ignoreRawTypeArguments(rhs, lhs)) {
+                return true;
+            }
+
             if (lhs.hasEffectiveAnnotation(MUTABLE))
                 return super.isSubtypeTypeArguments(rhs, lhs);
 
@@ -93,7 +97,7 @@ public class ImmutabilitySubchecker extends BaseTypeChecker<ImmutabilityAnnotate
         }
 
         @Override
-        public boolean isSubtype(Collection<AnnotationMirror> rhs, Collection<AnnotationMirror> lhs) {
+        public boolean isSubtype(Collection<? extends AnnotationMirror> rhs, Collection<? extends AnnotationMirror> lhs) {
             if (lhs.isEmpty() || rhs.isEmpty()) {
                 ErrorReporter.errorAbort("GraphQualifierHierarchy: Empty annotations in lhs: " + lhs + " or rhs: " + rhs);
             }

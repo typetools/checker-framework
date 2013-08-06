@@ -1,19 +1,5 @@
 package dataflow.analysis;
 
-import java.util.ArrayList;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.PriorityQueue;
-import java.util.Set;
-
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.Types;
-
-import javacutils.Pair;
-
 import dataflow.cfg.ControlFlowGraph;
 import dataflow.cfg.UnderlyingAST;
 import dataflow.cfg.UnderlyingAST.CFGMethod;
@@ -27,6 +13,20 @@ import dataflow.cfg.block.SpecialBlock;
 import dataflow.cfg.node.LocalVariableNode;
 import dataflow.cfg.node.Node;
 import dataflow.cfg.node.ReturnNode;
+
+import javacutils.Pair;
+
+import java.util.ArrayList;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.PriorityQueue;
+import java.util.Set;
+
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Types;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;

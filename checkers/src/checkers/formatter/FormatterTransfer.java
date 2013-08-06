@@ -1,16 +1,17 @@
 package checkers.formatter;
 
-import javax.lang.model.element.AnnotationMirror;
-
 import checkers.flow.CFAbstractTransfer;
 import checkers.flow.CFStore;
 import checkers.flow.CFValue;
 import checkers.formatter.FormatterTreeUtil.Result;
 import checkers.formatter.quals.ConversionCategory;
+
 import dataflow.analysis.RegularTransferResult;
 import dataflow.analysis.TransferInput;
 import dataflow.analysis.TransferResult;
 import dataflow.cfg.node.MethodInvocationNode;
+
+import javax.lang.model.element.AnnotationMirror;
 
 public class FormatterTransfer extends
         CFAbstractTransfer<CFValue, CFStore, FormatterTransfer> {

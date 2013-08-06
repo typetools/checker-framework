@@ -4,6 +4,35 @@ package checkers.util.stub;
 import checkers.nullness.quals.*;
 */
 
+import cfjapa.parser.JavaParser;
+import cfjapa.parser.ast.CompilationUnit;
+import cfjapa.parser.ast.ImportDeclaration;
+import cfjapa.parser.ast.IndexUnit;
+import cfjapa.parser.ast.PackageDeclaration;
+import cfjapa.parser.ast.TypeParameter;
+import cfjapa.parser.ast.body.BodyDeclaration;
+import cfjapa.parser.ast.body.ClassOrInterfaceDeclaration;
+import cfjapa.parser.ast.body.ConstructorDeclaration;
+import cfjapa.parser.ast.body.FieldDeclaration;
+import cfjapa.parser.ast.body.MethodDeclaration;
+import cfjapa.parser.ast.body.Parameter;
+import cfjapa.parser.ast.body.TypeDeclaration;
+import cfjapa.parser.ast.body.VariableDeclarator;
+import cfjapa.parser.ast.expr.AnnotationExpr;
+import cfjapa.parser.ast.expr.ArrayInitializerExpr;
+import cfjapa.parser.ast.expr.Expression;
+import cfjapa.parser.ast.expr.FieldAccessExpr;
+import cfjapa.parser.ast.expr.MarkerAnnotationExpr;
+import cfjapa.parser.ast.expr.MemberValuePair;
+import cfjapa.parser.ast.expr.NameExpr;
+import cfjapa.parser.ast.expr.NormalAnnotationExpr;
+import cfjapa.parser.ast.expr.SingleMemberAnnotationExpr;
+import cfjapa.parser.ast.expr.StringLiteralExpr;
+import cfjapa.parser.ast.type.ClassOrInterfaceType;
+import cfjapa.parser.ast.type.ReferenceType;
+import cfjapa.parser.ast.type.Type;
+import cfjapa.parser.ast.type.WildcardType;
+
 import checkers.quals.FromStubFile;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
@@ -13,35 +42,6 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
 import checkers.util.AnnotationBuilder;
-
-import japa.parser.JavaParser;
-import japa.parser.ast.CompilationUnit;
-import japa.parser.ast.ImportDeclaration;
-import japa.parser.ast.IndexUnit;
-import japa.parser.ast.PackageDeclaration;
-import japa.parser.ast.TypeParameter;
-import japa.parser.ast.body.BodyDeclaration;
-import japa.parser.ast.body.ClassOrInterfaceDeclaration;
-import japa.parser.ast.body.ConstructorDeclaration;
-import japa.parser.ast.body.FieldDeclaration;
-import japa.parser.ast.body.MethodDeclaration;
-import japa.parser.ast.body.Parameter;
-import japa.parser.ast.body.TypeDeclaration;
-import japa.parser.ast.body.VariableDeclarator;
-import japa.parser.ast.expr.AnnotationExpr;
-import japa.parser.ast.expr.ArrayInitializerExpr;
-import japa.parser.ast.expr.Expression;
-import japa.parser.ast.expr.FieldAccessExpr;
-import japa.parser.ast.expr.MarkerAnnotationExpr;
-import japa.parser.ast.expr.MemberValuePair;
-import japa.parser.ast.expr.NameExpr;
-import japa.parser.ast.expr.NormalAnnotationExpr;
-import japa.parser.ast.expr.SingleMemberAnnotationExpr;
-import japa.parser.ast.expr.StringLiteralExpr;
-import japa.parser.ast.type.ClassOrInterfaceType;
-import japa.parser.ast.type.ReferenceType;
-import japa.parser.ast.type.Type;
-import japa.parser.ast.type.WildcardType;
 
 import javacutils.AnnotationUtils;
 import javacutils.ElementUtils;
@@ -82,9 +82,9 @@ public class StubParser {
      * packages that are not on the classpath, this can be OK, so default to
      * false.
      */
-    private boolean warnIfNotFound = false;
+    private final boolean warnIfNotFound;
 
-    private boolean debugStubParser = false;
+    private final boolean debugStubParser;
 
     /** The file being parsed (makes error messages more informative). */
     private final String filename;
@@ -222,7 +222,7 @@ public class StubParser {
                 if (importDecl.isAsterisk()) {
                     // Static determines if we are importing members
                     // of a type (class or interface) or of a package
-                    if(importDecl.isStatic()) {
+                    if (importDecl.isStatic()) {
                         // Members of a type (according to JLS)
 
                         TypeElement element = findType(imported, "Imported type not found");
@@ -231,7 +231,7 @@ public class StubParser {
                             // Find compile time constant fields, or values of an enum
                             putAllNew(result, annosInType(element));
                             imports.addAll(getImportableMembers(element));
-                            }
+                        }
                     } else {
                         // Members of a package (according to JLS)
 
@@ -262,14 +262,14 @@ public class StubParser {
                         if (enclType != null) {
                             if (findFieldElement(enclType, fieldName) != null) {
                                 imports.add(imported);
-                                }
+                            }
                         }
 
                     } else if (importType.getKind() == ElementKind.ANNOTATION_TYPE) {
                         // Single annotation or nested annotation
 
                         AnnotationMirror anno = AnnotationUtils.fromName(elements, imported);
-                        if (anno != null ) {
+                        if (anno != null) {
                             Element annoElt = anno.getAnnotationType().asElement();
                             putNew(result, annoElt.getSimpleName().toString(), anno);
                         } else {
@@ -281,7 +281,7 @@ public class StubParser {
                         // Class or nested class
 
                         imports.add(imported);
-                        }
+                    }
                 }
             } catch (AssertionError error) {
                 stubWarning("" + error);
@@ -565,7 +565,7 @@ public class StubParser {
             AnnotatedDeclaredType adeclType = (AnnotatedDeclaredType)atype;
             if (declType.getTypeArgs() != null
                     && !declType.getTypeArgs().isEmpty()
-                    && adeclType.isParameterized()) {
+                    && !adeclType.getTypeArguments().isEmpty()) {
                 assert declType.getTypeArgs().size() == adeclType.getTypeArguments().size();
                 for (int i = 0; i < declType.getTypeArgs().size(); ++i) {
                     annotate(adeclType.getTypeArguments().get(i),

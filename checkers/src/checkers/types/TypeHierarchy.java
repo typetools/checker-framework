@@ -9,6 +9,7 @@ import checkers.util.AnnotatedTypes;
 import checkers.util.QualifierPolymorphism;
 
 import javacutils.AnnotationUtils;
+import javacutils.ErrorReporter;
 import javacutils.InternalUtils;
 
 import java.util.HashSet;
@@ -78,12 +79,19 @@ public class TypeHierarchy {
      * @return  a true iff rhs a subtype of lhs
      */
     public boolean isSubtype(AnnotatedTypeMirror rhs, AnnotatedTypeMirror lhs) {
-        rhs = handlePolyAll(rhs);
-        lhs = handlePolyAll(lhs);
+        try {
+            rhs = handlePolyAll(rhs);
+            lhs = handlePolyAll(lhs);
 
-        boolean result = isSubtypeImpl(rhs, lhs);
-        this.visited.clear();
-        return result;
+            boolean result = isSubtypeImpl(rhs, lhs);
+            this.visited.clear();
+            return result;
+        } catch (Throwable t) {
+            ErrorReporter.errorAbort("Found exception during TypeHierarchy.isSubtype of " +
+                    rhs + " and " + lhs, t);
+            // Dead code
+            return false;
+        }
     }
 
     /**
@@ -230,10 +238,14 @@ public class TypeHierarchy {
             Set<AnnotationMirror> lhsAnnos = lhsBase.getEffectiveAnnotations();
             Set<AnnotationMirror> rhsAnnos = rhsBase.getEffectiveAnnotations();
 
-            assert lhsAnnos.size() == qualifierHierarchy.getWidth() : "Found invalid number of annotations on lhsBase "
-                    + lhsBase + "; comparing lhs: " + lhs + " rhs: " + rhs;
-            assert rhsAnnos.size() == qualifierHierarchy.getWidth() : "Found invalid number of annotations on rhsBase "
-                    + rhsBase + "; comparing lhs: " + lhs + " rhs: " + rhs;
+            assert lhsAnnos.size() == qualifierHierarchy.getWidth() :
+                "Found invalid number of annotations on lhsBase " + lhsBase +
+                "; comparing lhs: " + lhs + " rhs: " + rhs +
+                "; expected number: " + qualifierHierarchy.getWidth();
+            assert rhsAnnos.size() == qualifierHierarchy.getWidth() :
+                "Found invalid number of annotations on rhsBase " + rhsBase +
+                "; comparing lhs: " + lhs + " rhs: " + rhs +
+                "; expected number: " + qualifierHierarchy.getWidth();
             if (!qualifierHierarchy.isSubtype(rhsAnnos, lhsAnnos)) {
                 return false;
             }
@@ -249,7 +261,7 @@ public class TypeHierarchy {
             // System.out.printf("lhsBase (%s underlying=%s), rhsBase (%s underlying=%s), equals=%s%n", lhsBase.hashCode(), lhsBase.getUnderlyingType(), rhsBase.hashCode(), rhsBase.getUnderlyingType(), lhsBase.equals(rhsBase));
 
             if (areCorrespondingTypeVariables(lhsBase, rhsBase)) {
-                Set<AnnotationMirror> tops = qualifierHierarchy.getTopAnnotations();
+                Set<? extends AnnotationMirror> tops = qualifierHierarchy.getTopAnnotations();
                 int good = 0;
                 // Go through annotations for each hierarchy separately.
                 for (AnnotationMirror top : tops) {
@@ -361,6 +373,11 @@ public class TypeHierarchy {
         return false;
     }
 
+    protected boolean ignoreRawTypeArguments(AnnotatedDeclaredType rhs, AnnotatedDeclaredType lhs) {
+        return checker.getProcessingEnvironment().getOptions().containsKey("ignoreRawTypeArguments") &&
+                (rhs.wasRaw() || lhs.wasRaw());
+    }
+
     /**
      * Checks that rhs and lhs are subtypes with respect to type arguments only.
      * Returns true if any of the provided types is not a parameterized type.
@@ -378,6 +395,10 @@ public class TypeHierarchy {
      * @return  true iff the type arguments of lhs and rhs are invariant.
      */
     protected boolean isSubtypeTypeArguments(AnnotatedDeclaredType rhs, AnnotatedDeclaredType lhs) {
+        if (ignoreRawTypeArguments(rhs, lhs)) {
+            return true;
+        }
+
         List<AnnotatedTypeMirror> rhsTypeArgs = rhs.getTypeArguments();
         List<AnnotatedTypeMirror> lhsTypeArgs = lhs.getTypeArguments();
 
@@ -428,6 +449,7 @@ public class TypeHierarchy {
                     return false;
                 }
             }
+
             lhs = ((AnnotatedWildcardType)lhs).getEffectiveExtendsBound();
             if (lhs == null)
                 return true;
@@ -443,6 +465,14 @@ public class TypeHierarchy {
             if (visited.contains(rhs))
                 return true;
             visited.add(rhs);
+
+            if (((AnnotatedWildcardType)lhs).getExtendsBoundField() == null ||
+                    ((AnnotatedWildcardType)lhs).getExtendsBoundField().getAnnotations().isEmpty()) {
+                // TODO: the LHS extends bound hasn't been unfolded or defaulted.
+                // Stop looking, we should be fine.
+                // See tests/nullness/generics/WildcardSubtyping.java
+                return true;
+            }
 
             AnnotatedTypeMirror rhsbnd = ((AnnotatedWildcardType)rhs).getEffectiveExtendsBound();
             AnnotatedTypeMirror lhsbnd = ((AnnotatedWildcardType)lhs).getEffectiveExtendsBound();

@@ -25,6 +25,7 @@ import javacutils.ErrorReporter;
 import javacutils.InternalUtils;
 import javacutils.Pair;
 import javacutils.TreeUtils;
+import javacutils.TypesUtils;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -165,8 +166,15 @@ public class AnnotatedTypes {
         @Override
         public AnnotatedTypeMirror visitDeclared(AnnotatedDeclaredType type, AnnotatedTypeMirror p) {
             // If visited Element is the desired one, we are done
-            if (p.getKind().isPrimitive())
-                return visit(atypeFactory.getUnboxedType(type), p);
+            if (p.getKind().isPrimitive()) {
+                if (TypesUtils.isBoxedPrimitive(type.getUnderlyingType())) {
+                    return visit(atypeFactory.getUnboxedType(type), p);
+                } else {
+                    // TODO: is there something better we could do?
+                    // See tests/framework/Unboxing.java
+                    return null;
+                }
+            }
 
             /* Something like the following seemed sensible for intersection types,
              * which came up in the Ternary test case with classes MethodSymbol and ClassSymbol.
@@ -478,13 +486,11 @@ public class AnnotatedTypes {
         AnnotatedDeclaredType iterableElmType = atypeFactory.getAnnotatedType(iterableElement);
         AnnotatedDeclaredType dt = (AnnotatedDeclaredType) asSuper(processingEnv.getTypeUtils(), atypeFactory, iterableType, iterableElmType);
         if (dt == null) {
-            ErrorReporter.errorAbort("AnnotatedTypes.getIteratedType: not iterable type: " + iterableType);
+            ErrorReporter.errorAbort("AnnotatedTypes.getIteratedType: not an iterable type: " + iterableType);
             return null; // dead code
         } else if (dt.getTypeArguments().isEmpty()) {
             TypeElement e = processingEnv.getElementUtils().getTypeElement("java.lang.Object");
-            AnnotatedDeclaredType t = atypeFactory.fromElement(e);
-            t.clearAnnotations();
-            atypeFactory.annotateImplicit(e, t);
+            AnnotatedDeclaredType t = atypeFactory.getAnnotatedType(e);
             return t;
         } else {
             return dt.getTypeArguments().get(0);
@@ -1135,7 +1141,7 @@ public class AnnotatedTypes {
             }
         }
 
-        Collection<AnnotationMirror> unification = Collections.emptySet();
+        Collection<? extends AnnotationMirror> unification = Collections.emptySet();
 
         boolean isFirst = true;
         for (AnnotatedTypeMirror type : types) {
@@ -1444,8 +1450,9 @@ public class AnnotatedTypes {
 
         // treat types that have polyall like type variables
         boolean hasPolyAll = type.hasAnnotation(PolyAll.class);
-        boolean canHaveEmptyAnnotationSet = QualifierHierarchy
-                .canHaveEmptyAnnotationSet(type) || hasPolyAll;
+        boolean canHaveEmptyAnnotationSet =
+                QualifierHierarchy.canHaveEmptyAnnotationSet(type) ||
+                hasPolyAll;
 
         // wrong number of annotations
         if (!canHaveEmptyAnnotationSet && n != expectedN) {

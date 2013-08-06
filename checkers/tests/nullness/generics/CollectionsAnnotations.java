@@ -38,7 +38,7 @@ class PriorityQueue3<E extends @NonNull Object> implements Collection2<E> {
 
 class Methods {
    static void addNull1(Collection1 l) {
-      //:: error: (argument.type.incompatible)
+      //:: error: (argument.type.incompatible) :: warning: [unchecked] unchecked call to add(E) as a member of the raw type Collection1 
       l.add(null);
    }
 

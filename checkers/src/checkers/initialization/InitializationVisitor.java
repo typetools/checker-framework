@@ -1,22 +1,10 @@
 package checkers.initialization;
 
-import java.lang.annotation.Annotation;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+/*>>>
+import checkers.compilermsgs.quals.CompilerMessageKey;
+import checkers.nullness.quals.Nullable;
+*/
 
-import javacutils.AnnotationUtils;
-import javacutils.ElementUtils;
-import javacutils.Pair;
-import javacutils.TreeUtils;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.ExecutableType;
 import checkers.basetype.BaseTypeVisitor;
 import checkers.flow.CFAbstractStore;
 import checkers.flow.CFAbstractValue;
@@ -25,6 +13,29 @@ import checkers.source.Result;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
+
+import dataflow.analysis.FlowExpressions.ClassName;
+import dataflow.analysis.FlowExpressions.FieldAccess;
+import dataflow.analysis.FlowExpressions.Receiver;
+import dataflow.analysis.FlowExpressions.ThisReference;
+
+import javacutils.AnnotationUtils;
+import javacutils.ElementUtils;
+import javacutils.Pair;
+import javacutils.TreeUtils;
+
+import java.lang.annotation.Annotation;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ExecutableType;
 
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
@@ -36,16 +47,6 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.VariableTree;
 
-import dataflow.analysis.FlowExpressions.ClassName;
-import dataflow.analysis.FlowExpressions.FieldAccess;
-import dataflow.analysis.FlowExpressions.Receiver;
-import dataflow.analysis.FlowExpressions.ThisReference;
-
-/*>>>
-import checkers.compilermsgs.quals.CompilerMessageKey;
-import checkers.nullness.quals.Nullable;
-*/
-
 /**
  * The visitor for the freedom-before-commitment type-system. The
  * freedom-before-commitment type-system and this class are abstract and need to
@@ -56,15 +57,16 @@ import checkers.nullness.quals.Nullable;
  *
  * @author Stefan Heule
  */
-public class InitializationVisitor<Checker extends InitializationChecker<? extends InitializationAnnotatedTypeFactory<?, Value, Store, ?, ?>>,
+public class InitializationVisitor<Checker extends InitializationChecker<? extends Factory>,
+        Factory extends InitializationAnnotatedTypeFactory<?, Value, Store, ?, ?>,
         Value extends CFAbstractValue<Value>,
         Store extends InitializationStore<Value, Store>>
-    extends BaseTypeVisitor<Checker, InitializationAnnotatedTypeFactory<?, Value, Store, ?, ?>> {
+    extends BaseTypeVisitor<Checker, Factory> {
 
     // Error message keys
     private static final /*@CompilerMessageKey*/ String COMMITMENT_INVALID_CAST = "initialization.invalid.cast";
     private static final /*@CompilerMessageKey*/ String COMMITMENT_FIELDS_UNINITIALIZED = "initialization.fields.uninitialized";
-    private static final /*@CompilerMessageKey*/ String COMMITMENT_INVALID_FIELD_ANNOTATION = "commitment.invalid.constructor.return.type";
+    private static final /*@CompilerMessageKey*/ String COMMITMENT_INVALID_FIELD_ANNOTATION = "initialization.invalid.field.annotation";
     private static final /*@CompilerMessageKey*/ String COMMITMENT_INVALID_CONSTRUCTOR_RETURN_TYPE = "initialization.invalid.constructor.return.type";
     private static final /*@CompilerMessageKey*/ String COMMITMENT_INVALID_FIELD_WRITE_UNCLASSIFIED = "initialization.invalid.field.write.unknown";
     private static final /*@CompilerMessageKey*/ String COMMITMENT_INVALID_FIELD_WRITE_COMMITTED = "initialization.invalid.field.write.initialized";
@@ -130,9 +132,8 @@ public class InitializationVisitor<Checker extends InitializationChecker<? exten
                 AnnotatedTypeMirror var2 = atypeFactory.getAnnotatedType(lhs);
                 atypeFactory.HACK_DONT_CALL_POST_AS_MEMBER = old;
                 atypeFactory.shouldReadCache = old2;
-                final AnnotationMirror newAnno = var2
-                        .getAnnotationInHierarchy(checker
-                                .getFieldInvariantAnnotation());
+                final AnnotationMirror newAnno = var2.getAnnotationInHierarchy(
+                        checker.getFieldInvariantAnnotation());
                 if (newAnno != null) {
                     var.replaceAnnotation(newAnno);
                 }

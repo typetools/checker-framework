@@ -24,7 +24,7 @@ class Enumeration {
       checkNotNull(p);
     }
 
-    public <S> S firstNonNull(S first, S second) {
+    public <S extends Object> S firstNonNull(S first, S second) {
         return first!=null ? first : checkNotNull(second);
     }
   }

@@ -1,16 +1,16 @@
 package checkers.formatter;
 
-import javacutils.AnnotationUtils;
-
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.util.Elements;
-
 import checkers.formatter.quals.ConversionCategory;
 import checkers.formatter.quals.Format;
 import checkers.formatter.quals.FormatBottom;
 import checkers.formatter.quals.InvalidFormat;
 import checkers.util.GraphQualifierHierarchy;
+
+import javacutils.AnnotationUtils;
+
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.util.Elements;
 
 public class FormatterQualifierHierarchy extends GraphQualifierHierarchy {
     private final FormatterChecker checker;

@@ -1,5 +1,9 @@
 package checkers.types;
 
+/*>>>
+import checkers.nullness.quals.Nullable;
+*/
+
 import checkers.basetype.BaseTypeChecker;
 import checkers.flow.CFAbstractAnalysis;
 import checkers.flow.CFAbstractStore;
@@ -10,6 +14,7 @@ import checkers.flow.CFCFGBuilder;
 import checkers.flow.CFStore;
 import checkers.flow.CFTransfer;
 import checkers.flow.CFValue;
+import checkers.quals.DefaultFor;
 import checkers.quals.DefaultLocation;
 import checkers.quals.DefaultQualifier;
 import checkers.quals.DefaultQualifierInHierarchy;
@@ -19,11 +24,6 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.util.QualifierDefaults;
 import checkers.util.QualifierPolymorphism;
-
-import javacutils.AnnotationUtils;
-import javacutils.InternalUtils;
-import javacutils.Pair;
-import javacutils.TreeUtils;
 
 import dataflow.analysis.AnalysisResult;
 import dataflow.analysis.TransferInput;
@@ -35,6 +35,12 @@ import dataflow.cfg.UnderlyingAST.CFGMethod;
 import dataflow.cfg.UnderlyingAST.CFGStatement;
 import dataflow.cfg.node.Node;
 import dataflow.cfg.node.ReturnNode;
+
+import javacutils.AnnotationUtils;
+import javacutils.ErrorReporter;
+import javacutils.InternalUtils;
+import javacutils.Pair;
+import javacutils.TreeUtils;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -50,7 +56,6 @@ import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
@@ -60,6 +65,7 @@ import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
@@ -127,30 +133,12 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
         this.poly = createQualifierPolymorphism();
         this.defaults = createQualifierDefaults();
 
-        boolean foundDefault = false;
-        // TODO: should look for a default qualifier per qualifier hierarchy.
-        for (Class<? extends Annotation> qual : checker.getSupportedTypeQualifiers()) {
-            if (qual.getAnnotation(DefaultQualifierInHierarchy.class) != null) {
-                defaults.addAbsoluteDefault(AnnotationUtils.fromClass(elements, qual),
-                        DefaultLocation.OTHERWISE);
-                foundDefault = true;
-            }
-        }
-
-        AnnotationMirror unqualified = AnnotationUtils.fromClass(elements, Unqualified.class);
-        if (!foundDefault && this.isSupportedQualifier(unqualified)) {
-            defaults.addAbsoluteDefault(unqualified,
-                    DefaultLocation.OTHERWISE);
-        }
-
         // Add common aliases.
         // addAliasedDeclAnnotation(checkers.nullness.quals.Pure.class,
         //         Pure.class, AnnotationUtils.fromClass(elements, Pure.class));
 
-        // every subclass must call postInit!
-        if (this.getClass().equals(BasicAnnotatedTypeFactory.class)) {
-            this.postInit();
-        }
+        // Every subclass must call postInit, but it must be called after
+        // all other initialization is finished.
     }
 
     /**
@@ -255,7 +243,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
     public TransferFunction createFlowTransferFunction(FlowAnalysis analysis) {
 
         // Try to reflectively load the visitor.
-        Class<?> checkerClass = checker.getClass();
+        Class<?> checkerClass = this.resourceClass;
 
         while (checkerClass != BaseTypeChecker.class) {
             final String classToLoad = checkerClass.getName()
@@ -278,12 +266,54 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
     /**
      * Create {@link QualifierDefaults} which handles user specified defaults
      * @return the QualifierDefaults class
+     *
+     * TODO: should this be split in two methods to allow separate reuse?
      */
     protected QualifierDefaults createQualifierDefaults() {
         QualifierDefaults defs = new QualifierDefaults(elements, this);
-        for (AnnotationMirror a : checker.getQualifierHierarchy().getTopAnnotations()) {
-            defs.addAbsoluteDefault(a, DefaultLocation.LOCALS);
+
+        // TODO: this should be per qualifier hierarchy.
+        boolean foundDefaultOtherwise = false;
+
+        for (Class<? extends Annotation> qual : checker.getSupportedTypeQualifiers()) {
+            DefaultFor defaultFor = qual.getAnnotation(DefaultFor.class);
+            boolean hasDefaultFor = false;
+            if (defaultFor != null) {
+                defs.addAbsoluteDefaults(AnnotationUtils.fromClass(elements,qual),
+                        defaultFor.value());
+                hasDefaultFor = true;
+                for (DefaultLocation dl : defaultFor.value()) {
+                    if (dl == DefaultLocation.OTHERWISE) {
+                        foundDefaultOtherwise = true;
+                    }
+                }
+            }
+
+            if (qual.getAnnotation(DefaultQualifierInHierarchy.class) != null) {
+                if (hasDefaultFor) {
+                    // A type qualifier should either have a DefaultFor or
+                    // a DefaultQualifierInHierarchy annotation
+                    ErrorReporter.errorAbort("AbstractBasicAnnotatedTypeFactory.createQualifierDefaults: " +
+                            "qualifier has both @DefaultFor and @DefaultQualifierInHierarchy annotations: " +
+                            qual.getCanonicalName());
+                // } else if (foundDefaultOtherwise) {
+                    // TODO: raise an error once we know whether the previous
+                    // occurrence was in the same hierarchy
+                } else {
+                    defs.addAbsoluteDefault(AnnotationUtils.fromClass(elements, qual),
+                            DefaultLocation.OTHERWISE);
+                    foundDefaultOtherwise = true;
+                }
+            }
         }
+
+        AnnotationMirror unqualified = AnnotationUtils.fromClass(elements, Unqualified.class);
+        if (!foundDefaultOtherwise &&
+                this.isSupportedQualifier(unqualified)) {
+            defs.addAbsoluteDefault(unqualified,
+                    DefaultLocation.OTHERWISE);
+        }
+
         return defs;
     }
 
@@ -293,7 +323,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
      * @return the QualifierPolymorphism class
      */
     protected QualifierPolymorphism createQualifierPolymorphism() {
-        return new QualifierPolymorphism(checker, this);
+        return new QualifierPolymorphism(processingEnv, this);
     }
 
     // **********************************************************************
@@ -359,7 +389,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
      *         store (because the method cannot exit through the regular exit
      *         block).
      */
-    public/* @Nullable */Store getRegularExitStore(Tree t) {
+    public /*@Nullable*/ Store getRegularExitStore(Tree t) {
         return regularExitStores.get(t);
     }
 
@@ -470,7 +500,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
                         ExpressionTree initializer = vt.getInitializer();
                         // analyze initializer if present
                         if (initializer != null) {
-                            analyze(queue, new CFGStatement(initializer),
+                            analyze(queue, new CFGStatement(vt),
                                     fieldValues);
                             Value value = flowResult.getValue(initializer);
                             if (value != null) {
@@ -590,15 +620,30 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
         return null;
     }
 
-    @Override
-    public AnnotatedTypeMirror getDefaultedAnnotatedType(Tree tree) {
+
+    /**
+     * Get the defaulted type of a variable, without considering
+     * flow inference from the initializer expression.
+     * This is needed to determine the type of the assignment context,
+     * which should have the "default" meaning, without flow inference.
+     * TODO: describe and generalize
+     */
+    public AnnotatedTypeMirror getDefaultedAnnotatedType(Tree tree, ExpressionTree valueTree) {
         AnnotatedTypeMirror res = null;
         if (tree instanceof VariableTree) {
             res = fromMember(tree);
-            annotateImplicit(((VariableTree) tree).getType(), res, false);
+            annotateImplicit(tree, res, false);
         } else if (tree instanceof AssignmentTree) {
             res = fromExpression(((AssignmentTree) tree).getVariable());
             annotateImplicit(tree, res, false);
+        } else if (tree instanceof CompoundAssignmentTree) {
+            res = fromExpression(((CompoundAssignmentTree) tree).getVariable());
+            annotateImplicit(tree, res, false);
+        } else if (TreeUtils.isExpressionTree(tree)) {
+            res = fromExpression((ExpressionTree) tree);
+            annotateImplicit(tree, res, false);
+        } else {
+            assert false;
         }
         return res;
     }
@@ -621,14 +666,18 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
         } else {
             treeAnnotator.visit(tree, type);
             Element elt = InternalUtils.symbol(tree);
-            typeAnnotator.visit(type, elt != null ? elt.getKind()
-                    : ElementKind.OTHER);
+            typeAnnotator.visit(type, elt);
             defaults.annotate(tree, type);
         }
     }
 
+    /**
+     * This method is final. Override
+     * {@link #annotateImplicit(Tree, AnnotatedTypeMirror, boolean)}
+     * instead.
+     */
     @Override
-    public void annotateImplicit(Tree tree, AnnotatedTypeMirror type) {
+    public final void annotateImplicit(Tree tree, AnnotatedTypeMirror type) {
         annotateImplicit(tree, type, this.useFlow);
     }
 
@@ -653,8 +702,8 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
         treeAnnotator.visit(tree, type);
 
         Element elt = InternalUtils.symbol(tree);
-        typeAnnotator.visit(type, elt != null ? elt.getKind()
-                : ElementKind.OTHER);
+
+        typeAnnotator.visit(type, elt);
         defaults.annotate(tree, type);
 
         Value as = getInferredValueFor(tree);
@@ -671,7 +720,11 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
         if (!analyses.isEmpty() && tree != null) {
             as = analyses.getFirst().getValue(tree);
         }
-        if (as == null && tree != null) {
+        if (as == null &&
+                tree != null &&
+                // TODO: this comparison shouldn't be needed, but
+                // Daikon check-nullness started failing without it.
+                flowResult != null) {
             as = flowResult.getValue(tree);
         }
         return as;
@@ -708,7 +761,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
 
     @Override
     public void annotateImplicit(Element elt, AnnotatedTypeMirror type) {
-        typeAnnotator.visit(type, elt.getKind());
+        typeAnnotator.visit(type, elt);
         defaults.annotate(elt, type);
     }
 
