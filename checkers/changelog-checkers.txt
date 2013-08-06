@@ -1,3 +1,14 @@
+
+Version 1.6.6, 01 August 2013
+
+Documentation:
+  The Checker Framework manual has been improved.  Changes include: 
+more troubleshooting tips to the Checker Framework manual, an improved discussion on qualifier bounds, more examples, improved formatting, and more.
+  An FAQ entry has been added to discuss JSR305.
+  Minor clarifications have been added to the Checker Framework tutorial.
+
+----------------------------------------------------------------------
+
 Version 1.6.5, 01 July 2013
 
 User-visible framework improvements:
