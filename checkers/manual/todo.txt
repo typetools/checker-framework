@@ -61,6 +61,14 @@ We found a better naming scheme than Basic vs. Base; it needs to be documented.
 
 ------------------------------------------------------
 
+Difference between treatment of explicit and implicit bounds:
+ * Whenever a bound is explicit, it should use the standard defaulting rules.
+ * Whenever a bound is implicit, it should use the maximal type:  maximally
+   high for an upper bound, and maximally low for a lower bound.
+These rules are applied uniformly for type variables and wildcards.
+
+------------------------------------------------------
+
 [Stefan]
 
 Explanations on what flow expressions are supported (i.e. strings in pre/postconditions):
