@@ -1,6 +1,7 @@
 package java.util;
-import checkers.nullness.quals.*;
-@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
+import dataflow.quals.Pure;
+import checkers.nullness.quals.EnsuresNonNullIf;
+import checkers.nullness.quals.Nullable;
 
 public abstract class AbstractQueue<E extends @Nullable Object> extends AbstractCollection<E> implements Queue<E> {
   protected AbstractQueue() {}
@@ -9,6 +10,6 @@ public abstract class AbstractQueue<E extends @Nullable Object> extends Abstract
   public E element() { throw new RuntimeException("skeleton method"); }
   public void clear() { throw new RuntimeException("skeleton method"); }
   public boolean addAll(Collection<? extends E> a1) { throw new RuntimeException("skeleton method"); }
-  @AssertNonNullIfFalse({"poll()", "peek()"})
-  public abstract boolean isEmpty();
+  @EnsuresNonNullIf(expression={"poll()", "peek()"}, result=false)
+  @Pure public abstract boolean isEmpty();
 }

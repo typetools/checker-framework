@@ -20,7 +20,7 @@ import com.google.common.annotations.GwtCompatible;
 
 import java.io.Serializable;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 //import javax.annotation.Nullable;
 
 /**
@@ -38,11 +38,11 @@ import checkers.nullness.quals.*;
     this.value = value;
   }
 
-  @Override public K getKey() {
+  @Pure @Override public K getKey() {
     return key;
   }
 
-  @Override public V getValue() {
+  @Pure @Override public V getValue() {
     return value;
   }
   private static final long serialVersionUID = 0;

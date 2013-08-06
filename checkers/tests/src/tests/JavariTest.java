@@ -1,5 +1,7 @@
 package tests;
 
+import checkers.util.test.ParameterizedCheckerTest;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -7,20 +9,22 @@ import java.util.LinkedList;
 
 import org.junit.runners.Parameterized.Parameters;
 
-import checkers.util.test.ParameterizedCheckerTest;
-
 /**
  * JUnit tests for the Javari annotation checker.
  */
 public class JavariTest extends ParameterizedCheckerTest {
 
     public JavariTest(File testFile) {
-        super(testFile, checkers.javari.JavariChecker.class.getCanonicalName(),
-                "javari", "-Anomsgtext");
+        super(testFile,
+                checkers.javari.JavariChecker.class,
+                "javari",
+                "-Anomsgtext");
     }
 
     @Parameters
-    public static Collection<Object[]> data() { return filter(testFiles("javari", "all-systems")); }
+    public static Collection<Object[]> data() {
+        return filter(testFiles("javari", "all-systems"));
+    }
 
     // TODO: I want this method somewhere in ParameterizedChecker, but as
     // all these methods are static, I didn't find a fast way :-(

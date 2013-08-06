@@ -1,18 +1,27 @@
 package checkers.igj;
 
+import checkers.basetype.BaseTypeChecker;
+import checkers.igj.quals.Assignable;
+import checkers.igj.quals.AssignsFields;
+import checkers.igj.quals.I;
+import checkers.igj.quals.Immutable;
+import checkers.igj.quals.Mutable;
+import checkers.igj.quals.ReadOnly;
+import checkers.quals.TypeQualifiers;
+import checkers.types.AnnotatedTypeMirror;
+import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import checkers.types.QualifierHierarchy;
+import checkers.types.TypeHierarchy;
+import checkers.util.GraphQualifierHierarchy;
+import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+
+import javacutils.AnnotationUtils;
+import javacutils.ErrorReporter;
+
 import java.util.Collection;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Elements;
-
-import checkers.basetype.BaseTypeChecker;
-import checkers.igj.quals.*;
-import checkers.quals.TypeQualifiers;
-import checkers.source.SourceChecker;
-import checkers.types.*;
-import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import checkers.util.*;
-import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 
 
 /**
@@ -29,7 +38,7 @@ import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
  */
 @TypeQualifiers({ ReadOnly.class, Mutable.class, Immutable.class, I.class,
     AssignsFields.class, IGJBottom.class })
-public class IGJChecker extends BaseTypeChecker {
+public class IGJChecker extends BaseTypeChecker<IGJAnnotatedTypeFactory> {
     //
     // IGJ tries to adhere to the various rules specified by the
     // type system and the conventions of the framework, except for two
@@ -132,9 +141,9 @@ public class IGJChecker extends BaseTypeChecker {
         }
 
         @Override
-        public boolean isSubtype(Collection<AnnotationMirror> rhs, Collection<AnnotationMirror> lhs) {
+        public boolean isSubtype(Collection<? extends AnnotationMirror> rhs, Collection<? extends AnnotationMirror> lhs) {
             if (lhs.isEmpty() || rhs.isEmpty()) {
-                SourceChecker.errorAbort("GraphQualifierHierarchy: Empty annotations in lhs: " + lhs + " or rhs: " + rhs);
+                ErrorReporter.errorAbort("GraphQualifierHierarchy: Empty annotations in lhs: " + lhs + " or rhs: " + rhs);
             }
             // TODO: sometimes there are multiple mutability annotations in a type and
             // the check in the superclass that the sets contain exactly one annotation
@@ -193,6 +202,10 @@ public class IGJChecker extends BaseTypeChecker {
          */
         @Override
         protected boolean isSubtypeTypeArguments(AnnotatedDeclaredType rhs, AnnotatedDeclaredType lhs) {
+            if (ignoreRawTypeArguments(rhs, lhs)) {
+                return true;
+            }
+
             if (lhs.hasEffectiveAnnotation(MUTABLE))
                 return super.isSubtypeTypeArguments(rhs, lhs);
 

@@ -1,6 +1,7 @@
 package java.util;
-import checkers.nullness.quals.*;
-@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
+import dataflow.quals.Pure;
+
+import checkers.nullness.quals.Nullable;
 
 // Subclasses of this interface/class may opt to prohibit null elements
 public abstract class AbstractSequentialList<E extends @Nullable Object> extends AbstractList<E> {

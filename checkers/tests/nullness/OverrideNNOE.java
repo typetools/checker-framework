@@ -1,3 +1,4 @@
+import checkers.nullness.quals.RequiresNonNull;
 import checkers.nullness.quals.*;
 
 class OverrideNNOE {
@@ -9,8 +10,8 @@ class OverrideNNOE {
 
   static class Sub extends Super {
     @Override
-    @NonNullOnEntry("f")
-    //:: error: (override.pre.method.annotation.invalid)
+    @RequiresNonNull("f")
+    //:: error: (contracts.precondition.override.invalid)
     void call() {
       f.hashCode();
     }

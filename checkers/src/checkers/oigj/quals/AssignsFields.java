@@ -7,7 +7,7 @@ import checkers.quals.TypeQualifier;
 
 /**
  *
- * Indicates that the annotated method could assigns (but not mutate) the fields
+ * Indicates that the annotated method could assign (but not mutate) the fields
  * of {@code this} object.
  *
  * A method with an AssignsFields receiver may not use the receiver to

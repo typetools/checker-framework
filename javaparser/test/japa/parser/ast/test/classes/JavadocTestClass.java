@@ -1,4 +1,4 @@
-package japa.parser.ast.test.classes;
+package cfjapa.parser.ast.test.classes;
 
 /**
  * Javadoc 1
