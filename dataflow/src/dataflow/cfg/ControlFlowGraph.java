@@ -79,7 +79,11 @@ public class ControlFlowGraph {
      *         corresponds.
      */
     public Node getNodeCorrespondingToTree(Tree t) {
-        return treeLookup.get(t);
+        if (convertedTreeLookup.containsKey(t)) {
+            return convertedTreeLookup.get(t);
+        } else {
+            return treeLookup.get(t);
+        }
     }
 
     /**
@@ -88,13 +92,13 @@ public class ControlFlowGraph {
      *         was performed, the unique {@link Node} to which the
      *         {@link Tree} corresponds.
      */
-    public Node getConvertedNodeCorrespondingToTree(Tree t) {
-        if (convertedTreeLookup.containsKey(t)) {
-            return convertedTreeLookup.get(t);
-        } else {
-            return getNodeCorrespondingToTree(t);
-        }
-    }
+    // public Node getConvertedNodeCorrespondingToTree(Tree t) {
+    //     if (convertedTreeLookup.containsKey(t)) {
+    //         return convertedTreeLookup.get(t);
+    //     } else {
+    //         return getNodeCorrespondingToTree(t);
+    //     }
+    // }
 
     /** @return The entry block of the control flow graph. */
     public SpecialBlock getEntryBlock() {
@@ -175,9 +179,9 @@ public class ControlFlowGraph {
     /**
      * @return The post-conversion tree-lookup map.
      */
-    public IdentityHashMap<Tree, Node> getConvertedTreeLookup() {
-        return new IdentityHashMap<>(convertedTreeLookup);
-    }
+    // public IdentityHashMap<Tree, Node> getConvertedTreeLookup() {
+    //     return new IdentityHashMap<>(convertedTreeLookup);
+    // }
 
     /**
      * Get the {@link MethodTree} of the CFG if the argument {@link Tree} maps

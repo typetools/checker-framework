@@ -37,7 +37,7 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
     protected final IdentityHashMap<Tree, Node> treeLookup;
 
     /** Map from AST {@link Tree}s to post-conversion {@link Node}s. */
-    protected final IdentityHashMap<Tree, Node> convertedTreeLookup;
+    // protected final IdentityHashMap<Tree, Node> convertedTreeLookup;
 
     /**
      * The stores before every method call.
@@ -49,11 +49,11 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
      */
     public AnalysisResult(Map<Node, A> nodeValues,
             IdentityHashMap<Block, TransferInput<A, S>> stores,
-            IdentityHashMap<Tree, Node> treeLookup,
-            IdentityHashMap<Tree, Node> convertedTreeLookup) {
+            IdentityHashMap<Tree, Node> treeLookup/*,
+                                                    IdentityHashMap<Tree, Node> convertedTreeLookup*/) {
         this.nodeValues = new IdentityHashMap<>(nodeValues);
         this.treeLookup = new IdentityHashMap<>(treeLookup);
-        this.convertedTreeLookup = new IdentityHashMap<>(convertedTreeLookup);
+        // this.convertedTreeLookup = new IdentityHashMap<>(convertedTreeLookup);
         this.stores = stores;
     }
 
@@ -63,7 +63,7 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
     public AnalysisResult() {
         nodeValues = new IdentityHashMap<>();
         treeLookup = new IdentityHashMap<>();
-        convertedTreeLookup = new IdentityHashMap<>();
+        // convertedTreeLookup = new IdentityHashMap<>();
         stores = new IdentityHashMap<>();
     }
 
@@ -77,9 +77,9 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
         for (Entry<Tree, Node> e : other.treeLookup.entrySet()) {
             treeLookup.put(e.getKey(), e.getValue());
         }
-        for (Entry<Tree, Node> e : other.convertedTreeLookup.entrySet()) {
-            convertedTreeLookup.put(e.getKey(), e.getValue());
-        }
+        // for (Entry<Tree, Node> e : other.convertedTreeLookup.entrySet()) {
+        //     convertedTreeLookup.put(e.getKey(), e.getValue());
+        // }
         for (Entry<Block, TransferInput<A, S>> e : other.stores.entrySet()) {
             stores.put(e.getKey(), e.getValue());
         }
@@ -107,10 +107,10 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
      *         {@code t}, or {@code null} if no information is
      *         available.
      */
-    public/* @Nullable */A getConvertedValue(Tree t) {
-        A val = getValue(convertedTreeLookup.get(t));
-        return val;
-    }
+    // public/* @Nullable */A getConvertedValue(Tree t) {
+    //     A val = getValue(convertedTreeLookup.get(t));
+    //     return val;
+    // }
 
     /**
      * @return The {@link Node} for a given {@link Tree}.
@@ -122,9 +122,9 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
     /**
      * @return The post-conversion {@link Node} for a given {@link Tree}.
      */
-    public/* @Nullable */Node getConvertedNodeForTree(Tree tree) {
-        return convertedTreeLookup.get(tree);
-    }
+    // public/* @Nullable */Node getConvertedNodeForTree(Tree tree) {
+    //     return convertedTreeLookup.get(tree);
+    // }
 
     /**
      * @return The store immediately before a given {@link Tree}.
