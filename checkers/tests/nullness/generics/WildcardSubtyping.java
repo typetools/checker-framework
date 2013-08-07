@@ -1,4 +1,6 @@
 import checkers.nullness.quals.*;
+
+import java.lang.annotation.Annotation;
 import java.util.*;
 import java.lang.annotation.*;
 
@@ -31,6 +33,6 @@ class Utils {
 
     Set<Class<? extends Annotation>> foo() {
         Set<Class<? extends Annotation>> l = new HashSet<>(this.foo());
-	return l;
+        return l;
     }
 }

@@ -39,6 +39,7 @@ There is a separate FAQ for the type annotations syntax
 \ref{faq-annotation-after-type}: What is the meaning of an annotation after a type, such as \<@NonNull Object @Nullable>? \\
 \ref{faq-array-syntax-meaning}: What is the meaning of array annotations such as \<@NonNull Object @Nullable []>? \\
 \ref{faq-list-map-nonnull-typeargs}: Why are the type parameters to \<List> and \<Map> annotated as \<@NonNull>? \\
+\ref{faq-type-i-did-not-write}: Why does the Checker Framework report an error regarding a type I have not written in my program? \\
 \ref{faq-checker-framework-part-of-java}: Is the Checker Framework an official part of Java? \\
 \ref{faq-jsr-305}: What is the relationship between the Checker Framework and JSR 305?
 
@@ -726,6 +727,17 @@ rare.
 
 For more details on suppressing nullness warnings, see
 Section~\ref{suppressing-warnings-nullness}.
+
+
+\section{Why does the Checker Framework report an error regarding a type I have not written in my program?\label{faq-type-i-did-not-write}}
+
+
+Sometimes, a Checker Framework warning message will mention a type you have
+not written in your program.  This is typically because a default has been
+applied where you did not write a type; see Section~\label{defaults}.  In
+other cases, this is because flow-sensitive type refinement has given an
+expression a more specific type than you wrote or than was defaulted; see
+Section~\ref{type-refinement}.
 
 
 \section{Is the Checker Framework an official part of Java?\label{faq-checker-framework-part-of-java}}

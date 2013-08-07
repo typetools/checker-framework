@@ -2,7 +2,7 @@ import java.util.*;
 
 class MethodTypeVars3 {
     public static
-    <T> Map<T,List<T>> dominators(Map<T,List<T>> preds) {
+    <T extends Object> Map<T,List<T>> dominators(Map<T,List<T>> preds) {
         List<T> nodes = new ArrayList<T>(preds.keySet());
 
         // Compute roots & non-roots, for convenience

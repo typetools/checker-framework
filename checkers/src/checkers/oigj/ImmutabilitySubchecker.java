@@ -72,6 +72,10 @@ public class ImmutabilitySubchecker extends BaseTypeChecker<ImmutabilityAnnotate
         // TODO: Handle CoVariant(X_i, C)
         @Override
         protected boolean isSubtypeTypeArguments(AnnotatedDeclaredType rhs, AnnotatedDeclaredType lhs) {
+            if (ignoreRawTypeArguments(rhs, lhs)) {
+                return true;
+            }
+
             if (lhs.hasEffectiveAnnotation(MUTABLE))
                 return super.isSubtypeTypeArguments(rhs, lhs);
 

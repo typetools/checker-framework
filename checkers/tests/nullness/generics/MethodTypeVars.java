@@ -18,6 +18,7 @@ public class MethodTypeVars {
 
 class A {
     public static <T extends @NonNull Object> T badMethod(T t) {
+        //:: warning: [unchecked] unchecked cast
         return (T) new Object();
     }
 

@@ -238,10 +238,14 @@ public class TypeHierarchy {
             Set<AnnotationMirror> lhsAnnos = lhsBase.getEffectiveAnnotations();
             Set<AnnotationMirror> rhsAnnos = rhsBase.getEffectiveAnnotations();
 
-            assert lhsAnnos.size() == qualifierHierarchy.getWidth() : "Found invalid number of annotations on lhsBase "
-                    + lhsBase + "; comparing lhs: " + lhs + " rhs: " + rhs;
-            assert rhsAnnos.size() == qualifierHierarchy.getWidth() : "Found invalid number of annotations on rhsBase "
-                    + rhsBase + "; comparing lhs: " + lhs + " rhs: " + rhs;
+            assert lhsAnnos.size() == qualifierHierarchy.getWidth() :
+                "Found invalid number of annotations on lhsBase " + lhsBase +
+                "; comparing lhs: " + lhs + " rhs: " + rhs +
+                "; expected number: " + qualifierHierarchy.getWidth();
+            assert rhsAnnos.size() == qualifierHierarchy.getWidth() :
+                "Found invalid number of annotations on rhsBase " + rhsBase +
+                "; comparing lhs: " + lhs + " rhs: " + rhs +
+                "; expected number: " + qualifierHierarchy.getWidth();
             if (!qualifierHierarchy.isSubtype(rhsAnnos, lhsAnnos)) {
                 return false;
             }
@@ -369,6 +373,11 @@ public class TypeHierarchy {
         return false;
     }
 
+    protected boolean ignoreRawTypeArguments(AnnotatedDeclaredType rhs, AnnotatedDeclaredType lhs) {
+        return checker.getProcessingEnvironment().getOptions().containsKey("ignoreRawTypeArguments") &&
+                (rhs.wasRaw() || lhs.wasRaw());
+    }
+
     /**
      * Checks that rhs and lhs are subtypes with respect to type arguments only.
      * Returns true if any of the provided types is not a parameterized type.
@@ -386,6 +395,10 @@ public class TypeHierarchy {
      * @return  true iff the type arguments of lhs and rhs are invariant.
      */
     protected boolean isSubtypeTypeArguments(AnnotatedDeclaredType rhs, AnnotatedDeclaredType lhs) {
+        if (ignoreRawTypeArguments(rhs, lhs)) {
+            return true;
+        }
+
         List<AnnotatedTypeMirror> rhsTypeArgs = rhs.getTypeArguments();
         List<AnnotatedTypeMirror> lhsTypeArgs = lhs.getTypeArguments();
 

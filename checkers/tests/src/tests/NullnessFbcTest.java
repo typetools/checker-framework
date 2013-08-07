@@ -20,6 +20,7 @@ public class NullnessFbcTest extends ParameterizedCheckerTest {
         super(testFile,
                 checkers.nullness.NullnessChecker.class,
                 "nullness",
+                "-AenablePurity",
                 "-Anomsgtext", "-Xlint:deprecation",
                 "-Alint=arrays:forbidnonnullcomponents,"
                         + AbstractNullnessChecker.LINT_REDUNDANTNULLCOMPARISON);

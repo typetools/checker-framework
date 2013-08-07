@@ -297,27 +297,17 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
             }
 
             // check method purity if needed
+            boolean enablePurity = checker.getProcessingEnvironment()
+                    .getOptions().containsKey("enablePurity");
             if (!abstractMethod) {
                 boolean anyPurityAnnotation = PurityUtils.hasPurityAnnotation(
                         atypeFactory, node);
                 boolean checkPurityAlways = checker.getProcessingEnvironment()
                         .getOptions().containsKey("suggestPureMethods");
-                boolean enablePurity = checker.getProcessingEnvironment()
-                        .getOptions().containsKey("enablePurity");
                 if (enablePurity && (anyPurityAnnotation || checkPurityAlways)) {
                     // check "no" purity
                     List<dataflow.quals.Pure.Kind> kinds = PurityUtils
                             .getPurityKinds(atypeFactory, node);
-                    if (!TreeUtils.isConstructor(node)) {
-                        // @Deterministic makes no sense for a void method
-                        boolean isDeterministic = PurityUtils.isDeterministic(
-                                atypeFactory, node);
-                        if (node.getReturnType().toString().equals("void")
-                                && isDeterministic) {
-                            checker.report(Result.warning("purity.deterministic.void.method"),
-                                    node);
-                        }
-                    }
                     // Report errors if necessary.
                     PurityResult r = PurityChecker.checkPurity(node.getBody(),
                             atypeFactory);
@@ -349,6 +339,16 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
                             }
                         }
                     }
+                }
+            }
+            if (enablePurity && !TreeUtils.isConstructor(node)) {
+                // @Deterministic makes no sense for a void method
+                boolean isDeterministic = PurityUtils.isDeterministic(
+                        atypeFactory, node);
+                if (node.getReturnType().toString().equals("void")
+                        && isDeterministic) {
+                    checker.report(Result.warning("purity.deterministic.void.method"),
+                            node);
                 }
             }
 
@@ -1300,7 +1300,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
      *            variable?
      */
     protected void commonAssignmentCheck(AnnotatedTypeMirror varType,
-            AnnotatedTypeMirror valueType, Tree valueTree, /*@CompilerMessageKey*/String errorKey,
+            AnnotatedTypeMirror valueType, Tree valueTree, /*@CompilerMessageKey*/ String errorKey,
             boolean isLocalVariableAssignement) {
 
         String valueTypeString = valueType.toString();

@@ -5,9 +5,6 @@ import checkers.nullness.quals.*;
 import checkers.interning.quals.*;
 */
 
-import com.sun.tools.javac.code.Symbol.VarSymbol;
-import com.sun.tools.javac.code.Type;
-
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Inherited;
 import java.util.ArrayList;
@@ -32,6 +29,10 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
+
+import com.sun.tools.javac.code.Symbol.VarSymbol;
+import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.model.JavacElements;
 
 /**
  * A utility class for working with annotations.
@@ -488,7 +489,7 @@ public class AnnotationUtils {
 
     /**
      * Get the Class that is referenced by attribute 'name'.
-     * This method uses Class.forName to tr to load the class. It returns
+     * This method uses Class.forName to load the class. It returns
      * null if the class wasn't found.
      */
     public static Class<?> getElementValueClass(AnnotationMirror anno, CharSequence name,

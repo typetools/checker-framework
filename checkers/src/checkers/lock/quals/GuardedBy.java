@@ -25,11 +25,9 @@ import checkers.quals.TypeQualifier;
  * This annotation does <b>not</b> indicate whether or not the given lock
  * is held at the moment that execution reaches the annotation.
  * It merely indicates that the lock must be held when the
- * variable is accessed.  An unannotated type is a subtype of a
- * <code>@GuardedBy</code> one, because the unannotated type may be
- * used in any context where the <code>@GuardedBy</code> one is.
+ * variable is accessed.
  * <p>
- *
+ * 
  * The argument is a string that indicates which lock guards the annotated variable:
  * <ul>
  * <li>
@@ -57,6 +55,12 @@ import checkers.quals.TypeQualifier;
  * <code><em>class-name</em>.class</code> : The Class object for the specified class should be used as the lock object.
  * </li>
  * </ul>
+ *
+ * <b>Subtyping rules:
+ * An unannotated type is a subtype of a
+ * <code>@GuardedBy</code> one, because the unannotated type may be
+ * used in any context where the <code>@GuardedBy</code> one is.
+ * <p>
  *
  * @see Holding
  * @checker.framework.manual #lock-checker Lock Checker
