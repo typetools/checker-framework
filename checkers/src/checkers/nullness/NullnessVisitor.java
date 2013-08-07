@@ -47,6 +47,7 @@ import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
@@ -195,9 +196,9 @@ public class NullnessVisitor
     /** Case 1: Check for null dereferencing */
     @Override
     public Void visitMemberSelect(MemberSelectTree node, Void p) {
-        if (!TreeUtils.isSelfAccess(node))
+        boolean isType = node.getExpression().getKind() == Kind.PARAMETERIZED_TYPE;
+        if (!TreeUtils.isSelfAccess(node) && !isType)
             checkForNullability(node.getExpression(), DEREFERENCE_OF_NULLABLE);
-
         return super.visitMemberSelect(node, p);
     }
 
