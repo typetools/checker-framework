@@ -61,8 +61,10 @@ public class Casts {
     void testUnsafeCastList3(@NonNull Object x) {
         // Warning only with -Alint:cast:strict.
         //TODO:: warning: (cast.unsafe)
+        //:: warning: [unchecked] unchecked cast
         java.util.List<@Nullable Object> y = (java.util.List<@Nullable Object>) x;
         //TODO:: warning: (cast.unsafe)
+        //:: warning: [unchecked] unchecked cast
         java.util.List<@NonNull Object> y2 = (java.util.ArrayList<@NonNull Object>) x;
     }
 
@@ -73,7 +75,7 @@ public class Casts {
         @NonNull String s2 = (String) x;
     }
 
-    class Generics<T> {
+    class Generics<T extends Object> {
         T t;
         @Nullable T nt;
         Generics(T t) {

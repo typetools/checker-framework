@@ -833,12 +833,19 @@ public abstract class AnnotatedTypeMirror {
         /** Parametrized Type Arguments **/
         protected List<AnnotatedTypeMirror> typeArgs;
 
-        protected boolean isGeneric = false;
+        /**
+         * Whether the type was initially raw, i.e. the user
+         * did not provide the type arguments.
+         * typeArgs will contain inferred type arguments, which
+         * might be too conservative at the moment.
+         * TODO: improve inference.
+         */
+        protected final boolean wasRaw;
 
         /** The enclosing Type **/
         protected AnnotatedDeclaredType enclosingType;
 
-        protected List<AnnotatedDeclaredType> supertypes;
+        protected List<AnnotatedDeclaredType> supertypes = null;
 
         /**
          * Constructor for this type
@@ -850,14 +857,15 @@ public abstract class AnnotatedTypeMirror {
                 AnnotatedTypeFactory atypeFactory) {
             super(type, atypeFactory);
             DeclaredType elem = (DeclaredType)((TypeElement)type.asElement()).asType();
-            isGeneric = !elem.getTypeArguments().isEmpty();
-            this.supertypes = null;
-            TypeKind enclKind = type.getEnclosingType().getKind();
-            if (enclKind == TypeKind.DECLARED) {
-                this.enclosingType = (AnnotatedDeclaredType) createType(type.getEnclosingType(), atypeFactory);
-            } else if (enclKind != TypeKind.NONE) {
+            wasRaw = !elem.getTypeArguments().isEmpty() &&
+                    type.getTypeArguments().isEmpty();
+
+            TypeMirror encl = type.getEnclosingType();
+            if (encl.getKind() == TypeKind.DECLARED) {
+                this.enclosingType = (AnnotatedDeclaredType) createType(encl, atypeFactory);
+            } else if (encl.getKind() != TypeKind.NONE) {
                 ErrorReporter.errorAbort("AnnotatedDeclaredType: unsupported enclosing type: " +
-                        type.getEnclosingType() + " (" + enclKind + ")");
+                        type.getEnclosingType() + " (" + encl.getKind() + ")");
             }
         }
 
@@ -900,7 +908,11 @@ public abstract class AnnotatedTypeMirror {
         // WMD
         public
         void setTypeArguments(List<? extends AnnotatedTypeMirror> ts) {
-            typeArgs = Collections.unmodifiableList(new ArrayList<AnnotatedTypeMirror>(ts));
+            if (ts == null || ts.isEmpty()) {
+                typeArgs = Collections.emptyList();
+            } else {
+                typeArgs = Collections.unmodifiableList(new ArrayList<AnnotatedTypeMirror>(ts));
+            }
         }
 
         /**
@@ -919,26 +931,13 @@ public abstract class AnnotatedTypeMirror {
         }
 
         /**
-         * Returns true if the type is generic, even if the type is erased
-         * or used as a RAW type.
+         * Returns true if the type was raw, that is, type arguments were not
+         * provided but instead inferred.
          *
-         * @return true iff the type is generic
+         * @return true iff the type was raw
          */
-        public boolean isGeneric() {
-            return isGeneric;
-        }
-
-        /**
-         * Returns true if the type is a generic type and the type declaration
-         * is parameterized.  Otherwise, it returns false, in cases where a
-         * type is a raw type or a non-generic type.
-         *
-         * Note: Even if the type is a raw type, the framework actually adds
-         * type arguments to the type.
-         */
-        public boolean isParameterized() {
-            return !getTypeArguments().isEmpty()
-                && !getUnderlyingType().getTypeArguments().isEmpty();
+        public boolean wasRaw() {
+            return wasRaw;
         }
 
         @Override
@@ -1055,7 +1054,7 @@ public abstract class AnnotatedTypeMirror {
          *
          * @param enclosingType
          */
-        void setEnclosingType(AnnotatedDeclaredType enclosingType) {
+        /*default-visibility*/ void setEnclosingType(AnnotatedDeclaredType enclosingType) {
             this.enclosingType = enclosingType;
         }
 
@@ -2424,8 +2423,6 @@ public abstract class AnnotatedTypeMirror {
             Map<TypeParameterElement, AnnotatedTypeMirror> mapping =
                 new HashMap<TypeParameterElement, AnnotatedTypeMirror>();
 
-            final boolean isRaw = !type.isParameterized() && type.isGeneric();
-
             for (int i = 0; i < typeElement.getTypeParameters().size() &&
                             i < type.getTypeArguments().size(); ++i) {
                 mapping.put(typeElement.getTypeParameters().get(i),
@@ -2442,11 +2439,7 @@ public abstract class AnnotatedTypeMirror {
             }
 
             for (AnnotatedDeclaredType dt : supertypes) {
-                if (isRaw) {
-                    dt.setTypeArguments(Collections.<AnnotatedTypeMirror>emptyList());
-                } else if (!mapping.isEmpty()) {
-                    replacer.visit(dt, mapping);
-                }
+                replacer.visit(dt, mapping);
             }
 
             return supertypes;

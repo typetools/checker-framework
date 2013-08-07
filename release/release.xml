@@ -118,9 +118,10 @@
         <fail unless="langtools"   message="langtools property is not set!" />
         <fail unless="dest.dir"    message="dest.dir property is not set!"  />
         <fail unless="file.name"   message="file.name property is not set!" />
+        <fail unless="version"     message="version number is not set!"     />
 
         <zip destfile="${dest.dir}/${file.name}">
-            <zipfileset dir="${langtools}" prefix="jsr308-langtools"
+            <zipfileset dir="${langtools}" prefix="jsr308-langtools-${version}"
                         excludesfile="release/langtools-excludes"/>
 
             <zipfileset dir="${langtools}"
@@ -131,7 +132,7 @@
                         includes="dist/lib/javap.jar"
                         fullpath="jsr308-langtools/binary/javap.jar"/>
 
-            <zipfileset dir="${langtools}" prefix="jsr308-langtools"
+            <zipfileset dir="${langtools}" prefix="jsr308-langtools-${version}"
                         includes="dist/bin/**" filemode="755"/>
         </zip>
 
@@ -142,14 +143,15 @@
         <fail unless="checkers"    message="checkers property is not set!" />
         <fail unless="dest.dir"    message="dest.dir property is not set!"  />
         <fail unless="file.name"   message="file.name property is not set!" />
+        <fail unless="version"     message="version number is not set!"     />
 
         <!-- Todo: Make this use the version number for the unzipped checker-framework dir -->
         <chmod file="${checkers}/binary/javac" perm="+x"/>
         <zip destfile="${dest.dir}/${file.name}">
-            <zipfileset dir="${checkers}" prefix="checker-framework/checkers"
+            <zipfileset dir="${checkers}" prefix="checker-framework-${version}"
                         includesfile="release/checkers-includes"
                         excludesfile="release/checkers-excludes"/>
-            <zipfileset dir="${checkers}" prefix="checker-framework/checkers"
+            <zipfileset dir="${checkers}" prefix="checker-framework-${version}"
                         includes="**/javac" filemode="755"/>
         </zip>
 
@@ -159,9 +161,10 @@
         <fail unless="checkers"    message="checkers property is not set!" />
         <fail unless="dest.dir"    message="dest.dir property is not set!"  />
         <fail unless="file.name"   message="file.name property is not set!" />
+        <fail unless="version"     message="version is not set!" />
 
         <zip destfile="${dest.dir}/${file.name}">
-            <zipfileset dir="${checkers}/../maven-plugin/mvn-examples" filemode="755"/>
+            <zipfileset dir="${checkers}/../maven-plugin/mvn-examples" filemode="755" prefix="maven-examples-${version}"/>
         </zip>
     </target>
 

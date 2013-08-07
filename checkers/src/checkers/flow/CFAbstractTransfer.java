@@ -161,6 +161,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
      *         from {@code annotatedValue}.
      */
     protected V getValueWithSameAnnotations(TypeMirror type, V annotatedValue) {
+        if (annotatedValue == null) return null;
         AbstractBasicAnnotatedTypeFactory<? extends BaseTypeChecker<?>, V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory = analysis.atypeFactory;
         AnnotatedTypeMirror at = factory.toAnnotatedType(type);
         at.replaceAnnotations(annotatedValue.getType().getAnnotations());

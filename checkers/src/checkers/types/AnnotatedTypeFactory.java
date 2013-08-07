@@ -537,24 +537,26 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         // e.g. class Pair<Y extends List<Y>> { ... }
         if (result.getKind() == TypeKind.DECLARED) {
             AnnotatedDeclaredType dt = (AnnotatedDeclaredType)result;
-            if (dt.getTypeArguments().isEmpty()
-                    && !((TypeElement)dt.getUnderlyingType().asElement()).getTypeParameters().isEmpty()) {
-                List<AnnotatedTypeMirror> typeArgs = new ArrayList<AnnotatedTypeMirror>();
-                AnnotatedDeclaredType declaration = fromElement((TypeElement)dt.getUnderlyingType().asElement());
-                for (AnnotatedTypeMirror typeParam : declaration.getTypeArguments()) {
-                    AnnotatedTypeVariable typeParamVar = (AnnotatedTypeVariable)typeParam;
-                    AnnotatedTypeMirror upperBound = typeParamVar.getEffectiveUpperBound();
-                    while (upperBound.getKind() == TypeKind.TYPEVAR)
-                        upperBound = ((AnnotatedTypeVariable)upperBound).getEffectiveUpperBound();
-
-                    WildcardType wc = processingEnv.getTypeUtils().getWildcardType(upperBound.getUnderlyingType(), null);
-                    AnnotatedWildcardType wctype = (AnnotatedWildcardType) AnnotatedTypeMirror.createType(wc, this);
-                    wctype.setExtendsBound(upperBound);
-                    wctype.addAnnotations(typeParam.getAnnotations());
-                    // This hack allows top-level wildcards to be supertypes of non-wildcards
-                    // wctype.setMethodTypeArgHack();
-
-                    typeArgs.add(wctype);
+            if (dt.wasRaw()) {
+                List<AnnotatedTypeMirror> typeArgs;
+                Pair<Tree, AnnotatedTypeMirror> ctx = this.visitorState.getAssignmentContext();
+                if (ctx != null) {
+                    if (ctx.second.getKind() == TypeKind.DECLARED &&
+                            types.isSameType(types.erasure(ctx.second.actualType), types.erasure(dt.actualType))) {
+                        typeArgs = ((AnnotatedDeclaredType) ctx.second).getTypeArguments();
+                    } else {
+                        // TODO: we want a way to go from the raw type to an instantiation of the raw type
+                        // that is compatible with the context.
+                        typeArgs = null;
+                    }
+                } else {
+                    // TODO: the context is null, use uninstantiated wildcards instead.
+                    typeArgs = new ArrayList<AnnotatedTypeMirror>();
+                    AnnotatedDeclaredType declaration = fromElement((TypeElement)dt.getUnderlyingType().asElement());
+                    for (AnnotatedTypeMirror typeParam : declaration.getTypeArguments()) {
+                        AnnotatedTypeMirror wct = getUninferredWildcardType((AnnotatedTypeVariable) typeParam, false);
+                        typeArgs.add(wct);
+                    }
                 }
                 dt.setTypeArguments(typeArgs);
             }
@@ -597,6 +599,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param tree an AST node
      * @param type the type obtained from {@code tree}
      */
+    // TODO: make this method protected. At the moment there is one use in
+    // AnnotatedTypes that is actually not desirable.
+    // TODO: rename the method; it's not just implicits, but also defaulting, etc.
     public void annotateImplicit(Tree tree, /*@Mutable*/ AnnotatedTypeMirror type) {
         // Pass.
     }
@@ -609,7 +614,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param elt an element
      * @param type the type obtained from {@code elt}
      */
-    public void annotateImplicit(Element elt, /*@Mutable*/ AnnotatedTypeMirror type) {
+    protected void annotateImplicit(Element elt, /*@Mutable*/ AnnotatedTypeMirror type) {
         // Pass.
     }
 
@@ -784,6 +789,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 visited.remove(tpelt);
             }
             return null;
+        }
+
+        @Override
+        public void reset() {
+            visited.clear();
+            super.reset();
         }
     }
 
@@ -1204,11 +1215,26 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         AnnotatedDeclaredType type = (AnnotatedDeclaredType)toAnnotatedType(((JCTree)tree).type);
         if (tree.getIdentifier().getKind() == Tree.Kind.ANNOTATED_TYPE)
             type.addAnnotations(InternalUtils.annotationsFromTree((AnnotatedTypeTree)tree));
+        Pair<Tree, AnnotatedTypeMirror> ctx = this.visitorState.getAssignmentContext();
+        if (ctx != null) {
+            AnnotatedTypeMirror ctxtype = ctx.second;
+            if (ctxtype.getKind() == TypeKind.DECLARED) {
+                if (types.isSameType(types.erasure(ctxtype.actualType), types.erasure(type.actualType))) {
+                    AnnotatedDeclaredType adctx = (AnnotatedDeclaredType) ctxtype;
+                    assert type.getTypeArguments().size() == adctx.getTypeArguments().size() :
+                        "Strange type argument size mismatch";
+                    type.setTypeArguments(adctx.getTypeArguments());
+                } else {
+                    // TODO: the LHS is some supertype of the created object.
+                    // Find a way to determine type arguments.
+                }
+            }
+        }
         return type;
     }
 
     /**
-     * returns the annotated boxed type of the given primitive type.
+     * Returns the annotated boxed type of the given primitive type.
      * The returned type would only have the annotations on the given type.
      *
      * Subclasses may override this method safely to override this behavior.
@@ -2018,8 +2044,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * The main point for introducing this method was to better separate
      * AnnotatetTypes from the classes in this package.
      */
-    public AnnotatedTypeMirror getUninferredMethodTypeArgument(
-            AnnotatedTypeVariable typeVar) {
+    public AnnotatedTypeMirror getUninferredMethodTypeArgument(AnnotatedTypeVariable typeVar) {
+        return getUninferredWildcardType(typeVar, true);
+    }
+
+    protected AnnotatedTypeMirror getUninferredWildcardType(AnnotatedTypeVariable typeVar, boolean useHack) {
         AnnotatedTypeMirror upperBound = typeVar.getEffectiveUpperBound();
         while (upperBound.getKind() == TypeKind.TYPEVAR)
             upperBound = ((AnnotatedTypeVariable)upperBound).getEffectiveUpperBound();
@@ -2027,7 +2056,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         AnnotatedWildcardType wctype = (AnnotatedWildcardType) AnnotatedTypeMirror.createType(wc, this);
         wctype.setExtendsBound(upperBound);
         wctype.addAnnotations(typeVar.getAnnotations());
-        wctype.setMethodTypeArgHack();
+        if (useHack) {
+            wctype.setMethodTypeArgHack();
+        }
         return wctype;
     }
 
@@ -2035,6 +2066,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     public Elements getElementUtils() {
         return this.elements;
+    }
+
+    /** Accessor for the tree utilities.
+     */
+    public Trees getTreeUtils() {
+        return this.trees;
     }
 
     /** Accessor for the processing environment.

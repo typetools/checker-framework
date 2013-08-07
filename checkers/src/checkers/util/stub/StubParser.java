@@ -82,9 +82,9 @@ public class StubParser {
      * packages that are not on the classpath, this can be OK, so default to
      * false.
      */
-    private boolean warnIfNotFound = false;
+    private final boolean warnIfNotFound;
 
-    private boolean debugStubParser = false;
+    private final boolean debugStubParser;
 
     /** The file being parsed (makes error messages more informative). */
     private final String filename;
@@ -222,7 +222,7 @@ public class StubParser {
                 if (importDecl.isAsterisk()) {
                     // Static determines if we are importing members
                     // of a type (class or interface) or of a package
-                    if(importDecl.isStatic()) {
+                    if (importDecl.isStatic()) {
                         // Members of a type (according to JLS)
 
                         TypeElement element = findType(imported, "Imported type not found");
@@ -231,7 +231,7 @@ public class StubParser {
                             // Find compile time constant fields, or values of an enum
                             putAllNew(result, annosInType(element));
                             imports.addAll(getImportableMembers(element));
-                            }
+                        }
                     } else {
                         // Members of a package (according to JLS)
 
@@ -262,14 +262,14 @@ public class StubParser {
                         if (enclType != null) {
                             if (findFieldElement(enclType, fieldName) != null) {
                                 imports.add(imported);
-                                }
+                            }
                         }
 
                     } else if (importType.getKind() == ElementKind.ANNOTATION_TYPE) {
                         // Single annotation or nested annotation
 
                         AnnotationMirror anno = AnnotationUtils.fromName(elements, imported);
-                        if (anno != null ) {
+                        if (anno != null) {
                             Element annoElt = anno.getAnnotationType().asElement();
                             putNew(result, annoElt.getSimpleName().toString(), anno);
                         } else {
@@ -281,7 +281,7 @@ public class StubParser {
                         // Class or nested class
 
                         imports.add(imported);
-                        }
+                    }
                 }
             } catch (AssertionError error) {
                 stubWarning("" + error);
@@ -565,7 +565,7 @@ public class StubParser {
             AnnotatedDeclaredType adeclType = (AnnotatedDeclaredType)atype;
             if (declType.getTypeArgs() != null
                     && !declType.getTypeArgs().isEmpty()
-                    && adeclType.isParameterized()) {
+                    && !adeclType.getTypeArguments().isEmpty()) {
                 assert declType.getTypeArgs().size() == adeclType.getTypeArguments().size();
                 for (int i = 0; i < declType.getTypeArgs().size(); ++i) {
                     annotate(adeclType.getTypeArguments().get(i),

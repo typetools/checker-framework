@@ -3,6 +3,13 @@ import checkers.interning.quals.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/*
+ * TODO: Make diamond cleverer:
+ *     List<@Interned String> sl = new ArrayList<>();
+ * currently is interpreted as
+ *     List<@Interned String> sl = new ArrayList<String>();
+ * and then the assignment fails.
+ */
 class Raw3 {
 
   // We would like behavior that is as similar as possible between the
@@ -17,21 +24,22 @@ class Raw3 {
   // with raw types
   List<String> foo2() {
     List<String> sl = new ArrayList<>();
+    //:: warning: [unchecked] unchecked conversion
     return (List) sl;
   }
 
 
   // no raw types
   List<String> foo3() {
-    List<@Interned String> sl = new ArrayList<>();
+    List<@Interned String> sl = new ArrayList<@Interned String>();
     //:: error: (return.type.incompatible)
     return (List<@Interned String>) sl;
   }
 
   // with raw types
   List<String> foo4() {
-    List<@Interned String> sl = new ArrayList<>();
-    //:: error: (return.type.incompatible)
+    List<@Interned String> sl = new ArrayList<@Interned String>();
+    //:: warning: [unchecked] unchecked conversion
     return (List) sl;
   }
 
@@ -46,7 +54,7 @@ class Raw3 {
   // with raw types
   List<@Interned String> foo6() {
     List<String> sl = new ArrayList<>();
-    //:: error: (return.type.incompatible)
+    //:: warning: [unchecked] unchecked conversion
     return (List) sl;
   }
 
@@ -59,7 +67,22 @@ class Raw3 {
 
     List<String> bar2() {
       List<String> sl = new ArrayList<>();
+      //:: warning: [unchecked] unchecked conversion
       return (List) sl;
+    }
+
+    List<String> bar3(List<String> sl) {
+      //:: warning: [unchecked] unchecked conversion
+      return (List) sl;
+    }
+
+    class DuoList<S, T> extends ArrayList<S> {}
+
+    List<String> bar4(List<String> sl) {
+      // This error goes away by using -AignoreRawTypeArguments or by
+      // improving our inference.
+      //:: error: (return.type.incompatible) :: warning: [unchecked] unchecked conversion
+      return (DuoList) sl;
     }
   }
 

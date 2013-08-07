@@ -19,14 +19,9 @@ class Constructors {
 
     //:: error: (argument.type.incompatible)
     Box b1 = new Box(this);
-    //:: error: (argument.type.incompatible)
-    requireInitialized(b1);
-
     Box b2 = new Box("hello");
     requireInitialized(b2);
   }
-
-
 
   public class Options {
   
