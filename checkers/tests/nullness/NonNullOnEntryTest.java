@@ -53,14 +53,14 @@ class NonNullOnEntryTest {
 
   @Pure
   @RequiresNonNull("staticfield")
-  //:: warning: (purity.void.method)
+  //:: warning: (purity.deterministic.void.method)
   public void reqStaticName() {
     reqStaticQualName();
   }
 
   @Pure
   @RequiresNonNull("NonNullOnEntryTest.staticfield")
-  //:: warning: (purity.void.method)
+  //:: warning: (purity.deterministic.void.method)
   public void reqStaticQualName() {
     reqStaticName();
   }
