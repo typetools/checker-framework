@@ -278,8 +278,6 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
         visitorState.setMethodTree(node);
         ExecutableElement methodElement = TreeUtils.elementFromDeclaration(node);
 
-        boolean abstractMethod = methodElement.getModifiers().contains(Modifier.ABSTRACT);
-
         try {
             if (InternalUtils.isAnonymousConstructor(node)) {
                 // We shouldn't dig deeper
@@ -371,6 +369,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
             }
             return super.visitMethod(node, p);
         } finally {
+            boolean abstractMethod = methodElement.getModifiers().contains(Modifier.ABSTRACT);
 
             if (!abstractMethod) {
                 // check postcondition annotations
