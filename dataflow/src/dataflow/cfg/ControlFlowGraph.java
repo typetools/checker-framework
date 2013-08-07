@@ -86,20 +86,6 @@ public class ControlFlowGraph {
         }
     }
 
-    /**
-     * @return The post-conversion {@link Node} to which the {@link
-     *         Tree} <code>t</code> corresponds, or if no conversion
-     *         was performed, the unique {@link Node} to which the
-     *         {@link Tree} corresponds.
-     */
-    // public Node getConvertedNodeCorrespondingToTree(Tree t) {
-    //     if (convertedTreeLookup.containsKey(t)) {
-    //         return convertedTreeLookup.get(t);
-    //     } else {
-    //         return getNodeCorrespondingToTree(t);
-    //     }
-    // }
-
     /** @return The entry block of the control flow graph. */
     public SpecialBlock getEntryBlock() {
         return entryBlock;
@@ -175,13 +161,6 @@ public class ControlFlowGraph {
     public IdentityHashMap<Tree, Node> getTreeLookup() {
         return new IdentityHashMap<>(treeLookup);
     }
-
-    /**
-     * @return The post-conversion tree-lookup map.
-     */
-    // public IdentityHashMap<Tree, Node> getConvertedTreeLookup() {
-    //     return new IdentityHashMap<>(convertedTreeLookup);
-    // }
 
     /**
      * Get the {@link MethodTree} of the CFG if the argument {@link Tree} maps
