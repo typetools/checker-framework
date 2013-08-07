@@ -18,19 +18,19 @@ class ChainAssignment {
     this.a = b = new Object();
   }
   void n1() {
-    //:: (assignment.type.incompatible)
+    //:: error: (assignment.type.incompatible)
     x = y = null;
   }
   void n2() {
-    //:: (assignment.type.incompatible)
+    //:: error: (assignment.type.incompatible)
     this.x = this.y = null;
   }
   void n3() {
-    //:: (assignment.type.incompatible)
+    //:: error: (assignment.type.incompatible)
     x = this.y = null;
   }
   void n4() {
-    //:: (assignment.type.incompatible)
+    //:: error: (assignment.type.incompatible)
     this.x = y = null;
   }
 }
