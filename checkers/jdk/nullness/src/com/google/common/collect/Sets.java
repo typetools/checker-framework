@@ -42,7 +42,7 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 //import javax.annotation.Nullable;
 
 /**
@@ -437,14 +437,14 @@ public final class Sets {
     @Override public void clear() {
       m.clear();
     }
-    @Override public int size() {
+    @Pure @Override public int size() {
       return m.size();
     }
-    @Override public boolean isEmpty() {
+    @Pure @Override public boolean isEmpty() {
       return m.isEmpty();
     }
     @SuppressWarnings("nullness")
-    @Override public boolean contains(/*@Nullable*/ Object o) {
+    @Pure @Override public boolean contains(/*@Nullable*/ Object o) {
       return m.containsKey(o);
     }
     @SuppressWarnings("nullness")
@@ -466,17 +466,17 @@ public final class Sets {
     @Override public <T extends /*@Nullable*/ Object> T[] toArray(T[] a) {
       return s.toArray(a);
     }
-    @Override public String toString() {
+    @Pure @Override public String toString() {
       return s.toString();
     }
-    @Override public int hashCode() {
+    @Pure @Override public int hashCode() {
       return s.hashCode();
     }
-    @Override public boolean equals(@Nullable Object object) {
+    @Pure @Override public boolean equals(@Nullable Object object) {
       return this == object || this.s.equals(object);
     }
     @SuppressWarnings("nullness")
-    @Override public boolean containsAll(Collection<? extends /*@Nullable*/ Object> c) {
+    @Pure @Override public boolean containsAll(Collection<? extends /*@Nullable*/ Object> c) {
       return s.containsAll(c);
     }
     @SuppressWarnings("nullness")
@@ -564,10 +564,10 @@ public final class Sets {
     final Set<? extends E> set2minus1 = difference(set2, set1);
 
     return new SetView<E>() {
-      @Override public int size() {
+      @Pure @Override public int size() {
         return set1.size() + set2minus1.size();
       }
-      @Override public boolean isEmpty() {
+      @Pure @Override public boolean isEmpty() {
         return set1.isEmpty() && set2.isEmpty();
       }
       @SuppressWarnings("nullness")
@@ -576,7 +576,7 @@ public final class Sets {
         return Iterators.unmodifiableIterator(
             Iterators.concat(set1.iterator(), set2minus1.iterator()));
       }
-      @Override public boolean contains(@Nullable Object object) {
+      @Pure @Override public boolean contains(@Nullable Object object) {
         return set1.contains(object) || set2.contains(object);
       }
       @Override public <S extends Set<E>> S copyInto(S set) {
@@ -637,16 +637,16 @@ public final class Sets {
       @Override public Iterator<E> iterator() {
         return Iterators.filter(set1.iterator(), inSet2);
       }
-      @Override public int size() {
+      @Pure @Override public int size() {
         return Iterators.size(iterator());
       }
-      @Override public boolean isEmpty() {
+      @Pure @Override public boolean isEmpty() {
         return !iterator().hasNext();
       }
-      @Override public boolean contains(@Nullable Object object) {
+      @Pure @Override public boolean contains(@Nullable Object object) {
         return set1.contains(object) && set2.contains(object);
       }
-      @Override public boolean containsAll(Collection<?> collection) {
+      @Pure @Override public boolean containsAll(Collection<?> collection) {
         return set1.containsAll(collection)
             && set2.containsAll(collection);
       }
@@ -683,13 +683,13 @@ public final class Sets {
       @Override public Iterator<E> iterator() {
         return Iterators.filter(set1.iterator(), notInSet2);
       }
-      @Override public int size() {
+      @Pure @Override public int size() {
         return Iterators.size(iterator());
       }
-      @Override public boolean isEmpty() {
+      @Pure @Override public boolean isEmpty() {
         return set2.containsAll(set1);
       }
-      @Override public boolean contains(@Nullable Object element) {
+      @Pure @Override public boolean contains(@Nullable Object element) {
         return set1.contains(element) && !set2.contains(element);
       }
     };
@@ -738,11 +738,11 @@ public final class Sets {
 	super(unfiltered, predicate);
     }
 
-    @Override public boolean equals(@Nullable Object object) {
+    @Pure @Override public boolean equals(@Nullable Object object) {
       return Collections2.setEquals(this, object);
     }
 
-    @Override public int hashCode() {
+    @Pure @Override public int hashCode() {
       return hashCodeImpl(this);
     }
   }
@@ -750,8 +750,8 @@ public final class Sets {
   /**
    * Calculates and returns the hash code of {@code s}.
    */
-    static int hashCodeImpl(Set<? extends /*@Nullable*/ Object> s) {
-    int hashCode = 0;
+    @Pure static int hashCodeImpl(Set<? extends /*@Nullable*/ Object> s) {
+    @Pure int hashCode = 0;
     for (Object o : s) {
       hashCode += o != null ? o.hashCode() : 0;
     }

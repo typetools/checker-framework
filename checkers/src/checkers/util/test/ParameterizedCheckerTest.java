@@ -5,17 +5,29 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import javax.annotation.processing.AbstractProcessor;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-
 
 @RunWith(CheckerParameterized.class)
 public abstract class ParameterizedCheckerTest extends CheckerTest {
     private final File testFile;
 
     public ParameterizedCheckerTest(File testFile,
-            String checkerName, String checkerDir, String... checkerOptions) {
+            Class<? extends AbstractProcessor> checker, String checkerDir, String... checkerOptions) {
+        super(checker, checkerDir, checkerOptions);
+        this.testFile = testFile;
+    }
+
+    /**
+     * Creates a new parameterized checker test.
+     * This constructor is deprecated, use
+     * {@link #ParameterizedCheckerTest(File, Class, String, String...)} instead.
+     */
+    @Deprecated
+    public ParameterizedCheckerTest(File testFile,
+                String checkerName, String checkerDir, String... checkerOptions) {
         super(checkerName, checkerDir, checkerOptions);
         this.testFile = testFile;
     }

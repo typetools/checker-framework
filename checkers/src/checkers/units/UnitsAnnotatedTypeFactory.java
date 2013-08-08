@@ -1,12 +1,5 @@
 package checkers.units;
 
-import java.lang.annotation.Annotation;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-
-import javax.lang.model.element.AnnotationMirror;
-
 import checkers.basetype.BaseTypeChecker;
 import checkers.quals.Bottom;
 import checkers.types.AnnotatedTypeMirror;
@@ -16,7 +9,15 @@ import checkers.units.quals.MixedUnits;
 import checkers.units.quals.Prefix;
 import checkers.units.quals.UnitsMultiple;
 import checkers.util.AnnotationBuilder;
-import checkers.util.AnnotationUtils;
+
+import javacutils.AnnotationUtils;
+
+import java.lang.annotation.Annotation;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
+import javax.lang.model.element.AnnotationMirror;
 
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompilationUnitTree;
@@ -87,7 +88,7 @@ public class UnitsAnnotatedTypeFactory extends
      */
     private class UnitsTreeAnnotator extends TreeAnnotator {
 
-        UnitsTreeAnnotator(BaseTypeChecker checker) {
+        UnitsTreeAnnotator(BaseTypeChecker<?> checker) {
             super(checker, UnitsAnnotatedTypeFactory.this);
         }
 
@@ -159,7 +160,7 @@ public class UnitsAnnotatedTypeFactory extends
                     // TODO: We agreed to treat remainder like division.
                     break;
                 default:
-                    // Nothing to do.
+                    // Do nothing
                 }
             }
 
@@ -177,8 +178,7 @@ public class UnitsAnnotatedTypeFactory extends
             ExpressionTree var = node.getVariable();
             AnnotatedTypeMirror varType = getAnnotatedType(var);
 
-            type.clearAnnotations();
-            type.addAnnotations(varType.getAnnotations());
+            type.replaceAnnotations(varType.getAnnotations());
             return super.visitCompoundAssignment(node, type);
         }
 
@@ -195,7 +195,7 @@ public class UnitsAnnotatedTypeFactory extends
                     res = ur.multiplication(lht, rht);
                     break;
                 default:
-                    // Nothing to do.
+                    // Do nothing
                 }
             }
             return res;

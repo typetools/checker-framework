@@ -2,14 +2,14 @@
 /*
  * @test
  * @summary Test that the stub files get invoked
- * @compile/ref=NonDefaultConstructor.out -processor checkers.nullness.NullnessChecker -Alint NonDefaultConstructor.java
+ * @compile/fail/ref=NonDefaultConstructor.out -XDrawDiagnostics -processor checkers.nullness.NullnessChecker -Alint NonDefaultConstructor.java
  */
 import checkers.nullness.quals.*;
 
 class NonDefaultConstructor {
   Object nonNull = 4;
   Object nullObject;
-  @LazyNonNull Object lazyField;
+  @MonotonicNonNull Object lazyField;
 
   // error doesn't initialize nullObject
   public NonDefaultConstructor() { }

@@ -1,5 +1,8 @@
 import checkers.nullness.quals.*;
 
+// Enable this test once AssertNonNullIfNonNull is implemented
+// @skip-test
+
 /**
  * Documented in Issue 62
  */

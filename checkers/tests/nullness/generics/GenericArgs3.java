@@ -5,6 +5,8 @@ import java.util.Map;
 
 import checkers.nullness.quals.Nullable;
 
+import dataflow.quals.Pure;
+
 class Other {
     public static final class StaticIterator<T> implements Iterator<T> {
         Enumeration<T> e;
@@ -25,13 +27,15 @@ class Other {
 
 class Entry<K,V> implements Map.Entry<K,V> {
     public V setValue(V newValue) { throw new RuntimeException(); }
-    public K getKey() { throw new RuntimeException(); }
-    public V getValue() { throw new RuntimeException(); }
+    @SuppressWarnings("purity") // new and throw are not allowed, ignore
+    @Pure public K getKey() { throw new RuntimeException(); }
+    @SuppressWarnings("purity") // new and throw are not allowed, ignore
+    @Pure public V getValue() { throw new RuntimeException(); }
 }
 
 interface Function<F, T extends @Nullable Object> {
   T apply(@Nullable F from);
-  boolean equals(@Nullable Object obj);
+  @Pure boolean equals(@Nullable Object obj);
 }
 
 enum IdentityFunction implements Function<Object, @Nullable Object> {

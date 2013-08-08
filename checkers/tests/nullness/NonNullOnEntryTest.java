@@ -1,11 +1,13 @@
 import checkers.nullness.quals.*;
+import checkers.quals.*;
+import dataflow.quals.Pure;
 
 class NonNullOnEntryTest {
 
   @Nullable Object field1;
   @Nullable Object field2;
 
-  @NonNullOnEntry("field1")
+  @RequiresNonNull("field1")
   void method1() {
     field1.toString(); // OK, field1 is known to be non-null
     this.field1.toString(); // OK, field1 is known to be non-null
@@ -13,7 +15,7 @@ class NonNullOnEntryTest {
     field2.toString(); // error, might throw NullPointerException
   }
 
-  @NonNullOnEntry("field1")
+  @RequiresNonNull("field1")
   void method1also() {
     // ok, precondition satisfied by NNOE
     method1();
@@ -23,17 +25,17 @@ class NonNullOnEntryTest {
     field1 = new Object();
     method1(); // OK, satisfies method precondition
     field1 = null;
-    //:: error: (nonnullonentry.precondition.not.satisfied)
+    //:: error: (contracts.precondition.not.satisfied)
     method1(); // error, does not satisfy method precondition
   }
 
   protected @Nullable Object field;
 
-  @NonNullOnEntry("field")
+  @RequiresNonNull("field")
   public void requiresNonNullField() {}
 
   public void clientFail(NonNullOnEntryTest arg1) {
-    //:: error: (nonnullonentry.precondition.not.satisfied)
+    //:: error: (contracts.precondition.not.satisfied)
     arg1.requiresNonNullField();
   }
 
@@ -49,12 +51,16 @@ class NonNullOnEntryTest {
 
   protected static @Nullable Object staticfield;
 
-  @NonNullOnEntry("staticfield")
+  @Pure
+  @RequiresNonNull("staticfield")
+  //:: warning: (purity.deterministic.void.method)
   public void reqStaticName() {
     reqStaticQualName();
   }
 
-  @NonNullOnEntry("NonNullOnEntryTest.staticfield")
+  @Pure
+  @RequiresNonNull("NonNullOnEntryTest.staticfield")
+  //:: warning: (purity.deterministic.void.method)
   public void reqStaticQualName() {
     reqStaticName();
   }
@@ -74,9 +80,9 @@ class NonNullOnEntryTest {
   }
 
   public void statClientFail(NonNullOnEntryTest arg1) {
-    //:: error: (nonnullonentry.precondition.not.satisfied)
+    //:: error: (contracts.precondition.not.satisfied)
     arg1.reqStaticName();
-    //:: error: (nonnullonentry.precondition.not.satisfied)
+    //:: error: (contracts.precondition.not.satisfied)
     arg1.reqStaticQualName();
   }
 
@@ -89,7 +95,7 @@ class NonNullOnEntryTest {
     }
 
     public void subClientFail(NNOESubTest arg4) {
-      //:: error: (nonnullonentry.precondition.not.satisfied)
+      //:: error: (contracts.precondition.not.satisfied)
       arg4.requiresNonNullField();
     }
 
@@ -119,25 +125,16 @@ class NonNullOnEntryTest {
        * detect that hiding happened.
        * TODO: correctly resolve hidden fields.
        */
-      //:: error: (nonnull.hiding.violated)
       arg5.requiresNonNullField();
     }
 
     public void hidingClient2(NNOEHidingTest arg6) {
-      // We also would get an (nonnullonentry.precondition.not.satisfied), but
-      // this error wins.
-      //:: error: (nonnull.hiding.violated)
+      //:: error: (contracts.precondition.not.satisfied)
       arg6.requiresNonNullField();
     }
 
-    // @skip-test: 
-//    // the field in the super class is also visible
-//    //:: error: (nonnull.hiding.violated)
-//    @NonNullOnEntry("field") void hiddenTest() {}
-
-
     protected @Nullable Object notHidden;
-    @NonNullOnEntry("notHidden")
+    @RequiresNonNull("notHidden")
     void notHiddenTest() {
       // the field in the superclass is private -> don't complain about hiding
     }
@@ -145,7 +142,7 @@ class NonNullOnEntryTest {
   }
 
   static @Nullable Object o = "m";
-  @NonNullOnEntry("o")
+  @RequiresNonNull("o")
   void test() {
       o = null;
   }

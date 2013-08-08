@@ -1,35 +1,74 @@
 package checkers.util.stub;
 
+/*>>>
+import checkers.nullness.quals.*;
+*/
+
+import cfjapa.parser.JavaParser;
+import cfjapa.parser.ast.CompilationUnit;
+import cfjapa.parser.ast.ImportDeclaration;
+import cfjapa.parser.ast.IndexUnit;
+import cfjapa.parser.ast.PackageDeclaration;
+import cfjapa.parser.ast.TypeParameter;
+import cfjapa.parser.ast.body.BodyDeclaration;
+import cfjapa.parser.ast.body.ClassOrInterfaceDeclaration;
+import cfjapa.parser.ast.body.ConstructorDeclaration;
+import cfjapa.parser.ast.body.FieldDeclaration;
+import cfjapa.parser.ast.body.MethodDeclaration;
+import cfjapa.parser.ast.body.Parameter;
+import cfjapa.parser.ast.body.TypeDeclaration;
+import cfjapa.parser.ast.body.VariableDeclarator;
+import cfjapa.parser.ast.expr.AnnotationExpr;
+import cfjapa.parser.ast.expr.ArrayInitializerExpr;
+import cfjapa.parser.ast.expr.Expression;
+import cfjapa.parser.ast.expr.FieldAccessExpr;
+import cfjapa.parser.ast.expr.MarkerAnnotationExpr;
+import cfjapa.parser.ast.expr.MemberValuePair;
+import cfjapa.parser.ast.expr.NameExpr;
+import cfjapa.parser.ast.expr.NormalAnnotationExpr;
+import cfjapa.parser.ast.expr.SingleMemberAnnotationExpr;
+import cfjapa.parser.ast.expr.StringLiteralExpr;
+import cfjapa.parser.ast.type.ClassOrInterfaceType;
+import cfjapa.parser.ast.type.ReferenceType;
+import cfjapa.parser.ast.type.Type;
+import cfjapa.parser.ast.type.WildcardType;
+
+import checkers.quals.FromStubFile;
+import checkers.types.AnnotatedTypeFactory;
+import checkers.types.AnnotatedTypeMirror;
+import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
+import checkers.util.AnnotationBuilder;
+
+import javacutils.AnnotationUtils;
+import javacutils.ElementUtils;
+import javacutils.ErrorReporter;
+import javacutils.Pair;
+
 import java.io.InputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.*;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.PackageElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
-
-
-import checkers.quals.FromStubFile;
-import checkers.source.SourceChecker;
-import checkers.types.AnnotatedTypeFactory;
-import checkers.types.AnnotatedTypeMirror;
-import checkers.types.AnnotatedTypeMirror.*;
-import checkers.util.AnnotationBuilder;
-import checkers.util.AnnotationUtils;
-import checkers.util.ElementUtils;
-import checkers.util.Pair;
-
-import japa.parser.JavaParser;
-import japa.parser.ast.*;
-import japa.parser.ast.body.*;
-import japa.parser.ast.expr.*;
-import japa.parser.ast.type.*;
-
-/*>>>
-import checkers.nullness.quals.*;
-*/
 
 // Main entry point is:
 // parse(Map<Element, AnnotatedTypeMirror>, Map<Element, Set<AnnotationMirror>>)
@@ -43,9 +82,9 @@ public class StubParser {
      * packages that are not on the classpath, this can be OK, so default to
      * false.
      */
-    private boolean warnIfNotFound = false;
+    private final boolean warnIfNotFound;
 
-    private boolean debugStubParser = false;
+    private final boolean debugStubParser;
 
     /** The file being parsed (makes error messages more informative). */
     private final String filename;
@@ -86,7 +125,7 @@ public class StubParser {
 
 
     /**
-     * 
+     *
      * @param filename name of stub file
      * @param inputStream of stub file to parse
      * @param factory  AnnotatedtypeFactory to use
@@ -99,7 +138,7 @@ public class StubParser {
         try {
             parsedindex = JavaParser.parse(inputStream);
         } catch (Exception e) {
-            SourceChecker.errorAbort("StubParser: exception from JavaParser.parse", e);
+            ErrorReporter.errorAbort("StubParser: exception from JavaParser.parse for file " + filename, e);
             parsedindex = null; // dead code, but needed for def. assignment checks
         }
         this.index = parsedindex;
@@ -149,17 +188,17 @@ public class StubParser {
     /**
      * Get all members of a Type that are useful in a stub file.
      * Currently these are values of enums, or compile time constants.
-     * 
+     *
      * @return a list fully qualified member names
      */
     private static List<String> getImportableMembers(TypeElement typeElement) {
         List<String> result = new ArrayList<String>();
         List<VariableElement> memberElements = ElementFilter.fieldsIn(typeElement.getEnclosedElements());
         for (VariableElement varElement : memberElements) {
-            if (varElement.getConstantValue() != null 
+            if (varElement.getConstantValue() != null
                     || varElement.getKind() == ElementKind.ENUM_CONSTANT) {
 
-                result.add(String.format("%s.%s", typeElement.getQualifiedName().toString(), 
+                result.add(String.format("%s.%s", typeElement.getQualifiedName().toString(),
                         varElement.getSimpleName().toString()));
             }
         }
@@ -181,9 +220,9 @@ public class StubParser {
             String imported = importDecl.getName().toString();
             try {
                 if (importDecl.isAsterisk()) {
-                    // Static determines if we are importing members 
+                    // Static determines if we are importing members
                     // of a type (class or interface) or of a package
-                    if(importDecl.isStatic()) {
+                    if (importDecl.isStatic()) {
                         // Members of a type (according to JLS)
 
                         TypeElement element = findType(imported, "Imported type not found");
@@ -192,7 +231,7 @@ public class StubParser {
                             // Find compile time constant fields, or values of an enum
                             putAllNew(result, annosInType(element));
                             imports.addAll(getImportableMembers(element));
-                            }
+                        }
                     } else {
                         // Members of a package (according to JLS)
 
@@ -217,20 +256,20 @@ public class StubParser {
                         Pair<String, String> typeParts = StubUtil.partitionQualifiedName(imported);
                         String type = typeParts.first;
                         String fieldName = typeParts.second;
-                        TypeElement enclType = findType(type, 
+                        TypeElement enclType = findType(type,
                                 String.format("Enclosing type of static field %s not found", fieldName));
 
                         if (enclType != null) {
                             if (findFieldElement(enclType, fieldName) != null) {
                                 imports.add(imported);
-                                }
+                            }
                         }
 
                     } else if (importType.getKind() == ElementKind.ANNOTATION_TYPE) {
                         // Single annotation or nested annotation
 
                         AnnotationMirror anno = AnnotationUtils.fromName(elements, imported);
-                        if (anno != null ) {
+                        if (anno != null) {
                             Element annoElt = anno.getAnnotationType().asElement();
                             putNew(result, annoElt.getSimpleName().toString(), anno);
                         } else {
@@ -242,7 +281,7 @@ public class StubParser {
                         // Class or nested class
 
                         imports.add(imported);
-                        }
+                    }
                 }
             } catch (AssertionError error) {
                 stubWarning("" + error);
@@ -442,7 +481,7 @@ public class StubParser {
 
     /**
      * Adds a declAnnotation to every method in the stub file.
-     * 
+     *
      * @param declAnnos
      * @param elt
      */
@@ -460,8 +499,8 @@ public class StubParser {
     }
 
     /**
-     * List of all array component types. 
-     * Example input: int[][] 
+     * List of all array component types.
+     * Example input: int[][]
      * Example output: int, int[], int[][]
      */
     private List<AnnotatedTypeMirror> arrayAllComponents(AnnotatedArrayType atype) {
@@ -526,7 +565,7 @@ public class StubParser {
             AnnotatedDeclaredType adeclType = (AnnotatedDeclaredType)atype;
             if (declType.getTypeArgs() != null
                     && !declType.getTypeArgs().isEmpty()
-                    && adeclType.isParameterized()) {
+                    && !adeclType.getTypeArguments().isEmpty()) {
                 assert declType.getTypeArgs().size() == adeclType.getTypeArguments().size();
                 for (int i = 0; i < declType.getTypeArgs().size(); ++i) {
                     annotate(adeclType.getTypeArguments().get(i),
@@ -760,12 +799,92 @@ public class StubParser {
         if (m.containsKey(key) && !m.get(key).equals(value)) {
             // TODO: instead of failing, can we try merging the information from
             // multiple stub files?
-            SourceChecker.errorAbort("StubParser: key is already in map: " + LINE_SEPARATOR
+            ErrorReporter.errorAbort("StubParser: key is already in map: " + LINE_SEPARATOR
                             + "  " + key + " => " + m.get(key) + LINE_SEPARATOR
                             + "while adding: " + LINE_SEPARATOR
                             + "  " + key + " => " + value);
         }
         m.put(key, value);
+    }
+
+    /** Just like Map.put, but does not throw an error if the key with the same value is already in the map. */
+    private static void putNew(Map<Element, AnnotatedTypeMirror> m, Element key, AnnotatedTypeMirror value) {
+        if (key == null)
+            return;
+        if (m.containsKey(key)) {
+            AnnotatedTypeMirror value2 = m.get(key);
+            // Are the two values the same?
+            if (AnnotationUtils.areSame(value.getAnnotations(), value2.getAnnotations())) {
+                return;
+            }
+            AnnotatedTypeMirror prev = m.get(key);
+            mergeATM(value, prev);
+        }
+        m.put(key, value);
+    }
+
+    /**
+     * Merge the qualifiers from the second parameter into the first parameter.
+     * Modifies the first parameter directly.
+     * Raises an exception if both types have a qualifier in a given hierarchy.
+     *
+     * @param into target type
+     * @param from source type
+     */
+    // Should we move this to AnnotationUtils? The way collisions are handled is specific.
+    private static void mergeATM(AnnotatedTypeMirror into, AnnotatedTypeMirror from) {
+        assert into.getClass() == from.getClass();
+        // Everybody needs to merge the main qualifier.
+        for (AnnotationMirror afrom : from.getAnnotations()) {
+            if (into.isAnnotatedInHierarchy(afrom) &&
+                    !AnnotationUtils.areSame(into.getAnnotationInHierarchy(afrom), afrom)) {
+                // TODO: raise error on the caller, this message might not help in debugging.
+                ErrorReporter.errorAbort("StubParser: key is already in map: " + LINE_SEPARATOR
+                        + " existing: " + into + " new: " + from);
+                return; // dead code
+            } else {
+                into.addAnnotation(afrom);
+            }
+        }
+
+        if (from instanceof AnnotatedArrayType) {
+            AnnotatedArrayType cinto = (AnnotatedArrayType) into;
+            AnnotatedArrayType cfrom = (AnnotatedArrayType) from;
+            // Also merge the component types.
+            mergeATM(cinto.getComponentType(), cfrom.getComponentType());
+        } else if (from instanceof AnnotatedDeclaredType) {
+            AnnotatedDeclaredType cinto = (AnnotatedDeclaredType) into;
+            AnnotatedDeclaredType cfrom = (AnnotatedDeclaredType) from;
+            mergeATMs(cinto.getTypeArguments(), cfrom.getTypeArguments());
+        } else if (from instanceof AnnotatedExecutableType) {
+            AnnotatedExecutableType cinto = (AnnotatedExecutableType) into;
+            AnnotatedExecutableType cfrom = (AnnotatedExecutableType) from;
+            mergeATMs(cinto.getTypeVariables(), cinto.getTypeVariables());
+            mergeATM(cinto.getReturnType(), cfrom.getReturnType());
+            mergeATM(cinto.getReceiverType(), cfrom.getReceiverType());
+            mergeATMs(cinto.getParameterTypes(), cfrom.getParameterTypes());
+            mergeATMs(cinto.getThrownTypes(), cfrom.getThrownTypes());
+        } else if (from instanceof AnnotatedTypeVariable) {
+            AnnotatedTypeVariable cinto = (AnnotatedTypeVariable) into;
+            AnnotatedTypeVariable cfrom = (AnnotatedTypeVariable) from;
+            mergeATM(cinto.getLowerBound(), cfrom.getLowerBound());
+            mergeATM(cinto.getUpperBound(), cfrom.getUpperBound());
+        } else if (from instanceof AnnotatedWildcardType) {
+            AnnotatedWildcardType cinto = (AnnotatedWildcardType) into;
+            AnnotatedWildcardType cfrom = (AnnotatedWildcardType) from;
+            mergeATM(cinto.getSuperBound(), cfrom.getSuperBound());
+            mergeATM(cinto.getExtendsBound(), cfrom.getExtendsBound());
+        } else {
+            // Remainder: No, Null, Primitive
+            // Nothing to do.
+        }
+    }
+
+    private static void mergeATMs(List<? extends AnnotatedTypeMirror> into, List<? extends AnnotatedTypeMirror> from) {
+        assert into.size() == from.size();
+        for (int i=0; i<into.size(); ++i) {
+            mergeATM(into.get(i), from.get(i));
+        }
     }
 
     /** Just like Map.putAll, but errs if any key is already in the map. */
@@ -822,7 +941,7 @@ public class StubParser {
             handleExpr(builder, "value", valexpr);
             return builder.build();
         } else {
-            SourceChecker.errorAbort("StubParser: unknown annotation type: " + annotation);
+            ErrorReporter.errorAbort("StubParser: unknown annotation type: " + annotation);
             annoMirror = null; // dead code
         }
         return annoMirror;
@@ -861,7 +980,7 @@ public class StubParser {
                     builder.setValue(name, arr);
                 }
             } else {
-                SourceChecker.errorAbort("StubParser: unhandled annotation attribute type: " + expr + " and expected: " + expected);
+                ErrorReporter.errorAbort("StubParser: unhandled annotation attribute type: " + expr + " and expected: " + expected);
             }
         } else if (expr instanceof StringLiteralExpr) {
             StringLiteralExpr slexpr = (StringLiteralExpr) expr;
@@ -873,13 +992,13 @@ public class StubParser {
                 String[] arr = { slexpr.getValue() };
                 builder.setValue(name, arr);
             } else {
-                SourceChecker.errorAbort("StubParser: unhandled annotation attribute type: " + slexpr + " and expected: " + expected);
+                ErrorReporter.errorAbort("StubParser: unhandled annotation attribute type: " + slexpr + " and expected: " + expected);
             }
         } else if (expr instanceof ArrayInitializerExpr) {
             ExecutableElement var = builder.findElement(name);
             TypeMirror expected = var.getReturnType();
             if (expected.getKind() != TypeKind.ARRAY) {
-                SourceChecker.errorAbort("StubParser: unhandled annotation attribute type: " + expr + " and expected: " + expected);
+                ErrorReporter.errorAbort("StubParser: unhandled annotation attribute type: " + expr + " and expected: " + expected);
             }
 
             ArrayInitializerExpr aiexpr = (ArrayInitializerExpr) expr;
@@ -910,13 +1029,13 @@ public class StubParser {
                 } else if (anaiexpr instanceof StringLiteralExpr) {
                     elemarr[i] = ((StringLiteralExpr) anaiexpr).getValue();
                 } else {
-                    SourceChecker.errorAbort("StubParser: unhandled annotation attribute type: " + anaiexpr);
+                    ErrorReporter.errorAbort("StubParser: unhandled annotation attribute type: " + anaiexpr);
                 }
             }
 
             builder.setValue(name, elemarr);
         } else {
-            SourceChecker.errorAbort("StubParser: unhandled annotation attribute type: " + expr + " class: " + expr.getClass());
+            ErrorReporter.errorAbort("StubParser: unhandled annotation attribute type: " + expr + " class: " + expr.getClass());
         }
     }
 
@@ -932,7 +1051,7 @@ public class StubParser {
             String typeName = partitionedName.first;
             String fieldName = partitionedName.second;
             if (fieldName.equals(nexpr.getName())) {
-                TypeElement enclType = findType(typeName, 
+                TypeElement enclType = findType(typeName,
                         String.format("Enclosing type of static import %s not found", fieldName));
 
                 if (enclType == null) {
