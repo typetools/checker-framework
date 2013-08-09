@@ -122,7 +122,7 @@ ${build.version} of the 'javac.jar' library."/>
         </pathconvert>
         <java fork="true"
               failonerror="true"
-              classpath="${javac.lib}:${annotation-utils.lib}:${javacutils.lib}:${tests.junit}"
+              classpath="${javac.lib}:${javacutils.lib}:${tests.junit}"
               classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>

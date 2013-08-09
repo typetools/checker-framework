@@ -203,7 +203,7 @@ ${build.version} of the 'javac.jar' library."/>
         </pathconvert>
         <java fork="true"
               failonerror="true"
-              classpath="${javac.lib}:${annotation-utils.lib}:${javaparser.lib}:${javacutils.lib}:${dataflow.lib}:${tests.junit}"
+              classpath="${javac.lib}:${javaparser.lib}:${javacutils.lib}:${dataflow.lib}:${tests.junit}"
               classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
@@ -659,7 +659,7 @@ ${build.version} of the 'javac.jar' library."/>
             <sequential>
                 <property name="coverage.options" value=""/>    <!-- default -->
                 <property name="coverage.classpath" value=""/>  <!-- default -->
-                <property name="checkers.classpath" value="${javac.lib}:${basedir}/${checkers.jar.file}:${annotation-utils.lib}:${basedir}/${javaparser.lib}:${basedir}/${javacutils.lib}:${basedir}/${dataflow.lib}"/>
+                <property name="checkers.classpath" value="${javac.lib}:${basedir}/${checkers.jar.file}:${basedir}/${javaparser.lib}:${basedir}/${javacutils.lib}:${basedir}/${dataflow.lib}"/>
                 <jtreg
                     dir="jtreg"
                     workDir="${build.jtreg.dir}/@{name}/work"
@@ -699,7 +699,7 @@ ${build.version} of the 'javac.jar' library."/>
 
         <java fork="true"
               failonerror="true"
-              classpath="${javac.lib}:${checkers.jar.file}:${annotation-utils.lib}:${javaparser.lib}:${javacutils.lib}:${dataflow.lib}"
+              classpath="${javac.lib}:${checkers.jar.file}:${javaparser.lib}:${javacutils.lib}:${dataflow.lib}"
               classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
