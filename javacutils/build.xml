@@ -83,7 +83,7 @@ ${build.version} of the 'javac.jar' library."/>
         </pathconvert>
         <java fork="true"
               failonerror="true"
-              classpath="${javac.lib}:${annotation-utils.lib}:${tests.junit}"
+              classpath="${javac.lib}::${tests.junit}"
               classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
@@ -91,6 +91,7 @@ ${build.version} of the 'javac.jar' library."/>
             <arg line="-d ${build}"/>
             <arg line="${src.files.spaceseparated_jc}"/>
             <arg line="-version"/>
+            <arg line="-XDTA:noannotationsincomments"/>
         </java>
         <!--
         Touch doesn't work on a directory, so can't do:
@@ -100,6 +101,9 @@ ${build.version} of the 'javac.jar' library."/>
         <touch file="${build}/.timestamp"/>
         <delete file="${build}/.timestamp"/>
     </target>
+
+    <!-- TODO: add a type-checking target that doesn't use
+         -XDTA:noannotations in comments. -->
 
     <target name="dist" depends="build" description="Create jar file">
       <jar destfile="${dist.file}" basedir="${build}"/>
