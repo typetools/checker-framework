@@ -151,8 +151,8 @@ import com.sun.tools.javac.tree.TreeInfo;
  * expressions should have the component type as context
  */
 public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
-        Factory extends AbstractBasicAnnotatedTypeFactory<?, ?, ?, ?, ?>>
-    extends SourceVisitor<Checker, Factory, Void, Void> {
+                             Factory extends AbstractBasicAnnotatedTypeFactory<?, ?, ?, ?, ?>>
+        extends SourceVisitor<Checker, Factory, Void, Void> {
 
     /** The options that were provided to the checker using this visitor. */
     protected final Map<String, String> options;
