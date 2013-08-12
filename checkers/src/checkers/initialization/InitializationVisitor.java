@@ -249,16 +249,18 @@ public class InitializationVisitor<Checker extends InitializationChecker<? exten
             if (node.isStatic()) {
                 boolean isStatic = true;
                 Store store = atypeFactory.getRegularExitStore(node);
-                // Add field values for fields with an initializer.
-                for (Pair<VariableElement, Value> t : store.getAnalysis()
-                        .getFieldValues()) {
-                    store.addInitializedField(t.first);
+                if (store != null) {
+                    // Add field values for fields with an initializer.
+                    for (Pair<VariableElement, Value> t : store.getAnalysis()
+                            .getFieldValues()) {
+                        store.addInitializedField(t.first);
+                    }
+                    // Check that all static fields are initialized.
+                    List<AnnotationMirror> receiverAnnotations = Collections
+                            .emptyList();
+                    checkFieldsInitialized(node, isStatic, store,
+                            receiverAnnotations);
                 }
-                // Check that all static fields are initialized.
-                List<AnnotationMirror> receiverAnnotations = Collections
-                        .emptyList();
-                checkFieldsInitialized(node, isStatic, store,
-                        receiverAnnotations);
             }
         }
         return super.visitBlock(node, p);
