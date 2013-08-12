@@ -86,7 +86,6 @@ import com.sun.source.tree.InstanceOfTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
@@ -152,8 +151,8 @@ import com.sun.tools.javac.tree.TreeInfo;
  * expressions should have the component type as context
  */
 public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
-        Factory extends AbstractBasicAnnotatedTypeFactory<?, ?, ?, ?, ?>>
-    extends SourceVisitor<Checker, Factory, Void, Void> {
+                             Factory extends AbstractBasicAnnotatedTypeFactory<?, ?, ?, ?, ?>>
+        extends SourceVisitor<Checker, Factory, Void, Void> {
 
     /** The options that were provided to the checker using this visitor. */
     protected final Map<String, String> options;
@@ -279,41 +278,44 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
         visitorState.setMethodTree(node);
         ExecutableElement methodElement = TreeUtils.elementFromDeclaration(node);
 
-        boolean abstractMethod = false;
-        ModifiersTree modifiers = node.getModifiers();
-        if (modifiers != null) {
-            Set<Modifier> flags = modifiers.getFlags();
-            if (flags.contains(Modifier.ABSTRACT)) {
-                abstractMethod = true;
-            }
-        }
-
         try {
-            Element elt = InternalUtils.symbol(node);
-            assert elt != null : "no symbol for method: " + node;
             if (InternalUtils.isAnonymousConstructor(node)) {
                 // We shouldn't dig deeper
                 return null;
             }
 
             // check method purity if needed
-            boolean enablePurity = checker.getProcessingEnvironment()
-                    .getOptions().containsKey("enablePurity");
-            if (!abstractMethod) {
+            {
                 boolean anyPurityAnnotation = PurityUtils.hasPurityAnnotation(
                         atypeFactory, node);
                 boolean checkPurityAlways = checker.getProcessingEnvironment()
                         .getOptions().containsKey("suggestPureMethods");
+                boolean enablePurity = checker.getProcessingEnvironment()
+                        .getOptions().containsKey("enablePurity");
+
                 if (enablePurity && (anyPurityAnnotation || checkPurityAlways)) {
                     // check "no" purity
-                    List<dataflow.quals.Pure.Kind> kinds = PurityUtils
-                            .getPurityKinds(atypeFactory, node);
+                    List<Pure.Kind> kinds = PurityUtils.getPurityKinds(atypeFactory, node);
+
+                    // @Deterministic makes no sense for a void method or constructor
+                    boolean isDeterministic = kinds.contains(Pure.Kind.DETERMINISTIC);
+                    if (isDeterministic) {
+                        if (TreeUtils.isConstructor(node)) {
+                            checker.report(Result.warning("purity.deterministic.constructor"),
+                                    node);
+                        } else if (InternalUtils.typeOf(node.getReturnType()).getKind() == TypeKind.VOID) {
+                            checker.report(Result.warning("purity.deterministic.void.method"),
+                                    node);
+                        }
+                    }
+
                     // Report errors if necessary.
                     PurityResult r = PurityChecker.checkPurity(node.getBody(),
                             atypeFactory);
                     if (!r.isPure(kinds)) {
                         reportPurityErrors(r, node, kinds);
                     }
+
                     // Issue a warning if the method is pure, but not annotated
                     // as such (if the feature is activated).
                     if (checkPurityAlways) {
@@ -323,7 +325,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
                         if (TreeUtils.isConstructor(node)) {
                             additionalKinds.remove(Pure.Kind.DETERMINISTIC);
                         }
-                        if (additionalKinds.size() > 0) {
+                        if (!additionalKinds.isEmpty()) {
                             if (additionalKinds.size() == 2) {
                                 checker.report(
                                         Result.warning("purity.more.pure",
@@ -332,23 +334,15 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
                                 checker.report(
                                         Result.warning("purity.more.sideeffectfree",
                                                 node.getName()), node);
-                            } else {
+                            } else if (additionalKinds.contains(Pure.Kind.DETERMINISTIC)) {
                                 checker.report(
                                         Result.warning("purity.more.deterministic",
                                                 node.getName()), node);
+                            } else {
+                                assert false : "BaseTypeVisitor reached undesirable state";
                             }
                         }
                     }
-                }
-            }
-            if (enablePurity && !TreeUtils.isConstructor(node)) {
-                // @Deterministic makes no sense for a void method
-                boolean isDeterministic = PurityUtils.isDeterministic(
-                        atypeFactory, node);
-                if (node.getReturnType().toString().equals("void")
-                        && isDeterministic) {
-                    checker.report(Result.warning("purity.deterministic.void.method"),
-                            node);
                 }
             }
 
@@ -375,6 +369,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
             }
             return super.visitMethod(node, p);
         } finally {
+            boolean abstractMethod = methodElement.getModifiers().contains(Modifier.ABSTRACT);
 
             if (!abstractMethod) {
                 // check postcondition annotations
