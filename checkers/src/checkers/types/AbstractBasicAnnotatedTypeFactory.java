@@ -451,7 +451,6 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
         }
         // no need to scan interfaces or enums
         if (classTree.getKind() == Kind.INTERFACE
-                || classTree.getKind() == Kind.ENUM
                 || classTree.getKind() == Kind.ANNOTATION_TYPE) {
             // Mark finished so that default annotations will be applied.
             scannedClasses.put(classTree, ScanState.FINISHED);
