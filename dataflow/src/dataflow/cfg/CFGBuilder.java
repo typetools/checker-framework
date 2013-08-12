@@ -2285,6 +2285,15 @@ public class CFGBuilder {
             ExecutableElement method = TreeUtils.elementFromUse(tree);
             boolean isBooleanMethod = TypesUtils.isBooleanType(method.getReturnType());
 
+            // in an enum, ignore the super call because of mis-matched arguments.
+            // it seems that the constructor expects two arguments, but the implicit
+            // super call does not have any arguments, causing an exception in
+            // convertCallArguments further down.
+            if (TreeUtils.enclosingClass(getCurrentPath()).getKind() == Kind.ENUM
+                    && method.getSimpleName().toString().equals("<init>")) {
+                return null;
+            }
+
             ConditionalJump cjump = null;
             if (conditionalMode && isBooleanMethod) {
                 cjump = new ConditionalJump(thenTargetL, elseTargetL);
