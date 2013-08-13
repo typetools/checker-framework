@@ -1,6 +1,7 @@
 package java.io;
 
 import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
 import checkers.nullness.quals.Nullable;
 
 
@@ -15,5 +16,5 @@ public class ObjectStreamField implements Comparable<Object> {
   @Pure public boolean isPrimitive() { throw new RuntimeException("skeleton method"); }
   @Pure public boolean isUnshared() { throw new RuntimeException("skeleton method"); }
   @Pure public int compareTo(Object a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public String toString() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public String toString() { throw new RuntimeException("skeleton method"); }
 }

@@ -50,7 +50,7 @@ public class Vector<E extends @Nullable Object> extends AbstractList<E> implemen
   public synchronized boolean addAll(int a1, Collection<? extends E> a2) { throw new RuntimeException("skeleton method"); }
   @Pure public synchronized boolean equals(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   @Pure public synchronized int hashCode() { throw new RuntimeException("skeleton method"); }
-  @Pure public synchronized String toString() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public synchronized String toString() { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public synchronized List<E> subList(int a1, int a2) { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public synchronized Object clone() { throw new RuntimeException("skeleton method"); }
 }

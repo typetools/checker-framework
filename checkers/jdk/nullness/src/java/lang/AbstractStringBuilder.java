@@ -1344,7 +1344,7 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
      *
      * @return  a string representation of this sequence of characters.
      */
-    @Pure public abstract String toString();
+    @SideEffectFree public abstract String toString();
 
     /**
      * Needed by <tt>String</tt> for the contentEquals method.
