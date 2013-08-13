@@ -90,6 +90,8 @@ Explanations on what flow expressions are supported (i.e. strings in pre/postcon
     - Comparisons (equality, less than, etc.).
     - Probably other Java expressions that are "pure" (non-pure things cannot occur, anyway) that I did not think of.
 
+NNEL includes upper bounds in addition to locals.  Maybe other things too?
+
 
 Changelog
 ===========================================================================
