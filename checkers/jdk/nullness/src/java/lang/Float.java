@@ -29,7 +29,7 @@ public final class Float extends Number implements Comparable<Float> {
   public Float(String a1) throws NumberFormatException { throw new RuntimeException("skeleton method"); }
   @Pure public boolean isNaN() { throw new RuntimeException("skeleton method"); }
   @Pure public boolean isInfinite() { throw new RuntimeException("skeleton method"); }
-  @Pure public String toString() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public String toString() { throw new RuntimeException("skeleton method"); }
   @Pure public byte byteValue() { throw new RuntimeException("skeleton method"); }
   @Pure public short shortValue() { throw new RuntimeException("skeleton method"); }
   @Pure public int intValue() { throw new RuntimeException("skeleton method"); }
