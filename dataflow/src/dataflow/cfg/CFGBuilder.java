@@ -2289,8 +2289,9 @@ public class CFGBuilder {
             // it seems that the constructor expects two arguments, but the implicit
             // super call does not have any arguments, causing an exception in
             // convertCallArguments further down.
-            if (TreeUtils.enclosingClass(getCurrentPath()).getKind() == Kind.ENUM
-                    && method.getSimpleName().toString().equals("<init>")) {
+            // the super-calls are javac generated. also see
+            // BaseTypeVisitor.visitMethodInvocation
+            if (TreeUtils.isEnumSuper(tree)) {
                 return null;
             }
 
