@@ -1,4 +1,5 @@
 import checkers.nullness.quals.*;
+import dataflow.quals.*;
 
 class PureTest {
     @dataflow.quals.Pure @Nullable Object puremethod(@Nullable Object a) {
@@ -123,6 +124,12 @@ class PureTest {
         }
         //:: error: (dereference.of.nullable)
         pt.getSuperclass().toString();
+    }
+
+    @Override
+    @SideEffectFree
+    public String toString() {
+        return "foo";
     }
 
 }
