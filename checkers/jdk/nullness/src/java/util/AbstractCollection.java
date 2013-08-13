@@ -1,5 +1,6 @@
 package java.util;
 import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
 import checkers.nullness.quals.Nullable;
 import checkers.nullness.quals.PolyNull;
 
@@ -19,5 +20,5 @@ public abstract class AbstractCollection<E extends @Nullable Object> implements 
   public boolean removeAll(Collection<?> a1) { throw new RuntimeException("skeleton method"); }
   public boolean retainAll(Collection<?> a1) { throw new RuntimeException("skeleton method"); }
   public void clear() { throw new RuntimeException("skeleton method"); }
-  @Pure public String toString() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public String toString() { throw new RuntimeException("skeleton method"); }
 }

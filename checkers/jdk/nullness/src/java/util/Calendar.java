@@ -6,6 +6,7 @@ import checkers.nullness.quals.Nullable;
 
 public abstract class Calendar implements java.io.Serializable, Cloneable, Comparable<Calendar> {
   protected Calendar() {}
+    static final long       serialVersionUID = -1807547505821590642L;
   public final static int ERA = 0;
   public final static int YEAR = 1;
   public final static int MONTH = 2;
@@ -99,5 +100,5 @@ public abstract class Calendar implements java.io.Serializable, Cloneable, Compa
         "DST_OFFSET"
   };
   static final String getFieldName(int field)  { throw new RuntimeException("skeleton method"); }
-  @Pure public String toString() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public String toString() { throw new RuntimeException("skeleton method"); }
 }

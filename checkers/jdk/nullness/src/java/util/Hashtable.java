@@ -25,7 +25,7 @@ public class Hashtable<K extends @NonNull Object, V extends @NonNull Object> ext
   public synchronized @Nullable V remove(Object a1) { throw new RuntimeException("skeleton method"); }
   public synchronized void putAll(Map<? extends K, ? extends V> a1) { throw new RuntimeException("skeleton method"); }
   public synchronized void clear() { throw new RuntimeException("skeleton method"); }
-  @Pure public synchronized String toString() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public synchronized String toString() { throw new RuntimeException("skeleton method"); }
   public Set<@KeyFor("this") K> keySet() { throw new RuntimeException("skeleton method"); }
   public Set<Map.Entry<@KeyFor("this") K, V>> entrySet() { throw new RuntimeException("skeleton method"); }
   public Collection<V> values() { throw new RuntimeException("skeleton method"); }
