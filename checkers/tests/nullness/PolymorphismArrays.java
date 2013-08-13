@@ -1,4 +1,5 @@
 import checkers.nullness.quals.*;
+import checkers.quals.*;
 
 public class PolymorphismArrays {
 
@@ -43,6 +44,14 @@ public class PolymorphismArrays {
         String[][] elts = new String[0][0];
         String[][] clone = elts.clone();
         String[] results = intern(elts[0].clone());
+    }
+
+    public static <T> int indexOf(T[] a) {
+      return indexOfEq(a);
+    }
+
+    public static int indexOfEq(/*@PolyAll*/ Object[] a) {
+        return -1;
     }
 
 }
