@@ -127,7 +127,7 @@ public class FlowExpressions {
                     receiverClassName.contentEquals("java.lang.Double") ||
                     receiverClassName.contentEquals("java.lang.Boolean") ||
                     receiverClassName.contentEquals("java.lang.Char"))) {
-                //return internalReprOf(provider, mn.getArgument(0));
+                return internalReprOf(provider, mn.getArgument(0));
             }
 
             if (PurityUtils.isDeterministic(provider, invokedMethod)) {
