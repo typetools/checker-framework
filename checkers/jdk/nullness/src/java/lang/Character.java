@@ -1,6 +1,7 @@
 package java.lang;
 
 import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
 import checkers.nullness.quals.Nullable;
 
 
@@ -10,7 +11,7 @@ public final class Character implements java.io.Serializable, Comparable<Charact
     protected Subset() {}
     @Pure public final boolean equals(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
     @Pure public final int hashCode() { throw new RuntimeException("skeleton method"); }
-    @Pure public final String toString() { throw new RuntimeException("skeleton method"); }
+    @SideEffectFree public final String toString() { throw new RuntimeException("skeleton method"); }
   }
   public final static class UnicodeBlock extends Subset{
     public final static Character.UnicodeBlock BASIC_LATIN = new UnicodeBlock();
@@ -215,7 +216,7 @@ public final class Character implements java.io.Serializable, Comparable<Charact
   @Pure public char charValue() { throw new RuntimeException("skeleton method"); }
   @Pure public int hashCode() { throw new RuntimeException("skeleton method"); }
   @Pure public boolean equals(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public String toString() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public String toString() { throw new RuntimeException("skeleton method"); }
   @Pure public static String toString(char a1) { throw new RuntimeException("skeleton method"); }
   @Pure public static boolean isValidCodePoint(int a1) { throw new RuntimeException("skeleton method"); }
   @Pure public static boolean isSupplementaryCodePoint(int a1) { throw new RuntimeException("skeleton method"); }

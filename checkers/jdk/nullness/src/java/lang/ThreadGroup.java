@@ -1,6 +1,7 @@
 package java.lang;
 
 import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
 import checkers.nullness.quals.Nullable;
 
 
@@ -30,5 +31,5 @@ public class ThreadGroup implements Thread.UncaughtExceptionHandler {
   public void list() { throw new RuntimeException("skeleton method"); }
   public void uncaughtException(Thread a1, Throwable a2) { throw new RuntimeException("skeleton method"); }
   public boolean allowThreadSuspension(boolean a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public String toString() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public String toString() { throw new RuntimeException("skeleton method"); }
 }

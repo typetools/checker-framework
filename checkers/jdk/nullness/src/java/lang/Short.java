@@ -26,7 +26,7 @@ public final class Short extends Number implements Comparable<Short> {
   @Pure public long longValue() { throw new RuntimeException("skeleton method"); }
   @Pure public float floatValue() { throw new RuntimeException("skeleton method"); }
   @Pure public double doubleValue() { throw new RuntimeException("skeleton method"); }
-  @Pure public String toString() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public String toString() { throw new RuntimeException("skeleton method"); }
   @Pure public int hashCode() { throw new RuntimeException("skeleton method"); }
   @Pure public boolean equals(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   @Pure public int compareTo(Short a1) { throw new RuntimeException("skeleton method"); }

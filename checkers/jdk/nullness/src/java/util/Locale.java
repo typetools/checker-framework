@@ -38,7 +38,7 @@ public final class Locale implements Cloneable, java.io.Serializable {
   public String getLanguage() { throw new RuntimeException("skeleton method"); }
   public String getCountry() { throw new RuntimeException("skeleton method"); }
   public String getVariant() { throw new RuntimeException("skeleton method"); }
-  @Pure public final String toString() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public final String toString() { throw new RuntimeException("skeleton method"); }
   public String getISO3Language()throws MissingResourceException { throw new RuntimeException("skeleton method"); }
   public String getISO3Country()throws MissingResourceException { throw new RuntimeException("skeleton method"); }
   public final String getDisplayLanguage() { throw new RuntimeException("skeleton method"); }

@@ -25,6 +25,12 @@ import java.lang.annotation.Target;
         x.myDeterministicMethod().hashCode();
       }</code></pre>
  * <p>
+ * Note that <tt>@Deterministic</tt> guarantees that the result is
+ * identical according to <tt>==</tt>, <b>not</b> equal according to
+ * <tt>equals</tt>.  This means that writing <tt>@Deterministic</tt> on a
+ * method that returns a reference is often erroneous unless the
+ * returned value is cached or interned.
+ * <p>
  * Also see {@link Pure}, which means both deterministic and {@link
  * SideEffectFree}.
  * <p>
