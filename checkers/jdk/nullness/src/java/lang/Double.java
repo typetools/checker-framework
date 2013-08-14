@@ -17,7 +17,7 @@ public final class Double extends Number implements Comparable<Double> {
   public final static int MIN_EXPONENT = -1022;
   public final static int SIZE = 64;
   public final static Class<Double> TYPE = Double.class;
-  @Pure public static String toString(double a1) { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public static String toString(double a1) { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public static String toHexString(double a1) { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public static Double valueOf(String a1) throws NumberFormatException { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public static Double valueOf(double a1) { throw new RuntimeException("skeleton method"); }

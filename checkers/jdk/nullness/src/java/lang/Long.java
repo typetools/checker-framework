@@ -12,11 +12,11 @@ public final class Long extends Number implements Comparable<Long> {
   public final static long MAX_VALUE = 9223372036854775807L;
   public final static Class<Long> TYPE;
   public final static int SIZE = 64;
-  @Pure public static String toString(long a1, int a2) { throw new RuntimeException("skeleton method"); }
-  @Pure public static String toHexString(long a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static String toOctalString(long a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static String toBinaryString(long a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static String toString(long a1) { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public static String toString(long a1, int a2) { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public static String toHexString(long a1) { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public static String toOctalString(long a1) { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public static String toBinaryString(long a1) { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public static String toString(long a1) { throw new RuntimeException("skeleton method"); }
   @Pure static int stringSize(long x) { throw new RuntimeException("skeleton method"); }
   @Pure public static long parseLong(String a1, int a2) throws NumberFormatException { throw new RuntimeException("skeleton method"); }
   @Pure public static long parseLong(String a1) throws NumberFormatException { throw new RuntimeException("skeleton method"); }

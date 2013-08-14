@@ -11,7 +11,7 @@ public final class Short extends Number implements Comparable<Short> {
   public final static short MAX_VALUE = 32767;
   public final static Class<Short> TYPE;
   public final static int SIZE = 16;
-  @Pure public static String toString(short a1) { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public static String toString(short a1) { throw new RuntimeException("skeleton method"); }
   @Pure public static short parseShort(String a1) throws NumberFormatException { throw new RuntimeException("skeleton method"); }
   @Pure public static short parseShort(String a1, int a2) throws NumberFormatException { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public static Short valueOf(String a1, int a2) throws NumberFormatException { throw new RuntimeException("skeleton method"); }
