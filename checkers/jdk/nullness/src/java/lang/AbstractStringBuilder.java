@@ -30,6 +30,7 @@ import java.util.Arrays;
 
 import checkers.nullness.quals.Nullable;
 import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
 
 /**
  * A mutable sequence of characters.
