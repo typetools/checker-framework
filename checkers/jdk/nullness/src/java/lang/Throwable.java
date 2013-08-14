@@ -22,7 +22,7 @@ public class Throwable implements java.io.Serializable{
   // https://code.google.com/p/checker-framework/issues/detail?id=216 .
   // public synchronized @PolyRaw Throwable initCause(@PolyRaw Throwable this, @Nullable Throwable a1) { throw new RuntimeException("skeleton method"); }
   public synchronized @UnknownInitialization @Raw Throwable initCause(@UnknownInitialization @Raw Throwable this, @Nullable Throwable a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public @SideEffectFree String toString() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public @SideEffectFree String toString() { throw new RuntimeException("skeleton method"); }
   public void printStackTrace() { throw new RuntimeException("skeleton method"); }
   public void printStackTrace(java.io.PrintStream a1) { throw new RuntimeException("skeleton method"); }
   public void printStackTrace(java.io.PrintWriter a1) { throw new RuntimeException("skeleton method"); }

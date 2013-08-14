@@ -6,6 +6,7 @@ import java.nio.ByteBuffer;
 import java.util.Map;
 
 import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
 import checkers.nullness.quals.Nullable;
 
 @SuppressWarnings("rawtypes")
@@ -96,7 +97,7 @@ public final
     }
 
 
-    @Pure public String toString() {
+    @SideEffectFree public String toString() {
         throw new RuntimeException("skeleton method");
     }
 

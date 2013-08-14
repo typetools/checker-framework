@@ -1,6 +1,7 @@
 package java.lang;
 
 import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
 
 import checkers.nullness.quals.Nullable;
 
@@ -20,7 +21,7 @@ public class Package implements java.lang.reflect.AnnotatedElement{
   public static @Pure @Nullable Package getPackage(String a1) { throw new RuntimeException("skeleton method"); }
   public static @Pure Package[] getPackages() { throw new RuntimeException("skeleton method"); }
   @Pure public int hashCode() { throw new RuntimeException("skeleton method"); }
-  @Pure public String toString() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public String toString() { throw new RuntimeException("skeleton method"); }
   public <A extends java.lang.annotation.Annotation> @Nullable A getAnnotation(Class<A> a1) { throw new RuntimeException("skeleton method"); }
   @Pure public boolean isAnnotationPresent(Class<? extends java.lang.annotation.Annotation> a1) { throw new RuntimeException("skeleton method"); }
   public java.lang.annotation.Annotation[] getAnnotations() { throw new RuntimeException("skeleton method"); }

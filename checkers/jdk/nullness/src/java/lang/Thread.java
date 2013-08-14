@@ -1,6 +1,7 @@
 package java.lang;
 
 import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
 import checkers.nullness.quals.*;
 import checkers.initialization.quals.*;
 
@@ -53,7 +54,7 @@ public class Thread implements Runnable {
   public final void setDaemon(@UnknownInitialization @Raw Thread this, boolean a1) { throw new RuntimeException("skeleton method"); }
   @Pure public final boolean isDaemon() { throw new RuntimeException("skeleton method"); }
   public final void checkAccess() { throw new RuntimeException("skeleton method"); }
-  @Pure public String toString() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public String toString() { throw new RuntimeException("skeleton method"); }
   public @Nullable ClassLoader getContextClassLoader() { throw new RuntimeException("skeleton method"); }
   public void setContextClassLoader(ClassLoader a1) { throw new RuntimeException("skeleton method"); }
   public StackTraceElement[] getStackTrace() { throw new RuntimeException("skeleton method"); }
