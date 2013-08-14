@@ -217,7 +217,7 @@ public final class Character implements java.io.Serializable, Comparable<Charact
   @Pure public int hashCode() { throw new RuntimeException("skeleton method"); }
   @Pure public boolean equals(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public String toString() { throw new RuntimeException("skeleton method"); }
-  @Pure public static String toString(char a1) { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public static String toString(char a1) { throw new RuntimeException("skeleton method"); }
   @Pure public static boolean isValidCodePoint(int a1) { throw new RuntimeException("skeleton method"); }
   @Pure public static boolean isSupplementaryCodePoint(int a1) { throw new RuntimeException("skeleton method"); }
   @Pure public static boolean isHighSurrogate(char a1) { throw new RuntimeException("skeleton method"); }

@@ -12,11 +12,11 @@ public final class Integer extends Number implements Comparable<Integer> {
   public final static int MAX_VALUE = 2147483647;
   public final static Class<Integer> TYPE;
   public final static int SIZE = 32;
-  @Pure public static String toString(int a1, int a2) { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public static String toString(int a1, int a2) { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public static String toHexString(int a1) { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public static String toOctalString(int a1) { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public static String toBinaryString(int a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public static String toString(int a1) { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public static String toString(int a1) { throw new RuntimeException("skeleton method"); }
   @Pure static int stringSize(int x) { throw new RuntimeException("skeleton method"); }
   @Pure public static int parseInt(String a1, int a2) throws NumberFormatException { throw new RuntimeException("skeleton method"); }
   @Pure public static int parseInt(String a1) throws NumberFormatException { throw new RuntimeException("skeleton method"); }
