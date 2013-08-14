@@ -11,7 +11,7 @@ public final class Byte extends Number implements Comparable<Byte> {
   public final static byte MAX_VALUE = 127;
   public final static Class<Byte> TYPE;
   public final static int SIZE = 8;
-  @Pure public static String toString(byte a1) { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public static String toString(byte a1) { throw new RuntimeException("skeleton method"); }
   @Pure public static Byte valueOf(byte a1) { throw new RuntimeException("skeleton method"); }
   @Pure public static byte parseByte(String a1) throws NumberFormatException { throw new RuntimeException("skeleton method"); }
   @Pure public static byte parseByte(String a1, int a2) throws NumberFormatException { throw new RuntimeException("skeleton method"); }
