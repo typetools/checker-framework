@@ -2285,16 +2285,6 @@ public class CFGBuilder {
             ExecutableElement method = TreeUtils.elementFromUse(tree);
             boolean isBooleanMethod = TypesUtils.isBooleanType(method.getReturnType());
 
-            // in an enum, ignore the super call because of mis-matched arguments.
-            // it seems that the constructor expects two arguments, but the implicit
-            // super call does not have any arguments, causing an exception in
-            // convertCallArguments further down.
-            // the super-calls are javac generated. also see
-            // BaseTypeVisitor.visitMethodInvocation
-            if (TreeUtils.isEnumSuper(tree)) {
-                return null;
-            }
-
             ConditionalJump cjump = null;
             if (conditionalMode && isBooleanMethod) {
                 cjump = new ConditionalJump(thenTargetL, elseTargetL);
@@ -2325,7 +2315,18 @@ public class CFGBuilder {
                 extendWithNodeWithException(target, npeElement.asType());
             }
 
-            List<Node> arguments = convertCallArguments(method, actualExprs);
+            List<Node> arguments = new ArrayList<>();
+
+            // Don't convert arguments for enum super calls.  The AST contains
+            // no actual arguments, while the method element expects two arguments,
+            // leading to an exception in convertCallArguments.  Since no actual
+            // arguments are present in the AST that is being checked, it shouldn't
+            // cause any harm to omit the conversions.
+            // See also BaseTypeVisitor.visitMethodInvocation and
+            // QualifierPolymorphism.annotate
+            if (!TreeUtils.isEnumSuper(tree)) {
+                arguments = convertCallArguments(method, actualExprs);
+            }
 
             // TODO: lock the receiver for synchronized methods
 
