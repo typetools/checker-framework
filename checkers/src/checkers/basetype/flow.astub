@@ -15,8 +15,8 @@ public final class Character implements java.io.Serializable, Comparable<Charact
     @Pure public char charValue();
     @Pure public int hashCode();
     @Pure public boolean equals(Object obj);
-    @Pure public String toString();
-    @Pure public static String toString(char c);
+    @SideEffectFree public String toString();
+    @SideEffectFree public static String toString(char c);
     @Pure public static boolean isValidCodePoint(int codePoint);
     @Pure public static boolean isBmpCodePoint(int codePoint);
     @Pure public static boolean isSupplementaryCodePoint(int codePoint);
@@ -102,7 +102,7 @@ public static class Character$Subset {
    @Pure protected Subset(String name);
    @Pure public final boolean equals(Object obj);
    @Pure public final int hashCode();
-   @Pure public final String toString();
+   @SideEffectFree public final String toString();
 }
 public static final class Character$UnicodeBlock extends Subset {
    @Pure public static UnicodeBlock of(char c);
@@ -117,7 +117,7 @@ public static final class Character$UnicodeBlock extends Subset {
 
 public class Object {
     @Pure public Object();
-    @Pure public String toString();
+    @SideEffectFree public String toString();
     @Pure public int hashCode();
     @Pure public final Class<?> getClass();
 }
