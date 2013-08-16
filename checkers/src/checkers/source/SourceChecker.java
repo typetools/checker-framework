@@ -1238,6 +1238,10 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
             return false;
         TypeElement typeElement = ElementUtils.enclosingClass(element);
         String name = typeElement.getQualifiedName().toString();
+        if (name.equals("")) {
+            // the fully qualified name for anonymous classes is empty; use toString of type
+            name = typeElement.toString();
+        }
         return shouldSkipUses(name);
     }
 
