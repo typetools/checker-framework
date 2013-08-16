@@ -1,0 +1,10 @@
+To add a new file to the test suite, see
+  ../README
+
+To run the tests, do
+  ant -e -find build.xml basic-tests
+
+Target "basic-tests" in file ../../build.xml indicates which type systems
+are tested -- currently BasicEncryptedTest (from
+../src/tests/BasicEncryptedTest.java) and BasicSuperSubTest (from
+../src/tests/BasicSuperSubTest.java).

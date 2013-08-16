@@ -1,0 +1,130 @@
+
+Necessary changes to the manual.  In brackets I (Stefan) wrote the names of people familiar with the particular change, which might be most qualified to make the change.  If no person is listed, than anyone could do the change.
+
+
+
+New section on concepts and annotations that apply to all type-systems and checkers
+===========================================================================
+What would a good place be for this?  At the beginning/end?  Split into multiple sections?
+
+- Purity annotation
+  - Explain the annotation and its semantics (can probably mostly taken from the Javadoc of @Pure).
+  - Explain the command line parameter -AsuggestPureMethods, as well as what the purity analysis does (again, see Javadoc of @Pure).
+  - Explain the command line parameter -AenablePurity (maybe this ambiguous option, which enables checking whether method bodies are compatible with the method declaration annotation, should be renamed, such as to -AcheckPurity)
+
+- Pre-/postconditions from a user perspective:
+  - Explain the generic pre- and postcondition annotations: @EnsuresAnnotation/@EnsuresAnnotations, @EnsuresAnnotationIf/@EnsuresAnnotationsIf and @RequiresAnnotation/@RequiresAnnotations.
+  - Explain what kind of strings are supported (see at the end of the documentation for a list).
+
+- Pre-/postconditions from a developer perspective:
+  - Explain the meta-annotations @PreconditionAnnotation, @ConditionalPostconditionAnnotation and @PostconditionAnnotation.
+
+- Dataflow analysis
+  - Explain the new defaulting for local variables (including our decision on casts and instanceof).
+  - Explain the command line parameter -Adotflowdir (probably find a better name first) [Stefan/Charlie].
+  - Explain the new annotation @TerminatesExecution.
+  - Document -AconcurrentSemantics command-line option; also note it in caveats about what the checker guarantees [Stefan].
+  - Document -AassumeAssertionsAreEnabled and -AassumeAssertionsAreDisabled [Stefan].
+
+- Document @Covariant annotation [Mike/Werner].
+
+- Document -AignoreRawTypeArguments (rename the option?)
+
+
+Changes throughout the manual to existing sections
+===========================================================================
+
+Document the lint option strictMonotonicNonNullInit for NullnessChecker (disallow null initializations for @MonoNonNull fields)
+
+------------------------------------------------------
+
+[Stefan]
+
+After an expression has been unboxed, it is assumed to be non-null (if it was not, then a NPE has occured).  This prevents many errors for the same problem, just like there is only one error for "o.toString(); o.toString()".
+
+------------------------------------------------------
+
+
+------------------------------------------------------
+
+"NNEL" default becomes "top for locals, casts, and instanceof"
+The top qualifier should only be added to top-level type variables,
+because those will get suitably refined by flow.
+For type variables in other positions, e.g. as type argument in your
+example, we should not add default qualifiers.
+
+------------------------------------------------------
+
+Explain relationship between XXXChecker and XXXAnnotatedTypeFactory:
+if the Checker is a subtype of BaseTypeChecker, the ATF has to be a
+subtype of AbstractBasicATF, because BaseTypeVisitor assumes that.
+
+We found a better naming scheme than Basic vs. Base; it needs to be documented.
+
+------------------------------------------------------
+
+Difference between treatment of explicit and implicit bounds:
+ * Whenever a bound is explicit, it should use the standard defaulting rules.
+ * Whenever a bound is implicit, it should use the maximal type:  maximally
+   high for an upper bound, and maximally low for a lower bound.
+These rules are applied uniformly for type variables and wildcards.
+But note that wildcards should just be refinements of the declared upper
+bounds -- we don't always simply use the top type, but the wildcard always
+refines the declared upper bound.
+
+------------------------------------------------------
+
+[Stefan]
+
+Explanations on what flow expressions are supported (i.e. strings in pre/postconditions):
+
+- Flow expressions:  There is fairly good support for methods with arguments now.   In general, the following features work.
+    - Field accesses of the form "expr.f" (for any flow expression "expr", including method calls or other field access expressions).
+    - Static field accesses of the form "ClassName.f".
+    - Pure method calls (with or without parameters) of the form "expr.method(arg1, arg2, ...).  This even works for overloaded methods and methods with type parameters.
+    - Static pure method calls.
+    - Self reference (i.e., "this").  It can be left off in which case the (static or non-static) field/method is searched for in the current class (just like in normal Java).  That is, both "f" and "this.f" work.
+    - Parameters to the method that a contract annotation belongs, #1, #2, etc.
+    - String literals, integer literals, long literals, null literal.
+- Flow expressions limitations: There are some limitations that I'm aware of, but I don't think any of these are severe.  Let me know if you think we should include any of them.
+    - Other literals, e.g. floats, doubles, chars or class literals.
+    - String concatenation expressions.
+    - Mathematical operators (plus, minus, division, ...).
+    - Comparisons (equality, less than, etc.).
+    - Probably other Java expressions that are "pure" (non-pure things cannot occur, anyway) that I did not think of.
+
+NNEL includes upper bounds in addition to locals.  Maybe other things too?
+
+
+Changelog
+===========================================================================
+
+Format String Checker (new):
+  Ensures that format methods (such as System.out.printf) are invoked
+  with correct arguments.
+
+Renamed method annotations used by the Nullness Checker:
+  @AssertNonNullAfter => @EnsuresNonNull
+  @NonNullOnEntry => @RequiresNonNull
+  @AssertNonNullIfTrue(...) => @EnsuresNonNullIf(result=true, expression=...)
+  @AssertNonNullIfFalse(...) => @EnsuresNonNullIf(result=false, expression=...)
+  @LazyNonNull => @MonotonicNonNull
+  @AssertParametersNonNull => [no replacement]
+Renamed method annotations used by all checkers:
+  @SuppressWarnings => @AssumeAssertion
+
+New -AonlyDefs and -AonlyUses command-line options complement existing
+-AskipDefs and -AskipUses command-line options
+
+New manual section about array types
+
+Suppress warnings using assert statements with the string
+@AssumeAssertion(warningkey); previously, just the warning key sufficed.
+
+Purity analysis:  uses new annotations @SideEffectFree and ...
+
+
+Eclipse setup
+-------------
+Describe checker-framework.importorder and formatter.
+Should these developer-focused configs be moved somewhere else?
