@@ -2,6 +2,8 @@ import java.util.*;
 
 import checkers.nullness.quals.*;
 
+// See issue 241
+//@skip-test
 public class JavaExprContext {
   
   public static class Graph {
