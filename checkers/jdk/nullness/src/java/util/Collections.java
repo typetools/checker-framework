@@ -49,7 +49,7 @@ public class Collections {
   public final static <T> Set<T> emptySet() { throw new RuntimeException("skeleton method"); }
   public final static <T> List<T> emptyList() { throw new RuntimeException("skeleton method"); }
   public final static <K,V> Map<K, V> emptyMap() { throw new RuntimeException("skeleton method"); }
-  public static <T> Set<T> singleton(T a1) { throw new RuntimeException("skeleton method"); }
+  public static <T extends @Nullable Object> Set<T> singleton(T a1) { throw new RuntimeException("skeleton method"); }
   public static <T> List<T> singletonList(T a1) { throw new RuntimeException("skeleton method"); }
   public static <K, V> Map<K, V> singletonMap(K a1, V a2) { throw new RuntimeException("skeleton method"); }
   public static <T> List<T> nCopies(int a1, T a2) { throw new RuntimeException("skeleton method"); }
