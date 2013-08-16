@@ -420,6 +420,12 @@ public class ImmutabilityAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<
         Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair = super.methodFromUse(tree);
         AnnotatedExecutableType type = mfuPair.first;
 
+        // javac produces enum super calls with zero arguments even though the
+        // method element requires two.
+        // See also BaseTypeVisitor.visitMethodInvocation and
+        // CFGBuilder.CFGTranslationPhaseOne.visitMethodInvocation
+        if (TreeUtils.isEnumSuper(tree)) return mfuPair;
+
         List<AnnotatedTypeMirror> requiredArgs = AnnotatedTypes.expandVarArgs(this, type, tree.getArguments());
         List<AnnotatedTypeMirror> arguments = AnnotatedTypes.getAnnotatedTypes(this, requiredArgs, tree.getArguments());
 
