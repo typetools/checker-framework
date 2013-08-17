@@ -835,7 +835,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         }
     }
 
-    @Pure
+    @SideEffectFree
     @Override
     public String toString() {
         return toDOToutput().replace("\\n", "\n");
