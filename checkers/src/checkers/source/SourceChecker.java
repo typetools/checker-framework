@@ -1074,6 +1074,9 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
         options.add("skipDefs");
         options.add("onlyDefs");
 
+        // Unsoundly ignore side effects
+        options.add("assumeSideEffectFree");
+
         // Lint options
         // checkers.source.SourceChecker.getSupportedLintOptions() and similar
         options.add("lint");
