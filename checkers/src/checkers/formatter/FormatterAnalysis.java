@@ -18,7 +18,7 @@ import javax.lang.model.element.VariableElement;
  * @author Konstantin Weitz
  */
 public class FormatterAnalysis extends
-CFAbstractAnalysis<CFValue, CFStore, FormatterTransfer> {
+        CFAbstractAnalysis<CFValue, CFStore, FormatterTransfer> {
     public FormatterAnalysis(FormatterAnnotatedTypeFactory factory,
             ProcessingEnvironment env, FormatterChecker checker,
             List<Pair<VariableElement, CFValue>> fieldValues) {
