@@ -94,8 +94,8 @@ public class PurityChecker {
      * Returns a result that can be queried.
      */
     public static PurityResult checkPurity(Tree statement,
-            AnnotationProvider annoProvider) {
-        PurityCheckerHelper helper = new PurityCheckerHelper(annoProvider);
+            AnnotationProvider annoProvider, boolean assumeSideEffectFree) {
+        PurityCheckerHelper helper = new PurityCheckerHelper(annoProvider, assumeSideEffectFree);
         PurityResult res = helper.scan(statement, new PurityResult());
         return res;
     }
@@ -190,10 +190,14 @@ public class PurityChecker {
             TreeVisitor<PurityResult, PurityResult> {
 
         protected final AnnotationProvider annoProvider;
+        /** True if all methods should be assumed to be @SideEffectFree,
+         * for the purposes of dataflow analysis. */
+        private boolean assumeSideEffectFree;
         protected /*@Nullable*/ List<Element> methodParameter;
 
-        public PurityCheckerHelper(AnnotationProvider annoProvider) {
+        public PurityCheckerHelper(AnnotationProvider annoProvider, boolean assumeSideEffectFree) {
             this.annoProvider = annoProvider;
+            this.assumeSideEffectFree = assumeSideEffectFree;
         }
 
         /**
@@ -393,8 +397,9 @@ public class PurityChecker {
                 p.addNotBothReason(node, reason);
             } else {
                 boolean det = PurityUtils.isDeterministic(annoProvider, elt);
-                boolean seFree = PurityUtils
-                        .isSideEffectFree(annoProvider, elt);
+                boolean seFree = (assumeSideEffectFree
+                                  || PurityUtils.isSideEffectFree(annoProvider,
+                                                                  elt));
                 if (!det && !seFree) {
                     p.addNotBothReason(node, reason);
                 } else if (!det) {
@@ -411,8 +416,9 @@ public class PurityChecker {
         @Override
         public PurityResult visitNewClass(NewClassTree node, PurityResult p) {
             Element methodElement = InternalUtils.symbol(node);
-            boolean sideEffectFree = PurityUtils.isSideEffectFree(annoProvider,
-                    methodElement);
+            boolean sideEffectFree = (assumeSideEffectFree
+                                      || PurityUtils.isSideEffectFree(annoProvider,
+                                                                      methodElement));
             if (sideEffectFree) {
                 p.addNotDetReason(node, "object.creation");
             } else {
