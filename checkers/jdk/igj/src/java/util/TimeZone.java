@@ -3,6 +3,7 @@ import checkers.igj.quals.*;
 
 @I
 public abstract class TimeZone implements java.io.Serializable, Cloneable {
+    static final long serialVersionUID = 3581463369166924961L;
   public final static int SHORT = 0;
   public final static int LONG = 1;
   public @AssignsFields TimeZone() { throw new RuntimeException("skeleton method"); }
