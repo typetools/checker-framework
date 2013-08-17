@@ -738,7 +738,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
             AnnotationMirror inferredAnnotation = inferred.getAnnotationInHierarchy(top);
             if (inferredAnnotation == null) {
                 // We inferred "no annotation" for this hierarchy.
-                type.removeAnnotationInHierarchy(top);
+                type.removeNonTopAnnotationInHierarchy(top);
             } else {
                 // We inferred an annotation.
                 AnnotationMirror present = type
