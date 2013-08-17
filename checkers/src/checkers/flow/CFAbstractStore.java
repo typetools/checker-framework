@@ -146,7 +146,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         ExecutableElement method = n.getTarget().getMethod();
 
         // case 1: remove information if necessary
-        if (!PurityUtils.isSideEffectFree(atypeFactory, method)) {
+        if (!(analysis.atypeFactory.getProcessingEnv().getOptions().containsKey("assumeSideEffectFree")
+              || PurityUtils.isSideEffectFree(atypeFactory, method))) {
             // update field values
             Map<FlowExpressions.FieldAccess, V> newFieldValues = new HashMap<>();
             for (Entry<FlowExpressions.FieldAccess, V> e : fieldValues
