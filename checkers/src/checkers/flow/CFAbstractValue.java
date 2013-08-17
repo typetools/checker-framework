@@ -16,6 +16,7 @@ import checkers.util.AnnotatedTypes;
 
 import dataflow.analysis.AbstractValue;
 import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
 import dataflow.util.HashCodeUtils;
 
 import javacutils.AnnotationUtils;
