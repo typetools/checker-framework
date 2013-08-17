@@ -1,0 +1,134 @@
+Notes for Interned demo (for OOPSLA 2007).
+
+The Interned demo uses Daikon.  You can use the version from CVS.
+Before the demo, copy the demo versions of VarInfo.java and FileIO.java
+over the original versions in $inv/java/daikon.
+
+
+1. Verify correctness of existing code.
+
+View field VarInfo.str_name.
+Note that a comment states that it is interned; that comment was introduced
+many years ago.  We wish to verify that comment.
+
+First, attempt to verify by hand.
+ * Search forward for uses of "str_name =".  [Eclipse incremental search: C-j]
+ * Note that the assignments are correct.  The 5th one is a call to
+   prestate_name(); notice that that call returns an interned value [jump to
+   it by typing "C-o prestate_name"], which is consistent.
+ * OK, this is getting tedious.  Let's verify it automatically instead of
+   manually.
+
+* Add "@Interned" annotation to the field, and run
+  make interned-varinfo
+(It takes 20 seconds on Mike's laptop as of 4/12/2008.
+So you might need to kill some time by talking.)
+
+There are two errors.  (These are real problems, because the uninterned
+values propagate to places that == is used, causing erroneous behaviors.
+Examples are FileIO.read_VarInfos(), FileIO.add_orig_variables(), and
+VarInfoName.isThis(), though you won't give those examples.)
+
+Fix the errors by adding ".intern()" at the end of each
+right-hand-side statement.  Now you are done, and you know that str_name
+never contains a non-interned value.  (You can re-run the checker; it took 14
+seconds on Mike's laptop as of 4/12/2008.)
+
+
+2. Verify correctness of an optimization.
+
+View FileIO.read_data_trace_record().
+This routine contains the inner loop of file reading.  The data trace files
+can easily be many gigabytes, so the loop can be executed millions of times.
+
+The statement on line 1202
+  line = line.intern()
+is suspicious.  This is the inner loop of parsing, and the line will be
+discarded at the end of the loop.  Probably, the reason that it has not
+been removed is that the programmers were too scared.  There is no easy way
+to know whether any code depends on the interning, so removing the
+interning has the potential to introduce a very-hard-to-debug error.
+
+Our analysis can tell us whether there are any errors, though, emboldening
+us to remove the line.
+
+Comment out the line, and run
+  make interned-fileio
+
+There is one error, in is_declaration_header.  Change the parameter from
+"@Interned String" to "String", and change the use of "==" to ".equals".
+
+Rerun the checker, and you can see that the change has not introduced any
+bugs.
+
+----------------
+
+The Interned checker can be very slow.  For example, "make
+interned-varinfo" takes one minute to typecheck one file, on
+manioc.csail.mit.edu (and over half a minute on my laptop).  I
+commented out InternedVisitor.visitMethodInvocation(), mostly to eliminate
+those warnings, but that made no measurable improvement.
+
+===========================================================================
+
+Slides
+
+----------------
+
+Interning
+
+Also known as canonicalization or hash-consing
+
+A space optimization:  reuse an existing object instead of creating a new
+one
+
+Built into java.lang.String: intern() method
+
+  s1  --->  "hello"
+  s2  --->  "hello"
+  s3  --->  "hello"
+
+s1 = s1.intern()
+s2 = s2.intern()   // animation: swing the pointer, gray or X out the second one
+s3 = s3.intern()   // animation: swing the other pointer, gray or X out the second one
+
+Users can add interning for their own classes
+
+The space savings can be significant
+
+----------------
+
+Interning (2)
+
+Interning also saves time:  can compare with ==
+  myString.equals(otherString)
+  myString == otherString   // and, this is more readable and emphasises the interning
+
+Potential for error:  using == on non-interned objects
+
+  new Integer(22) == new Integer(22)   // yields false!
+
+Benefits of automatic checking:
+ * guarantee that no space savings were overlooked
+ * guarantee of no equality-checking errors
+
+----------------
+
+Case study:  Daikon invariant detector
+
+250KLOC of Java code
+Memory is the limiting factor in scaleability
+Daikon makes extensive use of space optimizations such as interning
+1200 lines of code/comments about interning
+200 run-time assertions checking interning
+
+127 @Interned annotations
+  Most files require no annotations
+14 @SuppressWarnings annotations
+
+Detected 9 correctness errors
+Detected 2 performance bugs
+
+[Say:  I will show one example of each.]
+
+===========================================================================
