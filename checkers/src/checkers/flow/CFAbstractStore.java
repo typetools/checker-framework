@@ -16,6 +16,7 @@ import dataflow.cfg.node.LocalVariableNode;
 import dataflow.cfg.node.MethodInvocationNode;
 import dataflow.cfg.node.Node;
 import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
 import dataflow.util.PurityUtils;
 
 import javacutils.AnnotationUtils;
