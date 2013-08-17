@@ -1,0 +1,27 @@
+;# Tests for printing esc forall statments
+;# orig(a[0..x])
+; parse a a
+a = a
+; elements a a
+a = a[]
+; parse x x
+x = x
+; slice prefix a null x
+prefix = a[0..x]
+; prestate o_prefix prefix
+o_prefix = orig(a[0..x])
+; quantify_esc_name o_prefix
+(\forall int i; (0 <= i && i <= \old(x)) ==> 
+	\old(a[i])
+)
+;# orig(a[x..]) :: a[x..]
+; slice suffix a x null
+suffix = a[x..]
+; prestate o_suffix suffix
+o_suffix = orig(a[x..])
+; quantify_esc_name o_suffix suffix
+(\forall int i, j; (\old(x) <= i && i <= \old(a.length-1) && x <= j && j <= a.length-1) ==> 
+(\forall int i, j; (\old(x) <= i && i <= \old(a.length-1) && x <= j && j <= a.length-1 && (i-(\old(x))) == (j-(x))) ==> 
+	\old(a[i])
+	a[j]
+)
