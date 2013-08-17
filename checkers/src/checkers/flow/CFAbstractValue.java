@@ -62,7 +62,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
         this.typeHierarchy = analysis.getTypeHierarchy();
     }
 
-    @Pure
+    @Pure // because the type field is final
     public AnnotatedTypeMirror getType() {
         return type;
     }
@@ -452,7 +452,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
     /**
      * @return The string representation as a comma-separated list.
      */
-    @Pure
+    @SideEffectFree
     @Override
     public String toString() {
         return getType().toString();
