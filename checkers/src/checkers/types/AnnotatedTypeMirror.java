@@ -629,6 +629,22 @@ public abstract class AnnotatedTypeMirror {
     }
 
     /**
+     * Remove an annotation that is in the same qualifier hierarchy as the parameter,
+     * unless it's the top annotation.
+     *
+     * @param a An annotation from the same qualifier hierarchy
+     * @return If an annotation was removed
+     */
+    public boolean removeNonTopAnnotationInHierarchy(AnnotationMirror a) {
+        AnnotationMirror prev = this.getAnnotationInHierarchy(a);
+        QualifierHierarchy qualHier = this.atypeFactory.getQualifierHierarchy();
+        if (prev != null && !prev.equals(qualHier.getTopAnnotation(a))) {
+            return this.removeAnnotation(prev);
+        }
+        return false;
+    }
+
+    /**
      * Removes multiple annotations from the type.
      *
      * @param annotations
