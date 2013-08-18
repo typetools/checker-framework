@@ -703,7 +703,7 @@ public final class TreeUtils {
             IdentifierTree ident = (IdentifierTree) tree;
             Element el = TreeUtils.elementFromUse(ident);
             return el.getKind().isField()
-                    && !ident.getName().contentEquals("this");
+                    && !ident.getName().contentEquals("this") && !ident.getName().contentEquals("super");
         }
         return false;
     }
