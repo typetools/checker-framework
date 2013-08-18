@@ -22,6 +22,7 @@ import dataflow.cfg.node.MethodInvocationNode;
 import dataflow.cfg.node.NarrowingConversionNode;
 import dataflow.cfg.node.Node;
 import dataflow.cfg.node.StringConversionNode;
+import dataflow.cfg.node.SuperNode;
 import dataflow.cfg.node.ThisLiteralNode;
 import dataflow.cfg.node.ValueLiteralNode;
 import dataflow.cfg.node.WideningConversionNode;
@@ -86,6 +87,8 @@ public class FlowExpressions {
             receiver = internalReprOfFieldAccess(provider,
                     (FieldAccessNode) receiverNode);
         } else if (receiverNode instanceof ThisLiteralNode) {
+            receiver = new ThisReference(receiverNode.getType());
+        } else if (receiverNode instanceof SuperNode) {
             receiver = new ThisReference(receiverNode.getType());
         } else if (receiverNode instanceof LocalVariableNode) {
             LocalVariableNode lv = (LocalVariableNode) receiverNode;
