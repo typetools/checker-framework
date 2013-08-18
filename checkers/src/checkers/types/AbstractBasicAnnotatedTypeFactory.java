@@ -41,7 +41,6 @@ import javacutils.ErrorReporter;
 import javacutils.InternalUtils;
 import javacutils.Pair;
 import javacutils.TreeUtils;
-
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -735,10 +734,15 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
     protected void applyInferredAnnotations(AnnotatedTypeMirror type, Value as) {
         AnnotatedTypeMirror inferred = as.getType();
         for (AnnotationMirror top : getQualifierHierarchy().getTopAnnotations()) {
-            AnnotationMirror inferredAnnotation = inferred.getAnnotationInHierarchy(top);
+            AnnotationMirror inferredAnnotation;
+            if (QualifierHierarchy.canHaveEmptyAnnotationSet(type)) {
+                inferredAnnotation = inferred.getAnnotationInHierarchy(top);
+            } else {
+                inferredAnnotation = inferred.getEffectiveAnnotationInHierarchy(top);
+            }
             if (inferredAnnotation == null) {
                 // We inferred "no annotation" for this hierarchy.
-                type.removeNonTopAnnotationInHierarchy(top);
+                type.removeAnnotationInHierarchy(top);
             } else {
                 // We inferred an annotation.
                 AnnotationMirror present = type
