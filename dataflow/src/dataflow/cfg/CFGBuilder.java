@@ -73,6 +73,7 @@ import dataflow.cfg.node.StringConcatenateAssignmentNode;
 import dataflow.cfg.node.StringConcatenateNode;
 import dataflow.cfg.node.StringConversionNode;
 import dataflow.cfg.node.StringLiteralNode;
+import dataflow.cfg.node.SuperNode;
 import dataflow.cfg.node.TernaryExpressionNode;
 import dataflow.cfg.node.ThisLiteralNode;
 import dataflow.cfg.node.ThrowNode;
@@ -3483,8 +3484,11 @@ public class CFGBuilder {
                     node = new ClassNameNode(tree);
                     break;
                 case FIELD:
-                    // Note that "this" is a field, but not a field access.
-                    node = new ExplicitThisLiteralNode(tree);
+                    // Note that "this"/"super" is a field, but not a field access.
+                    if (element.getSimpleName().contentEquals("this"))
+                        node = new ExplicitThisLiteralNode(tree);
+                    else
+                        node = new SuperNode(tree);
                     break;
                 case EXCEPTION_PARAMETER:
                 case LOCAL_VARIABLE:
