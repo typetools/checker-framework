@@ -230,44 +230,4 @@ class RawTypes {
         }
     }
 
-
-
-// skip-test
-//     // TODO: reinstate.  This shows desired features, for initialization in
-//     // a helper method rather than in the constructor.
-//     class InitInHelperMethod {
-//         int a;
-//         int b;
-//
-//         InitInHelperMethod(short constructor_inits_ab) {
-//             a = 1;
-//             b = 1;
-//             nonRawMethod();
-//         }
-//
-//         InitInHelperMethod(boolean constructor_inits_a) {
-//             a = 1;
-//             init_b();
-//             nonRawMethod();
-//         }
-//
-//         void init_b(@Raw InitInHelperMethod this) {
-//             b = 2;
-//             nonRawMethod();
-//         }
-//
-//         InitInHelperMethod(int constructor_inits_none) {
-//             init_ab();
-//             nonRawMethod();
-//         }
-//
-//         void init_ab(@Raw InitInHelperMethod this) {
-//             a = 1;
-//             b = 2;
-//             nonRawMethod();
-//         }
-//
-//         void nonRawMethod() { }
-//     }
-
 }
