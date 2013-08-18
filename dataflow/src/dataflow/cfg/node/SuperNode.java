@@ -28,7 +28,7 @@ public class SuperNode extends Node {
     public SuperNode(Tree t) {
         super(InternalUtils.typeOf(t));
         assert t instanceof IdentifierTree
-                && ((IdentifierTree) t).getName().equals("super");
+                && ((IdentifierTree) t).getName().contentEquals("super");
         tree = t;
     }
 
