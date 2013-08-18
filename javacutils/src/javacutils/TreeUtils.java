@@ -844,7 +844,9 @@ public final class TreeUtils {
     public static boolean isEnumSuper(MethodInvocationTree node) {
         ExecutableElement ex = TreeUtils.elementFromUse(node);
         Name name = ElementUtils.getQualifiedClassName(ex);
-        return "java.lang.Enum".contentEquals(name);
+        boolean correctClass = "java.lang.Enum".contentEquals(name);
+        boolean correctMethod = "<init>".contentEquals(ex.getSimpleName());
+        return correctClass && correctMethod;
     }
 
 }
