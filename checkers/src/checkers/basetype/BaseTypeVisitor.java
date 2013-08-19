@@ -68,6 +68,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic.Kind;
@@ -387,6 +388,11 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
                 checkConditionalPostconditions(node, methodElement);
             }
 
+            // check well-formedness of pre/postcondition
+            checkPreconditionsConsistency(node, methodElement);
+            checkPostconditionsConsistency(node, methodElement);
+            checkConditionalPostconditionsConsistency(node, methodElement);
+
             visitorState.setMethodReceiver(preMRT);
             visitorState.setMethodTree(preMT);
         }
@@ -463,7 +469,6 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
                 // other annotations)
                 expr = FlowExpressionParseUtil.parse(expression,
                         flowExprContext, getCurrentPath());
-                checkFlowExprParameters(node, expression);
 
                 CFAbstractStore<?, ?> exitStore = atypeFactory
                         .getRegularExitStore(node);
@@ -487,6 +492,42 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
                 // report errors here
                 checker.report(e.getResult(), node);
             }
+        }
+    }
+
+    /**
+     * Checks all (non-conditional) postcondition on the method {@code node}
+     * with element {@code methodElement} for consistency.
+     */
+    protected void checkPostconditionsConsistency(MethodTree node,
+            ExecutableElement methodElement) {
+        FlowExpressionContext flowExprContext = null;
+        Set<Pair<String, String>> postconditions = contractsUtils
+                .getPostconditions(methodElement);
+
+        for (Pair<String, String> p : postconditions) {
+            String expression = p.first;
+            AnnotationMirror annotation = AnnotationUtils.fromName(elements,
+                    p.second);
+
+            if (flowExprContext == null) {
+                flowExprContext = FlowExpressionParseUtil
+                        .buildFlowExprContextForDeclaration(node,
+                                getCurrentPath(), atypeFactory);
+            }
+
+            // Only check if the postcondition concerns this checker
+            if (!checker.isSupportedAnnotation(annotation)) {
+                continue;
+            }
+            try {
+                FlowExpressionParseUtil.parse(expression,
+                        flowExprContext, getCurrentPath());
+            } catch (FlowExpressionParseException e) {
+                // ignore expressions that do not parse
+                continue;
+            }
+            checkFlowExprParameters(methodElement, expression);
         }
     }
 
@@ -524,7 +565,6 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
                 // other annotations)
                 expr = FlowExpressionParseUtil.parse(expression,
                         flowExprContext, getCurrentPath());
-                checkFlowExprParameters(node, expression);
 
                 // check return type of method
                 boolean booleanReturnType = TypesUtils
@@ -584,17 +624,53 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
     }
 
     /**
+     * Checks all conditional postcondition on the method with element
+     * {@code methodElement} for consistency.
+     */
+    protected void checkConditionalPostconditionsConsistency(MethodTree node,
+            ExecutableElement methodElement) {
+        FlowExpressionContext flowExprContext = null;
+        Set<Pair<String, Pair<Boolean, String>>> conditionalPostconditions = contractsUtils
+                .getConditionalPostconditions(methodElement);
+
+        for (Pair<String, Pair<Boolean, String>> p : conditionalPostconditions) {
+            String expression = p.first;
+            AnnotationMirror annotation = AnnotationUtils.fromName(elements,
+                    p.second.second);
+
+            if (flowExprContext == null) {
+                flowExprContext = FlowExpressionParseUtil
+                        .buildFlowExprContextForDeclaration(node,
+                                getCurrentPath(), atypeFactory);
+            }
+
+            // Only check if the postcondition concerns this checker
+            if (!checker.isSupportedAnnotation(annotation)) {
+                continue;
+            }
+            try {
+                FlowExpressionParseUtil.parse(expression,
+                        flowExprContext, getCurrentPath());
+            } catch (FlowExpressionParseException e) {
+                // ignore expressions that do not parse
+                continue;
+            }
+            checkFlowExprParameters(methodElement, expression);
+
+        }
+    }
+
+    /**
      * Check that the parameters used in {@code stringExpr} are final for method
      * {@code method}.
      */
-    protected void checkFlowExprParameters(MethodTree method, String stringExpr) {
+    protected void checkFlowExprParameters(ExecutableElement method, String stringExpr) {
         // check that all parameters used in the expression are
         // final, so that they cannot be modified
         List<Integer> parameterIndices = FlowExpressionParseUtil.parameterIndices(stringExpr);
         for (Integer idx : parameterIndices) {
-            VariableTree parameter = method.getParameters().get(idx - 1);
-            Element element = TreeUtils.elementFromDeclaration(parameter);
-            if (!ElementUtils.isFinal(element)) {
+            VariableElement parameter = method.getParameters().get(idx - 1);
+            if (!ElementUtils.isEffectivelyFinal(parameter)) {
                 checker.report(
                         Result.failure("flowexpr.parameter.not.final",
                                 "#" + idx, stringExpr), method);
@@ -767,6 +843,42 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
             } catch (FlowExpressionParseException e) {
                 // errors are reported at declaration site
             }
+        }
+    }
+
+    /**
+     * Checks all the preconditions of the method with element
+     * {@code methodElement} for consistency.
+     */
+    protected void checkPreconditionsConsistency(MethodTree node,
+            ExecutableElement methodElement) {
+        FlowExpressionContext flowExprContext = null;
+        Set<Pair<String, String>> preconditions = contractsUtils
+                .getPreconditions(methodElement);
+
+        for (Pair<String, String> p : preconditions) {
+            String expression = p.first;
+            AnnotationMirror anno = AnnotationUtils
+                    .fromName(elements, p.second);
+
+            if (flowExprContext == null) {
+                flowExprContext = FlowExpressionParseUtil
+                        .buildFlowExprContextForDeclaration(node,
+                                getCurrentPath(), atypeFactory);
+            }
+
+            // Only check if the precondition concerns this checker
+            if (!checker.isSupportedAnnotation(anno)) {
+                return;
+            }
+            try {
+                FlowExpressionParseUtil.parse(expression, flowExprContext,
+                        getCurrentPath());
+            } catch (FlowExpressionParseException e) {
+                // ignore expressions that do not parse
+                continue;
+            }
+            checkFlowExprParameters(methodElement, expression);
         }
     }
 
