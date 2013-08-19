@@ -52,6 +52,7 @@ class Postcondition {
     @EnsuresOdd({"#1","#2"})
     //:: error: (flowexpr.parameter.not.final)
     void param2(@Odd String f, @Odd String g) {
+        f = g;
     }
     @EnsuresOdd("#1")
     //:: error: (flowexpr.parse.index.too.big)
