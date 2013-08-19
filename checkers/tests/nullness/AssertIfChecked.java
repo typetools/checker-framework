@@ -108,6 +108,11 @@ public class AssertIfChecked {
       return getValuePure() != null;
   }
 
+  @EnsuresNonNullIf(result=true, expression="#1")
+  public static final boolean isComment(@Nullable String s) {
+    return s != null && (s.startsWith("//") || s.startsWith("#"));
+  }
+
   
   /*
    * The next two methods are from Daikon's class Quant. They verify that
