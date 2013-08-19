@@ -65,6 +65,7 @@ class Postcondition {
     @EnsuresQualifier(expression={"#1","#2"}, qualifier=Value.class)
     //:: error: (flowexpr.parameter.not.final)
     void param2(@Value String f, @Value String g) {
+        f = g;
     }
     @EnsuresQualifier(expression="#1", qualifier=Value.class)
     //:: error: (flowexpr.parse.index.too.big)
