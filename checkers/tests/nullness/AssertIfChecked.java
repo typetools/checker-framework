@@ -113,6 +113,11 @@ public class AssertIfChecked {
     return s != null && (s.startsWith("//") || s.startsWith("#"));
   }
 
+  @EnsuresNonNullIf(result=true, expression="#1")
+  public boolean myEquals (/*@Nullable*/ Object o) {
+    return (o instanceof String) && equals((String) o);
+  }
+
   
   /*
    * The next two methods are from Daikon's class Quant. They verify that
