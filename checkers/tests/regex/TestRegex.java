@@ -9,3 +9,11 @@ public class TestRegex {
         a += "(";
     }
 }
+
+// test-case for issue 148
+class Search {
+    public static void main(String[] args) {
+        if (!checkers.regex.RegexUtil.isRegex(args[0], 4)) { return; }
+        @Regex(4) String regex = args[0];
+    }
+}
