@@ -41,6 +41,7 @@ import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.AssertTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ExpressionTree;
@@ -119,13 +120,21 @@ public class CFCFGBuilder extends CFGBuilder {
 
         @Override
         public void handleArtificialTree(Tree tree) {
-            // Record the method that encloses the newly created tree.
+            // Record the method or class that encloses the newly created tree.
             MethodTree enclosingMethod = TreeUtils
                 .enclosingMethod(getCurrentPath());
             if (enclosingMethod != null) {
                 Element methodElement = TreeUtils
                     .elementFromDeclaration(enclosingMethod);
                 factory.setPathHack(tree, methodElement);
+            } else {
+                ClassTree enclosingClass = TreeUtils
+                    .enclosingClass(getCurrentPath());
+                if (enclosingClass != null) {
+                    Element classElement = TreeUtils
+                        .elementFromDeclaration(enclosingClass);
+                    factory.setPathHack(tree, classElement);
+                }
             }
         }
 
