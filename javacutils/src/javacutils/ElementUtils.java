@@ -4,6 +4,9 @@ package javacutils;
 import checkers.nullness.quals.Nullable;
 */
 
+import static com.sun.tools.javac.code.Flags.EFFECTIVELY_FINAL;
+import static com.sun.tools.javac.code.Flags.FINAL;
+
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -115,6 +118,17 @@ public class ElementUtils {
      */
     public static boolean isFinal(Element element) {
         return element.getModifiers().contains(Modifier.FINAL);
+    }
+
+    /**
+     * Returns true if the element is a effectively final element.
+     *
+     * @param element
+     * @return true if the element is effectively final
+     */
+    public static boolean isEffectivelyFinal(Element element) {
+        Symbol sym = (Symbol) element;
+        return (sym.flags() & (FINAL | EFFECTIVELY_FINAL)) != 0;
     }
 
     /**
