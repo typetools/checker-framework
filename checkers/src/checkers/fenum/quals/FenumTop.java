@@ -21,7 +21,7 @@ import java.lang.annotation.Target;
  */
 @TypeQualifier
 @SubtypeOf( { } )
-@DefaultFor(DefaultLocation.LOCALS)
+@DefaultFor({ DefaultLocation.LOCAL_VARIABLE, DefaultLocation.RESOURCE_VARIABLE })
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({}) // empty target prevents programmers from writing this in a program
