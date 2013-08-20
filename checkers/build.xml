@@ -250,7 +250,7 @@ ${build.version} of the 'javac.jar' library."/>
         subdirectory fails. -->
         <javadoc sourcepath="${src}" destdir="${dist.doc}" failonerror="false"
             executable="${jsr308.langtools}/dist/bin/javadoc"
-          classpath="${build}:${javac.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar:tests/junit-4.7.jar"
+          classpath="${build}:${javac.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar:${tests.junit}"
           excludepackagenames="checkers.util.stub"
           bootclasspath="${javac.lib}:${javadoc.lib}:${java.home}/lib/rt.jar">
           <package name="checkers.*"/>
@@ -607,7 +607,8 @@ ${build.version} of the 'javac.jar' library."/>
         </antcall>
     </target>
 
-    <target name="jtreg-tests" depends="-def-jtreg,jar">
+    <target name="jtreg-tests" depends="-def-jtreg,jar"
+	    description="Run jtreg tests">
         <jtreg-tool name="all" tests="."/>
     </target>
 
@@ -699,7 +700,7 @@ ${build.version} of the 'javac.jar' library."/>
 
         <java fork="true"
               failonerror="true"
-              classpath="${javac.lib}:${checkers.jar.file}:${javaparser.lib}:${javacutils.lib}:${dataflow.lib}"
+              classpath="${javac.lib}:${checkers.jar.file}:${javaparser.lib}:${javacutils.lib}:${dataflow.lib}:${tests.junit}"
               classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
