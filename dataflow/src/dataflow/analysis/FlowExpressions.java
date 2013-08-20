@@ -10,6 +10,7 @@ import javacutils.TypesUtils;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
@@ -114,6 +115,21 @@ public class FlowExpressions {
             MethodInvocationNode mn = (MethodInvocationNode) receiverNode;
             ExecutableElement invokedMethod = TreeUtils.elementFromUse(mn
                     .getTree());
+
+            // skip explicit boxing
+            Name receiverClassName = ElementUtils.getQualifiedClassName(invokedMethod);
+            if (invokedMethod.getSimpleName().contentEquals("valueOf") &&
+                    (receiverClassName.contentEquals("java.lang.Int") ||
+                    receiverClassName.contentEquals("java.lang.Long") ||
+                    receiverClassName.contentEquals("java.lang.Short") ||
+                    receiverClassName.contentEquals("java.lang.Byte") ||
+                    receiverClassName.contentEquals("java.lang.Float") ||
+                    receiverClassName.contentEquals("java.lang.Double") ||
+                    receiverClassName.contentEquals("java.lang.Boolean") ||
+                    receiverClassName.contentEquals("java.lang.Char"))) {
+                return internalReprOf(provider, mn.getArgument(0));
+            }
+
             if (PurityUtils.isDeterministic(provider, invokedMethod)) {
                 List<Receiver> parameters = new ArrayList<>();
                 for (Node p : mn.getArguments()) {

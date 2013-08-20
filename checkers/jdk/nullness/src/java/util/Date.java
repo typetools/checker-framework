@@ -33,7 +33,7 @@ public class Date implements java.io.Serializable, Cloneable, Comparable<Date> {
   @Pure public boolean equals(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   @Pure public int compareTo(Date a1) { throw new RuntimeException("skeleton method"); }
   @Pure public int hashCode() { throw new RuntimeException("skeleton method"); }
-  @Pure public String toString() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public String toString() { throw new RuntimeException("skeleton method"); }
   public String toLocaleString() { throw new RuntimeException("skeleton method"); }
   public String toGMTString() { throw new RuntimeException("skeleton method"); }
   public int getTimezoneOffset() { throw new RuntimeException("skeleton method"); }

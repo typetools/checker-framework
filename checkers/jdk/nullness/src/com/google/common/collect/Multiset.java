@@ -297,7 +297,7 @@ public interface Multiset<E extends /*@Nullable*/ Object> extends Collection<E> 
      * representation of the element, followed by the three characters {@code
      * " x "} (space, letter x, space), followed by the count.
      */
-    @Pure String toString();
+    @SideEffectFree String toString();
   }
 
   // Comparison and hashing
@@ -331,7 +331,7 @@ public interface Multiset<E extends /*@Nullable*/ Object> extends Collection<E> 
    *     [a x 3, c, d x 2, e]
    * </pre>
    */
-  @Pure String toString();
+  @SideEffectFree String toString();
 
   // Refined Collection Methods
 

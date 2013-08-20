@@ -11,7 +11,7 @@ public final class Short extends Number implements Comparable<Short> {
   public final static short MAX_VALUE = 32767;
   public final static Class<Short> TYPE;
   public final static int SIZE = 16;
-  @Pure public static String toString(short a1) { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public static String toString(short a1) { throw new RuntimeException("skeleton method"); }
   @Pure public static short parseShort(String a1) throws NumberFormatException { throw new RuntimeException("skeleton method"); }
   @Pure public static short parseShort(String a1, int a2) throws NumberFormatException { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public static Short valueOf(String a1, int a2) throws NumberFormatException { throw new RuntimeException("skeleton method"); }
@@ -26,7 +26,7 @@ public final class Short extends Number implements Comparable<Short> {
   @Pure public long longValue() { throw new RuntimeException("skeleton method"); }
   @Pure public float floatValue() { throw new RuntimeException("skeleton method"); }
   @Pure public double doubleValue() { throw new RuntimeException("skeleton method"); }
-  @Pure public String toString() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public String toString() { throw new RuntimeException("skeleton method"); }
   @Pure public int hashCode() { throw new RuntimeException("skeleton method"); }
   @Pure public boolean equals(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   @Pure public int compareTo(Short a1) { throw new RuntimeException("skeleton method"); }

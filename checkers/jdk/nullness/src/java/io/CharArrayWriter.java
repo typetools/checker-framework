@@ -1,6 +1,7 @@
 package java.io;
 
 import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
 import checkers.nullness.quals.Nullable;
 
 @checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
@@ -18,7 +19,7 @@ public class CharArrayWriter extends Writer {
   public void reset() { throw new RuntimeException("skeleton method"); }
   public char[] toCharArray() { throw new RuntimeException("skeleton method"); }
   @Pure public int size() { throw new RuntimeException("skeleton method"); }
-  @Pure public String toString() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public String toString() { throw new RuntimeException("skeleton method"); }
   public void flush() { throw new RuntimeException("skeleton method"); }
   public void close() { throw new RuntimeException("skeleton method"); }
 }

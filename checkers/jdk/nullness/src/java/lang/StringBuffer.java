@@ -1,6 +1,7 @@
 package java.lang;
 
 import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
 import checkers.nullness.quals.Nullable;
 
 
@@ -59,5 +60,5 @@ public final class StringBuffer extends AbstractStringBuilder implements java.io
   @Pure public int lastIndexOf(String a1) { throw new RuntimeException("skeleton method"); }
   @Pure public synchronized int lastIndexOf(String a1, int a2) { throw new RuntimeException("skeleton method"); }
   public synchronized StringBuffer reverse() { throw new RuntimeException("skeleton method"); }
-  @Pure public synchronized String toString() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public synchronized String toString() { throw new RuntimeException("skeleton method"); }
 }

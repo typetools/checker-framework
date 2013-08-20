@@ -30,7 +30,7 @@ public class SimpleTimeZone extends TimeZone {
   @Pure public synchronized int hashCode() { throw new RuntimeException("skeleton method"); }
   @Pure public boolean equals(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   public boolean hasSameRules(TimeZone a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public String toString() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public String toString() { throw new RuntimeException("skeleton method"); }
 
   @SideEffectFree public Object clone() { throw new RuntimeException("skeleton method"); }
 }

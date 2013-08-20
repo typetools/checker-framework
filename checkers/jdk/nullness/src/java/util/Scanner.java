@@ -1,5 +1,6 @@
 package java.util;
 import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
 import checkers.nullness.quals.Nullable;
 
 public final class Scanner implements Iterator<String> {
@@ -21,7 +22,7 @@ public final class Scanner implements Iterator<String> {
   public int radix() { throw new RuntimeException("skeleton method"); }
   public Scanner useRadix(int a1) { throw new RuntimeException("skeleton method"); }
   public java.util.regex.MatchResult match() { throw new RuntimeException("skeleton method"); }
-  @Pure public String toString() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public String toString() { throw new RuntimeException("skeleton method"); }
   public boolean hasNext() { throw new RuntimeException("skeleton method"); }
   public String next() { throw new RuntimeException("skeleton method"); }
   public void remove() { throw new RuntimeException("skeleton method"); }

@@ -69,6 +69,9 @@ Difference between treatment of explicit and implicit bounds:
  * Whenever a bound is implicit, it should use the maximal type:  maximally
    high for an upper bound, and maximally low for a lower bound.
 These rules are applied uniformly for type variables and wildcards.
+But note that wildcards should just be refinements of the declared upper
+bounds -- we don't always simply use the top type, but the wildcard always
+refines the declared upper bound.
 
 ------------------------------------------------------
 
@@ -90,6 +93,8 @@ Explanations on what flow expressions are supported (i.e. strings in pre/postcon
     - Mathematical operators (plus, minus, division, ...).
     - Comparisons (equality, less than, etc.).
     - Probably other Java expressions that are "pure" (non-pure things cannot occur, anyway) that I did not think of.
+
+NNEL includes upper bounds in addition to locals.  Maybe other things too?
 
 
 Changelog
