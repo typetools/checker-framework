@@ -59,15 +59,15 @@ public class ReportVisitor extends BaseTypeVisitor<ReportChecker, BasicAnnotated
     public ReportVisitor(ReportChecker checker, CompilationUnitTree root) {
         super(checker, root);
 
-        if (options.containsKey("reportTreeKinds")) {
-            String trees = options.get("reportTreeKinds");
+        if (checker.hasOption("reportTreeKinds")) {
+            String trees = checker.getOption("reportTreeKinds");
             treeKinds = trees.split(",");
         } else {
             treeKinds = null;
         }
 
-        if (options.containsKey("reportModifiers")) {
-            String mods = options.get("reportModifiers");
+        if (checker.hasOption("reportModifiers")) {
+            String mods = checker.getOption("reportModifiers");
             modifiers = mods.split(",");
         } else {
             modifiers = null;
