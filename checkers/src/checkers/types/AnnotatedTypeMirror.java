@@ -2183,7 +2183,13 @@ public abstract class AnnotatedTypeMirror {
             if (superBound != null)
                 type.setSuperBound(superBound.substitute(newMapping));
 
-            return type;
+            if (type.getExtendsBound() != null &&
+                    type.getSuperBound() != null &&
+                    AnnotatedTypes.areSame(type.getExtendsBound(), type.getSuperBound())) {
+                return type.getExtendsBound();
+            } else {
+                return type;
+            }
         }
 
         @Override
