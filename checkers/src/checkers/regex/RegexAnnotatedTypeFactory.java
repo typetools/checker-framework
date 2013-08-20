@@ -120,7 +120,7 @@ public class RegexAnnotatedTypeFactory extends AbstractBasicAnnotatedTypeFactory
      */
     /*package-scope*/ AnnotationMirror createRegexAnnotation(int groupCount) {
         AnnotationBuilder builder =
-            new AnnotationBuilder(processingEnv, Regex.class.getCanonicalName());
+            new AnnotationBuilder(processingEnv, Regex.class);
         builder.setValue("value", groupCount);
         return builder.build();
     }
@@ -273,7 +273,7 @@ public class RegexAnnotatedTypeFactory extends AbstractBasicAnnotatedTypeFactory
          */
         private AnnotationMirror createPartialRegexAnnotation(String partial) {
             AnnotationBuilder builder =
-                new AnnotationBuilder(processingEnv, PartialRegex.class.getCanonicalName());
+                new AnnotationBuilder(processingEnv, PartialRegex.class);
             builder.setValue("value", partial);
             return builder.build();
         }

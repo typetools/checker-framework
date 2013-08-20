@@ -614,7 +614,7 @@ public class StubParser {
         if (annotations == null)
             return;
         for (AnnotationExpr annotation : annotations) {
-            AnnotationMirror annoMirror = getAnnotation(annotation, supportedAnnotations, processingEnv);
+            AnnotationMirror annoMirror = getAnnotation(annotation, supportedAnnotations);
             if (annoMirror != null)
                 type.replaceAnnotation(annoMirror);
         }
@@ -625,7 +625,7 @@ public class StubParser {
             return;
         Set<AnnotationMirror> annos = AnnotationUtils.createAnnotationSet();
         for (AnnotationExpr annotation : annotations) {
-            AnnotationMirror annoMirror = getAnnotation(annotation, supportedAnnotations, processingEnv);
+            AnnotationMirror annoMirror = getAnnotation(annotation, supportedAnnotations);
             if (annoMirror != null)
                 annos.add(annoMirror);
         }
@@ -904,8 +904,7 @@ public class StubParser {
     }
 
     private AnnotationMirror getAnnotation(AnnotationExpr annotation,
-            Map<String, AnnotationMirror> supportedAnnotations,
-            ProcessingEnvironment env) {
+            Map<String, AnnotationMirror> supportedAnnotations) {
         AnnotationMirror annoMirror;
         if (annotation instanceof MarkerAnnotationExpr) {
             String annoName = ((MarkerAnnotationExpr)annotation).getName().getName();
@@ -918,7 +917,7 @@ public class StubParser {
                 // Not a supported qualifier -> ignore
                 return null;
             }
-            AnnotationBuilder builder = new AnnotationBuilder(env, annoMirror);
+            AnnotationBuilder builder = new AnnotationBuilder(processingEnv, annoMirror);
             List<MemberValuePair> pairs = nrmanno.getPairs();
             if (pairs!=null) {
                 for (MemberValuePair mvp : pairs) {
@@ -936,7 +935,7 @@ public class StubParser {
                 // Not a supported qualifier -> ignore
                 return null;
             }
-            AnnotationBuilder builder = new AnnotationBuilder(env, annoMirror);
+            AnnotationBuilder builder = new AnnotationBuilder(processingEnv, annoMirror);
             Expression valexpr = sglanno.getMemberValue();
             handleExpr(builder, "value", valexpr);
             return builder.build();

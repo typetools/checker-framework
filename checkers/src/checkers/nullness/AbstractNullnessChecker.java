@@ -1,16 +1,5 @@
 package checkers.nullness;
 
-import java.lang.annotation.Annotation;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-
-import javacutils.AnnotationUtils;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.util.Elements;
-
 import checkers.basetype.BaseTypeVisitor;
 import checkers.initialization.InitializationChecker;
 import checkers.nullness.quals.MonotonicNonNull;
@@ -20,6 +9,17 @@ import checkers.nullness.quals.PolyNull;
 import checkers.quals.PolyAll;
 import checkers.types.QualifierHierarchy;
 import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+
+import javacutils.AnnotationUtils;
+
+import java.lang.annotation.Annotation;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.util.Elements;
 
 import com.sun.source.tree.CompilationUnitTree;
 
@@ -128,21 +128,21 @@ public abstract class AbstractNullnessChecker extends InitializationChecker<Null
         }
 
         @Override
-        public boolean isSubtype(AnnotationMirror anno1, AnnotationMirror anno2) {
-            if (isInitializationAnnotation(anno1) ||
-                    isInitializationAnnotation(anno2)) {
-                return this.isSubtypeInitialization(anno1, anno2);
+        public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
+            if (isInitializationAnnotation(rhs) ||
+                    isInitializationAnnotation(lhs)) {
+                return this.isSubtypeInitialization(rhs, lhs);
             }
-            return super.isSubtype(anno1, anno2);
+            return super.isSubtype(rhs, lhs);
         }
 
         @Override
-        public AnnotationMirror leastUpperBound(AnnotationMirror anno1, AnnotationMirror anno2) {
-            if (isInitializationAnnotation(anno1) ||
-                    isInitializationAnnotation(anno2)) {
-                return this.leastUpperBoundInitialization(anno1, anno2);
+        public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
+            if (isInitializationAnnotation(a1) ||
+                    isInitializationAnnotation(a2)) {
+                return this.leastUpperBoundInitialization(a1, a2);
             }
-            return super.leastUpperBound(anno1, anno2);
+            return super.leastUpperBound(a1, a2);
         }
     }
 }

@@ -155,14 +155,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     private Map<String, Set<AnnotationMirror>> indexDeclAnnos;
 
     /**
-     * The Class that is used to look up annotation stub files.
-     * Stub files are located with the corresponding checker. This field has to be set
-     * to any of the classes in the directory of the checker.
-     * For example, for the Fenum Checker, to find the jdk.astub, provide the FenumChecker.class
-     * or any other class in that package.
-     * The field can be null; in that case, no annotation stub file will be loaded.
+     * The checker to use for option handling and resource management.
      */
-    protected final /*@Nullable*/ Class<?> resourceClass;
+    protected final SourceChecker<?> checker;
 
     /**
      * Map from class name (canonical name) of an annotation, to the
@@ -210,7 +205,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         uid = ++uidCounter;
         this.processingEnv = checker.getProcessingEnvironment();
         this.root = root;
-        this.resourceClass = checker.getClass();
+        this.checker = checker;
         this.trees = Trees.instance(processingEnv);
         this.elements = processingEnv.getElementUtils();
         this.types = processingEnv.getTypeUtils();
@@ -688,15 +683,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         AnnotatedDeclaredType generic = getAnnotatedType(element);
         List<AnnotatedTypeMirror> targs = type.getTypeArguments();
         List<AnnotatedTypeMirror> tvars = generic.getTypeArguments();
+
+        assert targs.size() == tvars.size() : "Mismatch in type argument size between " + type + " and " + generic;
+
         Map<AnnotatedTypeVariable, AnnotatedTypeMirror> mapping =
                 new HashMap<AnnotatedTypeVariable, AnnotatedTypeMirror>();
 
-        List<AnnotatedTypeVariable> res = new LinkedList<AnnotatedTypeVariable>();
-
-        assert targs.size() == tvars.size() : "Mismatch in type argument size between " + type + " and " + generic;
-        for(int i=0; i<targs.size(); ++i) {
+        for (int i = 0; i < targs.size(); ++i) {
             mapping.put((AnnotatedTypeVariable)tvars.get(i), targs.get(i));
         }
+
+        List<AnnotatedTypeVariable> res = new LinkedList<AnnotatedTypeVariable>();
 
         for (AnnotatedTypeMirror atm : tvars) {
             AnnotatedTypeVariable atv = (AnnotatedTypeVariable)atm;
@@ -1738,10 +1735,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         Map<String, Set<AnnotationMirror>> indexDeclAnnos
             = new HashMap<String, Set<AnnotationMirror>>();
 
-        if (!processingEnv.getOptions().containsKey("ignorejdkastub")) {
+        if (!checker.hasOption("ignorejdkastub")) {
             InputStream in = null;
-            if (resourceClass != null)
-                in = resourceClass.getResourceAsStream("jdk.astub");
+            if (checker != null)
+                in = checker.getClass().getResourceAsStream("jdk.astub");
             if (in != null) {
                 StubParser stubParser = new StubParser("jdk.astub", in, this, processingEnv);
                 stubParser.parse(indexTypes, indexDeclAnnos);
@@ -1758,7 +1755,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         String allstubFiles = "";
         String stubFiles;
 
-        stubFiles = processingEnv.getOptions().get("stubs");
+        stubFiles = checker.getOption("stubs");
         if (stubFiles != null)
             allstubFiles += File.pathSeparator + stubFiles;
 
@@ -1771,7 +1768,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             allstubFiles += File.pathSeparator + stubFiles;
 
         {
-            StubFiles sfanno = resourceClass.getAnnotation(StubFiles.class);
+            StubFiles sfanno = checker.getClass().getAnnotation(StubFiles.class);
             if (sfanno != null) {
                 String[] sfarr = sfanno.value();
                 stubFiles = "";
@@ -1798,8 +1795,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             List<StubResource> stubs = StubUtil.allStubFiles(stubPath);
             if (stubs.size() == 0) {
                 InputStream in = null;
-                if (resourceClass != null)
-                    in = resourceClass.getResourceAsStream(stubPath);
+                if (checker != null)
+                    in = checker.getClass().getResourceAsStream(stubPath);
                 if (in != null) {
                     StubParser stubParser = new StubParser(stubPath, in, this, processingEnv);
                     stubParser.parse(indexTypes, indexDeclAnnos);

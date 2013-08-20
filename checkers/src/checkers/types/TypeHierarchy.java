@@ -374,7 +374,7 @@ public class TypeHierarchy {
     }
 
     protected boolean ignoreRawTypeArguments(AnnotatedDeclaredType rhs, AnnotatedDeclaredType lhs) {
-        return checker.getProcessingEnvironment().getOptions().containsKey("ignoreRawTypeArguments") &&
+        return checker.hasOption("ignoreRawTypeArguments") &&
                 (rhs.wasRaw() || lhs.wasRaw());
     }
 

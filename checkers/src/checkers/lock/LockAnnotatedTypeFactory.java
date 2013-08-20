@@ -71,7 +71,7 @@ public class LockAnnotatedTypeFactory
 
     private AnnotationMirror createGuarded(String lock) {
         AnnotationBuilder builder =
-            new AnnotationBuilder(processingEnv, GuardedBy.class.getCanonicalName());
+            new AnnotationBuilder(processingEnv, GuardedBy.class);
         builder.setValue("value", lock);
         return builder.build();
     }

@@ -82,7 +82,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> {
             AnnotatedDeclaredType elemType = (AnnotatedDeclaredType) atypeFactory
                     .getAnnotatedType(type.getUnderlyingType().asElement());
 
-            if (!visitor.isValidUse(elemType, type)) {
+            if (!visitor.isValidUse(elemType, type, tree)) {
                 reportError(type, tree);
             }
         }
@@ -216,7 +216,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> {
         if (checker.shouldSkipUses(type.getUnderlyingType().toString()))
             return super.visitPrimitive(type, tree);
 
-        if (!visitor.isValidUse(type)) {
+        if (!visitor.isValidUse(type, tree)) {
             reportError(type, tree);
         }
 
@@ -239,7 +239,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> {
             return super.visitArray(type, tree);
         }
 
-        if (!visitor.isValidUse(type)) {
+        if (!visitor.isValidUse(type, tree)) {
             reportError(type, tree);
         }
 
@@ -249,7 +249,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> {
     /**
      * Checks that the annotations on the type arguments supplied to a type or a
      * method invocation are within the bounds of the type variables as
-     * declared, and issues the "generic.argument.invalid" error if they are
+     * declared, and issues the "type.argument.type.incompatible" error if they are
      * not.
      *
      * This method used to be visitParameterizedType, which incorrectly handles

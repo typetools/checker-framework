@@ -4,25 +4,11 @@ package checkers.initialization;
 import checkers.interning.quals.*;
 */
 
-import java.lang.annotation.Annotation;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-
-import javacutils.AnnotationUtils;
-import javacutils.TypesUtils;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.Elements;
-import javax.lang.model.util.Types;
-
 import checkers.basetype.BaseTypeChecker;
-import checkers.initialization.quals.Initialized;
 import checkers.initialization.quals.FBCBottom;
-import checkers.initialization.quals.UnderInitialization;
+import checkers.initialization.quals.Initialized;
 import checkers.initialization.quals.NotOnlyInitialized;
+import checkers.initialization.quals.UnderInitialization;
 import checkers.initialization.quals.UnknownInitialization;
 import checkers.nullness.quals.NonRaw;
 import checkers.nullness.quals.Raw;
@@ -31,6 +17,20 @@ import checkers.types.QualifierHierarchy;
 import checkers.util.AnnotationBuilder;
 import checkers.util.MultiGraphQualifierHierarchy;
 import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+
+import javacutils.AnnotationUtils;
+import javacutils.TypesUtils;
+
+import java.lang.annotation.Annotation;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.Tree;
