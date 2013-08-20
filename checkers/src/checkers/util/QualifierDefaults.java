@@ -484,10 +484,24 @@ public class QualifierDefaults {
                 }
 
                 switch (location) {
-                case LOCALS: {
+                case LOCAL_VARIABLE: {
                     if (scope.getKind() == ElementKind.LOCAL_VARIABLE &&
                             t == type) {
                         // TODO: how do we determine that we are in a cast or instanceof type?
+                        doApply(t, qual);
+                    }
+                    break;
+                }
+                case RESOURCE_VARIABLE: {
+                    if (scope.getKind() == ElementKind.RESOURCE_VARIABLE &&
+                            t == type) {
+                        doApply(t, qual);
+                    }
+                    break;
+                }
+                case EXCEPTION_PARAMETER: {
+                    if (scope.getKind() == ElementKind.EXCEPTION_PARAMETER &&
+                            t == type) {
                         doApply(t, qual);
                     }
                     break;
@@ -590,7 +604,8 @@ public class QualifierDefaults {
                 boolean prevIsTypeVarExtendsExplicit = isTypeVarExtendsExplicit;
 
                 if (tree == null) {
-                    // Is this the right combination for binary-only TVs?
+                    // This is not only for elements from binaries, but also
+                    // when the compilation unit is no-longer available.
                     isTypeVarExtendsImplicit = false;
                     isTypeVarExtendsExplicit = true;
                 } else {
