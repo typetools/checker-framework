@@ -16,7 +16,7 @@ public class Uninit11 {
   public @DoesNotUseF Uninit11(int disambiguate_overloads) {
   }
 
-  //:: error: initialization.fields.uninitialized
+  //:: error: (initialization.fields.uninitialized)
   public Uninit11(boolean disambiguate_overloads) {
   }
 
