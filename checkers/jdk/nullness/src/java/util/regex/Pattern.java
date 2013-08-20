@@ -2,6 +2,7 @@ package java.util.regex;
 
 import checkers.nullness.quals.Nullable;
 import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
 
 public final class Pattern implements java.io.Serializable{
     private static final long serialVersionUID = 0L;
@@ -19,7 +20,7 @@ public final class Pattern implements java.io.Serializable{
   /*@Pure*/  // pure wrt equals() but not ==
   public static Pattern compile(String a1, int a2) { throw new RuntimeException("skeleton method"); }
   public String pattern() { throw new RuntimeException("skeleton method"); }
-  @Pure public String toString() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public String toString() { throw new RuntimeException("skeleton method"); }
   public Matcher matcher(CharSequence a1) { throw new RuntimeException("skeleton method"); }
   public int flags() { throw new RuntimeException("skeleton method"); }
   public static boolean matches(String a1, CharSequence a2) { throw new RuntimeException("skeleton method"); }

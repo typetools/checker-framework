@@ -30,6 +30,7 @@ import java.util.Arrays;
 
 import checkers.nullness.quals.Nullable;
 import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
 
 /**
  * A mutable sequence of characters.
@@ -1344,7 +1345,7 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
      *
      * @return  a string representation of this sequence of characters.
      */
-    @Pure public abstract String toString();
+    @SideEffectFree public abstract String toString();
 
     /**
      * Needed by <tt>String</tt> for the contentEquals method.

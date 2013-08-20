@@ -1,6 +1,7 @@
 package java.io;
 
 import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
 
 import checkers.nullness.quals.Nullable;
 
@@ -17,7 +18,7 @@ public class File implements Serializable, Comparable<File> {
   public File(@Nullable File a1, String a2) { throw new RuntimeException("skeleton method"); }
   public File(java.net.URI a1) { throw new RuntimeException("skeleton method"); }
   public String getName() { throw new RuntimeException("skeleton method"); }
-  public @Pure @Nullable String getParent() { throw new RuntimeException("skeleton method"); }
+  public @SideEffectFree @Nullable String getParent() { throw new RuntimeException("skeleton method"); }
   public @Pure @Nullable File getParentFile() { throw new RuntimeException("skeleton method"); }
   public String getPath() { throw new RuntimeException("skeleton method"); }
   @Pure public boolean isAbsolute() { throw new RuntimeException("skeleton method"); }
@@ -67,5 +68,5 @@ public class File implements Serializable, Comparable<File> {
   @Pure public int compareTo(File a1) { throw new RuntimeException("skeleton method"); }
   @Pure public boolean equals(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   @Pure public int hashCode() { throw new RuntimeException("skeleton method"); }
-  @Pure public String toString() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public String toString() { throw new RuntimeException("skeleton method"); }
 }

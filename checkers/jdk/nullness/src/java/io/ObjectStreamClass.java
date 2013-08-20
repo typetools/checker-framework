@@ -1,6 +1,7 @@
 package java.io;
 
 import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
 import checkers.nullness.quals.Nullable;
 
 
@@ -15,5 +16,5 @@ public class ObjectStreamClass implements Serializable {
   public @Nullable Class<?> forClass() { throw new RuntimeException("skeleton method"); }
   public ObjectStreamField[] getFields() { throw new RuntimeException("skeleton method"); }
   public @Nullable ObjectStreamField getField(String a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public String toString() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public String toString() { throw new RuntimeException("skeleton method"); }
 }

@@ -1,6 +1,7 @@
 package java.lang;
 
 import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
 
 import checkers.nullness.quals.EnsuresNonNullIf;
 import checkers.nullness.quals.NonNull;
@@ -10,7 +11,7 @@ import checkers.nullness.quals.PolyNull;
 public final class Class<T extends @Nullable Object> extends Object implements java.io.Serializable, java.lang.reflect.GenericDeclaration, java.lang.reflect.Type, java.lang.reflect.AnnotatedElement {
   private static final long serialVersionUID = 0;
   protected Class() {}
-  @Pure public String toString() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public String toString() { throw new RuntimeException("skeleton method"); }
   public static Class<?> forName(String a1) throws ClassNotFoundException { throw new RuntimeException("skeleton method"); }
   public static Class<?> forName(String a1, boolean a2, @Nullable ClassLoader a3) throws ClassNotFoundException { throw new RuntimeException("skeleton method"); }
   public @NonNull T newInstance() throws InstantiationException, IllegalAccessException { throw new RuntimeException("skeleton method"); }

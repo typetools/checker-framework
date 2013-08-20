@@ -1,6 +1,7 @@
 package java.lang;
 
 import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
 import checkers.nullness.quals.Nullable;
 
 
@@ -46,5 +47,5 @@ public final class StringBuilder
   @Pure public int lastIndexOf(String a1) { throw new RuntimeException("skeleton method"); }
   @Pure public int lastIndexOf(String a1, int a2) { throw new RuntimeException("skeleton method"); }
   public StringBuilder reverse() { throw new RuntimeException("skeleton method"); }
-  @Pure public String toString() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public String toString() { throw new RuntimeException("skeleton method"); }
 }

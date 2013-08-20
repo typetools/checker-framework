@@ -2315,7 +2315,18 @@ public class CFGBuilder {
                 extendWithNodeWithException(target, npeElement.asType());
             }
 
-            List<Node> arguments = convertCallArguments(method, actualExprs);
+            List<Node> arguments = new ArrayList<>();
+
+            // Don't convert arguments for enum super calls.  The AST contains
+            // no actual arguments, while the method element expects two arguments,
+            // leading to an exception in convertCallArguments.  Since no actual
+            // arguments are present in the AST that is being checked, it shouldn't
+            // cause any harm to omit the conversions.
+            // See also BaseTypeVisitor.visitMethodInvocation and
+            // QualifierPolymorphism.annotate
+            if (!TreeUtils.isEnumSuper(tree)) {
+                arguments = convertCallArguments(method, actualExprs);
+            }
 
             // TODO: lock the receiver for synchronized methods
 

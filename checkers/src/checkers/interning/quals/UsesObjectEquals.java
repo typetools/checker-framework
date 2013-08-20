@@ -16,7 +16,8 @@ import java.lang.annotation.Target;
  * <p>
  *
  * A class may be annotated @UsesObjectEquals if neither it, nor any of its
- * supertypes or subtypes, overrides <tt>equals</tt>.  Therefore, it is
+ * supertypes or subtypes, overrides <tt>equals</tt>.  Therefore, it cannot
+ * be written on <tt>Object</tt> itself.  It is
  * most commonly written on a direct subclass of <tt>Object</tt>.
  * <p>
  *

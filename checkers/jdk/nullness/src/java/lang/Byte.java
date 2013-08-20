@@ -1,6 +1,7 @@
 package java.lang;
 
 import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
 import checkers.nullness.quals.Nullable;
 
 
@@ -10,7 +11,7 @@ public final class Byte extends Number implements Comparable<Byte> {
   public final static byte MAX_VALUE = 127;
   public final static Class<Byte> TYPE;
   public final static int SIZE = 8;
-  @Pure public static String toString(byte a1) { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public static String toString(byte a1) { throw new RuntimeException("skeleton method"); }
   @Pure public static Byte valueOf(byte a1) { throw new RuntimeException("skeleton method"); }
   @Pure public static byte parseByte(String a1) throws NumberFormatException { throw new RuntimeException("skeleton method"); }
   @Pure public static byte parseByte(String a1, int a2) throws NumberFormatException { throw new RuntimeException("skeleton method"); }
@@ -25,7 +26,7 @@ public final class Byte extends Number implements Comparable<Byte> {
   @Pure public long longValue() { throw new RuntimeException("skeleton method"); }
   @Pure public float floatValue() { throw new RuntimeException("skeleton method"); }
   @Pure public double doubleValue() { throw new RuntimeException("skeleton method"); }
-  @Pure public String toString() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public String toString() { throw new RuntimeException("skeleton method"); }
   @Pure public int hashCode() { throw new RuntimeException("skeleton method"); }
   @Pure public boolean equals(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   @Pure public int compareTo(Byte a1) { throw new RuntimeException("skeleton method"); }
