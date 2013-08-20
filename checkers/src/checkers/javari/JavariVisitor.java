@@ -104,17 +104,17 @@ public class JavariVisitor extends BaseTypeVisitor<JavariChecker, JavariAnnotate
      * @see BaseTypeVisitor
      */
     @Override
-    public boolean isValidUse(AnnotatedDeclaredType elemType, AnnotatedDeclaredType useType) {
+    public boolean isValidUse(AnnotatedDeclaredType elemType, AnnotatedDeclaredType useType, Tree tree) {
         return true;
     }
 
     @Override
-    public boolean isValidUse(AnnotatedPrimitiveType useType) {
+    public boolean isValidUse(AnnotatedPrimitiveType useType, Tree tree) {
         if (useType.hasAnnotation(QREADONLY)
                 || useType.hasAnnotation(READONLY)
                 || useType.hasAnnotation(POLYREAD)) {
             return false;
         }
-        return super.isValidUse(useType);
+        return super.isValidUse(useType, tree);
     }
 }

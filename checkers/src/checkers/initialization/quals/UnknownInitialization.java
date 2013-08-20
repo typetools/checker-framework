@@ -44,7 +44,7 @@ import java.lang.annotation.Target;
  */
 @TypeQualifier
 @SubtypeOf({})
-@DefaultFor(DefaultLocation.LOCALS)
+@DefaultFor({ DefaultLocation.LOCAL_VARIABLE, DefaultLocation.RESOURCE_VARIABLE })
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })

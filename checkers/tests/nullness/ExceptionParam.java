@@ -1,6 +1,7 @@
 package org.junit;
 
 import checkers.nullness.quals.NonNull;
+import checkers.nullness.quals.Nullable;
 import checkers.quals.DefaultQualifier;
 
 /**
@@ -9,9 +10,24 @@ import checkers.quals.DefaultQualifier;
  */
 @DefaultQualifier(checkers.nullness.quals.Nullable.class)
 class ExceptionParam {
-    void exc() {
+    void exc1() {
         try {
         } catch (AssertionError e) {
+            @NonNull Object o = e;
+        }
+    }
+
+    void exc2() {
+        try {
+        } catch (@NonNull AssertionError e) {
+            @NonNull Object o = e;
+        }
+    }
+
+    void exc3() {
+        try {
+        //:: error: (type.invalid)
+        } catch (@Nullable AssertionError e) {
             @NonNull Object o = e;
         }
     }
