@@ -24,7 +24,9 @@ import java.lang.management.MemoryPoolMXBean;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -82,6 +84,111 @@ import com.sun.tools.javac.util.Log;
  * {@link AbstractProcessor} (or even this class) as the Checker Framework is
  * not designed for such checkers.
  */
+
+@SupportedOptions({
+    // When adding a new standard option, add a brief blurb about
+    // the use case and a pointer to one prominent use of the option.
+    // Update the Checker Framework manual,
+    // introduction.tex contains an overview of all options;
+    // a specific section should contain a detailed discussion.
+
+    // Set inclusion/exclusion of type uses or definitions
+    // checkers.source.SourceChecker.shouldSkipUses and similar
+    "skipUses",
+    "onlyUses",
+    "skipDefs",
+    "onlyDefs",
+
+    // Lint options
+    // checkers.source.SourceChecker.getSupportedLintOptions() and similar
+    "lint",
+
+    // Only output error code, useful for testing framework
+    // checkers.source.SourceChecker.message(Kind, Object, String, Object...)
+    "nomsgtext",
+
+    // Output detailed message in simple-to-parse format, useful
+    // for tools parsing our output
+    // checkers.source.SourceChecker.message(Kind, Object, String, Object...)
+    "detailedmsgtext",
+
+    // Output file names before checking
+    // TODO: it looks like support for this was lost!
+    "filenames",
+
+    // Output all subtyping checks
+    // checkers.basetype.BaseTypeVisitor
+    "showchecks",
+
+    // Additional stub files to use
+    // checkers.types.AnnotatedTypeFactory.buildIndexTypes()
+    "stubs",
+    // Ignore the standard jdk.astub file
+    // checkers.types.AnnotatedTypeFactory.buildIndexTypes()
+    "ignorejdkastub",
+
+    // Whether to print warnings about types/members in a stub file
+    // that were not found on the class path
+    // checkers.util.stub.StubParser.warnIfNotFound
+    "stubWarnIfNotFound",
+
+    // Whether to print debugging messages while processing the stub files
+    // checkers.util.stub.StubParser.debugStubParser
+    "stubDebug",
+
+    // Whether to check that the annotated JDK is correctly provided
+    // checkers.basetype.BaseTypeVisitor.checkForAnnotatedJdk()
+    "nocheckjdk",
+
+    // Whether to output errors or warnings only
+    // checkers.source.SourceChecker.report
+    "warns",
+
+    // A comma-separated list of warnings to suppress
+    // checkers.source.SourceChecker.createSuppressWarnings
+    "suppressWarnings",
+
+    // Whether to output a stack trace for a framework error
+    // checkers.source.SourceChecker.logCheckerError
+    "printErrorStack",
+
+    // Whether to print @InvisibleQualifier marked annotations
+    // checkers.types.AnnotatedTypeMirror.toString()
+    "printAllQualifiers",
+
+    // Directory for .dot files generated from the CFG
+    // checkers.types.AbstractBasicAnnotatedTypeFactory.analyze
+    "flowdotdir",
+
+    // Whether to assume that assertions are enabled or disabled
+    // checkers.flow.CFCFGBuilder.CFCFGBuilder
+    "assumeAssertionsAreEnabled",
+    "assumeAssertionsAreDisabled",
+
+    // Whether to assume sound concurrent semantics or
+    // simplified sequential semantics
+    // checkers.flow.CFAbstractTransfer.sequentialSemantics
+    "concurrentSemantics",
+
+    // TODO: Checking of bodies of @Pure methods is temporarily disabled
+    // unless -AenablePurity is supplied on the command line; re-enable
+    // it after making the analysis more precise.
+    // checkers.basetype.BaseTypeVisitor.visitMethod(MethodTree, Void)
+    "enablePurity",
+
+    // Whether to suggest methods that could be marked @Pure
+    // checkers.basetype.BaseTypeVisitor.visitMethod(MethodTree, Void)
+    "suggestPureMethods",
+
+    // Whether to output resource statistics at JVM shutdown
+    // checkers.source.SourceChecker.shutdownHook()
+    "resourceStats",
+
+    // Whether to ignore all subtype tests for type arguments that
+    // were inferred for a raw type
+    // checkers.types.TypeHierarchy.isSubtypeTypeArguments
+    "ignoreRawTypeArguments",
+})
 public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
     extends AbstractTypeProcessor implements ErrorHandler {
 
@@ -104,9 +211,6 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
     /** The source tree that's being scanned. */
     protected CompilationUnitTree currentRoot;
     public TreePath currentPath;
-
-    /** issue errors as warnings */
-    private boolean warns;
 
     /** Keys for warning suppressions specified on the command line */
     private String /*@Nullable*/ [] suppressWarnings;
@@ -155,8 +259,26 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
     /** The supported lint options */
     private Set<String> supportedLints;
 
-    /** The chosen lint options that have been enabled by programmer */
+    /** The enabled lint options */
     private Set<String> activeLints;
+
+    /** The active options for this checker.
+     * This is a processed version of {@link ProcessingEnvironment#getOptions()}:
+     * If the option is of the form "-ACheckerName@key=value" and the current checker class,
+     * or one of its superclasses is named "CheckerName", then add key -> value.
+     * If the option is of the form "-ACheckerName@key=value" and the current checker class,
+     * and none of its superclasses is named "CheckerName", then do not add key -> value.
+     * If the option is of the form "-Akey=value", then add key -> value.
+     *
+     * Both the simple and the canonical name of the checker can be used.
+     * Superclasses of the current checker are also considered.
+     */
+    private Map<String, String> activeOptions;
+
+    // The string that separates the checker name from the option name.
+    // This string may only consist of valid Java identifier part characters,
+    // because it will be used within the key of an option.
+    private final static String OPTION_SEPARATOR = "_";
 
     /** The line separator */
     private final static String LINE_SEPARATOR = System.getProperty("line.separator").intern();
@@ -304,6 +426,44 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
         return Collections.unmodifiableSet(activeLint);
     }
 
+    private Map<String, String> createActiveOptions(Map<String, String> options) {
+        if (options.isEmpty())
+            return Collections.emptyMap();
+
+        Map<String, String> activeOpts = new HashMap<String, String>();
+
+        for (Map.Entry<String, String> opt : options.entrySet()) {
+            String key = opt.getKey();
+            String value = opt.getValue();
+
+            String[] split = key.split(OPTION_SEPARATOR);
+
+            switch (split.length) {
+            case 1:
+                // No separator, option always active
+                activeOpts.put(key, value);
+                break;
+            case 2:
+                // Valid class-option pair
+                Class<?> clazz = this.getClass();
+
+                do {
+                    if (clazz.getCanonicalName().equals(split[0]) ||
+                            clazz.getSimpleName().equals(split[0])) {
+                        activeOpts.put(split[1], value);
+                    }
+
+                    clazz = clazz.getSuperclass();
+                } while (clazz != null && !clazz.getName().equals(javacutils.AbstractTypeProcessor.class.getCanonicalName()));
+                break;
+            default:
+                ErrorReporter.errorAbort("Invalid option name: " + key +
+                        " At most one separator " + OPTION_SEPARATOR + " expected, but found " + split.length);
+            }
+        }
+        return Collections.unmodifiableMap(activeOpts);
+    }
+
     private String /*@Nullable*/ [] createSuppressWarnings(Map<String, String> options) {
         if (!options.containsKey("suppressWarnings"))
             return null;
@@ -352,17 +512,25 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
                 processingEnv.getOptions() == null ||
                 processingEnv.getOptions().containsKey("printErrorStack")) &&
                 ce.getCause() != null) {
-            msg.append("\nCompilation unit: " + this.currentRoot.getSourceFile().getName());
+
+            if (this.currentRoot != null &&
+                    this.currentRoot.getSourceFile() != null) {
+                msg.append("\nCompilation unit: " + this.currentRoot.getSourceFile().getName());
+            }
+
             msg.append("\nException: " +
                             ce.getCause().toString() + ": " + formatStackTrace(ce.getCause().getStackTrace()));
             Throwable cause = ce.getCause().getCause();
-            while (cause!=null) {
+            while (cause != null) {
                 msg.append("\nUnderlying Exception: " +
                                 (cause.toString() + ": " +
                                         formatStackTrace(cause.getStackTrace())));
                 cause = cause.getCause();
             }
+        } else {
+            msg.append("; invoke the compiler with -AprintErrorStack to see the stack trace.");
         }
+
         if (this.messager != null) {
             this.messager.printMessage(javax.tools.Diagnostic.Kind.ERROR, msg);
         } else {
@@ -408,23 +576,12 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
 
             logCheckerError(ce);
         } catch (Throwable t) {
-            String stackTraceHelp = getStackTraceHelp(processingEnv);
-
             if (this.messager == null) {
                 messager = processingEnv.getMessager();
             }
             logCheckerError(new CheckerError("SourceChecker.init: unexpected Throwable (" +
                     t.getClass().getSimpleName() + ")" +
-                    (t.getMessage() != null ? "; message: " + t.getMessage() : "") +
-                    stackTraceHelp, t));
-        }
-    }
-
-    private static String getStackTraceHelp(ProcessingEnvironment processingEnv) {
-        if (processingEnv.getOptions().containsKey("printErrorStack")) {
-            return "";
-        } else {
-            return "; invoke the compiler with -AprintErrorStack to see the stack trace.";
+                    (t.getMessage() != null ? "; message: " + t.getMessage() : ""), t));
         }
     }
 
@@ -442,13 +599,6 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
 
         this.messager = processingEnv.getMessager();
         this.messages = getMessages();
-        this.warns = processingEnv.getOptions().containsKey("warns");
-        this.activeLints = createActiveLints(processingEnv.getOptions());
-        this.suppressWarnings = createSuppressWarnings(processingEnv.getOptions());
-        this.skipUsesPattern = getSkipUsesPattern(processingEnv.getOptions());
-        this.onlyUsesPattern = getOnlyUsesPattern(processingEnv.getOptions());
-        this.skipDefsPattern = getSkipDefsPattern(processingEnv.getOptions());
-        this.onlyDefsPattern = getOnlyDefsPattern(processingEnv.getOptions());
     }
 
     /**
@@ -456,7 +606,7 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
      * added as a shutdownHook of the JVM.
      */
     protected boolean shouldAddShutdownHook() {
-        return processingEnv.getOptions().containsKey("resourceStats");
+        return getOptions().containsKey("resourceStats");
     }
 
     /**
@@ -464,7 +614,7 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
      * Checkers can override this method to customize the behavior.
      */
     protected void shutdownHook() {
-        if (processingEnv.getOptions().containsKey("resourceStats")) {
+        if (getOptions().containsKey("resourceStats")) {
             // Check for the "resourceStats" option and don't call shouldAddShutdownHook
             // to allow subclasses to override shouldXXX and shutdownHook and simply
             // call the super implementations.
@@ -535,13 +685,10 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
         } catch (CheckerError ce) {
             logCheckerError(ce);
         } catch (Throwable t) {
-            String stackTraceHelp = getStackTraceHelp(processingEnv);
-
             logCheckerError(new CheckerError("SourceChecker.typeProcess: unexpected Throwable (" +
                     t.getClass().getSimpleName() + ") when processing "
                     + currentRoot.getSourceFile().getName() +
-                    (t.getMessage() != null ? "; message: " + t.getMessage() : "") +
-                    stackTraceHelp, t));
+                    (t.getMessage() != null ? "; message: " + t.getMessage() : ""), t));
         } finally {
             // Also add possibly deferred diagnostics, which will get published back in
             // AbstractTypeProcessor.
@@ -756,6 +903,9 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
             return false;
 
         String[] userSwKeys = (anno == null ? null : anno.value());
+        if (this.suppressWarnings == null) {
+            this.suppressWarnings = createSuppressWarnings(getOptions());
+        }
         String[] cmdLineSwKeys = this.suppressWarnings;
 
         return (checkSuppressWarnings(userSwKeys, err)
@@ -859,7 +1009,7 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
 
         for (Result.DiagMessage msg : r.getDiagMessages()) {
             if (r.isFailure())
-                this.message(warns ? Diagnostic.Kind.MANDATORY_WARNING : Diagnostic.Kind.ERROR,
+                this.message(hasOption("warns") ? Diagnostic.Kind.MANDATORY_WARNING : Diagnostic.Kind.ERROR,
                         src, msg.getMessageKey(), msg.getArgs());
             else if (r.isWarning())
                 this.message(Diagnostic.Kind.MANDATORY_WARNING, src, msg.getMessageKey(), msg.getArgs());
@@ -883,7 +1033,7 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
      * @return true if the lint option was given, false if it was not given or
      * was given prepended with a "-"
      *
-     * @see SourceChecker#getLintOption(String,boolean)
+     * @see SourceChecker#getLintOption(String, boolean)
      */
     public final boolean getLintOption(String name) {
         return getLintOption(name, false);
@@ -906,6 +1056,7 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
      *         prepended with a "-", or {@code def} if it was not given at all
      *
      * @see SourceChecker#getLintOption(String)
+     * @see SourceChecker#getOption(String)
      */
     public final boolean getLintOption(String name, boolean def) {
 
@@ -913,8 +1064,13 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
             ErrorReporter.errorAbort("Illegal lint option: " + name);
         }
 
-        if (activeLints.isEmpty())
+        if (activeLints == null) {
+            activeLints = createActiveLints(processingEnv.getOptions());
+        }
+
+        if (activeLints.isEmpty()) {
             return def;
+        }
 
         String tofind = name;
         while (tofind != null) {
@@ -1048,124 +1204,132 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
         supportedLints = newlints;
     }
 
-    /*
-     * Force "-Alint" as a recognized processor option for all subtypes of
-     * SourceChecker.
-     * TODO: Options other than "lint" are also added here. Many of them could
-     * be lint options.
+    /**
+     * Add additional active options.
+     * Use of this method should be limited to the AggregateChecker,
+     * who needs to set the active options to the union of all subcheckers.
+     */
+    protected void addOptions(Map<String, String> moreopts) {
+        Map<String, String> activeOpts = new HashMap<String, String>(getOptions());
+        activeOpts.putAll(moreopts);
+        activeOptions = Collections.unmodifiableMap(activeOpts);
+    }
+
+    /**
+     * Determines the value of the option with the given name.
      *
-     * [This method is provided here, rather than via the @SupportedOptions
-     * annotation, so that it may be inherited by subclasses.]
+     * @see SourceChecker#getLintOption(String,boolean)
+     */
+    public final String getOption(String name) {
+        return getOption(name, null);
+    }
+
+    /**
+     * Return all active options for this checker.
+     * @return all active options for this checker.
+     */
+    public Map<String, String> getOptions() {
+        if (activeOptions == null) {
+            activeOptions = createActiveOptions(processingEnv.getOptions());
+        }
+        return activeOptions;
+    }
+
+    /**
+     * Check whether the given option is provided.
+     * Note that {@link #getOption(String)} can still return null even
+     * if hasOption is true: this happens e.g. for -Amyopt
+     *
+     * @param name The option name to check
+     * @return True if the option name was provided, false otherwise.
+     */
+    // TODO I would like to rename getLintOption to hasLintOption
+    public final boolean hasOption(String name) {
+        return getOptions().containsKey(name);
+    }
+
+    /**
+     * Determines the value of the lint option with the given name and
+     * returns the default value if nothing is specified.
+     *
+     * @see SourceChecker#getOption(String)
+     * @see SourceChecker#getLintOption(String)
+     */
+    public final String getOption(String name, String def) {
+
+        if (!this.getSupportedOptions().contains(name)) {
+            ErrorReporter.errorAbort("Illegal option: " + name);
+        }
+
+        if (activeOptions == null) {
+            activeOptions = createActiveOptions(processingEnv.getOptions());
+        }
+
+        if (activeOptions.isEmpty()) {
+            return def;
+        }
+
+        if (activeOptions.containsKey(name)) {
+            return activeOptions.get(name);
+        } else {
+            return def;
+        }
+    }
+
+    /**
+     * Map the Checker Framework version of {@link SupportedOptions} to
+     * the standard annotation provided version
+     * {@link javax.annotation.processing.SupportedOptions}.
      */
     @Override
     public Set<String> getSupportedOptions() {
         Set<String> options = new HashSet<String>();
 
-        // When adding a new standard option, add a brief blurb about
-        // the use case and a pointer to one prominent use of the option.
-        // Update the Checker Framework manual,
-        // introduction.tex contains an overview of all options;
-        // a specific section should contain a detailed discussion.
-
-        // Set inclusion/exclusion of type uses or definitions
-        // checkers.source.SourceChecker.shouldSkipUses and similar
-        options.add("skipUses");
-        options.add("onlyUses");
-        options.add("skipDefs");
-        options.add("onlyDefs");
-
-        // Lint options
-        // checkers.source.SourceChecker.getSupportedLintOptions() and similar
-        options.add("lint");
-
-        // Only output error code, useful for testing framework
-        // checkers.source.SourceChecker.message(Kind, Object, String, Object...)
-        options.add("nomsgtext");
-
-        // Output detailed message in simple-to-parse format, useful
-        // for tools parsing our output
-        // checkers.source.SourceChecker.message(Kind, Object, String, Object...)
-        options.add("detailedmsgtext");
-
-        // Output file names before checking
-        // TODO: it looks like support for this was lost!
-        options.add("filenames");
-
-        // Output all subtyping checks
-        // checkers.basetype.BaseTypeVisitor
-        options.add("showchecks");
-
-        // Additional stub files to use
-        // checkers.types.AnnotatedTypeFactory.buildIndexTypes()
-        options.add("stubs");
-        // Ignore the standard jdk.astub file
-        // checkers.types.AnnotatedTypeFactory.buildIndexTypes()
-        options.add("ignorejdkastub");
-
-        // Whether to print warnings about types/members in a stub file
-        // that were not found on the class path
-        // checkers.util.stub.StubParser.warnIfNotFound
-        options.add("stubWarnIfNotFound");
-
-        // Whether to print debugging messages while processing the stub files
-        // checkers.util.stub.StubParser.debugStubParser
-        options.add("stubDebug");
-
-        // Whether to check that the annotated JDK is correctly provided
-        // checkers.basetype.BaseTypeVisitor.checkForAnnotatedJdk()
-        options.add("nocheckjdk");
-
-        // Whether to output errors or warnings only
-        // checkers.source.SourceChecker.report
-        options.add("warns");
-
-        // A comma-separated list of warnings to suppress
-        // checkers.source.SourceChecker.createSuppressWarnings
-        options.add("suppressWarnings");
-
-        // Whether to output a stack trace for a framework error
-        // checkers.source.SourceChecker.logCheckerError
-        options.add("printErrorStack");
-
-        // Whether to print @InvisibleQualifier marked annotations
-        // checkers.types.AnnotatedTypeMirror.toString()
-        options.add("printAllQualifiers");
-
-        // Directory for .dot files generated from the CFG
-        // checkers.types.AbstractBasicAnnotatedTypeFactory.analyze
-        options.add("flowdotdir");
-
-        // Whether to assume that assertions are enabled or disabled
-        // checkers.flow.CFCFGBuilder.CFCFGBuilder
-        options.add("assumeAssertionsAreEnabled");
-        options.add("assumeAssertionsAreDisabled");
-
-        // Whether to assume sound concurrent semantics or
-        // simplified sequential semantics
-        // checkers.flow.CFAbstractTransfer.sequentialSemantics
-        options.add("concurrentSemantics");
-
-        // TODO: Checking of bodies of @Pure methods is temporarily disabled
-        // unless -AenablePurity is supplied on the command line; re-enable
-        // it after making the analysis more precise.
-        // checkers.basetype.BaseTypeVisitor.visitMethod(MethodTree, Void)
-        options.add("enablePurity");
-
-        // Whether to suggest methods that could be marked @Pure
-        // checkers.basetype.BaseTypeVisitor.visitMethod(MethodTree, Void)
-        options.add("suggestPureMethods");
-
-        // Whether to output resource statistics at JVM shutdown
-        // checkers.source.SourceChecker.shutdownHook()
-        options.add("resourceStats");
-
-        // Whether to ignore all subtype tests for type arguments that
-        // were inferred for a raw type
-        // checkers.types.TypeHierarchy.isSubtypeTypeArguments
-        options.add("ignoreRawTypeArguments");
-
+        // Support all options provided with the standard
+        // {@link javax.annotation.processing.SupportedOptions}
+        // annotation.
         options.addAll(super.getSupportedOptions());
+
+        // For the Checker Framework annotation
+        // {@link checkers.source.SupportedOptions}
+        // we additionally add
+        Class<?> clazz = this.getClass();
+        List<Class<?>> clazzPrefixes = new LinkedList<>();
+
+        do {
+            clazzPrefixes.add(clazz);
+
+            SupportedOptions so = clazz.getAnnotation(SupportedOptions.class);
+            if  (so != null) {
+                options.addAll(expandCFOptions(clazzPrefixes, so.value()));
+            }
+            clazz = clazz.getSuperclass();
+        } while (clazz != null && !clazz.getName().equals(javacutils.AbstractTypeProcessor.class.getCanonicalName()));
+
         return Collections.</*@NonNull*/ String>unmodifiableSet(options);
+    }
+
+    /**
+     * Generate the possible command-line option names by prefixing
+     * each class name from {@code classPrefixes} to {@code options},
+     * separated by OPTION_SEPARATOR.
+     *
+     * @param clazzPrefixes The classes to prefix
+     * @param options The option names
+     * @return the possible combinations that should be supported
+     */
+    protected Collection<String> expandCFOptions(
+            List<? extends Class<?>> clazzPrefixes, String[] options) {
+        Set<String> res = new HashSet<>();
+
+        for (String option : options) {
+            res.add(option);
+            for (Class<?> clazz : clazzPrefixes) {
+                res.add(clazz.getCanonicalName() + OPTION_SEPARATOR + option);
+                res.add(clazz.getSimpleName() + OPTION_SEPARATOR + option);
+            }
+        }
+        return res;
     }
 
     /**
@@ -1263,6 +1427,12 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
         //     System.out.println("  " + stea[i]);
         // }
         // System.out.println();
+        if (skipUsesPattern == null) {
+            skipUsesPattern = getSkipUsesPattern(getOptions());
+        }
+        if (onlyUsesPattern == null) {
+            onlyUsesPattern = getOnlyUsesPattern(getOptions());
+        }
         return (skipUsesPattern.matcher(typeName).find()
                 || ! onlyUsesPattern.matcher(typeName).find());
     }
@@ -1283,6 +1453,13 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
         //                   onlyDefsPattern.matcher(qualifiedName).find(),
         //                   (skipDefsPattern.matcher(qualifiedName).find()
         //                    || ! onlyDefsPattern.matcher(qualifiedName).find()));
+        if (skipDefsPattern == null) {
+            skipDefsPattern = getSkipDefsPattern(getOptions());
+        }
+        if (onlyDefsPattern == null) {
+            onlyDefsPattern = getOnlyDefsPattern(getOptions());
+        }
+
         return (skipDefsPattern.matcher(qualifiedName).find()
                 || ! onlyDefsPattern.matcher(qualifiedName).find());
     }
