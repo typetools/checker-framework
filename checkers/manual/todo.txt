@@ -31,6 +31,7 @@ What would a good place be for this?  At the beginning/end?  Split into multiple
 
 - Document -AignoreRawTypeArguments (rename the option?)
 
+- Document -ANullnessChecker_option=value mechanism
 
 Changes throughout the manual to existing sections
 ===========================================================================
