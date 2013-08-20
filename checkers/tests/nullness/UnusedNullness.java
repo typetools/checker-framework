@@ -39,15 +39,13 @@ public class UnusedNullness {
       this.ppt = null;
   }
 
-  protected void useUnusedField(@Prototype UnusedNullness this) {
+  protected void useUnusedField1(@Prototype UnusedNullness this) {
     //:: error: (assignment.type.incompatible)
     @NonNull Object x = this.ppt;
   }
 
-  protected void useUnusedField() {
+  protected void useUnusedField2() {
     @NonNull Object x = this.ppt;
   }
-
-  
 
 }
