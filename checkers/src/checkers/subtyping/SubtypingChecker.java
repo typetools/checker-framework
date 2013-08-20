@@ -43,7 +43,7 @@ public final class SubtypingChecker extends BaseTypeChecker<BasicAnnotatedTypeFa
     @SuppressWarnings("unchecked")
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
 
-        String qualNames = processingEnv.getOptions().get("quals");
+        String qualNames = getOption("quals");
         if (qualNames == null) {
             errorAbort("SubtypingChecker: missing required option: -Aquals");
         }
