@@ -86,7 +86,6 @@ import com.sun.source.tree.InstanceOfTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
@@ -274,25 +273,14 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
         visitorState.setMethodTree(node);
         ExecutableElement methodElement = TreeUtils.elementFromDeclaration(node);
 
-        boolean abstractMethod = false;
-        ModifiersTree modifiers = node.getModifiers();
-        if (modifiers != null) {
-            Set<Modifier> flags = modifiers.getFlags();
-            if (flags.contains(Modifier.ABSTRACT)) {
-                abstractMethod = true;
-            }
-        }
-
         try {
-            Element elt = InternalUtils.symbol(node);
-            assert elt != null : "no symbol for method: " + node;
             if (InternalUtils.isAnonymousConstructor(node)) {
                 // We shouldn't dig deeper
                 return null;
             }
 
             // check method purity if needed
-            if (!abstractMethod) {
+            {
                 boolean anyPurityAnnotation = PurityUtils.hasPurityAnnotation(
                         atypeFactory, node);
                 boolean checkPurityAlways = checker.hasOption("suggestPureMethods");
@@ -301,11 +289,13 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
                 if (enablePurity && (anyPurityAnnotation || checkPurityAlways)) {
                     // check "no" purity
                     List<Pure.Kind> kinds = PurityUtils.getPurityKinds(atypeFactory, node);
-                    if (!TreeUtils.isConstructor(node)) {
-                        // @Deterministic makes no sense for a void method
-                        boolean isDeterministic = PurityUtils.isDeterministic(atypeFactory, node);
-                        if (node.getReturnType().toString().equals("void")
-                                && isDeterministic) {
+                    // @Deterministic makes no sense for a void method or constructor
+                    boolean isDeterministic = kinds.contains(Pure.Kind.DETERMINISTIC);
+                    if (isDeterministic) {
+                        if (TreeUtils.isConstructor(node)) {
+                            checker.report(Result.warning("purity.deterministic.constructor"),
+                                    node);
+                        } else if (InternalUtils.typeOf(node.getReturnType()).getKind() == TypeKind.VOID) {
                             checker.report(Result.warning("purity.deterministic.void.method"),
                                     node);
                         }
@@ -313,7 +303,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
 
                     // Report errors if necessary.
                     PurityResult r = PurityChecker.checkPurity(node.getBody(),
-                            atypeFactory, options.containsKey("assumeSideEffectFree"));
+                            atypeFactory, checker.hasOption("assumeSideEffectFree"));
                     if (!r.isPure(kinds)) {
                         reportPurityErrors(r, node, kinds);
                     }
@@ -371,6 +361,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
             }
             return super.visitMethod(node, p);
         } finally {
+            boolean abstractMethod = methodElement.getModifiers().contains(Modifier.ABSTRACT);
 
             if (!abstractMethod) {
                 // check postcondition annotations
