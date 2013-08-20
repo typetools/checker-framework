@@ -36,7 +36,8 @@ import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.concurrent.CopyOnWriteArrayList;
 // import java.util.function.Supplier;
-import sun.reflect.CallerSensitive;
+// TODO ignore Java 8 annotation for now.
+// import sun.reflect.CallerSensitive;
 import sun.reflect.Reflection;
 
 import dataflow.quals.SideEffectFree;
@@ -340,7 +341,7 @@ public class Logger {
 
     // Synchronization is not required here. All synchronization for
     // adding a new Logger object is handled by LogManager.addLogger().
-    @CallerSensitive
+    // @CallerSensitive
     public static Logger getLogger(String name) { throw new RuntimeException(); }
 
     /**
@@ -386,7 +387,7 @@ public class Logger {
 
     // Synchronization is not required here. All synchronization for
     // adding a new Logger object is handled by LogManager.addLogger().
-    @CallerSensitive
+    // @CallerSensitive
     public static Logger getLogger(String name, String resourceBundleName) { throw new RuntimeException(); }
 
     // package-private
@@ -443,7 +444,7 @@ public class Logger {
 
     // Synchronization is not required here. All synchronization for
     // adding a new anonymous Logger object is handled by doSetParent().
-    @CallerSensitive
+    // @CallerSensitive
     public static Logger getAnonymousLogger(String resourceBundleName) { throw new RuntimeException(); }
 
     /**
