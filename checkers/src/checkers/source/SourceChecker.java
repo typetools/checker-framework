@@ -521,8 +521,13 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
                 msg.append("\nCompilation unit: " + this.currentRoot.getSourceFile().getName());
             }
 
-            msg.append("\nException: " +
-                            ce.getCause().toString() + ": " + formatStackTrace(ce.getCause().getStackTrace()));
+            msg.append("\nException: " + ce.getCause().toString());
+            // avoid a colon with nothing following
+            StackTraceElement[] st = ce.getCause().getStackTrace();
+            if (st.length != 0) {
+                msg.append(": " + formatStackTrace(ce.getCause().getStackTrace()));
+            }
+
             Throwable cause = ce.getCause().getCause();
             while (cause != null) {
                 msg.append("\nUnderlying Exception: " +
@@ -582,7 +587,7 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
             if (this.messager == null) {
                 messager = processingEnv.getMessager();
             }
-            logCheckerError(new CheckerError("SourceChecker.init: unexpected Throwable (" +
+            logCheckerError(new CheckerError("SourceChecker.init: unexpected Throwable (of class " +
                     t.getClass().getSimpleName() + ")" +
                     (t.getMessage() != null ? "; message: " + t.getMessage() : ""), t));
         }
