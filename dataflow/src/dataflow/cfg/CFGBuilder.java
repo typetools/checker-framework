@@ -3477,6 +3477,7 @@ public class CFGBuilder {
                     break;
                 case EXCEPTION_PARAMETER:
                 case LOCAL_VARIABLE:
+                case RESOURCE_VARIABLE:
                 case PARAMETER:
                     node = new LocalVariableNode(tree);
                     break;
