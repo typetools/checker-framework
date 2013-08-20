@@ -1,23 +1,24 @@
 package checkers.igj;
 
-import java.util.*;
-
-import javax.lang.model.element.*;
-
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.Tree;
-
-import javacutils.ElementUtils;
-import javacutils.InternalUtils;
-import javacutils.TreeUtils;
-
 import checkers.basetype.BaseTypeVisitor;
 import checkers.igj.quals.Assignable;
 import checkers.igj.quals.AssignsFields;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
+
+import javacutils.ElementUtils;
+import javacutils.InternalUtils;
+import javacutils.TreeUtils;
+
+import java.util.Collection;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.Tree;
 
 /**
  * A type-checking visitor for the IGJ type
@@ -48,11 +49,11 @@ public class IGJVisitor extends BaseTypeVisitor<IGJChecker, IGJAnnotatedTypeFact
     }
 
     @Override
-    public boolean isValidUse(AnnotatedDeclaredType elemType, AnnotatedDeclaredType use) {
+    public boolean isValidUse(AnnotatedDeclaredType elemType, AnnotatedDeclaredType use, Tree tree) {
         if (elemType.hasEffectiveAnnotation(checker.I) || use.hasEffectiveAnnotation(checker.READONLY))
             return true;
 
-        return super.isValidUse(elemType, use);
+        return super.isValidUse(elemType, use, tree);
     }
 
     /**
