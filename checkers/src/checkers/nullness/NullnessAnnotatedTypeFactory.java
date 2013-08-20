@@ -296,12 +296,6 @@ public class NullnessAnnotatedTypeFactory
                 || var.getSimpleName().contentEquals("class") || inJavaPackage);
     }
 
-    private static boolean isExceptionParameter(IdentifierTree node) {
-        Element elt = TreeUtils.elementFromUse(node);
-        assert elt != null;
-        return elt.getKind() == ElementKind.EXCEPTION_PARAMETER;
-    }
-
     protected class NonNullTreeAnnotator
         extends InitializationAnnotatedTypeFactory<AbstractNullnessChecker, NullnessValue, NullnessStore, NullnessTransfer, NullnessAnalysis>.CommitmentTreeAnnotator {
 
@@ -321,6 +315,19 @@ public class NullnessAnnotatedTypeFactory
         }
 
         @Override
+        public Void visitVariable(VariableTree node,
+                AnnotatedTypeMirror type) {
+            Element elt = InternalUtils.symbol(node);
+            if (elt.getKind() == ElementKind.EXCEPTION_PARAMETER) {
+                if (!type.isAnnotatedInHierarchy(NONNULL)) {
+                    // case 9. exception parameter
+                    type.addAnnotation(NONNULL);
+                }
+            }
+            return super.visitVariable(node, type);
+        }
+
+        @Override
         public Void visitIdentifier(IdentifierTree node,
                 AnnotatedTypeMirror type) {
 
@@ -330,9 +337,13 @@ public class NullnessAnnotatedTypeFactory
             // case 8. static method access
             annotateIfStatic(elt, type);
 
-            // case 9. exception parameter
-            if (isExceptionParameter(node))
+            if (elt.getKind() == ElementKind.EXCEPTION_PARAMETER) {
+                // TODO: It's surprising that we have to do this in
+                // both visitVariable and visitIdentifier. This should
+                // already be handled by applying the defaults anyway.
+                // case 9. exception parameter
                 type.replaceAnnotation(NONNULL);
+            }
 
             return super.visitIdentifier(node, type);
         }
