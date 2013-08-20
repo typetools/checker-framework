@@ -1,28 +1,27 @@
 package checkers.propkey;
 
+import checkers.basetype.BaseTypeChecker;
+import checkers.propkey.quals.PropertyKey;
+import checkers.quals.Bottom;
+import checkers.quals.TypeQualifiers;
+import checkers.quals.Unqualified;
+import checkers.util.GraphQualifierHierarchy;
+import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+
+import javacutils.AnnotationUtils;
+
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.Set;
 
 import javax.annotation.processing.SupportedOptions;
 import javax.lang.model.util.Elements;
-
-import javacutils.AnnotationUtils;
-
-import checkers.basetype.BaseTypeChecker;
-import checkers.quals.Bottom;
-import checkers.propkey.quals.PropertyKey;
-import checkers.quals.TypeQualifiers;
-import checkers.quals.Unqualified;
-import checkers.util.GraphQualifierHierarchy;
-import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 
 
 /**
@@ -65,7 +64,7 @@ public class PropertyKeyChecker extends BaseTypeChecker<PropertyKeyAnnotatedType
     public void initChecker() {
         super.initChecker();
         this.lookupKeys =
-            Collections.unmodifiableSet(buildLookupKeys(processingEnv.getOptions()));
+            Collections.unmodifiableSet(buildLookupKeys());
     }
 
     /**
@@ -75,14 +74,14 @@ public class PropertyKeyChecker extends BaseTypeChecker<PropertyKeyAnnotatedType
         return this.lookupKeys;
     }
 
-    private Set<String> buildLookupKeys(Map<String, String> options) {
+    private Set<String> buildLookupKeys() {
         Set<String> result = new HashSet<String>();
 
-        if (options.containsKey("propfiles")) {
-            result.addAll( keysOfPropertyFiles(processingEnv.getOptions().get("propfiles")) );
+        if (hasOption("propfiles")) {
+            result.addAll( keysOfPropertyFiles(getOption("propfiles")) );
         }
-        if (options.containsKey("bundlenames")) {
-            result.addAll( keysOfResourceBundle(processingEnv.getOptions().get("bundlenames")) );
+        if (hasOption("bundlenames")) {
+            result.addAll( keysOfResourceBundle(getOption("bundlenames")) );
         }
 
         return result;
