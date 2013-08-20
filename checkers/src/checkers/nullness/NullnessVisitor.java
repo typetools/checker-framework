@@ -358,11 +358,11 @@ public class NullnessVisitor
             AnnotatedTypeMirror left = atypeFactory.getAnnotatedType(leftOp);
             AnnotatedTypeMirror right = atypeFactory.getAnnotatedType(rightOp);
             if (leftOp.getKind() == Tree.Kind.NULL_LITERAL
-                    && right.hasAnnotation(NONNULL))
+                    && right.hasEffectiveAnnotation(NONNULL))
                 checker.report(
                         Result.warning(KNOWN_NONNULL, rightOp.toString()), node);
             else if (rightOp.getKind() == Tree.Kind.NULL_LITERAL
-                    && left.hasAnnotation(NONNULL))
+                    && left.hasEffectiveAnnotation(NONNULL))
                 checker.report(
                         Result.warning(KNOWN_NONNULL, leftOp.toString()), node);
         }
