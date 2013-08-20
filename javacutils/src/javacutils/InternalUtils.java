@@ -41,6 +41,7 @@ import com.sun.tools.javac.tree.JCTree.JCNewArray;
 import com.sun.tools.javac.tree.JCTree.JCNewClass;
 import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
 import com.sun.tools.javac.tree.TreeInfo;
+import com.sun.tools.javac.util.Context;
 
 /*>>>
  import checkers.nullness.quals.*;
@@ -369,5 +370,15 @@ public class InternalUtils {
         }
         assert false;
         return null;
+    }
+
+    /** Helper function to extract the javac Context from the
+     * javac processing environment.
+     *
+     * @param env the processing environment
+     * @return the javac Context
+     */
+    public static Context getJavacContext(ProcessingEnvironment env) {
+        return ((JavacProcessingEnvironment)env).getContext();
     }
 }
