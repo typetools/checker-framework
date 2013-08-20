@@ -11,7 +11,7 @@ public class BufferedReader extends Reader {
   public BufferedReader(Reader a1) { throw new RuntimeException("skeleton method"); }
   public int read() throws IOException { throw new RuntimeException("skeleton method"); }
   public int read(char[] a1, int a2, int a3) throws IOException { throw new RuntimeException("skeleton method"); }
-  @Deterministic // but NOT @SideEffectFree
+  // neither @Deterministic nor @SideEffectFree
   public @Nullable String readLine() throws IOException { throw new RuntimeException("skeleton method"); }
   public long skip(long a1) throws IOException { throw new RuntimeException("skeleton method"); }
   @EnsuresNonNullIf(expression="readLine()", result=true)

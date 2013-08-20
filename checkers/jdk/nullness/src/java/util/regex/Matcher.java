@@ -45,7 +45,7 @@ public final class Matcher implements MatchResult {
   @Pure
   public boolean hasAnchoringBounds() { throw new RuntimeException("skeleton method"); }
   public Matcher useAnchoringBounds(boolean a1) { throw new RuntimeException("skeleton method"); }
-  @Pure public String toString() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public String toString() { throw new RuntimeException("skeleton method"); }
   @Pure
   public boolean hitEnd() { throw new RuntimeException("skeleton method"); }
   @Pure

@@ -125,7 +125,7 @@ public abstract class Enum<E extends Enum<E>>
      *
      * @return the name of this enum constant
      */
-    @Pure public String toString() {
+    @SideEffectFree public String toString() {
         return name;
     }
 

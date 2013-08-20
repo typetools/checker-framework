@@ -1,6 +1,7 @@
 package java.lang;
 
 import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
 import checkers.nullness.quals.Nullable;
 
 
@@ -12,7 +13,7 @@ public final class StackTraceElement implements java.io.Serializable {
   public String getClassName() { throw new RuntimeException("skeleton method"); }
   public String getMethodName() { throw new RuntimeException("skeleton method"); }
   @Pure public boolean isNativeMethod() { throw new RuntimeException("skeleton method"); }
-  @Pure public String toString() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public String toString() { throw new RuntimeException("skeleton method"); }
   @Pure public boolean equals(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   @Pure public int hashCode() { throw new RuntimeException("skeleton method"); }
 }

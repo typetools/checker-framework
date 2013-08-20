@@ -1,5 +1,6 @@
 package java.util;
 import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
 
 import checkers.nullness.quals.KeyFor;
 import checkers.nullness.quals.Nullable;
@@ -17,7 +18,7 @@ public abstract class AbstractMap<K extends @Nullable Object, V extends @Nullabl
     public V setValue(V a1) { throw new RuntimeException("skeleton method"); }
     @Pure public boolean equals(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
     @Pure public int hashCode() { throw new RuntimeException("skeleton method"); }
-    @Pure public String toString() { throw new RuntimeException("skeleton method"); }
+    @SideEffectFree public String toString() { throw new RuntimeException("skeleton method"); }
   }
   public class SimpleImmutableEntry<K extends @Nullable Object, V extends @Nullable Object>
       implements Map.Entry<K, V>, java.io.Serializable {
@@ -29,7 +30,7 @@ public abstract class AbstractMap<K extends @Nullable Object, V extends @Nullabl
     public V setValue(V a1) { throw new RuntimeException("skeleton method"); }
     @Pure public boolean equals(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
     @Pure public int hashCode() { throw new RuntimeException("skeleton method"); }
-    @Pure public String toString() { throw new RuntimeException("skeleton method"); }
+    @SideEffectFree public String toString() { throw new RuntimeException("skeleton method"); }
   }
   @Pure public int size() { throw new RuntimeException("skeleton method"); }
   @Pure public boolean isEmpty() { throw new RuntimeException("skeleton method"); }
@@ -45,5 +46,5 @@ public abstract class AbstractMap<K extends @Nullable Object, V extends @Nullabl
   public abstract Set<Map.Entry<@KeyFor("this") K, V>> entrySet();
   @Pure public boolean equals(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   @Pure public int hashCode() { throw new RuntimeException("skeleton method"); }
-  @Pure public String toString() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public String toString() { throw new RuntimeException("skeleton method"); }
 }

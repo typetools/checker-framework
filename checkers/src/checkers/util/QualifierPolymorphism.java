@@ -17,6 +17,7 @@ import checkers.types.visitors.SimpleAnnotatedTypeVisitor;
 
 import javacutils.AnnotationUtils;
 import javacutils.ErrorReporter;
+import javacutils.TreeUtils;
 
 import java.lang.annotation.Annotation;
 import java.util.Collections;
@@ -178,6 +179,11 @@ public class QualifierPolymorphism {
      */
     public void annotate(MethodInvocationTree tree, AnnotatedExecutableType type) {
         if (polyQuals.isEmpty()) return;
+        // javac produces enum super calls with zero arguments even though the
+        // method element requires two.
+        // See also BaseTypeVisitor.visitMethodInvocation and
+        // CFGBuilder.CFGTranslationPhaseOne.visitMethodInvocation
+        if (TreeUtils.isEnumSuper(tree)) return;
         List<AnnotatedTypeMirror> requiredArgs = AnnotatedTypes.expandVarArgs(atypeFactory, type, tree.getArguments());
         List<AnnotatedTypeMirror> arguments = AnnotatedTypes.getAnnotatedTypes(atypeFactory, requiredArgs, tree.getArguments());
 

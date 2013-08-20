@@ -1,6 +1,7 @@
 package java.lang.reflect;
 
 import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
 import checkers.nullness.quals.NonNull;
 import checkers.nullness.quals.Nullable;
 import checkers.nullness.quals.Raw;
@@ -17,7 +18,7 @@ public final class Field extends AccessibleObject implements Member {
   public Type getGenericType() { throw new RuntimeException("skeleton method"); }
   @Pure public boolean equals(@Nullable Object obj) { throw new RuntimeException("skeleton method"); }
   @Pure public int hashCode() { throw new RuntimeException("skeleton method"); }
-  @Pure public String toString() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public String toString() { throw new RuntimeException("skeleton method"); }
   public String toGenericString() { throw new RuntimeException("skeleton method"); }
   public @Nullable Object get(@UnknownInitialization @Raw @Nullable Object obj) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }
   public boolean getBoolean(@UnknownInitialization @Raw @Nullable Object obj) throws IllegalArgumentException, IllegalAccessException { throw new RuntimeException("skeleton method"); }

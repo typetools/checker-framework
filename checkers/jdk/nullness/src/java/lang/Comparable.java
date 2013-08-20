@@ -6,6 +6,6 @@ import dataflow.quals.Pure;
 
 
 public abstract interface Comparable<T extends @NonNull Object> {
-  // argument may not be null
+  // argument may NOT be null
   @Pure public abstract int compareTo(T a1);
 }

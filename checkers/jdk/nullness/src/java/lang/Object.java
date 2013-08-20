@@ -9,7 +9,9 @@ import checkers.initialization.quals.*;
 public class Object {
   public Object() { throw new RuntimeException("skeleton method"); }
   public @Pure boolean equals(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
-  public @Pure String toString() { throw new RuntimeException("skeleton method"); }
+  // toString() is @SideEffectFree rather than @Pure because it returns a string
+  // that differs according to ==, and @Deterministic is with respect to ==.
+  public @SideEffectFree String toString() { throw new RuntimeException("skeleton method"); }
   public final void wait(@UnknownInitialization @Raw Object this, long a1, int a2) throws InterruptedException { throw new RuntimeException("skeleton method"); }
   public final void wait(@UnknownInitialization @Raw Object this) throws InterruptedException { throw new RuntimeException("skeleton method"); }
 
