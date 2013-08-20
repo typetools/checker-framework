@@ -61,7 +61,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -154,9 +153,6 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
                              Factory extends AbstractBasicAnnotatedTypeFactory<?, ?, ?, ?, ?>>
         extends SourceVisitor<Checker, Factory, Void, Void> {
 
-    /** The options that were provided to the checker using this visitor. */
-    protected final Map<String, String> options;
-
     /** For obtaining line numbers in -Ashowchecks debugging output. */
     private final SourcePositions positions;
 
@@ -176,9 +172,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
     public BaseTypeVisitor(Checker checker, CompilationUnitTree root) {
         super(checker, root);
 
-        contractsUtils = ContractsUtils.getInstance(atypeFactory);
-        ProcessingEnvironment env = checker.getProcessingEnvironment();
-        this.options = env.getOptions();
+        this.contractsUtils = ContractsUtils.getInstance(atypeFactory);
         this.positions = trees.getSourcePositions();
         this.visitorState = atypeFactory.getVisitorState();
     }
@@ -288,10 +282,8 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
             {
                 boolean anyPurityAnnotation = PurityUtils.hasPurityAnnotation(
                         atypeFactory, node);
-                boolean checkPurityAlways = checker.getProcessingEnvironment()
-                        .getOptions().containsKey("suggestPureMethods");
-                boolean enablePurity = checker.getProcessingEnvironment()
-                        .getOptions().containsKey("enablePurity");
+                boolean checkPurityAlways = checker.hasOption("suggestPureMethods");
+                boolean enablePurity = checker.hasOption("enablePurity");
 
                 if (enablePurity && (anyPurityAnnotation || checkPurityAlways)) {
                     // check "no" purity
@@ -1317,7 +1309,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
             return;
         }
 
-        if (options.containsKey("showchecks")) {
+        if (checker.hasOption("showchecks")) {
             long valuePos = positions.getStartPosition(root, valueTree);
             System.out.printf(
                     " %s (line %3d): %s %s%n     actual: %s %s%n   expected: %s %s%n",
@@ -1345,7 +1337,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
             }
         }
 
-        if (options.containsKey("showchecks")) {
+        if (checker.hasOption("showchecks")) {
             long valuePos = positions.getStartPosition(root, valueTree);
             System.out.printf(
                     " %s (line %3d): %s %s%n     actual: %s %s%n   expected: %s %s%n",
@@ -1375,7 +1367,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
     /**
      * Checks that the annotations on the type arguments supplied to a type or a
      * method invocation are within the bounds of the type variables as
-     * declared, and issues the "generic.argument.invalid" error if they are
+     * declared, and issues the "type.argument.type.incompatible" error if they are
      * not.
      *
      * @param toptree the tree for error reporting, only used for inferred type arguments
@@ -1572,7 +1564,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
         if ((overrider.getReturnType().getKind() != TypeKind.VOID)) {
             boolean success = checker.getTypeHierarchy().isSubtype(overrider.getReturnType(),
                     overridden.getReturnType());
-            if (options.containsKey("showchecks")) {
+            if (checker.hasOption("showchecks")) {
                 long valuePos = positions.getStartPosition(root, overriderTree.getReturnType());
                 System.out.printf(
                         " %s (line %3d):%n     overrider: %s %s (return type %s)%n   overridden: %s %s (return type %s)%n",
@@ -1600,7 +1592,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
             overridden.getParameterTypes();
         for (int i = 0; i < overriderParams.size(); ++i) {
             boolean success = checker.getTypeHierarchy().isSubtype(overriddenParams.get(i), overriderParams.get(i));
-            if (options.containsKey("showchecks")) {
+            if (checker.hasOption("showchecks")) {
                 long valuePos = positions.getStartPosition(root, overriderTree.getParameters().get(i));
                 System.out.printf(
                         " %s (line %3d):%n     overrider: %s %s (parameter %d type %s)%n   overridden: %s %s (parameter %d type %s)%n",
@@ -1917,12 +1909,13 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
      * {@code @Immutable String};  {@link ReadOnly} is not a subtype of
      * {@link Immutable}.
      *
-     * @param declarationType  the type of the class (TypeElement)
-     * @param useType   the use of the class (instance type)
-     * @return  if the useType is a valid use of elemType
+     * @param declarationType the type of the class (TypeElement)
+     * @param useType the use of the class (instance type)
+     * @param tree the tree where the type is used
+     * @return true if the useType is a valid use of elemType
      */
     public boolean isValidUse(AnnotatedDeclaredType declarationType,
-            AnnotatedDeclaredType useType) {
+            AnnotatedDeclaredType useType, Tree tree) {
         return checker.getTypeHierarchy().isSubtype(useType.getErased(), declarationType.getErased());
     }
 
@@ -1932,8 +1925,12 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
      * The default implementation always returns true.
      * Subclasses should override this method to limit what annotations are
      * allowed on primitive types.
+     *
+     * @param type the use of the primitive type
+     * @param tree the tree where the type is used
+     * @return true if the type is a valid use of the primitive type
      */
-    public boolean isValidUse(AnnotatedPrimitiveType type) {
+    public boolean isValidUse(AnnotatedPrimitiveType type, Tree tree) {
         return true;
     }
 
@@ -1945,8 +1942,12 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
      * The default implementation always returns true.
      * Subclasses should override this method to limit what annotations are
      * allowed on array types.
+     *
+     * @param type the array type use
+     * @param tree the tree where the type is used
+     * @return true if the type is a valid array type
      */
-    public boolean isValidUse(AnnotatedArrayType type) {
+    public boolean isValidUse(AnnotatedArrayType type, Tree tree) {
         return true;
     }
 
@@ -2058,7 +2059,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
             return;
         }
         checkedJDK = true;
-        if (options.containsKey("nocheckjdk")) {
+        if (checker.hasOption("nocheckjdk")) {
             return;
         }
         TypeElement objectTE = elements.getTypeElement("java.lang.Object");
