@@ -138,6 +138,8 @@ public class TypeFromElement {
                     case METHOD_FORMAL_PARAMETER:
                     case METHOD_RECEIVER:
                     case LOCAL_VARIABLE:
+                    case RESOURCE_VARIABLE:
+                    case EXCEPTION_PARAMETER:
                     case NEW:
                     case CAST:
                     case INSTANCEOF:
@@ -188,6 +190,8 @@ public class TypeFromElement {
                     case METHOD_TYPE_PARAMETER:
                     case METHOD_TYPE_PARAMETER_BOUND:
                     case LOCAL_VARIABLE:
+                    case RESOURCE_VARIABLE:
+                    case EXCEPTION_PARAMETER:
                     case NEW:
                     case CAST:
                     case INSTANCEOF:
@@ -221,6 +225,8 @@ public class TypeFromElement {
                     case METHOD_TYPE_PARAMETER:
                     case METHOD_TYPE_PARAMETER_BOUND:
                     case LOCAL_VARIABLE:
+                    case RESOURCE_VARIABLE:
+                    case EXCEPTION_PARAMETER:
                     case NEW:
                     case CAST:
                     case INSTANCEOF:
@@ -412,6 +418,8 @@ public class TypeFromElement {
                 }
                 break;
             case LOCAL_VARIABLE: // ? TODO: check why those appear on a type element
+            case RESOURCE_VARIABLE:
+            case EXCEPTION_PARAMETER:
             case NEW: // ?
             case CAST: // ?
             case INSTANCEOF:
@@ -561,6 +569,8 @@ public class TypeFromElement {
                 }
                 break;
             case LOCAL_VARIABLE:
+            case RESOURCE_VARIABLE:
+            case EXCEPTION_PARAMETER:
             case NEW:
             case CAST:
             case INSTANCEOF:

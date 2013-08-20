@@ -29,6 +29,7 @@ import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
 /**
@@ -55,7 +56,9 @@ import javax.lang.model.util.Types;
  */
 public class AnnotationBuilder {
 
-    private final ProcessingEnvironment env;
+    private final Elements elements;
+    private final Types types;
+
     private final TypeElement annotationElt;
     private final DeclaredType annotationType;
     private final Map<ExecutableElement, AnnotationValue> elementValues;
@@ -66,16 +69,19 @@ public class AnnotationBuilder {
     }
 
     public AnnotationBuilder(ProcessingEnvironment env, CharSequence name) {
-        this.env = env;
-        this.annotationElt = env.getElementUtils().getTypeElement(name);
+        this.elements = env.getElementUtils();
+        this.types = env.getTypeUtils();
+
+        this.annotationElt = elements.getTypeElement(name);
         assert annotationElt.getKind() == ElementKind.ANNOTATION_TYPE;
         this.annotationType = (DeclaredType) annotationElt.asType();
         this.elementValues = new LinkedHashMap<ExecutableElement, AnnotationValue>();
     }
 
-    public AnnotationBuilder(ProcessingEnvironment env,
-            AnnotationMirror annotation) {
-        this.env = env;
+    public AnnotationBuilder(ProcessingEnvironment env, AnnotationMirror annotation) {
+        this.elements = env.getElementUtils();
+        this.types = env.getTypeUtils();
+
         this.annotationType = annotation.getAnnotationType();
         this.annotationElt = (TypeElement) annotationType.asElement();
 
@@ -216,16 +222,16 @@ public class AnnotationBuilder {
 
     private TypeMirror typeFromClass(Class<?> clazz) {
         if (clazz == void.class) {
-            return env.getTypeUtils().getNoType(TypeKind.VOID);
+            return types.getNoType(TypeKind.VOID);
         } else if (clazz.isPrimitive()) {
             String primitiveName = clazz.getName().toUpperCase();
             TypeKind primitiveKind = TypeKind.valueOf(primitiveName);
-            return env.getTypeUtils().getPrimitiveType(primitiveKind);
+            return types.getPrimitiveType(primitiveKind);
         } else if (clazz.isArray()) {
             TypeMirror componentType = typeFromClass(clazz.getComponentType());
-            return env.getTypeUtils().getArrayType(componentType);
+            return types.getArrayType(componentType);
         } else {
-            TypeElement element = env.getElementUtils().getTypeElement(
+            TypeElement element = elements.getTypeElement(
                     clazz.getCanonicalName());
             if (element == null) {
                 ErrorReporter.errorAbort("Unrecognized class: " + clazz);
@@ -348,7 +354,7 @@ public class AnnotationBuilder {
 
     private VariableElement findEnumElement(Enum<?> value) {
         String enumClass = value.getDeclaringClass().getCanonicalName();
-        TypeElement enumClassElt = env.getElementUtils().getTypeElement(
+        TypeElement enumClassElt = elements.getTypeElement(
                 enumClass);
         assert enumClassElt != null;
         for (Element enumElt : enumClassElt.getEnclosedElements()) {
@@ -382,8 +388,6 @@ public class AnnotationBuilder {
     // TODO: this method always returns true and no-one ever looks at the return
     // value.
     private boolean checkSubtype(TypeMirror expected, Object givenValue) {
-        Types types = env.getTypeUtils();
-
         if (expected.getKind().isPrimitive())
             expected = types.boxedClass((PrimitiveType) expected).asType();
 
@@ -414,7 +418,7 @@ public class AnnotationBuilder {
                 isSubtype = false;
             }
         } else {
-            found = env.getElementUtils()
+            found = elements
                     .getTypeElement(givenValue.getClass().getCanonicalName())
                     .asType();
             isSubtype = types.isSubtype(types.erasure(found),

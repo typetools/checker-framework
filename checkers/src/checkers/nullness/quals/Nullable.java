@@ -31,7 +31,8 @@ import com.sun.source.tree.Tree;
 @TypeQualifier
 @SubtypeOf({})
 @ImplicitFor(trees = { Tree.Kind.NULL_LITERAL }, typeNames = { java.lang.Void.class })
-@DefaultFor({ DefaultLocation.LOCALS, DefaultLocation.IMPLICIT_UPPER_BOUNDS })
+@DefaultFor({ DefaultLocation.LOCAL_VARIABLE, DefaultLocation.RESOURCE_VARIABLE,
+    DefaultLocation.IMPLICIT_UPPER_BOUNDS })
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
