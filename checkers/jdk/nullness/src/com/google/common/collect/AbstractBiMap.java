@@ -85,7 +85,7 @@ import javax.annotation.Nullable;
 
   // Query Operations (optimizations)
 
-  @Override public boolean containsValue(/*@Nullable*/ Object value) {
+  @Pure @Override public boolean containsValue(/*@Nullable*/ Object value) {
     return inverse.containsKey(value);
   }
 
@@ -259,7 +259,7 @@ import javax.annotation.Nullable;
       return ObjectArrays.toArrayImpl(this, array);
     }
 
-    @Override public String toString() {
+    @Pure @Override public String toString() {
       return Iterators.toString(iterator());
     }
   }
@@ -349,10 +349,10 @@ import javax.annotation.Nullable;
     @Override public <T> T[] toArray(T[] array) {
       return ObjectArrays.toArrayImpl(this, array);
     }
-    @Override public boolean contains(/*@Nullable*/ Object o) {
+    @Pure @Override public boolean contains(/*@Nullable*/ Object o) {
       return Maps.containsEntryImpl(delegate(), o);
     }
-    @Override public boolean containsAll(Collection<? extends /*@Nullable*/ Object> c) {
+    @Pure @Override public boolean containsAll(Collection<? extends /*@Nullable*/ Object> c) {
       return Collections2.containsAll(this, c);
     }
     @Override public boolean removeAll(Collection<? extends /*@Nullable*/ Object> c) {

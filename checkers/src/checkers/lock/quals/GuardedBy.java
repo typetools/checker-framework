@@ -21,13 +21,11 @@ import checkers.quals.TypeQualifier;
  * (synchronization) lock, or may be an explicit {@link
  * java.util.concurrent.locks.Lock}.
  * <p>
- * 
+ *
  * This annotation does <b>not</b> indicate whether or not the given lock
  * is held at the moment that execution reaches the annotation.
  * It merely indicates that the lock must be held when the
- * variable is accessed.  An unannotated type is a subtype of a
- * <code>@GuardedBy</code> one, because the unannotated type may be
- * used in any context where the <code>@GuardedBy</code> one is.
+ * variable is accessed.
  * <p>
  * 
  * The argument is a string that indicates which lock guards the annotated variable:
@@ -58,6 +56,12 @@ import checkers.quals.TypeQualifier;
  * </li>
  * </ul>
  *
+ * <b>Subtyping rules:
+ * An unannotated type is a subtype of a
+ * <code>@GuardedBy</code> one, because the unannotated type may be
+ * used in any context where the <code>@GuardedBy</code> one is.
+ * <p>
+ *
  * @see Holding
  * @checker.framework.manual #lock-checker Lock Checker
  */
@@ -65,7 +69,7 @@ import checkers.quals.TypeQualifier;
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 @TypeQualifier
-@SubtypeOf({})
+@SubtypeOf({ GuardedByTop.class })
 public @interface GuardedBy {
     String value();
 }

@@ -16,7 +16,7 @@
 
 package com.google.common.collect;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
 /**
  * Thrown when a computer function returns null. This subclass exists so

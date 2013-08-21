@@ -31,7 +31,7 @@ class Wellformed {
         @Nullable T get() { return null; }
     }
 
-    //:: error: (fields.uninitialized)
+    //:: error: (initialization.fields.uninitialized)
     class Gen4<T extends @Nullable Object> {
         @NonNull T f;
         @NonNull T get() { throw new RuntimeException(); }
@@ -42,7 +42,7 @@ class Wellformed {
     class Gen5b<S> extends Gen5a<@Nullable Object> {}
     class Gen5c<S> extends Gen5a<@Nullable S> {}
 
-    class Gen6a<T> {}
+    class Gen6a<T extends Object> {}
     //:: error: (type.argument.type.incompatible)
     class Gen6b<S> extends Gen6a<@Nullable Object> {}
     //:: error: (type.argument.type.incompatible)

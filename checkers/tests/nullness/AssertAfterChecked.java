@@ -1,3 +1,4 @@
+import checkers.nullness.quals.EnsuresNonNull;
 import checkers.nullness.quals.*;
 
 import java.util.*;
@@ -7,13 +8,13 @@ public class AssertAfterChecked {
   class InitField {
     @Nullable Object f;
 
-    @AssertNonNullAfter("f")
+    @EnsuresNonNull("f")
     void init() {
       f = new Object();
     }
 
-    //:: error: (assert.postcondition.not.satisfied)
-    @AssertNonNullAfter("f") void initBad() {
+    //:: error: (contracts.postcondition.not.satisfied)
+    @EnsuresNonNull("f") void initBad() {
     }
 
     void testInit() {
@@ -25,18 +26,18 @@ public class AssertAfterChecked {
   static class InitStaticField {
     static @Nullable Object f;
 
-    @AssertNonNullAfter("f")
+    @EnsuresNonNull("f")
     void init() {
       f = new Object();
     }
 
-    @AssertNonNullAfter("f")
+    @EnsuresNonNull("f")
     void init2() {
       InitStaticField.f = new Object();
     }
 
-    //:: error: (assert.postcondition.not.satisfied)
-    @AssertNonNullAfter("f") void initBad() {
+    //:: error: (contracts.postcondition.not.satisfied)
+    @EnsuresNonNull("f") void initBad() {
     }
 
     void testInit() {
@@ -44,18 +45,18 @@ public class AssertAfterChecked {
       f.toString();
     }
 
-    @AssertNonNullAfter("InitStaticField.f")
+    @EnsuresNonNull("InitStaticField.f")
     void initE() {
       f = new Object();
     }
 
-    @AssertNonNullAfter("InitStaticField.f")
+    @EnsuresNonNull("InitStaticField.f")
     void initE2() {
       InitStaticField.f = new Object();
     }
 
-    //:: error: (assert.postcondition.not.satisfied)
-    @AssertNonNullAfter("InitStaticField.f") void initBadE() {
+    //:: error: (contracts.postcondition.not.satisfied)
+    @EnsuresNonNull("InitStaticField.f") void initBadE() {
     }
 
     void testInitE() {
@@ -71,11 +72,12 @@ public class AssertAfterChecked {
   }
 
   class TestParams {
-    //:: error: (assert.postcondition.not.satisfied)
-    @AssertNonNullAfter("get(#1)") void init(TestParams p) {
+    //:: error: (contracts.postcondition.not.satisfied)
+    @EnsuresNonNull("get(#1)") void init(final TestParams p) {
 
     }
 
+    @dataflow.quals.Pure
     @Nullable Object get(Object o) {
       return null;
     }
@@ -113,13 +115,13 @@ public class AssertAfterChecked {
   class WithReturn {
     @Nullable Object f;
 
-    @AssertNonNullAfter("f")
+    @EnsuresNonNull("f")
     int init1() {
       f = new Object();
       return 0;
     }
 
-    @AssertNonNullAfter("f")
+    @EnsuresNonNull("f")
     int init2() {
       if (5==5) {
         f = new Object();
@@ -130,13 +132,13 @@ public class AssertAfterChecked {
       }
     }
 
-    //:: error: (assert.postcondition.not.satisfied)
-    @AssertNonNullAfter("f") int initBad1() {
+    //:: error: (contracts.postcondition.not.satisfied)
+    @EnsuresNonNull("f") int initBad1() {
       return 0;
     }
 
-    //:: error: (assert.postcondition.not.satisfied)
-    @AssertNonNullAfter("f") int initBad2() {
+    //:: error: (contracts.postcondition.not.satisfied)
+    @EnsuresNonNull("f") int initBad2() {
       if (5==5) {
         return 0;
       } else {

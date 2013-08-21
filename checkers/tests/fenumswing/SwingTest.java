@@ -158,7 +158,7 @@ public class SwingTest {
   void testInference8b() {
     //:: error: (assignment.type.incompatible)
     @SwingHorizontalOrientation int s2 = 5;
-    //:: error: (compoundassign.type.incompatible)
+    //:: error: (compound.assignment.type.incompatible)
     s2 += 1;
 
     //:: error: (assignment.type.incompatible)

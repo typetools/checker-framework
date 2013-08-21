@@ -30,7 +30,7 @@ import java.util.NoSuchElementException;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
 /**
  * An immutable {@link SortedMap}. Does not permit null keys or values.
@@ -247,7 +247,7 @@ public class ImmutableSortedMap<K, V>
   private static void sortEntries(Entry<?, ?>[] entryArray,
       final Comparator<?> comparator) {
     Comparator<Entry<?, ?>> entryComparator = new Comparator<Entry<?, ?>>() {
-      public int compare(Entry<?, ?> entry1, Entry<?, ?> entry2) {
+      /*@Pure*/ public int compare(Entry<?, ?> entry1, Entry<?, ?> entry2) {
         return ImmutableSortedSet.unsafeCompare(
             comparator, entry1.getKey(), entry2.getKey());
       }
@@ -395,7 +395,7 @@ public class ImmutableSortedMap<K, V>
     this(entries, comparator, 0, entries.length);
   }
 
-  public int size() {
+  @Pure public int size() {
     return toIndex - fromIndex;
   }
 
@@ -432,7 +432,7 @@ public class ImmutableSortedMap<K, V>
     return -lower - 1;
   }
 
-  @Override public boolean containsValue(@Nullable Object value) {
+  @Pure @Override public boolean containsValue(@Nullable Object value) {
     if (value == null) {
       return false;
     }
@@ -468,7 +468,7 @@ public class ImmutableSortedMap<K, V>
       this.map = map;
     }
 
-    public int size() {
+    @Pure public int size() {
       return map.size();
     }
 
@@ -478,7 +478,7 @@ public class ImmutableSortedMap<K, V>
 
     @SuppressWarnings("nullness")
     // Suppressed, as target can only be nonNull after the if statement
-    @Override public boolean contains(/*@Nullable*/ Object target) {
+    @Pure @Override public boolean contains(/*@Nullable*/ Object target) {
       if (target instanceof Entry) {
         Entry<?, ?> entry = (Entry<?, ?>) target;
         V mappedValue = map.get(entry.getKey());
@@ -545,7 +545,7 @@ public class ImmutableSortedMap<K, V>
       this.map = map;
     }
 
-    public int size() {
+    @Pure public int size() {
       return map.size();
     }
 
@@ -561,7 +561,7 @@ public class ImmutableSortedMap<K, V>
       };
     }
 
-    @Override public boolean contains(/*@Nullable*/ Object target) {
+    @Pure @Override public boolean contains(/*@Nullable*/ Object target) {
       return map.containsValue(target);
     }
 

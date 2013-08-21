@@ -12,20 +12,20 @@ class ThisIsNN {
         Object in = new Object();
 
         void test2(@Raw Inner this) {
-            @SuppressWarnings("rawness") // initialization is now complete
+            @SuppressWarnings("initialization") // initialization is now complete
             @NonRaw Object nonRawThis = this;
             out = nonRawThis;
         }
 
         void test3(@Raw Inner this) {
-            @SuppressWarnings("rawness") // initialization is now complete
+            @SuppressWarnings("initialization") // initialization is now complete
             @NonRaw Object nonRawThis = ThisIsNN.this;
             out = nonRawThis;
         }
     }
 
     void test4(@Raw ThisIsNN this) {
-        @SuppressWarnings("rawness") // initialization is now complete
+        @SuppressWarnings("initialization") // initialization is now complete
         @NonRaw Object nonRawThis = this;
         out = nonRawThis;
     }

@@ -1,11 +1,11 @@
 package tests;
 
+import checkers.util.test.ParameterizedCheckerTest;
+
 import java.io.File;
 import java.util.Collection;
 
 import org.junit.runners.Parameterized.Parameters;
-
-import checkers.util.test.ParameterizedCheckerTest;
 
 /**
  * JUnit tests for the Nullness Checker -- testing -AskipUses command-line argument.
@@ -13,11 +13,15 @@ import checkers.util.test.ParameterizedCheckerTest;
 public class NullnessSkipUsesTest extends ParameterizedCheckerTest {
 
     public NullnessSkipUsesTest(File testFile) {
-        super(testFile, checkers.nullness.NullnessChecker.class.getName(),
-                "nullness", "-Anomsgtext", "-AskipUses=SkipMe", "-Alint=advancedchecks");
+        super(testFile,
+                checkers.nullness.NullnessChecker.class,
+                "nullness",
+                "-Anomsgtext", "-AskipUses=SkipMe");
     }
 
     @Parameters
-    public static Collection<Object[]> data() { return testFiles("nullness-skipuses"); }
+    public static Collection<Object[]> data() {
+        return testFiles("nullness-skipuses");
+    }
 
 }

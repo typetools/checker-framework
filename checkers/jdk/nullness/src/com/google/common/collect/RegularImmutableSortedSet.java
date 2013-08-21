@@ -72,15 +72,15 @@ final class RegularImmutableSortedSet<E>
         Iterators.forArray(elements, fromIndex, size());
   }
 
-  @Override public boolean isEmpty() {
+  @Pure @Override public boolean isEmpty() {
     return false;
   }
 
-  public int size() {
+  @Pure public int size() {
     return toIndex - fromIndex;
   }
 
-  @Override public boolean contains(/*@Nullable*/ Object o) {
+  @Pure @Override public boolean contains(/*@Nullable*/ Object o) {
     if (o == null) {
       return false;
     }
@@ -91,7 +91,7 @@ final class RegularImmutableSortedSet<E>
     }
   }
 
-  @Override public boolean containsAll(Collection<?> targets) {
+  @Pure @Override public boolean containsAll(Collection<?> targets) {
     // TODO: For optimal performance, use a binary search when
     // targets.size() < size() / log(size())
     if (!hasSameComparator(targets, comparator()) || (targets.size() <= 1)) {
@@ -165,7 +165,7 @@ final class RegularImmutableSortedSet<E>
     return array;
   }
 
-  @Override public boolean equals(@Nullable Object object) {
+  @Pure @Override public boolean equals(@Nullable Object object) {
     if (object == this) {
       return true;
     }
@@ -198,7 +198,7 @@ final class RegularImmutableSortedSet<E>
     return this.containsAll(that);
   }
 
-  @Override public int hashCode() {
+  @Pure @Override public int hashCode() {
     // not caching hash code since it could change if the elements are mutable
     // in a way that modifies their hash codes
     int hash = 0;

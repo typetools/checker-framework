@@ -15,7 +15,7 @@ public class JarEntryStubResource implements StubResource {
     /**
      * Constructs a {@code StubResource} for the specified entry in the
      * specified JAR file.
-     * 
+     *
      * @param file the JAR file
      * @param entry the JAR entry
      */
