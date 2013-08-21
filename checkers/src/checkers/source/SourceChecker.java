@@ -349,9 +349,10 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
     }
 
     private Pattern getSkipPattern(String patternName, Map<String, String> options) {
-        // default is an illegal Java identifier character
-        // so that it won't match anything
-        return getPattern(patternName, options, "\\(");
+        // Default is an illegal Java identifier substring
+        // so that it won't match anything.
+        // Note that AnnotatedType's toString output format contains characters such as "():{}".
+        return getPattern(patternName, options, "\\]'\"\\]");
     }
 
     private Pattern getOnlyPattern(String patternName, Map<String, String> options) {
