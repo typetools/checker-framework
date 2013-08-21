@@ -1,4 +1,4 @@
-
+import checkers.nullness.quals.Nullable;
 import java.util.Arrays;
 
 public class CopyOfArray {
@@ -6,7 +6,7 @@ public class CopyOfArray {
         //:: error: (assignment.type.incompatible)
         Object[] copy = Arrays.copyOf(args, args.length);
     }
+    protected void makeCopyGood(Object[] args) {
+        @Nullable Object @Nullable [] copy = Arrays.copyOf(args, args.length);
+    }
 }
-
-
-
