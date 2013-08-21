@@ -41,6 +41,7 @@ import javacutils.ErrorReporter;
 import javacutils.InternalUtils;
 import javacutils.Pair;
 import javacutils.TreeUtils;
+
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -239,7 +240,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
      * transfer function if they do not follow the checker naming convention.
      */
     @SuppressWarnings("unchecked")
-    public TransferFunction createFlowTransferFunction(FlowAnalysis analysis) {
+    public TransferFunction createFlowTransferFunction(CFAbstractAnalysis<Value, Store, TransferFunction> analysis) {
 
         // Try to reflectively load the visitor.
         Class<?> checkerClass = this.checker.getClass();
