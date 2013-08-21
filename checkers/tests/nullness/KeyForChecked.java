@@ -1,7 +1,12 @@
+import dataflow.quals.Pure;
 import checkers.nullness.quals.*;
+import checkers.quals.*;
+import checkers.nullness.quals.KeyFor;
+import checkers.nullness.quals.Covariant;
 
 import java.util.*;
 
+@DefaultQualifier(value=NonNull.class, locations=DefaultLocation.IMPLICIT_UPPER_BOUNDS)
 public class KeyForChecked {
 
 interface KFMap<K extends @NonNull Object, V extends @NonNull Object> {
@@ -90,7 +95,7 @@ class KFIterator<E extends @Nullable Object> {
         for (@KeyFor("bubu") String st : s) {}
     }
 
-    <T> void dominators(KFMap<T,List<T>> preds) {
+    <T> void dominators(KFMap<T, List<T>> preds) {
         for (T node : preds.keySet()) {}
 
         for (@KeyFor("preds") T node : preds.keySet()) {}

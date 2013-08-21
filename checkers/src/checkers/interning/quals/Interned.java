@@ -1,10 +1,17 @@
 package checkers.interning.quals;
 
-import java.lang.annotation.*;
-
 import checkers.interning.InterningChecker;
-import checkers.quals.*;
+import checkers.quals.ImplicitFor;
+import checkers.quals.SubtypeOf;
+import checkers.quals.TypeQualifier;
+import checkers.quals.Unqualified;
 import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
+
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 import com.sun.source.tree.LiteralTree;
 
@@ -27,13 +34,12 @@ import com.sun.source.tree.LiteralTree;
  * @see InterningChecker
  * @checker.framework.manual #interning-checker Interning Checker
  */
-@Documented
 @TypeQualifier
-@Inherited
 @SubtypeOf(Unqualified.class)
+@ImplicitFor(
+        treeClasses = { LiteralTree.class },
+        typeClasses = { AnnotatedPrimitiveType.class })
+@Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-@ImplicitFor(
-    treeClasses={LiteralTree.class},
-    typeClasses={AnnotatedPrimitiveType.class})
 public @interface Interned {}

@@ -3,6 +3,8 @@ import checkers.igj.quals.*;
 
 @I
 public abstract class Calendar implements java.io. @I Serializable, @I Cloneable, @I Comparable<@ReadOnly Calendar> {
+    static final long       serialVersionUID = -1807547505821590642L;
+
   public final static int ERA = 0;
   public final static int YEAR = 1;
   public final static int MONTH = 2;

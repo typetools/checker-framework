@@ -18,6 +18,7 @@ public class MethodTypeVars {
 
 class A {
     public static <T extends @NonNull Object> T badMethod(T t) {
+        //:: warning: [unchecked] unchecked cast
         return (T) new Object();
     }
 
@@ -25,9 +26,9 @@ class A {
 }
 
 class B {
-    public <T> void indexOf1(T[] a, @Nullable Object elt) {}
+    public <T> void indexOf1(T[] a, /*@Nullable*/ Object elt) {}
     // This is not valid Java syntax.
-    // public void indexOf2(?[] a, @Nullable Object elt) {}
+    // public void indexOf2(?[] a, /*@Nullable*/ Object elt) {}
 
     void call() {
         Integer[] arg = new Integer[] { 1, 2, 3, 4 };

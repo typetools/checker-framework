@@ -1,18 +1,26 @@
 package checkers.oigj;
 
+import checkers.basetype.BaseTypeVisitor;
+import checkers.oigj.quals.Dominator;
+import checkers.types.AnnotatedTypeMirror;
+import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
+
 import javax.lang.model.element.Element;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.Tree;
 
-import checkers.basetype.BaseTypeVisitor;
-import checkers.oigj.quals.Dominator;
-import checkers.types.AnnotatedTypeMirror;
-
-public class OwnershipVisitor extends BaseTypeVisitor<OwnershipSubchecker> {
+public class OwnershipVisitor extends BaseTypeVisitor<OwnershipSubchecker, OwnershipAnnotatedTypeFactory> {
 
     public OwnershipVisitor(OwnershipSubchecker checker, CompilationUnitTree root) {
         super(checker, root);
+    }
+
+    @Override
+    public boolean isValidUse(AnnotatedDeclaredType declarationType,
+            AnnotatedDeclaredType useType, Tree tree) {
+        return true;
     }
 
     @Override

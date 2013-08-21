@@ -22,7 +22,7 @@ import com.google.common.annotations.GwtIncompatible;
 import java.lang.reflect.Array;
 import java.util.List;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
 /**
  * Methods factored out so that they can be emulated differently in GWT.
@@ -51,7 +51,7 @@ class Platform {
    * emulated in GWT.
    */
   @GwtIncompatible("Class.isInstance")
-  static boolean isInstance(Class<?> clazz, Object obj) {
+  @Pure static boolean isInstance(Class<?> clazz, Object obj) {
     return clazz.isInstance(obj);
   }
 
@@ -59,7 +59,7 @@ class Platform {
    * Clone the given array using {@link Object#clone()}.  It is factored out so
    * that it can be emulated in GWT.
    */
-    static <T extends /*@Nullable*/ Object> T[] clone(T[] array) {
+  @SideEffectFree static <T extends /*@Nullable*/ Object> T[] clone(T[] array) {
     return array.clone();
   }
 

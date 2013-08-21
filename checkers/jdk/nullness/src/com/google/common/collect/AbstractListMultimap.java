@@ -78,7 +78,7 @@ abstract class AbstractListMultimap<K, V>
    * contain the same values in the same order. If the value orderings disagree,
    * the multimaps will not be considered equal.
    */
-  @Override public boolean equals(@Nullable Object object) {
+  @Pure @Override public boolean equals(@Nullable Object object) {
     return super.equals(object);
   }
   

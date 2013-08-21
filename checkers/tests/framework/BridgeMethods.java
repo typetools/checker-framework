@@ -11,7 +11,7 @@ class Usage {
         // If we allowed this (via the wildcard hack used for method type
         // variable inference), then unsound constructs would pass.
         // So just don't use raw types and all is well.
-        //:: error: (argument.type.incompatible)
+        //:: error: (argument.type.incompatible) :: warning: [unchecked] unchecked call to id(T) as a member of the raw type C
         c.id(new Object()); // fails with a ClassCastException
     }
 }

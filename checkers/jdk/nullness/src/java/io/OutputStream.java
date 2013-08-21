@@ -1,8 +1,7 @@
 package java.io;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
-@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
 
 public abstract class OutputStream implements Closeable, Flushable {
   public OutputStream() { throw new RuntimeException("skeleton method"); }

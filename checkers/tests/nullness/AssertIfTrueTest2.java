@@ -1,34 +1,34 @@
+import checkers.nullness.quals.EnsuresNonNullIf;
 import checkers.nullness.quals.*;
 
 
 /**
- * Test case for issue 53: http://code.google.com/p/checker-framework/issues/detail?id=53
- * @skip-test
+ * Test case for issue 53: http://code.google.com/p/checker-framework/issues/detail?id=53 (fixed now)
  */
 public class AssertIfTrueTest2 {
 
     private @Nullable Long id;
-    public @Pure @Nullable Long getId(){
+    public @dataflow.quals.Pure @Nullable Long getId(){
         return id;
     }
-    @AssertNonNullIfTrue("getId()")
+    @EnsuresNonNullIf(result=true, expression="getId()")
     public boolean hasId2(){
         return getId() != null;
     }
 
-    @AssertNonNullIfTrue("id")
+    @EnsuresNonNullIf(result=true, expression="id")
     public boolean hasId11(){
         return id != null;
     }
-    @AssertNonNullIfTrue("id")
+    @EnsuresNonNullIf(result=true, expression="id")
     public boolean hasId12(){
         return this.id != null;
     }
-    @AssertNonNullIfTrue("this.id")
+    @EnsuresNonNullIf(result=true, expression="this.id")
     public boolean hasId13(){
         return id != null;
     }
-    @AssertNonNullIfTrue("this.id")
+    @EnsuresNonNullIf(result=true, expression="this.id")
     public boolean hasId14(){
         return this.id != null;
     }
@@ -42,4 +42,16 @@ public class AssertIfTrueTest2 {
         id.toString();
     }
 
+    // Expressions referring to enclosing classes should be resolved.
+    class Inner {
+        @EnsuresNonNullIf(result=true, expression="getId()")
+        public boolean innerHasGetIdMethod(){
+            return getId() != null;
+        }
+
+        @EnsuresNonNullIf(result=true, expression="id")
+        public boolean innerHasIdField(){
+            return id != null;
+        }
+    }
 }

@@ -22,7 +22,6 @@ public class Flow {
 
         // initializer shouldn't affect type if explicit
         @ReadOnly Object b = emptyList();
-        //:: error: (argument.type.incompatible)
         assertImmutable(b);
 
         // assignments afterwards does affect it

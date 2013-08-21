@@ -36,7 +36,7 @@ Version history
 - Fixed issues:
 	- Issue 17: A refactor suggestion for AnnotationExpr and its subclasses
 	- Issue 21: Java 5 JavaParser compiled JARs
-	- Issue 22: Please use java.lang.reflect.Modifier constants in japa.parser.ast.body.ModifierSet
+	- Issue 22: Please use java.lang.reflect.Modifier constants in cfjapa.parser.ast.body.ModifierSet
 	- Issue 27: Implement the "equal" method
 	- Issue 30: equals and hashCode methods
 
@@ -72,8 +72,8 @@ Version history
 1.0.0 (2008-06-25)
 - Changed version numbering, starting version 1.0.0
 - Javadoc done for packages:
-    - japa.parser
-    - japa.parser.ast
+    - cfjapa.parser
+    - cfjapa.parser.ast
 - Corrected bug when parsing in multithread: 
     - JavaParser.setCacheParser(false) must be called before to use the parser concurrent 
 
