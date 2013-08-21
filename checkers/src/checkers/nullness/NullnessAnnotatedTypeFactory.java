@@ -83,40 +83,29 @@ public class NullnessAnnotatedTypeFactory
         addAliasedAnnotation(checkers.nullness.quals.LazyNonNull.class,
                 AnnotationUtils.fromClass(elements, MonotonicNonNull.class));
 
-        // aliases borrowed from NullnessAnnotatedTypeFactory
+        // If you update the following, also update ../../../manual/nullness-checker.tex .
+        // Aliases for @Nonnull:
         addAliasedAnnotation(com.sun.istack.NotNull.class, NONNULL);
-        addAliasedAnnotation(edu.umd.cs.findbugs.annotations.NonNull.class,
-                NONNULL);
+        addAliasedAnnotation(edu.umd.cs.findbugs.annotations.NonNull.class, NONNULL);
         addAliasedAnnotation(javax.annotation.Nonnull.class, NONNULL);
-        addAliasedAnnotation(javax.validation.constraints.NotNull.class,
-                NONNULL);
-        addAliasedAnnotation(org.eclipse.jdt.annotation.NonNull.class,
-                NONNULL);
+        addAliasedAnnotation(javax.validation.constraints.NotNull.class, NONNULL);
+        addAliasedAnnotation(org.eclipse.jdt.annotation.NonNull.class, NONNULL);
         addAliasedAnnotation(org.jetbrains.annotations.NotNull.class, NONNULL);
-        addAliasedAnnotation(org.netbeans.api.annotations.common.NonNull.class,
-                NONNULL);
+        addAliasedAnnotation(org.netbeans.api.annotations.common.NonNull.class, NONNULL);
         addAliasedAnnotation(org.jmlspecs.annotation.NonNull.class, NONNULL);
 
+        // Aliases for @Nullable:
         addAliasedAnnotation(com.sun.istack.Nullable.class, NULLABLE);
-        addAliasedAnnotation(
-                edu.umd.cs.findbugs.annotations.CheckForNull.class, NULLABLE);
-        addAliasedAnnotation(edu.umd.cs.findbugs.annotations.Nullable.class,
-                NULLABLE);
-        addAliasedAnnotation(
-                edu.umd.cs.findbugs.annotations.UnknownNullness.class, NULLABLE);
+        addAliasedAnnotation(edu.umd.cs.findbugs.annotations.CheckForNull.class, NULLABLE);
+        addAliasedAnnotation(edu.umd.cs.findbugs.annotations.Nullable.class, NULLABLE);
+        addAliasedAnnotation(edu.umd.cs.findbugs.annotations.UnknownNullness.class, NULLABLE);
         addAliasedAnnotation(javax.annotation.CheckForNull.class, NULLABLE);
         addAliasedAnnotation(javax.annotation.Nullable.class, NULLABLE);
-        addAliasedAnnotation(javax.validation.constraints.NotNull.class,
-                NULLABLE);
         addAliasedAnnotation(org.eclipse.jdt.annotation.Nullable.class, NULLABLE);
         addAliasedAnnotation(org.jetbrains.annotations.Nullable.class, NULLABLE);
-        addAliasedAnnotation(
-                org.netbeans.api.annotations.common.CheckForNull.class,
-                NULLABLE);
-        addAliasedAnnotation(
-                org.netbeans.api.annotations.common.NullAllowed.class, NULLABLE);
-        addAliasedAnnotation(
-                org.netbeans.api.annotations.common.NullUnknown.class, NULLABLE);
+        addAliasedAnnotation(org.netbeans.api.annotations.common.CheckForNull.class, NULLABLE);
+        addAliasedAnnotation(org.netbeans.api.annotations.common.NullAllowed.class, NULLABLE);
+        addAliasedAnnotation(org.netbeans.api.annotations.common.NullUnknown.class, NULLABLE);
         addAliasedAnnotation(org.jmlspecs.annotation.Nullable.class, NULLABLE);
 
         // TODO: These heuristics are just here temporarily. They all either
