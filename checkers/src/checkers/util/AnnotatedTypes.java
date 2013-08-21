@@ -814,9 +814,17 @@ public class AnnotatedTypes {
         List<AnnotatedTypeMirror> requiredParams = expandVarArgs(atypeFactory, exeType, args);
         List<AnnotatedTypeMirror> passedArgs = new ArrayList<AnnotatedTypeMirror>();
 
+        // Whether the type variable only occurred in type argument positions.
+        // E.g. will be true for <T> T get(List<T> p1, Map<T, T> p2)
+        // but false for <T> T get(T in)
+        boolean tvOnlyAsTypeArg = true;
+
         for (int i = 0; i < requiredParams.size(); ++i) {
             AnnotatedTypeMirror passedArg = atypeFactory.getAnnotatedType(args.get(i));
             AnnotatedTypeMirror requiredArg = requiredParams.get(i);
+            if (types.isSameType(requiredArg.getUnderlyingType(), typeVar.getUnderlyingType())) {
+                tvOnlyAsTypeArg = false;
+            }
             AnnotatedTypeMirror pasAsSuper = asSuper(types, atypeFactory, passedArg, requiredArg);
             if (pasAsSuper != null) {
                 passedArg = pasAsSuper;
@@ -828,6 +836,19 @@ public class AnnotatedTypes {
 
         // Found arguments! Great!
         annotateAsLub(processingEnv, atypeFactory, lubForVar.get(0), passedArgs);
+
+        // TODO hack to get TestInfer tests working. This should more properly be integrated.
+        if (tvOnlyAsTypeArg) {
+            if (lubForVar.get(0).getKind() == TypeKind.DECLARED &&
+                    (returnType.getKind() == TypeKind.DECLARED ||
+                            returnType.getKind() == TypeKind.TYPEVAR)) {
+                AnnotatedWildcardType res = atypeFactory.getWildcardBoundedBy(lubForVar.get(0));
+                if (atypeFactory.getTypeHierarchy().isSubtype(res, returnType)) {
+                    return res;
+                }
+            }
+        }
+
         return lubForVar.get(0);
     }
 
@@ -866,7 +887,7 @@ public class AnnotatedTypes {
                 // For an array type, the only legal upper bound is java.lang.Object.
                 AnnotatedTypeMirror bound = ((AnnotatedWildcardType)p).getExtendsBound();
                 if (bound != null) {
-                    assert bound.getUnderlyingType().toString().equals("java.lang.Object");
+                    assert TypesUtils.isObject(bound.getUnderlyingType());
                 }
                 return Collections.emptyList();
             }
