@@ -1,6 +1,7 @@
 package checkers.nullness;
 
 import checkers.basetype.BaseTypeChecker;
+import checkers.flow.CFAbstractAnalysis;
 import checkers.initialization.InitializationAnnotatedTypeFactory;
 import checkers.nullness.quals.MonotonicNonNull;
 import checkers.nullness.quals.NonNull;
@@ -201,9 +202,9 @@ public class NullnessAnnotatedTypeFactory
     }
 
     @Override
-    public NullnessTransfer createFlowTransferFunction(NullnessAnalysis analysis) {
-        return new NullnessTransfer(analysis);
-    };
+    public NullnessTransfer createFlowTransferFunction(CFAbstractAnalysis<NullnessValue, NullnessStore, NullnessTransfer> analysis) {
+        return new NullnessTransfer((NullnessAnalysis) analysis);
+    }
 
     @Override
     public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> methodFromUse(
