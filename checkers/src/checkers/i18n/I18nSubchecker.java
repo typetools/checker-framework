@@ -12,5 +12,5 @@ import checkers.quals.Unqualified;
  * @checker.framework.manual #i18n-checker Internationalization Checker
  */
 @TypeQualifiers( {Localized.class, Unqualified.class} )
-public class I18nSubchecker extends BaseTypeChecker {
+public class I18nSubchecker extends BaseTypeChecker<I18nAnnotatedTypeFactory> {
 }

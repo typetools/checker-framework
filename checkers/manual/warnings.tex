@@ -45,7 +45,7 @@ there are several ways to eliminate the compiler warnings.
   file (see Section~\ref{suppressing-warnings}).
 \item Suppress all warnings related to uses of \code{unannotated\_method}
   via the \code{skipUses} processor option
-  (see Section~\ref{suppressing-warnings}).
+  (see Section~\ref{askipuses}).
   Since this can suppress more warnings than you may expect,
   it is usually better to annotate at least the method's signature.  If you
   choose the boundary between the annotated and unannotated code wisely,
@@ -75,17 +75,21 @@ guarantees provided by a checker, or for other reasons.  You can suppress
 warnings via
 \begin{enumerate}
 \item
-  the \code{@SuppressWarnings} annotation,
+  the \code{@SuppressWarnings} annotation (Section~\ref{suppresswarnings-annotation}),
 \item
-  the \code{-AskipUses} command-line option,
+  the \code{-AsuppressWarnings} command-line option (Section~\ref{suppresswarnings-command-line}),
 \item
-  the \code{-AskipDefs} command-line option,
+  the \code{@AssumeAssertion} comment in an \<assert> statement (Section~\ref{assumeassertion}),
 \item
-  the \code{-Alint} command-line option,
+  the \code{-AskipUses} and \code{-AonlyUses} command-line options (Section~\ref{askipuses}),
 \item
-  not using the \code{-processor} command-line option, or
+  the \code{-AskipDefs} and \code{-AonlyDefs} command-line options (Section~\ref{askipdefs}),
 \item
-  checker-specific mechanisms.
+  the \code{-Alint} command-line option (Section~\ref{alint}),
+\item
+  not using the \code{-processor} command-line option (Section~\ref{no-processor}), or
+\item
+  checker-specific mechanisms (Section~\ref{checker-specific-suppression}).
 \end{enumerate}
 
 \noindent
@@ -132,7 +136,7 @@ It would have been illegal to write
 \end{Verbatim}
 
 \noindent
-because Java does not permit annotations (such as \<@SuppressWarnings> on
+because Java does not permit annotations (such as \<@SuppressWarnings>) on
 assignments or other statements or expressions.
 
 
@@ -180,7 +184,8 @@ errors/warnings relating to the given message key.  For example,
 \code{cast.unsafe} is the key for warnings about an unsafe cast, and
 \code{cast.redundant} to the key for warnings about a redundant cast.
 
-Thus, the above example could have been written as:
+Thus, the above example could have been written as any one of the
+following, which would have suppressed the specific error:
 
 \begin{Verbatim}
   @SuppressWarnings("tainting")              // suppresses all tainting-related warnings
@@ -205,15 +210,94 @@ key, you can re-run the checker, passing the the \code{-Anomsgtext}
 command-line option (Section~\ref{debugging-options}).
 
 
+\subsection{\code{-AsuppressWarnings} command-line option\label{suppresswarnings-command-line}}
 
-\subsection{\code{-AskipUses} command-line option\label{askipuses}}
+Supplying the \<-AsuppressWarnings> command-line option is equivalent to
+writing a \<@SuppressWarnings> annotation on every class that the compiler
+type-checks.  The argument to \<-AsuppressWarnings> is a comma-separated
+list of warning suppression keys, as in
+\<-AsuppressWarnings=purity,uninitialized>.
+
+When possible, it is better to write a \<@SuppressWarnings> annotation with a
+smaller scope, rather than using the \<-AsuppressWarnings> command-line option.
+
+
+\subsection{\code{@AssumeAssertion} comment in an \<assert> statement\label{assumeassertion}}
+
+You can suppress a warning by \<assert>ing that some property is true, and
+placing the string \<@AssumeAssertion(\emph{warningkey})> in the assertion
+message.
+
+For example, in this code:
+
+\begin{Verbatim}
+  assert x != null : "@AssumeAssertion(nullness)";
+  ... x.f ...
+\end{Verbatim}
+
+\noindent
+the Nullness Checker assumes that \<x> is non-null from the \<assert>
+statement forward, and so the expression \<x.f> cannot throw a null pointer
+exception.
+
+The assert expression must be an expression that would affect flow-sensitive
+type qualifier refinement (Section~\ref{type-refinement}), if the
+expression appeared in a conditional test.  Each type system has its own
+rules about what type refinement it performs, if any.
+
+The warning key is exactly as in the \<@SuppressWarnings> annotation
+(Section~\ref{suppresswarnings-annotation}).  The same good practices apply
+as for a \<@SuppressWarnings> annotations, such as writing a comment
+justifying why the assumption is safe.
+
+If the string \<@AssumeAssertion(\emph{warningkey})> does not appear in the
+assertion message, then the Checker Framework treats the assertion as
+being used for defensive programming.  That is, the programmer believes
+that the assertion might fail at run time, so the Checker Framework should
+not make any inference, which would not be justified.
+
+A downside of putting the string in the assertion message is that if the
+assertion ever fails, then a user might see the string and be confused.
+But the string should only be used if the programmer has reasoned that the
+assertion can never fail.
+
+% (Another way of stating the Nullness Checker's use of assertions is as an
+% additional caveat to the guarantees provided by a checker
+% (Section~\ref{checker-guarantees}).  The Nullness Checker prevents null
+% pointer errors in your code under the assumption that assertions are
+% enabled, and it does not guarantee that all of your assertions succeed.)
+
+
+% TODO:
+% There is a new lint option "flow:inferFromAsserts" that can be used
+% to always infer information from assert statements, even without the
+% suppression key.
+% Discuss how this influences the guarantees from the checker.
+% This is a feature of the framework, not only the nullness checker;
+% however, the nullness checker is probably the only one that infers something
+% from conditions.
+% Move the discussion somewhere else, but keep something here?
+% Maybe warnings or advanced-features.
+
+% TODO: Also discuss the whole inference over conditions somewhere.
+
+
+
+\subsection{\code{-AskipUses} and \code{-AonlyUses} command-line options\label{askipuses}}
 
 You can suppress all errors and warnings at all \emph{uses} of a given
-class (but the class itself is still type-checked, unless you also use
-the \code{-AskipDefs} command-line option, see~\ref{askipdefs}).
+class, or suppress all errors and warnings except those at uses of a given
+class.  (The class itself is still type-checked, unless you also use
+the \code{-AskipDefs} or \code{-AonlyDefs} command-line option, see~\ref{askipdefs}).
+
 Set the \code{-AskipUses} command-line option to a
 regular expression that matches class names (not file names) for which warnings and errors
-should be suppressed.  For example, suppose that you use
+should be suppressed.
+Or, set the \code{-AonlyUses} command-line option to a
+regular expression that matches class names (not file names) for which warnings and errors
+should be emitted; warnings about uses of all other classes will be suppressed.
+
+For example, suppose that you use
 ``{\codesize\verb|-AskipUses=^java\.|}'' on the command line
 (with appropriate quoting) when invoking
 \code{javac}.  Then the checkers will suppress all warnings related to
@@ -227,29 +311,64 @@ the regular expression alternative operator ``\code{|}'', as in
 all warnings related to uses of classes belong to the \code{java.lang} or
 \code{java.util} packages.
 
+You can supply both \code{-AskipUses} and \code{-AonlyUses}, in which case
+the \code{-AskipUses} argument takes precedence, and \code{-AonlyUses} does
+further filtering but does not add anything that \code{-AskipUses} removed.
 
-\subsection{\code{-AskipDefs} command-line option\label{askipdefs}}
+Warning:  Use the \code{-AonlyUses} command-line option with care,
+because it can have unexpected results.  For example, if the
+given regular expression does not match classes in the JDK, then the
+Checker Framework will suppress every warning that involves a JDK class
+such as \<Object> or \<String>.  The meaning of \code{-AonlyUses} may be
+refined in the future.  Oftentimes \code{-AskipUses} is more useful.
+
+% The desired meaning of -AonlyUses is tricky, because what is a "use"?
+% Maybe only check calls of methods on the class (though don't check
+% argument expressions) and field accesses, but nothing else (such as
+% extends clauses that happen to use the class).  But then we would also
+% want to suppress warnings related to assignments where a method use or
+% field access is the right-hand side.  I'm going to punt on this for now.
+
+
+\subsection{\code{-AskipDefs} and \code{-AonlyDefs} command-line options\label{askipdefs}}
 
 You can suppress all errors and warnings in the \emph{definition} of a given
-class (but uses of the class are still type-checked, unless you also use
-the \code{-AskipUses} command-line option, see~\ref{askipuses}).
+class, or suppress all errors and warnings except those in the definition
+of a given class.  (Uses of the class are still type-checked, unless you also use
+the \code{-AskipUses} or \code{-AonlyUses} command-line option,
+see~\ref{askipuses}).
+
 Set the \code{-AskipDefs} command-line option to a
 regular expression that matches class names (not file names) in whose definition warnings and errors
-should be suppressed.  For example, if you use
+should be suppressed.
+Or, set the \code{-AonlyDefs} command-line option to a
+regular expression that matches class names (not file names) whose
+definitions should be type-checked.
+
+For example, if you use
 ``{\codesize\verb|-AskipDefs=^mypackage\.|}'' on the command line
 (with appropriate quoting) when invoking
 \code{javac}, then the definitions of 
 classes whose fully-qualified name starts with \codesize\verb|mypackage.|
 will not be checked.
 
+If you supply both \code{-AskipDefs} and \code{-AonlyDefs}, then
+\code{-AskipDefs} takes precedence.
+
 Another way not to type-check a file is not to pass it on the compiler
 command-line:  the Checker Framework type-checks only files that are passed
 to the compiler on the command line, and does not type-check any file that
-is not passed to the compiler.  The \code{-AskipDefs} command-line option
-is intended for situations in which the build system is hard to understand
+is not passed to the compiler.  The \code{-AskipDefs} and \code{-AonlyDefs}
+command-line options
+are intended for situations in which the build system is hard to understand
 or change.  In such a situation, a programmer may find it easier to supply
 an extra command-line argument, than to change the set of files that is
 compiled.
+
+A common scenario for using the arguments is when you are starting out by
+type-checking only part of a legacy codebase.  After you have verified the
+most important parts, you can incrementally check more classes until you
+are type-checking the whole thing.
 
 
 \subsection{\code{-Alint} command-line option\label{alint}}

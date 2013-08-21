@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 //import javax.annotation.Nullable;
 
 /**
@@ -177,10 +177,10 @@ final class MapConstraints {
       return ObjectArrays.toArrayImpl(this, array);
     }
     
-    @Override public boolean contains(/*@Nullable*/ Object o) {
+    @Pure @Override public boolean contains(/*@Nullable*/ Object o) {
       return Maps.containsEntryImpl(delegate(), o);
     }
-    @Override public boolean containsAll(Collection<?> c) {
+    @Pure @Override public boolean containsAll(Collection<?> c) {
       return Collections2.containsAll(this, c);
     }
     
@@ -204,11 +204,11 @@ final class MapConstraints {
 
     // See Collections.CheckedMap.CheckedEntrySet for details on attacks.
 
-    @Override public boolean equals(@Nullable Object object) {
+    @Pure @Override public boolean equals(@Nullable Object object) {
       return Collections2.setEquals(this, object);
     }
 
-    @Override public int hashCode() {
+    @Pure @Override public int hashCode() {
       return Sets.hashCodeImpl(this);
     }
   }
