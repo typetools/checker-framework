@@ -48,6 +48,7 @@ import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.code.Type.WildcardType;
 
 /**
  * Determines the default qualifiers on a type.
@@ -640,11 +641,22 @@ public class QualifierDefaults {
                 }
                 Void r;
                 boolean prevIsTypeVarExtendsImplicit = isTypeVarExtendsImplicit;
-                isTypeVarExtendsImplicit = true;
+                boolean prevIsTypeVarExtendsExplicit = isTypeVarExtendsExplicit;
+
+                WildcardType wc = (WildcardType) type.getUnderlyingType();
+
+                if (wc.isUnbound()) {
+                    isTypeVarExtendsImplicit = true;
+                    isTypeVarExtendsExplicit = false;
+                } else {
+                    isTypeVarExtendsImplicit = false;
+                    isTypeVarExtendsExplicit = true;
+                }
                 try {
                     r = scan(type.getExtendsBoundField(), qual);
                 } finally {
                     isTypeVarExtendsImplicit = prevIsTypeVarExtendsImplicit;
+                    isTypeVarExtendsExplicit = prevIsTypeVarExtendsExplicit;
                 }
                 visitedNodes.put(type, r);
                 r = scanAndReduce(type.getSuperBoundField(), qual, r);

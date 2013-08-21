@@ -521,17 +521,12 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
                 msg.append("\nCompilation unit: " + this.currentRoot.getSourceFile().getName());
             }
 
-            msg.append("\nException: " + ce.getCause().toString());
-            // avoid a colon with nothing following
-            StackTraceElement[] st = ce.getCause().getStackTrace();
-            if (st.length != 0) {
-                msg.append(": " + formatStackTrace(ce.getCause().getStackTrace()));
-            }
-
+            msg.append("\nException: " +
+                            ce.getCause().toString() + "; " + formatStackTrace(ce.getCause().getStackTrace()));
             Throwable cause = ce.getCause().getCause();
             while (cause != null) {
                 msg.append("\nUnderlying Exception: " +
-                                (cause.toString() + ": " +
+                                (cause.toString() + "; " +
                                         formatStackTrace(cause.getStackTrace())));
                 cause = cause.getCause();
             }
@@ -539,11 +534,10 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
             msg.append("; invoke the compiler with -AprintErrorStack to see the stack trace.");
         }
 
-        if (this.messager != null) {
-            this.messager.printMessage(javax.tools.Diagnostic.Kind.ERROR, msg);
-        } else {
-            System.err.println("Exception before having a messager set up: " + msg);
+        if (this.messager == null) {
+            messager = processingEnv.getMessager();
         }
+        this.messager.printMessage(javax.tools.Diagnostic.Kind.ERROR, msg);
     }
 
     /**
@@ -578,15 +572,8 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
                 });
             }
         } catch (CheckerError ce) {
-            if (this.messager == null) {
-                messager = processingEnv.getMessager();
-            }
-
             logCheckerError(ce);
         } catch (Throwable t) {
-            if (this.messager == null) {
-                messager = processingEnv.getMessager();
-            }
             logCheckerError(new CheckerError("SourceChecker.init: unexpected Throwable (of class " +
                     t.getClass().getSimpleName() + ")" +
                     (t.getMessage() != null ? "; message: " + t.getMessage() : ""), t));
@@ -694,8 +681,7 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
             logCheckerError(ce);
         } catch (Throwable t) {
             logCheckerError(new CheckerError("SourceChecker.typeProcess: unexpected Throwable (" +
-                    t.getClass().getSimpleName() + ") when processing "
-                    + currentRoot.getSourceFile().getName() +
+                    t.getClass().getSimpleName() + ")" +
                     (t.getMessage() != null ? "; message: " + t.getMessage() : ""), t));
         } finally {
             // Also add possibly deferred diagnostics, which will get published back in
@@ -711,6 +697,11 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
     protected String formatStackTrace(StackTraceElement[] stackTrace) {
         boolean first = true;
         StringBuilder sb = new StringBuilder();
+        if (stackTrace.length == 0) {
+            sb.append("no stack trace available.");
+        } else {
+            sb.append("Stack trace: ");
+        }
         for (StackTraceElement ste : stackTrace) {
             if (!first) {
                 sb.append("\n");
