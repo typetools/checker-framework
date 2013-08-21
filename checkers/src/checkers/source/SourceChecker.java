@@ -194,8 +194,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor {
 
         // return a pattern of an illegal Java identifier character
         // so that it won't match anything
+        // Note that AnnotatedType's toString output format contains characters such as "():{}".
         if (pattern.equals(""))
-            pattern = "\\(";
+            pattern = "\\]'\"\\]";
 
         return Pattern.compile(pattern);
     }
