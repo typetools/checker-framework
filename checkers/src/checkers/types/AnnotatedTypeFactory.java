@@ -65,7 +65,6 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
 import com.sun.source.tree.AnnotatedTypeTree;
-import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
@@ -228,6 +227,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     protected void postInit() {
         buildIndexTypes();
+        // TODO: is this the best location for declaring this alias?
+        addAliasedDeclAnnotation(org.jmlspecs.annotation.Pure.class,
+                dataflow.quals.Pure.class,
+                AnnotationUtils.fromClass(elements, dataflow.quals.Pure.class));
     }
 
     @Pure
@@ -1822,26 +1825,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         this.indexTypes = indexTypes;
         this.indexDeclAnnos = indexDeclAnnos;
         return;
-    }
-
-    /**
-     * Find the declaration annotation in method meth that
-     * has type anno and return the annotation tree.
-     *
-     * @param meth the method tree to query
-     * @param anno the annotation class to look for
-     * @return the AnnotationTree for anno in meth
-     */
-    public AnnotationTree getDeclAnnotationTree(MethodTree meth,
-            Class<? extends Annotation> anno) {
-        List<? extends AnnotationTree> atrees = meth.getModifiers().getAnnotations();
-        for (AnnotationTree atree : atrees) {
-            TypeMirror atype = InternalUtils.typeOf(atree);
-            if (anno.getCanonicalName().equals(atype.toString())) {
-                return atree;
-            }
-        }
-        return null;
     }
 
     /**
