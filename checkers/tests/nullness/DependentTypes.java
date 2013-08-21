@@ -4,10 +4,9 @@ import checkers.nullness.quals.*;
 import tests.util.SuperQual;
 import tests.util.SubQual;
 
-// @skip-test
 public class DependentTypes {
 
-  @SuperQual Object supero = null;
+  @SuperQual @Nullable Object supero = null;
   // A trivial error, so there is at least one in the output.
   //:: error: (type.incompatible)
   @SubQual Object subo = supero;
