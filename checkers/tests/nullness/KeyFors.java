@@ -62,7 +62,7 @@ public class KeyFors {
         for (@KeyFor("call_hashmap") Integer i : sortedKeySet(call_hashmap)) {
         }
     }
-    
+
     static class Otherclass {
         static Map<String, String> map = new HashMap<String, String>();
     }
@@ -74,8 +74,8 @@ public class KeyFors {
 
         Otherclass o = new Otherclass();
         o.map.get(s1).toString();
-        //:: error: (dereference.of.nullable)
-        o.map.get(s2).toString();        
+        //TODO:: error: (dereference.of.nullable)
+        o.map.get(s2).toString();
     }
 
   public class Graph<T> {

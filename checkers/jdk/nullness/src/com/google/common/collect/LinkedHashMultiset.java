@@ -24,7 +24,7 @@ import java.io.ObjectOutputStream;
 import java.util.LinkedHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
 /**
  * A {@code Multiset} implementation with predictable iteration order. Its

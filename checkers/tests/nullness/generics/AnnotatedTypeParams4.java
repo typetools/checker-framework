@@ -10,7 +10,7 @@ class Test {
         public CONTENT get() {
             return a;
         }
-        @Pure
+        @dataflow.quals.Pure
         public CONTENT get2() {
             return a;
         }
@@ -24,7 +24,7 @@ class Test {
         public @NonNull CONTENT get() {
             return a;
         }
-        @Pure
+        @dataflow.quals.Pure
         public @NonNull CONTENT get2() {
             return a;
         }
@@ -48,7 +48,7 @@ class Test {
         private Pair<CONTENT, CONTENT> userObject;
         Test4(Pair<CONTENT, CONTENT> p) { userObject = p; }
         
-        @Pure
+        @dataflow.quals.Pure
         public CONTENT getUserLeft() {
           return userObject.a;
         }

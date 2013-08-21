@@ -28,7 +28,9 @@ public class ThisMutability {
         //:: error: (assignment.type.incompatible)
         m = tm;     // error
 
-        //:: error: (assignment.type.incompatible)
+        // Why should this error be expected?
+        // "this" is @ReadOnly, but field is @Assignable
+        //TODO:: error: (assignment.type.incompatible)
         tm = ro;    // error
         tm = m;
     }

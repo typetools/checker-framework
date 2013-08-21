@@ -22,7 +22,7 @@ import java.io.Serializable;
 import java.util.Comparator;
 import java.util.List;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
 @SuppressWarnings("nullness")
 /** An ordering that tries several comparators in order. */
@@ -47,7 +47,7 @@ import checkers.nullness.quals.*;
   }
   
  
-  public int compare(T left, T right) {
+  /*@Pure*/ public int compare(T left, T right) {
     for (Comparator<? super T> comparator : comparators) {
       int result = comparator.compare(left, right);
       if (result != 0) {
@@ -57,7 +57,7 @@ import checkers.nullness.quals.*;
     return 0;
   }
   
-  @Override public boolean equals(/*@Nullable*/ Object object) {
+  @Pure @Override public boolean equals(/*@Nullable*/ Object object) {
     if (object == this) {
       return true;
     }
@@ -68,11 +68,11 @@ import checkers.nullness.quals.*;
     return false;
   }
 
-  @Override public int hashCode() {
+  @Pure @Override public int hashCode() {
     return comparators.hashCode();
   }
 
-  @Override public String toString() {
+  @Pure @Override public String toString() {
     return "Ordering.compound(" + comparators + ")";
   }
 

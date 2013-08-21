@@ -1,11 +1,11 @@
 package tests;
 
+import checkers.util.test.ParameterizedCheckerTest;
+
 import java.io.File;
 import java.util.Collection;
 
 import org.junit.runners.Parameterized.Parameters;
-
-import checkers.util.test.ParameterizedCheckerTest;
 
 /**
  * JUnit tests for the Interning Checker, which tests the Interned annotation.
@@ -13,10 +13,14 @@ import checkers.util.test.ParameterizedCheckerTest;
 public class InterningTest extends ParameterizedCheckerTest {
 
     public InterningTest(File testFile) {
-        super(testFile, checkers.interning.InterningChecker.class.getName(),
-                "interning", "-Anomsgtext");
+        super(testFile,
+                checkers.interning.InterningChecker.class,
+                "interning",
+                "-Anomsgtext");
     }
 
     @Parameters
-    public static Collection<Object[]> data() { return testFiles("interning", "all-systems"); }
+    public static Collection<Object[]> data() {
+        return testFiles("interning", "all-systems");
+    }
 }

@@ -21,6 +21,7 @@ public @Interned class InternedClass {
     }
 
     // Overriding method
+    @dataflow.quals.Pure
     public String toString() {
         return new Integer(value).toString();
     }
@@ -31,6 +32,7 @@ public @Interned class InternedClass {
     }
 
     // Equals method (used only by interning; clients should use ==)
+    @dataflow.quals.Pure
     public boolean equals(Object other) {
         if (! (other instanceof InternedClass))
             return false;
@@ -106,6 +108,7 @@ public @Interned class InternedClass {
     }
 
     // Default implementation
+    @dataflow.quals.Pure
     public InternedClass clone() throws CloneNotSupportedException {
         return (InternedClass) super.clone();
     }

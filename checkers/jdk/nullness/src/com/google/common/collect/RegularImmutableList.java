@@ -23,7 +23,8 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
 
-import checkers.nullness.quals.*;
+import dataflow.quals.SideEffectFree;
+import checkers.nullness.quals.Nullable;
 
 /**
  * Implementation of {@link ImmutableList} with one or more elements.
@@ -47,15 +48,15 @@ final class RegularImmutableList<E> extends ImmutableList<E> {
     this(array, 0, array.length);
   }
 
-  public int size() {
+  @Pure public int size() {
     return size;
   }
 
-  @Override public boolean isEmpty() {
+  @Pure @Override public boolean isEmpty() {
     return false;
   }
 
-  @Override public boolean contains(/*@Nullable*/ Object target) {
+  @Pure @Override public boolean contains(/*@Nullable*/ Object target) {
     return indexOf(target) != -1;
   }
 
@@ -90,7 +91,7 @@ final class RegularImmutableList<E> extends ImmutableList<E> {
     return (E) array[index + offset];
   }
 
-  @Override public int indexOf(/*@Nullable*/ Object target) {
+  @Pure @Override public int indexOf(/*@Nullable*/ Object target) {
     if (target != null) {
       for (int i = offset; i < offset + size; i++) {
         if (array[i].equals(target)) {
@@ -101,7 +102,7 @@ final class RegularImmutableList<E> extends ImmutableList<E> {
     return -1;
   }
 
-  @Override public int lastIndexOf(/*@Nullable*/ Object target) {
+  @Pure @Override public int lastIndexOf(/*@Nullable*/ Object target) {
     if (target != null) {
       for (int i = offset + size - 1; i >= offset; i--) {
         if (array[i].equals(target)) {
@@ -112,7 +113,7 @@ final class RegularImmutableList<E> extends ImmutableList<E> {
     return -1;
   }
 
-  @Override public ImmutableList<E> subList(int fromIndex, int toIndex) {
+  @SideEffectFree @Override public ImmutableList<E> subList(int fromIndex, int toIndex) {
     Preconditions.checkPositionIndexes(fromIndex, toIndex, size);
     return (fromIndex == toIndex)
         ? ImmutableList.<E>of()
@@ -177,7 +178,7 @@ final class RegularImmutableList<E> extends ImmutableList<E> {
     };
   }
 
-  @Override public boolean equals(@Nullable Object object) {
+  @Pure @Override public boolean equals(@Nullable Object object) {
     if (object == this) {
       return true;
     }
@@ -208,17 +209,17 @@ final class RegularImmutableList<E> extends ImmutableList<E> {
     return true;
   }
 
-  @Override public int hashCode() {
+  @Pure @Override public int hashCode() {
     // not caching hash code since it could change if the elements are mutable
     // in a way that modifies their hash codes
-    int hashCode = 1;
+    @Pure int hashCode = 1;
     for (int i = offset; i < offset + size; i++) {
       hashCode = 31 * hashCode + array[i].hashCode();
     }
     return hashCode;
   }
 
-  @Override public String toString() {
+  @Pure @Override public String toString() {
     StringBuilder sb = new StringBuilder(size() * 16);
     sb.append('[').append(array[offset]);
     for (int i = offset + 1; i < offset + size; i++) {

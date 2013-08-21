@@ -88,7 +88,7 @@ import javax.annotation.Nullable;
    * contain the same values. Equality does not depend on the ordering of keys
    * or values.
    */
-  @Override public boolean equals(@Nullable Object object) {
+  @Pure @Override public boolean equals(@Nullable Object object) {
     return super.equals(object);
   }
   

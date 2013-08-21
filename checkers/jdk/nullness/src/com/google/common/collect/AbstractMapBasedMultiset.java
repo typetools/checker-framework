@@ -34,7 +34,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
 /**
  * Basic implementation of {@code Multiset<E>} backed by an instance of {@code
@@ -142,7 +142,7 @@ import checkers.nullness.quals.*;
       };
     }
 
-    @Override public int size() {
+    @Pure @Override public int size() {
       return backingMap.size();
     }
 
@@ -156,7 +156,7 @@ import checkers.nullness.quals.*;
       size = 0L;
     }
 
-    @Override public boolean contains(/*@Nullable*/ Object o) {
+    @Pure @Override public boolean contains(/*@Nullable*/ Object o) {
       if (o instanceof Entry) {
         Entry<?> entry = (Entry<?>) o;
         int count = count(entry.getElement());
@@ -181,7 +181,7 @@ import checkers.nullness.quals.*;
 
   // Optimizations - Query Operations
 
-  @Override public int size() {
+  @Pure @Override public int size() {
     return (int) Math.min(this.size, Integer.MAX_VALUE);
   }
 

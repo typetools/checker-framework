@@ -1,6 +1,8 @@
 package java.util;
-import checkers.nullness.quals.*;
-@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
+import dataflow.quals.Pure;
+
+import checkers.nullness.quals.KeyFor;
+import checkers.nullness.quals.Nullable;
 
 public abstract class ResourceBundle{
   public static class Control{

@@ -1,11 +1,14 @@
 package checkers.quals;
 
-import java.lang.annotation.*;
+import checkers.nullness.quals.Nullable;
+import checkers.types.AnnotatedTypeMirror;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 import javax.lang.model.type.TypeKind;
-
-import checkers.nullness.quals.Nullable;
-import checkers.types.*;
 
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
@@ -67,4 +70,7 @@ public @interface ImplicitFor {
      *         an annotation should be implicitly added
      */
     String[] stringPatterns() default {};
+
+    // TODO: do we need an option to provide implicits for locations
+    // specified by a DefaultLocation (which should then be renamed)?
 }

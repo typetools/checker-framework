@@ -7,14 +7,29 @@ package checkers.quals;
  * In particular, this means that OTHERWISE and ALL should be last.
  *
  * @see DefaultQualifier
+ * @see javax.lang.model.element.ElementKind
  */
 public enum DefaultLocation {
 
     /**
      * Apply default annotations to all unannotated raw types
-     * of local types (local variables, casts, and instanceof).
+     * of local variables, casts, and instanceof.
+     * TODO: should cast/instanceof be separated?
      */
-    LOCALS,
+    LOCAL_VARIABLE,
+
+    /**
+     * Apply default annotations to all unannotated raw types
+     * of resource variables.
+     */
+    RESOURCE_VARIABLE,
+
+    /**
+     * Apply default annotations to all unannotated raw types
+     * of exception parameters.
+     */
+    EXCEPTION_PARAMETER,
+
     /**
      * Apply default annotations to all unannotated raw types
      * of receiver types.
@@ -40,8 +55,24 @@ public enum DefaultLocation {
      *
      * Especially useful for parametrized classes that provide a lot of
      * static methods with the same generic parameters as the class.
+     *
+     * TODO: more doc, relation to other UPPER_BOUNDS
      */
     UPPER_BOUNDS,
+    /**
+     * Apply default annotations to unannotated, but explicit upper bounds:
+     * @code{&lt;T extends Object&gt;}
+     *
+     * TODO: more doc, relation to other UPPER_BOUNDS
+     */
+    EXPLICIT_UPPER_BOUNDS,
+    /**
+     * Apply default annotations to unannotated type variables:
+     * @code{&lt;T&gt;}
+     *
+     * TODO: more doc, relation to other UPPER_BOUNDS
+     */
+    IMPLICIT_UPPER_BOUNDS,
 
     /**
      * Apply if nothing more concrete is provided.
