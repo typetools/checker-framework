@@ -1,13 +1,14 @@
+import checkers.nullness.quals.EnsuresNonNullIf;
 import checkers.nullness.quals.*;
 
 public class AssertIfFalseTest {
 
-    @Nullable Object get() { return "m"; }
+    @dataflow.quals.Pure @Nullable Object get() { return "m"; }
 
-    @AssertNonNullIfFalse("get()")
+    @EnsuresNonNullIf(result=false, expression="get()")
     boolean isGettable() {
         // don't bother with the implementation
-        //:: error: (assertiffalse.postcondition.not.satisfied)
+        //:: error: (contracts.conditional.postcondition.not.satisfied)
         return false;
     }
 
@@ -30,10 +31,12 @@ public class AssertIfFalseTest {
     }
 
     /** Returns whether or not constant_value is a legal constant **/
-    @AssertNonNullIfFalse("#1")
-    static boolean legalConstant (@Nullable Object constant_value) {
-        return ((constant_value == null) || (constant_value instanceof Long)
-                || (constant_value instanceof Double));
+    @EnsuresNonNullIf(result=false, expression="#1")
+    static boolean legalConstant (final @Nullable Object constant_value) {
+        if ((constant_value == null) || ((constant_value instanceof Long)
+                || (constant_value instanceof Double)))
+            return true;
+        return false;
     }
 
     void useLegalConstant1 (@Nullable Object static_constant_value) {

@@ -1,49 +1,65 @@
 package checkers.nullness.quals;
 
-import java.lang.annotation.*;
-
-import javax.lang.model.type.TypeKind;
-
-import checkers.nullness.NullnessChecker;
+import checkers.initialization.InitializationChecker;
+import checkers.nullness.AbstractNullnessChecker;
+import checkers.quals.DefaultQualifierInHierarchy;
 import checkers.quals.ImplicitFor;
 import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifier;
+import checkers.types.AnnotatedTypeMirror.AnnotatedNoType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
+
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+import javax.lang.model.type.TypeKind;
 
 import com.sun.source.tree.Tree;
 
 /**
- * {@code @NonNull} is a type annotation that indicates that a value is never null.
- * <p>
+ * {@link NonNull} is a type annotation that indicates that an expression is
+ * never {@code null}.
  *
- * When applied to a member field's type, indicates that the field is never
- * null after instantiation (construction) completes.  When applied to a
- * static field's type, indicates that the field is never null after the
- * containing class is initialized.
  * <p>
+ * For fields of a class, the {@link NonNull} annotation indicates that this
+ * field is never {@code null}
+ * <em>after the class has been fully initialized</em>. Class initialization is
+ * controlled by the Freedom Before Commitment type system, see
+ * {@link InitializationChecker} for more details.
  *
+ * <p>
+ * For static fields, the {@link NonNull} annotation indicates that this field
+ * is never {@code null} <em>after the containing class is initialized</em>.
+ *
+ * <p>
  * This annotation is rarely written in source code, because it is the default.
- * No more than one of {@code @NonNull} and {@link Nullable} may be
- * written on a given type.
- * <p>
  *
- * This annotation is associated with the {@link NullnessChecker}.
+ * <p>
+ * This annotation is associated with the {@link AbstractNullnessChecker}.
  *
  * @see Nullable
- * @see NullnessChecker
+ * @see MonotonicNonNull
+ * @see AbstractNullnessChecker
  * @checker.framework.manual #nullness-checker Nullness Checker
  */
+@TypeQualifier
+@SubtypeOf(MonotonicNonNull.class)
+@ImplicitFor(types = { TypeKind.PACKAGE },
+    typeClasses = { AnnotatedPrimitiveType.class, AnnotatedNoType.class },
+    trees = {
+        Tree.Kind.NEW_CLASS,
+        Tree.Kind.NEW_ARRAY,
+        Tree.Kind.PLUS, // for String concatenation
+        // All literals except NULL_LITERAL:
+        Tree.Kind.BOOLEAN_LITERAL, Tree.Kind.CHAR_LITERAL,
+        Tree.Kind.DOUBLE_LITERAL, Tree.Kind.FLOAT_LITERAL,
+        Tree.Kind.INT_LITERAL, Tree.Kind.LONG_LITERAL, Tree.Kind.STRING_LITERAL })
+@DefaultQualifierInHierarchy
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-@TypeQualifier
-// See note on subtyping in Primitive.java.
-@SubtypeOf(Primitive.class)
-@ImplicitFor(
-    types = { TypeKind.PACKAGE },
-    trees = { Tree.Kind.NEW_CLASS,
-        Tree.Kind.NEW_ARRAY,
-        Tree.Kind.PLUS,         // for String concatenation
-        // The NULL_LITERAL is @Nullable and all primitive type literals are @Primitive
-        Tree.Kind.STRING_LITERAL
-    })
-public @interface NonNull {}
+@Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
+public @interface NonNull {
+}

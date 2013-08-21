@@ -1,6 +1,9 @@
 package java.util;
-import checkers.nullness.quals.*;
-@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
+import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
+import checkers.nullness.quals.EnsuresNonNullIf;
+import checkers.nullness.quals.Nullable;
+import checkers.nullness.quals.PolyNull;
 
 public class ArrayDeque<E extends @Nullable Object> extends AbstractCollection<E> implements Deque<E>, Cloneable, java.io.Serializable {
   private static final long serialVersionUID = 0;
@@ -29,16 +32,16 @@ public class ArrayDeque<E extends @Nullable Object> extends AbstractCollection<E
   public @Nullable E peek() { throw new RuntimeException("skeleton method"); }
   public void push(E a1) { throw new RuntimeException("skeleton method"); }
   public E pop() { throw new RuntimeException("skeleton method"); }
-  public int size() { throw new RuntimeException("skeleton method"); }
-  @AssertNonNullIfFalse({"peek()", "peekFirst()", "peekLast()", "poll()", "pollFirst()", "pollLast()"})
-  public boolean isEmpty() { throw new RuntimeException("skeleton method"); }
+  @Pure public int size() { throw new RuntimeException("skeleton method"); }
+  @EnsuresNonNullIf(expression={"peek()", "peekFirst()", "peekLast()", "poll()", "pollFirst()", "pollLast()"}, result=false)
+  @Pure public boolean isEmpty() { throw new RuntimeException("skeleton method"); }
   public Iterator<E> iterator() { throw new RuntimeException("skeleton method"); }
   public Iterator<E> descendingIterator() { throw new RuntimeException("skeleton method"); }
-  public boolean contains(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
+  @Pure public boolean contains(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   public boolean remove(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   public void clear() { throw new RuntimeException("skeleton method"); }
   public Object [] toArray() { throw new RuntimeException("skeleton method"); }
   public <T> @Nullable T @PolyNull [] toArray(T @PolyNull [] a1) { throw new RuntimeException("skeleton method"); }
 
-  public ArrayDeque<E> clone() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public ArrayDeque<E> clone() { throw new RuntimeException("skeleton method"); }
 }

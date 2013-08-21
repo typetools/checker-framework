@@ -19,17 +19,17 @@
 /*
  * Created on 11/06/2008
  */
-package japa.parser.ast.test;
+package cfjapa.parser.ast.test;
 
-import japa.parser.ParseException;
-import japa.parser.ast.CompilationUnit;
-import japa.parser.ast.test.classes.DumperTestClass;
-import japa.parser.ast.test.classes.JavadocTestClass;
-import japa.parser.ast.visitor.GenericVisitor;
-import japa.parser.ast.visitor.GenericVisitorAdapter;
-import japa.parser.ast.visitor.ModifierVisitorAdapter;
-import japa.parser.ast.visitor.VoidVisitor;
-import japa.parser.ast.visitor.VoidVisitorAdapter;
+import cfjapa.parser.ParseException;
+import cfjapa.parser.ast.CompilationUnit;
+import cfjapa.parser.ast.test.classes.DumperTestClass;
+import cfjapa.parser.ast.test.classes.JavadocTestClass;
+import cfjapa.parser.ast.visitor.GenericVisitor;
+import cfjapa.parser.ast.visitor.GenericVisitorAdapter;
+import cfjapa.parser.ast.visitor.ModifierVisitorAdapter;
+import cfjapa.parser.ast.visitor.VoidVisitor;
+import cfjapa.parser.ast.visitor.VoidVisitorAdapter;
 
 import org.junit.Test;
 

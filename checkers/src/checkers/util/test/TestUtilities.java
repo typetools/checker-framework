@@ -6,6 +6,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Scanner;
 
@@ -40,13 +42,16 @@ public final class TestUtilities {
         boolean seenKeyword = false;
         while (in.hasNext()) {
             String nextLine = in.nextLine();
-            if (nextLine.contains("@skip-test"))
+            if (nextLine.contains("@skip-test")) {
+                in.close();
                 return false;
+            }
             if (nextLine.contains("class")
                     || nextLine.contains("interface")
                     || nextLine.contains("enum"))
                 seenKeyword = true;
         }
+        in.close();
         return seenKeyword;
     }
 
@@ -64,9 +69,12 @@ public final class TestUtilities {
         try {
             Scanner in = new Scanner(new FileReader(expectedFile));
             while (in.hasNextLine()) {
-                if (!in.nextLine().contains("warning"))
+                if (!in.nextLine().contains("warning")) {
+                    in.close();
                     return false;
+                }
             }
+            in.close();
             return true;
         } catch (Exception e) {
             throw new Error(e);
@@ -104,7 +112,14 @@ public final class TestUtilities {
 
         List<File> javaFiles = new ArrayList<File>();
 
-        for (File file : directory.listFiles()) {
+        File[] in = directory.listFiles();
+        Arrays.sort(in, new Comparator<File>() {
+            @Override
+            public int compare(File o1, File o2) {
+                return o1.getName().compareTo(o2.getName());
+            }
+        });
+        for (File file : in) {
             if (file.isDirectory())
                 javaFiles.addAll(deeplyEnclosedJavaTestFiles(file));
             else if (isJavaTestFile(file))
@@ -137,6 +152,7 @@ public final class TestUtilities {
                     }
                 }
             }
+            reader.close();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

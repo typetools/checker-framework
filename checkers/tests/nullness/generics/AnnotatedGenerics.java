@@ -1,3 +1,4 @@
+import dataflow.quals.*;
 import checkers.nullness.quals.*;
 
 class AnnotatedGenerics {
@@ -50,7 +51,7 @@ class AnnotatedGenerics {
     }
 
     class MyComparable<T> {
-        public int compareTo(@NonNull T a1) { return 0; }
+        @Pure public int compareTo(@NonNull T a1) { return 0; }
     }
 
     <T> T test(java.util.List<? super Iterable<?>> l) {

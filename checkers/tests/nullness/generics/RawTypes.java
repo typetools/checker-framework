@@ -1,9 +1,7 @@
 import checkers.nullness.quals.*;
 
-//@skip-test
 class RawTypes {
   void m() throws ClassNotFoundException {
-    // TODO: this fails but shouldn't
     Class c1 = Class.forName("bla");
     Class<?> c2 = Class.forName("bla");
   }
@@ -17,7 +15,7 @@ class RawTypes {
     // ok
     Test y = new Test<Integer>();
 
-    //:: error: (assignment.type.incompatible) :: error: (generic.argument.invalid)
+    //:: error: (type.argument.type.incompatible)
     Test z = new Test<@Nullable Integer>();
   }
 

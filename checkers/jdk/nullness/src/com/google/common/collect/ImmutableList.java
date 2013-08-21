@@ -29,7 +29,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.RandomAccess;
 
-import checkers.nullness.quals.*;
+import dataflow.quals.SideEffectFree;
+import checkers.nullness.quals.Nullable;
 
 /**
  * A high-performance, immutable, random-access {@code List} implementation.
@@ -282,9 +283,9 @@ public abstract class ImmutableList<E> extends ImmutableCollection<E>
 
   // Mark these two methods with @Nullable
 
-  public abstract int indexOf(@Nullable Object object);
+  @Pure public abstract int indexOf(@Nullable Object object);
 
-  public abstract int lastIndexOf(@Nullable Object object);
+  @Pure public abstract int lastIndexOf(@Nullable Object object);
 
   // constrain the return type to ImmutableList<E>
 

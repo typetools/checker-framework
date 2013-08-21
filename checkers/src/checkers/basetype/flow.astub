@@ -1,0 +1,216 @@
+// This file will be eventually converted into an annotated JDK, at 
+// checkers/jdk/basetype/ .
+
+import dataflow.quals.*;
+
+package java.lang;
+
+public final class Class {
+    @Pure public String getName();
+}
+
+public final class Character implements java.io.Serializable, Comparable<Character> {
+    @Pure public Character(char value);
+    @Pure public static Character valueOf(char c);
+    @Pure public char charValue();
+    @Pure public int hashCode();
+    @Pure public boolean equals(Object obj);
+    @SideEffectFree public String toString();
+    @SideEffectFree public static String toString(char c);
+    @Pure public static boolean isValidCodePoint(int codePoint);
+    @Pure public static boolean isBmpCodePoint(int codePoint);
+    @Pure public static boolean isSupplementaryCodePoint(int codePoint);
+    @Pure public static boolean isHighSurrogate(char ch);
+    @Pure public static boolean isLowSurrogate(char ch);
+    @Pure public static boolean isSurrogate(char ch);
+    @Pure public static boolean isSurrogatePair(char high, char low);
+    @Pure public static int charCount(int codePoint);
+    @Pure public static int toCodePoint(char high, char low);
+    @Pure public static int codePointAt(CharSequence seq, int index);
+    @Pure public static int codePointAt(char[] a, int index);
+    @Pure public static int codePointAt(char[] a, int index, int limit);
+    @Pure public static int codePointBefore(CharSequence seq, int index);
+    @Pure public static int codePointBefore(char[] a, int index);
+    @Pure public static int codePointBefore(char[] a, int index, int start);
+    @Pure public static char highSurrogate(int codePoint);
+    @Pure public static char lowSurrogate(int codePoint);
+    @Pure public static int toChars(int codePoint, char[] dst, int dstIndex);
+    @Pure public static char[] toChars(int codePoint);
+    @Pure public static int codePointCount(CharSequence seq, int beginIndex, int endIndex);
+    @Pure public static int codePointCount(char[] a, int offset, int count);
+    @Pure public static int offsetByCodePoints(CharSequence seq, int index, int codePointOffset);
+    @Pure public static int offsetByCodePoints(char[] a, int start, int count, int index, int codePointOffset);
+    @Pure public static boolean isLowerCase(char ch);
+    @Pure public static boolean isLowerCase(int codePoint);
+    @Pure public static boolean isUpperCase(char ch);
+    @Pure public static boolean isUpperCase(int codePoint);
+    @Pure public static boolean isTitleCase(char ch);
+    @Pure public static boolean isTitleCase(int codePoint);
+    @Pure public static boolean isDigit(char ch);
+    @Pure public static boolean isDigit(int codePoint);
+    @Pure public static boolean isDefined(char ch);
+    @Pure public static boolean isDefined(int codePoint);
+    @Pure public static boolean isLetter(char ch);
+    @Pure public static boolean isLetter(int codePoint);
+    @Pure public static boolean isLetterOrDigit(char ch);
+    @Pure public static boolean isLetterOrDigit(int codePoint);
+    @Pure public static boolean isJavaLetter(char ch);
+    @Pure public static boolean isJavaLetterOrDigit(char ch);
+    @Pure public static boolean isAlphabetic(int codePoint);
+    @Pure public static boolean isIdeographic(int codePoint);
+    @Pure public static boolean isJavaIdentifierStart(char ch);
+    @Pure public static boolean isJavaIdentifierStart(int codePoint);
+    @Pure public static boolean isJavaIdentifierPart(char ch);
+    @Pure public static boolean isJavaIdentifierPart(int codePoint);
+    @Pure public static boolean isUnicodeIdentifierStart(char ch);
+    @Pure public static boolean isUnicodeIdentifierStart(int codePoint);
+    @Pure public static boolean isUnicodeIdentifierPart(char ch);
+    @Pure public static boolean isUnicodeIdentifierPart(int codePoint);
+    @Pure public static boolean isIdentifierIgnorable(char ch);
+    @Pure public static boolean isIdentifierIgnorable(int codePoint);
+    @Pure public static char toLowerCase(char ch);
+    @Pure public static int toLowerCase(int codePoint);
+    @Pure public static char toUpperCase(char ch);
+    @Pure public static int toUpperCase(int codePoint);
+    @Pure public static char toTitleCase(char ch);
+    @Pure public static int toTitleCase(int codePoint);
+    @Pure public static int digit(char ch, int radix);
+    @Pure public static int digit(int codePoint, int radix);
+    @Pure public static int getNumericValue(char ch);
+    @Pure public static int getNumericValue(int codePoint);
+    @Pure public static boolean isSpace(char ch);
+    @Pure public static boolean isSpaceChar(char ch);
+    @Pure public static boolean isSpaceChar(int codePoint);
+    @Pure public static boolean isWhitespace(char ch);
+    @Pure public static boolean isWhitespace(int codePoint);
+    @Pure public static boolean isISOControl(char ch);
+    @Pure public static boolean isISOControl(int codePoint);
+    @Pure public static int getType(char ch);
+    @Pure public static int getType(int codePoint);
+    @Pure public static char forDigit(int digit, int radix);
+    @Pure public static byte getDirectionality(char ch);
+    @Pure public static byte getDirectionality(int codePoint);
+    @Pure public static boolean isMirrored(char ch);
+    @Pure public static boolean isMirrored(int codePoint);
+    @Pure public int compareTo(Character anotherCharacter);
+    @Pure public static int compare(char x, char y);
+    @Pure public static char reverseBytes(char ch);
+    @Pure public static String getName(int codePoint);
+}
+
+public static class Character$Subset {
+   @Pure protected Subset(String name);
+   @Pure public final boolean equals(Object obj);
+   @Pure public final int hashCode();
+   @SideEffectFree public final String toString();
+}
+public static final class Character$UnicodeBlock extends Subset {
+   @Pure public static UnicodeBlock of(char c);
+   @Pure public static UnicodeBlock of(int codePoint);
+   @Pure public static final UnicodeBlock forName(String blockName);
+}
+// Stub file parser bug?  Can it handle enums?
+// public static enum Character$UnicodeScript {
+//    @Pure public static UnicodeScript of(int codePoint);
+//    @Pure public static final UnicodeScript forName(String scriptName);
+// }
+
+public class Object {
+    @Pure public Object();
+    @SideEffectFree public String toString();
+    @Pure public int hashCode();
+    @Pure public final Class<?> getClass();
+}
+
+public final class String {
+    @Pure public String intern();
+    @Pure public int lastIndexOf(int ch);
+    @Pure public String substring(int beginIndex);
+}
+
+public final class System {
+    @TerminatesExecution public static void exit(int status);
+}
+
+public class UnsupportedOperationException extends RuntimeException {
+    @Pure public UnsupportedOperationException();
+    @Pure public UnsupportedOperationException(String message);
+    @Pure public UnsupportedOperationException(String message, Throwable cause);
+    @Pure public UnsupportedOperationException(Throwable cause);
+}
+
+
+///////////////////////////////////////////////////////////////////////////
+package java.util;
+
+public interface Map<K, V> {
+    @Pure V get(Object key);
+}
+
+public abstract class TimeZone {
+    @Pure public final String getDisplayName();
+}
+
+
+///////////////////////////////////////////////////////////////////////////
+package java.util.logging;
+
+// Mark every method as @Pure.  Could revisit this decision later.
+public class Logger {
+    @Pure public static final Logger getGlobal();
+    @Pure protected Logger(String name, String resourceBundleName);
+    @Pure public static Logger getLogger(String name);
+    @Pure public static Logger getLogger(String name, String resourceBundleName);
+    @Pure public static Logger getAnonymousLogger();
+    @Pure public static Logger getAnonymousLogger(String resourceBundleName);
+    @Pure public ResourceBundle getResourceBundle();
+    @Pure public String getResourceBundleName();
+    @Pure public void setFilter(Filter newFilter);
+    @Pure public Filter getFilter();
+    @Pure public void log(LogRecord record);
+    @Pure public void log(Level level, String msg);
+    @Pure public void log(Level level, String msg, Object param1);
+    @Pure public void log(Level level, String msg, Object[] params);
+    @Pure public void log(Level level, String msg, Throwable thrown);
+    @Pure public void logp(Level level, String sourceClass, String sourceMethod, String msg);
+    @Pure public void logp(Level level, String sourceClass, String sourceMethod, String msg, Object param1);
+    @Pure public void logp(Level level, String sourceClass, String sourceMethod, String msg, Object[] params);
+    @Pure public void logp(Level level, String sourceClass, String sourceMethod, String msg, Throwable thrown);
+    @Pure public void logrb(Level level, String sourceClass, String sourceMethod, String bundleName, String msg);
+    @Pure public void logrb(Level level, String sourceClass, String sourceMethod, String bundleName, String msg, Object param1);
+    @Pure public void logrb(Level level, String sourceClass, String sourceMethod, String bundleName, String msg, Object[] params);
+    @Pure public void logrb(Level level, String sourceClass, String sourceMethod, String bundleName, String msg, Throwable thrown);
+    @Pure public void entering(String sourceClass, String sourceMethod);
+    @Pure public void entering(String sourceClass, String sourceMethod, Object param1);
+    @Pure public void entering(String sourceClass, String sourceMethod, Object[] params);
+    @Pure public void exiting(String sourceClass, String sourceMethod);
+    @Pure public void exiting(String sourceClass, String sourceMethod, Object result);
+    @Pure public void throwing(String sourceClass, String sourceMethod, Throwable thrown);
+    @Pure public void severe(String msg);
+    @Pure public void warning(String msg);
+    @Pure public void info(String msg);
+    @Pure public void config(String msg);
+    @Pure public void fine(String msg);
+    @Pure public void finer(String msg);
+    @Pure public void finest(String msg);
+    @Pure public void setLevel(Level newLevel);
+    @Pure public Level getLevel();
+    @Pure public boolean isLoggable(Level level);
+    @Pure public String getName();
+    @Pure public void addHandler(Handler handler);
+    @Pure public void removeHandler(Handler handler);
+    @Pure public Handler[] getHandlers();
+    @Pure public void setUseParentHandlers(boolean useParentHandlers);
+    @Pure public boolean getUseParentHandlers();
+    @Pure public Logger getParent();
+    @Pure public void setParent(Logger parent);
+}
+
+
+///////////////////////////////////////////////////////////////////////////
+package java.util.regex;
+
+public final class Pattern {
+    @Pure public static String quote(String s);
+}
+
