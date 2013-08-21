@@ -4,6 +4,7 @@ package javacutils;
 import checkers.nullness.quals.Nullable;
 */
 
+import static com.sun.tools.javac.code.Flags.ABSTRACT;
 import static com.sun.tools.javac.code.Flags.EFFECTIVELY_FINAL;
 import static com.sun.tools.javac.code.Flags.FINAL;
 
@@ -128,6 +129,10 @@ public class ElementUtils {
      */
     public static boolean isEffectivelyFinal(Element element) {
         Symbol sym = (Symbol) element;
+        if (sym.getEnclosingElement().getKind() == ElementKind.METHOD &&
+                (sym.getEnclosingElement().flags() & ABSTRACT) != 0) {
+            return true;
+        }
         return (sym.flags() & (FINAL | EFFECTIVELY_FINAL)) != 0;
     }
 
