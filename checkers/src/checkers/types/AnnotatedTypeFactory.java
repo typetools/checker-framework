@@ -549,7 +549,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     typeArgs = new ArrayList<AnnotatedTypeMirror>();
                     AnnotatedDeclaredType declaration = fromElement((TypeElement)dt.getUnderlyingType().asElement());
                     for (AnnotatedTypeMirror typeParam : declaration.getTypeArguments()) {
-                        AnnotatedTypeMirror wct = getUninferredWildcardType((AnnotatedTypeVariable) typeParam, false);
+                        AnnotatedWildcardType wct = getUninferredWildcardType((AnnotatedTypeVariable) typeParam, false);
                         typeArgs.add(wct);
                     }
                 }
@@ -2041,11 +2041,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * The main point for introducing this method was to better separate
      * AnnotatetTypes from the classes in this package.
      */
-    public AnnotatedTypeMirror getUninferredMethodTypeArgument(AnnotatedTypeVariable typeVar) {
+    public AnnotatedWildcardType getUninferredMethodTypeArgument(AnnotatedTypeVariable typeVar) {
         return getUninferredWildcardType(typeVar, true);
     }
 
-    protected AnnotatedTypeMirror getUninferredWildcardType(AnnotatedTypeVariable typeVar, boolean useHack) {
+    protected AnnotatedWildcardType getUninferredWildcardType(AnnotatedTypeVariable typeVar, boolean useHack) {
         AnnotatedTypeMirror upperBound = typeVar.getEffectiveUpperBound();
         while (upperBound.getKind() == TypeKind.TYPEVAR)
             upperBound = ((AnnotatedTypeVariable)upperBound).getEffectiveUpperBound();
@@ -2056,6 +2056,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (useHack) {
             wctype.setMethodTypeArgHack();
         }
+        return wctype;
+    }
+
+    public AnnotatedWildcardType getWildcardBoundedBy(AnnotatedTypeMirror upper) {
+        WildcardType wc = types.getWildcardType(upper.getUnderlyingType(), null);
+        AnnotatedWildcardType wctype = (AnnotatedWildcardType) AnnotatedTypeMirror.createType(wc, this);
+        wctype.setExtendsBound(upper);
         return wctype;
     }
 
