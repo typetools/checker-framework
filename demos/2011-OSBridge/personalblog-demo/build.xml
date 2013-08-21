@@ -1,0 +1,50 @@
+<project name="personalblog-demo" default="check-tainting">
+  <property environment="env"/>
+
+  <presetdef name="jsr308.javac">
+    <javac fork="yes">
+      <!-- JSR308 related compiler arguments -->
+      <compilerarg value="-version"/>
+      <!-- optional, so .class files work with older JVMs: <compilerarg line="-target 5"/> -->
+      <compilerarg value="-implicit:class"/>
+      <compilerarg line="-Xmaxwarns 10000"/>
+      <compilerarg value="-J-Xbootclasspath/p:${env.CHECKERS}/binary/jsr308-all.jar"/>
+
+      <classpath>
+        <pathelement location="${env.CHECKERS}/binary/checkers.jar"/>
+        <pathelement location="lib/personalblog.jar"/>
+        <pathelement location="lib/hibernate2.jar"/>
+        <pathelement location="lib/commons-logging.jar"/>
+        <pathelement location="lib/struts.jar"/>
+        <pathelement location="lib/servlet-api.jar"/>
+        <pathelement location="lib/commons-lang.jar"/>
+      </classpath>
+    </javac>
+  </presetdef>
+
+  <target name="check-tainting"
+          description="Check for tainting errors as they come up"
+          depends="clean">
+    <mkdir dir="bin"/>
+    <jsr308.javac fork="true" srcdir="src" destdir="bin" includeantruntime="false">
+      <compilerarg line="-processor checkers.tainting.TaintingChecker"/>
+      <compilerarg value="-Xbootclasspath/p:${env.CHECKERS}/jdk/jdk.jar"/>
+    </jsr308.javac>
+  </target>
+
+  <target name="check-tainting-all"
+          description="Check for tainting errors in all files"
+          depends="clean">
+    <mkdir dir="bin"/>
+    <jsr308.javac fork="true" srcdir="src" destdir="bin" includeantruntime="false">
+      <compilerarg line="-processor checkers.tainting.TaintingChecker"/>
+      <compilerarg value="-Xbootclasspath/p:${env.CHECKERS}/jdk/jdk.jar"/>
+      <compilerarg value="-Awarns"/>
+    </jsr308.javac>
+  </target>
+
+  <target name="clean">
+    <delete dir="bin"/>
+  </target>
+
+</project>
