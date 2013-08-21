@@ -113,7 +113,7 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
         UNUSED = AnnotationUtils.fromClass(elements, Unused.class);
 
         // If you update the following, also update ../../../manual/nullness-checker.tex .
-        // aliases for nonnull
+        // Aliases for @Nonnull:
         addAliasedAnnotation(com.sun.istack.NotNull.class, NONNULL);
         addAliasedAnnotation(edu.umd.cs.findbugs.annotations.NonNull.class, NONNULL);
         addAliasedAnnotation(javax.annotation.Nonnull.class, NONNULL);
@@ -123,7 +123,7 @@ public class NullnessAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Null
         addAliasedAnnotation(org.netbeans.api.annotations.common.NonNull.class, NONNULL);
         addAliasedAnnotation(org.jmlspecs.annotation.NonNull.class, NONNULL);
 
-        // aliases for nullable
+        // Aliases for @Nullable:
         addAliasedAnnotation(com.sun.istack.Nullable.class, NULLABLE);
         addAliasedAnnotation(edu.umd.cs.findbugs.annotations.CheckForNull.class, NULLABLE);
         addAliasedAnnotation(edu.umd.cs.findbugs.annotations.Nullable.class, NULLABLE);
