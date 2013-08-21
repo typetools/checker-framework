@@ -90,10 +90,13 @@ public class NullnessAnnotatedTypeFactory
         addAliasedAnnotation(javax.annotation.Nonnull.class, NONNULL);
         addAliasedAnnotation(javax.validation.constraints.NotNull.class,
                 NONNULL);
+        addAliasedAnnotation(org.eclipse.jdt.annotation.NonNull.class,
+                NONNULL);
         addAliasedAnnotation(org.jetbrains.annotations.NotNull.class, NONNULL);
         addAliasedAnnotation(org.netbeans.api.annotations.common.NonNull.class,
                 NONNULL);
         addAliasedAnnotation(org.jmlspecs.annotation.NonNull.class, NONNULL);
+
         addAliasedAnnotation(com.sun.istack.Nullable.class, NULLABLE);
         addAliasedAnnotation(
                 edu.umd.cs.findbugs.annotations.CheckForNull.class, NULLABLE);
@@ -103,6 +106,9 @@ public class NullnessAnnotatedTypeFactory
                 edu.umd.cs.findbugs.annotations.UnknownNullness.class, NULLABLE);
         addAliasedAnnotation(javax.annotation.CheckForNull.class, NULLABLE);
         addAliasedAnnotation(javax.annotation.Nullable.class, NULLABLE);
+        addAliasedAnnotation(javax.validation.constraints.NotNull.class,
+                NULLABLE);
+        addAliasedAnnotation(org.eclipse.jdt.annotation.Nullable.class, NULLABLE);
         addAliasedAnnotation(org.jetbrains.annotations.Nullable.class, NULLABLE);
         addAliasedAnnotation(
                 org.netbeans.api.annotations.common.CheckForNull.class,
