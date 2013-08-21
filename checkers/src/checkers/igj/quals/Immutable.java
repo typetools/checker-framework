@@ -1,8 +1,13 @@
 package checkers.igj.quals;
 
-import java.lang.annotation.*;
+import checkers.quals.SubtypeOf;
+import checkers.quals.TypeQualifier;
 
-import checkers.quals.*;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 // import static java.lang.annotation.ElementType.*;
 
@@ -15,9 +20,9 @@ import checkers.quals.*;
  *
  * @checker.framework.manual #igj-checker IGJ Checker
  */
+@TypeQualifier
+@SubtypeOf(ReadOnly.class)
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-@TypeQualifier
-@SubtypeOf(ReadOnly.class)
 public @interface Immutable {}

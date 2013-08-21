@@ -23,7 +23,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.io.Serializable;
 import java.util.Map;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
 /**
  * Useful functions.
@@ -57,7 +57,7 @@ public final class Functions {
       return o.toString();
     }
 
-    @Override public String toString() {
+    @Pure @Override public String toString() {
       return "toString";
     }
   }
@@ -78,7 +78,7 @@ public final class Functions {
       return o;
     }
 
-    @Override public String toString() {
+    @Pure @Override public String toString() {
       return "identity";
     }
   }
@@ -107,17 +107,17 @@ public final class Functions {
           "Key '%s' not present in map", key);
       return result;
     }
-    @Override public boolean equals(/*@Nullable*/ Object o) {
+    @Pure @Override public boolean equals(/*@Nullable*/ Object o) {
       if (o instanceof FunctionForMapNoDefault) {
         FunctionForMapNoDefault<?, ?> that = (FunctionForMapNoDefault<?, ?>) o;
         return map.equals(that.map);
       }
       return false;
     }
-    @Override public int hashCode() {
+    @Pure @Override public int hashCode() {
       return map.hashCode();
     }
-    @Override public String toString() {
+    @Pure @Override public String toString() {
       return "forMap(" + map + ")";
     }
     private static final long serialVersionUID = 0;
@@ -152,7 +152,7 @@ public final class Functions {
     public V apply(K key) {
       return map.containsKey(key) ? map.get(key) : defaultValue;
     }
-    @Override public boolean equals(/*@Nullable*/ Object o) {
+    @Pure @Override public boolean equals(/*@Nullable*/ Object o) {
       if (o instanceof ForMapWithDefault) {
         ForMapWithDefault<?, ?> that = (ForMapWithDefault<?, ?>) o;
         return map.equals(that.map)
@@ -160,10 +160,10 @@ public final class Functions {
       }
       return false;
     }
-    @Override public int hashCode() {
+    @Pure @Override public int hashCode() {
       return Objects.hashCode(map, defaultValue);
     }
-    @Override public String toString() {
+    @Pure @Override public String toString() {
       return "forMap(" + map + ", defaultValue=" + defaultValue + ")";
     }
     private static final long serialVersionUID = 0;
@@ -199,7 +199,7 @@ public final class Functions {
     public C apply(A a) {
       return g.apply(f.apply(a));
     }
-    @Override public boolean equals(/*@Nullable*/ Object obj) {
+    @Pure @Override public boolean equals(/*@Nullable*/ Object obj) {
       if (obj instanceof FunctionComposition) {
         FunctionComposition<?, ?, ?> that = (FunctionComposition<?, ?, ?>) obj;
         return f.equals(that.f) && g.equals(that.g);
@@ -207,10 +207,10 @@ public final class Functions {
       return false;
     }
 
-    @Override public int hashCode() {
+    @Pure @Override public int hashCode() {
       return f.hashCode() ^ g.hashCode();
     }
-    @Override public String toString() {
+    @Pure @Override public String toString() {
       return g.toString() + "(" + f.toString() + ")";
     }
     private static final long serialVersionUID = 0;
@@ -236,17 +236,17 @@ public final class Functions {
     public Boolean apply(T t) {
       return predicate.apply(t);
     }
-    @Override public boolean equals(/*@Nullable*/ Object obj) {
+    @Pure @Override public boolean equals(/*@Nullable*/ Object obj) {
       if (obj instanceof PredicateFunction) {
         PredicateFunction<?> that = (PredicateFunction<?>) obj;
         return predicate.equals(that.predicate);
       }
       return false;
     }
-    @Override public int hashCode() {
+    @Pure @Override public int hashCode() {
       return predicate.hashCode();
     }
-    @Override public String toString() {
+    @Pure @Override public String toString() {
       return "forPredicate(" + predicate + ")";
     }
     private static final long serialVersionUID = 0;
@@ -272,17 +272,17 @@ public final class Functions {
     public E apply(Object from) {
       return value;
     }
-    @Override public boolean equals(/*@Nullable*/ Object obj) {
+    @Pure @Override public boolean equals(/*@Nullable*/ Object obj) {
       if (obj instanceof ConstantFunction) {
         ConstantFunction<?> that = (ConstantFunction<?>) obj;
         return Objects.equal(value, that.value);
       }
       return false;
     }
-    @Override public int hashCode() {
+    @Pure @Override public int hashCode() {
       return (value == null) ? 0 : value.hashCode();
     }
-    @Override public String toString() {
+    @Pure @Override public String toString() {
       return "constant(" + value + ")";
     }
     private static final long serialVersionUID = 0;

@@ -4,13 +4,16 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Elements;
 
 import lubglb.quals.*;
+
+import javacutils.AnnotationUtils;
+
 import checkers.basetype.BaseTypeChecker;
 import checkers.quals.TypeQualifiers;
+import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.types.QualifierHierarchy;
-import checkers.util.AnnotationUtils;
 
 @TypeQualifiers( {A.class, B.class, C.class, D.class, E.class, F.class} )
-public class LubGlbChecker extends BaseTypeChecker {
+public class LubGlbChecker extends BaseTypeChecker<BasicAnnotatedTypeFactory<LubGlbChecker>> {
 
     private AnnotationMirror B, C, D, E; // A and F not needed
 

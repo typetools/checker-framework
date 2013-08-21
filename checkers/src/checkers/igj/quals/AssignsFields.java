@@ -1,12 +1,15 @@
 package checkers.igj.quals;
 
-import java.lang.annotation.*;
-
 import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifier;
 
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
 /**
- *
  * Indicates that the annotated method could assign (but not mutate) the fields
  * of {@code this} object.
  *
@@ -17,9 +20,9 @@ import checkers.quals.TypeQualifier;
  */
 // TODO: Document this
 
-@Documented
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE_USE})
 @TypeQualifier // (for now)
 @SubtypeOf( ReadOnly.class )
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE_USE)
 public @interface AssignsFields {}

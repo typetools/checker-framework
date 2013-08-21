@@ -35,6 +35,12 @@ class Boolean {
   public static @Interned Boolean valueOf(boolean b);
 }
 
+class Byte {
+  public static @Interned Byte valueOf(byte b);
+  public static @Interned Byte valueOf(String s);
+  public static @Interned Byte valueOf(String s, int radix);
+}
+
 // All instances are interned
 @Interned class Character$UnicodeBlock { }
 

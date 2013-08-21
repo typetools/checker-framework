@@ -33,7 +33,8 @@ import java.util.RandomAccess;
 import java.util.Set;
 import java.util.SortedSet;
 
-import checkers.nullness.quals.*;
+import dataflow.quals.SideEffectFree;
+import checkers.nullness.quals.Nullable;
 //import javax.annotation.Nullable;
 
 /**
@@ -70,7 +71,7 @@ final class Synchronized {
 
     // No equals and hashCode; see ForwardingObject for details.
 
-    @Override public String toString() {
+    @Pure @Override public String toString() {
       synchronized (mutex) {
         return delegate.toString();
       }
@@ -150,20 +151,20 @@ final class Synchronized {
       }
     }
 
-    public boolean contains(/*@Nullable*/ Object o) {
+    @Pure public boolean contains(/*@Nullable*/ Object o) {
       synchronized (mutex) {
         return delegate().contains(o);
       }
     }
 
     @SuppressWarnings("nullness")
-    public boolean containsAll(Collection<? extends /*@Nullable*/ Object> c) {
+    @Pure public boolean containsAll(Collection<? extends /*@Nullable*/ Object> c) {
       synchronized (mutex) {
         return delegate().containsAll(c);
       }
     }
 
-    public boolean isEmpty() {
+    @Pure public boolean isEmpty() {
       synchronized (mutex) {
         return delegate().isEmpty();
       }
@@ -193,7 +194,7 @@ final class Synchronized {
       }
     }
 
-    public int size() {
+    @Pure public int size() {
       synchronized (mutex) {
         return delegate().size();
       }
@@ -255,7 +256,7 @@ final class Synchronized {
       return (Set<E>) super.delegate();
     }
 
-    @Override public boolean equals(/*@Nullable*/ Object o) {
+    @Pure @Override public boolean equals(/*@Nullable*/ Object o) {
       if (o == this) {
         return true;
       }
@@ -264,7 +265,7 @@ final class Synchronized {
       }
     }
 
-    @Override public int hashCode() {
+    @Pure @Override public int hashCode() {
       synchronized (mutex) {
         return delegate().hashCode();
       }
@@ -413,13 +414,13 @@ final class Synchronized {
       }
     }
 
-    public int indexOf(/*@Nullable*/ Object o) {
+    @Pure public int indexOf(/*@Nullable*/ Object o) {
       synchronized (mutex) {
         return delegate().indexOf(o);
       }
     }
 
-    public int lastIndexOf(/*@Nullable*/ Object o) {
+    @Pure public int lastIndexOf(/*@Nullable*/ Object o) {
       synchronized (mutex) {
         return delegate().lastIndexOf(o);
       }
@@ -446,13 +447,13 @@ final class Synchronized {
     }
 
     @GwtIncompatible("List.subList")
-    public List<E> subList(int fromIndex, int toIndex) {
+    @SideEffectFree public List<E> subList(int fromIndex, int toIndex) {
       synchronized (mutex) {
         return list(Platform.subList(delegate(), fromIndex, toIndex), mutex);
       }
     }
 
-    @Override public boolean equals(/*@Nullable*/ Object o) {
+    @Pure @Override public boolean equals(/*@Nullable*/ Object o) {
       if (o == this) {
         return true;
       }
@@ -461,7 +462,7 @@ final class Synchronized {
       }
     }
 
-    @Override public int hashCode() {
+    @Pure @Override public int hashCode() {
       synchronized (mutex) {
         return delegate().hashCode();
       }
@@ -570,7 +571,7 @@ final class Synchronized {
       }
     }
 
-    @Override public boolean equals(/*@Nullable*/ Object o) {
+    @Pure @Override public boolean equals(/*@Nullable*/ Object o) {
       if (o == this) {
         return true;
       }
@@ -579,7 +580,7 @@ final class Synchronized {
       }
     }
 
-    @Override public int hashCode() {
+    @Pure @Override public int hashCode() {
       synchronized (mutex) {
         return delegate().hashCode();
       }
@@ -637,31 +638,31 @@ final class Synchronized {
       super(delegate, mutex);
     }
 
-    public int size() {
+    @Pure public int size() {
       synchronized (mutex) {
         return delegate().size();
       }
     }
 
-    public boolean isEmpty() {
+    @Pure public boolean isEmpty() {
       synchronized (mutex) {
         return delegate().isEmpty();
       }
     }
 
-    public boolean containsKey(/*@Nullable*/ Object key) {
+    @Pure public boolean containsKey(/*@Nullable*/ Object key) {
       synchronized (mutex) {
         return delegate().containsKey(key);
       }
     }
 
-    public boolean containsValue(/*@Nullable*/ Object value) {
+    @Pure public boolean containsValue(/*@Nullable*/ Object value) {
       synchronized (mutex) {
         return delegate().containsValue(value);
       }
     }
 
-    public boolean containsEntry(/*@Nullable*/ Object key, /*@Nullable*/ Object value) {
+    @Pure public boolean containsEntry(/*@Nullable*/ Object key, /*@Nullable*/ Object value) {
       synchronized (mutex) {
         return delegate().containsEntry(key, value);
       }
@@ -760,7 +761,7 @@ final class Synchronized {
       }
     }
 
-    @Override public boolean equals(/*@Nullable*/ Object o) {
+    @Pure @Override public boolean equals(/*@Nullable*/ Object o) {
       if (o == this) {
         return true;
       }
@@ -769,7 +770,7 @@ final class Synchronized {
       }
     }
 
-    @Override public int hashCode() {
+    @Pure @Override public int hashCode() {
       synchronized (mutex) {
         return delegate().hashCode();
       }
@@ -1045,18 +1046,18 @@ final class Synchronized {
       }
     }
 
-    @Override public boolean contains(/*@Nullable*/ Object o) {
+    @Pure @Override public boolean contains(/*@Nullable*/ Object o) {
       synchronized (mutex) {
         return Maps.containsEntryImpl(delegate(), o);
       }
     }
     @SuppressWarnings("nullness")
-    @Override public boolean containsAll(Collection<? extends /*@Nullable*/ Object> c) {
+    @Pure @Override public boolean containsAll(Collection<? extends /*@Nullable*/ Object> c) {
       synchronized (mutex) {
         return Collections2.containsAll(delegate(), c);
       }
     }
-    @Override public boolean equals(/*@Nullable*/ Object o) {
+    @Pure @Override public boolean equals(/*@Nullable*/ Object o) {
       if (o == this) {
         return true;
       }
@@ -1139,14 +1140,14 @@ final class Synchronized {
     }
 
     @SuppressWarnings("nullness")
-    public boolean containsKey(/*@Nullable*/ Object key) {
+    @Pure public boolean containsKey(/*@Nullable*/ Object key) {
       synchronized (mutex) {
         return delegate().containsKey(key);
       }
     }
 
     @SuppressWarnings("nullness")
-    public boolean containsValue(/*@Nullable*/ Object value) {
+    @Pure public boolean containsValue(/*@Nullable*/ Object value) {
       synchronized (mutex) {
         return delegate().containsValue(value);
       }
@@ -1168,7 +1169,7 @@ final class Synchronized {
       }
     }
 
-    public boolean isEmpty() {
+    @Pure public boolean isEmpty() {
       synchronized (mutex) {
         return delegate().isEmpty();
       }
@@ -1203,7 +1204,7 @@ final class Synchronized {
       }
     }
 
-    public int size() {
+    @Pure public int size() {
       synchronized (mutex) {
         return delegate().size();
       }
@@ -1218,7 +1219,7 @@ final class Synchronized {
       }
     }
 
-    @Override public boolean equals(/*@Nullable*/ Object o) {
+    @Pure @Override public boolean equals(/*@Nullable*/ Object o) {
       if (o == this) {
         return true;
       }
@@ -1227,7 +1228,7 @@ final class Synchronized {
       }
     }
 
-    @Override public int hashCode() {
+    @Pure @Override public int hashCode() {
       synchronized (mutex) {
         return delegate().hashCode();
       }
@@ -1347,7 +1348,7 @@ final class Synchronized {
       return asMapValues;
     }
 
-    @Override public boolean containsValue(/*@Nullable*/ Object o) {
+    @Pure @Override public boolean containsValue(/*@Nullable*/ Object o) {
       return values().contains(o);
     }
 
@@ -1389,13 +1390,13 @@ final class Synchronized {
         return ObjectArrays.toArrayImpl(delegate(), array);
       }
     }
-    @Override public boolean contains(/*@Nullable*/ Object o) {
+    @Pure @Override public boolean contains(/*@Nullable*/ Object o) {
       synchronized (mutex) {
         return Iterators.contains(delegate().iterator(), o);
       }
     }
     @SuppressWarnings("nullness")
-    @Override public boolean containsAll(Collection<? extends /*@Nullable*/ Object> c) {
+    @Pure @Override public boolean containsAll(Collection<? extends /*@Nullable*/ Object> c) {
       synchronized (mutex) {
         return Collections2.containsAll(delegate(), c);
       }

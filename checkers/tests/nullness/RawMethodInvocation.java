@@ -1,3 +1,5 @@
+import checkers.initialization.quals.UnknownInitialization;
+import checkers.nullness.quals.EnsuresNonNull;
 import checkers.nullness.quals.*;
 import java.util.*;
 @checkers.quals.DefaultQualifier(Nullable.class)
@@ -10,8 +12,8 @@ class RawMethodInvocation {
     init_b();
   }
 
-  @AssertNonNullAfter("b")
-  void init_b(@Raw RawMethodInvocation this) {
+  @EnsuresNonNull("b")
+  void init_b(@Raw @UnknownInitialization RawMethodInvocation this) {
     b = 2;
   }
 
@@ -19,14 +21,16 @@ class RawMethodInvocation {
     init_ab();
   }
 
-  @AssertNonNullAfter({"a", "b"})
-  void init_ab(@Raw RawMethodInvocation this) {
+  @EnsuresNonNull({"a", "b"})
+  void init_ab(@Raw @UnknownInitialization RawMethodInvocation this) {
     a = 1;
     b = 2;
   }
 
   RawMethodInvocation(long constructor_escapes_raw) {
     a = 1;
+    // this call is not valid, this is still raw
+    //:: error: (method.invocation.invalid)
     nonRawMethod();
     b = 2;
   }

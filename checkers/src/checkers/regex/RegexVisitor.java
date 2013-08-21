@@ -1,31 +1,32 @@
 package checkers.regex;
 
 
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.VariableElement;
-
 import checkers.basetype.BaseTypeVisitor;
 import checkers.regex.quals.Regex;
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
-import checkers.util.TreeUtils;
+
+import javacutils.TreeUtils;
+
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
 
 import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 
 /**
  * A type-checking visitor for the Regex type system.
- * 
+ *
  * This visitor does the following:
- * 
+ *
  * <ol>
  * <li value="1">Allows any String to be passed to Pattern.compile if the
  *    Pattern.LITERAL flag is passed.</li>
@@ -34,10 +35,10 @@ import com.sun.source.tree.Tree.Kind;
  * <li value="3">Checks calls to {@code MatchResult.start}, {@code MatchResult.end}
  * and {@code MatchResult.group} to ensure that a valid group number is passed.</li>
  * </ol>
- * 
+ *
  * @see RegexChecker
  */
-public class RegexVisitor extends BaseTypeVisitor<RegexChecker> {
+public class RegexVisitor extends BaseTypeVisitor<RegexChecker, RegexAnnotatedTypeFactory> {
 
     private final ExecutableElement matchResultEnd;
     private final ExecutableElement matchResultGroup;
@@ -110,22 +111,14 @@ public class RegexVisitor extends BaseTypeVisitor<RegexChecker> {
      * Case 2: Check String compound concatenation for valid Regex use.
      */
     // TODO: Remove this. This should be handled by flow.
-    @Override
+    /*@Override
     public Void visitCompoundAssignment(CompoundAssignmentTree node, Void p) {
-        if (TreeUtils.isStringCompoundConcatenation(node)) {
-            AnnotatedTypeMirror rhs = atypeFactory.getAnnotatedType(node.getExpression());
-            AnnotatedTypeMirror lhs = atypeFactory.getAnnotatedType(node.getVariable());
-
-            if (lhs.hasExplicitAnnotation(Regex.class) && !rhs.hasAnnotation(Regex.class)) {
-                checker.report(Result.failure("assignment.type.incompatible", rhs.toString(), lhs.toString()), node.getExpression());
-            }
-        }
-        return super.visitCompoundAssignment(node, p);
-    }
+        // Default behavior from superclass
+    }*/
 
     @Override
     public boolean isValidUse(AnnotatedDeclaredType declarationType,
-                             AnnotatedDeclaredType useType) {
+                             AnnotatedDeclaredType useType, Tree tree) {
         // TODO: only allow Regex and PolyRegex annotations on types in legalReferenceTypes.
         // This is pending an implementation of AnnotatedTypeMirror.getExplicitAnnotations
         // that supports local variables, array types and parameterized types.
@@ -139,11 +132,11 @@ public class RegexVisitor extends BaseTypeVisitor<RegexChecker> {
             }
             return false;
         }*/
-        return super.isValidUse(declarationType, useType);
+        return super.isValidUse(declarationType, useType, tree);
     }
 
     @Override
-    public boolean isValidUse(AnnotatedPrimitiveType type) {
+    public boolean isValidUse(AnnotatedPrimitiveType type, Tree tree) {
         // TODO: only allow Regex and PolyRegex annotations on chars.
         // This is pending an implementation of AnnotatedTypeMirror.getExplicitAnnotations
         // that supports local variables and array types.
@@ -151,7 +144,7 @@ public class RegexVisitor extends BaseTypeVisitor<RegexChecker> {
         if (!type.getExplicitAnnotations().isEmpty()) {
             return type.getKind() == TypeKind.CHAR;
         }*/
-        return super.isValidUse(type);
+        return super.isValidUse(type, tree);
     }
 
 }

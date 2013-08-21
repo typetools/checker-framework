@@ -8,12 +8,14 @@ public class IdentityArrayList {
     public <T> T[] toArray(T[] a) {
         // Warnings only with -Alint=cast:strict.
         //TODO:: warning: (cast.unsafe)
+        //:: warning: [unchecked] unchecked cast
         return (T[]) Arrays.copyOf(null, 0, a.getClass());
     }
 
     public <T> T[] toArray2(T[] a) {
         wc(null, 0, new java.util.LinkedList<T[]>());
         //TODO:: warning: (cast.unsafe)
+        //:: warning: [unchecked] unchecked cast
         return (T[]) myCopyOf(null, 0, a.getClass());
     }
 

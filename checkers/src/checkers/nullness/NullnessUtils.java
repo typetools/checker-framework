@@ -73,7 +73,6 @@ public final class NullnessUtils {
      * @param ref a reference of @Nullable type
      * @return the argument, casted to have the type qualifier @NonNull
      */
-    @AssertParametersNonNull
     public static
     <T extends @Nullable Object>
     @NonNull T castNonNull(T ref) {
@@ -88,7 +87,6 @@ public final class NullnessUtils {
      * every array level are non-null.
      * @see #castNonNull(Object)
      */
-    @AssertParametersNonNull
     public static
     <T extends @Nullable Object>
     @NonNull T @NonNull []
@@ -103,7 +101,6 @@ public final class NullnessUtils {
      * every array level are non-null.
      * @see #castNonNull(Object)
      */
-    @AssertParametersNonNull
     public static
     <T extends @Nullable Object>
     @NonNull T @NonNull [][]
@@ -118,7 +115,6 @@ public final class NullnessUtils {
      * every array level are non-null.
      * @see #castNonNull(Object)
      */
-    @AssertParametersNonNull
     public static
     <T extends @Nullable Object>
     @NonNull T @NonNull [][][]
@@ -133,7 +129,6 @@ public final class NullnessUtils {
      * every array level are non-null.
      * @see #castNonNull(Object)
      */
-    @AssertParametersNonNull
     public static
     <T extends @Nullable Object>
     @NonNull T @NonNull [][][][]
@@ -148,7 +143,6 @@ public final class NullnessUtils {
      * every array level are non-null.
      * @see #castNonNull(Object)
      */
-    @AssertParametersNonNull
     public static
     <T extends @Nullable Object>
     @NonNull T @NonNull [][][][][]
@@ -156,7 +150,6 @@ public final class NullnessUtils {
         return (@NonNull T[][][][][]) castNonNullArray(arr);
     }
 
-    @AssertParametersNonNull
     private static
     <T extends @Nullable Object>
     @NonNull T @NonNull [] castNonNullArray(T @Nullable [] arr) {

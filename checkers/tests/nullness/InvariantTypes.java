@@ -5,10 +5,10 @@ public class InvariantTypes {
     @Nullable Object[] noa = {"non-null!"};
 
     // Type for array creation is propagated from LHS
-    @LazyNonNull Object[] f = new Object[5];
+    @MonotonicNonNull Object[] f = new Object[5];
 
     void testAsLocal() {
-        @LazyNonNull Object[] lo;
+        @MonotonicNonNull Object[] lo;
         lo = new Object[5];
         //:: error: (assignment.type.incompatible)
         lo[0] = null;
@@ -20,7 +20,7 @@ public class InvariantTypes {
     // Type for array creation is propagated from LHS
     @PolyNull Object[] po = new Object[5];
 
-    void testDecl(@LazyNonNull Object[] p) {} 
+    void testDecl(@MonotonicNonNull Object[] p) {} 
     void testCall() {
         // Type for array creation is propaged from parameter type
         testDecl(new Object[5]);

@@ -1,3 +1,4 @@
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import checkers.regex.RegexUtil;
 import checkers.regex.quals.*;
@@ -79,7 +80,6 @@ class TestIsRegex {
         }
     }
 
-/* TODO: Why does the following, exact copy of test8 fail?
     @Regex(1) Pattern test9(String input) {
         String datePattern = null;
 
@@ -100,5 +100,26 @@ class TestIsRegex {
             Pattern pattern = datePattern != null ? Pattern.compile(dp) : null;
             return pattern;
         }
-      }*/
+      }
+
+    void test10(String s) throws Exception {
+        if (!RegexUtil.isRegex(s, 2)) {
+            throw new Exception();
+        }
+        Pattern p = Pattern.compile(s);
+        Matcher m = p.matcher("abc");
+        String g = m.group(1);
+    }
+    
+    void test11(String s) throws Exception {
+        @Regex(2) String l1 = RegexUtil.asRegex(s, 2);
+        @Regex(1) String l2 = RegexUtil.asRegex(s, 2);
+        @Regex String l3 = RegexUtil.asRegex(s, 2);
+        //:: error: (assignment.type.incompatible)
+        @Regex(3) String l4 = RegexUtil.asRegex(s, 2);
+    }
+    
+    @Regex(2) String test12(String s, boolean b) throws Exception {
+        return b ? null : RegexUtil.asRegex(s, 2);
+    }
 }

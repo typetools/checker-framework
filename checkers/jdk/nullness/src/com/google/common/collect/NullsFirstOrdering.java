@@ -33,7 +33,7 @@ import javax.annotation.Nullable;
   }
 
   @SuppressWarnings("nullness")
-  public int compare(T left, T right) {
+    /*@Pure*/ public int compare(T left, T right) {
     if (left == right) {
       return 0;
     }
@@ -60,7 +60,7 @@ import javax.annotation.Nullable;
     return ordering.nullsLast();
   }
 
-  @Override public boolean equals(@Nullable Object object) {
+  @Pure @Override public boolean equals(@Nullable Object object) {
     if (object == this) {
       return true;
     }
@@ -71,11 +71,11 @@ import javax.annotation.Nullable;
     return false;
   }
 
-  @Override public int hashCode() {
+  @Pure @Override public int hashCode() {
     return ordering.hashCode() ^ 957692532; // meaningless
   }
 
-  @Override public String toString() {
+  @Pure @Override public String toString() {
     return ordering + ".nullsFirst()";
   }
 

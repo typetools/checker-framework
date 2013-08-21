@@ -1,6 +1,10 @@
 package java.util;
-import checkers.nullness.quals.*;
-@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
+import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
+
+import checkers.nullness.quals.EnsuresNonNullIf;
+import checkers.nullness.quals.KeyFor;
+import checkers.nullness.quals.Nullable;
 
 // This permits null element when using a custom comparator which allows null
 public class TreeMap<K extends @Nullable Object, V extends @Nullable Object> extends AbstractMap<K, V> implements NavigableMap<K, V>, Cloneable, java.io.Serializable {
@@ -9,9 +13,9 @@ public class TreeMap<K extends @Nullable Object, V extends @Nullable Object> ext
   public TreeMap(Comparator<? super K> a1) { throw new RuntimeException("skeleton method"); }
   public TreeMap(Map<? extends K, ? extends V> a1) { throw new RuntimeException("skeleton method"); }
   public TreeMap(SortedMap<K, ? extends V> a1) { throw new RuntimeException("skeleton method"); }
-  public int size() { throw new RuntimeException("skeleton method"); }
+  @Pure public int size() { throw new RuntimeException("skeleton method"); }
   public @Pure boolean containsKey(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
-  public boolean containsValue(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
+  @Pure public boolean containsValue(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   public @Pure @Nullable V get(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   public Comparator<? super K> comparator() { throw new RuntimeException("skeleton method"); }
   public K firstKey() { throw new RuntimeException("skeleton method"); }
@@ -44,8 +48,8 @@ public class TreeMap<K extends @Nullable Object, V extends @Nullable Object> ext
   public SortedMap<K, V> subMap(K a1, K a2) { throw new RuntimeException("skeleton method"); }
   public SortedMap<K, V> headMap(K a1) { throw new RuntimeException("skeleton method"); }
   public SortedMap<K, V> tailMap(K a1) { throw new RuntimeException("skeleton method"); }
-  public Object clone() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public Object clone() { throw new RuntimeException("skeleton method"); }
 
-  @AssertNonNullIfFalse({"firstEntry()", "pollFirstEntry()", "lastEntry()", "pollLastEntry()"})
-  public boolean isEmpty() { throw new RuntimeException("skeleton method"); }
+  @EnsuresNonNullIf(expression={"firstEntry()", "pollFirstEntry()", "lastEntry()", "pollLastEntry()"}, result=false)
+  @Pure public boolean isEmpty() { throw new RuntimeException("skeleton method"); }
 }

@@ -28,7 +28,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 /**
  * A comparator with added methods to support common functions. For example:
  * <pre>   {@code
@@ -316,7 +316,7 @@ import checkers.nullness.quals.*;
    * ordering. Note that this is always true when the iterable has fewer than
    * two elements.
    */
-  public boolean isOrdered(Iterable<? extends T> iterable) {
+  @Pure public boolean isOrdered(Iterable<? extends T> iterable) {
     Iterator<? extends T> it = iterable.iterator();
     if (it.hasNext()) {
       T prev = it.next();
@@ -337,7 +337,7 @@ import checkers.nullness.quals.*;
    * this ordering. Note that this is always true when the iterable has fewer
    * than two elements.
    */
-  public boolean isStrictlyOrdered(Iterable<? extends T> iterable) {
+  @Pure public boolean isStrictlyOrdered(Iterable<? extends T> iterable) {
     Iterator<? extends T> it = iterable.iterator();
     if (it.hasNext()) {
       T prev = it.next();
