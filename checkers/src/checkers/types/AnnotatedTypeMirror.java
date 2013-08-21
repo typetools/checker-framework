@@ -873,8 +873,9 @@ public abstract class AnnotatedTypeMirror {
         private AnnotatedDeclaredType(DeclaredType type,
                 AnnotatedTypeFactory atypeFactory) {
             super(type, atypeFactory);
-            DeclaredType elem = (DeclaredType)((TypeElement)type.asElement()).asType();
-            wasRaw = !elem.getTypeArguments().isEmpty() &&
+            TypeElement typeelem = (TypeElement) type.asElement();
+            DeclaredType declty = (DeclaredType) typeelem.asType();
+            wasRaw = !declty.getTypeArguments().isEmpty() &&
                     type.getTypeArguments().isEmpty();
 
             TypeMirror encl = type.getEnclosingType();
