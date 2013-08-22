@@ -61,14 +61,14 @@ public enum DefaultLocation {
     UPPER_BOUNDS,
     /**
      * Apply default annotations to unannotated, but explicit upper bounds:
-     * @code{&lt;T extends Object&gt;}
+     * <code>&lt;T extends Object&gt;</code>
      *
      * TODO: more doc, relation to other UPPER_BOUNDS
      */
     EXPLICIT_UPPER_BOUNDS,
     /**
      * Apply default annotations to unannotated type variables:
-     * @code{&lt;T&gt;}
+     * <code>&lt;T&gt;</code>
      *
      * TODO: more doc, relation to other UPPER_BOUNDS
      */
