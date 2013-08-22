@@ -10,7 +10,7 @@ public abstract class Dictionary<K extends @Nullable Object, V extends @Nullable
   @Pure public abstract boolean isEmpty();
   public abstract Enumeration<K> keys();
   public abstract Enumeration<V> elements();
-  public abstract @Pure @Nullable V get(@Nullable Object a1);
+  @Pure public abstract @Nullable V get(@Nullable Object a1);
   public abstract @Nullable V put(K a1, V a2);
   public abstract @Nullable V remove(Object a1);
 }

@@ -120,7 +120,7 @@ final class MapConstraints {
     @Override protected Map<K, V> delegate() {
       return delegate;
     }
-    @Override public Set<Entry<K, V>> entrySet() {
+    @SideEffectFree @Override public Set<Entry<K, V>> entrySet() {
       if (entrySet == null) {
         entrySet = constrainedEntrySet(delegate.entrySet(), constraint);
       }

@@ -56,7 +56,7 @@ import checkers.quals.TypeQualifier;
  * </li>
  * </ul>
  *
- * <b>Subtyping rules:
+ * <b>Subtyping rules:</b>
  * An unannotated type is a subtype of a
  * <code>@GuardedBy</code> one, because the unannotated type may be
  * used in any context where the <code>@GuardedBy</code> one is.

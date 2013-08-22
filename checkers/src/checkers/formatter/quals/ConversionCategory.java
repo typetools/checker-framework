@@ -24,9 +24,8 @@ import java.util.Set;
  * </blockquote>
  *
  * The annotation describes that the format string requires any Object as the
- * first parameter ({@link ConversionCategory.GENERAL
- * ConversionCategory.GENERAL}) and an integer as the second parameter
- * ({@link ConversionCategory.INT ConversionCategory.INT}).
+ * first parameter ({@link ConversionCategory#GENERAL}) and an integer as the
+ * second parameter ({@link ConversionCategory#INT}).
  *
  * @see Format
  * @checker.framework.manual #formatter-checker Format String Checker

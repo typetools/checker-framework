@@ -223,7 +223,7 @@ import checkers.nullness.quals.Nullable;
     return inverse().containsKey(value);
   }
 
-  @Override public ImmutableSet<Entry<K, V>> entrySet() {
+  @SideEffectFree @Override public ImmutableSet<Entry<K, V>> entrySet() {
     return delegate().entrySet();
   }
   
@@ -231,7 +231,7 @@ import checkers.nullness.quals.Nullable;
     return delegate().get(key);
   }
 
-  @Override public ImmutableSet<K> keySet() {
+  @SideEffectFree @Override public ImmutableSet<K> keySet() {
     return delegate().keySet();
   }
 
@@ -239,7 +239,7 @@ import checkers.nullness.quals.Nullable;
    * Returns an immutable set of the values in this map. The values are in the
    * same order as the parameters used to build this map.
    */
-  @Override public ImmutableSet<V> values() {
+  @SideEffectFree @Override public ImmutableSet<V> values() {
     return inverse().keySet();
   }
 

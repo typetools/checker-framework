@@ -655,7 +655,7 @@ public final class Maps {
           : result;
     }
 
-    @Override public Set<V> values() {
+    @SideEffectFree @Override public Set<V> values() {
       Set<V> result = values;
       return (result == null)
           ? values = Collections.<V>unmodifiableSet(delegate.values())
@@ -725,7 +725,7 @@ public final class Maps {
 
     private transient Set<Entry<K, V>> entrySet;
 
-    @Override public synchronized Set<Entry<K, V>> entrySet() {
+    @SideEffectFree @Override public synchronized Set<Entry<K, V>> entrySet() {
       if (entrySet == null) {
         entrySet = createEntrySet();
       }
@@ -734,7 +734,7 @@ public final class Maps {
 
     private transient Set<K> keySet;
 
-    @Override public synchronized Set<K> keySet() {
+    @SideEffectFree @Override public synchronized Set<K> keySet() {
       if (keySet == null) {
         final Set<K> delegate = super.keySet();
         keySet = new ForwardingSet<K>() {
@@ -752,7 +752,7 @@ public final class Maps {
 
     private transient Collection<V> values;
 
-    @Override public synchronized Collection<V> values() {
+    @SideEffectFree @Override public synchronized Collection<V> values() {
       if (values == null) {
         final Collection<V> delegate = super.values();
         values = new ForwardingCollection<V>() {
@@ -865,7 +865,7 @@ public final class Maps {
 
     volatile EntrySet entrySet;
 
-    @Override public Set<Entry<K, V2>> entrySet() {
+    @SideEffectFree @Override public Set<Entry<K, V2>> entrySet() {
       if (entrySet == null) {
         entrySet = new EntrySet();
       }
@@ -1034,7 +1034,7 @@ public static <K extends /*@Nullable*/ Object, V extends /*@Nullable*/ Object> M
 
     Collection<V> values;
 
-    @Override public Collection<V> values() {
+    @SideEffectFree @Override public Collection<V> values() {
       Collection<V> result = values;
       return (result == null) ? values = new Values() : values;
     }
@@ -1129,7 +1129,7 @@ public static <K extends /*@Nullable*/ Object, V extends /*@Nullable*/ Object> M
 
     Set<Entry<K, V>> entrySet;
 
-    @Override public Set<Entry<K, V>> entrySet() {
+    @SideEffectFree @Override public Set<Entry<K, V>> entrySet() {
       Set<Entry<K, V>> result = entrySet;
       return (result == null)
           ? entrySet = Sets.filter(unfiltered.entrySet(), predicate)
@@ -1138,7 +1138,7 @@ public static <K extends /*@Nullable*/ Object, V extends /*@Nullable*/ Object> M
 
     Set<K> keySet;
 
-    @Override public Set<K> keySet() {
+    @SideEffectFree @Override public Set<K> keySet() {
       Set<K> result = keySet;
       return (result == null)
           ? keySet = Sets.filter(unfiltered.keySet(), keyPredicate)
@@ -1169,7 +1169,7 @@ public static <K extends /*@Nullable*/ Object, V extends /*@Nullable*/ Object> M
 
     Set<Entry<K, V>> entrySet;
 
-    @Override public Set<Entry<K, V>> entrySet() {
+    @SideEffectFree @Override public Set<Entry<K, V>> entrySet() {
       Set<Entry<K, V>> result = entrySet;
       return (result == null) ? entrySet = new EntrySet() : result;
     }
@@ -1203,7 +1203,7 @@ public static <K extends /*@Nullable*/ Object, V extends /*@Nullable*/ Object> M
 
     Set<K> keySet;
 
-    @Override public Set<K> keySet() {
+    @SideEffectFree @Override public Set<K> keySet() {
       Set<K> result = keySet;
       return (result == null) ? keySet = new KeySet() : result;
     }

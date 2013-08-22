@@ -8,6 +8,7 @@ import javacutils.AnnotationUtils;
 import checkers.basetype.BaseTypeChecker;
 import checkers.lock.quals.GuardedBy;
 import checkers.lock.quals.GuardedByTop;
+import checkers.lock.quals.Holding;
 import checkers.quals.TypeQualifiers;
 import checkers.quals.Unqualified;
 import checkers.types.QualifierHierarchy;
