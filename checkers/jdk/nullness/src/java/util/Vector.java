@@ -36,7 +36,7 @@ public class Vector<E extends @Nullable Object> extends AbstractList<E> implemen
   public synchronized void removeAllElements() { throw new RuntimeException("skeleton method"); }
   public synchronized @Nullable Object [] toArray() { throw new RuntimeException("skeleton method"); }
   public synchronized <T> @Nullable T @PolyNull [] toArray(T @PolyNull [] a1) { throw new RuntimeException("skeleton method"); }
-  public synchronized @Pure E get(int a1) { throw new RuntimeException("skeleton method"); }
+  @Pure public synchronized E get(int a1) { throw new RuntimeException("skeleton method"); }
   public synchronized E set(int a1, E a2) { throw new RuntimeException("skeleton method"); }
   public synchronized boolean add(E a1) { throw new RuntimeException("skeleton method"); }
   public boolean remove(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }

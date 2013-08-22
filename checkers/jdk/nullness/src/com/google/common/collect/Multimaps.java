@@ -476,7 +476,7 @@ public final class Multimaps {
 
           Set<Entry<K, Collection<V>>> entrySet;
 
-          @Override public Set<Map.Entry<K, Collection<V>>> entrySet() {
+          @SideEffectFree @Override public Set<Map.Entry<K, Collection<V>>> entrySet() {
             Set<Entry<K, Collection<V>>> result = entrySet;
             return (result == null)
                 ? entrySet
@@ -494,7 +494,7 @@ public final class Multimaps {
 
           Collection<Collection<V>> asMapValues;
 
-          @Override public Collection<Collection<V>> values() {
+          @SideEffectFree @Override public Collection<Collection<V>> values() {
             Collection<Collection<V>> result = asMapValues;
             return (result == null)
                 ? asMapValues
@@ -510,7 +510,7 @@ public final class Multimaps {
       return map;
     }
 
-    @Override public Collection<Entry<K, V>> entries() {
+    @SideEffectFree @Override public Collection<Entry<K, V>> entries() {
       if (entries == null) {
         entries = unmodifiableEntries(delegate.entries());
       }
@@ -528,7 +528,7 @@ public final class Multimaps {
       return keys;
     }
 
-    @Override public Set<K> keySet() {
+    @SideEffectFree @Override public Set<K> keySet() {
       if (keySet == null) {
         keySet = Collections.unmodifiableSet(delegate.keySet());
       }
@@ -562,7 +562,7 @@ public final class Multimaps {
       throw new UnsupportedOperationException();
     }
 
-    @Override public Collection<V> values() {
+    @SideEffectFree @Override public Collection<V> values() {
       if (values == null) {
         values = Collections.unmodifiableCollection(delegate.values());
       }
@@ -649,7 +649,7 @@ public final class Multimaps {
        */
       return Collections.unmodifiableSet(delegate().get(key));
     }
-    @Override public Set<Map.Entry<K, V>> entries() {
+    @SideEffectFree @Override public Set<Map.Entry<K, V>> entries() {
       return Maps.unmodifiableEntrySet(delegate().entries());
     }
     @Override public Set<V> removeAll(/*@Nullable*/ Object key) {
@@ -1059,7 +1059,7 @@ public final class Multimaps {
       map.clear();
     }
 
-    public Set<K> keySet() {
+    @SideEffectFree public Set<K> keySet() {
       return map.keySet();
     }
 
@@ -1067,11 +1067,11 @@ public final class Multimaps {
       return Multisets.forSet(map.keySet());
     }
 
-    public Collection<V> values() {
+    @SideEffectFree public Collection<V> values() {
       return map.values();
     }
 
-    public Set<Entry<K, V>> entries() {
+    @SideEffectFree public Set<Entry<K, V>> entries() {
       return map.entrySet();
     }
 

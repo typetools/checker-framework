@@ -1,5 +1,6 @@
 package java.util;
 import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
 import checkers.nullness.quals.EnsuresNonNullIf;
 import checkers.nullness.quals.Nullable;
 
@@ -14,12 +15,12 @@ public interface NavigableSet<E extends @Nullable Object> extends SortedSet<E> {
   public abstract Iterator<E> iterator();
   public abstract NavigableSet<E> descendingSet();
   public abstract Iterator<E> descendingIterator();
-  public abstract NavigableSet<E> subSet(E a1, boolean a2, E a3, boolean a4);
-  public abstract NavigableSet<E> headSet(E a1, boolean a2);
-  public abstract NavigableSet<E> tailSet(E a1, boolean a2);
-  public abstract SortedSet<E> subSet(E a1, E a2);
-  public abstract SortedSet<E> headSet(E a1);
-  public abstract SortedSet<E> tailSet(E a1);
+  @SideEffectFree public abstract NavigableSet<E> subSet(E a1, boolean a2, E a3, boolean a4);
+  @SideEffectFree public abstract NavigableSet<E> headSet(E a1, boolean a2);
+  @SideEffectFree public abstract NavigableSet<E> tailSet(E a1, boolean a2);
+  @SideEffectFree public abstract SortedSet<E> subSet(E a1, E a2);
+  @SideEffectFree public abstract SortedSet<E> headSet(E a1);
+  @SideEffectFree public abstract SortedSet<E> tailSet(E a1);
 
   @EnsuresNonNullIf(expression={"pollFirst()", "pollLast()"}, result=false)
   @Pure public abstract boolean isEmpty();
