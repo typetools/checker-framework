@@ -1,0 +1,3 @@
+This document can be processed with pdflatex, but not with latex.
+
+This document has been written at an early point in the development of the dataflow framework and might not reflect the current design accurately or might be missing important information.

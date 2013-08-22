@@ -1,0 +1,548 @@
+% -*- Mode: LaTeX -*-
+\documentclass{article}
+
+\usepackage{url}
+
+% \|name| or \mathid{name} denotes identifiers and slots in formulas
+\def\|#1|{\mathid{#1}}
+\newcommand{\mathid}[1]{\ensuremath{\mathit{#1}}}
+% \<name> or \codeid{name} denotes computer code identifiers
+\def\<#1>{\codeid{#1}}
+\newcommand{\codeid}[1]{\ifmmode{\mbox{\ttfamily{#1}}}\else{\ttfamily #1}\fi}
+\newcommand{\code}[1]{\ifmmode{\mbox{\ttfamily{#1}}}\else{\ttfamily #1}\fi}
+
+
+\begin{document}
+
+\title{Preventing runtime errors at compile time
+% with the Checker Framework
+}
+
+\author{
+Michael D. Ernst
+\qquad
+Werner Dietl\\
+University of Washington\\
+\url{{mernst,wmdietl}@cs.washington.edu}
+}
+
+\maketitle
+
+
+This document contains the data that we will submit in the OSCON Java
+web form.
+
+
+\section{Proposal title}
+
+== document title.
+
+
+\section{Description}
+
+Brief overview for marketing purposes, max. length 400
+characters---about 65 words:
+
+\medskip
+
+Are you tired of null pointer exceptions, unintended side effects, SQL
+injections, concurrency errors, mistaken equality tests, and other run-time
+errors that appear during testing or in the field?  A compile-time tool
+named the Checker Framework has found hundreds of such errors.  Oracle
+plans to include it in the Java 8 javac, but you can use it today to
+improve your code and avoid errors.
+
+
+
+\section{Topics}
+
+Select the most relevant to your proposal:
+
+\noindent
+Java: Tools \& techniques
+
+\medskip
+
+\noindent
+Other options:\\
+Java: Cloud\\
+Java: Community\\
+Java: Groovy\\
+Java: JVM languages\\
+Java: Mobile\\
+Java: Rich client\\
+Java: Scala\\
+Java: Server side\\
+Java: Other
+
+
+\section{Session type}
+
+40 min presentation\\
+90 min workshop
+
+We can do either, preferably the 90 min workshop.
+
+
+\section{Abstract}
+
+The form doesn't say how long this can be...
+
+\medskip
+
+Are you tired of null pointer exceptions, unintended side effects, SQL
+injections, concurrency errors, mistaken equality tests, and other run-time
+errors that appear during testing or in the field?  A pluggable type system
+can guarantee the absence of these errors, and many more real, important
+bugs.
+
+Are you a software architect who wants to be able to quickly and easily
+implement custom checks that prevent more errors at compile time?  You need
+a framework that supports you in creating a formally correct code checker.
+
+This presentation is aimed at both audiences.  A pluggable type system can
+give a compile-time guarantee of important properties.  We will explain
+what it is, how to use it, and even how to create your own.  You can create
+a simple pluggable type-checker in 2 minutes, and you can enhance it
+thereafter.
+
+The demo uses the Checker Framework, which enables you to create pluggable
+type systems for Java.
+It takes advantage of features planned by Oracle for Java 8, but your code
+remains backward-compatible.
+The pluggable type-checker can be run as part of javac or via an Eclipse
+plug-in, and integration with build tools such as Ant and Maven is
+provided.
+The tools are freely available at
+\url{http://types.cs.washington.edu/checker-framework/}.
+
+The Checker Framework provides 12 pluggable type systems that are
+ready to use, including nullness, immutability, and
+locking checkers.
+The presentation will first develop a simple declarative type checker
+that checks the consistency of method signature strings.
+The presentation will then discuss the design and usage of more
+advanced checkers.
+
+The Checker Framework has found hundreds of bugs in over 3 million lines of
+open source code, including from Oracle, Google, Apache, etc.  Overall, we
+found that the type checkers were easy to write, easy for novices to
+productively use, and effective in finding real bugs and verifying program
+properties, even for widely tested and used open source projects.  It is
+easy to improve the quality of your Java code, and you can start using the
+Checker Framework today!
+
+
+
+\section{Skill Level of this session}
+
+Beginning\\
+X Intermediate\\
+Advanced
+
+
+\section{What knowledge/skills should attendees have in order to get
+  the most from this session?}
+
+A basic understanding of the Java type system is assumed.
+
+Attendants are encouraged to come with a laptop computer.  We will walk
+through the installation and use of the Checker Framework, including both
+exercises and running it on participants' code.
+
+
+
+\section{Additional Tags}
+
+Please provide any related tags to your presentation 
+(comma separated list):
+
+\medskip
+
+Design, Documentation, Experimentation, Languages, Reliability,
+Security, Verification,
+User-defined type system, Static type system
+
+
+\section{Audience level}
+
+Novice\\
+X Intermediate\\
+Expert
+
+\medskip
+
+What is the difference to the Skill level??
+
+
+\section{O'Reilly author}
+
+Are you an O'Reilly author? If so, please list your main contact with us.
+
+\medskip
+
+No.
+
+
+\section{Additional Notes}
+
+Any other information you wish the organizer to know? If you are
+proposing a workshop, please tell us what type of learning experience
+you have in mind (hands-on, demo, etc.). If you selected ``Other'' in
+the Session type field, please provide more details here.
+
+\medskip
+
+We can do either a 90 minute workshop or a 40 minute presentation.  We
+prefer a 90 minute workshop, which would be more interactive and provide
+hands-on sessions to install and use the Checker Framework and walks
+through building a custom type checker.  In a 40-minute presentation, we
+would do a demo but the audience would not get practice in using the tools
+themselves.
+
+
+\section{Speakers}
+
+Michael D. Ernst
+
+
+\end{document}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Categories:
+{D.2.4}{Software Engineering}{Software/Program Verification}
+{D.3.3}{Programming Languages}{Language Constructs and Features}
+{D.3.4}{Programming Languages}{Processors}
+
+Terms:
+{Design, Documentation, Experimentation, Languages, Reliability,
+  Security, Verification}
+
+Keywords:
+{Pluggable type-system, user-defined type system, Checker
+  Framework, Java, type checking}
+
+
+\section{Motivation}
+
+Buggy software is costly to society:  in 2002, insufficient software
+testing and verification were estimated to cost the US economy \$22--60
+billion annually~\cite{NIST02-3}.
+One approach to reducing this cost is program verification via type systems.
+%
+A static type system helps programmers to detect and prevent errors.
+However, a language's built-in type system does not help to detect and
+prevent \emph{enough} errors, because it cannot express
+certain important invariants.  A user-defined, or pluggable, type
+system enriches the built-in type system by expressing extra information
+about types via type qualifiers.  Example qualifiers include
+\code{nonnull}, \code{readonly}, \code{interned}, \code{locked}, and
+\code{tainted}, as well as much more complex type systems.  Pluggable types
+permit more expressive compile-time checking and guarantee the absence of
+additional errors.
+
+
+We present the Checker Framework for defining pluggable types in a
+backward-compatible way, in the context of a real-world programming
+language.  Our implementation is for Java, but the ideas and techniques
+translate to other languages.
+The Checker Framework is available in source and binary forms from
+\url{http://types.cs.washington.edu/checker-framework/}.
+
+The framework makes it easy to define type-checkers either
+declaratively or procedurally.
+The framework makes use of a syntax for type qualifiers that is usable
+today and is planned for inclusion in a future version of the Java
+language.
+The framework is in daily academic use by type system designers who are
+creating new type systems  and evaluating them in a realistic context.
+The framework is in daily industrial use by programmers who want a
+guarantee that certain types of errors cannot occur.
+The framework has been applied to millions of lines of code and has found
+errors in every codebase to which it has been applied.
+
+The framework ships with the following checkers:
+\begin{itemize}    \itemsep 0pt \parskip 0pt
+\item Nullness Checker for null pointer errors
+\item Interning Checker for errors in equality testing and interning
+\item IGJ Checker for mutation errors (incorrect side effects), based on the IGJ type system
+\item Javari Checker for mutation errors (incorrect side effects), based on the Javari type system
+\item Lock Checker for concurrency and lock errors, inspired by the Java Concurrency in Practice (JCIP)~\cite{Goetz2006} annotations
+\item Fake enum Checker for integers used as enumerations
+\item Tainting Checker for trust and security errors
+\item Linear Checker to control aliasing and prevent re-use
+\item Regex Checker to prevent use of syntactically invalid regular expressions
+\item Internationalization Checker to ensure that code is properly internationalized: user-visible text is obtained from a localization resource, and proper keys are used for a localization resource
+\item Property file Checker to check keys used for property files and
+  resource bundles, and to check internationalization and compiler messages
+\item Basic Checker for customized checking without writing any code
+\end{itemize}
+Additional checkers written by third parties are also available.
+The Checker Framework comes with a 100-page manual, mostly describing each
+of the pluggable type systems.
+
+
+\section{Benefits to the profession}
+
+Program types are the shining success of formal methods.  Types are widely
+adopted by rank-and-file programmers to detect errors and --- more
+importantly --- to verify that no more errors (of particular varieties)
+exist.  However, the uptake of types into practice has been
+limited by their migration into mainstream programming languages, a
+process that takes decades.  Our work shortcuts this process,
+offering benefits both to practitioners and to researchers.
+
+For practitioners, we offer the ability to adopt new type systems without
+breaking compatibility with existing programs, systems, and languages.
+This enables faster adoption of new ideas.  Our work also permits
+programmers to define application-specific type systems that verify
+important properties of their systems.  We believe that these changes have
+the potential to transform the way that software is written, and the way
+that programmers think about their programs.  Rather than testing to try to
+eliminate as many bugs as possible, types provide a pathway to verification
+and a mindset of writing correct code.
+
+For researchers, we offer the opportunity to experiment with type systems
+in the context of a widely-used industrial language, Java.  To date,
+evaluating a new type system has generally required either defining a new
+language, or extensive and incompatible changes to an existing language.
+Incompatibility with existing tools and programs limits the scope of
+experimentation, and it limits adoption in practice.  This has too often led to
+flawed theory --- say, the approach is
+unscalable, or it does not handle features like iterators, generics, or the
+visitor pattern, or a proof of soundness makes unrealistic simplifications.
+Empirical evaluation is not optional --- it is a necessary part of
+programming language research.  By lowering the bar to experimentation,
+while retaining compatibility with existing tools and programs, we hope to
+change the way that researchers think about implementing and evaluating
+their ideas.  The result should be more relevant and worthwhile theory and
+systems, achieved more quickly.
+
+
+
+% \textbf{Intellectual merit.}
+% The proposed research will advance the state of the art, both in terms of
+% theory and in terms of practice.  The creation of a uniform and
+% backward-compatible framework for type systems is a long-standing research
+% goal, but previous attempts have fallen short.  Our work takes a novel
+% and more practical approach, both in terms of algorithms and in terms of
+% implementation strategy.  Our framework for type checking and inference can be
+% instantiated for use in many 
+% domains, as indicated by our collaborations with other researchers
+% to support their work.  The type systems raise interesting theoretical
+% questions about program specification, verification, and correctness.
+% Experiments enabled by our work will yield insight into the applicability
+% of theory to practice.  Already, users of our prototype implementation have
+% revised theory based on experimental evaluation.  Future users will be able
+% to develop even deeper theoretical insights that have the promise to aid in
+% understanding of program analysis and the behavior operation of computer
+% systems.
+
+
+% \section{Goal and objectives}
+% 
+% Our aim is to bring the research and practitioner communities closer
+% together, in the concrete context of type systems, by offering each
+% community something that it has lacked so far.
+% 
+% For researchers, it is too hard to evaluate a proposed type system in a
+% realistic way, which requires integration with a full, real programming
+% language and evaluation on real, sizable programs.  It is also too hard to
+% package type systems for use by practitioners, even after they have been
+% demonstrated to be useful.
+% 
+% For practitioners, many important properties of a program must be expressed
+% informally in English, and no tools exist to detect and prevent these
+% problems.
+% 
+% We will demonstrate a solution to many of these problems.
+
+
+
+
+
+\section{Related work}
+
+This document only skims the surface of related work.
+For a more extensive discussion, please see~\cite{PapiACPE2008}.
+
+The most closely related frameworks are JQual~\cite{GreenfieldboyceF2007},
+and JavaCOP~\cite{AndreaeNMM2006}.  These two frameworks, like the Checker
+Framework, have been used to implement the Javari~\cite{TschantzE2005} type
+system for enforcing reference immutability.  The version implemented in
+our framework supports the entire Javari language (5 keywords).  The JQual
+and JavaCOP versions have only partial support for 1 keyword (\<readonly>),
+and neither one properly implements method overriding, a key feature of an
+object-oriented language.  Neither JQual nor JavaCOP scales to real
+programs --- either in terms of program size or of language features.
+
+The JastAdd extensible Java compiler~\cite{EkmanH2007:JastAdd} includes a
+module for checking and inferencing of non-null
+types~\cite{EkmanH2007:NonNull}, though it is less featureful and correct
+than our Nullness Checker.  JastAdd could theoretically be used as a
+framework to build other type systems.
+
+The goal of a bug-finder such as FindBugs~\cite{HovemeyerSP2005} is to find
+just a few errors, not all errors.  FindBugs discards most reports to avoid
+false positives.  Its benefit is that it requires few user annotations.
+
+The Type Annotations (JSR 308) Specification~\cite{JSR308} explains how
+Java will support expressing pluggable type systems.
+
+\bibliographystyle{plain}
+\bibliography{bibstring-unabbrev,ernst,testing,types,concurrency}
+
+% \newpage
+% 
+% \section{Demo setup}
+% 
+% The demo will mix slides (that introduce concepts) with live use of the
+% pluggable type-checkers, under multiple environments such as Emacs and
+% Eclipse.  We will show multiple checkers, including ones for nullness,
+% immutability, and tainting.  In each case, we will show real code that
+% contains real errors committed by programmers, and will show how pluggable
+% type-checking can detect these errors and verify the absence of further
+% errors.
+% 
+% 
+% \section{Presenters}
+% 
+% Mahmood Ali is a graduate student in the MIT Computer Science and
+% Artificial Intelligence Lab.  He designed and implemented the Type
+% Annotations (JSR 308) compiler that has been incorporated into Sun's
+% OpenJDK, and the Checker Framework that enables the creation of
+% user-defined pluggable type systems.
+% 
+% Michael D. Ernst is an Associate Professor in the Computer Science and
+% Engineering department at the University of Washington.  He is the
+% specification lead for the Type Annotations language extension (``JSR
+% 308'') that is part of Java 7 --- the first non-Sun-employee to be the
+% specification lead for a Java language change.  Ernst's research aims to
+% make software more reliable, more secure, and easier (and more fun!) to
+% produce. His primary technical interests are in software engineering and
+% related areas, including programming languages, type theory, security,
+% program analysis, bug prediction, testing, and verification. Ernst's
+% research combines strong theoretical foundations with realistic
+% experimentation, with an eye to changing the way that software developers
+% work.  Dr. Ernst was previously a tenured professor at MIT, and before that
+% a researcher at Microsoft Research.  More information is available at his
+% homepage:  \url{http://homes.cs.washington.edu/~mernst/}.
+% 
+% Ernst received a ``Java Rock Star'' award for his presentation on the
+% Checker Framework at the JavaOne 2009 conference.  He and/or Ali have
+% recently given presentations on the topic at Dagstuhl (4/2008), J-Spring
+% (4/2008), ECOOP (7/2008), OOPSLA (10/2008), Devoxx (12/2008), Google
+% (12/2008), and SeaJUG (4/2009), PPPJ (8/2009), OOPSLA (10/2009), and Devoxx
+% (11/2009).
+
+
+
+\end{document}
+
+
+
+% \section{Summary of contents}
+% 
+% The Java type system helps programmers to detect and prevent
+% errors. However, Java's built-in type system does not detect and prevent
+% \emph{enough} errors. It cannot express important properties such as: a reference
+% is non-null, a data structure should not be modified, or a string has been
+% properly sanitized.
+% 
+% Java's type system can be extended to enforce such properties statically,
+% preventing whole classes of errors. 
+% A user-defined, or pluggable, type system enriches a
+% language's built-in type system via type qualifiers.  Pluggable types
+% permit more expressive compile-time checking, and they can guarantee
+% the absence of additional errors.
+% 
+% Despite considerable interest in user-defined type qualifiers,
+% previous implementations have been too inexpressive, unscalable, or
+% incompatible with existing languages or tools.  This has hindered the
+% evaluation, understanding, and uptake of pluggable types.
+% 
+% More recently, pluggable types (that operate as an optional plug-in to the
+% compiler) have become practical for Java. This benefits two constituencies:
+% 
+% \begin{itemize}
+% \item Programmers can detect and prevent errors in their code.
+% \item Type system designers can easily evaluate new type systems in the
+%   context of an industrial programming language.
+% \end{itemize}
+% 
+% The line between these constituencies is porous: a developer may create a
+% simple type system to enforce an application-specific property.
+% 
+% This demo will explain how to both \emph{use} and \emph{create}
+% pluggable type systems. Afterward, you will be ready to use pluggable types
+% with confidence and to create simple type-checkers of your own, and you
+% will know where to look for more information.
+% 
+% The Checker Framework is expressive and flexible.  It builds in many
+% features needed by type system designers and programmers, including:
+% \begin{itemize}
+% \item backward-compatible Java and classfile syntax for type qualifiers
+% \item integration with javac and Eclipse
+% \item three type inference tools to ease programmer annotation burden
+% \item declarative and procedural syntax for writing type-checking rules
+% \item flow-sensitive type qualifier inference
+% \item polymorphism over types (Java generics)
+% \item polymorphism over type qualifiers
+% \item implicit and default qualifiers
+% \end{itemize}
+% 
+% The hands-on activities will use the Checker Framework, which provides
+% expressive, concise declarative and procedural mechanisms for creating
+% pluggable type checkers for Java. However, the ideas extend to other
+% frameworks and languages. The Checker Framework is the basis of many
+% practical checkers that are in daily use and have found hundreds of
+% important errors in millions of lines of code. The Checker Framework is
+% being used by researchers worldwide, and it has yielded new insight into
+% research type systems. It is usable with any version of the Java language,
+% but pluggable types are so important that Java 7 will contain special
+% syntax (designed by the presenter of this demo) to support type
+% qualifiers.
+% 
+% The demo will cover both theory and practice, and is applicable both to
+% researchers and also to practitioners who wish to verify domain-specific
+% properties in their software. For example, you will learn how type system
+% designers can build scalable, robust, and easily deployable
+% type-checkers. During the demo, you will build your own
+% type-checker. After the demo, you will be prepared to use, create, or
+% customize pluggable type-checkers.
+% 
+% Attendees are suggested to bring laptop computers, though it is also
+% possible to look on with another attendee.
+% 
+% The Checker Framework is freely available at
+% \url{http://types.cs.washington.edu/jsr308/}.
+% The distribution includes source code, binaries, extensive
+% documentation, and example type-checkers.
+% 
+% 
+% 
+% 
+% The demo is relevant because it is a rare example of academic research
+% having a direct effect on industrial practice and becoming available to
+% every Java developer via support in the Java language standard.
+
+
+
+%%% Local Variables: 
+%%% mode: latex
+%%% End: 
+
+% LocalWords:  Devoxx SeaJUG PPPJ deployable nonnull readonly classfile XSS
+% LocalWords:  checkable toolsets Dagstuhl ernst

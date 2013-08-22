@@ -1,0 +1,172 @@
+#if 0
+Do not attempt to compile this file with a Java compiler such as javac.
+You first need to preprocess it with cpp, the C preprocessor.
+The correct way to build the system is to run 'make'.
+#endif
+
+#include "MathMDE-help.java.jpp"
+
+  /** Return z such that (z == x mod y) and (0 <= z < abs(y)). */
+  public static final INT mod_positive(INT x, INT y) {
+    INT result = x % y;
+    if (result < 0)
+      result += Math.abs(y);
+    return result;
+  }
+
+
+  /**
+   * Return an array of two integers (r,m) such that each number in NUMS is equal to r (mod m).
+   * The largest possible modulus is used, and the trivial constraint that all
+   * integers are equal to 0 mod 1 is not returned (null is returned instead).
+   **/
+  public static INT[] modulus(INT[] nums) {
+    if (nums.length < 3)
+    return null;
+
+    INT modulus = Math.abs(gcd_differences(nums));
+    if (modulus == 1)
+      return null;
+
+    INT remainder = nums[0] % modulus;
+    if (remainder < 0)
+      remainder += modulus;
+
+    return new INT[] { remainder, modulus };
+  }
+
+  /**
+   * The iterator produces INTEGER values.
+   * This can be more efficient than modulus(INT[]) if the INT[] doesn't already
+   * exist, because this does not necessarily examine every value produced by
+   * its iterator.
+   **/
+  public static INT[] modulus_INT(Iterator<INTEGER> itor) {
+    if (!itor.hasNext())
+      return null;
+    INT avalue = itor.next().INTValue();
+    if (!itor.hasNext())
+      return null;
+    INT modulus = Math.abs(avalue - itor.next().INTValue());
+    if (modulus == 1)
+      return null;
+    int count = 2;
+    while (itor.hasNext()) {
+      INT i = itor.next().INTValue();
+      if (i == avalue)
+        continue;
+      modulus = MathMDE.gcd(modulus, Math.abs(avalue - i));
+      count++;
+      if (modulus == 1)
+        return null;
+      }
+    if (count < 3)
+      return null;
+    return new INT[] { MathMDE.mod_positive(avalue, modulus), modulus } ;
+  }
+
+
+  /**
+   * Return an array of two integers (r,m) such that each number in NUMS is equal to r (mod m).
+   * The largest possible modulus is used, and the trivial constraint that all
+   * integers are equal to 0 mod 1 is not returned (null is returned instead).
+   * <p>
+   *
+   * This "_strict" version requires its input to be sorted, and no element
+   * may be missing.
+   * <p>
+   *
+   * This "_strict" version differs from the regular modulus by requiring
+   * that the argument be dense:  that is, every pair of numbers in the
+   * argument array is separated by exactly the modulus.
+   * <p>
+   *
+   * The endpoints can be treated in two different ways:  Either exactly
+   * like other numbers in the input, or they can merely be checked for the
+   * condition without the strict density requirement.
+   **/
+  public static INT[] modulus_strict(INT[] nums, boolean nonstrict_ends) {
+    int first_index = 0;
+    int last_index = nums.length-1;
+    INT first_nonstrict = 0; // arbitrary initial value
+    INT last_nonstrict = 0; // arbitrary initial value
+    if (nonstrict_ends) {
+      first_nonstrict = nums[first_index];
+      first_index++;
+      last_nonstrict = nums[last_index];
+      last_index--;
+    }
+    if (last_index - first_index < 2)
+      return null;
+
+    INT modulus = nums[first_index+1] - nums[first_index];
+    if (modulus == 1)
+      return null;
+    for (int i=first_index+2; i<=last_index; i++)
+      if (nums[i] - nums[i-1] != modulus)
+        return null;
+
+    INT r = mod_positive(nums[first_index], modulus);
+    if (nonstrict_ends) {
+      if ((r != mod_positive(first_nonstrict, modulus))
+          || (r != mod_positive(last_nonstrict, modulus)))
+        return null;
+    }
+
+    return new INT[] { r, modulus };
+  }
+
+  /**
+   * The iterator produces INTEGER values.
+   * This can be more efficient than modulus(INT[]) if the INT[] doesn't
+   * already exist, because this does not necessarily examine every value
+   * produced by its iterator.
+   *
+   * For documentation, see modulus_strict(INT[], boolean).
+   * @see #modulus_strict(int[], boolean)
+   **/
+  public static INT[] modulus_strict_INT(Iterator<INTEGER> itor, boolean nonstrict_ends) {
+    if (!itor.hasNext())
+      return null;
+
+    INT first_nonstrict = 0;    // arbitrary initial value
+    INT last_nonstrict = 0;     // arbitrary initial value
+    if (nonstrict_ends) {
+      first_nonstrict = itor.next().INTValue();
+    }
+
+    INT prev = itor.next().INTValue();
+    if (!itor.hasNext())
+      return null;
+    INT next = itor.next().INTValue();
+    INT modulus = next-prev;
+    if (modulus == 1)
+      return null;
+    int count = 2;
+    while (itor.hasNext()) {
+      prev = next;
+      next = itor.next().INTValue();
+      if (nonstrict_ends && (! itor.hasNext())) {
+        last_nonstrict = next;
+        break;
+      }
+
+      if (next - prev != modulus)
+        return null;
+      count++;
+    }
+    if (count < 3)
+      return null;
+
+    INT r = MathMDE.mod_positive(next, modulus);
+    if (nonstrict_ends) {
+      if ((r != mod_positive(first_nonstrict, modulus))
+          || (r != mod_positive(last_nonstrict, modulus)))
+        return null;
+    }
+
+    return new INT[] { r, modulus } ;
+  }
+
+
+#include "MathMDE-helpend.java.jpp"
