@@ -3,6 +3,8 @@ import checkers.initialization.quals.Initialized;
 import checkers.nullness.quals.*;
 import java.util.*;
 
+//@skip-test
+// See http://code.google.com/p/checker-framework/issues/detail?id=223
 class Constructors {
 
   static void requireInitialized(Object o) { }
