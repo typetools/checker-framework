@@ -1,5 +1,6 @@
 package java.util;
 import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
 import checkers.nullness.quals.EnsuresNonNullIf;
 import checkers.nullness.quals.NonNull;
 import checkers.nullness.quals.Nullable;
@@ -25,7 +26,7 @@ public class PriorityQueue<E extends @NonNull Object> extends AbstractQueue<E> i
   @Pure public int size() { throw new RuntimeException("skeleton method"); }
   public void clear() { throw new RuntimeException("skeleton method"); }
   public @Nullable E poll() { throw new RuntimeException("skeleton method"); }
-  public Comparator<? super E> comparator() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public Comparator<? super E> comparator() { throw new RuntimeException("skeleton method"); }
 
   @EnsuresNonNullIf(expression={"poll()", "peek()"}, result=false)
   @Pure public boolean isEmpty() { throw new RuntimeException("skeleton method"); }

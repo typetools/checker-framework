@@ -14,10 +14,10 @@ public class TreeMap<K extends @Nullable Object, V extends @Nullable Object> ext
   public TreeMap(Map<? extends K, ? extends V> a1) { throw new RuntimeException("skeleton method"); }
   public TreeMap(SortedMap<K, ? extends V> a1) { throw new RuntimeException("skeleton method"); }
   @Pure public int size() { throw new RuntimeException("skeleton method"); }
-  public @Pure boolean containsKey(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
+  @Pure public boolean containsKey(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   @Pure public boolean containsValue(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
-  public @Pure @Nullable V get(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
-  public Comparator<? super K> comparator() { throw new RuntimeException("skeleton method"); }
+  @Pure public @Nullable V get(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public Comparator<? super K> comparator() { throw new RuntimeException("skeleton method"); }
   public K firstKey() { throw new RuntimeException("skeleton method"); }
   public K lastKey() { throw new RuntimeException("skeleton method"); }
   public void putAll(Map<? extends K, ? extends V> a1) { throw new RuntimeException("skeleton method"); }
@@ -36,18 +36,18 @@ public class TreeMap<K extends @Nullable Object, V extends @Nullable Object> ext
   public @Nullable K ceilingKey(K a1) { throw new RuntimeException("skeleton method"); }
   public Map. @Nullable Entry<K, V> higherEntry(K a1) { throw new RuntimeException("skeleton method"); }
   public @Nullable K higherKey(K a1) { throw new RuntimeException("skeleton method"); }
-  public Set<@KeyFor("this") K> keySet() { throw new RuntimeException("skeleton method"); }
-  public NavigableSet<@KeyFor("this") K> navigableKeySet() { throw new RuntimeException("skeleton method"); }
-  public NavigableSet<@KeyFor("this") K> descendingKeySet() { throw new RuntimeException("skeleton method"); }
-  public Collection<V> values() { throw new RuntimeException("skeleton method"); }
-  public Set<Map.Entry<@KeyFor("this") K, V>> entrySet() { throw new RuntimeException("skeleton method"); }
-  public NavigableMap<K, V> descendingMap() { throw new RuntimeException("skeleton method"); }
-  public NavigableMap<K, V> subMap(K a1, boolean a2, K a3, boolean a4) { throw new RuntimeException("skeleton method"); }
-  public NavigableMap<K, V> headMap(K a1, boolean a2) { throw new RuntimeException("skeleton method"); }
-  public NavigableMap<K, V> tailMap(K a1, boolean a2) { throw new RuntimeException("skeleton method"); }
-  public SortedMap<K, V> subMap(K a1, K a2) { throw new RuntimeException("skeleton method"); }
-  public SortedMap<K, V> headMap(K a1) { throw new RuntimeException("skeleton method"); }
-  public SortedMap<K, V> tailMap(K a1) { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public Set<@KeyFor("this") K> keySet() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public NavigableSet<@KeyFor("this") K> navigableKeySet() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public NavigableSet<@KeyFor("this") K> descendingKeySet() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public Collection<V> values() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public Set<Map.Entry<@KeyFor("this") K, V>> entrySet() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public NavigableMap<K, V> descendingMap() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public NavigableMap<K, V> subMap(K a1, boolean a2, K a3, boolean a4) { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public NavigableMap<K, V> headMap(K a1, boolean a2) { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public NavigableMap<K, V> tailMap(K a1, boolean a2) { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public SortedMap<K, V> subMap(K a1, K a2) { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public SortedMap<K, V> headMap(K a1) { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public SortedMap<K, V> tailMap(K a1) { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public Object clone() { throw new RuntimeException("skeleton method"); }
 
   @EnsuresNonNullIf(expression={"firstEntry()", "pollFirstEntry()", "lastEntry()", "pollLastEntry()"}, result=false)

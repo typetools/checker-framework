@@ -375,7 +375,7 @@ public abstract class ImmutableMultimap<K, V>
    * are ordered according to when they first appeared during the construction
    * of this multimap.
    */
-  public ImmutableSet<K> keySet() {
+  @SideEffectFree public ImmutableSet<K> keySet() {
     return map.keySet();
   }
 
@@ -395,7 +395,7 @@ public abstract class ImmutableMultimap<K, V>
    * iterator traverses the values for the first key, the values for the second
    * key, and so on.
    */
-  public ImmutableCollection<Map.Entry<K, V>> entries() {
+  @SideEffectFree public ImmutableCollection<Map.Entry<K, V>> entries() {
     ImmutableCollection<Map.Entry<K, V>> result = entries;
     return (result == null)
         ? (entries = new EntryCollection<K, V>(this)) : result;
@@ -478,7 +478,7 @@ public abstract class ImmutableMultimap<K, V>
    * iterator traverses the values for the first key, the values for the second
    * key, and so on.
    */
-  public ImmutableCollection<V> values() {
+  @SideEffectFree public ImmutableCollection<V> values() {
     ImmutableCollection<V> result = values;
     return (result == null) ? (values = new Values<V>(this)) : result;
   }

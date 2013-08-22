@@ -26,6 +26,8 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import dataflow.quals.*;
+
 /**
  * Factory and utilities pertaining to the {@code MapConstraint} interface.
  *
@@ -47,7 +49,7 @@ import javax.annotation.Nullable;
   @Override protected Map<K, V> delegate() {
     return delegate;
   }
-  @Override public Set<Entry<K, V>> entrySet() {
+  @SideEffectFree @Override public Set<Entry<K, V>> entrySet() {
     if (entrySet == null) {
       entrySet = constrainedEntrySet(delegate.entrySet(), constraint);
     }

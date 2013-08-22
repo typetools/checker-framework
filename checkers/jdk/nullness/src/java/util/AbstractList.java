@@ -8,7 +8,7 @@ import checkers.nullness.quals.Nullable;
 public abstract class AbstractList<E extends @Nullable Object> extends AbstractCollection<E> implements List<E> {
   protected AbstractList() {}
   public boolean add(E a1) { throw new RuntimeException("skeleton method"); }
-  public abstract @Pure E get(int a1);
+  @Pure public abstract E get(int a1);
   public E set(int a1, E a2) { throw new RuntimeException("skeleton method"); }
   public void add(int a1, E a2) { throw new RuntimeException("skeleton method"); }
   public E remove(int a1) { throw new RuntimeException("skeleton method"); }

@@ -50,11 +50,11 @@ import checkers.nullness.quals.Nullable;
     return delegate().remove(element, occurrences);
   }
 
-  public Set<E> elementSet() {
+  @SideEffectFree public Set<E> elementSet() {
     return delegate().elementSet();
   }
 
-  public Set<Entry<E>> entrySet() {
+  @SideEffectFree public Set<Entry<E>> entrySet() {
     return delegate().entrySet();
   }
 
