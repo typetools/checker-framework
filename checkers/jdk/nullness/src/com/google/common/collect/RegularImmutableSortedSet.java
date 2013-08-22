@@ -210,13 +210,13 @@ final class RegularImmutableSortedSet<E>
 
   // The factory methods ensure that every element is an E.
   @SuppressWarnings("unchecked")
-  public E first() {
+  @SideEffectFree public E first() {
     return (E) elements[fromIndex];
   }
 
   // The factory methods ensure that every element is an E.
   @SuppressWarnings("unchecked")
-  public E last() {
+  @SideEffectFree public E last() {
     return (E) elements[toIndex - 1];
   }
 

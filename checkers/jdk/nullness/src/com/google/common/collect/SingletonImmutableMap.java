@@ -76,21 +76,21 @@ final class SingletonImmutableMap<K, V> extends ImmutableMap<K, V> {
 
   private transient ImmutableSet<Entry<K, V>> entrySet;
 
-  @Override public ImmutableSet<Entry<K, V>> entrySet() {
+  @SideEffectFree @Override public ImmutableSet<Entry<K, V>> entrySet() {
     ImmutableSet<Entry<K, V>> es = entrySet;
     return (es == null) ? (entrySet = ImmutableSet.of(entry())) : es;
   }
 
   private transient ImmutableSet<K> keySet;
 
-  @Override public ImmutableSet<K> keySet() {
+  @SideEffectFree @Override public ImmutableSet<K> keySet() {
     ImmutableSet<K> ks = keySet;
     return (ks == null) ? (keySet = ImmutableSet.of(singleKey)) : ks;
   }
 
   private transient ImmutableCollection<V> values;
 
-  @Override public ImmutableCollection<V> values() {
+  @SideEffectFree @Override public ImmutableCollection<V> values() {
     ImmutableCollection<V> v = values;
     return (v == null) ? (values = new Values<V>(singleValue)) : v;
   }

@@ -18,7 +18,7 @@ import checkers.quals.PostconditionAnnotation;
  * expression is null.
  *
  * @see NonNull
- * @see NullnessChecker
+ * @see checkers.nullness.NullnessChecker
  * @checker.framework.manual #nullness-checker Nullness Checker
  */
 @Documented

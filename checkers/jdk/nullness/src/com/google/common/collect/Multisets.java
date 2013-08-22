@@ -76,7 +76,7 @@ public final class Multisets {
 
     transient Set<E> elementSet;
 
-    @Override public Set<E> elementSet() {
+    @SideEffectFree @Override public Set<E> elementSet() {
       Set<E> es = elementSet;
       return (es == null)
           ? elementSet = Collections.<E>unmodifiableSet(delegate.elementSet())
@@ -86,7 +86,7 @@ public final class Multisets {
     transient Set<Multiset.Entry<E>> entrySet;
 
     @SuppressWarnings("unchecked")
-    @Override public Set<Multiset.Entry<E>> entrySet() {
+    @SideEffectFree @Override public Set<Multiset.Entry<E>> entrySet() {
       Set<Multiset.Entry<E>> es = entrySet;
       return (es == null)
           // Safe because the returned set is made unmodifiable and Entry
@@ -216,14 +216,14 @@ public final class Multisets {
 
     transient Set<E> elementSet;
 
-    public Set<E> elementSet() {
+    @SideEffectFree public Set<E> elementSet() {
       Set<E> es = elementSet;
       return (es == null) ? elementSet = new ElementSet() : es;
     }
 
     transient Set<Entry<E>> entrySet;
 
-    public Set<Entry<E>> entrySet() {
+    @SideEffectFree public Set<Entry<E>> entrySet() {
       Set<Entry<E>> es = entrySet;
       return (es == null) ? entrySet = new EntrySet() : es;
     }
