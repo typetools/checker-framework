@@ -35,6 +35,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import checkers.nullness.quals.Nullable;
+import dataflow.quals.*;
 
 /**
  * Basic implementation of {@code Multiset<E>} backed by an instance of {@code
@@ -87,7 +88,7 @@ import checkers.nullness.quals.Nullable;
    * set always returns the current count of that element in the multiset, as
    * opposed to the count at the time the entry was retrieved.
    */
-  @Override public Set<Multiset.Entry<E>> entrySet() {
+  @SideEffectFree @Override public Set<Multiset.Entry<E>> entrySet() {
     EntrySet result = entrySet;
     if (result == null) {
       entrySet = result = new EntrySet();

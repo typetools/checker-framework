@@ -20,7 +20,7 @@ public class ArrayList<E extends @Nullable Object> extends AbstractList<E> imple
   @Pure public int lastIndexOf(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   public @Nullable Object [] toArray() { throw new RuntimeException("skeleton method"); }
   public <T> @Nullable T @PolyNull [] toArray(T @PolyNull [] a1) { throw new RuntimeException("skeleton method"); }
-  public @Pure E get(int a1) { throw new RuntimeException("skeleton method"); }
+  @Pure public E get(int a1) { throw new RuntimeException("skeleton method"); }
   public E set(int a1, E a2) { throw new RuntimeException("skeleton method"); }
   public boolean add(E a1) { throw new RuntimeException("skeleton method"); }
   public void add(int a1, E a2) { throw new RuntimeException("skeleton method"); }

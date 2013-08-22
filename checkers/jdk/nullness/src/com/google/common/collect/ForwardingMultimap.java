@@ -62,7 +62,7 @@ import checkers.nullness.quals.Nullable;
     return delegate().containsValue(value);
   }
 
-  public Collection<Entry<K, V>> entries() {
+  @SideEffectFree public Collection<Entry<K, V>> entries() {
     return delegate().entries();
   }
 
@@ -78,7 +78,7 @@ import checkers.nullness.quals.Nullable;
     return delegate().keys();
   }
 
-  public Set<K> keySet() {
+  @SideEffectFree public Set<K> keySet() {
     return delegate().keySet();
   }
 
@@ -110,7 +110,7 @@ import checkers.nullness.quals.Nullable;
     return delegate().size();
   }
 
-  public Collection<V> values() {
+  @SideEffectFree public Collection<V> values() {
     return delegate().values();
   }
 

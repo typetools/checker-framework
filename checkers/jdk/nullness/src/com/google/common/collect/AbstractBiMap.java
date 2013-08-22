@@ -32,6 +32,8 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import dataflow.quals.*;
+
 /**
  * A general-purpose bimap implementation using any two backing {@code Map}
  * instances.
@@ -159,7 +161,7 @@ import javax.annotation.Nullable;
 
   private transient volatile Set<K> keySet;
 
-  @Override public Set<K> keySet() {
+  @SideEffectFree @Override public Set<K> keySet() {
     Set<K> result = keySet;
     return (result == null) ? keySet = new KeySet() : keySet;
   }
@@ -213,7 +215,7 @@ import javax.annotation.Nullable;
 
   private transient volatile Set<V> valueSet;
 
-  @Override public Set<V> values() {
+  @SideEffectFree @Override public Set<V> values() {
     /*
      * We can almost reuse the inverse's keySet, except we have to fix the
      * iteration order so that it is consistent with the forward map.
@@ -266,7 +268,7 @@ import javax.annotation.Nullable;
 
   private transient volatile Set<Entry<K, V>> entrySet;
 
-  @Override public Set<Entry<K, V>> entrySet() {
+  @SideEffectFree @Override public Set<Entry<K, V>> entrySet() {
     Set<Entry<K, V>> result = entrySet;
     return (result == null) ? entrySet = new EntrySet() : entrySet;
   }

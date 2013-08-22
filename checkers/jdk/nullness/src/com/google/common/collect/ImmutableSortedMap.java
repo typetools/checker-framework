@@ -450,7 +450,7 @@ public class ImmutableSortedMap<K, V>
    * Returns an immutable set of the mappings in this map, sorted by the key
    * ordering.
    */
-  @Override public ImmutableSet<Entry<K, V>> entrySet() {
+  @SideEffectFree @Override public ImmutableSet<Entry<K, V>> entrySet() {
     ImmutableSet<Entry<K, V>> es = entrySet;
     return (es == null) ? (entrySet = createEntrySet()) : es;
   }
@@ -508,7 +508,7 @@ public class ImmutableSortedMap<K, V>
   /**
    * Returns an immutable sorted set of the keys in this map.
    */
-  @Override public ImmutableSortedSet<K> keySet() {
+  @SideEffectFree @Override public ImmutableSortedSet<K> keySet() {
     ImmutableSortedSet<K> ks = keySet;
     return (ks == null) ? (keySet = createKeySet()) : ks;
   }
@@ -532,7 +532,7 @@ public class ImmutableSortedMap<K, V>
    * Returns an immutable collection of the values in this map, sorted by the
    * ordering of the corresponding keys.
    */
-  @Override public ImmutableCollection<V> values() {
+  @SideEffectFree @Override public ImmutableCollection<V> values() {
     ImmutableCollection<V> v = values;
     return (v == null) ? (values = new Values<V>(this)) : v;
   }
@@ -587,7 +587,7 @@ public class ImmutableSortedMap<K, V>
    * Note that its behavior is not consistent with {@link TreeMap#comparator()},
    * which returns {@code null} to indicate natural ordering.
    */
-  public Comparator<? super K> comparator() {
+  @SideEffectFree public Comparator<? super K> comparator() {
     return comparator;
   }
 
