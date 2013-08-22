@@ -3852,8 +3852,12 @@ public class CFGBuilder {
 
             extendWithNode(new MarkerNode(tree, "start of try statement", env.getTypeUtils()));
 
-            // TODO: Handle try-with-resources blocks.
-            // List<? extends Tree> resources = tree.getResources();
+            // TODO: Should we handle try-with-resources blocks by also generating code
+            // for automatically closing the resources?
+            List<? extends Tree> resources = tree.getResources();
+            for (Tree resource : resources) {
+                scan(resource, p);
+            }
 
             List<Pair<TypeMirror, Label>> catchLabels = new ArrayList<>();
             for (CatchTree c : catches) {
