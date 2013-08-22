@@ -51,7 +51,7 @@ import checkers.quals.ConditionalPostconditionAnnotation;
  *
  * @see NonNull
  * @see EnsuresNonNull
- * @see NullnessChecker
+ * @see checkers.nullness.NullnessChecker
  * @checker.framework.manual #nullness-checker Nullness Checker
  */
 @Documented

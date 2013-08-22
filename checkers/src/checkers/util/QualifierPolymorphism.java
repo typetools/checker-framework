@@ -85,7 +85,7 @@ public class QualifierPolymorphism {
      * checker for querying type qualifiers and the given factory for getting
      * annotated types.
      *
-     * @param checker the current checker
+     * @param env the processing environment
      * @param factory the factory for the current checker
      */
     public QualifierPolymorphism(ProcessingEnvironment env, AnnotatedTypeFactory factory) {
