@@ -314,37 +314,37 @@ final class Synchronized {
       return (SortedSet<E>) super.delegate();
     }
 
-    public Comparator<? super E> comparator() {
+    @SideEffectFree public Comparator<? super E> comparator() {
       synchronized (mutex) {
         return delegate().comparator();
       }
     }
 
-    public SortedSet<E> subSet(E fromElement, E toElement) {
+    @SideEffectFree public SortedSet<E> subSet(E fromElement, E toElement) {
       synchronized (mutex) {
         return sortedSet(delegate().subSet(fromElement, toElement), mutex);
       }
     }
 
-    public SortedSet<E> headSet(E toElement) {
+    @SideEffectFree public SortedSet<E> headSet(E toElement) {
       synchronized (mutex) {
         return sortedSet(delegate().headSet(toElement), mutex);
       }
     }
 
-    public SortedSet<E> tailSet(E fromElement) {
+    @SideEffectFree public SortedSet<E> tailSet(E fromElement) {
       synchronized (mutex) {
         return sortedSet(delegate().tailSet(fromElement), mutex);
       }
     }
 
-    public E first() {
+    @SideEffectFree public E first() {
       synchronized (mutex) {
         return delegate().first();
       }
     }
 
-    public E last() {
+    @SideEffectFree public E last() {
       synchronized (mutex) {
         return delegate().last();
       }
@@ -553,7 +553,7 @@ final class Synchronized {
       }
     }
 
-    public Set<E> elementSet() {
+    @SideEffectFree public Set<E> elementSet() {
       synchronized (mutex) {
         if (elementSet == null) {
           elementSet = typePreservingSet(delegate().elementSet(), mutex);
@@ -562,7 +562,7 @@ final class Synchronized {
       }
     }
 
-    public Set<Entry<E>> entrySet() {
+    @SideEffectFree public Set<Entry<E>> entrySet() {
       synchronized (mutex) {
         if (entrySet == null) {
           entrySet = typePreservingSet(delegate().entrySet(), mutex);
@@ -716,7 +716,7 @@ final class Synchronized {
       }
     }
 
-    public Set<K> keySet() {
+    @SideEffectFree public Set<K> keySet() {
       synchronized (mutex) {
         if (keySet == null) {
           keySet = typePreservingSet(delegate().keySet(), mutex);
@@ -725,7 +725,7 @@ final class Synchronized {
       }
     }
 
-    public Collection<V> values() {
+    @SideEffectFree public Collection<V> values() {
       synchronized (mutex) {
         if (valuesCollection == null) {
           valuesCollection = collection(delegate().values(), mutex);
@@ -734,7 +734,7 @@ final class Synchronized {
       }
     }
 
-    public Collection<Map.Entry<K, V>> entries() {
+    @SideEffectFree public Collection<Map.Entry<K, V>> entries() {
       synchronized (mutex) {
         if (entries == null) {
           entries = typePreservingCollection(delegate().entries(), mutex);
@@ -863,7 +863,7 @@ final class Synchronized {
         return delegate().replaceValues(key, values); // copy not synchronized
       }
     }
-    @Override public Set<Map.Entry<K, V>> entries() {
+    @SideEffectFree @Override public Set<Map.Entry<K, V>> entries() {
       synchronized (mutex) {
         if (entrySet == null) {
           entrySet = set(delegate().entries(), mutex);
@@ -1153,7 +1153,7 @@ final class Synchronized {
       }
     }
 
-    public Set<Map.Entry<K, V>> entrySet() {
+    @SideEffectFree public Set<Map.Entry<K, V>> entrySet() {
       synchronized (mutex) {
         if (entrySet == null) {
           entrySet = set(delegate().entrySet(), mutex);
@@ -1175,7 +1175,7 @@ final class Synchronized {
       }
     }
 
-    public Set<K> keySet() {
+    @SideEffectFree public Set<K> keySet() {
       synchronized (mutex) {
         if (keySet == null) {
           keySet = set(delegate().keySet(), mutex);
@@ -1210,7 +1210,7 @@ final class Synchronized {
       }
     }
 
-    public Collection<V> values() {
+    @SideEffectFree public Collection<V> values() {
       synchronized (mutex) {
         if (values == null) {
           values = collection(delegate().values(), mutex);
@@ -1285,7 +1285,7 @@ final class Synchronized {
       return (BiMap<K, V>) super.delegate();
     }
 
-    @Override public Set<V> values() {
+    @SideEffectFree @Override public Set<V> values() {
       synchronized (mutex) {
         if (valueSet == null) {
           valueSet = set(delegate().values(), mutex);
@@ -1332,7 +1332,7 @@ final class Synchronized {
       }
     }
 
-    @Override public Set<Map.Entry<K, Collection<V>>> entrySet() {
+    @SideEffectFree @Override public Set<Map.Entry<K, Collection<V>>> entrySet() {
       if (asMapEntrySet == null) {
         asMapEntrySet = new SynchronizedAsMapEntries<K, V>(
             delegate().entrySet(), mutex);
@@ -1340,7 +1340,7 @@ final class Synchronized {
       return asMapEntrySet;
     }
 
-    @Override public Collection<Collection<V>> values() {
+    @SideEffectFree @Override public Collection<Collection<V>> values() {
       if (asMapValues == null) {
         asMapValues
             = new SynchronizedAsMapValues<V>(delegate().values(), mutex);

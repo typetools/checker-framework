@@ -22,13 +22,13 @@ public final class Class<T extends @Nullable Object> extends Object implements j
   public @Nullable ClassLoader getClassLoader() { throw new RuntimeException("skeleton method"); }
   public java.lang.reflect.TypeVariable<Class<T>>[] getTypeParameters() { throw new RuntimeException("skeleton method"); }
   public java.lang.reflect. @Nullable Type getGenericSuperclass() { throw new RuntimeException("skeleton method"); }
-  public @Pure @Nullable Package getPackage() { throw new RuntimeException("skeleton method"); }
+  @Pure public @Nullable Package getPackage() { throw new RuntimeException("skeleton method"); }
   public java.lang.reflect.Type[] getGenericInterfaces() { throw new RuntimeException("skeleton method"); }
   public java.lang.reflect. @Nullable Method getEnclosingMethod() { throw new RuntimeException("skeleton method"); }
   public java.lang.reflect. @Nullable Constructor<?> getEnclosingConstructor() { throw new RuntimeException("skeleton method"); }
   public @Nullable Class<?> getEnclosingClass() { throw new RuntimeException("skeleton method"); }
   public String getSimpleName() { throw new RuntimeException("skeleton method"); }
-  public native @Pure @Nullable Class<? super T> getSuperclass();
+  @Pure public native @Nullable Class<? super T> getSuperclass();
   @Pure public native Class<?>[] getInterfaces();
   public @Nullable String getCanonicalName() { throw new RuntimeException("skeleton method"); }
   @Pure public boolean isAnonymousClass() { throw new RuntimeException("skeleton method"); }
@@ -61,12 +61,12 @@ public final class Class<T extends @Nullable Object> extends Object implements j
   @Pure public boolean isAnnotationPresent(Class<? extends java.lang.annotation.Annotation> a1) { throw new RuntimeException("skeleton method"); }
   public java.lang.annotation.Annotation[] getAnnotations() { throw new RuntimeException("skeleton method"); }
   public java.lang.annotation.Annotation[] getDeclaredAnnotations() { throw new RuntimeException("skeleton method"); }
-  public native @Pure @Nullable Class<?> getComponentType();
+  @Pure public native @Nullable Class<?> getComponentType();
   public native Object @Nullable [] getSigners();
   public native @Nullable Class<?> getDeclaringClass();
   @Pure public native boolean isPrimitive();
   @EnsuresNonNullIf(expression="getComponentType()", result=true)
-  public native @Pure boolean isArray();
+  @Pure public native boolean isArray();
   @Pure public native boolean isAssignableFrom(Class<? extends @Nullable Object> cls);
   @Pure public native boolean isInterface();
   @Pure public native int getModifiers();

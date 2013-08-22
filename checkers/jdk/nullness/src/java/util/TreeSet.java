@@ -22,15 +22,15 @@ public class TreeSet<E extends @Nullable Object> extends AbstractSet<E> implemen
   public boolean remove(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   public void clear() { throw new RuntimeException("skeleton method"); }
   public boolean addAll(Collection<? extends E> a1) { throw new RuntimeException("skeleton method"); }
-  public NavigableSet<E> subSet(E a1, boolean a2, E a3, boolean a4) { throw new RuntimeException("skeleton method"); }
-  public NavigableSet<E> headSet(E a1, boolean a2) { throw new RuntimeException("skeleton method"); }
-  public NavigableSet<E> tailSet(E a1, boolean a2) { throw new RuntimeException("skeleton method"); }
-  public SortedSet<E> subSet(E a1, E a2) { throw new RuntimeException("skeleton method"); }
-  public SortedSet<E> headSet(E a1) { throw new RuntimeException("skeleton method"); }
-  public SortedSet<E> tailSet(E a1) { throw new RuntimeException("skeleton method"); }
-  public Comparator<? super E> comparator() { throw new RuntimeException("skeleton method"); }
-  public E first() { throw new RuntimeException("skeleton method"); }
-  public E last() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public NavigableSet<E> subSet(E a1, boolean a2, E a3, boolean a4) { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public NavigableSet<E> headSet(E a1, boolean a2) { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public NavigableSet<E> tailSet(E a1, boolean a2) { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public SortedSet<E> subSet(E a1, E a2) { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public SortedSet<E> headSet(E a1) { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public SortedSet<E> tailSet(E a1) { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public Comparator<? super E> comparator() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public E first() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public E last() { throw new RuntimeException("skeleton method"); }
   public @Nullable E lower(E a1) { throw new RuntimeException("skeleton method"); }
   public @Nullable E floor(E a1) { throw new RuntimeException("skeleton method"); }
   public @Nullable E ceiling(E a1) { throw new RuntimeException("skeleton method"); }
