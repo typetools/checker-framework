@@ -4,6 +4,7 @@ import checkers.nullness.quals.*;
 import tests.util.SuperQual;
 import tests.util.SubQual;
 
+// @skip-test
 //:: error: (initialization.fields.uninitialized)
 public class DependentTypes {
 
