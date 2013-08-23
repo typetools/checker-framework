@@ -632,7 +632,8 @@ indices.)
 % need arises.
 
 
-\section{Unused fields and dependent types\label{unused-fields-and-dependent-types}}
+% \section{Unused fields and dependent types\label{unused-fields-and-dependent-types}}
+\section{Unused fields\label{unused-fields}}
 
 In an inheritance hierarchy, subclasses often introduce new methods and
 fields.  For example, a \<Marsupial> (and its subclasses such as
@@ -647,10 +648,10 @@ the \<@Unused> annotation, which enforces that a field or method may only
 be accessed from a receiver expression with a given annotation (or one of
 its subtypes).
 
-Then,
-Section~\ref{dependent-types} describes an even more powerful mechanism, by
-which the qualifier of a field depends on the qualifier of the expression
-from which the field was accessed.
+% Then,
+% Section~\ref{dependent-types} describes an even more powerful mechanism, by
+% which the qualifier of a field depends on the qualifier of the expression
+% from which the field was accessed.
 
 Also see the discussion of typestate checkers, in
 Chapter~\ref{typestate-checker}.
@@ -708,95 +709,95 @@ class @Marsupial-Animal {
 \end{Verbatim}
 
 
-\subsection{Dependent types\label{dependent-types}}
-
-A variable has a \emph{dependent type} if its type depends on some other
-value or type.
-%  --- the type is dynamically, not statically, determined.
-% (Type-safety can still be statically determined, though.)
-
-The Checker Framework supports a form of dependent types, via the
-\code{@\refclass{quals}{Dependent}} annotation.
-This annotation changes the type of a reference, based on the
-qualified type of the receiver (\code{this}).  This can be viewed as a more
-expressive form of polymorphism (see Section~\ref{polymorphism}).  It can
-also be seen as a way of linking the meanings of two type qualifier
-hierarchies.
-
-When the \code{@\refclass{quals}{Unused}} annotation is sufficient, you
-should use it instead of \code{@Dependent}.
-
-Here is a restatement of the example of Section~\ref{unused-fields}, using
-\code{@\refclass{quals}{Dependent}}:
-
-\begin{Verbatim}
-@interface Mammal { }
-@interface Marsupial { }
-class Animal {
-  // pouch capacity, in cubic centimeters
-  // (non-null if this animal is a marsupial)
-  @Nullable @Dependent(result=NonNull.class, when=Marsupial.class) Integer getPouchSize;
-  ...
-}
-
-@Marsupial Animal joey = ...;
-... joey.getPouchSize().intValue() ...    // OK
-@Mammal Animal mae = ...;
-... mae.getPouchSize().intValue() ...    // compile-time error:
-                                         //   dereference of possibly-null mae.getPouchSize()
-\end{Verbatim}
-
-Just as writing \<@Unused> is similar to writing multiple classes (but when
-it is not possible to write real subclasses), \<@Dependent> mimics the
-effect of multiple classes with overriding definitions of some method or
-field.
-The above class declaration is like writing
-
-\begin{Verbatim}
-class @Mammal-Animal {
-  // pouch capacity, in cubic centimeters
-  // (non-null if this animal is a marsupial)
-  @Nullable Integer getPouchSize();
-}
-class @Marsupial-Animal {
-  // pouch capacity, in cubic centimeters
-  @NonNull Integer getPouchSize();
-  ...
-}  
-\end{Verbatim}
-
-
-\subsubsection{Limitations of \<@Dependent>\label{dependent-types-limitations}}
-
-It is unsound to write \<@Dependent> on a non-\<final> field.  Consider the
-following:
-
-\begin{Verbatim}
-class MyClass {
-  @Nullable @Dependent(result=NonNull.class, when=Marsupial.class) Integer pouchSize;
-}
-\end{Verbatim}
-
-Then it would be possible to write
-
-\begin{Verbatim}
-@Marsupial Animal a = new @Marsupial Animal();
-@Mammal Animal b = a;
-b.pouchSize = null;
-a.pouchSize.intValue();
-\end{Verbatim}
-
-\noindent
-In the last line of the example, \<a.pouchSize> is null, contradicting its
-declaration and leading to a null pointer exception that would not be
-caught by the type-checker.
-
-In certain circumstances, it may be desirable to write such an annotation
-on a \<private> field anyway, manually check all uses, and then suppress
-the warning.
-
-It is sound to write \<@Dependent> on a \<final> field.  Such a field
-behaves like a getter method, such as \<getPouchSize()> above.
+% \subsection{Dependent types\label{dependent-types}}
+% 
+% A variable has a \emph{dependent type} if its type depends on some other
+% value or type.
+% %  --- the type is dynamically, not statically, determined.
+% % (Type-safety can still be statically determined, though.)
+% 
+% The Checker Framework supports a form of dependent types, via the
+% \code{@\refclass{quals}{Dependent}} annotation.
+% This annotation changes the type of a reference, based on the
+% qualified type of the receiver (\code{this}).  This can be viewed as a more
+% expressive form of polymorphism (see Section~\ref{polymorphism}).  It can
+% also be seen as a way of linking the meanings of two type qualifier
+% hierarchies.
+% 
+% When the \code{@\refclass{quals}{Unused}} annotation is sufficient, you
+% should use it instead of \code{@Dependent}.
+% 
+% Here is a restatement of the example of Section~\ref{unused-fields}, using
+% \code{@\refclass{quals}{Dependent}}:
+% 
+% \begin{Verbatim}
+% @interface Mammal { }
+% @interface Marsupial { }
+% class Animal {
+%   // pouch capacity, in cubic centimeters
+%   // (non-null if this animal is a marsupial)
+%   @Nullable @Dependent(result=NonNull.class, when=Marsupial.class) Integer getPouchSize;
+%   ...
+% }
+% 
+% @Marsupial Animal joey = ...;
+% ... joey.getPouchSize().intValue() ...    // OK
+% @Mammal Animal mae = ...;
+% ... mae.getPouchSize().intValue() ...    // compile-time error:
+%                                          //   dereference of possibly-null mae.getPouchSize()
+% \end{Verbatim}
+% 
+% Just as writing \<@Unused> is similar to writing multiple classes (but when
+% it is not possible to write real subclasses), \<@Dependent> mimics the
+% effect of multiple classes with overriding definitions of some method or
+% field.
+% The above class declaration is like writing
+% 
+% \begin{Verbatim}
+% class @Mammal-Animal {
+%   // pouch capacity, in cubic centimeters
+%   // (non-null if this animal is a marsupial)
+%   @Nullable Integer getPouchSize();
+% }
+% class @Marsupial-Animal {
+%   // pouch capacity, in cubic centimeters
+%   @NonNull Integer getPouchSize();
+%   ...
+% }  
+% \end{Verbatim}
+% 
+% 
+% \subsubsection{Limitations of \<@Dependent>\label{dependent-types-limitations}}
+% 
+% It is unsound to write \<@Dependent> on a non-\<final> field.  Consider the
+% following:
+% 
+% \begin{Verbatim}
+% class MyClass {
+%   @Nullable @Dependent(result=NonNull.class, when=Marsupial.class) Integer pouchSize;
+% }
+% \end{Verbatim}
+% 
+% Then it would be possible to write
+% 
+% \begin{Verbatim}
+% @Marsupial Animal a = new @Marsupial Animal();
+% @Mammal Animal b = a;
+% b.pouchSize = null;
+% a.pouchSize.intValue();
+% \end{Verbatim}
+% 
+% \noindent
+% In the last line of the example, \<a.pouchSize> is null, contradicting its
+% declaration and leading to a null pointer exception that would not be
+% caught by the type-checker.
+% 
+% In certain circumstances, it may be desirable to write such an annotation
+% on a \<private> field anyway, manually check all uses, and then suppress
+% the warning.
+% 
+% It is sound to write \<@Dependent> on a \<final> field.  Such a field
+% behaves like a getter method, such as \<getPouchSize()> above.
 
 
 
