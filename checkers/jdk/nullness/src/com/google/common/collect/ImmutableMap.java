@@ -313,19 +313,19 @@ public abstract class ImmutableMap<K, V> implements Map<K, V>, Serializable {
    * Returns an immutable set of the mappings in this map. The entries are in
    * the same order as the parameters used to build this map.
    */
-  public abstract ImmutableSet<Entry<K, V>> entrySet();
+  @SideEffectFree public abstract ImmutableSet<Entry<K, V>> entrySet();
 
   /**
    * Returns an immutable set of the keys in this map. These keys are in
    * the same order as the parameters used to build this map.
    */
-  public abstract ImmutableSet<K> keySet();
+  @SideEffectFree public abstract ImmutableSet<K> keySet();
 
   /**
    * Returns an immutable collection of the values in this map. The values are
    * in the same order as the parameters used to build this map.
    */
-  public abstract ImmutableCollection<V> values();
+  @SideEffectFree public abstract ImmutableCollection<V> values();
 
   @Pure @Override public boolean equals(@Nullable Object object) {
     if (object == this) {

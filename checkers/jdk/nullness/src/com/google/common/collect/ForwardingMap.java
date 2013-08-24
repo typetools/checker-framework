@@ -86,15 +86,15 @@ import checkers.nullness.quals.Nullable;
     delegate().putAll(map);
   }
 
-  public Set<K> keySet() {
+  @SideEffectFree public Set<K> keySet() {
     return delegate().keySet();
   }
 
-  public Collection<V> values() {
+  @SideEffectFree public Collection<V> values() {
     return delegate().values();
   }
 
-  public Set<Entry<K, V>> entrySet() {
+  @SideEffectFree public Set<Entry<K, V>> entrySet() {
     return delegate().entrySet();
   }
 

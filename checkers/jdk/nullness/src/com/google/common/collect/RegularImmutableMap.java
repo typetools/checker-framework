@@ -115,7 +115,7 @@ final class RegularImmutableMap<K, V> extends ImmutableMap<K, V> {
   
   private transient ImmutableSet<Entry<K, V>> entrySet;
 
-  @Override public ImmutableSet<Entry<K, V>> entrySet() {
+  @SideEffectFree @Override public ImmutableSet<Entry<K, V>> entrySet() {
     ImmutableSet<Entry<K, V>> es = entrySet;
     return (es == null) ? (entrySet = new EntrySet<K, V>(this)) : es;
   }
@@ -141,7 +141,7 @@ final class RegularImmutableMap<K, V> extends ImmutableMap<K, V> {
 
   private transient ImmutableSet<K> keySet;
 
-  @Override public ImmutableSet<K> keySet() {
+  @SideEffectFree @Override public ImmutableSet<K> keySet() {
     ImmutableSet<K> ks = keySet;
     return (ks == null) ? (keySet = new KeySet<K, V>(this)) : ks;
   }
@@ -167,7 +167,7 @@ final class RegularImmutableMap<K, V> extends ImmutableMap<K, V> {
 
   private transient ImmutableCollection<V> values;
 
-  @Override public ImmutableCollection<V> values() {
+  @SideEffectFree @Override public ImmutableCollection<V> values() {
     ImmutableCollection<V> v = values;
     return (v == null) ? (values = new Values<V>(this)) : v;
   }

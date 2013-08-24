@@ -18,8 +18,8 @@ public class Package implements java.lang.reflect.AnnotatedElement{
   @Pure public boolean isSealed() { throw new RuntimeException("skeleton method"); }
   @Pure public boolean isSealed(java.net.URL a1) { throw new RuntimeException("skeleton method"); }
   @Pure public boolean isCompatibleWith(String a1) throws NumberFormatException { throw new RuntimeException("skeleton method"); }
-  public static @Pure @Nullable Package getPackage(String a1) { throw new RuntimeException("skeleton method"); }
-  public static @Pure Package[] getPackages() { throw new RuntimeException("skeleton method"); }
+  @Pure public static @Nullable Package getPackage(String a1) { throw new RuntimeException("skeleton method"); }
+  @Pure public static Package[] getPackages() { throw new RuntimeException("skeleton method"); }
   @Pure public int hashCode() { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public String toString() { throw new RuntimeException("skeleton method"); }
   public <A extends java.lang.annotation.Annotation> @Nullable A getAnnotation(Class<A> a1) { throw new RuntimeException("skeleton method"); }

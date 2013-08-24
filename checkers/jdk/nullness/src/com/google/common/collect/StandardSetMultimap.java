@@ -53,7 +53,7 @@ import checkers.nullness.quals.Nullable;
     return (Set<V>) super.get(key);
   }
 
-  @Override public Set<Map.Entry<K, V>> entries() {
+  @SideEffectFree @Override public Set<Map.Entry<K, V>> entries() {
     return (Set<Map.Entry<K, V>>) super.entries();
   }
 
