@@ -286,9 +286,13 @@ public abstract class InitializationChecker<Factory extends InitializationAnnota
     }
 
     /**
-     * The {@link QualifierHierarchy} for the initialization type system. This
-     * hierarchy also includes the child type system, whose hierarchy is
-     * provided through {@link #getChildQualifierHierarchy()}.
+     * The {@link QualifierHierarchy} for the initialization type system.
+     * Type systems extending the Initialization Checker should call methods
+     * {@link InitializationQualifierHierarchy#isSubtypeInitialization(AnnotationMirror, AnnotationMirror)}
+     * and
+     * {@link InitializationQualifierHierarchy#leastUpperBoundInitialization(AnnotationMirror, AnnotationMirror)}
+     * for appropriate qualifiers.
+     * See class {@link checkers.nullness.AbstractNullnessChecker.NullnessQualifierHierarchy} for an example.
      */
     protected abstract class InitializationQualifierHierarchy extends MultiGraphQualifierHierarchy {
         protected Types types = processingEnv.getTypeUtils();
