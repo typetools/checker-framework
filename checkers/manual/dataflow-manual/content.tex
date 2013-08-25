@@ -5,14 +5,288 @@ This document describes a \emph{dataflow analysis framework} for the Java Progra
 In particular, the framework is designed to be used in the Checker Framework, a framework
 that adds pluggable types to the Java type system.
 
-\begin{workinprogress}
-    The dataflow framework is currently a work in progress. This document does not necessarily describe
-    the latest state of the design and/or implementation.
-    
+The primary purpose of the dataflow framework is to enable flow-sensitive type checking in the Checker Framework, which serves to reduce the burden of annotating a program.  The dataflow framework was designed with several goals in mind.  First, to encourage other uses of the framework, it is written as a separate package that can be built and used with no dependence on the Checker Framework.  Second, the framework is currently intended to support analysis but not transformation, so it provides information that can be used by a type checker or an IDE, but it does not support optimization.  Third, the framework aims to minimize the burden on developers who build on top of it.  In particular, the hierarchy of analysis classes is designed to reduce the effort required to implement a new flow-sensitive type checker in the Checker Framework.
+
+To summarize the behavior of the Dataflow Framework concisely, we may say that it makes control flow explicit by transforming an input AST into a control flow graph consisting of basic blocks made up of nodes representing single operations.  It performs iterative data flow analysis over the control flow graph to produce a set of stores that map variables and other distinguished expressions to abstract values.  The action of a single node on the dataflow store is captured by a transfer function, that takes an input store and a node and produces an output store.  Once the analysis reaches a fix point, the dataflow information, consisting of an abstract value for each expression and a store at each program point, is preserved as an analysis result, which can be accessed by client code.
+
+In the Checker Framework, the abstract values to be computed are annotated types.  Individual checkers can customize their analysis by extending the abstract value class and by overriding the behavior of the transfer function for particular node types.
+
+\begin{workinprogress}    
     Paragraphs colored in gray with a gray bar on the left side (just like this one)
     contain questions, additional comments or indicate missing parts. Eventually, these
     paragraphs will be removed.
 \end{workinprogress}
+
+
+
+
+
+\section{Organization}
+
+\subsection{Projects}
+
+The source code of the combined Checker Framework and Dataflow Framework is divided into three projects: \code{javacutils}, \code{dataflow} and \code{checkers}, which can be built into distinct jar files. 
+
+\code{javacutils} provides convenient interfaces to routines in Oracle's javac library.  There are utility classes for interacting with annotations, elements, trees and types, as well as \code{InternalUtils}, which gives direct access to internal features of javac that are not part of a supported interface.  There are interfaces or abstract classes for reporting errors, for processing types in an AST and for providing the annotations present on an Element.  The \code{javacutils.trees} package provides a class to parse expressions into javac Trees, a class to build new Trees from scratch and a class to represent newly introduced variables that are not part of an input program.
+ 
+\code{dataflow} contains the classes to represent and construct control flow graphs and the base classes required for flow analysis.   These classes are described in detail in \autoref{sec:node_classes}.
+  
+\code{checkers} contains the Checker Framework and the type system-specific checkers, including the derived classes for flow analysis of annotated types which are described later in this document.
+
+The \code{dataflow} project depends on \code{javacutils}, while the \code{checkers} project depends on both \code{dataflow} and \code{javactuils}.
+
+\subsection{Classes}
+
+This section gives an overview of the major Java classes and interfaces in the implementation of the Dataflow Framework and the flow-sensitive type checking feature of the Checker Framework.  It includes both the base classes in the \code{dataflow} project and the derived classes in the \code{checkers} project.  The class and interface declarations are given with full package names to indicate which project they belong to.
+
+\subsubsection{Nodes}
+\label{sec:node_classes}
+
+    We use Node classes to represent the individual operations of a program, including arithmetic operations, logical operations, method calls, variable references, array accesses, etc.  The individual Node types are listed in \autoref{tab:nodes} .
+
+    \code{class dataflow.cfg.node.*Node}
+
+\subsubsection{Blocks}
+\label{sec:block_classes}
+
+    Nodes are grouped into basic blocks using a hierarchy of Block classes.  The hierarchy is composed of five interfaces, two abstract classes and four concrete classes.  
+
+    \code{interface dataflow.cfg.block.Block}
+    
+    \code{abstract class dataflow.cfg.block.BlockImpl implements Block}
+
+    \code{interface dataflow.cfg.block.SingleSuccessorBlock extends Block}
+
+    \code{abstract class dataflow.cfg.block.SingleSuccessorBlockImpl extends BlockImpl implements
+        SingleSuccessorBlock}
+
+    RegularBlocks contain no exception raising operations and have a single control-flow successor.
+
+    \code{interface dataflow.cfg.block.RegularBlock extends SingleSuccessorBlock}
+        
+    \code{class dataflow.cfg.block.RegularBlockImpl extends SingleSuccessorBlockImpl implements
+        RegularBlock}
+        
+    ExceptionBlocks contain a single operation that may raise an exception, with one or more exceptional successors and a single normal control-flow successor.
+            
+    \code{interface dataflow.cfg.block.ExceptionBlock extends SingleSuccessorBlock}
+
+    \code{class dataflow.cfg.block.ExceptionBlockImpl extends SingleSuccessorBlockImpl implements
+        ExceptionBlock}
+        
+    SpecialBlocks represent method entry and exit.
+
+    \code{interface dataflow.cfg.block.SpecialBlock extends SingleSuccessorBlock}
+
+    \code{class dataflow.cfg.block.SpecialBlockImpl extends SingleSuccessorBlockImpl implements
+        SpecialBlock}
+
+    ConditionalBlocks contain no operations at all.  They represent a control-flow split to either a 'then' or an 'else' successor based on the immediately preceding boolean valued Node.
+
+    \code{interface dataflow.cfg.block.ConditionalBlock extends Block}
+    
+    \code{class dataflow.cfg.block.ConditionalBlockImpl extends BlockImpl implements ConditionalBlock}
+    
+
+
+\subsubsection{ControlFlowGraph}
+\label{sec:control_flow_graph_class}
+
+     A ControlFlowGraph represents the body of a method or an initializer expressions as a graph of Blocks with distinguished entry, exit and exceptional exit SpecialBlocks.  ControlFlowGraphs are produced by the CFGBuilder classes and are treated as immutable data once they are built.
+
+        \code{class dataflow.cfg.ControlFlowGraph}
+
+\subsubsection{CFGBuilder}
+\label{sec:cfg_builder_classes}
+    
+    The CFGBuilder classes visit an AST and produce a corresponding ControlFlowGraph as described in \autoref{sec:ast_to_cfg_translation}.
+    
+        \code{class dataflow.cfg.CFGBuilder}
+        
+    The Checker Framework derives from CFGBuilder in order to desugar enhanced for loops that make explicit use of type annotations provided by the checker in use.
+        
+        \code{class checkers.flow.CFCFGBuilder extends CFGBuilder}
+
+
+\subsubsection{FlowExpressions}
+\label{sec:flow_expressions_class}
+
+    The Dataflow Framework uses an intermediate representation called FlowExpressions to represent field accesses, this references, pure method calls and other miscellaneous expressions to which it can associate dataflow information.  Think of FlowExpressions as keys in the store of abstract values.
+
+    \code{class dataflow.analysis.FlowExpressions}
+
+    
+\subsubsection{AbstractValue}
+\label{sec:abstract_value_classes}
+
+    AbstractValues are the internal representation of dataflow information produced by an analysis.  The information may vary widely among different users of the Dataflow Framework, but they share a common feature that one can compute the least upper bound of two AbstractValues.
+
+        \code{interface dataflow.analysis.AbstractValue<V extends AbstractValue<V>>}
+        
+    For the Checker Framework, abstract values represent AnnotatedTypeMirrors.
+        
+        \code{abstract class checkers.flow.CFAbstractValue<V extends CFAbstractValue<V>> implements AbstractValue<V>}
+        
+        \code{class checkers.flow.CFValue extends CFAbstractValue<CFValue>}
+        
+    For the NullnessCheckers, the abstract value additionally tracks the meaning of PolyNull.
+        
+        \code{class checkers.nullness.NullnessValue extends CFAbstractValue<NullnessValue>}
+        
+
+\subsubsection{Store}
+\label{sec:store_classes}
+
+    A Store is a set of dataflow facts computed by an analysis, so it is a mapping from variable and FlowExpressions to AbstractValues.  As with AbstractValues, one can take the least upper bound of two Stores.
+
+    \code{interface dataflow.analysis.Store<S extends Store<S>>}
+
+    The Checker Framework store restricts the type of abstract values it may contain.
+
+    \code{abstract class checkers.flow.CFAbstractStore<V extends CFAbstractValue<V>,
+        S extends CFAbstractStore<V, S>>
+    implements Store<S>}
+    
+    \code{class checkers.flow.CFStore extends CFAbstractStore<CFValue, CFStore>}
+    
+    An InitializationStore tracks which fields of the 'self' reference have been initialized.
+    
+    \code{class checkers.initialization.InitializationStore<
+        V extends CFAbstractValue<V>, S extends InitializationStore<V, S>>
+    extends CFAbstractStore<V, S>}
+    
+    A NullnessStore additionally tracks the meaning of PolyNull.
+    
+    \code{class checkers.nullness.NullnessStore extends
+        InitializationStore<NullnessValue, NullnessStore>}
+
+
+\subsubsection{TransferInput}
+\label{sec:transfer_input_classes}
+
+    Transfer functions are explicitly represented as a node visitor that takes a TransferInput and produces a TransferResult.  The TransferInput represents the set of dataflow facts known to be true immediately before the node to be analyzed.  TransferInputs may contain a single store, or a pair of 'then' and 'else' stores when following a boolean-valued expression.
+
+    \code{class dataflow.analysis.TransferInput<
+        A extends AbstractValue<A>,
+        S extends Store<S>>}
+
+\subsubsection{TransferResult}
+\label{sec:transfer_result_classes}
+
+    A TransferResult is the output of a transfer function.  In other words, it is the set of dataflow facts known to be true immediately after a node.  Boolean-valued expressions produce ConditionalTransferResults that contain both a 'then' and an 'else' store, while most other Nodes produce a RegularTransferResult with a single store.
+
+    \code{abstract class dataflow.analysis.TransferResult<
+        A extends AbstractValue<A>,
+        S extends Store<S>>}
+        
+    \code{class dataflow.analysis.ConditionalTransferResult<
+        A extends AbstractValue<A>,
+        S extends Store<S>>
+    extends TransferResult<A, S>}
+
+    \code{class dataflow.analysis.RegularTransferResult<
+        A extends AbstractValue<A>,
+        S extends Store<S>>
+    extends TransferResult<A, S>}
+
+\subsubsection{TransferFunction}
+\label{sec:transfer_function_classes}
+
+    A TransferFunction is a NodeVisitor that takes an input and produces an output.
+
+    \code{interface dataflow.analysis.TransferFunction<
+        A extends AbstractValue<A>,
+        S extends Store<S>>
+    extends NodeVisitor<TransferResult<A, S>, TransferInput<A, S>>}
+
+    The transfer function for the Checker Framework constrains the type of abstract values and it overrides many node visitor methods to refine the abstract values in their TransferResults.
+
+    \code{abstract class checkers.flow.CFAbstractTransfer<
+        V extends CFAbstractValue<V>,
+        S extends CFAbstractStore<V, S>,
+        T extends CFAbstractTransfer<V, S, T>>
+    extends AbstractNodeVisitor<TransferResult<V, S>, TransferInput<V, S>>
+    implements TransferFunction<V, S>}
+
+    \code{class checkers.flow.CFTransfer
+    extends CFAbstractTransfer<CFValue, CFStore, CFTransfer>}
+    
+    The Initialization checker's transfer function tracks which fields of the 'self' reference have been initialized.
+    
+    \code{class checkers.initialization.InitializationTransfer<
+        V extends CFAbstractValue<V>,
+        T extends InitializationTransfer<V, T, S>,
+        S extends InitializationStore<V, S>>
+    extends CFAbstractTransfer<V, S, T>}
+
+    The Regex checker's transfer function overrides visitMethodInvocation to special case isRegex and asRegex methods.
+
+    \code{class checkers.regex.RegexTransfer
+    extends CFAbstractTransfer<CFValue, CFStore, RegexTransfer>}
+
+
+\subsubsection{Analysis}
+\label{sec:analysis_classes}
+
+    An Analysis performs iterative dataflow analysis over a control flow graph using a given transfer function.  Currently only forward analyses are supported.
+
+    \code{class dataflow.analysis.Analysis<
+        A extends AbstractValue<A>,
+        S extends Store<S>,
+        T extends TransferFunction<A, S>>}
+
+    A Checker Framework analysis adds information about the type hierarchy being analyzed and acts as a factory for abstract values, stores and the transfer function.
+
+    \code{abstract class dataflow.analysis.CFAbstractAnalysis<
+        V extends CFAbstractValue<V>,
+        S extends CFAbstractStore<V, S>,
+        T extends CFAbstractTransfer<V, S, T>>
+    extends Analysis<V, S, T>}
+    
+    \code{class checkers.flow.CFAnalysis
+    extends CFAbstractAnalysis<CFValue, CFStore, CFTransfer>}
+
+    The nullness checkers' analysis overrides the factory methods for abstract values, stores and the transfer function.
+
+    \code{class checkers.nullness.NullnessAnalysis
+    extends CFAbstractAnalysis<NullnessValue, NullnessStore, NullnessTransfer>}
+    
+    The RegexChecker's analysis overrides the factory methods for abstract values, stores and the transfer function.
+
+    \code{class checkers.regex.RegexAnalysis
+    extends CFAbstractAnalysis<CFValue, CFStore, RegexTransfer>}
+
+
+\subsubsection{AnalysisResult}
+\label{sec:analysis_result_class}
+
+    An AnalysisResult preserves the dataflow information computed by an Analysis for later use by clients.  The information consists of an AbstractValue for each node in the CFG and a Store that is valid at the start of each Block.  The AnalysisResult class can return AbstractValues for either Nodes or Trees and it can re-run the transfer function to compute Stores that are valid immediately before or after any Tree.
+
+    \code{class dataflow.analysis.AnalysisResult<A extends AbstractValue<A>,
+                                       S extends Store<S>>}
+
+
+\subsubsection{AnnotatedTypeFactory}
+\label{sec:annotated_type_factory_classes}
+
+    AnnotatedTypeFactorys are not part of the Dataflow Framework per se, but they are parameterized by the Dataflow Framework classes that they use.
+
+    \code{class checkers.types.AnnotatedTypeFactory
+    implements AnnotationProvider}
+    
+    In the Checker Framework, dataflow analysis is performed on demand, a class at a time, the first time that a ClassTree is passed to getAnnotatedType.   This is implemented in the AbstractBasicAnnotatedTypeFactory.
+    
+    \code{abstract class checkers.types.AbstractBasicAnnotatedTypeFactory<
+        Checker extends BaseTypeChecker<?>,
+        Value extends CFAbstractValue<Value>,
+        Store extends CFAbstractStore<Value, Store>,
+        TransferFunction extends CFAbstractTransfer<Value, Store, TransferFunction>,
+        FlowAnalysis extends CFAbstractAnalysis<Value, Store, TransferFunction>>
+    extends AnnotatedTypeFactory}
+    
+    \code{class checkers.types.BasicAnnotatedTypeFactory<
+        Checker extends BaseTypeChecker<?>>
+    extends AbstractBasicAnnotatedTypeFactory<Checker, CFValue, CFStore, CFTransfer, CFAnalysis>}
 
 
 
@@ -392,24 +666,9 @@ the abstract value of such constructs.
 
 
 
-\subsubsection{L- and R-Values}
-
-Certain nodes in the CFG represent \emph{l-values}, while other stand for \emph{r-values}.  The
-distinction between the two is important, as the only for r-values an abstract value needs to be
-produced.  For this reason, nodes are tagged as either being an l-value, or an r-value.  The transfer function
-is only applied by the framework for r-values, while l-values are typically ignored.  If for some
-reason, a particular dataflow analysis also needs to look at l-values, one could think about
-extending the framework with a second transfer function, that is used for r-values.
-
-\begin{workinprogress}
-    This is not yet implemented.
-\end{workinprogress}
-
-
-
-
 
 \subsection{AST to CFG Translation}
+\label{sec:ast_to_cfg_translation}
 
 In this section we give a high level overview of the translation process from the
 abstract syntax tree to the control-flow graph as described in \autoref{sec:cfg-formal}.
