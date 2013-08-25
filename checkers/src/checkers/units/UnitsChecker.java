@@ -76,7 +76,7 @@ public class UnitsChecker extends BaseTypeChecker<UnitsAnnotatedTypeFactory> {
         Set<Class<? extends Annotation>> qualSet =
                 new HashSet<Class<? extends Annotation>>();
 
-        String qualNames = processingEnv.getOptions().get("units");
+        String qualNames = getOption("units");
         if (qualNames == null) {
         } else {
             for (String qualName : qualNames.split(",")) {

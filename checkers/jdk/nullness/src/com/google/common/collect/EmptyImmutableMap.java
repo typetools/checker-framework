@@ -22,6 +22,8 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
+import dataflow.quals.*;
+
 /**
  * An empty immutable map.
  * 
@@ -55,15 +57,15 @@ final class EmptyImmutableMap extends ImmutableMap<Object, Object> {
     return false;
   }
 
-  @Override public ImmutableSet<Entry<Object, Object>> entrySet() {
+  @SideEffectFree @Override public ImmutableSet<Entry<Object, Object>> entrySet() {
     return ImmutableSet.of();
   }
 
-  @Override public ImmutableSet<Object> keySet() {
+  @SideEffectFree @Override public ImmutableSet<Object> keySet() {
     return ImmutableSet.of();
   }
 
-  @Override public ImmutableCollection<Object> values() {
+  @SideEffectFree @Override public ImmutableCollection<Object> values() {
     return ImmutableCollection.EMPTY_IMMUTABLE_COLLECTION;
   }
 

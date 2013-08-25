@@ -1,6 +1,7 @@
 package checkers.nullness;
 
 import checkers.basetype.BaseTypeChecker;
+import checkers.flow.CFAbstractAnalysis;
 import checkers.initialization.InitializationAnnotatedTypeFactory;
 import checkers.nullness.quals.MonotonicNonNull;
 import checkers.nullness.quals.NonNull;
@@ -83,34 +84,29 @@ public class NullnessAnnotatedTypeFactory
         addAliasedAnnotation(checkers.nullness.quals.LazyNonNull.class,
                 AnnotationUtils.fromClass(elements, MonotonicNonNull.class));
 
-        // aliases borrowed from NullnessAnnotatedTypeFactory
+        // If you update the following, also update ../../../manual/nullness-checker.tex .
+        // Aliases for @Nonnull:
         addAliasedAnnotation(com.sun.istack.NotNull.class, NONNULL);
-        addAliasedAnnotation(edu.umd.cs.findbugs.annotations.NonNull.class,
-                NONNULL);
+        addAliasedAnnotation(edu.umd.cs.findbugs.annotations.NonNull.class, NONNULL);
         addAliasedAnnotation(javax.annotation.Nonnull.class, NONNULL);
-        addAliasedAnnotation(javax.validation.constraints.NotNull.class,
-                NONNULL);
+        addAliasedAnnotation(javax.validation.constraints.NotNull.class, NONNULL);
+        addAliasedAnnotation(org.eclipse.jdt.annotation.NonNull.class, NONNULL);
         addAliasedAnnotation(org.jetbrains.annotations.NotNull.class, NONNULL);
-        addAliasedAnnotation(org.netbeans.api.annotations.common.NonNull.class,
-                NONNULL);
+        addAliasedAnnotation(org.netbeans.api.annotations.common.NonNull.class, NONNULL);
         addAliasedAnnotation(org.jmlspecs.annotation.NonNull.class, NONNULL);
+
+        // Aliases for @Nullable:
         addAliasedAnnotation(com.sun.istack.Nullable.class, NULLABLE);
-        addAliasedAnnotation(
-                edu.umd.cs.findbugs.annotations.CheckForNull.class, NULLABLE);
-        addAliasedAnnotation(edu.umd.cs.findbugs.annotations.Nullable.class,
-                NULLABLE);
-        addAliasedAnnotation(
-                edu.umd.cs.findbugs.annotations.UnknownNullness.class, NULLABLE);
+        addAliasedAnnotation(edu.umd.cs.findbugs.annotations.CheckForNull.class, NULLABLE);
+        addAliasedAnnotation(edu.umd.cs.findbugs.annotations.Nullable.class, NULLABLE);
+        addAliasedAnnotation(edu.umd.cs.findbugs.annotations.UnknownNullness.class, NULLABLE);
         addAliasedAnnotation(javax.annotation.CheckForNull.class, NULLABLE);
         addAliasedAnnotation(javax.annotation.Nullable.class, NULLABLE);
+        addAliasedAnnotation(org.eclipse.jdt.annotation.Nullable.class, NULLABLE);
         addAliasedAnnotation(org.jetbrains.annotations.Nullable.class, NULLABLE);
-        addAliasedAnnotation(
-                org.netbeans.api.annotations.common.CheckForNull.class,
-                NULLABLE);
-        addAliasedAnnotation(
-                org.netbeans.api.annotations.common.NullAllowed.class, NULLABLE);
-        addAliasedAnnotation(
-                org.netbeans.api.annotations.common.NullUnknown.class, NULLABLE);
+        addAliasedAnnotation(org.netbeans.api.annotations.common.CheckForNull.class, NULLABLE);
+        addAliasedAnnotation(org.netbeans.api.annotations.common.NullAllowed.class, NULLABLE);
+        addAliasedAnnotation(org.netbeans.api.annotations.common.NullUnknown.class, NULLABLE);
         addAliasedAnnotation(org.jmlspecs.annotation.Nullable.class, NULLABLE);
 
         // TODO: These heuristics are just here temporarily. They all either
@@ -201,9 +197,9 @@ public class NullnessAnnotatedTypeFactory
     }
 
     @Override
-    public NullnessTransfer createFlowTransferFunction(NullnessAnalysis analysis) {
-        return new NullnessTransfer(analysis);
-    };
+    public NullnessTransfer createFlowTransferFunction(CFAbstractAnalysis<NullnessValue, NullnessStore, NullnessTransfer> analysis) {
+        return new NullnessTransfer((NullnessAnalysis) analysis);
+    }
 
     @Override
     public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> methodFromUse(
@@ -296,12 +292,6 @@ public class NullnessAnnotatedTypeFactory
                 || var.getSimpleName().contentEquals("class") || inJavaPackage);
     }
 
-    private static boolean isExceptionParameter(IdentifierTree node) {
-        Element elt = TreeUtils.elementFromUse(node);
-        assert elt != null;
-        return elt.getKind() == ElementKind.EXCEPTION_PARAMETER;
-    }
-
     protected class NonNullTreeAnnotator
         extends InitializationAnnotatedTypeFactory<AbstractNullnessChecker, NullnessValue, NullnessStore, NullnessTransfer, NullnessAnalysis>.CommitmentTreeAnnotator {
 
@@ -321,6 +311,19 @@ public class NullnessAnnotatedTypeFactory
         }
 
         @Override
+        public Void visitVariable(VariableTree node,
+                AnnotatedTypeMirror type) {
+            Element elt = InternalUtils.symbol(node);
+            if (elt.getKind() == ElementKind.EXCEPTION_PARAMETER) {
+                if (!type.isAnnotatedInHierarchy(NONNULL)) {
+                    // case 9. exception parameter
+                    type.addAnnotation(NONNULL);
+                }
+            }
+            return super.visitVariable(node, type);
+        }
+
+        @Override
         public Void visitIdentifier(IdentifierTree node,
                 AnnotatedTypeMirror type) {
 
@@ -330,9 +333,13 @@ public class NullnessAnnotatedTypeFactory
             // case 8. static method access
             annotateIfStatic(elt, type);
 
-            // case 9. exception parameter
-            if (isExceptionParameter(node))
+            if (elt.getKind() == ElementKind.EXCEPTION_PARAMETER) {
+                // TODO: It's surprising that we have to do this in
+                // both visitVariable and visitIdentifier. This should
+                // already be handled by applying the defaults anyway.
+                // case 9. exception parameter
                 type.replaceAnnotation(NONNULL);
+            }
 
             return super.visitIdentifier(node, type);
         }

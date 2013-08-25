@@ -1,19 +1,10 @@
 package checkers.initialization;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.ElementFilter;
-
-import javacutils.TreeUtils;
+import checkers.flow.CFAbstractAnalysis;
+import checkers.flow.CFAbstractTransfer;
+import checkers.flow.CFAbstractValue;
+import checkers.types.AnnotatedTypeMirror;
+import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 
 import dataflow.analysis.ConditionalTransferResult;
 import dataflow.analysis.FlowExpressions;
@@ -28,15 +19,25 @@ import dataflow.cfg.node.MethodInvocationNode;
 import dataflow.cfg.node.Node;
 import dataflow.cfg.node.ThisLiteralNode;
 
-import checkers.flow.CFAbstractAnalysis;
-import checkers.flow.CFAbstractTransfer;
-import checkers.flow.CFAbstractValue;
-import checkers.types.AnnotatedTypeMirror;
-import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import javacutils.TreeUtils;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.tools.javac.code.Symbol;
 
 /**
  * A transfer function that extends {@link CFAbstractTransfer} and tracks
@@ -136,6 +137,13 @@ public class InitializationTransfer<V extends CFAbstractValue<V>, T extends Init
         List<VariableElement> fields = ElementFilter.fieldsIn(clazzElem
                 .getEnclosedElements());
         for (VariableElement field : fields) {
+            if (((Symbol)field).type.tsym.completer != null) {
+                // If the type is not completed yet, we might run
+                // into trouble. Skip the field.
+                // TODO: is there a nicer solution?
+                // This was raised by Issue 244.
+                continue;
+            }
             AnnotatedTypeMirror fieldAnno = analysis.getFactory()
                     .getAnnotatedType(field);
             if (fieldAnno.hasAnnotation(checker.getFieldInvariantAnnotation())) {

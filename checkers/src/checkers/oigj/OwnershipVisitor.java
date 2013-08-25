@@ -1,14 +1,15 @@
 package checkers.oigj;
 
-import javax.lang.model.element.Element;
-
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.ExpressionTree;
-
 import checkers.basetype.BaseTypeVisitor;
 import checkers.oigj.quals.Dominator;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
+
+import javax.lang.model.element.Element;
+
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.Tree;
 
 public class OwnershipVisitor extends BaseTypeVisitor<OwnershipSubchecker, OwnershipAnnotatedTypeFactory> {
 
@@ -18,7 +19,7 @@ public class OwnershipVisitor extends BaseTypeVisitor<OwnershipSubchecker, Owner
 
     @Override
     public boolean isValidUse(AnnotatedDeclaredType declarationType,
-            AnnotatedDeclaredType useType) {
+            AnnotatedDeclaredType useType, Tree tree) {
         return true;
     }
 

@@ -1,5 +1,12 @@
 package tests.util;
 
+import checkers.source.Result;
+import checkers.source.SourceChecker;
+import checkers.source.SourceVisitor;
+import checkers.types.AnnotatedTypeFactory;
+
+import javacutils.TreeUtils;
+
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -20,11 +27,6 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
 import com.sun.tools.javac.tree.JCTree;
-
-import javacutils.TreeUtils;
-
-import checkers.source.*;
-import checkers.types.AnnotatedTypeFactory;
 
 /**
  * A specialized checker for testing purposes.  It compares an expression's
@@ -84,7 +86,7 @@ public class FactoryTestChecker extends SourceChecker<AnnotatedTypeFactory> {
         super.initChecker();
 
         // Find factory constructor
-        String checkerClassName = processingEnv.getOptions().get("checker");
+        String checkerClassName = getOption("checker");
         try {
             if (checkerClassName != null) {
                 Class<?> checkerClass = Class.forName(checkerClassName);

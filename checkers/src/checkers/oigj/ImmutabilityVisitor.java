@@ -1,19 +1,19 @@
 package checkers.oigj;
 
+import checkers.basetype.BaseTypeVisitor;
+import checkers.oigj.quals.Assignable;
+import checkers.types.AnnotatedTypeMirror;
+import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
+
+import javacutils.InternalUtils;
+import javacutils.TreeUtils;
+
 import java.util.Collections;
 
 import javax.lang.model.element.Element;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
-
-import javacutils.InternalUtils;
-import javacutils.TreeUtils;
-
-import checkers.basetype.BaseTypeVisitor;
-import checkers.oigj.quals.Assignable;
-import checkers.types.AnnotatedTypeMirror;
-import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 
 public class ImmutabilityVisitor extends BaseTypeVisitor<ImmutabilitySubchecker, ImmutabilityAnnotatedTypeFactory> {
 
@@ -23,7 +23,7 @@ public class ImmutabilityVisitor extends BaseTypeVisitor<ImmutabilitySubchecker,
 
     @Override
     public boolean isValidUse(AnnotatedDeclaredType declarationType,
-                             AnnotatedDeclaredType useType) {
+                             AnnotatedDeclaredType useType, Tree tree) {
         return true;
     }
 
