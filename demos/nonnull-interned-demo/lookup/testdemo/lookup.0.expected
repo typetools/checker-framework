@@ -1,0 +1,15 @@
+src/utilMDE/UtilMDE.java:564: error: dereference of possibly-null reference files
+    for (int i = 0; i < files.length; i++) {
+                        ^
+src/utilMDE/UtilMDE.java:716: error: incompatible types in return.
+    return hm.put(key, new Integer(new_total));
+                 ^
+  found   : @Nullable Integer
+  required: @NonNull Integer
+2 errors
+
+BUILD FAILED
+build.xml:9: The following error occurred while executing this line:
+ant.xml:23: Java returned: 1
+
+Total time: 5 seconds
