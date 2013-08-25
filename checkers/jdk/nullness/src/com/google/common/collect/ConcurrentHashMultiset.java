@@ -34,6 +34,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import checkers.nullness.quals.Nullable;
+import dataflow.quals.*;
 
 /**
  * A multiset that supports concurrent modifications and that provides atomic
@@ -372,7 +373,7 @@ public final class ConcurrentHashMultiset<E> extends AbstractMultiset<E>
 
   private volatile transient EntrySet entrySet;
 
-  @Override public Set<Multiset.Entry<E>> entrySet() {
+  @SideEffectFree @Override public Set<Multiset.Entry<E>> entrySet() {
     EntrySet result = entrySet;
     if (result == null) {
       entrySet = result = new EntrySet();

@@ -41,6 +41,7 @@ import javacutils.ErrorReporter;
 import javacutils.InternalUtils;
 import javacutils.Pair;
 import javacutils.TreeUtils;
+
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -239,10 +240,10 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
      * transfer function if they do not follow the checker naming convention.
      */
     @SuppressWarnings("unchecked")
-    public TransferFunction createFlowTransferFunction(FlowAnalysis analysis) {
+    public TransferFunction createFlowTransferFunction(CFAbstractAnalysis<Value, Store, TransferFunction> analysis) {
 
         // Try to reflectively load the visitor.
-        Class<?> checkerClass = this.resourceClass;
+        Class<?> checkerClass = this.checker.getClass();
 
         while (checkerClass != BaseTypeChecker.class) {
             final String classToLoad = checkerClass.getName()
@@ -565,8 +566,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
         ControlFlowGraph cfg = builder.run(root, processingEnv, ast);
         FlowAnalysis newAnalysis = createFlowAnalysis(getChecker(), fieldValues);
         if (emptyStore == null) {
-            emptyStore = newAnalysis.createEmptyStore(!getProcessingEnv()
-                    .getOptions().containsKey("concurrentSemantics"));
+            emptyStore = newAnalysis.createEmptyStore(!checker.hasOption("concurrentSemantics"));
         }
         analyses.addFirst(newAnalysis);
         analyses.getFirst().performAnalysis(cfg);
@@ -592,8 +592,8 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
             }
         }
 
-        if (processingEnv.getOptions().containsKey("flowdotdir")) {
-            String dotfilename = processingEnv.getOptions().get("flowdotdir") + "/"
+        if (checker.hasOption("flowdotdir")) {
+            String dotfilename = checker.getOption("flowdotdir") + "/"
                     + dotOutputFileName(ast) + ".dot";
             // make path safe for Windows
             dotfilename = dotfilename.replace("<", "_").replace(">", "");

@@ -211,5 +211,9 @@ public class NonNullMapValue {
     public abstract @dataflow.quals.Pure @Nullable V get(@Nullable Object a1);
   }
 
-
+  interface MyMap3<K, V> {
+      @dataflow.quals.Pure
+      @EnsuresNonNullIf(result=true, expression="get(#1)")
+      boolean containsKey(@Nullable Object a1);
+    }
 }

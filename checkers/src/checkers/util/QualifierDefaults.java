@@ -48,6 +48,7 @@ import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.code.Type.WildcardType;
 
 /**
  * Determines the default qualifiers on a type.
@@ -484,10 +485,24 @@ public class QualifierDefaults {
                 }
 
                 switch (location) {
-                case LOCALS: {
+                case LOCAL_VARIABLE: {
                     if (scope.getKind() == ElementKind.LOCAL_VARIABLE &&
                             t == type) {
                         // TODO: how do we determine that we are in a cast or instanceof type?
+                        doApply(t, qual);
+                    }
+                    break;
+                }
+                case RESOURCE_VARIABLE: {
+                    if (scope.getKind() == ElementKind.RESOURCE_VARIABLE &&
+                            t == type) {
+                        doApply(t, qual);
+                    }
+                    break;
+                }
+                case EXCEPTION_PARAMETER: {
+                    if (scope.getKind() == ElementKind.EXCEPTION_PARAMETER &&
+                            t == type) {
                         doApply(t, qual);
                     }
                     break;
@@ -590,7 +605,8 @@ public class QualifierDefaults {
                 boolean prevIsTypeVarExtendsExplicit = isTypeVarExtendsExplicit;
 
                 if (tree == null) {
-                    // Is this the right combination for binary-only TVs?
+                    // This is not only for elements from binaries, but also
+                    // when the compilation unit is no-longer available.
                     isTypeVarExtendsImplicit = false;
                     isTypeVarExtendsExplicit = true;
                 } else {
@@ -625,11 +641,22 @@ public class QualifierDefaults {
                 }
                 Void r;
                 boolean prevIsTypeVarExtendsImplicit = isTypeVarExtendsImplicit;
-                isTypeVarExtendsImplicit = true;
+                boolean prevIsTypeVarExtendsExplicit = isTypeVarExtendsExplicit;
+
+                WildcardType wc = (WildcardType) type.getUnderlyingType();
+
+                if (wc.isUnbound()) {
+                    isTypeVarExtendsImplicit = true;
+                    isTypeVarExtendsExplicit = false;
+                } else {
+                    isTypeVarExtendsImplicit = false;
+                    isTypeVarExtendsExplicit = true;
+                }
                 try {
                     r = scan(type.getExtendsBoundField(), qual);
                 } finally {
                     isTypeVarExtendsImplicit = prevIsTypeVarExtendsImplicit;
+                    isTypeVarExtendsExplicit = prevIsTypeVarExtendsExplicit;
                 }
                 visitedNodes.put(type, r);
                 r = scanAndReduce(type.getSuperBoundField(), qual, r);

@@ -1,15 +1,18 @@
 package checkers.source;
 
+import checkers.types.AnnotatedTypeFactory;
+
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.TypeElement;
-
-import checkers.types.AnnotatedTypeFactory;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.util.TreePath;
@@ -72,16 +75,23 @@ public abstract class AggregateChecker extends SourceChecker<AnnotatedTypeFactor
     @Override
     public void initChecker() {
         super.initChecker();
+        // first initialize all checkers
         for (SourceChecker<?> checker : checkers) {
-            // Each checker should "support" all possible lint options - otherwise
-            // subchecker A would complain about an lint option for subchecker B.
-            checker.setSupportedLintOptions(this.getSupportedLintOptions());
             checker.initChecker();
+        }
+        // then share options as necessary
+        for (SourceChecker<?> checker : checkers) {
+            // We need to add all options that are activated for the aggregate to
+            // the individual checkers.
+            checker.addOptions(super.getOptions());
+            // Each checker should "support" all possible lint options - otherwise
+            // subchecker A would complain about a lint option for subchecker B.
+            checker.setSupportedLintOptions(this.getSupportedLintOptions());
         }
         allCheckersInited = true;
     }
 
-    // Whether all checkers were successfully initialized. 
+    // Whether all checkers were successfully initialized.
     private boolean allCheckersInited = false;
 
     // Same functionality as the same field in SourceChecker
@@ -123,6 +133,16 @@ public abstract class AggregateChecker extends SourceChecker<AnnotatedTypeFactor
         Set<String> options = new HashSet<String>();
         for (SourceChecker<?> checker : checkers) {
             options.addAll(checker.getSupportedOptions());
+        }
+        options.addAll(expandCFOptions(Arrays.asList(this.getClass()), options.toArray(new String[0])));
+        return options;
+    }
+
+    @Override
+    public final Map<String, String> getOptions() {
+        Map<String, String> options = new HashMap<String, String>(super.getOptions());
+        for (SourceChecker<?> checker : checkers) {
+            options.putAll(checker.getOptions());
         }
         return options;
     }

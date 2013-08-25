@@ -103,7 +103,7 @@ public class NullnessVisitor
 
     @Override
     public boolean isValidUse(AnnotatedDeclaredType declarationType,
-            AnnotatedDeclaredType useType) {
+            AnnotatedDeclaredType useType, Tree tree) {
         // At most a single qualifier on a type, ignoring a possible PolyAll
         // annotation.
         boolean foundInit = false;
@@ -127,6 +127,22 @@ public class NullnessVisitor
             }
         }
 
+        if (tree.getKind() == Tree.Kind.VARIABLE) {
+            Element vs = InternalUtils.symbol(tree);
+            switch (vs.getKind()) {
+                case EXCEPTION_PARAMETER:
+                    if (useType.hasAnnotation(NULLABLE)) {
+                        // Exception parameters cannot use Nullable
+                        // annotations. They default to NonNull.
+                        return false;
+                    }
+                    break;
+                default:
+                    // nothing to do
+                    break;
+            }
+        }
+
         // The super implementation checks that useType is a subtype
         // of declarationType. However, declarationType by default
         // is NonNull, which would then forbid Nullable uses.
@@ -135,13 +151,11 @@ public class NullnessVisitor
     }
 
     @Override
-    public boolean isValidUse(AnnotatedPrimitiveType type) {
-        boolean nonNull = AnnotationUtils.containsSame(type.getAnnotations(),
-                checker.NONNULL);
-        if (!nonNull) {
+    public boolean isValidUse(AnnotatedPrimitiveType type, Tree tree) {
+        if (!type.hasAnnotation(NONNULL)) {
             return false;
         }
-        return super.isValidUse(type);
+        return super.isValidUse(type, tree);
     }
 
     private boolean containsSameIgnoringValues(
@@ -344,11 +358,11 @@ public class NullnessVisitor
             AnnotatedTypeMirror left = atypeFactory.getAnnotatedType(leftOp);
             AnnotatedTypeMirror right = atypeFactory.getAnnotatedType(rightOp);
             if (leftOp.getKind() == Tree.Kind.NULL_LITERAL
-                    && right.hasAnnotation(NONNULL))
+                    && right.hasEffectiveAnnotation(NONNULL))
                 checker.report(
                         Result.warning(KNOWN_NONNULL, rightOp.toString()), node);
             else if (rightOp.getKind() == Tree.Kind.NULL_LITERAL
-                    && left.hasAnnotation(NONNULL))
+                    && left.hasEffectiveAnnotation(NONNULL))
                 checker.report(
                         Result.warning(KNOWN_NONNULL, leftOp.toString()), node);
         }
@@ -433,8 +447,8 @@ public class NullnessVisitor
             // If receiver is Nullable, then we don't want to issue a warning
             // about method invocability (we'd rather have only the
             // "dereference.of.nullable" message).
-            if (AnnotationUtils.containsSame(treeReceiver.getAnnotations(),
-                    NULLABLE) || recvAnnos.contains(MONOTONICNONNULL)) {
+            if (treeReceiver.hasAnnotation(NULLABLE) ||
+                    recvAnnos.contains(MONOTONICNONNULL)) {
                 return;
             }
         }

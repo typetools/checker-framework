@@ -308,7 +308,7 @@ public class ImmutableSetMultimap<K, V>
    * second key, and so on.
    */
   // TODO: Fix this so that two copies of the entries are not created.
-  @Override public ImmutableSet<Map.Entry<K, V>> entries() {
+  @SideEffectFree @Override public ImmutableSet<Map.Entry<K, V>> entries() {
     ImmutableSet<Map.Entry<K, V>> result = entries;
     return (result == null)
         ? (entries = ImmutableSet.copyOf(super.entries()))

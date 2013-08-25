@@ -1,15 +1,15 @@
 package checkers.nullness.quals;
 
+import checkers.nullness.AbstractNullnessChecker;
+import checkers.quals.MonotonicQualifier;
+import checkers.quals.SubtypeOf;
+import checkers.quals.TypeQualifier;
+
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-
-import checkers.nullness.AbstractNullnessChecker;
-import checkers.quals.MonotonicQualifier;
-import checkers.quals.SubtypeOf;
-import checkers.quals.TypeQualifier;
 
 /**
  * Indicates that a field (or variable) is lazily initialized to a non-null
@@ -31,10 +31,10 @@ import checkers.quals.TypeQualifier;
  * method</em> can be assumed to be non-null, even after arbitrary external
  * method calls that might access the field.
  * <p>
- * 
+ *
  * {@code MonotonicNonNull} gives stronger guarantees than {@link Nullable}.
  * After a check that a {@link Nullable} field holds a non-null value, only
- * accesses until the next non-{@link Pure} method is called can be assumed
+ * accesses until the next non-{@link dataflow.quals.Pure} method is called can be assumed
  * to be non-null.
  * <p>
  *

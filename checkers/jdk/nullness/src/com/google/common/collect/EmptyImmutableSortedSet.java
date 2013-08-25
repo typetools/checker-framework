@@ -87,11 +87,11 @@ class EmptyImmutableSortedSet<E> extends ImmutableSortedSet<E> {
     return "[]";
   }
 
-  public E first() {
+  @SideEffectFree public E first() {
     throw new NoSuchElementException();
   }
 
-  public E last() {
+  @SideEffectFree public E last() {
     throw new NoSuchElementException();
   }
 
