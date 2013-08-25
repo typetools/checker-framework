@@ -69,7 +69,7 @@ import checkers.nullness.quals.Nullable;
    * Consequently, the values do not follow their natural ordering or the
    * ordering of the value comparator.
    */
-  @Override public Collection<V> values() {
+  @SideEffectFree @Override public Collection<V> values() {
     return super.values();
   }
 }

@@ -19,6 +19,7 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 
 /**
@@ -117,7 +118,7 @@ public class RegexVisitor extends BaseTypeVisitor<RegexChecker, RegexAnnotatedTy
 
     @Override
     public boolean isValidUse(AnnotatedDeclaredType declarationType,
-                             AnnotatedDeclaredType useType) {
+                             AnnotatedDeclaredType useType, Tree tree) {
         // TODO: only allow Regex and PolyRegex annotations on types in legalReferenceTypes.
         // This is pending an implementation of AnnotatedTypeMirror.getExplicitAnnotations
         // that supports local variables, array types and parameterized types.
@@ -131,11 +132,11 @@ public class RegexVisitor extends BaseTypeVisitor<RegexChecker, RegexAnnotatedTy
             }
             return false;
         }*/
-        return super.isValidUse(declarationType, useType);
+        return super.isValidUse(declarationType, useType, tree);
     }
 
     @Override
-    public boolean isValidUse(AnnotatedPrimitiveType type) {
+    public boolean isValidUse(AnnotatedPrimitiveType type, Tree tree) {
         // TODO: only allow Regex and PolyRegex annotations on chars.
         // This is pending an implementation of AnnotatedTypeMirror.getExplicitAnnotations
         // that supports local variables and array types.
@@ -143,7 +144,7 @@ public class RegexVisitor extends BaseTypeVisitor<RegexChecker, RegexAnnotatedTy
         if (!type.getExplicitAnnotations().isEmpty()) {
             return type.getKind() == TypeKind.CHAR;
         }*/
-        return super.isValidUse(type);
+        return super.isValidUse(type, tree);
     }
 
 }

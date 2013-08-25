@@ -39,7 +39,7 @@ import checkers.nullness.quals.Nullable;
 
   @Override protected abstract SortedMap<K, V> delegate();
 
-  public Comparator<? super K> comparator() {
+  @SideEffectFree public Comparator<? super K> comparator() {
     return delegate().comparator();
   }
 

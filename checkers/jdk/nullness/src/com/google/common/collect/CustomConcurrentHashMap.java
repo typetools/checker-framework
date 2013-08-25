@@ -36,6 +36,7 @@ import java.util.concurrent.atomic.AtomicReferenceArray;
 import java.util.concurrent.locks.ReentrantLock;
 
 import checkers.nullness.quals.Nullable;
+import dataflow.quals.*;
 
 /**
  * A framework for concurrent hash map implementations. The
@@ -1593,7 +1594,7 @@ final class CustomConcurrentHashMap {
      * iterator, and may (but is not guaranteed to) reflect any modifications
      * subsequent to construction.
      */
-    @Override public Set<K> keySet() {
+    @SideEffectFree @Override public Set<K> keySet() {
       Set<K> ks = keySet;
       return (ks != null) ? ks : (keySet = new KeySet());
     }
@@ -1615,7 +1616,7 @@ final class CustomConcurrentHashMap {
      * iterator, and may (but is not guaranteed to) reflect any modifications
      * subsequent to construction.
      */
-    @Override public Collection<V> values() {
+    @SideEffectFree @Override public Collection<V> values() {
       Collection<V> vs = values;
       return (vs != null) ? vs : (values = new Values());
     }
@@ -1637,7 +1638,7 @@ final class CustomConcurrentHashMap {
      * iterator, and may (but is not guaranteed to) reflect any modifications
      * subsequent to construction.
      */
-    @Override public Set<Entry<K, V>> entrySet() {
+    @SideEffectFree @Override public Set<Entry<K, V>> entrySet() {
       Set<Entry<K, V>> es = entrySet;
       return (es != null) ? es : (entrySet = new EntrySet());
     }

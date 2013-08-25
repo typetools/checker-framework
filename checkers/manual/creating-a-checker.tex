@@ -660,7 +660,7 @@ similar to Java subtype rules, but taking the type qualifiers into account.
     myNonNullObject = myObject;  // invalid assignment
   \end{Verbatim}
 
-\item invalid generic argument (generic.argument.invalid) when a type
+\item invalid generic argument (type.argument.type.incompatible) when a type
   is bound to an incompatible generic type variable
 
 \item invalid method invocation (method.invocation.invalid) when a
@@ -864,10 +864,8 @@ processing \code{SupportedOptions} annotation on the checker, as in:
 The value of the option can be queried using
 
 \begin{Verbatim}
-env.getOptions().get("info")
+checker.getOption("info")
 \end{Verbatim}
-
-where \code{env} is the current \code{ProcessingEnvironment}.
 
 To pass an option on the command line, call javac as follows:
 
@@ -878,6 +876,8 @@ javac -processor Mine -Ainfo=p1,p2
 The value is returned as a single string and you have to perform the
 required parsing of the option.
 
+
+% TODO: describe -ANullnessChecker_option=value mechanism.
 
 
 

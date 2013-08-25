@@ -3,8 +3,8 @@ import java.lang.annotation.*;
 import checkers.quals.*;
 import checkers.nullness.quals.*;
 
-import tests.util.SuperQual;
-import tests.util.SubQual;
+// import tests.util.SuperQual;
+// import tests.util.SubQual;
 
 public class UnusedNullness {
 
@@ -22,7 +22,7 @@ public class UnusedNullness {
       this.ppt = null;
   }
 
-  protected @Prototype UnusedNullness(int param) {
+  protected @Prototype UnusedNullness(int disambiguate_overloading) {
       // It should be legal to NOT initialize an unused field in
       // a constructor with @Prototype receiver.
   }
@@ -38,4 +38,14 @@ public class UnusedNullness {
       //:: error: (assignment.type.incompatible)
       this.ppt = null;
   }
+
+  protected void useUnusedField1(@Prototype UnusedNullness this) {
+    //:: error: (assignment.type.incompatible)
+    @NonNull Object x = this.ppt;
+  }
+
+  protected void useUnusedField2() {
+    @NonNull Object x = this.ppt;
+  }
+
 }

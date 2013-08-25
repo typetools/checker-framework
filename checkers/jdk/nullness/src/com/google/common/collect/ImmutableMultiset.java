@@ -266,13 +266,13 @@ public class ImmutableMultiset<E> extends ImmutableCollection<E>
   // deserialization should call multiset.elementSet(). Then
   // reserialized(multiset).elementSet() == reserialized(multiset.elementSet())
   // Currently, those object references differ.
-  public Set<E> elementSet() {
+  @SideEffectFree public Set<E> elementSet() {
     return map.keySet();
   }
 
   private transient ImmutableSet<Entry<E>> entrySet;
 
-  public Set<Entry<E>> entrySet() {
+  @SideEffectFree public Set<Entry<E>> entrySet() {
     ImmutableSet<Entry<E>> es = entrySet;
     return (es == null) ? (entrySet = new EntrySet<E>(this)) : es;
   }
@@ -280,7 +280,7 @@ public class ImmutableMultiset<E> extends ImmutableCollection<E>
   private static class EntrySet<E> extends ImmutableSet<Entry<E>> {
     final ImmutableMultiset<E> multiset;
 
-    public EntrySet(ImmutableMultiset<E> multiset) {
+    @SideEffectFree public EntrySet(ImmutableMultiset<E> multiset) {
       this.multiset = multiset;
     }
 

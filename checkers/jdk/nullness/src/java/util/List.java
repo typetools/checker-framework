@@ -28,7 +28,7 @@ public interface List<E extends @Nullable Object> extends Collection<E> {
   public abstract void clear();
   @Pure public abstract boolean equals(@Nullable Object a1);
   @Pure public abstract int hashCode();
-  public abstract @Pure E get(int a1);
+  @Pure public abstract E get(int a1);
   public abstract E set(int a1, E a2);
   public abstract void add(int a1, E a2);
   public abstract E remove(int a1);

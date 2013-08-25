@@ -24,6 +24,8 @@ import java.util.SortedSet;
 
 import javax.annotation.Nullable;
 
+import dataflow.quals.*;
+
 /**
  * Basic implementation of the {@link SortedSetMultimap} interface. It's a
  * wrapper around {@link AbstractMultimap} that converts the returned
@@ -67,7 +69,7 @@ import javax.annotation.Nullable;
    * Consequently, the values do not follow their natural ordering or the
    * ordering of the value comparator.
    */
-  @Override public Collection<V> values() {
+  @SideEffectFree @Override public Collection<V> values() {
     return super.values();
   }
   

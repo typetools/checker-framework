@@ -25,7 +25,7 @@ public class LinkedList<E extends @Nullable Object> extends AbstractSequentialLi
   public boolean addAll(Collection<? extends E> a1) { throw new RuntimeException("skeleton method"); }
   public boolean addAll(int a1, Collection<? extends E> a2) { throw new RuntimeException("skeleton method"); }
   public void clear() { throw new RuntimeException("skeleton method"); }
-  public @Pure E get(int a1) { throw new RuntimeException("skeleton method"); }
+  @Pure public E get(int a1) { throw new RuntimeException("skeleton method"); }
   public E set(int a1, E a2) { throw new RuntimeException("skeleton method"); }
   public void add(int a1, E a2) { throw new RuntimeException("skeleton method"); }
   public E remove(int a1) { throw new RuntimeException("skeleton method"); }

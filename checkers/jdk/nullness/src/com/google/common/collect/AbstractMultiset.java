@@ -30,6 +30,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 
 import checkers.nullness.quals.Nullable;
+import dataflow.quals.*;
 
 /**
  * This class provides a skeletal implementation of the {@link Multiset}
@@ -49,7 +50,7 @@ import checkers.nullness.quals.Nullable;
 @SuppressWarnings("nullness:generic.argument")
 abstract class AbstractMultiset<E extends /*@Nullable*/ Object> extends AbstractCollection<E>
     implements Multiset<E> {
-    public abstract Set<Entry<E>> entrySet();
+    @SideEffectFree public abstract Set<Entry<E>> entrySet();
 
   // Query Operations
 
@@ -211,7 +212,7 @@ abstract class AbstractMultiset<E extends /*@Nullable*/ Object> extends Abstract
 
   private transient volatile Set<E> elementSet;
 
-  public Set<E> elementSet() {
+  @SideEffectFree public Set<E> elementSet() {
     Set<E> result = elementSet;
     if (result == null) {
       elementSet = result = createElementSet();

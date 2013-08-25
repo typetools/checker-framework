@@ -354,18 +354,18 @@ public abstract class AnnotatedTypeMirror {
     public Set<AnnotationMirror> getExplicitAnnotations() {
         // TODO JSR 308: The explicit type annotations should be always present
         Set<AnnotationMirror> explicitAnnotations = AnnotationUtils.createAnnotationSet();
-         List<? extends AnnotationMirror> typeAnnotations = this.getUnderlyingType().getAnnotationMirrors();
+        List<? extends AnnotationMirror> typeAnnotations = this.getUnderlyingType().getAnnotationMirrors();
 
-         Set<? extends AnnotationMirror> validAnnotations = atypeFactory.getQualifierHierarchy().getTypeQualifiers();
-         for (AnnotationMirror explicitAnno : typeAnnotations) {
-             for (AnnotationMirror validAnno : validAnnotations) {
-                 if (AnnotationUtils.areSameIgnoringValues(explicitAnno, validAnno)) {
-                     explicitAnnotations.add(explicitAnno);
-                 }
-             }
-         }
+        Set<? extends AnnotationMirror> validAnnotations = atypeFactory.getQualifierHierarchy().getTypeQualifiers();
+        for (AnnotationMirror explicitAnno : typeAnnotations) {
+            for (AnnotationMirror validAnno : validAnnotations) {
+                if (AnnotationUtils.areSameIgnoringValues(explicitAnno, validAnno)) {
+                    explicitAnnotations.add(explicitAnno);
+                }
+            }
+        }
 
-         return explicitAnnotations;
+        return explicitAnnotations;
     }
 
     /**
@@ -774,7 +774,8 @@ public abstract class AnnotatedTypeMirror {
     public final String toString() {
         // Also see
         // checkers.basetype.BaseTypeVisitor.commonAssignmentCheck(AnnotatedTypeMirror, AnnotatedTypeMirror, Tree, String)
-        return toString(atypeFactory.processingEnv.getOptions().containsKey("printAllQualifiers"));
+        // TODO the direct access to the 'checker' field is not clean
+        return toString(atypeFactory.checker.hasOption("printAllQualifiers"));
     }
 
     /**
@@ -872,8 +873,9 @@ public abstract class AnnotatedTypeMirror {
         private AnnotatedDeclaredType(DeclaredType type,
                 AnnotatedTypeFactory atypeFactory) {
             super(type, atypeFactory);
-            DeclaredType elem = (DeclaredType)((TypeElement)type.asElement()).asType();
-            wasRaw = !elem.getTypeArguments().isEmpty() &&
+            TypeElement typeelem = (TypeElement) type.asElement();
+            DeclaredType declty = (DeclaredType) typeelem.asType();
+            wasRaw = !declty.getTypeArguments().isEmpty() &&
                     type.getTypeArguments().isEmpty();
 
             TypeMirror encl = type.getEnclosingType();
@@ -2182,7 +2184,13 @@ public abstract class AnnotatedTypeMirror {
             if (superBound != null)
                 type.setSuperBound(superBound.substitute(newMapping));
 
-            return type;
+            if (type.getExtendsBound() != null &&
+                    type.getSuperBound() != null &&
+                    AnnotatedTypes.areSame(type.getExtendsBound(), type.getSuperBound())) {
+                return type.getExtendsBound();
+            } else {
+                return type;
+            }
         }
 
         @Override

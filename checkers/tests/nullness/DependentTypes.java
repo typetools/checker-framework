@@ -5,13 +5,13 @@ import tests.util.SuperQual;
 import tests.util.SubQual;
 
 // @skip-test
+//:: error: (initialization.fields.uninitialized)
 public class DependentTypes {
 
-  @SuperQual Object supero = null;
+  @SuperQual @Nullable Object supero = null;
   // A trivial error, so there is at least one in the output.
-  //:: error: (type.incompatible)
+  //:: error: (assignment.type.incompatible)
   @SubQual Object subo = supero;
-
 
   // This signature is a type error.  A client of the supertype (SuperQual)
   // can set publicDepSubQual to null, but a client of the subtype cannot.
