@@ -67,7 +67,7 @@ import com.sun.source.util.TreePath;
  * <pre><code>assert map.get(key) != null;
  * Object v = map.get(key);</code></pre>
  *
- * <li value="4">Preceded by an check of contains or nullness if
+ * <li value="4">Preceded by a check of contains or nullness if
  * test that throws an exception, in the first line:
  *
  * <pre><code>if (!map.contains(key)) throw new Exception();
