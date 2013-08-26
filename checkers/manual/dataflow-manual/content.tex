@@ -626,6 +626,12 @@ for every type.
     \end{longtable}
     
 \begin{workinprogress}
+ThisLiteral shouldn't be considered a literal value node, because a use of
+\code{this} is not a literal expression.  I would change the name and group
+it with accessor expressions.
+\end{workinprogress}
+
+\begin{workinprogress}
 Can \code{StringConversion} be implicit?  I think so, but in any event discuss.
 \end{workinprogress}
 
