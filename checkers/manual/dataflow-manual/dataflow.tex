@@ -23,6 +23,15 @@
 \def\dblfloatpagefraction{\topfraction}  % default .5
 \def\textfraction{.15}
 
+%% This doesn't work for longtable.  :-(
+% Add line between figure and text
+\makeatletter
+\def\topfigrule{\kern3\p@ \hrule \kern -3.4\p@} % the \hrule is .4pt high
+\def\botfigrule{\kern-3\p@ \hrule \kern 2.6\p@} % the \hrule is .4pt high
+\def\dblfigrule{\kern3\p@ \hrule \kern -3.4\p@} % the \hrule is .4pt high
+\makeatother
+
+
 \usepackage{listings}
 \lstset{
     language=Java,
