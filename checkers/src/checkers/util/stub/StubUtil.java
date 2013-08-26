@@ -1,11 +1,24 @@
 package checkers.util.stub;
 
-import japa.parser.ast.CompilationUnit;
-import japa.parser.ast.IndexUnit;
-import japa.parser.ast.Node;
-import japa.parser.ast.body.*;
-import japa.parser.ast.type.*;
-import japa.parser.ast.visitor.SimpleVoidVisitor;
+import cfjapa.parser.ast.CompilationUnit;
+import cfjapa.parser.ast.IndexUnit;
+import cfjapa.parser.ast.Node;
+import cfjapa.parser.ast.body.BodyDeclaration;
+import cfjapa.parser.ast.body.ConstructorDeclaration;
+import cfjapa.parser.ast.body.FieldDeclaration;
+import cfjapa.parser.ast.body.MethodDeclaration;
+import cfjapa.parser.ast.body.Parameter;
+import cfjapa.parser.ast.body.TypeDeclaration;
+import cfjapa.parser.ast.body.VariableDeclarator;
+import cfjapa.parser.ast.type.ClassOrInterfaceType;
+import cfjapa.parser.ast.type.PrimitiveType;
+import cfjapa.parser.ast.type.ReferenceType;
+import cfjapa.parser.ast.type.VoidType;
+import cfjapa.parser.ast.type.WildcardType;
+import cfjapa.parser.ast.visitor.SimpleVoidVisitor;
+
+import javacutils.ErrorReporter;
+import javacutils.Pair;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,14 +29,14 @@ import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-import javax.lang.model.element.*;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
-
-import checkers.source.SourceChecker;
-import checkers.util.Pair;
 
 /**
  * Utility class for skeleton files
@@ -161,7 +174,7 @@ public class StubUtil {
         Pair<String,String> typeParts = Pair.of(typeName, name);
         return typeParts;
     }
-    
+
     /**
      * A helper method that standarize type by printing simple names
      * instead of fully qualified names.
@@ -181,7 +194,7 @@ public class StubUtil {
             if (type.getKind().isPrimitive())
                 return type.toString();
         }
-        SourceChecker.errorAbort("StubUtil: unhandled type: " + type);
+        ErrorReporter.errorAbort("StubUtil: unhandled type: " + type);
         return null; // dead code
     }
 
@@ -206,7 +219,7 @@ public class StubUtil {
                 for (Iterator<Parameter> i = n.getParameters().iterator(); i.hasNext();) {
                     Parameter p = i.next();
                     p.accept(this, arg);
-                    
+
                     if (i.hasNext()) {
                         sb.append(",");
                     }
@@ -224,7 +237,7 @@ public class StubUtil {
                 for (Iterator<Parameter> i = n.getParameters().iterator(); i.hasNext();) {
                     Parameter p = i.next();
                     p.accept(this, arg);
-         
+
                     if (i.hasNext()) {
                         sb.append(",");
                     }
@@ -236,9 +249,9 @@ public class StubUtil {
         @Override
         public void visit(Parameter n, Void arg) {
             if (n.getId().getArrayCount() > 0) {
-                SourceChecker.errorAbort("StubUtil: put array brackets on the type, not the variable: " + n);
+                ErrorReporter.errorAbort("StubUtil: put array brackets on the type, not the variable: " + n);
             }
-           
+
             n.getType().accept(this, arg);
             if (n.isVarArgs())
                 sb.append("[]");
@@ -278,7 +291,7 @@ public class StubUtil {
                 sb.append("short");
                 break;
             default:
-                SourceChecker.errorAbort("StubUtil: unknown type: " + n.getType());
+                ErrorReporter.errorAbort("StubUtil: unknown type: " + n.getType());
             }
         }
 
@@ -298,7 +311,7 @@ public class StubUtil {
         public void visit(WildcardType n, Void arg) {
             // We don't write type arguments
             // TODO: Why?
-            SourceChecker.errorAbort("StubUtil: don't print type args!");
+            ErrorReporter.errorAbort("StubUtil: don't print type args!");
         }
     }
 

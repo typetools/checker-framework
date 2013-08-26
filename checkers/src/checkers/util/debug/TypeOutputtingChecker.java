@@ -7,13 +7,14 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.Elements;
 
+import javacutils.TreeUtils;
+
 import checkers.source.SourceChecker;
 import checkers.source.SourceVisitor;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.GeneralAnnotatedTypeFactory;
-import checkers.util.TreeUtils;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
@@ -43,10 +44,10 @@ import com.sun.tools.javac.util.Context;
  * 3. Apply a simple diff on the two outputs
  *
  */
-public class TypeOutputtingChecker extends SourceChecker {
+public class TypeOutputtingChecker extends SourceChecker<AnnotatedTypeFactory> {
 
     @Override
-    protected SourceVisitor<?, ?> createSourceVisitor(CompilationUnitTree root) {
+    protected SourceVisitor<?, ?, ?, ?> createSourceVisitor(CompilationUnitTree root) {
         return new Visitor(this, root);
     }
 
@@ -54,10 +55,10 @@ public class TypeOutputtingChecker extends SourceChecker {
      * Prints the types of the class and all of its enclosing
      * fields, methods, and inner classes
      */
-    public static class Visitor extends SourceVisitor<Void, Void> {
+    public static class Visitor extends SourceVisitor<TypeOutputtingChecker, AnnotatedTypeFactory, Void, Void> {
         String currentClass;
 
-        public Visitor(SourceChecker checker, CompilationUnitTree root) {
+        public Visitor(TypeOutputtingChecker checker, CompilationUnitTree root) {
             super(checker, root);
         }
 

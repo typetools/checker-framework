@@ -37,7 +37,8 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 
-import checkers.nullness.quals.*;
+import dataflow.quals.SideEffectFree;
+import checkers.nullness.quals.Nullable;
 
 /**
  * Basic implementation of the {@link Multimap} interface. This class represents
@@ -162,20 +163,20 @@ import checkers.nullness.quals.*;
 
   // Query Operations
 
-  public int size() {
+  @Pure public int size() {
     return totalSize;
   }
 
-  public boolean isEmpty() {
+  @Pure public boolean isEmpty() {
     return totalSize == 0;
   }
 
   @SuppressWarnings("nullness")
-  public boolean containsKey(@Nullable Object key) {
+  @Pure public boolean containsKey(@Nullable Object key) {
     return map.containsKey(key);
   }
 
-  public boolean containsValue(@Nullable Object value) {
+  @Pure public boolean containsValue(@Nullable Object value) {
     for (Collection<V> collection : map.values()) {
       if (collection.contains(value)) {
         return true;
@@ -187,7 +188,7 @@ import checkers.nullness.quals.*;
 
   @SuppressWarnings("nullness")
       //Suppressed due to annotations on Java.util.Map
-  public boolean containsEntry(@Nullable Object key, @Nullable Object value) {
+  @Pure public boolean containsEntry(@Nullable Object key, @Nullable Object value) {
     Collection<V> collection = map.get(key);
     return collection != null && collection.contains(value);
   }
@@ -442,12 +443,12 @@ import checkers.nullness.quals.*;
       }
     }
 
-    @Override public int size() {
+    @Pure @Override public int size() {
       refreshIfEmpty();
       return delegate.size();
     }
 
-    @Override public boolean equals(@Nullable Object object) {
+    @Pure @Override public boolean equals(@Nullable Object object) {
       if (object == this) {
         return true;
       }
@@ -455,12 +456,12 @@ import checkers.nullness.quals.*;
       return delegate.equals(object);
     }
 
-    @Override public int hashCode() {
+    @Pure @Override public int hashCode() {
       refreshIfEmpty();
       return delegate.hashCode();
     }
 
-    @Override public String toString() {
+    @Pure @Override public String toString() {
       refreshIfEmpty();
       return delegate.toString();
     }
@@ -555,13 +556,13 @@ import checkers.nullness.quals.*;
       return changed;
     }
 
-    @Override public boolean contains(/*@Nullable*/ Object o) {
+    @Pure @Override public boolean contains(/*@Nullable*/ Object o) {
       refreshIfEmpty();
       return delegate.contains(o);
     }
 
     @SuppressWarnings("nullness")
-    @Override public boolean containsAll(Collection<? extends /*@Nullable*/ Object> c) {
+    @Pure @Override public boolean containsAll(Collection<? extends /*@Nullable*/ Object> c) {
       refreshIfEmpty();
       return delegate.containsAll(c);
     }
@@ -642,35 +643,35 @@ import checkers.nullness.quals.*;
       return (SortedSet<V>) getDelegate();
     }
 
-    public Comparator<? super V> comparator() {
+    @SideEffectFree public Comparator<? super V> comparator() {
       return getSortedSetDelegate().comparator();
     }
 
-    public V first() {
+    @SideEffectFree public V first() {
       refreshIfEmpty();
       return getSortedSetDelegate().first();
     }
 
-    public V last() {
+    @SideEffectFree public V last() {
       refreshIfEmpty();
       return getSortedSetDelegate().last();
     }
 
-    public SortedSet<V> headSet(V toElement) {
+    @SideEffectFree public SortedSet<V> headSet(V toElement) {
       refreshIfEmpty();
       return new WrappedSortedSet(
           getKey(), getSortedSetDelegate().headSet(toElement),
           (getAncestor() == null) ? this : getAncestor());
     }
 
-    public SortedSet<V> subSet(V fromElement, V toElement) {
+    @SideEffectFree public SortedSet<V> subSet(V fromElement, V toElement) {
       refreshIfEmpty();
       return new WrappedSortedSet(
           getKey(), getSortedSetDelegate().subSet(fromElement, toElement),
           (getAncestor() == null) ? this : getAncestor());
     }
 
-    public SortedSet<V> tailSet(V fromElement) {
+    @SideEffectFree public SortedSet<V> tailSet(V fromElement) {
       refreshIfEmpty();
       return new WrappedSortedSet(
           getKey(), getSortedSetDelegate().tailSet(fromElement),
@@ -732,12 +733,12 @@ import checkers.nullness.quals.*;
       return value;
     }
 
-    public int indexOf(/*@Nullable*/ Object o) {
+    @Pure public int indexOf(/*@Nullable*/ Object o) {
       refreshIfEmpty();
       return getListDelegate().indexOf(o);
     }
 
-    public int lastIndexOf(/*@Nullable*/ Object o) {
+    @Pure public int lastIndexOf(/*@Nullable*/ Object o) {
       refreshIfEmpty();
       return getListDelegate().lastIndexOf(o);
     }
@@ -753,7 +754,7 @@ import checkers.nullness.quals.*;
     }
 
     @GwtIncompatible("List.subList")
-    public List<V> subList(int fromIndex, int toIndex) {
+    @SideEffectFree public List<V> subList(int fromIndex, int toIndex) {
       refreshIfEmpty();
       return wrapList(getKey(),
           Platform.subList(getListDelegate(), fromIndex, toIndex),
@@ -818,7 +819,7 @@ import checkers.nullness.quals.*;
 
   private transient Set<K> keySet;
 
-  public Set<K> keySet() {
+  @SideEffectFree public Set<K> keySet() {
     Set<K> result = keySet;
     return (result == null) ? keySet = createKeySet() : result;
   }
@@ -840,7 +841,7 @@ import checkers.nullness.quals.*;
       this.subMap = subMap;
     }
 
-    @Override public int size() {
+    @Pure @Override public int size() {
       return subMap.size();
     }
 
@@ -869,7 +870,7 @@ import checkers.nullness.quals.*;
 
     @SuppressWarnings("nullness")
     //Suppressed due to annotations on Java.util.Map
-    @Override public boolean contains(/*@Nullable*/ Object key) {
+    @Pure @Override public boolean contains(/*@Nullable*/ Object key) {
       return subMap.containsKey(key);
     }
 
@@ -886,15 +887,15 @@ import checkers.nullness.quals.*;
       return count > 0;
     }
 
-    @Override public boolean containsAll(Collection<?> c) {
+    @Pure @Override public boolean containsAll(Collection<?> c) {
       return subMap.keySet().containsAll(c);
     }
 
-    @Override public boolean equals(@Nullable Object object) {
+    @Pure @Override public boolean equals(@Nullable Object object) {
       return this == object || this.subMap.keySet().equals(object);
     }
 
-    @Override public int hashCode() {
+    @Pure @Override public int hashCode() {
       return subMap.keySet().hashCode();
     }
   }
@@ -909,27 +910,27 @@ import checkers.nullness.quals.*;
       return (SortedMap<K, Collection<V>>) subMap;
     }
 
-    public Comparator<? super K> comparator() {
+    @SideEffectFree public Comparator<? super K> comparator() {
       return sortedMap().comparator();
     }
 
-    public K first() {
+    @SideEffectFree public K first() {
       return sortedMap().firstKey();
     }
 
-    public SortedSet<K> headSet(K toElement) {
+    @SideEffectFree public SortedSet<K> headSet(K toElement) {
       return new SortedKeySet(sortedMap().headMap(toElement));
     }
 
-    public K last() {
+    @SideEffectFree public K last() {
       return sortedMap().lastKey();
     }
 
-    public SortedSet<K> subSet(K fromElement, K toElement) {
+    @SideEffectFree public SortedSet<K> subSet(K fromElement, K toElement) {
       return new SortedKeySet(sortedMap().subMap(fromElement, toElement));
     }
 
-    public SortedSet<K> tailSet(K fromElement) {
+    @SideEffectFree public SortedSet<K> tailSet(K fromElement) {
       return new SortedKeySet(sortedMap().tailMap(fromElement));
     }
   }
@@ -979,13 +980,13 @@ import checkers.nullness.quals.*;
       return count;
     }
 
-    @Override public Set<K> elementSet() {
+    @SideEffectFree @Override public Set<K> elementSet() {
       return StandardMultimap.this.keySet();
     }
 
     transient Set<Multiset.Entry<K>> entrySet;
 
-    @Override public Set<Multiset.Entry<K>> entrySet() {
+    @SideEffectFree @Override public Set<Multiset.Entry<K>> entrySet() {
       Set<Multiset.Entry<K>> result = entrySet;
       return (result == null) ? entrySet = new EntrySet() : result;
     }
@@ -994,13 +995,13 @@ import checkers.nullness.quals.*;
       @Override public Iterator<Multiset.Entry<K>> iterator() {
         return new MultisetEntryIterator();
       }
-      @Override public int size() {
+      @Pure @Override public int size() {
         return map.size();
       }
 
       // The following methods are included for better performance.
 
-      @Override public boolean contains(/*@Nullable*/ Object o) {
+      @Pure @Override public boolean contains(/*@Nullable*/ Object o) {
         if (!(o instanceof Multiset.Entry)) {
           return false;
         }
@@ -1039,7 +1040,7 @@ import checkers.nullness.quals.*;
       }
     }
 
-    @Override public int size() {
+    @Pure @Override public int size() {
       return totalSize;
     }
 
@@ -1126,7 +1127,7 @@ import checkers.nullness.quals.*;
    * <p>The iterator generated by the returned collection traverses the values
    * for one key, followed by the values of a second key, and so on.
    */
-  public Collection<V> values() {
+  @SideEffectFree public Collection<V> values() {
     Collection<V> result = valuesCollection;
     return (result == null) ? valuesCollection = new Values() : result;
   }
@@ -1135,7 +1136,7 @@ import checkers.nullness.quals.*;
     @Override public Iterator<V> iterator() {
       return new ValueIterator();
     }
-    @Override public int size() {
+    @Pure @Override public int size() {
       return totalSize;
     }
 
@@ -1145,7 +1146,7 @@ import checkers.nullness.quals.*;
       StandardMultimap.this.clear();
     }
 
-    @Override public boolean contains(/*@Nullable*/ Object value) {
+    @Pure @Override public boolean contains(/*@Nullable*/ Object value) {
       return containsValue(value);
     }
   }
@@ -1177,7 +1178,7 @@ import checkers.nullness.quals.*;
    * multimap, taken at the time the entry is returned by a method call to the
    * collection or its iterator.
    */
-  public Collection<Map.Entry<K, V>> entries() {
+  @SideEffectFree public Collection<Map.Entry<K, V>> entries() {
     Collection<Map.Entry<K, V>> result = entries;
     return (entries == null) ? entries = createEntries() : result;
   }
@@ -1192,13 +1193,13 @@ import checkers.nullness.quals.*;
     @Override public Iterator<Map.Entry<K, V>> iterator() {
       return createEntryIterator();
     }
-    @Override public int size() {
+    @Pure @Override public int size() {
       return totalSize;
     }
 
     // The following methods are included to improve performance.
 
-    @Override public boolean contains(/*@Nullable*/ Object o) {
+    @Pure @Override public boolean contains(/*@Nullable*/ Object o) {
       if (!(o instanceof Map.Entry)) {
         return false;
       }
@@ -1276,10 +1277,10 @@ import checkers.nullness.quals.*;
 
   /** Entry set for a {@link SetMultimap}. */
   private class EntrySet extends Entries implements Set<Map.Entry<K, V>> {
-    @Override public boolean equals(@Nullable Object object) {
+    @Pure @Override public boolean equals(@Nullable Object object) {
       return Collections2.setEquals(this, object);
     }
-    @Override public int hashCode() {
+    @Pure @Override public int hashCode() {
       return Sets.hashCodeImpl(this);
     }
   }
@@ -1309,7 +1310,7 @@ import checkers.nullness.quals.*;
 
     transient Set<Map.Entry<K, Collection<V>>> entrySet;
 
-    @Override public Set<Map.Entry<K, Collection<V>>> entrySet() {
+    @SideEffectFree @Override public Set<Map.Entry<K, Collection<V>>> entrySet() {
       Set<Map.Entry<K, Collection<V>>> result = entrySet;
       return (entrySet == null) ? entrySet = new AsMapEntries() : result;
     }
@@ -1318,7 +1319,7 @@ import checkers.nullness.quals.*;
 
     @SuppressWarnings("nullness")
 	//Suppressed due to annotations on Java.util.Map
-    @Override public boolean containsKey(/*@Nullable*/ Object key) {
+    @Pure @Override public boolean containsKey(/*@Nullable*/ Object key) {
       return submap.containsKey(key);
     }
 
@@ -1334,7 +1335,7 @@ import checkers.nullness.quals.*;
       return wrapCollection(k, collection);
     }
 
-    @Override public Set<K> keySet() {
+    @SideEffectFree @Override public Set<K> keySet() {
       return StandardMultimap.this.keySet();
     }
 
@@ -1353,15 +1354,15 @@ import checkers.nullness.quals.*;
       return output;
     }
 
-    @Override public boolean equals(@Nullable Object object) {
+    @Pure @Override public boolean equals(@Nullable Object object) {
       return this == object || submap.equals(object);
     }
 
-    @Override public int hashCode() {
+    @Pure @Override public int hashCode() {
       return submap.hashCode();
     }
 
-    @Override public String toString() {
+    @Pure @Override public String toString() {
       return submap.toString();
     }
 
@@ -1370,13 +1371,13 @@ import checkers.nullness.quals.*;
         return new AsMapIterator();
       }
 
-      @Override public int size() {
+      @Pure @Override public int size() {
         return submap.size();
       }
 
       // The following methods are included for performance.
       @SuppressWarnings("nullness")
-      @Override public boolean contains(/*@Nullable*/ Object o) {
+      @Pure @Override public boolean contains(/*@Nullable*/ Object o) {
         return submap.entrySet().contains(o);
       }
 
@@ -1427,7 +1428,7 @@ import checkers.nullness.quals.*;
       return (SortedMap<K, Collection<V>>) submap;
     }
 
-    public Comparator<? super K> comparator() {
+    @SideEffectFree public Comparator<? super K> comparator() {
       return sortedMap().comparator();
     }
 
@@ -1455,7 +1456,7 @@ import checkers.nullness.quals.*;
 
     // returns a SortedSet, even though returning a Set would be sufficient to
     // satisfy the SortedMap.keySet() interface
-    @Override public SortedSet<K> keySet() {
+    @SideEffectFree @Override public SortedSet<K> keySet() {
       SortedSet<K> result = sortedKeySet;
       return (result == null)
           ? sortedKeySet = new SortedKeySet(sortedMap()) : result;
@@ -1464,7 +1465,7 @@ import checkers.nullness.quals.*;
 
   // Comparison and hashing
 
-  @Override public boolean equals(@Nullable Object object) {
+  @Pure @Override public boolean equals(@Nullable Object object) {
     if (object == this) {
       return true;
     }
@@ -1483,7 +1484,7 @@ import checkers.nullness.quals.*;
    *
    * @see Map#hashCode
    */
-  @Override public int hashCode() {
+  @Pure @Override public int hashCode() {
     return map.hashCode();
   }
 
@@ -1493,7 +1494,7 @@ import checkers.nullness.quals.*;
    *
    * @return a string representation of the multimap
    */
-  @Override public String toString() {
+  @Pure @Override public String toString() {
     return map.toString();
   }
 }
