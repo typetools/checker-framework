@@ -20,7 +20,7 @@ import com.google.common.annotations.GwtCompatible;
 
 import java.util.Map;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
 /**
  * An immutable {@link BiMap} with reliable user-specified iteration order. Does
@@ -215,15 +215,15 @@ import checkers.nullness.quals.*;
    */
   public abstract ImmutableBiMap<V, K> inverse();
 
-  @Override public boolean containsKey(@Nullable Object key) {
+  @Pure @Override public boolean containsKey(@Nullable Object key) {
     return delegate().containsKey(key);
   }
 
-  @Override public boolean containsValue(@Nullable Object value) {
+  @Pure @Override public boolean containsValue(@Nullable Object value) {
     return inverse().containsKey(value);
   }
 
-  @Override public ImmutableSet<Entry<K, V>> entrySet() {
+  @SideEffectFree @Override public ImmutableSet<Entry<K, V>> entrySet() {
     return delegate().entrySet();
   }
   
@@ -231,7 +231,7 @@ import checkers.nullness.quals.*;
     return delegate().get(key);
   }
 
-  @Override public ImmutableSet<K> keySet() {
+  @SideEffectFree @Override public ImmutableSet<K> keySet() {
     return delegate().keySet();
   }
 
@@ -239,7 +239,7 @@ import checkers.nullness.quals.*;
    * Returns an immutable set of the values in this map. The values are in the
    * same order as the parameters used to build this map.
    */
-  @Override public ImmutableSet<V> values() {
+  @SideEffectFree @Override public ImmutableSet<V> values() {
     return inverse().keySet();
   }
 
@@ -252,23 +252,23 @@ import checkers.nullness.quals.*;
     throw new UnsupportedOperationException();
   }
 
-  @Override public boolean isEmpty() {
+  @Pure @Override public boolean isEmpty() {
     return delegate().isEmpty();
   }
 
-  public int size() {
+  @Pure public int size() {
     return delegate().size();
   }
 
-  @Override public boolean equals(@Nullable Object object) {
+  @Pure @Override public boolean equals(@Nullable Object object) {
     return object == this || delegate().equals(object);
   }
 
-  @Override public int hashCode() {
+  @Pure @Override public int hashCode() {
     return delegate().hashCode();
   }
 
-  @Override public String toString() {
+  @Pure @Override public String toString() {
     return delegate().toString();
   }
 

@@ -15,7 +15,7 @@
  */
 
 package com.google.common.collect;
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
 /**
  * Wraps an exception that occured during a computation in a different thread.

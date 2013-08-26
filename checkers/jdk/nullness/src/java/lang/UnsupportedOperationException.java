@@ -25,7 +25,7 @@
 
 package java.lang;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
 /**
  * Thrown to indicate that the requested operation is not supported.<p>

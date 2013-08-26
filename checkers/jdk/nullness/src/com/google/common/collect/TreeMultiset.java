@@ -28,7 +28,7 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 //import javax.annotation.Nullable;
 
 /**
@@ -109,7 +109,7 @@ import checkers.nullness.quals.*;
    * <p>In {@code TreeMultiset}, the return type of this method is narrowed
    * from {@link Set} to {@link SortedSet}.
    */
-  @Override public SortedSet<E> elementSet() {
+  @SideEffectFree @Override public SortedSet<E> elementSet() {
     return (SortedSet<E>) super.elementSet();
   }
 
@@ -143,28 +143,28 @@ import checkers.nullness.quals.*;
       return (SortedMap<E, AtomicInteger>) getMap();
     }
 
-    public Comparator<? super E> comparator() {
+    @SideEffectFree public Comparator<? super E> comparator() {
       return sortedMap().comparator();
     }
 
-    public E first() {
+    @SideEffectFree public E first() {
       return sortedMap().firstKey();
     }
 
-    public E last() {
+    @SideEffectFree public E last() {
       return sortedMap().lastKey();
     }
 
-    public SortedSet<E> headSet(E toElement) {
+    @SideEffectFree public SortedSet<E> headSet(E toElement) {
       return new SortedMapBasedElementSet(sortedMap().headMap(toElement));
     }
 
-    public SortedSet<E> subSet(E fromElement, E toElement) {
+    @SideEffectFree public SortedSet<E> subSet(E fromElement, E toElement) {
       return new SortedMapBasedElementSet(
           sortedMap().subMap(fromElement, toElement));
     }
 
-    public SortedSet<E> tailSet(E fromElement) {
+    @SideEffectFree public SortedSet<E> tailSet(E fromElement) {
       return new SortedMapBasedElementSet(sortedMap().tailMap(fromElement));
     }
 

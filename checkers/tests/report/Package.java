@@ -11,6 +11,7 @@ class Package extends PatternSyntaxException {
     }
 
     @Override
+    @dataflow.quals.Pure
     public String getPattern() {
         //:: error: (usage)
         return super.getPattern();

@@ -18,7 +18,7 @@ package com.google.common.base;
 
 import java.lang.ref.WeakReference;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
 /**
  * Weak reference with a {@code finalizeReferent()} method which a background

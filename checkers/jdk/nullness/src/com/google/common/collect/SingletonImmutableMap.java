@@ -20,7 +20,7 @@ import com.google.common.annotations.GwtCompatible;
 
 import java.util.Map;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 //import javax.annotation.Nullable;
 
 /**
@@ -58,39 +58,39 @@ final class SingletonImmutableMap<K, V> extends ImmutableMap<K, V> {
     return singleKey.equals(key) ? singleValue : null;
   }
 
-  public int size() {
+  @Pure public int size() {
     return 1;
   }
 
-  @Override public boolean isEmpty() {
+  @Pure @Override public boolean isEmpty() {
     return false;
   }
 
-  @Override public boolean containsKey(/*@Nullable*/ Object key) {
+  @Pure @Override public boolean containsKey(/*@Nullable*/ Object key) {
     return singleKey.equals(key);
   }
 
-  @Override public boolean containsValue(/*@Nullable*/ Object value) {
+  @Pure @Override public boolean containsValue(/*@Nullable*/ Object value) {
     return singleValue.equals(value);
   }
 
   private transient ImmutableSet<Entry<K, V>> entrySet;
 
-  @Override public ImmutableSet<Entry<K, V>> entrySet() {
+  @SideEffectFree @Override public ImmutableSet<Entry<K, V>> entrySet() {
     ImmutableSet<Entry<K, V>> es = entrySet;
     return (es == null) ? (entrySet = ImmutableSet.of(entry())) : es;
   }
 
   private transient ImmutableSet<K> keySet;
 
-  @Override public ImmutableSet<K> keySet() {
+  @SideEffectFree @Override public ImmutableSet<K> keySet() {
     ImmutableSet<K> ks = keySet;
     return (ks == null) ? (keySet = ImmutableSet.of(singleKey)) : ks;
   }
 
   private transient ImmutableCollection<V> values;
 
-  @Override public ImmutableCollection<V> values() {
+  @SideEffectFree @Override public ImmutableCollection<V> values() {
     ImmutableCollection<V> v = values;
     return (v == null) ? (values = new Values<V>(singleValue)) : v;
   }
@@ -103,15 +103,15 @@ final class SingletonImmutableMap<K, V> extends ImmutableMap<K, V> {
       this.singleValue = singleValue;
     }
 
-    @Override public boolean contains(/*@Nullable*/ Object object) {
+    @Pure @Override public boolean contains(/*@Nullable*/ Object object) {
       return singleValue.equals(object);
     }
 
-    @Override public boolean isEmpty() {
+    @Pure @Override public boolean isEmpty() {
       return false;
     }
 
-    public int size() {
+    @Pure public int size() {
       return 1;
     }
 
@@ -120,7 +120,7 @@ final class SingletonImmutableMap<K, V> extends ImmutableMap<K, V> {
     }
   }
 
-  @Override public boolean equals(@Nullable Object object) {
+  @Pure @Override public boolean equals(@Nullable Object object) {
     if (object == this) {
       return true;
     }
@@ -136,11 +136,11 @@ final class SingletonImmutableMap<K, V> extends ImmutableMap<K, V> {
     return false;
   }
 
-  @Override public int hashCode() {
+  @Pure @Override public int hashCode() {
     return singleKey.hashCode() ^ singleValue.hashCode();
   }
 
-  @Override public String toString() {
+  @Pure @Override public String toString() {
     return new StringBuilder()
         .append('{')
         .append(singleKey.toString())

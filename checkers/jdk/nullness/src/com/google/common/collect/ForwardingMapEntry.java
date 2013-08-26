@@ -20,7 +20,7 @@ import com.google.common.annotations.GwtCompatible;
 
 import java.util.Map;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 //import javax.annotation.Nullable;
 
 /**
@@ -38,11 +38,11 @@ import checkers.nullness.quals.*;
     extends ForwardingObject implements Map.Entry<K, V> {
 
   @Override protected abstract Map.Entry<K, V> delegate();
-  public K getKey() {
+  @Pure public K getKey() {
     return delegate().getKey();
   }
 
-  public V getValue() {
+  @Pure public V getValue() {
     return delegate().getValue();
   }
 
@@ -50,11 +50,11 @@ import checkers.nullness.quals.*;
     return delegate().setValue(value);
   }
 
-  @Override public boolean equals(@Nullable Object object) {
+  @Pure @Override public boolean equals(@Nullable Object object) {
     return delegate().equals(object);
   }
 
-  @Override public int hashCode() {
+  @Pure @Override public int hashCode() {
     return delegate().hashCode();
   }
 }

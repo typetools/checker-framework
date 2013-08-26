@@ -14,6 +14,7 @@ public class Enumerations {
         SENIOR;
 
         // check that receiver is OK
+        @dataflow.quals.Pure
         public String toString() { return "StudentYear: ..."; }
 
     }

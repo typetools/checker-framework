@@ -35,7 +35,8 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 import java.util.concurrent.locks.ReentrantLock;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
+import dataflow.quals.*;
 
 /**
  * A framework for concurrent hash map implementations. The
@@ -769,7 +770,7 @@ final class CustomConcurrentHashMap {
         setTable(newEntryArray(initialCapacity));
       }
 
-      AtomicReferenceArray<E> newEntryArray(int size) {
+      @Pure AtomicReferenceArray<E> newEntryArray(int size) {
         return new AtomicReferenceArray<E>(size);
       }
 
@@ -824,7 +825,7 @@ final class CustomConcurrentHashMap {
         return strategy.getValue(entry);
       }
 
-	boolean containsKey(/*@Nullable*/ Object key, int hash) {
+	@Pure boolean containsKey(/*@Nullable*/ Object key, int hash) {
         Strategy<K, V, E> s = Impl.this.strategy;
         if (count != 0) { // read-volatile
           for (/*@Nullable*/ E e = getFirst(hash); e != null; e = s.getNext(e)) {
@@ -847,7 +848,7 @@ final class CustomConcurrentHashMap {
         return false;
       }
 
-	boolean containsValue(/*@Nullable*/ Object value) {
+	@Pure boolean containsValue(/*@Nullable*/ Object value) {
         Strategy<K, V, E> s = Impl.this.strategy;
         if (count != 0) { // read-volatile
           AtomicReferenceArray<E> table = this.table;
@@ -1243,7 +1244,7 @@ final class CustomConcurrentHashMap {
      *
      * @return {@code true} if this map contains no key-value mappings
      */
-    @Override public boolean isEmpty() {
+    @Pure @Override public boolean isEmpty() {
       final Segment[] segments = this.segments;
       /*
        * We keep track of per-segment modCounts to avoid ABA
@@ -1284,7 +1285,7 @@ final class CustomConcurrentHashMap {
      *
      * @return the number of key-value mappings in this map
      */
-    @Override public int size() {
+    @Pure @Override public int size() {
       final Segment[] segments = this.segments;
       long sum = 0;
       long check = 0;
@@ -1361,7 +1362,7 @@ final class CustomConcurrentHashMap {
      *         {@code false} otherwise.
      * @throws NullPointerException if the specified key is null
      */
-    @Override public boolean containsKey(/*@Nullable*/ Object key) {
+    @Pure @Override public boolean containsKey(/*@Nullable*/ Object key) {
       if (key == null) {
         throw new NullPointerException("key");
       }
@@ -1379,7 +1380,7 @@ final class CustomConcurrentHashMap {
      *         value
      * @throws NullPointerException if the specified value is null
      */
-    @Override public boolean containsValue(/*@Nullable*/ Object value) {
+    @Pure @Override public boolean containsValue(/*@Nullable*/ Object value) {
       if (value == null) {
         throw new NullPointerException("value");
       }
@@ -1593,7 +1594,7 @@ final class CustomConcurrentHashMap {
      * iterator, and may (but is not guaranteed to) reflect any modifications
      * subsequent to construction.
      */
-    @Override public Set<K> keySet() {
+    @SideEffectFree @Override public Set<K> keySet() {
       Set<K> ks = keySet;
       return (ks != null) ? ks : (keySet = new KeySet());
     }
@@ -1615,7 +1616,7 @@ final class CustomConcurrentHashMap {
      * iterator, and may (but is not guaranteed to) reflect any modifications
      * subsequent to construction.
      */
-    @Override public Collection<V> values() {
+    @SideEffectFree @Override public Collection<V> values() {
       Collection<V> vs = values;
       return (vs != null) ? vs : (values = new Values());
     }
@@ -1637,7 +1638,7 @@ final class CustomConcurrentHashMap {
      * iterator, and may (but is not guaranteed to) reflect any modifications
      * subsequent to construction.
      */
-    @Override public Set<Entry<K, V>> entrySet() {
+    @SideEffectFree @Override public Set<Entry<K, V>> entrySet() {
       Set<Entry<K, V>> es = entrySet;
       return (es != null) ? es : (entrySet = new EntrySet());
     }
@@ -1786,11 +1787,11 @@ final class CustomConcurrentHashMap {
         this.value = value;
       }
 
-      @Override public K getKey() {
+      @Pure @Override public K getKey() {
         return key;
       }
 
-      @Override public V getValue() {
+      @Pure @Override public V getValue() {
         return value;
       }
 
@@ -1826,15 +1827,15 @@ final class CustomConcurrentHashMap {
         return new KeyIterator();
       }
 
-      @Override public int size() {
+      @Pure @Override public int size() {
         return Impl.this.size();
       }
 
-      @Override public boolean isEmpty() {
+      @Pure @Override public boolean isEmpty() {
         return Impl.this.isEmpty();
       }
 
-      @Override public boolean contains(/*@Nullable*/ Object o) {
+      @Pure @Override public boolean contains(/*@Nullable*/ Object o) {
         return Impl.this.containsKey(o);
       }
 
@@ -1853,15 +1854,15 @@ final class CustomConcurrentHashMap {
         return new ValueIterator();
       }
 
-      @Override public int size() {
+      @Pure @Override public int size() {
         return Impl.this.size();
       }
 
-      @Override public boolean isEmpty() {
+      @Pure @Override public boolean isEmpty() {
         return Impl.this.isEmpty();
       }
 
-      @Override public boolean contains(/*@Nullable*/ Object o) {
+      @Pure @Override public boolean contains(/*@Nullable*/ Object o) {
         return Impl.this.containsValue(o);
       }
 
@@ -1878,7 +1879,7 @@ final class CustomConcurrentHashMap {
 
       @SuppressWarnings("nullness")
       // Suppressed due to annotations on get
-      @Override public boolean contains(/*@Nullable*/ Object o) {
+      @Pure @Override public boolean contains(/*@Nullable*/ Object o) {
         if (!(o instanceof Entry)) {
           return false;
         }
@@ -1901,11 +1902,11 @@ final class CustomConcurrentHashMap {
         return key != null && Impl.this.remove(key, e.getValue());
       }
 
-      @Override public int size() {
+      @Pure @Override public int size() {
         return Impl.this.size();
       }
 
-      @Override public boolean isEmpty() {
+      @Pure @Override public boolean isEmpty() {
         return Impl.this.isEmpty();
       }
 
@@ -2151,19 +2152,19 @@ final class CustomConcurrentHashMap {
     public void setValue(SimpleInternalEntry<K, V> entry, V value) {
       entry.value = value;
     }
-    public /*@Nullable*/ V getValue(SimpleInternalEntry<K, V> entry) {
+    @Pure public /*@Nullable*/ V getValue(SimpleInternalEntry<K, V> entry) {
       return entry.value;
     }
-    public boolean equalKeys(K a, /*@Nullable*/ Object b) {
+    @Pure public boolean equalKeys(K a, /*@Nullable*/ Object b) {
       return a.equals(b);
     }
-    public boolean equalValues(V a, /*@Nullable*/ Object b) {
+    @Pure public boolean equalValues(V a, /*@Nullable*/ Object b) {
       return a.equals(b);
     }
-    public int hashKey(Object key) {
+    @Pure public int hashKey(Object key) {
       return key.hashCode();
     }
-    public K getKey(SimpleInternalEntry<K, V> entry) {
+    @Pure public K getKey(SimpleInternalEntry<K, V> entry) {
       return entry.key;
     }
     public /*@Nullable*/ SimpleInternalEntry<K, V> getNext(/*@Nullable*/ SimpleInternalEntry<K, V> entry) {

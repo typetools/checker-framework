@@ -23,7 +23,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.ListIterator;
 
-import checkers.nullness.quals.*;
+import dataflow.quals.SideEffectFree;
+import checkers.nullness.quals.Nullable;
 
 /**
  * A list which forwards all its method calls to another list. Subclasses should
@@ -56,11 +57,11 @@ import checkers.nullness.quals.*;
     return delegate().get(index);
   }
 
-  public int indexOf(/*@Nullable*/ Object element) {
+  @Pure public int indexOf(/*@Nullable*/ Object element) {
     return delegate().indexOf(element);
   }
 
-  public int lastIndexOf(/*@Nullable*/ Object element) {
+  @Pure public int lastIndexOf(/*@Nullable*/ Object element) {
     return delegate().lastIndexOf(element);
   }
 
@@ -81,15 +82,15 @@ import checkers.nullness.quals.*;
   }
 
   @GwtIncompatible("List.subList")
-  public List<E> subList(int fromIndex, int toIndex) {
+  @SideEffectFree public List<E> subList(int fromIndex, int toIndex) {
     return Platform.subList(delegate(), fromIndex, toIndex);
   }
 
-  @Override public boolean equals(@Nullable Object object) {
+  @Pure @Override public boolean equals(@Nullable Object object) {
     return object == this || delegate().equals(object);
   }
 
-  @Override public int hashCode() {
+  @Pure @Override public int hashCode() {
     return delegate().hashCode();
   }
 }

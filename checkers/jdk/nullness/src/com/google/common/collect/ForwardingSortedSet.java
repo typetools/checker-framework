@@ -21,7 +21,7 @@ import com.google.common.annotations.GwtCompatible;
 import java.util.Comparator;
 import java.util.SortedSet;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
 /**
  * A sorted set which forwards all its method calls to another sorted set.
@@ -39,27 +39,27 @@ import checkers.nullness.quals.*;
 
   @Override protected abstract SortedSet<E> delegate();
 
-  public Comparator<? super E> comparator() {
+  @SideEffectFree public Comparator<? super E> comparator() {
     return delegate().comparator();
   }
 
-  public E first() {
+  @SideEffectFree public E first() {
     return delegate().first();
   }
 
-  public SortedSet<E> headSet(E toElement) {
+  @SideEffectFree public SortedSet<E> headSet(E toElement) {
     return delegate().headSet(toElement);
   }
 
-  public E last() {
+  @SideEffectFree public E last() {
     return delegate().last();
   }
 
-  public SortedSet<E> subSet(E fromElement, E toElement) {
+  @SideEffectFree public SortedSet<E> subSet(E fromElement, E toElement) {
     return delegate().subSet(fromElement, toElement);
   }
 
-  public SortedSet<E> tailSet(E fromElement) {
+  @SideEffectFree public SortedSet<E> tailSet(E fromElement) {
     return delegate().tailSet(fromElement);
   }
 }

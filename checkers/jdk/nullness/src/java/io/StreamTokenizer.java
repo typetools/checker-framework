@@ -1,8 +1,9 @@
 package java.io;
 
-import checkers.nullness.quals.*;
+import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
+import checkers.nullness.quals.Nullable;
 
-@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
 
 public class StreamTokenizer{
   public int ttype;
@@ -29,5 +30,5 @@ public class StreamTokenizer{
   public int nextToken() throws IOException { throw new RuntimeException("skeleton method"); }
   public void pushBack() { throw new RuntimeException("skeleton method"); }
   public int lineno() { throw new RuntimeException("skeleton method"); }
-  public String toString() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public String toString() { throw new RuntimeException("skeleton method"); }
 }

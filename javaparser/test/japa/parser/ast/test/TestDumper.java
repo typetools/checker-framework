@@ -19,12 +19,12 @@
 /*
  * Created on 22/11/2006
  */
-package japa.parser.ast.test;
+package cfjapa.parser.ast.test;
 
 import static org.junit.Assert.assertEquals;
-import japa.parser.ast.CompilationUnit;
-import japa.parser.ast.test.classes.DumperTestClass;
-import japa.parser.ast.test.classes.JavadocTestClass;
+import cfjapa.parser.ast.CompilationUnit;
+import cfjapa.parser.ast.test.classes.DumperTestClass;
+import cfjapa.parser.ast.test.classes.JavadocTestClass;
 
 import org.junit.Test;
 
@@ -51,7 +51,7 @@ public class TestDumper {
     @Test
     public void testComments() throws Exception {
         final String source_with_comment = //
-        "package japa.parser.javacc;\n" + //
+        "package cfjapa.parser.javacc;\n" + //
                 "public class Teste {\n" + //
                 "//line comment\n" + //
                 "int a = 0;" + //
@@ -67,7 +67,7 @@ public class TestDumper {
                 "//final comment" + //
                 "";
         final String source_without_comment = //
-        "package japa.parser.javacc;\n" + //
+        "package cfjapa.parser.javacc;\n" + //
                 "\n" + //
                 "public class Teste {\n" + //
                 "\n" + //

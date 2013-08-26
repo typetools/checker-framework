@@ -31,7 +31,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.SortedSet;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
 /**
  * An immutable {@code SortedSet} that stores its elements in a sorted array.
@@ -591,7 +591,7 @@ public abstract class ImmutableSortedSet<E>
    * {@link SortedSet#comparator()}, which returns {@code null} to indicate
    * natural ordering.
    */
-  public Comparator<? super E> comparator() {
+  @SideEffectFree public Comparator<? super E> comparator() {
     return comparator;
   }
 
@@ -606,7 +606,7 @@ public abstract class ImmutableSortedSet<E>
    * method doesn't throw an exception in that situation, but instead keeps the
    * original {@code toElement}.
    */
-  public ImmutableSortedSet<E> headSet(E toElement) {
+  @SideEffectFree public ImmutableSortedSet<E> headSet(E toElement) {
     return headSetImpl(checkNotNull(toElement));
   }
 
@@ -623,7 +623,7 @@ public abstract class ImmutableSortedSet<E>
    * original {@code toElement}, instead of throwing an exception, if passed a
    * {@code toElement} greater than an earlier {@code toElement}.
    */
-  public ImmutableSortedSet<E> subSet(E fromElement, E toElement) {
+  @SideEffectFree public ImmutableSortedSet<E> subSet(E fromElement, E toElement) {
     checkNotNull(fromElement);
     checkNotNull(toElement);
     checkArgument(comparator.compare(fromElement, toElement) <= 0);
@@ -641,7 +641,7 @@ public abstract class ImmutableSortedSet<E>
    * this method doesn't throw an exception in that situation, but instead keeps
    * the original {@code fromElement}.
    */
-  public ImmutableSortedSet<E> tailSet(E fromElement) {
+  @SideEffectFree public ImmutableSortedSet<E> tailSet(E fromElement) {
     return tailSetImpl(checkNotNull(fromElement));
   }
 
