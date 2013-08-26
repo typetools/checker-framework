@@ -7,11 +7,13 @@ that adds pluggable types to the Java type system.
 
 The primary purpose of the dataflow framework is to enable flow-sensitive type checking in the Checker Framework, which serves to reduce the burden of annotating a program.  The dataflow framework was designed with several goals in mind.  First, to encourage other uses of the framework, it is written as a separate package that can be built and used with no dependence on the Checker Framework.  Second, the framework is currently intended to support analysis but not transformation, so it provides information that can be used by a type checker or an IDE, but it does not support optimization.  Third, the framework aims to minimize the burden on developers who build on top of it.  In particular, the hierarchy of analysis classes is designed to reduce the effort required to implement a new flow-sensitive type checker in the Checker Framework.
 
-The Dataflow Framework's result is an abstract value for each expression
+The Dataflow Framework's result (\autoref{sec:analysis_result_class}) is an
+abstract value for each expression
 (an estimate of the expression's run-time value) and a store at each
 program point.  A store maps variables and other distinguished expressions
 to abstract values.  As a pre-pass, the Dataflow Framework transforming an
-input AST into a control flow graph consisting of basic blocks made up of
+input AST into a control flow graph (\autoref{sec:cfg}) consisting of basic
+blocks made up of
 nodes representing single operations.  To produce its output, the Checker
 Framework performs iterative data flow analysis over the control flow
 graph.  The effect of a single node on the dataflow store is represented by
@@ -273,7 +275,7 @@ The TransferInput represents the set of dataflow facts known to be true immediat
         S extends Store<S>,
         T extends TransferFunction<A, S>>}
 
-    The Checker Framework defines a derived class of Analysis for use as the default analysis of most checkers.  This class adds information about the type hierarchy being analyzed and acts as a factory for abstract values, stores and the transfer function.
+    The Checker Framework defines a derived class of Analysis for use as the default analysis of most checkers.  This class adds information about the type hierarchy being analyzed and acts as a factory for abstract values, stores, and the transfer function.
 
     \code{abstract class dataflow.analysis.CFAbstractAnalysis<
         V extends CFAbstractValue<V>,
@@ -284,12 +286,12 @@ The TransferInput represents the set of dataflow facts known to be true immediat
     \code{class checkers.flow.CFAnalysis
     extends CFAbstractAnalysis<CFValue, CFStore, CFTransfer>}
 
-    The nullness checkers' analysis overrides the factory methods for abstract values, stores and the transfer function.
+    The Nullness Checkers' analysis overrides the factory methods for abstract values, stores, and the transfer function.
 
     \code{class checkers.nullness.NullnessAnalysis
     extends CFAbstractAnalysis<NullnessValue, NullnessStore, NullnessTransfer>}
     
-    The RegexChecker's analysis overrides the factory methods for abstract values, stores and the transfer function.
+    The RegexChecker's analysis overrides the factory methods for abstract values, stores, and the transfer function.
 
     \code{class checkers.regex.RegexAnalysis
     extends CFAbstractAnalysis<CFValue, CFStore, RegexTransfer>}
@@ -337,10 +339,12 @@ The TransferInput represents the set of dataflow facts known to be true immediat
 %In this section, we describe the control-flow graph (CFG), and the translation from the
 %Java abstract syntax tree (AST) to the CFG.
 
-The dataflow framework described here is designed to perform an intra-procedural analysis.
-This analysis is modular and every method is considered in isolation. In this section
-we describe the control-flow graph (CFG), which is used to represent a single method or field initialization, and the
-translation from the abstract syntax tree (AST) to the CFG. We start with a simple
+This section
+describes the control-flow graph (CFG), which is used to represent a single method or field initialization, and the
+translation from the abstract syntax tree (AST) to the CFG\@.
+(The dataflow framework described here is designed to perform an intra-procedural analysis.
+This analysis is modular and every method is considered in isolation.)
+ We start with a simple
 example, then give a more formal definition of the CFG and its properties, and finally
 describe the translation from the AST to the CFG.
 
@@ -354,12 +358,15 @@ of so-called nodes, which correspond to a minimal Java operations or expression.
 
 Consider the method \code{test} of \autoref{lst:CFGSimple} whose control-flow
 graph is shown in \autoref{fig:CFGSimple}. The if conditional got translated to
-a \emph{conditional basic block} with two successors. There are also two
-special basic blocks to denote the entry and exit point of the method.
+a \emph{conditional basic block} (octagon) with two successors. There are also two
+special basic blocks (ovals) to denote the entry and exit point of the method.
 
 
 \subsection{Formal Definition of the Control-Flow Graph}
 \label{sec:cfg-formal}
+
+The control-flow graph models all paths that can possibly be taken by an
+execution of the method.
 
 \begin{definition}[Control-Flow Graph]
     A \emph{control-flow graph} consists of a set of \emph{basic blocks} and
@@ -367,15 +374,13 @@ special basic blocks to denote the entry and exit point of the method.
 \end{definition}
 
 \begin{definition}[Basic Block]
-    A \emph{basic block} is a sequence of \emph{nodes}, where there is no
+    A \emph{basic block} is a sequence of \emph{nodes}, where the only
+    control flow between the nodes inside
+    the basic block is sequential.  Furthermore, there is no
     control flow occurring between those nodes and nodes of other basic
     blocks, except between the last node of one block $b_1$ and the first node
-    of another block $b_2$, if $b_2$ is a successor of $b_1$.
-    Furthermore, the only control flow between the nodes inside
-    the basic block is sequential.
-    
-    As is standard, the control-flow graph models all paths that can possibly be taken by
-    an execution of the method.
+    of another block $b_2$, if $b_2$ is a successor of $b_1$.  A basic
+    block may have multiple successors.
 \end{definition}
 
 
@@ -389,66 +394,76 @@ special basic blocks to denote the entry and exit point of the method.
         of special basic blocks:
         \begin{itemize}
             \item Entry block. This basic block is the (only) entry point of the
-            method and thus the only basic block without predecessors.
+            method and thus is the only basic block without predecessors.
             \item Exit block. This basic block denotes the (normal) exit of
             a method, and it does not have successors.
             \item Exceptional exit block, which indicates exceptional termination
             of the method. As an exit block, this block does not have successors.
         \end{itemize}
-        Every method has exactly one entry, zero or one exit blocks and zero or one
+        Every method has exactly one entry, zero or one exit blocks, and zero or one
         exceptional exit blocks. However, there is either an exit block or an exceptional
         exit block.
         \item \textbf{Regular basic block.} A \emph{regular basic block} contains
-        any non-empty sequence of nodes, and has exactly one successor.
+        any non-empty sequence of nodes and has exactly one successor.
         None of the nodes in the block can throw an exception at runtime.
         \item \textbf{Exception basic block.} An \emph{exception basic block} contains exactly
         one node that \emph{might} throw an exception at runtime (e.g., a method call).
-        There are zero or one non-exceptional successor, and one
+        There are zero or one non-exceptional successors, and one
         or more exceptional successors (see \autoref{def:edges}). But in all cases there
         is at least one successor (regular or exceptional), and only a basic block
         containing a \code{throw} statement does not have a non-exceptional successor.
         \item \textbf{Conditional basic block.} A \emph{conditional basic block}
         does not contain any nodes and is used as a \emph{split point} after the execution
-        of a node of boolean type. It has exactly two successors (both non-exceptional); one
+        of a node of boolean type. It has exactly two successors (both non-exceptional): one
         if the previous node evaluates to true, and another
         if the node evaluates to false. Both successors are labeled accordingly.
-        
+\begin{workinprogress}
+Successors are basic blocks, but edges are labeled.
+\end{workinprogress}
+
+
         There is always exactly a single predecessor block for every conditional basic block, which
         is either a regular basic block or an exception basic block. In both cases, the last node
-        in the predecessor (or the only one for an exceptional basic block) will be of boolean type
+        in the predecessor will be of boolean type
         and the boolean value controls which successor of the conditional block is executed.
     \end{enumerate}
 \end{definition}
 
-The Java class hierarchy used to implement the four block types above is described in section \autoref{sec:block_classes}.
+The Java implementation of the four block types above is described in \autoref{sec:block_classes}.
 
 In the visualizations used in this document (e.g., in \autoref{fig:CFGSimple}), special basic blocks are
-shown as ovals, conditional basic blocks are polygons with eight sides and any
-other basic block appears as rectangle.
+shown as ovals, conditional basic blocks are polygons with eight sides, and any
+other basic block appears as a rectangle.
 
 \begin{definition}[Control-Flow Graph Edges]
 \label{def:edges}
 The basic blocks of a control-flow graph are connected by directed \emph{edges}.
 If $b_1$ and $b_2$ are connected by a directed edge $(b_1,b_2)$, we call
-$b_1$ the predecessor of $b_2$, and $b_2$ the successor of $b_1$.
+$b_1$ the predecessor of $b_2$, and we call $b_2$ the successor of $b_1$.
 In a control-flow graph, there are three types of edges:
 \begin{enumerate}
     \item \textbf{Exceptional edges}. An \emph{exceptional edge} connects an exception basic block
     with its exceptional successors, and it is labeled by the most
-    general exception that might cause the execution to take this edge during runtime.
-    Note that the outgoing exceptional edges of a basic block do not need to have mutual
+    general exception that might cause execution to take this edge during runtime.
+    Note that the outgoing exceptional edges of a basic block do not need to have mutually
     exclusive labels; the semantics is that the control flow follows the most specific
     edge. For instance, if one edge is labeled with type \code{A} and another is labeled
     with type \code{B} where \code{B} is a subtype of \code{A}, then the execution only takes
     the first edge if the exception is of a subtype of \code{A}, but not a subtype of \code{B}.
     
+\begin{workinprogress}
+There is not necessarily a most specific exception type in the program
+text; in that case, does the translation add a most specific case that will
+never be executed at run time?
+\end{workinprogress}
+
     There is at most one successor for every exception type.
     \item \textbf{Conditional edges}. A \emph{conditional edge} is a non-exceptional
     edge that connects a conditional
     basic block with one of its successors, and is labeled with either ``true'' or
     ``false''.
     \item \textbf{Regular, non-conditional edge.} Any other edge is a \emph{regular edge}, and does not carry
-    a label. Only regular basic blocks, the entry basic block and exception basic blocks have outgoing
+    a label. Only regular basic blocks, the entry basic block, and exception basic blocks have outgoing
     regular edges.
 \end{enumerate}
 \end{definition}
@@ -464,21 +479,28 @@ In a control-flow graph, there are three types of edges:
     are described in more detail in \autoref{sec:noteworthy-translations}.
     
     It is important to note that, even though nodes can contain references to other nodes,
-    it is only that ``top-level'' node which is considered at that point in the basic
+    it is only the ``top-level'' node which is considered at that point in the basic
     block. In our example of the addition node, this means that only the addition operation
     is to be executed, and its operands would occur earlier in the control-flow graph
     (as they are evaluated first, before performing the addition).
 \end{definition}
 
-In the visualization, a string representation of the node is used, followed by the name
-of the node type in square brackets. Note that the string representation often also includes
+In the visualization, a string representation of the node is used, followed by
+the node type in square brackets. Note that the string representation often also includes
 more than just the ``top-level'' node. For instance, an addition node also displays its
 left and right operator. This is done for clarity, so that it is easy to see what
 expressions are summed up.
 
-In \autoref{tab:nodes} we give a list of all node types in our framework. We use the
+\begin{workinprogress}
+  An example would be helpful to make the ideas concrete.  Should you
+  forward-reference to \code{||} in one of the examples?  (I think that's
+  OK because short-circuited operators are treated the same for the
+  purposes of this discussion.)
+\end{workinprogress}
+
+\autoref{tab:nodes} lists all node types in our framework. We use the
 Java class name of the implementation, but leave out the suffix \code{Node}, which is present
-for all types.
+for every type.
 
     \begin{longtable}{lp{0.5\linewidth}l}
         \midrule
@@ -493,107 +515,104 @@ for all types.
         \midrule
 
         \code{ValueLiteral} & The base class of literal value nodes. & \\
-        \code{BooleanLiteral} & & true \\
-        \code{CharacterLiteral} & & 'c' \\
-        \code{DoubleLiteral} & & 3.14159 \\
-        \code{FloatLiteral} & & 1.414f \\
-        \code{IntegerLiteral} & & 42 \\
-        \code{LongLiteral} & & 1024L \\
-        \code{NullLiteral} & & null \\
-        \code{ShortLiteral} & & 512 \\
-        \code{StringLiteral} & & "memo" \\
-        \code{ThisLiteral} & Base class of references to 'this' & \\
-        \code{ExplicitThisLiteral} & Explicit use of 'this' in an expression & \\
-        \code{ImplicitThisLiteral} & Implicit use of 'this' in an expression & \\
+        \code{BooleanLiteral} & & \code{true} \\
+        \code{CharacterLiteral} & & \code{'c'} \\
+        \code{DoubleLiteral} & & \code{3.14159} \\
+        \code{FloatLiteral} & & \code{1.414f} \\
+        \code{IntegerLiteral} & & \code{42} \\
+        \code{LongLiteral} & & \code{1024L} \\
+        \code{NullLiteral} & & \code{null} \\
+        \code{ShortLiteral} & & \code{512} \\
+        \code{StringLiteral} & & \code{"memo"} \\
         \midrule
         
         & Accessor expressions & \\
-        \code{ArrayAccess} & & args[i] \\
-        \code{FieldAccess} & & f, obj.f \\
-        \code{MethodAccess} & & obj.hashCode \\
+        \code{ArrayAccess} & & \code{args[i]} \\
+        \code{FieldAccess} & & \code{f}, \code{obj.f} \\
+        \code{MethodAccess} & & \code{obj.hashCode} \\
+        \code{ThisLiteral} & Base class of references to \code{this} & \\
+        \code{ExplicitThisLiteral} & Explicit use of \code{this} in an expression & \\
+        \code{ImplicitThisLiteral} & Implicit use of \code{this} in an expression & \\
+        \code{Super} & Explicit use of \code{super} in expression. & \code{super(x, y)} \\
         \midrule
         
-        \code{MethodInvocation} & Note that access and invocation are distinct. & hashCode() \\
+        \code{MethodInvocation} & Note that access and invocation are distinct. & \code{hashCode()} \\
         \midrule
 
         & Arithmetic and logical operations. & \\
-        \code{BitwiseAnd} & & a \& b \\
-        \code{BitwiseComplement} & & \~{}b \\
-        \code{BitwiseOr} & & a | b \\
-        \code{BitwiseXor} & & a \^{} b \\
-        \code{ConditionalAnd} & Short-circuiting. & a \&\& b \\
-        \code{ConditionalNot} & & !a \\
-        \code{ConditionalOr} & Short-circuiting. & a || b \\
-        \code{FloatingDivision} & & 1.0 / 2.0 \\
-        \code{FloatingRemainder} & & 13.0 \% 4.0 \\
-        \code{LeftShift} & & x << 3 \\
-        \code{IntegerDivision} & & 3 / 2 \\
-        \code{IntegerRemainder} & & 13 \% 4 \\
-        \code{NumericalAddition} & & x + y \\
-        \code{NumericalMinus} & & -x \\
-        \code{NumericalMultiplication} & & x * y \\
-        \code{NumericalPlus} & & +x \\
-        \code{NumericalSubtraction} & & x - y \\
-        \code{SignedRightShift} & & x >> 3 \\
-        \code{StringConcatenate} & & s + ".txt" \\
-        \code{TernaryExpression} & & c ? t : f \\
-        \code{UnsignedRightShift} & & x >>> 5 \\
+        \code{BitwiseAnd} & & a \& \code{b} \\
+        \code{BitwiseComplement} & & \verb|~b| \\
+        \code{BitwiseOr} & & \code{a | b} \\
+        \code{BitwiseXor} & & \code{a ^ b} \\
+        \code{ConditionalAnd} & Short-circuiting. & a \&\& \code{b} \\
+        \code{ConditionalNot} & & \code{!a} \\
+        \code{ConditionalOr} & Short-circuiting. & \code{a || b} \\
+        \code{FloatingDivision} & & \code{1.0 / 2.0} \\
+        \code{FloatingRemainder} & & \code{13.0 \% 4.0} \\
+        \code{LeftShift} & & \code{x << 3} \\
+        \code{IntegerDivision} & & \code{3 / 2} \\
+        \code{IntegerRemainder} & & \code{13 \% 4} \\
+        \code{NumericalAddition} & & \code{x + y} \\
+        \code{NumericalMinus} & & \code{-x} \\
+        \code{NumericalMultiplication} & & \code{x * y} \\
+        \code{NumericalPlus} & & \code{+x} \\
+        \code{NumericalSubtraction} & & \code{x - y} \\
+        \code{SignedRightShift} & & \code{x >> 3} \\
+        \code{StringConcatenate} & & \code{s + ".txt"} \\
+        \code{TernaryExpression} & & \code{c ? t : f} \\
+        \code{UnsignedRightShift} & & \code{x >>> 5} \\
         \midrule
 
         & Relational operations & \\
-        \code{EqualTo} & & x == y \\
-        \code{NotEqual} & & x != y \\
-        \code{GreaterThan} & & x > y \\
-        \code{GreaterThanOrEqual} & & x >= y \\
-        \code{LessThan} & & x < y \\
-        \code{LessThanOrEqual} & & x <= y \\
+        \code{EqualTo} & & \code{x == y} \\
+        \code{NotEqual} & & \code{x != y} \\
+        \code{GreaterThan} & & \code{x > y} \\
+        \code{GreaterThanOrEqual} & & \code{x >= y} \\
+        \code{LessThan} & & \code{x < y} \\
+        \code{LessThanOrEqual} & & \code{x <= y} \\
+
+        \code{Case} & Case of a switch.  Acts as an equality test. & \\
         \midrule
 
         \code{VariableDeclaration} & Declaration of a local variable & \\
         \code{LocalVariable} & Use of a local variable, either as l-value or r-value & \\
         \midrule
 	
-        \code{Assignment} & & x = 1 \\
-        \midrule
+        \code{Assignment} & & \code{x = 1} \\
+%        \midrule
 	
-        \code{StringConcatenateAssignment} & A compound assignment.  Could be desugared. & s += ".txt" \\
+        \code{StringConcatenateAssignment} & A compound assignment.  Could be desugared. & \code{s += ".txt"} \\
         \midrule
 
-        \code{Super} & Explicit use of 'super' in expression. & super(x, y) \\
+        \code{ArrayCreation} & & \code{new double[]} \\
+        \code{ObjectCreation} & & \code{new Object()} \\
         \midrule
 
-        \code{ArrayCreation} & & new double[]  \\
-        \code{ObjectCreation} & & new Object() \\
+        \code{ClassName} & Identifier referring to Java class or interface. & \code{java.util.HashMap} \\
+        \code{PackageName} & Identifier referring to Java package. & \code{java.util} \\
         \midrule
 
-        \code{ClassName} & Identifier referring to Java class or interface. & java.util.HashMap \\
-        \code{PackageName} & Identifier referring to Java package. & java.util \\
-        \midrule
-
-        & Types appearing in expressions, such as type.class & \\
+        & Types appearing in expressions, such as \code{MyType.class} & \\
         \code{ArrayType} & & \\
         \code{ParameterizedType} & & \\
         \code{PrimitiveType} & & \\
         \midrule
         
-        \code{TypeCast} & & (float) 42 \\
-        \code{InstanceOf} & & x instanceof Float \\
+        \code{TypeCast} & & \code{(float) 42} \\
+        \code{InstanceOf} & & \code{x instanceof Float} \\
         \midrule
         
         & Conversion nodes.  Could be desugared. & \\
         \code{NarrowingConversion} & Implicit conversion. & \\
-        \code{StringConversion} & & obj.toString() \\
+        \code{StringConversion} & & \code{obj.toString()} \\
         \code{WideningConversion} & Implicit conversion. & \\
         \midrule
 
-        \code{Case} & Case of a switch.  Acts as an equality test. & \\
-        \midrule
-        
         \code{Throw} & Throw an exception. & \\
         \code{Return} & Return from a method. & \\
         \midrule
 
-        \code{AssertionError} & & assert x != null : "Hey" \\
+        \code{AssertionError} & & \code{assert x != null : "Hey"} \\
         \midrule
 
         \code{Marker} & No-op nodes used to annotate a CFG & \\
@@ -606,7 +625,21 @@ for all types.
         \label{tab:nodes}
     \end{longtable}
     
+\begin{workinprogress}
+Can \code{StringConversion} be implicit?  I think so, but in any event discuss.
+\end{workinprogress}
 
+\begin{workinprogress}
+What is \code{Marker} used for?
+\end{workinprogress}
+
+\begin{workinprogress}
+``Could be desugared'' is confusing.  What is the design rationale for
+desugaring in the Dataflow Framework?   Discuss that.  Here, at least
+forward-reference to \autoref{sec:desugaring}, if that's relevant. \\
+More generally, for any cases that will be discussed in the text, add a
+forward reference to the section with the discussion.
+\end{workinprogress}
 
 
 \subsection{Noteworthy Translations and Node Types}
