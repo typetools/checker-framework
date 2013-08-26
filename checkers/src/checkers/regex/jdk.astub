@@ -1,0 +1,56 @@
+import checkers.regex.quals.*;
+
+package java.util.regex;
+
+class Pattern {
+    @Regex Pattern compile(@Regex String regex);
+    Pattern compile(@Regex String regex, int flags);
+    boolean matches(@Regex String regex, CharSequence input);
+    @PolyRegex Matcher matcher(CharSequence input) @PolyRegex;
+    public static @Regex String quote(String s);
+}
+
+package java.lang;
+
+class String {
+    public @PolyRegex String intern() @PolyRegex;
+    public boolean matches(@Regex String regex);
+    public String replaceFirst(@Regex String regex, String replacement);
+    public String replaceAll(@Regex String regex, String replacement);
+    public String[] split(@Regex String regex, int limit);
+    public String[] split(@Regex String regex);
+    public @PolyRegex String toString() @PolyRegex;
+}
+
+package javax.swing.plaf.synth;
+
+class DefaultSynthStyleFactory extends SynthStyleFactory {
+    public synchronized void addStyle(DefaultSynthStyle style,
+                         @Regex String path, int type) throws PatternSyntaxException;
+}
+
+package javax.swing;
+
+public abstract class RowFilter<M,I> {
+    public static <M,I> RowFilter<M,I> regexFilter(@Regex String regex,
+                                                       int... indices);
+}
+
+package com.sun.org.apache.xerces.internal.impl.xpath.regex;
+
+public class RegularExpression implements java.io.Serializable {
+    public RegularExpression(@Regex String regex) throws ParseException;
+    public RegularExpression(@Regex String regex, String options) throws ParseException;
+    RegularExpression(@Regex String regex, Token tok, int parens, boolean hasBackReferences, int options);
+}
+
+public final class REUtil {
+    static String stripExtendedComment(String regex);  // no @Regex annotation needed
+    public static boolean matches(@Regex String regex, String target) throws ParseException;
+    public static boolean matches(@Regex String regex, String options, String target) throws ParseException;
+}
+
+class RegexParser {
+    synchronized Token parse(@Regex String regex, int options) throws ParseException;
+    public RegularExpression createRegex(@Regex String regex, int options) throws ParseException;
+}
