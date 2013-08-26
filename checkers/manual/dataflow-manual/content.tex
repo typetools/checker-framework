@@ -19,7 +19,10 @@ a transfer function, which takes an input store and a node and produces an
 output store.  Once the analysis reaches a fix point, the result can be
 accessed by client code.
 
-In the Checker Framework, the abstract values to be computed are annotated types.  Individual checkers can customize their analysis by extending the abstract value class and by overriding the behavior of the transfer function for particular node types.
+In the Checker Framework, the abstract values to be computed are annotated
+types.  An individual checkers can customize its analysis by extending the
+abstract value class and by overriding the behavior of the transfer
+function for particular node types.
 
 \begin{workinprogress}    
     Paragraphs colored in gray with a gray bar on the left side (just like this one)
@@ -35,9 +38,9 @@ In the Checker Framework, the abstract values to be computed are annotated types
 
 \subsection{Projects}
 
-The source code of the combined Checker Framework and Dataflow Framework is divided into three projects: \code{javacutils}, \code{dataflow} and \code{checkers}, which can be built into distinct jar files. 
+The source code of the combined Checker Framework and Dataflow Framework is divided into three projects: \code{javacutils}, \code{dataflow}, and \code{checkers}, which can be built into distinct jar files. 
 
-\code{javacutils} provides convenient interfaces to routines in Oracle's javac library.  There are utility classes for interacting with annotations, elements, trees and types, as well as \code{InternalUtils}, which gives direct access to internal features of javac that are not part of a supported interface.  There are interfaces or abstract classes for reporting errors, for processing types in an AST and for providing the annotations present on an Element.  The \code{javacutils.trees} package provides a class to parse expressions into javac Trees, a class to build new Trees from scratch and a class to represent newly introduced variables that are not part of an input program.
+\code{javacutils} provides convenient interfaces to routines in Oracle's javac library.  There are utility classes for interacting with annotations, elements, trees and types, as well as \code{InternalUtils}, which gives direct access to internal features of javac that are not part of a supported interface.  There are interfaces or abstract classes for reporting errors, for processing types in an AST, and for providing the annotations present on an Element.  The \code{javacutils.trees} package provides a class to parse expressions into javac Trees, a class to build new Trees from scratch, and a class to represent newly introduced variables that are not part of an input program.
  
 \code{dataflow} contains the classes to represent and construct control flow graphs and the base classes required for flow analysis.   These classes are described in detail in \autoref{sec:node_classes}.
   
@@ -52,14 +55,14 @@ This section gives an overview of the major Java classes and interfaces in the i
 \subsubsection{Nodes}
 \label{sec:node_classes}
 
-    We use Node classes to represent the individual operations of a program, including arithmetic operations, logical operations, method calls, variable references, array accesses, etc.  The individual Node types are listed in \autoref{tab:nodes} .
+    A Node class represents an individual operation of a program, including arithmetic operations, logical operations, method calls, variable references, array accesses, etc.  \autoref{tab:nodes} lists the Node types.
 
     \code{class dataflow.cfg.node.*Node}
 
 \subsubsection{Blocks}
 \label{sec:block_classes}
 
-    Nodes are grouped into basic blocks using a hierarchy of Block classes.  The hierarchy is composed of five interfaces, two abstract classes and four concrete classes.  
+    Nodes are grouped into basic blocks using a hierarchy of Block classes.  The hierarchy is composed of five interfaces, two abstract classes, and four concrete classes.  
 
              \code{interface dataflow.cfg.block.Block}
     
@@ -70,28 +73,28 @@ This section gives an overview of the major Java classes and interfaces in the i
               \code{abstract class dataflow.cfg.block.SingleSuccessorBlockImpl extends BlockImpl implements
         SingleSuccessorBlock}
 
-    RegularBlocks contain no exception-raising operations and have a single control-flow successor.
+    A RegularBlock contains no exception-raising operations and has a single control-flow successor.
 
     \code{interface dataflow.cfg.block.RegularBlock extends SingleSuccessorBlock}
         
     \code{class dataflow.cfg.block.RegularBlockImpl extends SingleSuccessorBlockImpl implements
         RegularBlock}
         
-    ExceptionBlocks contain a single operation that may raise an exception, with one or more exceptional successors and a single normal control-flow successor.
+    An ExceptionBlock contains a single operation that may raise an exception, with one or more exceptional successors and a single normal control-flow successor.
             
     \code{interface dataflow.cfg.block.ExceptionBlock extends SingleSuccessorBlock}
 
     \code{class dataflow.cfg.block.ExceptionBlockImpl extends SingleSuccessorBlockImpl implements
         ExceptionBlock}
         
-    SpecialBlocks represent method entry and exit.
+    A SpecialBlock represents method entry or exit, including exceptional exit.
 
     \code{interface dataflow.cfg.block.SpecialBlock extends SingleSuccessorBlock}
 
     \code{class dataflow.cfg.block.SpecialBlockImpl extends SingleSuccessorBlockImpl implements
         SpecialBlock}
 
-    ConditionalBlocks contain no operations at all.  They represent a control-flow split to either a 'then' or an 'else' successor based on the immediately preceding boolean-valued Node.
+    A ConditionalBlock contains no operations at all.  It represents a control-flow split to either a `then' or an `else' successor based on the immediately preceding boolean-valued Node.
 
     \code{interface dataflow.cfg.block.ConditionalBlock extends Block}
     
@@ -102,11 +105,11 @@ This section gives an overview of the major Java classes and interfaces in the i
 \subsubsection{ControlFlowGraph}
 \label{sec:control_flow_graph_class}
 
-     A ControlFlowGraph represents the body of a method or an initializer expression as a graph of Blocks with distinguished entry, exit and exceptional exit SpecialBlocks.  ControlFlowGraphs are produced by the CFGBuilder classes and are treated as immutable data once they are built.
+     A ControlFlowGraph represents the body of a method or an initializer expression as a graph of Blocks with distinguished entry, exit, and exceptional exit SpecialBlocks.  ControlFlowGraphs are produced by the CFGBuilder classes and are treated as immutable once they are built.
 
         \code{class dataflow.cfg.ControlFlowGraph}
 
-\subsubsection{CFGBuilder}
+\subsubsubsection{CFGBuilder}
 \label{sec:cfg_builder_classes}
     
     The CFGBuilder classes visit an AST and produce a corresponding ControlFlowGraph as described in \autoref{sec:ast_to_cfg_translation}.
@@ -121,7 +124,10 @@ This section gives an overview of the major Java classes and interfaces in the i
 \subsubsection{FlowExpressions}
 \label{sec:flow_expressions_class}
 
-    The Dataflow Framework uses an intermediate representation called FlowExpressions to represent local variables, field accesses, array accesses, references to this, and pure method calls to which it can associate dataflow information.  FlowExpressions are keys in the store of abstract values.
+    The Dataflow Framework records the abstract values of certain
+    expressions, called FlowExpressions:  local variables, field accesses,
+    array accesses, references to \code{this}, and pure method calls.
+    FlowExpressions are keys in the store of abstract values.
 
     \code{class dataflow.analysis.FlowExpressions}
     
@@ -131,7 +137,13 @@ This section gives an overview of the major Java classes and interfaces in the i
 \subsubsection{AbstractValue}
 \label{sec:abstract_value_classes}
 
-    AbstractValues are the internal representation of dataflow information produced by an analysis.  The information may vary widely among different users of the Dataflow Framework, but they share a common feature that one can compute the least upper bound of two AbstractValues.
+    AbstractValue is the internal representation of dataflow information
+    produced by an analysis.  An AbstractValue is an estimate about the
+    run-time values that an expression may evaluate to.  The client of the
+    Dataflow Framework defines the abstract value, so the information may
+    vary widely among different users of the Dataflow Framework, but they
+    share a common feature that one can compute the least upper bound of
+    two AbstractValues.
 
         \code{interface dataflow.analysis.AbstractValue<V extends AbstractValue<V>>}
         
@@ -145,6 +157,12 @@ This section gives an overview of the major Java classes and interfaces in the i
         
         \code{class checkers.nullness.NullnessValue extends CFAbstractValue<NullnessValue>}
         
+\begin{workinprogress}    
+Don't (nearly) all type systems support \code{Poly...}, so wouldn't that
+statement be true of most type checkers, not just the NullnessCheckers?
+\end{workinprogress}
+
+
 
 \subsubsection{Store}
 \label{sec:store_classes}
@@ -161,7 +179,7 @@ This section gives an overview of the major Java classes and interfaces in the i
     
     \code{class checkers.flow.CFStore extends CFAbstractStore<CFValue, CFStore>}
     
-    An InitializationStore tracks which fields of the 'self' reference have been initialized.
+    An InitializationStore tracks which fields of the `self' reference have been initialized.
     
     \code{class checkers.initialization.InitializationStore<
         V extends CFAbstractValue<V>, S extends InitializationStore<V, S>>
@@ -173,19 +191,27 @@ This section gives an overview of the major Java classes and interfaces in the i
         InitializationStore<NullnessValue, NullnessStore>}
 
 
-\subsubsection{TransferInput}
+\subsubsection{Transfer functions}
+\label{sec:transfer_functions}
+
+    A transfer function (\autoref{sec:transfer_function_classes}) is
+    explicitly represented as a node visitor that takes a TransferInput
+    (\autoref{sec:transfer_input_classes}) and produces a TransferResult
+    (\autoref{sec:transfer_result_classes}).
+
+\subsubsubsection{TransferInput}
 \label{sec:transfer_input_classes}
 
-    Transfer functions are explicitly represented as a node visitor that takes a TransferInput and produces a TransferResult.  The TransferInput represents the set of dataflow facts known to be true immediately before the node to be analyzed.  TransferInputs may contain a single store, or a pair of 'then' and 'else' stores when following a boolean-valued expression.
+The TransferInput represents the set of dataflow facts known to be true immediately before the node to be analyzed.  TransferInputs may contain a single store, or a pair of `then' and `else' stores when following a boolean-valued expression.
 
     \code{class dataflow.analysis.TransferInput<
         A extends AbstractValue<A>,
         S extends Store<S>>}
 
-\subsubsection{TransferResult}
+\subsubsubsection{TransferResult}
 \label{sec:transfer_result_classes}
 
-    A TransferResult is the output of a transfer function.  In other words, it is the set of dataflow facts known to be true immediately after a node.  Boolean-valued expressions produce ConditionalTransferResults that contain both a 'then' and an 'else' store, while most other Nodes produce a RegularTransferResult with a single store.
+    A TransferResult is the output of a transfer function.  In other words, it is the set of dataflow facts known to be true immediately after a node.  A Boolean-valued expression produces a ConditionalTransferResult that contains both a `then' and an `else' store, while most other Nodes produce a RegularTransferResult with a single store.
 
     \code{abstract class dataflow.analysis.TransferResult<
         A extends AbstractValue<A>,
@@ -201,7 +227,7 @@ This section gives an overview of the major Java classes and interfaces in the i
         S extends Store<S>>
     extends TransferResult<A, S>}
 
-\subsubsection{TransferFunction}
+\subsubsubsection{TransferFunction}
 \label{sec:transfer_function_classes}
 
     A TransferFunction is a NodeVisitor that takes an input and produces an output.
@@ -223,7 +249,7 @@ This section gives an overview of the major Java classes and interfaces in the i
     \code{class checkers.flow.CFTransfer
     extends CFAbstractTransfer<CFValue, CFStore, CFTransfer>}
     
-    The Initialization checker's transfer function tracks which fields of the 'self' reference have been initialized.
+    The Initialization Checker's transfer function tracks which fields of the `self' reference have been initialized.
     
     \code{class checkers.initialization.InitializationTransfer<
         V extends CFAbstractValue<V>,
@@ -1106,7 +1132,8 @@ field and $m$ a pure method.  Furthermore, we assume to have access to
 a predicate $\alias(o_1,o_2)$ that returns true if and only
 if~$o_1$ might alias~$o_2$.
 
-\paragraph{At Field Assignments}
+\subsubsubsection{At Field Assignments}
+
 For a field update of the form $o_1.f_1 = e$ for some expression $e$, the
 dataflow analysis first determines the abstract value $e_\text{val}$ for $e$.
 Then, the following steps need to be taken in order to correctly update
@@ -1129,7 +1156,7 @@ the information in the store.
 \end{enumerate}
 
 
-\paragraph{At Local Variable Assignments}
+\subsubsubsection{At Local Variable Assignments}
 
 For a local variable assignment of the form $x = e$ for some expression $e$,
 the dataflow analysis first determines the abstract value $e_\text{val}$ for
@@ -1144,7 +1171,7 @@ the information in the store.
     to the mapping for local variables.
 \end{enumerate}
 
-\paragraph{At Other Assignments}
+\subsubsubsection{At Other Assignments}
 
 For any other assignment of the for $z = e$ for some expression $e$ and some
 assignment target $z$ (which is not a field or local variable),
@@ -1158,13 +1185,14 @@ the information in the store.
 \end{enumerate}
 
 
-\paragraph{At Non-Pure Method Calls}
+\subsubsubsection{At Non-Pure Method Calls}
 
 A non-pure method call might modify the value of any field arbitrarily.
 Therefore, at a method call, any information about fields is lost.
 
 
-\paragraph{Alias Information}
+\subsubsubsection{Alias Information}
+
 The Checker Framework does not include an aliasing analysis, which could
 provide precise aliasing information.  For this reason, we implement the
 predicate $\alias$ as follows:
