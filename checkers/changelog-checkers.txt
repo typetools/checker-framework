@@ -1,3 +1,14 @@
+----------------------------------------------------------------------
+
+Version 1.6.7, 28 August 2013
+
+User-visible framework improvements:
+  Improve the error message produced by -Adetailedmsg
+
+Bug fixes:
+  Fix issue #245: anonymous classes were skipped by default
+
+----------------------------------------------------------------------
 
 Version 1.6.6, 01 August 2013
 
