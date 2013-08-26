@@ -55,7 +55,7 @@ class PolyReads {
     @PolyRead Object testAsReadOnlyReceiver(@ReadOnly PolyReads this, @PolyRead Object s) {
         //:: error: (assignment.type.incompatible)
         mObject = s;           // error, s might be readonly
-        //:: error: (assignment.type.incompatible) :: error: (ro.field)
+        //:: error: (ro.field)
         tmObject = s;          // error, local field, and unassignable (s readonly, mutable class, for example)
         //:: error: (ro.field)
         roObject = s;          // error, local field
@@ -71,7 +71,7 @@ class PolyReads {
 
         //:: error: (assignment.type.incompatible)
         mObject = a;           // error, a might be readonly
-        //:: error: (assignment.type.incompatible) :: error: (ro.field)
+        //:: error: (ro.field)
         tmObject = a;          // error, local field, and unassignable (s readonly, mutable class, for example)
         //:: error: (ro.field)
         roObject = a;          // error, local field

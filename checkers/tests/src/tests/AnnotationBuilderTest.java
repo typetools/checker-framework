@@ -1,11 +1,9 @@
 package tests;
 
-import static org.junit.Assert.*;
-import checkers.igj.quals.I;
-import checkers.nullness.quals.NonNull;
-import checkers.source.SourceChecker;
-import checkers.util.AnnotationBuilder;
-import checkers.util.AnnotationUtils;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import javacutils.AnnotationUtils;
+import javacutils.ErrorReporter;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
@@ -13,6 +11,12 @@ import javax.lang.model.type.TypeMirror;
 
 import org.junit.Ignore;
 import org.junit.Test;
+
+import tests.util.TestChecker;
+import checkers.igj.quals.I;
+import checkers.nullness.quals.NonNull;
+import checkers.source.SourceChecker;
+import checkers.util.AnnotationBuilder;
 
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
@@ -23,6 +27,7 @@ public class AnnotationBuilderTest {
 
     public AnnotationBuilderTest() {
         env = JavacProcessingEnvironment.instance(new Context());
+        ErrorReporter.setHandler(new TestChecker());
     }
 
     @Test
@@ -58,7 +63,7 @@ public class AnnotationBuilderTest {
     public void addingValuesAfterBuilding() {
         AnnotationBuilder builder = new AnnotationBuilder(env, I.class);
         builder.setValue("value", "m");
-        // AnnotationMirror anno = 
+        // AnnotationMirror anno =
         builder.build();
         builder.setValue("value", "n");
     }

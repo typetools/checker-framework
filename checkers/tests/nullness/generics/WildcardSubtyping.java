@@ -1,5 +1,8 @@
 import checkers.nullness.quals.*;
+
+import java.lang.annotation.Annotation;
 import java.util.*;
+import java.lang.annotation.*;
 
 class Utils {
 
@@ -26,4 +29,10 @@ class Utils {
         return Utils.<A>cast(nullConsumer);
     }
 
+    Map<String, Set<?>> mss = new HashMap<>();
+
+    Set<Class<? extends Annotation>> foo() {
+        Set<Class<? extends Annotation>> l = new HashSet<>(this.foo());
+        return l;
+    }
 }

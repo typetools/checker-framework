@@ -1,3 +1,4 @@
+import checkers.nullness.quals.EnsuresNonNull;
 import checkers.nullness.quals.*;
 
 import java.util.*;
@@ -12,8 +13,8 @@ public class AssertAfter2 {
       this.childMap = childMap;
     }
 
-    @SuppressWarnings("assert.postcondition.not.satisfied")
-    @AssertNonNullAfter("childMap.get(#1)") public void addNode( T n ) {
+    @SuppressWarnings("contracts.postcondition.not.satisfied")
+    @EnsuresNonNull("childMap.get(#1)") public void addNode(final T n ) {
       // body omitted, not relevant to test case
     }
 
@@ -56,15 +57,14 @@ public class AssertAfter2 {
 
     MultiParam thing;
 
-    @SuppressWarnings("assert.postcondition.not.satisfied")
-    // TODO: doc: spaces important
-    // TODO: doc: no explicit this!
-    @AssertNonNullAfter("get(#1, #2, #3)")
-    void add( Object o1, Object o2, Object o3 ) {
+    @SuppressWarnings("contracts.postcondition.not.satisfied")
+    @EnsuresNonNull("get(#1, #2, #3)")
+    void add(final Object o1, final Object o2, final Object o3 ) {
       // body omitted, not relevant to test case
     }
 
-    @Nullable Object get( Object o1, Object o2, Object o3 ) {
+    @dataflow.quals.Pure
+    @Nullable Object get(Object o1, Object o2, Object o3 ) {
       return null;
     }
 
