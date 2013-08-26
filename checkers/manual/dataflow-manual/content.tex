@@ -543,7 +543,9 @@ for all types.
         \code{WideningConversion} & Implicit conversion. & \\
         \midrule
 
-        \code{Case} & Case within a switch statement. & \\
+        \code{Case} & Case of a switch.  Acts as an equality test. & \\
+        \midrule
+        
         \code{Throw} & Throw an exception. & \\
         \code{Return} & Return from a method. & \\
         \midrule
@@ -599,14 +601,19 @@ left-to-right (cf.\ \jlsref{15.26.1}),
 which is properly handled by our translation.}
 
 
-\subsubsection{Boolean-valued expressions}
+\subsubsection{Conditional stores}
 
-Create two stores.
+The dataflow framework extracts information from control-flow splits that occur in if, for, while and switch statements.  In order to have the information available at the split, we eagerly produce two stores contained in a \code{ConditionalTransferResult} after certain boolean-valued expressions.  The stores are called the \emph{then} and \emph{else} stores.  So, for example, after the expression \code{x == null}, two different stores will be created.  The Nullness checkers would produce a then store that maps \code{x} to @Nullable and an else store that maps \code{x} to @NonNull.
+
+The dataflow framework allows a maximum of two stores and when there are two distinct stores, they always refer to the most recent boolean-valued expression.  Stores are propagated through most nodes and they are reversed for conditional not expressions.  The transfer functions for many nodes merge conditional stores back together because they cannot maintain the distinction between them.  Merging just means taking the least upper bound of the two stores and it happens automatically by
+calling \code{TransferInput.getRegularStore}.
 
 
 \subsubsection{Branches}
 
-Split stores.
+The control flow graph represents all non-exceptional control-flow splits, or branches, as \code{ConditionalBlocks} that contain no nodes.  If there is one store flowing into a conditional block, then it is duplicated to both successors.  If there are two stores flowing into a conditional block, the then store is propagated to the block's true successor and the else store is propagated to the block's false successor.
+
+A key point is that while we \emph{produce} multiple stores after several kinds of boolean-valued expressions, we can only \emph{use} them after a conditional block has split them apart, making them the unique store at some program point.  This constraint dictates how we build the CFG for conditional and and or nodes, as described in \autoref{sec:cond-exp}.  We split the control-flow immediately after computing the value of the left operand and we do not merge it until after the operations of the then or else successor.
 
 
 \subsubsection{Conditional Expressions}
@@ -725,6 +732,68 @@ The process of translating an AST to a CFG proceeds in three distinct phases.
 
 
 
+\subsubsection{Desugaring}
+\label{sec:desugaring}
+
+Desugaring means replacing complicated source language constructs by simpler ones, or removing syntactic sugar from an input program.  Originally, we intended for the control flow graph representation to be as close as possible to the Java abstract syntax tree to simplify the mapping from tree to CFG node and back and to reuse existing checker code written in terms of trees.  However, we ran into several cases that were better handled by desugaring.
+
+    \begin{itemize}
+    \item We decided to represent implicit conversion operations like boxing, unboxing, widening
+    and narrowing as CFG nodes because they change the type of a value.  The pre-conversion
+    type can be associated with the original node and the post-conversion type can be associated
+    with the explicit conversion node.  It also makes it possible for the transfer function to operate
+    on the conversion nodes.
+    
+    \item Enhanced for loops are defined in terms of a complicated translation into simpler
+    operations, including field accesses, branches and method calls that could affect dataflow
+    information.  It would be prohibitively difficult for a checker writer to write a transfer function that
+    correctly accounted for all of those operations, so we desugar enhanced for loops.
+    
+    \item Once we decided to make conversion nodes explicit it made sense to desugar
+    compound assignments.  A compound assignment like \code{Integer i; i += 3;} performs
+    both an unboxing and a boxing operation on \code{i}.  Desugaring all compound assignments
+    greatly reduced the total number of node classes.
+
+    \end{itemize}
+
+In order to desugar code and still maintain the invariant that every CFG node maps to a tree, 
+we needed to create new AST tree nodes that were not present in the input program.  Javac
+allows us to do this through non-supported APIs and we wrote some utility classes in
+\code{javacutils} to make the process easier.  The new trees are created during CFG building
+and they persist as long as some CFG node refers to them.  However, the trees are not
+inserted into the AST, so they are not type-checked or seen by other tree visitors.  Their
+main purpose is to carry Java types and to satisfy AnnotatedTypeFactory methods.
+
+A further complication is that these newly introduced AST trees are not part of the TreePath
+when visiting the AST.  We workaround this problem by giving the AnnotatedTypeFactory a
+mapping, called the \code{pathHack}, from newly introduced trees to their containing
+MethodTree and ClassTree.
+
+Possibly even worse, we needed to create fake symbols for variables created when
+desugaring enhanced for loops.  Javac does not expose the ability to create a symbol,
+so we created a new subclass of Symbol.VarSymbol called \code{javacutils.tree.DetachedVarSymbol} for this purpose.  AnnotatedTypeFactory
+explicitly checks for DetachedVarSymbols in its DeclarationFromElement method.
+
+
+
+\subsubsection{Conversions and node-tree mapping}
+\label{sec:conversions}
+
+As mentioned in \autoref{sec:desugaring}, we represent implicit Java type conversions such as boxing, unboxing, widening and narrowing by explicit CFG nodes.  This means that some 
+AST tree nodes correspond to multiple CFG nodes: a pre-conversion node and a post-conversion
+nodes.  We will describe how the conversions work and how the node-tree mappings are
+implemented.
+
+Boxing and unboxing are represented in terms of calls to Java standard library methods.  Boxing
+corresponds to a call to \code{BoxedClass.valueOf} while unboxing corresponds to a call to
+\code{BoxedClass.\*Value}.  This allows annotations on the library methods, as well as transfer functions for method invocations to apply to the conversions with no special work on the part of
+a checker developer.
+
+Widening and narrowing conversions are still represented as special node types, although
+it would be more consistent to change them into type casts.
+
+We maintain the invariant that a CFG node maps to zero or one AST tree and almost all of them map to a single tree.  But we can't maintain a unique inverse mapping because some trees have both pre- and post-conversion nodes.  Instead, we remember two mappings, one from tree to pre-conversion node and, for those trees that were converted, one from tree to post-conversion node.  Both the CFGBuilder and the ControlFlowGraph store two separate mappings.  The Analysis class explicitly stores the tree to pre-conversion node mapping as \code{treeLookup} and it indirectly uses the tree to post-conversion mapping in \code{Analysis.getValue(Tree)}.  This has effectively hidden the distinction between pre and post-conversion nodes from the Checker Framework, but in the long run
+it may be necessary to expose it.
 
 
 
