@@ -33,7 +33,7 @@ The source code of the combined Checker Framework and Dataflow Framework is divi
   
 \code{checkers} contains the Checker Framework and the type system-specific checkers, including the derived classes for flow analysis of annotated types which are described later in this document.
 
-The \code{dataflow} project depends on \code{javacutils}, while the \code{checkers} project depends on both \code{dataflow} and \code{javactuils}.
+The \code{dataflow} project depends on \code{javacutils}, while the \code{checkers} project depends on both \code{dataflow} and \code{javacutils}.
 
 \subsection{Classes}
 
@@ -51,16 +51,16 @@ This section gives an overview of the major Java classes and interfaces in the i
 
     Nodes are grouped into basic blocks using a hierarchy of Block classes.  The hierarchy is composed of five interfaces, two abstract classes and four concrete classes.  
 
-    \code{interface dataflow.cfg.block.Block}
+             \code{interface dataflow.cfg.block.Block}
     
-    \code{abstract class dataflow.cfg.block.BlockImpl implements Block}
+              \code{abstract class dataflow.cfg.block.BlockImpl implements Block}
 
-    \code{interface dataflow.cfg.block.SingleSuccessorBlock extends Block}
+              \code{interface dataflow.cfg.block.SingleSuccessorBlock extends Block}
 
-    \code{abstract class dataflow.cfg.block.SingleSuccessorBlockImpl extends BlockImpl implements
+              \code{abstract class dataflow.cfg.block.SingleSuccessorBlockImpl extends BlockImpl implements
         SingleSuccessorBlock}
 
-    RegularBlocks contain no exception raising operations and have a single control-flow successor.
+    RegularBlocks contain no exception-raising operations and have a single control-flow successor.
 
     \code{interface dataflow.cfg.block.RegularBlock extends SingleSuccessorBlock}
         
@@ -81,7 +81,7 @@ This section gives an overview of the major Java classes and interfaces in the i
     \code{class dataflow.cfg.block.SpecialBlockImpl extends SingleSuccessorBlockImpl implements
         SpecialBlock}
 
-    ConditionalBlocks contain no operations at all.  They represent a control-flow split to either a 'then' or an 'else' successor based on the immediately preceding boolean valued Node.
+    ConditionalBlocks contain no operations at all.  They represent a control-flow split to either a 'then' or an 'else' successor based on the immediately preceding boolean-valued Node.
 
     \code{interface dataflow.cfg.block.ConditionalBlock extends Block}
     
@@ -92,7 +92,7 @@ This section gives an overview of the major Java classes and interfaces in the i
 \subsubsection{ControlFlowGraph}
 \label{sec:control_flow_graph_class}
 
-     A ControlFlowGraph represents the body of a method or an initializer expressions as a graph of Blocks with distinguished entry, exit and exceptional exit SpecialBlocks.  ControlFlowGraphs are produced by the CFGBuilder classes and are treated as immutable data once they are built.
+     A ControlFlowGraph represents the body of a method or an initializer expression as a graph of Blocks with distinguished entry, exit and exceptional exit SpecialBlocks.  ControlFlowGraphs are produced by the CFGBuilder classes and are treated as immutable data once they are built.
 
         \code{class dataflow.cfg.ControlFlowGraph}
 
@@ -111,9 +111,11 @@ This section gives an overview of the major Java classes and interfaces in the i
 \subsubsection{FlowExpressions}
 \label{sec:flow_expressions_class}
 
-    The Dataflow Framework uses an intermediate representation called FlowExpressions to represent field accesses, this references, pure method calls and other miscellaneous expressions to which it can associate dataflow information.  Think of FlowExpressions as keys in the store of abstract values.
+    The Dataflow Framework uses an intermediate representation called FlowExpressions to represent local variables, field accesses, array accesses, references to this, and pure method calls to which it can associate dataflow information.  FlowExpressions are keys in the store of abstract values.
 
     \code{class dataflow.analysis.FlowExpressions}
+    
+    Java expressions that appear in method pre- and postconditions are parsed into FlowExpressions using helper routines in \code{checkers.util.FlowExpressionParseUtil}.
 
     
 \subsubsection{AbstractValue}
@@ -123,13 +125,13 @@ This section gives an overview of the major Java classes and interfaces in the i
 
         \code{interface dataflow.analysis.AbstractValue<V extends AbstractValue<V>>}
         
-    For the Checker Framework, abstract values represent AnnotatedTypeMirrors.
+    For the Checker Framework, abstract values are essentially AnnotatedTypeMirrors.
         
         \code{abstract class checkers.flow.CFAbstractValue<V extends CFAbstractValue<V>> implements AbstractValue<V>}
         
         \code{class checkers.flow.CFValue extends CFAbstractValue<CFValue>}
         
-    For the NullnessCheckers, the abstract value additionally tracks the meaning of PolyNull.
+    For the NullnessCheckers, abstract values additionally track the meaning of PolyNull, which may be either Nullable or NonNull.
         
         \code{class checkers.nullness.NullnessValue extends CFAbstractValue<NullnessValue>}
         
@@ -137,7 +139,7 @@ This section gives an overview of the major Java classes and interfaces in the i
 \subsubsection{Store}
 \label{sec:store_classes}
 
-    A Store is a set of dataflow facts computed by an analysis, so it is a mapping from variable and FlowExpressions to AbstractValues.  As with AbstractValues, one can take the least upper bound of two Stores.
+    A Store is a set of dataflow facts computed by an analysis, so it is a mapping from FlowExpressions to AbstractValues.  As with AbstractValues, one can take the least upper bound of two Stores.
 
     \code{interface dataflow.analysis.Store<S extends Store<S>>}
 
@@ -199,7 +201,7 @@ This section gives an overview of the major Java classes and interfaces in the i
         S extends Store<S>>
     extends NodeVisitor<TransferResult<A, S>, TransferInput<A, S>>}
 
-    The transfer function for the Checker Framework constrains the type of abstract values and it overrides many node visitor methods to refine the abstract values in their TransferResults.
+    The Checker Framework defines a derived class of TransferFunction to serve as the default for most checkers.  The class constrains the type of abstract values and it overrides many node visitor methods to refine the abstract values in their TransferResults.
 
     \code{abstract class checkers.flow.CFAbstractTransfer<
         V extends CFAbstractValue<V>,
@@ -235,7 +237,7 @@ This section gives an overview of the major Java classes and interfaces in the i
         S extends Store<S>,
         T extends TransferFunction<A, S>>}
 
-    A Checker Framework analysis adds information about the type hierarchy being analyzed and acts as a factory for abstract values, stores and the transfer function.
+    The Checker Framework defines a derived class of Analysis for use as the default analysis of most checkers.  This class adds information about the type hierarchy being analyzed and acts as a factory for abstract values, stores and the transfer function.
 
     \code{abstract class dataflow.analysis.CFAbstractAnalysis<
         V extends CFAbstractValue<V>,
@@ -269,12 +271,12 @@ This section gives an overview of the major Java classes and interfaces in the i
 \subsubsection{AnnotatedTypeFactory}
 \label{sec:annotated_type_factory_classes}
 
-    AnnotatedTypeFactorys are not part of the Dataflow Framework per se, but they are parameterized by the Dataflow Framework classes that they use.
+    AnnotatedTypeFactorys are not part of the Dataflow Framework, per se, but they are parameterized by the Dataflow Framework classes that they use.
 
     \code{class checkers.types.AnnotatedTypeFactory
     implements AnnotationProvider}
     
-    In the Checker Framework, dataflow analysis is performed on demand, a class at a time, the first time that a ClassTree is passed to getAnnotatedType.   This is implemented in the AbstractBasicAnnotatedTypeFactory.
+    In the Checker Framework, dataflow analysis is performed on demand, one class at a time, the first time that a ClassTree is passed to getAnnotatedType.   This is implemented in the abstract class AbstractBasicAnnotatedTypeFactory with concrete implementation in BasicAnnotatedTypeFactory.
     
     \code{abstract class checkers.types.AbstractBasicAnnotatedTypeFactory<
         Checker extends BaseTypeChecker<?>,
@@ -301,7 +303,7 @@ This section gives an overview of the major Java classes and interfaces in the i
 
 The dataflow framework described here is designed to perform an intra-procedural analysis.
 This analysis is modular and every method is considered in isolation. In this section
-we describe the control-flow graph (CFG), which is used to represent a single method, and the
+we describe the control-flow graph (CFG), which is used to represent a single method or field initialization, and the
 translation from the abstract syntax tree (AST) to the CFG. We start with a simple
 example, then give a more formal definition of the CFG and its properties, and finally
 describe the translation from the AST to the CFG.
@@ -313,7 +315,6 @@ of so-called nodes, which correspond to a minimal Java operations or expression.
 
 
 \flow{Simple}{A simple Java code snippet to introduce the CFG.}
-\todo{It would be nice for the octagon to contain the text ``if'', as a clarification.}
 
 Consider the method \code{test} of \autoref{lst:CFGSimple} whose control-flow
 graph is shown in \autoref{fig:CFGSimple}. The if conditional got translated to
@@ -344,7 +345,7 @@ special basic blocks to denote the entry and exit point of the method.
 
 
 \begin{definition}[Types of Basic Blocks]
-    There are three \emph{types} of basic blocks in a control-flow graph:
+    There are four \emph{types} of basic blocks in a control-flow graph:
     \begin{enumerate}
         \item \textbf{Special basic blocks.} A \emph{special basic block} contains
         the empty sequence of nodes (i.e., is empty) and denotes either the
@@ -356,7 +357,7 @@ special basic blocks to denote the entry and exit point of the method.
             \item Exit block. This basic block denotes the (normal) exit of
             a method, and it does not have successors.
             \item Exceptional exit block, which indicates exceptional termination
-            of the method. As the exit block, this block does not have successors.
+            of the method. As an exit block, this block does not have successors.
         \end{itemize}
         Every method has exactly one entry, zero or one exit blocks and zero or one
         exceptional exit blocks. However, there is either an exit block or an exceptional
@@ -366,7 +367,7 @@ special basic blocks to denote the entry and exit point of the method.
         None of the nodes in the block can throw an exception at runtime.
         \item \textbf{Exception basic block.} An \emph{exception basic block} contains exactly
         one node that \emph{might} throw an exception at runtime (e.g., a method call).
-        There is zero or one non-exceptional successor, and one
+        There are zero or one non-exceptional successor, and one
         or more exceptional successors (see \autoref{def:edges}). But in all cases there
         is at least one successor (regular or exceptional), and only a basic block
         containing a \code{throw} statement does not have a non-exceptional successor.
@@ -378,9 +379,12 @@ special basic blocks to denote the entry and exit point of the method.
         
         There is always exactly a single predecessor block for every conditional basic block, which
         is either a regular basic block or an exception basic block. In both cases, the last node
-        in the predecessor (or the only one for an exceptional basic block) will be of boolean type.
+        in the predecessor (or the only one for an exceptional basic block) will be of boolean type
+        and the boolean value controls which successor of the conditional block is executed.
     \end{enumerate}
 \end{definition}
+
+The Java class hierarchy used to implement the four block types above is described in section \autoref{sec:block_classes}.
 
 In the visualizations used in this document (e.g., in \autoref{fig:CFGSimple}), special basic blocks are
 shown as ovals, conditional basic blocks are polygons with eight sides and any
@@ -394,7 +398,7 @@ $b_1$ the predecessor of $b_2$, and $b_2$ the successor of $b_1$.
 In a control-flow graph, there are three types of edges:
 \begin{enumerate}
     \item \textbf{Exceptional edges}. An \emph{exceptional edge} connects an exception basic block
-    basic block with its exceptional successors, and it is labeled by the most
+    with its exceptional successors, and it is labeled by the most
     general exception that might cause the execution to take this edge during runtime.
     Note that the outgoing exceptional edges of a basic block do not need to have mutual
     exclusive labels; the semantics is that the control flow follows the most specific
@@ -414,9 +418,6 @@ In a control-flow graph, there are three types of edges:
 \end{definition}
 
 
-\begin{workinprogress}
-    The following definition of nodes is rather vague. Tips for improvements are welcome.
-\end{workinprogress}
 \begin{definition}[Nodes]
     \label{def:node}
     A \emph{node} is a minimal Java operation or expression.
@@ -445,90 +446,117 @@ for all types.
 
     \begin{longtable}{lp{0.6\linewidth}l}
         \textbf{Node type} & \textbf{Notes} & \textbf{Example} \\ \midrule \endhead
-        \code{IntegerLiteral} & An integer constant. & \code{42}\\
-        \code{FieldAccess} & Any access to a field, either implicit or explicit. & \code{f}, \code{obj.f}\\
-        \code{ImplicitThis} & A node without corresponding AST element to indicate
-        an implicit access on the self reference \code{this}. & - \\
-        \code{Assignment} & An assignment. & \code{a = 1}\\
-        \code{VariableDeclaration} & Declaration of a local variable. Does not include
-        an initialization of the variable. If there was an initializer block in the
-        AST, then this node is followed by an \code{AssignmentNode}. & \code{int a} \\
-        \code{ConditionalOr} & The conditional disjunction node has a field \code{result}
-        that can be \code{true}, \code{false} or \code{null}, depending on the knowledge of
-        its evaluation result we have (cf.~\autoref{sec:cond-exp}). & \code{b || c} \\
-        \midrule \multicolumn{3}{l}{\emph{Node types added on 2012-01-14:}} \\ \midrule
-        \code{ByteLiteral} &  & \\
-        \code{ShortLiteral} &  & \\
-        \code{LongLiteral} &  & \\
-        \code{FloatLiteral} &  & \\
-        \code{DoubleLiteral} &  & \\
-        \code{CharacterLiteral} &  & \\
-        \code{BooleanLiteral} &  & \\
+        \code{Node} & The base class of all nodes. & \\
+        \midrule
+
+        \code{ValueLiteral} & The base class of literal value nodes. & \\
+        \code{BooleanLiteral} & & true \\
+        \code{CharacterLiteral} & & 'c' \\
+        \code{DoubleLiteral} & & 3.14159 \\
+        \code{FloatLiteral} & & 1.414f \\
+        \code{IntegerLiteral} & & 42 \\
+        \code{LongLiteral} & & 1024L \\
+        \code{NullLiteral} & & null \\
+        \code{ShortLiteral} & & 512 \\
+        \code{StringLiteral} & & "memo" \\
+        \code{ThisLiteral} & Base class of references to 'this' & \\
+        \code{ExplicitThisLiteral} & Explicit use of 'this' in an expression & \\
+        \code{ImplicitThisLiteral} & Implicit use of 'this' in an expression & \\
+        \midrule
         
-        \code{NullLiteral} & The \code{null} literal. & \\
+        & Accessor expressions & \\
+        \code{ArrayAccess} & & args[i] \\
+        \code{FieldAccess} & & f, obj.f \\
+        \code{MethodAccess} & & obj.hashCode \\
+        \midrule
         
-        \code{ExplicitThis} & Explicit access of the self reference \code{this}. & \\
-        \code{Super} & The \code{super} literal. & \\
+        \code{MethodInvocation} & Note that access and invocation are distinct. & hashCode() \\
         \midrule
-        \code{ArrayAccess} &  & \\
+
+        & Arithmetic and logical operations. & \\
+        \code{BitwiseAnd} & & a \& b \\
+        \code{BitwiseComplement} & & \~{}b \\
+        \code{BitwiseOr} & & a | b \\
+        \code{BitwiseXor} & & a \^{} b \\
+        \code{ConditionalAnd} & Short-circuiting. & a \&\& b \\
+        \code{ConditionalNot} & & !a \\
+        \code{ConditionalOr} & Short-circuiting. & a || b \\
+        \code{FloatingDivision} & & 1.0 / 2.0 \\
+        \code{FloatingRemainder} & & 13.0 \% 4.0 \\
+        \code{LeftShift} & & x << 3 \\
+        \code{IntegerDivision} & & 3 / 2 \\
+        \code{IntegerRemainder} & & 13 \% 4 \\
+        \code{NumericalAddition} & & x + y \\
+        \code{NumericalMinus} & & -x \\
+        \code{NumericalMultiplication} & & x * y \\
+        \code{NumericalPlus} & & +x \\
+        \code{NumericalSubtraction} & & x - y \\
+        \code{SignedRightShift} & & x >> 3 \\
+        \code{StringConcatenate} & & s + ".txt" \\
+        \code{TernaryExpression} & & c ? t : f \\
+        \code{UnsignedRightShift} & & x >>> 5 \\
         \midrule
-        \code{NumericalAddition} & Addition of any numerical type (int, float, etc.). Integer, Float, etc.
-        do not need to be handled, as there is an explicit \code{UnboxingNode} & \\
-        \code{NumericalSubtraction} &  & \\
-        \code{NumericalMultiplication} &  & \\
-        \code{IntegerDivision} & Division for int, long, short, etc. Can throw exception. & \\
-        \code{FloatDivision} & Division for float and double. Cannot throw exception. & \\
-        \code{IntegerRemainder} & Remainder for int, long, short, etc. Can throw exception. & \\
-        \code{FloatRemainder} & Remainder for float and double. Cannot throw exception. & \\
-        \code{NumericalMinus} & Unary minus. & \\
-        \code{NumericalPlus} & Unary plus. & \\
-        \code{LeftShift} &  & \\
-        \code{SignedRightShift} &  & \\
-        \code{UnsignedRightShift} &  & \\
+
+        & Relational operations & \\
+        \code{EqualTo} & & x == y \\
+        \code{NotEqual} & & x != y \\
+        \code{GreaterThan} & & x > y \\
+        \code{GreaterThanOrEqual} & & x >= y \\
+        \code{LessThan} & & x < y \\
+        \code{LessThanOrEqual} & & x <= y \\
         \midrule
-        \code{StringConcatenate} &  & \\
+
+        \code{VariableDeclaration} & Declaration of a local variable & \\
+        \code{LocalVariable} & Use of a local variable, either as l-value or r-value & \\
         \midrule
-        \code{TernaryExpression} & & \\
+	
+        \code{Assignment} & & x = 1 \\
         \midrule
-        \code{PrefixIncrement} &  & \\
-        \code{PrefixDecrement} &  & \\
-        \code{PostfixIncrement} &  & \\
-        \code{PostfixDecrement} &  & \\
+	
+        \code{StringConcatenateAssignment} & A compound assignment.  Could be desugared. & s += ".txt" \\
         \midrule
-        \code{LessThanNode} &  & \\
-        \code{LessOrEqualThanNode} &  & \\
-        \code{GreaterThanNode} &  & \\
-        \code{GreaterOrEqualThanNode} &  & \\
-        \code{EqualToNode} &  & \\
-        \code{NotEqualNode} &  & \\
-        \code{InstanceOfNode} &  & \\
+
+        \code{Super} & Explicit use of 'super' in expression. & super(x, y) \\
         \midrule
-        \code{BitwiseAndNode} &  & \\
-        \code{BitwiseOrNode} &  & \\
-        \code{BitwiseXorNode} &  & \\
-        \code{BitwiseComplementNode} &  & \\
+
+        \code{ArrayCreation} & & new double[]  \\
+        \code{ObjectCreation} & & new Object() \\
         \midrule
-        \code{ConditionalAnd} &  & \\
-        \code{ConditionalNot} &  & \\
+
+        \code{ClassName} & Identifier referring to Java class or interface. & java.util.HashMap \\
+        \code{PackageName} & Identifier referring to Java package. & java.util \\
         \midrule
-        \code{Cast} & Type cast. & \\
-        \code{Unboxing} & Unboxing of an object to a primitive. & \\
-        \code{Boxing} & Boxing of a primitive. & \\
-        \code{WideningConversion} & Widening of a primitive. & \\
-        \code{NarrowingConversion} & Narrowing of a primitive. & \\
+
+        & Types appearing in expressions, such as type.class & \\
+        \code{ArrayType} & & \\
+        \code{ParameterizedType} & & \\
+        \code{PrimitiveType} & & \\
         \midrule
-        \code{ArrayCreation} &  & \\
-        \code{ObjectCreation} & Instantiation of a class. & \\
-        \code{AnonymousObjectCreation} & Instantiation of an anonymous class. & \\
+        
+        \code{TypeCast} & & (float) 42 \\
+        \code{InstanceOf} & & x instanceof Float \\
         \midrule
-        \code{MethodInvocation} &  & \\
-        \code{Assert} &  & \\
-        \code{Break} &  & \\
-        \code{Continue} &  & \\
-        \code{Throw} &  & \\
-        \code{SynchronizedEntry} &  & \\
-        \code{SynchronizedExit} &  & \\
-        \code{Return} &  & \\
+        
+        & Conversion nodes.  Could be desugared. & \\
+        \code{NarrowingConversion} & Implicit conversion. & \\
+        \code{StringConversion} & & obj.toString() \\
+        \code{WideningConversion} & Implicit conversion. & \\
+        \midrule
+
+        \code{Case} & Case within a switch statement. & \\
+        \code{Throw} & Throw an exception. & \\
+        \code{Return} & Return from a method. & \\
+        \midrule
+
+        \code{AssertionError} & & assert x != null : "Hey" \\
+        \midrule
+
+        \code{Marker} & No-op nodes used to annotate a CFG & \\
+        \midrule
+        
+        \code{NullChk} & Null checks inserted by javac & \\
+        \midrule
+        
         \caption{All node types in our dataflow framework.}
         \label{tab:nodes}
     \end{longtable}
@@ -557,16 +585,6 @@ possible outcomes of the condition: either, the control flow follows the
 `true' branch and continues with the loops body, or goes to the `false'
 successor and executes the first statement after the loop.
 
-This translation of the many high-level constructs to only few low-level
-elements has the advantage that the implementer of a particular dataflow
-analysis will not have to think about how all these high-level constructs
-behave. In particular, there is usually no need to handle different high-level
-constructs in a special manner. However, the loss of the program structure
-also means that a dataflow analysis cannot easily (if at all) implement special behavior
-for a specific high-level construct. If this becomes a problem in the future,
-it is possible to extend the dataflow framework to keep this information.
-
-
 
 \subsubsection{Assignment}
 
@@ -579,6 +597,16 @@ An example of a field assignment exhibiting this behavior is shown in \autoref{l
 \flow{FieldAssignment}{Control flow for a field assignment is not strictly
 left-to-right (cf.\ \jlsref{15.26.1}),
 which is properly handled by our translation.}
+
+
+\subsubsection{Boolean-valued expressions}
+
+Create two stores.
+
+
+\subsubsection{Branches}
+
+Split stores.
 
 
 \subsubsection{Conditional Expressions}
@@ -617,55 +645,6 @@ where the receiver might be an \code{ImplicitThisNode}.
 For instance, this is shown in the earlier example \autoref{lst:CFGFieldAssignment}.
 
 
-\subsubsection{Synchronized Methods}
-
-A \code{synchronized} method acquires a monitor before it executes, and it is possible
-to desugar methods with the \code{synchronized} modifier to explicitly use
-the \code{synchronized} statement (see \jlsref{8.4.3.6}). This desugaring
-assures that the user of the framework only needs to handle the
-\code{SynchronizedEntryNode} and \code{SynchronizedExitNode},
-but does not need to check if a method is declared as
-\code{synchronized}.
-
-
-
-
-\subsubsection{Desugaring of Statements and Expressions}
-
-At first it may seem beneficial to desugar more advanced expressions such as compound
-assignments, or pre/post-increments or decrements into simpler nodes.  Indeed, this would
-have several advantages, including:
-\begin{itemize}
-    \item Less \code{Node} types, which leads to a simpler representation.
-    \item The visitor class for nodes is smaller, which simplifies the implementation
-    of the transfer function.
-\end{itemize}
-However, when the dataflow framework is used with the Checker Framework, there is a major
-disadvantage to this approach.  As described in \autoref{sec:flow-cf-interaction}, the
-checker-specific implementations on how to handle different AST tree nodes can be directly
-reused to implement the transfer function:  For a given node, we determine the corresponding
-AST tree node and ask the \code{AnnotatedTypeFactory} to determine its type.  However, this
-is only possible if a corresponding AST node is present.
-
-If we desugar, say, the compound assignment into a regular assignment and an string concatenation
-(or whatever operation is used), then no corresponding AST tree node is available.
-For this reason, we only minimally desugar the AST in the translation to
-CFG nodes.
-
-\begin{workinprogress}
-    Note that the regex checker does not have special behavior for the compound string
-    assignment, and thus there will be no benefit in the dataflow analysis.  However,
-    this is just an implementation weakness of this particular checker.
-\end{workinprogress}
-
-Note that desugaring control statements (such as loops or conditionals) as mentioned
-in \autoref{sec:prog-structure} is not problematic, as these are statements and thus do not
-have a type.  Therefore, the \code{AnnotatedTypeFactory} will not be used to determine
-the abstract value of such constructs.
-
-
-
-
 
 \subsection{AST to CFG Translation}
 \label{sec:ast_to_cfg_translation}
@@ -684,7 +663,7 @@ First, we define several entities, which will be used in the translation.
         \item \textbf{Exception extended node.} Similar to a simple node, an exception extended
         node contains a node, but this node might throw an exception at runtime.
         \item \textbf{Unconditional jump.} An unconditional jump indicates that control
-        flow proceeds non-sequential to a location indicated by a target label.
+        flow proceeds non-sequentially to a location indicated by a target label.
         \item \textbf{Conditional jump.} A conditional jump can follow an extended node
         that contains a node of boolean type. It contains two target labels, one if the
         node evaluates to true and one for false.
@@ -699,8 +678,8 @@ The process of translating an AST to a CFG proceeds in three distinct phases.
     \item \textbf{Phase one.} In the first phase, a sequence of extended nodes is created
     that represents the control flow of the method. The control flow is implicitly
     assumed to be sequential through the sequence of extended nodes, until a (conditional
-    or unconditional) jump is encountered, in which case the jump target decides
-    where execution proceeds.
+    or unconditional) jump is encountered in an if, for, while or switch statement, in which
+    case the jump target decides where execution proceeds.
     
     The labels used as targets of jumps are associated with positions in this sequence and are managed
     by maintaining a binding function from labels to sequence positions. The advantage of
@@ -768,17 +747,9 @@ backwards analyses; in the future, we may wish to do so.)
  These transfer functions are specific to the particular analysis and are used
 to approximate the runtime-behavior of different statements and expressions.
 
-So-called \emph{stores} are used to keep track of the current information the dataflow
-analysis has accumulated. Every store is associated with a particular point in the
-control-flow graph.
+An analysis maintains dataflow information in two forms.  First, for every node that can take on an abstract value, there is a mapping (\code{Analysis.nodeValues}) from node to abstract value.  For example, in the Checker Framework, the mapping is from expression nodes to annotated types.  Second, for every flow expression, there is a data structure called a \emph{store} that tracks the abstract value of the flow expression at specified program points.  An analysis keeps explicit stores for the start of each basic block (\code{Analysis.stores}) and computes the store for other program points on the fly.
 
-The class \code{Analysis<S, T>} (parameterized by the type \code S of the store and the type \code T of the
-transfer function) performs the actual dataflow analysis. It requires the transfer function
-as an argument to the constructor. Then, the object provides a method to perform the dataflow
-analysis on a given control-flow graph and methods to query the result of that dataflow analysis.
-
-
-
+After an analysis has iterated to a fix-point, the computed dataflow information is maintained in an AnalysisResult, which can map either nodes or trees to abstract values.
 
 
 \subsection{Concurrency}
@@ -790,31 +761,19 @@ presence of concurrency, the dataflow analysis can in general not infer any type
 of field based on local information.  Another thread might have already changed the value
 of that field before the next use, potentially changing its type.
 
-\begin{workinprogress}
-    Currently, the Checker Framework does not support a mode for concurrency.  Once this
-    has been added, the dataflow framework will already provide support for this flag.
-\end{workinprogress}
+The command line option to enable concurrent semantics is -AconcurrentSemantics.  The default is to use sequential semantics and the option takes effect at the point that an AbstractBasicAnnotatedTypeFactory creates a new empty store.
 
 An exception to this are monotonic type properties, such as the \code{@MonotonicNonNull} annotation
-of the non-null type system.
-
-\begin{workinprogress}
-    It might be useful to think about an abstraction for monotonic types (such as \code{@MonotonicNonNull}).
-    I could see an annotation for the declaration of annotations that indicates this property, and the
-    dataflow framework can then use this information to automatically give better analysis results (even
-    in the presence of concurrency).  Potentially, the monotonicity construct could even be added
-    to the Checker Framework in general, such that an implementation does not have to do anything
-    to implement annotations like \code{@MonotonicNonNull}.
-\end{workinprogress}
-
-
+of the non-null type system.  There is now a meta-annotation \code{@MonotonicQualifier} that
+allows one to declare that a qualifier behaves monotonically, however it is not yet used to
+preserve dataflow information about fields under concurrent semantics.
 
 
 \subsection{Managing Intermediate Results of the Analysis}
 \label{sec:node-mapping}
 \label{sec:store-management}
 
-Conceptually, the dataflow analysis computes an abstract value for every node\footnote{Certain
+Conceptually, the dataflow analysis computes an abstract value for every node and flow expression\footnote{Certain
 dataflow analysis might choose not to produce an abstract value for every node.  For instance,
 a constant propagation analysis would only be concerned with nodes of a numerical type, and
 ignore other nodes.}.
@@ -832,11 +791,8 @@ nodes to remove any coupling between the control-flow graph and a particular ana
 This allows the control-flow graph to be constructed only once, and then reused for different
 dataflow analyses.
 
-Besides the abstract value of every node,
-every analysis has to implement the \code{Store} interface. A \emph{store} is
-used to track the intermediate results of a dataflow analysis. For instance, the store
-could contain information about which variables can be considered \code{@NonNull}.
-A store is required to provide the following operations:
+The stores tracked by an analysis implement the \code{Store} interface, which defines the
+following operations:
 \begin{itemize}
 \item Least upper bound: Compute the least upper bound of two stores (e.g., at a merge-point
 in the control-flow graph).
@@ -851,10 +807,8 @@ which can be reused.
 Every store is associated with a particular point in the control-flow graph, and
 all stores are managed by the framework. It maintains
 a single store for every basic block that represents the information available at the
-beginning of that block.
-Note that it is only the stores that determine when the iteration of the dataflow analysis
-can terminate, and not the node-value mapping.  The node-value mapping is used solely for
-providing the abstract value of a sub-node to the transfer function of a particular node.
+beginning of that block.  When dataflow information is requested for a later point in a block, the analysis applies the transfer function to compute it from the initial store.
+
 
 
 \subsection{Answering Questions}
@@ -865,33 +819,35 @@ available.
 
 Two kinds of queries are possible to the dataflow analysis after the analysis is complete:
 \begin{enumerate}
-    \item For a given AST tree node, what is its abstract value?
+    \item For a given AST tree node, what is its abstract value?  Both pre- and postconversion
+    values can be retrieved.
     \item For a given AST tree node, it is possible to ask an analysis-specific question
     about the state right after this AST tree node. For instance, examples of questions
     include:
     \begin{itemize}
-        \item Which looks are currently held?
+        \item Which locks are currently held?
         \item Are all fields of a given object initialized?
     \end{itemize}
 \end{enumerate}
 
 The implementor
 of the dataflow analysis can implement arbitrary queries and how to answer them
-given a store. Then, the framework will allow to issue those queries for
+given a store. Then, the framework will allow issuing those queries for
 any given AST node by looking up (or computing) the correct store and applying the query
 implementation.
 The store may first need to be computed, as the framework does not store all intermediate
 stores but rather only those for key positions as described in \autoref{sec:store-management}.
 
-To support the both kinds of queries, our framework builds a map from AST tree nodes (of type
+To support both kinds of queries, our framework builds a map from AST tree nodes (of type
 \code{com.sun.source.tree.Tree}) to CFG nodes.  To answer questions of the first type it is
 then possible to go from the AST tree node to the CFG node and look up its abstract value in
-the node-value mapping.  To support questions of the second kind, every node has a reference
+the node-value mapping.  By default, the abstract value returned for a tree by \code{Analysis.getValue(Tree)} includes any implicit conversions because it uses the mapping
+from tree node to post-conversion CFG node.  To request the pre-conversion value, one currently uses the \code{ControlFlowGraph.treelookup} map directly.
+
+To support questions of the second kind, every node has a reference
 to the basic block it is part of. Thus, for a given AST tree node, the framework
 can determine the CFG node and thereby the CFG basic block, and compute the necessary store
 to answer the question.
-
-
 
 
 
@@ -911,18 +867,13 @@ under consideration.  This is not limited to immediate children, but the abstrac
 in \code n can be queried.
 \end{itemize}
 
-To allow the dataflow analysis to use different information (that is, different stores)
-for conditional nodes and its two successors, it is possible to provide two additional
-transfer functions; one for the \emph{true} edge and one for the \emph{false} edge.
-That is, there are potentially three transfer functions; one regular transfer function, and two
-for conditional basic blocks.
-
 
 \section{Example: Constant Propagation}
 
-\begin{workinprogress}
-    As a proof-of-concept, I implemented a constant propagation analysis for local variables
-    and integer values. I describe the most important aspects here.
+    As a proof-of-concept, I (Stefan) implemented a constant propagation analysis for local variables
+    and integer values.  The main class is 
+    \code{dataflow.cfg.playground.ConstantPropagationPlayground}. 
+    I describe the most important aspects here.
     
     \textbf{Abstract values.} A class \code{Constant} is used as an abstract value, which can
     either be \emph{top} (more than one integer value seen), \emph{bottom} (no value seen yet),
@@ -950,7 +901,6 @@ for conditional basic blocks.
     the correct information to one of the branches. This is also shown in the example of \autoref{fig:ConstSimple}.
     
     \text{Example.} A small example is shown in \autoref{fig:ConstSimple}.
-\end{workinprogress}
 
 \constantpropagation{Simple}{Simple sequential program to illustrate constant propagation.}
 
@@ -960,23 +910,13 @@ for conditional basic blocks.
 
 \subsection{Overview}
 
-The default flow-sensitive analysis works for the qualifier hierarchy of any checker defined in 
+The default flow-sensitive analysis \code{checkers.flow.CFAnalysis} works for the qualifier hierarchy of any checker defined in 
 the Checker Framework.  This generality is both a strength and a weakness because the 
 default analysis can
 always run but the facts it can deduce are limited.  The default analysis
 will be extensible so checkers can add logic specific to their own qualifiers.
 
-The default flow-sensitive analysis tracks type annotations though assignments to local 
-variables and thereby improves precision when the qualifiers on the right hand side of the
-assignment are more precise than those on the left hand side.
-
-\begin{workinprogress}
-    At a later point in time, we want to add tracking of type annotations of fields, and
-    potentially also of array expressions.  In general, both of these extensions need to be
-    rather conservative to be sound, but can still yield useful results in certain cases.
-    Furthermore, for monotonic annotations (such as \code{@MonotonicNonNull}), the analysis can be
-    fairly precise.
-\end{workinprogress}
+The default flow-sensitive analysis takes advantage of several forms of control-flow to improve the precision of type qualifiers.  It tracks assignments to flow expressions, propagating type qualifiers from the right-hand side of the assignment.  It considers equality and inequality tests to propagate the most precise qualifiers from the left or right-hand side to the true (resp. false) successor.  It also applies type qualifiers from method postconditions after calls.
 
 
 
@@ -1001,89 +941,14 @@ For a given node \code{n}, perform the following steps:
     to compute this type.  Typical implementations will look at the type
     of sub-trees and compute the overall type based on the information about these sub-trees.
     
-    Note that the factory uses information provided by the flow analysis to determine
-    the type of sub-trees.  This information can simply be looked up in the node-value
-    mapping, as it asks about the abstract value of sub-nodes.
+    Note that the factory recursively uses information provided by the flow analysis to determine
+    the types of sub-trees.  There is a check in \code{Analysis.getValue} that the node whose type
+    is being requested is a sub-node of the node to which the transfer function is currently being
+    applied.  For other nodes, the analysis will return a null abstract value and the factory will
+    return the flow-insensitive annotated type.
 \end{enumerate}
 
-\begin{workinprogress}
-    We only want the \code{AnnotatedTypeFactory} to use flow information for sub-trees of
-    the tree we currently are asking a question about.  How can we enforce this?
-    For instance, usually a call to \code{getAnnotatedType} for a local variable will ask flow
-    about the type of this local variable.  This is circular and needs to be avoided.
-    We need to be especially careful if old information from a previous iteration is present
-    in the node-value mapping.
-    
-    Should we have a flag in the dataflow framework, that it only returns information
-    about sub-nodes during the dataflow analysis?  How would we determine if a node is
-    a sub-node efficiently?
-\end{workinprogress}
 
-\begin{workinprogress}
-    Charlie suggested that we only store information about local variables in the store if
-    the type information is more precise than the ``flow-insensitive'' type.  This seems like
-    a very good idea, but how can we determine the flow-insenstitive type?  Most likely, if we
-    just naively use the \code{getAnnotatedType} method of the \code{AnnotatedTypeFactory}, the
-    factory would just ask the flow (which is circular).
-    
-    Should there be a flag in the \code{AnnotatedTypeFactory} that makes it possible to turn off
-    flow temporarily?
-\end{workinprogress}
-
-
-
-
-\subsection{Implementation}
-
-A few of the implementation details of the default analysis are worth discussing.
-
-%Since the flow-insensitive annotations for a \code{Node} are an upper bound on the flow-sensitive 
-%annotations, we don't need to explicitly keep the annotations in the Store unless they are more
-%precise than the flow-insensitive ones.  The \code{BaseTypeAnalysis.NodeInfo} class returns
-%information from the \code{Store} when it is present and defaults to the 
-%\code{AnnotatedTypeFactory} when none is present.
-
-The nodes in the node-value mapping are used to provide the abstract value of sub-nodes
-that have already been computed.  For this reason, once an are\todo{Clarify} done with a particular node,
-any of its sub-nodes can potentially be removed from the node-value mapping,
-leading to more efficient space use\footnote{One has to be very careful, for two reasons: (1)
-some nodes can appear as children of multiple other nodes, and (2) the transfer function of
-a node might not only look at its immediate children, but at any node it contains.  However,
-such an optimization does not seem impossible.}.
-However, after the last iteration, it seems beneficial to keep around all nodes in this mapping,
-such that querying the dataflow analysis later on will be more efficient.  We keep all nodes in this mapping
-all the time, because it is not
-possible to decide, in advance, which is the last iteration.
-
-Each analysis pass implements the \code{AbstractValue}, \code{Store} and 
-\code{Transfer} interfaces, so the
-default analysis does also.  The current prototype makes those implementations inner
-classes within the \code{BaseTypeAnalysis} class, so there is just one (final) member field
-for the \code{QualifierHierarchy} and one for the \code{AnnotatedTypeFactory} that determine 
-which checker is providing the type information for the analysis.
-
-
-\subsection{Open Questions}
-
-\begin{workinprogress}
-The \code{EqualTo} and \code{NotEqual Nodes} could potentially supply flow-sensitive
-information for 
-non-primitive types because they establish that two \code{Objects} are identical, which means their 
-types are identical.  For example, suppose that \code{s1} is a \code{String} and \code{s2} is 
-a \code{@Regex String}.  Then
-in the true successor of \code{if (s1 == s2)}, we know that \code{s1} is also a 
-\code{@Regex String}.  However, it 
-seems inconsistent to extract information from a comparison of objects with distinct types.  
-We would most likely issue an error for comparing a \code{String} to a \code{@Regex String}
-and expect the
-programmer to fix it, so this is a kind of information that may never appear in properly typed
-programs.
-\end{workinprogress}
-
-
-
-
-\begin{new}
 
 \subsection{The Checker-Framework Store and Dealing with Aliasing}
 
@@ -1163,7 +1028,7 @@ the information in the store.
 \begin{enumerate}
     \item For every field access $o_2.f_2$, remove its information if
     the two field $f_1$ and $f_2$ are the same, and either of the following
-    condition holds:
+    conditions holds:
     \begin{itemize}
         \item $o_1$ and $o_2$ are (syntactically) the same.  In this case, the
         new abstract value will be added in the second step.
@@ -1180,7 +1045,7 @@ the information in the store.
 
 \paragraph{At Local Variable Assignments}
 
-For a local variable assignment of the for $x = e$ for some expression $e$,
+For a local variable assignment of the form $x = e$ for some expression $e$,
 the dataflow analysis first determines the abstract value $e_\text{val}$ for
 $e$. Then, the following steps need to be taken in order to correctly update
 the information in the store.
@@ -1224,7 +1089,6 @@ predicate $\alias$ as follows:
 where $\operatorname{type}(o)$ determines the Java type of a reference $o$
 and $<:$ denotes standard Java subtyping.
 
-\end{new}
 
 %%% Local Variables: 
 %%% mode: latex
