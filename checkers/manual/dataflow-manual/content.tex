@@ -454,8 +454,15 @@ In \autoref{tab:nodes} we give a list of all node types in our framework. We use
 Java class name of the implementation, but leave out the suffix \code{Node}, which is present
 for all types.
 
-    \begin{longtable}{lp{0.6\linewidth}l}
+    \begin{longtable}{lp{0.5\linewidth}l}
+        \midrule
+        \multicolumn{3}{c}{\autoref{tab:nodes}: All node types in our dataflow framework.} \\ \\
+        \textbf{Node type} & \textbf{Notes} & \textbf{Example} \\ \midrule \endfirsthead
+
         \textbf{Node type} & \textbf{Notes} & \textbf{Example} \\ \midrule \endhead
+        \hline \multicolumn{3}{|c|}{{Continued on next page}} \\ \hline \endfoot
+        \endlastfoot
+
         \code{Node} & The base class of all nodes. & \\
         \midrule
 
