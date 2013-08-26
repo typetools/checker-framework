@@ -7,7 +7,17 @@ that adds pluggable types to the Java type system.
 
 The primary purpose of the dataflow framework is to enable flow-sensitive type checking in the Checker Framework, which serves to reduce the burden of annotating a program.  The dataflow framework was designed with several goals in mind.  First, to encourage other uses of the framework, it is written as a separate package that can be built and used with no dependence on the Checker Framework.  Second, the framework is currently intended to support analysis but not transformation, so it provides information that can be used by a type checker or an IDE, but it does not support optimization.  Third, the framework aims to minimize the burden on developers who build on top of it.  In particular, the hierarchy of analysis classes is designed to reduce the effort required to implement a new flow-sensitive type checker in the Checker Framework.
 
-To summarize the behavior of the Dataflow Framework concisely, we may say that it makes control flow explicit by transforming an input AST into a control flow graph consisting of basic blocks made up of nodes representing single operations.  It performs iterative data flow analysis over the control flow graph to produce a set of stores that map variables and other distinguished expressions to abstract values.  The action of a single node on the dataflow store is captured by a transfer function, that takes an input store and a node and produces an output store.  Once the analysis reaches a fix point, the dataflow information, consisting of an abstract value for each expression and a store at each program point, is preserved as an analysis result, which can be accessed by client code.
+The Dataflow Framework's result is an abstract value for each expression
+(an estimate of the expression's run-time value) and a store at each
+program point.  A store maps variables and other distinguished expressions
+to abstract values.  As a pre-pass, the Dataflow Framework transforming an
+input AST into a control flow graph consisting of basic blocks made up of
+nodes representing single operations.  To produce its output, the Checker
+Framework performs iterative data flow analysis over the control flow
+graph.  The effect of a single node on the dataflow store is represented by
+a transfer function, which takes an input store and a node and produces an
+output store.  Once the analysis reaches a fix point, the result can be
+accessed by client code.
 
 In the Checker Framework, the abstract values to be computed are annotated types.  Individual checkers can customize their analysis by extending the abstract value class and by overriding the behavior of the transfer function for particular node types.
 
