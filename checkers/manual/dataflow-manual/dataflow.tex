@@ -17,11 +17,20 @@
 
 % At least 80% of every float page must be taken up by
 % floats; there will be no page with more than 20% white space.
-\def\topfraction{.85}
+\def\topfraction{.95}
 \def\dbltopfraction{\topfraction}
 \def\floatpagefraction{\topfraction}     % default .5
 \def\dblfloatpagefraction{\topfraction}  % default .5
-\def\textfraction{.15}
+\def\textfraction{.05}
+
+%% This doesn't work for longtable.  :-(
+% Add line between figure and text
+\makeatletter
+\def\topfigrule{\kern3\p@ \hrule \kern -3.4\p@} % the \hrule is .4pt high
+\def\botfigrule{\kern-3\p@ \hrule \kern 2.6\p@} % the \hrule is .4pt high
+\def\dblfigrule{\kern3\p@ \hrule \kern -3.4\p@} % the \hrule is .4pt high
+\makeatother
+
 
 \usepackage{listings}
 \lstset{
@@ -54,6 +63,10 @@
 \def\sectionautorefname{Section}
 \def\subsectionautorefname{Section}
 \def\subsubsectionautorefname{Section}
+\def\paragraphautorefname{Section}
+\def\subsubsubsection{\paragraph}
+\setcounter{secnumdepth}{4}
+
 
 % macros for bnf grammers
 \newenvironment{bnfgrammar}{\begin{center}\renewcommand{\arraystretch}{1.5}\begin{tabular}{rcl}}{\end{tabular}\end{center}}
@@ -76,7 +89,7 @@
 % control-flow graph images and listings
 \newcommand{\flowlst}[2]{\lstinputlisting[caption=#2,label=lst:#1,float]{examples/#1.java}}
 \newcommand{\flowimg}[2]{\begin{figure}
-\includegraphics[scale=0.55]{examples/graphs/#1.pdf}
+\includegraphics[scale=0.6]{examples/graphs/#1.pdf}
 \centering
 \caption{#2}
 \label{fig:#1}
@@ -109,15 +122,15 @@
 \setlength{\parskip}{.5em}
 
 \title{A Dataflow Framework for Java and the Checker Framework}
-\author{Stefan Heule\\\url{stheule@cs.washington.edu}}
+\author{
+              Stefan Heule\\\url{stheule@cs.washington.edu}
+              \and
+              Charlie Garrett\\\url{charlie.garrett@gmail.com}
+}
 
 \begin{document}
 
 \maketitle
-
-\begin{workinprogress}
-IMPORTANT: This document has been written at an early point in the development of the dataflow framework and might not reflect the current design accurately or might be missing important information.
-\end{workinprogress}
 
 \input{content.tex}
 
