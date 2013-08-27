@@ -213,6 +213,7 @@ ${build.version} of the 'javac.jar' library."/>
             <arg line="-version"/>
             <arg line="-XDTA:noannotationsincomments"/>
             <arg line="-Xlint"/>
+            <arg line="-Werror"/>
         </java>
         <unjar src="${javaparser.lib}" dest="${build}" />
         <unjar src="${javacutils.lib}" dest="${build}" />

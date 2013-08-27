@@ -44,6 +44,7 @@ public final class TestUtilities {
             if (nextLine.contains("@skip-test")) {
                 in.close();
                 return false;
+            }
         }
         in.close();
         return true;
