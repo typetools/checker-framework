@@ -132,6 +132,7 @@ ${build.version} of the 'javac.jar' library."/>
             <arg line="-version"/>
             <arg line="-XDTA:noannotationsincomments"/>
             <arg line="-Xlint"/>
+            <arg line="-Werror"/>
         </java>
         <!--
         Touch doesn't work on a directory, so can't do:
