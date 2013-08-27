@@ -10,10 +10,10 @@ class GenericTest11 {
 
     static interface BeanManager {
         java.util.Set<Bean<?>> getBeans(java.lang.reflect.Type arg0, java.lang.annotation.Annotation... arg1);
-        <T> CreationalContext<T> createCreationalContext(Contextual<T> arg0);
+        <T1> CreationalContext<T1> createCreationalContext(Contextual<T1> arg0);
     }
 
-    static interface Contextual<T> {}
-    static interface Bean<T> extends Contextual<T> {}
-    static interface CreationalContext<T> {}
+    static interface Contextual<T2> {}
+    static interface Bean<T3> extends Contextual<T3> {}
+    static interface CreationalContext<T4> {}
 }

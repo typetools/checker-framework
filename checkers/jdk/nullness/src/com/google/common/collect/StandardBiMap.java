@@ -30,7 +30,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
 /**
  * A general-purpose bimap implementation using any two backing {@code Map}
@@ -83,7 +83,7 @@ import checkers.nullness.quals.*;
 
   // Query Operations (optimizations)
 
-  @Override public boolean containsValue(/*@Nullable*/ Object value) {
+  @Pure @Override public boolean containsValue(/*@Nullable*/ Object value) {
     return inverse.containsKey(value);
   }
 
@@ -158,7 +158,7 @@ import checkers.nullness.quals.*;
 
   private transient volatile Set<K> keySet;
 
-  @Override public Set<K> keySet() {
+  @SideEffectFree @Override public Set<K> keySet() {
     Set<K> result = keySet;
     return (result == null) ? keySet = new KeySet() : keySet;
   }
@@ -210,7 +210,7 @@ import checkers.nullness.quals.*;
 
   private transient volatile Set<V> valueSet;
 
-  @Override public Set<V> values() {
+  @SideEffectFree @Override public Set<V> values() {
     /*
      * We can almost reuse the inverse's keySet, except we have to fix the
      * iteration order so that it is consistent with the forward map.
@@ -256,14 +256,14 @@ import checkers.nullness.quals.*;
       return ObjectArrays.toArrayImpl(this, array);
     }
 
-    @Override public String toString() {
+    @Pure @Override public String toString() {
       return Iterators.toString(iterator());
     }
   }
 
   private transient volatile Set<Entry<K, V>> entrySet;
 
-  @Override public Set<Entry<K, V>> entrySet() {
+  @SideEffectFree @Override public Set<Entry<K, V>> entrySet() {
     Set<Entry<K, V>> result = entrySet;
     return (result == null) ? entrySet = new EntrySet() : entrySet;
   }
@@ -346,10 +346,10 @@ V oldValue = finalEntry.setValue(value);
     @Override public <T> T[] toArray(T[] array) {
       return ObjectArrays.toArrayImpl(this, array);
     }
-    @Override public boolean contains(/*@Nullable*/ Object o) {
+    @Pure @Override public boolean contains(/*@Nullable*/ Object o) {
       return Maps.containsEntryImpl(delegate(), o);
     }
-    @Override public boolean containsAll(Collection<?> c) {
+    @Pure @Override public boolean containsAll(Collection<?> c) {
       return Collections2.containsAll(this, c);
     }
     @Override public boolean removeAll(Collection<?> c) {

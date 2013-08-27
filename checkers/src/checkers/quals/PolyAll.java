@@ -1,10 +1,14 @@
 package checkers.quals;
 
-import java.lang.annotation.*;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-import checkers.util.QualifierPolymorphism;
-import checkers.nullness.quals.PolyNull;
 import checkers.interning.quals.PolyInterned;
+import checkers.nullness.quals.PolyNull;
+import checkers.util.QualifierPolymorphism;
 
 /**
  * A polymorphic type qualifier that varies over all type hierarchies.
@@ -14,7 +18,7 @@ import checkers.interning.quals.PolyInterned;
  * qualifier for every type system (whether such a qualifier has been
  * declared or not).
  * <p>
- * 
+ *
  * The <tt>@PolyAll</tt> annotation applies to every type qualifier hierarchy for
  * which no explicit qualifier is written.  For example, a declaration like
  * <tt>@PolyAll @NonNull String s</tt> is polymorphic over every type system
@@ -30,7 +34,7 @@ import checkers.interning.quals.PolyInterned;
  * occurrences with the same argument (or with no argument) vary together.
  * <p>
  * -->
- * 
+ *
  * To support <tt>@PolyAll</tt> in a type system, simply add it to the
  * list of <tt>@TypeQualifiers</tt>.
  *

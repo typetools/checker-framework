@@ -49,7 +49,7 @@ class MutableClass {
         i = 0;   // OK
         this.i = 0; // OK
         o = new Object() {
-            public String toString() {
+            @dataflow.quals.Pure public String toString() {
                 i++; // error
                 return super.toString();
             }

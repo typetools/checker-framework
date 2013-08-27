@@ -106,4 +106,11 @@ public class Primitives {
     res += 5;
     res /= 9;
   }
+
+  // TODO: enable after boxing is improved in AST creation
+  // void negation() {
+  //   Boolean t = new Boolean(true);
+  //   boolean b = !t;
+  // }
+
 }

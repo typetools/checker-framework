@@ -19,7 +19,7 @@ package com.google.common.collect;
 import com.google.common.annotations.GwtCompatible;
 import com.google.common.collect.ImmutableSet.ArrayImmutableSet;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
 /**
  * Implementation of {@link ImmutableSet} with two or more elements.
@@ -33,17 +33,17 @@ final class RegularImmutableSet<E> extends ArrayImmutableSet<E> {
   private final transient Object[] table;
   // 'and' with an int to get a valid table index.
   private final transient int mask;
-  private final transient int hashCode;
+  @Pure private final transient int hashCode;
 
   RegularImmutableSet(
-      Object[] elements, int hashCode, Object[] table, int mask) {
+      @Pure Object[] elements, int hashCode, Object[] table, int mask) {
     super(elements);
     this.table = table;
     this.mask = mask;
     this.hashCode = hashCode;
   }
 
-  @Override public boolean contains(/*@Nullable*/ Object target) {
+  @Pure @Override public boolean contains(/*@Nullable*/ Object target) {
     if (target == null) {
       return false;
     }
@@ -58,11 +58,11 @@ final class RegularImmutableSet<E> extends ArrayImmutableSet<E> {
     }
   }
 
-  @Override public int hashCode() {
+  @Pure @Override public int hashCode() {
     return hashCode;
   }
 
-  @Override boolean isHashCodeFast() {
+  @Pure @Override boolean isHashCodeFast() {
     return true;
   }
 }
