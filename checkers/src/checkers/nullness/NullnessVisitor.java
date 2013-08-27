@@ -67,6 +67,9 @@ public class NullnessVisitor
     private static final /*@CompilerMessageKey*/ String LOCKING_NULLABLE = "locking.nullable";
     private static final /*@CompilerMessageKey*/ String THROWING_NULLABLE = "throwing.nullable";
     private static final /*@CompilerMessageKey*/ String ACCESSING_NULLABLE = "accessing.nullable";
+    private static final /*@CompilerMessageKey*/ String CONDITION_NULLABLE = "condition.nullable";
+    private static final /*@CompilerMessageKey*/ String ITERATING_NULLABLE = "iterating.over.nullable";
+    private static final /*@CompilerMessageKey*/ String SWITCHING_NULLABLE = "switching.nullable";
     private static final /*@CompilerMessageKey*/ String DEREFERENCE_OF_NULLABLE = "dereference.of.nullable";
 
     // Annotation and type constants
@@ -219,7 +222,7 @@ public class NullnessVisitor
     /** Case 2: Check for implicit {@code .iterator} call */
     @Override
     public Void visitEnhancedForLoop(EnhancedForLoopTree node, Void p) {
-        checkForNullability(node.getExpression(), "iterating.over.nullable");
+        checkForNullability(node.getExpression(), ITERATING_NULLABLE);
         return super.visitEnhancedForLoop(node, p);
     }
 
@@ -333,7 +336,7 @@ public class NullnessVisitor
 
     @Override
     public Void visitIf(IfTree node, Void p) {
-        checkForNullability(node.getCondition(), "condition.nullable");
+        checkForNullability(node.getCondition(), CONDITION_NULLABLE);
         return super.visitIf(node, p);
     }
 
@@ -489,7 +492,7 @@ public class NullnessVisitor
 
     @Override
     public Void visitSwitch(SwitchTree node, Void p) {
-        checkForNullability(node.getExpression(), "switching.nullable");
+        checkForNullability(node.getExpression(), SWITCHING_NULLABLE);
         return super.visitSwitch(node, p);
     }
 
@@ -497,7 +500,7 @@ public class NullnessVisitor
     public Void visitForLoop(ForLoopTree node, Void p) {
         if (node.getCondition() != null) {
             // Condition is null e.g. in "for (;;) {...}"
-            checkForNullability(node.getCondition(), "condition.nullable");
+            checkForNullability(node.getCondition(), CONDITION_NULLABLE);
         }
         return super.visitForLoop(node, p);
     }
@@ -535,20 +538,20 @@ public class NullnessVisitor
 
     @Override
     public Void visitWhileLoop(WhileLoopTree node, Void p) {
-        checkForNullability(node.getCondition(), "condition.nullable");
+        checkForNullability(node.getCondition(), CONDITION_NULLABLE);
         return super.visitWhileLoop(node, p);
     }
 
     @Override
     public Void visitDoWhileLoop(DoWhileLoopTree node, Void p) {
-        checkForNullability(node.getCondition(), "condition.nullable");
+        checkForNullability(node.getCondition(), CONDITION_NULLABLE);
         return super.visitDoWhileLoop(node, p);
     }
 
     @Override
     public Void visitConditionalExpression(ConditionalExpressionTree node,
             Void p) {
-        checkForNullability(node.getCondition(), "condition.nullable");
+        checkForNullability(node.getCondition(), CONDITION_NULLABLE);
         return super.visitConditionalExpression(node, p);
     }
 }
