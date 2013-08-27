@@ -9,6 +9,7 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedNoType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedNullType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import checkers.types.AnnotatedTypeMirror.AnnotatedUnionType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
 
 import java.util.IdentityHashMap;
@@ -149,6 +150,16 @@ public class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor<R, P> {
         }
         visitedNodes.put(type, null);
         R r = scan(type.directSuperTypes(), p);
+        return r;
+    }
+
+    @Override
+    public R visitUnion(AnnotatedUnionType type, P p) {
+        if (visitedNodes.containsKey(type)) {
+            return visitedNodes.get(type);
+        }
+        visitedNodes.put(type, null);
+        R r = scan(type.getAlternatives(), p);
         return r;
     }
 
