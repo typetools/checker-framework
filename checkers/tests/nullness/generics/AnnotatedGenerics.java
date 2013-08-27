@@ -8,7 +8,7 @@ class AnnotatedGenerics {
             @Nullable T get() { return f; }
         }
         Test<Iterable<String>> l = new Test<Iterable<String>>();
-        //:: error: (dereference.of.nullable)
+        //:: error: (iterating.over.nullable)
         for (String s : l.get());
     }
 
