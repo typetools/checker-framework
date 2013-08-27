@@ -45,8 +45,7 @@ public enum ConversionCategory {
      * Character.isValidCodePoint(int) returns true. Applicable for conversions
      * c, C.
      */
-    @SuppressWarnings("unchecked")
-    CHAR(new Class[] { Character.class, Byte.class, Short.class,
+    CHAR(new Class<?>[] { Character.class, Byte.class, Short.class,
             Integer.class}, "cC"),
 
     /**
@@ -54,24 +53,21 @@ public enum ConversionCategory {
      * int and Integer, long, Long, and BigInteger. Applicable for conversions d,
      * o, x, X.
      */
-    @SuppressWarnings("unchecked")
-    INT(new Class[] { Byte.class, Short.class, Integer.class, Long.class,
+    INT(new Class<?>[] { Byte.class, Short.class, Integer.class, Long.class,
             BigInteger.class }, "doxX"),
 
     /**
      * Use if the parameter is is a floating-point type: float, Float, double,
      * Double, and BigDecimal. Applicable for conversions e, E, f, g, G, a, A.
      */
-    @SuppressWarnings("unchecked")
-    FLOAT(new Class[] { Float.class, Double.class, BigDecimal.class },
+    FLOAT(new Class<?>[] { Float.class, Double.class, BigDecimal.class },
             "eEfgGaA"),
 
     /**
      * Use if the parameter is is a type which is capable of encoding a date or
      * time: long, Long, Calendar, and Date. Applicable for conversions t, T.
      */
-    @SuppressWarnings("unchecked")
-    TIME(new Class[] { Long.class, Calendar.class, Date.class }, "tT"),
+    TIME(new Class<?>[] { Long.class, Calendar.class, Date.class }, "tT"),
 
     /**
      * In a format string, multiple conversions may be applied to
@@ -96,12 +92,10 @@ public enum ConversionCategory {
      * or NULL, in which case it is illegal to pass object's of any
      * type as parameter.
      */
-    @SuppressWarnings("unchecked")
-    CHAR_AND_INT(new Class[] { Byte.class, Short.class, Integer.class},
+    CHAR_AND_INT(new Class<?>[] { Byte.class, Short.class, Integer.class},
             null),
 
-    @SuppressWarnings("unchecked")
-    INT_AND_TIME(new Class[] { Long.class }, null),
+    INT_AND_TIME(new Class<?>[] { Long.class }, null),
 
     /**
      * Use if no object of any type can be passed as parameter.
@@ -116,8 +110,7 @@ public enum ConversionCategory {
      * Only null can be legally passed, passing a value such as 4 or 4.2
      * would lead to an exception.
      */
-    @SuppressWarnings("unchecked")
-    NULL(new Class[0], null),
+    NULL(new Class<?>[0], null),
 
     /**
      * Use if a parameter is not used by the formatter.

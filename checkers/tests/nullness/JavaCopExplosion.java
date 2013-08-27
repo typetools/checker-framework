@@ -106,8 +106,8 @@ class Explosion {
 
     private void bar(List<@NonNull String> ss, String b, String c){
         @NonNull String a;
-        //:: error: (dereference.of.nullable)
-        for(@NonNull String s : ss){
+        //:: error: (iterating.over.nullable)
+        for (@NonNull String s : ss){
             a = s;
         }
         if (b==null || b.length() == 0){

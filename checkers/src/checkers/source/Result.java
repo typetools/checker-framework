@@ -6,6 +6,7 @@ import checkers.nullness.quals.*;
 */
 
 import dataflow.quals.Pure;
+import dataflow.util.HashCodeUtils;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -170,7 +171,7 @@ public final class Result {
     }
 
     /**
-     * A class that represents the diangosis messages.
+     * A class that represents diagnostic messages.
      *
      * {@code DiagMessage} encapsulate the message key which would identify
      * the relevant standard error message according to the user locale.
@@ -215,6 +216,11 @@ public final class Result {
 
             return (message.equals(other.message) && Arrays.equals(args,
                     other.args));
+        }
+
+        @Override
+        public int hashCode() {
+            return  HashCodeUtils.hash(this.message, this.args);
         }
 
         @Pure
