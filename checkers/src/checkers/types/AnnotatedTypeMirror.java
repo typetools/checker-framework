@@ -50,6 +50,7 @@ import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
+import javax.lang.model.type.UnionType;
 import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
@@ -116,6 +117,8 @@ public abstract class AnnotatedTypeMirror {
                 return new AnnotatedWildcardType((WildcardType) type, atypeFactory);
             case INTERSECTION:
                 return new AnnotatedIntersectionType((IntersectionType) type, atypeFactory);
+            case UNION:
+                return new AnnotatedUnionType((UnionType) type, atypeFactory);
             default:
                 if (type.getKind().isPrimitive()) {
                     return new AnnotatedPrimitiveType((PrimitiveType) type, atypeFactory);
@@ -2330,6 +2333,90 @@ public abstract class AnnotatedTypeMirror {
             return type;
         }
     }
+
+
+    // TODO: Ensure union types are handled everywhere.
+    // TODO: Should field "annotations" contain anything?
+    public static class AnnotatedUnionType extends AnnotatedTypeMirror {
+
+        /**
+         * Constructor for this type
+         *
+         * @param type  underlying kind of this type
+         * @param atypeFactory TODO
+         */
+        private AnnotatedUnionType(UnionType type,
+                AnnotatedTypeFactory atypeFactory) {
+            super(type, atypeFactory);
+        }
+
+        @Pure
+        @Override
+        public String toString(boolean printInvisible) {
+            StringBuilder sb = new StringBuilder();
+
+            boolean isFirst = true;
+            for(AnnotatedDeclaredType adt : this.getAlternatives()) {
+                if (!isFirst) sb.append(" | ");
+                sb.append(adt.toString(printInvisible));
+                isFirst = false;
+            }
+            return sb.toString();
+        }
+
+        @Override
+        public <R, P> R accept(AnnotatedTypeVisitor<R, P> v, P p) {
+            return v.visitUnion(this, p);
+        }
+
+        @Override
+        public AnnotatedUnionType getCopy(boolean copyAnnotations) {
+            AnnotatedUnionType type =
+                    new AnnotatedUnionType((UnionType) actualType, atypeFactory);
+            if (copyAnnotations)
+                type.addAnnotations(annotations);
+            type.alternatives = this.alternatives;
+            return type;
+        }
+
+        protected List<AnnotatedDeclaredType> alternatives;
+
+        public List<AnnotatedDeclaredType> getAlternatives() {
+            if (alternatives == null) {
+                List<? extends TypeMirror> ualts = ((UnionType)actualType).getAlternatives();
+                List<AnnotatedDeclaredType> res = new ArrayList<AnnotatedDeclaredType>(ualts.size());
+                for (TypeMirror alt : ualts) {
+                    res.add((AnnotatedDeclaredType) createType(alt, atypeFactory));
+                }
+                alternatives = Collections.unmodifiableList(res);
+            }
+            return alternatives;
+        }
+
+        @Override
+        public AnnotatedTypeMirror substitute(
+                Map<? extends AnnotatedTypeMirror,
+                    ? extends AnnotatedTypeMirror> mappings) {
+            if (mappings.containsKey(this))
+                return mappings.get(this);
+
+            AnnotatedUnionType type = getCopy(true);
+
+            Map<AnnotatedTypeMirror, AnnotatedTypeMirror> newMappings =
+                    new HashMap<AnnotatedTypeMirror, AnnotatedTypeMirror>(mappings);
+            newMappings.put(this, type);
+
+            if (this.alternatives != null) {
+                // watch need to copy alternatives as well
+                List<AnnotatedDeclaredType> alternatives = new ArrayList<AnnotatedDeclaredType>();
+                for (AnnotatedDeclaredType t : getAlternatives())
+                    alternatives.add((AnnotatedDeclaredType)t.substitute(newMappings));
+                type.alternatives = alternatives;
+            }
+            return type;
+        }
+    }
+
 
 
     public List<? extends AnnotatedTypeMirror> directSuperTypes() {

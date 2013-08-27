@@ -351,7 +351,9 @@ public abstract class QualifierHierarchy {
      * (and thus the *TypeVariable methods need to be used).
      */
     public static boolean canHaveEmptyAnnotationSet(AnnotatedTypeMirror type) {
-        return type.getKind() == TypeKind.TYPEVAR || type.getKind() == TypeKind.WILDCARD;
+        return type.getKind() == TypeKind.TYPEVAR || type.getKind() == TypeKind.WILDCARD ||
+                // TODO: or should the union be the LUB of the alternatives?
+                type.getKind() == TypeKind.UNION;
     }
 
     /**
