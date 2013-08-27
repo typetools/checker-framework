@@ -219,7 +219,7 @@ public class NullnessVisitor
     /** Case 2: Check for implicit {@code .iterator} call */
     @Override
     public Void visitEnhancedForLoop(EnhancedForLoopTree node, Void p) {
-        checkForNullability(node.getExpression(), DEREFERENCE_OF_NULLABLE);
+        checkForNullability(node.getExpression(), "iterating.over.nullable");
         return super.visitEnhancedForLoop(node, p);
     }
 
@@ -427,7 +427,7 @@ public class NullnessVisitor
      *            the tree where the error is to reported
      */
     private void checkForNullability(ExpressionTree tree,
-    /*@CompilerMessageKey*/ String errMsg) {
+            /*@CompilerMessageKey*/ String errMsg) {
         AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(tree);
         if (!type.hasEffectiveAnnotation(NONNULL))
             checker.report(Result.failure(errMsg, tree), tree);
