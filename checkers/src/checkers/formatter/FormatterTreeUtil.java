@@ -279,7 +279,8 @@ public class FormatterTreeUtil {
          * to work with the result.
          */
         public final Result<TypeMirror>[] getParamTypes() {
-            @SuppressWarnings("unchecked")
+            // One to make javac happy, the other to make Eclipse happy...
+            @SuppressWarnings({"rawtypes", "unchecked"})
             Result<TypeMirror>[] res = new Result[args.size()];
             for (int i=0; i<res.length; ++i){
                 ExpressionTree arg = args.get(i);

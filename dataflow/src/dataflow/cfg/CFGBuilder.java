@@ -4102,7 +4102,8 @@ public class CFGBuilder {
                 break;
             }
 
-            case OTHER: {
+            case OTHER:
+            default:
                 // special node NLLCHK
                 if (tree.toString().startsWith("<*nullchk*>")) {
                     Node expr = scan(tree.getExpression(), p);
@@ -4110,10 +4111,6 @@ public class CFGBuilder {
                     break;
                 }
 
-                // fall-through
-            }
-
-            default:
                 assert false : "Unknown kind (" + kind
                         + ") of unary expression: " + tree;
             }

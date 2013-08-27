@@ -239,7 +239,9 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
      * Subclasses have to override this method to create the appropriate
      * transfer function if they do not follow the checker naming convention.
      */
-    @SuppressWarnings("unchecked")
+    // A more precise type for the parameter would be FlowAnalysis, which
+    // is the type parameter bounded by the current parameter type CFAbstractAnalysis<Value, Store, TransferFunction>.
+    // However, we ran into issues in callers of the method if we used that type.
     public TransferFunction createFlowTransferFunction(CFAbstractAnalysis<Value, Store, TransferFunction> analysis) {
 
         // Try to reflectively load the visitor.
@@ -259,8 +261,10 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
 
         // If a transfer function couldn't be loaded reflectively, return the
         // default.
-        return (TransferFunction) new CFTransfer(
+        @SuppressWarnings("unchecked")
+        TransferFunction ret = (TransferFunction) new CFTransfer(
                 (CFAbstractAnalysis<CFValue, CFStore, CFTransfer>) analysis);
+        return ret;
     }
 
     /**
