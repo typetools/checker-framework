@@ -8,7 +8,7 @@ class FinalVar {
     final @NonNull String iter_view_3 = "Dittos";
     @NonNull String iter_view_4 = "I change but stay non-null";
     iter_view_4 = "new value";
-    @NonNull String iter_view_5 = "I also change but stay non-null";
+    String iter_view_5 = "I also change but stay non-null";
     iter_view_5 = "also new value";
     return new Object() {
       public void useFinalVar() {
