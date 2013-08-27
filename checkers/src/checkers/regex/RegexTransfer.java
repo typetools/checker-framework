@@ -1,9 +1,12 @@
 package checkers.regex;
 
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.ExecutableElement;
-
-import javacutils.AnnotationUtils;
+import checkers.flow.CFAbstractTransfer;
+import checkers.flow.CFStore;
+import checkers.flow.CFValue;
+import checkers.regex.quals.Regex;
+import checkers.util.FlowExpressionParseUtil;
+import checkers.util.FlowExpressionParseUtil.FlowExpressionContext;
+import checkers.util.FlowExpressionParseUtil.FlowExpressionParseException;
 
 import dataflow.analysis.ConditionalTransferResult;
 import dataflow.analysis.FlowExpressions.Receiver;
@@ -16,13 +19,10 @@ import dataflow.cfg.node.MethodAccessNode;
 import dataflow.cfg.node.MethodInvocationNode;
 import dataflow.cfg.node.Node;
 
-import checkers.flow.CFAbstractTransfer;
-import checkers.flow.CFStore;
-import checkers.flow.CFValue;
-import checkers.util.FlowExpressionParseUtil;
-import checkers.util.FlowExpressionParseUtil.FlowExpressionContext;
-import checkers.util.FlowExpressionParseUtil.FlowExpressionParseException;
-import checkers.regex.quals.Regex;
+import javacutils.AnnotationUtils;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
 
 public class RegexTransfer extends
         CFAbstractTransfer<CFValue, CFStore, RegexTransfer> {
@@ -72,9 +72,7 @@ public class RegexTransfer extends
                     if (count instanceof IntegerLiteralNode) {
                         IntegerLiteralNode iln = (IntegerLiteralNode) count;
                         Integer groupCount = iln.getValue();
-                        RegexAnnotatedTypeFactory f = (RegexAnnotatedTypeFactory) factory;
-                        AnnotationMirror regexAnnotation = f
-                                .createRegexAnnotation(groupCount);
+                        AnnotationMirror regexAnnotation = factory.createRegexAnnotation(groupCount);
                         thenStore.insertValue(firstParam, regexAnnotation);
                     } else {
                         AnnotationMirror regexAnnotation = AnnotationUtils
