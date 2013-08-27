@@ -131,6 +131,7 @@ ${build.version} of the 'javac.jar' library."/>
             <arg line="${src.files.spaceseparated_df}"/>
             <arg line="-version"/>
             <arg line="-XDTA:noannotationsincomments"/>
+            <arg line="-Xlint"/>
         </java>
         <!--
         Touch doesn't work on a directory, so can't do:
