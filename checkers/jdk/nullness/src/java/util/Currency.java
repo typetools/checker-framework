@@ -1,6 +1,7 @@
 package java.util;
-import checkers.nullness.quals.*;
-@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
+import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
+import checkers.nullness.quals.Nullable;
 
 public final class Currency implements java.io.Serializable {
     private static final long serialVersionUID = 0L;
@@ -11,5 +12,5 @@ public final class Currency implements java.io.Serializable {
   public String getSymbol() { throw new RuntimeException("skeleton method"); }
   public String getSymbol(Locale a1) { throw new RuntimeException("skeleton method"); }
   public int getDefaultFractionDigits() { throw new RuntimeException("skeleton method"); }
-  public String toString() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public String toString() { throw new RuntimeException("skeleton method"); }
 }

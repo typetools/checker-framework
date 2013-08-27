@@ -16,7 +16,7 @@ class Enumeration {
   <E extends Enum<E>> void mtv(Class<E> p) {}
 
   <T extends Object> T checkNotNull(T ref) { return ref; }
-  
+
   <T extends Object, S extends Object> T checkNotNull2(T ref, S ref2) { return ref; }
 
   class Test<T extends Enum<T>> {
@@ -24,8 +24,10 @@ class Enumeration {
       checkNotNull(p);
     }
 
-    public <S> S firstNonNull(S first, S second) {
-        return first!=null ? first : checkNotNull(second);
+    public <S extends Object> S firstNonNull(S first, S second) {
+      @SuppressWarnings("nullness:known.nonnull")
+      S res = first != null ? first : checkNotNull(second);
+      return res;
     }
   }
 
