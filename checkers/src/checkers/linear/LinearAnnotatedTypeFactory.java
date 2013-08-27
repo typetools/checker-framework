@@ -1,22 +1,16 @@
 package checkers.linear;
 
-import java.util.Set;
+import checkers.linear.quals.Linear;
+import checkers.linear.quals.Unusable;
+import checkers.types.AnnotatedTypeMirror;
+import checkers.types.BasicAnnotatedTypeFactory;
+
+import javacutils.AnnotationUtils;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 
-import com.sun.source.tree.*;
-
-import checkers.basetype.BaseTypeChecker;
-import checkers.flow.DefaultFlow;
-import checkers.flow.DefaultFlowState;
-import checkers.flow.Flow;
-import checkers.linear.quals.*;
-import checkers.types.AnnotatedTypeFactory;
-import checkers.types.AnnotatedTypeMirror;
-import checkers.types.BasicAnnotatedTypeFactory;
-import checkers.util.AnnotationUtils;
-import checkers.util.TreeUtils;
+import com.sun.source.tree.CompilationUnitTree;
 
 /**
  * Adds {@link Unusable} qualifier to a type if it represents:
@@ -48,17 +42,13 @@ public class LinearAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Linear
      */
     @Override
     public void annotateImplicit(Element elt, AnnotatedTypeMirror type) {
-        if (!type.isAnnotated() && elt.getKind().isClass()) {
-            type.addAnnotation(Unusable.class);
+        if (!type.isAnnotatedInHierarchy(LINEAR) && elt.getKind().isClass()) {
+            type.addAnnotation(UNUSABLE);
         }
         super.annotateImplicit(elt, type);
     }
 
-    @Override
-    public Flow createFlow(LinearChecker checker, CompilationUnitTree tree,
-            Set<AnnotationMirror> flowQuals) {
-        return new LinearFlow(checker, tree, flowQuals, this);
-    }
+    // TODO: Re-enable flow with the new dataflow framework.
 
     /**
      * Performs flow-sensitive analysis to mark reference types {@code Linear}
@@ -68,6 +58,7 @@ public class LinearAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Linear
      * an {@link IdentifierTree}.
      *
      */
+    /*
     private class LinearFlow extends DefaultFlow<DefaultFlowState> {
         public LinearFlow(BaseTypeChecker checker, CompilationUnitTree root,
                 Set<AnnotationMirror> annotations, AnnotatedTypeFactory factory) {
@@ -76,7 +67,7 @@ public class LinearAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Linear
 
         /**
          * Case 2: add {@code Unusable} to node type, if it is {@code Linear}.
-         */
+         *
         @Override
         public Void visitIdentifier(IdentifierTree node, Void p) {
             super.visitIdentifier(node, p);
@@ -90,7 +81,7 @@ public class LinearAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Linear
          *
          * The method should be called on every instance of a tree
          * that causes the reference to be "used up".
-         */
+         *
         private void markAsUnusableIfLinear(ExpressionTree node) {
             if (!LinearVisitor.isLocalVarOrParam(node))
                 return;
@@ -105,6 +96,6 @@ public class LinearAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<Linear
                 }
             }
         }
-
     }
+    */
 }

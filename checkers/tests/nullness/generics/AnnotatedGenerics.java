@@ -1,3 +1,4 @@
+import dataflow.quals.*;
 import checkers.nullness.quals.*;
 
 class AnnotatedGenerics {
@@ -7,7 +8,7 @@ class AnnotatedGenerics {
             @Nullable T get() { return f; }
         }
         Test<Iterable<String>> l = new Test<Iterable<String>>();
-        //:: error: (dereference.of.nullable)
+        //:: error: (iterating.over.nullable)
         for (String s : l.get());
     }
 
@@ -50,7 +51,7 @@ class AnnotatedGenerics {
     }
 
     class MyComparable<T> {
-        public int compareTo(@NonNull T a1) { return 0; }
+        @Pure public int compareTo(@NonNull T a1) { return 0; }
     }
 
     <T> T test(java.util.List<? super Iterable<?>> l) {

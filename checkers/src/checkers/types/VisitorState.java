@@ -1,10 +1,16 @@
 package checkers.types;
 
-import com.sun.source.tree.*;
-import com.sun.source.util.TreePath;
-
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.util.AnnotatedTypes;
+
+import dataflow.quals.Pure;
+
+import javacutils.Pair;
+
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
 
 /**
  * Represents the state of a visitor.  Stores the relevant information to find
@@ -21,7 +27,8 @@ public class VisitorState {
     /** The enclosing method tree **/
     private MethodTree mt;
 
-    private AnnotatedTypeMirror assignmentcontext;
+    /** The assignment context is a tree as well as its type. */
+    private Pair<Tree, AnnotatedTypeMirror> assignmentcontext;
 
     /** The visitor's current tree path. */
     private TreePath path;
@@ -54,7 +61,7 @@ public class VisitorState {
         this.mt = mt;
     }
 
-    public void setAssignmentContext(AnnotatedTypeMirror assCtxt) {
+    public void setAssignmentContext(Pair<Tree, AnnotatedTypeMirror> assCtxt) {
         this.assignmentcontext = assCtxt;
     }
 
@@ -97,7 +104,7 @@ public class VisitorState {
         return this.mt;
     }
 
-    public AnnotatedTypeMirror getAssignmentContext() {
+    public Pair<Tree, AnnotatedTypeMirror> getAssignmentContext() {
         return assignmentcontext;
     }
 
@@ -108,6 +115,7 @@ public class VisitorState {
         return this.path;
     }
 
+    @Pure
     @Override
     public String toString() {
         return String.format("method %s (%s) / class %s (%s)",

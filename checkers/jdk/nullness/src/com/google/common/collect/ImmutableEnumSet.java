@@ -23,7 +23,7 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Set;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
 /**
  * Implementation of {@link ImmutableSet} backed by a non-empty {@link
@@ -60,19 +60,19 @@ final class ImmutableEnumSet<E /*extends Enum<E>*/> extends ImmutableSet<E> {
     return Iterators.unmodifiableIterator(delegate.iterator());
   }
 
-  public int size() {
+  @Pure public int size() {
     return delegate.size();
   }
 
-  @Override public boolean contains(/*@Nullable*/ Object object) {
+  @Pure @Override public boolean contains(/*@Nullable*/ Object object) {
     return delegate.contains(object);
   }
 
-  @Override public boolean containsAll(Collection<?> collection) {
+  @Pure @Override public boolean containsAll(Collection<?> collection) {
     return delegate.containsAll(collection);
   }
 
-  @Override public boolean isEmpty() {
+  @Pure @Override public boolean isEmpty() {
     return delegate.isEmpty();
   }
 
@@ -86,17 +86,17 @@ final class ImmutableEnumSet<E /*extends Enum<E>*/> extends ImmutableSet<E> {
   }
 
   @SuppressWarnings("nullness")
-  @Override public boolean equals(/*@Nullable*/ Object object) {
+  @Pure @Override public boolean equals(/*@Nullable*/ Object object) {
     return object == this || delegate.equals(object);
   }
 
   private transient int hash;
 
-  @Override public int hashCode() {
+  @Pure @Override public int hashCode() {
     return (hash == 0) ? hash = delegate.hashCode() : hash;
   }
 
-  @Override public String toString() {
+  @Pure @Override public String toString() {
     return delegate.toString();
   }
 
