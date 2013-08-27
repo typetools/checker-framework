@@ -83,6 +83,7 @@ public class KeyForSubchecker extends BaseTypeChecker<KeyForAnnotatedTypeFactory
             // List<AnnotatedTypeMirror> lhsTVs = lhsDecl.getTypeArguments();
             // List<AnnotatedTypeMirror> rhsTVs = rhsDecl.getTypeArguments();
 
+            // TODO: implementation of @Covariant should be done in the standard TypeHierarchy
             int[] covarVals = null;
             if (lhsElem.getAnnotation(Covariant.class) != null) {
                 covarVals = lhsElem.getAnnotation(Covariant.class).value();
@@ -110,7 +111,9 @@ public class KeyForSubchecker extends BaseTypeChecker<KeyForAnnotatedTypeFactory
 
                 if (covar) {
                     if (!isSubtype(rhsTypeArgs.get(i), lhsTypeArgs.get(i)))
-                        return false;
+                        // TODO: still check whether isSubtypeAsTypeArgument returns true.
+                        // This handles wildcards better.
+                        return isSubtypeAsTypeArgument(rhsTypeArgs.get(i), lhsTypeArgs.get(i));
                 } else {
                     if (!isSubtypeAsTypeArgument(rhsTypeArgs.get(i), lhsTypeArgs.get(i)))
                         return false;
