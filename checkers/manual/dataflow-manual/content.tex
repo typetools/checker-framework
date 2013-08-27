@@ -475,6 +475,7 @@ never be executed at run time?
     It is minimal in the sense that it cannot be decomposed further into subparts
     between which control flow occurs. Examples for such nodes include integer literals,
     an addition node (that performs the mathematical addition of two nodes) or a method call.
+    Control flow such as \code{if} and \code{goto} are not represented as nodes.
     The full list of nodes is given in \autoref{tab:nodes} and several of them
     are described in more detail in \autoref{sec:noteworthy-translations}.
     
@@ -685,7 +686,7 @@ which is properly handled by our translation.}
 
 \subsubsection{Conditional stores}
 
-The dataflow framework extracts information from control-flow splits that occur in if, for, while and switch statements.  In order to have the information available at the split, we eagerly produce two stores contained in a \code{ConditionalTransferResult} after certain boolean-valued expressions.  The stores are called the \emph{then} and \emph{else} stores.  So, for example, after the expression \code{x == null}, two different stores will be created.  The Nullness checkers would produce a then store that maps \code{x} to @Nullable and an else store that maps \code{x} to @NonNull.
+The dataflow framework extracts information from control-flow splits that occur in if, for, while and switch statements.  In order to have the information available at the split, we eagerly produce two stores contained in a \code{ConditionalTransferResult} after certain boolean-valued expressions.  The stores are called the \emph{then} and \emph{else} stores.  So, for example, after the expression \code{x == null}, two different stores will be created.  The Nullness Checkers would produce a then store that maps \code{x} to @Nullable and an else store that maps \code{x} to @NonNull.
 
 The dataflow framework allows a maximum of two stores and when there are two distinct stores, they always refer to the most recent boolean-valued expression.  Stores are propagated through most nodes and they are reversed for conditional not expressions.  The transfer functions for many nodes merge conditional stores back together because they cannot maintain the distinction between them.  Merging just means taking the least upper bound of the two stores and it happens automatically by
 calling \code{TransferInput.getRegularStore}.
@@ -697,12 +698,16 @@ The control flow graph represents all non-exceptional control-flow splits, or br
 
 A key point is that while we \emph{produce} multiple stores after several kinds of boolean-valued expressions, we can only \emph{use} them after a conditional block has split them apart, making them the unique store at some program point.  This constraint dictates how we build the CFG for conditional and and or nodes, as described in \autoref{sec:cond-exp}.  We split the control-flow immediately after computing the value of the left operand and we do not merge it until after the operations of the then or else successor.
 
+\begin{workinprogress}
+  Consider restructuring to make the relationship to \autoref{sec:cond-exp}
+  clearer.
+\end{workinprogress}
 
 \subsubsection{Conditional Expressions}
 \label{sec:cond-exp}
 
 The conditional and (\code{&&}, cf. \jlsref{15.23}) and the conditional
-or (\code{||}, cf. \jlsref{15.24}) expression are subject to short-circuiting:
+or (\code{||}, cf. \jlsref{15.24}) expressions are subject to short-circuiting:
 if evaluating the left-hand side already determines the result, then the right-hand
 side is not evaluated. This semantics is represented in the CFG, and an example
 is given in \autoref{lst:CFGConditionalOr}.
@@ -717,8 +722,20 @@ node is introduced. In the visualization, the truth value is indicated in
 parentheses after the node type. An example of only a single node is given in
 \autoref{lst:CFGConditionalOr2}.
 
+\begin{workinprogress}
+A more directed example and expanded explanation would be helpful here.
+\end{workinprogress}
+
 \flow{ConditionalOr}{Example of a conditional or expression (\code{||}) with short-circuiting
-and usage of two \code{ConditionalOrNode}'s.}
+and usage of two \code{ConditionalOrNode}s.}
+
+\begin{workinprogress}
+  ``two \code{ConditionalOrNode}s:  I see 4.  ``a single
+  \code{ConditionalOrNode}'': I see 3.  It would be helpful to indicate
+  which ones you are referring to.  Are you only talking about the
+  top-level \code{||}?  Showing an example with just one \code{||} might
+  make the example clearer.
+\end{workinprogress}
 
 \flow{ConditionalOr2}{Example of a conditional or expression (\code{||}) with short-circuiting
 and usage of only a single \code{ConditionalOrNode}.}
@@ -738,10 +755,17 @@ For instance, this is shown in the earlier example \autoref{lst:CFGFieldAssignme
 \subsection{AST to CFG Translation}
 \label{sec:ast_to_cfg_translation}
 
-In this section we give a high level overview of the translation process from the
+This section gives a high-level overview of the translation process from the
 abstract syntax tree to the control-flow graph as described in \autoref{sec:cfg-formal}.
 
 First, we define several entities, which will be used in the translation.
+
+\begin{workinprogress}
+What is the intuition behind and extended node?  What does in mean?  How is
+it different than a regular node?  How is it used?  This definition is
+precise, but it doesn't help the reader to place the concept in context and
+therefore it is confusing.
+\end{workinprogress}
 
 \begin{definition}[Extended Node]
     In the translation process the data type \emph{extended node} is used.
@@ -749,6 +773,11 @@ First, we define several entities, which will be used in the translation.
     \begin{itemize}
         \item \textbf{Simple extended node.} An extended node can just be a wrapper for a node
         as defined in \autoref{def:node}.
+        \begin{workinprogress}
+          Are there restrictions on simple extended nodes?  Can they throw
+          an exception?  How are they related to regular simple nodes?  Is
+          it a wrapper only for regular simple nodes?
+        \end{workinprogress}
         \item \textbf{Exception extended node.} Similar to a simple node, an exception extended
         node contains a node, but this node might throw an exception at runtime.
         \item \textbf{Unconditional jump.} An unconditional jump indicates that control
