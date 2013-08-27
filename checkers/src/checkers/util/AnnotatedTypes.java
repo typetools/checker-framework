@@ -1121,9 +1121,6 @@ public class AnnotatedTypes {
         //        "\n   visited: " + visited +
         //        "\n   types: " + Arrays.toString(types));
 
-        // types may contain a null in the context of unchecked cast
-        // TODO: fix this
-
         AnnotatedTypeMirror origalub = alub;
         boolean shouldAnnoOrig = false;
 
@@ -1225,10 +1222,18 @@ public class AnnotatedTypes {
             Set<AnnotationMirror> annotations) {
         Set<AnnotationMirror> bots = AnnotationUtils.createAnnotationSet();
         bots.addAll(atypeFactory.getQualifierHierarchy().getBottomAnnotations());
+
+        // Return true if all the qualifiers that are present are
+        // bottom qualifiers. Allow fewer qualifiers to be present,
+        // which can happen for type variables and wildcards.
+        boolean allbot = true;
+
         for (AnnotationMirror am : annotations) {
-            bots.remove(am);
+            if (!bots.remove(am)) {
+                allbot = false;
+            }
         }
-        return bots.isEmpty();
+        return allbot;
     }
 
     /**
