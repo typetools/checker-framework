@@ -1,14 +1,13 @@
-import java.util.*;
 import checkers.nullness.quals.*;
 
 
 public class OptionsTest {
-  
+
   class MyAnnotation { }
 
   // Annotated identically to java.lang.reflect.Field.getAnnotation
-  public static <T extends @Nullable MyAnnotation>
-  @Nullable T getAnnotation(Class<@NonNull T> obj) {
+  public static <T1 extends @Nullable MyAnnotation>
+  @Nullable T1 getAnnotation(Class<@NonNull T1> obj) {
     return null;
   }
 
@@ -21,10 +20,10 @@ public class OptionsTest {
   }
 
 
-  public static <T extends MyAnnotation>
-  @Nullable T safeGetAnnotationGeneric(Class<@NonNull T> annotationClass) {
-    @Nullable T cast = getAnnotation(annotationClass);
-    @Nullable T annotation = cast;
+  public static <T2 extends MyAnnotation>
+  @Nullable T2 safeGetAnnotationGeneric(Class<@NonNull T2> annotationClass) {
+    @Nullable T2 cast = getAnnotation(annotationClass);
+    @Nullable T2 annotation = cast;
     return annotation;
   }
 
