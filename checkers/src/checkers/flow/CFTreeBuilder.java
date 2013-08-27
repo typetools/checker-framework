@@ -1,10 +1,13 @@
 package checkers.flow;
 
+import checkers.types.AnnotatedTypeMirror;
+
+import javacutils.trees.TreeBuilder;
+
 import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.processing.ProcessingEnvironment;
-
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.AnnotationValueVisitor;
@@ -16,12 +19,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 
-import javacutils.trees.TreeBuilder;
-
-import checkers.types.AnnotatedTypeMirror;
-
 import com.sun.source.tree.Tree;
-
 import com.sun.tools.javac.code.Attribute;
 import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Symbol;
@@ -118,8 +116,7 @@ public class CFTreeBuilder extends TreeBuilder {
             // No recursive annotations.
             AnnotatedTypeMirror.AnnotatedTypeVariable variable =
                 (AnnotatedTypeMirror.AnnotatedTypeVariable) annotatedType;
-            TypeVariable underlyingTypeVar =
-                (TypeVariable)variable.getUnderlyingType();
+            TypeVariable underlyingTypeVar = variable.getUnderlyingType();
             underlyingTypeTree =
                 maker.Ident((Symbol.TypeSymbol)(underlyingTypeVar).asElement());
             break;
@@ -226,59 +223,71 @@ public class CFTreeBuilder extends TreeBuilder {
     }
 
     class AttributeCreator implements AnnotationValueVisitor<Attribute, Void> {
+        @Override
         public Attribute visit(AnnotationValue av, Void p) {
             return av.accept(this, p);
         }
 
+        @Override
         public Attribute visit(AnnotationValue av) {
             return visit(av, null);
         }
 
+        @Override
         public Attribute visitBoolean(boolean b, Void p) {
             TypeMirror booleanType = modelTypes.getPrimitiveType(TypeKind.BOOLEAN);
             return new Attribute.Constant((Type)booleanType, b);
         }
 
+        @Override
         public Attribute visitByte(byte b, Void p) {
             TypeMirror byteType = modelTypes.getPrimitiveType(TypeKind.BYTE);
             return new Attribute.Constant((Type)byteType, b);
         }
 
+        @Override
         public Attribute visitChar(char c, Void p) {
             TypeMirror charType = modelTypes.getPrimitiveType(TypeKind.CHAR);
             return new Attribute.Constant((Type)charType, c);
         }
 
+        @Override
         public Attribute visitDouble(double d, Void p) {
             TypeMirror doubleType = modelTypes.getPrimitiveType(TypeKind.DOUBLE);
             return new Attribute.Constant((Type)doubleType, d);
         }
 
+        @Override
         public Attribute visitFloat(float f, Void p) {
             TypeMirror floatType = modelTypes.getPrimitiveType(TypeKind.FLOAT);
             return new Attribute.Constant((Type)floatType, f);
         }
 
+        @Override
         public Attribute visitInt(int i, Void p) {
             TypeMirror intType = modelTypes.getPrimitiveType(TypeKind.INT);
             return new Attribute.Constant((Type)intType, i);
         }
 
+        @Override
         public Attribute visitLong(long i, Void p) {
             TypeMirror longType = modelTypes.getPrimitiveType(TypeKind.LONG);
             return new Attribute.Constant((Type)longType, i);
         }
 
+        @Override
         public Attribute visitShort(short s, Void p) {
             TypeMirror shortType = modelTypes.getPrimitiveType(TypeKind.SHORT);
             return new Attribute.Constant((Type)shortType, s);
         }
 
+        @Override
         public Attribute visitString(String s, Void p) {
             TypeMirror stringType = elements.getTypeElement("java.lang.String").asType();
             return new Attribute.Constant((Type)stringType, s);
         }
 
+        @Override
         public Attribute visitType(TypeMirror t, Void p) {
             if (t instanceof Type) {
                 return new Attribute.Class(javacTypes, (Type)t);
@@ -288,6 +297,7 @@ public class CFTreeBuilder extends TreeBuilder {
             return null;
         }
 
+        @Override
         public Attribute visitEnumConstant(VariableElement c, Void p) {
             if (c instanceof Symbol.VarSymbol) {
                 Symbol.VarSymbol sym = (Symbol.VarSymbol) c;
@@ -300,10 +310,12 @@ public class CFTreeBuilder extends TreeBuilder {
             return null;
         }
 
+        @Override
         public Attribute visitAnnotation(AnnotationMirror a, Void p) {
             return attributeFromAnnotationMirror(a);
         }
 
+        @Override
         public Attribute visitArray(java.util.List<? extends AnnotationValue> vals, Void p) {
             List<Attribute> valAttrs = List.nil();
             for (AnnotationValue av : vals) {
@@ -313,6 +325,7 @@ public class CFTreeBuilder extends TreeBuilder {
             return new Attribute.Array((Type)arrayType, valAttrs);
         }
 
+        @Override
         public Attribute visitUnknown(AnnotationValue av, Void p) {
             assert false : "Unexpected type of AnnotationValue: " + av.getClass();
             return null;

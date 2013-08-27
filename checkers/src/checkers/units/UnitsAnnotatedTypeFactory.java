@@ -138,6 +138,7 @@ public class UnitsAnnotatedTypeFactory extends
                         // unqualified.
                         break;
                     }
+                    break;
                 case MULTIPLY:
                     if (noUnits(lht)) {
                         type.addAnnotations(rht.getAnnotations());

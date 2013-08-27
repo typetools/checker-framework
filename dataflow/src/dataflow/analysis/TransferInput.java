@@ -1,6 +1,7 @@
 package dataflow.analysis;
 
 import dataflow.cfg.node.Node;
+import dataflow.util.HashCodeUtils;
 
 /**
  * {@code TransferInput} is used as the input type of the individual transfer
@@ -252,6 +253,11 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
             }
         }
         return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return HashCodeUtils.hash(this.analysis, this.node, this.store, this.thenStore, this.elseStore);
     }
 
     @Override
