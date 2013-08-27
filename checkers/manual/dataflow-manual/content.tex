@@ -89,7 +89,8 @@ This section gives an overview of the major Java classes and interfaces in the i
     \code{class dataflow.cfg.block.ExceptionBlockImpl extends SingleSuccessorBlockImpl implements
         ExceptionBlock}
         
-    A SpecialBlock represents method entry or exit, including exceptional exit.
+    A SpecialBlock represents method entry or exit, including exceptional
+    exit which is represented separately from normal exit.
 
     \code{interface dataflow.cfg.block.SpecialBlock extends SingleSuccessorBlock}
 
@@ -723,7 +724,7 @@ parentheses after the node type. An example of only a single node is given in
 \autoref{lst:CFGConditionalOr2}.
 
 \begin{workinprogress}
-A more directed example and expanded explanation would be helpful here.
+A more directed (that is, simple) example and expanded explanation would be helpful here.
 \end{workinprogress}
 
 \flow{ConditionalOr}{Example of a conditional or expression (\code{||}) with short-circuiting
