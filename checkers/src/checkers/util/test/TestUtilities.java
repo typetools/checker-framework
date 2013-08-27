@@ -25,10 +25,10 @@ public final class TestUtilities {
     }
 
     /**
-     * Checks if the given file is a java test file not to be ignored.
+     * Checks if the given file is a Java test file not to be ignored.
      *
-     * Returns true if it is a file and does not contain
-     * {@code @skip-test} in the declaration comment of the file.
+     * Returns true if {@code file} is a {@code .java} file and
+     * it does not contain {@code @skip-test} anywhere in the file.
      */
     public static boolean isJavaTestFile(File file) {
         if (!isJavaFile(file))
@@ -39,20 +39,14 @@ public final class TestUtilities {
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }
-        boolean seenKeyword = false;
         while (in.hasNext()) {
             String nextLine = in.nextLine();
             if (nextLine.contains("@skip-test")) {
                 in.close();
                 return false;
-            }
-            if (nextLine.contains("class")
-                    || nextLine.contains("interface")
-                    || nextLine.contains("enum"))
-                seenKeyword = true;
         }
         in.close();
-        return seenKeyword;
+        return true;
     }
 
     /**
