@@ -21,6 +21,7 @@ import dataflow.cfg.node.ThisLiteralNode;
 
 import javacutils.TreeUtils;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -85,13 +86,13 @@ public class InitializationTransfer<V extends CFAbstractValue<V>, T extends Init
     }
 
     /**
-     * Returns the set of fields that can safely be considered initialized after
+     * Returns the fields that can safely be considered initialized after
      * the method call {@code node}.
      */
-    protected Set<Element> initializedFieldsAfterCall(
+    protected List<Element> initializedFieldsAfterCall(
             MethodInvocationNode node,
             ConditionalTransferResult<V, S> transferResult) {
-        Set<Element> result = new HashSet<>();
+        List<Element> result = new ArrayList<>();
         MethodInvocationTree tree = node.getTree();
         ExecutableElement method = TreeUtils.elementFromUse(tree);
         boolean isConstructor = method.getSimpleName().contentEquals("<init>");
@@ -132,7 +133,7 @@ public class InitializationTransfer<V extends CFAbstractValue<V>, T extends Init
      * Adds all the fields of the class {@code clazzElem} that have the
      * 'invariant annotation' to the set of initialized fields {@code result}.
      */
-    protected void markInvariantFieldsAsInitialized(Set<Element> result,
+    protected void markInvariantFieldsAsInitialized(List<Element> result,
             TypeElement clazzElem) {
         List<VariableElement> fields = ElementFilter.fieldsIn(clazzElem
                 .getEnclosedElements());
@@ -205,7 +206,7 @@ public class InitializationTransfer<V extends CFAbstractValue<V>, T extends Init
             TransferInput<V, S> in) {
         TransferResult<V, S> result = super.visitMethodInvocation(n, in);
         assert result instanceof ConditionalTransferResult;
-        Set<Element> newlyInitializedFields = initializedFieldsAfterCall(n,
+        List<Element> newlyInitializedFields = initializedFieldsAfterCall(n,
                 (ConditionalTransferResult<V, S>) result);
         if (newlyInitializedFields.size() > 0) {
             for (Element f : newlyInitializedFields) {

@@ -23,6 +23,7 @@ import javacutils.Pair;
 import javacutils.TreeUtils;
 import javacutils.TypesUtils;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -171,12 +172,12 @@ public class NullnessAnnotatedTypeFactory
     }
 
     @Override
-    public Set<VariableTree> getUninitializedInvariantFields(
+    public List<VariableTree> getUninitializedInvariantFields(
             NullnessStore store, TreePath path, boolean isStatic,
             List<? extends AnnotationMirror> receiverAnnotations) {
-        Set<VariableTree> candidates = super.getUninitializedInvariantFields(
+        List<VariableTree> candidates = super.getUninitializedInvariantFields(
                 store, path, isStatic, receiverAnnotations);
-        Set<VariableTree> result = new HashSet<>();
+        List<VariableTree> result = new ArrayList<>();
         for (VariableTree c : candidates) {
             AnnotatedTypeMirror type = getAnnotatedType(c);
             boolean isPrimitive = TypesUtils.isPrimitive(type
