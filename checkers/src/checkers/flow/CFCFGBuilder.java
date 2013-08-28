@@ -192,8 +192,13 @@ public class CFCFGBuilder extends CFGBuilder {
                     treeBuilder.buildMethodInvocation(iteratorSelect);
                 handleArtificialTree(iteratorCall);
 
+                // We do not want to cache types flow-insensitive types
+                // retrieved during CFG building.
+                boolean oldShouldCache = factory.shouldCache;
+                factory.shouldCache = false;
                 AnnotatedTypeMirror annotatedIteratorType =
                     factory.getAnnotatedType(iteratorCall);
+                factory.shouldCache = oldShouldCache;
 
                 Tree annotatedIteratorTypeTree =
                     ((CFTreeBuilder)treeBuilder).buildAnnotatedType(annotatedIteratorType);
@@ -308,8 +313,13 @@ public class CFCFGBuilder extends CFGBuilder {
                 // TODO: Shift any labels after the initialization of the
                 // temporary array variable.
 
+                // We do not want to cache types flow-insensitive types
+                // retrieved during CFG building.
+                boolean oldShouldCache = factory.shouldCache;
+                factory.shouldCache = false;
                 AnnotatedTypeMirror annotatedArrayType =
                     factory.getAnnotatedType(expression);
+                factory.shouldCache = oldShouldCache;
 
                 assert (annotatedArrayType instanceof AnnotatedTypeMirror.AnnotatedArrayType) :
                     "ArrayType must be represented by AnnotatedArrayType";
