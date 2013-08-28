@@ -67,6 +67,10 @@ public abstract class UnderlyingAST {
             return classTree;
         }
 
+        @Override
+        public String toString() {
+            return "CFGMethod(\n" + method + "\n)";
+        }
     }
 
     /**
@@ -84,6 +88,11 @@ public abstract class UnderlyingAST {
         @Override
         public Tree getCode() {
             return code;
+        }
+
+        @Override
+        public String toString() {
+            return "CFGStatement(\n" + code + "\n)";
         }
     }
 }
