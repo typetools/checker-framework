@@ -444,6 +444,13 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
     }
 
     /**
+     * @return The value of effectively final local variables.
+     */
+    public HashMap<Element, Value> getFinalLocalValues() {
+        return flowResult.getFinalLocalValues();
+    }
+
+    /**
      * Perform a dataflow analysis over a single class tree and its nested
      * classes.
      */
