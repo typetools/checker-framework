@@ -10,13 +10,16 @@ import dataflow.cfg.block.ExceptionBlock;
 import dataflow.cfg.block.RegularBlock;
 import dataflow.cfg.block.SingleSuccessorBlock;
 import dataflow.cfg.block.SpecialBlock;
+import dataflow.cfg.node.AssignmentNode;
 import dataflow.cfg.node.LocalVariableNode;
 import dataflow.cfg.node.Node;
 import dataflow.cfg.node.ReturnNode;
 
+import javacutils.ElementUtils;
 import javacutils.Pair;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +28,7 @@ import java.util.PriorityQueue;
 import java.util.Set;
 
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 
@@ -80,6 +84,9 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
 
     /** Abstract values of nodes. */
     protected IdentityHashMap<Node, A> nodeValues;
+
+    /** Map from (effectively final) local variable elements to their abstract value. */
+    public HashMap<Element, A> finalLocalValues;
 
     /**
      * The node that is currently handled in the analysis (if it is running).
@@ -301,6 +308,18 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
             // a given return statement
             storesAtReturnStatements.put((ReturnNode) node, transferResult);
         }
+        if (node instanceof AssignmentNode) {
+            // store the flow-refined value for effectively final local variables
+            AssignmentNode assignment = (AssignmentNode) node;
+            Node lhst = assignment.getTarget();
+            if (lhst instanceof LocalVariableNode) {
+                LocalVariableNode lhs = (LocalVariableNode) lhst;
+                Element elem = lhs.getElement();
+                if (ElementUtils.isEffectivelyFinal(elem)) {
+                    finalLocalValues.put(elem, transferResult.getResultValue());
+                }
+            }
+        }
         return transferResult;
     }
 
@@ -311,6 +330,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
         storesAtReturnStatements = new IdentityHashMap<>();
         worklist = new Worklist();
         nodeValues = new IdentityHashMap<>();
+        finalLocalValues = new HashMap<>();
         worklist.add(cfg.getEntryBlock());
 
         List<LocalVariableNode> parameters = null;
@@ -608,7 +628,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
     public AnalysisResult<A, S> getResult() {
         assert !isRunning;
         IdentityHashMap<Tree, Node> treeLookup = cfg.getTreeLookup();
-        return new AnalysisResult<>(nodeValues, stores, treeLookup);
+        return new AnalysisResult<>(nodeValues, stores, treeLookup, finalLocalValues);
     }
 
     /**
