@@ -434,6 +434,11 @@ public class FlowExpressions {
             this.element = localVar.getElement();
         }
 
+        public LocalVariable(Element elem) {
+            super(ElementUtils.getType(elem));
+            this.element = elem;
+        }
+
         @Override
         public boolean equals(Object obj) {
             if (obj == null || !(obj instanceof LocalVariable)) {
