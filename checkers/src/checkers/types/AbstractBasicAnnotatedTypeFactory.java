@@ -694,6 +694,12 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
     protected void annotateImplicitWithFlow(Tree tree, AnnotatedTypeMirror type) {
         assert useFlow : "useFlow must be true to use flow analysis";
 
+        // For performance reasons, we require that getAnnotatedType is called
+        // on the ClassTree before it's called on any code contained in the class,
+        // so that we can perform flow analysis on the class.  Previously we
+        // used TreePath.getPath to find enclosing classes, but that call
+        // alone consumed more than 10% of execution time.  See BaseTypeVisitor
+        // .visitClass for the call to getAnnotatedType that triggers analysis.
         if (tree instanceof ClassTree) {
             ClassTree classTree = (ClassTree) tree;
             if (!scannedClasses.containsKey(classTree)) {
