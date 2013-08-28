@@ -14,6 +14,7 @@ import dataflow.analysis.ConditionalTransferResult;
 import dataflow.analysis.FlowExpressions;
 import dataflow.analysis.FlowExpressions.ClassName;
 import dataflow.analysis.FlowExpressions.FieldAccess;
+import dataflow.analysis.FlowExpressions.LocalVariable;
 import dataflow.analysis.FlowExpressions.Receiver;
 import dataflow.analysis.FlowExpressions.ThisReference;
 import dataflow.analysis.RegularTransferResult;
@@ -52,6 +53,7 @@ import javacutils.TreeUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -258,6 +260,12 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
                             element);
                     info.insertValue(field, value);
                 }
+            }
+
+            // add information about effectively final variables (from outer scopes)
+            for (Entry<Element, V> e : analysis.atypeFactory.getFinalLocalValues().entrySet()) {
+                LocalVariable l = new LocalVariable(e.getKey());
+                info.insertValue(l, e.getValue());
             }
         }
 

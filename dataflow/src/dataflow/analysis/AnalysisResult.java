@@ -1,8 +1,11 @@
 package dataflow.analysis;
 
+import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import javax.lang.model.element.Element;
 
 import dataflow.cfg.block.Block;
 import dataflow.cfg.block.ExceptionBlock;
@@ -29,6 +32,9 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
     /** Map from AST {@link Tree}s to {@link Node}s. */
     protected final IdentityHashMap<Tree, Node> treeLookup;
 
+    /** Map from (effectively final) local variable elements to their abstract value. */
+    protected final HashMap<Element, A> finalLocalValues;
+
     /**
      * The stores before every method call.
      */
@@ -39,10 +45,11 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
      */
     public AnalysisResult(Map<Node, A> nodeValues,
             IdentityHashMap<Block, TransferInput<A, S>> stores,
-            IdentityHashMap<Tree, Node> treeLookup) {
+            IdentityHashMap<Tree, Node> treeLookup, HashMap<Element, A> finalLocalValues) {
         this.nodeValues = new IdentityHashMap<>(nodeValues);
         this.treeLookup = new IdentityHashMap<>(treeLookup);
         this.stores = stores;
+        this.finalLocalValues = finalLocalValues;
     }
 
     /**
@@ -52,6 +59,7 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
         nodeValues = new IdentityHashMap<>();
         treeLookup = new IdentityHashMap<>();
         stores = new IdentityHashMap<>();
+        finalLocalValues = new HashMap<>();
     }
 
     /**
@@ -67,6 +75,16 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
         for (Entry<Block, TransferInput<A, S>> e : other.stores.entrySet()) {
             stores.put(e.getKey(), e.getValue());
         }
+        for (Entry<Element, A> e : other.finalLocalValues.entrySet()) {
+            finalLocalValues.put(e.getKey(), e.getValue());
+        }
+    }
+
+    /**
+     * @return The value of effectively final local variables.
+     */
+    public HashMap<Element, A> getFinalLocalValues() {
+        return finalLocalValues;
     }
 
     /**
