@@ -165,11 +165,13 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
                 TransferInput<A, S> storeBefore = getStoreBefore(rb);
                 currentStore = storeBefore.copy();
                 TransferResult<A, S> transferResult = null;
+                boolean addToWorklistAgain = false;
                 for (Node n : rb.getContents()) {
                     transferResult = callTransferFunction(n, currentStore);
                     A val = transferResult.getResultValue();
                     if (val != null) {
-                        nodeValues.put(n, val);
+                        final boolean didNodeValuesChange = updateNodeValues(n, val);
+                        addToWorklistAgain = didNodeValuesChange || addToWorklistAgain;
                     }
                     currentStore = new TransferInput<>(n, this, transferResult);
                 }
@@ -178,7 +180,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
                 // propagate store to successors
                 Block succ = rb.getSuccessor();
                 assert succ != null : "regular basic block without non-exceptional successor unexpected";
-                addStoreBefore(succ, currentStore);
+                addStoreBefore(succ, currentStore, addToWorklistAgain);
                 break;
             }
 
@@ -192,15 +194,16 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
                 TransferResult<A, S> transferResult = callTransferFunction(
                         node, currentStore);
                 A val = transferResult.getResultValue();
+                boolean addToWorklistAgain = false;
                 if (val != null) {
-                    nodeValues.put(node, val);
+                    addToWorklistAgain = updateNodeValues(node, val);
                 }
 
                 // propagate store to successor
                 Block succ = eb.getSuccessor();
                 if (succ != null) {
                     currentStore = new TransferInput<>(node, this, transferResult);
-                    addStoreBefore(succ, currentStore);
+                    addStoreBefore(succ, currentStore, addToWorklistAgain);
                 }
 
                 // propagate store to exceptional successors
@@ -212,11 +215,11 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
                     if (exceptionalStore != null) {
                         for (Block exceptionSucc : e.getValue()) {
                             addStoreBefore(exceptionSucc, new TransferInput<>(node,
-                                    this, exceptionalStore));
+                                    this, exceptionalStore), addToWorklistAgain);
                         }
                     } else {
                         for (Block exceptionSucc : e.getValue()) {
-                            addStoreBefore(exceptionSucc, storeBefore.copy());
+                            addStoreBefore(exceptionSucc, storeBefore.copy(), addToWorklistAgain);
                         }
                     }
                 }
@@ -234,9 +237,9 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
                 Block thenSucc = cb.getThenSuccessor();
                 Block elseSucc = cb.getElseSuccessor();
                 addStoreBefore(thenSucc,
-                        new TransferInput<>(null, this, store.getThenStore()));
+                        new TransferInput<>(null, this, store.getThenStore()), false);
                 addStoreBefore(elseSucc,
-                        new TransferInput<>(null, this, store.getElseStore()));
+                        new TransferInput<>(null, this, store.getElseStore()), false);
                 break;
             }
 
@@ -246,7 +249,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
                 SpecialBlock sb = (SpecialBlock) b;
                 Block succ = sb.getSuccessor();
                 if (succ != null) {
-                    addStoreBefore(succ, getStoreBefore(b));
+                    addStoreBefore(succ, getStoreBefore(b), false);
                 }
                 break;
             }
@@ -259,6 +262,19 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
 
         assert isRunning == true;
         isRunning = false;
+    }
+
+    /**
+     * Updates the value of node {@code n} to {@code val}, and returns true if
+     * anything in {@code nodeValues} changed (i.e., if we need to iterate
+     * further).
+     */
+    protected boolean updateNodeValues(Node n, A val) {
+        A oldVal = nodeValues.get(n);
+        nodeValues.put(n, val);
+        boolean result = ((oldVal == null || val == null) && val != oldVal)
+                || (!oldVal.equals(val));
+        return result;
     }
 
     /**
@@ -330,7 +346,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
      * Add a store before the basic block <code>b</code> by merging with the
      * existing store for that location.
      */
-    protected void addStoreBefore(Block b, TransferInput<A, S> s) {
+    protected void addStoreBefore(Block b, TransferInput<A, S> s, boolean addToWorklistAgain) {
         TransferInput<A, S> storeBefore = getStoreBefore(b);
         TransferInput<A, S> newStoreBefore;
         if (storeBefore == null) {
@@ -339,7 +355,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
             newStoreBefore = storeBefore.leastUpperBound(s);
         }
         stores.put(b, newStoreBefore);
-        if (storeBefore == null || !storeBefore.equals(newStoreBefore)) {
+        if (storeBefore == null || addToWorklistAgain || !storeBefore.equals(newStoreBefore)) {
             addToWorklist(b);
         }
     }
@@ -389,6 +405,11 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
             @Override
             public int hashCode() {
                 return block.hashCode();
+            }
+
+            @Override
+            public String toString() {
+                return "" + index;
             }
         }
 
@@ -465,6 +486,15 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
                 }
             }
             return result;
+        }
+
+        @Override
+        public String toString() {
+            List<Item> items = new ArrayList<>();
+            for (Item e : queue) {
+                items.add(e);
+            }
+            return "Worklist(" + items + ")";
         }
     }
 
