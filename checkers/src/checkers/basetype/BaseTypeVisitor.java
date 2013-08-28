@@ -204,6 +204,11 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
         MethodTree preMT = visitorState.getMethodTree();
         Pair<Tree, AnnotatedTypeMirror> preAssCtxt = visitorState.getAssignmentContext();
 
+        // For flow-sensitive type checking, it's significant that we get the
+        // annotated type of the ClassTree before checking the type of any
+        // code within the class.  The call below causes flow analysis to
+        // be run over the class.  See AbstractBasicAnnotatedTypeFactory
+        // .annotateImplicitWithFlow where analysis is performed.
         visitorState.setClassType(atypeFactory.getAnnotatedType(node));
         visitorState.setClassTree(node);
         visitorState.setMethodReceiver(null);

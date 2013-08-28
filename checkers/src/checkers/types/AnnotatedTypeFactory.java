@@ -245,7 +245,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /** Should results be cached? Disable for better debugging. */
     protected static boolean SHOULD_CACHE = true;
-    protected boolean shouldCache = SHOULD_CACHE;
+    public boolean shouldCache = SHOULD_CACHE;
 
     /** Should the cached result be used, or should it be freshly computed? */
     protected static boolean SHOULD_READ_CACHE = true;
