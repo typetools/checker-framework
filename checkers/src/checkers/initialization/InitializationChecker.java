@@ -22,9 +22,11 @@ import javacutils.AnnotationUtils;
 import javacutils.TypesUtils;
 
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -138,8 +140,8 @@ public abstract class InitializationChecker<Factory extends InitializationAnnota
     /**
      * Returns a list of all fields of the given class
      */
-    public static Set<VariableTree> getAllFields(ClassTree clazz) {
-        Set<VariableTree> fields = new HashSet<>();
+    public static List<VariableTree> getAllFields(ClassTree clazz) {
+        List<VariableTree> fields = new ArrayList<>();
         for (Tree t : clazz.getMembers()) {
             if (t.getKind().equals(Tree.Kind.VARIABLE)) {
                 VariableTree vt = (VariableTree) t;
@@ -292,7 +294,7 @@ public abstract class InitializationChecker<Factory extends InitializationAnnota
      * and
      * {@link InitializationQualifierHierarchy#leastUpperBoundInitialization(AnnotationMirror, AnnotationMirror)}
      * for appropriate qualifiers.
-     * See class {@link checkers.nullness.AbstractNullnessChecker.NullnessQualifierHierarchy} for an example.
+     * See proctected subclass NullnessQualifierHierarchy within class {@link checkers.nullness.AbstractNullnessChecker} for an example.
      */
     protected abstract class InitializationQualifierHierarchy extends MultiGraphQualifierHierarchy {
         protected Types types = processingEnv.getTypeUtils();

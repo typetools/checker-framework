@@ -1,6 +1,8 @@
 package checkers.initialization;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -34,13 +36,13 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
         CFAbstractStore<V, S> {
 
     /** The list of fields that are initialized. */
-    protected final Set<Element> initializedFields;
+    protected final List<Element> initializedFields;
 
     public InitializationStore(
             CFAbstractAnalysis<V, S, ?> analysis,
             boolean sequentialSemantics) {
         super(analysis, sequentialSemantics);
-        initializedFields = new HashSet<>();
+        initializedFields = new ArrayList<>();
     }
 
     /**
@@ -89,7 +91,7 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
 
         // Are there fields that have the 'invariant' annotations and are in the
         // store?
-        Set<FlowExpressions.FieldAccess> invariantFields = new HashSet<>();
+        List<FlowExpressions.FieldAccess> invariantFields = new ArrayList<>();
         for (Entry<FlowExpressions.FieldAccess, V> e : fieldValues.entrySet()) {
             FlowExpressions.FieldAccess fieldAccess = e.getKey();
             Set<AnnotationMirror> declaredAnnos = atypeFactory.getAnnotatedType(fieldAccess.getField()).getAnnotations();
@@ -109,7 +111,7 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
     /** A copy constructor. */
     public InitializationStore(S other) {
         super(other);
-        initializedFields = new HashSet<>(other.initializedFields);
+        initializedFields = new ArrayList<>(other.initializedFields);
     }
 
     /**

@@ -20,6 +20,7 @@ import javacutils.ElementUtils;
 import javacutils.TreeUtils;
 import javacutils.TypesUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -218,16 +219,16 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
     }
 
     /**
-     * Returns the set of (non-static) fields that have the invariant annotation
+     * Returns the (non-static) fields that have the invariant annotation
      * and are not yet initialized in a given store.
      */
-    public Set<VariableTree> getUninitializedInvariantFields(Store store,
+    public List<VariableTree> getUninitializedInvariantFields(Store store,
             TreePath path, boolean isStatic,
             List<? extends AnnotationMirror> receiverAnnotations) {
         ClassTree currentClass = TreeUtils.enclosingClass(path);
-        Set<VariableTree> fields = InitializationChecker
+        List<VariableTree> fields = InitializationChecker
                 .getAllFields(currentClass);
-        Set<VariableTree> violatingFields = new HashSet<>();
+        List<VariableTree> violatingFields = new ArrayList<>();
         AnnotationMirror invariant = checker.getFieldInvariantAnnotation();
         for (VariableTree field : fields) {
             if (isUnused(field, receiverAnnotations)) {
@@ -248,15 +249,15 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
     }
 
     /**
-     * Returns the set of (non-static) fields that have the invariant annotation
+     * Returns the (non-static) fields that have the invariant annotation
      * and are initialized in a given store.
      */
-    public Set<VariableTree> getInitializedInvariantFields(Store store,
+    public List<VariableTree> getInitializedInvariantFields(Store store,
             TreePath path) {
         ClassTree currentClass = TreeUtils.enclosingClass(path);
-        Set<VariableTree> fields = InitializationChecker
+        List<VariableTree> fields = InitializationChecker
                 .getAllFields(currentClass);
-        Set<VariableTree> initializedFields = new HashSet<>();
+        List<VariableTree> initializedFields = new ArrayList<>();
         AnnotationMirror invariant = checker.getFieldInvariantAnnotation();
         for (VariableTree field : fields) {
             if (!ElementUtils.isStatic(TreeUtils.elementFromDeclaration(field))) {

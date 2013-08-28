@@ -25,6 +25,7 @@ import javacutils.Pair;
 import javacutils.TreeUtils;
 
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -264,7 +265,7 @@ public class InitializationVisitor<Checker extends InitializationChecker<? exten
         return super.visitBlock(node, p);
     }
 
-    protected Set<VariableTree> initializedFields = new HashSet<>();
+    protected List<VariableTree> initializedFields = new ArrayList<>();
     @Override
     public Void visitClass(ClassTree node, Void p) {
 
@@ -285,7 +286,7 @@ public class InitializationVisitor<Checker extends InitializationChecker<? exten
                             .getFieldValues()) {
                         store.addInitializedField(t.first);
                     }
-                    final Set<VariableTree> init = atypeFactory
+                    final List<VariableTree> init = atypeFactory
                             .getInitializedInvariantFields(store,
                                     getCurrentPath());
                     initializedFields.addAll(init);
@@ -396,7 +397,7 @@ public class InitializationVisitor<Checker extends InitializationChecker<? exten
         // If the store is null, then the constructor cannot terminate
         // successfully
         if (store != null) {
-            Set<VariableTree> violatingFields = atypeFactory.getUninitializedInvariantFields(store, getCurrentPath(),
+            List<VariableTree> violatingFields = atypeFactory.getUninitializedInvariantFields(store, getCurrentPath(),
                             staticFields, receiverAnnotations);
             if (!staticFields) {
                 // remove fields that have already been initialized by an
