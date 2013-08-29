@@ -268,6 +268,10 @@ ${build.version} of the 'javac.jar' library."/>
             and documentation.">
     </target>
 
+    <target name="bindist-all" depends="-prep-bindist,jar,all.jdks.jar,bindist-nojdk"
+            description="Build checkers.jar, checker-quals.jar, jdkX.jar.  This comprises all jars needed to run the framework.">
+    </target>
+
     <!-- This creates checkers.jar -->
     <target name="jar" depends="build,checkers-quals-jar"
             description="Create checkers.jar file">
@@ -363,7 +367,7 @@ ${build.version} of the 'javac.jar' library."/>
 
     <!-- Used to guarantee that targets executed from other ant scripts do not cause unnecessary rebuilds -->
     <target name="all-tests-nojdk" depends="jar, all-tests-nojar"
-            description="Run tests for all checkers, WITHOUT updating jdk.jar">
+            description="Run tests for all checkers, WITHOUT updating jdkX.jar">
     </target>
 
     <!-- Used to guarantee that targets executed from other ant scripts do not cause unnecessary rebuilds -->
@@ -542,7 +546,7 @@ ${build.version} of the 'javac.jar' library."/>
       description="Run extra tests for the Nullness Checker"/>
 
     <target name="nullness-extra-tests-nojdk" depends="bindist-nojdk,build-tests"
-      description="Run extra tests for the Nullness Checker, WITHOUT updating jdk.jar">
+      description="Run extra tests for the Nullness Checker, WITHOUT updating jdkX.jar">
       <exec executable="chmod">
         <arg line="+x ${basedir}/binary/javac"/>
       </exec>
@@ -792,7 +796,7 @@ ${build.version} of the 'javac.jar' library."/>
     </target>
 
     <target name="jdk.jar" depends="jar"
-            description="creates the instrumented jdk.jar using the JDK specified by JAVA_HOME">
+            description="creates the instrumented jdkX.jar using the JDK specified by JAVA_HOME">
 
       <exec executable="make" failonerror="true">
          <arg value="LANGTOOLS=${jsr308.langtools}"/>
@@ -805,16 +809,12 @@ ${build.version} of the 'javac.jar' library."/>
 
     </target>
 
-    <target name="bindist-all" depends="-prep-bindist,jar,all.jdks.jar,bindist-nojdk"
-            description="Build checkers.jar, checker-quals.jar, jdk6.jar and jdk7.jar.  This comprises all jars needed to run the framework.">
-    </target>
-
     <target name="bindist" depends="-prep-bindist,jar,jdk.jar,bindist-nojdk"
             description="Build checkers.jar, checker-quals.jar, and jdk(V).jar where (V) is the major version number of java in JAVA_HOME (only Java 6/7 are currently supported).  This comprises all jars needed to run the framework.">
     </target>
 
     <target name="bindist-nojdk" depends="-prep-bindist,jar"
-            description="Build checkers.jar, checker-quals.jar WITHOUT updating jdk6.jar or jdk7.jar.  Move all relevant files to the binary directory. ">
+            description="Build checkers.jar, checker-quals.jar WITHOUT updating jdkX.jar.  Move all relevant files to the binary directory.">
 
         <copy todir="binary" file="${javac.lib}"      overwrite="true" failonerror="true" />
 
