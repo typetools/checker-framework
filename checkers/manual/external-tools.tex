@@ -310,9 +310,10 @@ is one that was not specified on the command line, but for which the source
 code is newer than the \code{.class} file.)  This is the default, but
 supplying the argument explicitly suppresses a compiler warning.
 
-The \code{-Awarns ...} compiler argument is optional, and causes the checker to
-treat errors as warnings so that compilation does not fail even if
-pluggable type-checking fails; see Section~\ref{checker-options}.
+%% -Awarns was removed above without removing it here.
+% The \code{-Awarns} compiler argument is optional, and causes the checker to
+% treat errors as warnings so that compilation does not fail even if
+% pluggable type-checking fails; see Section~\ref{checker-options}.
 
 \item The \code{check-nullness} target:
 
@@ -468,7 +469,7 @@ Note: The Checker Framework Maven plugin will only work with Checker Framework v
     <checkerFrameworkVersion>1.6.2-johndoe</checkerFrameworkVersion>
 \end{Verbatim}
 
-To disable the Checker Framework check without removing it from your pom file you can use the /code{skip} option.
+To disable the Checker Framework check without removing it from your pom file you can use the \code{skip} option.
 \begin{Verbatim}
     <skip>true</skip>
 \end{Verbatim}

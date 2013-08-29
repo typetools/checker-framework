@@ -7,6 +7,8 @@ import checkers.interning.InterningVisitor;
 import com.sun.source.tree.*;
 import com.sun.source.util.*;
 
+import javacutils.TreeUtils;
+
 /**
  * Utilities for determining tree-based heuristics.
  *

@@ -1,8 +1,13 @@
 package checkers.interning.quals;
 
-import java.lang.annotation.*;
+import checkers.quals.PolymorphicQualifier;
+import checkers.quals.TypeQualifier;
 
-import checkers.quals.*;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * A polymorphic qualifier for the Interning type system.
@@ -14,9 +19,9 @@ import checkers.quals.*;
  *
  * @checker.framework.manual #interning-checker Interning Checker
  */
-@Documented
 @TypeQualifier
 @PolymorphicQualifier
+@Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface PolyInterned {}

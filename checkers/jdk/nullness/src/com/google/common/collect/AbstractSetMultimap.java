@@ -24,6 +24,8 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import dataflow.quals.*;
+
 /**
  * Basic implementation of the {@link SetMultimap} interface. It's a wrapper
  * around {@link AbstractMultimap} that converts the returned collections into
@@ -51,7 +53,7 @@ import javax.annotation.Nullable;
     return (Set<V>) super.get(key);
   }
 
-  @Override public Set<Map.Entry<K, V>> entries() {
+  @SideEffectFree @Override public Set<Map.Entry<K, V>> entries() {
     return (Set<Map.Entry<K, V>>) super.entries();
   }
 
@@ -88,7 +90,7 @@ import javax.annotation.Nullable;
    * contain the same values. Equality does not depend on the ordering of keys
    * or values.
    */
-  @Override public boolean equals(@Nullable Object object) {
+  @Pure @Override public boolean equals(@Nullable Object object) {
     return super.equals(object);
   }
   

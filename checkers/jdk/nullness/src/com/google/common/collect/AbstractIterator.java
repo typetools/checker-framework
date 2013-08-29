@@ -21,7 +21,7 @@ import static com.google.common.base.Preconditions.checkState;
 
 import java.util.NoSuchElementException;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
 /**
  * This class provides a skeletal implementation of the {@code Iterator}

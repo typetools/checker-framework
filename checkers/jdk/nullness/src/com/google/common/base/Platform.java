@@ -18,7 +18,7 @@ package com.google.common.base;
 
 import com.google.common.annotations.GwtCompatible;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
 /**
  * Methods factored out so that they can be emulated differently in GWT.
@@ -34,7 +34,7 @@ final class Platform {
    *
    * <p>This method is not supported in GWT yet.
    */
-  static boolean isInstance(Class<?> clazz, Object obj) {
+  @Pure static boolean isInstance(Class<?> clazz, Object obj) {
     return clazz.isInstance(obj);
   }
 }

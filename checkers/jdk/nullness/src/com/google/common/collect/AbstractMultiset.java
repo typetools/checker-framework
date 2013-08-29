@@ -29,7 +29,8 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
+import dataflow.quals.*;
 
 /**
  * This class provides a skeletal implementation of the {@link Multiset}
@@ -49,11 +50,11 @@ import checkers.nullness.quals.*;
 @SuppressWarnings("nullness:generic.argument")
 abstract class AbstractMultiset<E extends /*@Nullable*/ Object> extends AbstractCollection<E>
     implements Multiset<E> {
-    public abstract Set<Entry<E>> entrySet();
+    @SideEffectFree public abstract Set<Entry<E>> entrySet();
 
   // Query Operations
 
-  @Override public int size() {
+  @Pure @Override public int size() {
     long sum = 0L;
     for (Entry<E> entry : entrySet()) {
       sum += entry.getCount();
@@ -61,12 +62,12 @@ abstract class AbstractMultiset<E extends /*@Nullable*/ Object> extends Abstract
     return (int) Math.min(sum, Integer.MAX_VALUE);
   }
 
-  @Override public boolean isEmpty() {
+  @Pure @Override public boolean isEmpty() {
     return entrySet().isEmpty();  }
 
   @SuppressWarnings("nullness")
       //Suppressed due to annotation on Set
-  @Override public boolean contains(@Nullable Object element) {
+  @Pure @Override public boolean contains(@Nullable Object element) {
     return elementSet().contains(element);
   }
 
@@ -159,7 +160,7 @@ abstract class AbstractMultiset<E extends /*@Nullable*/ Object> extends Abstract
 
   @SuppressWarnings("nullness")
   // Suppressed Warnings to override containsAll in Set<E>
-  @Override public boolean containsAll(Collection<? extends /*@Nullable*/ Object> elements) {
+  @Pure @Override public boolean containsAll(Collection<? extends /*@Nullable*/ Object> elements) {
     return elementSet().containsAll(elements);
   }
 
@@ -211,7 +212,7 @@ abstract class AbstractMultiset<E extends /*@Nullable*/ Object> extends Abstract
 
   private transient volatile Set<E> elementSet;
 
-  public Set<E> elementSet() {
+  @SideEffectFree public Set<E> elementSet() {
     Set<E> result = elementSet;
     if (result == null) {
       elementSet = result = createElementSet();
@@ -242,7 +243,7 @@ abstract class AbstractMultiset<E extends /*@Nullable*/ Object> extends Abstract
         }
       };
     }
-    @Override public int size() {
+    @Pure @Override public int size() {
       return entrySet().size();
     }
   }
@@ -256,7 +257,7 @@ abstract class AbstractMultiset<E extends /*@Nullable*/ Object> extends Abstract
    * of the same size and if, for each element, the two multisets have the same
    * count.
    */
-  @Override public boolean equals(@Nullable Object object) {
+  @Pure @Override public boolean equals(@Nullable Object object) {
     if (object == this) {
       return true;
     }
@@ -287,7 +288,7 @@ abstract class AbstractMultiset<E extends /*@Nullable*/ Object> extends Abstract
    * <p>This implementation returns the hash code of {@link
    * Multiset#entrySet()}.
    */
-  @Override public int hashCode() {
+  @Pure @Override public int hashCode() {
     return entrySet().hashCode();
   }
 
@@ -297,7 +298,7 @@ abstract class AbstractMultiset<E extends /*@Nullable*/ Object> extends Abstract
    * <p>This implementation returns the result of invoking {@code toString} on
    * {@link Multiset#entrySet()}.
    */
-  @Override public String toString() {
+  @Pure @Override public String toString() {
     return entrySet().toString();
   }
 }

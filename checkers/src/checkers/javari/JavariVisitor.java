@@ -1,16 +1,17 @@
 package checkers.javari;
 
 
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-
 import checkers.basetype.BaseTypeVisitor;
 import checkers.javari.quals.Assignable;
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
-import checkers.util.TreeUtils;
+
+import javacutils.TreeUtils;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
@@ -25,7 +26,7 @@ import com.sun.source.tree.Tree;
  *
  * @see BaseTypeVisitor
  */
-public class JavariVisitor extends BaseTypeVisitor<JavariChecker> {
+public class JavariVisitor extends BaseTypeVisitor<JavariChecker, JavariAnnotatedTypeFactory> {
 
     final private AnnotationMirror READONLY, MUTABLE, POLYREAD, QREADONLY;
 
@@ -64,8 +65,9 @@ public class JavariVisitor extends BaseTypeVisitor<JavariChecker> {
     */
     @Override
     protected void checkAssignability(AnnotatedTypeMirror varType, Tree varTree) {
-        if (!TreeUtils.isExpressionTree(varTree)) return;
-        Element varElt = varType.getElement();
+        if (!TreeUtils.isExpressionTree(varTree))
+            return;
+        Element varElt = TreeUtils.elementFromUse((ExpressionTree) varTree);
         if (varElt != null && atypeFactory.getDeclAnnotation(varElt, Assignable.class) != null)
             return;
 
@@ -102,17 +104,17 @@ public class JavariVisitor extends BaseTypeVisitor<JavariChecker> {
      * @see BaseTypeVisitor
      */
     @Override
-    public boolean isValidUse(AnnotatedDeclaredType elemType, AnnotatedDeclaredType useType) {
+    public boolean isValidUse(AnnotatedDeclaredType elemType, AnnotatedDeclaredType useType, Tree tree) {
         return true;
     }
 
     @Override
-    public boolean isValidUse(AnnotatedPrimitiveType useType) {
+    public boolean isValidUse(AnnotatedPrimitiveType useType, Tree tree) {
         if (useType.hasAnnotation(QREADONLY)
                 || useType.hasAnnotation(READONLY)
                 || useType.hasAnnotation(POLYREAD)) {
             return false;
         }
-        return super.isValidUse(useType);
+        return super.isValidUse(useType, tree);
     }
 }

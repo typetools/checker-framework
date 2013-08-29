@@ -1,3 +1,4 @@
+import dataflow.quals.*;
 import checkers.nullness.quals.*;
 import java.io.*;
 import java.util.*;
@@ -51,7 +52,7 @@ public class GenericArgs {
     void testRecursiveDeclarations() {
         class MyComparator<T extends @NonNull Comparable<T>>
         implements Comparator<T @NonNull []> {
-            public int compare(T[] a, T[] b) { return 0; }
+            @Pure public int compare(T[] a, T[] b) { return 0; }
         }
         Comparator<@NonNull String @NonNull []> temp = new MyComparator<@NonNull String>();
     }

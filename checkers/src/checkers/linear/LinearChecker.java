@@ -13,4 +13,4 @@ import checkers.quals.TypeQualifiers;
 
  */
 @TypeQualifiers({Normal.class, Linear.class, Unusable.class})
-public class LinearChecker extends BaseTypeChecker { }
+public class LinearChecker extends BaseTypeChecker<LinearAnnotatedTypeFactory> { }

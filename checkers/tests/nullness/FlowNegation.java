@@ -1,3 +1,5 @@
+import checkers.nullness.quals.NonNull;
+
 public class FlowNegation {
 
     void testSimpleValid() {
@@ -7,6 +9,7 @@ public class FlowNegation {
 
     void testCase1() {
         String s = "m";
+        //:: warning: (known.nonnull)
         if (s != null) { }
         else { }
         s.toString();
@@ -14,6 +17,7 @@ public class FlowNegation {
 
     void testCase2() {
         String s = "m";
+        //:: warning: (known.nonnull)
         if (s == null) { }
         else { }
         s.toString();
@@ -21,6 +25,7 @@ public class FlowNegation {
 
     void testInvalidCase1() {
         String s = "m";
+        //:: warning: (known.nonnull)
         if (s != null) { s = null; }
         else { }
         //:: error: (dereference.of.nullable)
@@ -29,6 +34,7 @@ public class FlowNegation {
 
     void testInvalidCase2() {
         String s = "m";
+        //:: warning: (known.nonnull)
         if (s != null) { }
         else { s = null; }
         //:: error: (dereference.of.nullable)
@@ -42,18 +48,21 @@ public class FlowNegation {
 
     void testTernaryCase1() {
         String s = "m";
+        //:: warning: (known.nonnull)
         Object m = (s != null) ? "m" : "n";
         s.toString();
     }
 
     void testTernaryCase2() {
         String s = "m";
+        //:: warning: (known.nonnull)
         Object m = (s == null) ? "m" : "n";
         s.toString();
     }
 
     void testTernaryInvalidCase1() {
         String s = "m";
+        //:: warning: (known.nonnull)
         Object m = (s != null) ? (s = null) : "n";
         //:: error: (dereference.of.nullable)
         s.toString();   // error
@@ -61,6 +70,7 @@ public class FlowNegation {
 
     void testTernaryInvalidCase2() {
         String s = "m";
+        //:: warning: (known.nonnull)
         Object m = (s != null) ? "m" : (s = null);
         //:: error: (dereference.of.nullable)
         s.toString();   // error
@@ -69,11 +79,11 @@ public class FlowNegation {
     void testAssignInCond() {
         String s = "m";
         if ((s = null) != "m") {
-          //:: error: (dereference.of.nullable)
-            s.toString();   // error
+            //:: error: (assignment.type.incompatible)
+            @NonNull String l0 = s;
         } else {
         }
-        //:: error: (dereference.of.nullable)
-        s.toString();   // error
+        //:: error: (assignment.type.incompatible)
+        @NonNull String l1 = s;
     }
 }

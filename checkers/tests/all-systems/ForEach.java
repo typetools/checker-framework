@@ -1,4 +1,5 @@
 import java.util.*;
+
 import checkers.nullness.quals.*;
 
 public class ForEach {
@@ -31,7 +32,7 @@ public class ForEach {
   }
 
   // An example taken from plume-lib's UtilMDE
-  public static <T> List<T> removeDuplicates(List<T> l) {
+  public static <T extends Object> List<T> removeDuplicates(List<T> l) {
     // There are shorter solutions that do not maintain order.
     HashSet<T> hs = new HashSet<T>(l.size());
     List<T> result = new ArrayList<T>();

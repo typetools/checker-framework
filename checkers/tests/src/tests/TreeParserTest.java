@@ -1,14 +1,19 @@
 package tests;
 
+import javacutils.trees.TreeParser;
+
 import javax.annotation.processing.ProcessingEnvironment;
 
 import junit.framework.Assert;
 
 import org.junit.Test;
 
-import checkers.util.trees.TreeParser;
-
-import com.sun.source.tree.*;
+import com.sun.source.tree.ArrayAccessTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
 
@@ -83,7 +88,7 @@ public class TreeParserTest {
         Assert.assertEquals("field", array.getIdentifier().toString());
         Assert.assertTrue(array.getExpression() instanceof ArrayAccessTree);
     }
-    
+
     @Test
     public void parsesMethodArguments() {
         parser.parseTree("method()");

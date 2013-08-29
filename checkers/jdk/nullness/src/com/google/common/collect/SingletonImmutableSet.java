@@ -21,7 +21,7 @@ import com.google.common.base.Preconditions;
 
 import java.util.Set;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 //import javax.annotation.Nullable;
 
 /**
@@ -44,21 +44,21 @@ final class SingletonImmutableSet<E> extends ImmutableSet<E> {
     this.element = Preconditions.checkNotNull(element);
   }
 
-  SingletonImmutableSet(E element, int hashCode) {
+  @Pure SingletonImmutableSet(E element, int hashCode) {
     // Guaranteed to be non-null by the presence of the pre-computed hash code.
     this.element = element;
     cachedHashCode = hashCode;
   }
 
-  public int size() {
+  @Pure public int size() {
     return 1;
   }
 
-  @Override public boolean isEmpty() {
+  @Pure @Override public boolean isEmpty() {
     return false;
   }
 
-  @Override public boolean contains(/*@Nullable*/ Object target) {
+  @Pure @Override public boolean contains(/*@Nullable*/ Object target) {
     return element.equals(target);
   }
 
@@ -83,7 +83,7 @@ final class SingletonImmutableSet<E> extends ImmutableSet<E> {
     return array;
   }
 
-  @Override public boolean equals(@Nullable Object object) {
+  @Pure @Override public boolean equals(@Nullable Object object) {
     if (object == this) {
       return true;
     }
@@ -94,7 +94,7 @@ final class SingletonImmutableSet<E> extends ImmutableSet<E> {
     return false;
   }
 
-  @Override public final int hashCode() {
+  @Pure @Override public final int hashCode() {
     Integer code = cachedHashCode;
     if (code == null) {
       return cachedHashCode = element.hashCode();
@@ -102,11 +102,11 @@ final class SingletonImmutableSet<E> extends ImmutableSet<E> {
     return code;
   }
 
-  @Override boolean isHashCodeFast() {
+  @Pure @Override boolean isHashCodeFast() {
     return false;
   }
 
-  @Override public String toString() {
+  @Pure @Override public String toString() {
     String elementToString = element.toString();
     return new StringBuilder(elementToString.length() + 2)
         .append('[')

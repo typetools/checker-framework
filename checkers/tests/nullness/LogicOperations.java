@@ -1,3 +1,4 @@
+import checkers.nullness.quals.NonNull;
 import checkers.nullness.quals.*;
 
 class LogicOperations {
@@ -55,11 +56,12 @@ class LogicOperations {
 
   void sideeffect() {
       Object a = "m";
-      if ((a = null) != "n")
-        //:: error: (dereference.of.nullable)
-          a.toString();
-      //:: error: (dereference.of.nullable)
-      a.toString();
+      if ((a = null) != "n") {
+          //:: error: (assignment.type.incompatible)
+          @NonNull Object l1 = a;
+      }
+      //:: error: (assignment.type.incompatible)
+      @NonNull Object l2 = a;
   }
 
   static boolean helper() { return true; }
