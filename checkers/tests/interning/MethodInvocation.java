@@ -41,9 +41,9 @@ public class MethodInvocation {
 
     // See http://code.google.com/p/checker-framework/issues/detail?id=84
     void internedCharacterParametersClient() {
-        // TODO: auto-boxing from char to Character //:: error: (argument.type.incompatible)
+        // TODO: autoboxing from char to Character //:: error: (argument.type.incompatible)
         internedCharacterParameter('\u00E4'); // lowercase a with umlaut
-        // TODO: auto-boxing from char to Character //:: error: (argument.type.incompatible)
+        // TODO: autoboxing from char to Character //:: error: (argument.type.incompatible)
         internedCharacterParameter('a');
         //:: error: (argument.type.incompatible)
         internedCharacterParameter(new Character('a'));

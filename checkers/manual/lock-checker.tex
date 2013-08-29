@@ -28,10 +28,21 @@ other is a method annotation.
 
 \item[\code{@\refclass{lock/quals}{GuardedBy}}]
   indicates a type whose value may be accessed only when the given lock is
-  held.  See the \ahref{doc/checkers/lock/quals/GuardedBy.html}{GuardedBy
+  held.
+  See the \ahref{doc/checkers/lock/quals/GuardedBy.html}{GuardedBy
     Javadoc} for an explanation of the argument and other details.  The lock
   acquisition and the value access may be arbitrarily far in the future;
   or, if the value is never accessed, the lock never need be held.
+  Figure~\ref{fig:guardedby-hierarchy} gives the type hierarchy.
+
+\begin{figure}
+\includeimage{guardedby}{2.5cm}
+\caption{Type hierarchy for the \code{@GuardedBy} annotation of the lock
+  type system.  The \<@GuardedByTop> annotation is for internal use by the
+  type checker; a programmer cannot write it.}
+\label{fig:guardedby-hierarchy}
+\end{figure}
+
 
 \item[\code{@\refclass{lock/quals}{Holding}}]
   is a method annotation (not a type qualifier).  It indicates that when
@@ -43,8 +54,10 @@ other is a method annotation.
 
 \subsection{Examples}
 
-Most often, field values are annotated with \code{@GuardedBy}, but other
-uses are possible.
+The most common use of \code{@GuardedBy} is to annotate a field declaration
+type.  However, other uses of \code{@GuardedBy} are possible.
+
+\paragraph{Return values}
 
 A return value may be annotated with \code{@GuardedBy}:
 
@@ -61,6 +74,8 @@ A return value may be annotated with \code{@GuardedBy}:
     y.toString();  // OK: the lock is held
   }
 \end{Verbatim}
+
+\paragraph{Formal parameters}
 
 A parameter may be annotated with \code{@GuardedBy}, which indicates that
 the method body must acquire the lock before accessing the parameter.  A
@@ -214,7 +229,7 @@ side of Figure~\ref{fig:lock-refactoring}.
 
 The book \ahref{http://jcip.net/}{\emph{Java Concurrency in Practice}}~\cite{Goetz2006} defines a
 \ahref{http://jcip.net.s3-website-us-east-1.amazonaws.com/annotations/doc/net/jcip/annotations/GuardedBy.html}{\code{@GuardedBy}} annotation that is the inspiration for ours.  The book's
-\code{@GuardedBy} serves two related purposes:
+\code{@GuardedBy} serves two related but distinct purposes:
 
 \begin{itemize}
 \item
@@ -227,15 +242,6 @@ The book \ahref{http://jcip.net/}{\emph{Java Concurrency in Practice}}~\cite{Goe
   the time that execution passes the \code{@GuardedBy} annotation.
 \end{itemize}
 
-One rationale for reusing the annotation name for both purposes in JCIP is
-that there are fewer annotations to learn.  Another rationale is
-that both variables and methods are ``members'' that can be ``accessed'';
-variables can be accessed by reading or writing them (putfield, getfield),
-and methods can be accessed by calling them (invokevirtual,
-invokeinterface).  In both cases, \code{@GuardedBy} creates preconditions
-for accessing so-annotated members.  This informal intuition is
-inappropriate for a tool that requires precise semantics.
-
 The Lock Checker renames the method annotation to
 \code{@\refclass{lock/quals}{Holding}}, and it generalizes the 
 \code{@\refclass{lock/quals}{GuardedBy}} annotation into a type qualifier
@@ -246,6 +252,16 @@ to automated checking.  It also accommodates the distinct
 meanings of the two annotations, and resolves ambiguity when \<@GuardedBy>
 is written in a location that might apply to either the method or the
 return type.
+
+(The JCIP book gives some rationales for reusing the annotation name for
+two purposes.  One rationale is
+that there are fewer annotations to learn.  Another rationale is
+that both variables and methods are ``members'' that can be ``accessed'';
+variables can be accessed by reading or writing them (putfield, getfield),
+and methods can be accessed by calling them (invokevirtual,
+invokeinterface):  in both cases, \code{@GuardedBy} creates preconditions
+for accessing so-annotated members.  This informal intuition is
+inappropriate for a tool that requires precise semantics.)
 
 % It would not work to retain the name \code{@GuardedBy} but put it on the
 % receiver; an annotation on the receiver indicates what lock must be held

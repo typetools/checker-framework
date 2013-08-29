@@ -1,11 +1,5 @@
 package checkers.nullness;
 
-import java.util.List;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.TypeKind;
-
 import checkers.basetype.BaseTypeChecker;
 import checkers.nullness.quals.Covariant;
 import checkers.nullness.quals.KeyFor;
@@ -16,23 +10,29 @@ import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.QualifierHierarchy;
 import checkers.types.TypeHierarchy;
-import checkers.util.AnnotationUtils;
 import checkers.util.GraphQualifierHierarchy;
 import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+
+import javacutils.AnnotationUtils;
+
+import java.util.List;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
 
 /**
  * TODO: doc
  * @checker.framework.manual #nullness-checker Nullness Checker
  */
 @TypeQualifiers({ KeyFor.class, Unqualified.class, KeyForBottom.class})
-public class KeyForSubchecker extends BaseTypeChecker {
+public class KeyForSubchecker extends BaseTypeChecker<KeyForAnnotatedTypeFactory> {
     protected AnnotationMirror KEYFOR;
 
     @Override
     public void initChecker() {
-        super.initChecker();
-
         KEYFOR = AnnotationUtils.fromClass(processingEnv.getElementUtils(), KeyFor.class);
+        super.initChecker();
     }
 
     @Override
@@ -65,6 +65,10 @@ public class KeyForSubchecker extends BaseTypeChecker {
 
         @Override
         protected boolean isSubtypeTypeArguments(AnnotatedDeclaredType rhs, AnnotatedDeclaredType lhs) {
+            if (ignoreRawTypeArguments(rhs, lhs)) {
+                return true;
+            }
+
             List<AnnotatedTypeMirror> rhsTypeArgs = rhs.getTypeArguments();
             List<AnnotatedTypeMirror> lhsTypeArgs = lhs.getTypeArguments();
 
@@ -79,6 +83,7 @@ public class KeyForSubchecker extends BaseTypeChecker {
             // List<AnnotatedTypeMirror> lhsTVs = lhsDecl.getTypeArguments();
             // List<AnnotatedTypeMirror> rhsTVs = rhsDecl.getTypeArguments();
 
+            // TODO: implementation of @Covariant should be done in the standard TypeHierarchy
             int[] covarVals = null;
             if (lhsElem.getAnnotation(Covariant.class) != null) {
                 covarVals = lhsElem.getAnnotation(Covariant.class).value();
@@ -106,7 +111,9 @@ public class KeyForSubchecker extends BaseTypeChecker {
 
                 if (covar) {
                     if (!isSubtype(rhsTypeArgs.get(i), lhsTypeArgs.get(i)))
-                        return false;
+                        // TODO: still check whether isSubtypeAsTypeArgument returns true.
+                        // This handles wildcards better.
+                        return isSubtypeAsTypeArgument(rhsTypeArgs.get(i), lhsTypeArgs.get(i));
                 } else {
                     if (!isSubtypeAsTypeArgument(rhsTypeArgs.get(i), lhsTypeArgs.get(i)))
                         return false;

@@ -1,11 +1,12 @@
 package java.util;
-import checkers.nullness.quals.*;
-@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
+import dataflow.quals.Pure;
+
+import checkers.nullness.quals.Nullable;
 
 // Subclasses of this interface/class may opt to prohibit null elements
 public abstract class AbstractSequentialList<E extends @Nullable Object> extends AbstractList<E> {
   protected AbstractSequentialList() {}
-  public @Pure E get(int a1) { throw new RuntimeException("skeleton method"); }
+  @Pure public E get(int a1) { throw new RuntimeException("skeleton method"); }
   public E set(int a1, E a2) { throw new RuntimeException("skeleton method"); }
   public void add(int a1, E a2) { throw new RuntimeException("skeleton method"); }
   public E remove(int a1) { throw new RuntimeException("skeleton method"); }

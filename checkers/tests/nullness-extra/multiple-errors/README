@@ -7,6 +7,6 @@ http://groups.google.com/group/checker-framework-discuss/browse_thread/thread/e0
 
 Performing
 
-javac -processor checkers.nullness.NullnessChecker *.java
+javac -processor checkers.nonnull.NonNullFbcChecker *.java
 
 should result in 2 errors and 1 warning, not only 1 each.

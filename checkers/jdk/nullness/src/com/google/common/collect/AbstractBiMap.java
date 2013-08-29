@@ -32,6 +32,8 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import dataflow.quals.*;
+
 /**
  * A general-purpose bimap implementation using any two backing {@code Map}
  * instances.
@@ -85,7 +87,7 @@ import javax.annotation.Nullable;
 
   // Query Operations (optimizations)
 
-  @Override public boolean containsValue(/*@Nullable*/ Object value) {
+  @Pure @Override public boolean containsValue(/*@Nullable*/ Object value) {
     return inverse.containsKey(value);
   }
 
@@ -159,7 +161,7 @@ import javax.annotation.Nullable;
 
   private transient volatile Set<K> keySet;
 
-  @Override public Set<K> keySet() {
+  @SideEffectFree @Override public Set<K> keySet() {
     Set<K> result = keySet;
     return (result == null) ? keySet = new KeySet() : keySet;
   }
@@ -213,7 +215,7 @@ import javax.annotation.Nullable;
 
   private transient volatile Set<V> valueSet;
 
-  @Override public Set<V> values() {
+  @SideEffectFree @Override public Set<V> values() {
     /*
      * We can almost reuse the inverse's keySet, except we have to fix the
      * iteration order so that it is consistent with the forward map.
@@ -259,14 +261,14 @@ import javax.annotation.Nullable;
       return ObjectArrays.toArrayImpl(this, array);
     }
 
-    @Override public String toString() {
+    @Pure @Override public String toString() {
       return Iterators.toString(iterator());
     }
   }
 
   private transient volatile Set<Entry<K, V>> entrySet;
 
-  @Override public Set<Entry<K, V>> entrySet() {
+  @SideEffectFree @Override public Set<Entry<K, V>> entrySet() {
     Set<Entry<K, V>> result = entrySet;
     return (result == null) ? entrySet = new EntrySet() : entrySet;
   }
@@ -349,10 +351,10 @@ import javax.annotation.Nullable;
     @Override public <T> T[] toArray(T[] array) {
       return ObjectArrays.toArrayImpl(this, array);
     }
-    @Override public boolean contains(/*@Nullable*/ Object o) {
+    @Pure @Override public boolean contains(/*@Nullable*/ Object o) {
       return Maps.containsEntryImpl(delegate(), o);
     }
-    @Override public boolean containsAll(Collection<? extends /*@Nullable*/ Object> c) {
+    @Pure @Override public boolean containsAll(Collection<? extends /*@Nullable*/ Object> c) {
       return Collections2.containsAll(this, c);
     }
     @Override public boolean removeAll(Collection<? extends /*@Nullable*/ Object> c) {

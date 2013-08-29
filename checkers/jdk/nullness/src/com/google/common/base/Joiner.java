@@ -26,7 +26,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
 /**
  * An object which joins pieces of text (specified as an array, {@link
@@ -325,7 +325,7 @@ import checkers.nullness.quals.*;
 		   final /*@Nullable*/ Object[] rest) {
     checkNotNull(rest);
     return new AbstractList</*@Nullable*/ Object>() {
-      @Override public int size() {
+      @Pure @Override public int size() {
         return rest.length + 2;
       }
       @Override public /*@Nullable*/ Object get(int index) {

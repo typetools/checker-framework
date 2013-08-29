@@ -1,46 +1,35 @@
 package checkers.nullness.quals;
 
-import java.lang.annotation.*;
+import checkers.nullness.NullnessRawnessChecker;
+import checkers.quals.DefaultQualifierInHierarchy;
+import checkers.quals.SubtypeOf;
+import checkers.quals.TypeQualifier;
 
-import checkers.nullness.NullnessChecker;
-import checkers.quals.*;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * An annotation that indicates a type that contains an initialized object
- * &mdash; that is, the object's constructor has completed, either in full
- * or in part.
+ * This type qualifier belongs to the rawness initialization tracking
+ * type-system. This type-system is not used on its own, but in conjunction with
+ * some other type-system that wants to ensure safe initialization. For
+ * instance, {@link NullnessRawnessChecker} uses rawness to track initialization
+ * of {@link NonNull} fields.
  *
  * <p>
+ * This type qualifier indicates that the object has been fully initialized;
+ * reading fields from such objects is fully safe and yields objects of the
+ * correct type.
  *
- * When no argument is given, as in {@code @NonRaw}, then the object is
- * fully initialized; this is the default, so there is little need for a
- * programmer to write this explicitly.
- *
- * <p>
- *
- * When an argument is given, as in {@code @NonRaw(MyClass.class)}, then
- * the object's {@code MyClass} constructor has completed.
- * All {@code @NonNull} fields declared in {@code MyClass} or in any of its
- * superclasses have a non-{@code null} value.
- * Thus, when a constructor in class {@code C} completes, {@code this} has
- * type {@code @NonRaw(C.class) C}.
- *
- * <p>
- *
- * This annotation is associated with the {@link NullnessChecker}.
- *
- * @see Raw
- * @see NonNull
- * @see NullnessChecker
  * @checker.framework.manual #nullness-checker Nullness Checker
  */
+@TypeQualifier
+@SubtypeOf(Raw.class)
+@DefaultQualifierInHierarchy
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-@TypeQualifier
-@DefaultQualifierInHierarchy
-@SubtypeOf(Raw.class)
+@Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
 public @interface NonRaw {
-  // TODO: implement this
-  // Class<?> upFrom() default Object.class;
 }

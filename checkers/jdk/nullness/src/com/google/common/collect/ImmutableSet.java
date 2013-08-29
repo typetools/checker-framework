@@ -29,7 +29,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
 /**
  * A high-performance, immutable {@code Set} with reliable, user-specified
@@ -214,11 +214,11 @@ import checkers.nullness.quals.*;
   ImmutableSet() {}
 
   /** Returns {@code true} if the {@code hashCode()} method runs quickly. */
-  boolean isHashCodeFast() {
+  @Pure boolean isHashCodeFast() {
     return false;
   }
 
-  @Override public boolean equals(@Nullable Object object) {
+  @Pure @Override public boolean equals(@Nullable Object object) {
     if (object == this) {
       return true;
     }
@@ -231,8 +231,8 @@ import checkers.nullness.quals.*;
     return Collections2.setEquals(this, object);
   }
 
-  @Override public int hashCode() {
-    int hashCode = 0;
+  @Pure @Override public int hashCode() {
+    @Pure int hashCode = 0;
     for (Object o : this) {
       hashCode += o.hashCode();
     }
@@ -255,7 +255,7 @@ import checkers.nullness.quals.*;
     int mask = tableSize - 1;
 
     List<E> elements = new ArrayList<E>(count);
-    int hashCode = 0;
+    @Pure int hashCode = 0;
 
     for (E element : iterable) {
       checkNotNull(element); // for GWT
@@ -289,11 +289,11 @@ import checkers.nullness.quals.*;
       this.elements = elements;
     }
 
-    public int size() {
+    @Pure public int size() {
       return elements.length;
     }
 
-    @Override public boolean isEmpty() {
+    @Pure @Override public boolean isEmpty() {
       return false;
     }
 
@@ -324,7 +324,7 @@ import checkers.nullness.quals.*;
       return array;
     }
 
-    @Override public boolean containsAll(Collection<?> targets) {
+    @Pure @Override public boolean containsAll(Collection<?> targets) {
       if (targets == this) {
         return true;
       }
@@ -346,20 +346,20 @@ import checkers.nullness.quals.*;
   /** such as ImmutableMap.keySet() */
   abstract static class TransformedImmutableSet<D, E> extends ImmutableSet<E> {
     final D[] source;
-    final int hashCode;
+    @Pure final int hashCode;
 
-    TransformedImmutableSet(D[] source, int hashCode) {
+    @Pure TransformedImmutableSet(D[] source, int hashCode) {
       this.source = source;
       this.hashCode = hashCode;
     }
 
     abstract E transform(D element);
 
-    public int size() {
+    @Pure public int size() {
       return source.length;
     }
 
-    @Override public boolean isEmpty() {
+    @Pure @Override public boolean isEmpty() {
       return false;
     }
 
@@ -396,11 +396,11 @@ import checkers.nullness.quals.*;
       return array;
     }
 
-    @Override public final int hashCode() {
+    @Pure @Override public final int hashCode() {
       return hashCode;
     }
 
-    @Override boolean isHashCodeFast() {
+    @Pure @Override boolean isHashCodeFast() {
       return true;
     }
   }

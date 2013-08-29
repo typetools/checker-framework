@@ -45,7 +45,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 //import javax.annotation.Nullable;
 
 /**
@@ -360,7 +360,7 @@ public final class Maps {
       return differences;
     }
 
-    @Override public boolean equals(/*@Nullable*/ Object object) {
+    @Pure @Override public boolean equals(/*@Nullable*/ Object object) {
       if (object == this) {
         return true;
       }
@@ -374,12 +374,12 @@ public final class Maps {
       return false;
     }
 
-    @Override public int hashCode() {
+    @Pure @Override public int hashCode() {
       return Objects.hashCode(entriesOnlyOnLeft(), entriesOnlyOnRight(),
           entriesInCommon(), entriesDiffering());
     }
 
-    @Override public String toString() {
+    @Pure @Override public String toString() {
       if (areEqual) {
         return "equal";
       }
@@ -417,7 +417,7 @@ public final class Maps {
       return right;
     }
 
-    @Override public boolean equals(@Nullable Object object) {
+    @Pure @Override public boolean equals(@Nullable Object object) {
       if (object instanceof MapDifference.ValueDifference<?>) {
         MapDifference.ValueDifference<?> that =
             (MapDifference.ValueDifference<?>) object;
@@ -427,11 +427,11 @@ public final class Maps {
       return false;
     }
 
-    @Override public int hashCode() {
+    @Pure @Override public int hashCode() {
       return Objects.hashCode(left, right);
     }
 
-    @Override public String toString() {
+    @Pure @Override public String toString() {
       return "(" + left + ", " + right + ")";
     }
   }
@@ -532,10 +532,10 @@ public final class Maps {
   private static <K extends /*@Nullable*/ Object, V extends /*@Nullable*/ Object> Entry<K, V> unmodifiableEntry(final Entry<K, V> entry) {
     checkNotNull(entry);
     return new AbstractMapEntry<K, V>() {
-      @Override public K getKey() {
+      @Pure @Override public K getKey() {
         return entry.getKey();
       }
-      @Override public V getValue() {
+      @Pure @Override public V getValue() {
         return entry.getValue();
       }
     };
@@ -578,11 +578,11 @@ public final class Maps {
       return ObjectArrays.toArrayImpl(this, array);
     }
     
-    @Override public boolean contains(/*@Nullable*/ Object o) {
+    @Pure @Override public boolean contains(/*@Nullable*/ Object o) {
       return containsEntryImpl(delegate(), o);
     }
 
-    @Override public boolean containsAll(Collection<?> c) {
+    @Pure @Override public boolean containsAll(Collection<?> c) {
       return Collections2.containsAll(this, c);
     }
   }
@@ -597,11 +597,11 @@ public final class Maps {
 
     // See java.util.Collections.UnmodifiableEntrySet for details on attacks.
 
-    @Override public boolean equals(@Nullable Object object) {
+    @Pure @Override public boolean equals(@Nullable Object object) {
       return Collections2.setEquals(this, object);
     }
 
-    @Override public int hashCode() {
+    @Pure @Override public int hashCode() {
       return Sets.hashCodeImpl(this);
     }
   }
@@ -655,7 +655,7 @@ public final class Maps {
           : result;
     }
 
-    @Override public Set<V> values() {
+    @SideEffectFree @Override public Set<V> values() {
       Set<V> result = values;
       return (result == null)
           ? values = Collections.<V>unmodifiableSet(delegate.values())
@@ -678,7 +678,7 @@ public final class Maps {
    * @param o the object that might be contained in {@code c}
    * @return {@code true} if {@code c} contains {@code o}
    */
-    static <K extends /*@Nullable*/ Object, V extends /*@Nullable*/ Object> boolean containsEntryImpl(Collection<Entry<K, V>> c, /*@Nullable*/  Object o) {
+    @Pure static <K extends /*@Nullable*/ Object, V extends /*@Nullable*/ Object> boolean containsEntryImpl(Collection<Entry<K, V>> c, /*@Nullable*/  Object o) {
     if (!(o instanceof Entry)) {
       return false;
     }
@@ -725,7 +725,7 @@ public final class Maps {
 
     private transient Set<Entry<K, V>> entrySet;
 
-    @Override public synchronized Set<Entry<K, V>> entrySet() {
+    @SideEffectFree @Override public synchronized Set<Entry<K, V>> entrySet() {
       if (entrySet == null) {
         entrySet = createEntrySet();
       }
@@ -734,7 +734,7 @@ public final class Maps {
 
     private transient Set<K> keySet;
 
-    @Override public synchronized Set<K> keySet() {
+    @SideEffectFree @Override public synchronized Set<K> keySet() {
       if (keySet == null) {
         final Set<K> delegate = super.keySet();
         keySet = new ForwardingSet<K>() {
@@ -742,7 +742,7 @@ public final class Maps {
             return delegate;
           }
 
-          @Override public boolean isEmpty() {
+          @Pure @Override public boolean isEmpty() {
             return ImprovedAbstractMap.this.isEmpty();
           }
         };
@@ -752,7 +752,7 @@ public final class Maps {
 
     private transient Collection<V> values;
 
-    @Override public synchronized Collection<V> values() {
+    @SideEffectFree @Override public synchronized Collection<V> values() {
       if (values == null) {
         final Collection<V> delegate = super.values();
         values = new ForwardingCollection<V>() {
@@ -760,7 +760,7 @@ public final class Maps {
             return delegate;
           }
 
-          @Override public boolean isEmpty() {
+          @Pure @Override public boolean isEmpty() {
             return ImprovedAbstractMap.this.isEmpty();
           }
         };
@@ -775,7 +775,7 @@ public final class Maps {
      *
      * @return {@code true} if this map contains no key-value mappings
      */
-    @Override public boolean isEmpty() {
+    @Pure @Override public boolean isEmpty() {
       return entrySet().isEmpty();
     }
   }
@@ -833,13 +833,13 @@ public final class Maps {
       this.function = checkNotNull(function);
     }
 
-    @Override public int size() {
+    @Pure @Override public int size() {
       return fromMap.size();
     }
 
     @SuppressWarnings("nullness")
     // Suppressed to override annotations on Java.util.Map
-    @Override public boolean containsKey(/*@Nullable*/ Object key) {
+    @Pure @Override public boolean containsKey(/*@Nullable*/ Object key) {
       return fromMap.containsKey(key);
     }
 
@@ -865,7 +865,7 @@ public final class Maps {
 
     volatile EntrySet entrySet;
 
-    @Override public Set<Entry<K, V2>> entrySet() {
+    @SideEffectFree @Override public Set<Entry<K, V2>> entrySet() {
       if (entrySet == null) {
         entrySet = new EntrySet();
       }
@@ -873,7 +873,7 @@ public final class Maps {
     }
 
     class EntrySet extends AbstractSet<Entry<K, V2>> {
-      @Override public int size() {
+      @Pure @Override public int size() {
         return TransformedValuesMap.this.size();
       }
 
@@ -889,12 +889,12 @@ public final class Maps {
           public Entry<K, V2> next() {
             final Entry<K, V1> entry = mapIterator.next();
             return new AbstractMapEntry<K, V2>() {
-              @Override public K getKey() {
+              @Pure @Override public K getKey() {
                 return entry.getKey();
               }
               @SuppressWarnings("nullness")
 	      //Suppressed due to annotations on function.apply
-              @Override public V2 getValue() {
+              @Pure @Override public V2 getValue() {
                 return function.apply(entry.getValue());
               }
             };
@@ -910,7 +910,7 @@ public final class Maps {
         fromMap.clear();
       }
 
-      @Override public boolean contains(/*@Nullable*/ Object o) {
+      @Pure @Override public boolean contains(/*@Nullable*/ Object o) {
         if (!(o instanceof Entry)) {
           return false;
         }
@@ -1011,7 +1011,7 @@ public static <K extends /*@Nullable*/ Object, V extends /*@Nullable*/ Object> M
 
     @SuppressWarnings("nullness")
 	//Suppressed to override annotations on Map.containsKey
-    @Override public boolean containsKey(/*@Nullable*/ Object key) {
+    @Pure @Override public boolean containsKey(/*@Nullable*/ Object key) {
       return unfiltered.containsKey(key) && apply(key, unfiltered.get(key));
     }
 
@@ -1022,7 +1022,7 @@ public static <K extends /*@Nullable*/ Object, V extends /*@Nullable*/ Object> M
       return ((value != null) && apply(key, value)) ? value : null;
     }
 
-    @Override public boolean isEmpty() {
+    @Pure @Override public boolean isEmpty() {
       return entrySet().isEmpty();
     }
 
@@ -1034,7 +1034,7 @@ public static <K extends /*@Nullable*/ Object, V extends /*@Nullable*/ Object> M
 
     Collection<V> values;
 
-    @Override public Collection<V> values() {
+    @SideEffectFree @Override public Collection<V> values() {
       Collection<V> result = values;
       return (result == null) ? values = new Values() : values;
     }
@@ -1054,7 +1054,7 @@ public static <K extends /*@Nullable*/ Object, V extends /*@Nullable*/ Object> M
         };
       }
 
-      @Override public int size() {
+      @Pure @Override public int size() {
         return entrySet().size();
       }
 
@@ -1062,7 +1062,7 @@ public static <K extends /*@Nullable*/ Object, V extends /*@Nullable*/ Object> M
         entrySet().clear();
       }
 
-      @Override public boolean isEmpty() {
+      @Pure @Override public boolean isEmpty() {
         return entrySet().isEmpty();
       }
 
@@ -1129,7 +1129,7 @@ public static <K extends /*@Nullable*/ Object, V extends /*@Nullable*/ Object> M
 
     Set<Entry<K, V>> entrySet;
 
-    @Override public Set<Entry<K, V>> entrySet() {
+    @SideEffectFree @Override public Set<Entry<K, V>> entrySet() {
       Set<Entry<K, V>> result = entrySet;
       return (result == null)
           ? entrySet = Sets.filter(unfiltered.entrySet(), predicate)
@@ -1138,7 +1138,7 @@ public static <K extends /*@Nullable*/ Object, V extends /*@Nullable*/ Object> M
 
     Set<K> keySet;
 
-    @Override public Set<K> keySet() {
+    @SideEffectFree @Override public Set<K> keySet() {
       Set<K> result = keySet;
       return (result == null)
           ? keySet = Sets.filter(unfiltered.keySet(), keyPredicate)
@@ -1147,7 +1147,7 @@ public static <K extends /*@Nullable*/ Object, V extends /*@Nullable*/ Object> M
 
     @SuppressWarnings({"unchecked","nullness"})
 	//Suppressed to override annotations on Java.util.Map
-    @Override public boolean containsKey(/*@Nullable*/ Object key) {
+    @Pure @Override public boolean containsKey(/*@Nullable*/ Object key) {
       return unfiltered.containsKey(key) && keyPredicate.apply((K) key);
     }
   }
@@ -1169,7 +1169,7 @@ public static <K extends /*@Nullable*/ Object, V extends /*@Nullable*/ Object> M
 
     Set<Entry<K, V>> entrySet;
 
-    @Override public Set<Entry<K, V>> entrySet() {
+    @SideEffectFree @Override public Set<Entry<K, V>> entrySet() {
       Set<Entry<K, V>> result = entrySet;
       return (result == null) ? entrySet = new EntrySet() : result;
     }
@@ -1203,7 +1203,7 @@ public static <K extends /*@Nullable*/ Object, V extends /*@Nullable*/ Object> M
 
     Set<K> keySet;
 
-    @Override public Set<K> keySet() {
+    @SideEffectFree @Override public Set<K> keySet() {
       Set<K> result = keySet;
       return (result == null) ? keySet = new KeySet() : result;
     }
@@ -1221,7 +1221,7 @@ public static <K extends /*@Nullable*/ Object, V extends /*@Nullable*/ Object> M
         };
       }
 
-      @Override public int size() {
+      @Pure @Override public int size() {
         return filteredEntrySet.size();
       }
 
@@ -1229,7 +1229,7 @@ public static <K extends /*@Nullable*/ Object, V extends /*@Nullable*/ Object> M
         filteredEntrySet.clear();
       }
 
-      @Override public boolean contains(/*@Nullable*/ Object o) {
+      @Pure @Override public boolean contains(/*@Nullable*/ Object o) {
         return containsKey(o);
       }
 

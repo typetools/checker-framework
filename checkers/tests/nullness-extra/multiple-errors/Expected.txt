@@ -1,11 +1,11 @@
-C1.java:1: error: constructor does not initialize fields [o]
+C1.java:1: error: the constructor does not initialize fields: o
 public class C1 {
        ^
 C2.java:2: error: incompatible types in assignment.
   Object o = null;
              ^
   found   : null
-  required: @NonNull Object
+  required: @Initialized @NonNull Object
 C3.java:4: error: cannot find symbol
       void bad(XXX p) {
                ^

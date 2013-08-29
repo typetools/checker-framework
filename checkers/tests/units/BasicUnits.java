@@ -41,7 +41,7 @@ public class BasicUnits {
         // Addition/substraction only accepts another @kmPERh value
         //:: error: (assignment.type.incompatible)
         speed = speed + 5;
-        //:: error: (compoundassign.type.incompatible)
+        //:: error: (compound.assignment.type.incompatible)
         speed += 5;
 
         speed += speed;
