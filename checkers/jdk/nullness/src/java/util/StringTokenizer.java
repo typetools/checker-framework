@@ -1,6 +1,6 @@
 package java.util;
-import checkers.nullness.quals.*;
-@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
+import checkers.nullness.quals.NonNull;
+import checkers.nullness.quals.Nullable;
 
 public class StringTokenizer implements Enumeration<@NonNull Object> {
   public StringTokenizer(String a1, @Nullable String a2, boolean a3) { throw new RuntimeException("skeleton method"); }

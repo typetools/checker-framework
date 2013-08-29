@@ -1,8 +1,7 @@
 package java.io;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
-@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
 
 public class PipedWriter extends Writer {
   public PipedWriter(PipedReader a1) throws IOException { throw new RuntimeException("skeleton method"); }

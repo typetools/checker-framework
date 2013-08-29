@@ -13,7 +13,7 @@ public class FileStubResource implements StubResource {
 
     /**
      * Constructs a {@code StubResource} for the specified stub file.
-     * 
+     *
      * @param file the stub file
      */
     public FileStubResource(File file) {

@@ -16,10 +16,10 @@ import checkers.interning.quals.Interned;
 import checkers.interning.quals.UsesObjectEquals;
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeMirror;
-import checkers.util.AnnotationUtils;
+import javacutils.AnnotationUtils;
 import checkers.util.Heuristics;
-import checkers.util.InternalUtils;
-import checkers.util.TreeUtils;
+import javacutils.InternalUtils;
+import javacutils.TreeUtils;
 
 import com.sun.source.tree.*;
 
@@ -37,7 +37,7 @@ import com.sun.source.tree.*;
  *
  * @see BaseTypeVisitor
  */
-public final class InterningVisitor extends BaseTypeVisitor<InterningChecker> {
+public final class InterningVisitor extends BaseTypeVisitor<InterningChecker, InterningAnnotatedTypeFactory> {
 
     /** The interned annotation. */
     private final AnnotationMirror INTERNED;

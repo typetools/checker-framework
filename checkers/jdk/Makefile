@@ -74,3 +74,7 @@ annotated/%.class:
 
 %.annotated:
 	cd $*; $(MAKE) annotated
+
+TAGS: tags
+tags:
+	etags `find . -name '*.java'`

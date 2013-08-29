@@ -1,6 +1,8 @@
 package java.util;
-import checkers.nullness.quals.*;
-@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
+
+import dataflow.quals.*;
+import checkers.nullness.quals.KeyFor;
+import checkers.nullness.quals.Nullable;
 
 public abstract class ResourceBundle{
   public static class Control{
@@ -34,7 +36,7 @@ public abstract class ResourceBundle{
   public static ResourceBundle getBundle(String a1, Locale a2, ClassLoader a3, ResourceBundle.Control a4) { throw new RuntimeException("skeleton method"); }
   public final static void clearCache() { throw new RuntimeException("skeleton method"); }
   public final static void clearCache(ClassLoader a1) { throw new RuntimeException("skeleton method"); }
-  public abstract Enumeration<String> getKeys();
-  public @Pure boolean containsKey(String a1) { throw new RuntimeException("skeleton method"); }
-  public Set<@KeyFor("this") String> keySet() { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public abstract Enumeration<String> getKeys();
+  @Pure public boolean containsKey(String a1) { throw new RuntimeException("skeleton method"); }
+  @SideEffectFree public Set<@KeyFor("this") String> keySet() { throw new RuntimeException("skeleton method"); }
 }
