@@ -24,9 +24,7 @@ import javacutils.TreeUtils;
 import javacutils.TypesUtils;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
