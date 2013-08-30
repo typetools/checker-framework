@@ -1,5 +1,9 @@
 package dataflow.cfg.block;
 
+import dataflow.analysis.Store;
+
+import javacutils.Pair;
+
 /**
  * Implementation of a non-special basic block.
  *
@@ -12,7 +16,10 @@ public abstract class SingleSuccessorBlockImpl extends BlockImpl implements
     /** Internal representation of the successor. */
     protected /*@Nullable*/ BlockImpl successor;
 
+    protected Pair<Store.Kind, Store.Kind> storeFlow;
+
     public SingleSuccessorBlockImpl() {
+        storeFlow = Pair.of(Store.Kind.BOTH, Store.Kind.BOTH);
     }
 
     @Override
@@ -28,4 +35,8 @@ public abstract class SingleSuccessorBlockImpl extends BlockImpl implements
         successor.addPredecessor(this);
     }
 
+    @Override
+    public Pair<Store.Kind, Store.Kind> getStoreFlow() {
+        return storeFlow;
+    }
 }
