@@ -209,13 +209,13 @@ public class CFGDOTVisualizer {
             }
         }
 
-        // visualize store if necessary
+        // visualize transfer input if necessary
         if (analysis != null) {
-            TransferInput<A, S> store = analysis.getStore(bb);
+            TransferInput<A, S> input = analysis.getInput(bb);
             StringBuilder sb2 = new StringBuilder();
 
-            // split store representation to two lines
-            String s = store.toDOToutput().replace("}, else={", "}\\nelse={");
+            // split input representation to two lines
+            String s = input.toDOToutput().replace("}, else={", "}\\nelse={");
             sb2.append(s.subSequence(1, s.length() - 1));
 
             // separator
