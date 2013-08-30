@@ -121,6 +121,16 @@
     </target>
 
     <target name="clean" description="Remove generated files">
+        <ant dir="${javacutils.loc}">
+            <target name="clean"/>
+        </ant>
+        <ant dir="${dataflow.loc}">
+            <target name="clean"/>
+        </ant>
+        <ant dir="${javaparser.loc}">
+            <target name="clean"/>
+        </ant>
+
         <delete dir="${build}"/>
         <delete dir="${dist.doc}"/>
         <delete file="${checkers.jar.file}"/>
