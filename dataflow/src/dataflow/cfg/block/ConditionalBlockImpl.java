@@ -1,5 +1,9 @@
 package dataflow.cfg.block;
 
+import dataflow.analysis.Store;
+
+import javacutils.Pair;
+
 /**
  * Implementation of a conditional basic block.
  *
@@ -15,11 +19,21 @@ public class ConditionalBlockImpl extends BlockImpl implements ConditionalBlock 
     protected BlockImpl elseSuccessor;
 
     /**
+     * A store flow contains the kinds of destination stores
+     * to which a store flows.
+     */
+    protected Pair<Store.Kind, Store.Kind> thenStoreFlow;
+    
+    protected Pair<Store.Kind, Store.Kind> elseStoreFlow;
+
+    /**
      * Initialize an empty conditional basic block to be filled with contents
      * and linked to other basic blocks later.
      */
     public ConditionalBlockImpl() {
         type = BlockType.CONDITIONAL_BLOCK;
+        thenStoreFlow = Pair.of(Store.Kind.THEN, Store.Kind.BOTH);
+        elseStoreFlow = Pair.of(Store.Kind.ELSE, Store.Kind.BOTH);
     }
 
     /**
@@ -46,6 +60,16 @@ public class ConditionalBlockImpl extends BlockImpl implements ConditionalBlock 
     @Override
     public Block getElseSuccessor() {
         return elseSuccessor;
+    }
+
+     @Override
+    public Pair<Store.Kind, Store.Kind> getThenStoreFlow() {
+        return thenStoreFlow;
+    }
+
+    @Override
+    public Pair<Store.Kind, Store.Kind> getElseStoreFlow() {
+        return elseStoreFlow;
     }
 
     @Override
