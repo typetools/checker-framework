@@ -1,0 +1,149 @@
+;# Tests for the parsing and printing routines
+;# x
+; parse p x
+p = x
+; esc_name p
+x
+; simplify_name p
+|x|
+;# x[]
+; parse p x[]
+p = x[]
+; quantify_esc_name p
+(\forall int i; (0 <= i && i <= x.length-1) ==> 
+	x[i]
+)
+; quantify_simplify_name p
+(FORALL (|i|) (IMPLIES (AND (<= 0 |i|) (<= |i| (- (arrayLength |x|) 1))) 
+	(select (select elems |x|) |i|)
+))
+;# x.getClass()
+; parse p x.getClass()
+p = x.getClass()
+; esc_name p
+\typeof(x)
+; simplify_name p
+(typeof |x|)
+;# x[].getClass()
+; parse p x[].getClass()
+p = x[].getClass()
+; quantify_esc_name p
+(\forall int i; (0 <= i && i <= x.length-1) ==> 
+	\typeof(x[i])
+)
+; quantify_simplify_name p
+(FORALL (|i|) (IMPLIES (AND (<= 0 |i|) (<= |i| (- (arrayLength |x|) 1))) 
+	(typeof (select (select elems |x|) |i|))
+))
+;# this.field
+; parse p this.field
+p = this.field
+; esc_name p
+this.field
+; simplify_name p
+(select |field| |this|)
+;# this.field[]
+; parse p this.field[]
+p = this.field[]
+; quantify_esc_name p
+(\forall int i; (0 <= i && i <= this.field.length-1) ==> 
+	this.field[i]
+)
+; quantify_simplify_name p
+(FORALL (|i|) (IMPLIES (AND (<= 0 |i|) (<= |i| (- (arrayLength (select |field| |this|)) 1))) 
+	(select (select elems (select |field| |this|)) |i|)
+))
+;# this.field.again
+; parse p this.field.again
+p = this.field.again
+; esc_name p
+this.field.again
+; simplify_name p
+(select |again| (select |field| |this|))
+;# this.field.again[]
+; parse p this.field.again[]
+p = this.field.again[]
+; quantify_esc_name p
+(\forall int i; (0 <= i && i <= this.field.again.length-1) ==> 
+	this.field.again[i]
+)
+; quantify_simplify_name p
+(FORALL (|i|) (IMPLIES (AND (<= 0 |i|) (<= |i| (- (arrayLength (select |again| (select |field| |this|))) 1))) 
+	(select (select elems (select |again| (select |field| |this|))) |i|)
+))
+;# this.field.getClass()
+; parse p this.field.getClass()
+p = this.field.getClass()
+; esc_name p
+\typeof(this.field)
+; simplify_name p
+(typeof (select |field| |this|))
+; postPreConverter p
+p = post(this).field.getClass()
+;# this.field[].getClass()
+; parse p this.field[].getClass()
+p = this.field[].getClass()
+; quantify_esc_name p
+(\forall int i; (0 <= i && i <= this.field.length-1) ==> 
+	\typeof(this.field[i])
+)
+; quantify_simplify_name p
+(FORALL (|i|) (IMPLIES (AND (<= 0 |i|) (<= |i| (- (arrayLength (select |field| |this|)) 1))) 
+	(typeof (select (select elems (select |field| |this|)) |i|))
+))
+;# x[].field
+; parse p x[].field
+p = x[].field
+; quantify_esc_name p
+(\forall int i; (0 <= i && i <= x.length-1) ==> 
+	x[i].field
+)
+; quantify_simplify_name p
+(FORALL (|i|) (IMPLIES (AND (<= 0 |i|) (<= |i| (- (arrayLength |x|) 1))) 
+	(select |field| (select (select elems |x|) |i|))
+))
+;# x[].field.foo
+; parse p x[].field.foo
+p = x[].field.foo
+; quantify_esc_name p
+(\forall int i; (0 <= i && i <= x.length-1) ==> 
+	x[i].field.foo
+)
+; quantify_simplify_name p
+(FORALL (|i|) (IMPLIES (AND (<= 0 |i|) (<= |i| (- (arrayLength |x|) 1))) 
+	(select |foo| (select |field| (select (select elems |x|) |i|)))
+))
+; postPreConverter p
+p = post(x)[].field.foo
+;# return
+; parse p return
+p = return
+; esc_name p
+\result
+; simplify_name p
+|return|
+; postPreConverter p
+p = return
+;# return.field
+; parse p return.field
+p = return.field
+; esc_name p
+\result.field
+; simplify_name p
+(select |field| |return|)
+; postPreConverter p
+p = return.field
+;# x[anIndex:Int]
+; parse p x[anIndex:Int]
+p = x[anIndex:Int]
+; esc_name p
+x[anIndex:Int]
+; simplify_name p
+(select (select elems |x|) |anIndex:Int|)
+;# x[anIndex:Int].y
+; parse p x[anIndex:Int].y
+p = x[anIndex:Int].y
+; esc_name p
+x[anIndex:Int].y
+; simplify_name p
+(select |y| (select (select elems |x|) |anIndex:Int|))
