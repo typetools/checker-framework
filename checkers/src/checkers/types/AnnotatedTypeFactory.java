@@ -15,6 +15,7 @@ import checkers.source.SourceChecker;
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedIntersectionType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
@@ -2030,8 +2031,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     protected AnnotatedWildcardType getUninferredWildcardType(AnnotatedTypeVariable typeVar, boolean useHack) {
         AnnotatedTypeMirror upperBound = typeVar.getEffectiveUpperBound();
-        while (upperBound.getKind() == TypeKind.TYPEVAR)
+        while (upperBound.getKind() == TypeKind.TYPEVAR) {
             upperBound = ((AnnotatedTypeVariable)upperBound).getEffectiveUpperBound();
+        }
+        if (upperBound.getKind() == TypeKind.INTERSECTION) {
+            // Use the class type of an intersection type.
+            upperBound = ((AnnotatedIntersectionType)upperBound).directSuperTypes().get(0);
+        }
         WildcardType wc = types.getWildcardType(upperBound.getUnderlyingType(), null);
         AnnotatedWildcardType wctype = (AnnotatedWildcardType) AnnotatedTypeMirror.createType(wc, this);
         wctype.setExtendsBound(upperBound);
