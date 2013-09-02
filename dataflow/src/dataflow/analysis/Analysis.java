@@ -87,12 +87,6 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
     protected IdentityHashMap<Block, TransferInput<A, S>> inputs;
 
     /**
-     * The transfer inputs after every basic block (assumed to be 'no information' if
-     * not present).
-     */
-    protected IdentityHashMap<Block, TransferInput<A, S>> inputsAfter;
-
-    /**
      * The stores after every return statement.
      */
     protected IdentityHashMap<ReturnNode, TransferResult<A, S>> storesAtReturnStatements;
@@ -207,8 +201,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
                 // propagate store to successors
                 Block succ = rb.getSuccessor();
                 assert succ != null : "regular basic block without non-exceptional successor unexpected";
-                inputsAfter.put(b, currentInput.copy());
-                propagateStoresTo(succ, lastNode, currentInput, rb.getStoreFlow(), addToWorklistAgain);
+                propagateStoresTo(succ, lastNode, currentInput, rb.getFlowRule(), addToWorklistAgain);
                 break;
             }
 
@@ -231,9 +224,8 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
                 Block succ = eb.getSuccessor();
                 if (succ != null) {
                     currentInput = new TransferInput<>(node, this, transferResult);
-                    Store.FlowRule storeFlow = eb.getStoreFlow();
-                    inputsAfter.put(b, currentInput.copy());
-                    propagateStoresTo(succ, node, currentInput, eb.getStoreFlow(), addToWorklistAgain);
+                    Store.FlowRule storeFlow = eb.getFlowRule();
+                    propagateStoresTo(succ, node, currentInput, eb.getFlowRule(), addToWorklistAgain);
                 }
 
                 // propagate store to exceptional successors
@@ -268,8 +260,8 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
                 Block thenSucc = cb.getThenSuccessor();
                 Block elseSucc = cb.getElseSuccessor();
 
-                propagateStoresTo(thenSucc, null, input, cb.getThenStoreFlow(), false);
-                propagateStoresTo(elseSucc, null, input, cb.getElseStoreFlow(), false);
+                propagateStoresTo(thenSucc, null, input, cb.getThenFlowRule(), false);
+                propagateStoresTo(elseSucc, null, input, cb.getElseFlowRule(), false);
                 break;
             }
 
@@ -279,7 +271,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
                 SpecialBlock sb = (SpecialBlock) b;
                 Block succ = sb.getSuccessor();
                 if (succ != null) {
-                    propagateStoresTo(succ, null, getInputBefore(b), sb.getStoreFlow(), false);
+                    propagateStoresTo(succ, null, getInputBefore(b), sb.getFlowRule(), false);
                 }
                 break;
             }
@@ -389,7 +381,6 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
         thenStores = new IdentityHashMap<>();
         elseStores = new IdentityHashMap<>();
         inputs = new IdentityHashMap<>();
-        inputsAfter = new IdentityHashMap<>();
         storesAtReturnStatements = new IdentityHashMap<>();
         worklist = new Worklist();
         nodeValues = new IdentityHashMap<>();
@@ -660,14 +651,6 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
         }
 
         return inputs.get(b);
-    }
-
-    /**
-     * @return The transfer input corresponding to the location after the basic
-     *         block <code>b</code>.
-     */
-    public/* @Nullable */TransferInput<A, S> getInputAfter(Block b) {
-        return inputsAfter.get(b);
     }
 
     /**
