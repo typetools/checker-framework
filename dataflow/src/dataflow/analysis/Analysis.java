@@ -312,11 +312,11 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
             addStoreBefore(succ, node, currentInput.getElseStore(), Store.Kind.BOTH,
                     addToWorklistAgain);
             break;
-        case BOTH_TO_THEN:
+        case THEN_TO_THEN:
             addStoreBefore(succ, node, currentInput.getRegularStore(), Store.Kind.THEN,
                     addToWorklistAgain);
             break;
-        case BOTH_TO_ELSE:
+        case ELSE_TO_ELSE:
             addStoreBefore(succ, node, currentInput.getRegularStore(), Store.Kind.ELSE,
                     addToWorklistAgain);
             break;
@@ -674,6 +674,11 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
      *         block <code>b</code>.
      */
     protected/* @Nullable */TransferInput<A, S> getInputBefore(Block b) {
+        if (!inputs.containsKey(b)) {
+            System.out.println("Cannot find block " + b);
+            System.out.println("in map " + inputs);
+        }
+
         return inputs.get(b);
     }
 

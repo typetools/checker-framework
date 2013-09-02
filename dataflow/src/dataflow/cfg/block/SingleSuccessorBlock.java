@@ -20,4 +20,9 @@ public interface SingleSuccessorBlock extends Block {
      * @return The flow rule for information flowing from this block to its successor.
      */
     Store.FlowRule getStoreFlow();
+
+    /**
+     * Set the flow rule for information flowing from this block to its successor.
+     */
+    void setStoreFlow(Store.FlowRule rule);
 }
