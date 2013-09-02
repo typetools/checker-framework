@@ -535,6 +535,7 @@ for every type.
         \code{ExplicitThisLiteral} & Explicit use of \code{this} in an expression & \\
         \code{ImplicitThisLiteral} & Implicit use of \code{this} in an expression & \\
         \code{Super} & Explicit use of \code{super} in expression. & \code{super(x, y)} \\
+        \code{LocalVariable} & Use of a local variable, either as l-value or r-value & \\
         \midrule
         
         \code{MethodInvocation} & Note that access and invocation are distinct. & \code{hashCode()} \\
@@ -575,23 +576,28 @@ for every type.
         \code{Case} & Case of a switch.  Acts as an equality test. & \\
         \midrule
 
-        \code{VariableDeclaration} & Declaration of a local variable & \\
-        \code{LocalVariable} & Use of a local variable, either as l-value or r-value & \\
-        \midrule
-	
         \code{Assignment} & & \code{x = 1} \\
 %        \midrule
 	
-        \code{StringConcatenateAssignment} & A compound assignment.  Could be desugared. & \code{s += ".txt"} \\
+        \code{StringConcatenateAssignment} & A compound assignment. & \code{s += ".txt"} \\
         \midrule
 
         \code{ArrayCreation} & & \code{new double[]} \\
         \code{ObjectCreation} & & \code{new Object()} \\
         \midrule
 
-        \code{ClassName} & Identifier referring to Java class or interface. & \code{java.util.HashMap} \\
-        \code{PackageName} & Identifier referring to Java package. & \code{java.util} \\
+        \code{TypeCast} & & \code{(float) 42} \\
+        \code{InstanceOf} & & \code{x instanceof Float} \\
         \midrule
+        
+        & Conversion nodes. & \\
+        \code{NarrowingConversion} & Implicit conversion. & \\
+        \code{StringConversion} & Might be implicit. & \code{obj.toString()} \\
+        \code{WideningConversion} & Implicit conversion. & \\
+        \midrule
+
+        \midrule
+        & \textbf{Non-value nodes} & \\
 
         & Types appearing in expressions, such as \code{MyType.class} & \\
         \code{ArrayType} & & \\
@@ -599,14 +605,8 @@ for every type.
         \code{PrimitiveType} & & \\
         \midrule
         
-        \code{TypeCast} & & \code{(float) 42} \\
-        \code{InstanceOf} & & \code{x instanceof Float} \\
-        \midrule
-        
-        & Conversion nodes.  Could be desugared. & \\
-        \code{NarrowingConversion} & Implicit conversion. & \\
-        \code{StringConversion} & & \code{obj.toString()} \\
-        \code{WideningConversion} & Implicit conversion. & \\
+        \code{ClassName} & Identifier referring to Java class or interface. & \code{java.util.HashMap} \\
+        \code{PackageName} & Identifier referring to Java package. & \code{java.util} \\
         \midrule
 
         \code{Throw} & Throw an exception. & \\
@@ -622,6 +622,10 @@ for every type.
         \code{NullChk} & Null checks inserted by javac & \\
         \midrule
         
+        \code{VariableDeclaration} & Declaration of a local variable & \\
+        \midrule
+	
+
         \caption{All node types in our dataflow framework.}
         \label{tab:nodes}
     \end{longtable}
@@ -638,10 +642,24 @@ Can \code{StringConversion} be implicit?  I think so, but in any event discuss.
 
 \begin{workinprogress}
 What is \code{Marker} used for?
+It's for drawing diagrams, to show where try-catch and switch nodes were in
+the original program.
 \end{workinprogress}
 
 \begin{workinprogress}
-``Could be desugared'' is confusing.  What is the design rationale for
+I think it might be helpful to indicate which nodes can possibly throw an
+exception.  This could be done by segretating them to a different part of
+the table, or by having another column or an asterisk.
+\end{workinprogress}
+
+\begin{workinprogress}
+For each non-expression, explain its purpose, just like the explanation for
+Marker that still needs to be fleshed out.
+\end{workinprogress}
+
+\begin{workinprogress}
+``Could be desugared'' on ``StringConcatenateAssignment'' and ``Conversion
+nodes'' was confusing.  What is the design rationale for
 desugaring in the Dataflow Framework?   Discuss that.  Here, at least
 forward-reference to \autoref{sec:desugaring}, if that's relevant. \\
 More generally, for any cases that will be discussed in the text, add a
@@ -686,7 +704,7 @@ which is properly handled by our translation.}
 
 \subsubsection{Conditional stores}
 
-The dataflow framework extracts information from control-flow splits that occur in if, for, while and switch statements.  In order to have the information available at the split, we eagerly produce two stores contained in a \code{ConditionalTransferResult} after certain boolean-valued expressions.  The stores are called the \emph{then} and \emph{else} stores.  So, for example, after the expression \code{x == null}, two different stores will be created.  The Nullness Checkers would produce a then store that maps \code{x} to @Nullable and an else store that maps \code{x} to @NonNull.
+The dataflow framework extracts information from control-flow splits that occur in if, for, while, and switch statements.  In order to have the information available at the split, we eagerly produce two stores contained in a \code{ConditionalTransferResult} after certain boolean-valued expressions.  The stores are called the \emph{then} and \emph{else} stores.  So, for example, after the expression \code{x == null}, two different stores will be created.  The Nullness Checkers would produce a then store that maps \code{x} to @Nullable and an else store that maps \code{x} to @NonNull.
 
 The dataflow framework allows a maximum of two stores and when there are two distinct stores, they always refer to the most recent boolean-valued expression.  Stores are propagated through most nodes and they are reversed for conditional not expressions.  The transfer functions for many nodes merge conditional stores back together because they cannot maintain the distinction between them.  Merging just means taking the least upper bound of the two stores and it happens automatically by
 calling \code{TransferInput.getRegularStore}.
