@@ -1148,10 +1148,6 @@ public class CFGBuilder {
                                 @Override
                                 public void setSuccessor(BlockImpl successor) {
                                     cb.setThenSuccessor(successor);
-                                    Store.FlowRule rule = thenLabel.getFlowRule();
-                                    if (rule != null) {
-                                        // cb.setThenStoreFlow(rule);
-                                    }
                                 }
                             }, bindings.get(thenLabel)));
                     missingEdges.add(new Tuple<>(
@@ -1159,10 +1155,6 @@ public class CFGBuilder {
                                 @Override
                                 public void setSuccessor(BlockImpl successor) {
                                     cb.setElseSuccessor(successor);
-                                    Store.FlowRule rule = elseLabel.getFlowRule();
-                                    if (rule != null) {
-                                        // cb.setElseStoreFlow(rule);
-                                    }
                                 }
                             }, bindings.get(elseLabel)));
                     break;
