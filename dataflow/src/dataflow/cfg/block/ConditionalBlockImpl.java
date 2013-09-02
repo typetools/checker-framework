@@ -2,8 +2,6 @@ package dataflow.cfg.block;
 
 import dataflow.analysis.Store;
 
-import javacutils.Pair;
-
 /**
  * Implementation of a conditional basic block.
  *
@@ -19,12 +17,14 @@ public class ConditionalBlockImpl extends BlockImpl implements ConditionalBlock 
     protected BlockImpl elseSuccessor;
 
     /**
-     * A store flow contains the kinds of destination stores
-     * to which a store flows.
+     * The rules below say that the THEN store before a conditional
+     * block flows to BOTH of the stores of the then successor, while
+     * the ELSE store before a conditional block flows to BOTH of the
+     * stores of the else successor.
      */
-    protected Pair<Store.Kind, Store.Kind> thenStoreFlow;
+    protected Store.FlowRule thenStoreFlow = Store.FlowRule.THEN_TO_BOTH;
     
-    protected Pair<Store.Kind, Store.Kind> elseStoreFlow;
+    protected Store.FlowRule elseStoreFlow = Store.FlowRule.ELSE_TO_BOTH;
 
     /**
      * Initialize an empty conditional basic block to be filled with contents
@@ -32,8 +32,6 @@ public class ConditionalBlockImpl extends BlockImpl implements ConditionalBlock 
      */
     public ConditionalBlockImpl() {
         type = BlockType.CONDITIONAL_BLOCK;
-        thenStoreFlow = Pair.of(Store.Kind.THEN, Store.Kind.BOTH);
-        elseStoreFlow = Pair.of(Store.Kind.ELSE, Store.Kind.BOTH);
     }
 
     /**
@@ -63,12 +61,12 @@ public class ConditionalBlockImpl extends BlockImpl implements ConditionalBlock 
     }
 
      @Override
-    public Pair<Store.Kind, Store.Kind> getThenStoreFlow() {
+    public Store.FlowRule getThenStoreFlow() {
         return thenStoreFlow;
     }
 
     @Override
-    public Pair<Store.Kind, Store.Kind> getElseStoreFlow() {
+    public Store.FlowRule getElseStoreFlow() {
         return elseStoreFlow;
     }
 
