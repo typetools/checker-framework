@@ -2,8 +2,6 @@ package dataflow.cfg.block;
 
 import dataflow.analysis.Store;
 
-import javacutils.Pair;
-
 /**
  * Implementation of a non-special basic block.
  *
@@ -16,11 +14,11 @@ public abstract class SingleSuccessorBlockImpl extends BlockImpl implements
     /** Internal representation of the successor. */
     protected /*@Nullable*/ BlockImpl successor;
 
-    protected Pair<Store.Kind, Store.Kind> storeFlow;
-
-    public SingleSuccessorBlockImpl() {
-        storeFlow = Pair.of(Store.Kind.BOTH, Store.Kind.BOTH);
-    }
+    /**
+     * The rule below say that EACH store at the end of a single
+     * successor block flow to the corresponding store of the successor.
+     */
+    protected Store.FlowRule storeFlow = Store.FlowRule.EACH_TO_EACH;
 
     @Override
     public /*@Nullable*/ Block getSuccessor() {
@@ -36,7 +34,7 @@ public abstract class SingleSuccessorBlockImpl extends BlockImpl implements
     }
 
     @Override
-    public Pair<Store.Kind, Store.Kind> getStoreFlow() {
+    public Store.FlowRule getStoreFlow() {
         return storeFlow;
     }
 }

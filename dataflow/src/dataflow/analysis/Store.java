@@ -24,6 +24,16 @@ public interface Store<S extends Store<S>> {
         BOTH
     }
 
+    // A flow rule describes how stores flow along one edge between basic blocks.
+    public static enum FlowRule {
+        EACH_TO_EACH,       // The normal case, then store flows to the then store
+                            // and else store flows to the else store.
+        THEN_TO_BOTH,       // Then store flows to both then and else of successor.
+        ELSE_TO_BOTH,       // Else store flows to both then and else of successor.
+        BOTH_TO_THEN,       // Then and else store merge, flowing to then store of successor.
+        BOTH_TO_ELSE        // Then and else store merge, flowing to else store of successor.
+    }
+
     /** @return An exact copy of this store. */
     S copy();
 

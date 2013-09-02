@@ -201,36 +201,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
                 // propagate store to successors
                 Block succ = rb.getSuccessor();
                 assert succ != null : "regular basic block without non-exceptional successor unexpected";
-                Pair<Store.Kind, Store.Kind> storeFlow = rb.getStoreFlow();
-                switch (storeFlow.first) {
-                case THEN:
-                    if (currentInput.containsTwoStores()) {
-                        System.out.println("RB: Add THEN store: " + currentInput.getThenStore());
-                        addStoreBefore(succ, lastNode, currentInput.getThenStore(), storeFlow.second,
-                                       addToWorklistAgain);
-                    } else {
-                        System.out.println("RB: Add regular store #1: " + currentInput.getRegularStore());
-                        addStoreBefore(succ, lastNode, currentInput.getRegularStore(), storeFlow.second,
-                                       addToWorklistAgain);
-                    }
-                    break;
-                case ELSE:
-                    if (currentInput.containsTwoStores()) {
-                        System.out.println("RB: Add ELSE store: " + currentInput.getElseStore());
-                        addStoreBefore(succ, lastNode, currentInput.getElseStore(), storeFlow.second,
-                                       addToWorklistAgain);
-                    } else {
-                        System.out.println("RB: Add regular store #2: " + currentInput.getRegularStore());
-                        addStoreBefore(succ, lastNode, currentInput.getRegularStore(), storeFlow.second,
-                                       addToWorklistAgain);
-                    }
-                    break;
-                case BOTH:
-                    System.out.println("RB: Add regular store #3: " + currentInput.getRegularStore());
-                    addStoreBefore(succ, lastNode, currentInput.getRegularStore(), storeFlow.second,
-                                   addToWorklistAgain);
-                    break;
-                }
+                propagateStoresTo(succ, lastNode, currentInput, rb.getStoreFlow(), addToWorklistAgain);
                 break;
             }
 
@@ -253,10 +224,8 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
                 Block succ = eb.getSuccessor();
                 if (succ != null) {
                     currentInput = new TransferInput<>(node, this, transferResult);
-                    Pair<Store.Kind, Store.Kind> storeFlow = eb.getStoreFlow();
-                    assert storeFlow.first == Store.Kind.BOTH;
-                    addStoreBefore(succ, node, currentInput.getRegularStore(), storeFlow.second,
-                                   addToWorklistAgain);
+                    Store.FlowRule storeFlow = eb.getStoreFlow();
+                    propagateStoresTo(succ, node, currentInput, eb.getStoreFlow(), addToWorklistAgain);
                 }
 
                 // propagate store to exceptional successors
@@ -291,15 +260,8 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
                 Block thenSucc = cb.getThenSuccessor();
                 Block elseSucc = cb.getElseSuccessor();
 
-                Pair<Store.Kind, Store.Kind> thenStoreFlow = cb.getThenStoreFlow();
-                assert thenStoreFlow.first == Store.Kind.THEN;
-                System.out.println("CB: Add THEN store: " + input.getThenStore());
-                addStoreBefore(thenSucc, null, input.getThenStore(), thenStoreFlow.second, false);
-
-                Pair<Store.Kind, Store.Kind> elseStoreFlow = cb.getElseStoreFlow();
-                assert elseStoreFlow.first == Store.Kind.ELSE;
-                System.out.println("CB: Add ELSE store: " + input.getElseStore());
-                addStoreBefore(elseSucc, null, input.getElseStore(), elseStoreFlow.second, false);
+                propagateStoresTo(thenSucc, null, input, cb.getThenStoreFlow(), false);
+                propagateStoresTo(elseSucc, null, input, cb.getElseStoreFlow(), false);
                 break;
             }
 
@@ -309,10 +271,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
                 SpecialBlock sb = (SpecialBlock) b;
                 Block succ = sb.getSuccessor();
                 if (succ != null) {
-                    Pair<Store.Kind, Store.Kind> storeFlow = sb.getStoreFlow();
-                    assert storeFlow.first == Store.Kind.BOTH;
-                    addStoreBefore(succ, null, getInputBefore(b).getRegularStore(),
-                                   storeFlow.second, false);
+                    propagateStoresTo(succ, null, getInputBefore(b), sb.getStoreFlow(), false);
                 }
                 break;
             }
@@ -325,6 +284,43 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
 
         assert isRunning == true;
         isRunning = false;
+    }
+
+    /**
+     * Propagate the stores in currentInput to the successor block, succ, according to the
+     * flowRule.
+     */
+    protected void propagateStoresTo(Block succ, Node node, TransferInput<A, S> currentInput,
+            Store.FlowRule flowRule, boolean addToWorklistAgain) {
+        switch (flowRule) {
+        case EACH_TO_EACH:
+            if (currentInput.containsTwoStores()) {
+                addStoreBefore(succ, node, currentInput.getThenStore(), Store.Kind.THEN,
+                        addToWorklistAgain);
+                addStoreBefore(succ, node, currentInput.getElseStore(), Store.Kind.ELSE,
+                        addToWorklistAgain);
+            } else {
+                addStoreBefore(succ, node, currentInput.getRegularStore(), Store.Kind.BOTH,
+                        addToWorklistAgain);
+            }
+            break;
+        case THEN_TO_BOTH:
+            addStoreBefore(succ, node, currentInput.getThenStore(), Store.Kind.BOTH,
+                    addToWorklistAgain);
+            break;
+        case ELSE_TO_BOTH:
+            addStoreBefore(succ, node, currentInput.getElseStore(), Store.Kind.BOTH,
+                    addToWorklistAgain);
+            break;
+        case BOTH_TO_THEN:
+            addStoreBefore(succ, node, currentInput.getRegularStore(), Store.Kind.THEN,
+                    addToWorklistAgain);
+            break;
+        case BOTH_TO_ELSE:
+            addStoreBefore(succ, node, currentInput.getRegularStore(), Store.Kind.ELSE,
+                    addToWorklistAgain);
+            break;
+        }
     }
 
     /**
@@ -436,21 +432,16 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
         case THEN:
             // Update the then store
             if (thenStoreBefore == null) {
-                System.out.println("addStoreBefore #1");
                 thenStores.put(b, s);
                 if (elseStoreBefore != null) {
-                    System.out.println("addStoreBefore #2");
                     inputs.put(b, new TransferInput<>(node, this, s, elseStoreBefore));
                     addBlockToWorklist = true;
                 }
             } else {
-                System.out.println("addStoreBefore #3");
                 S newThenStoreBefore = thenStoreBefore.leastUpperBound(s);
                 if (!thenStoreBefore.equals(newThenStoreBefore)) {
-                    System.out.println("addStoreBefore #4");
                     thenStores.put(b, s);
                     if (elseStoreBefore != null) {
-                        System.out.println("addStoreBefore #5");
                         inputs.put(b, new TransferInput<>(node, this, newThenStoreBefore, elseStoreBefore));
                         addBlockToWorklist = true;
                     }
@@ -460,21 +451,16 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
         case ELSE:
             // Update the else store
             if (elseStoreBefore == null) {
-                System.out.println("addStoreBefore #6");
                 elseStores.put(b, s);
                 if (thenStoreBefore != null) {
-                    System.out.println("addStoreBefore #7");
                     inputs.put(b, new TransferInput<>(node, this, thenStoreBefore, s));
                     addBlockToWorklist = true;
                 }
             } else {
-                System.out.println("addStoreBefore #8");
                 S newElseStoreBefore = elseStoreBefore.leastUpperBound(s);
                 if (!elseStoreBefore.equals(newElseStoreBefore)) {
-                    System.out.println("addStoreBefore #9");
                     elseStores.put(b, s);
                     if (thenStoreBefore != null) {
-                        System.out.println("addStoreBefore #10");
                         inputs.put(b, new TransferInput<>(node, this, thenStoreBefore, newElseStoreBefore));
                         addBlockToWorklist = true;
                     }
@@ -485,16 +471,13 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
             if (thenStoreBefore == elseStoreBefore) {
                 // Currently there is only one regular store
                 if (thenStoreBefore == null) {
-                    System.out.println("addStoreBefore #11");
                     thenStores.put(b, s);
                     elseStores.put(b, s);
                     inputs.put(b, new TransferInput<>(node, this, s));
                     addBlockToWorklist = true;
                 } else {
-                    System.out.println("addStoreBefore #12");
                     S newStoreBefore = thenStoreBefore.leastUpperBound(s);
                     if (!thenStoreBefore.equals(newStoreBefore)) {
-                        System.out.println("addStoreBefore #13");
                         thenStores.put(b, newStoreBefore);
                         elseStores.put(b, newStoreBefore);
                         inputs.put(b, new TransferInput<>(node, this, newStoreBefore));
@@ -502,42 +485,34 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
                     }
                 }
             } else {
-                System.out.println("addStoreBefore #14");
                 S newThenStoreBefore = null;
                 S newElseStoreBefore = null;
                 boolean storeChanged = false;
                 if (thenStoreBefore == null) {
-                    System.out.println("addStoreBefore #15");
                     newThenStoreBefore = s;
                     thenStores.put(b, newThenStoreBefore);
                     storeChanged = true;
                 } else {
-                    System.out.println("addStoreBefore #16");
                     newThenStoreBefore = thenStoreBefore.leastUpperBound(s);
                     if (!thenStoreBefore.equals(newThenStoreBefore)) {
-                        System.out.println("addStoreBefore #17");
                         thenStores.put(b, newThenStoreBefore);
                         storeChanged = true;
                     }
                 }
 
                 if (elseStoreBefore == null) {
-                    System.out.println("addStoreBefore #18");
                     newElseStoreBefore = s;
                     elseStores.put(b, newElseStoreBefore);
                     storeChanged = true;
                 } else {
-                    System.out.println("addStoreBefore #19");
                     newElseStoreBefore = elseStoreBefore.leastUpperBound(s);
                     if (!elseStoreBefore.equals(newElseStoreBefore)) {
-                        System.out.println("addStoreBefore #20");
                         elseStores.put(b, newElseStoreBefore);
                         storeChanged = true;
                     }
                 }
 
                 if (storeChanged) {
-                    System.out.println("addStoreBefore #21");
                     inputs.put(b, new TransferInput<>(node, this, newThenStoreBefore, newElseStoreBefore));
                     addBlockToWorklist = true;
                 }
