@@ -222,6 +222,20 @@ public class CFGDOTVisualizer {
             sb2.append("\\n~~~~~~~~~\\n");
             sb2.append(sb);
             sb = sb2;
+
+            // Dataflow information valid at the end of the basic block
+            input = analysis.getInputAfter(bb);
+            if (input != null) {
+                StringBuilder sb3 = new StringBuilder();
+
+                // Split input representation into two lines
+                s = input.toDOToutput().replace("}, else={", "}\\nelse={");
+                sb3.append(s.subSequence(1, s.length() - 1));
+            
+                // separator
+                sb.append("\\n~~~~~~~~~\\n");
+                sb.append(sb3);
+            }
         }
 
         return sb.toString() + (centered ? "" : "\\n");
