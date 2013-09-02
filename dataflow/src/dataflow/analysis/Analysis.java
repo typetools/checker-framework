@@ -87,6 +87,12 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
     protected IdentityHashMap<Block, TransferInput<A, S>> inputs;
 
     /**
+     * The transfer inputs after every basic block (assumed to be 'no information' if
+     * not present).
+     */
+    protected IdentityHashMap<Block, TransferInput<A, S>> inputsAfter;
+
+    /**
      * The stores after every return statement.
      */
     protected IdentityHashMap<ReturnNode, TransferResult<A, S>> storesAtReturnStatements;
@@ -201,6 +207,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
                 // propagate store to successors
                 Block succ = rb.getSuccessor();
                 assert succ != null : "regular basic block without non-exceptional successor unexpected";
+                inputsAfter.put(b, currentInput.copy());
                 propagateStoresTo(succ, lastNode, currentInput, rb.getStoreFlow(), addToWorklistAgain);
                 break;
             }
@@ -225,6 +232,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
                 if (succ != null) {
                     currentInput = new TransferInput<>(node, this, transferResult);
                     Store.FlowRule storeFlow = eb.getStoreFlow();
+                    inputsAfter.put(b, currentInput.copy());
                     propagateStoresTo(succ, node, currentInput, eb.getStoreFlow(), addToWorklistAgain);
                 }
 
@@ -313,11 +321,11 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
                     addToWorklistAgain);
             break;
         case THEN_TO_THEN:
-            addStoreBefore(succ, node, currentInput.getRegularStore(), Store.Kind.THEN,
+            addStoreBefore(succ, node, currentInput.getThenStore(), Store.Kind.THEN,
                     addToWorklistAgain);
             break;
         case ELSE_TO_ELSE:
-            addStoreBefore(succ, node, currentInput.getRegularStore(), Store.Kind.ELSE,
+            addStoreBefore(succ, node, currentInput.getElseStore(), Store.Kind.ELSE,
                     addToWorklistAgain);
             break;
         }
@@ -381,6 +389,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
         thenStores = new IdentityHashMap<>();
         elseStores = new IdentityHashMap<>();
         inputs = new IdentityHashMap<>();
+        inputsAfter = new IdentityHashMap<>();
         storesAtReturnStatements = new IdentityHashMap<>();
         worklist = new Worklist();
         nodeValues = new IdentityHashMap<>();
@@ -405,7 +414,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
         Block entry = cfg.getEntryBlock();
         thenStores.put(entry, initialStore);
         elseStores.put(entry, initialStore);
-        inputs.put(entry, new TransferInput<>(null, this, initialStore, initialStore));
+        inputs.put(entry, new TransferInput<>(null, this, initialStore));
     }
 
     /**
@@ -425,95 +434,66 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
      */
     protected void addStoreBefore(Block b, Node node, S s, Store.Kind kind,
             boolean addBlockToWorklist) {
-        S thenStoreBefore = getStoreBefore(b, Store.Kind.THEN);
-        S elseStoreBefore = getStoreBefore(b, Store.Kind.ELSE);
+        S thenStore = getStoreBefore(b, Store.Kind.THEN);
+        S elseStore = getStoreBefore(b, Store.Kind.ELSE);
 
         switch (kind) {
-        case THEN:
+        case THEN: {
             // Update the then store
-            if (thenStoreBefore == null) {
-                thenStores.put(b, s);
-                if (elseStoreBefore != null) {
-                    inputs.put(b, new TransferInput<>(node, this, s, elseStoreBefore));
+            S newThenStore = (thenStore != null) ?
+                thenStore.leastUpperBound(s) : s;
+            if (!newThenStore.equals(thenStore)) {
+                thenStores.put(b, newThenStore);
+                if (elseStore != null) {
+                    inputs.put(b, new TransferInput<>(node, this, newThenStore, elseStore));
                     addBlockToWorklist = true;
-                }
-            } else {
-                S newThenStoreBefore = thenStoreBefore.leastUpperBound(s);
-                if (!thenStoreBefore.equals(newThenStoreBefore)) {
-                    thenStores.put(b, s);
-                    if (elseStoreBefore != null) {
-                        inputs.put(b, new TransferInput<>(node, this, newThenStoreBefore, elseStoreBefore));
-                        addBlockToWorklist = true;
-                    }
                 }
             }
             break;
-        case ELSE:
+        }
+        case ELSE: {
             // Update the else store
-            if (elseStoreBefore == null) {
-                elseStores.put(b, s);
-                if (thenStoreBefore != null) {
-                    inputs.put(b, new TransferInput<>(node, this, thenStoreBefore, s));
+            S newElseStore = (elseStore != null) ?
+                elseStore.leastUpperBound(s) : s;
+            if (!newElseStore.equals(elseStore)) {
+                elseStores.put(b, newElseStore);
+                if (thenStore != null) {
+                    inputs.put(b, new TransferInput<>(node, this, thenStore, newElseStore));
                     addBlockToWorklist = true;
-                }
-            } else {
-                S newElseStoreBefore = elseStoreBefore.leastUpperBound(s);
-                if (!elseStoreBefore.equals(newElseStoreBefore)) {
-                    elseStores.put(b, s);
-                    if (thenStoreBefore != null) {
-                        inputs.put(b, new TransferInput<>(node, this, thenStoreBefore, newElseStoreBefore));
-                        addBlockToWorklist = true;
-                    }
                 }
             }
             break;
+        }
         case BOTH:
-            if (thenStoreBefore == elseStoreBefore) {
+            if (thenStore == elseStore) {
                 // Currently there is only one regular store
-                if (thenStoreBefore == null) {
-                    thenStores.put(b, s);
-                    elseStores.put(b, s);
-                    inputs.put(b, new TransferInput<>(node, this, s));
+                S newStore = (thenStore != null) ?
+                    thenStore.leastUpperBound(s) : s;
+                if (!newStore.equals(thenStore)) {
+                    thenStores.put(b, newStore);
+                    elseStores.put(b, newStore);
+                    inputs.put(b, new TransferInput<>(node, this, newStore));
                     addBlockToWorklist = true;
-                } else {
-                    S newStoreBefore = thenStoreBefore.leastUpperBound(s);
-                    if (!thenStoreBefore.equals(newStoreBefore)) {
-                        thenStores.put(b, newStoreBefore);
-                        elseStores.put(b, newStoreBefore);
-                        inputs.put(b, new TransferInput<>(node, this, newStoreBefore));
-                        addBlockToWorklist = true;
-                    }
                 }
             } else {
-                S newThenStoreBefore = null;
-                S newElseStoreBefore = null;
                 boolean storeChanged = false;
-                if (thenStoreBefore == null) {
-                    newThenStoreBefore = s;
-                    thenStores.put(b, newThenStoreBefore);
+
+                S newThenStore = (thenStore != null) ?
+                    thenStore.leastUpperBound(s) : s;
+                if (!newThenStore.equals(thenStore)) {
+                    thenStores.put(b, newThenStore);
                     storeChanged = true;
-                } else {
-                    newThenStoreBefore = thenStoreBefore.leastUpperBound(s);
-                    if (!thenStoreBefore.equals(newThenStoreBefore)) {
-                        thenStores.put(b, newThenStoreBefore);
-                        storeChanged = true;
-                    }
                 }
 
-                if (elseStoreBefore == null) {
-                    newElseStoreBefore = s;
-                    elseStores.put(b, newElseStoreBefore);
+                S newElseStore = (elseStore != null) ?
+                    elseStore.leastUpperBound(s) : s;
+                if (!newElseStore.equals(elseStore)) {
+                    elseStores.put(b, newElseStore);
                     storeChanged = true;
-                } else {
-                    newElseStoreBefore = elseStoreBefore.leastUpperBound(s);
-                    if (!elseStoreBefore.equals(newElseStoreBefore)) {
-                        elseStores.put(b, newElseStoreBefore);
-                        storeChanged = true;
-                    }
                 }
 
                 if (storeChanged) {
-                    inputs.put(b, new TransferInput<>(node, this, newThenStoreBefore, newElseStoreBefore));
+                    inputs.put(b, new TransferInput<>(node, this, newThenStore, newElseStore));
                     addBlockToWorklist = true;
                 }
             }
@@ -680,6 +660,14 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
         }
 
         return inputs.get(b);
+    }
+
+    /**
+     * @return The transfer input corresponding to the location after the basic
+     *         block <code>b</code>.
+     */
+    public/* @Nullable */TransferInput<A, S> getInputAfter(Block b) {
+        return inputsAfter.get(b);
     }
 
     /**
