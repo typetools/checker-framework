@@ -60,7 +60,7 @@ public class ConditionalBlockImpl extends BlockImpl implements ConditionalBlock 
         return elseSuccessor;
     }
 
-     @Override
+    @Override
     public Store.FlowRule getThenStoreFlow() {
         return thenStoreFlow;
     }
@@ -71,8 +71,17 @@ public class ConditionalBlockImpl extends BlockImpl implements ConditionalBlock 
     }
 
     @Override
+    public void setThenStoreFlow(Store.FlowRule rule) {
+        thenStoreFlow = rule;
+    }
+
+    @Override
+    public void setElseStoreFlow(Store.FlowRule rule) {
+        elseStoreFlow = rule;
+    }
+
+    @Override
     public String toString() {
         return "ConditionalBlock()";
     }
-
 }

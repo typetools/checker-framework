@@ -37,4 +37,9 @@ public abstract class SingleSuccessorBlockImpl extends BlockImpl implements
     public Store.FlowRule getStoreFlow() {
         return storeFlow;
     }
+
+    @Override
+    public void setStoreFlow(Store.FlowRule rule) {
+        storeFlow = rule;
+    }
 }

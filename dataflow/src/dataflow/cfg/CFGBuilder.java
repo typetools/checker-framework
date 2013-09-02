@@ -4,6 +4,7 @@ package dataflow.cfg;
 import checkers.nullness.quals.Nullable;
 */
 
+import dataflow.analysis.Store;
 import dataflow.cfg.CFGBuilder.ExtendedNode.ExtendedNodeType;
 import dataflow.cfg.UnderlyingAST.CFGMethod;
 import dataflow.cfg.block.Block;
@@ -516,12 +517,26 @@ public class CFGBuilder {
 
         protected String name;
 
+        /**
+         * {@link FlowRule} for information flowing along edges to this label,
+         * or null if there is no special flow rule.
+         */
+        protected /*@Nullable*/ Store.FlowRule flowRule;
+
         public Label(String name) {
             this.name = name;
         }
 
         public Label() {
             this.name = uniqueName();
+        }
+
+        public /*@Nullable*/ Store.FlowRule getFlowRule() {
+            return flowRule;
+        }
+
+        public void setFlowRule(Store.FlowRule rule) {
+            flowRule = rule;
         }
 
         @Override
@@ -708,7 +723,7 @@ public class CFGBuilder {
 
     /**
      * Class that performs phase three of the translation process. In
-     * particular, the following degenerated cases of basic blocks are removed:
+     * particular, the following degenerate cases of basic blocks are removed:
      *
      * <ol>
      * <li>Empty regular basic blocks: These blocks will be removed and their
@@ -1126,20 +1141,30 @@ public class CFGBuilder {
                     block = new RegularBlockImpl();
                     // use two anonymous SingleSuccessorBlockImpl that set the
                     // 'then' and 'else' successor of the conditional block
+                    final Label thenLabel = cj.getThenLabel();
+                    final Label elseLabel = cj.getElseLabel();
                     missingEdges.add(new Tuple<>(
                             new SingleSuccessorBlockImpl() {
                                 @Override
                                 public void setSuccessor(BlockImpl successor) {
                                     cb.setThenSuccessor(successor);
+                                    Store.FlowRule rule = thenLabel.getFlowRule();
+                                    if (rule != null) {
+                                        // cb.setThenStoreFlow(rule);
+                                    }
                                 }
-                            }, bindings.get(cj.getThenLabel())));
+                            }, bindings.get(thenLabel)));
                     missingEdges.add(new Tuple<>(
                             new SingleSuccessorBlockImpl() {
                                 @Override
                                 public void setSuccessor(BlockImpl successor) {
                                     cb.setElseSuccessor(successor);
+                                    Store.FlowRule rule = elseLabel.getFlowRule();
+                                    if (rule != null) {
+                                        // cb.setElseStoreFlow(rule);
+                                    }
                                 }
-                            }, bindings.get(cj.getElseLabel())));
+                            }, bindings.get(elseLabel)));
                     break;
                 }
                 case UNCONDITIONAL_JUMP:
@@ -1178,7 +1203,6 @@ public class CFGBuilder {
                     // exceptional edges
                     for (Entry<TypeMirror, Set<Label>> entry : en.getExceptions()
                             .entrySet()) {
-                        // missingEdges.put(e, bindings.get(key))
                         TypeMirror cause = entry.getKey();
                         for (Label label : entry.getValue()) {
                             Integer target = bindings.get(label);
@@ -3098,6 +3122,21 @@ public class CFGBuilder {
                 Label falseNodeL = new Label();
                 Label oldTrueTargetL = thenTargetL;
                 Label oldFalseTargetL = elseTargetL;
+
+                // Set special flow rules on labels/edges
+                if (kind == Tree.Kind.CONDITIONAL_AND) {
+                    // Control flows to the falseNodeL label when the left
+                    // expression is false, which implies that left && right is
+                    // also false.  So the dataflow information only needs
+                    // to be propagated to the "else" store of the successor.
+                    falseNodeL.setFlowRule(Store.FlowRule.ELSE_TO_ELSE);
+                } else {
+                    // Control flows to the trueNodeL label when the left
+                    // expression is true, which implies that left || right is
+                    // also true.  So the dataflow information only needs
+                    // to be propagated to the "then" store of the successor.
+                    trueNodeL.setFlowRule(Store.FlowRule.THEN_TO_THEN);
+                }
 
                 // left-hand side
                 if (kind == Tree.Kind.CONDITIONAL_AND) {
