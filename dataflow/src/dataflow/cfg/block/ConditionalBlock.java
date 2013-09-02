@@ -26,23 +26,23 @@ public interface ConditionalBlock extends Block {
      * @return The flow rule for information flowing from
      * this block to its then successor.
      */
-    Store.FlowRule getThenStoreFlow();
+    Store.FlowRule getThenFlowRule();
 
     /**
      * @return The flow rule for information flowing from
      * this block to its else successor.
      */
-    Store.FlowRule getElseStoreFlow();
+    Store.FlowRule getElseFlowRule();
 
     /**
      * Set the flow rule for information flowing from this block to
      * its then successor.
      */
-    void setThenStoreFlow(Store.FlowRule rule);
+    void setThenFlowRule(Store.FlowRule rule);
 
     /**
      * Set the flow rule for information flowing from this block to
      * its else successor.
      */
-    void setElseStoreFlow(Store.FlowRule rule);
+    void setElseFlowRule(Store.FlowRule rule);
 }

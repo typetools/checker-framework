@@ -22,9 +22,9 @@ public class ConditionalBlockImpl extends BlockImpl implements ConditionalBlock 
      * the ELSE store before a conditional block flows to BOTH of the
      * stores of the else successor.
      */
-    protected Store.FlowRule thenStoreFlow = Store.FlowRule.THEN_TO_BOTH;
+    protected Store.FlowRule thenFlowRule = Store.FlowRule.THEN_TO_BOTH;
     
-    protected Store.FlowRule elseStoreFlow = Store.FlowRule.ELSE_TO_BOTH;
+    protected Store.FlowRule elseFlowRule = Store.FlowRule.ELSE_TO_BOTH;
 
     /**
      * Initialize an empty conditional basic block to be filled with contents
@@ -61,23 +61,23 @@ public class ConditionalBlockImpl extends BlockImpl implements ConditionalBlock 
     }
 
     @Override
-    public Store.FlowRule getThenStoreFlow() {
-        return thenStoreFlow;
+    public Store.FlowRule getThenFlowRule() {
+        return thenFlowRule;
     }
 
     @Override
-    public Store.FlowRule getElseStoreFlow() {
-        return elseStoreFlow;
+    public Store.FlowRule getElseFlowRule() {
+        return elseFlowRule;
     }
 
     @Override
-    public void setThenStoreFlow(Store.FlowRule rule) {
-        thenStoreFlow = rule;
+    public void setThenFlowRule(Store.FlowRule rule) {
+        thenFlowRule = rule;
     }
 
     @Override
-    public void setElseStoreFlow(Store.FlowRule rule) {
-        elseStoreFlow = rule;
+    public void setElseFlowRule(Store.FlowRule rule) {
+        elseFlowRule = rule;
     }
 
     @Override
