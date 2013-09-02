@@ -74,7 +74,7 @@ public class CFGDOTVisualizer {
                 Block thenSuccessor = ccur.getThenSuccessor();
                 sb2.append("    " + ccur.getId() + " -> "
                         + thenSuccessor.getId());
-                sb2.append(" [label=\"then\\n" + ccur.getThenStoreFlow() + "\"];\n");
+                sb2.append(" [label=\"then\\n" + ccur.getThenFlowRule() + "\"];\n");
                 if (!visited.contains(thenSuccessor)) {
                     visited.add(thenSuccessor);
                     worklist.add(thenSuccessor);
@@ -82,7 +82,7 @@ public class CFGDOTVisualizer {
                 Block elseSuccessor = ccur.getElseSuccessor();
                 sb2.append("    " + ccur.getId() + " -> "
                         + elseSuccessor.getId());
-                sb2.append(" [label=\"else\\n" + ccur.getElseStoreFlow() + "\"];\n");
+                sb2.append(" [label=\"else\\n" + ccur.getElseFlowRule() + "\"];\n");
                 if (!visited.contains(elseSuccessor)) {
                     visited.add(elseSuccessor);
                     worklist.add(elseSuccessor);
@@ -92,7 +92,7 @@ public class CFGDOTVisualizer {
                 Block b = ((SingleSuccessorBlock) cur).getSuccessor();
                 if (b != null) {
                     sb2.append("    " + cur.getId() + " -> " + b.getId());
-                    sb2.append(" [label=\"" + ((SingleSuccessorBlock) cur).getStoreFlow() + "\"];\n");
+                    sb2.append(" [label=\"" + ((SingleSuccessorBlock) cur).getFlowRule() + "\"];\n");
                     if (!visited.contains(b)) {
                         visited.add(b);
                         worklist.add(b);
@@ -222,20 +222,6 @@ public class CFGDOTVisualizer {
             sb2.append("\\n~~~~~~~~~\\n");
             sb2.append(sb);
             sb = sb2;
-
-            // Dataflow information valid at the end of the basic block
-            input = analysis.getInputAfter(bb);
-            if (input != null) {
-                StringBuilder sb3 = new StringBuilder();
-
-                // Split input representation into two lines
-                s = input.toDOToutput().replace("}, else={", "}\\nelse={");
-                sb3.append(s.subSequence(1, s.length() - 1));
-            
-                // separator
-                sb.append("\\n~~~~~~~~~\\n");
-                sb.append(sb3);
-            }
         }
 
         return sb.toString() + (centered ? "" : "\\n");

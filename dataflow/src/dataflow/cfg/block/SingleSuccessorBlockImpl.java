@@ -18,7 +18,7 @@ public abstract class SingleSuccessorBlockImpl extends BlockImpl implements
      * The rule below say that EACH store at the end of a single
      * successor block flow to the corresponding store of the successor.
      */
-    protected Store.FlowRule storeFlow = Store.FlowRule.EACH_TO_EACH;
+    protected Store.FlowRule flowRule = Store.FlowRule.EACH_TO_EACH;
 
     @Override
     public /*@Nullable*/ Block getSuccessor() {
@@ -34,12 +34,12 @@ public abstract class SingleSuccessorBlockImpl extends BlockImpl implements
     }
 
     @Override
-    public Store.FlowRule getStoreFlow() {
-        return storeFlow;
+    public Store.FlowRule getFlowRule() {
+        return flowRule;
     }
 
     @Override
-    public void setStoreFlow(Store.FlowRule rule) {
-        storeFlow = rule;
+    public void setFlowRule(Store.FlowRule rule) {
+        flowRule = rule;
     }
 }
