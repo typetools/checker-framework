@@ -59,6 +59,12 @@ This section gives an overview of the major Java classes and interfaces in the i
 
     A Node class represents an individual operation of a program, including arithmetic operations, logical operations, method calls, variable references, array accesses, etc.  \autoref{tab:nodes} lists the Node types.
 
+\begin{workinprogress}
+Need to double-check whether the code adds exceptions properly.  Also, does
+division possibly throw a DivideByZero exception?
+\end{workinprogress}
+
+
     \code{class dataflow.cfg.node.*Node}
 
 \subsubsection{Blocks}
@@ -759,6 +765,29 @@ and usage of two \code{ConditionalOrNode}s.}
 and usage of only a single \code{ConditionalOrNode}.}
 
 
+\begin{workinprogress}
+Here is Mike's take on how the translation happens.  Someone should
+double-check it and improve the presentation.
+\begin{itemize}
+\item
+Create a boolean expression.
+\item
+Create its labels (but they aren't attached anywhere yet).
+\item
+Later, attach each label to some code.
+Maybe both labels get attached to the same code, in which case the last
+pass will simplify the CFG.
+\end{itemize}
+
+A ``conditional node'' is used when generating the CFG for the predicate of
+a conditional (\code{if}, etc.), but not when generating the CFG for an
+arbitrary boolean expression.  When generating this node, the Checker
+Framework knows its then and else successors because the conditional
+statement (the \code{if}, etc.) passed that information in.
+
+\end{workinprogress}
+
+
 \subsubsection{Implicit \code{this} access}
 
 The Java compiler AST uses the same type (\code{IdentifierTree}) for local variables
@@ -785,16 +814,31 @@ precise, but it doesn't help the reader to place the concept in context and
 therefore it is confusing.
 \end{workinprogress}
 
+\begin{workinprogress}
+Nodes themselves never contain control flow information; they only
+represent computation.
+
+An extended node is a wrapper around a node that represents control flow
+information.  It contains:  a node, a label, a predecessor, and a
+successor.
+
+An extended node is temporarily used to keep track of some control flow
+information.  Later, the basic block data structures are created, and they
+represent the control flow.  (And at that point the extended nodes can be
+discarded.)
+\end{workinprogress}
+
 \begin{definition}[Extended Node]
     In the translation process the data type \emph{extended node} is used.
     An extended node can be one of four possibilities:
     \begin{itemize}
-        \item \textbf{Simple extended node.} An extended node can just be a wrapper for a node
-        as defined in \autoref{def:node}.
+        \item \textbf{Simple extended node.} An extended node can just be a
+          wrapper for a node that does not throw an exception,
+        as defined in Definition~\ref{def:node}.
         \begin{workinprogress}
-          Are there restrictions on simple extended nodes?  Can they throw
-          an exception?  How are they related to regular simple nodes?  Is
-          it a wrapper only for regular simple nodes?
+          Say how non-exception-throwing nodes are distinguished in
+          Table~\autoref{tab:nodes}.  Exception-throwing ones need to
+          include throw, call, field access, typecast, division, ...
         \end{workinprogress}
         \item \textbf{Exception extended node.} Similar to a simple node, an exception extended
         node contains a node, but this node might throw an exception at runtime.
@@ -809,10 +853,23 @@ therefore it is confusing.
     A \emph{label} is a marker that is used to refer to extended nodes.
 \end{definition}
 
+\begin{workinprogress}
+Is a label used temporarily like an extended node, long-term like a basic
+block, or both?
+\end{workinprogress}
+
+\begin{workinprogress}
+I find it useful to never name phases ``one'', ``two'', ``three'', but
+always to give them Inglish names.  This makes the meaning clearer to
+readers --- often because it forces the writer to think harder about the
+meaning of each.  It can still be useful to number the phases even after
+they have more mnemonic names.
+\end{workinprogress}
+
+
 The process of translating an AST to a CFG proceeds in three distinct phases.
 \begin{enumerate}
-    \item \textbf{Phase one.} In the first phase, a sequence of extended nodes is created
-    that represents the control flow of the method. The control flow is implicitly
+    \item \textbf{Phase one.} In the first phase, a single linear sequence of extended nodes is created. The control flow is implicitly
     assumed to be sequential through the sequence of extended nodes, until a (conditional
     or unconditional) jump is encountered in an if, for, while or switch statement, in which
     case the jump target decides where execution proceeds.
@@ -828,7 +885,7 @@ The process of translating an AST to a CFG proceeds in three distinct phases.
     
     Furthermore, phase one also computes a mapping from AST tree elements to nodes, as well
     as a set of leaders. A \emph{leader} is an extended node for which one of the following
-    condition applies:
+    conditions applies:
     \begin{itemize}
     \item It is the first extended node in the sequence.
     \item It is the target of a jump (i.e. there is a label bound to the location of the node
@@ -852,7 +909,7 @@ The process of translating an AST to a CFG proceeds in three distinct phases.
     \item Some conditional basic blocks might be unnecessary, in that they have the same target for both
     the `then' as well as the `else' branch.
     \item Two consecutive, non-empty, regular basic blocks can exist, even if the second block has only
-    exactly one predecessor and the two block could thus be merged.
+    exactly one predecessor and the two blocks could thus be merged.
     \end{itemize}
     \item \textbf{Phase three.} In the third and last phase, the control-flow graph is transformed such that
     the deficiencies remaining from phase two are removed. It is ensured that removing one kind of deficiency
@@ -867,14 +924,19 @@ The process of translating an AST to a CFG proceeds in three distinct phases.
 Desugaring means replacing complicated source language constructs by simpler ones, or removing syntactic sugar from an input program.  Originally, we intended for the control flow graph representation to be as close as possible to the Java abstract syntax tree to simplify the mapping from tree to CFG node and back and to reuse existing checker code written in terms of trees.  However, we ran into several cases that were better handled by desugaring.
 
     \begin{itemize}
-    \item We decided to represent implicit conversion operations like boxing, unboxing, widening
-    and narrowing as CFG nodes because they change the type of a value.  The pre-conversion
+    \item We decided to represent implicit conversion operations like boxing, unboxing, widening,
+    and narrowing as their own CFG nodes (not as method calls) because they change the type of a value.  The pre-conversion
     type can be associated with the original node and the post-conversion type can be associated
     with the explicit conversion node.  It also makes it possible for the transfer function to operate
     on the conversion nodes.
     
+\begin{workinprogress}
+Is the ``not as method calls'' bit above still correct?
+\end{workinprogress}
+
+
     \item Enhanced for loops are defined in terms of a complicated translation into simpler
-    operations, including field accesses, branches and method calls that could affect dataflow
+    operations, including field accesses, branches, and method calls that could affect dataflow
     information.  It would be prohibitively difficult for a checker writer to write a transfer function that
     correctly accounted for all of those operations, so we desugar enhanced for loops.
     
@@ -893,9 +955,9 @@ and they persist as long as some CFG node refers to them.  However, the trees ar
 inserted into the AST, so they are not type-checked or seen by other tree visitors.  Their
 main purpose is to carry Java types and to satisfy AnnotatedTypeFactory methods.
 
-A further complication is that these newly introduced AST trees are not part of the TreePath
-when visiting the AST.  We workaround this problem by giving the AnnotatedTypeFactory a
-mapping, called the \code{pathHack}, from newly introduced trees to their containing
+A further complication is that these newly-introduced AST trees are not part of the TreePath
+when visiting the AST.  We work around this problem by giving the AnnotatedTypeFactory a
+mapping, called the \code{pathHack}, from newly-introduced trees to their containing
 MethodTree and ClassTree.
 
 Possibly even worse, we needed to create fake symbols for variables created when
@@ -908,14 +970,14 @@ explicitly checks for DetachedVarSymbols in its DeclarationFromElement method.
 \subsubsection{Conversions and node-tree mapping}
 \label{sec:conversions}
 
-As mentioned in \autoref{sec:desugaring}, we represent implicit Java type conversions such as boxing, unboxing, widening and narrowing by explicit CFG nodes.  This means that some 
+As mentioned in \autoref{sec:desugaring}, we represent implicit Java type conversions such as boxing, unboxing, widening, and narrowing by explicit CFG nodes.  This means that some 
 AST tree nodes correspond to multiple CFG nodes: a pre-conversion node and a post-conversion
-nodes.  We will describe how the conversions work and how the node-tree mappings are
+node.  We will describe how the conversions work and how the node-tree mappings are
 implemented.
 
 Boxing and unboxing are represented in terms of calls to Java standard library methods.  Boxing
 corresponds to a call to \code{BoxedClass.valueOf} while unboxing corresponds to a call to
-\code{BoxedClass.\*Value}.  This allows annotations on the library methods, as well as transfer functions for method invocations to apply to the conversions with no special work on the part of
+\code{BoxedClass.\*Value}.  This allows annotations on the library methods, as well as transfer functions for method invocations, to apply to the conversions with no special work on the part of
 a checker developer.
 
 Widening and narrowing conversions are still represented as special node types, although
@@ -928,7 +990,7 @@ it may be necessary to expose it.
 
 \section{Dataflow Analysis}
 
-In this section, we describe how the dataflow analysis over the control-flow
+This section describes how the dataflow analysis over the control-flow
 graph is performed and what the user of our framework has to implement to
 define a particular analysis.
 
