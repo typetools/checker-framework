@@ -645,11 +645,6 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
      *         block <code>b</code>.
      */
     protected/* @Nullable */TransferInput<A, S> getInputBefore(Block b) {
-        if (!inputs.containsKey(b)) {
-            System.out.println("Cannot find block " + b);
-            System.out.println("in map " + inputs);
-        }
-
         return inputs.get(b);
     }
 
