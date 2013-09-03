@@ -84,4 +84,20 @@ unsanitized data that could result in a SQL injection attack.
 CheckLT is available from \url{http://checklt.github.io/}.
 
 
-% LocalWords:  SCJ EnerJ
+\section{JavaUI GUI threading checker\label{javaui-checker}}
+
+Eclipse and other GUI toolkits require all access to the UI to occur from
+the UI event loop thread.  If a different thread accesses a UI element, the
+program crashes.  JavaUI is an effect system that ensures that you program
+does not suffer such access errors.
+
+The implementation is available at
+\url{https://github.com/csgordon/javaui}.  
+A fork that fixes some compilation errors appears at
+\url{https://github.com/Overruler/javaui}.
+You can also read a technical paper about the effect system:  ``JavaUI:
+Effects for Controlling UI Object Access'' is available at
+\url{http://homes.cs.washington.edu/~mernst/pubs/gui-thread-ecoop2013-abstract.html}.
+
+
+% LocalWords:  SCJ EnerJ CheckLT unsanitized JavaUI
