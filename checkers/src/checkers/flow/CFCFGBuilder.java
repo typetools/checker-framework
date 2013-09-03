@@ -139,8 +139,6 @@ public class CFCFGBuilder extends CFGBuilder {
         @Override
         public Node visitEnhancedForLoop(EnhancedForLoopTree tree, Void p) {
             // see JLS 14.14.2
-            assert !conditionalMode;
-
             Name parentLabel = getLabel(getCurrentPath());
 
             Label conditionStart = new Label();

@@ -13,6 +13,27 @@ package dataflow.analysis;
  */
 public interface Store<S extends Store<S>> {
 
+    // We maintain a then store and an else store before each basic block.
+    // When they are identical (by reference equality), they can be treated
+    // as a regular unconditional store.
+    // Once we have some information for both the then and else store, we
+    // create a TransferInput for the block and allow it to be analyzed.
+    public static enum Kind {
+        THEN,
+        ELSE,
+        BOTH
+    }
+
+    // A flow rule describes how stores flow along one edge between basic blocks.
+    public static enum FlowRule {
+        EACH_TO_EACH,       // The normal case, then store flows to the then store
+                            // and else store flows to the else store.
+        THEN_TO_BOTH,       // Then store flows to both then and else of successor.
+        ELSE_TO_BOTH,       // Else store flows to both then and else of successor.
+        THEN_TO_THEN,       // Then store flows to the then of successor.  Else store is ignored.
+        ELSE_TO_ELSE,       // Else store flows to the else of successor.  Then store is ignored.
+    }
+
     /** @return An exact copy of this store. */
     S copy();
 
