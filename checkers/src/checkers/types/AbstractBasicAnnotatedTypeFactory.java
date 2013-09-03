@@ -415,7 +415,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
         }
         FlowAnalysis analysis = analyses.getFirst();
         Node node = analysis.getNodeForTree(tree);
-        TransferInput<Value, Store> prevStore = analysis.getStore(node.getBlock());
+        TransferInput<Value, Store> prevStore = analysis.getInput(node.getBlock());
         if (prevStore == null) {
             return null;
         }
@@ -432,7 +432,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
         }
         FlowAnalysis analysis = analyses.getFirst();
         Node node = analysis.getNodeForTree(tree);
-        Store store = AnalysisResult.runAnalysisFor(node, false, analysis.getStore(node.getBlock()));
+        Store store = AnalysisResult.runAnalysisFor(node, false, analysis.getInput(node.getBlock()));
         return store;
     }
 
