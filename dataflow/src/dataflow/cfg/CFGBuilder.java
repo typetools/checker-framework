@@ -821,7 +821,6 @@ public class CFGBuilder {
                     ConditionalBlockImpl cb = (ConditionalBlockImpl) cur;
                     assert cb.getPredecessors().size() == 1;
                     if (cb.getThenSuccessor() == cb.getElseSuccessor()) {
-                        System.out.println("Removing conditional block");
                         BlockImpl pred = cb.getPredecessors().iterator().next();
                         PredecessorHolder predecessorHolder = getPredecessorHolder(
                                 pred, cb);
@@ -841,7 +840,6 @@ public class CFGBuilder {
                     if (succ.getType() == BlockType.REGULAR_BLOCK) {
                         RegularBlockImpl rs = (RegularBlockImpl) succ;
                         if (rs.getPredecessors().size() == 1) {
-                            System.out.println("Merging basic blocks");
                             b.setSuccessor(rs.getRegularSuccessor());
                             b.addNodes(rs.getContents());
                             rs.getRegularSuccessor().removePredecessor(rs);
