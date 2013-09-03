@@ -1,5 +1,7 @@
 package dataflow.cfg.block;
 
+import dataflow.analysis.Store;
+
 /**
  * Implementation of a non-special basic block.
  *
@@ -12,8 +14,11 @@ public abstract class SingleSuccessorBlockImpl extends BlockImpl implements
     /** Internal representation of the successor. */
     protected /*@Nullable*/ BlockImpl successor;
 
-    public SingleSuccessorBlockImpl() {
-    }
+    /**
+     * The rule below say that EACH store at the end of a single
+     * successor block flow to the corresponding store of the successor.
+     */
+    protected Store.FlowRule flowRule = Store.FlowRule.EACH_TO_EACH;
 
     @Override
     public /*@Nullable*/ Block getSuccessor() {
@@ -28,4 +33,13 @@ public abstract class SingleSuccessorBlockImpl extends BlockImpl implements
         successor.addPredecessor(this);
     }
 
+    @Override
+    public Store.FlowRule getFlowRule() {
+        return flowRule;
+    }
+
+    @Override
+    public void setFlowRule(Store.FlowRule rule) {
+        flowRule = rule;
+    }
 }

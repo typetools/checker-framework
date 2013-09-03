@@ -883,8 +883,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                     + "\\n");
         }
         for (Entry<PureMethodCall, V> entry : methodValues.entrySet()) {
-            result.append("  " + entry.getKey() + " > " + entry.getValue()
-                    + "\\n");
+            result.append("  " + entry.getKey().toString().replace("\"", "\\\"")
+                    + " > " + entry.getValue() + "\\n");
         }
     }
 }

@@ -74,7 +74,7 @@ public class CFGDOTVisualizer {
                 Block thenSuccessor = ccur.getThenSuccessor();
                 sb2.append("    " + ccur.getId() + " -> "
                         + thenSuccessor.getId());
-                sb2.append(" [label=\"then\"];\n");
+                sb2.append(" [label=\"then\\n" + ccur.getThenFlowRule() + "\"];\n");
                 if (!visited.contains(thenSuccessor)) {
                     visited.add(thenSuccessor);
                     worklist.add(thenSuccessor);
@@ -82,7 +82,7 @@ public class CFGDOTVisualizer {
                 Block elseSuccessor = ccur.getElseSuccessor();
                 sb2.append("    " + ccur.getId() + " -> "
                         + elseSuccessor.getId());
-                sb2.append(" [label=\"else\"];\n");
+                sb2.append(" [label=\"else\\n" + ccur.getElseFlowRule() + "\"];\n");
                 if (!visited.contains(elseSuccessor)) {
                     visited.add(elseSuccessor);
                     worklist.add(elseSuccessor);
@@ -92,7 +92,7 @@ public class CFGDOTVisualizer {
                 Block b = ((SingleSuccessorBlock) cur).getSuccessor();
                 if (b != null) {
                     sb2.append("    " + cur.getId() + " -> " + b.getId());
-                    sb2.append(";\n");
+                    sb2.append(" [label=\"" + ((SingleSuccessorBlock) cur).getFlowRule() + "\"];\n");
                     if (!visited.contains(b)) {
                         visited.add(b);
                         worklist.add(b);
@@ -209,13 +209,13 @@ public class CFGDOTVisualizer {
             }
         }
 
-        // visualize store if necessary
+        // visualize transfer input if necessary
         if (analysis != null) {
-            TransferInput<A, S> store = analysis.getStore(bb);
+            TransferInput<A, S> input = analysis.getInput(bb);
             StringBuilder sb2 = new StringBuilder();
 
-            // split store representation to two lines
-            String s = store.toDOToutput().replace("}, else={", "}\\nelse={");
+            // split input representation to two lines
+            String s = input.toDOToutput().replace("}, else={", "}\\nelse={");
             sb2.append(s.subSequence(1, s.length() - 1));
 
             // separator
