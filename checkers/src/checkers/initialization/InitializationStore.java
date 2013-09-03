@@ -1,16 +1,10 @@
 package checkers.initialization;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-
-import javacutils.AnnotationUtils;
+import checkers.flow.CFAbstractAnalysis;
+import checkers.flow.CFAbstractStore;
+import checkers.flow.CFAbstractValue;
+import checkers.types.AnnotatedTypeFactory;
+import checkers.types.QualifierHierarchy;
 
 import dataflow.analysis.FlowExpressions;
 import dataflow.analysis.FlowExpressions.ClassName;
@@ -19,11 +13,16 @@ import dataflow.analysis.FlowExpressions.Receiver;
 import dataflow.analysis.FlowExpressions.ThisReference;
 import dataflow.cfg.node.MethodInvocationNode;
 
-import checkers.flow.CFAbstractAnalysis;
-import checkers.flow.CFAbstractStore;
-import checkers.flow.CFAbstractValue;
-import checkers.types.AnnotatedTypeFactory;
-import checkers.types.QualifierHierarchy;
+import javacutils.AnnotationUtils;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 
 /**
  * A store that extends {@code CFAbstractStore} and additionally tracks which

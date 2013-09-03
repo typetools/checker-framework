@@ -10,13 +10,16 @@ import dataflow.cfg.block.ExceptionBlock;
 import dataflow.cfg.block.RegularBlock;
 import dataflow.cfg.block.SingleSuccessorBlock;
 import dataflow.cfg.block.SpecialBlock;
+import dataflow.cfg.node.AssignmentNode;
 import dataflow.cfg.node.LocalVariableNode;
 import dataflow.cfg.node.Node;
 import dataflow.cfg.node.ReturnNode;
 
+import javacutils.ElementUtils;
 import javacutils.Pair;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +28,7 @@ import java.util.PriorityQueue;
 import java.util.Set;
 
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 
@@ -65,10 +69,22 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
     protected final Types types;
 
     /**
-     * The stores before every basic blocks (assumed to be 'no information' if
+     * Then stores before every basic block (assumed to be 'no information' if
      * not present).
      */
-    protected IdentityHashMap<Block, TransferInput<A, S>> stores;
+    protected IdentityHashMap<Block, S> thenStores;
+
+    /**
+     * Else stores before every basic block (assumed to be 'no information' if
+     * not present).
+     */
+    protected IdentityHashMap<Block, S> elseStores;
+
+    /**
+     * The transfer inputs before every basic block (assumed to be 'no information' if
+     * not present).
+     */
+    protected IdentityHashMap<Block, TransferInput<A, S>> inputs;
 
     /**
      * The stores after every return statement.
@@ -80,6 +96,9 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
 
     /** Abstract values of nodes. */
     protected IdentityHashMap<Node, A> nodeValues;
+
+    /** Map from (effectively final) local variable elements to their abstract value. */
+    public HashMap<Element, A> finalLocalValues;
 
     /**
      * The node that is currently handled in the analysis (if it is running).
@@ -99,9 +118,9 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
     protected Tree currentTree;
 
     /**
-     * The current store when the analysis is running.
+     * The current transfer input when the analysis is running.
      */
-    protected TransferInput<A, S> currentStore;
+    protected TransferInput<A, S> currentInput;
 
     public Tree getCurrentTree() {
         return currentTree;
@@ -162,25 +181,27 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
                 RegularBlock rb = (RegularBlock) b;
 
                 // apply transfer function to contents
-                TransferInput<A, S> storeBefore = getStoreBefore(rb);
-                currentStore = storeBefore.copy();
+                TransferInput<A, S> inputBefore = getInputBefore(rb);
+                currentInput = inputBefore.copy();
                 TransferResult<A, S> transferResult = null;
+                Node lastNode = null;
                 boolean addToWorklistAgain = false;
                 for (Node n : rb.getContents()) {
-                    transferResult = callTransferFunction(n, currentStore);
+                    transferResult = callTransferFunction(n, currentInput);
                     A val = transferResult.getResultValue();
                     if (val != null) {
                         final boolean didNodeValuesChange = updateNodeValues(n, val);
                         addToWorklistAgain = didNodeValuesChange || addToWorklistAgain;
                     }
-                    currentStore = new TransferInput<>(n, this, transferResult);
+                    currentInput = new TransferInput<>(n, this, transferResult);
+                    lastNode = n;
                 }
                 // loop will run at least one, making transferResult non-null
 
                 // propagate store to successors
                 Block succ = rb.getSuccessor();
                 assert succ != null : "regular basic block without non-exceptional successor unexpected";
-                addStoreBefore(succ, currentStore, addToWorklistAgain);
+                propagateStoresTo(succ, lastNode, currentInput, rb.getFlowRule(), addToWorklistAgain);
                 break;
             }
 
@@ -188,11 +209,11 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
                 ExceptionBlock eb = (ExceptionBlock) b;
 
                 // apply transfer function to content
-                TransferInput<A, S> storeBefore = getStoreBefore(eb);
-                currentStore = storeBefore.copy();
+                TransferInput<A, S> inputBefore = getInputBefore(eb);
+                currentInput = inputBefore.copy();
                 Node node = eb.getNode();
                 TransferResult<A, S> transferResult = callTransferFunction(
-                        node, currentStore);
+                        node, currentInput);
                 A val = transferResult.getResultValue();
                 boolean addToWorklistAgain = false;
                 if (val != null) {
@@ -202,8 +223,9 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
                 // propagate store to successor
                 Block succ = eb.getSuccessor();
                 if (succ != null) {
-                    currentStore = new TransferInput<>(node, this, transferResult);
-                    addStoreBefore(succ, currentStore, addToWorklistAgain);
+                    currentInput = new TransferInput<>(node, this, transferResult);
+                    Store.FlowRule storeFlow = eb.getFlowRule();
+                    propagateStoresTo(succ, node, currentInput, eb.getFlowRule(), addToWorklistAgain);
                 }
 
                 // propagate store to exceptional successors
@@ -214,12 +236,13 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
                             .getExceptionalStore(cause);
                     if (exceptionalStore != null) {
                         for (Block exceptionSucc : e.getValue()) {
-                            addStoreBefore(exceptionSucc, new TransferInput<>(node,
-                                    this, exceptionalStore), addToWorklistAgain);
+                            addStoreBefore(exceptionSucc, node, exceptionalStore, Store.Kind.BOTH,
+                                           addToWorklistAgain);
                         }
                     } else {
                         for (Block exceptionSucc : e.getValue()) {
-                            addStoreBefore(exceptionSucc, storeBefore.copy(), addToWorklistAgain);
+                            addStoreBefore(exceptionSucc, node, inputBefore.copy().getRegularStore(),
+                                           Store.Kind.BOTH, addToWorklistAgain);
                         }
                     }
                 }
@@ -230,16 +253,15 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
                 ConditionalBlock cb = (ConditionalBlock) b;
 
                 // get store before
-                TransferInput<A, S> storeBefore = getStoreBefore(cb);
-                TransferInput<A, S> store = storeBefore.copy();
+                TransferInput<A, S> inputBefore = getInputBefore(cb);
+                TransferInput<A, S> input = inputBefore.copy();
 
                 // propagate store to successor
                 Block thenSucc = cb.getThenSuccessor();
                 Block elseSucc = cb.getElseSuccessor();
-                addStoreBefore(thenSucc,
-                        new TransferInput<>(null, this, store.getThenStore()), false);
-                addStoreBefore(elseSucc,
-                        new TransferInput<>(null, this, store.getElseStore()), false);
+
+                propagateStoresTo(thenSucc, null, input, cb.getThenFlowRule(), false);
+                propagateStoresTo(elseSucc, null, input, cb.getElseFlowRule(), false);
                 break;
             }
 
@@ -249,7 +271,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
                 SpecialBlock sb = (SpecialBlock) b;
                 Block succ = sb.getSuccessor();
                 if (succ != null) {
-                    addStoreBefore(succ, getStoreBefore(b), false);
+                    propagateStoresTo(succ, null, getInputBefore(b), sb.getFlowRule(), false);
                 }
                 break;
             }
@@ -262,6 +284,43 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
 
         assert isRunning == true;
         isRunning = false;
+    }
+
+    /**
+     * Propagate the stores in currentInput to the successor block, succ, according to the
+     * flowRule.
+     */
+    protected void propagateStoresTo(Block succ, Node node, TransferInput<A, S> currentInput,
+            Store.FlowRule flowRule, boolean addToWorklistAgain) {
+        switch (flowRule) {
+        case EACH_TO_EACH:
+            if (currentInput.containsTwoStores()) {
+                addStoreBefore(succ, node, currentInput.getThenStore(), Store.Kind.THEN,
+                        addToWorklistAgain);
+                addStoreBefore(succ, node, currentInput.getElseStore(), Store.Kind.ELSE,
+                        addToWorklistAgain);
+            } else {
+                addStoreBefore(succ, node, currentInput.getRegularStore(), Store.Kind.BOTH,
+                        addToWorklistAgain);
+            }
+            break;
+        case THEN_TO_BOTH:
+            addStoreBefore(succ, node, currentInput.getThenStore(), Store.Kind.BOTH,
+                    addToWorklistAgain);
+            break;
+        case ELSE_TO_BOTH:
+            addStoreBefore(succ, node, currentInput.getElseStore(), Store.Kind.BOTH,
+                    addToWorklistAgain);
+            break;
+        case THEN_TO_THEN:
+            addStoreBefore(succ, node, currentInput.getThenStore(), Store.Kind.THEN,
+                    addToWorklistAgain);
+            break;
+        case ELSE_TO_ELSE:
+            addStoreBefore(succ, node, currentInput.getElseStore(), Store.Kind.ELSE,
+                    addToWorklistAgain);
+            break;
+        }
     }
 
     /**
@@ -301,16 +360,31 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
             // a given return statement
             storesAtReturnStatements.put((ReturnNode) node, transferResult);
         }
+        if (node instanceof AssignmentNode) {
+            // store the flow-refined value for effectively final local variables
+            AssignmentNode assignment = (AssignmentNode) node;
+            Node lhst = assignment.getTarget();
+            if (lhst instanceof LocalVariableNode) {
+                LocalVariableNode lhs = (LocalVariableNode) lhst;
+                Element elem = lhs.getElement();
+                if (ElementUtils.isEffectivelyFinal(elem)) {
+                    finalLocalValues.put(elem, transferResult.getResultValue());
+                }
+            }
+        }
         return transferResult;
     }
 
     /** Initialize the analysis with a new control flow graph. */
     protected void init(ControlFlowGraph cfg) {
         this.cfg = cfg;
-        stores = new IdentityHashMap<>();
+        thenStores = new IdentityHashMap<>();
+        elseStores = new IdentityHashMap<>();
+        inputs = new IdentityHashMap<>();
         storesAtReturnStatements = new IdentityHashMap<>();
         worklist = new Worklist();
         nodeValues = new IdentityHashMap<>();
+        finalLocalValues = new HashMap<>();
         worklist.add(cfg.getEntryBlock());
 
         List<LocalVariableNode> parameters = null;
@@ -327,8 +401,11 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
         } else {
             // nothing to do
         }
-        stores.put(cfg.getEntryBlock(), new TransferInput<>(null, this,
-                transferFunction.initialStore(underlyingAST, parameters)));
+        S initialStore = transferFunction.initialStore(underlyingAST, parameters);
+        Block entry = cfg.getEntryBlock();
+        thenStores.put(entry, initialStore);
+        elseStores.put(entry, initialStore);
+        inputs.put(entry, new TransferInput<>(null, this, initialStore));
     }
 
     /**
@@ -344,18 +421,75 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
 
     /**
      * Add a store before the basic block <code>b</code> by merging with the
-     * existing store for that location.
+     * existing stores for that location.
      */
-    protected void addStoreBefore(Block b, TransferInput<A, S> s, boolean addToWorklistAgain) {
-        TransferInput<A, S> storeBefore = getStoreBefore(b);
-        TransferInput<A, S> newStoreBefore;
-        if (storeBefore == null) {
-            newStoreBefore = s;
-        } else {
-            newStoreBefore = storeBefore.leastUpperBound(s);
+    protected void addStoreBefore(Block b, Node node, S s, Store.Kind kind,
+            boolean addBlockToWorklist) {
+        S thenStore = getStoreBefore(b, Store.Kind.THEN);
+        S elseStore = getStoreBefore(b, Store.Kind.ELSE);
+
+        switch (kind) {
+        case THEN: {
+            // Update the then store
+            S newThenStore = (thenStore != null) ?
+                thenStore.leastUpperBound(s) : s;
+            if (!newThenStore.equals(thenStore)) {
+                thenStores.put(b, newThenStore);
+                if (elseStore != null) {
+                    inputs.put(b, new TransferInput<>(node, this, newThenStore, elseStore));
+                    addBlockToWorklist = true;
+                }
+            }
+            break;
         }
-        stores.put(b, newStoreBefore);
-        if (storeBefore == null || addToWorklistAgain || !storeBefore.equals(newStoreBefore)) {
+        case ELSE: {
+            // Update the else store
+            S newElseStore = (elseStore != null) ?
+                elseStore.leastUpperBound(s) : s;
+            if (!newElseStore.equals(elseStore)) {
+                elseStores.put(b, newElseStore);
+                if (thenStore != null) {
+                    inputs.put(b, new TransferInput<>(node, this, thenStore, newElseStore));
+                    addBlockToWorklist = true;
+                }
+            }
+            break;
+        }
+        case BOTH:
+            if (thenStore == elseStore) {
+                // Currently there is only one regular store
+                S newStore = (thenStore != null) ?
+                    thenStore.leastUpperBound(s) : s;
+                if (!newStore.equals(thenStore)) {
+                    thenStores.put(b, newStore);
+                    elseStores.put(b, newStore);
+                    inputs.put(b, new TransferInput<>(node, this, newStore));
+                    addBlockToWorklist = true;
+                }
+            } else {
+                boolean storeChanged = false;
+
+                S newThenStore = (thenStore != null) ?
+                    thenStore.leastUpperBound(s) : s;
+                if (!newThenStore.equals(thenStore)) {
+                    thenStores.put(b, newThenStore);
+                    storeChanged = true;
+                }
+
+                S newElseStore = (elseStore != null) ?
+                    elseStore.leastUpperBound(s) : s;
+                if (!newElseStore.equals(elseStore)) {
+                    elseStores.put(b, newElseStore);
+                    storeChanged = true;
+                }
+
+                if (storeChanged) {
+                    inputs.put(b, new TransferInput<>(node, this, newThenStore, newElseStore));
+                    addBlockToWorklist = true;
+                }
+            }
+        }
+        if (addBlockToWorklist) {
             addToWorklist(b);
         }
     }
@@ -499,11 +633,35 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
     }
 
     /**
+     * Read the {@link TransferInput} for a particular basic block (or {@code null} if
+     * none exists yet).
+     */
+    public/* @Nullable */TransferInput<A, S> getInput(Block b) {
+        return getInputBefore(b);
+    }
+
+    /**
+     * @return The transfer input corresponding to the location right before the basic
+     *         block <code>b</code>.
+     */
+    protected/* @Nullable */TransferInput<A, S> getInputBefore(Block b) {
+        return inputs.get(b);
+    }
+
+    /**
      * @return The store corresponding to the location right before the basic
      *         block <code>b</code>.
      */
-    protected/* @Nullable */TransferInput<A, S> getStoreBefore(Block b) {
-        return readFromStore(stores, b);
+    protected/* @Nullable */S getStoreBefore(Block b, Store.Kind kind) {
+        switch (kind) {
+        case THEN:
+            return readFromStore(thenStores, b);
+        case ELSE:
+            return readFromStore(elseStores, b);
+        default:
+            assert false;
+            return null;
+        }
     }
 
     /**
@@ -518,14 +676,6 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
     /** Is the analysis currently running? */
     public boolean isRunning() {
         return isRunning;
-    }
-
-    /**
-     * Read the {@link Store} for a particular basic block (or {@code null} if
-     * none exists yet).
-     */
-    public/* @Nullable */TransferInput<A, S> getStore(Block b) {
-        return readFromStore(stores, b);
     }
 
     /**
@@ -608,7 +758,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
     public AnalysisResult<A, S> getResult() {
         assert !isRunning;
         IdentityHashMap<Tree, Node> treeLookup = cfg.getTreeLookup();
-        return new AnalysisResult<>(nodeValues, stores, treeLookup);
+        return new AnalysisResult<>(nodeValues, inputs, treeLookup, finalLocalValues);
     }
 
     /**
@@ -618,8 +768,8 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
      */
     public/* @Nullable */S getRegularExitStore() {
         SpecialBlock regularExitBlock = cfg.getRegularExitBlock();
-        if (stores.containsKey(regularExitBlock)) {
-            S regularExitStore = stores.get(regularExitBlock).getRegularStore();
+        if (inputs.containsKey(regularExitBlock)) {
+            S regularExitStore = inputs.get(regularExitBlock).getRegularStore();
             return regularExitStore;
         } else {
             return null;
@@ -627,7 +777,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
     }
 
     public S getExceptionalExitStore() {
-        S exceptionalExitStore = stores.get(cfg.getExceptionalExitBlock())
+        S exceptionalExitStore = inputs.get(cfg.getExceptionalExitBlock())
                 .getRegularStore();
         return exceptionalExitStore;
     }

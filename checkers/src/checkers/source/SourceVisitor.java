@@ -1,17 +1,20 @@
 package checkers.source;
 
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.util.*;
-
 /*>>>
 import checkers.nullness.quals.*;
 */
+
 import checkers.types.AnnotatedTypeFactory;
 
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.util.*;
-
 import javacutils.ErrorReporter;
+
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
+
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.util.TreePathScanner;
+import com.sun.source.util.Trees;
 
 /**
  * An AST visitor that provides a variety of compiler utilities and interfaces

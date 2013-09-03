@@ -84,6 +84,8 @@ public abstract class InitializationChecker<Factory extends InitializationAnnota
     public Collection<String> getSuppressWarningsKeys() {
         Collection<String> result = new HashSet<>(super.getSuppressWarningsKeys());
         result.add("initialization");
+        // Temporary, to make transition easier.
+        result.add("rawness");
         return result;
     }
 
