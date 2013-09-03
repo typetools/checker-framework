@@ -167,7 +167,7 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
         Node oldCurrentNode = analysis.currentNode;
 
         if (analysis.isRunning) {
-            return analysis.currentStore.getRegularStore();
+            return analysis.currentInput.getRegularStore();
         }
         analysis.isRunning = true;
         try {
