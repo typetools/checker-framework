@@ -1,5 +1,6 @@
 package dataflow.cfg.block;
 
+import dataflow.analysis.Store;
 import dataflow.cfg.node.Node;
 
 /**
@@ -21,4 +22,27 @@ public interface ConditionalBlock extends Block {
      */
     Block getElseSuccessor();
 
+    /**
+     * @return The flow rule for information flowing from
+     * this block to its then successor.
+     */
+    Store.FlowRule getThenFlowRule();
+
+    /**
+     * @return The flow rule for information flowing from
+     * this block to its else successor.
+     */
+    Store.FlowRule getElseFlowRule();
+
+    /**
+     * Set the flow rule for information flowing from this block to
+     * its then successor.
+     */
+    void setThenFlowRule(Store.FlowRule rule);
+
+    /**
+     * Set the flow rule for information flowing from this block to
+     * its else successor.
+     */
+    void setElseFlowRule(Store.FlowRule rule);
 }
