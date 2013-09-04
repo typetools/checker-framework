@@ -218,6 +218,7 @@ public final class Result {
                     other.args));
         }
 
+        @Pure
         @Override
         public int hashCode() {
             return  HashCodeUtils.hash(this.message, this.args);
