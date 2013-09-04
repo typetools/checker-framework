@@ -1,6 +1,7 @@
 package java.io;
 
-import checkers.nullness.quals.*;
+import dataflow.quals.Pure;
+import checkers.nullness.quals.Nullable;
 
 @checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
 
@@ -20,5 +21,5 @@ public class DataOutputStream extends FilterOutputStream implements DataOutput {
   public final void writeBytes(String a1) throws IOException { throw new RuntimeException("skeleton method"); }
   public final void writeChars(String a1) throws IOException { throw new RuntimeException("skeleton method"); }
   public final void writeUTF(String a1) throws IOException { throw new RuntimeException("skeleton method"); }
-  public final int size() { throw new RuntimeException("skeleton method"); }
+  @Pure public final int size() { throw new RuntimeException("skeleton method"); }
 }

@@ -1,11 +1,17 @@
 package checkers.util.test;
 
+import java.io.File;
 import java.io.StringWriter;
-import java.util.*;
-import javax.tools.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 
-
-import java.io.*;
+import javax.tools.DiagnosticCollector;
+import javax.tools.JavaCompiler;
+import javax.tools.JavaFileObject;
+import javax.tools.StandardJavaFileManager;
+import javax.tools.ToolProvider;
 
 public class TestInput {
 
@@ -68,7 +74,7 @@ public class TestInput {
         JavaCompiler.CompilationTask task = compiler.getTask(output, fileManager,
               diagnostics, this.options, this.processors, this.files);
 
-        /* 
+        /*
          * In Eclipse, std out and std err for multiple tests appear as one
          * long stream. When selecting a specific failed test, one sees the
          * expected/unexpected messages, but not the std out/err messages from
@@ -88,6 +94,11 @@ public class TestInput {
         }
         opts.add("-source");
         opts.add("1.8");
+        // Always output warnings for unchecked constructs
+        opts.add("-Xlint:unchecked");
+        // Use short javac diagnostics
+        opts.add("-XDrawDiagnostics");
+
         for (String option : options)
             opts.add(option);
 

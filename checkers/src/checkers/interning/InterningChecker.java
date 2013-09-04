@@ -1,9 +1,5 @@
 package checkers.interning;
 
-import javax.annotation.processing.SupportedOptions;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.DeclaredType;
-
 import checkers.basetype.BaseTypeChecker;
 import checkers.interning.quals.Interned;
 import checkers.interning.quals.PolyInterned;
@@ -11,6 +7,10 @@ import checkers.quals.PolyAll;
 import checkers.quals.TypeQualifiers;
 import checkers.quals.Unqualified;
 import checkers.source.SupportedLintOptions;
+
+import javax.annotation.processing.SupportedOptions;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
 
 /**
  * A type-checker plug-in for the {@link Interned} qualifier that
@@ -31,7 +31,7 @@ import checkers.source.SupportedLintOptions;
     PolyInterned.class, PolyAll.class})
 @SupportedLintOptions({"dotequals"})
 @SupportedOptions({"checkclass"})
-public final class InterningChecker extends BaseTypeChecker {
+public final class InterningChecker extends BaseTypeChecker<InterningAnnotatedTypeFactory> {
 
     /**
      * Returns the declared type of which the equality tests should be tested,
@@ -43,7 +43,7 @@ public final class InterningChecker extends BaseTypeChecker {
      *
      */
     DeclaredType typeToCheck() {
-        String className = processingEnv.getOptions().get("checkclass");
+        String className = getOption("checkclass");
         if (className == null) return null;
 
         TypeElement classElt = processingEnv.getElementUtils().getTypeElement(className);

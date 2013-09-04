@@ -5,7 +5,14 @@ import checkers.compilermsgs.quals.CompilerMessageKey;
 import checkers.nullness.quals.*;
 */
 
-import java.util.*;
+import dataflow.quals.Pure;
+import dataflow.util.HashCodeUtils;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Represents the outcome of a type-checking operation (success,
@@ -149,6 +156,7 @@ public final class Result {
         return Collections.</*@NonNull*/ DiagMessage>unmodifiableList(messages);
     }
 
+    @Pure
     @Override
     public String toString() {
         switch (type) {
@@ -163,7 +171,7 @@ public final class Result {
     }
 
     /**
-     * A class that represents the diangosis messages.
+     * A class that represents diagnostic messages.
      *
      * {@code DiagMessage} encapsulate the message key which would identify
      * the relevant standard error message according to the user locale.
@@ -210,6 +218,12 @@ public final class Result {
                     other.args));
         }
 
+        @Override
+        public int hashCode() {
+            return  HashCodeUtils.hash(this.message, this.args);
+        }
+
+        @Pure
         @Override
         public String toString() {
             if (args.length == 0)

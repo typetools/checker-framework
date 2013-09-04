@@ -1,5 +1,17 @@
 package checkers.fenum;
 
+import checkers.basetype.BaseTypeChecker;
+import checkers.fenum.quals.Fenum;
+import checkers.fenum.quals.FenumTop;
+import checkers.fenum.quals.FenumUnqualified;
+import checkers.quals.Bottom;
+import checkers.subtyping.SubtypingChecker;
+import checkers.types.QualifierHierarchy;
+import checkers.util.GraphQualifierHierarchy;
+import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+
+import javacutils.AnnotationUtils;
+
 import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.Collections;
@@ -9,16 +21,6 @@ import java.util.Set;
 import javax.annotation.processing.SupportedOptions;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Elements;
-
-import checkers.fenum.quals.FenumTop;
-import checkers.fenum.quals.Fenum;
-import checkers.fenum.quals.FenumUnqualified;
-import checkers.quals.Bottom;
-import checkers.types.QualifierHierarchy;
-import checkers.util.AnnotationUtils;
-import checkers.util.GraphQualifierHierarchy;
-import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
-import checkers.basetype.BaseTypeChecker;
 
 /**
  * The main checker class for the Fake Enum Checker.
@@ -40,7 +42,7 @@ import checkers.basetype.BaseTypeChecker;
  * @checker.framework.manual #fenum-checker Fake Enum Checker
  */
 @SupportedOptions( { "quals" } )
-public class FenumChecker extends BaseTypeChecker {
+public class FenumChecker extends BaseTypeChecker<FenumAnnotatedTypeFactory> {
     protected AnnotationMirror FENUM, BOTTOM;
 
     @Override
@@ -51,7 +53,7 @@ public class FenumChecker extends BaseTypeChecker {
         super.initChecker();
     }
 
-    /** Copied from BasicChecker.
+    /** Copied from SubtypingChecker.
      * Instead of returning an empty set if no "quals" option is given,
      * we return Fenum as the only qualifier.
      */
@@ -61,7 +63,7 @@ public class FenumChecker extends BaseTypeChecker {
         Set<Class<? extends Annotation>> qualSet =
             new HashSet<Class<? extends Annotation>>();
 
-        String qualNames = processingEnv.getOptions().get("quals");
+        String qualNames = getOption("quals");
         if (qualNames == null) {
           // maybe issue a warning?
         } else {
@@ -89,14 +91,15 @@ public class FenumChecker extends BaseTypeChecker {
         return Collections.unmodifiableSet(qualSet);
     }
 
-    /** Copied from BasicChecker; cannot reuse it, because BasicChecker is final.
+    /** Copied from SubtypingChecker; cannot reuse it, because SubtypingChecker is final.
+     * @see SubtypingChecker#getSuppressWarningsKeys()
      */
     @Override
-    public Collection<String> getSuppressWarningsKey() {
+    public Collection<String> getSuppressWarningsKeys() {
         Set<String> swKeys = new HashSet<String>();
         Set<Class<? extends Annotation>> annos = getSupportedTypeQualifiers();
         if (annos.isEmpty())
-            return super.getSuppressWarningsKey();
+            return super.getSuppressWarningsKeys();
 
         for (Class<? extends Annotation> anno : annos)
             swKeys.add(anno.getSimpleName().toLowerCase());

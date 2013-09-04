@@ -20,7 +20,7 @@ import com.google.common.annotations.GwtCompatible;
 import com.google.common.collect.ImmutableSet.ArrayImmutableSet;
 import com.google.common.collect.ImmutableSet.TransformedImmutableSet;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
 /**
  * Implementation of {@link ImmutableMap} with two or more entries.
@@ -88,15 +88,15 @@ final class RegularImmutableMap<K, V> extends ImmutableMap<K, V> {
     }
   }
 
-  public int size() {
+  @Pure public int size() {
     return entries.length;
   }
 
-  @Override public boolean isEmpty() {
+  @Pure @Override public boolean isEmpty() {
     return false;
   }
 
-  @Override public boolean containsValue(/*@Nullable*/ Object value) {
+  @Pure @Override public boolean containsValue(/*@Nullable*/ Object value) {
     if (value == null) {
       return false;
     }
@@ -115,7 +115,7 @@ final class RegularImmutableMap<K, V> extends ImmutableMap<K, V> {
   
   private transient ImmutableSet<Entry<K, V>> entrySet;
 
-  @Override public ImmutableSet<Entry<K, V>> entrySet() {
+  @SideEffectFree @Override public ImmutableSet<Entry<K, V>> entrySet() {
     ImmutableSet<Entry<K, V>> es = entrySet;
     return (es == null) ? (entrySet = new EntrySet<K, V>(this)) : es;
   }
@@ -129,7 +129,7 @@ final class RegularImmutableMap<K, V> extends ImmutableMap<K, V> {
       this.map = map;
     }
 
-    @Override public boolean contains(/*@Nullable*/ Object target) {
+    @Pure @Override public boolean contains(/*@Nullable*/ Object target) {
       if (target instanceof Entry) {
         Entry<?, ?> entry = (Entry<?, ?>) target;
         /*@Nullable*/ V mappedValue = map.get(entry.getKey());
@@ -141,7 +141,7 @@ final class RegularImmutableMap<K, V> extends ImmutableMap<K, V> {
 
   private transient ImmutableSet<K> keySet;
 
-  @Override public ImmutableSet<K> keySet() {
+  @SideEffectFree @Override public ImmutableSet<K> keySet() {
     ImmutableSet<K> ks = keySet;
     return (ks == null) ? (keySet = new KeySet<K, V>(this)) : ks;
   }
@@ -160,14 +160,14 @@ final class RegularImmutableMap<K, V> extends ImmutableMap<K, V> {
       return element.getKey();
     }
 
-    @Override public boolean contains(/*@Nullable*/ Object target) {
+    @Pure @Override public boolean contains(/*@Nullable*/ Object target) {
       return map.containsKey(target);
     }
   }
 
   private transient ImmutableCollection<V> values;
 
-  @Override public ImmutableCollection<V> values() {
+  @SideEffectFree @Override public ImmutableCollection<V> values() {
     ImmutableCollection<V> v = values;
     return (v == null) ? (values = new Values<V>(this)) : v;
   }
@@ -180,7 +180,7 @@ final class RegularImmutableMap<K, V> extends ImmutableMap<K, V> {
       this.map = map;
     }
 
-    public int size() {
+    @Pure public int size() {
       return map.entries.length;
     }
 
@@ -195,12 +195,12 @@ final class RegularImmutableMap<K, V> extends ImmutableMap<K, V> {
       };
     }
 
-    @Override public boolean contains(/*@Nullable*/ Object target) {
+    @Pure @Override public boolean contains(/*@Nullable*/ Object target) {
       return map.containsValue(target);
     }
   }
 
-  @Override public String toString() {
+  @Pure @Override public String toString() {
     StringBuilder result = new StringBuilder(size() * 16).append('{');
     Collections2.standardJoiner.appendTo(result, entries);
     return result.append('}').toString();

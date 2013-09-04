@@ -20,7 +20,7 @@ import com.google.common.annotations.GwtCompatible;
 
 import java.util.Set;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
 /**
  * A multiset which forwards all its method calls to another multiset.
@@ -50,19 +50,19 @@ import checkers.nullness.quals.*;
     return delegate().remove(element, occurrences);
   }
 
-  public Set<E> elementSet() {
+  @SideEffectFree public Set<E> elementSet() {
     return delegate().elementSet();
   }
 
-  public Set<Entry<E>> entrySet() {
+  @SideEffectFree public Set<Entry<E>> entrySet() {
     return delegate().entrySet();
   }
 
-  @Override public boolean equals(@Nullable Object object) {
+  @Pure @Override public boolean equals(@Nullable Object object) {
     return object == this || delegate().equals(object);
   }
 
-  @Override public int hashCode() {
+  @Pure @Override public int hashCode() {
     return delegate().hashCode();
   }
 

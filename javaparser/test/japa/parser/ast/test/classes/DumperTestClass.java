@@ -1,8 +1,8 @@
-package japa.parser.ast.test.classes;
+package cfjapa.parser.ast.test.classes;
 
-import japa.parser.JavaParser;
-import japa.parser.ParseException;
-import japa.parser.ast.CompilationUnit;
+import cfjapa.parser.JavaParser;
+import cfjapa.parser.ParseException;
+import cfjapa.parser.ast.CompilationUnit;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;

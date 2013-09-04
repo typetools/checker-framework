@@ -4,6 +4,8 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Elements;
 
+import javacutils.AnnotationUtils;
+
 import checkers.types.AnnotatedTypeMirror;
 import checkers.units.quals.Prefix;
 import checkers.units.quals.h;
@@ -14,7 +16,6 @@ import checkers.units.quals.m2;
 import checkers.units.quals.mPERs;
 import checkers.units.quals.s;
 import checkers.util.AnnotationBuilder;
-import checkers.util.AnnotationUtils;
 
 /**
  * Default relations between SI units.
