@@ -25,7 +25,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
 /**
  * An immutable, hash-based {@link Map} with reliable user-specified iteration
@@ -295,16 +295,16 @@ public abstract class ImmutableMap<K, V> implements Map<K, V>, Serializable {
     throw new UnsupportedOperationException();
   }
 
-  public boolean isEmpty() {
+  @Pure public boolean isEmpty() {
     return size() == 0;
   }
 
-  public boolean containsKey(@Nullable Object key) {
+  @Pure public boolean containsKey(@Nullable Object key) {
     return get(key) != null;
   }
 
   // Overriding to mark it Nullable
-  @Override public abstract boolean containsValue(@Nullable Object value);
+  @Pure @Override public abstract boolean containsValue(@Nullable Object value);
 
   // Overriding to mark it Nullable
   @Override public abstract /*@Nullable*/ V get(@Nullable Object key);
@@ -313,21 +313,21 @@ public abstract class ImmutableMap<K, V> implements Map<K, V>, Serializable {
    * Returns an immutable set of the mappings in this map. The entries are in
    * the same order as the parameters used to build this map.
    */
-  public abstract ImmutableSet<Entry<K, V>> entrySet();
+  @SideEffectFree public abstract ImmutableSet<Entry<K, V>> entrySet();
 
   /**
    * Returns an immutable set of the keys in this map. These keys are in
    * the same order as the parameters used to build this map.
    */
-  public abstract ImmutableSet<K> keySet();
+  @SideEffectFree public abstract ImmutableSet<K> keySet();
 
   /**
    * Returns an immutable collection of the values in this map. The values are
    * in the same order as the parameters used to build this map.
    */
-  public abstract ImmutableCollection<V> values();
+  @SideEffectFree public abstract ImmutableCollection<V> values();
 
-  @Override public boolean equals(@Nullable Object object) {
+  @Pure @Override public boolean equals(@Nullable Object object) {
     if (object == this) {
       return true;
     }
@@ -338,13 +338,13 @@ public abstract class ImmutableMap<K, V> implements Map<K, V>, Serializable {
     return false;
   }
 
-  @Override public int hashCode() {
+  @Pure @Override public int hashCode() {
     // not caching hash code since it could change if map values are mutable
     // in a way that modifies their hash codes
     return entrySet().hashCode();
   }
 
-  @Override public String toString() {
+  @Pure @Override public String toString() {
     StringBuilder result = new StringBuilder(size() * 16).append('{');
     Maps.standardJoiner.appendTo(result, this);
     return result.append('}').toString();

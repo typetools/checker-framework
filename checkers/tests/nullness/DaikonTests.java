@@ -1,3 +1,5 @@
+import checkers.nullness.quals.EnsuresNonNull;
+import checkers.nullness.quals.EnsuresNonNullIf;
 import checkers.nullness.quals.*;
 
 /*
@@ -9,15 +11,13 @@ public class DaikonTests {
     class Bug1 {
         @Nullable Object field;
 
-        // skip-test TODO
-        /*
         public void cond1() {
             if ( this.hashCode() > 6 && Bug1Other.field != null ) {
                 // spurious dereference error
                 Bug1Other.field.toString();
             }
         }
-        */
+
         public void cond1(Bug1 p) {
             if ( this.hashCode() > 6 && p.field != null ) {
                 // works
@@ -41,7 +41,7 @@ public class DaikonTests {
     }
 
     class Bug2Super {
-        public @LazyNonNull Bug2Data field;
+        public @MonotonicNonNull Bug2Data field;
     }
 
     class Bug2 extends Bug2Super {
@@ -53,10 +53,11 @@ public class DaikonTests {
 
     // Based on problem found in FloatEqual.
     class Bug3 {
-        @AssertNonNullIfTrue("derived")
+        @EnsuresNonNullIf(expression="derived", result=true)
         public boolean isDerived() {
             return (derived != null);
         }
+
         @Nullable Object derived;
 
         void good1(Bug3 v1) {
@@ -65,11 +66,12 @@ public class DaikonTests {
             v1.derived.hashCode();
         }
 
-        void good2(Bug3 v1) {
-            if (!(v1.isDerived() && (5 > 9)))
-                return;
-            v1.derived.hashCode();
-        }
+        // TODO: this is currently not supported
+//        void good2(Bug3 v1) {
+//            if (!(v1.isDerived() && (5 > 9)))
+//                return;
+//            v1.derived.hashCode();
+//        }
 
         void good3(Bug3 v1) {
             if (!v1.isDerived() || !(v1 instanceof Bug3))
@@ -83,7 +85,7 @@ public class DaikonTests {
     // Not yet able to reproduce the problem :-(
 
     class Bug4 {
-        @LazyNonNull Object field;
+        @MonotonicNonNull Object field;
 
         void m(Bug4 p) {
             if (false && p.field != null)
@@ -92,13 +94,10 @@ public class DaikonTests {
     }
 
     // Based on problem found in chicory.Runtime:
-
-    // skip-test TODO
-    /*
     class Bug5 {
         @Nullable Object clazz;
 
-        @AssertNonNullAfter("clazz")
+        @EnsuresNonNull("clazz")
         void init() {
             clazz = new Object();
         }
@@ -116,9 +115,21 @@ public class DaikonTests {
             b.clazz.hashCode();
         }
     }
-    */
+
+    // From LimitedSizeSet.  The following initialization of the values array
+    // has caused a NullPointerException.
+    class Bug6<T> {
+        protected /*@Nullable*/ T /*@Nullable*/ [] values;
+
+        public Bug6() {
+            //:: warning: [unchecked] unchecked cast
+            /*@Nullable*/ T[] new_values_array = (/*@Nullable*/ T[]) new /*@Nullable*/ Object[4];
+            values = new_values_array;
+        }
+    }
 }
 
 class Bug1Other {
     static @Nullable Object field;
 }
+

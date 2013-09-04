@@ -5,8 +5,13 @@ import java.lang.annotation.*;
 import checkers.nullness.NullnessChecker;
 import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifier;
+import dataflow.quals.Pure;
 
 /**
+ * This annotation is deprecated.  {@link MonotonicNonNull} should be used
+ * instead.
+ * <p>
+ *
  * Indicates that a field (or variable) is lazily initialized to a non-null
  * value.  Once the field becomes non-null, it never becomes null again.
  * There is no guarantee that the field ever becomes non-null, however.
@@ -25,7 +30,7 @@ import checkers.quals.TypeQualifier;
  * method</em> can be assumed to be non-null, even after arbitrary external
  * method calls that might access the field.
  * <p>
- * 
+ *
  * {@code LazyNonNull} gives stronger guarantees than {@link Nullable}.
  * After a check that a {@link Nullable} field holds a non-null value, only
  * accesses until the next non-{@link Pure} method is called can be assumed
@@ -34,7 +39,7 @@ import checkers.quals.TypeQualifier;
  *
  * To indicate that a {@code LazyNonNull} or {@code Nullable} field is
  * non-null whenever a particular method is called, use
- * {@link NonNullOnEntry}.
+ * {@link RequiresNonNull}.
  * <p>
  *
  * Final fields are treated as LazyNonNull by default.
@@ -46,6 +51,7 @@ import checkers.quals.TypeQualifier;
  * @see NullnessChecker
  * @checker.framework.manual #nullness-checker Nullness Checker
  */
+@Deprecated
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE_USE) // not applicable to ElementType.TYPE_PARAMETER

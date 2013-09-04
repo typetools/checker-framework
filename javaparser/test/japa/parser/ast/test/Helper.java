@@ -1,11 +1,11 @@
 /*
  * Created on 30/06/2008
  */
-package japa.parser.ast.test;
+package cfjapa.parser.ast.test;
 
-import japa.parser.JavaParser;
-import japa.parser.ParseException;
-import japa.parser.ast.CompilationUnit;
+import cfjapa.parser.JavaParser;
+import cfjapa.parser.ParseException;
+import cfjapa.parser.ast.CompilationUnit;
 
 import java.io.BufferedReader;
 import java.io.File;

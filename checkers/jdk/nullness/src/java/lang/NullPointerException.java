@@ -25,7 +25,7 @@
 
 package java.lang;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
 /**
  * Thrown when an application attempts to use <code>null</code> in a

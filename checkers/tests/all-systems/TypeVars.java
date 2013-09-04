@@ -18,6 +18,6 @@ class TypeVars {
 
   // It's difficult to add more test cases that
   // should work for all type systems.
-  // Ensure that for the different type systems annotations
+  // Ensure that for the different type systems, annotations
   // on the type variable are propagated correctly.
 }

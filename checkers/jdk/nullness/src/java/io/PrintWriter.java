@@ -3,7 +3,7 @@ package java.io;
 import java.util.Formatter;
 import java.util.Locale;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 public class PrintWriter extends Writer {
 
     protected Writer out;

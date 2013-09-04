@@ -1,6 +1,7 @@
 package java.util;
-import checkers.nullness.quals.*;
-@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
+import dataflow.quals.Pure;
+import checkers.nullness.quals.EnsuresNonNullIf;
+import checkers.nullness.quals.Nullable;
 
 // Subclasses of this interface/class may opt to prohibit
 // null elements
@@ -28,10 +29,10 @@ public interface Deque<E extends @Nullable Object> extends Queue<E> {
   public abstract void push(E a1);
   public abstract E pop();
   public abstract boolean remove(@Nullable Object a1);
-  public abstract boolean contains(@Nullable Object a1);
-  public abstract int size();
+  @Pure public abstract boolean contains(@Nullable Object a1);
+  @Pure public abstract int size();
   public abstract Iterator<E> iterator();
   public abstract Iterator<E> descendingIterator();
-  @AssertNonNullIfFalse({"peek()", "peekFirst()", "peekLast()", "poll()", "pollFirst()", "pollLast()"})
-  public abstract boolean isEmpty();
+  @EnsuresNonNullIf(expression={"peek()", "peekFirst()", "peekLast()", "poll()", "pollFirst()", "pollLast()"}, result=false)
+  @Pure public abstract boolean isEmpty();
 }

@@ -1,6 +1,6 @@
 package java.lang;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
 public class ExceptionInInitializerError extends LinkageError {
     private static final long serialVersionUID = 1521711792217232256L;

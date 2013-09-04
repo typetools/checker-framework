@@ -9,7 +9,7 @@ import polyall.quals.*;
 // are separately annotated.
 class Defaulting {
 
-    @DefaultQualifier(value=H1S1.class, locations={DefaultLocation.LOCALS})
+    @DefaultQualifier(value=H1S1.class, locations={DefaultLocation.LOCAL_VARIABLE})
     class TestLocal {
         void m(@H1S1 Object p1, @H1S2 Object p2) {
             Object l1 = p1;
@@ -19,7 +19,7 @@ class Defaulting {
     }
 
     @DefaultQualifiers({
-        @DefaultQualifier(value=H1Top.class, locations={DefaultLocation.LOCALS}),
+        @DefaultQualifier(value=H1Top.class, locations={DefaultLocation.LOCAL_VARIABLE}),
         @DefaultQualifier(value=H1S1.class, locations={DefaultLocation.UPPER_BOUNDS}),
         @DefaultQualifier(value=H1S2.class, locations={DefaultLocation.OTHERWISE})
     })
@@ -33,7 +33,7 @@ class Defaulting {
     }
 
     @DefaultQualifiers({
-        @DefaultQualifier(value=H1Top.class, locations={DefaultLocation.LOCALS}),
+        @DefaultQualifier(value=H1Top.class, locations={DefaultLocation.LOCAL_VARIABLE}),
         @DefaultQualifier(value=H1S1.class, locations={DefaultLocation.PARAMETERS}),
         @DefaultQualifier(value=H1S2.class, locations={DefaultLocation.OTHERWISE})
     })
@@ -53,29 +53,29 @@ class Defaulting {
         }
     }
     @DefaultQualifiers({
-        @DefaultQualifier(value=H1Top.class, locations={DefaultLocation.LOCALS}),
+        @DefaultQualifier(value=H1Top.class, locations={DefaultLocation.LOCAL_VARIABLE}),
         @DefaultQualifier(value=H1S1.class, locations={DefaultLocation.PARAMETERS}),
         @DefaultQualifier(value=H1S2.class, locations={DefaultLocation.OTHERWISE})
     })
     class TestConstructorParameter {
  
-    	TestConstructorParameter (Object p) {
+        TestConstructorParameter (Object p) {
             @H1S1 Object l1 = p;
             //:: error: (assignment.type.incompatible)
             @H1S2 Object l2 = p;
             Object l3 = p;
         }
         void call() {
-        	new TestConstructorParameter(new @H1S1 Object());
+            new TestConstructorParameter(new @H1S1 Object());
             //:: error: (argument.type.incompatible)
-        	new TestConstructorParameter(new @H1S2 Object());
+            new TestConstructorParameter(new @H1S2 Object());
             //:: error: (argument.type.incompatible)
-        	new TestConstructorParameter(new Object());
+            new TestConstructorParameter(new Object());
         }
     }
 
     @DefaultQualifiers({
-        @DefaultQualifier(value=H1Top.class, locations={DefaultLocation.LOCALS}),
+        @DefaultQualifier(value=H1Top.class, locations={DefaultLocation.LOCAL_VARIABLE}),
         @DefaultQualifier(value=H1S1.class, locations={DefaultLocation.RETURNS}),
         @DefaultQualifier(value=H1S2.class, locations={DefaultLocation.OTHERWISE})
     })
@@ -101,31 +101,31 @@ class Defaulting {
             return new Object();
         }
     }
-    
+
     @DefaultQualifiers({
-        @DefaultQualifier(value=H1Top.class, locations={DefaultLocation.LOCALS}),
+        @DefaultQualifier(value=H1Top.class, locations={DefaultLocation.LOCAL_VARIABLE}),
         @DefaultQualifier(value=H1S1.class, locations={DefaultLocation.RECEIVERS})
-    })   
+    })
     public class ReceiverDefaulting {
-    	public ReceiverDefaulting(){};
-    	public void m(){}
+        public ReceiverDefaulting(){};
+        public void m(){}
     }
+
     @DefaultQualifiers({
-        @DefaultQualifier(value=H1Top.class, locations={DefaultLocation.LOCALS}),
-    })  
+        @DefaultQualifier(value=H1Top.class, locations={DefaultLocation.LOCAL_VARIABLE}),
+    })
     class TestReceiver{
-    	 
+
         void call() {
-        	@H1S1 ReceiverDefaulting r2 =  new @H1S1 ReceiverDefaulting();
-        	@H1S2 ReceiverDefaulting r3 = new @H1S2 ReceiverDefaulting();
-        	ReceiverDefaulting r = new ReceiverDefaulting();
+            @H1S1 ReceiverDefaulting r2 =  new @H1S1 ReceiverDefaulting();
+            @H1S2 ReceiverDefaulting r3 = new @H1S2 ReceiverDefaulting();
+            ReceiverDefaulting r = new ReceiverDefaulting();
 
-        	r2.m();
+            r2.m();
             //:: error: (method.invocation.invalid)
-        	r3.m();
+            r3.m();
             //:: error: (method.invocation.invalid)
-        	r.m();
-
+            r.m();
         }
     }
 
