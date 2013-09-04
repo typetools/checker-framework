@@ -1,6 +1,5 @@
 package java.util;
-import checkers.nullness.quals.*;
-@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
+import checkers.nullness.quals.Nullable;
 
 // This class permits null elements
 public class LinkedHashSet<E extends @Nullable Object> extends HashSet<E> implements Set<E>, Cloneable, java.io.Serializable {

@@ -26,6 +26,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 
+import dataflow.quals.SideEffectFree;
+
 import javax.annotation.Nullable;
 
 /**
@@ -39,15 +41,15 @@ final class EmptyImmutableList extends ImmutableList<Object> {
 
   private EmptyImmutableList() {}
 
-  public int size() {
+  @Pure public int size() {
     return 0;
   }
 
-  @Override public boolean isEmpty() {
+  @Pure @Override public boolean isEmpty() {
     return true;
   }
 
-  @Override public boolean contains(/*@Nullable*/ Object target) {
+  @Pure @Override public boolean contains(/*@Nullable*/ Object target) {
     return false;
   }
 
@@ -75,15 +77,15 @@ final class EmptyImmutableList extends ImmutableList<Object> {
     throw new AssertionError("unreachable");
   }
 
-  @Override public int indexOf(/*@Nullable*/ Object target) {
+  @Pure @Override public int indexOf(/*@Nullable*/ Object target) {
     return -1;
   }
 
-  @Override public int lastIndexOf(/*@Nullable*/ Object target) {
+  @Pure @Override public int lastIndexOf(/*@Nullable*/ Object target) {
     return -1;
   }
 
-  @Override public ImmutableList<Object> subList(int fromIndex, int toIndex) {
+  @SideEffectFree @Override public ImmutableList<Object> subList(int fromIndex, int toIndex) {
     checkPositionIndexes(fromIndex, toIndex, 0);
     return this;
   }
@@ -97,11 +99,11 @@ final class EmptyImmutableList extends ImmutableList<Object> {
     return Collections.emptyList().listIterator();
   }
 
-  @Override public boolean containsAll(Collection<?> targets) {
+  @Pure @Override public boolean containsAll(Collection<?> targets) {
     return targets.isEmpty();
   }
 
-  @Override public boolean equals(@Nullable Object object) {
+  @Pure @Override public boolean equals(@Nullable Object object) {
     if (object instanceof List) {
       List<?> that = (List<?>) object;
       return that.isEmpty();
@@ -109,11 +111,11 @@ final class EmptyImmutableList extends ImmutableList<Object> {
     return false;
   }
 
-  @Override public int hashCode() {
+  @Pure @Override public int hashCode() {
     return 1;
   }
 
-  @Override public String toString() {
+  @Pure @Override public String toString() {
     return "[]";
   }
 

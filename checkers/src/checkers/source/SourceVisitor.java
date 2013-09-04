@@ -1,24 +1,35 @@
 package checkers.source;
 
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.util.*;
-
 /*>>>
 import checkers.nullness.quals.*;
 */
+
 import checkers.types.AnnotatedTypeFactory;
 
+import javacutils.ErrorReporter;
+
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
+
 import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.util.*;
+import com.sun.source.util.TreePathScanner;
+import com.sun.source.util.Trees;
 
 /**
  * An AST visitor that provides a variety of compiler utilities and interfaces
  * to facilitate type-checking.
  */
-public abstract class SourceVisitor<R, P> extends TreePathScanner<R, P> {
+public abstract class SourceVisitor<Checker extends SourceChecker<? extends Factory>,
+        Factory extends AnnotatedTypeFactory,
+        R, P>
+    extends TreePathScanner<R, P> {
 
     /** The {@link SourceChecker} to invoke on the input source tree. */
-    protected final SourceChecker checker;
+    protected final Checker checker;
+
+    /** The factory to use for obtaining "parsed" version of annotations. */
+    protected final Factory atypeFactory;
 
     /** The {@link Trees} instance to use for scanning. */
     protected final Trees trees;
@@ -32,16 +43,13 @@ public abstract class SourceVisitor<R, P> extends TreePathScanner<R, P> {
     /** The root of the AST that this {@link SourceVisitor} will scan. */
     protected final CompilationUnitTree root;
 
-    /** The factory to use for obtaining "parsed" version of annotations. */
-    protected final AnnotatedTypeFactory atypeFactory;
-
     /**
      * Creates a {@link SourceVisitor} to use for scanning a source tree.
      *
      * @param checker the checker to invoke on the input source tree
      * @param root the AST root that this scanner will check against
      */
-    public SourceVisitor(SourceChecker checker, CompilationUnitTree root) {
+    public SourceVisitor(Checker checker, CompilationUnitTree root) {
         this.checker = checker;
         this.root = root;
 
@@ -51,6 +59,9 @@ public abstract class SourceVisitor<R, P> extends TreePathScanner<R, P> {
         this.trees = Trees.instance(env);
         this.elements = env.getElementUtils();
         this.types = env.getTypeUtils();
+
+        // Install the SourceChecker as the error handler
+        ErrorReporter.setHandler(checker);
 
         // Ask the checker for the AnnotatedTypeFactory.
         this.atypeFactory = checker.createFactory(root);

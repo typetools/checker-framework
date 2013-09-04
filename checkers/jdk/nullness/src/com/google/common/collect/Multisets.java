@@ -28,7 +28,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 
 /**
  * Provides static utility methods for creating and working with {@link
@@ -76,7 +76,7 @@ public final class Multisets {
 
     transient Set<E> elementSet;
 
-    @Override public Set<E> elementSet() {
+    @SideEffectFree @Override public Set<E> elementSet() {
       Set<E> es = elementSet;
       return (es == null)
           ? elementSet = Collections.<E>unmodifiableSet(delegate.elementSet())
@@ -86,7 +86,7 @@ public final class Multisets {
     transient Set<Multiset.Entry<E>> entrySet;
 
     @SuppressWarnings("unchecked")
-    @Override public Set<Multiset.Entry<E>> entrySet() {
+    @SideEffectFree @Override public Set<Multiset.Entry<E>> entrySet() {
       Set<Multiset.Entry<E>> es = entrySet;
       return (es == null)
           // Safe because the returned set is made unmodifiable and Entry
@@ -216,14 +216,14 @@ public final class Multisets {
 
     transient Set<E> elementSet;
 
-    public Set<E> elementSet() {
+    @SideEffectFree public Set<E> elementSet() {
       Set<E> es = elementSet;
       return (es == null) ? elementSet = new ElementSet() : es;
     }
 
     transient Set<Entry<E>> entrySet;
 
-    public Set<Entry<E>> entrySet() {
+    @SideEffectFree public Set<Entry<E>> entrySet() {
       Set<Entry<E>> es = entrySet;
       return (es == null) ? entrySet = new EntrySet() : es;
     }
@@ -255,7 +255,7 @@ public final class Multisets {
       return setCountImpl(this, element, oldCount, newCount);
     }
 
-    @Override public boolean equals(@Nullable Object object) {
+    @Pure @Override public boolean equals(@Nullable Object object) {
       if (object instanceof Multiset) {
         Multiset<?> that = (Multiset<?>) object;
         return this.size() == that.size() && delegate.equals(that.elementSet());
@@ -263,7 +263,7 @@ public final class Multisets {
       return false;
     }
 
-    @Override public int hashCode() {
+    @Pure @Override public int hashCode() {
       int sum = 0;
       for (E e : this) {
         sum += ((e == null) ? 0 : e.hashCode()) ^ 1;
@@ -288,7 +288,7 @@ public final class Multisets {
 
     /** @see SetMultiset#entrySet */
     class EntrySet extends AbstractSet<Entry<E>> {
-      @Override public int size() {
+      @Pure @Override public int size() {
         return delegate.size();
       }
       @Override public Iterator<Entry<E>> iterator() {
@@ -334,7 +334,7 @@ public final class Multisets {
      * Indicates whether an object equals this entry, following the behavior
      * specified in {@link Multiset.Entry#equals}.
      */
-    @Override public boolean equals(@Nullable Object object) {
+    @Pure @Override public boolean equals(@Nullable Object object) {
       if (object instanceof Multiset.Entry) {
         Multiset.Entry<?> that = (Multiset.Entry<?>) object;
         return this.getCount() == that.getCount()
@@ -347,7 +347,7 @@ public final class Multisets {
      * Return this entry's hash code, following the behavior specified in
      * {@link Multiset.Entry#hashCode}.
      */
-    @Override public int hashCode() {
+    @Pure @Override public int hashCode() {
       E e = getElement();
       return ((e == null) ? 0 : e.hashCode()) ^ getCount();
     }
@@ -359,7 +359,7 @@ public final class Multisets {
      * " x " (space, x and space) followed by the count. Elements and counts are
      * converted to strings as by {@code String.valueOf}.
      */
-    @Override public String toString() {
+    @Pure @Override public String toString() {
       String text = String.valueOf(getElement());
       int n = getCount();
       return (n == 1) ? text : (text + " x " + n);

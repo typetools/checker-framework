@@ -1,7 +1,16 @@
 package checkers.types.visitors;
 
 import checkers.types.AnnotatedTypeMirror;
-import checkers.types.AnnotatedTypeMirror.*;
+import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedIntersectionType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedNoType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedNullType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import checkers.types.AnnotatedTypeMirror.AnnotatedUnionType;
+import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
 
 /**
  * A simple visitor for {@link AnnotatedTypeMirror}s.
@@ -62,6 +71,11 @@ public class SimpleAnnotatedTypeVisitor<R, P> implements AnnotatedTypeVisitor<R,
 
     @Override
     public R visitIntersection(AnnotatedIntersectionType type, P p) {
+        return defaultAction(type, p);
+    }
+
+    @Override
+    public R visitUnion(AnnotatedUnionType type, P p) {
         return defaultAction(type, p);
     }
 

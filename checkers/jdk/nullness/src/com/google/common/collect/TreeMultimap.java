@@ -30,7 +30,7 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import checkers.nullness.quals.*;
+import checkers.nullness.quals.Nullable;
 //import javax.annotation.Nullable;
 
 /**
@@ -177,7 +177,7 @@ public final class TreeMultimap<K extends /*@Nullable*/ Object, V extends /*@Nul
    * returns a {@link SortedSet}, instead of the {@link Set} specified in the
    * {@link Multimap} interface.
    */
-  @Override public SortedSet<K> keySet() {
+  @SideEffectFree @Override public SortedSet<K> keySet() {
     return (SortedSet<K>) super.keySet();
   }
 
