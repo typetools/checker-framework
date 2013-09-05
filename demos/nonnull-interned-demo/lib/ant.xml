@@ -33,6 +33,7 @@
         <arg line="@{files}"/>
         <arg line="-Alint=@{lint}"/>
         <arg line="-Anocheckjdk"/>
+        <arg line="-AsuppressWarnings=purity"/>
       </java>
     </sequential>
   </macrodef>

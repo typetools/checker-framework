@@ -1,8 +1,8 @@
 src/checkers/nonnull/NonnullAnnotatedTypeFactory.java:201: error: incompatible types.
         Element elt = InternalUtils.symbol(id);
                                           ^
-  found   : @Nullable Element
-  required: @NonNull Element
+  found   : @Initialized @Nullable Element
+  required: @UnknownInitialization @NonNull Element
 1 error
 
 BUILD FAILED
