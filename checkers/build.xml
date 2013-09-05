@@ -462,13 +462,6 @@ ${build.version} of the 'javac.jar' library."/>
         </antcall>
     </target>
 
-    <target name="all-flow-tests" depends="jar,build-tests"
-      description="Run tests for the Checker Framework (all-flow)">
-        <antcall target="-run-tests">
-            <param name="param" value="tests.AllFlowTests"/>
-        </antcall>
-    </target>
-
     <target name="framework-tests" depends="jar,build-tests"
       description="Run tests for the Checker Framework">
         <antcall target="-run-tests">
