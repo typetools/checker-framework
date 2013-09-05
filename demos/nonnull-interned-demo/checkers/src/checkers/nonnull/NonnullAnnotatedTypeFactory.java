@@ -8,6 +8,7 @@ import javax.lang.model.type.*;
 import javax.lang.model.util.*;
 
 import checkers.quals.*;
+import checkers.initialization.quals.Initialized;
 import checkers.types.*;
 import checkers.util.*;
 import checkers.types.InternalUtils;
@@ -66,8 +67,8 @@ public class NonnullAnnotatedTypeFactory extends AnnotatedTypeFactory {
         assert srcPos != null; /*nninvariant*/
         this.srcPos = srcPos;
 
-        @SuppressWarnings("nullness")
-        FlowVisitor fv = new FlowVisitor(root, srcPos, this);
+        @SuppressWarnings({"nullness", "initialization"})
+        @Initialized FlowVisitor fv = new FlowVisitor(root, srcPos, this);
         this.flow = fv;
         if (useFlow) {
             // Run a flow-sensitive analysis for "if (x != null)"-type expressions.
