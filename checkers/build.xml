@@ -286,7 +286,7 @@ ${build.version} of the 'javac.jar' library."/>
     <target name="jar" depends="build,checkers-quals-jar"
             description="Create checkers.jar file">
         <delete dir="${build.reports}"/>
-        <jar destfile="${checkers.jar.file}" basedir="${build}">
+        <jar destfile="${checkers.jar.file}" basedir="${build}" excludes="polyall/,tests/,lubglb/,jtreg/">
             <manifest>
                 <attribute name="Main-Class" value="checkers.util.CheckerMain"/>
             </manifest>
