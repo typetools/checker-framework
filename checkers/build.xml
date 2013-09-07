@@ -661,7 +661,8 @@ ${build.version} of the 'javac.jar' library."/>
             <attribute name="name"/>
             <attribute name="tests"/>
             <!-- <attribute name="jdk" default="${java.home}"/> -->
-            <attribute name="samevm" default="true"/>
+            <!-- TODO samevm true does not work. Investigate. -->
+            <attribute name="samevm" default="false"/>
             <attribute name="verbose" default="summary"/>
             <attribute name="options" default=""/>
             <attribute name="keywords" default="-keywords:!ignore"/>

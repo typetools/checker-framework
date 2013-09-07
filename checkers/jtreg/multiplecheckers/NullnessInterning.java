@@ -12,7 +12,7 @@
  *
  * @compile/ref=NullnessInterning3.out -XDrawDiagnostics -Anomsgtext -processor checkers.nullness.NullnessChecker,checkers.interning.InterningChecker NullnessInterning.java -Awarns -Acheckers.interning.InterningChecker_skipDefs=NullnessInterning
  *
- * @compile/ref=NullnessInterning3.out -XDrawDiagnostics -Anomsgtext -processor checkers.nullness.NullnessChecker,checkers.interning.InterningChecker NullnessInterning.java -Awarns -Acheckers.basetype.BaseTypeChecker_skipDefs=NullnessInterning
+ * @compile/ref=NullnessInterning4.out -XDrawDiagnostics -Anomsgtext -processor checkers.nullness.NullnessChecker,checkers.interning.InterningChecker NullnessInterning.java -Awarns -Acheckers.basetype.BaseTypeChecker_skipDefs=NullnessInterning
  */
 
 class NullnessInterning {

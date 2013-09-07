@@ -2,7 +2,7 @@
  * @test
  * @summary Test that raw types sometimes produces unwanted errors
  *
- * @compile/ref=RawTypeFail.out -XDrawDiagnostics -Xlint:unchecked -processor checkers.nullness.NullnessChecker -AprintErrorStack -Alint -Anomsgtext RawTypeFail.java
+ * @compile/fail/ref=RawTypeFail.out -XDrawDiagnostics -Xlint:unchecked -processor checkers.nullness.NullnessChecker -AprintErrorStack -Alint -Anomsgtext RawTypeFail.java
  * @compile/ref=RawTypeFailIgnored.out -XDrawDiagnostics -Xlint:unchecked -processor checkers.nullness.NullnessChecker -AprintErrorStack -Alint -Anomsgtext -AignoreRawTypeArguments RawTypeFail.java
  */
 
