@@ -4,8 +4,7 @@ import javacutils.trees.TreeParser;
 
 import javax.annotation.processing.ProcessingEnvironment;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.junit.Test;
 
 import com.sun.source.tree.ArrayAccessTree;

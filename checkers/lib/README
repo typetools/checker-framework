@@ -6,5 +6,5 @@ javaparser.jar
   This file is not in the repository. It is rebuilt from the
   CF/javaparser project.
 
-Also note that there is ../tests/junit-4.7.jar, which
+Also note that there is ../tests/junit.jar, which
 is used by the tests only.

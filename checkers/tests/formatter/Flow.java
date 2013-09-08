@@ -5,7 +5,7 @@ import java.util.Formatter;
 import java.util.List;
 import java.util.Map;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import checkers.formatter.FormatUtil;
 import checkers.formatter.quals.ConversionCategory;
 import checkers.formatter.quals.Format;

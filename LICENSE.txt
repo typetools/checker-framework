@@ -33,7 +33,7 @@ different licenses.
 
  * junit is licensed under the Common Public License v1.0 (see
    http://www.junit.org/license), with parts (Hamcrest) licensed under the
-   BSD License (see LICENSE.txt in checkers/tests/junit-4.7.jar ).
+   BSD License (see LICENSE.txt in checkers/tests/junit.jar ).
 
  * plume-lib is licensed under the MIT License.
 

@@ -83,7 +83,7 @@ ${build.version} of the 'javac.jar' library."/>
         </pathconvert>
         <java fork="true"
               failonerror="true"
-              classpath="${javac.lib}::${tests.junit}"
+              classpath="${javac.lib}"
               classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
@@ -133,7 +133,7 @@ ${build.version} of the 'javac.jar' library."/>
         subdirectory fails. -->
         <javadoc sourcepath="${src}" destdir="${dist.doc}" failonerror="true"
             executable="${jsr308.langtools}/dist/bin/javadoc"
-          classpath="${build}:${compiler.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar:${tests.junit}"
+          classpath="${build}:${compiler.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar"
           bootclasspath="${compiler.lib}:${javadoc.lib}:${java.home}/lib/rt.jar">
           <package name="javacutils.*"/>
           <link href="http://docs.oracle.com/javase/7/docs/api/"/>
