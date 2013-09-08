@@ -4,8 +4,8 @@ src/utilMDE/UtilMDE.java:564: error: dereference of possibly-null reference file
 src/utilMDE/UtilMDE.java:716: error: incompatible types in return.
     return hm.put(key, new Integer(new_total));
                  ^
-  found   : @Nullable Integer
-  required: @NonNull Integer
+  found   : @Initialized @Nullable Integer
+  required: @Initialized @NonNull Integer
 2 errors
 
 BUILD FAILED

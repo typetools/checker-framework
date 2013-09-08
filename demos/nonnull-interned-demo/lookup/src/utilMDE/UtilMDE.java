@@ -588,7 +588,7 @@ public final class UtilMDE {
       if (filename.indexOf("*") != -1)
         throw new Error("Multiple asterisks in wildcard argument: " + filename);
     }
-    @SuppressWarnings("nonnull")
+    @SuppressWarnings("nullness")
     public boolean accept(File dir, String name) {
       return name.startsWith(prefix) && name.endsWith(suffix);
     }
@@ -860,17 +860,17 @@ public final class UtilMDE {
   // their arguments into a scope that Java was happy with.
 
   /** Converts an Enumeration into an Iterator. */
-  @SuppressWarnings("nonnull")
+  @SuppressWarnings("nullness")
   public static final class EnumerationIterator<T> implements Iterator<T> {
     Enumeration<T> e;
     public EnumerationIterator(Enumeration<T> e) { this.e = e; }
     public boolean hasNext() { return e.hasMoreElements(); }
-    public T next() { return e.nextElement(); }
+    public @NonNull T next() { return e.nextElement(); }
     public void remove() { throw new UnsupportedOperationException(); }
   }
 
   /** Converts an Iterator into an Enumeration. */
-  @SuppressWarnings("nonnull")
+  @SuppressWarnings("nullness")
   public static final class IteratorEnumeration<T> implements Enumeration<T> {
     Iterator<T> itor;
     public IteratorEnumeration(Iterator<T> itor) { this.itor = itor; }
@@ -884,7 +884,7 @@ public final class UtilMDE {
    * argument, then the elements returned by its second argument.
    * Like MergedIterator, but specialized for the case of two arguments.
    **/
-  @SuppressWarnings("nonnull")
+  @SuppressWarnings("nullness")
   public static final class MergedIterator2<T> implements Iterator<T> {
     Iterator<T> itor1, itor2;
     public MergedIterator2(Iterator<T> itor1_, Iterator<T> itor2_) {
@@ -893,7 +893,7 @@ public final class UtilMDE {
     public boolean hasNext() {
       return (itor1.hasNext() || itor2.hasNext());
     }
-    public T next() {
+    public @NonNull T next() {
       if (itor1.hasNext())
         return itor1.next();
       else if (itor2.hasNext())
@@ -938,9 +938,9 @@ public final class UtilMDE {
   }
   */
 
-  @SuppressWarnings("nonnull")
+  @SuppressWarnings("nullness")
   /** An iterator that only returns elements that match the given Filter. */
-  public static final class FilteredIterator<T> implements Iterator<T> {
+  public static final class FilteredIterator<T extends Object> implements Iterator<T> {
     Iterator<T> itor;
     Filter<T> filter;
 
@@ -962,7 +962,7 @@ public final class UtilMDE {
       return current_valid;
     }
 
-    public T next() {
+    public @NonNull T next() {
       if (hasNext()) {
         current_valid = false;
         @SuppressWarnings("interning")
@@ -1042,7 +1042,7 @@ public final class UtilMDE {
    * there are fewer.  It examines every element of the iterator, but does
    * not keep them all in memory.
    **/
-  public static <T> List<T> randomElements(Iterator<T> itor, int num_elts) {
+  public static <T extends Object> List<T> randomElements(Iterator<T> itor, int num_elts) {
     return randomElements(itor, num_elts, r);
   }
   private static Random r = new Random();
@@ -1053,7 +1053,7 @@ public final class UtilMDE {
    * there are fewer.  It examines every element of the iterator, but does
    * not keep them all in memory.
    **/
-  public static <T> List<T> randomElements(Iterator<T> itor, int num_elts, Random random) {
+  public static <T extends Object> List<T> randomElements(Iterator<T> itor, int num_elts, Random random) {
     // The elements are chosen with the following probabilities,
     // where n == num_elts:
     //   n n/2 n/3 n/4 n/5 ...
