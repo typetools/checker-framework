@@ -5,7 +5,7 @@ import java.util.*;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
-import checkers.quals.Interned;
+import checkers.interning.quals.Interned;
 
 /**
  * Represents additional information about a VarInfo that frontends
