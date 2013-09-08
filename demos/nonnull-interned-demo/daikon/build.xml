@@ -5,8 +5,11 @@
     <property file="../demo.properties"/>
     
     <target name="varinfo">
-        <run-demo checker="checkers.interning.InterningChecker" srcpath="." 
-            files="${basedir}/src/daikon/VarInfo.java" lint="-dotequals"/>
+        <run-demo checker="checkers.interning.InterningChecker"
+                srcpath="${basedir}/src/"
+                files="${basedir}/src/daikon/VarInfo.java"
+                lint="-dotequals"
+                custom.lib="${env.JAVA_HOME}/lib/tools.jar"/>
     </target>
 
     <target name="check-varinfo">
@@ -18,8 +21,11 @@
     </target>
 
     <target name="fileio">
-        <run-demo checker="checkers.interning.InterningChecker" srcpath="." 
-            files="${basedir}/src/daikon/FileIO.java" lint="-dotequals"/>
+        <run-demo checker="checkers.interning.InterningChecker"
+                srcpath="${basedir}/src/"
+                files="${basedir}/src/daikon/FileIO.java"
+                lint="-dotequals"
+                custom.lib="${env.JAVA_HOME}/lib/tools.jar"/>
     </target>
 
     <target name="check-fileio">

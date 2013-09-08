@@ -3,7 +3,7 @@ package utilMDE;
 import java.util.*;
 import java.io.*;
 
-import checkers.quals.Interned;
+import checkers.interning.quals.Interned;
 
 // NEEDS DOCUMENTATION!
 // (Probably mostly Javadoc "see" directives, possibly with first line of relevant method doc.)

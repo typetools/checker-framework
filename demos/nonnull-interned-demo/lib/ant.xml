@@ -6,6 +6,8 @@
         </classpath>
     </taskdef>
 
+    <property environment="env"/>
+
   <!--
        Macro for calling the JSR 308 Java compiler with a checker
        for the demo code.
@@ -41,7 +43,7 @@
   <macrodef name="run-demo-basic">
     <attribute name="srcpath"/>
     <attribute name="files"/>
-    <attribute name="checker" default="checkers.basic.BasicChecker"/>
+    <attribute name="checker" default="checkers.subtyping.SubtypingChecker"/>
     <attribute name="lint" default="none"/>
     <attribute name="quals" default=""/>
     <attribute name="custom.lib" default=""/>
