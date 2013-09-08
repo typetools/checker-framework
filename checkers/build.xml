@@ -12,7 +12,7 @@
 
     <property name="src" value="src"/>
     <property name="tests" value="tests"/>
-    <property name="tests.junit" value="${tests}/junit-4.7.jar"/>
+    <property name="tests.junit" value="${tests}/junit.jar"/>
 
     <property name="build" value="build"/>
     <property name="build.reports" value="${build}/reports"/>
