@@ -2,7 +2,7 @@
 
 rm -rf checkers.zip
 wget -q http://types.cs.washington.edu/checker-framework/current/checkers.zip
-rm -rf checker-framework/
+rm -rf checker-framework-*/
 unzip -q checkers.zip
 
 export CHECKERS=`pwd`/checker-framework/checkers
