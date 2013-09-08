@@ -14,6 +14,7 @@ import checkers.util.AnnotatedTypes;
 import dataflow.analysis.Analysis;
 import dataflow.cfg.CFGDOTVisualizer;
 
+import javacutils.ErrorReporter;
 import javacutils.Pair;
 
 import java.io.BufferedWriter;
@@ -162,8 +163,7 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
             out.write(s);
             out.close();
         } catch (IOException e) {
-            e.printStackTrace();
-            System.exit(1);
+            ErrorReporter.errorAbort("Error creating dot file: " + outputFile + "; ensure the path is valid", e);
         }
     }
 
