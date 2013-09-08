@@ -376,7 +376,7 @@ ${build.version} of the 'javac.jar' library."/>
       description="Run tests for all checkers"/>
 
     <!-- Used to guarantee that targets executed from other ant scripts do not cause unnecessary rebuilds -->
-    <target name="all-tests-nojdk" depends="jar, all-tests-nojar, jtreg-tests"
+    <target name="all-tests-nojdk" depends="jar, all-tests-nojar"
             description="Run tests for all checkers, WITHOUT updating jdkX.jar">
     </target>
 
