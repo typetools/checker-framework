@@ -372,11 +372,11 @@ ${build.version} of the 'javac.jar' library."/>
         </junit>
     </target>
 
-    <target name="all-tests" depends="jar,jdk.jar,all-tests-nojdk"
+    <target name="all-tests" depends="jdk.jar, all-tests-nojdk"
       description="Run tests for all checkers"/>
 
     <!-- Used to guarantee that targets executed from other ant scripts do not cause unnecessary rebuilds -->
-    <target name="all-tests-nojdk" depends="jar, all-tests-nojar"
+    <target name="all-tests-nojdk" depends="jar, all-tests-nojar, jtreg-tests"
             description="Run tests for all checkers, WITHOUT updating jdkX.jar">
     </target>
 
