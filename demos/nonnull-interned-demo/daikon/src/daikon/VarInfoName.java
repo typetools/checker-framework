@@ -10,7 +10,7 @@ import daikon.chicory.DaikonVariableInfo;
 
 import utilMDE.*;
 
-import checkers.quals.Interned;
+import checkers.interning.quals.Interned;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -249,8 +249,8 @@ public abstract /*@Interned*/ class VarInfoName
     }
     return simplify_name_cached[which];
   }
-  private String[/*@Interned*/] simplify_name_cached
-    = new String[/*@Interned*/ 2]; // each interned
+  private String /*@Interned*/ [] simplify_name_cached
+    = new String /*@Interned*/ [2]; // each interned
 
   /**
    * Returns the String representation of this name in the simplify
@@ -481,7 +481,7 @@ public abstract /*@Interned*/ class VarInfoName
    * @return the nodes of this, as given by an inorder traversal.
    **/
   @SuppressWarnings("interned") // generic type inference
-  public Collection<VarInfoName> inOrderTraversal() /*@Interned*/ {
+  public Collection<VarInfoName> inOrderTraversal(/*>>> @Interned VarInfoName this*/) {
     return Collections.unmodifiableCollection(new InorderFlattener(this).nodes());
   }
 
@@ -533,7 +533,7 @@ public abstract /*@Interned*/ class VarInfoName
    * @return true if the given node is in a prestate context within
    * this tree; the node must be a member of this tree.
    **/
-  public boolean inPrestateContext(VarInfoName node) /*@Interned*/ {
+  public boolean inPrestateContext(/*>>> @Interned VarInfoName this, */ VarInfoName node) {
     return (new NodeFinder(this, node)).inPre();
   }
 
@@ -541,7 +541,7 @@ public abstract /*@Interned*/ class VarInfoName
    * @return true if every variable in the name is an orig(...)
    * variable.
    **/
-  public boolean isAllPrestate() /*@Interned*/ {
+  public boolean isAllPrestate(/*>>> @Interned VarInfoName this*/) {
     return new IsAllPrestateVisitor(this).result();
   }
 
@@ -549,7 +549,7 @@ public abstract /*@Interned*/ class VarInfoName
    * @return true if this VarInfoName contains a simple variable whose
    * name is NAME.
    **/
-  public boolean includesSimpleName(String name) /*@Interned*/ {
+  public boolean includesSimpleName(/*>>> @Interned VarInfoName this, */ String name) {
     return new SimpleNamesVisitor(this).simples().contains(name);
   }
 
@@ -560,7 +560,7 @@ public abstract /*@Interned*/ class VarInfoName
    * Replace the first instance of node by replacement, in the data
    * structure rooted at this.
    **/
-  public VarInfoName replace(VarInfoName node, VarInfoName replacement) /*@Interned*/ {
+  public VarInfoName replace(/*>>> @Interned VarInfoName this, */ VarInfoName node, VarInfoName replacement) {
     if (node == replacement)    // "interned": equality optimization pattern
       return this;
     Replacer r = new Replacer(node, replacement);
@@ -571,7 +571,7 @@ public abstract /*@Interned*/ class VarInfoName
    * Replace all instances of node by replacement, in the data structure
    * rooted at this.
    **/
-  public VarInfoName replaceAll(VarInfoName node, VarInfoName replacement) /*@Interned*/ {
+  public VarInfoName replaceAll(/*>>> @Interned VarInfoName this, */VarInfoName node, VarInfoName replacement) {
     if (node == replacement)    // "interned": equality optimization pattern
       return this;
 
@@ -596,7 +596,7 @@ public abstract /*@Interned*/ class VarInfoName
     return (o instanceof VarInfoName) && equals((VarInfoName) o);
   }
 
-  public boolean equals(VarInfoName other) /*@Interned*/ {
+  public boolean equals(/*>>> @Interned VarInfoName this, */ VarInfoName other) {
     return ((other == this)     // "interned": equality optimization pattern
             || ((other != null)
                 && (this.repr().equals(other.repr()))));
@@ -794,7 +794,7 @@ public abstract /*@Interned*/ class VarInfoName
    * Returns a name for the size of this (this object should be a
    * sequence).  Form is like "size(a[])" or "a.length".
    **/
-  public VarInfoName applySize() /*@Interned*/ {
+  public VarInfoName applySize(/*>>> @Interned VarInfoName this*/ ) {
     // The simple approach:
     //   return (new SizeOf((Elements) this)).intern();
     // is wrong because this might be "orig(a[])".
@@ -833,7 +833,7 @@ public abstract /*@Interned*/ class VarInfoName
    * and upper bounds, which can be subtracted to get one less than
    * its size.
    */
-  public VarInfoName[/*@Interned*/] getSliceBounds() /*@Interned*/ {
+  public VarInfoName /*@Interned*/[] getSliceBounds(/*>>> @Interned VarInfoName this*/) {
     VarInfoName vin = this;
     boolean inPrestate = false;
     if (vin instanceof Prestate) {
@@ -846,7 +846,7 @@ public abstract /*@Interned*/ class VarInfoName
     if (!(vin instanceof Slice))
       return null;
     Slice slice = (Slice)vin;
-    VarInfoName[/*@Interned*/] ret = new VarInfoName[/*@Interned*/ 2];
+    VarInfoName /*@Interned*/ [] ret = new VarInfoName /*@Interned*/ [2];
     if (slice.i != null)
       ret[0] = slice.i;
     else
@@ -966,7 +966,7 @@ public abstract /*@Interned*/ class VarInfoName
    * Returns a name for a unary function applied to this object.
    * The result is like "sum(this)".
    **/
-  public VarInfoName applyFunction(String function) /*@Interned*/ {
+  public VarInfoName applyFunction(/*>>> @Interned VarInfoName this, */ String function) {
     return (new FunctionOf(function, this)).intern();
   }
 
@@ -986,7 +986,7 @@ public abstract /*@Interned*/ class VarInfoName
    * @param function the name of the function
    * @param vars The arguments to the function
    **/
-  public static VarInfoName applyFunctionOfN(String function, VarInfoName[/*@Interned*/] vars) {
+  public static VarInfoName applyFunctionOfN(String function, VarInfoName /*@Interned*/ [] vars) {
     return applyFunctionOfN(function, Arrays.asList(vars));
   }
 
@@ -1164,7 +1164,7 @@ public abstract /*@Interned*/ class VarInfoName
    * Returns a name for the intersection of with another sequence, like
    * "intersect(a[], b[])".
    **/
-  public VarInfoName applyIntersection(VarInfoName seq2) /*@Interned*/ {
+  public VarInfoName applyIntersection(/*>>> @Interned VarInfoName this, */ VarInfoName seq2) {
     Assert.assertTrue(seq2 != null);
     return (new Intersection(this, seq2)).intern();
   }
@@ -1180,7 +1180,7 @@ public abstract /*@Interned*/ class VarInfoName
     static final long serialVersionUID = 20020130L;
 
     public Intersection(VarInfoName seq1, VarInfoName seq2) {
-      super ("intersection", Arrays.asList(new VarInfoName[/* @ Interned*/] {seq1, seq2}));
+      super ("intersection", Arrays.asList(new VarInfoName /* @ Interned*/ [] {seq1, seq2}));
     }
 
     protected String ioa_name_impl() {
@@ -1193,7 +1193,7 @@ public abstract /*@Interned*/ class VarInfoName
    * Returns a name for the union of this with another sequence, like
    * "union(a[], b[])".
    **/
-  public VarInfoName applyUnion(VarInfoName seq2) /*@Interned*/ {
+  public VarInfoName applyUnion(/*>>> @Interned VarInfoName this, */ VarInfoName seq2) {
     Assert.assertTrue(seq2 != null);
     return (new Union(this, seq2)).intern();
   }
@@ -1224,7 +1224,7 @@ public abstract /*@Interned*/ class VarInfoName
    * Returns a 'getter' operation for some field of this name, like
    * a.foo if this is a.
    **/
-  public VarInfoName applyField(String field) /*@Interned*/ {
+  public VarInfoName applyField(/*>>> @Interned VarInfoName this, */ String field) {
     return (new Field(this, field)).intern();
   }
 
@@ -1409,7 +1409,7 @@ public abstract /*@Interned*/ class VarInfoName
    * Returns a name for the type of this object; form is like
    * "this.getClass()" or "\typeof(this)".
    **/
-  public VarInfoName applyTypeOf() /*@Interned*/ {
+  public VarInfoName applyTypeOf(/*>>> @Interned VarInfoName this*/) {
     return (new TypeOf(this)).intern();
   }
 
@@ -1474,7 +1474,7 @@ public abstract /*@Interned*/ class VarInfoName
    * Returns a name for a the prestate value of this object; form is
    * like "orig(this)" or "\old(this)".
    **/
-  public VarInfoName applyPrestate() /*@Interned*/ {
+  public VarInfoName applyPrestate(/*>>> @Interned VarInfoName this*/) {
     if (this instanceof Poststate) {
       return ((Poststate)this).term;
     } else if ((this instanceof Add) && ((Add)this).term instanceof Poststate) {
@@ -1567,7 +1567,7 @@ public abstract /*@Interned*/ class VarInfoName
    * Returns a name for a the poststate value of this object; form is
    * like "new(this)" or "\new(this)".
    **/
-  public VarInfoName applyPoststate() /*@Interned*/ {
+  public VarInfoName applyPoststate(/*>>> @Interned VarInfoName this*/) {
     return (new Poststate(this)).intern();
   }
 
@@ -1625,7 +1625,7 @@ public abstract /*@Interned*/ class VarInfoName
    * Returns a name for the this term plus a constant, like "this-1"
    * or "this+1".
    **/
-  public VarInfoName applyAdd(int amount) /*@Interned*/ {
+  public VarInfoName applyAdd(/*>>> @Interned VarInfoName this, */ int amount) {
     if (amount == 0) {
       return this;
     } else {
@@ -1693,12 +1693,12 @@ public abstract /*@Interned*/ class VarInfoName
   }
 
   /** Returns a name for the decrement of this term, like "this-1". **/
-  public VarInfoName applyDecrement() /*@Interned*/ {
+  public VarInfoName applyDecrement(/*>>> @Interned VarInfoName this*/) {
     return applyAdd(-1);
   }
 
   /** Returns a name for the increment of this term, like "this+1". **/
-  public VarInfoName applyIncrement() /*@Interned*/ {
+  public VarInfoName applyIncrement(/*>>> @Interned VarInfoName this*/) {
     return applyAdd(+1);
   }
 
@@ -1706,7 +1706,7 @@ public abstract /*@Interned*/ class VarInfoName
    * Returns a name for the elements of a container (as opposed to the
    * identity of the container) like "this[]" or "(elements this)".
    **/
-  public VarInfoName applyElements() /*@Interned*/ {
+  public VarInfoName applyElements(/*>>> @Interned VarInfoName this*/) {
     return (new Elements(this)).intern();
   }
 
@@ -1841,7 +1841,7 @@ public abstract /*@Interned*/ class VarInfoName
    * Returns a name for an element selected from a sequence, like
    * "this[i]".
    **/
-  public VarInfoName applySubscript(VarInfoName index) /*@Interned*/ {
+  public VarInfoName applySubscript(/*>>> @Interned VarInfoName this, */ VarInfoName index) {
     Assert.assertTrue(index != null);
     ElementsFinder finder = new ElementsFinder(this);
     Elements elems = finder.elems();
@@ -1944,7 +1944,7 @@ public abstract /*@Interned*/ class VarInfoName
    * like "this[i..j]".  If an endpoint is null, it means "from the
    * start" or "to the end".
    **/
-  public VarInfoName applySlice(VarInfoName i, VarInfoName j) /*@Interned*/ {
+  public VarInfoName applySlice(/*>>> @Interned VarInfoName this, */ VarInfoName i, VarInfoName j) {
     // a[] -> a[index..]
     // orig(a[]) -> orig(a[post(index)..])
     ElementsFinder finder = new ElementsFinder(this);
@@ -2973,7 +2973,7 @@ public abstract /*@Interned*/ class VarInfoName
           index_vin = new Simple(index_off + "");
         }
         VarInfoName to_replace = unquants.get(0);
-        VarInfoName[/*@Interned*/] replace_result = replace(root, to_replace, index_vin);
+        VarInfoName /*@Interned*/ [] replace_result = replace(root, to_replace, index_vin);
         return replace_result[0];
       } else {
         Assert.assertTrue(false, "Can't handle multi-dim array in " +
@@ -3049,8 +3049,8 @@ public abstract /*@Interned*/ class VarInfoName
      * Record type for return value of the quantify method below.
      **/
     public static class QuantifyReturn {
-      public VarInfoName[/*@Interned*/] root_primes;
-      public Vector<VarInfoName[/*@Interned*/]> bound_vars; // each element is VarInfoName[3] = <variable, lower, upper>
+      public VarInfoName /*@Interned*/ [] root_primes;
+      public Vector<VarInfoName /*@Interned*/ []> bound_vars; // each element is VarInfoName[3] = <variable, lower, upper>
     }
 
     // <root*> -> <root'*, <index, lower, upper>*>

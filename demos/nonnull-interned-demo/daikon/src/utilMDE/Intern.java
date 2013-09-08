@@ -1,6 +1,6 @@
 package utilMDE;
 
-import checkers.quals.Interned;
+import checkers.interning.quals.Interned;
 
 import java.lang.ref.WeakReference;
 import java.util.*;

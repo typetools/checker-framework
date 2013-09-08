@@ -3691,7 +3691,7 @@ public final /*@Interned*/ class VarInfo implements Cloneable, Serializable {
    */
   public static VarInfo make_function (String function_name, VarInfo... vars) {
 
-    VarInfoName[] vin = new VarInfoName[vars.length];
+    VarInfoName /*@Interned*/ [] vin = new VarInfoName /*@Interned*/ [vars.length];
     for (int ii = 0; ii < vars.length; ii++)
       vin[ii] = vars[ii].var_info_name;
 
@@ -3889,4 +3889,13 @@ public final /*@Interned*/ class VarInfo implements Cloneable, Serializable {
 
 
   }
+
+  // TODO other classes use these methods, but they were not present.
+  public boolean isIOASet() { return true; }
+  public boolean isIOAArray() { return true; }
+  public String ioa_name() { return "unknown"; }
+  public String domainTypeIOA() { return "unknown"; }
+
+  public static Quantify.IOAQuantification get_ioa_quantify(VarInfo in) { return null; }
+  public static Quantify.IOAQuantification get_ioa_quantify(VarInfo in1, VarInfo in2) { return null; }
 }
