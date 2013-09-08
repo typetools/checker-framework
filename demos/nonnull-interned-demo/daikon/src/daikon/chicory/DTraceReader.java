@@ -1,6 +1,6 @@
 package daikon.chicory;
 
-import checkers.quals.Interned;
+import checkers.interning.quals.Interned;
 
 import utilMDE.*;
 

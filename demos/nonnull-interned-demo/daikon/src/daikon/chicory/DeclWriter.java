@@ -6,6 +6,9 @@ import java.lang.reflect.*;
 
 import static daikon.PptTopLevel.PptType;
 import static daikon.VarInfo.*;
+import daikon.VarInfo.VarFlags;
+import daikon.VarInfo.VarKind;
+
 import daikon.Chicory;
 import utilMDE.SimpleLog;
 
