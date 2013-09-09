@@ -105,7 +105,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
      * The following invariant holds:
      *
      * <pre>
-     *   !isRunning ==> (currentNode == null)
+     *   !isRunning ==&gt; (currentNode == null)
      * </pre>
      */
     protected Node currentNode;
@@ -224,7 +224,8 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
                 Block succ = eb.getSuccessor();
                 if (succ != null) {
                     currentInput = new TransferInput<>(node, this, transferResult);
-                    Store.FlowRule storeFlow = eb.getFlowRule();
+                    // TODO? Variable wasn't used.
+                    // Store.FlowRule storeFlow = eb.getFlowRule();
                     propagateStoresTo(succ, node, currentInput, eb.getFlowRule(), addToWorklistAgain);
                 }
 
@@ -636,7 +637,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
      * Read the {@link TransferInput} for a particular basic block (or {@code null} if
      * none exists yet).
      */
-    public/* @Nullable */TransferInput<A, S> getInput(Block b) {
+    public /*@Nullable*/ TransferInput<A, S> getInput(Block b) {
         return getInputBefore(b);
     }
 
@@ -644,7 +645,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
      * @return The transfer input corresponding to the location right before the basic
      *         block <code>b</code>.
      */
-    protected/* @Nullable */TransferInput<A, S> getInputBefore(Block b) {
+    protected /*@Nullable*/ TransferInput<A, S> getInputBefore(Block b) {
         return inputs.get(b);
     }
 
@@ -652,7 +653,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
      * @return The store corresponding to the location right before the basic
      *         block <code>b</code>.
      */
-    protected/* @Nullable */S getStoreBefore(Block b, Store.Kind kind) {
+    protected /*@Nullable*/ S getStoreBefore(Block b, Store.Kind kind) {
         switch (kind) {
         case THEN:
             return readFromStore(thenStores, b);
@@ -668,7 +669,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
      * Read the {@link Store} for a particular basic block from a map of stores
      * (or {@code null} if none exists yet).
      */
-    protected static <S> /* @Nullable */S readFromStore(Map<Block, S> stores,
+    protected static <S> /*@Nullable*/ S readFromStore(Map<Block, S> stores,
             Block b) {
         return stores.get(b);
     }
@@ -684,7 +685,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
      *         finished yet, this value might not represent the final value for
      *         this node.
      */
-    public/* @Nullable */A getValue(Node n) {
+    public /*@Nullable*/ A getValue(Node n) {
         if (isRunning) {
             // we do not yet have a dataflow fact about the current node
             if (currentNode == n
@@ -710,7 +711,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
      *         finished yet, this value might not represent the final value for
      *         this node.
      */
-    public/* @Nullable */A getValue(Tree t) {
+    public /*@Nullable*/ A getValue(Tree t) {
         // we do not yet have a dataflow fact about the current node
         if (t == currentTree) {
             return null;
@@ -733,7 +734,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
      * Get the {@link MethodTree} of the current CFG if the argument {@link Tree} maps
      * to a {@link Node} in the CFG or null otherwise.
      */
-    public/* @Nullable */MethodTree getContainingMethod(Tree t) {
+    public /*@Nullable*/ MethodTree getContainingMethod(Tree t) {
         return cfg.getContainingMethod(t);
     }
 
@@ -741,7 +742,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
      * Get the {@link ClassTree} of the current CFG if the argument {@link Tree} maps
      * to a {@link Node} in the CFG or null otherwise.
      */
-    public/* @Nullable */ClassTree getContainingClass(Tree t) {
+    public /*@Nullable*/ ClassTree getContainingClass(Tree t) {
         return cfg.getContainingClass(t);
     }
 
@@ -766,7 +767,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
      *         store (because the method cannot exit through the regular exit
      *         block).
      */
-    public/* @Nullable */S getRegularExitStore() {
+    public /*@Nullable*/ S getRegularExitStore() {
         SpecialBlock regularExitBlock = cfg.getRegularExitBlock();
         if (inputs.containsKey(regularExitBlock)) {
             S regularExitStore = inputs.get(regularExitBlock).getRegularStore();

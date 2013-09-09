@@ -1,16 +1,16 @@
 package dataflow.analysis;
 
+import dataflow.cfg.block.Block;
+import dataflow.cfg.block.ExceptionBlock;
+import dataflow.cfg.block.RegularBlock;
+import dataflow.cfg.node.Node;
+
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.lang.model.element.Element;
-
-import dataflow.cfg.block.Block;
-import dataflow.cfg.block.ExceptionBlock;
-import dataflow.cfg.block.RegularBlock;
-import dataflow.cfg.node.Node;
 
 import com.sun.source.tree.Tree;
 
@@ -91,7 +91,7 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
      * @return The abstract value for {@link Node} {@code n}, or {@code null} if
      *         no information is available.
      */
-    public/* @Nullable */A getValue(Node n) {
+    public /*@Nullable*/ A getValue(Node n) {
         return nodeValues.get(n);
     }
 
@@ -99,7 +99,7 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
      * @return The abstract value for {@link Tree} {@code t}, or {@code null} if
      *         no information is available.
      */
-    public/* @Nullable */A getValue(Tree t) {
+    public /*@Nullable*/ A getValue(Tree t) {
         A val = getValue(treeLookup.get(t));
         return val;
     }
@@ -107,7 +107,7 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
     /**
      * @return The {@link Node} for a given {@link Tree}.
      */
-    public/* @Nullable */Node getNodeForTree(Tree tree) {
+    public /*@Nullable*/ Node getNodeForTree(Tree tree) {
         return treeLookup.get(tree);
     }
 

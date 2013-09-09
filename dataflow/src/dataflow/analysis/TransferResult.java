@@ -7,8 +7,8 @@ import javax.lang.model.type.TypeMirror;
 /**
  * {@code TransferResult} is used as the result type of the individual transfer
  * functions of a {@link TransferFunction}. It always belongs to the result of
- * the individual transfer function for a particular {@link Node}, even though
- * that {@code Node} is not explicitly store in {@code TransferResult}.
+ * the individual transfer function for a particular {@link dataflow.cfg.node.Node}, even though
+ * that {@code dataflow.cfg.node.Node} is not explicitly store in {@code TransferResult}.
  *
  * <p>
  *
@@ -24,19 +24,19 @@ abstract public class TransferResult<A extends AbstractValue<A>, S extends Store
 
     /**
      * The stores in case the basic block throws an exception (or {@code null}
-     * if the corresponding {@link Node} does not throw any exceptions). Does
+     * if the corresponding {@link dataflow.cfg.node.Node} does not throw any exceptions). Does
      * not necessarily contain a store for every exception, in which case the
      * in-store will be used.
      */
-    protected/* @Nullable */Map<TypeMirror, S> exceptionalStores;
+    protected /*@Nullable*/ Map<TypeMirror, S> exceptionalStores;
 
     /**
-     * The abstract value of the {@link Node} associated with this
+     * The abstract value of the {@link dataflow.cfg.node.Node} associated with this
      * {@link TransferResult}, or {@code null} if no value has been produced.
      */
-    protected/* @Nullable */A resultValue;
+    protected /*@Nullable*/ A resultValue;
 
-    public TransferResult(/* @Nullable */A resultValue) {
+    public TransferResult(/*@Nullable*/ A resultValue) {
         this.resultValue = resultValue;
     }
 
@@ -53,18 +53,18 @@ abstract public class TransferResult<A extends AbstractValue<A>, S extends Store
 
     /**
      * @return The regular result store produced if no exception is thrown by
-     *         the {@link Node} corresponding to this transfer function result.
+     *         the {@link dataflow.cfg.node.Node} corresponding to this transfer function result.
      */
     abstract public S getRegularStore();
 
     /**
-     * @return The result store produced if the {@link Node} this result belongs
+     * @return The result store produced if the {@link dataflow.cfg.node.Node} this result belongs
      *         to evaluates to {@code true}.
      */
     abstract public S getThenStore();
 
     /**
-     * @return The result store produced if the {@link Node} this result belongs
+     * @return The result store produced if the {@link dataflow.cfg.node.Node} this result belongs
      *         to evaluates to {@code false}.
      */
     abstract public S getElseStore();

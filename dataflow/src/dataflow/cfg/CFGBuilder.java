@@ -190,7 +190,7 @@ import com.sun.source.util.Trees;
  * The translation of the AST to the CFG is split into three phases:
  * <ol>
  * <li><em>Phase one.</em> In the first phase, the AST is translated into a
- * sequence of {@link ExtendedNode}s. An extended node can either be a
+ * sequence of {@link dataflow.cfg.CFGBuilder.ExtendedNode}s. An extended node can either be a
  * {@link Node}, or one of several meta elements such as a conditional or
  * unconditional jump or a node with additional information about exceptions.
  * Some of the extended nodes contain labels (e.g., for the jump target), and
@@ -368,8 +368,8 @@ public class CFGBuilder {
 
         /**
          * @return The label associated with this extended node (only applicable
-         *         if type is {@code CONDITIONAL_JUMP} or
-         *         {@link UNCONDITIONAL_JUMP}).
+         *         if type is {@link ExtendedNodeType#CONDITIONAL_JUMP} or
+         *         {@link ExtendedNodeType#UNCONDITIONAL_JUMP}).
          */
         public Label getLabel() {
             assert false;
@@ -448,7 +448,7 @@ public class CFGBuilder {
     }
 
     /**
-     * An extended node of type {@code CONDITIONAL_JUMP}.
+     * An extended node of type {@link ExtendedNodeType#CONDITIONAL_JUMP}.
      *
      * <p>
      *
@@ -504,7 +504,7 @@ public class CFGBuilder {
     }
 
     /**
-     * An extended node of type {@code UNCONDITIONAL_JUMP}.
+     * An extended node of type {@link ExtendedNodeType#UNCONDITIONAL_JUMP}.
      */
     protected static class UnconditionalJump extends ExtendedNode {
 
@@ -1557,7 +1557,7 @@ public class CFGBuilder {
          *
          * @param node
          *            The node to add.
-         * @param causes
+         * @param cause
          *            An exception that the node might throw.
          * @return The node holder.
          */
@@ -2279,7 +2279,8 @@ public class CFGBuilder {
             // Fifth, if the method is synchronized, lock the receiving
             // object or class (15.12.4.5)
             ExecutableElement method = TreeUtils.elementFromUse(tree);
-            boolean isBooleanMethod = TypesUtils.isBooleanType(method.getReturnType());
+            // TODO? Variable wasn't used.
+            // boolean isBooleanMethod = TypesUtils.isBooleanType(method.getReturnType());
 
             ExpressionTree methodSelect = tree.getMethodSelect();
             assert TreeUtils.isMethodAccess(methodSelect) : "Expected a method access, but got: " + methodSelect;
@@ -3123,7 +3124,8 @@ public class CFGBuilder {
                 Void p) {
             // see JLS 15.25
             TypeMirror exprType = InternalUtils.typeOf(tree);
-            boolean isBooleanOp = TypesUtils.isBooleanType(exprType);
+            // TODO? Variable wasn't used.
+            // boolean isBooleanOp = TypesUtils.isBooleanType(exprType);
 
             Label trueStart = new Label();
             Label falseStart = new Label();

@@ -80,9 +80,10 @@ import com.sun.tools.javac.tree.TreeScanner;
  * A visitor that determines the purity (as defined by {@link dataflow.quals.Pure})
  * of a statement or expression.  The entry point is method {@link #checkPurity}.
  *
- * @see The annotation {@link Pure} for more details on what is checked and the
+ * See The annotation {@link Pure} for more details on what is checked and the
  *      semantics of purity.
  *
+ * @see Pure
  * @author Stefan Heule
  *
  */
@@ -192,7 +193,7 @@ public class PurityChecker {
         protected final AnnotationProvider annoProvider;
         /** True if all methods should be assumed to be @SideEffectFree,
          * for the purposes of dataflow analysis. */
-        private boolean assumeSideEffectFree;
+        private final boolean assumeSideEffectFree;
         protected /*@Nullable*/ List<Element> methodParameter;
 
         public PurityCheckerHelper(AnnotationProvider annoProvider, boolean assumeSideEffectFree) {

@@ -1,9 +1,9 @@
 package javacutils.trees;
 
-import java.util.List;
-
 import javacutils.InternalUtils;
 import javacutils.TypesUtils;
+
+import java.util.List;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
@@ -372,7 +372,7 @@ public class TreeBuilder {
      *
      * @param left  the left operand tree
      * @param right  the right operand tree
-     * @return  a Tree representing "left < right"
+     * @return  a Tree representing "left &lt; right"
      */
     public BinaryTree buildLessThan(ExpressionTree left, ExpressionTree right) {
         JCTree.JCBinary binary =
@@ -405,7 +405,7 @@ public class TreeBuilder {
      * @return  an IdentifierTree referring to the class
      */
     public IdentifierTree buildClassUse(Element elt) {
-        return (IdentifierTree)maker.Ident((Symbol)elt);
+        return maker.Ident((Symbol)elt);
     }
 
     /**
@@ -663,7 +663,7 @@ public class TreeBuilder {
      * @param op    AST Tree operator
      * @param left  the left operand tree
      * @param right  the right operand tree
-     * @return  a Tree representing "left < right"
+     * @return  a Tree representing "left &lt; right"
      */
     public BinaryTree buildBinary(TypeMirror type, Tree.Kind op, ExpressionTree left, ExpressionTree right) {
         JCTree.Tag jcOp = kindToTag(op);
@@ -674,6 +674,4 @@ public class TreeBuilder {
         return binary;
     }
 
-
-    
 }

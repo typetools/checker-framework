@@ -1,14 +1,5 @@
 package dataflow.cfg;
 
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.Queue;
-import java.util.Set;
-
-import javax.lang.model.type.TypeMirror;
-
 import dataflow.analysis.AbstractValue;
 import dataflow.analysis.Analysis;
 import dataflow.analysis.Store;
@@ -22,6 +13,15 @@ import dataflow.cfg.block.RegularBlock;
 import dataflow.cfg.block.SingleSuccessorBlock;
 import dataflow.cfg.block.SpecialBlock;
 import dataflow.cfg.node.Node;
+
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Queue;
+import java.util.Set;
+
+import javax.lang.model.type.TypeMirror;
 
 /**
  * Generate a graph description in the DOT language of a control graph.
@@ -227,8 +227,8 @@ public class CFGDOTVisualizer {
         return sb.toString() + (centered ? "" : "\\n");
     }
 
-    protected static <A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<A, S>> String visualizeNode(
-            Node t, /* @Nullable */Analysis<A, S, T> analysis) {
+    protected static <A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<A, S>>
+    String visualizeNode(Node t, /*@Nullable*/ Analysis<A, S, T> analysis) {
         A value = analysis.getValue(t);
         String valueInfo = "";
         if (value != null) {

@@ -240,13 +240,10 @@ public class InternalUtils {
     /**
      * Returns the least upper bound of two {@link TypeMirror}s.
      *
-     * @param processingEnv
-     *            The {@link ProcessingEnvironment} to be used.
-     * @param t1
-     *            A {@link TypeMirror}.
-     * @param t2
-     *            A {@link TypeMirror}.
-     * @return The least upper bound of {@code t1} and {@code t2}.
+     * @param processingEnv The {@link ProcessingEnvironment} to use.
+     * @param tm1 A {@link TypeMirror}.
+     * @param tm2 A {@link TypeMirror}.
+     * @return The least upper bound of {@code tm1} and {@code tm2}.
      */
     public static TypeMirror leastUpperBound(
             ProcessingEnvironment processingEnv, TypeMirror tm1, TypeMirror tm2) {
@@ -301,13 +298,10 @@ public class InternalUtils {
     /**
      * Returns the greatest lower bound of two {@link TypeMirror}s.
      *
-     * @param processingEnv
-     *            The {@link ProcessingEnvironment} to be used.
-     * @param t1
-     *            A {@link TypeMirror}.
-     * @param t2
-     *            A {@link TypeMirror}.
-     * @return The greatest lower bound of {@code t1} and {@code t2}.
+     * @param processingEnv The {@link ProcessingEnvironment} to use.
+     * @param tm1 A {@link TypeMirror}.
+     * @param tm2 A {@link TypeMirror}.
+     * @return The greatest lower bound of {@code tm1} and {@code tm2}.
      */
     public static TypeMirror greatestLowerBound(
             ProcessingEnvironment processingEnv, TypeMirror tm1, TypeMirror tm2) {

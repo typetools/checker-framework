@@ -26,14 +26,14 @@ public class ConditionalTransferResult<A extends AbstractValue<A>, S extends Sto
 
     /**
      * Create a {@code ConditionalTransferResult} with {@code thenStore} as the
-     * resulting store if the corresponding {@link Node} evaluates to
+     * resulting store if the corresponding {@link dataflow.cfg.node.Node} evaluates to
      * {@code true} and {@code elseStore} otherwise.
      *
      * <p>
      *
-     * <em>Exceptions</em>: If the corresponding {@link Node} throws an
+     * <em>Exceptions</em>: If the corresponding {@link dataflow.cfg.node.Node} throws an
      * exception, then it is assumed that no special handling is necessary and
-     * the store before the corresponding {@link Node} will be passed along any
+     * the store before the corresponding {@link dataflow.cfg.node.Node} will be passed along any
      * exceptional edge.
      *
      * <p>
@@ -50,16 +50,16 @@ public class ConditionalTransferResult<A extends AbstractValue<A>, S extends Sto
 
     /**
      * Create a {@code ConditionalTransferResult} with {@code thenStore} as the
-     * resulting store if the corresponding {@link Node} evaluates to
+     * resulting store if the corresponding {@link dataflow.cfg.node.Node} evaluates to
      * {@code true} and {@code elseStore} otherwise.
      *
      * <p>
      *
-     * <em>Exceptions</em>: If the corresponding {@link Node} throws an
+     * <em>Exceptions</em>: If the corresponding {@link dataflow.cfg.node.Node} throws an
      * exception, then the corresponding store in {@code exceptionalStores} is
      * used. If no exception is found in {@code exceptionalStores}, then it is
      * assumed that no special handling is necessary and the store before the
-     * corresponding {@link Node} will be passed along any exceptional edge.
+     * corresponding {@link dataflow.cfg.node.Node} will be passed along any exceptional edge.
      *
      * <p>
      *
