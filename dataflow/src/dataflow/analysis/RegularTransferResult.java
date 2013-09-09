@@ -22,14 +22,14 @@ public class RegularTransferResult<A extends AbstractValue<A>, S extends Store<S
 
     /**
      * Create a {@code TransferResult} with {@code resultStore} as the resulting
-     * store. If the corresponding {@link Node} is a boolean node, then
+     * store. If the corresponding {@link dataflow.cfg.node.Node} is a boolean node, then
      * {@code resultStore} is used for both the 'then' and 'else' edge.
      *
      * <p>
      *
-     * <em>Exceptions</em>: If the corresponding {@link Node} throws an
+     * <em>Exceptions</em>: If the corresponding {@link dataflow.cfg.node.Node} throws an
      * exception, then it is assumed that no special handling is necessary and
-     * the store before the corresponding {@link Node} will be passed along any
+     * the store before the corresponding {@link dataflow.cfg.node.Node} will be passed along any
      * exceptional edge.
      *
      * <p>
@@ -45,16 +45,16 @@ public class RegularTransferResult<A extends AbstractValue<A>, S extends Store<S
 
     /**
      * Create a {@code TransferResult} with {@code resultStore} as the resulting
-     * store. If the corresponding {@link Node} is a boolean node, then
+     * store. If the corresponding {@link dataflow.cfg.node.Node} is a boolean node, then
      * {@code resultStore} is used for both the 'then' and 'else' edge.
      *
      * <p>
      *
-     * <em>Exceptions</em>: If the corresponding {@link Node} throws an
+     * <em>Exceptions</em>: If the corresponding {@link dataflow.cfg.node.Node} throws an
      * exception, then the corresponding store in {@code exceptionalStores} is
      * used. If no exception is found in {@code exceptionalStores}, then it is
      * assumed that no special handling is necessary and the store before the
-     * corresponding {@link Node} will be passed along any exceptional edge.
+     * corresponding {@link dataflow.cfg.node.Node} will be passed along any exceptional edge.
      *
      * <p>
      *
@@ -91,7 +91,7 @@ public class RegularTransferResult<A extends AbstractValue<A>, S extends Store<S
     public boolean containsTwoStores() {
         return false;
     }
-    
+
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder();

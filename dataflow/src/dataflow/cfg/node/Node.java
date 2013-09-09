@@ -1,12 +1,12 @@
 package dataflow.cfg.node;
 
+import dataflow.cfg.CFGBuilder;
+import dataflow.cfg.block.Block;
+
 import java.util.Collection;
 import java.util.LinkedList;
 
 import javax.lang.model.type.TypeMirror;
-
-import dataflow.cfg.CFGBuilder;
-import dataflow.cfg.block.Block;
 
 import com.sun.source.tree.Tree;
 
@@ -20,14 +20,14 @@ import com.sun.source.tree.Tree;
  *
  * <pre>
  * block == null || block instanceof RegularBlock || block instanceof ExceptionBlock
- * block instanceof RegularBlock ==> block.getContents().contains(this)
- * block instanceof ExceptionBlock ==> block.getNode() == this
- * block == null <==> "This object represents a parameter of the method."
+ * block instanceof RegularBlock ==&gt; block.getContents().contains(this)
+ * block instanceof ExceptionBlock ==&gt; block.getNode() == this
+ * block == null &lt;==&gt; "This object represents a parameter of the method."
  * </pre>
  *
  * <pre>
  * type != null
- * tree != null ==> node.getType() == InternalUtils.typeOf(node.getTree())
+ * tree != null ==&gt; node.getType() == InternalUtils.typeOf(node.getTree())
  * </pre>
  *
  * @author Stefan Heule

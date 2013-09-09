@@ -243,7 +243,7 @@ public final class TreeUtils {
     /**
      * Gets the enclosing class of the tree node defined by the given
      * {@code {@link TreePath}}. It returns a {@link Tree}, from which
-     * {@link AnnotatedTypeMirror} or {@link Element} can be
+     * {@code checkers.types.AnnotatedTypeMirror} or {@link Element} can be
      * obtained.
      *
      * @param path the path defining the tree node
@@ -268,7 +268,7 @@ public final class TreeUtils {
     /**
      * Gets the enclosing method of the tree node defined by the given
      * {@code {@link TreePath}}. It returns a {@link Tree}, from which an
-     * {@link AnnotatedTypeMirror} or {@link Element} can be
+     * {@code checkers.types.AnnotatedTypeMirror} or {@link Element} can be
      * obtained.
      *
      * @param path the path defining the tree node
@@ -608,7 +608,7 @@ public final class TreeUtils {
      * Is the given tree kind a class, i.e. a class, enum,
      * interface, or annotation type.
      *
-     * @param kind The kind to test
+     * @param tree the tree to test
      * @return true, iff the given kind is a class kind
      */
     public static boolean isClassTree(Tree tree) {
@@ -636,7 +636,7 @@ public final class TreeUtils {
      * TODO: this is an under-approximation: e.g. an identifier could
      * be either a type use or an expression. How can we distinguish.
      *
-     * @param kind The kind to test
+     * @param tree the tree to test
      * @return true, iff the given tree is a type
      */
     public static boolean isTypeTree(Tree tree) {

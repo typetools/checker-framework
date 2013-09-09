@@ -1,7 +1,13 @@
 package javacutils;
 
-import javax.lang.model.element.*;
-import javax.lang.model.type.*;
+import javax.lang.model.element.Name;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
+import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
@@ -212,7 +218,7 @@ public final class TypesUtils {
      * performed on a value of the left type and the right type.
      * Defined in JLS 5.6.2.  We return a {@link TypeKind} because
      * creating a {@link TypeMirror} requires a {@link Types} object
-     * from the {@link ProcessingEnvironment}.
+     * from the {@link javax.annotation.processing.ProcessingEnvironment}.
      *
      * @return  the result of widening numeric conversion, or NONE when
      *          the conversion cannot be performed

@@ -1,31 +1,8 @@
 package checkers.util;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javacutils.ElementUtils;
-import javacutils.InternalUtils;
-import javacutils.Resolver;
-import javacutils.TreeUtils;
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.Types;
-
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeFactory;
 
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.VariableTree;
-import com.sun.source.util.TreePath;
-import com.sun.tools.javac.code.Type.ClassType;
 import dataflow.analysis.FlowExpressions;
 import dataflow.analysis.FlowExpressions.ClassName;
 import dataflow.analysis.FlowExpressions.FieldAccess;
@@ -38,6 +15,31 @@ import dataflow.cfg.node.LocalVariableNode;
 import dataflow.cfg.node.MethodInvocationNode;
 import dataflow.cfg.node.Node;
 import dataflow.util.PurityUtils;
+
+import javacutils.ElementUtils;
+import javacutils.InternalUtils;
+import javacutils.Resolver;
+import javacutils.TreeUtils;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Types;
+
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreePath;
+import com.sun.tools.javac.code.Type.ClassType;
 
 /**
  * A collection of helper methods to parse a string that represents a restricted
@@ -97,7 +99,7 @@ public class FlowExpressionParseUtil {
      *            The current tree path.
      * @throws FlowExpressionParseException
      */
-    public static/* @Nullable */FlowExpressions.Receiver parse(String s,
+    public static /*@Nullable*/ FlowExpressions.Receiver parse(String s,
             FlowExpressionContext context, TreePath path)
             throws FlowExpressionParseException {
         Receiver result = parse(s, context, path, true, true, true, true, true,
@@ -109,7 +111,7 @@ public class FlowExpressionParseUtil {
      * Private implementation of {@link #parse} with a choice of which classes
      * of expressions should be parsed.
      */
-    private static/* @Nullable */FlowExpressions.Receiver parse(String s,
+    private static /*@Nullable*/ FlowExpressions.Receiver parse(String s,
             FlowExpressionContext context, TreePath path, boolean allowSelf,
             boolean allowIdentifier, boolean allowParameter, boolean allowDot,
             boolean allowMethods, boolean allowLiterals)
@@ -243,7 +245,7 @@ public class FlowExpressionParseUtil {
                 // try to find the correct method
                 Resolver resolver = new Resolver(env);
                 TypeMirror receiverType = context.receiver.getType();
-                
+
                 // Search for method in each enclosing class.
                 while (receiverType.getKind() == TypeKind.DECLARED) {
                     methodElement = resolver.findMethod(methodName, receiverType,

@@ -1,12 +1,12 @@
 package dataflow.cfg.node;
 
+import dataflow.util.HashCodeUtils;
+
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
 import javax.lang.model.type.TypeMirror;
-
-import dataflow.util.HashCodeUtils;
 
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.Tree;
@@ -27,11 +27,11 @@ public class ArrayCreationNode extends Node {
 
     // The tree is null when an array is created for
     // variable arity method calls.
-    protected/* @Nullable */NewArrayTree tree;
+    protected /*@Nullable*/ NewArrayTree tree;
     protected List<Node> dimensions;
     protected List<Node> initializers;
 
-    public ArrayCreationNode(/* @Nullable */NewArrayTree tree,
+    public ArrayCreationNode(/*@Nullable*/ NewArrayTree tree,
             TypeMirror type,
             List<Node> dimensions,
             List<Node> initializers) {

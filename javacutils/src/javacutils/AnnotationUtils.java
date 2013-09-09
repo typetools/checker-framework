@@ -506,8 +506,8 @@ public class AnnotationUtils {
     }
 
     /**
-     *
-     * @see #updateMappingToMutableSet(QualifierHierarchy, Map, Object, AnnotationMirror)
+     * See checkers.types.QualifierHierarchy#updateMappingToMutableSet(QualifierHierarchy, Map, Object, AnnotationMirror)
+     * (Not linked because it is in an independent project.
      */
     public static <T> void updateMappingToImmutableSet(Map<T, Set<AnnotationMirror>> map,
             T key, Set<AnnotationMirror> newQual) {
