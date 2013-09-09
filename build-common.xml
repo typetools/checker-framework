@@ -1,0 +1,52 @@
+<!--
+  This file is shared between the javacutils, dataflow, and checkers
+  subprojects.
+  Properties that are likely to need adaption by developers should
+  instead go into build-common.properties.
+-->
+<project name="imports">
+
+    <property name="src" value="src"/>
+    <property name="build" value="build"/>
+    <property name="dist.doc" value="doc"/>
+
+    <property name="tmpdir"
+              value="${java.io.tmpdir}/${user.name}/${ant.project.name}" />
+
+    <property name="compiler.version.goal"
+              value="javac 1.8.0-jsr308-${build.version}"/>
+
+
+    <target name="prep-all"
+            description="Perform preparation useful for all projects">
+        <java fork="true"
+              outputproperty="compiler.version"
+              classname="com.sun.tools.javac.Main">
+            <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
+            <arg line="-version"/>
+        </java>
+
+        <condition property="compiler.exists">
+            <equals
+                arg1="${compiler.version}"
+                arg2="${compiler.version.goal}"/>
+        </condition>
+
+        <fail unless="compiler.exists"
+            message="
+Needed version ${compiler.version.goal} of the JSR 308 compiler,
+but found version ${compiler.version} on your classpath.
+${line.separator}${line.separator}
+Check that the 'javac.lib' property in 'build.properties' points to version
+${build.version} of the 'javac.jar' library."/>
+
+    </target>
+
+    <target name="tags" depends="prep" description="Create Emacs TAGS table">
+        <exec executable="/bin/sh" failonerror="true">
+            <arg value="-c"/>
+            <arg value="etags `find . \( -name jdk \) -prune -o -name '*.java' -print | sort-directory-order`"/>
+        </exec>
+    </target>
+
+</project>
