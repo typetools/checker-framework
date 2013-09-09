@@ -67,21 +67,21 @@
     </target>
 
     <target name="-prep-jp-compile" if="jp.project"
-            description="Compile javaparser project if available">
+            description="Compile javaparser project">
         <ant dir="${javaparser.loc}">
             <target name="dist"/>
         </ant>
     </target>
 
     <target name="-prep-javacutils-compile" if="javacutils.project"
-            description="Compile javacutils utilities project if available">
+            description="Compile javacutils utilities project">
         <ant dir="${javacutils.loc}">
             <target name="dist"/>
         </ant>
     </target>
 
     <target name="-prep-dataflow-compile" if="dataflow.project"
-            description="Compile dataflow utilities project if available">
+            description="Compile dataflow utilities project">
         <ant dir="${dataflow.loc}">
             <target name="dist"/>
         </ant>
@@ -761,8 +761,7 @@
         <fail unless="javac.exist" message="Could not find javac.jar: ${javac.lib}" />
     </target>
 
-    <target name="all.jdks.jar" description="Build jdkX.jar using
-	     JAVA_X_HOME (with X in 6, 7, and 8)">
+    <target name="all.jdks.jar" description="Build jdkX.jar using JAVA_X_HOME (with X in 6, 7, and 8)">
         <fail unless="JAVA_6_HOME" message="Property &quot;JAVA_6_HOME&quot; needs to be set!"/>
         <fail unless="JAVA_7_HOME" message="Property &quot;JAVA_7_HOME&quot; needs to be set!"/>
         <fail unless="JAVA_8_HOME" message="Property &quot;JAVA_8_HOME&quot; needs to be set!"/>
