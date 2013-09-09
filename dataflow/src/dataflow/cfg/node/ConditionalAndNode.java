@@ -1,11 +1,11 @@
 package dataflow.cfg.node;
 
-import java.util.Collection;
-import java.util.LinkedList;
+import dataflow.util.HashCodeUtils;
 
 import javacutils.InternalUtils;
 
-import dataflow.util.HashCodeUtils;
+import java.util.Collection;
+import java.util.LinkedList;
 
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.Tree.Kind;
@@ -14,7 +14,7 @@ import com.sun.source.tree.Tree.Kind;
  * A node for a conditional and expression:
  *
  * <pre>
- *   <em>expression</em> && <em>expression</em>
+ *   <em>expression</em> &amp;&amp; <em>expression</em>
  * </pre>
  *
  * @author Stefan Heule

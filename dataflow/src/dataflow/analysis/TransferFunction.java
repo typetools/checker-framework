@@ -1,11 +1,11 @@
 package dataflow.analysis;
 
-import java.util.List;
-
 import dataflow.cfg.UnderlyingAST;
 import dataflow.cfg.node.LocalVariableNode;
 import dataflow.cfg.node.Node;
 import dataflow.cfg.node.NodeVisitor;
+
+import java.util.List;
 
 /**
  * Interface of a transfer function for the abstract interpretation used for the
@@ -40,6 +40,6 @@ public interface TransferFunction<A extends AbstractValue<A>, S extends Store<S>
      * @return The initial store to be used by the dataflow analysis.
      *         {@code parameters} is only set if the underlying AST is a method.
      */
-    S initialStore(UnderlyingAST underlyingAST, /* @Nullable */
-            List<LocalVariableNode> parameters);
+    S initialStore(UnderlyingAST underlyingAST,
+            /*@Nullable*/ List<LocalVariableNode> parameters);
 }

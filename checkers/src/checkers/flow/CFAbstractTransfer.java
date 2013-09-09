@@ -174,8 +174,8 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
      * refined type.
      */
     @Override
-    public S initialStore(UnderlyingAST underlyingAST, /* @Nullable */
-            List<LocalVariableNode> parameters) {
+    public S initialStore(UnderlyingAST underlyingAST,
+            /*@Nullable */ List<LocalVariableNode> parameters) {
         S info = analysis.createEmptyStore(sequentialSemantics);
 
         if (underlyingAST.getKind() == Kind.METHOD) {

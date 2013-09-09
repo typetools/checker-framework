@@ -30,7 +30,7 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
      * following invariant is maintained:
      *
      * <pre>
-     * store == null <==> thenStore != null && elseStore != null
+     * store == null &lt;==&gt; thenStore != null &amp;&amp; elseStore != null
      * </pre>
      */
     protected final /*@Nullable*/ S store;
@@ -40,7 +40,7 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
      * following invariant is maintained:
      *
      * <pre>
-     * store == null <==> thenStore != null && elseStore != null
+     * store == null &lt;==&gt; thenStore != null &amp;&amp; elseStore != null
      * </pre>
      */
     protected final /*@Nullable*/ S thenStore;
@@ -50,7 +50,7 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
      * following invariant is maintained:
      *
      * <pre>
-     * store == null <==> thenStore != null && elseStore != null
+     * store == null &lt;==&gt; thenStore != null &amp;&amp; elseStore != null
      * </pre>
      */
     protected final /*@Nullable*/ S elseStore;
@@ -73,7 +73,7 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
      * <p>
      *
      * The node-value mapping {@code nodeValues} is provided by the analysis and
-     * is only read from within this {@link TranferInput}.
+     * is only read from within this {@link TransferInput}.
      */
     public TransferInput(Node n, Analysis<A, S, ?> analysis,
             TransferResult<A, S> to) {
@@ -101,7 +101,7 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
      * <p>
      *
      * The node-value mapping {@code nodeValues} is provided by the analysis and
-     * is only read from within this {@link TranferInput}.
+     * is only read from within this {@link TransferInput}.
      */
     public TransferInput(Node n, Analysis<A, S, ?> analysis, S s) {
         node = n;

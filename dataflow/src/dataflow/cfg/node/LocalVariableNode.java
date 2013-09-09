@@ -1,14 +1,14 @@
 package dataflow.cfg.node;
 
-import java.util.Collection;
-import java.util.Collections;
-
-import javax.lang.model.element.Element;
+import dataflow.util.HashCodeUtils;
 
 import javacutils.InternalUtils;
 import javacutils.TreeUtils;
 
-import dataflow.util.HashCodeUtils;
+import java.util.Collection;
+import java.util.Collections;
+
+import javax.lang.model.element.Element;
 
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.Tree;
@@ -21,7 +21,7 @@ import com.sun.source.tree.VariableTree;
  *   <em>identifier</em>
  * </pre>
  *
- * We allow local variable uses introduced by the {@link CFGBuilder} without
+ * We allow local variable uses introduced by the {@link dataflow.cfg.CFGBuilder} without
  * corresponding AST {@link Tree}s.
  *
  * @author Stefan Heule

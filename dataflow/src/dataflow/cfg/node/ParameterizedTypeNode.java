@@ -1,11 +1,11 @@
 package dataflow.cfg.node;
 
-import java.util.Collection;
-import java.util.Collections;
+import dataflow.util.HashCodeUtils;
 
 import javacutils.InternalUtils;
 
-import dataflow.util.HashCodeUtils;
+import java.util.Collection;
+import java.util.Collections;
 
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.Tree;
@@ -14,7 +14,7 @@ import com.sun.source.tree.Tree;
  * A node for a parameterized type occurring in an expression:
  *
  * <pre>
- *   <em>type<arg1, arg2></em>
+ *   <em>type&lt;arg1, arg2&gt;</em>
  * </pre>
  *
  * Parameterized types don't represent any computation to be done
