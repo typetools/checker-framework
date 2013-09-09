@@ -44,9 +44,12 @@ export PATH=$JAVA_HOME/bin:$ORIG_PATH
 
 cfruntest
 
-echo "Testing with latest type-annotations build:"
+# Jenkins is currently configured that JAVA8_HOME is
+# the following. At some point we may want to test
+# against the official Java 8 releases in addition.
+# echo "Testing with latest type-annotations build:"
 
-export JAVA_HOME=$WORKSPACE/../../type-annotations/lastSuccessful/archive/build/linux-x86_64-normal-server-release/images/j2sdk-image
-export PATH=$JAVA_HOME/bin:$ORIG_PATH
+# export JAVA_HOME=$WORKSPACE/../../type-annotations/lastSuccessful/archive/build/linux-x86_64-normal-server-release/images/j2sdk-image
+# export PATH=$JAVA_HOME/bin:$ORIG_PATH
 
-cfruntest
+# cfruntest
