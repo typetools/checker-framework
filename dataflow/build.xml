@@ -4,51 +4,23 @@
 <project name="dataflow" default="dist" basedir=".">
 
     <description>
-      Builds the Dataflow Framework for the JSR 308 compiler.
+        Builds the Dataflow Framework for the JSR 308 compiler.
     </description>
 
     <property file="build.${os.name}.properties"/>
     <property file="build.properties"/>
+    <property file="${basedir}/../build-common.properties"/>
 
-    <property name="src" value="src"/>
+    <import file="${basedir}/../build-common.xml"/>
 
-    <property name="build" value="build"/>
+
     <property name="build.reports" value="${build}/reports"/>
     <property name="build.tests" value="tests/build"/>
 
-    <property name="dist.file" value="dataflow.jar"/>
-    <property name="dist.doc" value="doc"/>
-    <property name="javacutils.loc" value="../javacutils"/>
-    <property name="dataflow.rel.javacutils" value="../dataflow"/>
-
-    <property name="tmpdir" value="${java.io.tmpdir}/${user.name}/${ant.project.name}" />
-
-    <property name="compiler.version.goal" value="javac 1.7.0-jsr308-${build.version}"/>
-
-    <path id="build.path">
-        <pathelement location="${javac.lib}"/>
-    </path>
-
-    <!-- Used to have:
-           depends="touch-jdk"
-         When is that truly necessary? -->
-    <target name="prep" description="Create required directories">
+    <target name="prep" depends="prep-all"
+            description="Create required directories">
         <mkdir dir="${build}"/>
         <mkdir dir="${dist.doc}"/>
-
-        <java fork="true"
-              outputproperty="compiler.version"
-              classname="com.sun.tools.javac.Main">
-          <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
-          <arg line="-version"/>
-        </java>
-
-        <property name="compiler.exists" value="true"/>
-        <condition property="compiler.exists">
-           <equals
-             arg1="${compiler.version}"
-             arg2="${compiler.version.goal}"/>
-        </condition>
 
         <available property="javacutils.project"
                    file="${javacutils.loc}/build.xml"/>
@@ -56,20 +28,21 @@
     </target>
 
     <target name="-prep-javacutils-compile" if="javacutils.project"
-            description="compile javacutils utilities project if available">
-      <ant dir="${javacutils.loc}">
-        <property name="dist.file"
-                  value="${dataflow.rel.javacutils}/${javacutils.lib}"/>
-        <target name="dist"/>
-      </ant>
+            description="Compile javacutils utilities project if available">
+        <ant dir="${javacutils.loc}">
+            <target name="dist"/>
+        </ant>
     </target>
 
     <target name="clean" description="Remove generated files">
+        <ant dir="${javacutils.loc}">
+            <target name="clean"/>
+        </ant>
+
         <delete dir="${build}"/>
+        <delete file="${dataflow.lib}"/>
         <delete dir="${dist.doc}"/>
-        <delete file="${dist.file}"/>
         <delete dir="${temp.dir}"/>
-        <delete file="${bindist.file}"/>
     </target>
 
     <target name="build.check.uptodate"
@@ -83,17 +56,19 @@
              and then combine with <condition>. -->
             <!-- Probably should depend on a file rather than a directory. -->
         <uptodate property="src.files.uptodate" targetfile="${build}">
-          <srcfiles refid="src.files"/>
-          <mapper type="glob" from="*.java" to="${build}/*.class"/>
+            <srcfiles refid="src.files"/>
+            <mapper type="glob" from="*.java" to="${build}/*.class"/>
         </uptodate>
+
         <uptodate property="javacutils.lib.uptodate" targetfile="${build}" srcfile="${javacutils.lib}"/>
 
         <condition property="build.uptodate">
-          <and>
-            <isset property="src.files.uptodate"/>
-            <isset property="javacutils.lib.uptodate"/>
-          </and>
+            <and>
+                <isset property="src.files.uptodate"/>
+                <isset property="javacutils.lib.uptodate"/>
+            </and>
         </condition>
+
         <!--
         <echo message="src.files.uptodate: ${src.files.uptodate}"/>
         <echo message="javacutils.lib.uptodate: ${javacutils.lib.uptodate}"/>
@@ -101,16 +76,9 @@
         -->
     </target>
 
-    <target name="build" depends="prep,build.check.uptodate" unless="build.uptodate"
-            description="Compile files.  Does not update jsr308-all.jar">
-        <fail unless="compiler.exists"
-            message="
-Needed version ${compiler.version.goal} of the JSR 308 compiler,
-but found version ${compiler.version} on your classpath.
-${line.separator}${line.separator}
-Check that the 'javac.lib' property in 'build.properties' points to version
-${build.version} of the 'javac.jar' library."/>
-
+    <target name="build" depends="prep,build.check.uptodate"
+            unless="build.uptodate"
+            description="Compile files.  Does not update any jars">
         <pathconvert pathsep=" " property="src.files.spaceseparated_df">
             <path>
                 <fileset dir="${src}">
@@ -118,6 +86,7 @@ ${build.version} of the 'javac.jar' library."/>
                 </fileset>
             </path>
         </pathconvert>
+
         <java fork="true"
               failonerror="true"
               classpath="${javac.lib}:${javacutils.lib}"
@@ -132,6 +101,7 @@ ${build.version} of the 'javac.jar' library."/>
             <arg line="-Xlint"/>
             <arg line="-Werror"/>
         </java>
+
         <!--
         Touch doesn't work on a directory, so can't do:
            <touch file="${build}"/>
@@ -152,9 +122,13 @@ ${build.version} of the 'javac.jar' library."/>
     classpath).  Also, ${java.home} is the jre/ directory.
     -->
     <target name="javadoc" depends="prep" description="Create Javadoc documentation">
+        <ant dir="${javacutils.loc}">
+            <target name="javadoc"/>
+        </ant>
+
         <java fork="true"
               failonerror="true"
-              classpath="${javac.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar"
+              classpath="${javacutils.lib}:${javac.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar"
               classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${javac.lib}:${javadoc.lib}"/>
             <arg value="-g"/>
@@ -162,17 +136,19 @@ ${build.version} of the 'javac.jar' library."/>
             <arg line="${javacutils.loc}/src/javacutils/dist/ManualTaglet.java"/>
             <arg line="-version"/>
         </java>
+
         <!-- This relative path is wrong; running "ant -find" from a
         subdirectory fails. -->
-        <javadoc sourcepath="${src}" destdir="${dist.doc}" failonerror="true"
-            executable="${jsr308.langtools}/dist/bin/javadoc"
-          classpath="${build}:${javac.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar"
-          excludepackagenames="checkers.util.stub,checkers.util.dist"
-          bootclasspath="${javac.lib}:${javadoc.lib}:${java.home}/lib/rt.jar">
-          <package name="dataflow.*"/>
-          <link href="http://docs.oracle.com/javase/7/docs/api/"/>
-          <link href="http://docs.oracle.com/javase/7/docs/jdk/api/javac/tree/"/>
-          <taglet name="javacutils.dist.ManualTaglet" path="${build}"/>
+        <javadoc sourcepath="${src}" destdir="${dist.doc}"
+                 failonerror="true"
+                 executable="${jsr308.langtools}/dist/bin/javadoc"
+                 classpath="${build}:${javacutils.lib}:${javac.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar"
+                 bootclasspath="${javac.lib}:${javadoc.lib}:${java.home}/lib/rt.jar">
+            <package name="dataflow.*"/>
+            <link href="http://types.cs.washington.edu/checker-framework/api/jdk/"/>
+            <link href="http://types.cs.washington.edu/checker-framework/api/javac/tree/"/>
+            <taglet name="javacutils.dist.ManualTaglet" path="${build}"/>
+            <arg line="-XDTA:noannotationsincomments"/>
         </javadoc>
     </target>
 
@@ -183,14 +159,7 @@ ${build.version} of the 'javac.jar' library."/>
     <!-- This creates dataflow.jar -->
     <target name="jar" depends="build"
             description="Create jar file">
-        <jar destfile="${dist.file}" basedir="${build}"/>
-    </target>
-
-    <target name="tags" depends="prep" description="Create Emacs TAGS table">
-        <exec executable="/bin/sh" failonerror="true">
-            <arg value="-c"/>
-            <arg value="etags `find . \( -name jdk \) -prune -o -name '*.java' -print | sort-directory-order`"/>
-        </exec>
+        <jar destfile="${dataflow.lib}" basedir="${build}"/>
     </target>
 
 </project>
