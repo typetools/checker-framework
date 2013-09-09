@@ -27,6 +27,7 @@ import checkers.types.QualifierHierarchy;
 import checkers.types.TypeHierarchy;
 import checkers.types.VisitorState;
 import checkers.util.AnnotatedTypes;
+import checkers.util.CheckerMain;
 import checkers.util.ContractsUtils;
 import checkers.util.FlowExpressionParseUtil;
 import checkers.util.FlowExpressionParseUtil.FlowExpressionContext;
@@ -2212,12 +2213,14 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
                 }
 
                 if (!foundNN) {
+                    String jdkJarName = CheckerMain.getJdkJarName();
+
                     checker.getProcessingEnvironment().getMessager().printMessage(Kind.WARNING,
                         "You do not seem to be using the distributed annotated JDK.  To fix the" +
                         System.getProperty("line.separator") +
                         "problem, supply this argument (first, fill in the \"...\") when you run javac:" +
                         System.getProperty("line.separator") +
-                        "  -Xbootclasspath/p:.../checkers/jdk/jdk.jar");
+                        "  -Xbootclasspath/p:.../checkers/binary/" + jdkJarName);
                 }
             }
         }

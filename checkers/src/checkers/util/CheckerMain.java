@@ -12,8 +12,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * This class functions essentially the same as the jsr308-langtools javac script EXCEPT that it adds the appropriate jdk.jar
- * to the bootclasspath and adds checkers.jar to the classpath passed to javac
+ * This class functions essentially the same as the jsr308-langtools javac
+ * script EXCEPT that it adds the appropriate jdk.jar to the bootclasspath and
+ * adds checkers.jar to the classpath passed to javac.
  */
 public class CheckerMain {
 
@@ -25,8 +26,8 @@ public class CheckerMain {
      * @param args command-line arguments, eventually passed to the JSR 308 Type Annotations compiler
      */
     public static void main(String[] args)  {
-        final File pathToThisJar     = new File(findPathTo(CheckerMain.class, false));
-        final CheckerMain program      = new CheckerMain(pathToThisJar, args);
+        final File pathToThisJar    = new File(findPathTo(CheckerMain.class, false));
+        final CheckerMain program   = new CheckerMain(pathToThisJar, args);
         final int exitStatus = program.invokeCompiler();
         System.exit(exitStatus);
     }
@@ -45,11 +46,6 @@ public class CheckerMain {
      * The paths to the jar containing CheckerMain.class (i.e. checkers.jar)
      */
     protected final File checkersJar;
-
-    /**
-     * The current major version of the jre in the form 1.X where X is the major version of Java
-     */
-    protected final double jreVersion;
 
 
     private final List<String> compilationBootclasspath;
@@ -71,14 +67,15 @@ public class CheckerMain {
     public CheckerMain(final File checkersJar, final String [] args) {
 
         final File searchPath = checkersJar.getParentFile();
-        this.jreVersion  = getJreVersion();
         this.checkersJar   = checkersJar;
 
         final List<String> argsList = new ArrayList<String>(Arrays.asList(args));
         argListFiles = collectArgLists(argsList);
 
         this.javacJar = extractFileArg(PluginUtil.JAVAC_PATH_OPT, new File(searchPath, "javac.jar"), argsList);
-        this.jdkJar   = extractFileArg(PluginUtil.JDK_PATH_OPT, new File(searchPath, findJdkJarName()), argsList);
+
+        String jdkJarName = getJdkJarName();
+        this.jdkJar   = extractFileArg(PluginUtil.JDK_PATH_OPT, new File(searchPath, jdkJarName), argsList);
 
         this.compilationBootclasspath = createCompilationBootclasspath(argsList);
         this.runtimeBootClasspath     = createRuntimeBootclasspath(argsList);
@@ -119,8 +116,8 @@ public class CheckerMain {
      */
     protected List<File> collectArgLists(final List<String> args) {
         final List<File> argListFiles = new ArrayList<File>();
-        for ( final String arg : args ) {
-            if(arg.startsWith("@")) {
+        for (final String arg : args) {
+            if (arg.startsWith("@")) {
                 argListFiles.add( new File(arg.substring(1)) );
             }
         }
@@ -138,9 +135,9 @@ public class CheckerMain {
      * argumentName is not present in args
      */
     protected static String extractArg(final String argumentName, final String alternative, final List<String> args) {
-        for(int i = 0; i < args.size(); i++) {
-            if(args.get(i).trim().equals(argumentName)) {
-                if(i == args.size() - 1) {
+        for (int i = 0; i < args.size(); i++) {
+            if (args.get(i).trim().equals(argumentName)) {
+                if (i == args.size() - 1) {
                     throw new RuntimeException("Argument " + argumentName + " specified but given no value!");
                 } else {
                     args.remove(i);
@@ -163,7 +160,7 @@ public class CheckerMain {
      */
     protected static File extractFileArg(final String argumentName, final File alternative, final List<String> args) {
         final String filePath = extractArg(argumentName, null, args);
-        if(filePath == null) {
+        if (filePath == null) {
             return alternative;
         } else {
             return new File(filePath);
@@ -178,15 +175,15 @@ public class CheckerMain {
      */
 
     protected static String prepFilePath(final String previous, File... files) {
-        if(files == null || files.length == 0) {
+        if (files == null || files.length == 0) {
             throw new RuntimeException("Prepending empty or null array to file path! files == " + (files == null ? " null" : " Empty"));
         } else {
             String path = files[0].getAbsolutePath();
-            for( int i = 1; i < files.length; i++ ) {
+            for (int i = 1; i < files.length; i++) {
                 path += File.pathSeparator + files[i].getAbsolutePath();
             }
 
-            if(previous == null || previous.isEmpty()) {
+            if (previous == null || previous.isEmpty()) {
                 return path;
             } else {
                 return path + File.pathSeparator + previous;
@@ -207,12 +204,12 @@ public class CheckerMain {
         final List<String> matchedArgs = new ArrayList<String>();
 
         int i = 0;
-        while(i < args.size()) {
+        while (i < args.size()) {
             final Matcher matcher = pattern.matcher(args.get(i));
-            if( matcher.matches() ) {
+            if (matcher.matches()) {
                 final String arg = matcher.group(1).trim();
 
-                if( !arg.isEmpty() || allowEmpties ) {
+                if (!arg.isEmpty() || allowEmpties) {
                     matchedArgs.add(arg);
                 }
 
@@ -266,13 +263,13 @@ public class CheckerMain {
         String path = null;
 
         int i = 0;
-        while(i < args.size()) {
+        while (i < args.size()) {
 
-            if( args.get(i).equals("-cp") || args.get(i).equals("-classpath")) {
-                if(args.size() > i ) {
+            if (args.get(i).equals("-cp") || args.get(i).equals("-classpath")) {
+                if (args.size() > i) {
                     args.remove(i);
                     path = args.remove(i);
-                } //else loop ends and we have a dangling -cp
+                } // else loop ends and we have a dangling -cp
             } else {
                 i++;
             }
@@ -280,9 +277,9 @@ public class CheckerMain {
 
         //The logic below is exactly what the javac script does
         //If it's empty use the current directory AND the "CLASSPATH" environment variable
-        if( path == null ) {
+        if (path == null) {
             final String systemClassPath = System.getenv("CLASSPATH");
-            if(systemClassPath != null && !systemClassPath.trim().isEmpty()) {
+            if (systemClassPath != null && !systemClassPath.trim().isEmpty()) {
                 actualArgs.add(System.getenv("CLASSPATH"));
             }
 
@@ -320,7 +317,7 @@ public class CheckerMain {
 
         args.add("-Xbootclasspath/p:" + PluginUtil.join(File.pathSeparator, compilationBootclasspath));
 
-        if( !argsListHasClassPath(argListFiles) ) {
+        if (!argsListHasClassPath(argListFiles)) {
             args.add("-classpath");
             args.add(quote(PluginUtil.join(File.pathSeparator, cpOpts)));
         }
@@ -332,8 +329,8 @@ public class CheckerMain {
     }
 
     private static boolean argsListHasClassPath(final List<File> argListFiles) {
-        for(final String arg : expandArgs(argListFiles)) {
-            if(arg.contains("-classpath ") || arg.contains("-cp ")) {
+        for (final String arg : expandArgs(argListFiles)) {
+            if (arg.contains("-classpath ") || arg.contains("-cp ")) {
                 return true;
             }
         }
@@ -350,7 +347,7 @@ public class CheckerMain {
      */
     protected static List<String> expandArgs(final List<File> args)  {
         final List<String> actualArgs = new ArrayList<String>();
-        for(final File latest : args) {
+        for (final File latest : args) {
             try {
                 actualArgs.addAll(PluginUtil.readArgFile(latest));
             } catch(final IOException exc) {
@@ -365,13 +362,14 @@ public class CheckerMain {
      * <V> is the version of java that is being run (e.g. 6, 7, ...)
      * @return The jdk<V>.jar where <V> is the version of java that is being run (e.g. 6, 7, ...)
      */
-    private String findJdkJarName() {
+    public static String getJdkJarName() {
+        final double jreVersion = getJreVersion();
         final String fileName;
-        if(jreVersion == 1.4 || jreVersion == 1.5 || jreVersion == 1.6) {
+        if (jreVersion == 1.4 || jreVersion == 1.5 || jreVersion == 1.6) {
             fileName = "jdk6.jar";
-        } else if(jreVersion == 1.7) {
+        } else if (jreVersion == 1.7) {
             fileName = "jdk7.jar";
-        } else if(jreVersion == 1.8) {
+        } else if (jreVersion == 1.8) {
             fileName = "jdk8.jar";
         } else {
             throw new AssertionError("Unsupported JRE version: " + jreVersion);
@@ -384,13 +382,13 @@ public class CheckerMain {
      * Extract the first two version numbers from java.version (e.g. 1.6 from 1.6.whatever)
      * @return The first two version numbers from java.version (e.g. 1.6 from 1.6.whatever)
      */
-    private static double getJreVersion() {
+    public static double getJreVersion() {
         final Pattern versionPattern = Pattern.compile("^(\\d\\.\\d+)\\..*$");
         final String  jreVersionStr = System.getProperty("java.version");
         final Matcher versionMatcher = versionPattern.matcher(jreVersionStr);
 
         final double version;
-        if(versionMatcher.matches()) {
+        if (versionMatcher.matches()) {
             version = Double.parseDouble(versionMatcher.group(1));
         } else {
             throw new RuntimeException("Could not determine version from property java.version=" + jreVersionStr);
@@ -408,14 +406,15 @@ public class CheckerMain {
         if (context == null) context = CheckerMain.class;
         String rawName = context.getName();
         String classFileName;
-        /* rawName is something like package.name.ContainingClass$ClassName. We need to turn this into ContainingClass$ClassName.class. */ {
+        /* rawName is something like package.name.ContainingClass$ClassName. We need to turn this into ContainingClass$ClassName.class. */
+        {
             int idx = rawName.lastIndexOf('.');
             classFileName = (idx == -1 ? rawName : rawName.substring(idx+1)) + ".class";
         }
 
         String uri = context.getResource(classFileName).toString();
         if (uri.startsWith("file:")) {
-            if(directory) {
+            if (directory) {
                 return uri;
             } else {
                 throw new IllegalStateException("This class has been loaded from a directory and not from a jar file.");
@@ -448,27 +447,26 @@ public class CheckerMain {
      */
     private static void assertFilesExist(final List<File> expectedFiles) {
         final List<File> missingFiles = new ArrayList<File>();
-        for(final File file : expectedFiles) {
-            if( file == null || !file.exists() ) {
+        for (final File file : expectedFiles) {
+            if (file == null || !file.exists()) {
                 missingFiles.add(file);
             }
         }
 
-        if( !missingFiles.isEmpty() ) {
+        if (!missingFiles.isEmpty()) {
             final File firstMissing = missingFiles.remove(0);
             String message = "The following files could not be located: " + firstMissing.getAbsolutePath();
 
-            for(final File missing : missingFiles) {
+            for (final File missing : missingFiles) {
                 message += ", " + missing.getAbsolutePath();
             }
-
 
             throw new RuntimeException(message);
         }
     }
 
     private static String quote(final String str) {
-        if(str.contains(" ")) {
+        if (str.contains(" ")) {
             return "\"" + str + "\"";
         }
         return str;
