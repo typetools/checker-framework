@@ -28,7 +28,7 @@
     </target>
 
     <target name="-prep-javacutils-compile" if="javacutils.project"
-            description="Compile javacutils utilities project if available">
+            description="Compile javacutils utilities project">
         <ant dir="${javacutils.loc}">
             <target name="dist"/>
         </ant>
