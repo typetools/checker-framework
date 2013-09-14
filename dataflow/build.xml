@@ -1,0 +1,165 @@
+<!--
+  This is an Ant build file for compiling the Dataflow Framework.
+-->
+<project name="dataflow" default="dist" basedir=".">
+
+    <description>
+        Builds the Dataflow Framework for the JSR 308 compiler.
+    </description>
+
+    <property file="build.${os.name}.properties"/>
+    <property file="build.properties"/>
+    <property file="${basedir}/../build-common.properties"/>
+
+    <import file="${basedir}/../build-common.xml"/>
+
+
+    <property name="build.reports" value="${build}/reports"/>
+    <property name="build.tests" value="tests/build"/>
+
+    <target name="prep" depends="prep-all"
+            description="Create required directories">
+        <mkdir dir="${build}"/>
+        <mkdir dir="${dist.doc}"/>
+
+        <available property="javacutils.project"
+                   file="${javacutils.loc}/build.xml"/>
+        <antcall target="-prep-javacutils-compile"/>
+    </target>
+
+    <target name="-prep-javacutils-compile" if="javacutils.project"
+            description="Compile javacutils utilities project">
+        <ant dir="${javacutils.loc}">
+            <target name="dist"/>
+        </ant>
+    </target>
+
+    <target name="clean" description="Remove generated files">
+        <ant dir="${javacutils.loc}">
+            <target name="clean"/>
+        </ant>
+
+        <delete dir="${build}"/>
+        <delete file="${dataflow.lib}"/>
+        <delete dir="${dist.doc}"/>
+        <delete dir="${temp.dir}"/>
+    </target>
+
+    <target name="build.check.uptodate"
+            description="Set properties: filesets and build.uptodate">
+        <fileset id="src.files" dir="${src}">
+            <include name="**/*.java"/>
+        </fileset>
+
+        <!-- I can't figure out how to combine filesets (or even selectors)
+             to get just one *.uptodate property, so do them individually
+             and then combine with <condition>. -->
+            <!-- Probably should depend on a file rather than a directory. -->
+        <uptodate property="src.files.uptodate" targetfile="${build}">
+            <srcfiles refid="src.files"/>
+            <mapper type="glob" from="*.java" to="${build}/*.class"/>
+        </uptodate>
+
+        <uptodate property="javacutils.lib.uptodate" targetfile="${build}" srcfile="${javacutils.lib}"/>
+
+        <condition property="build.uptodate">
+            <and>
+                <isset property="src.files.uptodate"/>
+                <isset property="javacutils.lib.uptodate"/>
+            </and>
+        </condition>
+
+        <!--
+        <echo message="src.files.uptodate: ${src.files.uptodate}"/>
+        <echo message="javacutils.lib.uptodate: ${javacutils.lib.uptodate}"/>
+        <echo message="build.uptodate: ${build.uptodate}"/>
+        -->
+    </target>
+
+    <target name="build" depends="prep,build.check.uptodate"
+            unless="build.uptodate"
+            description="Compile files.  Does not update any jars">
+        <pathconvert pathsep=" " property="src.files.spaceseparated_df">
+            <path>
+                <fileset dir="${src}">
+                    <include name="**/*.java"/>
+                </fileset>
+            </path>
+        </pathconvert>
+
+        <java fork="true"
+              failonerror="true"
+              classpath="${javac.lib}:${javacutils.lib}"
+              classname="com.sun.tools.javac.Main">
+            <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
+            <arg value="-g"/>
+            <arg line="-sourcepath ${src}"/>
+            <arg line="-d ${build}"/>
+            <arg line="${src.files.spaceseparated_df}"/>
+            <arg line="-version"/>
+            <arg line="-XDTA:noannotationsincomments"/>
+            <arg line="-Xlint"/>
+            <arg line="-Werror"/>
+        </java>
+
+        <!--
+        Touch doesn't work on a directory, so can't do:
+           <touch file="${build}"/>
+        Instead, create and remove a file, which modifies the directory.
+        -->
+        <touch file="${build}/.timestamp"/>
+        <delete file="${build}/.timestamp"/>
+    </target>
+
+    <!-- TODO: add a type-checking target that doesn't use
+         -XDTA:noannotations in comments. -->
+
+    <target name="docs" depends="javadoc"/>
+
+    <!--
+    This target seems to only work if tools.jar is already in the
+    classpath (despite the attempt in the body to add tools.jar to the
+    classpath).  Also, ${java.home} is the jre/ directory.
+    -->
+    <target name="javadoc" depends="prep" description="Create Javadoc documentation">
+        <ant dir="${javacutils.loc}">
+            <target name="javadoc"/>
+        </ant>
+
+        <java fork="true"
+              failonerror="true"
+              classpath="${javacutils.lib}:${javac.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar"
+              classname="com.sun.tools.javac.Main">
+            <jvmarg line="-Xbootclasspath/p:${javac.lib}:${javadoc.lib}"/>
+            <arg value="-g"/>
+            <arg line="-d ${build}"/>
+            <arg line="${javacutils.loc}/src/javacutils/dist/ManualTaglet.java"/>
+            <arg line="-version"/>
+        </java>
+
+        <!-- This relative path is wrong; running "ant -find" from a
+        subdirectory fails. -->
+        <javadoc sourcepath="${src}" destdir="${dist.doc}"
+                 failonerror="true"
+                 executable="${jsr308.langtools}/dist/bin/javadoc"
+                 classpath="${build}:${javacutils.lib}:${javac.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar"
+                 bootclasspath="${javac.lib}:${javadoc.lib}:${java.home}/lib/rt.jar">
+            <package name="dataflow.*"/>
+            <link href="http://types.cs.washington.edu/checker-framework/api/jdk/"/>
+            <link href="http://types.cs.washington.edu/checker-framework/api/javac/tree/"/>
+            <taglet name="javacutils.dist.ManualTaglet" path="${build}"/>
+            <arg line="-XDTA:noannotationsincomments"/>
+        </javadoc>
+    </target>
+
+    <target name="dist" depends="jar"
+            description="Create jar file">
+    </target>
+
+    <!-- This creates dataflow.jar -->
+    <target name="jar" depends="build"
+            description="Create jar file">
+        <jar destfile="${dataflow.lib}" basedir="${build}"/>
+    </target>
+
+</project>
