@@ -3,8 +3,8 @@ import checkers.nullness.quals.*;
 import checkers.quals.*;
 import checkers.initialization.quals.*;
 
-//@skip-test
-// See http://code.google.com/p/checker-framework/issues/detail?id=223
+// This test does not correctly work in the FBC system,
+// see http://code.google.com/p/checker-framework/issues/detail?id=223
 class RawField {
 
     public @Raw @UnknownInitialization RawField a;
@@ -49,6 +49,7 @@ class Options {
 
 class MultiVersionControl {
 
+  @SuppressWarnings("fbc") // see http://code.google.com/p/checker-framework/issues/detail?id=223
   public void parseArgs(@UnknownInitialization @Raw MultiVersionControl this) {
     Options options = new Options (this);
     options.parse_or_usage ();
