@@ -1,5 +1,9 @@
 package checkers.flow;
 
+/*>>>
+import checkers.nullness.quals.Nullable;
+*/
+
 import checkers.quals.MonotonicQualifier;
 import checkers.types.AnnotatedTypeFactory;
 
