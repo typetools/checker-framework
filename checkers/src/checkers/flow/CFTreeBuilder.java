@@ -178,6 +178,11 @@ public class CFTreeBuilder extends TreeBuilder {
         }
 
         ((JCTree)underlyingTypeTree).setType((Type)annotatedType.getUnderlyingType());
+
+        if (annotationTrees.isEmpty()) {
+            return underlyingTypeTree;
+        }
+
         JCTree.JCAnnotatedType annotatedTypeTree =
             maker.AnnotatedType(annotationTrees,
                                 (JCTree.JCExpression)underlyingTypeTree);
