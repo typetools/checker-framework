@@ -1,5 +1,9 @@
 package checkers.util;
 
+/*>>>
+import checkers.nullness.quals.Nullable;
+*/
+
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeFactory;
 
@@ -99,7 +103,7 @@ public class FlowExpressionParseUtil {
      *            The current tree path.
      * @throws FlowExpressionParseException
      */
-    public static /*@Nullable*/ FlowExpressions.Receiver parse(String s,
+    public static FlowExpressions. /*@Nullable*/ Receiver parse(String s,
             FlowExpressionContext context, TreePath path)
             throws FlowExpressionParseException {
         Receiver result = parse(s, context, path, true, true, true, true, true,
@@ -111,7 +115,7 @@ public class FlowExpressionParseUtil {
      * Private implementation of {@link #parse} with a choice of which classes
      * of expressions should be parsed.
      */
-    private static /*@Nullable*/ FlowExpressions.Receiver parse(String s,
+    private static FlowExpressions. /*@Nullable*/ Receiver parse(String s,
             FlowExpressionContext context, TreePath path, boolean allowSelf,
             boolean allowIdentifier, boolean allowParameter, boolean allowDot,
             boolean allowMethods, boolean allowLiterals)
