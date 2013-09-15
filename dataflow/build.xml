@@ -87,6 +87,7 @@
             </path>
         </pathconvert>
 
+        <echo message="${src.files.spaceseparated_df}" file="${tmpdir}/srcfiles-dataflow.txt"/>
         <java fork="true"
               failonerror="true"
               classpath="${javac.lib}:${javacutils.lib}"
@@ -95,12 +96,13 @@
             <arg value="-g"/>
             <arg line="-sourcepath ${src}"/>
             <arg line="-d ${build}"/>
-            <arg line="${src.files.spaceseparated_df}"/>
+            <arg line="@${tmpdir}/srcfiles-dataflow.txt"/>
             <arg line="-version"/>
             <arg line="-XDTA:noannotationsincomments"/>
             <arg line="-Xlint"/>
             <arg line="-Werror"/>
         </java>
+        <delete file="${tmpdir}/srcfiles-dataflow.txt"/>
 
         <!--
         Touch doesn't work on a directory, so can't do:
