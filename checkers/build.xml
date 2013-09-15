@@ -807,15 +807,16 @@
         <copy todir="binary" file="${javac.lib}"
               overwrite="true" failonerror="true" />
 
-        <fail message="No jdk jars were found in the jdk directory.  At least one annotated JDK (jdk/jdk[678].jar) must be built!">
-            <condition>
-                <and>
-                    <not><available file="jdk/jdk6.jar"></available></not>
-                    <not><available file="jdk/jdk7.jar"></available></not>
-                    <not><available file="jdk/jdk8.jar"></available></not>
-                </and>
-            </condition>
-        </fail>
+        <condition property="an.annotated.jdk.exists">
+            <or>
+                <available file="jdk/jdk6.jar"/>
+                <available file="jdk/jdk7.jar"/>
+                <available file="jdk/jdk8.jar"/>
+            </or>
+        </condition>
+
+        <fail message="No jdk jars were found in the jdk directory.  At least one annotated JDK (jdk/jdk[678].jar) must be built!"
+              unless="an.annotated.jdk.exists"/>
 
         <copy file="jdk/jdk6.jar" tofile="binary/jdk6.jar" overwrite="true" failonerror="false" />
         <copy file="jdk/jdk7.jar" tofile="binary/jdk7.jar" overwrite="true" failonerror="false" />
