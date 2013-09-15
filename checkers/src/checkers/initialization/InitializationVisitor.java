@@ -379,7 +379,7 @@ public class InitializationVisitor<Checker extends InitializationChecker<? exten
             com.sun.tools.javac.code.Type rcv = (com.sun.tools.javac.code.Type) ((ExecutableType) meth
                     .asType()).getReceiverType();
             if (rcv != null && rcv.isAnnotated()) {
-                rcvannos = ((com.sun.tools.javac.code.Type.AnnotatedType)rcv).typeAnnotations;
+                rcvannos = ((com.sun.tools.javac.code.Type.AnnotatedType)rcv).getAnnotationMirrors();
             } else {
                 rcvannos = Collections.<AnnotationMirror> emptyList();
             }
