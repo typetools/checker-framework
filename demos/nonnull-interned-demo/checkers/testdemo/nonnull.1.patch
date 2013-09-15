@@ -1,0 +1,13 @@
+Index: src/checkers/nonnull/NonnullAnnotatedTypeFactory.java
+===================================================================
+--- src/checkers/nonnull/NonnullAnnotatedTypeFactory.java	(revision 3850)
++++ src/checkers/nonnull/NonnullAnnotatedTypeFactory.java	(working copy)
+@@ -198,7 +198,7 @@
+     private void annotateIfEnum(IdentifierTree id, AnnotatedClassType type) {
+ 
+         // Get the identifier's element
+-        Element elt = InternalUtils.symbol(id);
++        @Nullable Element elt = InternalUtils.symbol(id);
+ 
+         // If it's an enum type, add a @NonNull annotation.
+         if (elt.getKind() == ElementKind.ENUM_CONSTANT)
