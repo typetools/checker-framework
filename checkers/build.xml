@@ -181,6 +181,7 @@
             </path>
         </pathconvert>
 
+        <echo message="${src.files.spaceseparated}" file="${tmpdir}/srcfiles-checkers.txt"/>
         <java fork="true"
               failonerror="true"
               classpath="${javac.lib}:${javaparser.lib}:${javacutils.lib}:${dataflow.lib}:${tests.junit}"
@@ -189,12 +190,13 @@
             <arg value="-g"/>
             <arg line="-sourcepath ${src}"/>
             <arg line="-d ${build}"/>
-            <arg line="${src.files.spaceseparated}"/>
+            <arg line="@${tmpdir}/srcfiles-checkers.txt"/>
             <arg line="-version"/>
             <arg line="-XDTA:noannotationsincomments"/>
             <arg line="-Xlint"/>
             <arg line="-Werror"/>
         </java>
+        <delete file="${tmpdir}/srcfiles-checkers.txt"/>
 
         <unjar src="${javaparser.lib}" dest="${build}" />
         <unjar src="${javacutils.lib}" dest="${build}" />
