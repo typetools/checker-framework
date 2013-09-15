@@ -358,9 +358,9 @@ public class CheckerMain {
     }
 
     /**
-     * Determine the version of the JRE that we are currently running and select a jdk<V>.jar where
-     * <V> is the version of java that is being run (e.g. 6, 7, ...)
-     * @return The jdk<V>.jar where <V> is the version of java that is being run (e.g. 6, 7, ...)
+     * Determine the version of the JRE that we are currently running and select a jdkX.jar where
+     * X is the version of Java that is being run (e.g. 6, 7, ...)
+     * @return The jdkX.jar where X is the version of Java that is being run (e.g. 6, 7, ...)
      */
     public static String getJdkJarName() {
         final double jreVersion = getJreVersion();
