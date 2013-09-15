@@ -13,9 +13,14 @@
     <property name="tmpdir"
               value="${java.io.tmpdir}/${user.name}/${ant.project.name}" />
 
-    <property name="compiler.version.goal"
+    <property name="compiler.version.goal.jsr308"
               value="javac 1.8.0-jsr308-${build.version}"/>
 
+    <property name="compiler.version.goal.java8.internal"
+              value="javac 1.8.0-internal"/>
+
+    <!-- In the future might add ...java8.build or ...java8.release
+         etc. -->
 
     <target name="prep-all"
             description="Perform preparation useful for all projects">
@@ -26,19 +31,33 @@
             <arg line="-version"/>
         </java>
 
-        <condition property="compiler.exists">
+        <condition property="compiler.exists.jsr308">
             <equals
                 arg1="${compiler.version}"
-                arg2="${compiler.version.goal}"/>
+                arg2="${compiler.version.goal.jsr308}"/>
+        </condition>
+
+        <condition property="compiler.exists.java8.internal">
+            <equals
+                arg1="${compiler.version}"
+                arg2="${compiler.version.goal.java8.internal}"/>
+        </condition>
+
+	<condition property="compiler.exists">
+            <or>
+                <istrue value="${compiler.exists.jsr308}"/>
+                <istrue value="${compiler.exists.java8.internal}"/>
+            </or>
         </condition>
 
         <fail unless="compiler.exists"
             message="
-Needed version ${compiler.version.goal} of the JSR 308 compiler,
-but found version ${compiler.version} on your classpath.
-${line.separator}${line.separator}
-Check that the 'javac.lib' property in 'build.properties' points to version
-${build.version} of the 'javac.jar' library."/>
+Needed version '${compiler.version.goal.jsr308}' of the JSR 308 compiler,
+but found version '${compiler.version}' on your classpath.
+${line.separator}
+${line.separator}Check that the 'javac.lib' property
+in 'build-common.properties'
+points to version ${build.version} of the 'javac.jar' library."/>
 
     </target>
 
