@@ -2,7 +2,7 @@ import java.util.*;
 
 import checkers.nullness.quals.*;
 
-// See issue 241
+// See issue 241: https://code.google.com/p/checker-framework/issues/detail?id=241
 //@skip-test
 public class JavaExprContext {
   
