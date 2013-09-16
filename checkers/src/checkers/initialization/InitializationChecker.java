@@ -212,6 +212,13 @@ public abstract class InitializationChecker<Factory extends InitializationAnnota
         return name;
     }
 
+    public boolean isInitializedForFrame(AnnotatedTypeMirror type, TypeMirror frame) {
+        AnnotationMirror initializationAnno = type.getAnnotationInHierarchy(UNCLASSIFIED);
+        TypeMirror typeFrame = getTypeFrameFromAnnotation(initializationAnno);
+        Types types = processingEnv.getTypeUtils();
+        return types.isSubtype(typeFrame, frame);
+    }
+
     /**
      * Is {@code anno} the {@link UnderInitialization} annotation (with any type frame)? Always
      * returns false if {@code useFbc} is false.
