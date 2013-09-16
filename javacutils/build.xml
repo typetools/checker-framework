@@ -50,6 +50,7 @@
             </path>
         </pathconvert>
 
+        <echo message="${src.files.spaceseparated_jc}" file="${tmpdir}/srcfiles-javacutils.txt"/>
         <java fork="true"
               failonerror="true"
               classpath="${javac.lib}"
@@ -58,12 +59,13 @@
             <arg value="-g"/>
             <arg line="-sourcepath ${src}"/>
             <arg line="-d ${build}"/>
-            <arg line="${src.files.spaceseparated_jc}"/>
+            <arg line="@${tmpdir}/srcfiles-javacutils.txt"/>
             <arg line="-version"/>
             <arg line="-XDTA:noannotationsincomments"/>
             <arg line="-Xlint"/>
             <arg line="-Werror"/>
         </java>
+        <delete file="${tmpdir}/srcfiles-javacutils.txt"/>
 
         <!--
         Touch doesn't work on a directory, so can't do:
