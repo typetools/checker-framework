@@ -1,0 +1,211 @@
+Task:  Improve and re-package the Checker Framework tutorial that currently
+appears in checker-framework/demos/2012-OSCON/.  Turn this into a
+self-study webpage with clear steps and tasks, and that is missing none of
+the information that is needed to follow the tutorial.
+
+===========================================================================
+
+Subject: Reflections on Checker Framework tutorial
+From: Michael Ernst <mernst@cs.washington.edu>
+To: Progress Reports <progress-reports@cs.washington.edu>
+Date: Mon, 23 Jul 2012 10:19:09 -0700 (PDT)
+
+Here are some reflections on the Checker Framework tutorial that Werner and
+I gave last week at OSCON.  It was a mixed success, and that offers both
+the opportunity to bask in the successes and to learn from the failures.
+
+The tutorial filled the room, and Werner saw people stick their heads in
+and then leave when they saw how crowded it was.  There were so many
+questions that we spent almost an extra hour on Q&A, though that meant that
+attendees didn't have time to build the type-checkers that they
+brainstormed.  A lot of people complimented us on the tutorial and said
+that they planned to try it out at their companies, or give a talk at their
+companies about it.  As Werner pointed out, we got better ratings than
+several other tutorials.  However, we also got some negative comments and
+ratings.
+
+There was no wifi, and so Werner put most of the tutorial materials on
+memory sticks which we distributed by running around the room.  No one had
+downloaded the materials in advance, though we had put a note on the
+session description suggesting that.
+
+We had a few glitches, but we liked the problem-solving attitude of the
+attendees:  unlike at some conferences, they dove in to try to fix the
+problems rather than just giving up or waiting for help.
+
+Nonetheless, a fair number of people were afraid of the command line.  They
+don't use it and they don't know their way around it.  Furthermore,
+compiling on the command line seemed impossibly clunky and archaic to them.
+As a result, they struggled, and they unfairly associated those struggles
+with our tool.
+
+Action item:  We should provide Eclipse .project files for use with the
+examples in the tutorial.  (This is done for one of the examples, but
+ironically for the example that we skipped when we rescheduled on the fly.)
+
+I was giving part of the presentation, but I received the slides and the
+schedule of the tutorial only that morning.  As a result, I wasn't able to
+give comments or to double-check the examples.  Most importantly, I didn't
+have time to become comfortable with the material I was going to present;
+even for a talk that I have given before, that takes time.  This threw me
+off a bit.
+
+Action item:  We should prepare materials in advance, and commit them to
+the repository.
+
+Our original plan was:
+ * explanation via slides
+ * practice using type-checkers #1
+ * practice using type-checkers #2
+ * brief brainstorming
+ * break
+ * practice creating type-checkers
+ * use the system on your own open-source project
+
+We changed the schedule on the fly, cutting out example #2 of using
+type-checkers and putting the practice creating type-checkers before the
+break.  As a result, people didn't get enough experience running a
+type-checker because they had tried only one tiny example.  Giving them a
+more realistic experience would have empowered them to try it on their own
+source code.  And, the vast majority of our users will never write a type
+system, so I don't think we should over-emphasize it, because doing so
+might alienate the main part of our audience.
+
+Action item:  More practice with using type-checkers.  Don't over-emphasize
+creating type-checkers.
+
+The Checker Framework was not fully functional on Windows.  The Windows
+installation worked for running any distributed type-checker, but not for
+creating a new type-checker.  This was part of the tutorial (and was
+rescheduled, on the fly, into the first half of the tutorial), so Windows
+users got the impression that the system doesn't really work.  This was an
+unfortunate and unfair impression, especially since most people won't
+create a new type system.  Ironically, a recent simplification to the
+installation instructions removed the workaround that would have provided
+full functionality on Windows.  We have corrected a couple of problems and
+Werner has already made a new release, which is great.  Luckily, the Linux
+and Mac users generally didn't have problems.
+
+Action item:  Test the instructions, and test more generally, on Windows.
+Windows is the dominant operating system even at an open source convention
+like OSCON.
+
+Most attendees spent most of their time waiting around, and as a result
+they were bored and they didn't get to try very many things.  The wireless
+didn't work, so attendees didn't have access to the instructions -- neither
+for installing the Checker Framework nor for what to do in the tutorial.
+Werner reacted well by putting the software downloads on 7 USB sticks that
+we distributed.  Unfortunately, the Checker Framework Manual and the
+tutorial instructions were not on the USB keys, so attendees didn't have
+access to them.  We showed instructions on the projector, but this didn't
+really work:  they were hard to read and weren't always what people needed
+as the people moved at different speeds.  Furthermore, the tutorial
+instructions, even had it been available, were buried at the bottom of the
+webpage.
+
+Action item:  In retrospect, we should have complained loudly to the
+organizers in hopes that they would fix the wireless problem.  Other
+tutorials, on the previous day, were also thrown off by lack of network
+access.  Mike should have set up a wireless network using his cell phone,
+but I think only 5 people can connect to it at a time.
+
+Action item:  The instructions need to be clearer and more to the point;
+attendees want clear step-by-step instructions about what to do, without
+irrelevant text.  More complete instructions will enable people to follow the
+tutorial by themselves; I think the information in it is great and we can
+make good use of it in this way.  The distribution for the tutorial should
+be a single zip file that contains everything attendees need (including the
+instructions), rather than multiple downloads; this will ensure that every
+attendee has access to the instructions.  We should have distributed the
+instructions when we saw this was a problem, but we were too busy running
+around helping people with installation problems to think at a higher
+level.  This will also enable us to move faster and leaving some people
+behind rather than going at the pace of the slowest participant.
+
+The brainstorming of type systems was very productive, and it segued into a
+long Q&A session.  Afterward, people drifted away rather than getting
+started using the Checker Framework on their own (open source or
+commercial) projects.  Many of the answers were already in the
+documentation, but it's always easier for people to hear it in person and
+ask questions.
+
+Action item:  While one person is answering questions, the other should
+browse the Checker Framework documentation on the projection screen, to
+show the section that already answers that particular question.  This will
+emphasize the quality of our documentation and encourage people to read the
+documentation when they get home.
+
+At the end of the tutorial, we asked people to get engaged, which was
+great.  However, we didn't leave people with a specific action item of what
+do do next.  Especially at an open source conference like OSCON, we could
+imagine attracting new developers to our project, either as users or as
+developers.
+
+Action item:  Mention the mailing list and encourage people to sign up.
+Somewhere on our webpages, list some specific to-do items that we need help
+with,
+
+Overall, the tutorial definitely made us some good contacts and some converts,
+and it raised the profile.  We should build on those successes to make it
+even better in the future.
+
+		    -Mike
+
+===========================================================================
+
+More notes:
+
+The way that the Checker Framework is invoked has changed since the
+tutorial was given.  The manual has been updated, but the index.html file
+for the tutorial may not have.
+
+The use of arbitrary package names confused a number of people during our
+tutorial.  Probably put the code that the attendees write in the unnamed
+(top-level) package.  Failing that, put it only one level down, and be
+consistent.  One point of confusion was putting the new type-checker in a
+different package than the code being type-checked.  This distinction may
+be able to be retained, but it needs to be explained and it is not essential
+from a stylistic point of view, for people who are just starting out and
+trying to understand much more important concepts.
+
+The tutorial should be put in its own well-named directory (for example,
+checker-framework/tutorial), and be prominently linked (with downloads)
+from both early in the manual and from the main Checker Framework webpage,
+http://types.cs.washington.edu/checker-framework/.
+Then, some of the material in checker-framework/demos can perhaps be
+eliminated or better-organized.
+
+Here is an example of part of the solution that didn't appear on a slide:
+@TypeQualifier
+@Target(ElementType.TYPE_USE)
+@SubtypeOf(Unqualified.class)
+public @interface Encrypted {}
+The tutorial materials need to give all the solution parts, so people don't
+get stuck, frustrated, and give up.
+
+The personalblog-demo.zip file that is referenced from the index.html file
+can be found at
+http://types.cs.washington.edu/checker-framework/2012-oscon/personalblog-demo.zip
+but we need a command that creates it from the proper sources.
+Werner says:
+  I think I built that zip file for OSBridge 2011 by taking the sources from
+  demos/nonnull-interned-demo/personalblog-demo
+  and re-arranging them in a more meaningful way.
+  As this was a one-off thing, I didn't add this to any build script.
+We should have an automated command for this, of course.
+
+We also need a command that re-deploys the tutorial to the web -- maybe we
+will run this whenever we make a Checker Framework release.  This would
+include making a single zip file that contains everything needed, including
+the Checker Framework Manual, the tutorial instructions, etc.
+
+During the tutorial, people complained about having to do things on the
+command line.  The tutoral should use our Ant, Eclipse, and Maven
+integration, so it will also serve as a tutorial on those tools.  We might
+or might not want to also retain the command-line instructions, for people
+who don't use these tools.  The tutorial was written at a time that our
+tools did not support Ant, Eclipse, and Maven well, but now that has
+changed and we should check that the tutorial and other tasks work well
+with them.
+
+===========================================================================
