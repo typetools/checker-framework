@@ -87,7 +87,18 @@
         </ant>
     </target>
 
-    <target name="clean" description="Remove generated files">
+    <target name="clean" description="Remove generated files"
+            depends="clean-nojdk">
+        <delete file="binary/jdk6.jar"/>
+        <delete file="binary/jdk7.jar"/>
+        <delete file="binary/jdk8.jar"/>
+
+        <delete file="jdk/jdk6.jar"/>
+        <delete file="jdk/jdk7.jar"/>
+        <delete file="jdk/jdk8.jar"/>
+    </target>
+
+    <target name="clean-nojdk" description="Remove generated files, but not the jdkX.jar files">
         <ant dir="${javacutils.loc}">
             <target name="clean"/>
         </ant>
@@ -110,20 +121,20 @@
             <fileset dir="${build.tests}" includes="**/*.class"/>
             <fileset dir="jdk" includes="**/*.class"/>
         </delete>
-        <delete file="binary/jdk6.jar"/>
-        <delete file="binary/jdk7.jar"/>
-        <delete file="binary/jdk8.jar"/>
+
         <delete file="binary/javac.jar"/>
-        <delete file="jdk/jdk6.jar"/>
-        <delete file="jdk/jdk7.jar"/>
-        <delete file="jdk/jdk8.jar"/>
     </target>
+
+    <target name="clean-nojar" description="Remove generated class files, but not the .jar files">
+        <delete dir="${build}"/>
+    </target>
+
 
     <target name="build.check.uptodate"
             description="Set properties: filesets and build.uptodate">
         <fileset id="src.files" dir="${src}">
             <include name="**/*.java"/>
-            <exclude name="checkers/util/dist/**"/>
+            <exclude name=""/>
         </fileset>
 
         <fileset id="src.astub.files" dir="${src}" includes="**/*.properties,**/*.astub"/>
@@ -676,6 +687,11 @@
 
     <!-- Type-check the checker implementations -->
 
+    <!-- TODO: it looks like this target only compiles the
+         code in "checkers/src". It should also compile the source
+         for the other projects. Can we do this here or do we need
+         to duplicate the targets in the other build files? -->
+
     <!-- depends on jar, needs classfile of the checker itself -->
     <target name="-run-checker" depends="jar"
             description="Run a checker on the Checker Framework">
@@ -683,11 +699,12 @@
             <path>
                 <fileset dir="${src}">
                     <include name="**/*.java"/>
-                    <exclude name="checkers/util/dist/**"/>
+                    <exclude name=""/>
                 </fileset>
             </path>
         </pathconvert>
 
+        <echo message="${src.files}" file="${tmpdir}/srcfiles-checkers.txt"/>
         <java fork="true"
               failonerror="true"
               classpath="${javac.lib}:${checkers.jar.file}:${javaparser.lib}:${javacutils.lib}:${dataflow.lib}:${tests.junit}"
@@ -696,12 +713,13 @@
             <arg value="-g"/>
             <arg line="-sourcepath ${src}:${checker-jdk}"/>
             <arg line="-d ${build}"/>
-            <arg line="${src.files}"/>
+            <arg line="@${tmpdir}/srcfiles-checkers.txt"/>
             <arg line="-version"/>
             <arg line="-proc:only"/>
             <arg line="-processor ${checker-name}"/>
 	    <arg line="${checker-args}"/>
         </java>
+        <delete file="${tmpdir}/srcfiles-checkers.txt"/>
     </target>
 
     <target name="check-nullness"
@@ -737,6 +755,37 @@
             <param name="checker-args" value="-Awarns -AprintErrorStack"/>
         </antcall>
     </target>
+
+
+    <!-- TODO: like for -run-checker this only checks checkers/src.
+         Improve both. -->
+    <!-- Depend on bindist-nojdk to make sure everything compiles. -->
+    <target name="check-errorprone" depends="bindist-nojdk, clean-nojar"
+            description="Run the error-prone compiler on the Checker Framework">
+        <mkdir dir="${build}"/>
+        <javac failonerror="true"
+                includeantruntime="false"
+                bootclasspath="${javac.lib}:${java.home}/lib/rt.jar"
+                classpath="${javac.lib}:${javaparser.lib}:${javacutils.lib}:${dataflow.lib}:${checkers.jar.file}:${tests.junit}"
+                srcdir="${src}"
+                includes="**/*.java"
+                excludes="checkers/nullness/NullnessUtils.java checkers/regex/RegexUtils.java"
+                compiler="com.google.errorprone.ErrorProneAntCompilerAdapter"
+                destdir="${build}">
+            <compilerarg value="-Xjcov"/>
+            <compilerarg value="-Xprefer:source"/>
+            <compilerarg value="-version"/>
+
+            <compilerarg value="-proc:only"/>
+            <!-- Using -proc:only without processor gives a warning,
+                 but error-prone crashes when I provide a dummy processor.
+            <compilerarg value="-processor"/>
+            <compilerarg value="checkers.util.debug.EmptyProcessor"/>
+            -->
+        </javac>
+        <delete file="${tmpdir}/srcfiles-checkers.txt"/>
+    </target>
+
 
     <!-- This throws off dependency tracking and causes rebuilding.
          When is it truly necessary? -->
