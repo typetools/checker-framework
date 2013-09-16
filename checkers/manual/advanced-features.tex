@@ -643,7 +643,10 @@ pouch.  The field does not exist in superclasses such as
 error if a program tries to access \<myMammal.pouchSize>.
 
 If you cannot use subtypes in your program, you can enforce similar
-requirements using type qualifiers.  Section~\ref{unused-fields} describes
+requirements using type qualifiers.
+% Section~\ref{unused-fields}
+Section~\ref{unused-annotation}
+describes
 the \<@Unused> annotation, which enforces that a field or method may only
 be accessed from a receiver expression with a given annotation (or one of
 its subtypes).
@@ -657,7 +660,8 @@ Also see the discussion of typestate checkers, in
 Chapter~\ref{typestate-checker}.
 
 
-\subsection{Unused fields\label{unused-fields}}
+% \subsection{Unused fields\label{unused-fields}}
+\subsection{\<@Unused> annotation\label{unused-annotation}}
 
 A Java subtype can have more fields than its supertype.  For example:
 
