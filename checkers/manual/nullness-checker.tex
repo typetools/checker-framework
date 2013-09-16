@@ -766,7 +766,7 @@ In general, code can depend that field \<f> is not \<null>, because the
 field is declared with a \code{@\refclass{nullness/quals}{NonNull}} type.
 However, this guarantee does not hold for a partially-initialized object.
 
-The Nullness Checker uses the \<@Raw> annotation to indicate that an object
+The Nullness Checker uses the \code{@\refclass{nullness/quals}{Raw}} annotation to indicate that an object
 is not yet fully initialized --- that is, not all its \<@NonNull> fields have been
 assigned.  Rawness is mostly relevant within the constructor, or for
 references to \code{this} that escape the constructor (say, by being stored
