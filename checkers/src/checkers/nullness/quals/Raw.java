@@ -50,6 +50,10 @@ import java.lang.annotation.Target;
  * {@code @Raw(B.class)} (and otherwise, if not all fields are initialized, an
  * error is issued).
  *
+ * At the end of the constructor, the type is not fully initialized.
+ * Rather, it is {@code Raw(<em>supertype</em>)}.
+ * <p>
+ *
  * <p>
  * Note that it would not be sound to type {@code this} as {@link NonRaw}
  * anywhere in a constructor (with the exception of final classes; but this is
