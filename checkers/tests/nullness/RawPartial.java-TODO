@@ -1,0 +1,51 @@
+import checkers.nullness.quals.*;
+
+public class RawPartial {
+
+  public RawPartial() {
+    //:: error: (uninitialized)
+    foo1();
+    foo2();
+    foo3();
+    foo4();
+  }
+
+  public void foo1() {}
+
+  public void foo2() @NonRaw(RawPartial.class) {}
+
+  public void foo3() @NonRaw(RawPartial.class) {}
+
+  public void foo4() @NonRaw(RawPartial.class) {}
+
+  public static void main(String[] args) {
+    new SubRP();
+  }
+}
+
+public class SubRP extends RawPartial {
+
+  @NonNull String f;
+
+  public SubRP() {
+    f = "";
+  }
+
+  @Override
+  //:: error: (overriding)
+  public void foo2() {
+    f.toLowerCase();
+  }
+
+  @Override
+  public void foo3() @NonRaw(RawPartial.class) {
+    //:: error: (uninitialized)
+    f.toLowerCase();
+  }
+
+  @Override
+  public void foo4() @Raw {
+    //:: error: (uninitialized)
+    f.toLowerCase();
+  }
+}
