@@ -607,7 +607,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         for (Entry<FieldAccess, V> e : fieldValues.entrySet()) {
             FlowExpressions.FieldAccess otherFieldAccess = e.getKey();
             V otherVal = e.getValue();
-            if (otherFieldAccess.containsModifiableAliasOf(this, arrayAccess)) {
+            if (otherFieldAccess.getReceiver().containsModifiableAliasOf(this, arrayAccess)) {
                 // remove information completely
                 continue;
             }
