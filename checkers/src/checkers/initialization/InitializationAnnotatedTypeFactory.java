@@ -129,7 +129,7 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
                 Collection<? extends AnnotationMirror> declaredFieldAnnotations = getDeclAnnotations(element);
                 AnnotatedTypeMirror fieldAnnotations = getAnnotatedType(element);
                 computeFieldAccessType(type, declaredFieldAnnotations, owner,
-                        fieldAnnotations);
+                        fieldAnnotations, element);
             }
         }
     }
@@ -312,11 +312,12 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
      * @param receiverType
      *            Inferred annotations of the receiver.
      * @param fieldAnnotations
+     * @param element
      */
     private void computeFieldAccessType(AnnotatedTypeMirror type,
             Collection<? extends AnnotationMirror> declaredFieldAnnotations,
             AnnotatedTypeMirror receiverType,
-            AnnotatedTypeMirror fieldAnnotations) {
+            AnnotatedTypeMirror fieldAnnotations, Element element) {
         // not necessary for primitive fields
         if (TypesUtils.isPrimitive(type.getUnderlyingType())) {
             return;
@@ -330,8 +331,16 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
         if (checker.isUnclassified(receiverType)
                 || checker.isFree(receiverType)) {
 
-            type.clearAnnotations();
-            type.addAnnotations(qualHierarchy.getTopAnnotations());
+            TypeMirror fieldDeclarationType = element.getEnclosingElement()
+                    .asType();
+            boolean isInitializedForFrame = checker.isInitializedForFrame(
+                    receiverType, fieldDeclarationType);
+            if (isInitializedForFrame) {
+                type.replaceAnnotation(qualHierarchy.getTopAnnotation(checker.UNCLASSIFIED));
+            } else {
+                type.clearAnnotations();
+                type.addAnnotations(qualHierarchy.getTopAnnotations());
+            }
 
             if (!AnnotationUtils.containsSame(declaredFieldAnnotations,
                     NOT_ONLY_COMMITTED) || !useFbc) {
