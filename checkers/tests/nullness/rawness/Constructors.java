@@ -3,7 +3,7 @@ import checkers.initialization.quals.Initialized;
 import checkers.nullness.quals.*;
 import java.util.*;
 
-//@skip-test
+//@skip-test -- should be fixed, but is a bit tricky to implement, so defer for now.
 // See http://code.google.com/p/checker-framework/issues/detail?id=223
 class Constructors {
 
