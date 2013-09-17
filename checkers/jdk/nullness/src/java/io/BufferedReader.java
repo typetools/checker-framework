@@ -15,7 +15,7 @@ public class BufferedReader extends Reader {
   public @Nullable String readLine() throws IOException { throw new RuntimeException("skeleton method"); }
   public long skip(long a1) throws IOException { throw new RuntimeException("skeleton method"); }
   @EnsuresNonNullIf(expression="readLine()", result=true)
-  public boolean ready() throws IOException { throw new RuntimeException("skeleton method"); }
+  @Pure public boolean ready() throws IOException { throw new RuntimeException("skeleton method"); }
   public boolean markSupported() { throw new RuntimeException("skeleton method"); }
   public void mark(int a1) throws IOException { throw new RuntimeException("skeleton method"); }
   public void reset() throws IOException { throw new RuntimeException("skeleton method"); }
