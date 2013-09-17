@@ -306,7 +306,7 @@ public class CFTreeBuilder extends TreeBuilder {
         public Attribute visitEnumConstant(VariableElement c, Void p) {
             if (c instanceof Symbol.VarSymbol) {
                 Symbol.VarSymbol sym = (Symbol.VarSymbol) c;
-                if (sym.getKind() == ElementKind.ENUM) {
+                if (sym.getKind() == ElementKind.ENUM_CONSTANT) {
                     return new Attribute.Enum(sym.type, sym);
                 }
             }
