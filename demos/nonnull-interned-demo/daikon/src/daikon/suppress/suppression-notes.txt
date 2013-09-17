@@ -1,0 +1,247 @@
+Things to suppress:
+
+ x[] = y[] => x \subset y, x \subseq y         Done
+ (x = y is handled by equality)
+ x[] = y[] => x[a] \in y
+ x \subset y /\ b \in x => b \in y             hard to do because how do we find x?
+
+
+Things not to suppress:
+
+Equality - this should be handled specially.
+
+===========================================================================
+
+SUPPRESSION NOTES
+
+Typically, Daikon can report many true invariants over a dtrace file.  Some
+of these invariants are implied by other true invariants.  Examples include
+(a and b are arrays; i and j are integers):
+
+  a>=0 && b==a[0..i]  ==>  b subseq a
+  b subseq a  ==>  b[j] in a                   Done
+  b subseq a  ==>  max(b) in a                 Done
+  0<=i<=j  ==>  b[i] in b[0..j]                Done
+  j>=0  ==>  B[0] in B[0..J]                   Is this interesting?
+  j<=b.length  ==>  B[-1] in B[J..]
+  0<=i<=j  ==>  min(B[0..I]) in B[0..J]
+  0<=i<=j  ==>  A[0..i] subseq A[0..j]
+  0<=i<a.len  => a[i] in a                     Never instantiated
+
+Given that the invariants on the left-hand side of the implication are
+true, it is more efficient not to check the invariants on the right-hand
+side.  Furthermore, it is better for users not to report the implied
+invariants.  The suppression mechanism provides a set of rules for
+expressing implications such as those above, and for avoiding checking or
+reporting the implied (suppressed) invariants.  
+
+
+Terminology:
+
+Suppression rule:  A suppression rule expresses, in the form of a template,
+which invariants imply which other invariants; examples include those at
+the beginning of this document.  A particular invariant type (such as "i in
+a") may have many rules that could suppress it.  To determine whether a
+concrete invariant is suppressed, apply each rule for that invariant type
+in turn; stop when one of them is satisfied and create a suppression
+object.  (This might require the ordering of suppression rules to be
+carefully chosen, for efficiency.)
+
+Suppression object:  A suppression object is a concrete instantiation of a
+suppression rule.  It is essentially a pair:
+ * suppressed (or suppressee) invariant
+ * list of suppressor invariants.  (In the 9 examples above, in 4 cases
+   there is a single suppressor invariant, and 5 cases there are multiple
+   suppressors, no one of which alone suppresses the suppressee.)
+
+(Each invariant also points back at the suppression objects that refer to
+it.  The invariant class gets two new fields:  a suppression object that
+suppresses this invariant (or null if the invariant isn't suppressed), and
+a list of suppression objects for which this invariant is a suppressor.)
+
+
+Maintaining suppression objects:
+
+An invariant is only suppressed by one active suppression object at a time.
+If that suppression object is removed, then all the possible suppression
+rules must be checked again; if one of them applies, then the object
+remains suppressed, and otherwise it becomes unsuppressed.
+
+The suppressor invariants must be at least as high in the partial order as
+the suppressed invariant (if they were lower, they wouldn't be true at the
+point where the suppressed object is).  Suppose that ppt C is a child of
+ppt P:
+   P [I1, I2]
+   C [I3, I4]
+It is possible for "I1 && I3" to suppress I4.  It is also possible for I1
+alone to suppress I4, if I3 fell down from another parent P' of C.  But if
+I1 suppresses I2, then I2 would never fall down unless I1 first fell down,
+because suppressed invariants don't even see any samples, and the fact that
+I1 is true at P means that I2 is certainly also still true at P, given that
+I1 suppresses I2.
+
+Rules for removing/updating suppression objects:  (The idea is to do this
+as soon as an invariant is falsified (falls down), so that we don't have to
+iterate flow.)
+
+ * If some suppressor invariant falls down, we need not do anything unless
+   the suppressor invariant is no longer true where the suppressed one is
+   -- that is, the suppressor invariant falls down below the suppressed
+   one.  In this case, we must re-run all suppression rules for the
+   suppressed invariant to see whether it is still suppressed (by a
+   different rule) or whether it becomes unsuppressed.
+ * If the suppressed invariant falls down (is moved down the hierarchy),
+   then we need not take any action unless some suppressor variable becomes
+   hidden (goes out of scope:  the set of variables at a lower program point
+   is not necessarily a superset of the variables at a higher program point).
+   I don't think this can happen, however, because a suppressed invariant
+   never sees any samples and so should never be moved down the hierarchy.
+
+When an invariant changes formula, it notifies the suppression objects that
+depend on it, and they can re-confirm; if any of them is eliminated, then
+all suppression rules for the formerly suppressed invariant must be re-run.
+
+
+Suppression rules:
+
+ * IntComparisons.java.jpp is a good place to start writing suppression rules.
+ * See comments in isObviousImplied, starting with "// isObviousImplied: ".
+   Add comments along the lines of those throughout, every place that there
+   is a "return true" from an isObviousImplied method or something it calls.
+   Also see the factories.
+ * Make "elementwise" imply "lexically".
+ * Make (a subseq b && b lexically-< c) imply (a lexically-< c).
+ * Make (a strict-subseq b && b lexically-<= c) imply (a lexically-< c).
+ * Search for "lexically" in *.txt-daikon.goal.
+
+Eventually, create a declarative syntax for suppression rules.
+ * In the short term, write suppression rules by hand.
+    * faster
+    * gives a feel for a good declarative syntax
+    * gives a feel for the translation from rules to Java code, or the
+      interpreter for rules
+ * To do the design:
+    * Say what it will be used for (to verify that it is adequate to the task).
+    * Write a bunch of examples.
+    * Show it to Jeremy.  (Also see ~mistere/research/notes/redesign.txt.)
+ * The design of the suppression rules comes perilously close to a language
+   for a geneal-purpose theorem-prover.  But it won't be that flexible or
+   general:  the search will be quite directed and the list of rules
+   limited to Daikon's grammar.
+
+Potential uses for theorem-prover:
+ * Offline uses:
+    * Verify that the suppression rules are all correct by running the
+      prover over the suppression rules.
+    * Feed the prover all the invariant classes and see which ones it says
+      imply others; use the output as suppression rules.
+ * Online use (for our own experimentation, not for use by users):
+    * Run it over the final output (just once, at printing time), see which
+      invariants are implied, and log those so that we can create
+      suppression rules for those later.  The long-term goal is never to
+      run a theorem-prover at analysis time, because it is slow and because
+      users are forced to download it specially.
+
+----------------
+
+Shouldn't VarInfo.isCanonical() be restored somehow?
+
+----------------
+
+Testing:
+
+(java -Xmx512m -classpath .:/g2/users/mernst/research/invariants/java:/g2/users/mernst/research/invariants/java/lib/log4j.jar:/g2/users/mernst/java:/g2/users/mernst/research/invariants/java:/g2/users/mernst/java/jtrek/jtrek.zip:/g2/users/mernst/java/OROMatcher-1.1:.:/g2/users/mernst/java/mochaandjasmine:/g2/users/mernst/java/JavaPrinter:/g2/users/mernst/java/bsh.jar:/g2/users/mernst/java/tmp:/g2/users/mernst/java/jdk/jre/lib/rt.jar:/g2/users/mernst/java/jdk/lib/tools.jar:/usr/local/lib/classes:/g2/jdk/jre/lib/rt.jar:/g2/jdk/lib/tools.jar:/g2/users/mernst/research/invariants/java/lib/jakarta-oro.jar:/g2/users/mernst/research/invariants/java/lib/java-getopt.jar:/g2/users/mernst/research/invariants/java/lib/junit.jar:/g2/users/mernst/research/invariants/java/lib/log4j.jar  daikon.PrintInvariants --suppress_cont --suppress_post QueueAr.inv.gz > QueueAr.txt-daikon3)
+
+Now compare QueueAr.txt-daikon2 with QueueAr.txt-daikon3
+
+----------------
+
+There are essentially two parts to the implementation:
+ * suppression rules: indicating what implies what.
+   (In the future, this could be further split into the declarative syntax
+   and the compiler/interpreter for that declarative syntax.)
+ * dealing with appearance and elimination of propositions as invariants
+   move up and down the hierarchy (in version 3).
+
+===========================================================================
+
+> We should *not* do suppression immediately upon instantiating invs.
+> Instead, run Daikon for 2-3 data points per program point so that
+> obviously false ones go away.  Then start suppression.
+
+I had initially planned this, but I think it may be a bad idea, because it
+will add complexity without any new functionality.  Our basic mechanism
+must be powerful enough to deal with lots of invariants becoming true and
+false, and if we special-case certain circumstances, we simply won't get to
+test those circumstances.  I tend to think we should get the thing working
+without this special case first, and if performance is a problem, we can
+add the special-casing after we are sure the initial thing works.
+
+===========================================================================
+
+Some tests to include in integer (and floating-point) comparisons:
+
+    boolean only_eq = false;
+    boolean obvious_lt = false;
+    boolean obvious_gt = false;
+    boolean obvious_le = false;
+    boolean obvious_ge = false;
+
+    // Commented out temporarily.
+    if (false && (seqvar1 != null) && (seqvar2 != null)) {
+      Derivation deriv1 = var1.derived;
+      Derivation deriv2 = var2.derived;
+      boolean min1 = (deriv1 instanceof SequenceMin);
+      boolean max1 = (deriv1 instanceof SequenceMax);
+      boolean min2 = (deriv2 instanceof SequenceMin);
+      boolean max2 = (deriv2 instanceof SequenceMax);
+      VarInfo super1 = seqvar1.isDerivedSubSequenceOf();
+      VarInfo super2 = seqvar2.isDerivedSubSequenceOf();
+
+      if (DEBUGINTEQUAL || ppt.debugged) {
+        System.out.println("INTEQUAL.instantiate: "
+                           + "min1=" + min1
+                           + ", max1=" + max1
+                           + ", min2=" + min2
+                           + ", max2=" + max2
+                           + ", super1=" + super1
+                           + ", super2=" + super2
+                           + ", iom(var2, seqvar1)=" + MEMBER.isObviousMember(var2, seqvar1)
+                           + ", iom(var1, seqvar2)=" + MEMBER.isObviousMember(var1, seqvar2));
+      }
+      if (seqvar1 == seqvar2) {
+        // Both variables are derived from the same sequence.  The
+        // invariant is obvious as soon as it's nonequal, because "all
+        // elements equal" will be reported elsewhere.
+        if (min1 || max2)
+          obvious_lt = true;
+        else if (max1 || min2)
+          obvious_gt = true;
+      } else if ((min1 || max1) && MEMBER.isObviousMember(var2, seqvar1)) {
+        if (min1) {
+          obvious_le = true;
+        } else if (max1) {
+          obvious_ge = true;
+        }
+      } else if ((min2 || max2) && MEMBER.isObviousMember(var1, seqvar2)) {
+        if (min2) {
+          obvious_ge = true;
+        } else if (max2) {
+          obvious_le = true;
+        }
+      } else if (((min1 && max2) || (max1 && min2))
+                 && (super1 != null) && (super2 != null) && (super1 == super2)
+                 && VarInfo.seqs_overlap(seqvar1, seqvar2)) {
+        // If the sequences overlap, then clearly the min of either is no
+        // greater than the max of the other.
+        if (min1 && max2) {
+          obvious_le = true;
+          // System.out.println("obvious_le: " + var1.name + " " + var2.name);
+        } else if (max1 && min2) {
+          obvious_ge = true;
+          // System.out.println("obvious_ge: " + var1.name + " " + var2.name);
+        }
+      }
+    }
+
+===========================================================================
