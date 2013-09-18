@@ -9,7 +9,7 @@ What would a good place be for this?  At the beginning/end?  Split into multiple
 
 - Pre-/postconditions from a user perspective:
   - Explain the generic pre- and postcondition annotations: @EnsuresAnnotation/@EnsuresAnnotations, @EnsuresAnnotationIf/@EnsuresAnnotationsIf and @RequiresAnnotation/@RequiresAnnotations.
-  - Explain what kind of strings are supported (see at the end of the documentation for a list).
+  - Explain what kind of strings are supported (see text near the end of this documentat; use that to augment the existing Checker Framework documentation).
 
 - Pre-/postconditions from a developer perspective:
   - Explain the meta-annotations @PreconditionAnnotation, @ConditionalPostconditionAnnotation and @PostconditionAnnotation.
