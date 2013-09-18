@@ -16,6 +16,7 @@ import checkers.types.visitors.SimpleAnnotatedTypeVisitor;
 import checkers.util.AnnotatedTypes;
 
 import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
 
 import javacutils.AnnotationUtils;
 import javacutils.ElementUtils;

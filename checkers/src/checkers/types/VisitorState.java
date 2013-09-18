@@ -3,7 +3,7 @@ package checkers.types;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.util.AnnotatedTypes;
 
-import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
 
 import javacutils.Pair;
 

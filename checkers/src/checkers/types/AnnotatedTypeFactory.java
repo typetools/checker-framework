@@ -25,7 +25,7 @@ import checkers.util.stub.StubParser;
 import checkers.util.stub.StubResource;
 import checkers.util.stub.StubUtil;
 
-import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
 
 import javacutils.AnnotationProvider;
 import javacutils.AnnotationUtils;
