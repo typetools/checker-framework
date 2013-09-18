@@ -47,6 +47,8 @@ import java.lang.annotation.Target;
  * result will be rejected.
  * <p>
  *
+ * @checker.framework.manual #type-refinement-purity Side effects, determinism, purity, and flow-sensitive analysis
+ *
  * @author Stefan Heule
  */
 @Documented
