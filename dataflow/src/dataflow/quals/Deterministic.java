@@ -79,6 +79,8 @@ import java.lang.annotation.Target;
  * deterministic nonetheless.
  * <p>
  *
+ * @checker.framework.manual #type-refinement-purity Side effects, determinism, purity, and flow-sensitive analysis
+ *
  * @author Stefan Heule
  */
 @Documented
