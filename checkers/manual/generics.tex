@@ -1,8 +1,9 @@
 \htmlhr
 \chapter{Generics and polymorphism\label{polymorphism}}
 
-This chapter describes support for Java generics and for the analogous
-capability over type qualifiers.
+This chapter describes support for Java generics (also known as
+``parametric polymorphism'').
+The chapter also describes polymorphism over type qualifiers.
 
 
 \section{Generics (parametric polymorphism or type polymorphism)\label{generics}}
@@ -14,6 +15,9 @@ When instantiating a generic type,
 clients supply the qualifier along with the type argument, as in
 \code{List<@NonNull String>}.
 
+
+\subsection{Raw types\label{generics-raw-types}}
+
 Before running any pluggable type-checker, we recommend that you eliminate
 raw types from your code (e.g., your code should use \code{List<...>} as
 opposed to \code{List}).
@@ -22,6 +26,15 @@ compiler and the \<-Xlint:unchecked -Xlint:rawtypes> command-line options.
 Using generics helps prevent type errors just as using a pluggable
 type-checker does, and makes the Checker Framework's warnings easier to
 understand.
+
+If your code uses raw types, then the Checker Framework will do its best to
+infer the Java type parameters and the type qualifiers.  If it infers
+imprecise types that lead to type-checking warings elsewhere, then you have
+two options.  You can convert the raw types such as \code{List} to
+parameterized types such as \code{List<String>}, or you can supply the 
+\<-AignoreRawTypeArguments> command-line option.  That option causes the
+Checker Framework to ignore all subtype tysts for type arguments that
+were inferred for a raw type.
 
 
 \subsection{Restricting instantiation of a generic class}

@@ -21,8 +21,6 @@ What would a good place be for this?  At the beginning/end?  Split into multiple
   - Document -AconcurrentSemantics command-line option; also note it in caveats about what the checker guarantees [Stefan].
   - Document -AassumeAssertionsAreEnabled and -AassumeAssertionsAreDisabled [Stefan].
 
-- Document -AignoreRawTypeArguments (rename the option?)
-
 - Document -ANullnessChecker_option=value mechanism
 
 Changes throughout the manual to existing sections
@@ -120,6 +118,7 @@ New command-line options:
   -AsuggestPureMethods
   -AenablePurity
   -AassumeSideEffectFree
+  -AignoreRawTypeArguments
 
 New manual section about array types
 
