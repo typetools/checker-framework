@@ -18,7 +18,6 @@ What would a good place be for this?  At the beginning/end?  Split into multiple
   - Explain the new defaulting for local variables (including our decision on casts and instanceof).
     (See notes below.)
   - Explain the command line parameter -Adotflowdir (probably find a better name first) [Stefan/Charlie].
-  - Explain the new annotation @TerminatesExecution.
   - Document -AconcurrentSemantics command-line option; also note it in caveats about what the checker guarantees [Stefan].
   - Document -AassumeAssertionsAreEnabled and -AassumeAssertionsAreDisabled [Stefan].
 
@@ -113,6 +112,8 @@ Renamed method annotations used by the Nullness Checker:
   @AssertParametersNonNull => [no replacement]
 Renamed method annotations used by all checkers:
   @SuppressWarnings => @AssumeAssertion
+
+New annotation @TerminatesExecution.
 
 New command-line options:
   -AonlyDefs and -AonlyUses complement existing -AskipDefs and -AskipUses

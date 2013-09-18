@@ -475,6 +475,11 @@ and this requires that any public signature be fully annotated by the user
 rather than inferred.
 
 
+The \code{@\refclass{dataflow/quals}{TerminatesExecution}} annotation
+indicates that a given method never returns.  This can enable the 
+flow-sensitive type refinement to be more precise.
+
+
 \subsection{Fields and flow-sensitive analysis\label{type-refinement-fields}}
 
 Flow sensitivity analysis infers the type of fields in some restricted cases:
