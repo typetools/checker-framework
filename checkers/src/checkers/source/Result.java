@@ -156,7 +156,7 @@ public final class Result {
         return Collections.</*@NonNull*/ DiagMessage>unmodifiableList(messages);
     }
 
-    @Pure
+    @SideEffectFree
     @Override
     public String toString() {
         switch (type) {
@@ -224,7 +224,7 @@ public final class Result {
             return  HashCodeUtils.hash(this.message, this.args);
         }
 
-        @Pure
+        @SideEffectFree
         @Override
         public String toString() {
             if (args.length == 0)

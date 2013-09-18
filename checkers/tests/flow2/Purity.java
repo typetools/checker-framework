@@ -25,7 +25,7 @@ class Purity {
         }
     }
 
-    // class with a side-effect free constructor
+    // class with a side-effect-free constructor
     private static class SEClass {
         @SideEffectFree
         public SEClass() {

@@ -7,11 +7,6 @@ New section on concepts and annotations that apply to all type-systems and check
 ===========================================================================
 What would a good place be for this?  At the beginning/end?  Split into multiple sections?
 
-- Purity annotation
-  - Explain the annotation and its semantics (can probably mostly taken from the Javadoc of @Pure).
-  - Explain the command line parameter -AsuggestPureMethods, as well as what the purity analysis does (again, see Javadoc of @Pure).
-  - Explain the command line parameter -AenablePurity (maybe this ambiguous option, which enables checking whether method bodies are compatible with the method declaration annotation, should be renamed, such as to -AcheckPurity)
-
 - Pre-/postconditions from a user perspective:
   - Explain the generic pre- and postcondition annotations: @EnsuresAnnotation/@EnsuresAnnotations, @EnsuresAnnotationIf/@EnsuresAnnotationsIf and @RequiresAnnotation/@RequiresAnnotations.
   - Explain what kind of strings are supported (see at the end of the documentation for a list).
@@ -21,11 +16,11 @@ What would a good place be for this?  At the beginning/end?  Split into multiple
 
 - Dataflow analysis
   - Explain the new defaulting for local variables (including our decision on casts and instanceof).
+    (See notes below.)
   - Explain the command line parameter -Adotflowdir (probably find a better name first) [Stefan/Charlie].
   - Explain the new annotation @TerminatesExecution.
   - Document -AconcurrentSemantics command-line option; also note it in caveats about what the checker guarantees [Stefan].
   - Document -AassumeAssertionsAreEnabled and -AassumeAssertionsAreDisabled [Stefan].
-  - Document -AassumeSideEffectFree
 
 - Document @Covariant annotation [Mike/Werner].
 
@@ -44,19 +39,23 @@ After an expression has been unboxed, it is assumed to be non-null (if it was no
 
 ------------------------------------------------------
 
-"NNEL" default becomes "top for locals, casts, and instanceof"
+"NNEL" default becomes "top for locals, casts, instanceof, and implicit
+upper bounds".
 The top qualifier should only be added to top-level type variables,
 because those will get suitably refined by flow.
 For type variables in other positions, e.g. as type argument in your
 example, we should not add default qualifiers.
 
-------------------------------------------------------
+What should we call it?
+CLIMB:  Casts, Locals, Instanceof, and iMplicit Bounds
+LIMBIC:  Locals, IMplicit Bounds, Instanceof, and Casts
+BaLtIC:  Bounds, Locals, Instanceof, and Casts
+BaCkLIT:  Bounds, Casts, Locals, and Instanceof get Top
 
-Explain relationship between XXXChecker and XXXAnnotatedTypeFactory:
-if the Checker is a subtype of BaseTypeChecker, the ATF has to be a
-subtype of AbstractBasicATF, because BaseTypeVisitor assumes that.
-
-We found a better naming scheme than Basic vs. Base; it needs to be documented.
+The manual and some Javadoc uses ALL_EXCEPT_LOCALS; remove any occurrences
+and document how to achieve that.
+Presumably via @DefaultQualifierInHierarchy which can be overrridden by
+@DefaultFor({ DefaultLocation.LOCAL_VARIABLE }) on another qualifier.
 
 ------------------------------------------------------
 
@@ -68,6 +67,14 @@ These rules are applied uniformly for type variables and wildcards.
 But note that wildcards should just be refinements of the declared upper
 bounds -- we don't always simply use the top type, but the wildcard always
 refines the declared upper bound.
+
+------------------------------------------------------
+
+Explain relationship between XXXChecker and XXXAnnotatedTypeFactory:
+if the Checker is a subtype of BaseTypeChecker, the ATF has to be a
+subtype of AbstractBasicATF, because BaseTypeVisitor assumes that.
+
+We found a better naming scheme than Basic vs. Base; it needs to be documented.
 
 ------------------------------------------------------
 
@@ -90,7 +97,6 @@ Explanations on what flow expressions are supported (i.e. strings in pre/postcon
     - Comparisons (equality, less than, etc.).
     - Probably other Java expressions that are "pure" (non-pure things cannot occur, anyway) that I did not think of.
 
-NNEL includes upper bounds in addition to locals.  Maybe other things too?
 
 
 Changelog
@@ -110,15 +116,19 @@ Renamed method annotations used by the Nullness Checker:
 Renamed method annotations used by all checkers:
   @SuppressWarnings => @AssumeAssertion
 
-New -AonlyDefs and -AonlyUses command-line options complement existing
--AskipDefs and -AskipUses command-line options
+New command-line options:
+  -AonlyDefs and -AonlyUses complement existing -AskipDefs and -AskipUses
+  -AsuggestPureMethods
+  -AenablePurity
+  -AassumeSideEffectFree
 
 New manual section about array types
 
 Suppress warnings using assert statements with the string
 @AssumeAssertion(warningkey); previously, just the warning key sufficed.
 
-Purity analysis:  uses new annotations @SideEffectFree and ...
+Purity analysis:  uses new annotations @SideEffectFree and @Deterministic;
+@Pure means both @SideEffectFree and @Deterministic
 
 
 Eclipse setup

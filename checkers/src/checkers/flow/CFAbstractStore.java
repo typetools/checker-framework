@@ -130,7 +130,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * call, and add information guaranteed by the method.
      *
      * <ol>
-     * <li>If the method is side-effect free (as indicated by
+     * <li>If the method is side-effect-free (as indicated by
      * {@link dataflow.quals.SideEffectFree} or {@link dataflow.quals.Pure}),
      * then no information needs to be removed.
      * <li>Otherwise, all information about field accesses {@code a.f} needs to

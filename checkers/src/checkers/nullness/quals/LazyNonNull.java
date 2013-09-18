@@ -33,7 +33,7 @@ import dataflow.quals.Pure;
  *
  * {@code LazyNonNull} gives stronger guarantees than {@link Nullable}.
  * After a check that a {@link Nullable} field holds a non-null value, only
- * accesses until the next non-{@link Pure} method is called can be assumed
+ * accesses until the next non-{@link SideEffectFree} method is called can be assumed
  * to be non-null.
  * <p>
  *

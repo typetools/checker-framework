@@ -77,21 +77,23 @@ import com.sun.source.tree.WildcardTree;
 import com.sun.tools.javac.tree.TreeScanner;
 
 /**
- * A visitor that determines the purity (as defined by {@link dataflow.quals.Pure})
- * of a statement or expression.  The entry point is method {@link #checkPurity}.
+ * A visitor that determines the purity (as defined by {@link
+ * dataflow.quals.SideEffectFree}, {@link dataflow.quals.Deterministic},
+ * and {@link dataflow.quals.Pure}) of a statement or expression.  The
+ * entry point is method {@link #checkPurity}.
  *
- * See The annotation {@link Pure} for more details on what is checked and the
- *      semantics of purity.
- *
+ * @see SideEffectFree
+ * @see Deterministic
  * @see Pure
+ *
  * @author Stefan Heule
  *
  */
 public class PurityChecker {
 
     /**
-     * Compute whether the given statement is pure (that is,
-     * side-effect-free, deterministic, or both).
+     * Compute whether the given statement is 
+     * side-effect-free, deterministic, or both.
      * Returns a result that can be queried.
      */
     public static PurityResult checkPurity(Tree statement,
@@ -131,7 +133,7 @@ public class PurityChecker {
         }
 
         /**
-         * Get the {@code reason}s why the method is not side-effect free.
+         * Get the {@code reason}s why the method is not side-effect-free.
          */
         public List<Pair<Tree, String>> getNotSeFreeReasons() {
             return notSeFreeReasons;
@@ -162,7 +164,7 @@ public class PurityChecker {
         }
 
         /**
-         * Get the {@code reason}s why the method is not both side-effect free
+         * Get the {@code reason}s why the method is not both side-effect-free
          * and deterministic.
          */
         public List<Pair<Tree, String>> getNotBothReasons() {
@@ -181,7 +183,7 @@ public class PurityChecker {
     }
 
     /**
-     * Helper class to keep {@link PurityChecker}s interface clean. The
+     * Helper class to keep {@link PurityChecker}'s interface clean. The
      * implementation is heavily based on {@link TreeScanner}, but some parts of
      * the AST are skipped (such as types or modifiers). Furthermore, scanning
      * works differently in that the input parameter (usually named {@code p})

@@ -173,13 +173,15 @@ import com.sun.tools.javac.util.Log;
     // checkers.flow.CFAbstractTransfer.sequentialSemantics
     "concurrentSemantics",
 
-    // TODO: Checking of bodies of @Pure methods is temporarily disabled
-    // unless -AenablePurity is supplied on the command line; re-enable
-    // it after making the analysis more precise.
+    // TODO: Checking of bodies of @SideEffectFree, @Deterministic, and
+    // @Pure methods is temporarily disabled unless -AenablePurity is
+    // supplied on the command line.
+    // Re-enable it after making the analysis more precise.
     // checkers.basetype.BaseTypeVisitor.visitMethod(MethodTree, Void)
     "enablePurity",
 
-    // Whether to suggest methods that could be marked @Pure
+    // Whether to suggest methods that could be marked @SideEffectFree,
+    // @Deterministic, or @Pure
     // checkers.basetype.BaseTypeVisitor.visitMethod(MethodTree, Void)
     "suggestPureMethods",
 
