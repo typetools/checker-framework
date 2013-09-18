@@ -1,6 +1,6 @@
 package checkers.util;
 
-import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
 
 import javacutils.ErrorReporter;
 import javacutils.InternalUtils;

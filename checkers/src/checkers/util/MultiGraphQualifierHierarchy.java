@@ -12,6 +12,7 @@ import checkers.quals.PolymorphicQualifier;
 import checkers.types.QualifierHierarchy;
 
 import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
 
 import javacutils.AnnotationUtils;
 import javacutils.ErrorReporter;

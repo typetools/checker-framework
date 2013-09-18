@@ -6,6 +6,7 @@ import checkers.nullness.quals.*;
 */
 
 import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
 import dataflow.util.HashCodeUtils;
 
 import java.util.Arrays;
