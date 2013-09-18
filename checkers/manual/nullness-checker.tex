@@ -155,6 +155,13 @@ The nullness hierarchy contains these qualifiers:
   to be NonNull, even after arbitrary external method calls that have
   access to the given field.
 
+  It is permitted to initialize a MonotonicNonNull field to null, but the
+  field may not be assigned to null anywhere else in the program.  If you
+  supply the \<noInitForMonotonicNonNull> lint flag (for example, supply 
+  \<-Alint=noInitForMonotonicNonNull> on the command line), then
+  @MonotonicNonNull fields are not allowed to have initializers.
+
+
 \end{description}
 
 Figure~\ref{fig:nullness-hierarchy} shows part of the type hierarchy for the
