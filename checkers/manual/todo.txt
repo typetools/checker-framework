@@ -2,10 +2,11 @@
 Necessary changes to the manual.  In brackets I (Stefan) wrote the names of people familiar with the particular change, which might be most qualified to make the change.  If no person is listed, than anyone could do the change.
 
 
+------------------------------------------------------
 
 New section on concepts and annotations that apply to all type-systems and checkers
-===========================================================================
-What would a good place be for this?  At the beginning/end?  Split into multiple sections?
+
+Where would a good place be for this?  At the beginning/end?  Split into multiple sections?
 
 - Pre-/postconditions from a user perspective:
   - Explain the generic pre- and postcondition annotations: @EnsuresAnnotation/@EnsuresAnnotations, @EnsuresAnnotationIf/@EnsuresAnnotationsIf and @RequiresAnnotation/@RequiresAnnotations.
@@ -22,9 +23,6 @@ What would a good place be for this?  At the beginning/end?  Split into multiple
   - Document -AassumeAssertionsAreEnabled and -AassumeAssertionsAreDisabled [Stefan].
 
 - Document -ANullnessChecker_option=value mechanism
-
-Changes throughout the manual to existing sections
-===========================================================================
 
 ------------------------------------------------------
 
@@ -92,10 +90,17 @@ Explanations on what flow expressions are supported (i.e. strings in pre/postcon
     - Comparisons (equality, less than, etc.).
     - Probably other Java expressions that are "pure" (non-pure things cannot occur, anyway) that I did not think of.
 
+------------------------------------------------------
 
+Eclipse setup
+-------------
+Describe checker-framework.importorder and formatter.
+Should these developer-focused configs be moved somewhere else?
+
+------------------------------------------------------
 
 Changelog
-===========================================================================
+
 
 Format String Checker (new):
   Ensures that format methods (such as System.out.printf) are invoked
@@ -128,8 +133,4 @@ Suppress warnings using assert statements with the string
 Purity analysis:  uses new annotations @SideEffectFree and @Deterministic;
 @Pure means both @SideEffectFree and @Deterministic
 
-
-Eclipse setup
--------------
-Describe checker-framework.importorder and formatter.
-Should these developer-focused configs be moved somewhere else?
+------------------------------------------------------
