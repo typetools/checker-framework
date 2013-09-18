@@ -182,8 +182,8 @@ public class NullnessVisitor
             if (atypeFactory.fromElement(elem).hasAnnotation(MONOTONICNONNULL)
                     && !checker
                             .getLintOption(
-                                    AbstractNullnessChecker.LINT_STRICTMONOTONICNONNULLINIT,
-                                    AbstractNullnessChecker.LINT_DEFAULT_STRICTMONOTONICNONNULLINIT)) {
+                                    AbstractNullnessChecker.LINT_NOINITFORMONOTONICNONNULL,
+                                    AbstractNullnessChecker.LINT_DEFAULT_NOINITFORMONOTONICNONNULL)) {
                 return;
             }
         }
