@@ -17,7 +17,12 @@ import dataflow.quals.Pure.Kind;
 import dataflow.quals.SideEffectFree;
 
 /**
- * An utility class for working with the {@link Pure} annotation.
+ * An utility class for working with the {@link SideEffectFree}, {@link
+ * Deterministic}, and {@link Pure} annotations.
+ *
+ * @see SideEffectFree
+ * @see Deterministic
+ * @see Pure
  *
  * @author Stefan Heule
  *
@@ -50,14 +55,14 @@ public class PurityUtils {
         return kinds.contains(Kind.DETERMINISTIC);
     }
 
-    /** Is the method {@code tree} side-effect free? */
+    /** Is the method {@code tree} side-effect-free? */
     public static boolean isSideEffectFree(AnnotationProvider provider,
             MethodTree tree) {
         Element methodElement = InternalUtils.symbol(tree);
         return isSideEffectFree(provider, methodElement);
     }
 
-    /** Is the method {@code methodElement} side-effect free? */
+    /** Is the method {@code methodElement} side-effect-free? */
     public static boolean isSideEffectFree(AnnotationProvider provider,
             Element methodElement) {
         List<Kind> kinds = getPurityKinds(provider, methodElement);

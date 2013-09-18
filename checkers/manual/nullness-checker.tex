@@ -207,47 +207,6 @@ apply to the method itself rather than to some particular type.
   expressions are non-null.  See Section~\ref{conditional-nullness} and the
   Javadoc for examples of their use.
 
-\item[\code{@\refclass{nullness/quals}{Pure}}]
-  indicates that the method has no (visible) side effects.
-  Furthermore, if the method is called multiple times with the same
-  arguments, then it returns the same result.
-
-  For example, consider the
-  following declaration and uses:
-
-\begin{Verbatim}
-        @Nullable Object getField(Object arg) { ... }
-
-        ...
-        if (x.getField(y) != null) {
-          x.getField(y).toString();
-        }
-\end{Verbatim}
-
-  \noindent
-  Ordinarily, the Nullness Checker would issue a warning regarding the
-  \code{toString()} call, because the receiver \code{x.getField(y)} might
-  be \code{null}, according to the \code{@Nullable} annotation in the
-  declaration of \code{getField}.  If you change the declaration of
-  \code{getField} to
-
-\begin{Verbatim}
-        @Pure @Nullable Object getField(Object arg) { ... }
-\end{Verbatim}
-
-  \noindent
-  then the Nullness Checker issues no warnings, because it can reason that
-  the two invocations \code{x.getField(y)} have the same value, and
-  therefore that \code{x.getField(y)} is non-null within the then branch
-  of the if statement.
-
-
-  If a method is pure, then it would be legal to annotate its receiver and
-  every parameter as \<@ReadOnly>, in the IGJ (Chapter~\ref{igj-checker}) or
-  Javari (Chapter~\ref{javari-checker}) type systems.  The reverse is not
-  true, both because the method might side-effect a global variable and
-  because the method might not be deterministic.
-
 \item[\code{@\refclass{nullness/quals}{AssertParametersNonNull}}]
   % Indicates a method precondition:  The annotated method expects all of
   % its parameters to be non-null.
@@ -1446,7 +1405,7 @@ assert var != null : "@SuppressWarnings(nullness)";
 \end{Verbatim}
 \item
     To indicate that a routine returns the same value every time it is
-    called, use \code{@\refclass{nullness/quals}{Pure}} (see Section~\ref{nullness-non-qualifiers}).
+    called, use \code{@\refclass{dataflow/quals}{Pure}} (see Section~\ref{nullness-non-qualifiers}).
 \item
     To indicate a method precondition (a contract stating the conditions
     under which a client is allowed to call it), you can use annotations

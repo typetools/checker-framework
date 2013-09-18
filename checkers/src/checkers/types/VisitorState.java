@@ -115,7 +115,7 @@ public class VisitorState {
         return this.path;
     }
 
-    @Pure
+    @SideEffectFree
     @Override
     public String toString() {
         return String.format("method %s (%s) / class %s (%s)",
