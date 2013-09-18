@@ -234,7 +234,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 AnnotationUtils.fromClass(elements, dataflow.quals.Pure.class));
     }
 
-    @Pure
+    @SideEffectFree
     @Override
     public String toString() {
         return getClass().getSimpleName() + "#" + uid;

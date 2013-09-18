@@ -70,7 +70,7 @@ import java.lang.annotation.Target;
  * Note that the rules for checking currently imply that every {@code
  * Deterministic} method is also {@link SideEffectFree}. This might change
  * in the future; in general, a deterministic method does not need to be
- * side-effect free.
+ * side-effect-free.
  * <p>
  *
  * These rules are conservative:  any code that passes the checks is

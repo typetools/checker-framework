@@ -686,7 +686,7 @@ public abstract class AnnotatedTypeMirror {
 
     // A helper method to print annotations separated by a space.
     // Note a final space after a list of annotations to separate from the underlying type.
-    @Pure
+    @SideEffectFree
     protected final static String formatAnnotationString(
             Collection<? extends AnnotationMirror> lst,
             boolean printInvisible) {
@@ -772,7 +772,7 @@ public abstract class AnnotatedTypeMirror {
         }
     }
 
-    @Pure
+    @SideEffectFree
     @Override
     public final String toString() {
         // Also see
@@ -788,13 +788,13 @@ public abstract class AnnotatedTypeMirror {
      * @param invisible Whether to always output invisible qualifiers.
      * @return A string representation of the current type containing all qualifiers.
      */
-    @Pure
+    @SideEffectFree
     public String toString(boolean invisible) {
         return formatAnnotationString(getAnnotations(), invisible)
                 + this.actualType;
     }
 
-    @Pure
+    @SideEffectFree
     public String toStringDebug() {
         return toString(true) + " " + getClass().getSimpleName(); // + "#" + uid;
     }
@@ -890,7 +890,7 @@ public abstract class AnnotatedTypeMirror {
             }
         }
 
-        @Pure
+        @SideEffectFree
         @Override
         public String toString(boolean printInvisible) {
             StringBuilder sb = new StringBuilder();
@@ -1344,7 +1344,7 @@ public abstract class AnnotatedTypeMirror {
             return type;
         }
 
-        @Pure
+        @SideEffectFree
         @Override
         public String toString(boolean printInvisible) {
             StringBuilder sb = new StringBuilder();
@@ -1497,7 +1497,7 @@ public abstract class AnnotatedTypeMirror {
             return sb.toString();
         }
 
-        @Pure
+        @SideEffectFree
         @Override
         public String toString(boolean printInvisible) {
             return toStringAsCanonical(printInvisible);
@@ -1803,7 +1803,7 @@ public abstract class AnnotatedTypeMirror {
         // Style taken from Type
         boolean isPrintingBound = false;
 
-        @Pure
+        @SideEffectFree
         @Override
         public String toString(boolean printInvisible) {
             StringBuilder sb = new StringBuilder();
@@ -1933,7 +1933,7 @@ public abstract class AnnotatedTypeMirror {
             return getCopy(true);
         }
 
-        @Pure
+        @SideEffectFree
         @Override
         public String toString(boolean printInvisible) {
             if (printInvisible) {
@@ -2204,7 +2204,7 @@ public abstract class AnnotatedTypeMirror {
 
         boolean isPrintingBound = false;
 
-        @Pure
+        @SideEffectFree
         @Override
         public String toString(boolean printInvisible) {
             StringBuilder sb = new StringBuilder();
@@ -2255,7 +2255,7 @@ public abstract class AnnotatedTypeMirror {
             super(type, atypeFactory);
         }
 
-        @Pure
+        @SideEffectFree
         @Override
         public String toString(boolean printInvisible) {
             StringBuilder sb = new StringBuilder();
@@ -2350,7 +2350,7 @@ public abstract class AnnotatedTypeMirror {
             super(type, atypeFactory);
         }
 
-        @Pure
+        @SideEffectFree
         @Override
         public String toString(boolean printInvisible) {
             StringBuilder sb = new StringBuilder();
