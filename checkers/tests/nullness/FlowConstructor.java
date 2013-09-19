@@ -1,5 +1,6 @@
+import checkers.initialization.quals.UnderInitialization;
 import checkers.nullness.quals.*;
-// @skip-test
+
 public class FlowConstructor {
 
     String a;
@@ -30,7 +31,7 @@ public class FlowConstructor {
         b.toString();
     }
 
-    void semiRawMethod(@Raw(FlowConstructor.class) FlowConstructor this) {
+    void semiRawMethod(@Raw(FlowConstructor.class) @UnderInitialization(FlowConstructor.class) FlowConstructor this) {
         a.toString();
         b.toString();
     }
