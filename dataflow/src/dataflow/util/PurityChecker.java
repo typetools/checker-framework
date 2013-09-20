@@ -4,8 +4,10 @@ package dataflow.util;
 import checkers.compilermsgs.quals.CompilerMessageKey;
 */
 
-import dataflow.quals.Pure;
+import dataflow.quals.Deterministic;
 import dataflow.quals.Pure.Kind;
+import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
 
 import javacutils.AnnotationProvider;
 import javacutils.InternalUtils;
