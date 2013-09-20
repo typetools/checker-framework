@@ -6,6 +6,7 @@ import checkers.nullness.NullnessChecker;
 import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifier;
 import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
 
 /**
  * This annotation is deprecated.  {@link MonotonicNonNull} should be used
