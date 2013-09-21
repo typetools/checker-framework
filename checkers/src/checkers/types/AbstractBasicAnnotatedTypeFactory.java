@@ -26,6 +26,7 @@ import checkers.util.QualifierDefaults;
 import checkers.util.QualifierPolymorphism;
 
 import dataflow.analysis.AnalysisResult;
+import dataflow.analysis.TransferFunction;
 import dataflow.analysis.TransferInput;
 import dataflow.analysis.TransferResult;
 import dataflow.cfg.CFGBuilder;
@@ -511,7 +512,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
                         // analyze initializer if present
                         if (initializer != null) {
                             analyze(queue, new CFGStatement(vt),
-                                    fieldValues);
+                                    fieldValues, classTree, true, false);
                             Value value = flowResult.getValue(initializer);
                             if (value != null) {
                                 // Store the abstract value for the field.
@@ -531,7 +532,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
                         break;
                     case BLOCK:
                         BlockTree b = (BlockTree) m;
-                        analyze(queue, new CFGStatement(b), fieldValues);
+                        analyze(queue, new CFGStatement(b), fieldValues, ct, true, b.isStatic());
                         break;
                     default:
                         assert false : "Unexpected member: " + m.getKind();
@@ -545,7 +546,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
                 for (MethodTree mt : methods) {
                     analyze(queue,
                             new CFGMethod(mt, TreeUtils
-                                    .enclosingClass(getPath(mt))), fieldValues);
+                                    .enclosingClass(getPath(mt))), fieldValues, classTree, false, false);
                 }
             } finally {
                 visitorState.setClassType(preClassType);
@@ -560,6 +561,10 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
 
     // Maintain a deque of analyses to accomodate nested classes.
     Deque<FlowAnalysis> analyses = new LinkedList<>();
+    // Maintain for every class the store that is used when we analyze initialization code
+    IdentityHashMap<ClassTree, Store> initializationStores = new IdentityHashMap<>();
+    // Maintain for every class the store that is used when we analyze static initialization code
+    IdentityHashMap<ClassTree, Store> initializationStaticStores = new IdentityHashMap<>();
 
     /**
      * Analyze the AST {@code ast} and store the result.
@@ -570,9 +575,12 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
      *            The abstract values for all fields of the same class.
      * @param ast
      *            The AST to analyze.
+     * @param currentClass The class we are currently looking at.
+     * @param isInitializationCode Are we analyzing a (non-static) initializer block of a class.
      */
     protected void analyze(Queue<ClassTree> queue, UnderlyingAST ast,
-            List<Pair<VariableElement, Value>> fieldValues) {
+            List<Pair<VariableElement, Value>> fieldValues, ClassTree currentClass,
+            boolean isInitializationCode, boolean isStatic) {
         CFGBuilder builder = new CFCFGBuilder(checker, this);
         ControlFlowGraph cfg = builder.run(root, processingEnv, ast);
         FlowAnalysis newAnalysis = createFlowAnalysis(getChecker(), fieldValues);
@@ -580,6 +588,17 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
             emptyStore = newAnalysis.createEmptyStore(!checker.hasOption("concurrentSemantics"));
         }
         analyses.addFirst(newAnalysis);
+        IdentityHashMap<ClassTree, Store> initStoreMap = isStatic ? initializationStores : initializationStaticStores;
+        if (isInitializationCode) {
+            Store initStore = initStoreMap.get(currentClass);
+            if (initStore != null) {
+                // we have already seen initialization code and analyzed it, and
+                // the analysis ended with the store initStore.
+                // use it to start the next analysis.
+                TransferFunction transfer = newAnalysis.getTransferFunction();
+                transfer.setFixedInitialStore(initStore);
+            }
+        }
         analyses.getFirst().performAnalysis(cfg);
         AnalysisResult<Value, Store> result = analyses.getFirst().getResult();
 
@@ -601,6 +620,11 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
             if (regularExitStore != null) {
                 regularExitStores.put(block.getCode(), regularExitStore);
             }
+        }
+
+        if (isInitializationCode) {
+            Store newInitStore = analyses.getFirst().getRegularExitStore();
+            initStoreMap.put(currentClass, newInitStore);
         }
 
         if (checker.hasOption("flowdotdir")) {
