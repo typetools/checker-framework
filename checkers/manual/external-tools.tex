@@ -253,7 +253,7 @@ Set the \code{jsr308javac} property:
 \end{smaller}
 %END LATEX
 
-\item Duplicate the compilation target, then modify it slightly as
+\item \textbf{Duplicate} the compilation target, then \textbf{modify} it slightly as
 indicated in this example:
 
 %BEGIN LATEX
@@ -266,8 +266,9 @@ indicated in this example:
     <!-- use jsr308.javac instead of javac -->
     <jsr308.javac ... >
       <compilerarg line="-processor checkers.nullness.NullnessChecker"/>
-      <!-- optional, for implicit imports: <compilerarg value="-J-Djsr308_imports=checkers.nullness.quals.*"/> -->
+      <!-- optional, for implicit imports: <compilerarg value="-J-Djsr308_imports=checkers.nullness.quals.*:dataflow.quals.*"/> -->
       <!-- optional, to not check uses of library methods: <compilerarg value="-AskipUses=^(java\.awt\.|javax\.swing\.)"/> -->
+      <compilerarg line="-Xmaxerrs 10000"/>
       ...
     </jsr308.javac>
   </target>
