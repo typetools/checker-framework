@@ -3890,16 +3890,34 @@ public class CFGBuilder {
 
             // see JLS 14.4
 
-            // local variable definition
-            VariableDeclarationNode decl = new VariableDeclarationNode(tree);
-            extendWithNode(decl);
-
-            // initializer
+            boolean isField = TreeUtils.enclosingOfKind(getCurrentPath(), Kind.BLOCK) == null;
             Node node = null;
-            ExpressionTree initializer = tree.getInitializer();
-            if (initializer != null) {
-                node = translateAssignment(tree, new LocalVariableNode(tree),
+
+            if (isField) {
+                ClassTree enclosingClass = TreeUtils
+                        .enclosingClass(getCurrentPath());
+                TypeElement classElem = TreeUtils
+                        .elementFromDeclaration(enclosingClass);
+                Node receiver = new ImplicitThisLiteralNode(classElem.asType());
+                ExpressionTree initializer = tree.getInitializer();
+                assert initializer != null;
+                node = translateAssignment(
+                        tree,
+                        new FieldAccessNode(TreeUtils
+                                .elementFromDeclaration(tree), receiver),
                         initializer);
+            } else {
+                // local variable definition
+                VariableDeclarationNode decl = new VariableDeclarationNode(tree);
+                extendWithNode(decl);
+
+                // initializer
+
+                ExpressionTree initializer = tree.getInitializer();
+                if (initializer != null) {
+                    node = translateAssignment(tree, new LocalVariableNode(tree),
+                            initializer);
+                }
             }
 
             return node;
