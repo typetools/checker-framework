@@ -18,12 +18,12 @@ rebuilding the JDK; for example,
 To run an individual test (check one source code file), do something like:
 
   cd $CHECKERS/tests/nullness
-  (cd $CHECKERS && ant -e jar) && javac -processor checkers.nullness.NullnessChecker -Xbootclasspath/p:$CHECKERS/jdk/jdk.jar AssertNonNullTest.java
+  (cd $CHECKERS && ant -e jar) && javac -processor checkers.nullness.NullnessChecker -Xbootclasspath/p:$CHECKERS/jdk/jdk.jar -implicit:class AssertNonNullTest.java
 
 or
 
   cd $CHECKERS/tests/framework
-  (cd $CHECKERS && ant -e jar) && javac -processor tests.util.TestChecker -classpath $CHECKERS/tests/build -Xbootclasspath/p:$CHECKERS/jdk/jdk.jar GenericTest10.java
+  (cd $CHECKERS && ant -e jar) && javac -implicit:class -processor tests.util.TestChecker -classpath $CHECKERS/tests/build -Xbootclasspath/p:$CHECKERS/jdk/jdk.jar -implicit:class GenericTest10.java
 
 where the specific checker and command-line arguments are often clear from
 the directory name but can also be determined from
