@@ -43,6 +43,7 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.tree.JCTree;
@@ -147,38 +148,49 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
                 enclosingMethod = TreeUtils.enclosingMethod(path);
                 continue;
             }
-            ClassTree enclosingClass = TreeUtils.enclosingClass(path);
-            Type classType = ((JCTree) enclosingClass).type;
-            AnnotationMirror annotation = null;
 
-            // If all fields are committed-only, and they are all initialized,
-            // then it is save to switch to @UnderInitialization(CurrentClass).
-            if (areAllFieldsCommittedOnly(enclosingClass)) {
-                Store store = getStoreBefore(tree);
-                if (store != null) {
-                    List<AnnotationMirror> annos = Collections.emptyList();
-                    if (getUninitializedInvariantFields(store, path, false,
-                            annos).size() == 0) {
-                        if (useFbc) {
-                            annotation = checker.createFreeAnnotation(classType);
-                        } else {
-                            annotation = checker.createUnclassifiedAnnotation(classType);
-                        }
-                        selfType.replaceAnnotation(annotation);
-                    }
-                }
-            }
-
-            if (annotation == null) {
-                annotation = getFreeOrRawAnnotationOfSuperType(classType);
-            }
-            selfType.replaceAnnotation(annotation);
+            setSelfTypeInInitializationCode(tree, selfType, path);
             // Found a constructor -> done.
             // TODO: should we look whether this constructor is
             // enclosed within another constructor?
             break;
         }
+        // set the correct type for initializer blocks
+        ClassTree enclosingClass = TreeUtils.enclosingClass(path);
+        Tree enclosingBlock = TreeUtils.enclosingOfKind(path, Kind.BLOCK);
+        if (enclosingClass.getMembers().contains(enclosingBlock)) {
+            setSelfTypeInInitializationCode(tree, selfType, path);
+        }
         return selfType;
+    }
+
+    protected void setSelfTypeInInitializationCode(Tree tree,
+            AnnotatedDeclaredType selfType, TreePath path) {
+        ClassTree enclosingClass = TreeUtils.enclosingClass(path);
+        Type classType = ((JCTree) enclosingClass).type;
+        AnnotationMirror annotation = null;
+
+        // If all fields are committed-only, and they are all initialized,
+        // then it is save to switch to @UnderInitialization(CurrentClass).
+        if (areAllFieldsCommittedOnly(enclosingClass)) {
+            Store store = getStoreBefore(tree);
+            if (store != null) {
+                List<AnnotationMirror> annos = Collections.emptyList();
+                if (getUninitializedInvariantFields(store, path, false,
+                        annos).size() == 0) {
+                    if (useFbc) {
+                        annotation = checker.createFreeAnnotation(classType);
+                    } else {
+                        annotation = checker.createUnclassifiedAnnotation(classType);
+                    }
+                }
+            }
+        }
+
+        if (annotation == null) {
+            annotation = getFreeOrRawAnnotationOfSuperType(classType);
+        }
+        selfType.replaceAnnotation(annotation);
     }
 
     /**
