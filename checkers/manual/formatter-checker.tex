@@ -353,9 +353,10 @@ Case \ref{formatter-null-category-error}:
   It is legal to write a format string that permits only null arguments and
   throws an exception for any other argument.  An example is
   \code{String.format("\%1\$d \%1\$f", null)}. 
-  If you should ever run into this problem, simply replace the problematic
-  format specifier with \code{"null"}. In the example above, this would
-  result in \code{String.format("null null")}.
+  The Format String Checker forbids such a format string.
+  If you should ever need such a format string, simply replace the problematic
+  format specifier with \code{"null"}.  For example, you would replace the
+  call above by \code{String.format("null null")}.
 
 Case \ref{formatter-array-warning}:
   Array format arguments.
