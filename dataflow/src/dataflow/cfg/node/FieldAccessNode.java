@@ -28,6 +28,7 @@ import com.sun.source.tree.Tree;
 public class FieldAccessNode extends Node {
 
     protected Tree tree;
+    protected Element element;
     protected String field;
     protected Node receiver;
 
@@ -39,14 +40,25 @@ public class FieldAccessNode extends Node {
         this.tree = tree;
         this.receiver = receiver;
         this.field = TreeUtils.getFieldName(tree);
+
+        if (tree instanceof MemberSelectTree) {
+            this.element = TreeUtils.elementFromUse((MemberSelectTree) tree);
+        } else {
+            assert tree instanceof IdentifierTree;
+            this.element =  TreeUtils.elementFromUse((IdentifierTree) tree);
+        }
+    }
+
+    public FieldAccessNode(Element element, Node receiver) {
+        super(element.asType());
+        this.tree = null;
+        this.element = element;
+        this.receiver = receiver;
+        this.field = element.getSimpleName().toString();
     }
 
     public Element getElement() {
-        if (tree instanceof MemberSelectTree) {
-            return TreeUtils.elementFromUse((MemberSelectTree) tree);
-        }
-        assert tree instanceof IdentifierTree;
-        return TreeUtils.elementFromUse((IdentifierTree) tree);
+        return element;
     }
 
     public Node getReceiver() {
