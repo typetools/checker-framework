@@ -153,6 +153,10 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
         this.transferFunction = transfer;
     }
 
+    public T getTransferFunction() {
+        return transferFunction;
+    }
+
     public Types getTypes() {
         return types;
     }
