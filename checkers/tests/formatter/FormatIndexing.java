@@ -61,13 +61,13 @@ public class FormatIndexing {
         String icf = "%d %<c %<f";
         @Format({ConversionCategory.NULL})
         String itc = "%d %<TT %<c";
-        //:: error: (format.argument.null)
+        //:: error: (format.specifier.null)
         f.format(tf,null,0);
-        //:: warning: (format.indirect.arguments) :: error: (format.argument.null)
+        //:: warning: (format.indirect.arguments) :: error: (format.specifier.null)
         f.format(tf,(Object[])null);
-        //:: error: (format.argument.null)
+        //:: error: (format.specifier.null)
         f.format(tf,'c',0);
-        //:: error: (format.argument.null)
+        //:: error: (format.specifier.null)
         f.format(tf,(Object)null,0);
 
         // test UNUSED
@@ -84,7 +84,7 @@ public class FormatIndexing {
         f.close();
 
         // test UNUSED and NULL
-        //:: warning: (format.argument.unused) :: error: (format.argument.null)
+        //:: warning: (format.argument.unused) :: error: (format.specifier.null)
         f.format("%1$s %3$d %3$f","Hello","Missing","World");
     }
 }
