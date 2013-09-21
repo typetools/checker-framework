@@ -60,7 +60,7 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterChecker, Formatte
                                 break;
                             case NULL:
                                 // I.3
-                                tu.failure(param, "format.argument.null");
+                                tu.failure(param, "format.specifier.null");
                                 break;
                             case GENERAL:
                                 break;
@@ -81,7 +81,7 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterChecker, Formatte
                     for (ConversionCategory cat : formatCats) {
                         if (cat == ConversionCategory.NULL){
                             // I.3
-                            tu.failure(invc, "format.argument.null");
+                            tu.failure(invc, "format.specifier.null");
                         }
                         if (cat == ConversionCategory.UNUSED){
                             // I.2

@@ -199,6 +199,26 @@ public enum ConversionCategory {
     }
 
 
+    private String className(Class<?> cls) {
+        if (cls == Boolean.class)
+            return "boolean";
+        if (cls == Character.class)
+            return "char";
+        if (cls == Byte.class)
+            return "byte";
+        if (cls == Short.class)
+            return "short";
+        if (cls == Integer.class)
+            return "int";
+        if (cls == Long.class)
+            return "long";
+        if (cls == Float.class)
+            return "float";
+        if (cls == Double.class)
+            return "double";
+        return cls.getSimpleName();
+    }
+
     /**
      * Returns a pretty printed {@link ConversionCategory}.
      */
@@ -206,13 +226,13 @@ public enum ConversionCategory {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(this.name());
-        sb.append(" (");
+        sb.append(" conversion category (one of: ");
         boolean first = true;
         for (Class<? extends Object> cls : this.types) {
             if (!first) {
                 sb.append(", ");
             }
-            sb.append(cls.getSimpleName());
+            sb.append(className(cls));
             first = false;
         }
         sb.append(")");
