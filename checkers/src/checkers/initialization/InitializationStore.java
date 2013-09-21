@@ -16,6 +16,7 @@ import dataflow.cfg.node.MethodInvocationNode;
 import javacutils.AnnotationUtils;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -35,13 +36,13 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
         CFAbstractStore<V, S> {
 
     /** The list of fields that are initialized. */
-    protected final List<Element> initializedFields;
+    protected final Set<Element> initializedFields;
 
     public InitializationStore(
             CFAbstractAnalysis<V, S, ?> analysis,
             boolean sequentialSemantics) {
         super(analysis, sequentialSemantics);
-        initializedFields = new ArrayList<>();
+        initializedFields = new HashSet<>();
     }
 
     /**
@@ -110,7 +111,7 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
     /** A copy constructor. */
     public InitializationStore(S other) {
         super(other);
-        initializedFields = new ArrayList<>(other.initializedFields);
+        initializedFields = new HashSet<>(other.initializedFields);
     }
 
     /**
