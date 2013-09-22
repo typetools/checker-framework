@@ -18,8 +18,6 @@ import dataflow.cfg.node.ImplicitThisLiteralNode;
 import dataflow.cfg.node.LocalVariableNode;
 import dataflow.cfg.node.MethodInvocationNode;
 import dataflow.cfg.node.Node;
-import dataflow.util.PurityUtils;
-
 import javacutils.ElementUtils;
 import javacutils.InternalUtils;
 import javacutils.Resolver;
@@ -266,14 +264,14 @@ public class FlowExpressionParseUtil {
             } catch (Throwable t) {
                 throw constructParserException(s);
             }
-            // check that the method is pure
+            // check that the method is pure (this is no longer required)
             assert methodElement != null;
-            if (!PurityUtils.isDeterministic(context.atypeFactory,
+            /*if (!PurityUtils.isDeterministic(context.atypeFactory,
                     methodElement)) {
                 throw new FlowExpressionParseException(Result.failure(
                         "flowexpr.method.not.deterministic",
                         methodElement.getSimpleName()));
-            }
+            }*/
             if (ElementUtils.isStatic(methodElement)) {
                 Element classElem = methodElement.getEnclosingElement();
                 Receiver staticClassReceiver = new ClassName(
