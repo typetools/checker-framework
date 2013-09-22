@@ -486,6 +486,10 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
             visitorState.setMethodReceiver(null);
             visitorState.setMethodTree(null);
 
+            // start without a initialization store
+            initializationStaticStore = null;
+            initializationStore = null;
+
             try {
                 List<MethodTree> methods = new ArrayList<>();
                 for (Tree m : ct.getMembers()) {
@@ -562,9 +566,9 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
     // Maintain a deque of analyses to accomodate nested classes.
     Deque<FlowAnalysis> analyses = new LinkedList<>();
     // Maintain for every class the store that is used when we analyze initialization code
-    IdentityHashMap<ClassTree, Store> initializationStores = new IdentityHashMap<>();
+    Store initializationStore = null;
     // Maintain for every class the store that is used when we analyze static initialization code
-    IdentityHashMap<ClassTree, Store> initializationStaticStores = new IdentityHashMap<>();
+    Store initializationStaticStore = null;
 
     /**
      * Analyze the AST {@code ast} and store the result.
@@ -588,9 +592,8 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
             emptyStore = newAnalysis.createEmptyStore(!checker.hasOption("concurrentSemantics"));
         }
         analyses.addFirst(newAnalysis);
-        IdentityHashMap<ClassTree, Store> initStoreMap = isStatic ? initializationStores : initializationStaticStores;
+        Store initStore = isStatic ? initializationStore : initializationStaticStore;
         if (isInitializationCode) {
-            Store initStore = initStoreMap.get(currentClass);
             if (initStore != null) {
                 // we have already seen initialization code and analyzed it, and
                 // the analysis ended with the store initStore.
@@ -624,7 +627,11 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
 
         if (isInitializationCode) {
             Store newInitStore = analyses.getFirst().getRegularExitStore();
-            initStoreMap.put(currentClass, newInitStore);
+            if (isStatic) {
+                initializationStore = newInitStore;
+            } else {
+                initializationStaticStore = newInitStore;
+            }
         }
 
         if (checker.hasOption("flowdotdir")) {
