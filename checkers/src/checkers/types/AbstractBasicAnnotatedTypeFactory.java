@@ -26,7 +26,6 @@ import checkers.util.QualifierDefaults;
 import checkers.util.QualifierPolymorphism;
 
 import dataflow.analysis.AnalysisResult;
-import dataflow.analysis.TransferFunction;
 import dataflow.analysis.TransferInput;
 import dataflow.analysis.TransferResult;
 import dataflow.cfg.CFGBuilder;
