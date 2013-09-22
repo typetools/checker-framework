@@ -391,7 +391,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      */
     public /*@Nullable*/ V getValue(MethodInvocationNode n) {
         Receiver method = FlowExpressions.internalReprOf(analysis.getFactory(),
-                n);
+                n, true);
         if (method == null) {
             return null;
         }
