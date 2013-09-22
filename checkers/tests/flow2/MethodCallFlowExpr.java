@@ -58,11 +58,6 @@ class MethodCallFlowExpr {
         // don't bother with implementation
     }
     
-    @EnsuresQualifier(expression="nonpure()", qualifier=Odd.class)
-    //:: error: (flowexpr.method.not.deterministic)
-    void e3() {
-    }
-    
     @EnsuresQualifier(expression="p2(\"abc\", 2L, p1(1))", qualifier=Odd.class)
     //:: error: (contracts.postcondition.not.satisfied)
     void e4() {
