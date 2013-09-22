@@ -1,5 +1,3 @@
-// @skip-test fails, but commented out to avoid breaking the build
-
 public abstract class RawInt2 {
 
   public void compare(MyVarInfo vi1, MyVarInfo vi2) {
