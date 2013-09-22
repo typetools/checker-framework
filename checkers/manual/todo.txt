@@ -92,6 +92,15 @@ Explanations on what flow expressions are supported (i.e. strings in pre/postcon
 
 ------------------------------------------------------
 
+Side-effecting methods in specifications
+
+We allowing non-pure methods in specifications.  This is non-standard.  If
+a specification is going to be checked at run time via assertions, then the
+specification must not use methods with side effects.  But, our checking is
+at compile time, so the semantics are clear and we allow it.
+
+------------------------------------------------------
+
 Eclipse setup
 -------------
 Describe checker-framework.importorder and formatter.
