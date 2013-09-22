@@ -158,7 +158,7 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
         // set the correct type for initializer blocks
         ClassTree enclosingClass = TreeUtils.enclosingClass(path);
         Tree enclosingBlock = TreeUtils.enclosingOfKind(path, Kind.BLOCK);
-        if (enclosingClass.getMembers().contains(enclosingBlock)) {
+        if (enclosingBlock != null && enclosingClass.getMembers().contains(enclosingBlock)) {
             setSelfTypeInInitializationCode(tree, selfType, path);
         }
         return selfType;
