@@ -577,9 +577,7 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
         } catch (CheckerError ce) {
             logCheckerError(ce);
         } catch (Throwable t) {
-            logCheckerError(new CheckerError("SourceChecker.init: unexpected Throwable (of class " +
-                    t.getClass().getSimpleName() + ")" +
-                    (t.getMessage() != null ? "; message: " + t.getMessage() : ""), t));
+            logCheckerError(wrapThrowableAsCheckerError(t, null));
         }
     }
 
@@ -683,14 +681,21 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
         } catch (CheckerError ce) {
             logCheckerError(ce);
         } catch (Throwable t) {
-            logCheckerError(new CheckerError("SourceChecker.typeProcess: unexpected Throwable (" +
-                    t.getClass().getSimpleName() + ")" +
-                    (t.getMessage() != null ? "; message: " + t.getMessage() : ""), t));
+            logCheckerError(wrapThrowableAsCheckerError(t, p));
         } finally {
             // Also add possibly deferred diagnostics, which will get published back in
             // AbstractTypeProcessor.
             this.errsOnLastExit = log.nerrors;
         }
+    }
+
+    private CheckerError wrapThrowableAsCheckerError(Throwable t, /*@Nullable*/ TreePath p) {
+        return new CheckerError(
+           "SourceChecker.typeProcess: unexpected Throwable (" +
+           t.getClass().getSimpleName() + ")" +
+           ((p == null) ? "" : " while processing " + p.getCompilationUnit().getSourceFile().getName()) +
+           (t.getMessage() == null ? "" : "; message: " + t.getMessage()),
+           t);
     }
 
     /**
