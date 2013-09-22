@@ -82,6 +82,18 @@ public class FlowExpressions {
      */
     public static Receiver internalReprOf(AnnotationProvider provider,
             Node receiverNode) {
+        return internalReprOf(provider, receiverNode, false);
+    }
+
+    /**
+     * We ignore operations such as widening and
+     * narrowing when computing the internal representation.
+     *
+     * @return The internal representation (as {@link Receiver}) of any
+     *         {@link Node}. Might contain {@link Unknown}.
+     */
+    public static Receiver internalReprOf(AnnotationProvider provider,
+            Node receiverNode, boolean allowNonDeterminitic) {
         Receiver receiver = null;
         if (receiverNode instanceof FieldAccessNode) {
             receiver = internalReprOfFieldAccess(provider,
@@ -133,7 +145,7 @@ public class FlowExpressions {
                 return internalReprOf(provider, mn.getArgument(0));
             }
 
-            if (PurityUtils.isDeterministic(provider, invokedMethod)) {
+            if (PurityUtils.isDeterministic(provider, invokedMethod) || allowNonDeterminitic) {
                 List<Receiver> parameters = new ArrayList<>();
                 for (Node p : mn.getArguments()) {
                     parameters.add(internalReprOf(provider, p));
@@ -552,7 +564,11 @@ public class FlowExpressions {
     }
 
     /**
-     * A deterministic method call.
+     * A method call, typically a deterministic one. However, this is not
+     * enforced and non-pure methods are also possible. It is the clients
+     * responsibility to ensure that using non-deterministic methods is done in
+     * a sound way.  The CF allows non-deterministic methods to be used in
+     * postconditions such as EnsuresNonNull.
      */
     public static class PureMethodCall extends Receiver {
 
