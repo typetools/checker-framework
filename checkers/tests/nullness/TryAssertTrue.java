@@ -2,12 +2,10 @@
 
 public class TryAssertTrue {
 
-    static int foo() { return 0; }
-
     static {
-        long vmStartTime = 0;
+        long x = 0;
         try {
-            vmStartTime = foo();
+            x = 0;
         } catch (Throwable e) {
             assert true;
         }
