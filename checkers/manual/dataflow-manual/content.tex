@@ -266,7 +266,7 @@ The TransferInput represents the set of dataflow facts known to be true immediat
         S extends InitializationStore<V, S>>
     extends CFAbstractTransfer<V, S, T>}
 
-    The Regex checker's transfer function overrides visitMethodInvocation to special case isRegex and asRegex methods.
+    The Regex Checker's transfer function overrides visitMethodInvocation to special case isRegex and asRegex methods.
 
     \code{class checkers.regex.RegexTransfer
     extends CFAbstractTransfer<CFValue, CFStore, RegexTransfer>}
@@ -655,7 +655,7 @@ the original program.
 
 \begin{workinprogress}
 I think it might be helpful to indicate which nodes can possibly throw an
-exception.  This could be done by segretating them to a different part of
+exception.  This could be done by segregating them to a different part of
 the table, or by having another column or an asterisk.
 \end{workinprogress}
 
@@ -719,7 +719,7 @@ calling \code{TransferInput.getRegularStore}.
 
 \subsubsection{Branches}
 
-The control flow graph represents all non-exceptional control-flow splits, or branches, as \code{ConditionalBlocks} that contain no nodes.  If there is one store flowing into a conditional block, then it is duplicated to both successors.  If there are two stores flowing into a conditional block, the then store is propagated to the block's true successor and the else store is propagated to the block's false successor.
+The control flow graph represents all non-exceptional control-flow splits, or branches, as \code{ConditionalBlock}s that contain no nodes.  If there is one store flowing into a conditional block, then it is duplicated to both successors.  If there are two stores flowing into a conditional block, the then store is propagated to the block's true successor and the else store is propagated to the block's false successor.
 
 A key point is that while we \emph{produce} multiple stores after several kinds of boolean-valued expressions, we can only \emph{use} them after a conditional block has split them apart, making them the unique store at some program point.  This constraint dictates how we build the CFG for conditional and and or nodes, as described in \autoref{sec:cond-exp}.  We split the control-flow immediately after computing the value of the left operand and we do not merge it until after the operations of the then or else successor.
 
@@ -861,7 +861,7 @@ block, or both?
 
 \begin{workinprogress}
 I find it useful to never name phases ``one'', ``two'', ``three'', but
-always to give them Inglish names.  This makes the meaning clearer to
+always to give them English names.  This makes the meaning clearer to
 readers --- often because it forces the writer to think harder about the
 meaning of each.  It can still be useful to number the phases even after
 they have more mnemonic names.
@@ -1006,52 +1006,68 @@ CFG\@.
 (For our initial application, type-checking, we do not need to support
 backwards analyses; in the future, we may wish to do so.)
  These transfer functions are specific to the particular analysis and are used
-to approximate the runtime-behavior of different statements and expressions.
+to approximate the runtime behavior of different statements and expressions.
 
-An analysis maintains dataflow information in two forms.  First, for every node that can take on an abstract value, there is a mapping (\code{Analysis.nodeValues}) from node to abstract value.  For example, in the Checker Framework, the mapping is from expression nodes to annotated types.  Second, for every flow expression, there is a data structure called a \emph{store} that tracks the abstract value of the flow expression at specified program points.  An analysis keeps explicit stores for the start of each basic block (\code{Analysis.stores}) and computes the store for other program points on the fly.
+An analysis result contains two parts:
+
+\begin{enumerate}
+\item
+  A node-value mapping (\code{Analysis.nodeValues}) from node to abstract value.
+  Only nodes that can take on an abstract value are used as keys.
+  For example,
+  in the Checker Framework, the mapping is from expression nodes to
+  annotated types.
+
+\item
+  A set of \emph{stores}.  Each store maps a flow expression to an abstract
+  value.  Each store is associated with a specific program point.
+  The framework keeps explicit
+  stores for the start of each basic block (\code{Analysis.stores}) and
+  computes the store for other program points on the fly.
+\end{enumerate}
+
+\begin{workinprogress}
+There needs to be a definition of ``program point''.
+\end{workinprogress}
+
 
 After an analysis has iterated to a fix-point, the computed dataflow information is maintained in an AnalysisResult, which can map either nodes or trees to abstract values.
 
 
-\subsection{Concurrency}
-
-The dataflow framework can operate under the assumption that the code is only
-executed sequentially, or work in the general setting where concurrency is allowed.
-The difference between these two modes is the treatment of fields:  In the
-presence of concurrency, the dataflow analysis can in general not infer any type information
-of field based on local information.  Another thread might have already changed the value
-of that field before the next use, potentially changing its type.
-
-The command line option to enable concurrent semantics is -AconcurrentSemantics.  The default is to use sequential semantics and the option takes effect at the point that an AbstractBasicAnnotatedTypeFactory creates a new empty store.
-
-An exception to this are monotonic type properties, such as the \code{@MonotonicNonNull} annotation
-of the non-null type system.  There is now a meta-annotation \code{@MonotonicQualifier} that
-allows one to declare that a qualifier behaves monotonically, however it is not yet used to
-preserve dataflow information about fields under concurrent semantics.
 
 
 \subsection{Managing Intermediate Results of the Analysis}
 \label{sec:node-mapping}
 \label{sec:store-management}
 
+\begin{workinprogress}
+This feels repetitive with the previous one.  Combine them in whole
+  or in part?
+\end{workinprogress}
+
 Conceptually, the dataflow analysis computes an abstract value for every node and flow expression\footnote{Certain
 dataflow analysis might choose not to produce an abstract value for every node.  For instance,
 a constant propagation analysis would only be concerned with nodes of a numerical type, and
 ignore other nodes.}.
-The transfer function (described in more detail in \autoref{sec:transfer-fnc}) produces these abstract
-values based on the abstract values computed earlier for sub-nodes.
-For instance, in a constant propagation analysis, the transfer function of addition would look at
+The transfer function (\autoref{sec:transfer-fnc}) produces these abstract
+values, taking as input the abstract values computed earlier for sub-expressions.
+For instance, in a constant propagation analysis, the transfer function for
+addition (\code{+}) would look at
 the abstract values for the left and right operand, and determine that the \code{AdditionNode}
 is a constant if and only if both operands are constant.
 
-The dataflow framework manages these abstract values that have been computed for nodes and
-makes them available to the transfer function.  To this end, a mapping called the
-\emph{node-value mapping} is used that maps \code{Node}s to their abstract values.
-The design of the framework consciously avoids storing the abstract value directly in
-nodes to remove any coupling between the control-flow graph and a particular analysis.
+There are two parts to the analysis result.
+
+\begin{enumerate}
+\item
+The
+\emph{node-value mapping} maps \code{Node}s to their abstract values.
+The framework consciously does not store the abstract value directly in
+the node, to remove any coupling between the control-flow graph and a particular analysis.
 This allows the control-flow graph to be constructed only once, and then reused for different
 dataflow analyses.
 
+\item
 The stores tracked by an analysis implement the \code{Store} interface, which defines the
 following operations:
 \begin{itemize}
@@ -1060,16 +1076,27 @@ in the control-flow graph).
 \item Equivalence: Compare two stores if they are (semantically) different, which is used
 to determine if a fix-point is reached in the dataflow analysis. Note that reference-equality
 is most likely not sufficient.
-\item Copy mechanism: Clone stores to get an exact copy.
+\item Copy mechanism: Clone a store to get an exact copy.
 \end{itemize}
 The store is analysis-dependent, but the framework provides a default store implementation
 which can be reused.
+
+\begin{workinprogress}
+Does that mean each store instance is analysis-dependent, or each store
+implementation is analysis-dependent?
+What is the name of the default store implementation?
+Is it required for an analysis implementor to to re-implement/extend the
+default stare implementation?  Under what circumstances would one want to
+or not want to?
+\end{workinprogress}
+
 
 Every store is associated with a particular point in the control-flow graph, and
 all stores are managed by the framework. It maintains
 a single store for every basic block that represents the information available at the
 beginning of that block.  When dataflow information is requested for a later point in a block, the analysis applies the transfer function to compute it from the initial store.
 
+\end{enumerate}
 
 
 \subsection{Answering Questions}
@@ -1082,8 +1109,10 @@ Two kinds of queries are possible to the dataflow analysis after the analysis is
 \begin{enumerate}
     \item For a given AST tree node, what is its abstract value?  Both pre- and postconversion
     values can be retrieved.
-    \item For a given AST tree node, it is possible to ask an analysis-specific question
-    about the state right after this AST tree node. For instance, examples of questions
+\begin{workinprogress}
+Cross-reference to where more explanation of conversions can be found.
+\end{workinprogress}
+    \item For a given AST tree node, what is the state right after this AST tree node?  Examples of questions
     include:
     \begin{itemize}
         \item Which locks are currently held?
@@ -1099,17 +1128,38 @@ implementation.
 The store may first need to be computed, as the framework does not store all intermediate
 stores but rather only those for key positions as described in \autoref{sec:store-management}.
 
+\begin{workinprogress}
+``can implement'':  How?  by defining new methods?  By overriding existing
+methods?
+\end{workinprogress}
+
 To support both kinds of queries, our framework builds a map from AST tree nodes (of type
 \code{com.sun.source.tree.Tree}) to CFG nodes.  To answer questions of the first type it is
 then possible to go from the AST tree node to the CFG node and look up its abstract value in
 the node-value mapping.  By default, the abstract value returned for a tree by \code{Analysis.getValue(Tree)} includes any implicit conversions because it uses the mapping
 from tree node to post-conversion CFG node.  To request the pre-conversion value, one currently uses the \code{ControlFlowGraph.treelookup} map directly.
 
+\begin{workinprogress}
+  ``it is then possible'':  is this an explanation of what the framework
+  does for the analysis programmer, or what the analysis programmer has to
+  implement?  Please clarify this distinction throughout the document.  A
+  way to fix some of the problematic places is to eliminate all uses of
+  passive voice and first person.  Doing so will force you to explicitly
+  identify the actor, which will clarify the document.
+\end{workinprogress}
+
 To support questions of the second kind, every node has a reference
 to the basic block it is part of. Thus, for a given AST tree node, the framework
 can determine the CFG node and thereby the CFG basic block, and compute the necessary store
 to answer the question.
 
+\begin{workinprogress}
+I have similar questions to those above.  ``the framework can'':
+\emph{does} it?  Is this an implementation detail provided for the
+enrichment of people who implement/maintain the dataflow framework, or is
+it important to analysis writers as well?  If you can clarify that distinction
+throughout the document, the document will be easier to read.
+\end{workinprogress}
 
 
 \subsection{Transfer Function}
@@ -1117,8 +1167,14 @@ to answer the question.
 
 A transfer function has to provide the following:
 \begin{itemize}
-\item A method that returns the initial store to be used by the dataflow analysis, given
-the list of arguments (as \code{LocalVariableNode}'s) and the \code{MethodTree} (not expected to be used often).
+\item A method that returns the initial store for a method, given
+the list of arguments (as \code{LocalVariableNode}s)
+and the \code{MethodTree} (not expected to be used often).
+
+\begin{workinprogress}
+When would the \code{MethodTree} be used?
+\end{workinprogress}
+
 \item A transfer method for every \code{Node} type that takes a store, the node and produces
 an updated store. This is achieved by implementing the \code{NodeVisitor<S, S>} interface
 for the store type \code{S}.
@@ -1126,7 +1182,37 @@ for the store type \code{S}.
 These transfer methods also get access to the abstract value of any sub-node of the node \code n
 under consideration.  This is not limited to immediate children, but the abstract value for any node contained
 in \code n can be queried.
+
+\begin{workinprogress}
+Please define ``sub-node'' or use a different term.  I think you mean every
+child in the AST --- is that correct?
+\end{workinprogress}
+
 \end{itemize}
+
+
+\subsection{Concurrency}
+
+By default, the dataflow framework analyzes the code as if it is 
+executed sequentially.
+This is unsound if the code is run concurrently.  Use the
+\code{-AconcurrentSemantics} 
+command-line option to enable concurrent semantics.
+
+\begin{workinprogress}
+I don't understand what a reader should take away from this sentence:
+``the option takes effect at the point that an
+AbstractBasicAnnotatedTypeFactory creates a new empty store.''
+What are the consequences, or how does this affect the reader?
+\end{workinprogress}
+
+In the concurrent mode, the dataflow analysis cannot not infer any local
+information for fields.  This is because after a local update, another
+thread might change the field's value before the next use.
+
+An exception to this are monotonic type properties, such as the \code{@MonotonicNonNull} annotation
+of the nullness type system.  The meta-annotation \code{@MonotonicQualifier} declares that a qualifier behaves monotonically, however it is not yet used to
+preserve dataflow information about fields under concurrent semantics.
 
 
 \section{Example: Constant Propagation}
@@ -1140,22 +1226,28 @@ in \code n can be queried.
     either be \emph{top} (more than one integer value seen), \emph{bottom} (no value seen yet),
     or \emph{constant} (exactly one value seen; in which case the value is also stored).
     
-    \textbf{The store.} The store for the constant propagation analysis maps \code{Node}'s to \code{Constant},
-    where only \code{LocalVariableNode}'s and \code{IntegerLiteralNode}'s are actually stored. Only those
+    \textbf{The store.} The store maps \code{Node}s to \code{Constant},
+    where only \code{LocalVariableNode}s and \code{IntegerLiteralNode}s are
+    used as keys.  Only those
     two nodes actually are of interest (there is no addition/multiplication/etc. yet, and other constructs like
-    fields are not supported by the analysis).
+    fields are not yet supported by the analysis).
     
-    Two different instances of \code{LocalVariableNode} can refer to the same local variable, and thus
+    Two different instances of \code{LocalVariableNode} can be uses of the same local variable, and thus
     the \code{equals} method has been implemented accordingly. Therefore, every local variable occurs
-    at most once in the store, even if multiple \code{LocalVariableNode} for it exist.
+    at most once in the store, even if multiple (equal) \code{LocalVariableNode}s for it exist.
     
     \textbf{The transfer function.} The transfer function is very simple. The initial store contains
-    \emph{top} for all parameters, as any value could have been passed in. Then, for
-    an integer literal, the store is extended to indicate what abstract value this literal
-    stands for. Furthermore, for an assignment, I check if the left-hand side is
-    a local variable, and if so update its abstract value in the
+    \emph{top} for all parameters, as any value could have been passed in.  When 
+    an integer literal is encountered, the store is extended to indicate what abstract value this literal
+    stands for. Furthermore, for an assignment, if the left-hand side is
+    a local variable, the transfer function updates its abstract value in the
     store with the abstract value of the right-hand side (which can be looked up in the store).
     
+\begin{workinprogress}
+``to indicate'':  you gave the value in the mapping, but you didn't say the
+key that maps to it.
+\end{workinprogress}
+
     To illustrate how we can have different information in the then and else block of a conditional,
     I also implemented another transfer function that considers the \code{EqualToNode}, and if
     it is of the form \code{a == e} for a local variable \code{a} and constant \code{e}, passes
@@ -1169,6 +1261,10 @@ in \code n can be queried.
 
 \section{Default Analysis}
 
+\begin{workinprogress}
+I feel like there is a missing cross-reference or two to this section.
+\end{workinprogress}
+
 \subsection{Overview}
 
 The default flow-sensitive analysis \code{checkers.flow.CFAnalysis} works for the qualifier hierarchy of any checker defined in 
@@ -1176,6 +1272,11 @@ the Checker Framework.  This generality is both a strength and a weakness becaus
 default analysis can
 always run but the facts it can deduce are limited.  The default analysis
 will be extensible so checkers can add logic specific to their own qualifiers.
+
+\begin{workinprogress}
+``will be'':  is this a future extension to the dataflow framework that you
+plan to implement, but not one that analysis writers can take advantage of yet?
+\end{workinprogress}
 
 The default flow-sensitive analysis takes advantage of several forms of control-flow to improve the precision of type qualifiers.  It tracks assignments to flow expressions, propagating type qualifiers from the right-hand side of the assignment.  It considers equality and inequality tests to propagate the most precise qualifiers from the left or right-hand side to the true (resp. false) successor.  It also applies type qualifiers from method postconditions after calls.
 
@@ -1186,20 +1287,30 @@ The default flow-sensitive analysis takes advantage of several forms of control-
 
 The \code{AnnotatedTypeFactory} of a checker already implements how different annotations
 need to be combined to determine the type of a larger expression.  For instance,
-the regex checker can determine that the string concatenation of two regular expression
-string (\code{@Regex}) are again a regular expression.
+the Regex Checker can determine that the string concatenation of two regular expression
+string (\code{@Regex}) is itself a regular expression.
+
+\begin{workinprogress}
+I found the below section confusing.  I had a hard time putting my finger
+on it, but perhaps you could re-read the section.  As one minor issue,
+``very similar'':  similar to what?  ``intermediary nodes'':  what are
+those?  ``we'':  is that the analysis writer or the framework implementor
+(or the runtime system)?
+\end{workinprogress}
 
 The dataflow analysis will have to perform very similar operations for the transfer function
 for intermediary nodes.  To reuse the code in the \code{AnnotatedTypeFactory}, we
 use the following default implementation for all transfer methods, and let
 the dataflow framework interact with the factory in the following way.
-For a given node \code{n}, perform the following steps:
-\begin{enumerate}
-    \item Check whether the node has a corresponding AST tree node. If not, no information is
-    available and ``top'' has to be used as abstract value.
-    \item Otherwise, use this AST tree node and ask the \code{AnnotatedTypeFactory} about
+
+For a given node \code{n}
+\begin{itemize}
+\item
+    If it has no corresponding AST tree node, use ``top'' as its abstract value.
+\item
+    If it has a corresponding AST tree node, ask the \code{AnnotatedTypeFactory} about
     the type of the tree node.  The factory will then use its checker-dependent logic
-    to compute this type.  Typical implementations will look at the type
+    to compute this type.  A typical implementation will look at the type
     of sub-trees and compute the overall type based on the information about these sub-trees.
     
     Note that the factory recursively uses information provided by the flow analysis to determine
@@ -1207,7 +1318,13 @@ For a given node \code{n}, perform the following steps:
     is being requested is a sub-node of the node to which the transfer function is currently being
     applied.  For other nodes, the analysis will return a null abstract value and the factory will
     return the flow-insensitive annotated type.
-\end{enumerate}
+
+\begin{workinprogress}
+What is ``a null abstract value''?  Is it \code{null} or something else?
+How is it related to top, bottom, and other abstract values?
+\end{workinprogress}
+
+\end{itemize}
 
 
 
@@ -1226,6 +1343,10 @@ This implementation of a store tracks the following information:
 	\item Local variable.
 	\item Self reference (i.e., \code{this}).
 	\item Pure method call.
+\begin{workinprogress}
+Are non-pure method calls now allowed?  That might require changes in a few
+other places too.
+\end{workinprogress}
 	\end{itemize}
 \end{itemize}
 
@@ -1234,42 +1355,50 @@ field accesses is kept up to date in the face of incomplete aliasing
 information.  In particular, at method calls and assignments care needs to be
 taken about which information is still valid afterwards.
 
-\subsubsection{Internal Representation}
+\begin{workinprogress}
+Method call information is discarded if not deterministic, I presume.
+\end{workinprogress}
+
+The store maintains a mapping from field accesses (as defined in Section~\ref{sec:field-access}) to
+abstract values, and the subsequent sections describe the operations that
+keep this mapping up-to-date.
+
+
+\subsubsection{Internal Representation of field access}
+\label{sec:field-access}
+
+\begin{workinprogress}
+Please avoid first person (``we''), which is confusing since the document
+sometimes uses it to refer to the framework implementer and sometimes to
+refer to the analysis implementer.
+\end{workinprogress}
+
 
 To keep track of the abstract values of fields, we use our own representation
+of field accesses
 (that is different from the \code{Node} type introduced earlier).  This
 data type is defined inductively as follows:
 
 \begin{bnfgrammar}
     \production{\nonterminal{FieldAccess}}
-        {\nonterminal{Receiver} \nonterminal{Field}}
+        {\nonterminal{Receiver} \nonterminal{Field} \qquad Java field (identified by its \code{Element})}
     \production{\nonterminal{Receiver}}
-        {\nonterminal{SelfReference}}
-    \altline{\nonterminal{LocalVariable}}
+        {\nonterminal{SelfReference} \qquad \code{this}}
+    \altline{\nonterminal{LocalVariable} \qquad local variable (identified by its \code{Element})}
     \altline{\nonterminal{FieldAccess}}
-    \altline{\nonterminal{PureMethodCall}}
-    \altline{\nonterminal{Unknown}}
+    \altline{\nonterminal{PureMethodCall} \qquad Java method call of a \textit{pure} method}
+    \altline{\nonterminal{Unknown} \qquad any other Java expression}
     \production{\nonterminal{PureMethodCall}}
         {\nonterminal{Receiver} \literal{.} \nonterminal{Method}
             \literal{(} \nonterminal{Receiver}$^{,*}$ \literal{)}}
 \end{bnfgrammar}
 
-where \nonterminal{Field} is a Java field (identified by its \code{Element}),
-\nonterminal{SelfReference} is the self reference in Java (i.e., \code{this})
-and \nonterminal{LocalVariable} is used to refer to local variables (again
-identified by their \code{Element}).
-\nonterminal{PureMethodCall} is a Java method call of a \textit{pure} method
-(as defined in the Checker Framework), with a receiver and zero or more
-arguments.  Finally, \nonterminal{Unknown} is used to represent any other
-Java expressions that might appear.  It is only used to determine which
+\nonterminal{Unknown} is only used to determine which
 information needs to be removed (e.g., after an assignment), but no field
 access that contains \nonterminal{Unknown} is stored in the mapping to
 abstract values.  For instance, \nonterminal{Unknown} could stand for
-a non-pure method call, an array access or a ternary expression.
+a non-pure method call, an array access, or a ternary expression.
 
-The store maintains a mapping from field accesses (as defined above) to
-abstract values, and in the following we describe the operations that
-keep this mapping up-to-date.
 
 \subsubsection{Updating Information in the Store}
 
@@ -1277,59 +1406,56 @@ keep this mapping up-to-date.
 
 In the following, let $o$ be any \nonterminal{Receiver},
 $x$ a local variable, $f$ a
-field and $m$ a pure method.  Furthermore, we assume to have access to
+field, $m$ a pure method, and $e$ an expression.  Furthermore, we assume to have access to
 a predicate $\alias(o_1,o_2)$ that returns true if and only
-if~$o_1$ might alias~$o_2$.
+if~$o_1$ might alias~$o_2$; see Section~\ref{sec:alias}.
 
 \subsubsubsection{At Field Assignments}
 
-For a field update of the form $o_1.f_1 = e$ for some expression $e$, the
+For a field update of the form $o_1.f_1 = e$, the
 dataflow analysis first determines the abstract value $e_\text{val}$ for $e$.
-Then, the following steps need to be taken in order to correctly update
-the information in the store.
+Then, it updates the store $S$ as follows.
 \begin{enumerate}
-    \item For every field access $o_2.f_2$, remove its information if
-    the two field $f_1$ and $f_2$ are the same, and either of the following
-    conditions holds:
-    \begin{itemize}
-        \item $o_1$ and $o_2$ are (syntactically) the same.  In this case, the
-        new abstract value will be added in the second step.
-        \item $o_2$ contains a \nonterminal{Receiver} that \emph{might}
+    \item For every field access $o_2.f_2$ that is a key in $S$, remove its
+      information $f_1 = f_2$ and 
+      $o_2$ lexically contains a \nonterminal{Receiver} that \emph{might}
         alias $o_1.f$ as determined by the $\alias$
-        predicate (this includes the case where $o_2$ and $o_1.f$ might be
-        aliases).  Note that the ``contains'' notion for pure method calls
+        predicate.
+      Note that the `` lexically contains'' notion for pure method calls
         includes both the receiver as well as the arguments.
-    \end{itemize}
-    \item Add the fact that $o_1.f$ now has the abstract value $e_\text{val}$
-    to the mapping.
+
+      This includes the case where $o_1 = o_2$ (that is, the are
+      syntactically the same) and the case where  $o_2$ and $o_1.f$ might be
+      aliases.
+
+    \item $S[o_1.f] = e_\text{val}$
 \end{enumerate}
 
 
 \subsubsubsection{At Local Variable Assignments}
 
-For a local variable assignment of the form $x = e$ for some expression $e$,
+For a local variable assignment of the form $x = e$,
 the dataflow analysis first determines the abstract value $e_\text{val}$ for
-$e$. Then, the following steps need to be taken in order to correctly update
-the information in the store.
+$e$.
+Then, it updates the store $S$ as follows.
 \begin{enumerate}
-    \item For every field access $o_2.f_2$, remove its information if
-    $o_2$ contains a \nonterminal{Receiver} that \emph{might}
+    \item For every field access $o_2.f_2$ that is a key in $S$, remove its information if
+    $o_2$ lexically contains a \nonterminal{Receiver} that \emph{might}
     alias $x$ as determined by the $\alias$
     predicate.
-    \item Add the fact that $x$ now has the abstract value $e_\text{val}$
-    to the mapping for local variables.
+    \item $S[x] = e_\text{val}$
 \end{enumerate}
 
 \subsubsubsection{At Other Assignments}
 
-For any other assignment of the for $z = e$ for some expression $e$ and some
-assignment target $z$ (which is not a field or local variable),
+For any other assignment $z = e$ where the
+assignment target $z$ is not a field or local variable,
 the dataflow analysis first determines the abstract value $e_\text{val}$ for
-$e$. Then, the following steps need to be taken in order to correctly update
-the information in the store.
+$e$.
+Then, it updates the store $S$ as follows.
 \begin{enumerate}
     \item For every field access $o_2.f_2$, remove its information if
-    $o_2$ contains a \nonterminal{Receiver} that \emph{might}
+    $o_2$ lexically contains a \nonterminal{Receiver} that \emph{might}
     alias $z$ as determined by the $\alias$ predicate.
 \end{enumerate}
 
@@ -1341,6 +1467,7 @@ Therefore, at a method call, any information about fields is lost.
 
 
 \subsubsubsection{Alias Information}
+\label{sec:alias}
 
 The Checker Framework does not include an aliasing analysis, which could
 provide precise aliasing information.  For this reason, we implement the
@@ -1358,3 +1485,47 @@ and $<:$ denotes standard Java subtyping.
 %%% TeX-master: "dataflow"
 %%% TeX-command-default: "PDF"
 %%% End: 
+
+%  LocalWords:  pre cfg javacutils InternalUtils DivideByZero BlockImpl se
+%  LocalWords:  SingleSuccessorBlock RegularBlock SingleSuccessorBlockImpl
+%  LocalWords:  ExceptionBlock SpecialBlock ConditionalBlock SpecialBlocks
+%  LocalWords:  ControlFlowGraph ControlFlowGraphs CFGBuilder ast CFValue
+%  LocalWords:  FlowExpressions AbstractValue AbstractValues PolyNull Poly
+%  LocalWords:  AnnotatedTypeMirrors CFAbstractValue NullnessValue CFStore
+%  LocalWords:  NullnessCheckers CFAbstractStore InitializationStore Regex
+%  LocalWords:  NullnessStore TransferInput TransferResult TransferInputs
+%  LocalWords:  ConditionalTransferResult RegularTransferResult CFTransfer
+%  LocalWords:  TransferFunction NodeVisitor TransferResults isRegex lst
+%  LocalWords:  CFAbstractTransfer AbstractNodeVisitor asRegex ClassTree
+%  LocalWords:  InitializationTransfer visitMethodInvocation RegexTransfer
+%  LocalWords:  CFAbstractAnalysis NullnessTransfer RegexChecker's lp 'c'
+%  LocalWords:  AnalysisResult AnnotatedTypeFactory AnnotatedTypeFactorys
+%  LocalWords:  AnnotationProvider getAnnotatedType BaseTypeChecker 414f
+%  LocalWords:  AbstractBasicAnnotatedTypeFactory FlowAnalysis CFAnalysis
+%  LocalWords:  BasicAnnotatedTypeFactory CFGSimple ValueLiteral 1024L txt
+%  LocalWords:  BooleanLiteral CharacterLiteral DoubleLiteral FloatLiteral
+%  LocalWords:  IntegerLiteral LongLiteral NullLiteral ShortLiteral args
+%  LocalWords:  StringLiteral Accessor ArrayAccess FieldAccess ThisLiteral
+%  LocalWords:  MethodAccess ExplicitThisLiteral ImplicitThisLiteral java
+%  LocalWords:  LocalVariable MethodInvocation BitwiseAnd BitwiseOr MyType
+%  LocalWords:  BitwiseComplement BitwiseXor ConditionalAnd ConditionalNot
+%  LocalWords:  ConditionalOr FloatingDivision FloatingRemainder LeftShift
+%  LocalWords:  IntegerDivision IntegerRemainder NumericalAddition EqualTo
+%  LocalWords:  NumericalMinus NumericalMultiplication NumericalPlus util
+%  LocalWords:  NumericalSubtraction SignedRightShift StringConcatenate
+%  LocalWords:  TernaryExpression UnsignedRightShift NotEqual GreaterThan
+%  LocalWords:  GreaterThanOrEqual LessThan LessThanOrEqual ArrayCreation
+%  LocalWords:  StringConcatenateAssignment ObjectCreation TypeCast cond
+%  LocalWords:  InstanceOf instanceof NarrowingConversion StringConversion
+%  LocalWords:  WideningConversion ArrayType ParameterizedType ClassName
+%  LocalWords:  PrimitiveType PackageName AssertionError NullChk accessor
+%  LocalWords:  VariableDeclaration desugared desugaring FieldAssignment
+%  LocalWords:  CFGFieldAssignment getRegularStore CFGConditionalOr fnc
+%  LocalWords:  CFGConditionalOr2 ConditionalOrNode ConditionalOr2 valueOf
+%  LocalWords:  IdentifierTree FieldAccessNode ImplicitThisNode unboxing
+%  LocalWords:  TreePath pathHack MethodTree VarSymbol DetachedVarSymbols
+%  LocalWords:  DeclarationFromElement BoxedClass treeLookup getValue
+%  LocalWords:  nodeValues AdditionNode postconversion treelookup
+%  LocalWords:  LocalVariableNode AconcurrentSemantics MonotonicNonNull
+%  LocalWords:  MonotonicQualifier IntegerLiteralNode EqualToNode
+%  LocalWords:  ConstSimple SelfReference PureMethodCall
