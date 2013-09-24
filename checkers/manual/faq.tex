@@ -41,7 +41,8 @@ There is a separate FAQ for the type annotations syntax
 \ref{faq-list-map-nonnull-typeargs}: Why are the type parameters to \<List> and \<Map> annotated as \<@NonNull>? \\
 \ref{faq-type-i-did-not-write}: Why does the Checker Framework report an error regarding a type I have not written in my program? \\
 \ref{faq-checker-framework-part-of-java}: Is the Checker Framework an official part of Java? \\
-\ref{faq-jsr-305}: What is the relationship between the Checker Framework and JSR 305?
+\ref{faq-jsr-305}: What is the relationship between the Checker Framework and JSR 305? \\
+\ref{faq-jsr-308}: What is the relationship between the Checker Framework and JSR 308?
 
 
 
@@ -773,6 +774,22 @@ use in practice.
 The Checker Framework defines annotations \<@NonNull> and \<@Nullable> that
 are compatible with annotations defined by JSR 305, FindBugs, IntelliJ, and
 other tools; see Section~\ref{nullness-related-work}.
+
+
+\section{What is the relationship between the Checker Framework and JSR 308?\label{faq-jsr-308}}
+
+JSR 308, also known as the Type Annotations specification, dictates the
+syntax of type annotations in Java SE 8:  how they are expressed in the
+Java language.
+
+JSR 308 does not define any type annotations such as \<@NonNull>, and it does
+not specify the semantics of any annotations.  Those tasks are left to
+third-party tools.  The Checker Framework is one such tool.
+
+The Checker Framework makes use of Java SE 8's type annotation syntax, but
+the Checker Framework can
+be used with previous versions of the Java language via the
+annotations-in-comments feature (Section~\ref{annotations-in-comments}).
 
 
 % LocalWords:  IGJ toolset AbstractCollection ConcurrentHashMap NullnessUtils
