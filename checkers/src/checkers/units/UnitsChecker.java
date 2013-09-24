@@ -5,6 +5,8 @@ import checkers.quals.Bottom;
 import checkers.quals.Unqualified;
 import checkers.types.QualifierHierarchy;
 import checkers.units.quals.A;
+import checkers.units.quals.Acceleration;
+import checkers.units.quals.Angle;
 import checkers.units.quals.Area;
 import checkers.units.quals.C;
 import checkers.units.quals.Current;
@@ -17,6 +19,7 @@ import checkers.units.quals.Substance;
 import checkers.units.quals.Temperature;
 import checkers.units.quals.Time;
 import checkers.units.quals.cd;
+import checkers.units.quals.degrees;
 import checkers.units.quals.g;
 import checkers.units.quals.h;
 import checkers.units.quals.km2;
@@ -24,9 +27,11 @@ import checkers.units.quals.kmPERh;
 import checkers.units.quals.m;
 import checkers.units.quals.m2;
 import checkers.units.quals.mPERs;
+import checkers.units.quals.mPERs2;
 import checkers.units.quals.min;
 import checkers.units.quals.mm2;
 import checkers.units.quals.mol;
+import checkers.units.quals.radians;
 import checkers.units.quals.s;
 import checkers.util.GraphQualifierHierarchy;
 import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
@@ -120,6 +125,13 @@ public class UnitsChecker extends BaseTypeChecker<UnitsAnnotatedTypeFactory> {
         qualSet.add(Speed.class);
         qualSet.add(mPERs.class);
         qualSet.add(kmPERh.class);
+
+        qualSet.add(Acceleration.class);
+        qualSet.add(mPERs2.class);
+
+        qualSet.add(Angle.class);
+        qualSet.add(degrees.class);
+        qualSet.add(radians.class);
 
         qualSet.add(Area.class);
         qualSet.add(mm2.class);

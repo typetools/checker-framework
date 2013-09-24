@@ -2400,7 +2400,7 @@ public class CFGBuilder {
         protected VariableTree ea = null;
 
         /**
-         * Get the {@link VariableTree} that indicates whether assertions are
+         * Get a synthetic {@link VariableTree} that indicates whether assertions are
          * enabled or not.
          */
         protected VariableTree getAssertionsEnabledVariable() {
@@ -2408,8 +2408,13 @@ public class CFGBuilder {
                 String name = uniqueName("assertionsEnabled");
                 MethodTree enclosingMethod = TreeUtils
                         .enclosingMethod(getCurrentPath());
-                Element owner = TreeUtils
-                        .elementFromDeclaration(enclosingMethod);
+                Element owner;
+                if (enclosingMethod != null) {
+                    owner = TreeUtils.elementFromDeclaration(enclosingMethod);
+                } else {
+                    ClassTree enclosingClass = TreeUtils.enclosingClass(getCurrentPath());
+                    owner = TreeUtils.elementFromDeclaration(enclosingClass);
+                }
                 ExpressionTree initializer = null;
                 ea = treeBuilder.buildVariableDecl(
                         types.getPrimitiveType(TypeKind.BOOLEAN), name, owner,
