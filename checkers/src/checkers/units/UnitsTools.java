@@ -13,6 +13,7 @@ import checkers.units.quals.kmPERh;
 import checkers.units.quals.m;
 import checkers.units.quals.m2;
 import checkers.units.quals.mPERs;
+import checkers.units.quals.mPERs2;
 import checkers.units.quals.min;
 import checkers.units.quals.mm;
 import checkers.units.quals.mm2;
@@ -54,6 +55,9 @@ public class UnitsTools {
     // Speed
     public static final @mPERs int mPERs = 1;
     public static final @kmPERh int kmPERh = 1;
+
+    // Acceleration
+    public static final @mPERs int mPERs2 = 1;
 
     // Current
     public static final @A int A = 1;
