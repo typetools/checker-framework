@@ -1,6 +1,4 @@
-// @skip-test crashes, but commented out to avoid breaking the build
-
-public class TryAssertTrue {
+public class AssertInStatic {
 
     static {
         long x = 0;
