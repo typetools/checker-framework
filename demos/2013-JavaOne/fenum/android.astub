@@ -1,0 +1,14 @@
+package android.content;
+
+import RestrictionType;
+
+class RestrictionEntry {
+    @RestrictionType int TYPE_BOOLEAN;
+    @RestrictionType int TYPE_CHOICE;
+    @RestrictionType int TYPE_MULTI_SELECT;
+    @RestrictionType int TYPE_NULL;
+
+    @RestrictionType int getType();
+
+    void setType(@RestrictionType int p);
+}
