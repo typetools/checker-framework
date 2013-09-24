@@ -47,7 +47,7 @@ import com.sun.source.tree.VariableTree;
  * @param <A>
  *            The abstract value type to be tracked by the analysis.
  * @param <S>
- *            The store type used in the analsysis.
+ *            The store type used in the analysis.
  * @param <T>
  *            The transfer function type that is used to approximated runtime
  *            behavior.
