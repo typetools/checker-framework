@@ -108,7 +108,7 @@ public class TreeParser {
                         names.fromString(token));
             } else if ("(".equals(delim)) {
                 nextToken();
-                ListBuffer<JCExpression> args = ListBuffer.lb();
+                ListBuffer<JCExpression> args = new ListBuffer<>();
                 while (!")".equals(token)) {
                     JCExpression arg = parseExpression();
                     args.append(arg);
