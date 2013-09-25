@@ -52,6 +52,7 @@ the answers, or other questions to include here.
 
 \faqtocpara{\ref{faq-semantics-section}: Semantics of type annotations}
 \\ \ref{faq-list-map-nonnull-typeargs}: Why are the type parameters to \<List> and \<Map> annotated as \<@NonNull>?
+\\ \ref{faq-typestate}: How can I handle typestate, or phases of my program with different data properties?}
 
 \faqtocpara{\ref{faq-create-a-checker-section}: Creating a new checker}
 \\ \ref{faq-create-a-checker}: How do I create a new checker?
@@ -151,10 +152,12 @@ type-checker, there are others that are easier to use.
 The \ahrefloc{linear-checker}{Linear Checker} (see
 \chapterpageref{linear-checker}) has not been extensively tested.
 The 
-\ahrefloc{igj-checker}{IGJ Checker} (see \chapterpageref{igj-checker}) and
-the 
-and \ahrefloc{javari-checker}{Javari Checker} (see
-\chapterpageref{javari-checker}) have known bugs that limit their
+\ahrefloc{igj-checker}{IGJ Checker} (see \chapterpageref{igj-checker}),
+\ahrefloc{javari-checker}{Javari Checker} (see
+\chapterpageref{javari-checker}), and 
+\ahrefloc{typestate-checker}{typestate checkers} (see
+\chapterpageref{typestate-checker})
+have known bugs that limit their
 usability.  (Report the ones that affect you, and the Checker Framework
 developers will prioritize fixing them.)
 
@@ -737,6 +740,33 @@ For more details on suppressing nullness warnings, see
 Section~\ref{suppressing-warnings-nullness}.
 
 
+\subsection{How can I handle typestate, or phases of my program with different data properties?\label{faq-typestate}}
+
+Sometimes, your program works in phases that have different behavior.  For
+example, you might have a field that starts out null and becomes non-null
+at some point during execution, such as after a method is called.  You can
+express this property as follows:
+
+\begin{enumerate}
+\item
+Annotate the field type as \code{@\refclass{nullness/quals}{MonotonicNonNull}}.
+\item
+Annotate the method that sets the field as \code{@\refclass{nullness/quals}{EnsuresNonNull}("\emph{myFieldName}")}.
+(If method \<m1> calls method \<m2>, which actually sets the field, then
+you would probably write this annotation on both \<m1> and \<m2>.)
+\item
+Annotate any method that depends on the field being non-null as
+\code{@\refclass{nullness/quals}{RequiresNonNull}("\emph{myFieldName}")}.
+The type-checker will verify that such a method is only called when the
+field isn't null --- that is, the method is only called after the setting
+method.
+\end{enumerate}
+
+You can also use a typestate checker (see
+\chapterpageref{typestate-checker}), but they have not been as extensively
+tested.
+
+
 \section{Creating a new checker\label{faq-create-a-checker-section}}
 
 \subsection{How do I create a new checker?\label{faq-create-a-checker}}
@@ -894,4 +924,5 @@ annotations-in-comments feature (Section~\ref{annotations-in-comments}).
 % LocalWords:  ElementType nullness bytecodes Jlint Hashtable SuppressWarnings
 %  LocalWords:  RegexUtil compareTo myA requiresB nullable java myobject
 %  LocalWords:  multithreading myfield Regex NonEmpty Xmaxerrs Xmaxwarns
-%  LocalWords:  8's igj javari
+%  LocalWords:  8's igj javari MonotonicNonNull EnsuresNonNull myFieldName
+%  LocalWords:  m1 m2 RequiresNonNull
