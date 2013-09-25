@@ -114,8 +114,50 @@ See Section~\ref{get-started-with-legacy-code}.
 
 \subsection{Which checker should I start with?\label{faq-first-checker}}
 
-TODO
-You should start with a property that matters to you, to achieve the best benefits. 
+You should start with a property that matters to you.  Think about what
+aspects of your code cause the most errors, or cost the most time during
+maintenance, or are the most common to be incorrectly-documented.  Focusing
+on what you care about will give you the best benefits. 
+
+When you first start out with the Checker Framework, it's usually best to
+get experience with an existing type-checker before you write your own new
+checker.
+
+Many users are tempted to start with the
+\ahrefloc{nullness-checker}{Nullness Checker} (see
+\chapterpageref{nullness-checker}), since null pointer errors are common
+and familiar.  The Nullness Checker works very well, but be warned of three
+facts that make the absence of null pointer exceptions challenging to
+verify.
+
+\begin{enumerate}
+\item
+  Dereferences happen throughout your codebase, so there are a lot of
+  potential problems.  By contrast, fewer lines of code are related to
+  locking, regular expressions, etc., so those properties are easier to
+  check.
+\item
+  Programmers use \<null> for many different purposes.  More seriously,
+  programmers write run-time tests against \<null>, and those are difficult
+  for any static analysis to capture.
+\item
+  The Nullness Checker interacts with initialization and map keys.
+\end{enumerate}
+
+If null pointer exceptions are most important to you, then by all means use
+the Nullness Checker.  But if you just want to try \emph{some}
+type-checker, there are others that are easier to use.
+
+The \ahrefloc{linear-checker}{Linear Checker} (see
+\chapterpageref{linear-checker}) has not been extensively tested.
+The 
+\ahrefloc{igj-checker}{IGJ Checker} (see \chapterpageref{igj-checker}) and
+the 
+and \ahrefloc{javari-checker}{Javari Checker} (see
+\chapterpageref{javari-checker}) have known bugs that limit their
+usability.  (Report the ones that affect you, and the Checker Framework
+developers will prioritize fixing them.)
+
 
 \section{Usability of pluggable type-checking\label{faq-usability-section}}
 
@@ -852,4 +894,4 @@ annotations-in-comments feature (Section~\ref{annotations-in-comments}).
 % LocalWords:  ElementType nullness bytecodes Jlint Hashtable SuppressWarnings
 %  LocalWords:  RegexUtil compareTo myA requiresB nullable java myobject
 %  LocalWords:  multithreading myfield Regex NonEmpty Xmaxerrs Xmaxwarns
-%  LocalWords:  8's
+%  LocalWords:  8's igj javari
