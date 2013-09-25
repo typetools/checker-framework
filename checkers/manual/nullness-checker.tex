@@ -184,7 +184,7 @@ another type hierarchy for map keys (Section~\ref{map-key-qualifiers}).}
 \end{figure}
 
 
-\subsection{Nullness method annotations\label{nullness-non-qualifiers}}
+\subsection{Nullness method annotations\label{nullness-method-annotations}}
 
 The Nullness Checker supports several annotations that specify method
 behavior.  These are declaration annotations, not type annotations:  they
@@ -1133,7 +1133,7 @@ values.  To express these concepts, use the
 \code{@\refclass{nullness/quals}{RequiresNonNull}},
 \code{@\refclass{nullness/quals}{EnsuresNonNull}}, and
 \code{@\refclass{nullness/quals}{EnsuresNonNullIf}} method annotations;
-see Section~\ref{nullness-non-qualifiers}.
+see Section~\ref{nullness-method-annotations}.
 
 
 % Should we change the terminology?
@@ -1405,11 +1405,11 @@ assert var != null : "@SuppressWarnings(nullness)";
 \end{Verbatim}
 \item
     To indicate that a routine returns the same value every time it is
-    called, use \code{@\refclass{dataflow/quals}{Pure}} (see Section~\ref{nullness-non-qualifiers}).
+    called, use \code{@\refclass{dataflow/quals}{Pure}} (see Section~\ref{nullness-method-annotations}).
 \item
     To indicate a method precondition (a contract stating the conditions
     under which a client is allowed to call it), you can use annotations
-    such as \code{@\refclass{nullness/quals}{RequiresNonNull}} (see Section~\ref{nullness-non-qualifiers}.
+    such as \code{@\refclass{nullness/quals}{RequiresNonNull}} (see Section~\ref{nullness-method-annotations}.
 \end{itemize}
 
 
