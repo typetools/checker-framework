@@ -134,7 +134,11 @@ New command-line options:
   -AassumeSideEffectFree
   -AignoreRawTypeArguments
 
-New manual section about array types
+Manual:
+ New manual section about array types
+ New FAQ entries "Which checker should I start with?" and "How can I handle
+   typestate, or phases of my program with different data properties?"
+ Reorganized FAQ chapter into sections.
 
 Suppress warnings using assert statements with the string
 @AssumeAssertion(warningkey); previously, just the warning key sufficed.
