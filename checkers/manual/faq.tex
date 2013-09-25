@@ -5,9 +5,6 @@ These are some common questions about the Checker Framework and about
 pluggable type-checking in general.  Feel free to suggest improvements to
 the answers, or other questions to include here.
 
-There is a separate FAQ for the type annotations syntax
-(\url{http://types.cs.washington.edu/jsr308/current/jsr308-faq.html}).
-
 % Not supported by Hevea, so don't bother; instead do by hand:
 % \minitoc
 
@@ -15,104 +12,62 @@ There is a separate FAQ for the type annotations syntax
 ~
 %END LATEX
 
+%BEGIN LATEX
+\newcommand{\faqtocpara}[1]{\paragraph{#1} ~}
+%END LATEX
+%HEVEA \newcommand{\faqtocpara}[1]{\textbf{#1}}
+
+
 \noindent
-\textbf{Contents:} \\
-\ref{faq-ease-of-use}: Are type annotations easy to read and write? \\
-\ref{faq-code-clutter}: Will my code become cluttered with type annotations? \\
-\ref{never-make-type-errors}: I don't make type errors, so would pluggable type-checking help me? \\
-\ref{faq-handling-warnings}: What should I do if a checker issues a warning about my code? \\
-\ref{faq-no-absolute-guarantee}: Can a pluggable type-checker give an absolute guarantee of correctness? \\
-\ref{faq-concurrency}: What guarantee does the Checker Framework give for concurrent code? \\
-\ref{faq-awarns}: How do I make compilation succeed even if a checker issues errors? \\
-\ref{faq-100-warnings}: Why does the checker always say there are 100 errors or warnings? \\
-\ref{faq-slowdown}: Will using the Checker Framework slow down my program?  Will it slow down the compiler? \\
-\ref{faq-run-time-checking}: How can I do run-time monitoring of properties that were not statically checked? \\
-\ref{faq-annotate-existing-program}: How do I get started annotating an existing program? \\
-\ref{faq-shorten-command-line}: How do I shorten the command line when invoking a checker? \\
-\ref{faq-qualifiers-vs-subclasses}: When should I use type qualifiers, and when should I use subclasses? \\
-\ref{faq-create-a-checker}: How do I create a new checker? \\
-\ref{faq-declarative-syntax-for-type-rules}: Why is there no declarative syntax for writing type rules? \\
-\ref{faq-type-checking-vs-bug-detectors}: Why not just use a bug detector (like FindBugs)? \\
-\ref{faq-jml}: How does pluggable type-checking compare with JML? \\
-\ref{faq-no-annotation-on-types-and-declarations}: Why shouldn't a qualifier apply to both types and declarations? \\
-\ref{faq-receiver}: What is a ``receiver''? \\
-\ref{faq-annotation-after-type}: What is the meaning of an annotation after a type, such as \<@NonNull Object @Nullable>? \\
-\ref{faq-array-syntax-meaning}: What is the meaning of array annotations such as \<@NonNull Object @Nullable []>? \\
-\ref{faq-list-map-nonnull-typeargs}: Why are the type parameters to \<List> and \<Map> annotated as \<@NonNull>? \\
-\ref{faq-type-i-did-not-write}: Why does the Checker Framework report an error regarding a type I have not written in my program? \\
-\ref{faq-checker-framework-part-of-java}: Is the Checker Framework an official part of Java? \\
-\ref{faq-jsr-305}: What is the relationship between the Checker Framework and JSR 305? \\
-\ref{faq-jsr-308}: What is the relationship between the Checker Framework and JSR 308?
+\textbf{Contents:}
+
+\faqtocpara{\ref{faq-motivation-section}: Motivation for pluggable type-checking}
+\\ \ref{never-make-type-errors}: I don't make type errors, so would pluggable type-checking help me?
+\\ \ref{faq-qualifiers-vs-subclasses}: When should I use type qualifiers, and when should I use subclasses?
+
+\faqtocpara{\ref{faq-getting-started-section}: Getting started}
+\\ \ref{faq-annotate-existing-program}: How do I get started annotating an existing program?
+\\ \ref{faq-first-checker}: Which checker should I start with?
+
+\faqtocpara{\ref{faq-usability-section}: Usability of pluggable type-checking}
+\\ \ref{faq-ease-of-use}: Are type annotations easy to read and write?
+\\ \ref{faq-code-clutter}: Will my code become cluttered with type annotations?
+\\ \ref{faq-slowdown}: Will using the Checker Framework slow down my program?  Will it slow down the compiler?
+\\ \ref{faq-shorten-command-line}: How do I shorten the command line when invoking a checker?
+
+\faqtocpara{\ref{faq-warnings-section}: How to handle warnings}
+\\ \ref{faq-handling-warnings}: What should I do if a checker issues a warning about my code?
+\\ \ref{faq-no-absolute-guarantee}: Can a pluggable type-checker give an absolute guarantee of correctness?
+\\ \ref{faq-concurrency}: What guarantee does the Checker Framework give for concurrent code?
+\\ \ref{faq-awarns}: How do I make compilation succeed even if a checker issues errors?
+\\ \ref{faq-100-warnings}: Why does the checker always say there are 100 errors or warnings?
+\\ \ref{faq-type-i-did-not-write}: Why does the Checker Framework report an error regarding a type I have not written in my program?
+\\ \ref{faq-run-time-checking}: How can I do run-time monitoring of properties that were not statically checked?
+
+\faqtocpara{\ref{faq-syntax-section}: Syntax of type annotations}
+\\ \ref{faq-receiver}: What is a ``receiver''?
+\\ \ref{faq-annotation-after-type}: What is the meaning of an annotation after a type, such as \<@NonNull Object @Nullable>?
+\\ \ref{faq-array-syntax-meaning}: What is the meaning of array annotations such as \<@NonNull Object @Nullable []>?
+\\ \ref{faq-no-annotation-on-types-and-declarations}: Why shouldn't a qualifier apply to both types and declarations?
+
+\faqtocpara{\ref{faq-semantics-section}: Semantics of type annotations}
+\\ \ref{faq-list-map-nonnull-typeargs}: Why are the type parameters to \<List> and \<Map> annotated as \<@NonNull>?
+
+\faqtocpara{\ref{faq-create-a-checker-section}: Creating a new checker}
+\\ \ref{faq-create-a-checker}: How do I create a new checker?
+\\ \ref{faq-declarative-syntax-for-type-rules}: Why is there no declarative syntax for writing type rules?
+
+\faqtocpara{\ref{faq-other-tools-section}: Relationship to other tools}
+\\ \ref{faq-type-checking-vs-bug-detectors}: Why not just use a bug detector (like FindBugs)?
+\\ \ref{faq-jml}: How does pluggable type-checking compare with JML?
+\\ \ref{faq-checker-framework-part-of-java}: Is the Checker Framework an official part of Java?
+\\ \ref{faq-jsr-305}: What is the relationship between the Checker Framework and JSR 305?
+\\ \ref{faq-jsr-308}: What is the relationship between the Checker Framework and JSR 308?
 
 
+\section{Motivation for pluggable type-checking\label{faq-motivation-section}}
 
-% This FAQ also appears in the JSR 308 FAQ.
-\section{Are type annotations easy to read and write?\label{faq-ease-of-use}}
-
-The paper
-\ahref{http://homes.cs.washington.edu/~mernst/pubs/pluggable-checkers-issta2008-abstract.html}{``Practical
-  pluggable types for Java''}~\cite{PapiACPE2008} discusses case studies in
-which programmers
-found type annotations to be natural to read and write.  The code
-continued to feel like Java, and the type-checking errors were easy to
-comprehend and often led to real bugs.
-
-You don't have to take our word for it, though.  You can try the
-Checker Framework for yourself.
-
-The difficulty of adding and verifying annotations depends on your program.
-If your program is well-designed and -documented, then skimming the
-existing documentation and writing type annotations is extremely easy.
-Otherwise, you may find yourself spending a lot of time trying to
-understand, reverse-engineer, or fix bugs in your program, and then just a
-moment writing a type annotation that describes what you discovered.  This
-process inevitably improves your code.  You must decide whether it is a
-good use of your time.  For code that is not causing trouble now and is
-unlikely to do so in the future (the code is bug-free, and you do not
-anticipate changing it or using it in new contexts), then the
-effort of writing type annotations for it may not be justified.
-
-
-\section{Will my code become cluttered with type annotations?\label{faq-code-clutter}}
-
-% This FAQ also appears in the JSR 308 FAQ.
-% When I update one, also update the other.
-
-As with any language feature, it is possible to write ugly code that
-over-uses annotations.  However, in normal use, very few annotations need
-to be written.  Figure 1 of the paper
-\ahref{http://homes.cs.washington.edu/~mernst/pubs/pluggable-checkers-issta2008-abstract.html}{Practical
-  pluggable types for Java}~\cite{PapiACPE2008} reports data for over
-350,000 lines of type-annotated code:
-
-\begin{itemize}
-\item
-    1 annotation per 62 lines for nullness annotations (\<@NonNull>, \<@Nullable>, etc.)
-    % (/ (+ 4640 3961 10798) (+ 107 35 167))
-\item
-    1 annotation per 1736 lines for interning annotations (\<@Interned>)
-    % (/ 224048 129)
-\item
-    1 annotation per 27 lines for immutability annotations (IGJ type system)
-    % (/ (+ 6236 18159 30507 8691 59221 26828) (+ 315 1125 1386 384 1815 450))
-\end{itemize}
-
-These numbers are for annotating existing code.  New code that
-is written with the type annotation system in mind is cleaner and more
-correct, so it requires even fewer annotations.
-
-Each annotation that a programmer writes replaces a sentence or phrase of
-English descriptive text that would otherwise have been written in the
-Javadoc.  So, use of annotations actually reduces the overall size of the
-documentation, at the same time as making it less ambiguous and
-machine-processable.
-
-In summary:  annotations do not clutter code; they are used much
-less frequently than generic types, which Java programmers find acceptable;
-and they reduce the overall volume of documentation that a codebase needs.
-
-
-\section{I don't make type errors, so would pluggable type-checking help me?\label{never-make-type-errors}}
+\subsection{I don't make type errors, so would pluggable type-checking help me?\label{never-make-type-errors}}
 
 Occasionally, a developer says that he makes no errors that type-checking
 could catch, or that any such errors are unimportant because they have low
@@ -142,12 +97,136 @@ automated approaches cannot find; pluggable type-checking gives you more
 time to focus on those.
 
 
-\section{What should I do if a checker issues a warning about my code?\label{faq-handling-warnings}}
+\subsection{When should I use type qualifiers, and when should I use subclasses?\label{faq-qualifiers-vs-subclasses}}
+
+In brief, use subtypes when you can, and use type qualifiers when you cannot
+use subtypes.
+For more details, see section~\ref{when-to-use-type-qualifiers}.
+
+
+
+\section{Getting started\label{faq-getting-started-section}}
+
+\subsection{How do I get started annotating an existing program?\label{faq-annotate-existing-program}}
+
+See Section~\ref{get-started-with-legacy-code}.
+
+
+\subsection{Which checker should I start with?\label{faq-first-checker}}
+
+TODO
+You should start with a property that matters to you, to achieve the best benefits. 
+
+\section{Usability of pluggable type-checking\label{faq-usability-section}}
+
+% This FAQ also appears in the JSR 308 FAQ.
+\subsection{Are type annotations easy to read and write?\label{faq-ease-of-use}}
+
+The papers
+\ahref{http://homes.cs.washington.edu/~mernst/pubs/pluggable-checkers-issta2008-abstract.html}{``Practical
+  pluggable types for Java''}~\cite{PapiACPE2008}
+and
+\ahref{http://homes.cs.washington.edu/~mernst/pubs/pluggable-checkers-icse2011-abstract.html}{``Building
+  and using pluggable type-checkers''}~\cite{DietlDEMS2011}
+discuss case studies in
+which programmers
+found type annotations to be natural to read and write.  The code
+continued to feel like Java, and the type-checking errors were easy to
+comprehend and often led to real bugs.
+
+You don't have to take our word for it, though.  You can try the
+Checker Framework for yourself.
+
+The difficulty of adding and verifying annotations depends on your program.
+If your program is well-designed and -documented, then skimming the
+existing documentation and writing type annotations is extremely easy.
+Otherwise, you may find yourself spending a lot of time trying to
+understand, reverse-engineer, or fix bugs in your program, and then just a
+moment writing a type annotation that describes what you discovered.  This
+process inevitably improves your code.  You must decide whether it is a
+good use of your time.  For code that is not causing trouble now and is
+unlikely to do so in the future (the code is bug-free, and you do not
+anticipate changing it or using it in new contexts), then the
+effort of writing type annotations for it may not be justified.
+
+
+\subsection{Will my code become cluttered with type annotations?\label{faq-code-clutter}}
+
+% This FAQ also appears in the JSR 308 FAQ.
+% When I update one, also update the other.
+
+In summary:  annotations do not clutter code; they are used much
+less frequently than generic types, which Java programmers find acceptable;
+and they reduce the overall volume of documentation that a codebase needs.
+
+As with any language feature, it is possible to write ugly code that
+over-uses annotations.  However, in normal use, very few annotations need
+to be written.  Figure 1 of the paper
+\ahref{http://homes.cs.washington.edu/~mernst/pubs/pluggable-checkers-issta2008-abstract.html}{Practical
+  pluggable types for Java}~\cite{PapiACPE2008} reports data for over
+350,000 lines of type-annotated code:
+
+\begin{itemize}
+\item
+    1 annotation per 62 lines for nullness annotations (\<@NonNull>, \<@Nullable>, etc.)
+    % (/ (+ 4640 3961 10798) (+ 107 35 167))
+\item
+    1 annotation per 1736 lines for interning annotations (\<@Interned>)
+    % (/ 224048 129)
+\item
+    1 annotation per 27 lines for immutability annotations (IGJ type system)
+    % (/ (+ 6236 18159 30507 8691 59221 26828) (+ 315 1125 1386 384 1815 450))
+\end{itemize}
+
+% ICSE 2011 paper says:
+% Signature String Checker: less than 1 annotation per 500 lines of code
+
+These numbers are for annotating existing code.  New code that
+is written with the type annotation system in mind is cleaner and more
+correct, so it requires even fewer annotations.
+
+Each annotation that a programmer writes replaces a sentence or phrase of
+English descriptive text that would otherwise have been written in the
+Javadoc.  So, use of annotations actually reduces the overall size of the
+documentation, at the same time as making it less ambiguous and
+machine-processable.
+
+
+\subsection{Will using the Checker Framework slow down my program?  Will it slow down the compiler?\label{faq-slowdown}}
+
+Using the Checker Framework has no impact on the execution of your program:
+the Type Annotations compiler emits the identical bytecodes as the Java 8
+compiler and so there is no run-time effect.  Because there is no run-time
+representation of type qualifiers, there is no way to use reflection to
+query the qualifier on a given object, though you can use reflection to
+examine a class/method/field declaration.
+
+Using the Checker Framework does increase compilation time.  In theory it
+should only add a few percent overhead, but our current implementation
+can double the compilation time --- or more, if you run many pluggable
+type-checkers at once.  This is especially true if you run pluggable
+type-checking on every file (as we recommend) instead of just on the ones
+that have recently changed.
+Nonetheless, compilation with pluggable type-checking still feels like
+compilation, and you can do it as part of your normal development process.
+
+
+\subsection{How do I shorten the command line when invoking a checker?\label{faq-shorten-command-line}}
+
+The compile options to javac can be a pain to type; for example,
+\code{javac -processor checkers.nullness.NullnessChecker ...}.
+See Section~\ref{checker-auto-discovery} for a way to avoid the need for
+the \code{-processor} command-line option.
+
+
+\section{How handle warnings and errors\label{faq-warnings-section}}
+
+\subsection{What should I do if a checker issues a warning about my code?\label{faq-handling-warnings}}
 
 For a discussion of this issue, see Section~\ref{handling-warnings}.
 
 
-\section{Can a pluggable type-checker give an absolute guarantee of correctness?\label{faq-no-absolute-guarantee}}
+\subsection{Can a pluggable type-checker give an absolute guarantee of correctness?\label{faq-no-absolute-guarantee}}
 
 Each checker looks for certain errors.  You can use multiple checkers, but
 even then your program might still contain other kinds of errors.
@@ -178,7 +257,7 @@ possible class of problems), and increasing confidence in a piece of
 software.
 
 
-\section{What guarantee does the Checker Framework give for concurrent code?\label{faq-concurrency}}
+\subsection{What guarantee does the Checker Framework give for concurrent code?\label{faq-concurrency}}
 
 The Checker Framework currently assumes that the code that it is checking
 is sequential:  that is, there are no concurrent accesses from another
@@ -243,14 +322,14 @@ and prevent certain concurrency errors.
 % designs.
 
 
-\section{How do I make compilation succeed even if a checker issues errors?\label{faq-awarns}}
+\subsection{How do I make compilation succeed even if a checker issues errors?\label{faq-awarns}}
 
 Section~\ref{running} describes the \<-Awarns> command-line
 option that turns checker errors into warnings, so type-checking errors
 will not cause \<javac> to exit with a failure status.
 
 
-\section{Why does the checker always say there are 100 errors or warnings?\label{faq-100-warnings}}
+\subsection{Why does the checker always say there are 100 errors or warnings?\label{faq-100-warnings}}
 
 By default, javac only reports the first 100 errors or warnings.
 Furthermore, once javac encounters an error, it doesn't try compiling any
@@ -263,26 +342,18 @@ that javac will process all your source files, use the option \<-Awarns>.
 See Section~\ref{running} for more details.
 
 
-\section{Will using the Checker Framework slow down my program?  Will it slow down the compiler?\label{faq-slowdown}}
-
-Using the Checker Framework has no impact on the execution of your program:
-the Type Annotations compiler emits the identical bytecodes as the Java 8
-compiler and so there is no run-time effect.  Because there is no run-time
-representation of type qualifiers, there is no way to use reflection to
-query the qualifier on a given object, though you can use reflection to
-examine a class/method/field declaration.
-
-Using the Checker Framework does increase compilation time.  In theory it
-should only add a few percent overhead, but our current implementation
-can double the compilation time --- or more, if you run many pluggable
-type-checkers at once.  This is especially true if you run pluggable
-type-checking on every file (as we recommend) instead of just on the ones
-that have recently changed.
-Nonetheless, compilation with pluggable type-checking still feels like
-compilation, and you can do it as part of your normal development process.
+\subsection{Why does the Checker Framework report an error regarding a type I have not written in my program?\label{faq-type-i-did-not-write}}
 
 
-\section{How can I do run-time monitoring of properties that were not statically checked?\label{faq-run-time-checking}}
+Sometimes, a Checker Framework warning message will mention a type you have
+not written in your program.  This is typically because a default has been
+applied where you did not write a type; see Section~\ref{defaults}.  In
+other cases, this is because flow-sensitive type refinement has given an
+expression a more specific type than you wrote or than was defaulted; see
+Section~\ref{type-refinement}.
+
+
+\subsection{How can I do run-time monitoring of properties that were not statically checked?\label{faq-run-time-checking}}
 
 Some properties are not checked statically (see
 Chapter~\ref{warnings-and-legacy} for reasons that code might not be
@@ -310,173 +381,13 @@ But, it would be better to have more general support that does not require
 the user to explicitly insert method calls.
 
 
-\section{How do I get started annotating an existing program?\label{faq-annotate-existing-program}}
+\section{Syntax of type annotations\label{faq-syntax-section}}
 
-See Section~\ref{get-started-with-legacy-code}.
-
-
-\section{How do I shorten the command line when invoking a checker?\label{faq-shorten-command-line}}
-
-The compile options to javac can be a pain to type; for example,
-\code{javac -processor checkers.nullness.NullnessChecker ...}.
-See Section~\ref{checker-auto-discovery} for a way to avoid the need for
-the \code{-processor} command-line option.
+There is also a separate FAQ for the type annotations syntax
+(\url{http://types.cs.washington.edu/jsr308/current/jsr308-faq.html}).
 
 
-\section{When should I use type qualifiers, and when should I use subclasses?\label{faq-qualifiers-vs-subclasses}}
-
-In brief, use subtypes when you can, and use type qualifiers when you cannot
-use subtypes.
-For more details, see section~\ref{when-to-use-type-qualifiers}.
-
-
-\section{How do I create a new checker?\label{faq-create-a-checker}}
-
-In addition to using the checkers that are distributed with the Checker
-Framework, you can write your own checker to check specific properties that
-you care about.  Thus, you can find and prevent the bugs that are most
-important to you.
-
-Chapter~\ref{writing-a-checker} gives
-complete details regarding how to write a checker.  It also suggests places
-to look for more help, such as the \ahref{doc/}{Checker Framework
-API documentation (Javadoc)} and the source code of the distributed
-checkers.
-
-To whet your interest and demonstrate how easy it is to get started, here
-is an example of a complete, useful type-checker.
-
-\begin{Verbatim}
-  @TypeQualifier
-  @SubtypeOf(Unqualified.class)
-  @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-  public @interface Encrypted { }
-\end{Verbatim}
-
-Section~\ref{basic-example} explains this checker and tells
-you how to run it.
-
-
-\section{Why is there no declarative syntax for writing type rules?\label{faq-declarative-syntax-for-type-rules}}
-
-A type system implementer can declaratively specify the type qualifier
-hierarchy (Section~\ref{declarative-hierarchy}) and the type introduction rules
-(Section~\ref{declarative-type-introduction}).  However, the Checker
-Framework uses a procedural syntax for specifying type-checking
-rules (Section~\ref{extending-visitor}).
-A declarative syntax might be more concise, more readable, and more
-verifiable than a procedural syntax.
-
-We have not found the procedural syntax to be the most important impediment
-to writing a checker.
-
-Previous attempts to devise a declarative syntax 
-for realistic type systems have failed; see a technical
-paper~\cite{PapiACPE2008} for a discussion.  When an
-adequate syntax exists, then the Checker Framework can be extended to
-support it.
-
-
-\section{Why not just use a bug detector (like FindBugs)?\label{faq-type-checking-vs-bug-detectors}}
-
-Pluggable type-checking finds more bugs than a bug detector does, for any
-given variety of bug.
-
-A bug detector like \ahref{http://findbugs.sourceforge.net/}{FindBugs}~\cite{HovemeyerP2004,HovemeyerSP2005},
-\ahref{http://jlint.sourceforge.net/}{Jlint}~\cite{Artho2001}, or
-\ahref{http://pmd.sourceforge.net/}{PMD}~\cite{Copeland2005} aims to find \emph{some}
-of the most obvious bugs in your program.  It uses a lightweight analysis,
-then uses heuristics to discard some of its warnings.  Thus, even if the tool
-prints no warnings, your code might still have errors --- maybe the
-analysis was too weak to find them, or the tool's heuristics classified the
-warnings as likely false positives and discarded them.
-
-A type-checker aims to find \emph{all} the bugs (of certain varieties).
-It requires you to write type qualifiers in your program, or to use a tool
-that infers types.  Thus, it requires more work from the programmer, and in
-return it gives stronger guarantees.
-
-Each tool is useful in different circumstances, depending on how important
-your code is and your desired level of confidence in your code.  For more
-details on the comparison, see section~\ref{other-tools}.  For a case study
-that compared the nullness analysis of FindBugs, Jlint, PMD, and the
-Checker Framework, see section 6 of the paper
-\ahref{http://homes.cs.washington.edu/~mernst/pubs/pluggable-checkers-issta2008.pdf}{``Practical pluggable types for Java''}~\cite{PapiACPE2008}.
-
-
-\section{How does pluggable type-checking compare with JML?\label{faq-jml}}
-
-\ahref{http://www.cs.ucf.edu/~leavens/JML/}{JML}, the Java Modeling
-Language~\cite{LeavensBR2006:JML}, is a language for writing formal
-specifications.  JML aims to be more expressive than pluggable
-type-checking.  JML is not as practical as pluggable type-checking.
-
-A programmer can write a JML specification that
-describes arbitrary facts about program behavior.  Then, the programmer can
-use formal reasoning or a theorem-proving tool to verify that the code
-meets the specification.  Run-time checking is also possible.
-By contrast, pluggable type-checking can express a more limited set of
-properties about your program.
-
-The JML toolset is less mature.  For instance, if your code uses
-generics or other features of Java 5, then you cannot use JML.  
-However, JML has a run-time checker, which the Checker Framework currently
-lacks.
-
-
-\section{Why shouldn't a qualifier apply to both types and declarations?\label{faq-no-annotation-on-types-and-declarations}}
-
-It is bad style for an annotation to apply to both types and declarations.
-In other words, every annotation should have a \<@Target> meta-annotation,
-and the \<@Target> meta-annotation should list either only declaration
-locations or only type annotations.  (It's OK for an annotation to target
-both \<ElementType.TYPE\_PARAMETER> and \<ElementType.TYPE\_USE>, but no
-other declaration location along with \<ElementType.TYPE\_USE>.)
-
-Sometimes, it may seem tempting for an annotation to apply to both type
-uses and (say) method declarations.  Here is a hypothetical example:
-
-\begin{quote}
-  ``Each \<Widget> type may have a \<@Version> annotation.
-  I wish to prove that versions of widgets don't get assigned to
-  incompatible variables, and that older code does not call newer code (to
-  avoid problems when backporting).
-
-  A \<@Version> annotation could be written like so:
-
-\begin{Verbatim}
-  @Version("2.0") Widget createWidget(String value) { ... }
-\end{Verbatim}
-
-\<@Version("2.0")> on the method could mean that the \<createWidget> method
-only appears in the 2.0 version.  \<@Version("2.0")> on the return type
-could mean that the returned \<Widget> should only be used by code that
-uses the 2.0 API of \<Widget>.  It should be possible to specify these
-independently, such as a 2.0 method that returns a value that allows the
-1.0 API method invocations.''
-\end{quote}
-
-Both of these are type properties and should be specified with type
-annotations.  No method annotation is necessary or desirable.  The best way
-to require that the receiver has a certain property is to use a type
-annotation on the receiver of the method.  (Slightly more formally, the
-property being checked is compatibility between the annotation on the type
-of the formal parameter receiver and the annotation on the type of the
-actual receiver.)  If you do not know what ``receiver'' means, see the next
-question.
-
-
-Another example of a type-and-declaration annotation that represents poor
-design is JCIP's \<@GuardedBy> annotation~\cite{Goetz2006}.  As discussed
-in Section~\ref{jcip-annotations}, it means two different things when
-applied to a field or a method.  To reduce confusion and increase
-expressiveness, the Lock Checker (see Chapter~\ref{lock-checker}) uses the
-\<@Holding> annotation for one of these meanings, rather than overloading
-\<@GuardedBy> with two distinct meanings.
-
-
-
-\section{What is a ``receiver''?\label{faq-receiver}}
+\subsection{What is a ``receiver''?\label{faq-receiver}}
 
 The \emph{receiver} of a method is the \<this> formal parameter, sometimes
 also called the ``current object''.  Within the method declaration, \<this>
@@ -528,7 +439,7 @@ constructor of an inner class, the receiver is named \<Outer.this> and the
 result is named \<this>.
 
 
-\section{What is the meaning of an annotation after a type, such as \<@NonNull Object @Nullable>?\label{faq-annotation-after-type}}
+\subsection{What is the meaning of an annotation after a type, such as \<@NonNull Object @Nullable>?\label{faq-annotation-after-type}}
 
 In a type such as \<@NonNull Object @Nullable []>, it may appear that the
 \<@Nullable> annotation is written \emph{after} the type \<Object>.  In
@@ -536,7 +447,7 @@ fact, \<@Nullable> modifies \<[]>.  See the next FAQ, about array
 annotations (Section~\ref{faq-array-syntax-meaning}).
 
 
-\section{What is the meaning of array annotations such as \<@NonNull Object @Nullable []>?\label{faq-array-syntax-meaning}}
+\subsection{What is the meaning of array annotations such as \<@NonNull Object @Nullable []>?\label{faq-array-syntax-meaning}}
 
 You should parse this as:
 (\textbf{\<@NonNull Object>}) (\textbf{\<@Nullable []>}).
@@ -566,7 +477,61 @@ tool is updated to conform to the Java specification, or until you
 transition to a newer tool that conforms to the Java specification.
 
 
-\section{Why are the type parameters to \<List> and \<Map> annotated as \<@NonNull>?\label{faq-list-map-nonnull-typeargs}}
+\subsection{Why shouldn't a qualifier apply to both types and declarations?\label{faq-no-annotation-on-types-and-declarations}}
+
+It is bad style for an annotation to apply to both types and declarations.
+In other words, every annotation should have a \<@Target> meta-annotation,
+and the \<@Target> meta-annotation should list either only declaration
+locations or only type annotations.  (It's OK for an annotation to target
+both \<ElementType.TYPE\_PARAMETER> and \<ElementType.TYPE\_USE>, but no
+other declaration location along with \<ElementType.TYPE\_USE>.)
+
+Sometimes, it may seem tempting for an annotation to apply to both type
+uses and (say) method declarations.  Here is a hypothetical example:
+
+\begin{quote}
+  ``Each \<Widget> type may have a \<@Version> annotation.
+  I wish to prove that versions of widgets don't get assigned to
+  incompatible variables, and that older code does not call newer code (to
+  avoid problems when backporting).
+
+  A \<@Version> annotation could be written like so:
+
+\begin{Verbatim}
+  @Version("2.0") Widget createWidget(String value) { ... }
+\end{Verbatim}
+
+\<@Version("2.0")> on the method could mean that the \<createWidget> method
+only appears in the 2.0 version.  \<@Version("2.0")> on the return type
+could mean that the returned \<Widget> should only be used by code that
+uses the 2.0 API of \<Widget>.  It should be possible to specify these
+independently, such as a 2.0 method that returns a value that allows the
+1.0 API method invocations.''
+\end{quote}
+
+Both of these are type properties and should be specified with type
+annotations.  No method annotation is necessary or desirable.  The best way
+to require that the receiver has a certain property is to use a type
+annotation on the receiver of the method.  (Slightly more formally, the
+property being checked is compatibility between the annotation on the type
+of the formal parameter receiver and the annotation on the type of the
+actual receiver.)  If you do not know what ``receiver'' means, see the next
+question.
+
+
+Another example of a type-and-declaration annotation that represents poor
+design is JCIP's \<@GuardedBy> annotation~\cite{Goetz2006}.  As discussed
+in Section~\ref{jcip-annotations}, it means two different things when
+applied to a field or a method.  To reduce confusion and increase
+expressiveness, the Lock Checker (see Chapter~\ref{lock-checker}) uses the
+\<@Holding> annotation for one of these meanings, rather than overloading
+\<@GuardedBy> with two distinct meanings.
+
+
+\section{Semantics of type annotations\label{faq-semantics-section}}
+
+
+\subsection{Why are the type parameters to \<List> and \<Map> annotated as \<@NonNull>?\label{faq-list-map-nonnull-typeargs}}
 
 The annotation on \<java.util.Collection> only allows non-null elements:
 
@@ -730,18 +695,108 @@ For more details on suppressing nullness warnings, see
 Section~\ref{suppressing-warnings-nullness}.
 
 
-\section{Why does the Checker Framework report an error regarding a type I have not written in my program?\label{faq-type-i-did-not-write}}
+\section{Creating a new checker\label{faq-create-a-checker-section}}
+
+\subsection{How do I create a new checker?\label{faq-create-a-checker}}
+
+In addition to using the checkers that are distributed with the Checker
+Framework, you can write your own checker to check specific properties that
+you care about.  Thus, you can find and prevent the bugs that are most
+important to you.
+
+Chapter~\ref{writing-a-checker} gives
+complete details regarding how to write a checker.  It also suggests places
+to look for more help, such as the \ahref{doc/}{Checker Framework
+API documentation (Javadoc)} and the source code of the distributed
+checkers.
+
+To whet your interest and demonstrate how easy it is to get started, here
+is an example of a complete, useful type-checker.
+
+\begin{Verbatim}
+  @TypeQualifier
+  @SubtypeOf(Unqualified.class)
+  @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+  public @interface Encrypted { }
+\end{Verbatim}
+
+Section~\ref{basic-example} explains this checker and tells
+you how to run it.
 
 
-Sometimes, a Checker Framework warning message will mention a type you have
-not written in your program.  This is typically because a default has been
-applied where you did not write a type; see Section~\ref{defaults}.  In
-other cases, this is because flow-sensitive type refinement has given an
-expression a more specific type than you wrote or than was defaulted; see
-Section~\ref{type-refinement}.
+\subsection{Why is there no declarative syntax for writing type rules?\label{faq-declarative-syntax-for-type-rules}}
+
+A type system implementer can declaratively specify the type qualifier
+hierarchy (Section~\ref{declarative-hierarchy}) and the type introduction rules
+(Section~\ref{declarative-type-introduction}).  However, the Checker
+Framework uses a procedural syntax for specifying type-checking
+rules (Section~\ref{extending-visitor}).
+A declarative syntax might be more concise, more readable, and more
+verifiable than a procedural syntax.
+
+We have not found the procedural syntax to be the most important impediment
+to writing a checker.
+
+Previous attempts to devise a declarative syntax 
+for realistic type systems have failed; see a technical
+paper~\cite{PapiACPE2008} for a discussion.  When an
+adequate syntax exists, then the Checker Framework can be extended to
+support it.
 
 
-\section{Is the Checker Framework an official part of Java?\label{faq-checker-framework-part-of-java}}
+\section{Relationship to other tools\label{faq-other-tools-section}}
+
+
+\subsection{Why not just use a bug detector (like FindBugs)?\label{faq-type-checking-vs-bug-detectors}}
+
+Pluggable type-checking finds more bugs than a bug detector does, for any
+given variety of bug.
+
+A bug detector like \ahref{http://findbugs.sourceforge.net/}{FindBugs}~\cite{HovemeyerP2004,HovemeyerSP2005},
+\ahref{http://jlint.sourceforge.net/}{Jlint}~\cite{Artho2001}, or
+\ahref{http://pmd.sourceforge.net/}{PMD}~\cite{Copeland2005} aims to find \emph{some}
+of the most obvious bugs in your program.  It uses a lightweight analysis,
+then uses heuristics to discard some of its warnings.  Thus, even if the tool
+prints no warnings, your code might still have errors --- maybe the
+analysis was too weak to find them, or the tool's heuristics classified the
+warnings as likely false positives and discarded them.
+
+A type-checker aims to find \emph{all} the bugs (of certain varieties).
+It requires you to write type qualifiers in your program, or to use a tool
+that infers types.  Thus, it requires more work from the programmer, and in
+return it gives stronger guarantees.
+
+Each tool is useful in different circumstances, depending on how important
+your code is and your desired level of confidence in your code.  For more
+details on the comparison, see section~\ref{other-tools}.  For a case study
+that compared the nullness analysis of FindBugs, Jlint, PMD, and the
+Checker Framework, see section 6 of the paper
+\ahref{http://homes.cs.washington.edu/~mernst/pubs/pluggable-checkers-issta2008.pdf}{``Practical pluggable types for Java''}~\cite{PapiACPE2008}.
+
+
+\subsection{How does pluggable type-checking compare with JML?\label{faq-jml}}
+
+\ahref{http://www.cs.ucf.edu/~leavens/JML/}{JML}, the Java Modeling
+Language~\cite{LeavensBR2006:JML}, is a language for writing formal
+specifications.
+
+\textbf{JML aims to be more expressive than pluggable type-checking.}
+A programmer can write a JML specification that
+describes arbitrary facts about program behavior.  Then, the programmer can
+use formal reasoning or a theorem-proving tool to verify that the code
+meets the specification.  Run-time checking is also possible.
+By contrast, pluggable type-checking can express a more limited set of
+properties about your program.  Pluggable type-checking annotations are
+more concise and easier to understand.
+
+\textbf{JML is not as practical as pluggable type-checking.}
+The JML toolset is less mature.  For instance, if your code uses
+generics or other features of Java 5, then you cannot use JML.  
+However, JML has a run-time checker, which the Checker Framework currently
+lacks.
+
+
+\subsection{Is the Checker Framework an official part of Java?\label{faq-checker-framework-part-of-java}}
 
 The Checker Framework is not an official part of Java.
 The Checker Framework relies on
@@ -750,7 +805,7 @@ type annotations, which are part of Java 8.  See the
   Annotations (JSR 308) FAQ} for more details.
 
 
-\section{What is the relationship between the Checker Framework and JSR 305?\label{faq-jsr-305}}
+\subsection{What is the relationship between the Checker Framework and JSR 305?\label{faq-jsr-305}}
 
 JSR 305 aimed to define official Java names for some annotations, such as
 \<@NonNull> and \<@Nullable>.  However, it did not aim to precisely define
@@ -776,7 +831,7 @@ are compatible with annotations defined by JSR 305, FindBugs, IntelliJ, and
 other tools; see Section~\ref{nullness-related-work}.
 
 
-\section{What is the relationship between the Checker Framework and JSR 308?\label{faq-jsr-308}}
+\subsection{What is the relationship between the Checker Framework and JSR 308?\label{faq-jsr-308}}
 
 JSR 308, also known as the Type Annotations specification, dictates the
 syntax of type annotations in Java SE 8:  how they are expressed in the
@@ -796,4 +851,5 @@ annotations-in-comments feature (Section~\ref{annotations-in-comments}).
 % LocalWords:  castNonNull createWidget backporting JCIP's GuardedBy Awarns PMD
 % LocalWords:  ElementType nullness bytecodes Jlint Hashtable SuppressWarnings
 %  LocalWords:  RegexUtil compareTo myA requiresB nullable java myobject
-%  LocalWords:  multithreading myfield Regex NonEmpty
+%  LocalWords:  multithreading myfield Regex NonEmpty Xmaxerrs Xmaxwarns
+%  LocalWords:  8's
