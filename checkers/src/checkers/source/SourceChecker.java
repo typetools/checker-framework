@@ -86,11 +86,16 @@ import com.sun.tools.javac.util.Log;
  */
 
 @SupportedOptions({
-    // When adding a new standard option, add a brief blurb about
-    // the use case and a pointer to one prominent use of the option.
-    // Update the Checker Framework manual,
-    // introduction.tex contains an overview of all options;
-    // a specific section should contain a detailed discussion.
+    // When adding a new standard option:
+    // 1. Add a brief blurb about
+    //    the use case and a pointer to one prominent use of the option.
+    // 2. Update the Checker Framework manual:
+    //     * introduction.tex contains an overview of all options;
+    //     * a specific section should contain a detailed discussion.
+
+    ///
+    /// Unsound checking: ignore some errors
+    ///
 
     // Set inclusion/exclusion of type uses or definitions
     // checkers.source.SourceChecker.shouldSkipUses and similar
@@ -99,69 +104,42 @@ import com.sun.tools.javac.util.Log;
     "skipDefs",
     "onlyDefs",
 
-    // Unsoundly ignore side effects
-    "assumeSideEffectFree",
-
-    // Lint options
-    // checkers.source.SourceChecker.getSupportedLintOptions() and similar
-    "lint",
-
-    // Only output error code, useful for testing framework
-    // checkers.source.SourceChecker.message(Kind, Object, String, Object...)
-    "nomsgtext",
-
-    // Output detailed message in simple-to-parse format, useful
-    // for tools parsing our output
-    // checkers.source.SourceChecker.message(Kind, Object, String, Object...)
-    "detailedmsgtext",
-
-    // Output file names before checking
-    // TODO: it looks like support for this was lost!
-    "filenames",
-
-    // Output all subtyping checks
-    // checkers.basetype.BaseTypeVisitor
-    "showchecks",
-
-    // Additional stub files to use
-    // checkers.types.AnnotatedTypeFactory.buildIndexTypes()
-    "stubs",
-    // Ignore the standard jdk.astub file
-    // checkers.types.AnnotatedTypeFactory.buildIndexTypes()
-    "ignorejdkastub",
-
-    // Whether to print warnings about types/members in a stub file
-    // that were not found on the class path
-    // checkers.util.stub.StubParser.warnIfNotFound
-    "stubWarnIfNotFound",
-
-    // Whether to print debugging messages while processing the stub files
-    // checkers.util.stub.StubParser.debugStubParser
-    "stubDebug",
-
-    // Whether to check that the annotated JDK is correctly provided
-    // checkers.basetype.BaseTypeVisitor.checkForAnnotatedJdk()
-    "nocheckjdk",
+    // A comma-separated list of warnings to suppress
+    // checkers.source.SourceChecker.createSuppressWarnings
+    "suppressWarnings",
 
     // Whether to output errors or warnings only
     // checkers.source.SourceChecker.report
     "warns",
 
-    // A comma-separated list of warnings to suppress
-    // checkers.source.SourceChecker.createSuppressWarnings
-    "suppressWarnings",
+    // Unsoundly ignore side effects
+    "assumeSideEffectFree",
 
-    // Whether to output a stack trace for a framework error
-    // checkers.source.SourceChecker.logCheckerError
-    "printErrorStack",
+    // TODO: Checking of bodies of @SideEffectFree, @Deterministic, and
+    // @Pure methods is temporarily disabled unless -AenablePurity is
+    // supplied on the command line.
+    // Re-enable it after making the analysis more precise.
+    // checkers.basetype.BaseTypeVisitor.visitMethod(MethodTree, Void)
+    "enablePurity",
 
-    // Whether to print @InvisibleQualifier marked annotations
-    // checkers.types.AnnotatedTypeMirror.toString()
-    "printAllQualifiers",
+    // Whether to ignore all subtype tests for type arguments that
+    // were inferred for a raw type
+    // checkers.types.TypeHierarchy.isSubtypeTypeArguments
+    "ignoreRawTypeArguments",
 
-    // Directory for .dot files generated from the CFG
-    // checkers.types.AbstractBasicAnnotatedTypeFactory.analyze
-    "flowdotdir",
+
+    ///
+    /// Type-checking modes:  enable/disable functionality
+    ///
+
+    // Lint options
+    // checkers.source.SourceChecker.getSupportedLintOptions() and similar
+    "lint",
+
+    // Whether to suggest methods that could be marked @SideEffectFree,
+    // @Deterministic, or @Pure
+    // checkers.basetype.BaseTypeVisitor.visitMethod(MethodTree, Void)
+    "suggestPureMethods",
 
     // Whether to assume that assertions are enabled or disabled
     // checkers.flow.CFCFGBuilder.CFCFGBuilder
@@ -173,26 +151,76 @@ import com.sun.tools.javac.util.Log;
     // checkers.flow.CFAbstractTransfer.sequentialSemantics
     "concurrentSemantics",
 
-    // TODO: Checking of bodies of @SideEffectFree, @Deterministic, and
-    // @Pure methods is temporarily disabled unless -AenablePurity is
-    // supplied on the command line.
-    // Re-enable it after making the analysis more precise.
-    // checkers.basetype.BaseTypeVisitor.visitMethod(MethodTree, Void)
-    "enablePurity",
 
-    // Whether to suggest methods that could be marked @SideEffectFree,
-    // @Deterministic, or @Pure
-    // checkers.basetype.BaseTypeVisitor.visitMethod(MethodTree, Void)
-    "suggestPureMethods",
+    ///
+    /// Stub libraries
+    ///
+
+    // Additional stub files to use
+    // checkers.types.AnnotatedTypeFactory.buildIndexTypes()
+    "stubs",
+    // Whether to print warnings about types/members in a stub file
+    // that were not found on the class path
+    // checkers.util.stub.StubParser.warnIfNotFound
+    "stubWarnIfNotFound",
+
+    ///
+    /// Debugging
+    ///
+
+    /// Amount of detail in messages
+
+    // Whether to print @InvisibleQualifier marked annotations
+    // checkers.types.AnnotatedTypeMirror.toString()
+    "printAllQualifiers",
+
+    // Output detailed message in simple-to-parse format, useful
+    // for tools parsing our output
+    // checkers.source.SourceChecker.message(Kind, Object, String, Object...)
+    "detailedmsgtext",
+
+    // Whether to output a stack trace for a framework error
+    // checkers.source.SourceChecker.logCheckerError
+    "printErrorStack",
+
+    // Only output error code, useful for testing framework
+    // checkers.source.SourceChecker.message(Kind, Object, String, Object...)
+    "nomsgtext",
+
+    /// Stub and JDK libraries
+
+    // Ignore the standard jdk.astub file; primarily for testing or debugging.
+    // checkers.types.AnnotatedTypeFactory.buildIndexTypes()
+    "ignorejdkastub",
+
+    // Whether to check that the annotated JDK is correctly provided
+    // checkers.basetype.BaseTypeVisitor.checkForAnnotatedJdk()
+    "nocheckjdk",
+
+    // Whether to print debugging messages while processing the stub files
+    // checkers.util.stub.StubParser.debugStubParser
+    "stubDebug",
+
+    /// Progress tracing
+
+    // Output file names before checking
+    // TODO: it looks like support for this was lost!
+    "filenames",
+
+    // Output all subtyping checks
+    // checkers.basetype.BaseTypeVisitor
+    "showchecks",
+
+    /// Miscellaneous debugging options
+
+    // Directory for .dot files generated from the CFG
+    // checkers.types.AbstractBasicAnnotatedTypeFactory.analyze
+    "flowdotdir",
 
     // Whether to output resource statistics at JVM shutdown
     // checkers.source.SourceChecker.shutdownHook()
     "resourceStats",
 
-    // Whether to ignore all subtype tests for type arguments that
-    // were inferred for a raw type
-    // checkers.types.TypeHierarchy.isSubtypeTypeArguments
-    "ignoreRawTypeArguments",
 })
 public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
     extends AbstractTypeProcessor implements ErrorHandler {

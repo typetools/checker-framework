@@ -554,7 +554,7 @@ until the checker can no longer support that inference.
 
 The refined type begins at a test (such as \<if (myvar != null) ...>) or
 an assignment.  The assignment or test may occur within a method call, in
-which case it is signalled by use of a postcondition annotation such as
+which case it is signaled by use of a postcondition annotation such as
 \code{@\refclass{nullness/quals}{EnsuresNonNull}}.
 
 The refined type ends at an assignment or possible assignment.  Any method
@@ -679,6 +679,23 @@ are starting out annotating a project, or if you are using the Checker
 Framework to find some bugs but not to give a guarantee that no more errors
 exist of the given type.
 
+
+% This is a slightly funny place for this section, but I cannot decide on a
+% better one.
+\subsection{Assertions\label{type-refinement-assertions}}
+
+If your code contains an \<assert> statement, then your code could behave
+in two different ways at run time, depending on whether you compile with or
+without the \<-ea> command-line option to javac.
+
+By default, the Checker Framework outputs warnings about any error that
+could happen at run time, whether assertions are enabled or disabled.
+
+If you supply the \<-AassumeAssertionsAreEnabled> command-line option, then
+the Checker Framework assumes assertions are enabled.  If you supply the
+\<-AassumeAssertionsAreEnabled> command-line option, then the Checker
+Framework assumes assertions are disabled.  You may not supply both
+command-line options.
 
 
 % If you add a Javadoc link to this location, also add the qualifier to the
@@ -974,5 +991,8 @@ class @Marsupial-Animal {
 % LocalWords:  subtype's RequiresNonNull EnsuresNonNull EnsuresNonNullIf
 % LocalWords:  myLocalVar myClass getPackage getSuperclass myString Regex
 % LocalWords:  getComponentType enum implementers dereferenced superclasses
-%  LocalWords:  regex myStrings myVar pouchSize myMammal getter
-%  LocalWords:  getPouchSize
+%  LocalWords:  regex myStrings myVar pouchSize myMammal getter foo MyAnno
+%  LocalWords:  getPouchSize TerminatesExecution myvar myField getField
+%  LocalWords:  computeValue ReadOnly IGJ AsuggestPureMethods
+%  LocalWords:  AenablePurity AassumeSideEffectFree
+%  LocalWords:  AassumeAssertionsAreEnabled
