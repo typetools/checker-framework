@@ -12,7 +12,7 @@ public class Arrays {
     }
 
     public void testMutate() {
-        // Warning only with -Alint:cast:strict.
+        // Warning only with -AcheckCastElementType.
         //TODO:: warning: (cast.unsafe)
         String @Mutable [] m = (String @Mutable [])null;
         m[3] = "m";

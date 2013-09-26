@@ -24,9 +24,9 @@ your purposes.
 
 
 
-\section{Generic Property File Checker\label{genpropkey-checker}}
+\section{General Property File Checker\label{genpropkey-checker}}
 
-The generic Property File Checker ensures that a resource key is located
+The general Property File Checker ensures that a resource key is located
 in a specified property file or resource bundle.
 
 
@@ -131,7 +131,7 @@ respect to the used locale.
 qualified \code{String} or \code{Object} is a valid key found in the
 localization resource.
 This annotation is a specialization of the \code{@PropertyKey} annotation, that
-gets checked by the generic Property Key Checker.
+gets checked by the general Property Key Checker.
 \end{enumerate}
 
 You may need to add the \code{@Localized} annotation to more methods in the
@@ -148,7 +148,7 @@ command:
 \end{Verbatim}
 
 You must specify the localization resource, which maps keys to user-visible
-strings.  Like the generic Property Key Checker, the Internationalization Checker
+strings.  Like the general Property Key Checker, the Internationalization Checker
 supports two types of localization resource:
 \code{ResourceBundle}s using the 
 \code{-Abundlenames=\emph{resource\_name}} option
@@ -187,7 +187,7 @@ command:
 \end{Verbatim}
 
 You must specify the resource, which maps compiler message keys to user-visible
-strings.  The checker supports the same options as the generic property key checker.
+strings.  The checker supports the same options as the general property key checker.
 Within the Checker Framework we only use property files,
 so the \code{-Apropfiles=\emph{prop\_file}} option should be used.
 

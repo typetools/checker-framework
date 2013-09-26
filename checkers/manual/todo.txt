@@ -133,6 +133,9 @@ New command-line options:
   -AenablePurity
   -AassumeSideEffectFree
   -AignoreRawTypeArguments
+  -AinvariantArrays replaces -Alint=arrays:invariant 
+  -AcheckCastElementType replaces -Alint=cast:strict
+
 
 Manual:
  New manual section about array types
