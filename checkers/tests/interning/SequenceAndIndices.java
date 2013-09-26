@@ -30,7 +30,7 @@ public final class SequenceAndIndices<T extends @Interned Object> {
   @Pure
   public boolean equals (Object other) {
     if (other instanceof SequenceAndIndices) {
-      // Warning only with -Alint:cast:strict.
+      // Warning only with -AcheckCastElementType.
       //TODO:: warning: (cast.unsafe)
       return equals((SequenceAndIndices<T>) other); // unchecked
     } else {

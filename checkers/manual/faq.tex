@@ -304,7 +304,11 @@ software.
 
 \subsection{What guarantee does the Checker Framework give for concurrent code?\label{faq-concurrency}}
 
-The Checker Framework currently assumes that the code that it is checking
+The Lock Checker (see Chapter~\ref{lock-checker}) offers a way to detect
+and prevent certain concurrency errors.
+
+
+By default, the Checker Framework assumes that the code that it is checking
 is sequential:  that is, there are no concurrent accesses from another
 thread.  This means that The Checker Framework is unsound for concurrent
 code, in the sense that it may fail to warn about a possible null
@@ -323,13 +327,10 @@ fail because another thread may set \<myobject.myfield> to \<null> after
 the nullness check in the \<if> condition, but before the \<if> body is
 executed.
 
-In the future, the Checker Framework developers plan to add a concurrent
-mode that would warn about any error that could happen due to concurrent
-accesses to data structures.  This extension is non-trivial, and enabling
-it by default would yield many unhelpful warnings for sequential code.
-
-The Lock Checker (see Chapter~\ref{lock-checker}) offers a way to detect
-and prevent certain concurrency errors.
+If you supply the \<-AconcurrentSemantics> command-line option, then the
+Checker Framework assumes that any field can be changed at any time.  This
+limits the amount of flow-sensitive type qualifier refinement
+(Section~\ref{type-refinement}) that the Checker Framework can do.
 
 
 % If you are concerned about concurrency, then the ``fix''
@@ -925,4 +926,4 @@ annotations-in-comments feature (Section~\ref{annotations-in-comments}).
 %  LocalWords:  RegexUtil compareTo myA requiresB nullable java myobject
 %  LocalWords:  multithreading myfield Regex NonEmpty Xmaxerrs Xmaxwarns
 %  LocalWords:  8's igj javari MonotonicNonNull EnsuresNonNull myFieldName
-%  LocalWords:  m1 m2 RequiresNonNull
+%  LocalWords:  m1 m2 RequiresNonNull AconcurrentSemantics 8's
