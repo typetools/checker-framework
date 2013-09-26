@@ -87,11 +87,13 @@ import com.sun.tools.javac.util.Log;
 
 @SupportedOptions({
     // When adding a new standard option:
-    // 1. Add a brief blurb about
-    //    the use case and a pointer to one prominent use of the option.
+    // 1. Add a brief blurb here about the use case
+    //    and a pointer to one prominent use of the option.
     // 2. Update the Checker Framework manual:
-    //     * introduction.tex contains an overview of all options;
+    //     * introduction.tex contains an overview of all options, which
+    //       should be in the same order as this source code file.
     //     * a specific section should contain a detailed discussion.
+    
 
     ///
     /// Unsound checking: ignore some errors
