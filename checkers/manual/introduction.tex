@@ -555,35 +555,96 @@ resulting \<.class> files, however.
 
 You can pass command-line arguments to a checker via javac's standard \<-A>
 option (``\<A>'' stands for ``annotation'').  All of the distributed
-checkers support the following command-line options:
+checkers support the following command-line options.
 
+Unsound checking: ignore some errors
 \begin{itemize}
-\item \<-AskipUses> Suppress all errors and warnings at all uses of a
-  given class; see Section~\ref{askipuses}
-\item \<-AonlyUses> Suppress all errors and warnings at all uses except those of a
-  given class; see Section~\ref{askipuses}
-\item \<-AskipDefs> Suppress all errors and warnings within the definition of a
-  given class; see Section~\ref{askipdefs}
-\item \<-AonlyDefs> Suppress all errors and warnings except within the definition of a
-  given class; see Section~\ref{askipdefs}
-\item \<-Astubs> List of stub files or directories; see Section~\ref{stub-using}
-\item \<-AstubWarnIfNotFound> Warn if a stub file entry could not be found; see Section~\ref{stub-using}
-\item \<-AstubDebug> Output debug messages while parsing stub files; see Section~\ref{stub-using}
-\item \<-Alint> Enable or disable optional checks; see Section~\ref{lint-options}
-\item \<-Awarns> Treat checker errors as warnings.  If you use this, you
+\item \<-AskipUses>, \<-AonlyUses> 
+  Suppress all errors and warnings at all uses of a given class --- or at all
+  uses except those of a given class.  See Section~\ref{askipuses}
+\item \<-AskipDefs>, \<-AonlyDefs>
+  Suppress all errors and warnings within the definition of a given class
+  --- or everywhere except within the definition of a given class.  See
+  Section~\ref{askipdefs}
+\item \<-AsuppressWarnings>
+  Suppress all warnings matching the given key; see
+  Section~\ref{suppresswarnings-command-line}
+\item \<-AassumeSideEffectFree>
+  Unsoundly assume that every method is side-effect-free; see
+  Section~\ref{type-refinement-purity}.
+\item \<-AenablePurity>
+  Check the bodies of methods marked \<@SideEffectFree>, \<@Deterministic>,
+  and \<@Pure> to ensure the method satisfies the annotation.  By default,
+  the Checker Framework unsoundly trusts the method annotation.  See
+  Section~\ref{type-refinement-purity}.
+\item \<-AignoreRawTypeArguments>
+  Ignore subtype tests for type arguments that were inferred for a raw
+  type.  If possible, it is better to write the type arguments.  See
+  Section~\ref{generics-raw-types}.
+\item \<-Awarns>
+  Treat checker errors as warnings.  If you use this, you
   may wish to also supply \code{-Xmaxwarns 10000}, because by default
   \<javac> prints at most 100 warnings.
-\item \<-AsuppressWarnings> Suppress all warnings matching the given key; see
-  Section~\ref{suppresswarnings-command-line}
-\item \<-Afilenames>, \<-Anomsgtext>, \<-Adetailedmsgtext>, \<-Ashowchecks>, \<-AprintErrorStack>,
-  \<-AprintAllQualifiers>, \<-Aignorejdkastub>
-  Aids for testing or debugging a checker; see Section~\ref{debugging-options}
-\item \<-AresourceStats> Display resource usage statistics at the end of compilation
 \end{itemize}
 
+
+Type-checking modes:  enable/disable functionality
+\begin{itemize}
+\item \<-Alint>
+  Enable or disable optional checks; see Section~\ref{lint-options}.
+\item \<-AsuggestPureMethods>
+  Suggest methods that could be marked \<@SideEffectFree>,
+  \<@Deterministic>, or \<@Pure>; see Section~\ref{type-refinement-purity}.
+\item \<-AassumeAssertionsAreEnabled>, \<-AassumeAssertionsAreDisabled>
+  Whether to assume that assertions are enabled or disabled; see Section~\ref{type-refinement-assertions}.
+\item \<-AconcurrentSemantics>
+  Whether to assume concurrent semantics (field values may change at any
+  time) or sequential semantics; see Section~\ref{faq-concurrency}.
+
+\end{itemize}
+
+Stub libraries
+\begin{itemize}
+\item \<-Astubs>
+  List of stub files or directories; see Section~\ref{stub-using}.
+\item \<-AstubWarnIfNotFound>
+  Warn if a stub file entry could not be found; see Section~\ref{stub-using}.
+\end{itemize}
+
+Debugging
+\begin{itemize}
+\item
+ \<-AprintAllQualifiers>,
+ \<-Adetailedmsgtext>,
+ \<-AprintErrorStack>,
+ \<-Anomsgtext>
+Amount of detail in messages; see Section~\ref{debugging-options-detail}.
+
+\item
+ \<-Aignorejdkastub>,
+ \<-Anocheckjdk>
+ \<-AstubDebug>,
+Stub and JDK libraries; see Section~\ref{debugging-options-libraries}
+
+\item
+ \<-Afilenames>,
+ \<-Ashowchecks>
+Progress tracing; see Section~\ref{debugging-options-progress}
+
+\item
+ \<-Aflowdotdir>,
+ \<-AresourceStats>
+Miscellaneous debugging options; see Section~\ref{debugging-options-misc}
+\end{itemize}
+
+
 \noindent
-Some checkers support additional options, such as \<-Aquals> for the Basic
-Checker to check; see Chapter~\ref{basic-checker}.
+Some checkers support additional options, which are described in that
+checker's manual section.
+% Search for "@SupportedOptions" in the implementation to find them all.
+For example, \<-Aquals> tells
+the Basic Checker (see Chapter~\ref{basic-checker}) and the Fenum Checker
+(see Chapter~\ref{fenum-checker}) which annotations to check.
 
 
 Here are some standard javac command-line options that you may find useful.
@@ -1067,5 +1128,11 @@ bug in the checker; in this case, please report the bug (see
 % LocalWords:  html JCIP MultiSet Astubs Afilenames Anomsgtext Ashowchecks tex
 % LocalWords:  Aquals processorpath regex RegEx Xmaxwarns Xbootclasspath com
 % LocalWords:  IntelliJ assertNotNull checkNotNull Goetz antipattern subclassed
-% LocalWords:  callees Xmx unconfuse fenum propkey forName jsr308
-% LocalWords:  bootclasspath
+% LocalWords:  callees Xmx unconfuse fenum propkey forName jsr308 Djsr308
+% LocalWords:  bootclasspath AonlyUses AskipDefs AonlyDefs AenablePurity
+%  LocalWords:  AsuppressWarnings AassumeSideEffectFree Adetailedmsgtext
+%  LocalWords:  AignoreRawTypeArguments AsuggestPureMethods Anocheckjdk
+%  LocalWords:  AassumeAssertionsAreEnabled AassumeAssertionsAreDisabled
+%  LocalWords:  AconcurrentSemantics AstubWarnIfNotFound AprintErrorStack
+%  LocalWords:  AprintAllQualifiers Aignorejdkastub AstubDebug Aflowdotdir
+%  LocalWords:  AresourceStats noannotationsincomments jls r78
