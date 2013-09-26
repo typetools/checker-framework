@@ -4,6 +4,10 @@ Necessary changes to the manual.  In brackets I (Stefan) wrote the names of peop
 
 ------------------------------------------------------
 
+Initialization checker:  rewrite and replace all current references to @Raw
+
+------------------------------------------------------
+
 New section on concepts and annotations that apply to all type-systems and checkers
 
 Where would a good place be for this?  At the beginning/end?  Split into multiple sections?
@@ -133,7 +137,6 @@ New command-line options:
   -AignoreRawTypeArguments
   -AinvariantArrays replaces -Alint=arrays:invariant 
   -AcheckCastElementType replaces -Alint=cast:strict
-
 
 Manual:
  New manual section about array types
