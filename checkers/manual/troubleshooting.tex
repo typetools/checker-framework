@@ -1,14 +1,15 @@
 \htmlhr
 \chapter{Troubleshooting and getting help\label{troubleshooting}}
 
-The manual might already answer your question, so please peruse it first,
+The manual might already answer your question, so first please look for
+your answer in the manual,
 including this chapter and the FAQ (Chapter~\ref{faq}).
 If not, you can use the mailing list,
 \code{checker-framework-discuss@googlegroups.com}, to ask other users for
 help.  For archives and to subscribe, see \url{http://groups.google.com/group/checker-framework-discuss}.
-To report bugs, use the issue tracker at
-\url{http://code.google.com/p/checker-framework/issues/list}.
-If you want to help out, you can choose a bug and fix it, or select a
+To report bugs, please see Section~\ref{reporting-bugs}.
+If you want to help out, you can give feedback (including on the
+documentation), choose a bug and fix it, or select a
 project from the ideas list at
 \url{http://code.google.com/p/checker-framework/wiki/Ideas}.
 
@@ -30,7 +31,9 @@ to doing its normal processing.
 \subsection{Unable to run the checker, or checker crashes\label{common-problems-running}}
 
 If you are unable to run the checker, or if the checker or the compiler
-crashes, then the problem may be a problem with your environment.
+terminates with an error, then the problem may be a problem with your environment.
+(If the checker or the compiler crashes, that is a bug in the Checker
+Framework; please report it.  See Section~\ref{reporting-bugs}.)
 This section describes some possible problems and solutions.
 
 \begin{itemize}
@@ -298,6 +301,35 @@ must be made to satisfy it for the pluggable type system as well.  The
 typical way to address this is to write the meta-annotation
 \<@ImplicitFor(trees={Tree.Kind.NULL\_LITERAL})> on the definition of the
 bottom type qualifier.
+
+\item
+An error such as 
+
+\begin{Verbatim}
+MyFile.java:123: error: incompatible types in argument.
+                        myModel.addElement("Scanning directories...");
+                                           ^
+  found   : String
+  required: ? extends Object
+\end{Verbatim}
+
+\noindent
+may stem from use of raw types.  (``\<String>'' might be a different type
+and might have type annotations.)  If your declaration was
+
+\begin{Verbatim}
+  DefaultListModel myModel;
+\end{Verbatim}
+
+\noindent
+then it should be
+\begin{Verbatim}
+  DefaultListModel<String> myModel;
+\end{Verbatim}
+
+Running the regular Java compiler with the \<-Xlint:unchecked> command-line
+option will help you to find and fix problems such as raw types.
+
 
 \end{itemize}
 
