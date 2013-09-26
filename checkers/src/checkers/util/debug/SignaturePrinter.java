@@ -24,6 +24,7 @@ import com.sun.tools.javac.util.Context;
 
 /**
  * Outputs the method signatures of a class with fully annotated types.
+ * <p>
  *
  * The class determines the effective annotations for a checker in source or
  * the classfile.  Finding the effective annotations is useful for the
