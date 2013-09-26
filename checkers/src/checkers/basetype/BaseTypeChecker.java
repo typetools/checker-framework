@@ -401,12 +401,7 @@ public abstract class BaseTypeChecker<Factory extends AbstractBasicAnnotatedType
     }
 
     /**
-     * Specify 'flow' and 'cast' as supported lint options for all Type checkers.
-     *
-     * WMD: the above comment talks about 'flow', but I don't find a use of it as
-     * a lint option. I added a new key 'flow:inferFromAsserts'.
-     * Maybe 'flow' should be used in BasicAnnotatedTypeFactory with/instead of
-     * FLOW_BY_DEFAULT.
+     * Specify supported lint options for all type-checkers.
      */
     @Override
     public Set<String> getSupportedLintOptions() {
@@ -414,7 +409,6 @@ public abstract class BaseTypeChecker<Factory extends AbstractBasicAnnotatedType
         lintSet.add("cast");
         lintSet.add("cast:redundant");
         lintSet.add("cast:unsafe");
-        lintSet.add("flow:inferFromAsserts");
 
         return Collections.unmodifiableSet(lintSet);
     }
