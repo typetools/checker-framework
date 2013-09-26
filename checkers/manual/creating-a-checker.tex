@@ -98,10 +98,10 @@ Annotation File Utilities to manipulate \code{.java} and \code{.class} files.
 Other \par tools
 \\ \hline
 \multicolumn{6}{|p{6\bw}|}{\centering Checker Framework \par (enables creation of pluggable type-checkers)} &
-\multicolumn{2}{p{3\bw}|}{\centering \ahref{http://types.cs.washington.edu/annotation-file-utilities/}{Annotation File Utilities} \par (\code{.java} $\leftrightarrow$ \code{.class} files)} 
+\multicolumn{2}{p{3\bw}|}{\centering \ahref{\url{http://types.cs.washington.edu/annotation-file-utilities/}}{Annotation File Utilities} \par (\code{.java} $\leftrightarrow$ \code{.class} files)} 
 \\ \hline
 \multicolumn{8}{|p{8.5\bw}|}{\centering
-  \ahref{http://types.cs.washington.edu/jsr308/}{Type Annotations} syntax
+  \ahref{\url{http://types.cs.washington.edu/jsr308/}}{Type Annotations} syntax
   and classfile format (``JSR 308'') \par \centering (no built-in semantics)} \\ \hline
 \end{tabular}
 \end{center}
@@ -621,7 +621,7 @@ The Checker Framework provides a \textit{base visitor class},
 \refclass{basetype}{BaseTypeVisitor}, that performs type-checking at each node of a
 source file's AST\@.  It uses the visitor design pattern to traverse
 Java syntax trees as provided by Oracle's
-\ahref{http://types.cs.washington.edu/checker-framework/api/javac/tree//index.html}{Tree
+\ahref{\url{http://types.cs.washington.edu/checker-framework/api/javac/tree//index.html}}{Tree
 API},
 and it issues a warning whenever the type system is violated.
 
@@ -737,7 +737,7 @@ checker classes for the Interning Checker and the Nullness Checker:
 \end{Verbatim}
 
 
-\urldef{\getSupportedTypeQualifiersURL}\url{http://types.cs.washington.edu/checker-framework/current/doc/checkers/basetype/BaseTypeChecker.html#getSupportedTypeQualifiers()}
+\urldef{\getSupportedTypeQualifiersURL}{\url}{http://types.cs.washington.edu/checker-framework/current/doc/checkers/basetype/BaseTypeChecker.html#getSupportedTypeQualifiers()}
 
 The checker class must be annotated by
 \code{@\refclass{quals}{TypeQualifiers}}, which lists the annotations
@@ -749,7 +749,7 @@ returned by the
 \ahref{\getSupportedTypeQualifiersURL}{\<BaseTypeChecker\-.getSupportedTypeQualifiers>}
 method).
 
-\urldef{\reportURL}\url{http://types.cs.washington.edu/checker-framework/current/doc/checkers/source/SourceChecker.html#report(checkers.source.Result,%20java.lang.Object)}
+\urldef{\reportURL}{\url}{http://types.cs.washington.edu/checker-framework/current/doc/checkers/source/SourceChecker.html#report(checkers.source.Result,%20java.lang.Object)}
 
 The checker class bridges between the compiler and the rest of the checker.  It
 invokes the type-rule check visitor on every Java source file being
@@ -1277,8 +1277,8 @@ you may find useful later on.
 The Checker Framework uses Oracle's Tree API to access a program's AST\@.
 The Tree API is specific to the Oracle OpenJDK, so the Checker Framework only
 works with the OpenJDK javac, not with Eclipse's compiler ecj or with
-\ahref{http://gcc.gnu.org/java/}{gcj}.  This also limits the tightness of
-the integration of the Checker Framework into other IDEs such as \ahref{http://www.jetbrains.com/idea/}{IntelliJ IDEA}\@.
+\ahref{\url{http://gcc.gnu.org/java/}}{gcj}.  This also limits the tightness of
+the integration of the Checker Framework into other IDEs such as \ahref{\url{http://www.jetbrains.com/idea/}}{IntelliJ IDEA}\@.
 An implementation-neutral API would be preferable.
 In the future, the Checker Framework
 can be migrated to use the Java Model AST of JSR 198 (Extension API for

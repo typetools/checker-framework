@@ -148,11 +148,11 @@ build the latest development version from source
 % Not "\ahrefurl" because it looks bad in the printed manual.
 \textbf{Requirement:}
 You must have \textbf{JDK 7} or later installed.  You can get JDK 7 from
-\ahref{http://www.oracle.com/technetwork/java/javase/downloads/index.html}{Oracle}
+\ahref{\url{http://www.oracle.com/technetwork/java/javase/downloads/index.html}}{Oracle}
 or elsewhere.  If you are using Apple Mac OS X, you can use
-\ahref{http://developer.apple.com/search/index.php?q=java}{Apple's implementation},
-\ahref{http://landonf.bikemonkey.org/static/soylatte/}{SoyLatte},
-or the \ahref{http://openjdk.java.net/}{OpenJDK}.
+\ahref{\url{http://developer.apple.com/search/index.php?q=java}}{Apple's implementation},
+\ahref{\url{http://landonf.bikemonkey.org/static/soylatte/}}{SoyLatte},
+or the \ahref{\url{http://openjdk.java.net/}}{OpenJDK}.
 
 The installation process is simple!  It has two required steps and one
 optional step.
@@ -431,7 +431,7 @@ command line.
 \section{Writing annotations\label{writing-annotations}}
 
 The syntax of type annotations in Java is specified by
-\ahref{http://types.cs.washington.edu/jsr308/}{JSR 308}~\cite{JSR308-2008-09-12}.  Ordinary
+\ahref{\url{http://types.cs.washington.edu/jsr308/}}{JSR 308}~\cite{JSR308-2008-09-12}.  Ordinary
 Java permits annotations on declarations.  JSR 308 permits annotations
 anywhere that you would write a type, including generics and casts.  You
 can also write annotations to indicate type qualifiers for array levels and
@@ -957,7 +957,7 @@ if a method does \emph{not} accept \code{null} as an argument, then an
 overriding definition is permitted to accept \code{null}.
 
 As a bad example, consider an erroneous \code{@Nullable} annotation at
-line 141 of \ahref{http://code.google.com/p/google-collections/source/browse/trunk/src/com/google/common/collect/Multiset.java}{\code{com/google/common/collect/Multiset.java}}, version r78:
+line 141 of \ahref{\url{http://code.google.com/p/google-collections/source/browse/trunk/src/com/google/common/collect/Multiset.java}}{\code{com/google/common/collect/Multiset.java}}, version r78:
 
 \begin{Verbatim}
 101  public interface Multiset<E> extends Collection<E> {
