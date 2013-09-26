@@ -19,8 +19,6 @@ Where would a good place be for this?  At the beginning/end?  Split into multipl
   - Explain the new defaulting for local variables (including our decision on casts and instanceof).
     (See notes below.)
   - Explain the command line parameter -Adotflowdir (probably find a better name first) [Stefan/Charlie].
-  - Document -AconcurrentSemantics command-line option; also note it in caveats about what the checker guarantees [Stefan].
-  - Document -AassumeAssertionsAreEnabled and -AassumeAssertionsAreDisabled [Stefan].
 
 - Document -ANullnessChecker_option=value mechanism
 
