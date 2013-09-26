@@ -12,7 +12,7 @@ class GenericsCasts {
   Data<?> forName(String p) { throw new Error(""); }
   void m() {
       // Cast from a wildcard to a normal type argument.
-      // Warning only with -Alint:cast:strict.
+      // Warning only with -AcheckCastElementType.
       //TODO:: warning: (cast.unsafe)
       //:: warning: [unchecked] unchecked cast
       Data<GenericsCasts> c = (Data<GenericsCasts>) forName("HaHa!");
@@ -28,7 +28,7 @@ class GenericsCasts {
       }
       void trouble() {
           Queue<K> queue = new Queue<K>();
-          // Warning only with -Alint:cast:strict.
+          // Warning only with -AcheckCastElementType.
           //TODO:: warning: (cast.unsafe)
           //:: warning: [unchecked] unchecked cast
           Entry<K, V> e = (Entry<K, V>) queue.poll();
