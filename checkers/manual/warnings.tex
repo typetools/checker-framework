@@ -429,7 +429,9 @@ lint options except redundant casts, you can pass
 \code{-Alint=-all,cast:redundant} on the command line.
 
 Only the last \code{-Alint} option is used; all previous \code{-Alint}
-options are silently ignored.
+options are silently ignored.  In particular, this means that \<-Alint=all
+-Alint=cast:redundant> is \emph{not} equivalent to
+\code{-Alint=-all,cast:redundant}.
 
 
 \subsection{No \code{-processor} command-line option\label{no-processor}}
