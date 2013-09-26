@@ -108,9 +108,7 @@
 % Reference to Sun Javadoc.
 % Arg 1: .html reference, without the .../api/ prefix
 % Arg 2: What will appear in the formatted manual.
-% Problem:  the "?is-external=true" must appear before any "#".  But why is
-% it necessary at all?
-% \newcommand{\sunjavadoc}[2]{\ahref{http://docs.oracle.com/javase/7/docs/api/#1?is-external=true}{\<#2>}}
+% Do not use \url in the body of any macro
 \newcommand{\sunjavadoc}[2]{\ahref{http://types.cs.washington.edu/checker-framework/api/jdk/#1}{\<#2>}}
 
 
