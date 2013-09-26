@@ -572,15 +572,25 @@ Unsound checking: ignore some errors
 \item \<-AassumeSideEffectFree>
   Unsoundly assume that every method is side-effect-free; see
   Section~\ref{type-refinement-purity}.
+\item \<-AignoreRawTypeArguments>
+  Ignore subtype tests for type arguments that were inferred for a raw
+  type.  If possible, it is better to write the type arguments.  See
+  Section~\ref{generics-raw-types}.
 \item \<-AenablePurity>
   Check the bodies of methods marked \<@SideEffectFree>, \<@Deterministic>,
   and \<@Pure> to ensure the method satisfies the annotation.  By default,
   the Checker Framework unsoundly trusts the method annotation.  See
   Section~\ref{type-refinement-purity}.
-\item \<-AignoreRawTypeArguments>
-  Ignore subtype tests for type arguments that were inferred for a raw
-  type.  If possible, it is better to write the type arguments.  See
-  Section~\ref{generics-raw-types}.
+\item \<-AinvariantArrays>
+  Make array subtyping invariant; that is, two arrays are subtypes of one
+  another only if they have exactly the same element type.  By default,
+  the Checker Framework unsoundly permits covariant array subtyping, just
+  as Java does.  See Section~\ref{invariant-arrays}.
+\item \<-AcheckCastElementType>
+  In a cast, require that parameterized type arguments and array elements
+  are the same.  By default, the Checker Framework unsoundly permits them
+  to differ, just as Java does.  See Section~\ref{covariant-type-parameters}
+  and Section~\ref{invariant-arrays}.
 \item \<-Awarns>
   Treat checker errors as warnings.  If you use this, you
   may wish to also supply \code{-Xmaxwarns 10000}, because by default

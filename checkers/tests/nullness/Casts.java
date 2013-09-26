@@ -27,7 +27,7 @@ public class Casts {
     }
 
     void testUnsafeCastArray1(@Nullable Object[] x) {
-        // Warning only with -Alint:cast:strict.
+        // Warning only with -AcheckCastElementType.
         //TODO:: warning: (cast.unsafe)
         @NonNull Object[] y = (@NonNull Object[]) x;
         y[0].toString();
@@ -35,14 +35,14 @@ public class Casts {
 
     void testUnsafeCastArray2(@NonNull Object x) {
         // We don't know about the component type of x -> warn
-        // Warning only with -Alint:cast:strict.
+        // Warning only with -AcheckCastElementType.
         //TODO:: warning: (cast.unsafe)
         @NonNull Object[] y = (@NonNull Object[]) x;
         y[0].toString();
     }
 
     void testUnsafeCastList1(java.util.ArrayList<@Nullable Object> x) {
-        // Warning only with -Alint:cast:strict.
+        // Warning only with -AcheckCastElementType.
         //TODO:: warning: (cast.unsafe)
         java.util.List<@NonNull Object> y = (java.util.List<@NonNull Object>) x;
         y.get(0).toString();
@@ -53,13 +53,13 @@ public class Casts {
 
     void testUnsafeCastList2(java.util.List<@Nullable Object> x) {
         java.util.List<@Nullable Object> y = (java.util.ArrayList<@Nullable Object>) x;
-        // Warning only with -Alint:cast:strict.
+        // Warning only with -AcheckCastElementType.
         //TODO:: warning: (cast.unsafe)
         java.util.List<@NonNull Object> y2 = (java.util.ArrayList<@NonNull Object>) x;
     }
 
     void testUnsafeCastList3(@NonNull Object x) {
-        // Warning only with -Alint:cast:strict.
+        // Warning only with -AcheckCastElementType.
         //TODO:: warning: (cast.unsafe)
         //:: warning: [unchecked] unchecked cast
         java.util.List<@Nullable Object> y = (java.util.List<@Nullable Object>) x;
