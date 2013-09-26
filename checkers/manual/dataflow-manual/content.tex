@@ -65,49 +65,49 @@ division possibly throw a DivideByZero exception?
 \end{workinprogress}
 
 
-    \code{class dataflow.cfg.node.*Node}
+    \begin{verbatim}class dataflow.cfg.node.*Node\end{verbatim}
 
 \subsubsection{Blocks}
 \label{sec:block_classes}
 
     Nodes are grouped into basic blocks using a hierarchy of Block classes.  The hierarchy is composed of five interfaces, two abstract classes, and four concrete classes.  
 
-             \code{interface dataflow.cfg.block.Block}
+             \begin{verbatim}interface dataflow.cfg.block.Block\end{verbatim}
     
-              \code{abstract class dataflow.cfg.block.BlockImpl implements Block}
+              \begin{verbatim}abstract class dataflow.cfg.block.BlockImpl implements Block\end{verbatim}
 
-              \code{interface dataflow.cfg.block.SingleSuccessorBlock extends Block}
+              \begin{verbatim}interface dataflow.cfg.block.SingleSuccessorBlock extends Block\end{verbatim}
 
-              \code{abstract class dataflow.cfg.block.SingleSuccessorBlockImpl extends BlockImpl implements
-        SingleSuccessorBlock}
+              \begin{verbatim}abstract class dataflow.cfg.block.SingleSuccessorBlockImpl extends BlockImpl implements
+        SingleSuccessorBlock\end{verbatim}
 
     A RegularBlock contains no exception-raising operations and has a single control-flow successor.
 
-    \code{interface dataflow.cfg.block.RegularBlock extends SingleSuccessorBlock}
+    \begin{verbatim}interface dataflow.cfg.block.RegularBlock extends SingleSuccessorBlock\end{verbatim}
         
-    \code{class dataflow.cfg.block.RegularBlockImpl extends SingleSuccessorBlockImpl implements
-        RegularBlock}
+    \begin{verbatim}class dataflow.cfg.block.RegularBlockImpl extends SingleSuccessorBlockImpl implements
+        RegularBlock\end{verbatim}
         
     An ExceptionBlock contains a single operation that may raise an exception, with one or more exceptional successors and a single normal control-flow successor.
             
-    \code{interface dataflow.cfg.block.ExceptionBlock extends SingleSuccessorBlock}
+    \begin{verbatim}interface dataflow.cfg.block.ExceptionBlock extends SingleSuccessorBlock\end{verbatim}
 
-    \code{class dataflow.cfg.block.ExceptionBlockImpl extends SingleSuccessorBlockImpl implements
-        ExceptionBlock}
+    \begin{verbatim}class dataflow.cfg.block.ExceptionBlockImpl extends SingleSuccessorBlockImpl implements
+        ExceptionBlock\end{verbatim}
         
     A SpecialBlock represents method entry or exit, including exceptional
     exit which is represented separately from normal exit.
 
-    \code{interface dataflow.cfg.block.SpecialBlock extends SingleSuccessorBlock}
+    \begin{verbatim}interface dataflow.cfg.block.SpecialBlock extends SingleSuccessorBlock\end{verbatim}
 
-    \code{class dataflow.cfg.block.SpecialBlockImpl extends SingleSuccessorBlockImpl implements
-        SpecialBlock}
+    \begin{verbatim}class dataflow.cfg.block.SpecialBlockImpl extends SingleSuccessorBlockImpl implements
+        SpecialBlock\end{verbatim}
 
     A ConditionalBlock contains no operations at all.  It represents a control-flow split to either a `then' or an `else' successor based on the immediately preceding boolean-valued Node.
 
-    \code{interface dataflow.cfg.block.ConditionalBlock extends Block}
+    \begin{verbatim}interface dataflow.cfg.block.ConditionalBlock extends Block\end{verbatim}
     
-    \code{class dataflow.cfg.block.ConditionalBlockImpl extends BlockImpl implements ConditionalBlock}
+    \begin{verbatim}class dataflow.cfg.block.ConditionalBlockImpl extends BlockImpl implements ConditionalBlock\end{verbatim}
     
 
 
@@ -116,18 +116,18 @@ division possibly throw a DivideByZero exception?
 
      A ControlFlowGraph represents the body of a method or an initializer expression as a graph of Blocks with distinguished entry, exit, and exceptional exit SpecialBlocks.  ControlFlowGraphs are produced by the CFGBuilder classes and are treated as immutable once they are built.
 
-        \code{class dataflow.cfg.ControlFlowGraph}
+        \begin{verbatim}class dataflow.cfg.ControlFlowGraph\end{verbatim}
 
 \subsubsubsection{CFGBuilder}
 \label{sec:cfg_builder_classes}
     
     The CFGBuilder classes visit an AST and produce a corresponding ControlFlowGraph as described in \autoref{sec:ast_to_cfg_translation}.
     
-        \code{class dataflow.cfg.CFGBuilder}
+        \begin{verbatim}class dataflow.cfg.CFGBuilder\end{verbatim}
         
     The Checker Framework derives from CFGBuilder in order to desugar enhanced for loops that make explicit use of type annotations provided by the checker in use.
         
-        \code{class checkers.flow.CFCFGBuilder extends CFGBuilder}
+        \begin{verbatim}class checkers.flow.CFCFGBuilder extends CFGBuilder\end{verbatim}
 
 
 \subsubsection{FlowExpressions}
@@ -138,7 +138,7 @@ division possibly throw a DivideByZero exception?
     array accesses, references to \code{this}, and pure method calls.
     FlowExpressions are keys in the store of abstract values.
 
-    \code{class dataflow.analysis.FlowExpressions}
+    \begin{verbatim}class dataflow.analysis.FlowExpressions\end{verbatim}
     
     Java expressions that appear in method pre- and postconditions are parsed into FlowExpressions using helper routines in \code{checkers.util.FlowExpressionParseUtil}.
 
@@ -154,17 +154,17 @@ division possibly throw a DivideByZero exception?
     share a common feature that one can compute the least upper bound of
     two AbstractValues.
 
-        \code{interface dataflow.analysis.AbstractValue<V extends AbstractValue<V>>}
+        \begin{verbatim}interface dataflow.analysis.AbstractValue<V extends AbstractValue<V>>\end{verbatim}
         
     For the Checker Framework, abstract values are essentially AnnotatedTypeMirrors.
         
-        \code{abstract class checkers.flow.CFAbstractValue<V extends CFAbstractValue<V>> implements AbstractValue<V>}
+        \begin{verbatim}abstract class checkers.flow.CFAbstractValue<V extends CFAbstractValue<V>> implements AbstractValue<V>\end{verbatim}
         
-        \code{class checkers.flow.CFValue extends CFAbstractValue<CFValue>}
+        \begin{verbatim}class checkers.flow.CFValue extends CFAbstractValue<CFValue>\end{verbatim}
         
     For the NullnessCheckers, abstract values additionally track the meaning of PolyNull, which may be either Nullable or NonNull.
         
-        \code{class checkers.nullness.NullnessValue extends CFAbstractValue<NullnessValue>}
+        \begin{verbatim}class checkers.nullness.NullnessValue extends CFAbstractValue<NullnessValue>\end{verbatim}
         
 \begin{workinprogress}    
 Don't (nearly) all type systems support \code{Poly...}, so wouldn't that
@@ -178,26 +178,26 @@ statement be true of most type checkers, not just the NullnessCheckers?
 
     A Store is a set of dataflow facts computed by an analysis, so it is a mapping from FlowExpressions to AbstractValues.  As with AbstractValues, one can take the least upper bound of two Stores.
 
-    \code{interface dataflow.analysis.Store<S extends Store<S>>}
+    \begin{verbatim}interface dataflow.analysis.Store<S extends Store<S>>\end{verbatim}
 
     The Checker Framework store restricts the type of abstract values it may contain.
 
-    \code{abstract class checkers.flow.CFAbstractStore<V extends CFAbstractValue<V>,
+    \begin{verbatim}abstract class checkers.flow.CFAbstractStore<V extends CFAbstractValue<V>,
         S extends CFAbstractStore<V, S>>
-    implements Store<S>}
+    implements Store<S>\end{verbatim}
     
-    \code{class checkers.flow.CFStore extends CFAbstractStore<CFValue, CFStore>}
+    \begin{verbatim}class checkers.flow.CFStore extends CFAbstractStore<CFValue, CFStore>\end{verbatim}
     
     An InitializationStore tracks which fields of the `self' reference have been initialized.
     
-    \code{class checkers.initialization.InitializationStore<
+    \begin{verbatim}class checkers.initialization.InitializationStore<
         V extends CFAbstractValue<V>, S extends InitializationStore<V, S>>
-    extends CFAbstractStore<V, S>}
+    extends CFAbstractStore<V, S>\end{verbatim}
     
     A NullnessStore additionally tracks the meaning of PolyNull.
     
-    \code{class checkers.nullness.NullnessStore extends
-        InitializationStore<NullnessValue, NullnessStore>}
+    \begin{verbatim}class checkers.nullness.NullnessStore extends
+        InitializationStore<NullnessValue, NullnessStore>\end{verbatim}
 
 
 \subsubsection{Transfer functions}
@@ -211,65 +211,65 @@ statement be true of most type checkers, not just the NullnessCheckers?
 \subsubsubsection{TransferInput}
 \label{sec:transfer_input_classes}
 
-The TransferInput represents the set of dataflow facts known to be true immediately before the node to be analyzed.  TransferInputs may contain a single store, or a pair of `then' and `else' stores when following a boolean-valued expression.
+The TransferInput represents the set of dataflow facts known to be true immediately before the node to be analyzed.  A TransferInput may contain a single store, or a pair of `then' and `else' stores when following a boolean-valued expression.
 
-    \code{class dataflow.analysis.TransferInput<
+    \begin{verbatim}class dataflow.analysis.TransferInput<
         A extends AbstractValue<A>,
-        S extends Store<S>>}
+        S extends Store<S>>\end{verbatim}
 
 \subsubsubsection{TransferResult}
 \label{sec:transfer_result_classes}
 
     A TransferResult is the output of a transfer function.  In other words, it is the set of dataflow facts known to be true immediately after a node.  A Boolean-valued expression produces a ConditionalTransferResult that contains both a `then' and an `else' store, while most other Nodes produce a RegularTransferResult with a single store.
 
-    \code{abstract class dataflow.analysis.TransferResult<
+    \begin{verbatim}abstract class dataflow.analysis.TransferResult<
         A extends AbstractValue<A>,
-        S extends Store<S>>}
+        S extends Store<S>>\end{verbatim}
         
-    \code{class dataflow.analysis.ConditionalTransferResult<
+    \begin{verbatim}class dataflow.analysis.ConditionalTransferResult<
         A extends AbstractValue<A>,
         S extends Store<S>>
-    extends TransferResult<A, S>}
+    extends TransferResult<A, S>\end{verbatim}
 
-    \code{class dataflow.analysis.RegularTransferResult<
+    \begin{verbatim}class dataflow.analysis.RegularTransferResult<
         A extends AbstractValue<A>,
         S extends Store<S>>
-    extends TransferResult<A, S>}
+    extends TransferResult<A, S>\end{verbatim}
 
 \subsubsubsection{TransferFunction}
 \label{sec:transfer_function_classes}
 
     A TransferFunction is a NodeVisitor that takes an input and produces an output.
 
-    \code{interface dataflow.analysis.TransferFunction<
+    \begin{verbatim}interface dataflow.analysis.TransferFunction<
         A extends AbstractValue<A>,
         S extends Store<S>>
-    extends NodeVisitor<TransferResult<A, S>, TransferInput<A, S>>}
+    extends NodeVisitor<TransferResult<A, S>, TransferInput<A, S>>\end{verbatim}
 
     The Checker Framework defines a derived class of TransferFunction to serve as the default for most checkers.  The class constrains the type of abstract values and it overrides many node visitor methods to refine the abstract values in their TransferResults.
 
-    \code{abstract class checkers.flow.CFAbstractTransfer<
+    \begin{verbatim}abstract class checkers.flow.CFAbstractTransfer<
         V extends CFAbstractValue<V>,
         S extends CFAbstractStore<V, S>,
         T extends CFAbstractTransfer<V, S, T>>
     extends AbstractNodeVisitor<TransferResult<V, S>, TransferInput<V, S>>
-    implements TransferFunction<V, S>}
+    implements TransferFunction<V, S>\end{verbatim}
 
-    \code{class checkers.flow.CFTransfer
-    extends CFAbstractTransfer<CFValue, CFStore, CFTransfer>}
+    \begin{verbatim}class checkers.flow.CFTransfer
+        extends CFAbstractTransfer<CFValue, CFStore, CFTransfer>\end{verbatim}
     
     The Initialization Checker's transfer function tracks which fields of the `self' reference have been initialized.
     
-    \code{class checkers.initialization.InitializationTransfer<
+    \begin{verbatim}class checkers.initialization.InitializationTransfer<
         V extends CFAbstractValue<V>,
         T extends InitializationTransfer<V, T, S>,
         S extends InitializationStore<V, S>>
-    extends CFAbstractTransfer<V, S, T>}
+    extends CFAbstractTransfer<V, S, T>\end{verbatim}
 
     The Regex Checker's transfer function overrides visitMethodInvocation to special case isRegex and asRegex methods.
 
-    \code{class checkers.regex.RegexTransfer
-    extends CFAbstractTransfer<CFValue, CFStore, RegexTransfer>}
+    \begin{verbatim}class checkers.regex.RegexTransfer
+       extends CFAbstractTransfer<CFValue, CFStore, RegexTransfer>\end{verbatim}
 
 
 \subsubsection{Analysis}
@@ -277,31 +277,31 @@ The TransferInput represents the set of dataflow facts known to be true immediat
 
     An Analysis performs iterative dataflow analysis over a control flow graph using a given transfer function.  Currently only forward analyses are supported.
 
-    \code{class dataflow.analysis.Analysis<
+    \begin{verbatim}class dataflow.analysis.Analysis<
         A extends AbstractValue<A>,
         S extends Store<S>,
-        T extends TransferFunction<A, S>>}
+        T extends TransferFunction<A, S>>\end{verbatim}
 
     The Checker Framework defines a derived class of Analysis for use as the default analysis of most checkers.  This class adds information about the type hierarchy being analyzed and acts as a factory for abstract values, stores, and the transfer function.
 
-    \code{abstract class dataflow.analysis.CFAbstractAnalysis<
+    \begin{verbatim}abstract class dataflow.analysis.CFAbstractAnalysis<
         V extends CFAbstractValue<V>,
         S extends CFAbstractStore<V, S>,
         T extends CFAbstractTransfer<V, S, T>>
-    extends Analysis<V, S, T>}
+    extends Analysis<V, S, T>\end{verbatim}
     
-    \code{class checkers.flow.CFAnalysis
-    extends CFAbstractAnalysis<CFValue, CFStore, CFTransfer>}
+    \begin{verbatim}class checkers.flow.CFAnalysis
+    extends CFAbstractAnalysis<CFValue, CFStore, CFTransfer>\end{verbatim}
 
     The Nullness Checkers' analysis overrides the factory methods for abstract values, stores, and the transfer function.
 
-    \code{class checkers.nullness.NullnessAnalysis
-    extends CFAbstractAnalysis<NullnessValue, NullnessStore, NullnessTransfer>}
+    \begin{verbatim}class checkers.nullness.NullnessAnalysis
+    extends CFAbstractAnalysis<NullnessValue, NullnessStore, NullnessTransfer>\end{verbatim}
     
     The RegexChecker's analysis overrides the factory methods for abstract values, stores, and the transfer function.
 
-    \code{class checkers.regex.RegexAnalysis
-    extends CFAbstractAnalysis<CFValue, CFStore, RegexTransfer>}
+    \begin{verbatim}class checkers.regex.RegexAnalysis
+    extends CFAbstractAnalysis<CFValue, CFStore, RegexTransfer>\end{verbatim}
 
 
 \subsubsection{AnalysisResult}
@@ -309,8 +309,8 @@ The TransferInput represents the set of dataflow facts known to be true immediat
 
     An AnalysisResult preserves the dataflow information computed by an Analysis for later use by clients.  The information consists of an AbstractValue for each node in the CFG and a Store that is valid at the start of each Block.  The AnalysisResult class can return AbstractValues for either Nodes or Trees and it can re-run the transfer function to compute Stores that are valid immediately before or after any Tree.
 
-    \code{class dataflow.analysis.AnalysisResult<A extends AbstractValue<A>,
-                                       S extends Store<S>>}
+    \begin{verbatim}class dataflow.analysis.AnalysisResult<A extends AbstractValue<A>,
+                                       S extends Store<S>>\end{verbatim}
 
 
 \subsubsection{AnnotatedTypeFactory}
@@ -318,22 +318,22 @@ The TransferInput represents the set of dataflow facts known to be true immediat
 
     AnnotatedTypeFactorys are not part of the Dataflow Framework, per se, but they are parameterized by the Dataflow Framework classes that they use.
 
-    \code{class checkers.types.AnnotatedTypeFactory
-    implements AnnotationProvider}
+    \begin{verbatim}class checkers.types.AnnotatedTypeFactory
+    implements AnnotationProvider\end{verbatim}
     
     In the Checker Framework, dataflow analysis is performed on demand, one class at a time, the first time that a ClassTree is passed to getAnnotatedType.   This is implemented in the abstract class AbstractBasicAnnotatedTypeFactory with concrete implementation in BasicAnnotatedTypeFactory.
     
-    \code{abstract class checkers.types.AbstractBasicAnnotatedTypeFactory<
+    \begin{verbatim}abstract class checkers.types.AbstractBasicAnnotatedTypeFactory<
         Checker extends BaseTypeChecker<?>,
         Value extends CFAbstractValue<Value>,
         Store extends CFAbstractStore<Value, Store>,
         TransferFunction extends CFAbstractTransfer<Value, Store, TransferFunction>,
         FlowAnalysis extends CFAbstractAnalysis<Value, Store, TransferFunction>>
-    extends AnnotatedTypeFactory}
+    extends AnnotatedTypeFactory\end{verbatim}
     
-    \code{class checkers.types.BasicAnnotatedTypeFactory<
+    \begin{verbatim}class checkers.types.BasicAnnotatedTypeFactory<
         Checker extends BaseTypeChecker<?>>
-    extends AbstractBasicAnnotatedTypeFactory<Checker, CFValue, CFStore, CFTransfer, CFAnalysis>}
+    extends AbstractBasicAnnotatedTypeFactory<Checker, CFValue, CFStore, CFTransfer, CFAnalysis>\end{verbatim}
 
 
 
@@ -942,7 +942,7 @@ Is the ``not as method calls'' bit above still correct?
     correctly accounted for all of those operations, so we desugar enhanced for loops.
     
     \item Once we decided to make conversion nodes explicit it made sense to desugar
-    compound assignments.  A compound assignment like \code{Integer i; i += 3;} performs
+    compound assignments.  A compound assignment like \begin{verbatim}Integer i; i += 3;\end{verbatim} performs
     both an unboxing and a boxing operation on \code{i}.  Desugaring all compound assignments
     greatly reduced the total number of node classes.
 
