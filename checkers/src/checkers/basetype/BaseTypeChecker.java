@@ -415,12 +415,6 @@ public abstract class BaseTypeChecker<Factory extends AbstractBasicAnnotatedType
         lintSet.add("cast:redundant");
         lintSet.add("cast:unsafe");
         lintSet.add("flow:inferFromAsserts");
-        // Temporary option to make array subtyping invariant,
-        // which will be the new default soon.
-        lintSet.add("arrays:invariant");
-        // Temporary option to make casts stricter, in particular when casting
-        // to an array or generic type. This will be the new default soon.
-        lintSet.add("cast:strict");
 
         return Collections.unmodifiableSet(lintSet);
     }
