@@ -110,12 +110,16 @@ import com.sun.tools.javac.util.Log;
     // checkers.source.SourceChecker.createSuppressWarnings
     "suppressWarnings",
 
-    // Whether to output errors or warnings only
-    // checkers.source.SourceChecker.report
-    "warns",
-
     // Unsoundly ignore side effects
     "assumeSideEffectFree",
+
+    // Whether to ignore all subtype tests for type arguments that
+    // were inferred for a raw type
+    // checkers.types.TypeHierarchy.isSubtypeTypeArguments
+    "ignoreRawTypeArguments",
+
+    // The next ones *increase* rather than *decrease* soundness.
+    // They will eventually be replaced by their complements.
 
     // TODO: Checking of bodies of @SideEffectFree, @Deterministic, and
     // @Pure methods is temporarily disabled unless -AenablePurity is
@@ -124,10 +128,17 @@ import com.sun.tools.javac.util.Log;
     // checkers.basetype.BaseTypeVisitor.visitMethod(MethodTree, Void)
     "enablePurity",
 
-    // Whether to ignore all subtype tests for type arguments that
-    // were inferred for a raw type
-    // checkers.types.TypeHierarchy.isSubtypeTypeArguments
-    "ignoreRawTypeArguments",
+    // TODO: Temporary option to make array subtyping invariant,
+    // which will be the new default soon.
+    "invariantArrays",
+
+    // TODO:  Temporary option to make casts stricter, in particular when
+    // casting to an array or generic type. This will be the new default soon.
+    "checkCastElementType",
+
+    // Whether to output errors or warnings only
+    // checkers.source.SourceChecker.report
+    "warns",
 
 
     ///
