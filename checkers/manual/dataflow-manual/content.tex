@@ -421,14 +421,9 @@ execution of the method.
         containing a \code{throw} statement does not have a non-exceptional successor.
         \item \textbf{Conditional basic block.} A \emph{conditional basic block}
         does not contain any nodes and is used as a \emph{split point} after the execution
-        of a node of boolean type. It has exactly two successors (both non-exceptional): one
-        if the previous node evaluates to true, and another
-        if the node evaluates to false. Both successors are labeled accordingly.
-\begin{workinprogress}
-Successors are basic blocks, but edges are labeled.
-\end{workinprogress}
-
-
+        of a node of boolean type. It has exactly two successors (both non-exceptional): a then
+        successor that is reached when the previous node evaluates to tee and the else successor
+        that is reached when the previous node evaluates to false.
         There is always exactly a single predecessor block for every conditional basic block, which
         is either a regular basic block or an exception basic block. In both cases, the last node
         in the predecessor will be of boolean type
@@ -495,16 +490,10 @@ never be executed at run time?
 
 In the visualization, a string representation of the node is used, followed by
 the node type in square brackets. Note that the string representation often also includes
-more than just the ``top-level'' node. For instance, an addition node also displays its
-left and right operator. This is done for clarity, so that it is easy to see what
-expressions are summed up.
-
-\begin{workinprogress}
-  An example would be helpful to make the ideas concrete.  Should you
-  forward-reference to \code{||} in one of the examples?  (I think that's
-  OK because short-circuited operators are treated the same for the
-  purposes of this discussion.)
-\end{workinprogress}
+more than just the ``top-level'' node. For instance, the addition expression \code{a + b[0];}
+will generate appear as ``a + b[0] [ NumericalAddition]'' rather than ``a'' plus some temporary.
+This is done for clarity, so that it is easy to see what expressions are summed up and because
+we don't create internal names for expression results.
 
 \autoref{tab:nodes} lists all node types in our framework. We use the
 Java class name of the implementation, but leave out the suffix \code{Node}, which is present
@@ -719,14 +708,11 @@ calling \code{TransferInput.getRegularStore}.
 
 \subsubsection{Branches}
 
-The control flow graph represents all non-exceptional control-flow splits, or branches, as \code{ConditionalBlock}s that contain no nodes.  If there is one store flowing into a conditional block, then it is duplicated to both successors.  If there are two stores flowing into a conditional block, the then store is propagated to the block's true successor and the else store is propagated to the block's false successor.
+The control flow graph represents all non-exceptional control-flow splits, or branches, as \code{ConditionalBlock}s that contain no nodes.  If there is one store flowing into a conditional block, then it is duplicated to both successors.  If there are two stores flowing into a conditional block, the then store is propagated to the block's then successor and the else store is propagated to the block's else successor.
 
-A key point is that while we \emph{produce} multiple stores after several kinds of boolean-valued expressions, we can only \emph{use} them after a conditional block has split them apart, making them the unique store at some program point.  This constraint dictates how we build the CFG for conditional and and or nodes, as described in \autoref{sec:cond-exp}.  We split the control-flow immediately after computing the value of the left operand and we do not merge it until after the operations of the then or else successor.
+Consider the control flow graph generated for the simple if statement in \autoref{lst:CFGIfStatement}.  The conditional expression \code{b1} immediately precedes the \code{ConditionalBlock}, represented by the octagonal node.  The \code{ConditionalBlock} is followed by both a then and an else successor block, after which control flow merges back together at the exit block.  The edge labels \code{EACH_TO_EACH}, \code{THEN_TO_BOTH}, and \code{ELSE_TO_BOTH} are flow rules described in \autoref{sec:flow-rules}.  As described above, the then store propagates to (both stores of) the block's then successor according to rule \code{THEN_TO_BOTH} and the else store propagates to (both stores of) the block's else successor according to rule \code{ELSE_TO_BOTH}.  More precise rules are used to preserve dataflow information for short-circuiting expressions, as described in \autoref{sec:cond-exp}.
 
-\begin{workinprogress}
-  Consider restructuring to make the relationship to \autoref{sec:cond-exp}
-  clearer.
-\end{workinprogress}
+\flow{IfStatement}{Example of an if statement translated into a \code{ConditionalBlock}.}
 
 \subsubsection{Conditional Expressions}
 \label{sec:cond-exp}
@@ -734,8 +720,14 @@ A key point is that while we \emph{produce} multiple stores after several kinds 
 The conditional and (\code{&&}, cf. \jlsref{15.23}) and the conditional
 or (\code{||}, cf. \jlsref{15.24}) expressions are subject to short-circuiting:
 if evaluating the left-hand side already determines the result, then the right-hand
-side is not evaluated. This semantics is represented in the CFG, and an example
-is given in \autoref{lst:CFGConditionalOr}.
+side is not evaluated. This semantics is represented by Flow Rules \autoref{sec:flow-rules}
+in the CFG, and an example is given in \autoref{lst:CFGConditionalOr}.
+
+Note that the CFG correctly represents short-circuiting.  The expression \code{b2 || b3} is
+only executed if \code{b1} is false and \code{b3} is only evaluated if \code{b1} and \code{b2}
+are false.
+
+
 
 To differentiate the paths taken by the execution, given how the conditional or evaluates,
 there are two different nodes for the conditional or expression in the AST
@@ -799,6 +791,16 @@ where the receiver might be an \code{ImplicitThisNode}.
 For instance, this is shown in the earlier example \autoref{lst:CFGFieldAssignment}.
 
 
+\subsubsection{Assert statements}
+\label{sec:assert-stmts}
+
+Assert statements are treated specially by the CFG builder because it is unknown at CFG construction time whether or not assertions will be enabled when the program is run.  When assertions are enabled, the dataflow information gained by analyzing the assert statement can improve precision and allow the programmer to avoid redundant annotations.  However, when assertions are disabled, it would be unsound to assume that they had any effect on dataflow information.
+
+Our solution is offer the user of the dataflow framework, and ultimately the user of the checker, the option of stating that assertions are enabled or disabled.  When assertions are assumed to be disabled, no CFG Nodes are built for the assert statement at all.  When assertions are assumed to be enabled, CFG Nodes are built represent the condition of the assert statement and, in the else successor of a ConditionalBlock, CFG Nodes are built to represent the detail expression of the assert, if any.
+
+If assertions are not assumed to be enabled or disabled, then we generate a CFG that is conservative and represents the fact that the assert statement may execute or may not.  This takes the form of a ConditionalBlock that branches on a fake variable.  For example, the code in \autoref{lst:CFGAssert} produces the control flow graph in \autoref{fig:CFGAssert}.  The fake variable named \code{assertionsEnabled#num0} controls the first ConditionalBlock.  The then successor of the ConditionalBlock is the same subgraph of CFG Nodes that would be created if assertions were assumed to be enabled, while the else successor of the ConditionalBlock is the same, empty, subgraph of CFG Nodes that would be created if assertions were assumed to be disabled.
+
+\flow{Assert}{Example of an assert statement translated with assertions neither assumed to be enabled nor assumed to be disabled.}
 
 \subsection{AST to CFG Translation}
 \label{sec:ast_to_cfg_translation}
@@ -926,15 +928,12 @@ Desugaring means replacing complicated source language constructs by simpler one
 
     \begin{itemize}
     \item We decided to represent implicit conversion operations like boxing, unboxing, widening,
-    and narrowing as their own CFG nodes (not as method calls) because they change the type of a value.  The pre-conversion
+    and narrowing as explicit CFG nodes because they change the type of a value.  For example, 
+    implicit unboxing of an \code{Integer} will be translated into a call to \code{Integer.intValue}.
+    The pre-conversion
     type can be associated with the original node and the post-conversion type can be associated
     with the explicit conversion node.  It also makes it possible for the transfer function to operate
     on the conversion nodes.
-    
-\begin{workinprogress}
-Is the ``not as method calls'' bit above still correct?
-\end{workinprogress}
-
 
     \item Enhanced for loops are defined in terms of a complicated translation into simpler
     operations, including field accesses, branches, and method calls that could affect dataflow
@@ -1189,6 +1188,11 @@ child in the AST --- is that correct?
 \end{workinprogress}
 
 \end{itemize}
+
+
+\subsection{Flow Rules}
+\label{sec:flow-rules}
+
 
 
 \subsection{Concurrency}
