@@ -699,6 +699,7 @@ which is properly handled by our translation.}
 
 
 \subsubsection{Conditional stores}
+\label{sec:cond-stores}
 
 The dataflow framework extracts information from control-flow splits that occur in if, for, while, and switch statements.  In order to have the information available at the split, we eagerly produce two stores contained in a \code{ConditionalTransferResult} after certain boolean-valued expressions.  The stores are called the \emph{then} and \emph{else} stores.  So, for example, after the expression \code{x == null}, two different stores will be created.  The Nullness Checkers would produce a then store that maps \code{x} to @Nullable and an else store that maps \code{x} to @NonNull.
 
@@ -720,65 +721,19 @@ Consider the control flow graph generated for the simple if statement in \autore
 The conditional and (\code{&&}, cf. \jlsref{15.23}) and the conditional
 or (\code{||}, cf. \jlsref{15.24}) expressions are subject to short-circuiting:
 if evaluating the left-hand side already determines the result, then the right-hand
-side is not evaluated. This semantics is represented by Flow Rules \autoref{sec:flow-rules}
-in the CFG, and an example is given in \autoref{lst:CFGConditionalOr}.
+side is not evaluated. This semantics is faithfully represented in the constructed CFG and
+more precise flow rules (\autoref{sec:flow-rules}) are used to preserve additional dataflow
+information.
 
+An example program using conditional or is shown in \autoref{lst:CFGConditionalOr}.
 Note that the CFG correctly represents short-circuiting.  The expression \code{b2 || b3} is
 only executed if \code{b1} is false and \code{b3} is only evaluated if \code{b1} and \code{b2}
 are false.
 
+Observe in \autoref{fig:CFGConditionalOr} that the flow rule between the first conditional block and its then successor is \code{THEN_TO_THEN}, rather than the default flow rule for such edges \code{THEN_TO_BOTH}, which is present on the edge from the last conditional block to its then successor.  \code{THEN_TO_THEN} is a more precise rule which propagates the then store from the predecessor of the conditional block to the then store of the then successor and leaves the else store of the successor untouched.  This is a valid rule for propagating information along the short-circuit edge of a conditional or expression because \code{b1 || (b2 || b3)} being false implies that \code{b1} is false, so dataflow information that obtains when \code{b1} is true has no effect on the dataflow information obtains when \code{b1 || (b2 || b3)} is false.  To put it another way, if control reaches the block containing \code{b1 || (b2 || b3)} and that expression is false, then control must have flowed along along the else branches of both conditional blocks and only the facts that obtain along those edges need to be kept in the else store of the block containing \code{b1 || (b2 || b3)}.
 
-
-To differentiate the paths taken by the execution, given how the conditional or evaluates,
-there are two different nodes for the conditional or expression in the AST
-(as shown in \autoref{fig:CFGConditionalOr}). However, this is only the case when
-two nodes are needed to distinguish execution paths. If the outgoing edges
-of the two nodes for the same expression are merged right away, then there is
-no need to have a conditional basic block. In such a case, only one
-node is introduced. In the visualization, the truth value is indicated in
-parentheses after the node type. An example of only a single node is given in
-\autoref{lst:CFGConditionalOr2}.
-
-\begin{workinprogress}
-A more directed (that is, simple) example and expanded explanation would be helpful here.
-\end{workinprogress}
-
-\flow{ConditionalOr}{Example of a conditional or expression (\code{||}) with short-circuiting
-and usage of two \code{ConditionalOrNode}s.}
-
-\begin{workinprogress}
-  ``two \code{ConditionalOrNode}s:  I see 4.  ``a single
-  \code{ConditionalOrNode}'': I see 3.  It would be helpful to indicate
-  which ones you are referring to.  Are you only talking about the
-  top-level \code{||}?  Showing an example with just one \code{||} might
-  make the example clearer.
-\end{workinprogress}
-
-\flow{ConditionalOr2}{Example of a conditional or expression (\code{||}) with short-circuiting
-and usage of only a single \code{ConditionalOrNode}.}
-
-
-\begin{workinprogress}
-Here is Mike's take on how the translation happens.  Someone should
-double-check it and improve the presentation.
-\begin{itemize}
-\item
-Create a boolean expression.
-\item
-Create its labels (but they aren't attached anywhere yet).
-\item
-Later, attach each label to some code.
-Maybe both labels get attached to the same code, in which case the last
-pass will simplify the CFG.
-\end{itemize}
-
-A ``conditional node'' is used when generating the CFG for the predicate of
-a conditional (\code{if}, etc.), but not when generating the CFG for an
-arbitrary boolean expression.  When generating this node, the Checker
-Framework knows its then and else successors because the conditional
-statement (the \code{if}, etc.) passed that information in.
-
-\end{workinprogress}
+\flow{ConditionalOr}{Example of a conditional or expression (\code{||}) with short-circuiting and
+more precise flow rules.}
 
 
 \subsubsection{Implicit \code{this} access}
@@ -1193,6 +1148,41 @@ child in the AST --- is that correct?
 \subsection{Flow Rules}
 \label{sec:flow-rules}
 
+As mentioned in \autoref{sec:cond-stores}, dataflow analysis conceptually maintains two stores for each program point, a then store containing information valid when the previous boolean-valued expression was true and an else store containing information valid when the expression was false.  In many cases, there is only a single store because there is no boolean-valued expression to split on or there was an expression, but it yielded no useful dataflow information.  However, any CFG edge may potentially have a predecessor with two stores and a successor with two stores.
+
+We could simply propagate information from both predecessor stores to both successor stores, but that would throw away useful information, so we define five flow rules that allow more precise propagation.
+        \begin{itemize}
+        \item \code{EACH_TO_EACH} is the default rule for an edge with a predecessor that
+                  is not a \code{ConditionalBlock}.  It propagates information from the then store
+                  of the predecessor to the then store of the successor and from the else store of
+                  the predecessor to the else store of the successor.
+        \item \code{THEN_TO_BOTH} is the default rule for an edge from a \code{ConditionalBlock}
+                  to its then successor.  It propagates information from the then store of its predecessor
+                  to both the then and else stores of the then successor, thereby splitting the conditional
+                  store to take advantage of the fact that the condition is known to be true.
+        \item \code{ELSE_TO_BOTH} is the default rule for an edge from a \code{ConditionalBlock}
+                  to its else successor.  It propagates information from the else store of its predecessor
+                  to both the then and else stores of the else successor, thereby splitting the conditional
+                  store to take advantage of the fact that the condition is known to be false.
+        \item \code{THEN_TO_THEN} is a special rule for short-circuit edge from a
+                  \code{ConditionalBlock} to its then successor.  It only propagates information from
+                  the then store of its predecessor to the then store of its successor.  This flow rule
+                  is used for conditional or expressions because the else store of \code{a || b} is
+                  not influenced by the then store of \code{a}.
+        \item \code{ELSE_TO_ELSE} is a special rule for short-circuit edge from a
+                  \code{ConditionalBlock} to its else successor.  It only propagates information from
+                  the else store of its predecessor to the else store of its successor.  This flow rule
+                  is used for conditional and expressions because the then store of \code{a && b} is
+                  not influenced by the else store of \code{a}.
+        \end{itemize}
+        
+Note that the more precise flow rules \code{THEN_TO_THEN} and \code{ELSE_TO_ELSE}
+improve the precision of the store they do not write to.  In other words, \code{THEN_TO_THEN}
+yields a more precise else store of its successor by not propagating information to the else store which might conflict with information already there, and conversely for \code{ELSE_TO_ELSE}.
+
+Currently, we only use flow rules for short-circuiting edges of conditional ands and ors.  The CFG builder sets the flow rule of each short-circuiting edge as it builds the CFG for the conditional and/or expression. 
+
+The dataflow analysis logic requires that both the then and the else store of each block contain some information before the block is analyzed, so it is a requirement that at least one predecessor block writes the then store and at least one writes the else store.
 
 
 \subsection{Concurrency}
