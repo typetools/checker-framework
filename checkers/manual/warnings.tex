@@ -379,6 +379,13 @@ The \code{-Alint} option enables or disables optional checks, analogously to
 javac's \code{-Xlint} option.
 Each of the distributed checkers supports at least the following lint options:
 
+% For the current list of lint options supported by all checkers, see
+% method BaseTypeChecker.getSupportedLintOptions().
+
+% For the per-checker list, search for "@SupportedLintOptions" in the
+% checker implementations.
+
+
 \begin{itemize}
 
 \item
@@ -701,4 +708,6 @@ comments.
 % LocalWords:  checkername util myref nulltest html ESC buildfile mynifty Fenum
 % LocalWords:  MyNiftyChecker messagekey basetype uncommenting Anomsgtext '
 % LocalWords:  AskipDefs mypackage jsr308 Djsr308 Makefile PLXCOMP expr '
-%  LocalWords:  TODO
+%  LocalWords:  TODO AsuppressWarnings AssumeAssertion AonlyUses AonlyDefs
+%  LocalWords:  ing warningkey redundantNullComparison '
+%  LocalWords:  noannotationsincomments
