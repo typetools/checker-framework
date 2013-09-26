@@ -413,8 +413,8 @@ Section~\ref{null-defaults}) your code uses.  You only need one of these tools.
   %
   If your code uses the standard NNEL (non-null-except-locals) default or
   the \refclass{nullness/quals}{NonNull} default, then use the
-  \ahref{http://groups.csail.mit.edu/pag/daikon/download/doc/daikon.html#AnnotateNullable}{AnnotateNullable}
-  tool of the \ahref{http://pag.csail.mit.edu/daikon/}{Daikon invariant
+  \ahref{\url{http://groups.csail.mit.edu/pag/daikon/download/doc/daikon.html#AnnotateNullable}}{AnnotateNullable}
+  tool of the \ahref{\url{http://pag.csail.mit.edu/daikon/}}{Daikon invariant
     detector}.
 
 \item
@@ -423,12 +423,12 @@ Section~\ref{null-defaults}) your code uses.  You only need one of these tools.
   If your code uses the Nullable default, use one of these tools:
 \begin{itemize}
 \item
-  \ahref{http://julia.scienze.univr.it/}{Julia analyzer},
+  \ahref{\url{http://julia.scienze.univr.it/}}{Julia analyzer},
 \item
-  \ahref{http://nit.gforge.inria.fr}{Nit: Nullability Inference Tool},
+  \ahref{\url{http://nit.gforge.inria.fr}}{Nit: Nullability Inference Tool},
 \item
-  \ahref{http://jastadd.org/jastadd-tutorial-examples/non-null-types-for-java/}{Non-null
-    checker and inferencer} of the \ahref{http://jastadd.org/}{JastAdd
+  \ahref{\url{http://jastadd.org/jastadd-tutorial-examples/non-null-types-for-java/}}{Non-null
+    checker and inferencer} of the \ahref{\url{http://jastadd.org/}}{JastAdd
     Extensible Compiler}.
 \end{itemize}
 
@@ -1276,13 +1276,13 @@ The Nullness Checker itself.
 
 \item
 The
-\ahref{http://code.google.com/p/plume-lib/}{Plume-lib library}.
+\ahref{\url{http://code.google.com/p/plume-lib/}}{Plume-lib library}.
 Run the command \code{make check-nullness}.
 
 
 \item
 The
-\ahref{http://groups.csail.mit.edu/pag/daikon/}{Daikon invariant detector}.
+\ahref{\url{http://groups.csail.mit.edu/pag/daikon/}}{Daikon invariant detector}.
 Run the command \code{make check-nullness}.
 
 % \item
@@ -1566,7 +1566,7 @@ Section~\ref{reporting-bugs}) so that we can enhance the Checker Framework.
 
 FindBugs has a non-standard definition of \<@Nullable>.  FindBugs's treatment is not
 documented in its own
-\ahref{http://findbugs.sourceforge.net/api/edu/umd/cs/findbugs/annotations/Nullable.html}{Javadoc};
+\ahref{\url{http://findbugs.sourceforge.net/api/edu/umd/cs/findbugs/annotations/Nullable.html}}{Javadoc};
 it is different from the definition of \<@Nullable> in every other tool for
 nullness analysis; it means the same thing as \<@NonNull> when applied to a
 formal parameter; and it invariably surprises programmers.  Thus, FindBugs's
