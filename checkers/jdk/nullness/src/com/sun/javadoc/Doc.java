@@ -1,6 +1,7 @@
 package com.sun.javadoc;
 
 import checkers.nullness.quals.Nullable;
+import dataflow.quals.Pure;
 
 public abstract interface Doc extends java.lang.Comparable<java.lang.Object> {
   public abstract java.lang.String commentText();
