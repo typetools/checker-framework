@@ -2,6 +2,7 @@ package com.sun.javadoc;
 
 import checkers.nullness.quals.NonNull;
 import checkers.nullness.quals.Nullable;
+import dataflow.quals.Pure;
 
 public interface ClassDoc extends ProgramElementDoc, Type {
     @Pure boolean isAbstract();

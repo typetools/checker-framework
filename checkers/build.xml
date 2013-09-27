@@ -516,6 +516,11 @@
             description="Run tests for the Nullness Checker">
     </target>
 
+    <target name="nullness-tests-nojdk"
+            depends="jar,build-tests,nullness-base-tests,nullness-skipuses-tests,nullness-skipdefs-tests,nullness-uninit-tests,nullness-extra-tests-nojdk"
+            description="Run tests for the Nullness Checker, WITHOUT updating jdkX.jar">
+    </target>
+
     <target name="nullness-base-tests" depends="jar,build-tests"
             description="Run base tests for the Nullness Checker">
         <antcall target="-run-tests">

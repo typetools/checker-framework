@@ -23,7 +23,7 @@ class FlowConditions {
             throw new NoSuchElementException();
         if ( !graph.containsKey(child))
             throw new NoSuchElementException();
-        /*@NonNull*/ Set<String> edges = graph.get(parent);
+        @NonNull Set<String> edges = graph.get(parent);
     }
 
     // TODO: Re-enable when issue 221 is resolved.
@@ -31,7 +31,7 @@ class FlowConditions {
     //     if ( (!graph.containsKey(parent)) ||
     //          (!graph.containsKey(child)))
     //         throw new NoSuchElementException();
-    //     /*@NonNull*/ Set<String> edges = graph.get(parent);
+    //     @NonNull Set<String> edges = graph.get(parent);
     // }
 
 
