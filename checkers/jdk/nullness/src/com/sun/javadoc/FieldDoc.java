@@ -1,6 +1,7 @@
 package com.sun.javadoc;
 
 import checkers.nullness.quals.Nullable;
+import dataflow.quals.Pure;
 
 public abstract interface FieldDoc extends MemberDoc {
   public abstract com.sun.javadoc.Type type();
