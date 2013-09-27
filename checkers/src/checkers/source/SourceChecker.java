@@ -577,7 +577,7 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
         } catch (CheckerError ce) {
             logCheckerError(ce);
         } catch (Throwable t) {
-            logCheckerError(wrapThrowableAsCheckerError(t, null));
+            logCheckerError(wrapThrowableAsCheckerError("SourceChecker.typeProcessingStart", t, null));
         }
     }
 
@@ -681,7 +681,7 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
         } catch (CheckerError ce) {
             logCheckerError(ce);
         } catch (Throwable t) {
-            logCheckerError(wrapThrowableAsCheckerError(t, p));
+            logCheckerError(wrapThrowableAsCheckerError("SourceChecker.typeProcess", t, p));
         } finally {
             // Also add possibly deferred diagnostics, which will get published back in
             // AbstractTypeProcessor.
@@ -689,9 +689,9 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
         }
     }
 
-    private CheckerError wrapThrowableAsCheckerError(Throwable t, /*@Nullable*/ TreePath p) {
+    private CheckerError wrapThrowableAsCheckerError(String where, Throwable t, /*@Nullable*/ TreePath p) {
         return new CheckerError(
-           "SourceChecker.typeProcess: unexpected Throwable (" +
+           where + ": unexpected Throwable (" +
            t.getClass().getSimpleName() + ")" +
            ((p == null) ? "" : " while processing " + p.getCompilationUnit().getSourceFile().getName()) +
            (t.getMessage() == null ? "" : "; message: " + t.getMessage()),
@@ -1381,6 +1381,16 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
      * @see SuppressWarningsKeys
      */
     public Collection<String> getSuppressWarningsKeys() {
+        return getStandardSuppressWarningsKeys();
+    }
+
+    /**
+     * Determine the standard set of suppress warning keys usable for any checker.
+     * 
+     * @see #getSuppressWarningsKeys()
+     * @return Collection of warning keys
+     */
+    protected final Collection<String> getStandardSuppressWarningsKeys() {
         SuppressWarningsKeys annotation =
             this.getClass().getAnnotation(SuppressWarningsKeys.class);
 
