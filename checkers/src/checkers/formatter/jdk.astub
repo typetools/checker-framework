@@ -1,0 +1,50 @@
+import checkers.formatter.quals.*;
+
+package java.util;
+
+class Formatter {
+    @FormatMethod
+    public Formatter format(String format, Object... args);
+    @FormatMethod
+    public Formatter format(Locale l, String format, Object... args);
+}
+
+package java.lang;
+
+class String {
+    @FormatMethod
+    public static String format(Locale l, String format, Object... args);
+    @FormatMethod
+    public static String format(String format, Object... args);
+}
+
+package java.io;
+
+class PrintStream {
+    @FormatMethod
+    public PrintStream format(Locale l, String format, Object... args);
+    @FormatMethod
+    public PrintStream format(String format, Object... args);
+    @FormatMethod
+    public PrintStream printf(Locale l, String format, Object... args);
+    @FormatMethod
+    public PrintStream printf(String format, Object... args);
+}
+
+class PrintWriter {
+    @FormatMethod
+    public PrintWriter format(Locale l, String format, Object... args);
+    @FormatMethod
+    public PrintWriter format(String format, Object... args);
+    @FormatMethod
+    public PrintWriter printf(Locale l, String format, Object... args);
+    @FormatMethod
+    public PrintWriter printf(String format, Object... args);
+}
+
+class Console {
+    @FormatMethod
+    public Console format(String format, Object... args);
+    @FormatMethod
+    public Console printf(String format, Object... args);
+}
