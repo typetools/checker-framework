@@ -9,7 +9,7 @@ public class WeakIdentityPair<T1 extends Object> {
     this.a = new WeakReference<T1>(a);
   }
 
-  public /*@Nullable*/ T1 getA() {
+  public @Nullable T1 getA() {
     return a.get();
   }
 }
