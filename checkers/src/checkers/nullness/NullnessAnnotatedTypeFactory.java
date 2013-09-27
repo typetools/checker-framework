@@ -128,7 +128,6 @@ public class NullnessAnnotatedTypeFactory
     @Override
     protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type, boolean useFlow) {
         super.annotateImplicit(tree, type, useFlow);
-        substituteUnused(tree, type);
         dependentTypes.handle(tree, type);
     }
 
@@ -380,55 +379,5 @@ public class NullnessAnnotatedTypeFactory
         public NonNullTypeAnnotator(BaseTypeChecker<?> checker) {
             super(checker);
         }
-    }
-
-    private boolean substituteUnused(Tree tree, AnnotatedTypeMirror type) {
-        if (tree.getKind() != Tree.Kind.MEMBER_SELECT
-            && tree.getKind() != Tree.Kind.IDENTIFIER)
-            return false;
-
-        Element field = InternalUtils.symbol(tree);
-        if (field == null || field.getKind() != ElementKind.FIELD)
-            return false;
-
-        AnnotationMirror unused = getDeclAnnotation(field, Unused.class);
-        if (unused == null) {
-            return false;
-        }
-
-        Name whenName = AnnotationUtils.getElementValueClassName(unused, "when", false);
-        MethodTree method = TreeUtils.enclosingMethod(this.getPath(tree));
-        if (TreeUtils.isConstructor(method)) {
-            /* TODO: this is messy and should be cleaned up.
-             * The problem is that "receiver" means something different in
-             * constructors and methods. Should we adapt .getReceiverType to do something
-             * different in constructors vs. methods?
-             * Or should we change this annotation into a declaration annotation?
-             */
-            com.sun.tools.javac.code.Symbol meth =
-                    (com.sun.tools.javac.code.Symbol)TreeUtils.elementFromDeclaration(method);
-            com.sun.tools.javac.util.List<TypeCompound> retannos = meth.getRawTypeAttributes();
-            if (retannos == null) {
-                return false;
-            }
-            boolean matched = false;
-            for (TypeCompound anno :  retannos) {
-                if (anno.getAnnotationType().toString().equals(whenName.toString())) {
-                    matched = true;
-                    break;
-                }
-            }
-            if (!matched) {
-                return false;
-            }
-        } else {
-            AnnotatedTypeMirror receiver = generalFactory.getReceiverType((ExpressionTree)tree);
-            Elements elements = processingEnv.getElementUtils();
-            if (receiver == null || !receiver.hasAnnotation(elements.getName(whenName))) {
-                return false;
-            }
-        }
-        type.replaceAnnotation(NULLABLE);
-        return true;
     }
 }
