@@ -29,16 +29,16 @@ class Constructors {
   
     class OptionInfo {
       Date d;
-      /*@UnknownInitialization*/ /*@Raw*/ Object obj;
+      @UnknownInitialization @Raw Object obj;
 
-      OptionInfo (Date d, /*@UnknownInitialization*/ /*@Raw*/ Object obj) {
+      OptionInfo (Date d, @UnknownInitialization @Raw Object obj) {
         this.d = d;
         this.obj = obj;
       }
 
     }
 
-    public Options (Date d, /*@UnknownInitialization*/ /*@Raw*/ Object obj) {
+    public Options (Date d, @UnknownInitialization @Raw Object obj) {
       OptionInfo oi = new OptionInfo(d, obj);
       // oi should be considered initialized at this point, because
       // the argument type of the constructor was @UnknownInitialization.

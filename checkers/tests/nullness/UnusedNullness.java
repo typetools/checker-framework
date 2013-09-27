@@ -3,9 +3,14 @@ import java.lang.annotation.*;
 import checkers.quals.*;
 import checkers.nullness.quals.*;
 
-// import tests.util.SuperQual;
-// import tests.util.SubQual;
-
+// TODO: feature request: the Nullness Checker should be aware of
+// the @Unused annotation.
+// This is difficult to implement: one needs to determine the correct
+// AnnotatedTypeFactory for the "when" type system and use it
+// to determine the right annotated type. We currently don't have
+// a mechanism to do this.
+//
+// @skip-test
 public class UnusedNullness {
 
   @TypeQualifier

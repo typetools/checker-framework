@@ -1,6 +1,7 @@
 package com.sun.javadoc;
 
 import checkers.nullness.quals.Nullable;
+import dataflow.quals.Pure;
 
 public abstract interface ProgramElementDoc extends Doc {
   public abstract com.sun.javadoc. @Nullable ClassDoc containingClass();
