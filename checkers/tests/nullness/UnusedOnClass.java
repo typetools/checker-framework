@@ -1,8 +1,6 @@
 import java.lang.annotation.*;
 import checkers.quals.*;
 
-// @skip-test TEMPORARY
-
 public final class UnusedOnClass {
   public static void read_serialized_pptmap2(@MyNonPrototype MyInvariant inv) {
     inv.ppt.toString();
