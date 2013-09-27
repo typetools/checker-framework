@@ -8,7 +8,6 @@ public final class UnusedOnClass {
 }
 
 
-// Removing this class annotation eliminates the problem.
 @MyPrototype
 abstract class MyInvariant {
   @Unused(when=MyPrototype.class)
