@@ -33,6 +33,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -238,7 +239,13 @@ public class FlowExpressionParseUtil {
             String indexStr = arraymatcher.group(2);
             Receiver receiver = parse(receiverStr, context, path);
             Receiver index = parse(indexStr, context, path);
-            ArrayAccess result = new ArrayAccess(receiver.getType(), receiver, index);
+            TypeMirror receiverType = receiver.getType();
+            if (!(receiverType instanceof ArrayType)) {
+                throw constructParserException(s);
+            }
+            TypeMirror componentType = ((ArrayType) receiverType)
+                    .getComponentType();
+            ArrayAccess result = new ArrayAccess(componentType, receiver, index);
             return result;
         } else if (methodMatcher.matches() && allowMethods) {
             String methodName = methodMatcher.group(1);
