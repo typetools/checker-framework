@@ -1,0 +1,35 @@
+package checkers.oigj;
+
+import checkers.basetype.BaseTypeVisitor;
+import checkers.oigj.quals.Dominator;
+import checkers.types.AnnotatedTypeMirror;
+import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
+
+import javax.lang.model.element.Element;
+
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.Tree;
+
+public class OwnershipVisitor extends BaseTypeVisitor<OwnershipSubchecker, OwnershipAnnotatedTypeFactory> {
+
+    public OwnershipVisitor(OwnershipSubchecker checker, CompilationUnitTree root) {
+        super(checker, root);
+    }
+
+    @Override
+    public boolean isValidUse(AnnotatedDeclaredType declarationType,
+            AnnotatedDeclaredType useType, Tree tree) {
+        return true;
+    }
+
+    @Override
+    protected boolean isAccessAllowed(Element field,
+            AnnotatedTypeMirror receiver, ExpressionTree accessTree) {
+        AnnotatedTypeMirror fType = atypeFactory.getAnnotatedType(field);
+        if (fType.hasAnnotation(Dominator.class)
+            && !atypeFactory.isMostEnclosingThisDeref(accessTree))
+            return false;
+        return super.isAccessAllowed(field, receiver, accessTree);
+    }
+}
