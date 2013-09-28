@@ -9,5 +9,5 @@ public class PatternSyntaxException extends IllegalArgumentException {
     @Pure public int getIndex() { throw new RuntimeException("skeleton method"); }
     @Pure public String getDescription() { throw new RuntimeException("skeleton method"); }
     @Pure public String getPattern() { throw new RuntimeException("skeleton method"); }
-    @SideEffectFree public String getMessage() { throw new RuntimeException("skeleton method"); }
+    @Pure public String getMessage() { throw new RuntimeException("skeleton method"); }
 }
