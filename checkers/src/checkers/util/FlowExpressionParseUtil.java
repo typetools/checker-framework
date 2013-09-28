@@ -8,6 +8,7 @@ import checkers.source.Result;
 import checkers.types.AnnotatedTypeFactory;
 
 import dataflow.analysis.FlowExpressions;
+import dataflow.analysis.FlowExpressions.ArrayAccess;
 import dataflow.analysis.FlowExpressions.ClassName;
 import dataflow.analysis.FlowExpressions.FieldAccess;
 import dataflow.analysis.FlowExpressions.PureMethodCall;
@@ -73,6 +74,8 @@ public class FlowExpressionParseUtil {
     /** Matches a method call */
     protected static final Pattern methodPattern = Pattern.compile("^("
             + identifierRegex + ")\\((.*)\\)$");
+    /** Matches an array access */
+    protected static final Pattern arrayPattern = Pattern.compile("^(.*)\\[(.*)\\]$");
     /** Matches a field access */
     protected static final Pattern dotPattern = Pattern
             .compile("^([^.]+)\\.(.+)$");
@@ -104,7 +107,7 @@ public class FlowExpressionParseUtil {
     public static FlowExpressions. /*@Nullable*/ Receiver parse(String s,
             FlowExpressionContext context, TreePath path)
             throws FlowExpressionParseException {
-        Receiver result = parse(s, context, path, true, true, true, true, true,
+        Receiver result = parse(s, context, path, true, true, true, true, true, true,
                 true);
         return result;
     }
@@ -116,7 +119,7 @@ public class FlowExpressionParseUtil {
     private static FlowExpressions. /*@Nullable*/ Receiver parse(String s,
             FlowExpressionContext context, TreePath path, boolean allowSelf,
             boolean allowIdentifier, boolean allowParameter, boolean allowDot,
-            boolean allowMethods, boolean allowLiterals)
+            boolean allowMethods, boolean allowArrays, boolean allowLiterals)
             throws FlowExpressionParseException {
         s = s.trim();
 
@@ -125,6 +128,7 @@ public class FlowExpressionParseUtil {
         Matcher superMatcher = superPattern.matcher(s);
         Matcher parameterMatcher = parameterPattern.matcher(s);
         Matcher methodMatcher = methodPattern.matcher(s);
+        Matcher arraymatcher = arrayPattern.matcher(s);
         Matcher dotMatcher = dotPattern.matcher(s);
         Matcher intMatcher = intPattern.matcher(s);
         Matcher longMatcher = longPattern.matcher(s);
@@ -229,6 +233,13 @@ public class FlowExpressionParseUtil {
                         "flowexpr.parse.index.too.big", Integer.toString(idx)));
             }
             return context.arguments.get(idx - 1);
+        } else if (arraymatcher.matches() && allowArrays) {
+            String receiverStr = arraymatcher.group(1);
+            String indexStr = arraymatcher.group(2);
+            Receiver receiver = parse(receiverStr, context, path);
+            Receiver index = parse(indexStr, context, path);
+            ArrayAccess result = new ArrayAccess(receiver.getType(), receiver, index);
+            return result;
         } else if (methodMatcher.matches() && allowMethods) {
             String methodName = methodMatcher.group(1);
 
@@ -296,7 +307,7 @@ public class FlowExpressionParseUtil {
             // Parse the rest, with a new receiver.
             FlowExpressionContext newContext = context.changeReceiver(receiver);
             return parse(remainingString, newContext, path, false, true, false,
-                    true, true, false);
+                    true, true, false, false);
         } else {
             throw constructParserException(s);
         }
