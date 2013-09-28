@@ -181,7 +181,11 @@ public class FlowExpressions {
             return type;
         }
 
-        public abstract boolean containsUnknown();
+        public abstract boolean containsOfClass(Class<? extends FlowExpressions.Receiver> clazz);
+
+        public boolean containsUnknown() {
+            return containsOfClass(Unknown.class);
+        }
 
         /**
          * Returns true if and only if the value this expression stands for
@@ -299,8 +303,8 @@ public class FlowExpressions {
         }
 
         @Override
-        public boolean containsUnknown() {
-            return receiver.containsUnknown();
+        public boolean containsOfClass(Class<? extends FlowExpressions.Receiver> clazz) {
+            return getClass().equals(clazz) || receiver.containsOfClass(clazz);
         }
 
         @Override
@@ -330,8 +334,8 @@ public class FlowExpressions {
         }
 
         @Override
-        public boolean containsUnknown() {
-            return false;
+        public boolean containsOfClass(Class<? extends FlowExpressions.Receiver> clazz) {
+            return getClass().equals(clazz);
         }
 
         @Override
@@ -381,8 +385,8 @@ public class FlowExpressions {
         }
 
         @Override
-        public boolean containsUnknown() {
-            return false;
+        public boolean containsOfClass(Class<? extends FlowExpressions.Receiver> clazz) {
+            return getClass().equals(clazz);
         }
 
         @Override
@@ -427,8 +431,8 @@ public class FlowExpressions {
         }
 
         @Override
-        public boolean containsUnknown() {
-            return true;
+        public boolean containsOfClass(Class<? extends FlowExpressions.Receiver> clazz) {
+            return getClass().equals(clazz);
         }
 
         @Override
@@ -475,8 +479,8 @@ public class FlowExpressions {
         }
 
         @Override
-        public boolean containsUnknown() {
-            return false;
+        public boolean containsOfClass(Class<? extends FlowExpressions.Receiver> clazz) {
+            return getClass().equals(clazz);
         }
 
         @Override
@@ -491,11 +495,6 @@ public class FlowExpressions {
         @Override
         public boolean containsSyntacticEqualReceiver(Receiver other) {
             return syntacticEquals(other);
-        }
-
-        @Override
-        public boolean containsModifiableAliasOf(Store<?> store, Receiver other) {
-            return false; // not modifiable by other code
         }
 
         @Override
@@ -519,8 +518,8 @@ public class FlowExpressions {
         }
 
         @Override
-        public boolean containsUnknown() {
-            return false;
+        public boolean containsOfClass(Class<? extends FlowExpressions.Receiver> clazz) {
+            return getClass().equals(clazz);
         }
 
         @Override
@@ -590,12 +589,15 @@ public class FlowExpressions {
         }
 
         @Override
-        public boolean containsUnknown() {
-            if (receiver.containsUnknown()) {
+        public boolean containsOfClass(Class<? extends FlowExpressions.Receiver> clazz) {
+            if (getClass().equals(clazz)) {
+                return true;
+            }
+            if (receiver.containsOfClass(clazz)) {
                 return true;
             }
             for (Receiver p : parameters) {
-                if (p.containsUnknown()) {
+                if (p.containsOfClass(clazz)) {
                     return true;
                 }
             }
@@ -718,11 +720,14 @@ public class FlowExpressions {
         }
 
         @Override
-        public boolean containsUnknown() {
-            if (receiver.containsUnknown()) {
+        public boolean containsOfClass(Class<? extends FlowExpressions.Receiver> clazz) {
+            if (getClass().equals(clazz)) {
                 return true;
             }
-            return index.containsUnknown();
+            if (receiver.containsOfClass(clazz)) {
+                return true;
+            }
+            return index.containsOfClass(clazz);
         }
 
         public Receiver getReceiver() {
