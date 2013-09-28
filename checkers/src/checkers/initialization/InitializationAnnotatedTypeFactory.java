@@ -140,6 +140,7 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
         AnnotatedDeclaredType selfType = super.getSelfType(tree);
         TreePath path = getPath(tree);
         MethodTree enclosingMethod = TreeUtils.enclosingMethod(path);
+        boolean done = false;
         // Set the correct type for 'this' inside of constructors.
         while (enclosingMethod != null) {
             if (!TreeUtils.isConstructor(enclosingMethod)) {
@@ -150,17 +151,32 @@ public abstract class InitializationAnnotatedTypeFactory<Checker extends Initial
             }
 
             setSelfTypeInInitializationCode(tree, selfType, path);
+            done = true;
             // Found a constructor -> done.
             // TODO: should we look whether this constructor is
             // enclosed within another constructor?
             break;
         }
         // set the correct type for initializer blocks
-        ClassTree enclosingClass = TreeUtils.enclosingClass(path);
-        Tree enclosingBlock = TreeUtils.enclosingOfKind(path, Kind.BLOCK);
-        if (enclosingBlock != null && enclosingClass.getMembers().contains(enclosingBlock)) {
-            setSelfTypeInInitializationCode(tree, selfType, path);
+        if (!done) {
+            ClassTree enclosingClass = TreeUtils.enclosingClass(path);
+            Tree enclosingBlock = TreeUtils.enclosingOfKind(path, Kind.BLOCK);
+            List<? extends Tree> classMembers = enclosingClass == null ? null : enclosingClass.getMembers();
+            if (enclosingBlock != null
+                    && classMembers.contains(enclosingBlock)) {
+                setSelfTypeInInitializationCode(tree, selfType, path);
+                done = true;
+            }
+            if (!done) {
+                // set the correct type for field initializers
+                VariableTree variableTree = (VariableTree) TreeUtils.enclosingOfKind(path, Kind.VARIABLE);
+                if (variableTree != null && classMembers.contains(variableTree)) {
+                    setSelfTypeInInitializationCode(tree, selfType, path);
+                    done = true;
+                }
+            }
         }
+
         return selfType;
     }
 
