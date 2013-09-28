@@ -494,6 +494,11 @@ public class FlowExpressions {
         }
 
         @Override
+        public boolean containsModifiableAliasOf(Store<?> store, Receiver other) {
+            return false; // not modifiable by other code
+        }
+
+        @Override
         public boolean isUnmodifiableByOtherCode() {
             return true;
         }
