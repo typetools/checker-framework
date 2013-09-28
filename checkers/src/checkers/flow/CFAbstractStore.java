@@ -572,7 +572,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * either <em>b</em> or <em>j</em> contains a modifiable alias of
      * <em>a[i]</em>.
      * <li value="2">Remove any abstract values for field accesses <em>b.g</em>
-     * where <em>a[i]</em> might alias any expression in the receiver <em>b</em>.
+     * where <em>a[i]</em> might alias any expression in the receiver <em>b</em>
+     * and there is an array expression somewhere in the receiver.
      * <li value="3">Remove any information about pure method calls.
      * </ol>
      *
@@ -607,7 +608,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         for (Entry<FieldAccess, V> e : fieldValues.entrySet()) {
             FlowExpressions.FieldAccess otherFieldAccess = e.getKey();
             V otherVal = e.getValue();
-            if (otherFieldAccess.getReceiver().containsModifiableAliasOf(this, arrayAccess)) {
+            Receiver receiver = otherFieldAccess.getReceiver();
+            if (receiver.containsModifiableAliasOf(this, arrayAccess) && receiver.containsOfClass(ArrayAccess.class)) {
                 // remove information completely
                 continue;
             }

@@ -1,4 +1,3 @@
-// @skip-test Failing test, but disabled to avoid breaking the build
 
 import java.util.*;
 
@@ -6,9 +5,9 @@ import checkers.nullness.quals.*;
 
 public class ArrayAssignmentFlow {
 
-  public void add_combined(PptTopLevel ppt) {
+  public void add_combined(MyPptTopLevel ppt) {
 
-    Object[] vals = new Object[10];
+    /*@Nullable*/ Object[] vals = new Object[10];
 
     if (ppt.last_values != null) {
       // Assigning to an array element should not cause flow information

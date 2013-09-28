@@ -1,4 +1,3 @@
-// @skip-test Are array references not supported in postconditions?
 
 import checkers.nullness.quals.*;
 
@@ -19,7 +18,7 @@ class ValueTuple {
 
   /*@EnsuresNonNullIf(result=false, expression="vals[#1]")*/
   boolean isMissing(int value_index) {
-    return false;
+    return true;
   }
 
 }
