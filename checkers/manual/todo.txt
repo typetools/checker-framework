@@ -28,12 +28,6 @@ Where would a good place be for this?  At the beginning/end?  Split into multipl
 
 ------------------------------------------------------
 
-[Stefan]
-
-After an expression has been unboxed, it is assumed to be non-null (if it was not, then a NPE has occured).  This prevents many errors for the same problem, just like there is only one error for "o.toString(); o.toString()".
-
-------------------------------------------------------
-
 "NNEL" default becomes "top for locals, casts, instanceof, and implicit
 upper bounds".
 The top qualifier should only be added to top-level type variables,
