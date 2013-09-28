@@ -40,7 +40,7 @@ public class Thread implements Runnable {
   public void destroy() { throw new RuntimeException("skeleton method"); }
   public final void suspend() { throw new RuntimeException("skeleton method"); }
   public final void resume() { throw new RuntimeException("skeleton method"); }
-  public final void setPriority(int a1) { throw new RuntimeException("skeleton method"); }
+  public final void setPriority(@UnknownInitialization(Thread.class) @Raw(Thread.class) Thread this, int a1) { throw new RuntimeException("skeleton method"); }
   public final int getPriority() { throw new RuntimeException("skeleton method"); }
   public final void setName(String a1) { throw new RuntimeException("skeleton method"); }
   public final String getName() { throw new RuntimeException("skeleton method"); }
