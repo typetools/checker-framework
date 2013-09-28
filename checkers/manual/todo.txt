@@ -91,6 +91,8 @@ Explanations on what flow expressions are supported (i.e. strings in pre/postcon
     - Mathematical operators (plus, minus, division, ...).
     - Comparisons (equality, less than, etc.).
     - Probably other Java expressions that are "pure" (non-pure things cannot occur, anyway) that I did not think of.
+What about array references, such as this.myArray[i]?
+See test case checkers/tests/nullness/EnsuresNonNullIfTest3.java .
 
 ------------------------------------------------------
 
