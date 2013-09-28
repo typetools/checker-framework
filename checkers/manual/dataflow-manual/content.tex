@@ -162,15 +162,9 @@ division possibly throw a DivideByZero exception?
         
         \begin{verbatim}class checkers.flow.CFValue extends CFAbstractValue<CFValue>\end{verbatim}
         
-    For the NullnessCheckers, abstract values additionally track the meaning of PolyNull, which may be either Nullable or NonNull.
+    For the NullnessCheckers, abstract values additionally track the meaning of PolyNull, which may be either Nullable or NonNull.  The meaning of PolyNull can change when a PolyNull value is compared to the null literal, which is specific to the NullnessChecker.  Other checkers often also support a Poly* qualifier, but only the NullnessChecker tracks the meaning of its poly qualifier using the dataflow analysis.
         
         \begin{verbatim}class checkers.nullness.NullnessValue extends CFAbstractValue<NullnessValue>\end{verbatim}
-        
-\begin{workinprogress}    
-Don't (nearly) all type systems support \code{Poly...}, so wouldn't that
-statement be true of most type checkers, not just the NullnessCheckers?
-\end{workinprogress}
-
 
 
 \subsubsection{Store}
@@ -612,7 +606,7 @@ for every type.
         \code{AssertionError} & & \code{assert x != null : "Hey"} \\
         \midrule
 
-        \code{Marker} & No-op nodes used to annotate a CFG & \\
+        \code{Marker} & No-op nodes used to annotate a CFG with information of the underlying Java source code.  Mostly useful for debugging and visualization. An example is indicating the start/end of switch statements. & \\
         \midrule
         
         \code{NullChk} & Null checks inserted by javac & \\
@@ -634,12 +628,6 @@ it with accessor expressions.
 
 \begin{workinprogress}
 Can \code{StringConversion} be implicit?  I think so, but in any event discuss.
-\end{workinprogress}
-
-\begin{workinprogress}
-What is \code{Marker} used for?
-It's for drawing diagrams, to show where try-catch and switch nodes were in
-the original program.
 \end{workinprogress}
 
 \begin{workinprogress}
@@ -765,27 +753,6 @@ abstract syntax tree to the control-flow graph as described in \autoref{sec:cfg-
 
 First, we define several entities, which will be used in the translation.
 
-\begin{workinprogress}
-What is the intuition behind and extended node?  What does in mean?  How is
-it different than a regular node?  How is it used?  This definition is
-precise, but it doesn't help the reader to place the concept in context and
-therefore it is confusing.
-\end{workinprogress}
-
-\begin{workinprogress}
-Nodes themselves never contain control flow information; they only
-represent computation.
-
-An extended node is a wrapper around a node that represents control flow
-information.  It contains:  a node, a label, a predecessor, and a
-successor.
-
-An extended node is temporarily used to keep track of some control flow
-information.  Later, the basic block data structures are created, and they
-represent the control flow.  (And at that point the extended nodes can be
-discarded.)
-\end{workinprogress}
-
 \begin{definition}[Extended Node]
     In the translation process the data type \emph{extended node} is used.
     An extended node can be one of four possibilities:
@@ -807,22 +774,30 @@ discarded.)
         node evaluates to true and one for false.
     \end{itemize}
 \end{definition}
+\textbf{Comparison of nodes and extended nodes.}
+Nodes themselves never contain control flow information; they only
+represent computation.
+
+An extended node is a wrapper around a node that represents control flow
+information.  It contains:  a node, a label, a predecessor, and a
+successor.
+
+An extended node is temporarily used to keep track of some control flow
+information.  Later, the basic block data structures are created, and they
+represent the control flow.  (And at that point the extended nodes can be
+discarded.)
 \begin{definition}[Label]
-    A \emph{label} is a marker that is used to refer to extended nodes.
+    A \emph{label} is a marker that is used to refer to extended nodes. It is used only temporarily during CFG construction.
 \end{definition}
 
-\begin{workinprogress}
-Is a label used temporarily like an extended node, long-term like a basic
-block, or both?
-\end{workinprogress}
-
-\begin{workinprogress}
-I find it useful to never name phases ``one'', ``two'', ``three'', but
-always to give them English names.  This makes the meaning clearer to
-readers --- often because it forces the writer to think harder about the
-meaning of each.  It can still be useful to number the phases even after
-they have more mnemonic names.
-\end{workinprogress}
+% I agree, we should keep this in mind in the future.
+%\begin{workinprogress}
+%I find it useful to never name phases ``one'', ``two'', ``three'', but
+%always to give them English names.  This makes the meaning clearer to
+%readers --- often because it forces the writer to think harder about the
+%meaning of each.  It can still be useful to number the phases even after
+%they have more mnemonic names.
+%\end{workinprogress}
 
 
 The process of translating an AST to a CFG proceeds in three distinct phases.
@@ -1033,17 +1008,13 @@ is most likely not sufficient.
 \item Copy mechanism: Clone a store to get an exact copy.
 \end{itemize}
 The store is analysis-dependent, but the framework provides a default store implementation
-which can be reused.
-
-\begin{workinprogress}
-Does that mean each store instance is analysis-dependent, or each store
-implementation is analysis-dependent?
-What is the name of the default store implementation?
-Is it required for an analysis implementor to to re-implement/extend the
-default stare implementation?  Under what circumstances would one want to
-or not want to?
-\end{workinprogress}
-
+which can be reused.  The default implementation is
+\begin{verbatim}checkers.flow.CFStore\end{verbatim}
+What information is tracked in the store depends on the analysis to be performed.  Some examples of stores include
+\begin{verbatim}
+checkers.initialization.InitializationStore
+checkers.nullness.NullnessStore
+\end{verbatim}
 
 Every store is associated with a particular point in the control-flow graph, and
 all stores are managed by the framework. It maintains
@@ -1074,46 +1045,19 @@ Cross-reference to where more explanation of conversions can be found.
     \end{itemize}
 \end{enumerate}
 
-The implementor
-of the dataflow analysis can implement arbitrary queries and how to answer them
-given a store. Then, the framework will allow issuing those queries for
-any given AST node by looking up (or computing) the correct store and applying the query
-implementation.
 The store may first need to be computed, as the framework does not store all intermediate
 stores but rather only those for key positions as described in \autoref{sec:store-management}.
-
-\begin{workinprogress}
-``can implement'':  How?  by defining new methods?  By overriding existing
-methods?
-\end{workinprogress}
 
 To support both kinds of queries, our framework builds a map from AST tree nodes (of type
 \code{com.sun.source.tree.Tree}) to CFG nodes.  To answer questions of the first type it is
 then possible to go from the AST tree node to the CFG node and look up its abstract value in
-the node-value mapping.  By default, the abstract value returned for a tree by \code{Analysis.getValue(Tree)} includes any implicit conversions because it uses the mapping
+the node-value mapping (this is provided by the framework).  By default, the abstract value returned for a tree by \code{Analysis.getValue(Tree)} includes any implicit conversions because it uses the mapping
 from tree node to post-conversion CFG node.  To request the pre-conversion value, one currently uses the \code{ControlFlowGraph.treelookup} map directly.
-
-\begin{workinprogress}
-  ``it is then possible'':  is this an explanation of what the framework
-  does for the analysis programmer, or what the analysis programmer has to
-  implement?  Please clarify this distinction throughout the document.  A
-  way to fix some of the problematic places is to eliminate all uses of
-  passive voice and first person.  Doing so will force you to explicitly
-  identify the actor, which will clarify the document.
-\end{workinprogress}
 
 To support questions of the second kind, every node has a reference
 to the basic block it is part of. Thus, for a given AST tree node, the framework
 can determine the CFG node and thereby the CFG basic block, and compute the necessary store
 to answer the question.
-
-\begin{workinprogress}
-I have similar questions to those above.  ``the framework can'':
-\emph{does} it?  Is this an implementation detail provided for the
-enrichment of people who implement/maintain the dataflow framework, or is
-it important to analysis writers as well?  If you can clarify that distinction
-throughout the document, the document will be easier to read.
-\end{workinprogress}
 
 
 \subsection{Transfer Function}
@@ -1123,11 +1067,7 @@ A transfer function has to provide the following:
 \begin{itemize}
 \item A method that returns the initial store for a method, given
 the list of arguments (as \code{LocalVariableNode}s)
-and the \code{MethodTree} (not expected to be used often).
-
-\begin{workinprogress}
-When would the \code{MethodTree} be used?
-\end{workinprogress}
+and the \code{MethodTree} (useful if the initial store depends on the method signature, for instance).
 
 \item A transfer method for every \code{Node} type that takes a store, the node and produces
 an updated store. This is achieved by implementing the \code{NodeVisitor<S, S>} interface
@@ -1136,11 +1076,6 @@ for the store type \code{S}.
 These transfer methods also get access to the abstract value of any sub-node of the node \code n
 under consideration.  This is not limited to immediate children, but the abstract value for any node contained
 in \code n can be queried.
-
-\begin{workinprogress}
-Please define ``sub-node'' or use a different term.  I think you mean every
-child in the AST --- is that correct?
-\end{workinprogress}
 
 \end{itemize}
 
@@ -1193,13 +1128,6 @@ This is unsound if the code is run concurrently.  Use the
 \code{-AconcurrentSemantics} 
 command-line option to enable concurrent semantics.
 
-\begin{workinprogress}
-I don't understand what a reader should take away from this sentence:
-``the option takes effect at the point that an
-AbstractBasicAnnotatedTypeFactory creates a new empty store.''
-What are the consequences, or how does this affect the reader?
-\end{workinprogress}
-
 In the concurrent mode, the dataflow analysis cannot not infer any local
 information for fields.  This is because after a local update, another
 thread might change the field's value before the next use.
@@ -1237,11 +1165,6 @@ preserve dataflow information about fields under concurrent semantics.
     a local variable, the transfer function updates its abstract value in the
     store with the abstract value of the right-hand side (which can be looked up in the store).
     
-\begin{workinprogress}
-``to indicate'':  you gave the value in the mapping, but you didn't say the
-key that maps to it.
-\end{workinprogress}
-
     To illustrate how we can have different information in the then and else block of a conditional,
     I also implemented another transfer function that considers the \code{EqualToNode}, and if
     it is of the form \code{a == e} for a local variable \code{a} and constant \code{e}, passes
@@ -1265,12 +1188,7 @@ The default flow-sensitive analysis \code{checkers.flow.CFAnalysis} works for th
 the Checker Framework.  This generality is both a strength and a weakness because the 
 default analysis can
 always run but the facts it can deduce are limited.  The default analysis
-will be extensible so checkers can add logic specific to their own qualifiers.
-
-\begin{workinprogress}
-``will be'':  is this a future extension to the dataflow framework that you
-plan to implement, but not one that analysis writers can take advantage of yet?
-\end{workinprogress}
+is extensible so checkers can add logic specific to their own qualifiers.
 
 The default flow-sensitive analysis takes advantage of several forms of control-flow to improve the precision of type qualifiers.  It tracks assignments to flow expressions, propagating type qualifiers from the right-hand side of the assignment.  It considers equality and inequality tests to propagate the most precise qualifiers from the left or right-hand side to the true (resp. false) successor.  It also applies type qualifiers from method postconditions after calls.
 
@@ -1310,13 +1228,8 @@ For a given node \code{n}
     Note that the factory recursively uses information provided by the flow analysis to determine
     the types of sub-trees.  There is a check in \code{Analysis.getValue} that the node whose type
     is being requested is a sub-node of the node to which the transfer function is currently being
-    applied.  For other nodes, the analysis will return a null abstract value and the factory will
+    applied.  For other nodes, the analysis will return \code{null} (i.e., no information) and the factory will
     return the flow-insensitive annotated type.
-
-\begin{workinprogress}
-What is ``a null abstract value''?  Is it \code{null} or something else?
-How is it related to top, bottom, and other abstract values?
-\end{workinprogress}
 
 \end{itemize}
 
@@ -1336,11 +1249,7 @@ This implementation of a store tracks the following information:
 	\item Field access.
 	\item Local variable.
 	\item Self reference (i.e., \code{this}).
-	\item Pure method call.
-\begin{workinprogress}
-Are non-pure method calls now allowed?  That might require changes in a few
-other places too.
-\end{workinprogress}
+	\item Pure or non-pure method call.
 	\end{itemize}
 \end{itemize}
 
@@ -1348,10 +1257,6 @@ The most challenging part is ensuring that the information about
 field accesses is kept up to date in the face of incomplete aliasing
 information.  In particular, at method calls and assignments care needs to be
 taken about which information is still valid afterwards.
-
-\begin{workinprogress}
-Method call information is discarded if not deterministic, I presume.
-\end{workinprogress}
 
 The store maintains a mapping from field accesses (as defined in Section~\ref{sec:field-access}) to
 abstract values, and the subsequent sections describe the operations that
@@ -1361,14 +1266,7 @@ keep this mapping up-to-date.
 \subsubsection{Internal Representation of field access}
 \label{sec:field-access}
 
-\begin{workinprogress}
-Please avoid first person (``we''), which is confusing since the document
-sometimes uses it to refer to the framework implementer and sometimes to
-refer to the analysis implementer.
-\end{workinprogress}
-
-
-To keep track of the abstract values of fields, we use our own representation
+To keep track of the abstract values of fields, the dataflow framework use our own representation
 of field accesses
 (that is different from the \code{Node} type introduced earlier).  This
 data type is defined inductively as follows:
@@ -1380,9 +1278,9 @@ data type is defined inductively as follows:
         {\nonterminal{SelfReference} \qquad \code{this}}
     \altline{\nonterminal{LocalVariable} \qquad local variable (identified by its \code{Element})}
     \altline{\nonterminal{FieldAccess}}
-    \altline{\nonterminal{PureMethodCall} \qquad Java method call of a \textit{pure} method}
+    \altline{\nonterminal{MethodCall} \qquad Java method call of a method}
     \altline{\nonterminal{Unknown} \qquad any other Java expression}
-    \production{\nonterminal{PureMethodCall}}
+    \production{\nonterminal{MethodCall}}
         {\nonterminal{Receiver} \literal{.} \nonterminal{Method}
             \literal{(} \nonterminal{Receiver}$^{,*}$ \literal{)}}
 \end{bnfgrammar}
