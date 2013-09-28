@@ -1,7 +1,6 @@
 
 Necessary changes to the manual.  In brackets I (Stefan) wrote the names of people familiar with the particular change, which might be most qualified to make the change.  If no person is listed, than anyone could do the change.
 
-
 ------------------------------------------------------
 
 Initialization checker:  rewrite and replace all current references to @Raw
@@ -46,7 +45,6 @@ and document how to achieve that.
 Presumably via @DefaultQualifierInHierarchy which can be overrridden by
 @DefaultFor({ DefaultLocation.LOCAL_VARIABLE }) on another qualifier.
 
-------------------------------------------------------
 
 Difference between treatment of explicit and implicit bounds:
  * Whenever a bound is explicit, it should use the standard defaulting rules.
@@ -86,11 +84,8 @@ Explanations on what flow expressions are supported (i.e. strings in pre/postcon
     - Comparisons (equality, less than, etc.).
     - Probably other Java expressions that are "pure" (non-pure things cannot occur, anyway) that I did not think of.
 
-------------------------------------------------------
 
-Side-effecting methods in specifications
-
-We allowing non-pure methods in specifications.  This is non-standard.  If
+We allow non-pure methods in specifications.  This is non-standard.  If
 a specification is going to be checked at run time via assertions, then the
 specification must not use methods with side effects.  But, our checking is
 at compile time, so the semantics are clear and we allow it.
