@@ -633,7 +633,7 @@ Can \code{StringConversion} be implicit?  I think so, but in any event discuss.
 \begin{workinprogress}
 I think it might be helpful to indicate which nodes can possibly throw an
 exception.  This could be done by segregating them to a different part of
-the table, or by having another column or an asterisk.
+the table, or by having another column or an asterisk.  In the meantime, this information can be rather easily found in the source code of the CFGBuilder.
 \end{workinprogress}
 
 \begin{workinprogress}
@@ -1236,6 +1236,10 @@ For a given node \code{n}
 
 
 \subsection{The Checker-Framework Store and Dealing with Aliasing}
+
+\begin{workinprogress}
+	Word of caution: The exact rules of what information is retained may or may not be implemented exactly as described here.  This is a good starting point in any case, but if very precise information is needed, then the source code is very readable and well documented.
+\end{workinprogress}
 
 The dataflow framework provides a default implementation of a store with the
 class \code{CFAbstractStore}, which is used (as \code{CFStore}) as the
