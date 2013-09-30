@@ -2,8 +2,14 @@
 public class GenericCast<T> {
 
   @SuppressWarnings("unchecked")
-  T invalid_t = (T) new Object();
+  T tObject = (T) new Object();
 
-  T current = invalid_t;
+  T field1 = tObject;
+
+  T field2;
+
+  GenericCast() {
+    field2 = tObject;
+  }
 
 }
