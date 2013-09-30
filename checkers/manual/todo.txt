@@ -122,12 +122,17 @@ New annotation @TerminatesExecution.
 
 New command-line options:
   -AonlyDefs and -AonlyUses complement existing -AskipDefs and -AskipUses
-  -AsuggestPureMethods
-  -AenablePurity
-  -AassumeSideEffectFree
-  -AignoreRawTypeArguments
+  -AsuppressWarnings suppress warnings matching the given key
+  -AassumeSideEffectFree Unsoundly assume that every method is side-effect-free
+  -AignoreRawTypeArguments Ignore subtype tests for type arguments that were inferred for a raw type
+  -AenablePurity Check the bodies of methods marked as pure
   -AinvariantArrays replaces -Alint=arrays:invariant 
   -AcheckCastElementType replaces -Alint=cast:strict
+  -AsuggestPureMethods Suggest methods that could be marked as pure
+  -AassumeAssertionsAreEnabled, -AassumeAssertionsAreDisabled Whether to assume that assertions are enabled or disabled
+  -AconcurrentSemantics Whether to assume concurrent semantics
+  -Anocheckjdk
+  -Aflowdotdir
 
 Manual:
  New manual section about array types
