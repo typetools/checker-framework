@@ -1,4 +1,4 @@
-// In source code, whether an explicit upper bound affects what type
+// In source code, whether an upper bound is explicit affects what type
 // qualifier is imputed for that upper bound.
 // The JDK should be treated consistently with source code.
 
