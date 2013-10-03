@@ -18,6 +18,12 @@ To run the Nullness Checker, supply the \code{-processor
   checkers.nullness.NullnessChecker} command-line option to javac.  For
 examples, see Section~\ref{nullness-example}.
 
+The NullnessChecker is actually an ensemble of three pluggable
+type-checkers that work together: the Nullness Checker proper (which is the
+main focus of this chapter), the Initialization Checker
+(Section~\ref{initialization-checker}), and the Map Key Checker
+(Sections~\ref{map-key-checker}).
+
 
 \section{What the Nullness Checker checks\label{nullness-checks}}
 
@@ -63,8 +69,8 @@ Parameter passing and return values are checked analogously to assignments.
 
 The Nullness Checker also checks the correctness, and correct use, of
 rawness annotations for checking initialization (see
-Section~\ref{raw-partially-initialized}) and of map key annotations (see
-Section~\ref{map-keys}).
+Section~\ref{initialization-rawness-checker}) and of map key annotations (see
+Section~\ref{map-key-checker}).
 
 
 The checker performs additional checks if certain \code{-Alint}
@@ -101,8 +107,8 @@ command-line option.)
 \section{Nullness annotations\label{nullness-annotations}}
 
 The Nullness Checker uses three separate type hierarchies:  one for nullness,
-one for rawness (Section~\ref{raw-partially-initialized}),
-and one for map keys (Section~\ref{map-keys})
+one for rawness (Section~\ref{initialization-rawness-checker}),
+and one for map keys (Section~\ref{map-key-checker})
 The Nullness Checker has four varieties of annotations:  nullness
 type qualifiers, nullness method annotations, rawness type qualifiers, and
 map key type
@@ -170,16 +176,14 @@ Nullness type system.
 multiple inheritance.)
 
 \begin{figure}
-\includeimage{nullness-and-raw}{2.5cm}
+\includeimage{nullness}{2.5cm}
 \caption{Partial type hierarchy for the Nullness type system.
 Java's \<Object> is expressed as \<@Nullable Object>.  Programmers can omit
 most type qualifiers, because the default annotation
-(Section~\ref{null-defaults}) is usually correct.  Also shown is the
-type hierarchy for rawness (Section~\ref{raw-partially-initialized}), which
-indicates whether
-initialization has completed.  The two type hierarchies are independent but
-inter-related.  The Nullness Checker verifies both of these, as well as
-another type hierarchy for map keys (Section~\ref{map-key-qualifiers}).}
+(Section~\ref{null-defaults}) is usually correct.
+The Nullness Checker verifies three type hierarchies:  this one for
+nullness, one for initialization (Section~\ref{initialization-checker}),
+and one for map keys (Section~\ref{map-key-checker}).}
 \label{fig:nullness-hierarchy}
 \end{figure}
 
@@ -207,20 +211,28 @@ apply to the method itself rather than to some particular type.
   expressions are non-null.  See Section~\ref{conditional-nullness} and the
   Javadoc for examples of their use.
 
-\item[\code{@\refclass{nullness/quals}{AssertParametersNonNull}}]
-  % Indicates a method precondition:  The annotated method expects all of
-  % its parameters to be non-null.
-  is used for suppressing warnings, in very rare cases.  See the Javadoc for
-  details.
-
 \end{description}
 
 
-\subsection{Rawness qualifiers\label{rawness-qualifiers-overview}}
+\subsection{Initialization qualifiers\label{initialization-qualifiers-overview}}
 
-The Nullness Checker supports rawness annotations that indicate whether
-an object is fully initialized --- that is, whether its fields have all
+The Nullness Checker invokes an Initialization Checker, whose annotations indicate whether
+an object is fully initialized --- that is, whether all of its fields have
 been assigned.
+
+\begin{description}
+\item[\code{@\refclass{initialization/quals}{Initialized}}]
+\item[\code{@\refclass{initialization/quals}{UnknownInitialization}}]
+\item[\code{@\refclass{initialization/quals}{UnderInitialization}}]
+\item[\code{@\refclass{initialization/quals}{PolyInitialized}}]
+\end{description}
+
+\noindent
+Use of these annotations can help you to type-check more
+code.  Figure~\ref{fig:initialization-hierarchy} shows its type hierarchy.  For
+details, see Section~\ref{initialization-checker}.
+
+A slightly simpler variant, called the Rawness Initialization Checker, is also available:
 
 \begin{description}
 \item[\code{@\refclass{nullness/quals}{Raw}}]
@@ -228,15 +240,16 @@ been assigned.
 \item[\code{@\refclass{nullness/quals}{PolyRaw}}]
 \end{description}
 
-Use of these annotations can help you to type-check more
-code.  Figure~\ref{fig:nullness-hierarchy} shows its type hierarchy.  For
-details, see Section~\ref{raw-partially-initialized}.
+\noindent
+Figure~\ref{fig:rawness-hierarchy} shows its type hierarchy.  For
+details, see Section~\ref{initialization-rawness-checker}.
 
 
 \subsection{Map key qualifiers\label{map-key-qualifiers}}
 
-The Nullness Checker supports a map key annotation, \code{@\refclass{nullness/quals}{KeyFor}} that indicates whether
-a value is a key for a given map --- that is, whether
+The Nullness Checker invokes a Map Key Checker, whose annotation,
+\code{@\refclass{nullness/quals}{KeyFor}}, indicates that
+a value is a key for a given map.  This indicates whether
 \code{map.containsKey(value)} would evaluate to \code{true}.
 
 \begin{description}
@@ -244,7 +257,7 @@ a value is a key for a given map --- that is, whether
 \end{description}
 
 Use of this annotation can help you to type-check more code.  For details,
-see Section~\ref{map-keys}.
+see Section~\ref{map-key-checker}.
 
 
 \section{Writing nullness annotations\label{writing-nullness-annotations}}
@@ -391,6 +404,33 @@ needs to be trusted:  that is, a programmer must verify that it is safe,
 then write a \<@SuppressWarnings> annotation.
 
 % TODO: explain more aspects, give more examples.
+
+
+\subsection{Additional details\label{nullness-additional-details}}
+
+The Nullness Checker does some special checks in certain circumstances, in
+order to soundly reduce the number of warnings that it produces.
+
+For example, a call to 
+\sunjavadoc{java/lang/System.html#getProperty(java.lang.String)}{System.getProperty(String)}
+can return null in general, but it will not return null if the argument is
+one of the built-in-keys listed in the documentation of 
+\sunjavadoc{java/lang/System.html#getProperties()}{System.getProperties()}.
+The Nullness Checker is aware of this fact, so you do not have to suppress
+a warning for a call like \<System.getProperty("line.separator")>.  The
+warning is still issued for code like this:
+
+\begin{Verbatim}
+  final String s = "line.separator";
+  nonNullvar = System.getProperty(s);
+\end{Verbatim}
+
+\noindent
+though that case could be handled as well, if desired.
+(Suppression of the warning is, strictly speaking, not sound, because a
+library that your code calls, or your code itself, could perversely change
+the system properties; the Nullness Checker assumes this bizarre coding
+pattern does not happen.)
 
 
 \subsection{Inference of \code{@NonNull} and \code{@Nullable} annotations\label{nullness-inference}}
@@ -679,563 +719,6 @@ such as:
 then you should mark the appropriate parameter as \<@NonNull> (which is the
 default).  This will prevent the checker from issuing a warning about the
 \<checkNotNull> call.
-
-
-\section{\code{@Raw} annotation for partially-initialized objects\label{raw-partially-initialized}}
-
-An object is
-\emph{raw} from the time that its constructor starts until its constructor
-finishes.  This is relevant to the Nullness Checker because while the
-constructor is executing --- that is, before initialization completes ---
-a \<@NonNull>
-field may be observed to be null, until that field is set.  In
-particular, the Nullness Checker issues a warning for code like this:
-
-\begin{Verbatim}
-  public class MyClass {
-    private @NonNull Object f;
-    public MyClass(int x, int y) {
-      // Error because constructor contains no assignment to this.f.
-      // By the time the constructor exits, f must be initialized to a non-null value.
-    }
-    public MyClass(int x) {
-      // Error because this.f is accessed before f is initialized.
-      // At the beginning of the constructor's execution, accessing this.f
-      // yields null, even though field f has a non-null type.
-      this.f.toString();
-    }
-    public MyClass(int x, int y, int z) {
-      m();
-    }
-    public void m() {
-      // Error because this.f is accessed before f is initialized,
-      // even though the access is not in a constructor.
-      // When m is called from the constructor, accessing f yields null,
-      // even though field f has a non-null type.
-      this.f.toString();
-    }
-\end{Verbatim}
-
-\noindent
-In general, code can depend that field \<f> is not \<null>, because the
-field is declared with a \code{@\refclass{nullness/quals}{NonNull}} type.
-However, this guarantee does not hold for a partially-initialized object.
-
-The Nullness Checker uses the \code{@\refclass{nullness/quals}{Raw}} annotation to indicate that an object
-is not yet fully initialized --- that is, not all its \<@NonNull> fields have been
-assigned.  Rawness is mostly relevant within the constructor, or for
-references to \code{this} that escape the constructor (say, by being stored
-in a field or passed to a method before initialization is complete).  
-Use of rawness annotations is rare in most code.
-
-The most common use for the \<@Raw> annotation is for a helper routine that
-is called by constructor.  For example:
-
-\begin{Verbatim}
-  class MyClass {
-    Object field1;
-    Object field2;
-    Object field3;
-
-    public MyClass(String arg1) {
-      this.field1 = arg1;
-      init_other_fields();
-    }
-
-    // A helper routine that initializes all the fields other than field1
-    @EnsuresNonNull({"field2", "field3"})
-    private void init_other_fields(@Raw MyClass this) {
-      field2 = new Object();
-      field3 = new Object();
-    }
-  }
-\end{Verbatim}
-
-For compatibility with Java 7 and earlier, you can write the receiver
-parameter in comments (see Section~\ref{annotations-in-comments}):
-\begin{Verbatim}
-    private void init_other_fields(/*>>> @Raw MyClass this*/) {
-\end{Verbatim}
-
-% Most readers can
-% skip this section on first reading; you can return to it once you have
-% mastered the rest of the Nullness Checker.
-
-\subsection{Rawness qualifiers\label{rawness-qualifiers}}
-
-The rawness hierarchy is shown in Figure~\ref{fig:nullness-hierarchy}.
-The rawness hierarchy contains these qualifiers:
-
-\begin{description}
-
-\item[\code{@\refclass{nullness/quals}{Raw}}]
-  indicates a type that may contain a partially-initialized object.  In a
-  partially-initialized object, fields that are annotated as
-  \code{@\refclass{nullness/quals}{NonNull}} may be null because the field
-  has not yet been assigned.  Within the constructor,
-  \code{this} has \code{@\refclass{nullness/quals}{Raw}} type until all
-  the \code{@NonNull} fields have been assigned.
-  A partially-initialized object (\code{this} in a constructor) may be
-  passed to a helper method or stored in a variable; if so, the method
-  receiver, or the field, would have to be annotated as \<@Raw>.
-
-% Cut this?
-\item[\code{@\refclass{nullness/quals}{NonRaw}}]
-  indicates a type that contains a fully-initialized object.  \code{NonRaw}
-  is the default, so there is little need for a programmer to write this
-  explicitly.
-
-\item[\code{@\refclass{nullness/quals}{PolyRaw}}]
-  indicates qualifier polymorphism over rawness (see
-  Section~\ref{qualifier-polymorphism}).
-
-\end{description}
-
-% However, if the constructor makes
-% a method call (passing \code{this} as a parameter or the receiver), then
-% the called method could observe the object in an illegal state.
-
-If a reference has
-\code{@Raw} type, then all of its \code{@NonNull} fields are treated as
-\code{@\refclass{nullness/quals}{MonotonicNonNull}}:  when read, they are
-treated as being \code{@\refclass{nullness/quals}{Nullable}}, but when
-written, they are treated as being
-\code{@\refclass{nullness/quals}{NonNull}}.
-
-
-The rawness hierarchy is orthogonal to the nullness hierarchy.  It
-is legal for a reference to be \<@NonNull @Raw>, \<@Nullable @Raw>,
-\<@NonNull @NonRaw>, or \<@Nullable @NonRaw>.  The nullness hierarchy tells
-you about the reference itself:  might the reference be null?  The rawness
-hierarchy tells you about the \<@NonNull> fields in the referred-to object:
-might those fields be temporarily null in contravention of their
-type annotation?
-% It's a figure rather than appearing inline so as not to span page breaks
-% in the printed manual.
-Figure~\ref{fig:rawness-examples} contains some examples.
-
-\begin{figure}
-\begin{tabular}{l|l|l}
-Declarations & Expression & Expression's nullness type, or checker error \\ \hline
-\begin{minipage}{1.5in}
-\begin{Verbatim}
-class C {
-  @NonNull Object f;
-  @Nullable Object g;
-  ...
-}
-\end{Verbatim}
-\end{minipage} & & \\ \cline{2-3}
-\<@NonNull @NonRaw C a;>
-& \<a> & \<@NonNull> \\
-& \<a.f> & \<@NonNull> \\
-& \<a.g> & \<@Nullable> \\ \cline{2-3}
-\<@NonNull @Raw C b;>
-& \<b> & \<@NonNull> \\
-& \<b.f> & \<@MonotonicNonNull> \\
-& \<b.g> & \<@Nullable> \\ \cline{2-3}
-\<@Nullable @NonRaw C c;>
-& \<c> & \<@Nullable> \\
-& \<c.f> & error: deref of nullable \\
-& \<c.g> & error: deref of nullable \\ \cline{2-3}
-\<@Nullable @Raw C d;>
-& \<d> & \<@Nullable> \\
-& \<d.f> & error: deref of nullable \\
-& \<d.g> & error: deref of nullable \\
-\end{tabular}
-\caption{Examples of the interaction between nullness and rawness.
-  Declarations are shown at the left for reference, but the focus of the
-  table is the expressions and their nullness type or error.}
-\label{fig:rawness-examples}
-\end{figure}
-
-
-% Does our implementation handle static fields soundly?  NO!  See issue
-% #105.  Maybe document this?
-
-
-\subsection{How an object becomes non-raw\label{becoming-non-raw}}
-
-Within the constructor,
-\code{this} starts out with \code{@\refclass{nullness/quals}{Raw}} type.
-As soon as all of the \code{@\refclass{nullness/quals}{NonNull}} fields
-have been initialized, then \code{this} is treated as non-raw.
-% TODO:  (See
-% Section~\ref{becoming-non-raw-clarification} for a slight clarification of
-% this rule.)
-
-The Nullness Checker issues an error if the constructor fails to initialize
-any \code{@NonNull} field.  This ensures that the object is in a legal (non-raw)
-state by the time that the constructor exits.
-\urldef{\jlsdefiniteassignmenturl}{\url}{http://docs.oracle.com/javase/specs/jls/se7/html/jls-16.html}
-\urldef{\jlsfinalvariablesurl}{\url}{http://docs.oracle.com/javase/specs/jls/se7/html/jls-4.html#jls-4.12.4}
-This is different than Java's test for definite assignment (see
-\ahref{\jlsdefiniteassignmenturl}{JLS ch.16}),
-% , which requires that local
-% variables (and blank \code{final} fields) must be assigned.  Java does not
-% require that non-\code{final} fields be assigned, since
-which does not apply to fields (except blank final ones, defined in
-\ahref{\jlsdefiniteassignmenturl}{JLS \S 4.12.4}) because fields
-have a default value of null.
-
-
-% and can only be passed to methods when the corresponding parameter is
-% annotated with \code{@\refclass{nullness/quals}{Raw}}.  Similar
-% restrictions apply to assigning \code{this} to a field.
-
-All \code{@NonNull} fields must either have a
-default in the field declaration, or be assigned in the constructor or in a
-helper method that the constructor calls.  If
-your code initializes (some) fields in a helper method, you will need to
-annotate the helper method with an annotation such as
-\code{@\refclass{nullness/quals}{EnsuresNonNull}(\{"field1", "field2"\})}
-for all the fields that the helper method assigns.
-It's a bit odd, but you use that same annotation, \code{@EnsuresNonNull},
-to indicate that a primitive field has its value set in a helper method,
-which is relevant when you supply the \code{-Alint=uninitialized}
-command-line option (see Section~\ref{lint-uninitialized}).
-
-% TODO:
-% We need an
-%   @EnsuresInitialized("b")
-% that is analogous to
-%   @EnsuresNonNull("b")
-% when we are dealing with a field of primitive type.
-% But, for now just use the same annotation, @EnsuresNonNull, for both purposes.
-
-
-\subsection{Partial initialization\label{partial-initialization}}
-
-So far, we have discussed rawness as if it is an all-or-nothing property:
-an object is fully raw until initialization completes, and then it is no
-longer raw.  The full truth is a bit more complex:  during the
-initialization process, an object can be partially initialized, and as the
-object's superclass constructors complete, its rawness changes.  The
-Nullness Checker lets you express such properties when necessary.
-
-Consider a simple example:
-
-\begin{Verbatim}
-class A {
-  Object a;
-  A() {
-    a = new Object();
-  }
-}
-class B extends A {
-  Object b;
-  B() {
-    super();
-    b = new Object();
-  }
-}
-\end{Verbatim}
-
-Consider what happens during execution of \<new B()>.
-
-\begin{enumerate}
-\item \<B>'s constructor begins to execute.  At this point, neither the
-  fields of \<A> nor those of \<B> have been initialized yet.
-\item \<B>'s constructor calls \<A>'s constructor, which begins to execute.
-  No fields of \<A> nor of \<B> have been initialized yet.
-\item \<A>'s constructor completes.  Now, all the fields of \<A> have been
-  initialized, and their invariants (such as that field \<a> is non-null) can be
-  depended on.  However, because \<B>'s constructor has not yet completed
-  executing, the object being constructed is not yet fully initialized.
-  When treated as an \<A> (e.g., if only the \<A> fields are accessed), the
-  object is initialized (non-raw), but when treated as a \<B>, the object
-  is still raw.
-\item \<B>'s constructor completes.  The object is fully initialized
-  (non-raw), if \<B>'s constructor was invoked via a \<new B()>
-  expression.  On the other hand, if there was a \<class C extends B \{
-  ... \}>, and \<B>'s constructor had been invoked from that, then the
-  object currently under construction would \emph{not} be fully initialized
-  --- it would only be initialized when treated as an \<A> or a \<B>, but
-  not when treated as a \<C>.
-\end{enumerate}
-
-At any moment during initialization, the superclasses of a given class
-can be divided into those that have completed initialization and those that
-have not yet completed initialization.  More precisely, at any moment there
-is a point in the class hierarchy such that all the classes above that
-point are fully initialized, and all those below it are not yet
-initialized.  As initialization proceeds, this dividing line between the
-initialized and raw classes moves down the type hierarchy.
-
-The Nullness Checker lets you indicate where the dividing line is between
-the initialized and non-initialized classes.
-You have two equivalent ways to indicate the dividing line:  \<@Raw>
-indicates the first class \emph{below} the dividing line, or
-\<@NonRaw(\emph{classliteral})> indicates the first class \emph{above} the
-dividing line.
-
-When you write \code{@\refclass{nullness/quals}{Raw} MyClass x;}, that
-means that variable \<x> is initialized for all superclasses of \<MyClass>,
-and (possibly) uninitialized for \<MyClass> and all subclasses.
-
-When you write \code{@\refclass{nullness/quals}{NonRaw(Foo.class)} MyClass
-  x;}, that means that variable \<x> is initialized for \<Foo> and all its
-superclasses, and (possibly) uninitialized for all subclasses of \<Foo>.
-
-If \<A> is a direct superclass of \<B> (as in the example above), then 
-\<@Raw A x;> and \<@NonRaw(B.class) A x;> are equivalent declarations.
-Neither one is the same as \<@NonRaw A x;>, which indicates that, whatever
-the actual class of the object that \<x> refers to, that object is fully
-initialized.  Since \<@NonRaw> (with no argument) is the default, you will
-rarely see it written.
-
-\label{becoming-non-raw-clarification}
-
-We can now state a clarification of Section~\ref{becoming-non-raw}'s rule
-for an object becoming non-raw.
-As soon as all of the \code{@\refclass{nullness/quals}{NonNull}} fields
-have been initialized, then \code{this} is treated as
-\code{@\refclass{nullness/quals}{NonRaw}(\emph{typeofthis})}, rather than
-treated as simply 
-\code{@\refclass{nullness/quals}{NonRaw}}.
-
-The example above lists 4 moments during construction.  At those moments,
-the type of the object being constructed is:
-
-\begin{enumerate}
-\item
-  \<@Raw Object>
-\item
-  \<@Raw Object>
-\item
-  \<@NonRaw(A.class) A>
-  %% Not quite equivalent because the Java (non-qualified) type differs
-  % ; equivalently, \<@Raw B>
-\item
-  \<@NonRaw(B.class) B>
-\end{enumerate}
-
-\paragraph{Example}
-
-As another example, consider the following 12 declarations:
-
-\begin{Verbatim}
-    @Raw Object rO;
-    @NonRaw(Object.class) Object nroO;
-    Object o;
-
-    @Raw A rA;
-    @NonRaw(Object.class) A nroA;  // same as "@Raw A"
-    @NonRaw(A.class) A nraA;
-    A a;
-
-    @NonRaw(Object.class) B nroB;
-    @Raw B rB;
-    @NonRaw(A.class) B nraB;  // same as "@Raw B"
-    @NonRaw(B.class) B nrbB;
-    B b;
-\end{Verbatim}
-
-In the following table, the type in cell C1 is a supertype of the type in
-cell C2 if:  C1 is at least as high and at least as far left in the table
-as C2 is.  For example, \<nraA>'s type is a supertype of those of \<rB>,
-\<nraB>, \<nrbB>, \<a>, and \<b>.  (The empty cells on the top row are real
-types, but are not expressible.  The other empty cells are not interesting
-types.)
-
-\noindent
-\begin{tabular}{|c|c|c|}
-
-\hline
-    \<@Raw Object rO;>
-&
-& 
-\\
-\hline
-
-    \<@NonRaw(Object.class) Object nroO;>
-&
-\begin{minipage}{2in}
-\begin{Verbatim}
-@Raw A rA;
-@NonRaw(Object.class) A nroA;
-\end{Verbatim}
-\end{minipage}
-&
-    \<@NonRaw(Object.class) B nroB;>
-\\
-\hline
-
-&
-    \<@NonRaw(A.class) A nraA;>
-&
-\begin{minipage}{1.75in}
-\begin{Verbatim}
-@Raw B rB;
-@NonRaw(A.class) B nraB;
-\end{Verbatim}
-\end{minipage}
-\\
-\hline
-
-&
-&
-    \<@NonRaw(B.class) B nrbB;>
-\\
-\hline
-
-    \<Object o;>
-&
-    \<A a;>
-&
-    \<B b;>
-\\
-\hline
-\end{tabular}
-
-
-
-% \urldef{\jlsconstructorbodyurl}{\url}{http://docs.oracle.com/javase/specs/jls/se7/html/jls-8.html#jls-8.8.7}
-% (Recall that the superclass constructor is called on the first line, or is
-% inserted automatically by the compiler before the first line, see
-% \ahref{\jlsconstructorbodyurl}{JLS \S8.8.7}.)
-
-
-
-\subsection{More details about rawness checking\label{rawness-checking}}
-
-
-\paragraph{Suppressing warnings}
-
-You can suppress warnings related to partially-initialized objects with
-\<@SuppressWarnings("rawness")>.  Do not confuse this with the unrelated
-\<@SuppressWarnings("rawtypes")> annotation for non-instantiated generic types!
-
-
-\paragraph{Checking initialization of all fields, not just \code{@NonNull} ones}
-
-When the \code{-Alint=uninitialized} command-line option is provided, then
-an object is considered raw until \emph{all} its fields are assigned, not
-just the \code{@NonNull} ones.  See Section~\ref{lint-uninitialized}.
-
-
-\paragraph{Use of method annotations}
-
-A method with a raw receiver often assumes that a few fields (but not all
-of them) are non-null, and sometimes sets some more fields to non-null
-values.  To express these concepts, use the
-\code{@\refclass{nullness/quals}{RequiresNonNull}},
-\code{@\refclass{nullness/quals}{EnsuresNonNull}}, and
-\code{@\refclass{nullness/quals}{EnsuresNonNullIf}} method annotations;
-see Section~\ref{nullness-method-annotations}.
-
-
-% Should we change the terminology?
-\paragraph{The terminology ``raw''}
-
-The name ``raw'' comes from a research paper that proposed this
-approach~\cite{FahndrichL2003}.
-A better name might have been ``not yet initialized'' or ``partially
-initialized'', but the term ``raw'' is now well-known.
-The \code{@\refclass{nullness/quals}{Raw}}
-annotation has nothing to do with the raw types of Java Generics.
-
-
-\section{Map key annotations\label{map-keys}}
-
-Java's
-\sunjavadoc{java/util/Map.html#get(java.lang.Object)}{\code{Map.get}}
-method always has the possibility to return null, if the key is not in the
-map.
-
-A call \<mymap.get(mykey)> returns non-null if two conditions are satisfied:
-\begin{enumerate}
-\item \<mymap>'s values are all non-null; that is, \<mymap> was
-  declared as \code{Map<\emph{KeyType}, @NonNull \emph{ValueType}>}.  Note
-  that \<@NonNull> is the default type, so it need not be written explicitly.
-\item \<mykey> is a key in \<mymap>; that is, \<mymap.containsKey(mykey)>
-  returns \<true>.  You express this fact to the Nullness Checker by
-  declaring \<mykey> as \<@KeyFor("mymap") \emph{KeyType} mykey>.  For a
-  local variable, the \<@KeyFor("mymap")> type qualifier can generally be
-  inferred.
-\end{enumerate}
-\noindent
-If either of these two conditions is violated, then \<mymap.get(mykey)> has
-the possibility of returning null.
-
-
-  Thus, to guarantee that the value returned from \code{Map.get} is
-non-null, it is necessary that the map contains only non-null values,
-\emph{and} the key is in the map.
-The \code{@\refclass{nullness/quals}{KeyFor}} annotation states the latter
-property.
-
-If a type is annotated as \code{@KeyFor("m")}, then any value v with that type
-is a key in Map \<m>.  Another way of saying this is that the expression
-\code{m.containsKey(v)} evaluates to true.
-
-You usually do not have to write \code{@KeyFor} explicitly, because the
-checker infers it based on usage patterns, such as calls to
-\code{containsKey} or iteration over a map's
-\sunjavadoc{java/util/Map.html#keySet()}{\textrm{key set}}.
-
-One usage pattern where you \emph{do} have to write \<@KeyFor> is for a
-user-managed collection that is a subset of the key set:
-
-\begin{Verbatim}
-Map<String, Object> m;
-Set<@KeyFor("m") String> matchingKeys; // keys that match some criterion
-for (@KeyFor("m") String k : matchingKeys) {
-  ... m.get(k) ...  // known to be non-null
-}
-\end{Verbatim}
-
-As with any annotation, use of the \<@KeyFor> annotation may force you to
-slightly refactor your code.  For example, this would be illegal:
-
-\begin{Verbatim}
-  Map<K,V> m;
-  Collection<@KeyFor("m") K> coll;
-  coll.add(x);   // compiler error, because the @KeyFor annotation is violated
-  m.put(x, ...);
-\end{Verbatim}
-
-\noindent
-but this would be OK (no compiler error):
-
-\begin{Verbatim}
-  Collection<@KeyFor("m") K> coll;
-  m.put(x, ...);
-  coll.add(x);
-\end{Verbatim}
-
-
-Because the \<@KeyFor> type hierarchy is independent from the nullness and
-rawness hierarchies, it uses a different warning suppression key.
-You can suppress warnings related to map keys with
-\<@SuppressWarnings("keyfor")>.
-
-
-\section{Additional details\label{nullness-additional-details}}
-
-The Nullness Checker does some special checks in certain circumstances, in
-order to soundly reduce the number of warnings that it produces.
-
-For example, a call to 
-\sunjavadoc{java/lang/System.html#getProperty(java.lang.String)}{System.getProperty(String)}
-can return null in general, but it will not return null if the argument is
-one of the built-in-keys listed in the documentation of 
-\sunjavadoc{java/lang/System.html#getProperties()}{System.getProperties()}.
-The Nullness Checker is aware of this fact, so you do not have to suppress
-a warning for a call like \<System.getProperty("line.separator")>.  The
-warning is still issued for code like this:
-
-\begin{Verbatim}
-  final String s = "line.separator";
-  nonNullvar = System.getProperty(s);
-\end{Verbatim}
-
-\noindent
-though that case could be handled as well, if desired.
-(Suppression of the warning is, strictly speaking, not sound, because a
-library that your code calls, or your code itself, could perversely change
-the system properties; the Nullness Checker assumes this bizarre coding
-pattern does not happen.)
 
 
 \section{Examples\label{nullness-example}}
@@ -1656,6 +1139,1014 @@ tool like the Checker Framework.)
 %    This means that the value may be null.  To avoid a NullPointerException,
 %    every client should check nullness before dereferencing the value.
 %    In the Checker Framework, this corresponds to @Nullable.
+
+
+\section{Initialization Checker\label{initialization-checker}}
+
+An object is partially initialized from the time that its constructor starts until its constructor
+finishes.  This is relevant to the Nullness Checker because while the
+constructor is executing --- that is, before initialization completes ---
+a \<@NonNull>
+field may be observed to be null, until that field is set.  In
+particular, the Nullness Checker issues a warning for code like this:
+
+\begin{Verbatim}
+  public class MyClass {
+    private @NonNull Object f;
+    public MyClass(int x, int y) {
+      // Error because constructor contains no assignment to this.f.
+      // By the time the constructor exits, f must be initialized to a non-null value.
+    }
+    public MyClass(int x) {
+      // Error because this.f is accessed before f is initialized.
+      // At the beginning of the constructor's execution, accessing this.f
+      // yields null, even though field f has a non-null type.
+      this.f.toString();
+    }
+    public MyClass(int x, int y, int z) {
+      m();
+    }
+    public void m() {
+      // Error because this.f is accessed before f is initialized,
+      // even though the access is not in a constructor.
+      // When m is called from the constructor, accessing f yields null,
+      // even though field f has a non-null type.
+      this.f.toString();
+    }
+\end{Verbatim}
+
+\noindent
+When a field \<f> is declared with a \code{@\refclass{nullness/quals}{NonNull}}
+type, then code can depend on the fact that the field is not \<null>.
+However, this guarantee does not hold for a partially-initialized object.
+
+The Nullness Checker uses three annotations to indicate whether an object
+is initalized (all its \<@NonNull> fields have been assigned), under
+initialization (its constructor is currently executing), or its
+initialization state is unknown.
+
+These distinctions are mostly relevant within the constructor, or for
+references to \code{this} that escape the constructor (say, by being stored
+in a field or passed to a method before initialization is complete).  
+Use of initialization annotations is rare in most code.
+
+The most common use for the \<@UnderInitialization> annotation is for a
+helper routine that is called by constructor.  For example:
+
+\begin{Verbatim}
+  class MyClass {
+    Object field1;
+    Object field2;
+    Object field3;
+
+    public MyClass(String arg1) {
+      this.field1 = arg1;
+      init_other_fields();
+    }
+
+    // A helper routine that initializes all the fields other than field1.
+    @EnsuresNonNull({"field2", "field3"})
+    private void init_other_fields(@UnderInitialization(MyClass.class) MyClass this) {
+      field2 = new Object();
+      field3 = new Object();
+    }
+  }
+\end{Verbatim}
+
+For compatibility with Java 7 and earlier, you can write the receiver
+parameter in comments (see Section~\ref{annotations-in-comments}):
+\begin{Verbatim}
+    private void init_other_fields(/*>>>@UnderInitialization(MyClass.class) MyClass this*/) {
+\end{Verbatim}
+
+% Most readers can
+% skip this section on first reading; you can return to it once you have
+% mastered the rest of the Nullness Checker.
+
+\subsection{Initialization qualifiers\label{initialization-qualifiers}}
+
+\begin{figure}
+\includeimage{initialization}{2.5cm}
+\caption{Partial type hierarchy for the Initialization type system.
+  \<@UnknownInitialization> and \<@UnderInitialization> each take an
+  optional parameter indicating how far initialization has proceeded, and
+  the right side of the figure illustrates its type hierarchy in more detail.}
+\label{fig:initialization-hierarchy}
+\end{figure}
+
+The initialization hierarchy is shown in Figure~\ref{fig:initialization-hierarchy}.
+The initialization hierarchy contains these qualifiers:
+
+\begin{description}
+
+\item[\code{@\refclass{initialization/quals}{Initialized}}]
+  indicates a type that contains a fully-initialized object.  \code{Initialized}
+  is the default, so there is little need for a programmer to write this
+  explicitly.
+
+\item[\code{@\refclass{initialization/quals}{UnknownInitialization}}]
+  indicates a type that may contain a partially-initialized object.  In a
+  partially-initialized object, fields that are annotated as
+  \code{@\refclass{nullness/quals}{NonNull}} may be null because the field
+  has not yet been assigned.
+
+  \<@UnknownInitialization> takes a parameter that is the class the object
+  is definitely initialized up to.  For instance, the type
+  \<@UnknownInitialization(Foo.class)> denotes an object in which every
+  fields declared in \<Foo> or its superclasses is initialized, but other
+  fields might not be.
+  Just \<@UnknownInitialization> is equivalent to
+  \<@UnknownInitialization(Object.class)>.
+
+\item[\code{@\refclass{initialization/quals}{UnderInitialization}}]
+  indicates a type that contains a partially-initialized object that is
+  under initialization --- that is, its constructor is currently executing.
+  It is otherwise the same as \<@UnknownInitialization>.  Within the
+  constructor, \code{this} has
+  \code{@\refclass{initialization/quals}{UnderInitialization}} type until
+  all the \code{@NonNull} fields have been assigned.
+
+\item[\code{@\refclass{initialization/quals}{PolyInitialized}}]
+  indicates qualifier polymorphism over initialization (see
+  Section~\ref{qualifier-polymorphism}).
+
+\end{description}
+
+  A partially-initialized object (\code{this} in a constructor) may be
+  passed to a helper method or stored in a variable; if so, the method
+  receiver, or the field, would have to be annotated as
+  \<@UnknownInitialization> or as \<@UnderInitialization>.
+
+% However, if the constructor makes
+% a method call (passing \code{this} as a parameter or the receiver), then
+% the called method could observe the object in an illegal state.
+
+If a reference has
+\code{@UnknownInitialization} or \code{@UnderInitialization} type, then all of its \code{@NonNull} fields are treated as
+\code{@\refclass{nullness/quals}{MonotonicNonNull}}:  when read, they are
+treated as being \code{@\refclass{nullness/quals}{Nullable}}, but when
+written, they are treated as being
+\code{@\refclass{nullness/quals}{NonNull}}.
+
+The initialization hierarchy is orthogonal to the nullness hierarchy.  It
+is legal for a reference to be \<@NonNull @UnderInitialization>, \<@Nullable @UnderInitialization>,
+\<@NonNull @Initialized>, or \<@Nullable @Initialized>.  The nullness hierarchy tells
+you about the reference itself:  might the reference be null?  The initialization
+hierarchy tells you about the \<@NonNull> fields in the referred-to object:
+might those fields be temporarily null in contravention of their
+type annotation?
+% It's a figure rather than appearing inline so as not to span page breaks
+% in the printed manual.
+Figure~\ref{fig:initialization-examples} contains some examples.
+
+\begin{figure}
+\begin{tabular}{l|l|l}
+Declarations & Expression & Expression's nullness type, or checker error \\ \hline
+\begin{minipage}{1.5in}
+\begin{Verbatim}
+class C {
+  @NonNull Object f;
+  @Nullable Object g;
+  ...
+}
+\end{Verbatim}
+\end{minipage} & & \\ \cline{2-3}
+\<@NonNull @Initialized C a;>
+& \<a> & \<@NonNull> \\
+& \<a.f> & \<@NonNull> \\
+& \<a.g> & \<@Nullable> \\ \cline{2-3}
+\<@NonNull @UnderInitialization C b;>
+& \<b> & \<@NonNull> \\
+& \<b.f> & \<@MonotonicNonNull> \\
+& \<b.g> & \<@Nullable> \\ \cline{2-3}
+\<@Nullable @Initialized C c;>
+& \<c> & \<@Nullable> \\
+& \<c.f> & error: deref of nullable \\
+& \<c.g> & error: deref of nullable \\ \cline{2-3}
+\<@Nullable @UnderInitialization C d;>
+& \<d> & \<@Nullable> \\
+& \<d.f> & error: deref of nullable \\
+& \<d.g> & error: deref of nullable \\
+\end{tabular}
+\caption{Examples of the interaction between nullness and initialization.
+  Declarations are shown at the left for reference, but the focus of the
+  table is the expressions and their nullness type or error.}
+\label{fig:initialization-examples}
+\end{figure}
+
+
+% Does our implementation handle static fields soundly?  NO!  See issue
+% #105.  Maybe document this?
+
+
+\subsection{How an object becomes initialized\label{becoming-initialized}}
+
+Within the constructor,
+\code{this} starts out with \code{@\refclass{initialization/quals}{UnderInitialization}} type.
+As soon as all of the \code{@\refclass{nullness/quals}{NonNull}} fields
+have been initialized, then \code{this} is treated as initialized.
+(See
+Section~\ref{becoming-initialized-clarification} for a slight clarification of
+this rule.)
+
+The Initialization Checker issues an error if the constructor fails to initialize
+any \code{@NonNull} field.  This ensures that the object is in a legal (initialized)
+state by the time that the constructor exits.
+\urldef{\jlsdefiniteassignmenturl}{\url}{http://docs.oracle.com/javase/specs/jls/se7/html/jls-16.html}
+\urldef{\jlsfinalvariablesurl}{\url}{http://docs.oracle.com/javase/specs/jls/se7/html/jls-4.html#jls-4.12.4}
+This is different than Java's test for definite assignment (see
+\ahref{\jlsdefiniteassignmenturl}{JLS ch.16}),
+% , which requires that local
+% variables (and blank \code{final} fields) must be assigned.  Java does not
+% require that non-\code{final} fields be assigned, since
+which does not apply to fields (except blank final ones, defined in
+\ahref{\jlsdefiniteassignmenturl}{JLS \S 4.12.4}) because fields
+have a default value of null.
+
+
+All \code{@NonNull} fields must either have a
+default in the field declaration, or be assigned in the constructor or in a
+helper method that the constructor calls.  If
+your code initializes (some) fields in a helper method, you will need to
+annotate the helper method with an annotation such as
+\code{@\refclass{nullness/quals}{EnsuresNonNull}(\{"field1", "field2"\})}
+for all the fields that the helper method assigns.
+It's a bit odd, but you use that same annotation, \code{@EnsuresNonNull},
+to indicate that a primitive field has its value set in a helper method,
+which is relevant when you supply the \code{-Alint=uninitialized}
+command-line option (see Section~\ref{lint-uninitialized}).
+
+% TODO:
+% We need an
+%   @EnsuresInitialized("b")
+% that is analogous to
+%   @EnsuresNonNull("b")
+% when we are dealing with a field of primitive type.
+% But, for now just use the same annotation, @EnsuresNonNull, for both purposes.
+
+
+\subsection{Partial initialization\label{partial-initialization}}
+
+So far, we have discussed initialization as if it is an all-or-nothing property:
+an object is non-initialized until initialization completes, and then it is initialized.  The full truth is a bit more complex:  during the
+initialization process, an object can be partially initialized, and as the
+object's superclass constructors complete, its initialization status.  The
+Initialization Checker lets you express such properties when necessary.
+
+Consider a simple example:
+
+\begin{Verbatim}
+class A {
+  Object a;
+  A() {
+    a = new Object();
+  }
+}
+class B extends A {
+  Object b;
+  B() {
+    super();
+    b = new Object();
+  }
+}
+\end{Verbatim}
+
+Consider what happens during execution of \<new B()>.
+
+\begin{enumerate}
+\item \<B>'s constructor begins to execute.  At this point, neither the
+  fields of \<A> nor those of \<B> have been initialized yet.
+\item \<B>'s constructor calls \<A>'s constructor, which begins to execute.
+  No fields of \<A> nor of \<B> have been initialized yet.
+\item \<A>'s constructor completes.  Now, all the fields of \<A> have been
+  initialized, and their invariants (such as that field \<a> is non-null) can be
+  depended on.  However, because \<B>'s constructor has not yet completed
+  executing, the object being constructed is not yet fully initialized.
+  When treated as an \<A> (e.g., if only the \<A> fields are accessed), the
+  object is initialized, but when treated as a \<B>, the object
+  is still non-initialized.
+\item \<B>'s constructor completes.  The object is initialized when treated
+  as an \<A> or a \<B>.  (And, the object is fully initialized
+   if \<B>'s constructor was invoked via a \<new B()>.  But the type system
+   cannot assume that -- there might be a \<class C extends B \{
+  ... \}>, and \<B>'s constructor might have been invoked from that.)
+\end{enumerate}
+
+At any moment during initialization, the superclasses of a given class
+can be divided into those that have completed initialization and those that
+have not yet completed initialization.  More precisely, at any moment there
+is a point in the class hierarchy such that all the classes above that
+point are fully initialized, and all those below it are not yet
+initialized.  As initialization proceeds, this dividing line between the
+initialized and uninitialized classes moves down the type hierarchy.
+
+The Nullness Checker lets you indicate where the dividing line is between
+the initialized and non-initialized classes.
+The \<@UnderInitialization(\emph{classliteral})>
+indicates the first class that is known to be fully initialized.
+When you write \code{@\refclass{initialization/quals}{UnderInitialization}(OtherClass.class) MyClass x;}, that
+means that variable \<x> is initialized for \<OtherClass> and its
+superclasses, and \<x> is (possibly) uninitialized for \<MyClass> and all subclasses.
+
+\label{becoming-initialized-clarification}
+
+We can now state a clarification of Section~\ref{becoming-initialized}'s rule
+for an object becoming initialized.
+As soon as all of the \code{@\refclass{nullness/quals}{NonNull}} fields
+in class $C$ have been initialized, then \code{this} is treated as
+\code{@\refclass{initialization/quals}{UnderInitialization}(\emph{C})}, rather than
+treated as simply 
+\code{@\refclass{initialization/quals}{Initialized}}.
+
+The example above lists 4 moments during construction.  At those moments,
+the type of the object being constructed is:
+
+\begin{enumerate}
+\item
+  \<@UnderInitialization B>
+\item
+  \<@UnderInitialization A>
+\item
+  \<@UnderInitialization(A.class) A>
+  %% Not quite equivalent because the Java (non-qualified) type differs
+  % ; equivalently, \<@UnderInitialization B>
+\item
+  \<@UnderInitialization(B.class) B>
+\end{enumerate}
+
+% \paragraph{Example}
+% 
+% As another example, consider the following 12 declarations, where class A
+% extends Object and class B extends A:
+% 
+% \begin{Verbatim}
+%     @UnderInitialization(Object.class) Object uOo;
+%     @Initialized Object o;
+% 
+%     @UnderInitialization(Object.class) A uOa;
+%     @UnderInitialization(A.class) A uAa;
+%     @Initialized A nraA;
+% 
+%     @UnderInitialization(Object.class) B uOb;
+%     @UnderInitialization(A.class) B uAb;
+%     @UnderInitialization(B.class) B uBb;
+%     @Initialized B b;
+% \end{Verbatim}
+% 
+% In the following table, the type in cell C1 is a supertype of the type in
+% cell C2 if:  C1 is at least as high and at least as far left in the table
+% as C2 is.  For example, \<nraA>'s type is a supertype of those of \<rB>,
+% \<nraB>, \<nrbB>, \<a>, and \<b>.  (The empty cells on the top row are real
+% types, but are not expressible.  The other empty cells are not interesting
+% types.)
+% 
+% \noindent
+% \begin{tabular}{|c|c|c|}
+% 
+% \hline
+%     \<@UnderInitialization Object rO;>
+% &
+% & 
+% \\
+% \hline
+% 
+%     \<@Initialized(Object.class) Object nroO;>
+% &
+% \begin{minipage}{2in}
+% \begin{Verbatim}
+% @UnderInitialization A rA;
+% @Initialized(Object.class) A nroA;
+% \end{Verbatim}
+% \end{minipage}
+% &
+%     \<@Initialized(Object.class) B nroB;>
+% \\
+% \hline
+% 
+% &
+%     \<@Initialized(A.class) A nraA;>
+% &
+% \begin{minipage}{1.75in}
+% \begin{Verbatim}
+% @UnderInitialization B rB;
+% @Initialized(A.class) B nraB;
+% \end{Verbatim}
+% \end{minipage}
+% \\
+% \hline
+% 
+% &
+% &
+%     \<@Initialized(B.class) B nrbB;>
+% \\
+% \hline
+% 
+%     \<Object o;>
+% &
+%     \<A a;>
+% &
+%     \<B b;>
+% \\
+% \hline
+% \end{tabular}
+
+
+
+% \urldef{\jlsconstructorbodyurl}{\url}{http://docs.oracle.com/javase/specs/jls/se7/html/jls-8.html#jls-8.8.7}
+% (Recall that the superclass constructor is called on the first line, or is
+% inserted automatically by the compiler before the first line, see
+% \ahref{\jlsconstructorbodyurl}{JLS \S8.8.7}.)
+
+
+
+\subsection{More details about initialization checking\label{initialization-checking}}
+
+
+\paragraph{Suppressing warnings}
+
+You can suppress warnings related to partially-initialized objects with
+\<@SuppressWarnings("initialization")>.
+
+
+\paragraph{Checking initialization of all fields, not just \code{@NonNull} ones}
+
+When the \code{-Alint=uninitialized} command-line option is provided, then
+an object is considered uninitialized until \emph{all} its fields are assigned, not
+just the \code{@NonNull} ones.  See Section~\ref{lint-uninitialized}.
+
+
+\paragraph{Use of method annotations}
+
+A method with a non-initialized receiver may assumes that a few fields (but not all
+of them) are non-null, and it sometimes sets some more fields to non-null
+values.  To express these concepts, use the
+\code{@\refclass{nullness/quals}{RequiresNonNull}},
+\code{@\refclass{nullness/quals}{EnsuresNonNull}}, and
+\code{@\refclass{nullness/quals}{EnsuresNonNullIf}} method annotations;
+see Section~\ref{nullness-method-annotations}.
+
+
+
+
+\subsection{Rawness Initialization Checker\label{initialization-rawness-checker}}
+
+The Checker Framework supports two different initialization checkers that
+are integrated with the Nullness Checker.
+One uses the three annotations 
+\code{@\refclass{initialization/quals}{Initialized}},
+\code{@\refclass{initialization/quals}{UnknownInitialization}}, and
+\code{@\refclass{initialization/quals}{UnderInitialization}}.
+The other uses the two annotations
+\code{@\refclass{nullness/quals}{Raw}} (which corresponds to \code{@UnknownInitialization}) and
+\code{@\refclass{nullness/quals}{NonRaw}} (which corresponds to \code{@Initialized}).
+The rawness type system is slightly easier to use but slightly less
+expressive.
+In practice, you can use whichever one you prefer.
+
+To run the Nullness Checker with the rawness variant of the Initialization
+Checker, invoke the NullnessRawnessChecker rather than the NullnessChecker;
+that is, supply the \code{-processor checkers.nullness.NullnessChecker}
+command-line option to javac.
+
+
+
+%% TODO: cut much of this, which is redundant with the text above.
+
+
+
+An object is
+\emph{raw} from the time that its constructor starts until its constructor
+finishes.  This is relevant to the Nullness Checker because while the
+constructor is executing --- that is, before initialization completes ---
+a \<@NonNull>
+field may be observed to be null, until that field is set.  In
+particular, the Nullness Checker issues a warning for code like this:
+
+\begin{Verbatim}
+  public class MyClass {
+    private @NonNull Object f;
+    public MyClass(int x, int y) {
+      // Error because constructor contains no assignment to this.f.
+      // By the time the constructor exits, f must be initialized to a non-null value.
+    }
+    public MyClass(int x) {
+      // Error because this.f is accessed before f is initialized.
+      // At the beginning of the constructor's execution, accessing this.f
+      // yields null, even though field f has a non-null type.
+      this.f.toString();
+    }
+    public MyClass(int x, int y, int z) {
+      m();
+    }
+    public void m() {
+      // Error because this.f is accessed before f is initialized,
+      // even though the access is not in a constructor.
+      // When m is called from the constructor, accessing f yields null,
+      // even though field f has a non-null type.
+      this.f.toString();
+    }
+\end{Verbatim}
+
+\noindent
+In general, code can depend that field \<f> is not \<null>, because the
+field is declared with a \code{@\refclass{nullness/quals}{NonNull}} type.
+However, this guarantee does not hold for a partially-initialized object.
+
+The Nullness Checker uses the \code{@\refclass{nullness/quals}{Raw}} annotation to indicate that an object
+is not yet fully initialized --- that is, not all its \<@NonNull> fields have been
+assigned.  Rawness is mostly relevant within the constructor, or for
+references to \code{this} that escape the constructor (say, by being stored
+in a field or passed to a method before initialization is complete).  
+Use of rawness annotations is rare in most code.
+
+The most common use for the \<@Raw> annotation is for a helper routine that
+is called by constructor.  For example:
+
+\begin{Verbatim}
+  class MyClass {
+    Object field1;
+    Object field2;
+    Object field3;
+
+    public MyClass(String arg1) {
+      this.field1 = arg1;
+      init_other_fields();
+    }
+
+    // A helper routine that initializes all the fields other than field1
+    @EnsuresNonNull({"field2", "field3"})
+    private void init_other_fields(@Raw MyClass this) {
+      field2 = new Object();
+      field3 = new Object();
+    }
+  }
+\end{Verbatim}
+
+For compatibility with Java 7 and earlier, you can write the receiver
+parameter in comments (see Section~\ref{annotations-in-comments}):
+\begin{Verbatim}
+    private void init_other_fields(/*>>> @Raw MyClass this*/) {
+\end{Verbatim}
+
+% Most readers can
+% skip this section on first reading; you can return to it once you have
+% mastered the rest of the Nullness Checker.
+
+\subsubsection{Rawness qualifiers\label{rawness-qualifiers}}
+
+\begin{figure}
+\includeimage{rawness}{2.5cm}
+\caption{Partial type hierarchy for the Rawness Initialization type system.}
+\label{fig:rawness-hierarchy}
+\end{figure}
+
+The rawness hierarchy is shown in Figure~\ref{fig:rawness-hierarchy}.
+The rawness hierarchy contains these qualifiers:
+
+\begin{description}
+
+\item[\code{@\refclass{nullness/quals}{Raw}}]
+  indicates a type that may contain a partially-initialized object.  In a
+  partially-initialized object, fields that are annotated as
+  \code{@\refclass{nullness/quals}{NonNull}} may be null because the field
+  has not yet been assigned.  Within the constructor,
+  \code{this} has \code{@\refclass{nullness/quals}{Raw}} type until all
+  the \code{@NonNull} fields have been assigned.
+  A partially-initialized object (\code{this} in a constructor) may be
+  passed to a helper method or stored in a variable; if so, the method
+  receiver, or the field, would have to be annotated as \<@Raw>.
+
+% Cut this?
+\item[\code{@\refclass{nullness/quals}{NonRaw}}]
+  indicates a type that contains a fully-initialized object.  \code{NonRaw}
+  is the default, so there is little need for a programmer to write this
+  explicitly.
+
+\item[\code{@\refclass{nullness/quals}{PolyRaw}}]
+  indicates qualifier polymorphism over rawness (see
+  Section~\ref{qualifier-polymorphism}).
+
+\end{description}
+
+% However, if the constructor makes
+% a method call (passing \code{this} as a parameter or the receiver), then
+% the called method could observe the object in an illegal state.
+
+If a reference has
+\code{@Raw} type, then all of its \code{@NonNull} fields are treated as
+\code{@\refclass{nullness/quals}{MonotonicNonNull}}:  when read, they are
+treated as being \code{@\refclass{nullness/quals}{Nullable}}, but when
+written, they are treated as being
+\code{@\refclass{nullness/quals}{NonNull}}.
+
+
+The rawness hierarchy is orthogonal to the nullness hierarchy.  It
+is legal for a reference to be \<@NonNull @Raw>, \<@Nullable @Raw>,
+\<@NonNull @NonRaw>, or \<@Nullable @NonRaw>.  The nullness hierarchy tells
+you about the reference itself:  might the reference be null?  The rawness
+hierarchy tells you about the \<@NonNull> fields in the referred-to object:
+might those fields be temporarily null in contravention of their
+type annotation?
+% It's a figure rather than appearing inline so as not to span page breaks
+% in the printed manual.
+Figure~\ref{fig:rawness-examples} contains some examples.
+
+\begin{figure}
+\begin{tabular}{l|l|l}
+Declarations & Expression & Expression's nullness type, or checker error \\ \hline
+\begin{minipage}{1.5in}
+\begin{Verbatim}
+class C {
+  @NonNull Object f;
+  @Nullable Object g;
+  ...
+}
+\end{Verbatim}
+\end{minipage} & & \\ \cline{2-3}
+\<@NonNull @NonRaw C a;>
+& \<a> & \<@NonNull> \\
+& \<a.f> & \<@NonNull> \\
+& \<a.g> & \<@Nullable> \\ \cline{2-3}
+\<@NonNull @Raw C b;>
+& \<b> & \<@NonNull> \\
+& \<b.f> & \<@MonotonicNonNull> \\
+& \<b.g> & \<@Nullable> \\ \cline{2-3}
+\<@Nullable @NonRaw C c;>
+& \<c> & \<@Nullable> \\
+& \<c.f> & error: deref of nullable \\
+& \<c.g> & error: deref of nullable \\ \cline{2-3}
+\<@Nullable @Raw C d;>
+& \<d> & \<@Nullable> \\
+& \<d.f> & error: deref of nullable \\
+& \<d.g> & error: deref of nullable \\
+\end{tabular}
+\caption{Examples of the interaction between nullness and rawness.
+  Declarations are shown at the left for reference, but the focus of the
+  table is the expressions and their nullness type or error.}
+\label{fig:rawness-examples}
+\end{figure}
+
+
+% Does our implementation handle static fields soundly?  NO!  See issue
+% #105.  Maybe document this?
+
+
+\subsubsection{How an object becomes non-raw\label{becoming-non-raw}}
+
+Within the constructor,
+\code{this} starts out with \code{@\refclass{nullness/quals}{Raw}} type.
+As soon as all of the \code{@\refclass{nullness/quals}{NonNull}} fields
+have been initialized, then \code{this} is treated as non-raw.
+% TODO:  (See
+% Section~\ref{becoming-non-raw-clarification} for a slight clarification of
+% this rule.)
+
+The Nullness Checker issues an error if the constructor fails to initialize
+any \code{@NonNull} field.  This ensures that the object is in a legal (non-raw)
+state by the time that the constructor exits.
+\urldef{\jlsdefiniteassignmenturl}{\url}{http://docs.oracle.com/javase/specs/jls/se7/html/jls-16.html}
+\urldef{\jlsfinalvariablesurl}{\url}{http://docs.oracle.com/javase/specs/jls/se7/html/jls-4.html#jls-4.12.4}
+This is different than Java's test for definite assignment (see
+\ahref{\jlsdefiniteassignmenturl}{JLS ch.16}),
+% , which requires that local
+% variables (and blank \code{final} fields) must be assigned.  Java does not
+% require that non-\code{final} fields be assigned, since
+which does not apply to fields (except blank final ones, defined in
+\ahref{\jlsdefiniteassignmenturl}{JLS \S 4.12.4}) because fields
+have a default value of null.
+
+
+% and can only be passed to methods when the corresponding parameter is
+% annotated with \code{@\refclass{nullness/quals}{Raw}}.  Similar
+% restrictions apply to assigning \code{this} to a field.
+
+All \code{@NonNull} fields must either have a
+default in the field declaration, or be assigned in the constructor or in a
+helper method that the constructor calls.  If
+your code initializes (some) fields in a helper method, you will need to
+annotate the helper method with an annotation such as
+\code{@\refclass{nullness/quals}{EnsuresNonNull}(\{"field1", "field2"\})}
+for all the fields that the helper method assigns.
+It's a bit odd, but you use that same annotation, \code{@EnsuresNonNull},
+to indicate that a primitive field has its value set in a helper method,
+which is relevant when you supply the \code{-Alint=uninitialized}
+command-line option (see Section~\ref{lint-uninitialized}).
+
+% TODO:
+% We need an
+%   @EnsuresInitialized("b")
+% that is analogous to
+%   @EnsuresNonNull("b")
+% when we are dealing with a field of primitive type.
+% But, for now just use the same annotation, @EnsuresNonNull, for both purposes.
+
+
+\subsubsection{Partial initialization\label{rawness-partial-initialization}}
+
+So far, we have discussed rawness as if it is an all-or-nothing property:
+an object is fully raw until initialization completes, and then it is no
+longer raw.  The full truth is a bit more complex:  during the
+initialization process, an object can be partially initialized, and as the
+object's superclass constructors complete, its rawness changes.  The
+Nullness Checker lets you express such properties when necessary.
+
+Consider a simple example:
+
+\begin{Verbatim}
+class A {
+  Object a;
+  A() {
+    a = new Object();
+  }
+}
+class B extends A {
+  Object b;
+  B() {
+    super();
+    b = new Object();
+  }
+}
+\end{Verbatim}
+
+Consider what happens during execution of \<new B()>.
+
+\begin{enumerate}
+\item \<B>'s constructor begins to execute.  At this point, neither the
+  fields of \<A> nor those of \<B> have been initialized yet.
+\item \<B>'s constructor calls \<A>'s constructor, which begins to execute.
+  No fields of \<A> nor of \<B> have been initialized yet.
+\item \<A>'s constructor completes.  Now, all the fields of \<A> have been
+  initialized, and their invariants (such as that field \<a> is non-null) can be
+  depended on.  However, because \<B>'s constructor has not yet completed
+  executing, the object being constructed is not yet fully initialized.
+  When treated as an \<A> (e.g., if only the \<A> fields are accessed), the
+  object is initialized (non-raw), but when treated as a \<B>, the object
+  is still raw.
+\item \<B>'s constructor completes.  The object is fully initialized
+  (non-raw), if \<B>'s constructor was invoked via a \<new B()>
+  expression.  On the other hand, if there was a \<class C extends B \{
+  ... \}>, and \<B>'s constructor had been invoked from that, then the
+  object currently under construction would \emph{not} be fully initialized
+  --- it would only be initialized when treated as an \<A> or a \<B>, but
+  not when treated as a \<C>.
+\end{enumerate}
+
+At any moment during initialization, the superclasses of a given class
+can be divided into those that have completed initialization and those that
+have not yet completed initialization.  More precisely, at any moment there
+is a point in the class hierarchy such that all the classes above that
+point are fully initialized, and all those below it are not yet
+initialized.  As initialization proceeds, this dividing line between the
+initialized and raw classes moves down the type hierarchy.
+
+The Nullness Checker lets you indicate where the dividing line is between
+the initialized and non-initialized classes.
+You have two equivalent ways to indicate the dividing line:  \<@Raw>
+indicates the first class \emph{below} the dividing line, or
+\<@NonRaw(\emph{classliteral})> indicates the first class \emph{above} the
+dividing line.
+
+When you write \code{@\refclass{nullness/quals}{Raw} MyClass x;}, that
+means that variable \<x> is initialized for all superclasses of \<MyClass>,
+and (possibly) uninitialized for \<MyClass> and all subclasses.
+
+When you write \code{@\refclass{nullness/quals}{NonRaw(Foo.class)} MyClass
+  x;}, that means that variable \<x> is initialized for \<Foo> and all its
+superclasses, and (possibly) uninitialized for all subclasses of \<Foo>.
+
+If \<A> is a direct superclass of \<B> (as in the example above), then 
+\<@Raw A x;> and \<@NonRaw(B.class) A x;> are equivalent declarations.
+Neither one is the same as \<@NonRaw A x;>, which indicates that, whatever
+the actual class of the object that \<x> refers to, that object is fully
+initialized.  Since \<@NonRaw> (with no argument) is the default, you will
+rarely see it written.
+
+\label{becoming-non-raw-clarification}
+
+We can now state a clarification of Section~\ref{becoming-non-raw}'s rule
+for an object becoming non-raw.
+As soon as all of the \code{@\refclass{nullness/quals}{NonNull}} fields
+have been initialized, then \code{this} is treated as
+\code{@\refclass{nullness/quals}{NonRaw}(\emph{typeofthis})}, rather than
+treated as simply 
+\code{@\refclass{nullness/quals}{NonRaw}}.
+
+The example above lists 4 moments during construction.  At those moments,
+the type of the object being constructed is:
+
+\begin{enumerate}
+\item
+  \<@Raw Object>
+\item
+  \<@Raw Object>
+\item
+  \<@NonRaw(A.class) A>
+  %% Not quite equivalent because the Java (non-qualified) type differs
+  % ; equivalently, \<@Raw B>
+\item
+  \<@NonRaw(B.class) B>
+\end{enumerate}
+
+\paragraph{Example}
+
+As another example, consider the following 12 declarations:
+
+\begin{Verbatim}
+    @Raw Object rO;
+    @NonRaw(Object.class) Object nroO;
+    Object o;
+
+    @Raw A rA;
+    @NonRaw(Object.class) A nroA;  // same as "@Raw A"
+    @NonRaw(A.class) A nraA;
+    A a;
+
+    @NonRaw(Object.class) B nroB;
+    @Raw B rB;
+    @NonRaw(A.class) B nraB;  // same as "@Raw B"
+    @NonRaw(B.class) B nrbB;
+    B b;
+\end{Verbatim}
+
+In the following table, the type in cell C1 is a supertype of the type in
+cell C2 if:  C1 is at least as high and at least as far left in the table
+as C2 is.  For example, \<nraA>'s type is a supertype of those of \<rB>,
+\<nraB>, \<nrbB>, \<a>, and \<b>.  (The empty cells on the top row are real
+types, but are not expressible.  The other empty cells are not interesting
+types.)
+
+\noindent
+\begin{tabular}{|c|c|c|}
+
+\hline
+    \<@Raw Object rO;>
+&
+& 
+\\
+\hline
+
+    \<@NonRaw(Object.class) Object nroO;>
+&
+\begin{minipage}{2in}
+\begin{Verbatim}
+@Raw A rA;
+@NonRaw(Object.class) A nroA;
+\end{Verbatim}
+\end{minipage}
+&
+    \<@NonRaw(Object.class) B nroB;>
+\\
+\hline
+
+&
+    \<@NonRaw(A.class) A nraA;>
+&
+\begin{minipage}{1.75in}
+\begin{Verbatim}
+@Raw B rB;
+@NonRaw(A.class) B nraB;
+\end{Verbatim}
+\end{minipage}
+\\
+\hline
+
+&
+&
+    \<@NonRaw(B.class) B nrbB;>
+\\
+\hline
+
+    \<Object o;>
+&
+    \<A a;>
+&
+    \<B b;>
+\\
+\hline
+\end{tabular}
+
+
+
+% \urldef{\jlsconstructorbodyurl}{\url}{http://docs.oracle.com/javase/specs/jls/se7/html/jls-8.html#jls-8.8.7}
+% (Recall that the superclass constructor is called on the first line, or is
+% inserted automatically by the compiler before the first line, see
+% \ahref{\jlsconstructorbodyurl}{JLS \S8.8.7}.)
+
+
+
+\subsubsection{More details about rawness checking\label{rawness-checking}}
+
+
+\paragraph{Suppressing warnings}
+
+You can suppress warnings related to partially-initialized objects with
+\<@SuppressWarnings("rawness")>.  Do not confuse this with the unrelated
+\<@SuppressWarnings("rawtypes")> annotation for non-instantiated generic types!
+
+
+\paragraph{Checking initialization of all fields, not just \code{@NonNull} ones}
+
+When the \code{-Alint=uninitialized} command-line option is provided, then
+an object is considered raw until \emph{all} its fields are assigned, not
+just the \code{@NonNull} ones.  See Section~\ref{lint-uninitialized}.
+
+
+\paragraph{Use of method annotations}
+
+A method with a raw receiver often assumes that a few fields (but not all
+of them) are non-null, and sometimes sets some more fields to non-null
+values.  To express these concepts, use the
+\code{@\refclass{nullness/quals}{RequiresNonNull}},
+\code{@\refclass{nullness/quals}{EnsuresNonNull}}, and
+\code{@\refclass{nullness/quals}{EnsuresNonNullIf}} method annotations;
+see Section~\ref{nullness-method-annotations}.
+
+
+% Should we change the terminology?
+\paragraph{The terminology ``raw''}
+
+The name ``raw'' comes from a research paper that proposed this
+approach~\cite{FahndrichL2003}.
+A better name might have been ``not yet initialized'' or ``partially
+initialized'', but the term ``raw'' is now well-known.
+The \code{@\refclass{nullness/quals}{Raw}}
+annotation has nothing to do with the raw types of Java Generics.
+
+
+\section{Map Key Checker\label{map-key-checker}}
+
+Java's
+\sunjavadoc{java/util/Map.html#get(java.lang.Object)}{\code{Map.get}}
+method always has the possibility to return null, if the key is not in the
+map.
+
+A call \<mymap.get(mykey)> returns non-null if two conditions are satisfied:
+\begin{enumerate}
+\item \<mymap>'s values are all non-null; that is, \<mymap> was
+  declared as \code{Map<\emph{KeyType}, @NonNull \emph{ValueType}>}.  Note
+  that \<@NonNull> is the default type, so it need not be written explicitly.
+\item \<mykey> is a key in \<mymap>; that is, \<mymap.containsKey(mykey)>
+  returns \<true>.  You express this fact to the Nullness Checker by
+  declaring \<mykey> as \<@KeyFor("mymap") \emph{KeyType} mykey>.  For a
+  local variable, the \<@KeyFor("mymap")> type qualifier can generally be
+  inferred.
+\end{enumerate}
+\noindent
+If either of these two conditions is violated, then \<mymap.get(mykey)> has
+the possibility of returning null.
+
+
+  Thus, to guarantee that the value returned from \code{Map.get} is
+non-null, it is necessary that the map contains only non-null values,
+\emph{and} the key is in the map.
+The \code{@\refclass{nullness/quals}{KeyFor}} annotation states the latter
+property.
+
+If a type is annotated as \code{@KeyFor("m")}, then any value v with that type
+is a key in Map \<m>.  Another way of saying this is that the expression
+\code{m.containsKey(v)} evaluates to true.
+
+You usually do not have to write \code{@KeyFor} explicitly, because the
+checker infers it based on usage patterns, such as calls to
+\code{containsKey} or iteration over a map's
+\sunjavadoc{java/util/Map.html#keySet()}{\textrm{key set}}.
+
+One usage pattern where you \emph{do} have to write \<@KeyFor> is for a
+user-managed collection that is a subset of the key set:
+
+\begin{Verbatim}
+Map<String, Object> m;
+Set<@KeyFor("m") String> matchingKeys; // keys that match some criterion
+for (@KeyFor("m") String k : matchingKeys) {
+  ... m.get(k) ...  // known to be non-null
+}
+\end{Verbatim}
+
+As with any annotation, use of the \<@KeyFor> annotation may force you to
+slightly refactor your code.  For example, this would be illegal:
+
+\begin{Verbatim}
+  Map<K,V> m;
+  Collection<@KeyFor("m") K> coll;
+  coll.add(x);   // compiler error, because the @KeyFor annotation is violated
+  m.put(x, ...);
+\end{Verbatim}
+
+\noindent
+but this would be OK (no compiler error):
+
+\begin{Verbatim}
+  Collection<@KeyFor("m") K> coll;
+  m.put(x, ...);
+  coll.add(x);
+\end{Verbatim}
+
+
+Because the \<@KeyFor> type hierarchy is independent from the nullness and
+rawness hierarchies, it uses a different warning suppression key.
+You can suppress warnings related to map keys with
+\<@SuppressWarnings("keyfor")>.
+
 
 
 
