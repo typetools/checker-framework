@@ -6,6 +6,7 @@ class UnionTypes {
             int[] arr = new int[10];
             arr[4] = 1;
         } catch (ArrayIndexOutOfBoundsException | StringIndexOutOfBoundsException exc) {
+            Exception e = exc;
         }
     }
 }

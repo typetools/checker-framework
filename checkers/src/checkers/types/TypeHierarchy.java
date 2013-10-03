@@ -4,6 +4,7 @@ import checkers.basetype.BaseTypeChecker;
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import checkers.types.AnnotatedTypeMirror.AnnotatedUnionType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
 import checkers.util.AnnotatedTypes;
 import checkers.util.QualifierPolymorphism;
@@ -151,9 +152,10 @@ public class TypeHierarchy {
         if (visited.contains(lhs))
             return true;
 
-        // An intersection type on the RHS is a subtype,
-        // iff any of its bounds is.
-        if (rhs.getKind() == TypeKind.INTERSECTION) {
+        switch (rhs.getKind()) {
+        case INTERSECTION: {
+            // An intersection type on the RHS is a subtype,
+            // iff any of its bounds is.
             for (AnnotatedTypeMirror atm : rhs.directSuperTypes()) {
                 if (isSubtypeImpl(atm, lhs)) {
                     return true;
@@ -161,15 +163,43 @@ public class TypeHierarchy {
             }
             return false;
         }
-        // An intersection type on the LHS is a supertype,
-        // iff all of its bounds are.
-        if (lhs.getKind() == TypeKind.INTERSECTION) {
+        case UNION: {
+            // A union type on the RHS is a subtype,
+            // iff all of its bounds are.
+            for (AnnotatedTypeMirror atm : ((AnnotatedUnionType)rhs).getAlternatives()) {
+                if (!isSubtypeImpl(atm, lhs)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        default:
+            // Nothing special.
+        }
+
+        switch (lhs.getKind()) {
+        case INTERSECTION: {
+            // An intersection type on the LHS is a supertype,
+            // iff all of its bounds are.
             for (AnnotatedTypeMirror atm : lhs.directSuperTypes()) {
                 if (!isSubtypeImpl(rhs, atm)) {
                     return false;
                 }
             }
             return true;
+        }
+        case UNION: {
+            // A union type on the LHS is a supertype,
+            // iff any of its bounds are.
+            for (AnnotatedTypeMirror atm : ((AnnotatedUnionType)rhs).getAlternatives()) {
+                if (isSubtypeImpl(atm, lhs)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        default:
+            // Nothing special.
         }
 
         AnnotatedTypeMirror lhsBase = lhs;
