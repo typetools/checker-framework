@@ -115,8 +115,19 @@ Renamed method annotations used by the Nullness Checker:
   @AssertNonNullIfFalse(...) => @IfMethodReturnsFalseEnsuresNonNull [was temporarily @EnsuresNonNullIf(result=false, expression=...)]
   @LazyNonNull => @MonotonicNonNull
   @AssertParametersNonNull => [no replacement]
-Renamed method annotations used by all checkers:
+Removed annotations used by the Nullness Checker:
+  @AssertParametersNonNull
+Replaced the Initialization Checker by a new variant that uses different annotations:
+  @NonRaw => @Initialized
+  @Raw => @UnknownInitialization
+  new annotation @UnderInitialization
+The old Initialization Checker can be invoked by invoking the
+  NullnessRawnessChecker rather than the NullnessChecker (but we recommend
+  the regular NullnessChecker).
+
+Renamed assertion comment string used by all checkers:
   @SuppressWarnings => @AssumeAssertion
+
 
 New annotation @TerminatesExecution.
 
@@ -142,6 +153,8 @@ Manual:
 
 Suppress warnings using assert statements with the string
 @AssumeAssertion(warningkey); previously, just the warning key sufficed.
+
+
 
 Purity analysis:  uses new annotations @SideEffectFree and @Deterministic;
 @Pure means both @SideEffectFree and @Deterministic
