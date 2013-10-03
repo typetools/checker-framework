@@ -170,7 +170,7 @@ The nullness hierarchy contains these qualifiers:
 
 \end{description}
 
-Figure~\ref{fig:nullness-hierarchy} shows part of the type hierarchy for the
+Figure~\ref{fig-nullness-hierarchy} shows part of the type hierarchy for the
 Nullness type system.
 (The annotations exist only at compile time; at run time, Java has no
 multiple inheritance.)
@@ -184,7 +184,7 @@ most type qualifiers, because the default annotation
 The Nullness Checker verifies three type hierarchies:  this one for
 nullness, one for initialization (Section~\ref{initialization-checker}),
 and one for map keys (Section~\ref{map-key-checker}).}
-\label{fig:nullness-hierarchy}
+\label{fig-nullness-hierarchy}
 \end{figure}
 
 
@@ -229,7 +229,7 @@ been assigned.
 
 \noindent
 Use of these annotations can help you to type-check more
-code.  Figure~\ref{fig:initialization-hierarchy} shows its type hierarchy.  For
+code.  Figure~\ref{fig-initialization-hierarchy} shows its type hierarchy.  For
 details, see Section~\ref{initialization-checker}.
 
 A slightly simpler variant, called the Rawness Initialization Checker, is also available:
@@ -241,7 +241,7 @@ A slightly simpler variant, called the Rawness Initialization Checker, is also a
 \end{description}
 
 \noindent
-Figure~\ref{fig:rawness-hierarchy} shows its type hierarchy.  For
+Figure~\ref{fig-rawness-hierarchy} shows its type hierarchy.  For
 details, see Section~\ref{initialization-rawness-checker}.
 
 
@@ -903,7 +903,7 @@ If your code is already annotated with a different nullness
 annotation, you can reuse that effort.  The Checker Framework comes with
 cleanroom re-implementations of annotations from other tools.  It treats
 them exactly as if you had written the corresponding annotation from the
-Nullness Checker, as described in Figure~\ref{fig:nullness-refactoring}.
+Nullness Checker, as described in Figure~\ref{fig-nullness-refactoring}.
 
 
 % These lists should be kept in sync with NullnessAnnotatedTypeFactory.java .
@@ -954,7 +954,7 @@ $\Rightarrow$
 %END LATEX
 \caption{Correspondence betwee other nullness annotations and the
   Checker Framework's annotations.}
-\label{fig:nullness-refactoring}
+\label{fig-nullness-refactoring}
 \end{figure}
 
 %% Removed, because it's tedious and should be obvious to a decent programmer.
@@ -989,9 +989,9 @@ $\Rightarrow$
 Alternately, the Checker Framework can process those other annotations (as
 well as its own, if they also appear in your program).  The Checker
 Framework has its own definition of the annotations on the left side of
-Figure~\ref{fig:nullness-refactoring}, so that they can be used as type
+Figure~\ref{fig-nullness-refactoring}, so that they can be used as type
 qualifiers.  The Checker Framework interprets them according to the right
-side of Figure~\ref{fig:nullness-refactoring}.
+side of Figure~\ref{fig-nullness-refactoring}.
 
 The Checker Framework may issue more or fewer errors than another tool.
 This is expected, since each tool uses a different analysis.  Remember that
@@ -1231,10 +1231,10 @@ parameter in comments (see Section~\ref{annotations-in-comments}):
   \<@UnknownInitialization> and \<@UnderInitialization> each take an
   optional parameter indicating how far initialization has proceeded, and
   the right side of the figure illustrates its type hierarchy in more detail.}
-\label{fig:initialization-hierarchy}
+\label{fig-initialization-hierarchy}
 \end{figure}
 
-The initialization hierarchy is shown in Figure~\ref{fig:initialization-hierarchy}.
+The initialization hierarchy is shown in Figure~\ref{fig-initialization-hierarchy}.
 The initialization hierarchy contains these qualifiers:
 
 \begin{description}
@@ -1297,7 +1297,7 @@ might those fields be temporarily null in contravention of their
 type annotation?
 % It's a figure rather than appearing inline so as not to span page breaks
 % in the printed manual.
-Figure~\ref{fig:initialization-examples} contains some examples.
+Figure~\ref{fig-initialization-examples} contains some examples.
 
 \begin{figure}
 \begin{tabular}{l|l|l}
@@ -1331,7 +1331,7 @@ class C {
 \caption{Examples of the interaction between nullness and initialization.
   Declarations are shown at the left for reference, but the focus of the
   table is the expressions and their nullness type or error.}
-\label{fig:initialization-examples}
+\label{fig-initialization-examples}
 \end{figure}
 
 
@@ -1697,10 +1697,10 @@ parameter in comments (see Section~\ref{annotations-in-comments}):
 \begin{figure}
 \includeimage{rawness}{2.5cm}
 \caption{Partial type hierarchy for the Rawness Initialization type system.}
-\label{fig:rawness-hierarchy}
+\label{fig-rawness-hierarchy}
 \end{figure}
 
-The rawness hierarchy is shown in Figure~\ref{fig:rawness-hierarchy}.
+The rawness hierarchy is shown in Figure~\ref{fig-rawness-hierarchy}.
 The rawness hierarchy contains these qualifiers:
 
 \begin{description}
@@ -1749,7 +1749,7 @@ might those fields be temporarily null in contravention of their
 type annotation?
 % It's a figure rather than appearing inline so as not to span page breaks
 % in the printed manual.
-Figure~\ref{fig:rawness-examples} contains some examples.
+Figure~\ref{fig-rawness-examples} contains some examples.
 
 \begin{figure}
 \begin{tabular}{l|l|l}
@@ -1783,7 +1783,7 @@ class C {
 \caption{Examples of the interaction between nullness and rawness.
   Declarations are shown at the left for reference, but the focus of the
   table is the expressions and their nullness type or error.}
-\label{fig:rawness-examples}
+\label{fig-rawness-examples}
 \end{figure}
 
 
