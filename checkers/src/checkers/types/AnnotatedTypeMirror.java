@@ -291,12 +291,13 @@ public abstract class AnnotatedTypeMirror {
 
     /**
      * Returns the "effective" annotations on this type, i.e. the annotations on
-     * the type itself, or on the upper/extends bound of a type variable/wildcard.
+     * the type itself, or on the upper/extends bound of a type variable/wildcard
+     * (recursively, until a class type is reached).
      *
      * @return  a set of the annotations on this
      */
     public Set<AnnotationMirror> getEffectiveAnnotations() {
-        Set<AnnotationMirror> effectiveAnnotations = getAnnotations();
+        Set<AnnotationMirror> effectiveAnnotations = getErased().getAnnotations();
 //        assert atypeFactory.qualHierarchy.getWidth() == effectiveAnnotations
 //                .size() : "Invalid number of effective annotations ("
 //                + effectiveAnnotations + "). Should be "
@@ -1685,19 +1686,6 @@ public abstract class AnnotatedTypeMirror {
             return effbnd;
         }
 
-        @Override
-        public Set<AnnotationMirror> getEffectiveAnnotations() {
-            // Do we want to re-introduce more efficient versions that don't
-            // compute the whole type?
-            Set<AnnotationMirror> effectiveAnnotations = getEffectiveUpperBound().getAnnotations();
-//          assert atypeFactory.qualHierarchy.getWidth() == effectiveAnnotations
-//          .size() : "Invalid number of effective annotations ("
-//          + effectiveAnnotations + "). Should be "
-//          + atypeFactory.qualHierarchy.getWidth() + " but is "
-//          + effectiveAnnotations.size() + ". Type: " + this.toString();
-            return effectiveAnnotations;
-        }
-
         /**
          *  Used to terminate recursion into upper bounds.
          */
@@ -2132,17 +2120,6 @@ public abstract class AnnotatedTypeMirror {
                 }
             }
             return Collections.unmodifiableSet(result);
-        }
-
-        @Override
-        public Set<AnnotationMirror> getEffectiveAnnotations() {
-            Set<AnnotationMirror> effectiveAnnotations = getEffectiveExtendsBoundAnnotations();
-//          assert atypeFactory.qualHierarchy.getWidth() == effectiveAnnotations
-//          .size() : "Invalid number of effective annotations ("
-//          + effectiveAnnotations + "). Should be "
-//          + atypeFactory.qualHierarchy.getWidth() + " but is "
-//          + effectiveAnnotations.size() + ". Type: " + this.toString();
-            return effectiveAnnotations;
         }
 
         @Override
