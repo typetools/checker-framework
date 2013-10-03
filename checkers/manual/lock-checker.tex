@@ -33,14 +33,14 @@ other is a method annotation.
     Javadoc} for an explanation of the argument and other details.  The lock
   acquisition and the value access may be arbitrarily far in the future;
   or, if the value is never accessed, the lock never need be held.
-  Figure~\ref{fig:guardedby-hierarchy} gives the type hierarchy.
+  Figure~\ref{fig-guardedby-hierarchy} gives the type hierarchy.
 
 \begin{figure}
 \includeimage{guardedby}{2.5cm}
 \caption{Type hierarchy for the \code{@GuardedBy} annotation of the lock
   type system.  The \<@GuardedByTop> annotation is for internal use by the
   type checker; a programmer cannot write it.}
-\label{fig:guardedby-hierarchy}
+\label{fig-guardedby-hierarchy}
 \end{figure}
 
 
@@ -191,7 +191,7 @@ If your code is already annotated with a different lock
 annotation, you can reuse that effort.  The Checker Framework comes with
 cleanroom re-implementations of annotations from other tools.  It treats
 them exactly as if you had written the corresponding annotation from the
-Lock Checker, as described in Figure~\ref{fig:lock-refactoring}.
+Lock Checker, as described in Figure~\ref{fig-lock-refactoring}.
 
 
 % These lists should be kept in sync with LockAnnotatedTypeFactory.java .
@@ -214,15 +214,15 @@ $\Rightarrow$
 %END LATEX
 \caption{Correspondence between other lock annotations and the
   Checker Framework's annotations.}
-\label{fig:lock-refactoring}
+\label{fig-lock-refactoring}
 \end{figure}
 
 Alternately, the Checker Framework can process those other annotations (as
 well as its own, if they also appear in your program).  The Checker
 Framework has its own definition of the annotations on the left side of
-Figure~\ref{fig:lock-refactoring}, so that they can be used as type
+Figure~\ref{fig-lock-refactoring}, so that they can be used as type
 qualifiers.  The Checker Framework interprets them according to the right
-side of Figure~\ref{fig:lock-refactoring}.
+side of Figure~\ref{fig-lock-refactoring}.
 
 
 \subsection{Relationship to annotations in \emph{Java Concurrency in Practice}\label{jcip-annotations}}

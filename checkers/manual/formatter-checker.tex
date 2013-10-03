@@ -110,10 +110,10 @@ String>, expresses that contract.
 \caption{The Format String Checker type qualifier hierarchy.  The figure
   does not show the subtyping rules among different \code{@Format(...)}
   qualifiers; see Section~\ref{formatter-format-subtyping}.}
-\label{fig:formatter-hierarchy}
+\label{fig-formatter-hierarchy}
 \end{figure}
 
-Figure~\ref{fig:formatter-hierarchy} shows all the type qualifiers.
+Figure~\ref{fig-formatter-hierarchy} shows all the type qualifiers.
 The annotations other than \<@Format> are only used
 internally and cannot be written in your code.
 \code{@\refclass{formatter/quals}{InvalidFormat}} indicates an invalid format
@@ -229,13 +229,13 @@ intersections of previously-mentioned conversion categories:
 For example, \code{GENERAL} $\cap$ \code{CHAR} $=$ \code{CHAR} and 
 \code{UNUSED} $\cap$ \code{GENERAL} $=$ \code{GENERAL}.
 
-Figure~\ref{fig:formatter-cat} summarizes the subset 
+Figure~\ref{fig-formatter-cat} summarizes the subset 
 relationship among all conversion categories.
 
 \begin{figure}[thbp]
     \includeimage{formatter-categories}{4cm}
     \caption{The subset relationship among conversion categories.}
-    \label{fig:formatter-cat}
+    \label{fig-formatter-cat}
 \end{figure}
 
 
