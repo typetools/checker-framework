@@ -3,10 +3,6 @@ Necessary changes to the manual.  In brackets I (Stefan) wrote the names of peop
 
 ------------------------------------------------------
 
-Initialization checker:  rewrite and replace all current references to @Raw
-
-------------------------------------------------------
-
 New section on concepts and annotations that apply to all type-systems and checkers
 
 Where would a good place be for this?  At the beginning/end?  Split into multiple sections?
@@ -26,6 +22,8 @@ Where would a good place be for this?  At the beginning/end?  Split into multipl
 - Document -ANullnessChecker_option=value mechanism
 
 ------------------------------------------------------
+
+Defaulting:
 
 "NNEL" default becomes "top for locals, casts, instanceof, and implicit
 upper bounds".
