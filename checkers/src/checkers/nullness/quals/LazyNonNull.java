@@ -5,7 +5,6 @@ import java.lang.annotation.*;
 import checkers.nullness.NullnessChecker;
 import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifier;
-import dataflow.quals.Pure;
 import dataflow.quals.SideEffectFree;
 
 /**

@@ -8,14 +8,12 @@ import checkers.nullness.quals.NonNull;
 import checkers.nullness.quals.Nullable;
 import checkers.nullness.quals.PolyNull;
 import checkers.quals.PolyAll;
-import checkers.quals.Unused;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.GeneralAnnotatedTypeFactory;
 import checkers.types.TreeAnnotator;
 import checkers.types.TypeAnnotator;
 import checkers.util.DependentTypes;
-
 import javacutils.AnnotationUtils;
 import javacutils.ElementUtils;
 import javacutils.InternalUtils;
@@ -29,9 +27,7 @@ import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.Name;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.util.Elements;
 
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompilationUnitTree;
@@ -47,7 +43,6 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
-import com.sun.tools.javac.code.Attribute.TypeCompound;
 
 /**
  * The annotated type factory for the nullness type-system.
