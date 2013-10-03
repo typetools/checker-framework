@@ -1143,7 +1143,7 @@ tool like the Checker Framework.)
 
 \section{Initialization Checker\label{initialization-checker}}
 
-An object is partially initialized from the time that its constructor starts until its constructor
+ object is partially initialized from the time that its constructor starts until its constructor
 finishes.  This is relevant to the Nullness Checker because while the
 constructor is executing --- that is, before initialization completes ---
 a \<@NonNull>
@@ -1585,6 +1585,17 @@ values.  To express these concepts, use the
 \code{@\refclass{nullness/quals}{EnsuresNonNullIf}} method annotations;
 see Section~\ref{nullness-method-annotations}.
 
+
+\paragraph{Source of the type system}
+
+The type system enforced by the Initialization Checker is known as
+``Freedom Before Committment''~\cite{SummersM2011}.  Our implementation
+changes its initialization modifiers (``committed'', ``free'', and
+``unclassified'') to ``initialized'', ``unknown initialization'', and
+``under initialization''.  Our implementation also has several
+enhancements.  For example, it supports partial initialization (the
+argument to the \<@UnknownInitialization> and \<@UnderInitialization>
+annotations.
 
 
 
