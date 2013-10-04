@@ -273,6 +273,79 @@ in the \<extends> clause, not to the lower bound in the inexpressible
 implicit \<super void> clause.)
 
 
+\subsection{Defaulting rules and CLIMB-to-top\label{climb-to-top}}
+
+Each type system defines a default qualifier.  For example, the default
+qualifier for the Nullness Checker is
+\code{@\refclass{nullness/quals}{NonNull}}.  That means that when a user
+writes a type such as \<Date>, the Nullness Checker interprets it as 
+\<@NonNull Date>.
+
+We recommend that the type system apply that default qualifier to most but
+not all types.  In particular, we recommend the CLIMB-to-top rule.  This
+rule states that the \emph{top} qualifier in the hierarchy is applied to
+the CLIMB locations:  Casts, Locals, Instanceof, and iMplicit Bounds.
+For example, when the user writes a type such as \<Date> in such a
+location, the Nullness Checker interprets it as \<@Nullable Date> (because
+\<@\code{@\refclass{nullness/quals}{Nullable}}> is the top qualifier in the
+hierarchy, see Figure~\ref{fig-nullness-hierarchy}.
+
+%% Users don't care about this detail.
+% The CLIMB-to-top rule is an improvement over a previous defaulting rule,
+% called NNEL for ``non-null except locals''~\cite{PapiACPE2008}.
+
+% TODO:  Add wildcard bounds to the set of type-refined locations?
+% Especially in light of
+% https://code.google.com/p/checker-framework/issues/detail?id=260
+
+Casts, local variables (including resource variables in the
+try-with-resources construct, variables in for statements, etc.), and
+instanceof should be defaulted to top because they are the locations to
+which type refinement (Section~\ref{type-refinement}) is applied.  If they
+start as the top type, then the Checker Framework chooses the best (most
+general) possible type for them.  As a result, a programmer rarely writes
+an explicit annotation on any of those locations.
+
+Implicit upper bounds are defaulted to top to allow them to be instantiated
+in any way.  If a user declared \code{class C<T> \ttlcb\ ... \ttrcb}, then
+we assume that the user intended to allow any instantiation of the class,
+and the declaration is interpreted as \code{class C<T extends @Nullable
+  Object> \ttlcb\ ... \ttrcb} rather than as \code{class C<T extends
+  @NonNull Object> \ttlcb\ ... \ttrcb}.  The latter would forbid
+instantiations such as \code{C<@Nullable String>}, or would require
+rewriting of code.  On the other hand, if a user writes an explicit bound
+such as \code{class C<T extends D> \ttlcb\ ... \ttrcb}, then the user
+intends some restriction on instantiation and can write a qualifier on the
+upper bound as desired.
+
+Implicit \emph{lower} bounds are defaulted to the bottom type, again to allow
+maximal instantiation.  Note that Java does not allow a programmer to
+express both the upper and lower bounds of a type, but the Checker
+Framework tracks both of them separately and allows the programmer to
+specify both by using a declaration on a wildcard or type variable name;
+see Section~\ref{type-parameter-rationale}.
+
+
+Here is how the CLIMB-to-top rule is expressed for the Nullness Checker:
+
+\begin{Verbatim}
+@DefaultQualifierInHierarchy
+public @interface NonNull { }
+
+@DefaultFor({ DefaultLocation.LOCAL_VARIABLE, DefaultLocation.RESOURCE_VARIABLE,
+    DefaultLocation.IMPLICIT_UPPER_BOUNDS })
+public @interface Nullable { }
+\end{Verbatim}
+
+\noindent
+Note that \<DefaultLocation.LOCAL\_VARIABLE> includes casts and instanceof.
+
+A type system designer does not have to use the CLIMB-to-top rule.  In
+addition, a user may choose a different rule for defaults using the
+\code{@\refclass{quals}{DefaultQualifier}} annotation; see
+Section~\ref{defaults}.
+
+
 \subsection{Inherited defaults\label{inherited-defaults}}
 
 In certain situations, it would be convenient for an annotation on a
@@ -706,7 +779,7 @@ Sometimes, it is necessary to write a Java expression as the argument to an
 annotation.  The annotations that take a Java
 expression as an argument are:
 
-% Need to periodically check/update this list.
+% TODO: Need to periodically check/update this list.
 \begin{itemize}
 \item \code{@\refclass{nullness/quals}{KeyFor}}
 \item \code{@\refclass{nullness/quals}{RequiresNonNull}}
@@ -720,9 +793,10 @@ The expression is a subset of legal Java expressions:
 \item
   the receiver object, \<this>.
 \item
-  a formal parameter.  Write \<\#> followed by the one-based parameter
+  a formal parameter.  Write \<\#> followed by the \textbf{one-based} parameter
   index.  For example: \<\#1>, \<\#3>.  It is not permitted to write \<\#0>;
   use \<this> instead.
+
 \item
   a local variable.  This is not applicable for method annotations, but is
   applicable to type annotations such as
@@ -734,41 +808,39 @@ The expression is a subset of legal Java expressions:
   % It may also work to use an instance variable and the static variable
   % name, but I'm not sure about that.
 
-  % True as of 7/6/2011.  This limitation should be fixed.
-  Within the class itself, just write the field name --- do not write the
-  class name.
 \item
   a field of any expression.  For example:  \<next>,
   \<this.next>, \<\#1.next>, \<myLocalVar.next>.
-\item a method invocation on any expression.
-  The method must be side-effect-free and have no formal parameters.  For example:
-  \<myClass.getPackage()>, \<myClass.getSuperclass()>,
-  \<myClass.getComponentType()>.
 
-  \textbf{Warning:}  currently, annotations that use method calls are
-  \emph{not} checked.  The annotation is trusted, and other code will rely
-  on it, but it is not verified that other code establishes or maintains
-  the validity of the annotation.  Such expressions are still useful if a
-  human verifies their correctness.  They are used in the JDK annotations,
-  for example.
+\item
+  an array access.  For example:  \<this.myArray[i]>, \<vals[\#1]>.
+
+\item literals: string, integer, long, null.
+
+\item a method invocation on any expression
+  This even works for overloaded methods and methods with type parameters.
+  For example:
+  \<m1(x,y.z, \#2)>, \<a.m2("hello")>.
+
 \end{itemize}
 
 You may optionally omit a leading ``\<this.>'', just as in Java.  Thus, 
 \<this.next> and \<next> are equivalent, assuming that there is no
 shadowing definition of \<next>.
 
+One unusual feature is that the method call is allowed to have side
+effects.  If a specification is going to be checked at run time via
+assertions, then the specification must not use methods with side
+effects.  But, our checking is at compile time, so we allow it.
+
 The expression may refer to private fields and method calls.  The client
 cannot directly make use of these private fields and method calls, but they
 may be useful in establishing a precondition that itself refers to private
 fields or methods.  This exposure of implementation details is unfortunate,
 but it enables more expressive and useful specifications to be written, it does not jeopardize soundness nor let the client manipulate the
-representation, and it is much simpler and more usable than alternative
-approaches.
-% such as defining specification fields or ghost fields
-
-
-\textbf{Limitation:}  Currently, only one level of field access can be
-checked; the checker cannot handle, for example, \code{"this.field1.field2"}.
+representation, and it is simple
+% simpler than defining specification fields or ghost fields
+%% TODO: we may eventually have an @SpecField annotation
 
 (A side note:  The formal parameter syntax \<\#1> may seem less convenient
 than writing the formal parameter name.  This syntax is necessary because
@@ -778,34 +850,15 @@ the compiler without a checker should create legal annotations in the
 indices.)
 
 
-%% Remove this section, since its example is now expressible.
-%% TODO: Find another example, and reinstate this section.
-% \section{Inexpressible types\label{inexpressible-types}}
-% 
-% The Type Annotations syntax~\cite{JSR308-2008-09-12} is designed to be easy to read.  As a result,
-% there are types that it cannot express.  An example is the type of
-% \<Collection.toArray()>, which returns an array of objects, where the
-% objects have the same annotation as the elements of the receiver.
-% 
-% This can be written as
-% 
-% \begin{Verbatim}
-% public @PolyNull Object [] toArray(Collection<@PolyNull E> this) { ... }
-% \end{Verbatim}
-% 
-% \noindent
-% except that this is illegal syntax:  ``\code{ArrayList<@PolyNull E>}'' is
-% not legal in the receiver position.  (This is a motivation for
-% \ahref{\myurl{http://types.cs.washington.edu/jsr308/specification/java-annotation-design.html#receiver-type-parameter-annotations}}{extending}
-% the Type Annotations syntax.)
-% 
-% The annotated libraries (Section~\ref{annotating-libraries}) contain a less-precise annotation for
-% \code{toArray}.  The Nullness Checker special-cases \code{toArray} to
-% act as if it had the above annotation.  The cases that
-% are currently being handled are described in
-% \refclass{nullness}{CollectionToArrayHeuristics}.
-% This approach would be possible for other checkers and other methods as the
-% need arises.
+\textbf{Limitations:}
+The following Java expressions may not currently be written:
+\begin{itemize}
+\item Some literals:  floats, doubles, chars, and class literals.
+\item String concatenation expressions.
+\item Mathematical operators (plus, minus, division, ...).
+\item Comparisons (equality, less than, etc.).
+\end{itemize}
+
 
 
 % \section{Unused fields and dependent types\label{unused-fields-and-dependent-types}}
@@ -992,7 +1045,7 @@ class @Marsupial-Animal {
 % LocalWords:  myLocalVar myClass getPackage getSuperclass myString Regex
 % LocalWords:  getComponentType enum implementers dereferenced superclasses
 %  LocalWords:  regex myStrings myVar pouchSize myMammal getter foo MyAnno
-%  LocalWords:  getPouchSize TerminatesExecution myvar myField getField
-%  LocalWords:  computeValue ReadOnly IGJ AsuggestPureMethods
-%  LocalWords:  AenablePurity AassumeSideEffectFree
-%  LocalWords:  AassumeAssertionsAreEnabled
+%  LocalWords:  getPouchSize TerminatesExecution myvar myField getField m1
+%  LocalWords:  computeValue ReadOnly IGJ AsuggestPureMethods Instanceof
+%  LocalWords:  AenablePurity AassumeSideEffectFree iMplicit instanceof m2
+%  LocalWords:  AassumeAssertionsAreEnabled myArray vals
