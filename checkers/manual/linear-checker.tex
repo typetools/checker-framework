@@ -145,7 +145,7 @@ analysis or type system, and is future work.
 
 No annotated libraries are provided for linear types.  Most libraries would
 not be able to use linear types in their purest form.  For example, you
-cannot put a linearly-typed object in a hashtable, because hashtable
+cannot put a linearly-typed object in a hash table, because hash table
 insertion calls \<hashCode>; \<hashCode> uses up the reference and does not
 return the object, even though it does not retain any pointers to the
 object.  For similar reasons, a collection of linearly-typed objects could
