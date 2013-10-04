@@ -167,6 +167,9 @@ The nullness hierarchy contains these qualifiers:
   \<-Alint=noInitForMonotonicNonNull> on the command line), then
   @MonotonicNonNull fields are not allowed to have initializers.
 
+  Use of \<@MonotonicNonNull> on a static field is a code smell:  it may
+  indicate poor design.  You should consider whether it is possible to make
+  the field a member field that is set in the constructor.
 
 \end{description}
 
