@@ -16,6 +16,13 @@ The Checker Framework comes with checkers for specific types of errors:
   \ahrefloc{nullness-checker}{Nullness Checker} for null pointer errors
   (see \chapterpageref{nullness-checker})
 \item
+  \ahrefloc{initialization-checker}{Initialization Checker} to ensure all
+  fields are set in the constructor (see
+  \chapterpageref{initialization-checker})
+\item
+  \ahrefloc{map-key-checker}{Map Key Checker} to track which values are
+  keys in a map (see \chapterpageref{map-key-checker})
+\item
   \ahrefloc{interning-checker}{Interning Checker} for errors in equality
   testing and interning (see \chapterpageref{interning-checker})
 \item
@@ -33,14 +40,17 @@ The Checker Framework comes with checkers for specific types of errors:
 \item
   \ahrefloc{formatter-checker}{Format String Checker} to ensure that format
   strings have the right number and type of \<\%> directives (see
-  \chapterpageref{formatter-checker}).
+  \chapterpageref{formatter-checker})
 \item
   \ahrefloc{propkey-checker}{Property File Checker} to ensure that valid
   keys are used for property files and resource bundles (see
-  \chapterpageref{propkey-checker}).
-  Also includes a checker that code is properly internationalized.
+  \chapterpageref{propkey-checker})
+\item
+  \ahrefloc{i18n-checker}{Internationalization Checker} to
+  ensure that code is properly internationalized (see
+  \chapterpageref{i18n-checker}).
   %% Not interesting enough to go at the beginning of the introduction:
-  % and a checker for compiler message keys as used in the Checker Framework.
+  % a checker for compiler message keys as used in the Checker Framework.
 \item
   \ahrefloc{signature-checker}{Signature String Checker} to ensure that the
   string representation of a type is properly used, for example in
@@ -72,7 +82,6 @@ The Checker Framework comes with checkers for specific types of errors:
   separately from the Checker Framework
   (see \chapterpageref{third-party-checkers})
 
-% Keep this list in sync with the list in manual.tex.
 \end{enumerate}
 
 \noindent
