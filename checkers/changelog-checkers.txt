@@ -6,6 +6,7 @@ Format String Checker:
 
 Reimplemented the dataflow analysis that performs flow-sensitive type
   refinement.  This fixes many bugs, improves precision, and adds features.
+  Many more Java expressions can be written as annotation arguments.
 
 Renamed method annotations used by the Nullness Checker:
   @AssertNonNullAfter => @EnsuresNonNull

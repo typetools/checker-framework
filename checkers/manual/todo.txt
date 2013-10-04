@@ -38,28 +38,6 @@ We found a better naming scheme than Basic vs. Base; it needs to be documented.
 
 Explanations on what flow expressions are supported (i.e. strings in pre/postconditions):
 
-- Flow expressions:  There is fairly good support for methods with arguments now.   In general, the following features work.
-    - Field accesses of the form "expr.f" (for any flow expression "expr", including method calls or other field access expressions).
-    - Static field accesses of the form "ClassName.f".
-    - Pure method calls (with or without parameters) of the form "expr.method(arg1, arg2, ...).  This even works for overloaded methods and methods with type parameters.
-    - Static pure method calls.
-    - Self reference (i.e., "this").  It can be left off in which case the (static or non-static) field/method is searched for in the current class (just like in normal Java).  That is, both "f" and "this.f" work.
-    - Parameters to the method that a contract annotation belongs, #1, #2, etc.
-    - String literals, integer literals, long literals, null literal.
-- Flow expressions limitations: There are some limitations that I'm aware of, but I don't think any of these are severe.  Let me know if you think we should include any of them.
-    - Other literals, e.g. floats, doubles, chars or class literals.
-    - String concatenation expressions.
-    - Mathematical operators (plus, minus, division, ...).
-    - Comparisons (equality, less than, etc.).
-    - Probably other Java expressions that are "pure" (non-pure things cannot occur, anyway) that I did not think of.
-What about array references, such as this.myArray[i]?
-See test case checkers/tests/nullness/EnsuresNonNullIfTest3.java .
-
-
-We allow non-pure methods in specifications.  This is non-standard.  If
-a specification is going to be checked at run time via assertions, then the
-specification must not use methods with side effects.  But, our checking is
-at compile time, so the semantics are clear and we allow it.
 
 ------------------------------------------------------
 
