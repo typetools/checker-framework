@@ -41,7 +41,7 @@ These qualifiers make up the Regex type system:
 \end{description}
 
 The subtyping hierarchy of the Regex Checker's qualifiers is shown in
-Figure~\ref{fig:regex-hierarchy}.
+Figure~\ref{fig-regex-hierarchy}.
 
 \begin{figure}
 \includeimage{regex}{9cm}
@@ -51,7 +51,7 @@ Figure~\ref{fig:regex-hierarchy}.
   capturing groups is a subtype of a \<@Regex> qualifier with fewer capturing
   groups. Qualifiers in gray are used internally by the type
   system but should never be written by a programmer.}
-\label{fig:regex-hierarchy}
+\label{fig-regex-hierarchy}
 \end{figure}
 
 \section{Annotating your code with \code{@Regex}\label{annotating-with-regex}}
@@ -94,12 +94,12 @@ public @Regex String parenthesize(@Regex String regex) {
 \end{Verbatim}
 \caption{An example of the Regex Checker's support for concatenation
 of non-regular expression Strings to produce valid regular expression Strings.}
-\label{fig:regex-partial}
+\label{fig-regex-partial}
 \end{figure}
 
 The Regex Checker supports concatenation of non-regular expression Strings
 that produce valid regular expression Strings. For an example see
-Figure~\ref{fig:regex-partial}.
+Figure~\ref{fig-regex-partial}.
 
 
 \subsection{Testing whether a string is a regular expression\label{regexutil-methods}}
@@ -110,7 +110,7 @@ these cases, you can use the \<isRegex> method to perform such a test, and
 other helper methods to provide useful error messages.  A
 common use is for user-provided regular expressions (such as ones passed
 on the command-line).
-Figure~\ref{fig:regex-util-example} gives an
+Figure~\ref{fig-regex-util-example} gives an
 example of the intended use of the \code{RegexUtil} methods.
 
 \begin{description}
@@ -173,7 +173,7 @@ Pattern p = Pattern.compile(regex);
 \end{smaller}
 %END LATEX
 \caption{Example use of \code{RegexUtil} methods.}
-\label{fig:regex-util-example}
+\label{fig-regex-util-example}
 \end{figure}
 
 
@@ -197,7 +197,7 @@ method that takes a capturing group parameter. This method works the same as
 described above, but returns a \code{@Regex String} with the parameter on the
 annotation set to the value of the capturing group parameter passed to the method.
 
-The use case shown in Figure~\ref{fig:regex-util-example} should support most cases
+The use case shown in Figure~\ref{fig-regex-util-example} should support most cases
 so the \<asRegex> method should be used rarely.
 
 
