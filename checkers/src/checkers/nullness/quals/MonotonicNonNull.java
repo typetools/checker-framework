@@ -48,7 +48,8 @@ import java.lang.annotation.Target;
  *
  * This annotation is associated with the {@link AbstractNullnessChecker}.
  *
- * @see Nullable
+ * @see EnsuresNonNull
+ * @see RequiresNonNull
  * @see MonotonicQualifier
  * @see AbstractNullnessChecker
  * @checker.framework.manual #nullness-checker Nullness Checker
