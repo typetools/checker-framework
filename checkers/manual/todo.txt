@@ -15,45 +15,14 @@ Where would a good place be for this?  At the beginning/end?  Split into multipl
   - Explain the meta-annotations @PreconditionAnnotation, @ConditionalPostconditionAnnotation and @PostconditionAnnotation.
 
 - Dataflow analysis
-  - Explain the new defaulting for local variables (including our decision on casts and instanceof).
-    (See notes below.)
   - Explain the command line parameter -Adotflowdir (probably find a better name first) [Stefan/Charlie].
 
 - Document -ANullnessChecker_option=value mechanism
 
 ------------------------------------------------------
 
-[Mike]
-
-Defaulting:
-
-"NNEL" default becomes "top for locals, casts, instanceof, and implicit
-upper bounds".
-The top qualifier should only be added to top-level type variables,
-because those will get suitably refined by flow.
-For type variables in other positions, e.g. as type argument in your
-example, we should not add default qualifiers.
-
-What should we call it?
-CLIMB:  Casts, Locals, Instanceof, and iMplicit Bounds
-LIMBIC:  Locals, IMplicit Bounds, Instanceof, and Casts
-BaLtIC:  Bounds, Locals, Instanceof, and Casts
-BaCkLIT:  Bounds, Casts, Locals, and Instanceof get Top
-
-The manual and some Javadoc uses ALL_EXCEPT_LOCALS; remove any occurrences
-and document how to achieve that.
-Presumably via @DefaultQualifierInHierarchy which can be overrridden by
-@DefaultFor({ DefaultLocation.LOCAL_VARIABLE }) on another qualifier.
-
-
-Difference between treatment of explicit and implicit bounds:
- * Whenever a bound is explicit, it should use the standard defaulting rules.
- * Whenever a bound is implicit, it should use the maximal type:  maximally
-   high for an upper bound, and maximally low for a lower bound.
-These rules are applied uniformly for type variables and wildcards.
-But note that wildcards should just be refinements of the declared upper
-bounds -- we don't always simply use the top type, but the wildcard always
-refines the declared upper bound.
+The Javadoc for DefaultQualifieers uses ALL_EXCEPT_LOCALS in an example.
+Replace it and document how to achieve CLIMB-to-top instead.
 
 ------------------------------------------------------
 
@@ -108,6 +77,8 @@ Format String Checker (new):
   Ensures that format methods (such as System.out.printf) are invoked
   with correct arguments.
 
+Replaced dataflow analysis.
+
 Renamed method annotations used by the Nullness Checker:
   @AssertNonNullAfter => @EnsuresNonNull
   @NonNullOnEntry => @RequiresNonNull
@@ -128,8 +99,10 @@ The old Initialization Checker can be invoked by invoking the
 Renamed assertion comment string used by all checkers:
   @SuppressWarnings => @AssumeAssertion
 
+Suppress warnings using assert statements with the string
+@AssumeAssertion(warningkey); previously, just the warning key sufficed.
 
-New annotation @TerminatesExecution.
+
 
 New command-line options:
   -AonlyDefs and -AonlyUses complement existing -AskipDefs and -AskipUses
@@ -145,18 +118,18 @@ New command-line options:
   -Anocheckjdk
   -Aflowdotdir
 
+
+
+Purity analysis:  uses new annotations @SideEffectFree and @Deterministic;
+@Pure means both @SideEffectFree and @Deterministic
+
+New annotation @TerminatesExecution.
+
 Manual:
  New manual section about array types
  New FAQ entries "Which checker should I start with?" and "How can I handle
    typestate, or phases of my program with different data properties?"
  Reorganized FAQ chapter into sections.
 
-Suppress warnings using assert statements with the string
-@AssumeAssertion(warningkey); previously, just the warning key sufficed.
-
-
-
-Purity analysis:  uses new annotations @SideEffectFree and @Deterministic;
-@Pure means both @SideEffectFree and @Deterministic
 
 ------------------------------------------------------
