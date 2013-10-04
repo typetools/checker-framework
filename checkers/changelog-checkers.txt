@@ -48,10 +48,9 @@ New command-line options:
   -Anocheckjdk don't err if no annotated JDK can be found
   -Aflowdotdir create an image of the control flow graph
 
-The purity analysis:  uses new annotations @SideEffectFree and
-@Deterministic; @Pure means both @SideEffectFree and @Deterministic.
-
-New annotation @TerminatesExecution.
+Purity (side effect) analysis uses new annotations @SideEffectFree,
+@Deterministic, and @TerminatesExecution; @Pure means both @SideEffectFree
+and @Deterministic.
 
 Manual:
   New manual section about array types.
