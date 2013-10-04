@@ -48,6 +48,7 @@ the answers, or other questions to include here.
 \\ \ref{faq-receiver}: What is a ``receiver''?
 \\ \ref{faq-annotation-after-type}: What is the meaning of an annotation after a type, such as \<@NonNull Object @Nullable>?
 \\ \ref{faq-array-syntax-meaning}: What is the meaning of array annotations such as \<@NonNull Object @Nullable []>?
+\\ \ref{faq-type-qualifier-on-class-declaration}: What is the meaning of a type qualifier at a class declaration?
 \\ \ref{faq-no-annotation-on-types-and-declarations}: Why shouldn't a qualifier apply to both types and declarations?
 
 \faqtocpara{\ref{faq-semantics-section}: Semantics of type annotations}
@@ -521,6 +522,18 @@ older tools, you will find this incompatibility confusing.
 You will have to live with it until the older
 tool is updated to conform to the Java specification, or until you
 transition to a newer tool that conforms to the Java specification.
+
+
+\subsection{What is the meaning of a type qualifier at a class declaration?\label{faq-type-qualifier-on-class-declaration}}
+
+% TODO: use a more realistic example.
+
+Writing an annotation on a class declaration makes that annotation implicit
+for all uses of the class (see Section~\ref{effective-qualifier}).  If you
+write \<class @MyQual MyClass \ttlcb\ ... \ttrcb>, then every unannotated
+use of \<MyClass> is \<@MyQual MyClass>.  A user is permitted to strengthen
+the type by writing a more restrictive annotation on a use of MyClass, such
+as \<@MyMoreRestrictiveQual MyClass>.
 
 
 \subsection{Why shouldn't a qualifier apply to both types and declarations?\label{faq-no-annotation-on-types-and-declarations}}
