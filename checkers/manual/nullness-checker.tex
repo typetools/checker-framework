@@ -412,6 +412,14 @@ then write a \<@SuppressWarnings> annotation.
 % TODO: explain more aspects, give more examples.
 
 
+\subsection{Run-time checks for nullness\label{nullness-runtime-checks}}
+
+When you perform a run-time check for nullness, such as \<if (x != null)
+...>, then the Nullness Checker refines the type of \<x> to
+\<@NonNull> within the scope of the test.  For more details, see
+Section~\ref{type-refinement}.
+
+
 \subsection{Additional details\label{nullness-additional-details}}
 
 The Nullness Checker does some special checks in certain circumstances, in
@@ -2160,12 +2168,16 @@ annotation has nothing to do with the raw types of Java Generics.
 
 \section{Map Key Checker\label{map-key-checker}}
 
+The Map Key Checker uses the \code{@\refclass{nullness/quals}{KeyFor}}
+annotation to declare that a is valke a key in a given map.
+
+This is relevant to the Nullness Checker because
 Java's
 \sunjavadoc{java/util/Map.html#get(java.lang.Object)}{\code{Map.get}}
 method always has the possibility to return null, if the key is not in the
 map.
-
-A call \<mymap.get(mykey)> returns non-null if two conditions are satisfied:
+In particular,
+a call \<mymap.get(mykey)> returns non-null if two conditions are satisfied:
 \begin{enumerate}
 \item \<mymap>'s values are all non-null; that is, \<mymap> was
   declared as \code{Map<\emph{KeyType}, @NonNull \emph{ValueType}>}.  Note
@@ -2181,7 +2193,7 @@ If either of these two conditions is violated, then \<mymap.get(mykey)> has
 the possibility of returning null.
 
 
-  Thus, to guarantee that the value returned from \code{Map.get} is
+Thus, for the Nullness Checker to guarantee that the value returned from \code{Map.get} is
 non-null, it is necessary that the map contains only non-null values,
 \emph{and} the key is in the map.
 The \code{@\refclass{nullness/quals}{KeyFor}} annotation states the latter
@@ -2218,9 +2230,10 @@ slightly refactor your code.  For example, this would be illegal:
 \end{Verbatim}
 
 \noindent
-but this would be OK (no compiler error):
+but reordering the two calls this would be OK (no compiler error):
 
 \begin{Verbatim}
+  Map<K,V> m;
   Collection<@KeyFor("m") K> coll;
   m.put(x, ...);
   coll.add(x);
@@ -2231,6 +2244,11 @@ Because the \<@KeyFor> type hierarchy is independent from the nullness and
 rawness hierarchies, it uses a different warning suppression key.
 You can suppress warnings related to map keys with
 \<@SuppressWarnings("keyfor")>.
+
+When you perform a run-time check for map keys, such as \<if (m.containsKey(k))
+...>, then the Map Key Checker refines the type of \<k> to
+\<@KeyFor("m")> within the scope of the test.  For more details, see
+Section~\ref{type-refinement}.
 
 
 
