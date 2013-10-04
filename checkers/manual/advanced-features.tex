@@ -273,6 +273,79 @@ in the \<extends> clause, not to the lower bound in the inexpressible
 implicit \<super void> clause.)
 
 
+\subsection{Defaulting rules and CLIMB-to-top\label{climb-to-top}}
+
+Each type system defines a default qualifier.  For example, the default
+qualifier for the Nullness Checker is
+\code{@\refclass{nullness/quals}{NonNull}}.  That means that when a user
+writes a type such as \<Date>, the Nullness Checker interprets it as 
+\<@NonNull Date>.
+
+We recommend that the type system apply that default qualifier to most but
+not all types.  In particular, we recommend the CLIMB-to-top rule.  This
+rule states that the \emph{top} qualifier in the hierarchy is applied to
+the CLIMB locations:  Casts, Locals, Instanceof, and iMplicit Bounds.
+For example, when the user writes a type such as \<Date> in such a
+location, the Nullness Checker interprets it as \<@Nullable Date> (because
+\<@\code{@\refclass{nullness/quals}{Nullable}}> is the top qualifier in the
+hierarchy, see Figure~\ref{fig-nullness-hierarchy}.
+
+%% Users don't care about this detail.
+% The CLIMB-to-top rule is an improvement over a previous defaulting rule,
+% called NNEL for ``non-null except locals''~\cite{PapiACPE2008}.
+
+% TODO:  Add wildcard bounds to the set of type-refined locations?
+% Especially in light of
+% https://code.google.com/p/checker-framework/issues/detail?id=260
+
+Casts, local variables (including resource variables in the
+try-with-resources construct, variables in for statements, etc.), and
+instanceof should be defaulted to top becuse they are the locations to
+which type refinement (Section~\ref{type-refinement}) is applied.  If they
+start as the top type, then the Checker Framework chooses the best (most
+general) possible type for them.  As a result, a programmer rarely writes
+an explicit annotation on any of those locations.
+
+Implicit upper bounds are defaulted to top to allow them to be instantiated
+in any way.  If a user declared \code{class C<T> \ttlcb\ ... \ttrcb}, then
+we assume that the user intended to allow any instantiation of the class,
+and the declaration is interpreted as \code{class C<T extends @Nullable
+  Object> \ttlcb\ ... \ttrcb} rather than as \code{class C<T extends
+  @NonNull Object> \ttlcb\ ... \ttrcb}.  The latter would forbit
+instantiations such as \code{C<@Nullable String>}, or would require
+rewriting of code.  On the other hand, if a user writes an explicit bound
+such as \code{class C<T extends D> \ttlcb\ ... \ttrcb}, then the user
+intends some restriction on instantiation and can write a qualifier on the
+upper bound as desired.
+
+Implicit \emph{lower} bounds are defaulted to the bottom type, again to allow
+maximal instantiation.  Note that Java does not allow a programmer to
+express both the upper and lower bounds of a type, but the Checker
+Framework tracks both of them separately and allows the programmer to
+specify both by using a declaration on a wildcard or type variable name;
+see Section~\ref{type-parameter-rationale}.
+
+
+Here is how the CLIMB-to-top rule is expressed for the Nullness Checker:
+
+\begin{Verbatim}
+@DefaultQualifierInHierarchy
+public @interface NonNull { }
+
+@DefaultFor({ DefaultLocation.LOCAL_VARIABLE, DefaultLocation.RESOURCE_VARIABLE,
+    DefaultLocation.IMPLICIT_UPPER_BOUNDS })
+public @interface Nullable { }
+\end{Verbatim}
+
+\noindent
+Note that \<DefaultLocation.LOCAL_VARIABLE> includes casts and instanceof.
+
+A type system designer does not have to use the CLIMB-to-top rule.  In
+addition, a user may choose a different rule for defaults using the
+\code{@\refclass{quals}{DefaultQualifier}} annotation; see
+Section~\ref{defaults}.
+
+
 \subsection{Inherited defaults\label{inherited-defaults}}
 
 In certain situations, it would be convenient for an annotation on a

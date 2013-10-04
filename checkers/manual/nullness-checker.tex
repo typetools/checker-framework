@@ -277,52 +277,55 @@ Javadoc for \refclass{nullness}{NullnessAnnotatedTypeFactory}.
 
 \subsection{Default annotation\label{null-defaults}}
 
-Unannotated references are treated as if they had a default annotation,
-using the NNEL (non-null except locals) rule described below.
-A user may choose a different rule for defaults using the
-\code{@\refclass{quals}{DefaultQualifier}} annotation; see
-Section~\ref{defaults}.
+Unannotated references are treated as if they had a default annotation.
+The standard defaulting rule is  ``CLIMB to top'',  described in
+Section~\ref{defaults}.  Its effect is to default all types to
+\<@NonNull>, except that \<@Nullable> is used for casts, locals,
+instanceof, and implicit bounds.  A user can choose a different defaulting
+rule.
 
-%BEGIN LATEX
-\begin{sloppy}
-%END LATEX
-Here are three possible default rules you may wish to use.  Other rules are
-possible but are not as useful.
-\begin{itemize}
-\item
-  \code{@\refclass{nullness/quals}{Nullable}}:  Unannotated types are regarded as possibly-null, or
-  nullable.  This default is backward-compatible with Java, which permits
-  any reference to be null.  You can activate this default by writing
-  a \code{@DefaultQualifier(Nullable.class)} annotation on a
-  % package/
-  class or method
-  % /variable
-  declaration.
-\item
-  \code{@\refclass{nullness/quals}{NonNull}}:  Unannotated types are treated as non-null.
-  % This may leads to fewer annotations written in your code.
-  You can activate this
-  default via the
-  \code{@DefaultQualifier(NonNull.class)} annotation.
-\item
-  Non-null except locals (NNEL):  Unannotated types are treated as
-  \code{@\refclass{nullness/quals}{NonNull}}, \emph{except} that the
-  unannotated raw type of a local variable is treated as
-  \code{@\refclass{nullness/quals}{Nullable}}.  (Any generic arguments to a
-  local variable still default to
-  \code{@\refclass{nullness/quals}{NonNull}}.)  This is the standard
-  behavior.  You can explicitly activate this default via the
-  \code{@DefaultQualifier(value=NonNull.class,
-    locations=\discretionary{}{}{}\{DefaultLocation\discretionary{}{}{}.ALL\_EXCEPT\_LOCALS\})}
-  annotation.
+%% Cut this to shorten the section.  Most users won't care about it.
+% %BEGIN LATEX
+% \begin{sloppy}
+% %END LATEX
+% Here are three possible default rules you may wish to use.  Other rules are
+% possible but are not as useful.
+% \begin{itemize}
+% \item
+%   \code{@\refclass{nullness/quals}{Nullable}}:  Unannotated types are regarded as possibly-null, or
+%   nullable.  This default is backward-compatible with Java, which permits
+%   any reference to be null.  You can activate this default by writing
+%   a \code{@DefaultQualifier(Nullable.class)} annotation on a
+%   % package/
+%   class or method
+%   % /variable
+%   declaration.
+% \item
+%   \code{@\refclass{nullness/quals}{NonNull}}:  Unannotated types are treated as non-null.
+%   % This may leads to fewer annotations written in your code.
+%   You can activate this
+%   default via the
+%   \code{@DefaultQualifier(NonNull.class)} annotation.
+% \item
+%   Non-null except locals (NNEL):  Unannotated types are treated as
+%   \code{@\refclass{nullness/quals}{NonNull}}, \emph{except} that the
+%   unannotated raw type of a local variable is treated as
+%   \code{@\refclass{nullness/quals}{Nullable}}.  (Any generic arguments to a
+%   local variable still default to
+%   \code{@\refclass{nullness/quals}{NonNull}}.)  This is the standard
+%   behavior.  You can explicitly activate this default via the
+%   \code{@DefaultQualifier(value=NonNull.class,
+%     locations=\discretionary{}{}{}\{DefaultLocation\discretionary{}{}{}.ALL\_EXCEPT\_LOCALS\})}
+%   annotation.
+% 
+%   The NNEL default leads to the smallest number of explicit annotations in
+%   your code~\cite{PapiACPE2008}.  It is what we recommend.  If you do not
+%   explicitly specify a different default, then NNEL is the default.
+% \end{itemize}
+% %BEGIN LATEX
+% \end{sloppy}
+% %END LATEX
 
-  The NNEL default leads to the smallest number of explicit annotations in
-  your code~\cite{PapiACPE2008}.  It is what we recommend.  If you do not
-  explicitly specify a different default, then NNEL is the default.
-\end{itemize}
-%BEGIN LATEX
-\end{sloppy}
-%END LATEX
 
 \subsection{Conditional nullness\label{conditional-nullness}}
 
@@ -451,7 +454,7 @@ Section~\ref{null-defaults}) your code uses.  You only need one of these tools.
 \item
   Inference of \code{@\refclass{nullness/quals}{Nullable}}:
   %
-  If your code uses the standard NNEL (non-null-except-locals) default or
+  If your code uses the standard CLIMB-to-top (non-null-except-locals) default or
   the \refclass{nullness/quals}{NonNull} default, then use the
   \ahref{\url{http://groups.csail.mit.edu/pag/daikon/download/doc/daikon.html#AnnotateNullable}}{AnnotateNullable}
   tool of the \ahref{\url{http://pag.csail.mit.edu/daikon/}}{Daikon invariant
