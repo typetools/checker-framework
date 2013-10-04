@@ -29,11 +29,11 @@ understand.
 
 If your code uses raw types, then the Checker Framework will do its best to
 infer the Java type parameters and the type qualifiers.  If it infers
-imprecise types that lead to type-checking warings elsewhere, then you have
+imprecise types that lead to type-checking warnings elsewhere, then you have
 two options.  You can convert the raw types such as \code{List} to
 parameterized types such as \code{List<String>}, or you can supply the 
 \<-AignoreRawTypeArguments> command-line option.  That option causes the
-Checker Framework to ignore all subtype tysts for type arguments that
+Checker Framework to ignore all subtype tests for type arguments that
 were inferred for a raw type.
 
 
@@ -647,4 +647,5 @@ had used \<elt.equals(a[i])> instead of \<elt == a[i]>.
 % LocalWords:  DefaultLocation subtype's ImmutableList ListIterator nullness
 % LocalWords:  PolymorphicQualifier PolyNull java lub invariantly supertype's
 %  LocalWords:  MyList1 MyList2 MyList4 MyList3 MyClass2 toUpperCase elt
-%  LocalWords:  PolyAll arrays'
+%  LocalWords:  PolyAll arrays' Xlint rawtypes AignoreRawTypeArguments
+%  LocalWords:  call's
