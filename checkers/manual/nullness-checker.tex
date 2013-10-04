@@ -1149,7 +1149,7 @@ tool like the Checker Framework.)
 
 \section{Initialization Checker\label{initialization-checker}}
 
- object is partially initialized from the time that its constructor starts until its constructor
+An object is partially initialized from the time that its constructor starts until its constructor
 finishes.  This is relevant to the Nullness Checker because while the
 constructor is executing --- that is, before initialization completes ---
 a \<@NonNull>
@@ -1563,6 +1563,74 @@ the type of the object being constructed is:
 % inserted automatically by the compiler before the first line, see
 % \ahref{\jlsconstructorbodyurl}{JLS \S8.8.7}.)
 
+
+
+\subsection{How to handle warnings\label{initialization-warnings}}
+
+There are several ways to address a warning ``error:  the constructor does
+not initialize fields: \ldots''.
+\begin{itemize}
+\item
+  Declare the field as \code{@\refclass{nullness/quals}{Nullable}}.  Recall
+  that if you did not write an annotation, the field defaults to
+  \code{@\refclass{nullness/quals}{NonNull}}.
+\item
+  Declare the field as \code{@\refclass{nullness/quals}{MonotonicNonNull}}.
+  This is appropriate if the field starts out as \<null> but is later set
+  to a non-null value.  You may then wish to use the
+  \code{@\refclass{nullness/quals}{EnsuresNonNull}} annotation to indicate
+  which methods set the field, and the
+  \code{@\refclass{nullness/quals}{RequiresNonNull}} annotation to indicate
+  which methods require the field to be non-null.
+\item
+  Initialize the field in the constructor or in the field's initializer, if 
+  the field should be initialized.  (In this case, the Initialization
+  Checker has found a bug!)
+
+  Do \emph{not} initialize the field to an arbitrary non-null value just to
+  eliminate the warning.  Doing so degrades your code:  it introduces a
+  value that will confuse other programmers, and it converts a clear
+  NullPointerException into a more obscure error.
+\end{itemize}
+
+If your code calls an instance method from a constructor, you may see a
+message such as the following:
+
+\begin{Verbatim}
+Foo.java:123: error: call to initHelper() not allowed on the given receiver.
+    initHelper();
+              ^
+  found   : @UnderInitialization(com.google.Bar.class) @NonNull MyClass
+  required: @Initialized @NonNull MyClass
+\end{Verbatim}
+
+The problem is that the current object (\<this>) is under initialization,
+but the receiver formal parameter (Section~\ref{faq-receiver}) of method
+\<initHelper()> is implicitly annotated as
+\code{@\refclass{initialization/quals}{Initialized}}.  If
+\<initHelper()> doesn't depend on its receiver being initialized --- that
+is, it's OK to call \<x.initHelper> even if \<x> is not initialized ---
+then you can indicate that:
+
+\begin{Verbatim}
+class MyClass {
+  void initHelper(@UnknownInitialization MyClass this,*/ String param1) { ... }
+}
+\end{Verbatim}
+
+\noindent
+If you are using annotations in comments, you would write:
+
+\begin{Verbatim}
+class MyClass {
+  void initHelper(/*>>>@UnknownInitialization MyClass this,*/ String param1) { ... }
+}
+\end{Verbatim}
+
+\noindent
+You are likely to want to annotate \<initHelper()> with
+\code{@\refclass{nullness/quals}{EnsuresNonNull}} as well; see
+Section~\ref{nullness-method-annotations}.
 
 
 \subsection{More details about initialization checking\label{initialization-checking}}
