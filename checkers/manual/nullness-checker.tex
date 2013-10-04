@@ -955,7 +955,7 @@ $\Rightarrow$
 %BEGIN LATEX
 \vspace{-1.5\baselineskip}
 %END LATEX
-\caption{Correspondence betwee other nullness annotations and the
+\caption{Correspondence between other nullness annotations and the
   Checker Framework's annotations.}
 \label{fig-nullness-refactoring}
 \end{figure}
@@ -1184,7 +1184,7 @@ type, then code can depend on the fact that the field is not \<null>.
 However, this guarantee does not hold for a partially-initialized object.
 
 The Nullness Checker uses three annotations to indicate whether an object
-is initalized (all its \<@NonNull> fields have been assigned), under
+is initialized (all its \<@NonNull> fields have been assigned), under
 initialization (its constructor is currently executing), or its
 initialization state is unknown.
 
@@ -1592,7 +1592,7 @@ see Section~\ref{nullness-method-annotations}.
 \paragraph{Source of the type system}
 
 The type system enforced by the Initialization Checker is known as
-``Freedom Before Committment''~\cite{SummersM2011}.  Our implementation
+``Freedom Before Commitment''~\cite{SummersM2011}.  Our implementation
 changes its initialization modifiers (``committed'', ``free'', and
 ``unclassified'') to ``initialized'', ``unknown initialization'', and
 ``under initialization''.  Our implementation also has several
@@ -2179,3 +2179,8 @@ You can suppress warnings related to map keys with
 % LocalWords:  lastIndexOf deref getProperty getProperties classliteral MyClass
 % LocalWords:  typeofthis nraB nrbB rO nroO nroB 5cm IGJ containsKey enum
 % LocalWords:  JUnit's 5in field1 field2 superclasses Foo C1 C2 2in 75in PolyRaw
+%  LocalWords:  NullnessChecker redundantNullComparison 5cm instanceof 5in
+%  LocalWords:  noInitForMonotonicNonNull UnknownInitialization isArray
+%  LocalWords:  UnderInitialization PolyInitialized getComponentType 2in
+%  LocalWords:  isEmpty AssumeAssertion cleanroom vararg OtherClass 75in
+%  LocalWords:  NullnessRawnessChecker mymap mykey KeyType ValueType

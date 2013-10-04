@@ -424,7 +424,7 @@ Within the configuration element you can add a number of parameters.
     <procOnly>false</procOnly>
 \end{Verbatim}
 By default, the Checker Framework Maven plugin will only check source files but will not produce
-class files for the source files it checks (see -proc:only at \url{http://docs.oracle.com/javase/6/docs/technotes/tools/solaris/javac.html}).
+class files for the source files it checks (see \<-proc:only> at \url{http://docs.oracle.com/javase/6/docs/technotes/tools/solaris/javac.html}).
 Setting \code{procOnly} to false will cause the Checker Framework compiler to generate class files.
 Note: If your Maven project's output directory has not been created then the plugin will attempt to
 create it and all required directories preceding it.  The check task will fail
@@ -432,7 +432,7 @@ in the event that these directories cannot be created.
 
 You may want to check only a subset of source files in your project.  To do so you can use the \code{includes} and \code{excludes}
 elements using the standard Maven syntax.  The semantics of including/excluding files are also described
-by DirectoryScanner documentation found at:
+by the DirectoryScanner documentation found at:
 \url{http://plexus.codehaus.org/plexus-utils/apidocs/org/codehaus/plexus/util/DirectoryScanner.html} (see setIncludes/setExcludes)
 
 \begin{Verbatim}
@@ -447,7 +447,7 @@ by DirectoryScanner documentation found at:
 \end{Verbatim}
 
 By default, an error reported by the Checker Framework Maven plugin will cause your build to fail.  To prevent
-a build from failing and still produce error and warning output set \code{failOError} to false.
+a build from failing and still produce error and warning output set \code{failOnError} to false.
 
 \begin{Verbatim}
     <failOnError>false</failOnError>
@@ -705,4 +705,6 @@ annotations for the Javari Checker, which detects mutation errors.
 
 % LocalWords:  jsr plugin Warski xml buildfile tIDE java Awarns pom lifecycle
 % LocalWords:  IntelliJ Maia newdir classpath Unconfuse nullness Gradle
-% LocalWords:  compilerArgs Xbootclasspath
+% LocalWords:  compilerArgs Xbootclasspath JSR308 jsr308 jsr308javac mvn
+%  LocalWords:  plugins proc procOnly DirectoryScanner setIncludes
+%  LocalWords:  setExcludes checkerFrameworkVersion javacParams javaParams
