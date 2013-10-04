@@ -196,14 +196,13 @@ public class FormatterTreeUtil {
          * Returns null if the format string does not contain syntactic errors.
          */
         public final Result<String> isIllegalFormat() {
-            String res = "";
-            if (formatAnno.hasAnnotation(Format.class)) {
-                res = null;
-            }
-
-            AnnotationMirror inv = formatAnno.getAnnotation(InvalidFormat.class);
-            if (inv != null) {
-                res = invalidFormatAnnotationToErrorMessage(inv);
+        	String res = null;
+            if (!formatAnno.hasAnnotation(Format.class)) {
+                res = "(is a @Format annotation missing?)";
+	            AnnotationMirror inv = formatAnno.getAnnotation(InvalidFormat.class);
+	            if (inv != null) {
+	                res = invalidFormatAnnotationToErrorMessage(inv);
+	            }
             }
             return new ResultImpl<String>(res, formatArg);
         }
@@ -215,6 +214,7 @@ public class FormatterTreeUtil {
          */
         public final Result<InvocationType> getInvocationType() {
             InvocationType type = InvocationType.VARARG;
+            
             if (args.size() == 1){
                 final ExpressionTree first = args.get(0);
                 TypeMirror argType = atypeFactory.getAnnotatedType(first).getUnderlyingType();
@@ -259,7 +259,12 @@ public class FormatterTreeUtil {
                             }
                         }, Void.TYPE);
             }
-            return new ResultImpl<InvocationType>(type, node.getMethodSelect());
+            
+            ExpressionTree loc = node.getMethodSelect();
+            if (type!=InvocationType.VARARG && args.size() > 0) {
+            	loc = args.get(0);
+            }
+            return new ResultImpl<InvocationType>(type, loc);
         }
 
         /**
@@ -365,7 +370,7 @@ public class FormatterTreeUtil {
      * and returns its value.
      */
     public String invalidFormatAnnotationToErrorMessage(AnnotationMirror anno) {
-        return AnnotationUtils.getElementValue(anno, "value", String.class, true);
+        return "\""+AnnotationUtils.getElementValue(anno, "value", String.class, true)+"\"";
     }
 
     /**
