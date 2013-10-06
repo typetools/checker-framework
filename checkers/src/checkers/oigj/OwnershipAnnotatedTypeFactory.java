@@ -3,7 +3,7 @@ package checkers.oigj;
 import checkers.oigj.quals.World;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import checkers.types.BasicAnnotatedTypeFactory;
+import checkers.types.SubtypingAnnotatedTypeFactory;
 import checkers.types.TreeAnnotator;
 import checkers.types.TypeAnnotator;
 
@@ -15,7 +15,7 @@ import javax.lang.model.element.ElementKind;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompilationUnitTree;
 
-public class OwnershipAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<OwnershipSubchecker> {
+public class OwnershipAnnotatedTypeFactory extends SubtypingAnnotatedTypeFactory<OwnershipSubchecker> {
 
     public OwnershipAnnotatedTypeFactory(OwnershipSubchecker checker,
             CompilationUnitTree root) {

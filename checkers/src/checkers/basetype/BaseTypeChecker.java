@@ -12,7 +12,7 @@ import checkers.source.SourceChecker;
 import checkers.source.SourceVisitor;
 import checkers.types.AbstractBasicAnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeFactory;
-import checkers.types.BasicAnnotatedTypeFactory;
+import checkers.types.SubtypingAnnotatedTypeFactory;
 import checkers.types.QualifierHierarchy;
 import checkers.types.TypeHierarchy;
 import checkers.util.GraphQualifierHierarchy;
@@ -353,7 +353,7 @@ public abstract class BaseTypeChecker<Factory extends AbstractBasicAnnotatedType
      *
      * The default implementation uses the checker naming convention to create
      * the appropriate type factory.  If no factory is found, it returns
-     * {@link BasicAnnotatedTypeFactory}.  It reflectively invokes the
+     * {@link SubtypingAnnotatedTypeFactory}.  It reflectively invokes the
      * constructor that accepts this checker and compilation unit tree
      * (in that order) as arguments.
      *
@@ -382,7 +382,7 @@ public abstract class BaseTypeChecker<Factory extends AbstractBasicAnnotatedType
             }
             checkerClass = checkerClass.getSuperclass();
         }
-        return (Factory) new BasicAnnotatedTypeFactory<BaseTypeChecker<Factory>>(this, root);
+        return (Factory) new SubtypingAnnotatedTypeFactory<BaseTypeChecker<Factory>>(this, root);
     }
 
 
