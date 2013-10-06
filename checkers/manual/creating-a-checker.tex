@@ -24,16 +24,16 @@ type-checker:
 public @interface Encrypted {}
 \end{Verbatim}
 
-This checker is so short because it builds on the Basic Checker
-(Chapter~\ref{basic-checker}).
-See Section~\ref{basic-example} for more details about this particular checker.
+This checker is so short because it builds on the Subtyping Checker
+(Chapter~\ref{subtyping-checker}).
+See Section~\ref{subtyping-example} for more details about this particular checker.
 When you wish to create a new checker, it is often easiest to begin by
-building it declaratively on top of the Basic Checker, and then return to
-this chapter when you need more expressiveness or power than the Basic
+building it declaratively on top of the Subtyping Checker, and then return to
+this chapter when you need more expressiveness or power than the Subtyping
 Checker affords.
 
 You can also create your own checker by customizing a different existing
-checker.  Specific checkers that are designed for extension (besides the Basic
+checker.  Specific checkers that are designed for extension (besides the Subtyping
 Checker) include the Fake Enumeration Checker
 (\chapterpageref{fenum-checker}), the Units Checker
 (\chapterpageref{units-checker}), and the typestate checkers
@@ -76,7 +76,7 @@ Annotation File Utilities to manipulate \code{.java} and \code{.class} files.
 \newlength{\bw}
 \setlength{\bw}{.5in}
 
-%% Strictly speaking, "Basic Checker" should sit on top of Checker
+%% Strictly speaking, "Subtyping Checker" should sit on top of Checker
 %% Framework and below all the specific checkers.  But omit it for simplicity.
 
 % Unfortunately, Hevea inserts a horizontal line between every pair of rows
@@ -84,7 +84,7 @@ Annotation File Utilities to manipulate \code{.java} and \code{.class} files.
 \begin{center}
 \begin{tabular}{|p{\bw}|p{\bw}|p{\bw}|p{\bw}|p{.4\bw}|p{\bw}|p{1.5\bw}|p{1\bw}|}
 \cline{1-4} \cline{6-6}
-\centering Basic \par Checker &
+\centering Subtyping \par Checker &
 \centering Nullness \par Checker &
 \centering Mutation \par Checker &
 \centering Tainting \par Checker &
@@ -108,7 +108,7 @@ Other \par tools
 
 
 The Base Checker enforces the standard subtyping rules on extended types.
-The Basic Checker is a simple use of the Base Checker that supports
+The Subtyping Checker is a simple use of the Base Checker that supports
 providing type qualifiers on the command line.
 You usually want to build your checker on the Base Checker.
 
@@ -147,7 +147,7 @@ the components of a type system as written using the Checker Framework:
   Subtyping rules related to the type hierarchy, such as that every
   assignment and pseudo-assignment satisfies a subtyping relationship.
   Your checker automatically inherits these subtyping rules from the Base
-  Checker (Chapter~\ref{basic-checker}).
+  Checker (Chapter~\ref{subtyping-checker}).
 \item
   Additional rules that are specific to your particular checker.  For
   example, in the Nullness type system, only references with a
@@ -478,8 +478,8 @@ There are reasons to not explicitly define the top qualifier, but to reuse
 \<@Unqualified>.
 The ability to omit the top qualifier is a convenience
 when writing a type system, because it reduces the number of qualifiers
-that must be defined; this is especially convenient when using the Basic
-Checker (Section~\ref{basic-checker}).
+that must be defined; this is especially convenient when using the Subtyping
+Checker (Section~\ref{subtyping-checker}).
 % TODO: Examples of the following?
 More importantly, omitting the top qualifier restricts the user in ways
 that the type system designer may have intended.
@@ -601,14 +601,14 @@ The Checker Framework provides automatic type refinement as described
 in Section~\ref{type-refinement}.
 
 Class
-\refclass{types}{BasicAnnotatedTypeFactory}
+\refclass{types}{SubtypingAnnotatedTypeFactory}
 provides a 3 parameter constructor that allows subclasses to disable
 flow inference.
 By default the 2 parameter constructor performs flow inference.
 To disable flow inference, call
 \code{super(checker, root, false);}
 in your subtype of
-\refclass{types}{BasicAnnotatedTypeFactory}.
+\refclass{types}{SubtypingAnnotatedTypeFactory}.
 
 
 \section{Visitor: Type rules\label{extending-visitor}}

@@ -1,12 +1,12 @@
 package checkers.fenum;
 
-import checkers.types.BasicAnnotatedTypeFactory;
+import checkers.types.SubtypingAnnotatedTypeFactory;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
 
 public class FenumAnnotatedTypeFactory extends
-        BasicAnnotatedTypeFactory<FenumChecker> {
+        SubtypingAnnotatedTypeFactory<FenumChecker> {
 
   public FenumAnnotatedTypeFactory(FenumChecker checker,
                                    CompilationUnitTree root) {

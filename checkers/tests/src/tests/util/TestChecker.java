@@ -11,7 +11,7 @@ import checkers.basetype.BaseTypeChecker;
 import checkers.quals.Bottom;
 import checkers.quals.TypeQualifiers;
 import checkers.quals.Unqualified;
-import checkers.types.BasicAnnotatedTypeFactory;
+import checkers.types.SubtypingAnnotatedTypeFactory;
 import checkers.types.QualifierHierarchy;
 import checkers.util.GraphQualifierHierarchy;
 import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
@@ -45,7 +45,7 @@ public final class TestChecker extends BaseTypeChecker<tests.util.TestChecker.Fr
         return new FrameworkTestAnnotatedTypeFactory(this, tree);
     }
 
-    class FrameworkTestAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<TestChecker> {
+    class FrameworkTestAnnotatedTypeFactory extends SubtypingAnnotatedTypeFactory<TestChecker> {
         public FrameworkTestAnnotatedTypeFactory(TestChecker checker, CompilationUnitTree root) {
             super(checker, root, true);
             this.typeAnnotator.addTypeName(java.lang.Void.class, BOTTOM);

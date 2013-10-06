@@ -71,8 +71,8 @@ The Checker Framework comes with checkers for specific types of errors:
   (incorrect side effects), based on the Javari type system (see
   \chapterpageref{javari-checker})
 \item
-  \ahrefloc{basic-checker}{Basic Checker} for customized checking without
-  writing any code (see \chapterpageref{basic-checker})
+  \ahrefloc{subtyping-checker}{Subtyping Checker} for customized checking without
+  writing any code (see \chapterpageref{subtyping-checker})
 % \item
 %   \ahrefloc{typestate-checker}{Typestate checker} to ensure operations are
 %   performed on objects that are in the right state, such as only opened
@@ -89,7 +89,7 @@ These checkers are easy to use and are invoked as arguments to \<javac>.
 
 
 The Checker Framework also enables you to write new checkers of your
-own; see Chapters~\ref{basic-checker} and~\ref{writing-a-checker}.
+own; see Chapters~\ref{subtyping-checker} and~\ref{writing-a-checker}.
 
 
 \section{How it works:  Pluggable types\label{pluggable-types}}
@@ -125,8 +125,8 @@ evaluate and deploy their type systems.
 %   The next chapters are user manuals for the \ahrefloc{nullness-checker}{Nullness}
 %   (Chapter~\ref{nullness-checker}), \ahrefloc{interning-checker}{Interning}
 %   (Chapter~\ref{interning-checker}), \ahrefloc{javari-checker}{Javari} (Chapter~\ref{javari-checker}),
-%   \ahrefloc{igj-checker}{IGJ} (Chapter~\ref{igj-checker}), and \ahrefloc{basic-checker}{Basic}
-%   (Chapter~\ref{basic-checker}) checkers.
+%   \ahrefloc{igj-checker}{IGJ} (Chapter~\ref{igj-checker}), and \ahrefloc{subtyping-checker}{Basic}
+%   (Chapter~\ref{subtyping-checker}) checkers.
 % \item Chapter~\ref{annotating-libraries} describes an approach for \ahrefloc{annotating-libraries}{annotating external
 % libraries}.
 % \item Chapter~\ref{writing-a-checker} describes how to
@@ -661,7 +661,7 @@ Some checkers support additional options, which are described in that
 checker's manual section.
 % Search for "@SupportedOptions" in the implementation to find them all.
 For example, \<-Aquals> tells
-the Basic Checker (see Chapter~\ref{basic-checker}) and the Fenum Checker
+the Subtyping Checker (see Chapter~\ref{subtyping-checker}) and the Fenum Checker
 (see Chapter~\ref{fenum-checker}) which annotations to check.
 
 

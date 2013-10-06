@@ -5,7 +5,7 @@ import checkers.quals.TypeQualifiers;
 import checkers.quals.PolyAll;
 import checkers.source.SuppressWarningsKeys;
 import checkers.tainting.quals.*;
-import checkers.types.BasicAnnotatedTypeFactory;
+import checkers.types.SubtypingAnnotatedTypeFactory;
 
 /**
  * A type-checker plug-in for the Tainting type system qualifier that finds
@@ -20,4 +20,4 @@ import checkers.types.BasicAnnotatedTypeFactory;
 @TypeQualifiers({Untainted.class, Tainted.class,
     PolyTainted.class, PolyAll.class})
 @SuppressWarningsKeys("untainted")
-public class TaintingChecker extends BaseTypeChecker<BasicAnnotatedTypeFactory<?>> {}
+public class TaintingChecker extends BaseTypeChecker<SubtypingAnnotatedTypeFactory<?>> {}

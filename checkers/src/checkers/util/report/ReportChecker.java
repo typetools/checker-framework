@@ -5,7 +5,7 @@ import javax.annotation.processing.SupportedOptions;
 import checkers.basetype.BaseTypeChecker;
 import checkers.quals.TypeQualifiers;
 import checkers.quals.Unqualified;
-import checkers.types.BasicAnnotatedTypeFactory;
+import checkers.types.SubtypingAnnotatedTypeFactory;
 
 /**
  * The Report Checker for semantic searches.
@@ -20,4 +20,4 @@ import checkers.types.BasicAnnotatedTypeFactory;
  */
 @TypeQualifiers({ Unqualified.class })
 @SupportedOptions({"reportTreeKinds", "reportModifiers"})
-public class ReportChecker extends BaseTypeChecker<BasicAnnotatedTypeFactory<ReportChecker>> {}
+public class ReportChecker extends BaseTypeChecker<SubtypingAnnotatedTypeFactory<ReportChecker>> {}

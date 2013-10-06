@@ -3,7 +3,7 @@ package checkers.units;
 import checkers.basetype.BaseTypeChecker;
 import checkers.quals.Bottom;
 import checkers.types.AnnotatedTypeMirror;
-import checkers.types.BasicAnnotatedTypeFactory;
+import checkers.types.SubtypingAnnotatedTypeFactory;
 import checkers.types.TreeAnnotator;
 import checkers.units.quals.MixedUnits;
 import checkers.units.quals.Prefix;
@@ -36,7 +36,7 @@ import com.sun.source.tree.Tree;
  * as "mPERs", the correct unit for the result.
  */
 public class UnitsAnnotatedTypeFactory extends
-        BasicAnnotatedTypeFactory<UnitsChecker> {
+        SubtypingAnnotatedTypeFactory<UnitsChecker> {
 
     protected final AnnotationMirror mixedUnits;
 

@@ -414,13 +414,13 @@
         </antcall>
     </target>
 
-    <target name="basic-tests" depends="jar,build-tests"
+    <target name="subtyping-tests" depends="jar,build-tests"
             description="Run tests for the Checker Framework">
         <antcall target="-run-tests">
-            <param name="param" value="tests.BasicEncryptedTest"/>
+            <param name="param" value="tests.SubtypingEncryptedTest"/>
         </antcall>
         <antcall target="-run-tests">
-            <param name="param" value="tests.BasicSuperSubTest"/>
+            <param name="param" value="tests.SubtypingSuperSubTest"/>
         </antcall>
     </target>
 

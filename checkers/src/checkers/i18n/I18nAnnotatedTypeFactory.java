@@ -3,7 +3,7 @@ package checkers.i18n;
 import checkers.basetype.BaseTypeChecker;
 import checkers.i18n.quals.Localized;
 import checkers.types.AnnotatedTypeMirror;
-import checkers.types.BasicAnnotatedTypeFactory;
+import checkers.types.SubtypingAnnotatedTypeFactory;
 import checkers.types.TreeAnnotator;
 
 import javacutils.AnnotationUtils;
@@ -16,7 +16,7 @@ import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.Tree;
 
-public class I18nAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<I18nSubchecker> {
+public class I18nAnnotatedTypeFactory extends SubtypingAnnotatedTypeFactory<I18nSubchecker> {
 
     public I18nAnnotatedTypeFactory(I18nSubchecker checker,
             CompilationUnitTree root) {

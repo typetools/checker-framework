@@ -5,7 +5,7 @@ import com.sun.source.tree.*;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.tainting.quals.Untainted;
-import checkers.types.BasicAnnotatedTypeFactory;
+import checkers.types.SubtypingAnnotatedTypeFactory;
 import checkers.types.TreeAnnotator;
 */
 
@@ -31,7 +31,7 @@ import checkers.types.TreeAnnotator;
  * we could add a TreeAnnotator again.
 
 public class TaintingAnnotatedTypeFactory
-  extends BasicAnnotatedTypeFactory<TaintingChecker> {
+  extends SubtypingAnnotatedTypeFactory<TaintingChecker> {
 
     public TaintingAnnotatedTypeFactory(TaintingChecker checker,
             CompilationUnitTree root) {

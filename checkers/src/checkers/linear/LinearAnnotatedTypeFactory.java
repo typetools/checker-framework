@@ -3,7 +3,7 @@ package checkers.linear;
 import checkers.linear.quals.Linear;
 import checkers.linear.quals.Unusable;
 import checkers.types.AnnotatedTypeMirror;
-import checkers.types.BasicAnnotatedTypeFactory;
+import checkers.types.SubtypingAnnotatedTypeFactory;
 
 import javacutils.AnnotationUtils;
 
@@ -23,7 +23,7 @@ import com.sun.source.tree.CompilationUnitTree;
  * </ol>
  *
  */
-public class LinearAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<LinearChecker> {
+public class LinearAnnotatedTypeFactory extends SubtypingAnnotatedTypeFactory<LinearChecker> {
 
     private final AnnotationMirror LINEAR, UNUSABLE;
 
