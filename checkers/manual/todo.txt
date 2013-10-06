@@ -30,8 +30,6 @@ Explain relationship between XXXChecker and XXXAnnotatedTypeFactory:
 if the Checker is a subtype of BaseTypeChecker, the ATF has to be a
 subtype of AbstractBasicATF, because BaseTypeVisitor assumes that.
 
-We found a better naming scheme than Basic vs. Base; it needs to be documented.
-
 ------------------------------------------------------
 
 [Stefan]
