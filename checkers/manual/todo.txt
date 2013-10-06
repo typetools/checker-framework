@@ -1,5 +1,5 @@
 
-Necessary changes to the manual.  In brackets I (Stefan) wrote the names of people familiar with the particular change, which might be most qualified to make the change.  If no person is listed, than anyone could do the change.
+Necessary changes to the manual.
 
 ------------------------------------------------------
 
@@ -30,13 +30,6 @@ Explain relationship between XXXChecker and XXXAnnotatedTypeFactory:  if
 the Checker is a subtype of BaseTypeChecker, the AnnotatedTypeFactory has
 to be a subtype of AbstractBasicAnnotatedTypeFactory, because
 BaseTypeVisitor assumes that.
-
-------------------------------------------------------
-
-[Stefan]
-
-Explanations on what flow expressions are supported (i.e. strings in pre/postconditions):
-
 
 ------------------------------------------------------
 
