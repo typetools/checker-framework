@@ -741,8 +741,8 @@ the time when the checker infers that the value has that refined type,
 until the checker can no longer support that inference.
 
 The refined type begins at a test (such as \<if (myvar != null) ...>) or
-an assignment.  The assignment or test may occur within a method call, in
-which case it is signaled by use of a postcondition annotation such as
+an assignment.  If the assignment occurs within a method body,
+write a postcondition annotation such as
 \code{@\refclass{nullness/quals}{EnsuresNonNull}}.
 
 The refined type ends at an assignment or possible assignment.  Any method
@@ -769,6 +769,8 @@ Usually, you only need to use \code{@\refclass{dataflow/quals}{SideEffectFree}}.
 
 \end{description}
 
+The Javadoc of the annotations describes their semantics and how they are
+checked.  This manual section gives examples and supplementary information.
 
 For example, consider the
 following declarations and uses:
@@ -800,7 +802,7 @@ If you change the declaration of \code{computeValue} to
 \noindent
 then the Nullness Checker issues no warnings, because it can reason that
 the second occurrence of \code{myField} has the same (non-null) value as
-the first one.
+the one in the test.
 
 As a more complex example, consider the
 following declaration and uses:
