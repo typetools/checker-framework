@@ -4,7 +4,7 @@ import checkers.basetype.BaseTypeChecker;
 import checkers.propkey.quals.PropertyKey;
 import checkers.quals.Bottom;
 import checkers.types.AnnotatedTypeMirror;
-import checkers.types.BasicAnnotatedTypeFactory;
+import checkers.types.SubtypingAnnotatedTypeFactory;
 import checkers.types.TreeAnnotator;
 
 import javacutils.AnnotationUtils;
@@ -27,7 +27,7 @@ import com.sun.source.tree.Tree;
  * @author wmdietl
  */
 public class PropertyKeyAnnotatedTypeFactory<Checker extends PropertyKeyChecker>
-        extends BasicAnnotatedTypeFactory<Checker> {
+        extends SubtypingAnnotatedTypeFactory<Checker> {
 
     private final Set<String> lookupKeys;
 
@@ -61,7 +61,7 @@ public class PropertyKeyAnnotatedTypeFactory<Checker extends PropertyKeyChecker>
         AnnotationMirror theAnnot;
 
         public KeyLookupTreeAnnotator(BaseTypeChecker<?> checker,
-                BasicAnnotatedTypeFactory<?> tf, Class<? extends Annotation> annot) {
+                SubtypingAnnotatedTypeFactory<?> tf, Class<? extends Annotation> annot) {
             super(checker, tf);
             theAnnot = AnnotationUtils.fromClass(elements, annot);
         }

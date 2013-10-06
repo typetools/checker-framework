@@ -11,7 +11,7 @@ import checkers.basetype.BaseTypeChecker;
 import checkers.quals.Bottom;
 import checkers.quals.TypeQualifiers;
 import checkers.quals.Unqualified;
-import checkers.types.BasicAnnotatedTypeFactory;
+import checkers.types.SubtypingAnnotatedTypeFactory;
 import checkers.types.QualifierHierarchy;
 import checkers.util.GraphQualifierHierarchy;
 import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
@@ -38,7 +38,7 @@ public final class FlowTestChecker extends BaseTypeChecker<tests.util.FlowTestCh
         return new FlowAnnotatedTypeFactory(this, tree);
     }
 
-    class FlowAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<FlowTestChecker> {
+    class FlowAnnotatedTypeFactory extends SubtypingAnnotatedTypeFactory<FlowTestChecker> {
         public FlowAnnotatedTypeFactory(FlowTestChecker checker, CompilationUnitTree root) {
             super(checker, root, true);
             this.typeAnnotator.addTypeName(java.lang.Void.class, BOTTOM);

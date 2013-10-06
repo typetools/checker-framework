@@ -2,7 +2,7 @@ package checkers.lock;
 
 import checkers.lock.quals.GuardedBy;
 import checkers.types.AnnotatedTypeMirror;
-import checkers.types.BasicAnnotatedTypeFactory;
+import checkers.types.SubtypingAnnotatedTypeFactory;
 import checkers.util.AnnotationBuilder;
 
 import javacutils.AnnotationUtils;
@@ -33,7 +33,7 @@ import com.sun.source.tree.Tree;
  *
  */
 public class LockAnnotatedTypeFactory
-    extends BasicAnnotatedTypeFactory<LockChecker> {
+    extends SubtypingAnnotatedTypeFactory<LockChecker> {
 
     private List<String> heldLocks = new ArrayList<String>();
     private final AnnotationMirror GUARDED_BY, UNQUALIFIED;

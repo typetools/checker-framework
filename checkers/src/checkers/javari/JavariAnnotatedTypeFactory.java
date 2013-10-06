@@ -10,7 +10,7 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
-import checkers.types.BasicAnnotatedTypeFactory;
+import checkers.types.SubtypingAnnotatedTypeFactory;
 import checkers.types.visitors.AnnotatedTypeScanner;
 import checkers.types.visitors.SimpleAnnotatedTypeScanner;
 import checkers.util.AnnotatedTypes;
@@ -76,7 +76,7 @@ import com.sun.source.util.SimpleTreeVisitor;
  * In all other cases, the {@link Mutable} annotation is inserted by default.
  * </ul>
  */
-public class JavariAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<JavariChecker> {
+public class JavariAnnotatedTypeFactory extends SubtypingAnnotatedTypeFactory<JavariChecker> {
 
     /** Adds annotations from tree context before type resolution. */
     private final JavariTreePreAnnotator treePre;

@@ -11,7 +11,7 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
-import checkers.types.BasicAnnotatedTypeFactory;
+import checkers.types.SubtypingAnnotatedTypeFactory;
 import checkers.types.TreeAnnotator;
 import checkers.types.TypeAnnotator;
 import checkers.types.visitors.AnnotatedTypeScanner;
@@ -108,7 +108,7 @@ import com.sun.source.tree.TypeCastTree;
 // To ease dealing with libraries, this inserts the bottom qualifier
 // rather than immutable in many cases, like all literals.
 // Should change that
-public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<IGJChecker> {
+public class IGJAnnotatedTypeFactory extends SubtypingAnnotatedTypeFactory<IGJChecker> {
 
     /** The various IGJ annotations. */
     private final AnnotationMirror READONLY, MUTABLE, IMMUTABLE, I,

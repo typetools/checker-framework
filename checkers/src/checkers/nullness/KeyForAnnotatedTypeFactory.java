@@ -7,7 +7,7 @@ import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
-import checkers.types.BasicAnnotatedTypeFactory;
+import checkers.types.SubtypingAnnotatedTypeFactory;
 import checkers.util.AnnotationBuilder;
 
 import javacutils.AnnotationUtils;
@@ -29,7 +29,7 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 
-public class KeyForAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<KeyForSubchecker> {
+public class KeyForAnnotatedTypeFactory extends SubtypingAnnotatedTypeFactory<KeyForSubchecker> {
 
   public KeyForAnnotatedTypeFactory(KeyForSubchecker checker,
                                     CompilationUnitTree root) {

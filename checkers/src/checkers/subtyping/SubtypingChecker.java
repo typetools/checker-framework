@@ -1,7 +1,7 @@
 package checkers.subtyping;
 
 import checkers.basetype.BaseTypeChecker;
-import checkers.types.BasicAnnotatedTypeFactory;
+import checkers.types.SubtypingAnnotatedTypeFactory;
 
 import java.lang.annotation.Annotation;
 import java.util.Collection;
@@ -29,14 +29,14 @@ import com.sun.source.tree.CompilationUnitTree;
  * hierarchy can be passed.</li>
  * </ul>
  *
- * @checker.framework.manual #basic-checker Basic Checker
+ * @checker.framework.manual #subtyping-checker Subtying Checker
  */
 @SupportedOptions( { "quals" })
-public final class SubtypingChecker extends BaseTypeChecker<BasicAnnotatedTypeFactory<SubtypingChecker>> {
+public final class SubtypingChecker extends BaseTypeChecker<SubtypingAnnotatedTypeFactory<SubtypingChecker>> {
 
     @Override
-    public BasicAnnotatedTypeFactory<SubtypingChecker> createFactory(CompilationUnitTree root) {
-        return new BasicAnnotatedTypeFactory<SubtypingChecker>(this, root);
+    public SubtypingAnnotatedTypeFactory<SubtypingChecker> createFactory(CompilationUnitTree root) {
+        return new SubtypingAnnotatedTypeFactory<SubtypingChecker>(this, root);
     }
 
     @Override

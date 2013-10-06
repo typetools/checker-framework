@@ -20,19 +20,19 @@ import com.sun.source.tree.CompilationUnitTree;
  *
  * @author Stefan Heule
  */
-public class BasicAnnotatedTypeFactory<Checker extends BaseTypeChecker<?>>
+public class SubtypingAnnotatedTypeFactory<Checker extends BaseTypeChecker<?>>
     extends AbstractBasicAnnotatedTypeFactory<Checker, CFValue, CFStore, CFTransfer, CFAnalysis> {
 
-    public BasicAnnotatedTypeFactory(Checker checker, CompilationUnitTree root,
+    public SubtypingAnnotatedTypeFactory(Checker checker, CompilationUnitTree root,
             boolean useFlow) {
         super(checker, root, useFlow);
         // Every subclass must call postInit!
-        if (this.getClass().equals(BasicAnnotatedTypeFactory.class)) {
+        if (this.getClass().equals(SubtypingAnnotatedTypeFactory.class)) {
             this.postInit();
         }
     }
 
-    public BasicAnnotatedTypeFactory(Checker checker, CompilationUnitTree root) {
+    public SubtypingAnnotatedTypeFactory(Checker checker, CompilationUnitTree root) {
         this(checker, root, FLOW_BY_DEFAULT);
     }
 
