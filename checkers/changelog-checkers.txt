@@ -4,6 +4,8 @@ Format String Checker:
   Ensures that format methods such as System.out.printf are invoked
   with correct arguments.
 
+Renamed the Basic Checker to the Subtyping Checker.
+
 Reimplemented the dataflow analysis that performs flow-sensitive type
   refinement.  This fixes many bugs, improves precision, and adds features.
   Many more Java expressions can be written as annotation arguments.
