@@ -26,9 +26,10 @@ Replace it and document how to achieve CLIMB-to-top instead.
 
 ------------------------------------------------------
 
-Explain relationship between XXXChecker and XXXAnnotatedTypeFactory:
-if the Checker is a subtype of BaseTypeChecker, the ATF has to be a
-subtype of AbstractBasicATF, because BaseTypeVisitor assumes that.
+Explain relationship between XXXChecker and XXXAnnotatedTypeFactory:  if
+the Checker is a subtype of BaseTypeChecker, the AnnotatedTypeFactory has
+to be a subtype of AbstractBasicAnnotatedTypeFactory, because
+BaseTypeVisitor assumes that.
 
 ------------------------------------------------------
 
