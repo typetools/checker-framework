@@ -10,5 +10,5 @@ public interface SortedMap<K, V> extends Map<K, V> {
   public abstract K lastKey(@ReadOnly SortedMap<K, V> this);
   public abstract @PolyRead Set<K> keySet(@PolyRead SortedMap<K, V> this);
   public abstract @PolyRead Collection<V> values(@PolyRead SortedMap<K, V> this);
-  public abstract @PolyRead Set<@PolyRead Map.Entry<K, V>> entrySet(@PolyRead SortedMap<K, V> this);
+  public abstract @PolyRead Set<Map. @PolyRead Entry<K, V>> entrySet(@PolyRead SortedMap<K, V> this);
 }

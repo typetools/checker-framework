@@ -19,6 +19,6 @@ public class HashMap<K, V> extends @I AbstractMap<K, V> implements @I Map<K, V>,
   public boolean containsValue(@ReadOnly HashMap<K, V> this, @ReadOnly Object a1) { throw new RuntimeException("skeleton method"); }
   public @I Set<K> keySet(@ReadOnly HashMap<K, V> this) { throw new RuntimeException("skeleton method"); }
   public @I Collection<V> values(@ReadOnly HashMap<K, V> this) { throw new RuntimeException("skeleton method"); }
-  public @I Set<@I Map.Entry<K, V>> entrySet(@ReadOnly HashMap<K, V> this) { throw new RuntimeException("skeleton method"); }
+  public @I Set<Map. @I Entry<K, V>> entrySet(@ReadOnly HashMap<K, V> this) { throw new RuntimeException("skeleton method"); }
   public @I("N") Object clone() { throw new RuntimeException("skeleton method"); }
 }

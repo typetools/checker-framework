@@ -42,7 +42,7 @@ public abstract class AbstractMap<K, V> implements @I Map<K, V> {
   public void clear(@Mutable AbstractMap<K, V> this) { throw new RuntimeException("skeleton method"); }
   public @I Set<K> keySet(@ReadOnly AbstractMap<K, V> this) { throw new RuntimeException("skeleton method"); }
   public @I Collection<V> values(@ReadOnly AbstractMap<K, V> this) { throw new RuntimeException("skeleton method"); }
-  public abstract @I Set<@I Map.Entry<K, V>> entrySet(@ReadOnly AbstractMap<K, V> this);
+  public abstract @I Set<Map. @I Entry<K, V>> entrySet(@ReadOnly AbstractMap<K, V> this);
   public boolean equals(@ReadOnly AbstractMap<K, V> this, @ReadOnly Object a1) { throw new RuntimeException("skeleton method"); }
   public int hashCode(@ReadOnly AbstractMap<K, V> this) { throw new RuntimeException("skeleton method"); }
   public String toString(@ReadOnly AbstractMap<K, V> this) { throw new RuntimeException("skeleton method"); }
