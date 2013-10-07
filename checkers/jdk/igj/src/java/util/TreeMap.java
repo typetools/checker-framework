@@ -35,7 +35,7 @@ public class TreeMap<K, V> extends @I AbstractMap<K, V> implements @I NavigableM
   public @I NavigableSet<K> navigableKeySet(@ReadOnly TreeMap<K, V> this) { throw new RuntimeException("skeleton method"); }
   public @I NavigableSet<K> descendingKeySet(@ReadOnly TreeMap<K, V> this) { throw new RuntimeException("skeleton method"); }
   public @I Collection<V> values(@ReadOnly TreeMap<K, V> this) { throw new RuntimeException("skeleton method"); }
-  public @I Set<@I Map.Entry<K, V>> entrySet(@ReadOnly TreeMap<K, V> this) { throw new RuntimeException("skeleton method"); }
+  public @I Set<Map. @I Entry<K, V>> entrySet(@ReadOnly TreeMap<K, V> this) { throw new RuntimeException("skeleton method"); }
   public @I NavigableMap<K, V> descendingMap(@ReadOnly TreeMap<K, V> this) { throw new RuntimeException("skeleton method"); }
   public @I NavigableMap<K, V> subMap(@ReadOnly TreeMap<K, V> this, K a1, boolean a2, K a3, boolean a4) { throw new RuntimeException("skeleton method"); }
   public @I NavigableMap<K, V> headMap(@ReadOnly TreeMap<K, V> this, K a1, boolean a2) { throw new RuntimeException("skeleton method"); }

@@ -13,7 +13,7 @@ public interface Map<K,V> {
     void clear();
     @PolyRead Set<K> keySet(@PolyRead Map<K,V> this);
     @PolyRead Collection<V> values(@PolyRead Map<K,V> this);
-    @PolyRead Set<@PolyRead Map.Entry<K, V>> entrySet(@PolyRead Map<K,V> this);
+    @PolyRead Set<Map. @PolyRead Entry<K, V>> entrySet(@PolyRead Map<K,V> this);
     interface Entry<K,V> {
         K getKey(@ReadOnly Entry<K,V> this);
         V getValue(@ReadOnly Entry<K,V> this);
