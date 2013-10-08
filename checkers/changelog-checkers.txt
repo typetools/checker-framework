@@ -8,6 +8,12 @@ Reimplemented the dataflow analysis that performs flow-sensitive type
   refinement.  This fixes many bugs, improves precision, and adds features.
   Many more Java expressions can be written as annotation arguments.
 
+Initialization Checker:
+  New abstract checker for initialization properties of a particular
+  type-system.  Needs to be combined with another type-system whose proper
+  initialization should be checked.  Based on Freedom Before Commitment.
+  This is the new default initialzation checker for the Nullness Checker.
+
 Renamed method annotations used by the Nullness Checker:
   @AssertNonNullAfter => @EnsuresNonNull
   @NonNullOnEntry => @RequiresNonNull
@@ -23,6 +29,14 @@ Changed type annotations used by the Initialization Checker:
   new annotation @UnderInitialization
 The old Initialization Checker (that uses @Raw and @NonRaw) can be invoked
   by invoking the NullnessRawnessChecker rather than the NullnessChecker.
+
+Pre- and postconditions about type qualifiers are available for any type-system
+  through @RequiresQualifier, @EnsuresQualifier and @EnsuresQualifierIf.  The
+  contract annotations for the NullnessChecker (e.g. @EnsuresNonNull) are now
+  only a special case of these general purpose annotations.
+  The meta-annotations @PreconditionAnnotation, @PostconditionAnnotation and
+  @ConditionalPostconditionAnnotation can be used to create more special-case
+  annotations for other type-systems.
 
 Renamed assertion comment string used by all checkers:
   @SuppressWarnings => @AssumeAssertion
