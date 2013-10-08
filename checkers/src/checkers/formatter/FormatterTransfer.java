@@ -33,16 +33,16 @@ public class FormatterTransfer extends
     public TransferResult<CFValue, CFStore> visitMethodInvocation(
             MethodInvocationNode node, TransferInput<CFValue, CFStore> in) {
         FormatterAnnotatedTypeFactory atypeFactory = (FormatterAnnotatedTypeFactory) analysis
-                .getFactory();
+                .getTypeFactory();
         TransferResult<CFValue, CFStore> result = super.visitMethodInvocation(node, in);
-        FormatterTreeUtil tu = checker.treeUtil;
+        FormatterTreeUtil tu = atypeFactory.treeUtil;
 
         if (tu.isAsFormatCall(node, atypeFactory)) {
             Result<ConversionCategory[]> cats = tu.asFormatCallCategories(node);
             if (cats.value() == null) {
                 tu.failure(cats, "format.asformat.indirect.arguments");
             } else {
-                AnnotationMirror anno = checker.treeUtil.categoriesToFormatAnnotation(cats.value());
+                AnnotationMirror anno = atypeFactory.treeUtil.categoriesToFormatAnnotation(cats.value());
                 CFValue newResultValue = analysis
                         .createSingleAnnotationValue(anno,
                                 result.getResultValue().getType()

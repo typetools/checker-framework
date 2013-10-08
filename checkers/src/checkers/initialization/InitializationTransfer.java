@@ -66,11 +66,13 @@ import com.sun.tools.javac.code.Symbol;
 public class InitializationTransfer<V extends CFAbstractValue<V>, T extends InitializationTransfer<V, T, S>, S extends InitializationStore<V, S>>
         extends CFAbstractTransfer<V, S, T> {
 
-    protected final InitializationChecker<?> checker;
+    //protected final InitializationChecker checker;
+    protected final InitializationAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory;
 
     public InitializationTransfer(CFAbstractAnalysis<V, S, T> analysis) {
         super(analysis);
-        this.checker = (InitializationChecker<?>) analysis.getFactory().getChecker();
+        this.atypeFactory = (InitializationAnnotatedTypeFactory<?, ?, ?, ?>) analysis.getTypeFactory();
+        // this.checker = (InitializationChecker) analysis.getTypeFactory().getChecker();
     }
 
     @Override
@@ -78,9 +80,9 @@ public class InitializationTransfer<V extends CFAbstractValue<V>, T extends Init
         if (super.isNotFullyInitializedReceiver(methodTree)) {
             return true;
         }
-        final AnnotatedDeclaredType receiverType = analysis.getFactory()
+        final AnnotatedDeclaredType receiverType = analysis.getTypeFactory()
                 .getAnnotatedType(methodTree).getReceiverType();
-        return checker.isUnclassified(receiverType) || checker.isFree(receiverType);
+        return atypeFactory.isUnclassified(receiverType) || atypeFactory.isFree(receiverType);
     }
 
     /**
@@ -101,7 +103,7 @@ public class InitializationTransfer<V extends CFAbstractValue<V>, T extends Init
         // invariant fields are guaranteed to be initialized.
         if (isConstructor && receiver instanceof ThisLiteralNode
                 && methodString.equals("this")) {
-            ClassTree clazz = TreeUtils.enclosingClass(analysis.getFactory()
+            ClassTree clazz = TreeUtils.enclosingClass(analysis.getTypeFactory()
                     .getPath(tree));
             TypeElement clazzElem = TreeUtils.elementFromDeclaration(clazz);
             markInvariantFieldsAsInitialized(result, clazzElem);
@@ -111,7 +113,7 @@ public class InitializationTransfer<V extends CFAbstractValue<V>, T extends Init
         // invariant fields of any super class are guaranteed to be initialized.
         if (isConstructor && receiver instanceof ThisLiteralNode
                 && methodString.equals("super")) {
-            ClassTree clazz = TreeUtils.enclosingClass(analysis.getFactory()
+            ClassTree clazz = TreeUtils.enclosingClass(analysis.getTypeFactory()
                     .getPath(tree));
             TypeElement clazzElem = TreeUtils.elementFromDeclaration(clazz);
             TypeMirror superClass = clazzElem.getSuperclass();
@@ -143,9 +145,8 @@ public class InitializationTransfer<V extends CFAbstractValue<V>, T extends Init
                 // This was raised by Issue 244.
                 continue;
             }
-            AnnotatedTypeMirror fieldAnno = analysis.getFactory()
-                    .getAnnotatedType(field);
-            if (fieldAnno.hasAnnotation(checker.getFieldInvariantAnnotation())) {
+            AnnotatedTypeMirror fieldAnno = atypeFactory.getAnnotatedType(field);
+            if (fieldAnno.hasAnnotation(atypeFactory.getFieldInvariantAnnotation())) {
                 result.add(field);
             }
         }
@@ -156,7 +157,7 @@ public class InitializationTransfer<V extends CFAbstractValue<V>, T extends Init
             TransferInput<V, S> in) {
         TransferResult<V, S> result = super.visitAssignment(n, in);
         assert result instanceof RegularTransferResult;
-        Receiver expr = FlowExpressions.internalReprOf(analysis.getFactory(),
+        Receiver expr = FlowExpressions.internalReprOf(analysis.getTypeFactory(),
                 n.getTarget());
 
         // If this is an assignment to a field of 'this', then mark the field as
@@ -183,11 +184,11 @@ public class InitializationTransfer<V extends CFAbstractValue<V>, T extends Init
         S store = result.getRegularStore();
         if (store.isFieldInitialized(n.getElement())
                 && n.getReceiver() instanceof ThisLiteralNode) {
-            AnnotatedTypeMirror fieldAnno = analysis.getFactory()
+            AnnotatedTypeMirror fieldAnno = analysis.getTypeFactory()
                     .getAnnotatedType(n.getElement());
             // Only if the field has the 'invariant' annotation.
-            if (fieldAnno.hasAnnotation(checker.getFieldInvariantAnnotation())) {
-                AnnotationMirror inv = checker.getFieldInvariantAnnotation();
+            if (fieldAnno.hasAnnotation(atypeFactory.getFieldInvariantAnnotation())) {
+                AnnotationMirror inv = atypeFactory.getFieldInvariantAnnotation();
                 V oldResultValue = result.getResultValue();
                 V refinedResultValue = analysis.createSingleAnnotationValue(
                         inv, oldResultValue.getType().getUnderlyingType());

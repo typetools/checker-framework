@@ -10,8 +10,6 @@ import javacutils.AnnotationUtils;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 
-import com.sun.source.tree.CompilationUnitTree;
-
 /**
  * Adds {@link Unusable} qualifier to a type if it represents:
  *
@@ -23,13 +21,12 @@ import com.sun.source.tree.CompilationUnitTree;
  * </ol>
  *
  */
-public class LinearAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<LinearChecker> {
+public class LinearAnnotatedTypeFactory extends BasicAnnotatedTypeFactory {
 
     private final AnnotationMirror LINEAR, UNUSABLE;
 
-    public LinearAnnotatedTypeFactory(LinearChecker checker,
-            CompilationUnitTree root) {
-        super(checker, root);
+    public LinearAnnotatedTypeFactory(LinearChecker checker) {
+        super(checker);
 
         LINEAR = AnnotationUtils.fromClass(elements, Linear.class);
         UNUSABLE = AnnotationUtils.fromClass(elements, Unusable.class);

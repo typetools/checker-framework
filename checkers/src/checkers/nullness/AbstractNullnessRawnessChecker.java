@@ -1,8 +1,5 @@
 package checkers.nullness;
 
-import java.util.Collection;
-import java.util.HashSet;
-
 import checkers.nullness.quals.MonotonicNonNull;
 import checkers.nullness.quals.NonNull;
 import checkers.nullness.quals.NonRaw;
@@ -12,6 +9,9 @@ import checkers.nullness.quals.Raw;
 import checkers.quals.PolyAll;
 import checkers.quals.TypeQualifiers;
 import checkers.source.SupportedLintOptions;
+
+import java.util.Collection;
+import java.util.HashSet;
 
 /**
  * A concrete instantiation of {@link AbstractNullnessChecker} using rawness.
