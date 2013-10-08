@@ -10,7 +10,7 @@ interface SwingConstants {
   @SwingHorizontalOrientation
   @SwingVerticalOrientation
   public static final int NOTSET = -1;
-    
+
   //
   // The central position in an area. Used for
   // both compass-direction constants (NORTH, etc.)
@@ -56,7 +56,7 @@ interface SwingConstants {
   //
   @SwingTextOrientation @SwingHorizontalOrientation int LEADING  = 10;
   @SwingTextOrientation @SwingHorizontalOrientation int TRAILING = 11;
-  
+
   @SwingTextOrientation int NEXT = 12;
   @SwingTextOrientation int PREVIOUS = 13;
 }

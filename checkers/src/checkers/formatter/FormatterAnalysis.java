@@ -9,7 +9,6 @@ import javacutils.Pair;
 
 import java.util.List;
 
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.VariableElement;
 
 /**
@@ -19,10 +18,10 @@ import javax.lang.model.element.VariableElement;
  */
 public class FormatterAnalysis extends
         CFAbstractAnalysis<CFValue, CFStore, FormatterTransfer> {
-    public FormatterAnalysis(FormatterAnnotatedTypeFactory factory,
-            ProcessingEnvironment env, FormatterChecker checker,
+    public FormatterAnalysis(FormatterChecker checker,
+            FormatterAnnotatedTypeFactory factory,
             List<Pair<VariableElement, CFValue>> fieldValues) {
-        super(factory, env, checker, fieldValues);
+        super(checker, factory, fieldValues);
     }
 
     @Override

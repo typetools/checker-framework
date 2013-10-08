@@ -1,7 +1,9 @@
 package checkers.linear;
 
 import checkers.basetype.BaseTypeChecker;
-import checkers.linear.quals.*;
+import checkers.linear.quals.Linear;
+import checkers.linear.quals.Normal;
+import checkers.linear.quals.Unusable;
 import checkers.quals.TypeQualifiers;
 
 /**
@@ -13,4 +15,4 @@ import checkers.quals.TypeQualifiers;
 
  */
 @TypeQualifiers({Normal.class, Linear.class, Unusable.class})
-public class LinearChecker extends BaseTypeChecker<LinearAnnotatedTypeFactory> { }
+public class LinearChecker extends BaseTypeChecker { }
