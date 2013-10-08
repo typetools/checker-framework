@@ -21,7 +21,7 @@ public abstract interface Map<K, V> {
   public abstract void clear();
   public abstract @NonNull Set<K> keySet();
   public abstract @NonNull Collection<V> values();
-  public abstract @NonNull Set<@NonNull Map.Entry<K, V>> entrySet();
+  public abstract @NonNull Set<Map. @NonNull Entry<K, V>> entrySet();
   public abstract boolean equals(java.lang.Object a1);
   public abstract int hashCode();
 }
