@@ -1,0 +1,57 @@
+# HG changeset patch
+# User notnoop
+# Date 1267159433 18000
+# Node ID 44a5a733bbe6d22dd5b6365308f472bd279a7b35
+# Parent  3453565056d6510bf2172eca9b91e6880f9d3987
+adding random jsr308 files
+
+diff --git a/.classpath b/.classpath
+new file mode 100644
+--- /dev/null
++++ b/.classpath
+@@ -0,0 +1,6 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<classpath>
++	<classpathentry kind="src" path="src"/>
++	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
++	<classpathentry kind="output" path="build"/>
++</classpath>
+diff --git a/.project b/.project
+new file mode 100644
+--- /dev/null
++++ b/.project
+@@ -0,0 +1,17 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<projectDescription>
++	<name>javaparser</name>
++	<comment></comment>
++	<projects>
++	</projects>
++	<buildSpec>
++		<buildCommand>
++			<name>org.eclipse.jdt.core.javabuilder</name>
++			<arguments>
++			</arguments>
++		</buildCommand>
++	</buildSpec>
++	<natures>
++		<nature>org.eclipse.jdt.core.javanature</nature>
++	</natures>
++</projectDescription>
+diff --git a/README b/README
+new file mode 100644
+--- /dev/null
++++ b/README
+@@ -0,0 +1,12 @@
++javaparser
++___________
++
++A JSR-308-conforming Java parser with AST generation and visitor support.
++The project is based on javaparser (http://code.google.com/p/javaparser/).
++
++The project branched off of javaparser 1.0.7, available at:
++  http://code.google.com/p/javaparser/downloads/list
++
++Known Issues:
++- does not parse annotations on new class or new array expressions
++- does not parse annotations in class literals, e.g. @FOO String.class
