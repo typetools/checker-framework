@@ -1,15 +1,14 @@
 package checkers.util.report;
 
-import javax.annotation.processing.SupportedOptions;
-
 import checkers.basetype.BaseTypeChecker;
 import checkers.quals.TypeQualifiers;
 import checkers.quals.Unqualified;
-import checkers.types.BasicAnnotatedTypeFactory;
+
+import javax.annotation.processing.SupportedOptions;
 
 /**
  * The Report Checker for semantic searches.
- * 
+ *
  * See the qualifiers for documentation.
  *
  * Options:
@@ -18,4 +17,4 @@ import checkers.types.BasicAnnotatedTypeFactory;
  */
 @TypeQualifiers({ Unqualified.class })
 @SupportedOptions({"reportTreeKinds", "reportModifiers"})
-public class ReportChecker extends BaseTypeChecker<BasicAnnotatedTypeFactory<ReportChecker>> {}
+public class ReportChecker extends BaseTypeChecker {}
