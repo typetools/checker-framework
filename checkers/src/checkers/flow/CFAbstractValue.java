@@ -4,7 +4,6 @@ package checkers.flow;
 import checkers.nullness.quals.Nullable;
 */
 
-import checkers.basetype.BaseTypeChecker;
 import checkers.types.AbstractBasicAnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -94,8 +93,8 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
      */
     public AnnotatedTypeMirror leastUpperBound(AnnotatedTypeMirror type,
             AnnotatedTypeMirror otherType) {
-        AbstractBasicAnnotatedTypeFactory<? extends BaseTypeChecker<?>, V, ?, ?, ?> factory = analysis
-                .getFactory();
+        AbstractBasicAnnotatedTypeFactory<V, ?, ?, ?> factory = analysis
+                .getTypeFactory();
         ProcessingEnvironment processingEnv = factory.getProcessingEnv();
         QualifierHierarchy qualifierHierarchy = factory.getQualifierHierarchy();
 
@@ -304,8 +303,8 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
             }
         }
         AnnotatedTypeMirror result = AnnotatedTypeMirror.createType(
-                underlyingType, analysis.getFactory());
-        QualifierHierarchy qualHierarchy = analysis.getFactory()
+                underlyingType, analysis.getTypeFactory());
+        QualifierHierarchy qualHierarchy = analysis.getTypeFactory()
                 .getQualifierHierarchy();
         AnnotatedTypeMirror otherType = other.getType();
 
