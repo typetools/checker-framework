@@ -1,9 +1,10 @@
 package tests.util;
 
+import checkers.basetype.BaseTypeChecker;
+import checkers.basetype.BaseTypeVisitor;
 import checkers.source.Result;
 import checkers.source.SourceChecker;
-import checkers.source.SourceVisitor;
-import checkers.types.AnnotatedTypeFactory;
+import checkers.types.AbstractBasicAnnotatedTypeFactory;
 
 import javacutils.TreeUtils;
 
@@ -78,8 +79,8 @@ import com.sun.tools.javac.tree.JCTree;
  */
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 @SupportedOptions( { "checker" } )
-public class FactoryTestChecker extends SourceChecker<AnnotatedTypeFactory> {
-    SourceChecker<?> checker;
+public class FactoryTestChecker extends BaseTypeChecker {
+    SourceChecker checker;
 
     @Override
     public void initChecker() {
@@ -93,7 +94,7 @@ public class FactoryTestChecker extends SourceChecker<AnnotatedTypeFactory> {
                 Constructor<?> constructor = checkerClass.getConstructor();
                 Object o = constructor.newInstance();
                 if (o instanceof SourceChecker) {
-                    checker = (SourceChecker<?>) o;
+                    checker = (SourceChecker) o;
                 }
             }
         } catch (Exception e) {
@@ -101,10 +102,11 @@ public class FactoryTestChecker extends SourceChecker<AnnotatedTypeFactory> {
         }
     }
 
+    /*
     @Override
-    public AnnotatedTypeFactory createFactory(CompilationUnitTree root) {
-        return checker.createFactory(root);
-    }
+    public AnnotatedTypeFactory createTypeFactory() {
+        return checker.createTypeFactory();
+    }*/
 
     @Override
     public Properties getMessages() {
@@ -120,8 +122,8 @@ public class FactoryTestChecker extends SourceChecker<AnnotatedTypeFactory> {
     }
 
     @Override
-    protected SourceVisitor<FactoryTestChecker, AnnotatedTypeFactory, Void, Void> createSourceVisitor(CompilationUnitTree root) {
-        return new ToStringVisitor(this, root);
+    protected BaseTypeVisitor<?> createSourceVisitor() {
+        return new ToStringVisitor(this);
     }
 
     /**
@@ -250,11 +252,11 @@ public class FactoryTestChecker extends SourceChecker<AnnotatedTypeFactory> {
      * A specialized visitor that compares the actual and expected types
      * for the specified trees and report an error if they differ
      */
-    private class ToStringVisitor extends SourceVisitor<FactoryTestChecker, AnnotatedTypeFactory, Void, Void> {
+    private class ToStringVisitor extends BaseTypeVisitor<AbstractBasicAnnotatedTypeFactory<?, ?, ?, ?>> {
         Map<TreeSpec, String> expected;
 
-        public ToStringVisitor(FactoryTestChecker checker, CompilationUnitTree root) {
-            super(checker, root);
+        public ToStringVisitor(FactoryTestChecker checker) {
+            super(checker);
             this.expected = buildExpected(root);
         }
 
