@@ -1,6 +1,6 @@
 package checkers.util;
 
-import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
 
 import javacutils.ErrorReporter;
 import javacutils.InternalUtils;
@@ -113,7 +113,7 @@ public class AnnotationBuilder {
                 return Collections.unmodifiableMap(elementValues);
             }
 
-            @Pure
+            @SideEffectFree
             @Override
             public String toString() {
                 StringBuilder buf = new StringBuilder();
@@ -449,7 +449,7 @@ public class AnnotationBuilder {
                 return value;
             }
 
-            @Pure
+            @SideEffectFree
             @Override
             public String toString() {
                 if (value instanceof String) {

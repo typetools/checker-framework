@@ -16,12 +16,12 @@ public abstract class AbstractNullnessChecker extends InitializationChecker {
     /**
      * Should we be strict about initialization of {@link MonotonicNonNull} variables.
      */
-    public static final String LINT_STRICTMONOTONICNONNULLINIT = "strictMonotonicNonNullInit";
+    public static final String LINT_NOINITFORMONOTONICNONNULL = "noInitForMonotonicNonNull";
 
     /**
-     * Default for {@link #LINT_STRICTMONOTONICNONNULLINIT}.
+     * Default for {@link #LINT_NOINITFORMONOTONICNONNULL}.
      */
-    public static final boolean LINT_DEFAULT_STRICTMONOTONICNONNULLINIT = false;
+    public static final boolean LINT_DEFAULT_NOINITFORMONOTONICNONNULL = false;
 
     /**
      * Warn about redundant comparisons of expressions with {@code null}, if the

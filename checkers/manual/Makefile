@@ -13,15 +13,16 @@ lock-checker.tex \
 fenum-checker.tex \
 tainting-checker.tex \
 regex-checker.tex \
-signature-checker.tex \
 formatter-checker.tex \
 propkey-checker.tex \
+signature-checker.tex \
 units-checker.tex \
 linear-checker.tex \
 igj-checker.tex \
 javari-checker.tex \
-basic-checker.tex \
+subtyping-checker.tex \
 external-checkers.tex \
+typestate-checker.tex \
 generics.tex \
 advanced-features.tex \
 warnings.tex \
@@ -61,12 +62,14 @@ manual.ps: manual.dvi
 html: manual.html
 manual.html: manual.dvi
 	hevea -fix -exec xxdate.exe urlhref.hva manual.tex
-	hevea -exec xxdate.exe urlhref.hva manual.tex
+# This was necessary once, but it makes Hevea 2.06 use wrong section anchors.
+# 	hevea -exec xxdate.exe urlhref.hva manual.tex
 # The following three lines are only necessary when using Hevea before version 2.04
+# With version 2.04 they have no effect but do no harm.
 	\mv -f manual.html manual.html-with-htoc
 	./hevea-retarget-crossrefs < manual.html-with-htoc > manual.html
 	\rm -f manual.html-with-htoc
-	perl -pi -e 's/\/&#XA0;/\/~/' manual.html
+# The below is not necessary since Hevea mkes good tables of contents itself.
 #	perl -pi -e 's/(<!--TOC section Introduction-->)/$$1\n\n<p>Contents:<\/p>\n<!-- start toc.  do not edit; run html-update-toc instead -->\n<!-- end toc -->\n\n<br>\n/' manual.html
 #	html-update-toc manual.html
 
@@ -76,7 +79,7 @@ bib:
 	hg clone https://code.google.com/p/plume-bib/ bib
 .PHONY: bib-update
 bib-update: bib
-# To skip running the hg command, invoke make like this:  make NOHG=t ...
+# To skip running the hg command, invoke make like this:  make NOHG=1 ...
 ifndef NOHG
 	cd bib && hg pull -u && make
 endif

@@ -10,22 +10,22 @@ import org.junit.runners.Parameterized.Parameters;
 import tests.util.Encrypted;
 
 /**
- * Test suite for the Basic Checker, using a simple {@link Encrypted}
+ * Test suite for the Subtyping Checker, using a simple {@link Encrypted}
  * annotation.
  */
-public class BasicEncryptedTest extends ParameterizedCheckerTest {
+public class SubtypingEncryptedTest extends ParameterizedCheckerTest {
 
-    public BasicEncryptedTest(File testFile) {
+    public SubtypingEncryptedTest(File testFile) {
         super(testFile,
                 checkers.subtyping.SubtypingChecker.class,
-                "basic",
+                "subtyping",
                 "-Anomsgtext",
                 "-Aquals=tests.util.Encrypted,tests.util.PolyEncrypted,checkers.quals.Unqualified");
     }
 
     @Parameters
     public static Collection<Object[]> data() {
-        return testFiles("basic", "all-systems");
+        return testFiles("subtyping", "all-systems");
     }
 
 }

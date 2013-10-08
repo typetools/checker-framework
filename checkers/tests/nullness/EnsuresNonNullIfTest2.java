@@ -6,7 +6,6 @@ import checkers.initialization.quals.*;
 import dataflow.quals.*;
 
 // Test case for a mysterious error.
-// @skip-test
 abstract class EnsuresNonNullIfTest2a {
     @EnsuresNonNullIf(result=true, expression="xxx")
     abstract boolean isFoo();

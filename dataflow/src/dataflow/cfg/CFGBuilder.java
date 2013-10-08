@@ -2400,7 +2400,7 @@ public class CFGBuilder {
         protected VariableTree ea = null;
 
         /**
-         * Get the {@link VariableTree} that indicates whether assertions are
+         * Get a synthetic {@link VariableTree} that indicates whether assertions are
          * enabled or not.
          */
         protected VariableTree getAssertionsEnabledVariable() {
@@ -2408,8 +2408,13 @@ public class CFGBuilder {
                 String name = uniqueName("assertionsEnabled");
                 MethodTree enclosingMethod = TreeUtils
                         .enclosingMethod(getCurrentPath());
-                Element owner = TreeUtils
-                        .elementFromDeclaration(enclosingMethod);
+                Element owner;
+                if (enclosingMethod != null) {
+                    owner = TreeUtils.elementFromDeclaration(enclosingMethod);
+                } else {
+                    ClassTree enclosingClass = TreeUtils.enclosingClass(getCurrentPath());
+                    owner = TreeUtils.elementFromDeclaration(enclosingClass);
+                }
                 ExpressionTree initializer = null;
                 ea = treeBuilder.buildVariableDecl(
                         types.getPrimitiveType(TypeKind.BOOLEAN), name, owner,
@@ -2789,7 +2794,14 @@ public class CFGBuilder {
 
         @Override
         public Node visitBinary(BinaryTree tree, Void p) {
+            // Note that for binary operations it is important to perform any required
+            // promotion on the left operand before generating any Nodes for the right
+            // operand, because labels must be inserted AFTER ALL preceding Nodes and
+            // BEFORE ALL following Nodes.
             Node r = null;
+            Tree leftTree = tree.getLeftOperand();
+            Tree rightTree = tree.getRightOperand();
+
             Tree.Kind kind = tree.getKind();
             switch (kind) {
             case DIVIDE:
@@ -2797,16 +2809,13 @@ public class CFGBuilder {
             case REMAINDER: {
                 // see JLS 15.17
 
-                Node left = scan(tree.getLeftOperand(), p);
-                Node right = scan(tree.getRightOperand(), p);
-
                 TypeMirror exprType = InternalUtils.typeOf(tree);
-                TypeMirror leftType = InternalUtils.typeOf(tree.getLeftOperand());
-                TypeMirror rightType = InternalUtils.typeOf(tree.getRightOperand());
+                TypeMirror leftType = InternalUtils.typeOf(leftTree);
+                TypeMirror rightType = InternalUtils.typeOf(rightTree);
                 TypeMirror promotedType = binaryPromotedType(leftType, rightType);
 
-                left = binaryNumericPromotion(left, promotedType);
-                right = binaryNumericPromotion(right, promotedType);
+                Node left = binaryNumericPromotion(scan(leftTree, p), promotedType);
+                Node right = binaryNumericPromotion(scan(rightTree, p), promotedType);
 
                 if (kind == Tree.Kind.MULTIPLY) {
                     r = new NumericalMultiplicationNode(tree, left, right);
@@ -2831,22 +2840,19 @@ public class CFGBuilder {
             case PLUS: {
                 // see JLS 15.18
 
-                Node left = scan(tree.getLeftOperand(), p);
-                Node right = scan(tree.getRightOperand(), p);
-
                 // TypeMirror exprType = InternalUtils.typeOf(tree);
-                TypeMirror leftType = InternalUtils.typeOf(tree.getLeftOperand());
-                TypeMirror rightType = InternalUtils.typeOf(tree.getRightOperand());
+                TypeMirror leftType = InternalUtils.typeOf(leftTree);
+                TypeMirror rightType = InternalUtils.typeOf(rightTree);
 
                 if (TypesUtils.isString(leftType) || TypesUtils.isString(rightType)) {
                     assert (kind == Tree.Kind.PLUS);
-                    left = stringConversion(left);
-                    right = stringConversion(right);
+                    Node left = stringConversion(scan(leftTree, p));
+                    Node right = stringConversion(scan(rightTree, p));
                     r = new StringConcatenateNode(tree, left, right);
                 } else {
                     TypeMirror promotedType = binaryPromotedType(leftType, rightType);
-                    left = binaryNumericPromotion(left, promotedType);
-                    right = binaryNumericPromotion(right, promotedType);
+                    Node left = binaryNumericPromotion(scan(leftTree, p), promotedType);
+                    Node right = binaryNumericPromotion(scan(rightTree, p), promotedType);
 
                     // TODO: Decide whether to deal with floating-point value
                     // set conversion.
@@ -2865,11 +2871,8 @@ public class CFGBuilder {
             case UNSIGNED_RIGHT_SHIFT: {
                 // see JLS 15.19
 
-                Node left = scan(tree.getLeftOperand(), p);
-                Node right = scan(tree.getRightOperand(), p);
-
-                left = unaryNumericPromotion(left);
-                right = unaryNumericPromotion(right);
+                Node left = unaryNumericPromotion(scan(leftTree, p));
+                Node right = unaryNumericPromotion(scan(rightTree, p));
 
                 if (kind == Tree.Kind.LEFT_SHIFT) {
                     r = new LeftShiftNode(tree, left, right);
@@ -2887,22 +2890,19 @@ public class CFGBuilder {
             case LESS_THAN:
             case LESS_THAN_EQUAL: {
                 // see JLS 15.20.1
-                Node left = scan(tree.getLeftOperand(), p);
-                Node right = scan(tree.getRightOperand(), p);
-
-                TypeMirror leftType = left.getType();
+                TypeMirror leftType = InternalUtils.typeOf(leftTree);
                 if (TypesUtils.isBoxedPrimitive(leftType)) {
                     leftType = types.unboxedType(leftType);
                 }
 
-                TypeMirror rightType = right.getType();
+                TypeMirror rightType = InternalUtils.typeOf(rightTree);
                 if (TypesUtils.isBoxedPrimitive(rightType)) {
                     rightType = types.unboxedType(rightType);
                 }
 
                 TypeMirror promotedType = binaryPromotedType(leftType, rightType);
-                left = binaryNumericPromotion(left, promotedType);
-                right = binaryNumericPromotion(right, promotedType);
+                Node left = binaryNumericPromotion(scan(leftTree, p), promotedType);
+                Node right = binaryNumericPromotion(scan(rightTree, p), promotedType);
 
                 Node node;
                 if (kind == Tree.Kind.GREATER_THAN) {
@@ -2924,11 +2924,8 @@ public class CFGBuilder {
             case EQUAL_TO:
             case NOT_EQUAL_TO: {
                 // see JLS 15.21
-                Node left = scan(tree.getLeftOperand(), p);
-                Node right = scan(tree.getRightOperand(), p);
-
-                TypeMirror leftType = left.getType();
-                TypeMirror rightType = right.getType();
+                TypeMirror leftType = InternalUtils.typeOf(leftTree);
+                TypeMirror rightType = InternalUtils.typeOf(rightTree);
 
                 boolean isLeftNumeric = TypesUtils.isNumeric(leftType);
                 boolean isLeftBoxed = TypesUtils.isBoxedPrimitive(leftType);
@@ -2944,6 +2941,9 @@ public class CFGBuilder {
                 boolean isRightBoxedBoolean = isRightBoxed
                         && TypesUtils.isBooleanType(rightType);
 
+                Node left;
+                Node right;
+
                 if (isLeftNumeric && (isRightNumeric || isRightBoxedNumeric)
                         || isLeftBoxedNumeric && isRightNumeric) {
                     TypeMirror leftUnboxedType = isLeftBoxedNumeric ? types
@@ -2952,12 +2952,17 @@ public class CFGBuilder {
                             .unboxedType(rightType) : rightType;
                     TypeMirror promotedType =
                         binaryPromotedType(leftUnboxedType, rightUnboxedType);
-                    left = binaryNumericPromotion(left, promotedType);
-                    right = binaryNumericPromotion(right, promotedType);
+                    left = binaryNumericPromotion(scan(leftTree, p), promotedType);
+                    right = binaryNumericPromotion(scan(rightTree, p), promotedType);
                 } else if (isLeftBoxedBoolean && !isRightBoxedBoolean) {
-                    left = unbox(left);
+                    left = unbox(scan(leftTree, p));
+                    right = scan(rightTree, p);
                 } else if (isRightBoxedBoolean && !isLeftBoxedBoolean) {
-                    right = unbox(right);
+                    left = scan(leftTree, p);
+                    right = unbox(scan(rightTree, p));
+                } else {
+                    left = scan(leftTree, p);
+                    right = scan(rightTree, p);
                 }
 
                 Node node;
@@ -2976,21 +2981,24 @@ public class CFGBuilder {
             case OR:
             case XOR: {
                 // see JLS 15.22
-                Node left = scan(tree.getLeftOperand(), p);
-                Node right = scan(tree.getRightOperand(), p);
-
-                TypeMirror leftType = InternalUtils.typeOf(tree.getLeftOperand());
-                TypeMirror rightType = InternalUtils.typeOf(tree.getRightOperand());
+                TypeMirror leftType = InternalUtils.typeOf(leftTree);
+                TypeMirror rightType = InternalUtils.typeOf(rightTree);
                 boolean isBooleanOp = TypesUtils.isBooleanType(leftType) &&
                     TypesUtils.isBooleanType(rightType);
 
+                Node left;
+                Node right;
+
                 if (isBooleanOp) {
-                    left = unbox(left);
-                    right = unbox(right);
+                    left = unbox(scan(leftTree, p));
+                    right = unbox(scan(rightTree, p));
                 } else if (isNumericOrBoxed(leftType) && isNumericOrBoxed(rightType)) {
                     TypeMirror promotedType = binaryPromotedType(leftType, rightType);
-                    left = binaryNumericPromotion(left, promotedType);
-                    right = binaryNumericPromotion(right, promotedType);
+                    left = binaryNumericPromotion(scan(leftTree, p), promotedType);
+                    right = binaryNumericPromotion(scan(rightTree, p), promotedType);
+                } else {
+                    left = unbox(scan(leftTree, p));
+                    right = unbox(scan(rightTree, p));
                 }
 
                 Node node;
@@ -3017,7 +3025,7 @@ public class CFGBuilder {
                 Label shortCircuitL = new Label();
 
                 // left-hand side
-                Node left = scan(tree.getLeftOperand(), p);
+                Node left = scan(leftTree, p);
 
                 ConditionalJump cjump;
                 if (kind == Tree.Kind.CONDITIONAL_AND) {
@@ -3031,7 +3039,7 @@ public class CFGBuilder {
 
                 // right-hand side
                 addLabelForNextNode(rightStartL);
-                Node right = scan(tree.getRightOperand(), p);
+                Node right = scan(rightTree, p);
 
                 // conditional expression itself
                 addLabelForNextNode(shortCircuitL);
@@ -3124,8 +3132,6 @@ public class CFGBuilder {
                 Void p) {
             // see JLS 15.25
             TypeMirror exprType = InternalUtils.typeOf(tree);
-            // TODO? Variable wasn't used.
-            // boolean isBooleanOp = TypesUtils.isBooleanType(exprType);
 
             Label trueStart = new Label();
             Label falseStart = new Label();
@@ -3890,16 +3896,34 @@ public class CFGBuilder {
 
             // see JLS 14.4
 
-            // local variable definition
-            VariableDeclarationNode decl = new VariableDeclarationNode(tree);
-            extendWithNode(decl);
-
-            // initializer
+            boolean isField = TreeUtils.enclosingOfKind(getCurrentPath(), Kind.BLOCK) == null;
             Node node = null;
-            ExpressionTree initializer = tree.getInitializer();
-            if (initializer != null) {
-                node = translateAssignment(tree, new LocalVariableNode(tree),
+
+            if (isField) {
+                ClassTree enclosingClass = TreeUtils
+                        .enclosingClass(getCurrentPath());
+                TypeElement classElem = TreeUtils
+                        .elementFromDeclaration(enclosingClass);
+                Node receiver = new ImplicitThisLiteralNode(classElem.asType());
+                ExpressionTree initializer = tree.getInitializer();
+                assert initializer != null;
+                node = translateAssignment(
+                        tree,
+                        new FieldAccessNode(TreeUtils
+                                .elementFromDeclaration(tree), receiver),
                         initializer);
+            } else {
+                // local variable definition
+                VariableDeclarationNode decl = new VariableDeclarationNode(tree);
+                extendWithNode(decl);
+
+                // initializer
+
+                ExpressionTree initializer = tree.getInitializer();
+                if (initializer != null) {
+                    node = translateAssignment(tree, new LocalVariableNode(tree),
+                            initializer);
+                }
             }
 
             return node;

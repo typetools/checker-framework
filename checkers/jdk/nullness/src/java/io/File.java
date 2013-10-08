@@ -18,7 +18,7 @@ public class File implements Serializable, Comparable<File> {
   public File(@Nullable File a1, String a2) { throw new RuntimeException("skeleton method"); }
   public File(java.net.URI a1) { throw new RuntimeException("skeleton method"); }
   public String getName() { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public @Nullable String getParent() { throw new RuntimeException("skeleton method"); }
+  @Pure public @Nullable String getParent() { throw new RuntimeException("skeleton method"); }
   @Pure public @Nullable File getParentFile() { throw new RuntimeException("skeleton method"); }
   public String getPath() { throw new RuntimeException("skeleton method"); }
   @Pure public boolean isAbsolute() { throw new RuntimeException("skeleton method"); }

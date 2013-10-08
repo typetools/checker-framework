@@ -22,7 +22,7 @@ public class Hashtable<K, V> extends @I Dictionary<K, V> implements @I Map<K, V>
   public synchronized void clear(@AssignsFields Hashtable<K, V> this) { throw new RuntimeException("skeleton method"); }
   public synchronized String toString(@ReadOnly Hashtable<K, V> this) { throw new RuntimeException("skeleton method"); }
   public @I Set<K> keySet(@ReadOnly Hashtable<K, V> this) { throw new RuntimeException("skeleton method"); }
-  public @I Set<@I Map.Entry<K, V>> entrySet(@ReadOnly Hashtable<K, V> this) { throw new RuntimeException("skeleton method"); }
+  public @I Set<Map. @I Entry<K, V>> entrySet(@ReadOnly Hashtable<K, V> this) { throw new RuntimeException("skeleton method"); }
   public @I Collection<V> values(@ReadOnly Hashtable<K, V> this) { throw new RuntimeException("skeleton method"); }
   public synchronized boolean equals(@ReadOnly Hashtable<K, V> this, @ReadOnly Object a1) { throw new RuntimeException("skeleton method"); }
   public synchronized int hashCode(@ReadOnly Hashtable<K, V> this) { throw new RuntimeException("skeleton method"); }

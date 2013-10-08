@@ -14,7 +14,7 @@ public class Throwable implements java.io.Serializable{
   @SideEffectFree public Throwable(@Nullable String a1) { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public Throwable(@Nullable String a1, @Nullable Throwable a2) { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public Throwable(@Nullable Throwable a1) { throw new RuntimeException("skeleton method"); }
-  @SideEffectFree public @Nullable String getMessage() { throw new RuntimeException("skeleton method"); }
+  @Pure public @Nullable String getMessage() { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public @Nullable String getLocalizedMessage() { throw new RuntimeException("skeleton method"); }
   @Pure public @Nullable Throwable getCause() { throw new RuntimeException("skeleton method"); }
   // The signature of initCause should use @PolyRaw as follows, but implementing

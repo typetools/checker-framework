@@ -4,7 +4,7 @@ import checkers.nullness.quals.*;
 import tests.util.SuperQual;
 import tests.util.SubQual;
 
-// @skip-test
+// @skip-test Dependent types are not currently supported (and may not make sense)
 //:: error: (initialization.fields.uninitialized)
 public class DependentTypes {
 

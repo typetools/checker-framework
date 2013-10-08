@@ -180,8 +180,8 @@ public class NullnessVisitor
             if (atypeFactory.fromElement(elem).hasAnnotation(MONOTONIC_NONNULL)
                     && !checker
                             .getLintOption(
-                                    AbstractNullnessChecker.LINT_STRICTMONOTONICNONNULLINIT,
-                                    AbstractNullnessChecker.LINT_DEFAULT_STRICTMONOTONICNONNULLINIT)) {
+                                    AbstractNullnessChecker.LINT_NOINITFORMONOTONICNONNULL,
+                                    AbstractNullnessChecker.LINT_DEFAULT_NOINITFORMONOTONICNONNULL)) {
                 return;
             }
         }
@@ -346,7 +346,7 @@ public class NullnessVisitor
         final ExpressionTree leftOp = node.getLeftOperand();
         final ExpressionTree rightOp = node.getRightOperand();
 
-        // respect command line option
+        // respect command-line option
         if (!checker.getLintOption(
                 AbstractNullnessChecker.LINT_REDUNDANTNULLCOMPARISON,
                 AbstractNullnessChecker.LINT_DEFAULT_REDUNDANTNULLCOMPARISON)) {

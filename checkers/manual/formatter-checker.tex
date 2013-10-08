@@ -110,10 +110,10 @@ String>, expresses that contract.
 \caption{The Format String Checker type qualifier hierarchy.  The figure
   does not show the subtyping rules among different \code{@Format(...)}
   qualifiers; see Section~\ref{formatter-format-subtyping}.}
-\label{fig:formatter-hierarchy}
+\label{fig-formatter-hierarchy}
 \end{figure}
 
-Figure~\ref{fig:formatter-hierarchy} shows all the type qualifiers.
+Figure~\ref{fig-formatter-hierarchy} shows all the type qualifiers.
 The annotations other than \<@Format> are only used
 internally and cannot be written in your code.
 \code{@\refclass{formatter/quals}{InvalidFormat}} indicates an invalid format
@@ -229,13 +229,13 @@ intersections of previously-mentioned conversion categories:
 For example, \code{GENERAL} $\cap$ \code{CHAR} $=$ \code{CHAR} and 
 \code{UNUSED} $\cap$ \code{GENERAL} $=$ \code{GENERAL}.
 
-Figure~\ref{fig:formatter-cat} summarizes the subset 
+Figure~\ref{fig-formatter-cat} summarizes the subset 
 relationship among all conversion categories.
 
 \begin{figure}[thbp]
     \includeimage{formatter-categories}{4cm}
     \caption{The subset relationship among conversion categories.}
-    \label{fig:formatter-cat}
+    \label{fig-formatter-cat}
 \end{figure}
 
 
@@ -353,9 +353,10 @@ Case \ref{formatter-null-category-error}:
   It is legal to write a format string that permits only null arguments and
   throws an exception for any other argument.  An example is
   \code{String.format("\%1\$d \%1\$f", null)}. 
-  If you should ever run into this problem, simply replace the problematic
-  format specifier with \code{"null"}. In the example above, this would
-  result in \code{String.format("null null")}.
+  The Format String Checker forbids such a format string.
+  If you should ever need such a format string, simply replace the problematic
+  format specifier with \code{"null"}.  For example, you would replace the
+  call above by \code{String.format("null null")}.
 
 Case \ref{formatter-array-warning}:
   Array format arguments.
@@ -559,4 +560,4 @@ the \code{FormatterUtil} class into your own code.
 %  LocalWords:  printf InvalidFormat Formatter FormatBottom specifier's
 %  LocalWords:  ConversionCategory isValidCodePoint BigInteger BigDecimal
 %  LocalWords:  5cm varargs TODO Formattable formatTo FormatterUtil java
-%  LocalWords:  asFormat printFloatAndInt 5cm 4cm
+%  LocalWords:  asFormat printFloatAndInt 5cm 4cm 5cm 4cm

@@ -16,6 +16,7 @@ import checkers.types.visitors.SimpleAnnotatedTypeVisitor;
 import checkers.util.AnnotatedTypes;
 
 import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
 
 import javacutils.AnnotationUtils;
 import javacutils.ElementUtils;
@@ -290,12 +291,13 @@ public abstract class AnnotatedTypeMirror {
 
     /**
      * Returns the "effective" annotations on this type, i.e. the annotations on
-     * the type itself, or on the upper/extends bound of a type variable/wildcard.
+     * the type itself, or on the upper/extends bound of a type variable/wildcard
+     * (recursively, until a class type is reached).
      *
      * @return  a set of the annotations on this
      */
     public Set<AnnotationMirror> getEffectiveAnnotations() {
-        Set<AnnotationMirror> effectiveAnnotations = getAnnotations();
+        Set<AnnotationMirror> effectiveAnnotations = getErased().getAnnotations();
 //        assert atypeFactory.qualHierarchy.getWidth() == effectiveAnnotations
 //                .size() : "Invalid number of effective annotations ("
 //                + effectiveAnnotations + "). Should be "
@@ -686,7 +688,7 @@ public abstract class AnnotatedTypeMirror {
 
     // A helper method to print annotations separated by a space.
     // Note a final space after a list of annotations to separate from the underlying type.
-    @Pure
+    @SideEffectFree
     protected final static String formatAnnotationString(
             Collection<? extends AnnotationMirror> lst,
             boolean printInvisible) {
@@ -772,7 +774,7 @@ public abstract class AnnotatedTypeMirror {
         }
     }
 
-    @Pure
+    @SideEffectFree
     @Override
     public final String toString() {
         // Also see
@@ -788,13 +790,13 @@ public abstract class AnnotatedTypeMirror {
      * @param invisible Whether to always output invisible qualifiers.
      * @return A string representation of the current type containing all qualifiers.
      */
-    @Pure
+    @SideEffectFree
     public String toString(boolean invisible) {
         return formatAnnotationString(getAnnotations(), invisible)
                 + this.actualType;
     }
 
-    @Pure
+    @SideEffectFree
     public String toStringDebug() {
         return toString(true) + " " + getClass().getSimpleName(); // + "#" + uid;
     }
@@ -890,7 +892,7 @@ public abstract class AnnotatedTypeMirror {
             }
         }
 
-        @Pure
+        @SideEffectFree
         @Override
         public String toString(boolean printInvisible) {
             StringBuilder sb = new StringBuilder();
@@ -1344,7 +1346,7 @@ public abstract class AnnotatedTypeMirror {
             return type;
         }
 
-        @Pure
+        @SideEffectFree
         @Override
         public String toString(boolean printInvisible) {
             StringBuilder sb = new StringBuilder();
@@ -1497,7 +1499,7 @@ public abstract class AnnotatedTypeMirror {
             return sb.toString();
         }
 
-        @Pure
+        @SideEffectFree
         @Override
         public String toString(boolean printInvisible) {
             return toStringAsCanonical(printInvisible);
@@ -1684,19 +1686,6 @@ public abstract class AnnotatedTypeMirror {
             return effbnd;
         }
 
-        @Override
-        public Set<AnnotationMirror> getEffectiveAnnotations() {
-            // Do we want to re-introduce more efficient versions that don't
-            // compute the whole type?
-            Set<AnnotationMirror> effectiveAnnotations = getEffectiveUpperBound().getAnnotations();
-//          assert atypeFactory.qualHierarchy.getWidth() == effectiveAnnotations
-//          .size() : "Invalid number of effective annotations ("
-//          + effectiveAnnotations + "). Should be "
-//          + atypeFactory.qualHierarchy.getWidth() + " but is "
-//          + effectiveAnnotations.size() + ". Type: " + this.toString();
-            return effectiveAnnotations;
-        }
-
         /**
          *  Used to terminate recursion into upper bounds.
          */
@@ -1803,7 +1792,7 @@ public abstract class AnnotatedTypeMirror {
         // Style taken from Type
         boolean isPrintingBound = false;
 
-        @Pure
+        @SideEffectFree
         @Override
         public String toString(boolean printInvisible) {
             StringBuilder sb = new StringBuilder();
@@ -1933,7 +1922,7 @@ public abstract class AnnotatedTypeMirror {
             return getCopy(true);
         }
 
-        @Pure
+        @SideEffectFree
         @Override
         public String toString(boolean printInvisible) {
             if (printInvisible) {
@@ -2134,17 +2123,6 @@ public abstract class AnnotatedTypeMirror {
         }
 
         @Override
-        public Set<AnnotationMirror> getEffectiveAnnotations() {
-            Set<AnnotationMirror> effectiveAnnotations = getEffectiveExtendsBoundAnnotations();
-//          assert atypeFactory.qualHierarchy.getWidth() == effectiveAnnotations
-//          .size() : "Invalid number of effective annotations ("
-//          + effectiveAnnotations + "). Should be "
-//          + atypeFactory.qualHierarchy.getWidth() + " but is "
-//          + effectiveAnnotations.size() + ". Type: " + this.toString();
-            return effectiveAnnotations;
-        }
-
-        @Override
         public <R, P> R accept(AnnotatedTypeVisitor<R, P> v, P p) {
             return v.visitWildcard(this, p);
         }
@@ -2204,7 +2182,7 @@ public abstract class AnnotatedTypeMirror {
 
         boolean isPrintingBound = false;
 
-        @Pure
+        @SideEffectFree
         @Override
         public String toString(boolean printInvisible) {
             StringBuilder sb = new StringBuilder();
@@ -2255,7 +2233,7 @@ public abstract class AnnotatedTypeMirror {
             super(type, atypeFactory);
         }
 
-        @Pure
+        @SideEffectFree
         @Override
         public String toString(boolean printInvisible) {
             StringBuilder sb = new StringBuilder();
@@ -2350,7 +2328,7 @@ public abstract class AnnotatedTypeMirror {
             super(type, atypeFactory);
         }
 
-        @Pure
+        @SideEffectFree
         @Override
         public String toString(boolean printInvisible) {
             StringBuilder sb = new StringBuilder();

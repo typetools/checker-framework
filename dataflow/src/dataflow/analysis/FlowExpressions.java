@@ -82,6 +82,18 @@ public class FlowExpressions {
      */
     public static Receiver internalReprOf(AnnotationProvider provider,
             Node receiverNode) {
+        return internalReprOf(provider, receiverNode, false);
+    }
+
+    /**
+     * We ignore operations such as widening and
+     * narrowing when computing the internal representation.
+     *
+     * @return The internal representation (as {@link Receiver}) of any
+     *         {@link Node}. Might contain {@link Unknown}.
+     */
+    public static Receiver internalReprOf(AnnotationProvider provider,
+            Node receiverNode, boolean allowNonDeterminitic) {
         Receiver receiver = null;
         if (receiverNode instanceof FieldAccessNode) {
             receiver = internalReprOfFieldAccess(provider,
@@ -133,7 +145,7 @@ public class FlowExpressions {
                 return internalReprOf(provider, mn.getArgument(0));
             }
 
-            if (PurityUtils.isDeterministic(provider, invokedMethod)) {
+            if (PurityUtils.isDeterministic(provider, invokedMethod) || allowNonDeterminitic) {
                 List<Receiver> parameters = new ArrayList<>();
                 for (Node p : mn.getArguments()) {
                     parameters.add(internalReprOf(provider, p));
@@ -169,7 +181,11 @@ public class FlowExpressions {
             return type;
         }
 
-        public abstract boolean containsUnknown();
+        public abstract boolean containsOfClass(Class<? extends FlowExpressions.Receiver> clazz);
+
+        public boolean containsUnknown() {
+            return containsOfClass(Unknown.class);
+        }
 
         /**
          * Returns true if and only if the value this expression stands for
@@ -287,8 +303,8 @@ public class FlowExpressions {
         }
 
         @Override
-        public boolean containsUnknown() {
-            return receiver.containsUnknown();
+        public boolean containsOfClass(Class<? extends FlowExpressions.Receiver> clazz) {
+            return getClass().equals(clazz) || receiver.containsOfClass(clazz);
         }
 
         @Override
@@ -318,8 +334,8 @@ public class FlowExpressions {
         }
 
         @Override
-        public boolean containsUnknown() {
-            return false;
+        public boolean containsOfClass(Class<? extends FlowExpressions.Receiver> clazz) {
+            return getClass().equals(clazz);
         }
 
         @Override
@@ -369,8 +385,8 @@ public class FlowExpressions {
         }
 
         @Override
-        public boolean containsUnknown() {
-            return false;
+        public boolean containsOfClass(Class<? extends FlowExpressions.Receiver> clazz) {
+            return getClass().equals(clazz);
         }
 
         @Override
@@ -415,8 +431,8 @@ public class FlowExpressions {
         }
 
         @Override
-        public boolean containsUnknown() {
-            return true;
+        public boolean containsOfClass(Class<? extends FlowExpressions.Receiver> clazz) {
+            return getClass().equals(clazz);
         }
 
         @Override
@@ -463,8 +479,8 @@ public class FlowExpressions {
         }
 
         @Override
-        public boolean containsUnknown() {
-            return false;
+        public boolean containsOfClass(Class<? extends FlowExpressions.Receiver> clazz) {
+            return getClass().equals(clazz);
         }
 
         @Override
@@ -502,8 +518,8 @@ public class FlowExpressions {
         }
 
         @Override
-        public boolean containsUnknown() {
-            return false;
+        public boolean containsOfClass(Class<? extends FlowExpressions.Receiver> clazz) {
+            return getClass().equals(clazz);
         }
 
         @Override
@@ -552,7 +568,11 @@ public class FlowExpressions {
     }
 
     /**
-     * A deterministic method call.
+     * A method call, typically a deterministic one. However, this is not
+     * enforced and non-pure methods are also possible. It is the clients
+     * responsibility to ensure that using non-deterministic methods is done in
+     * a sound way.  The CF allows non-deterministic methods to be used in
+     * postconditions such as EnsuresNonNull.
      */
     public static class PureMethodCall extends Receiver {
 
@@ -569,12 +589,15 @@ public class FlowExpressions {
         }
 
         @Override
-        public boolean containsUnknown() {
-            if (receiver.containsUnknown()) {
+        public boolean containsOfClass(Class<? extends FlowExpressions.Receiver> clazz) {
+            if (getClass().equals(clazz)) {
+                return true;
+            }
+            if (receiver.containsOfClass(clazz)) {
                 return true;
             }
             for (Receiver p : parameters) {
-                if (p.containsUnknown()) {
+                if (p.containsOfClass(clazz)) {
                     return true;
                 }
             }
@@ -697,11 +720,14 @@ public class FlowExpressions {
         }
 
         @Override
-        public boolean containsUnknown() {
-            if (receiver.containsUnknown()) {
+        public boolean containsOfClass(Class<? extends FlowExpressions.Receiver> clazz) {
+            if (getClass().equals(clazz)) {
                 return true;
             }
-            return index.containsUnknown();
+            if (receiver.containsOfClass(clazz)) {
+                return true;
+            }
+            return index.containsOfClass(clazz);
         }
 
         public Receiver getReceiver() {

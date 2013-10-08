@@ -34,7 +34,7 @@ import java.lang.annotation.Target;
  *
  * {@code MonotonicNonNull} gives stronger guarantees than {@link Nullable}.
  * After a check that a {@link Nullable} field holds a non-null value, only
- * accesses until the next non-{@link dataflow.quals.Pure} method is called can be assumed
+ * accesses until the next non-{@link dataflow.quals.SideEffectFree} method is called can be assumed
  * to be non-null.
  * <p>
  *
@@ -48,7 +48,8 @@ import java.lang.annotation.Target;
  *
  * This annotation is associated with the {@link AbstractNullnessChecker}.
  *
- * @see Nullable
+ * @see EnsuresNonNull
+ * @see RequiresNonNull
  * @see MonotonicQualifier
  * @see AbstractNullnessChecker
  * @checker.framework.manual #nullness-checker Nullness Checker

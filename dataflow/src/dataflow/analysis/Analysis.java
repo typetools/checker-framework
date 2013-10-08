@@ -19,6 +19,7 @@ import javacutils.ElementUtils;
 import javacutils.Pair;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -46,7 +47,7 @@ import com.sun.source.tree.VariableTree;
  * @param <A>
  *            The abstract value type to be tracked by the analysis.
  * @param <S>
- *            The store type used in the analsysis.
+ *            The store type used in the analysis.
  * @param <T>
  *            The transfer function type that is used to approximated runtime
  *            behavior.
@@ -151,6 +152,10 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
 
     public void setTransferFunction(T transfer) {
         this.transferFunction = transfer;
+    }
+
+    public T getTransferFunction() {
+        return transferFunction;
     }
 
     public Types getTypes() {
@@ -383,7 +388,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
         elseStores = new IdentityHashMap<>();
         inputs = new IdentityHashMap<>();
         storesAtReturnStatements = new IdentityHashMap<>();
-        worklist = new Worklist();
+        worklist = new Worklist(cfg);
         nodeValues = new IdentityHashMap<>();
         finalLocalValues = new HashMap<>();
         worklist.add(cfg.getEntryBlock());
@@ -490,146 +495,62 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
                 }
             }
         }
+
         if (addBlockToWorklist) {
             addToWorklist(b);
         }
     }
 
     /**
-     * A worklist that keeps track of blocks that still needs to be processed.
-     * The object implements a priority queue where blocks with the smallest
-     * number of incoming edges (from blocks that are also in the queue) are
-     * processed first. If the number of incoming edges is the same, then the
-     * block added to the worklist first is processed first.
+     * A worklist is a priority queue of blocks in which the order is given
+     * by depth-first ordering to place non-loop predecessors ahead of successors.
      */
     protected static class Worklist {
 
-        /**
-         * A wrapper class for a block that tracks the in-edge count as well as
-         * an index (i.e., the creation time) for sorting in the priority queue.
-         */
-        protected static class Item implements Comparable<Item> {
+        /** Map all blocks in the CFG to their depth-first order. */
+        protected IdentityHashMap<Block, Integer> depthFirstOrder;
 
-            public final Block block;
-            public int inEdgeCount = 0;
-            public final int index;
-            /** Static variable holding the index of the next item. */
-            protected static int currentIndex = 0;
-
-            public Item(Block block) {
-                this.block = block;
-                index = (currentIndex++);
-            }
-
-            @Override
-            public int compareTo(Item o) {
-                if (inEdgeCount == o.inEdgeCount) {
-                    return index - o.index;
-                }
-                return inEdgeCount - o.inEdgeCount;
-            }
-
-            @Override
-            public boolean equals(Object obj) {
-                if (!(obj instanceof Item)) {
-                    return false;
-                }
-                return block.equals(((Item) obj).block);
-            }
-
-            @Override
-            public int hashCode() {
-                return block.hashCode();
-            }
-
-            @Override
-            public String toString() {
-                return "" + index;
+        /** Comparator to allow priority queue to order blocks by their depth-first
+            order. */
+        public class DFOComparator implements Comparator<Block> {
+            public int compare(Block b1, Block b2) {
+                return depthFirstOrder.get(b1) - depthFirstOrder.get(b2);
             }
         }
 
         /** The backing priority queue. */
-        protected PriorityQueue<Item> queue = new PriorityQueue<Item>();
+        protected PriorityQueue<Block> queue;
 
-        /** Map for all blocks in the worklist to their item. */
-        protected Map<Block, Item> lookupMap = new IdentityHashMap<>();
+
+        public Worklist(ControlFlowGraph cfg) {
+            depthFirstOrder = new IdentityHashMap<>();
+            int count = 1;
+            for (Block b : cfg.getDepthFirstOrderedBlocks()) {
+                depthFirstOrder.put(b, count++);
+            }
+
+            queue = new PriorityQueue<Block>(11, new DFOComparator());
+        }
 
         public boolean isEmpty() {
             return queue.isEmpty();
         }
 
-        public boolean contains(Block o) {
-            return lookupMap.containsKey(o);
+        public boolean contains(Block block) {
+            return queue.contains(block);
         }
 
         public void add(Block block) {
-            Item item = new Item(block);
-            lookupMap.put(block, item);
-            // Update inEdgeCounts.
-            for (Block succ : successors(block)) {
-                if (lookupMap.containsKey(succ)) {
-                    Item i = lookupMap.get(succ);
-                    // Remove and re-add the object to let the priority queue
-                    // know about the inEdgeCount update.
-                    queue.remove(i);
-                    i.inEdgeCount++;
-                    queue.add(i);
-                }
-            }
-            queue.add(item);
+            queue.add(block);
         }
 
         public Block poll() {
-            Item head = queue.poll();
-            if (head == null) {
-                return null;
-            }
-            Block block = head.block;
-            lookupMap.remove(block);
-            // Update inEdgeCounts.
-            for (Block succ : successors(block)) {
-                if (lookupMap.containsKey(succ)) {
-                    Item item = lookupMap.get(succ);
-                    // Remove and re-add the object to let the priority queue
-                    // know about the inEdgeCount update.
-                    queue.remove(item);
-                    item.inEdgeCount--;
-                    queue.add(item);
-                }
-            }
-            return block;
-        }
-
-        /** Returns the list of all successors of a given {@link Block}. */
-        public static List<Block> successors(Block block) {
-            List<Block> result = new ArrayList<>();
-            if (block instanceof ConditionalBlock) {
-                result.add(((ConditionalBlock) block).getThenSuccessor());
-                result.add(((ConditionalBlock) block).getElseSuccessor());
-            } else if (block instanceof SingleSuccessorBlock) {
-                result.add(((SingleSuccessorBlock) block).getSuccessor());
-            } else if (block instanceof ExceptionBlock) {
-                result.add(((ExceptionBlock) block).getSuccessor());
-                // Exceptional successors may contain duplicates
-                for (Set<Block> exceptionSuccSet : ((ExceptionBlock) block)
-                         .getExceptionalSuccessors().values()) {
-                    for (Block exceptionSucc : exceptionSuccSet) {
-                        if (!result.contains(exceptionSucc)) {
-                            result.add(exceptionSucc);
-                        }
-                    }
-                }
-            }
-            return result;
+            return queue.poll();
         }
 
         @Override
         public String toString() {
-            List<Item> items = new ArrayList<>();
-            for (Item e : queue) {
-                items.add(e);
-            }
-            return "Worklist(" + items + ")";
+            return "Worklist(" + queue + ")";
         }
     }
 
