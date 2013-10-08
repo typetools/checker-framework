@@ -1,5 +1,4 @@
-
-Necessary changes to the manual.  In brackets I (Stefan) wrote the names of people familiar with the particular change, which might be most qualified to make the change.  If no person is listed, than anyone could do the change.
+Necessary changes to the manual.
 
 ------------------------------------------------------
 
@@ -14,9 +13,6 @@ Where would a good place be for this?  At the beginning/end?  Split into multipl
 - Pre-/postconditions from a developer perspective:
   - Explain the meta-annotations @PreconditionAnnotation, @ConditionalPostconditionAnnotation and @PostconditionAnnotation.
 
-- Dataflow analysis
-  - Explain the command line parameter -Adotflowdir (probably find a better name first) [Stefan/Charlie].
-
 - Document -ANullnessChecker_option=value mechanism
 
 ------------------------------------------------------
@@ -26,18 +22,16 @@ Replace it and document how to achieve CLIMB-to-top instead.
 
 ------------------------------------------------------
 
-Explain relationship between XXXChecker and XXXAnnotatedTypeFactory:
-if the Checker is a subtype of BaseTypeChecker, the ATF has to be a
-subtype of AbstractBasicATF, because BaseTypeVisitor assumes that.
-
-We found a better naming scheme than Basic vs. Base; it needs to be documented.
+Decide what to say about @KeyFor strings.  Unfortunately not the same set of expressions is allowed as with pre/postconditions.
 
 ------------------------------------------------------
 
-[Stefan]
+Explain relationship between XXXChecker and XXXAnnotatedTypeFactory:  if
+the Checker is a subtype of BaseTypeChecker, the AnnotatedTypeFactory has
+to be a subtype of AbstractBasicAnnotatedTypeFactory, because
+BaseTypeVisitor assumes that.
 
-Explanations on what flow expressions are supported (i.e. strings in pre/postconditions):
-
+We found a better naming scheme than Basic vs. Base; it needs to be documented.
 
 ------------------------------------------------------
 
