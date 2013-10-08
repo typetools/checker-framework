@@ -85,11 +85,18 @@ import com.sun.tools.javac.util.Log;
  */
 
 @SupportedOptions({
-    // When adding a new standard option, add a brief blurb about
-    // the use case and a pointer to one prominent use of the option.
-    // Update the Checker Framework manual,
-    // introduction.tex contains an overview of all options;
-    // a specific section should contain a detailed discussion.
+    // When adding a new standard option:
+    // 1. Add a brief blurb here about the use case
+    //    and a pointer to one prominent use of the option.
+    // 2. Update the Checker Framework manual:
+    //     * introduction.tex contains an overview of all options, which
+    //       should be in the same order as this source code file.
+    //     * a specific section should contain a detailed discussion.
+    
+
+    ///
+    /// Unsound checking: ignore some errors
+    ///
 
     // Set inclusion/exclusion of type uses or definitions
     // checkers.source.SourceChecker.shouldSkipUses and similar
@@ -98,69 +105,53 @@ import com.sun.tools.javac.util.Log;
     "skipDefs",
     "onlyDefs",
 
+    // A comma-separated list of warnings to suppress
+    // checkers.source.SourceChecker.createSuppressWarnings
+    "suppressWarnings",
+
     // Unsoundly ignore side effects
     "assumeSideEffectFree",
 
-    // Lint options
-    // checkers.source.SourceChecker.getSupportedLintOptions() and similar
-    "lint",
+    // Whether to ignore all subtype tests for type arguments that
+    // were inferred for a raw type
+    // checkers.types.TypeHierarchy.isSubtypeTypeArguments
+    "ignoreRawTypeArguments",
 
-    // Only output error code, useful for testing framework
-    // checkers.source.SourceChecker.message(Kind, Object, String, Object...)
-    "nomsgtext",
+    // The next ones *increase* rather than *decrease* soundness.
+    // They will eventually be replaced by their complements.
 
-    // Output detailed message in simple-to-parse format, useful
-    // for tools parsing our output
-    // checkers.source.SourceChecker.message(Kind, Object, String, Object...)
-    "detailedmsgtext",
+    // TODO: Checking of bodies of @SideEffectFree, @Deterministic, and
+    // @Pure methods is temporarily disabled unless -AenablePurity is
+    // supplied on the command line.
+    // Re-enable it after making the analysis more precise.
+    // checkers.basetype.BaseTypeVisitor.visitMethod(MethodTree, Void)
+    "enablePurity",
 
-    // Output file names before checking
-    // TODO: it looks like support for this was lost!
-    "filenames",
+    // TODO: Temporary option to make array subtyping invariant,
+    // which will be the new default soon.
+    "invariantArrays",
 
-    // Output all subtyping checks
-    // checkers.basetype.BaseTypeVisitor
-    "showchecks",
-
-    // Additional stub files to use
-    // checkers.types.AnnotatedTypeFactory.buildIndexTypes()
-    "stubs",
-    // Ignore the standard jdk.astub file
-    // checkers.types.AnnotatedTypeFactory.buildIndexTypes()
-    "ignorejdkastub",
-
-    // Whether to print warnings about types/members in a stub file
-    // that were not found on the class path
-    // checkers.util.stub.StubParser.warnIfNotFound
-    "stubWarnIfNotFound",
-
-    // Whether to print debugging messages while processing the stub files
-    // checkers.util.stub.StubParser.debugStubParser
-    "stubDebug",
-
-    // Whether to check that the annotated JDK is correctly provided
-    // checkers.basetype.BaseTypeVisitor.checkForAnnotatedJdk()
-    "nocheckjdk",
+    // TODO:  Temporary option to make casts stricter, in particular when
+    // casting to an array or generic type. This will be the new default soon.
+    "checkCastElementType",
 
     // Whether to output errors or warnings only
     // checkers.source.SourceChecker.report
     "warns",
 
-    // A comma-separated list of warnings to suppress
-    // checkers.source.SourceChecker.createSuppressWarnings
-    "suppressWarnings",
 
-    // Whether to output a stack trace for a framework error
-    // checkers.source.SourceChecker.logCheckerError
-    "printErrorStack",
+    ///
+    /// Type-checking modes:  enable/disable functionality
+    ///
 
-    // Whether to print @InvisibleQualifier marked annotations
-    // checkers.types.AnnotatedTypeMirror.toString()
-    "printAllQualifiers",
+    // Lint options
+    // checkers.source.SourceChecker.getSupportedLintOptions() and similar
+    "lint",
 
-    // Directory for .dot files generated from the CFG
-    // checkers.types.AbstractBasicAnnotatedTypeFactory.analyze
-    "flowdotdir",
+    // Whether to suggest methods that could be marked @SideEffectFree,
+    // @Deterministic, or @Pure
+    // checkers.basetype.BaseTypeVisitor.visitMethod(MethodTree, Void)
+    "suggestPureMethods",
 
     // Whether to assume that assertions are enabled or disabled
     // checkers.flow.CFCFGBuilder.CFCFGBuilder
@@ -172,24 +163,76 @@ import com.sun.tools.javac.util.Log;
     // checkers.flow.CFAbstractTransfer.sequentialSemantics
     "concurrentSemantics",
 
-    // TODO: Checking of bodies of @Pure methods is temporarily disabled
-    // unless -AenablePurity is supplied on the command line; re-enable
-    // it after making the analysis more precise.
-    // checkers.basetype.BaseTypeVisitor.visitMethod(MethodTree, Void)
-    "enablePurity",
 
-    // Whether to suggest methods that could be marked @Pure
-    // checkers.basetype.BaseTypeVisitor.visitMethod(MethodTree, Void)
-    "suggestPureMethods",
+    ///
+    /// Stub libraries
+    ///
+
+    // Additional stub files to use
+    // checkers.types.AnnotatedTypeFactory.buildIndexTypes()
+    "stubs",
+    // Whether to print warnings about types/members in a stub file
+    // that were not found on the class path
+    // checkers.util.stub.StubParser.warnIfNotFound
+    "stubWarnIfNotFound",
+
+    ///
+    /// Debugging
+    ///
+
+    /// Amount of detail in messages
+
+    // Whether to print @InvisibleQualifier marked annotations
+    // checkers.types.AnnotatedTypeMirror.toString()
+    "printAllQualifiers",
+
+    // Output detailed message in simple-to-parse format, useful
+    // for tools parsing our output
+    // checkers.source.SourceChecker.message(Kind, Object, String, Object...)
+    "detailedmsgtext",
+
+    // Whether to output a stack trace for a framework error
+    // checkers.source.SourceChecker.logCheckerError
+    "printErrorStack",
+
+    // Only output error code, useful for testing framework
+    // checkers.source.SourceChecker.message(Kind, Object, String, Object...)
+    "nomsgtext",
+
+    /// Stub and JDK libraries
+
+    // Ignore the standard jdk.astub file; primarily for testing or debugging.
+    // checkers.types.AnnotatedTypeFactory.buildIndexTypes()
+    "ignorejdkastub",
+
+    // Whether to check that the annotated JDK is correctly provided
+    // checkers.basetype.BaseTypeVisitor.checkForAnnotatedJdk()
+    "nocheckjdk",
+
+    // Whether to print debugging messages while processing the stub files
+    // checkers.util.stub.StubParser.debugStubParser
+    "stubDebug",
+
+    /// Progress tracing
+
+    // Output file names before checking
+    // TODO: it looks like support for this was lost!
+    "filenames",
+
+    // Output all subtyping checks
+    // checkers.basetype.BaseTypeVisitor
+    "showchecks",
+
+    /// Miscellaneous debugging options
+
+    // Directory for .dot files generated from the CFG
+    // checkers.types.AbstractBasicAnnotatedTypeFactory.analyze
+    "flowdotdir",
 
     // Whether to output resource statistics at JVM shutdown
     // checkers.source.SourceChecker.shutdownHook()
     "resourceStats",
 
-    // Whether to ignore all subtype tests for type arguments that
-    // were inferred for a raw type
-    // checkers.types.TypeHierarchy.isSubtypeTypeArguments
-    "ignoreRawTypeArguments",
 })
 public abstract class SourceChecker
     extends AbstractTypeProcessor implements ErrorHandler {
@@ -570,9 +613,7 @@ public abstract class SourceChecker
         } catch (CheckerError ce) {
             logCheckerError(ce);
         } catch (Throwable t) {
-            logCheckerError(new CheckerError("SourceChecker.init: unexpected Throwable (of class " +
-                    t.getClass().getSimpleName() + ")" +
-                    (t.getMessage() != null ? "; message: " + t.getMessage() : ""), t));
+            logCheckerError(wrapThrowableAsCheckerError("SourceChecker.typeProcessingStart", t, null));
         }
     }
 
@@ -676,14 +717,21 @@ public abstract class SourceChecker
         } catch (CheckerError ce) {
             logCheckerError(ce);
         } catch (Throwable t) {
-            logCheckerError(new CheckerError("SourceChecker.typeProcess: unexpected Throwable (" +
-                    t.getClass().getSimpleName() + ")" +
-                    (t.getMessage() != null ? "; message: " + t.getMessage() : ""), t));
+            logCheckerError(wrapThrowableAsCheckerError("SourceChecker.typeProcess", t, p));
         } finally {
             // Also add possibly deferred diagnostics, which will get published back in
             // AbstractTypeProcessor.
             this.errsOnLastExit = log.nerrors;
         }
+    }
+
+    private CheckerError wrapThrowableAsCheckerError(String where, Throwable t, /*@Nullable*/ TreePath p) {
+        return new CheckerError(
+           where + ": unexpected Throwable (" +
+           t.getClass().getSimpleName() + ")" +
+           ((p == null) ? "" : " while processing " + p.getCompilationUnit().getSourceFile().getName()) +
+           (t.getMessage() == null ? "" : "; message: " + t.getMessage()),
+           t);
     }
 
     /**
@@ -1369,6 +1417,16 @@ public abstract class SourceChecker
      * @see SuppressWarningsKeys
      */
     public Collection<String> getSuppressWarningsKeys() {
+        return getStandardSuppressWarningsKeys();
+    }
+
+    /**
+     * Determine the standard set of suppress warning keys usable for any checker.
+     * 
+     * @see #getSuppressWarningsKeys()
+     * @return Collection of warning keys
+     */
+    protected final Collection<String> getStandardSuppressWarningsKeys() {
         SuppressWarningsKeys annotation =
             this.getClass().getAnnotation(SuppressWarningsKeys.class);
 

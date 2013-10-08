@@ -130,12 +130,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
     // **********************************************************************
 
     /**
-     * Specify 'flow' and 'cast' as supported lint options for all Type checkers.
-     *
-     * WMD: the above comment talks about 'flow', but I don't find a use of it as
-     * a lint option. I added a new key 'flow:inferFromAsserts'.
-     * Maybe 'flow' should be used in BasicAnnotatedTypeFactory with/instead of
-     * FLOW_BY_DEFAULT.
+     * Specify supported lint options for all type-checkers.
      */
     @Override
     public Set<String> getSupportedLintOptions() {
@@ -143,13 +138,6 @@ public abstract class BaseTypeChecker extends SourceChecker {
         lintSet.add("cast");
         lintSet.add("cast:redundant");
         lintSet.add("cast:unsafe");
-        lintSet.add("flow:inferFromAsserts");
-        // Temporary option to make array subtyping invariant,
-        // which will be the new default soon.
-        lintSet.add("arrays:invariant");
-        // Temporary option to make casts stricter, in particular when casting
-        // to an array or generic type. This will be the new default soon.
-        lintSet.add("cast:strict");
 
         return Collections.unmodifiableSet(lintSet);
     }

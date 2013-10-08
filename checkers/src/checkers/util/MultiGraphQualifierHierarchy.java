@@ -12,6 +12,7 @@ import checkers.types.AnnotatedTypeFactory;
 import checkers.types.QualifierHierarchy;
 
 import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
 
 import javacutils.AnnotationUtils;
 import javacutils.ErrorReporter;
@@ -230,7 +231,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
             Set<AnnotationMirror> tops, Set<AnnotationMirror> bottoms,
             Object... args) { }
 
-    @Pure
+    @SideEffectFree
     @Override
     public String toString() {
         // TODO: it would be easier to debug if the graph and map were sorted by the key.
@@ -801,7 +802,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
             return false;
         }
 
-        @Pure
+        @SideEffectFree
         @Override
         public String toString() {
             return "AnnotationPair(" + a1 + ", " + a2 + ")";

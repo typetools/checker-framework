@@ -130,7 +130,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * call, and add information guaranteed by the method.
      *
      * <ol>
-     * <li>If the method is side-effect free (as indicated by
+     * <li>If the method is side-effect-free (as indicated by
      * {@link dataflow.quals.SideEffectFree} or {@link dataflow.quals.Pure}),
      * then no information needs to be removed.
      * <li>Otherwise, all information about field accesses {@code a.f} needs to
@@ -391,7 +391,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      */
     public /*@Nullable*/ V getValue(MethodInvocationNode n) {
         Receiver method = FlowExpressions.internalReprOf(analysis.getTypeFactory(),
-                n);
+                n, true);
         if (method == null) {
             return null;
         }
@@ -572,7 +572,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * either <em>b</em> or <em>j</em> contains a modifiable alias of
      * <em>a[i]</em>.
      * <li value="2">Remove any abstract values for field accesses <em>b.g</em>
-     * where <em>a[i]</em> might alias any expression in the receiver <em>b</em>.
+     * where <em>a[i]</em> might alias any expression in the receiver <em>b</em>
+     * and there is an array expression somewhere in the receiver.
      * <li value="3">Remove any information about pure method calls.
      * </ol>
      *
@@ -607,7 +608,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         for (Entry<FieldAccess, V> e : fieldValues.entrySet()) {
             FlowExpressions.FieldAccess otherFieldAccess = e.getKey();
             V otherVal = e.getValue();
-            if (otherFieldAccess.containsModifiableAliasOf(this, arrayAccess)) {
+            Receiver receiver = otherFieldAccess.getReceiver();
+            if (receiver.containsModifiableAliasOf(this, arrayAccess) && receiver.containsOfClass(ArrayAccess.class)) {
                 // remove information completely
                 continue;
             }

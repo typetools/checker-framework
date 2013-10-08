@@ -243,10 +243,24 @@ public class InitializationVisitor<
 
     @Override
     public Void visitBlock(BlockTree node, Void p) {
-        ClassTree enclosingClass = TreeUtils.enclosingClass(getCurrentPath());
-        // Is this a initializer block?
-        if (enclosingClass.getMembers().contains(node)) {
-            if (node.isStatic()) {
+        // Are we dealing with the last static initializer block? If so,
+        // then check that all static fields have been initialized.
+        if (node.isStatic()) {
+            ClassTree enclosingClass = TreeUtils
+                    .enclosingClass(getCurrentPath());
+            boolean isStaticInitBlock = false;
+            boolean isLastStaticInitBlock = true;
+            for (Tree m : enclosingClass.getMembers()) {
+                if (m == node) {
+                    isStaticInitBlock = true;
+                    continue;
+                }
+                if (isStaticInitBlock && m.getKind() == Kind.BLOCK
+                        && ((BlockTree) m).isStatic()) {
+                    isLastStaticInitBlock = false;
+                }
+            }
+            if (isLastStaticInitBlock && isStaticInitBlock) {
                 boolean isStatic = true;
                 Store store = atypeFactory.getRegularExitStore(node);
                 // Add field values for fields with an initializer.

@@ -106,8 +106,8 @@ The argument \emph{checkername} is in lower case and is derived from the
 way you invoke the checker; for example, if you invoke a checker as
 \code{javac -processor MyNiftyChecker ...}, then you would suppress its
 error messages with \code{@SuppressWarnings("mynifty")}.  (An exception is
-the Basic Checker, for which you use the annotation name; see
-Section~\ref{basic-using}).
+the Subtyping Checker, for which you use the annotation name; see
+Section~\ref{subtyping-using}).
 
 A \code{@\sunjavadoc{java/lang/SuppressWarnings.html}{SuppressWarnings}}
 annotation may be placed on program declarations such as a local
@@ -268,21 +268,6 @@ assertion can never fail.
 % enabled, and it does not guarantee that all of your assertions succeed.)
 
 
-% TODO:
-% There is a new lint option "flow:inferFromAsserts" that can be used
-% to always infer information from assert statements, even without the
-% suppression key.
-% Discuss how this influences the guarantees from the checker.
-% This is a feature of the framework, not only the nullness checker;
-% however, the nullness checker is probably the only one that infers something
-% from conditions.
-% Move the discussion somewhere else, but keep something here?
-% Maybe warnings or advanced-features.
-
-% TODO: Also discuss the whole inference over conditions somewhere.
-
-
-
 \subsection{\code{-AskipUses} and \code{-AonlyUses} command-line options\label{askipuses}}
 
 You can suppress all errors and warnings at all \emph{uses} of a given
@@ -379,6 +364,13 @@ The \code{-Alint} option enables or disables optional checks, analogously to
 javac's \code{-Xlint} option.
 Each of the distributed checkers supports at least the following lint options:
 
+% For the current list of lint options supported by all checkers, see
+% method BaseTypeChecker.getSupportedLintOptions().
+
+% For the per-checker list, search for "@SupportedLintOptions" in the
+% checker implementations.
+
+
 \begin{itemize}
 
 \item
@@ -422,7 +414,9 @@ lint options except redundant casts, you can pass
 \code{-Alint=-all,cast:redundant} on the command line.
 
 Only the last \code{-Alint} option is used; all previous \code{-Alint}
-options are silently ignored.
+options are silently ignored.  In particular, this means that \<-Alint=all
+-Alint=cast:redundant> is \emph{not} equivalent to
+\code{-Alint=-all,cast:redundant}.
 
 
 \subsection{No \code{-processor} command-line option\label{no-processor}}
@@ -594,26 +588,26 @@ whether or not the Type Annotations compiler is being used.
 
 You can specify multiple packages/classes separated by the classpath separator
 (same as the file path separator:  \<;> for Windows, and \<:> for Unix and
-Mac).  For example, to implicitly import the Nullness and Interning
+Mac).  For example, to implicitly import the Nullness, Interning, and dataflow
 qualifiers, set \code{jsr308\_imports} to
-\code{checkers.nullness.quals.*:checkers.interning.quals.*}.
+\code{checkers.nullness.quals.*:checkers.interning.quals.*:dataflow.quals.*}.
 
 Three ways to set an environment variable are:
 \begin{itemize}
 \item
   Set the environment variable in your shell.  For example, in bash, you
-  could do \code{export jsr308\_imports='checkers.nullness.quals.*'}.
+  could do \code{export jsr308\_imports='checkers.nullness.quals.*:dataflow.quals.*'}.
   This takes effect for all subsequent commands in that shell.  To take
   effect for all shells that you run, put the command in your
   \verb|~/.bashrc| file.
 \item
   Set the environment variable for a single command.  For example, in bash
   prefix the \code{javac} command by
-  \code{jsr308\_imports='checkers.nullness.quals.*'}.
+  \code{jsr308\_imports='checkers.nullness.quals.*:dataflow.quals.*'}.
 \item
   Set the environment variable for a single command, via a \code{javac}
   argument.  Use the \code{javac} command-line argument
-  \code{-J-Djsr308\_imports='checkers.nullness.quals.*'}.
+  \code{-J-Djsr308\_imports='checkers.nullness.quals.*:dataflow.quals.*'}.
 \end{itemize}
 
 If you issue the javac command from the command line or in a Makefile, you
@@ -624,7 +618,7 @@ you do not need the extra quoting.
 
 \item
 If it is not possible to set the environment variable (for example, Maven
-bug \ahref{http://jira.codehaus.org/browse/PLXCOMP-190}{PLXCOMP-190}
+bug \ahref{\url{http://jira.codehaus.org/browse/PLXCOMP-190}}{PLXCOMP-190}
 makes it impossible to use the \code{-J-Djsr308\_imports} command-line
 argument), you can instead use a different javac command-line argument:
 \code{-jsr308\_imports ...} or \code{-Djsr308.imports=...} (they have the
@@ -701,4 +695,6 @@ comments.
 % LocalWords:  checkername util myref nulltest html ESC buildfile mynifty Fenum
 % LocalWords:  MyNiftyChecker messagekey basetype uncommenting Anomsgtext '
 % LocalWords:  AskipDefs mypackage jsr308 Djsr308 Makefile PLXCOMP expr '
-%  LocalWords:  TODO
+%  LocalWords:  TODO AsuppressWarnings AssumeAssertion AonlyUses AonlyDefs
+%  LocalWords:  ing warningkey redundantNullComparison ' '
+%  LocalWords:  noannotationsincomments

@@ -15,7 +15,13 @@ because the library is distributed only in binary form
 This chapter is also useful if you do not wish to edit the
 library's source code.
 
-You can make the annotations known to the checkers in two ways.
+Note that this chapter is about annotating libraries, not analyzing them.
+The Checker Framework analyzes all, and only, the source code that is
+passed to it.  The Checker Framework is a plug-in to the javac compiler,
+and it never analyzes code that is not being compiled, though it does look
+up annotations for code that is not being compiled.
+
+You can make the library's annotations known to the checkers in two ways.
 
 \begin{itemize}
 
@@ -288,7 +294,7 @@ resolved.
 \<-AstubDebug> outputs debug messages while parsing stub files.
 
 
-\subsection{Troubleshooting\label{stub-troubleshooting}}
+\subsection{Troubleshooting stub libraries\label{stub-troubleshooting}}
 
 An error is issued if a stub file has a typo or the API method does not
 exist.
@@ -418,6 +424,8 @@ read whether the library's annotations are parsed.
 
 % LocalWords:  plugin utils util dist RuntimeException NonNull TODO AFU enum
 % LocalWords:  sourcepath Nullness javac classpath src quals pathSeparator JDKs
-% LocalWords:  IGJ's jdk Astubs skipUses astub AskipUses toArray IGJ
+% LocalWords:  IGJ's jdk Astubs skipUses astub AskipUses toArray IGJ JDK6
 % LocalWords:  CollectionToArrayHeuristics BaseTypeVisitor Xbootclasspath
-% LocalWords:  Interning's UsesObjectEquals Anocheckjdk
+% LocalWords:  Interning's UsesObjectEquals Anocheckjdk AonlyUses java
+%  LocalWords:  Aignorejdkastub AstubWarnIfNotFound AstubDebug jdk6 jdk7
+%  LocalWords:  enableForgroundNdefPush XDTA debugJSR308

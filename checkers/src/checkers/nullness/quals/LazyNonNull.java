@@ -5,7 +5,7 @@ import java.lang.annotation.*;
 import checkers.nullness.NullnessChecker;
 import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifier;
-import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
 
 /**
  * This annotation is deprecated.  {@link MonotonicNonNull} should be used
@@ -33,7 +33,7 @@ import dataflow.quals.Pure;
  *
  * {@code LazyNonNull} gives stronger guarantees than {@link Nullable}.
  * After a check that a {@link Nullable} field holds a non-null value, only
- * accesses until the next non-{@link Pure} method is called can be assumed
+ * accesses until the next non-{@link SideEffectFree} method is called can be assumed
  * to be non-null.
  * <p>
  *

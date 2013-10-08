@@ -1,7 +1,9 @@
 package dataflow.cfg;
 
+import java.util.Deque;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -109,7 +111,7 @@ public class ControlFlowGraph {
     }
 
     /**
-     * @return The list of all basic block in this control flow graph.
+     * @return The set of all basic block in this control flow graph.
      */
     public Set<Block> getAllBlocks() {
         Set<Block> visited = new HashSet<>();
@@ -153,6 +155,54 @@ public class ControlFlowGraph {
         }
 
         return visited;
+    }
+
+    /**
+     * @return The list of all basic block in this control flow graph, in depth-first
+     *         ordering, which is the reverse of depth-first postorder sequence.
+     */
+    public List<Block> getDepthFirstOrderedBlocks() {
+        Deque<Block> dfsPostorder = new LinkedList<>();
+        addDFSPostorder(entryBlock, new HashSet<Block>(), dfsPostorder);
+        
+        List<Block> depthFirstOrder = new LinkedList<>();
+        for (Iterator<Block> iter = dfsPostorder.descendingIterator(); iter.hasNext(); ) {
+            depthFirstOrder.add(iter.next());
+        }
+        return depthFirstOrder;
+    }
+
+    private void addDFSPostorder(Block cur, Set<Block> visited,
+            Deque<Block> ordered) {
+        if (!visited.contains(cur)) {
+            visited.add(cur);
+
+            Queue<Block> succs = new LinkedList<>();
+            if (cur.getType() == BlockType.CONDITIONAL_BLOCK) {
+                ConditionalBlock ccur = ((ConditionalBlock) cur);
+                succs.add(ccur.getThenSuccessor());
+                succs.add(ccur.getElseSuccessor());
+            } else {
+                assert cur instanceof SingleSuccessorBlock;
+                Block b = ((SingleSuccessorBlock) cur).getSuccessor();
+                if (b != null) {
+                    succs.add(b);
+                }
+            }
+
+            if (cur.getType() == BlockType.EXCEPTION_BLOCK) {
+                ExceptionBlock ecur = (ExceptionBlock) cur;
+                for (Set<Block> exceptionSuccSet : ecur.getExceptionalSuccessors().values()) {
+                    succs.addAll(exceptionSuccSet);
+                }
+            }
+
+            for (Block b : succs) {
+                addDFSPostorder(b, visited, ordered);
+            }
+
+            ordered.add(cur);
+        }
     }
 
     /**

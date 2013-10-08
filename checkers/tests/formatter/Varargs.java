@@ -33,7 +33,7 @@ public class Varargs {
         f.format("%d %s %s", 132, new Object[2]);
         //:: error: (argument.type.incompatible)
         f.format("%d %d", new Object[2], 123);
-        //:: error: (format.argument.null) :: warning: (format.indirect.arguments)
+        //:: error: (format.specifier.null) :: warning: (format.indirect.arguments)
         f.format("%d %<f", new Object[1]);
 
         // too many arguments

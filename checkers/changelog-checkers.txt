@@ -1,3 +1,65 @@
+Version 1.7.0, ?? October 2013
+
+Format String Checker:
+  Ensures that format methods such as System.out.printf are invoked
+  with correct arguments.
+
+Reimplemented the dataflow analysis that performs flow-sensitive type
+  refinement.  This fixes many bugs, improves precision, and adds features.
+  Many more Java expressions can be written as annotation arguments.
+
+Renamed method annotations used by the Nullness Checker:
+  @AssertNonNullAfter => @EnsuresNonNull
+  @NonNullOnEntry => @RequiresNonNull
+  @AssertNonNullIfTrue(...) => @IfMethodReturnsFalseEnsuresNonNull
+  @AssertNonNullIfFalse(...) => @IfMethodReturnsFalseEnsuresNonNull
+  @LazyNonNull => @MonotonicNonNull
+  @AssertParametersNonNull => [no replacement]
+Removed annotations used by the Nullness Checker:
+  @AssertParametersNonNull
+Changed type annotations used by the Initialization Checker:
+  @NonRaw => @Initialized
+  @Raw => @UnknownInitialization
+  new annotation @UnderInitialization
+The old Initialization Checker (that uses @Raw and @NonRaw) can be invoked
+  by invoking the NullnessRawnessChecker rather than the NullnessChecker.
+
+Renamed assertion comment string used by all checkers:
+  @SuppressWarnings => @AssumeAssertion
+
+To use an assert statement to suppress warnings, the assertion message must
+  include the string @AssumeAssertion(warningkey).  Previously, just the
+  warning key sufficed, but the string @SuppressWarnings(warningkey) was
+  recommended.
+
+New command-line options:
+  -AonlyDefs and -AonlyUses complement existing -AskipDefs and -AskipUses
+  -AsuppressWarnings suppress warnings matching the given key
+  -AassumeSideEffectFree Unsoundly assume that every method is side-effect-free
+  -AignoreRawTypeArguments Ignore subtype tests for type arguments that
+    were inferred for a raw type
+  -AenablePurity Check the bodies of methods marked as pure
+  -AinvariantArrays replaces -Alint=arrays:invariant 
+  -AcheckCastElementType replaces -Alint=cast:strict
+  -AsuggestPureMethods Suggest methods that could be marked as pure
+  -AassumeAssertionsAreEnabled, -AassumeAssertionsAreDisabled Whether to
+    assume that assertions are enabled or disabled
+  -AconcurrentSemantics Whether to assume concurrent semantics
+  -Anocheckjdk don't err if no annotated JDK can be found
+  -Aflowdotdir create an image of the control flow graph
+
+Purity (side effect) analysis uses new annotations @SideEffectFree,
+@Deterministic, and @TerminatesExecution; @Pure means both @SideEffectFree
+and @Deterministic.
+
+Manual:
+  New manual section about array types.
+  New FAQ entries:  "Which checker should I start with?", "How can I handle
+    typestate, or phases of my program with different data properties?",
+    "What is the meaning of a type qualifier at a class declaration?"
+  Reorganized FAQ chapter into sections.
+  Many other changes.
+
 ----------------------------------------------------------------------
 
 Version 1.6.7, 28 August 2013

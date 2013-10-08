@@ -24,16 +24,16 @@ type-checker:
 public @interface Encrypted {}
 \end{Verbatim}
 
-This checker is so short because it builds on the Basic Checker
-(Chapter~\ref{basic-checker}).
-See Section~\ref{basic-example} for more details about this particular checker.
+This checker is so short because it builds on the Subtyping Checker
+(Chapter~\ref{subtyping-checker}).
+See Section~\ref{subtyping-example} for more details about this particular checker.
 When you wish to create a new checker, it is often easiest to begin by
-building it declaratively on top of the Basic Checker, and then return to
-this chapter when you need more expressiveness or power than the Basic
+building it declaratively on top of the Subtyping Checker, and then return to
+this chapter when you need more expressiveness or power than the Subtyping
 Checker affords.
 
 You can also create your own checker by customizing a different existing
-checker.  Specific checkers that are designed for extension (besides the Basic
+checker.  Specific checkers that are designed for extension (besides the Subtyping
 Checker) include the Fake Enumeration Checker
 (\chapterpageref{fenum-checker}), the Units Checker
 (\chapterpageref{units-checker}), and the typestate checkers
@@ -76,7 +76,7 @@ Annotation File Utilities to manipulate \code{.java} and \code{.class} files.
 \newlength{\bw}
 \setlength{\bw}{.5in}
 
-%% Strictly speaking, "Basic Checker" should sit on top of Checker
+%% Strictly speaking, "Subtyping Checker" should sit on top of Checker
 %% Framework and below all the specific checkers.  But omit it for simplicity.
 
 % Unfortunately, Hevea inserts a horizontal line between every pair of rows
@@ -84,7 +84,7 @@ Annotation File Utilities to manipulate \code{.java} and \code{.class} files.
 \begin{center}
 \begin{tabular}{|p{\bw}|p{\bw}|p{\bw}|p{\bw}|p{.4\bw}|p{\bw}|p{1.5\bw}|p{1\bw}|}
 \cline{1-4} \cline{6-6}
-\centering Basic \par Checker &
+\centering Subtyping \par Checker &
 \centering Nullness \par Checker &
 \centering Mutation \par Checker &
 \centering Tainting \par Checker &
@@ -98,17 +98,17 @@ Annotation File Utilities to manipulate \code{.java} and \code{.class} files.
 Other \par tools
 \\ \hline
 \multicolumn{6}{|p{6\bw}|}{\centering Checker Framework \par (enables creation of pluggable type-checkers)} &
-\multicolumn{2}{p{3\bw}|}{\centering \ahref{http://types.cs.washington.edu/annotation-file-utilities/}{Annotation File Utilities} \par (\code{.java} $\leftrightarrow$ \code{.class} files)} 
+\multicolumn{2}{p{3\bw}|}{\centering \ahref{\url{http://types.cs.washington.edu/annotation-file-utilities/}}{Annotation File Utilities} \par (\code{.java} $\leftrightarrow$ \code{.class} files)} 
 \\ \hline
 \multicolumn{8}{|p{8.5\bw}|}{\centering
-  \ahref{http://types.cs.washington.edu/jsr308/}{Type Annotations} syntax
+  \ahref{\url{http://types.cs.washington.edu/jsr308/}}{Type Annotations} syntax
   and classfile format (``JSR 308'') \par \centering (no built-in semantics)} \\ \hline
 \end{tabular}
 \end{center}
 
 
 The Base Checker enforces the standard subtyping rules on extended types.
-The Basic Checker is a simple use of the Base Checker that supports
+The Subtyping Checker is a simple use of the Base Checker that supports
 providing type qualifiers on the command line.
 You usually want to build your checker on the Base Checker.
 
@@ -147,7 +147,7 @@ the components of a type system as written using the Checker Framework:
   Subtyping rules related to the type hierarchy, such as that every
   assignment and pseudo-assignment satisfies a subtyping relationship.
   Your checker automatically inherits these subtyping rules from the Base
-  Checker (Chapter~\ref{basic-checker}).
+  Checker (Chapter~\ref{subtyping-checker}).
 \item
   Additional rules that are specific to your particular checker.  For
   example, in the Nullness type system, only references with a
@@ -403,7 +403,7 @@ will not type-check unless \<null> has the bottom type:
 
 You don't necessarily have to define a new bottom qualifier.  But, You can
 use \<checkers.quals.Bottom> if your type system does not already have an
-appropriate bottom qualifiere
+appropriate bottom qualifier.
 
 If your type system has a special bottom type that is used \emph{only} for
 the \code{null} value, then users should never write the bottom qualifier
@@ -411,7 +411,7 @@ explicitly.  To ensure this, write \<@Target(\{\})> on the definition of
 the bottom qualifier.
 
 
-The hierarchy shown in Figure~\ref{fig:igj-hierarchy} lacks
+The hierarchy shown in Figure~\ref{fig-igj-hierarchy} lacks
 a bottom qualifier, because there is no qualifier that is a subtype of both
 \<@Immutable> and \<@Mutable>.
 The actual IGJ hierarchy does contain a (non-user-visible) bottom qualifier,
@@ -478,8 +478,8 @@ There are reasons to not explicitly define the top qualifier, but to reuse
 \<@Unqualified>.
 The ability to omit the top qualifier is a convenience
 when writing a type system, because it reduces the number of qualifiers
-that must be defined; this is especially convenient when using the Basic
-Checker (Section~\ref{basic-checker}).
+that must be defined; this is especially convenient when using the Subtyping
+Checker (Section~\ref{subtyping-checker}).
 % TODO: Examples of the following?
 More importantly, omitting the top qualifier restricts the user in ways
 that the type system designer may have intended.
@@ -601,14 +601,14 @@ The Checker Framework provides automatic type refinement as described
 in Section~\ref{type-refinement}.
 
 Class
-\refclass{types}{BasicAnnotatedTypeFactory}
+\refclass{types}{SubtypingAnnotatedTypeFactory}
 provides a 3 parameter constructor that allows subclasses to disable
 flow inference.
 By default the 2 parameter constructor performs flow inference.
 To disable flow inference, call
 \code{super(checker, root, false);}
 in your subtype of
-\refclass{types}{BasicAnnotatedTypeFactory}.
+\refclass{types}{SubtypingAnnotatedTypeFactory}.
 
 
 \section{Visitor: Type rules\label{extending-visitor}}
@@ -621,7 +621,7 @@ The Checker Framework provides a \textit{base visitor class},
 \refclass{basetype}{BaseTypeVisitor}, that performs type-checking at each node of a
 source file's AST\@.  It uses the visitor design pattern to traverse
 Java syntax trees as provided by Oracle's
-\ahref{http://types.cs.washington.edu/checker-framework/api/javac/tree//index.html}{Tree
+\ahref{\url{http://types.cs.washington.edu/checker-framework/api/javac/tree//index.html}}{Tree
 API},
 and it issues a warning whenever the type system is violated.
 
@@ -737,7 +737,7 @@ checker classes for the Interning Checker and the Nullness Checker:
 \end{Verbatim}
 
 
-\urldef{\getSupportedTypeQualifiersURL}\url{http://types.cs.washington.edu/checker-framework/current/doc/checkers/basetype/BaseTypeChecker.html#getSupportedTypeQualifiers()}
+\urldef{\getSupportedTypeQualifiersURL}{\url}{http://types.cs.washington.edu/checker-framework/current/doc/checkers/basetype/BaseTypeChecker.html#getSupportedTypeQualifiers()}
 
 The checker class must be annotated by
 \code{@\refclass{quals}{TypeQualifiers}}, which lists the annotations
@@ -749,7 +749,7 @@ returned by the
 \ahref{\getSupportedTypeQualifiersURL}{\<BaseTypeChecker\-.getSupportedTypeQualifiers>}
 method).
 
-\urldef{\reportURL}\url{http://types.cs.washington.edu/checker-framework/current/doc/checkers/source/SourceChecker.html#report(checkers.source.Result,%20java.lang.Object)}
+\urldef{\reportURL}{\url}{http://types.cs.washington.edu/checker-framework/current/doc/checkers/source/SourceChecker.html#report(checkers.source.Result,%20java.lang.Object)}
 
 The checker class bridges between the compiler and the rest of the checker.  It
 invokes the type-rule check visitor on every Java source file being
@@ -945,33 +945,70 @@ The Checker Framework provides debugging options that can be helpful when
 writing a checker. These are provided via the standard \code{javac} ``\code{-A}''
 switch, which is used to pass options to an annotation processor.
 
+\subsection{Amount of detail in messages\label{debugging-options-detail}}
+
 \begin{itemize}
-
-\item \code{-Anomsgtext}: use message keys (such as ``\code{type.invalid}'')
-rather than full message text when reporting errors or warnings
-
-\item \code{-Adetailedmsgtext}: print a more detailed error message in addition
-to the full message text when reporting errors or warnings
-
-\item \code{-Ashowchecks}: print debugging information for each
-pseudo-assignment check (as performed by \refclass{basetype}{BaseTypeVisitor}; see Section
-\ref{extending-visitor} above)
-
-\item \code{-Afilenames}: print the name of each file before type-checking it
-
-\item \code{-AprintErrorStack}: print a stack trace together with
-internal Checker Framework error messages
-
 \item \code{-AprintAllQualifiers}: print all type qualifiers, including
 qualifiers like \code{@Unqualified} which are usually not shown.
 (Use the \code{@InvisibleQualifier} meta-annotation on a qualifier to hide it.)
 
-\item \code{-Aignorejdkastub}: ignore the jdk.astub file in the checker
-directory. Files passed through the \code{-Astubs} option are still processed. This is useful when
-compiling the source code that is described by the stub file and experimenting with an
-alternative stub file.
+\item \code{-Adetailedmsgtext}: print a more detailed error message in addition
+to the full message text when reporting errors or warnings.  This is useful
+for tools that wish to parse the Checker Framework output.
+
+\item \code{-AprintErrorStack}: print a stack trace whenever an
+internal Checker Framework error occurs.
+
+\item \code{-Anomsgtext}: use message keys (such as ``\code{type.invalid}'')
+rather than full message text when reporting errors or warnings.  This is
+used by the Checker Framework's own tests, so they do not need to be
+changed if the English message is updated.
 
 \end{itemize}
+
+\subsection{Stub and JDK libraries\label{debugging-options-libraries}}
+
+\begin{itemize}
+
+\item \code{-Aignorejdkastub}:
+  ignore the \<jdk.astub> file in the checker directory. Files passed
+  through the \code{-Astubs} option are still processed. This is useful
+  when experimenting with an alternative stub file.
+
+\item \code{-Anocheckjdk}:
+  don't issue an error if no annotated JDK can be found.
+
+\item \code{-AstubDebug}:
+  Print debugging messages while processing stub files.
+
+\end{itemize}
+
+\subsection{Progress tracing\label{debugging-options-progress}}
+
+\begin{itemize}
+
+\item \code{-Afilenames}: print the name of each file before type-checking it.
+
+\item \code{-Ashowchecks}: print debugging information for each
+pseudo-assignment check (as performed by \refclass{basetype}{BaseTypeVisitor}; see Section
+\ref{extending-visitor}.
+
+\end{itemize}
+
+\subsection{Miscellaneous debugging options\label{debugging-options-misc}}
+
+\begin{itemize}
+
+\item \code{-Aflowdotdir}:
+  Directory for .dot files that visualize the control flow graph.
+
+\item \code{-AresourceStats}:
+  Whether to output resource statistics at JVM shutdown.
+
+\end{itemize}
+
+
+\subsection{Examples\label{debugging-options-examples}}
 
 The following example demonstrates how these options are used:
 
@@ -1240,8 +1277,8 @@ you may find useful later on.
 The Checker Framework uses Oracle's Tree API to access a program's AST\@.
 The Tree API is specific to the Oracle OpenJDK, so the Checker Framework only
 works with the OpenJDK javac, not with Eclipse's compiler ecj or with
-\ahref{http://gcc.gnu.org/java/}{gcj}.  This also limits the tightness of
-the integration of the Checker Framework into other IDEs such as \ahref{http://www.jetbrains.com/idea/}{IntelliJ IDEA}\@.
+\ahref{\url{http://gcc.gnu.org/java/}}{gcj}.  This also limits the tightness of
+the integration of the Checker Framework into other IDEs such as \ahref{\url{http://www.jetbrains.com/idea/}}{IntelliJ IDEA}\@.
 An implementation-neutral API would be preferable.
 In the future, the Checker Framework
 can be migrated to use the Java Model AST of JSR 198 (Extension API for
@@ -1300,4 +1337,4 @@ mailing list archives at
 % LocalWords:  DefaultQualifier bytecode NullType strictfp ClassTree TypesUtils
 % LocalWords:  ForEachTree ElementKind TreeAnnotator TreeUtils ElementUtils ecj
 % LocalWords:  AnnotatedTypes AbstractTypeProcessor gcj hardcoding jsr
-% LocalWords:  typeProcess getSupportedSourceVersion
+% LocalWords:  typeProcess getSupportedSourceVersion fenum classpath

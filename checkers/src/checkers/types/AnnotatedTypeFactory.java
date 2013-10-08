@@ -31,7 +31,7 @@ import checkers.util.stub.StubParser;
 import checkers.util.stub.StubResource;
 import checkers.util.stub.StubUtil;
 
-import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
 
 import javacutils.AnnotationProvider;
 import javacutils.AnnotationUtils;
@@ -261,7 +261,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         */
     }
 
-    @Pure
+    @SideEffectFree
     @Override
     public String toString() {
         return getClass().getSimpleName() + "#" + uid;

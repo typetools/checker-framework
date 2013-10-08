@@ -11,5 +11,5 @@ public interface SortedMap<K, V> extends @I Map<K, V> {
   public abstract K lastKey(@ReadOnly SortedMap<K, V> this);
   public abstract @I Set<K> keySet(@ReadOnly SortedMap<K, V> this);
   public abstract @I Collection<V> values(@ReadOnly SortedMap<K, V> this);
-  public abstract @I Set<@I Map.Entry<K, V>> entrySet(@ReadOnly SortedMap<K, V> this);
+  public abstract @I Set<Map. @I Entry<K, V>> entrySet(@ReadOnly SortedMap<K, V> this);
 }

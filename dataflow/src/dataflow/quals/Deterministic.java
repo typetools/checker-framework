@@ -17,11 +17,10 @@ import java.lang.annotation.Target;
  * call to a <tt>@Deterministic</tt> method, flow-sensitive type refinement
  * can assume that anything learned about the first invocation is true
  * about subsequent invocations (so long as no non-<tt>@</tt>{@link
- * SideEffectFree} method call intervenes).  For example, it can be
- * determined that the following code never suffers a null pointer
+ * SideEffectFree} method call intervenes).  For example,
+ * the following code never suffers a null pointer
  * exception, so the Nullness Checker need not issue a warning:
- * <pre><code>
-      if (x.myDeterministicMethod() != null) {
+ * <pre><code>      if (x.myDeterministicMethod() != null) {
         x.myDeterministicMethod().hashCode();
       }</code></pre>
  * <p>
@@ -70,7 +69,7 @@ import java.lang.annotation.Target;
  * Note that the rules for checking currently imply that every {@code
  * Deterministic} method is also {@link SideEffectFree}. This might change
  * in the future; in general, a deterministic method does not need to be
- * side-effect free.
+ * side-effect-free.
  * <p>
  *
  * These rules are conservative:  any code that passes the checks is
@@ -78,6 +77,13 @@ import java.lang.annotation.Target;
  * warnings, for code that uses one of the forbidden constructs but is
  * deterministic nonetheless.
  * <p>
+ * 
+ * In fact, the rules are so conservative that checking is currently
+ * disabled by default, but can be enabled via the <tt>-AenablePurity</tt>
+ * command-line option.
+ * <p>
+ *
+ * @checker.framework.manual #type-refinement-purity Side effects, determinism, purity, and flow-sensitive analysis
  *
  * @author Stefan Heule
  */

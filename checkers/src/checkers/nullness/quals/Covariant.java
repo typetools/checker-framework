@@ -7,13 +7,13 @@ import java.lang.annotation.*;
  * A marker annotation, written on a class declaration, that signifies that
  * one or more of the class's type parameters can be treated covariantly.
  * For example, if <tt>MyClass</tt> has a single type parameter that is
- * treated covariantly, and if <tt>A</tt> is a subtype of <tt>B</tt>, then
- * <tt>SomeClass&lt;A&gt;</tt> is a subtype of <tt>SomeClass&lt;B&gt;</tt>.
+ * treated covariantly, and if <tt>B</tt> is a subtype of <tt>A</tt>, then
+ * <tt>SomeClass&lt;B&gt;</tt> is a subtype of <tt>SomeClass&lt;B&gt;</tt>.
  * <p>
  *
  * Ordinarily, Java treats type parameters invariantly:
- * <tt>SomeClass&lt;A&gt;</tt> is unrelated to (neither a subtype nor a
- * supertype of) <tt>SomeClass&lt;B&gt;</tt>.
+ * <tt>SomeClass&lt;B&gt;</tt> is unrelated to (neither a subtype nor a
+ * supertype of) <tt>SomeClass&lt;A&gt;</tt>.
  * <p>
  *
  * It is only safe to mark a type parameter as covariant if the type
@@ -25,7 +25,7 @@ import java.lang.annotation.*;
  * The argument to <tt>@Covariant</tt> is the zero-based indices of the 
  * type parameters that should be treated covariantly.
  *
- * @checker.framework.manual #nullness-checker Nullness Checker
+ * @checker.framework.manual #covariant-type-parameters Covariant type parameters
  */
 @Documented
 @Target({ElementType.TYPE})

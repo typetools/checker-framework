@@ -7,20 +7,20 @@ import org.junit.Test;
 import tests.util.Encrypted;
 
 /**
- * Test suite for the Basic Checker, using a simple {@link Encrypted}
+ * Test suite for the Subtyping Checker, using a simple {@link Encrypted}
  * annotation.
  */
-public class BasicSuperSubTest extends CheckerTest {
+public class SubtypingSuperSubTest extends CheckerTest {
 
-    public BasicSuperSubTest() {
+    public SubtypingSuperSubTest() {
         super(checkers.subtyping.SubtypingChecker.class,
-                "basic",
+                "subtyping",
                 "-Anomsgtext",
                 "-Aquals=tests.util.SubQual,tests.util.SuperQual");
     }
 
     @Test public void dummy()  { }
 
-    /** Tests basic functionality. */
+    /** Tests subtyping functionality. */
     // @Test public void testDependentTypes()  { test(); }
 }

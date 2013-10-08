@@ -2,7 +2,7 @@
 \chapter{Fake Enum Checker\label{fenum-checker}}
 
 Java's 
-\ahref{http://docs.oracle.com/javase/specs/jls/se7/html/jls-8.html#jls-8.9}{\code{enum}}
+\ahref{\url{http://docs.oracle.com/javase/specs/jls/se7/html/jls-8.html#jls-8.9}}{\code{enum}}
 keyword lets you define an enumeration type: a finite set of distinct values
 that are related to one another but are disjoint from all other
 types, including other enumerations.
@@ -13,10 +13,10 @@ enumeration, both of which are error-prone:
 \item[the fake enum pattern]  a set of \code{int} or \code{String}
   constants (as often found in older C code).
 
-\item[the \ahref{http://www.oracle.com/technetwork/java/page1-139488.html}{typesafe
+\item[the \ahref{\url{http://www.oracle.com/technetwork/java/page1-139488.html}}{typesafe
 enum pattern}]  a class with private constructor.
 % This requires
-% \ahref{http://www.javaworld.com/javaworld/javatips/jw-javatip122.html}{careful development}.
+% \ahref{\url{http://www.javaworld.com/javaworld/javatips/jw-javatip122.html}}{careful development}.
 \end{description}
 
 Sometimes you need to use the fake enum pattern,
@@ -39,7 +39,7 @@ The developer can introduce new types that are distinct from all values of the
 base type and from all other fake enums. Fenums can be introduced for
 primitive types as well as for reference types.
 
-Figure~\ref{fig:fenum-hierarchy} shows part of the type hierarchy for the
+Figure~\ref{fig-fenum-hierarchy} shows part of the type hierarchy for the
 Fenum type system.
 
 \begin{figure}
@@ -52,7 +52,7 @@ introduce both types of fenums. The type qualifiers in gray
 (\code{@FenumTop}, \code{@FenumUnqualified}, and \code{@Bottom})
 should never be written in
 source code; they are used internally by the type system.}
-\label{fig:fenum-hierarchy}
+\label{fig-fenum-hierarchy}
 \end{figure}
 
 \section{Fake enum annotations\label{fenum-annotations}}
@@ -206,4 +206,5 @@ class FenumUser {
 
 % LocalWords:  enums typesafe Fenum Fenums fenum MyFenum quals fenums Aquals
 % LocalWords:  TestStatic FenumC FenumD myproject RetentionPolicy TypeQualifier
-% LocalWords:  SubtypeOf FenumTop MyFile
+% LocalWords:  SubtypeOf FenumTop MyFile Enum enum AWT 5cm java jls
+%  LocalWords:  FenumUnqualified

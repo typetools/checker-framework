@@ -50,7 +50,7 @@ public class PolymorphismArrays {
       return indexOfEq(a);
     }
 
-    public static int indexOfEq(/*@PolyAll*/ Object[] a) {
+    public static int indexOfEq(@PolyAll Object[] a) {
         return -1;
     }
 

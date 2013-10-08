@@ -14,7 +14,7 @@ For example, a user-supplied pointer, handle, or map key should be
 validated before being dereferenced.
 As another example, a user-supplied string should not be concatenated into a
 SQL query, lest the program be subject to a 
-\ahref{http://en.wikipedia.org/wiki/Sql_injection}{SQL injection} attack.
+\ahref{\url{http://en.wikipedia.org/wiki/Sql_injection}}{SQL injection} attack.
 A location in your program where malicious data could do damage is
 called a \emph{sensitive sink}.
 
@@ -112,8 +112,8 @@ libraries):
 
 The \code{@Tainted} and \code{@Untainted} annotations have only minimal
 built-in semantics.  In fact, the Tainting Checker provides only a small
-amount of functionality beyond the Basic Checker
-(Section~\ref{basic-checker}).  This lack of hard-coded behavior means that
+amount of functionality beyond the Subtyping Checker
+(Section~\ref{subtyping-checker}).  This lack of hard-coded behavior means that
 the annotations can serve many different purposes.  Here are just a few
 examples:
 
@@ -146,4 +146,4 @@ details.
 % TODO: one could add a String[] value to @Untainted to distinguish different
 % values, eg @Untainted{``SQL''} versus @Untainted{``HTML''}.
 
-% LocalWords:  quals untaint PolyTainted mis untainting sanitization
+% LocalWords:  quals untaint PolyTainted mis untainting sanitization java

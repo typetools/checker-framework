@@ -28,6 +28,14 @@ import com.sun.tools.javac.util.List;
 
 public class DependentTypes {
     private final Elements elements;
+
+    // TODO: the implementation of this class needs some serious refactoring
+    // and thought (and documentation...).
+    // @Dependent expresses the relationship between two separate
+    // type systems. It is not enough to use the GeneralATF, which doesn't
+    // apply defaulting appropriate for the second type system.
+    // This issue is similar to the interaction between @Unused and
+    // the Nullness Checker.
     private final GeneralAnnotatedTypeFactory atypeFactory;
 
     public DependentTypes(BaseTypeChecker checker) {
@@ -86,8 +94,16 @@ public class DependentTypes {
                     && symbol.getKind() != ElementKind.LOCAL_VARIABLE))
             return;
 
-        // FIXME: handle this case
-        AnnotatedTypeMirror receiver = atypeFactory.getReceiverType(expr);
+        AnnotatedTypeMirror receiver;
+        try {
+            // Ugly hack to not crash type checking if the GeneralATF
+            // runs into some problem determining the receiver type.
+            // TODO: remove GeneralATF, see note with field.
+            receiver = atypeFactory.getReceiverType(expr);
+        } catch (Throwable t) {
+            receiver = null;
+        }
+
         if (receiver != null)
             doSubsitution(symbol, type, receiver);
     }

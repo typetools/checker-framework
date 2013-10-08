@@ -168,6 +168,14 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
         return analysis.createAbstractValue(at);
     }
 
+    private S fixedInitialStore = null;
+    /**
+     * Set a fixed initial Store.
+     */
+    public void setFixedInitialStore(S s) {
+        fixedInitialStore = s;
+    }
+
     /**
      * The initial store maps method formal parameters to their currently most
      * refined type.
@@ -175,6 +183,8 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
     @Override
     public S initialStore(UnderlyingAST underlyingAST,
             /*@Nullable */ List<LocalVariableNode> parameters) {
+        if (fixedInitialStore != null) return fixedInitialStore;
+
         S info = analysis.createEmptyStore(sequentialSemantics);
 
         if (underlyingAST.getKind() == Kind.METHOD) {
