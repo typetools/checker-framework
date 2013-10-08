@@ -10,11 +10,9 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 
 import javacutils.TreeUtils;
 
-import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 
 import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
 
@@ -26,9 +24,7 @@ import com.sun.source.tree.Tree;
  *
  * @see BaseTypeVisitor
  */
-public class JavariVisitor extends BaseTypeVisitor<JavariChecker, JavariAnnotatedTypeFactory> {
-
-    final private AnnotationMirror READONLY, MUTABLE, POLYREAD, QREADONLY;
+public class JavariVisitor extends BaseTypeVisitor<JavariAnnotatedTypeFactory> {
 
     /**
      * Creates a new visitor for type-checking the Javari mutability
@@ -37,12 +33,8 @@ public class JavariVisitor extends BaseTypeVisitor<JavariChecker, JavariAnnotate
      * @param checker the {@link JavariChecker} to use
      * @param root the root of the input program's AST to check
      */
-    public JavariVisitor(JavariChecker checker, CompilationUnitTree root) {
-        super(checker, root);
-        READONLY = checker.READONLY;
-        MUTABLE = checker.MUTABLE;
-        POLYREAD = checker.POLYREAD;
-        QREADONLY = checker.QREADONLY;
+    public JavariVisitor(JavariChecker checker) {
+        super(checker);
         checkForAnnotatedJdk();
     }
 
@@ -52,8 +44,8 @@ public class JavariVisitor extends BaseTypeVisitor<JavariChecker, JavariAnnotate
      */
     @Override
     public Void visitClass(ClassTree node, Void p) {
-        if (atypeFactory.fromClass(node).hasEffectiveAnnotation(POLYREAD)
-            && !atypeFactory.getSelfType(node).hasEffectiveAnnotation(POLYREAD))
+        if (atypeFactory.fromClass(node).hasEffectiveAnnotation(atypeFactory.POLYREAD)
+            && !atypeFactory.getSelfType(node).hasEffectiveAnnotation(atypeFactory.POLYREAD))
             checker.report(Result.failure("polyread.type"), node);
 
         return super.visitClass(node, p);
@@ -80,19 +72,19 @@ public class JavariVisitor extends BaseTypeVisitor<JavariChecker, JavariAnnotate
             || TreeUtils.isConstructor(visitorState.getMethodTree());
         AnnotatedDeclaredType mReceiver = atypeFactory.getSelfType(varTree);
 
-        if (variableLocalField && !inConstructor && !mReceiver.hasEffectiveAnnotation(MUTABLE))
+        if (variableLocalField && !inConstructor && !mReceiver.hasEffectiveAnnotation(atypeFactory.MUTABLE))
             checker.report(Result.failure("ro.field"), varTree);
 
         if (varTree.getKind() == Tree.Kind.MEMBER_SELECT
             && !atypeFactory.isMostEnclosingThisDeref((ExpressionTree)varTree)) {
             AnnotatedTypeMirror receiver = atypeFactory.getReceiverType((ExpressionTree)varTree);
-            if (receiver != null && !receiver.hasEffectiveAnnotation(MUTABLE))
+            if (receiver != null && !receiver.hasEffectiveAnnotation(atypeFactory.MUTABLE))
                 checker.report(Result.failure("ro.field"), varTree);
         }
 
         if (varTree.getKind() == Tree.Kind.ARRAY_ACCESS) {
             AnnotatedTypeMirror receiver = atypeFactory.getReceiverType((ExpressionTree)varTree);
-            if (receiver != null && !receiver.hasEffectiveAnnotation(MUTABLE))
+            if (receiver != null && !receiver.hasEffectiveAnnotation(atypeFactory.MUTABLE))
                 checker.report(Result.failure("ro.element"), varTree);
         }
 
@@ -110,9 +102,9 @@ public class JavariVisitor extends BaseTypeVisitor<JavariChecker, JavariAnnotate
 
     @Override
     public boolean isValidUse(AnnotatedPrimitiveType useType, Tree tree) {
-        if (useType.hasAnnotation(QREADONLY)
-                || useType.hasAnnotation(READONLY)
-                || useType.hasAnnotation(POLYREAD)) {
+        if (useType.hasAnnotation(atypeFactory.QREADONLY)
+                || useType.hasAnnotation(atypeFactory.READONLY)
+                || useType.hasAnnotation(atypeFactory.POLYREAD)) {
             return false;
         }
         return super.isValidUse(useType, tree);

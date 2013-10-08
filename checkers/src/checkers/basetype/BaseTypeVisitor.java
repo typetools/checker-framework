@@ -23,6 +23,7 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.types.QualifierHierarchy;
 import checkers.types.TypeHierarchy;
 import checkers.types.VisitorState;
@@ -151,12 +152,14 @@ import com.sun.tools.javac.tree.TreeInfo;
  * DFF version. TODO: missing assignment context: - array initializer
  * expressions should have the component type as context
  */
-public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
-                             Factory extends AbstractBasicAnnotatedTypeFactory<?, ?, ?, ?, ?>>
-        extends SourceVisitor<Checker, Factory, Void, Void> {
+public class BaseTypeVisitor<Factory extends AbstractBasicAnnotatedTypeFactory<?, ?, ?, ?>>
+        extends SourceVisitor<Void, Void> {
+
+    /** The factory to use for obtaining "parsed" version of annotations. */
+    protected Factory atypeFactory;
 
     /** For obtaining line numbers in -Ashowchecks debugging output. */
-    private final SourcePositions positions;
+    protected final SourcePositions positions;
 
     /** For storing visitor state. **/
     protected final VisitorState visitorState;
@@ -171,17 +174,71 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
      * @param root
      *            the root of the AST that this visitor operates on
      */
-    public BaseTypeVisitor(Checker checker, CompilationUnitTree root) {
-        super(checker, root);
+    public BaseTypeVisitor(BaseTypeChecker checker) {
+        super(checker);
 
+        // Ask the checker for the AnnotatedTypeFactory.
+        this.atypeFactory = createTypeFactory();
         this.contractsUtils = ContractsUtils.getInstance(atypeFactory);
         this.positions = trees.getSourcePositions();
         this.visitorState = atypeFactory.getVisitorState();
+        this.typeValidator = createTypeValidator();
+        this.vectorType = atypeFactory.fromElement(elements.getTypeElement("java.util.Vector"));
+    }
+
+
+    /**
+     * Constructs an instance of the appropriate type factory for the
+     * implemented type system.
+     *
+     * The default implementation uses the checker naming convention to create
+     * the appropriate type factory.  If no factory is found, it returns
+     * {@link BasicAnnotatedTypeFactory}.  It reflectively invokes the
+     * constructor that accepts this checker and compilation unit tree
+     * (in that order) as arguments.
+     *
+     * Subclasses have to override this method to create the appropriate
+     * visitor if they do not follow the checker naming convention.
+     *
+     * @param root  the currently visited compilation unit
+     * @return the appropriate type factory
+     */
+    @SuppressWarnings("unchecked") // unchecked cast to type variable
+    protected Factory createTypeFactory() {
+        // Try to reflectively load the type factory.
+        Class<?> checkerClass = checker.getClass();
+        while (checkerClass != BaseTypeChecker.class) {
+            final String classToLoad =
+                    checkerClass.getName().replace("Checker", "AnnotatedTypeFactory")
+                    .replace("Subchecker", "AnnotatedTypeFactory");
+
+            AnnotatedTypeFactory result = BaseTypeChecker.invokeConstructorFor(classToLoad,
+                    new Class<?>[] { checkerClass },
+                    new Object[] { checker });
+            if (result != null) {
+                return (Factory) result;
+            }
+            checkerClass = checkerClass.getSuperclass();
+        }
+        return (Factory) new BasicAnnotatedTypeFactory((BaseTypeChecker)checker);
+    }
+
+    public final Factory getTypeFactory() {
+        if (atypeFactory == null) {
+            atypeFactory = createTypeFactory();
+        }
+        return atypeFactory;
     }
 
     // **********************************************************************
     // Responsible for updating the factory for the location (for performance)
     // **********************************************************************
+
+    @Override
+    public Void visit(CompilationUnitTree root, TreePath path, Void p) {
+        atypeFactory.setRoot(root);
+        return super.visit(root, path, p);
+    }
 
     @Override
     public Void scan(Tree tree, Void p) {
@@ -441,7 +498,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
                     p.second);
 
             // Only check if the postcondition concerns this checker
-            if (!checker.isSupportedAnnotation(annotation)) {
+            if (!atypeFactory.isSupportedQualifier(annotation)) {
                 continue;
             }
             if (flowExprContext == null) {
@@ -506,7 +563,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
             }
 
             // Only check if the postcondition concerns this checker
-            if (!checker.isSupportedAnnotation(annotation)) {
+            if (!atypeFactory.isSupportedQualifier(annotation)) {
                 continue;
             }
             try {
@@ -537,7 +594,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
                     p.second.second);
 
             // Only check if the postcondition concerns this checker
-            if (!checker.isSupportedAnnotation(annotation)) {
+            if (!atypeFactory.isSupportedQualifier(annotation)) {
                 continue;
             }
             if (flowExprContext == null) {
@@ -634,7 +691,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
             }
 
             // Only check if the postcondition concerns this checker
-            if (!checker.isSupportedAnnotation(annotation)) {
+            if (!atypeFactory.isSupportedQualifier(annotation)) {
                 continue;
             }
             try {
@@ -804,7 +861,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
                     .fromName(elements, p.second);
 
             // Only check if the precondition concerns this checker
-            if (!checker.isSupportedAnnotation(anno)) {
+            if (!atypeFactory.isSupportedQualifier(anno)) {
                 return;
             }
             if (flowExprContext == null) {
@@ -857,7 +914,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
             }
 
             // Only check if the precondition concerns this checker
-            if (!checker.isSupportedAnnotation(anno)) {
+            if (!atypeFactory.isSupportedQualifier(anno)) {
                 return;
             }
             try {
@@ -888,8 +945,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
     }
 
     // Handle case Vector.copyInto()
-    private final AnnotatedDeclaredType vectorType =
-        super.atypeFactory.fromElement(elements.getTypeElement("java.util.Vector"));
+    private final AnnotatedDeclaredType vectorType;
 
     /**
      * Returns true if the method symbol represents {@code Vector.copyInto}
@@ -1259,7 +1315,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
                     newExprType = exprType;
                 }
 
-                isSubtype = checker.getTypeHierarchy().isSubtype(newExprType, newCastType);
+                isSubtype = atypeFactory.getTypeHierarchy().isSubtype(newExprType, newCastType);
                 if (isSubtype) {
                     if (newCastType.getKind() == TypeKind.ARRAY &&
                             newExprType.getKind() != TypeKind.ARRAY) {
@@ -1282,7 +1338,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
             } else {
                 // Only check the main qualifiers, ignoring array components and
                 // type arguments.
-                isSubtype = checker.getQualifierHierarchy().isSubtype(
+                isSubtype = atypeFactory.getQualifierHierarchy().isSubtype(
                         exprType.getEffectiveAnnotations(),
                         castType.getEffectiveAnnotations());
             }
@@ -1437,11 +1493,11 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
                     varType.getKind(), varTypeString);
         }
 
-        boolean success = checker.getTypeHierarchy().isSubtype(valueType, varType);
+        boolean success = atypeFactory.getTypeHierarchy().isSubtype(valueType, varType);
 
         // TODO: integrate with subtype test.
         if (success) {
-            for (Class<? extends Annotation> mono : checker.getSupportedMonotonicTypeQualifiers()) {
+            for (Class<? extends Annotation> mono : atypeFactory.getSupportedMonotonicTypeQualifiers()) {
                 if (valueType.hasAnnotation(mono)
                         && varType.hasAnnotation(mono)) {
                     checker.report(
@@ -1574,7 +1630,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
         AnnotatedTypeMirror rcv = atypeFactory.getReceiverType(node);
         treeReceiver.addAnnotations(rcv.getEffectiveAnnotations());
 
-        if (!checker.getTypeHierarchy().isSubtype(treeReceiver, methodReceiver)) {
+        if (!atypeFactory.getTypeHierarchy().isSubtype(treeReceiver, methodReceiver)) {
             checker.report(Result.failure("method.invocation.invalid",
                 TreeUtils.elementFromUse(node),
                 treeReceiver.toString(), methodReceiver.toString()), node);
@@ -1584,8 +1640,8 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
     protected boolean checkConstructorInvocation(AnnotatedDeclaredType dt,
             AnnotatedExecutableType constructor, Tree src) {
         AnnotatedDeclaredType receiver = constructor.getReceiverType();
-        boolean b = checker.getTypeHierarchy().isSubtype(dt, receiver) ||
-                checker.getTypeHierarchy().isSubtype(receiver, dt);
+        boolean b = atypeFactory.getTypeHierarchy().isSubtype(dt, receiver) ||
+                atypeFactory.getTypeHierarchy().isSubtype(receiver, dt);
 
         if (!b) {
             checker.report(Result.failure("constructor.invocation.invalid",
@@ -1679,7 +1735,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
 
         // Check the return value.
         if ((overrider.getReturnType().getKind() != TypeKind.VOID)) {
-            boolean success = checker.getTypeHierarchy().isSubtype(overrider.getReturnType(),
+            boolean success = atypeFactory.getTypeHierarchy().isSubtype(overrider.getReturnType(),
                     overridden.getReturnType());
             if (checker.hasOption("showchecks")) {
                 long valuePos = positions.getStartPosition(root, overriderTree.getReturnType());
@@ -1708,7 +1764,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
         List<AnnotatedTypeMirror> overriddenParams =
             overridden.getParameterTypes();
         for (int i = 0; i < overriderParams.size(); ++i) {
-            boolean success = checker.getTypeHierarchy().isSubtype(overriddenParams.get(i), overriderParams.get(i));
+            boolean success = atypeFactory.getTypeHierarchy().isSubtype(overriddenParams.get(i), overriderParams.get(i));
             if (checker.hasOption("showchecks")) {
                 long valuePos = positions.getStartPosition(root, overriderTree.getParameters().get(i));
                 System.out.printf(
@@ -1738,7 +1794,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
         AnnotatedTypeMirror overriddenReceiver =
             overrider.getReceiverType().getErased().getCopy(false);
         overriddenReceiver.addAnnotations(overridden.getReceiverType().getAnnotations());
-        if (!checker.getTypeHierarchy().isSubtype(overriddenReceiver,
+        if (!atypeFactory.getTypeHierarchy().isSubtype(overriddenReceiver,
                 overrider.getReceiverType().getErased())) {
             checker.report(Result.failure("override.receiver.invalid",
                     overriderMeth, overriderTyp, overriddenMeth, overriddenTyp,
@@ -1838,8 +1894,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
                 // are we looking at a contract of the same receiver?
                 if (a.first.equals(b.first)) {
                     // check subtyping relationship of annotations
-                    QualifierHierarchy qualifierHierarchy = checker
-                            .getQualifierHierarchy();
+                    QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
                     if (qualifierHierarchy.isSubtype(a.second, b.second)) {
                         found = true;
                         break;
@@ -1873,7 +1928,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
                     atypeFactory.getElementUtils(), p.second);
 
             // Only check if the postcondition concerns this checker
-            if (!atypeFactory.getChecker().isSupportedAnnotation(annotation)) {
+            if (!atypeFactory.isSupportedQualifier(annotation)) {
                 continue;
             }
             if (flowExprContext == null) {
@@ -2033,7 +2088,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
      */
     public boolean isValidUse(AnnotatedDeclaredType declarationType,
             AnnotatedDeclaredType useType, Tree tree) {
-        return checker.getTypeHierarchy().isSubtype(useType.getErased(), declarationType.getErased());
+        return atypeFactory.getTypeHierarchy().isSubtype(useType.getErased(), declarationType.getErased());
     }
 
     /**
@@ -2093,7 +2148,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
         }
 
         // basic consistency checks
-        if (!AnnotatedTypes.isValidType(checker.getQualifierHierarchy(), type)) {
+        if (!AnnotatedTypes.isValidType(atypeFactory.getQualifierHierarchy(), type)) {
             checker.report(Result.failure("type.invalid", type.getAnnotations(),
                     type.toString()), tree);
             return false;
@@ -2104,7 +2159,7 @@ public class BaseTypeVisitor<Checker extends BaseTypeChecker<? extends Factory>,
     }
 
     // This is a test to ensure that all types are valid
-    protected final BaseTypeValidator typeValidator = createTypeValidator();
+    protected final BaseTypeValidator typeValidator;
 
     protected BaseTypeValidator createTypeValidator() {
         return new BaseTypeValidator(checker, this, atypeFactory);

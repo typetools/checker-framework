@@ -1,5 +1,7 @@
 package checkers.oigj;
 
+import checkers.basetype.BaseTypeChecker;
+import checkers.oigj.quals.AssignsFields;
 import checkers.oigj.quals.I;
 import checkers.oigj.quals.Immutable;
 import checkers.oigj.quals.Mutable;
@@ -11,19 +13,25 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
-import checkers.types.SubtypingAnnotatedTypeFactory;
+import checkers.types.BasicAnnotatedTypeFactory;
+import checkers.types.QualifierHierarchy;
 import checkers.types.TreeAnnotator;
 import checkers.types.TypeAnnotator;
+import checkers.types.TypeHierarchy;
 import checkers.types.visitors.AnnotatedTypeScanner;
 import checkers.types.visitors.SimpleAnnotatedTypeVisitor;
 import checkers.util.AnnotatedTypes;
+import checkers.util.GraphQualifierHierarchy;
+import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 
 import javacutils.AnnotationUtils;
 import javacutils.ElementUtils;
+import javacutils.ErrorReporter;
 import javacutils.Pair;
 import javacutils.TreeUtils;
 import javacutils.TypesUtils;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -39,7 +47,6 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeVariable;
 
-import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
@@ -109,12 +116,12 @@ import com.sun.source.tree.TypeCastTree;
 // To ease dealing with libraries, this inserts the bottom qualifier
 // rather than immutable in many cases, like all literals.
 // Should change that
-public class ImmutabilityAnnotatedTypeFactory extends SubtypingAnnotatedTypeFactory<ImmutabilitySubchecker> {
+public class ImmutabilityAnnotatedTypeFactory extends BasicAnnotatedTypeFactory {
 
     static {  FLOW_BY_DEFAULT = true;  }
 
     /** The various IGJ annotations. */
-    private final AnnotationMirror READONLY, MUTABLE, IMMUTABLE, I,
+    protected final AnnotationMirror READONLY, MUTABLE, IMMUTABLE, I,
             BOTTOM_QUAL, ASSIGNS_FIELDS;
 
     /** the {@link I} annotation value key */
@@ -127,28 +134,27 @@ public class ImmutabilityAnnotatedTypeFactory extends SubtypingAnnotatedTypeFact
      * @param root  the compilation unit the annotation processor is
      *              processing currently
      */
-    public ImmutabilityAnnotatedTypeFactory(ImmutabilitySubchecker checker,
-            CompilationUnitTree root) {
-        super(checker, root);
+    public ImmutabilityAnnotatedTypeFactory(ImmutabilitySubchecker checker) {
+        super(checker);
 
-        READONLY = checker.READONLY;
-        MUTABLE = checker.MUTABLE;
-        IMMUTABLE = checker.IMMUTABLE;
-        I = checker.I;
-        BOTTOM_QUAL = checker.BOTTOM_QUAL;
-        ASSIGNS_FIELDS = checker.ASSIGNS_FIELDS;
+        READONLY = AnnotationUtils.fromClass(elements, ReadOnly.class);
+        MUTABLE = AnnotationUtils.fromClass(elements, Mutable.class);
+        IMMUTABLE = AnnotationUtils.fromClass(elements, Immutable.class);
+        I = AnnotationUtils.fromClass(elements, I.class);
+        ASSIGNS_FIELDS = AnnotationUtils.fromClass(elements, AssignsFields.class);
+        BOTTOM_QUAL = AnnotationUtils.fromClass(elements, OIGJMutabilityBottom.class);
 
         this.postInit();
     }
 
     @Override
-    protected TreeAnnotator createTreeAnnotator(ImmutabilitySubchecker checker) {
-        return new IGJTreePreAnnotator(checker);
+    protected TreeAnnotator createTreeAnnotator() {
+        return new IGJTreePreAnnotator(this);
     }
 
     @Override
-    protected TypeAnnotator createTypeAnnotator(ImmutabilitySubchecker checker) {
-        return new IGJTypePostAnnotator(checker);
+    protected TypeAnnotator createTypeAnnotator() {
+        return new IGJTypePostAnnotator(this);
     }
 
     // **********************************************************************
@@ -159,8 +165,8 @@ public class ImmutabilityAnnotatedTypeFactory extends SubtypingAnnotatedTypeFact
      * Helper class for annotating unannotated types.
      */
     private class IGJTypePostAnnotator extends TypeAnnotator {
-        public IGJTypePostAnnotator(ImmutabilitySubchecker checker) {
-            super(checker, ImmutabilityAnnotatedTypeFactory.this);
+        public IGJTypePostAnnotator(ImmutabilityAnnotatedTypeFactory atypeFactory) {
+            super(atypeFactory);
         }
 
         /**
@@ -294,8 +300,8 @@ public class ImmutabilityAnnotatedTypeFactory extends SubtypingAnnotatedTypeFact
      */
     private class IGJTreePreAnnotator extends TreeAnnotator {
 
-        public IGJTreePreAnnotator(ImmutabilitySubchecker checker) {
-            super(checker, ImmutabilityAnnotatedTypeFactory.this);
+        public IGJTreePreAnnotator(ImmutabilityAnnotatedTypeFactory atypeFactory) {
+            super(atypeFactory);
         }
 
         @Override
@@ -734,4 +740,80 @@ public class ImmutabilityAnnotatedTypeFactory extends SubtypingAnnotatedTypeFact
     private boolean hasImmutabilityAnnotation(AnnotatedTypeMirror type) {
         return type.isAnnotatedInHierarchy(READONLY);
     }
+
+    @Override
+    public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
+        return new ImmutabilityQualifierHierarchy(factory);
+    }
+
+    //
+    // OIGJ Rule 6. Same-class subtype definition
+    // Let C<I, X_1, ..., X_n> be a class.  Type S = C<J, S_1, ..., S_n>
+    // is a subtype of T = C<J', T_1, ... T_n> witten as S<= T, iff J <= J' and
+    // for i = 1, ..., n, either S_i = T_i or
+    // (Immutable <= J' and S_i <= T_i and CoVariant(X_i, C))
+    //
+    @Override
+    protected TypeHierarchy createTypeHierarchy() {
+        return new OIGJImmutabilityTypeHierarchy(checker, getQualifierHierarchy());
+    }
+
+    private final class OIGJImmutabilityTypeHierarchy extends TypeHierarchy {
+
+        public OIGJImmutabilityTypeHierarchy(BaseTypeChecker checker,
+                QualifierHierarchy qualifierHierarchy) {
+            super(checker, qualifierHierarchy);
+        }
+
+        /**
+         * OIGJ Rule 6. <b>Same-class subtype definition</b>
+         */
+        // TODO: Handle CoVariant(X_i, C)
+        @Override
+        protected boolean isSubtypeTypeArguments(AnnotatedDeclaredType rhs, AnnotatedDeclaredType lhs) {
+            if (ignoreRawTypeArguments(rhs, lhs)) {
+                return true;
+            }
+
+            if (lhs.hasEffectiveAnnotation(MUTABLE))
+                return super.isSubtypeTypeArguments(rhs, lhs);
+
+            if (!lhs.getTypeArguments().isEmpty()
+                    && !rhs.getTypeArguments().isEmpty()) {
+                assert lhs.getTypeArguments().size() == rhs.getTypeArguments().size();
+                for (int i = 0; i < lhs.getTypeArguments().size(); ++i) {
+                    if (!isSubtype(rhs.getTypeArguments().get(i), lhs.getTypeArguments().get(i)))
+                        return false;
+                }
+            }
+            return true;
+        }
+    }
+
+    private final class ImmutabilityQualifierHierarchy extends GraphQualifierHierarchy {
+        public ImmutabilityQualifierHierarchy(MultiGraphFactory factory) {
+            super(factory, BOTTOM_QUAL);
+        }
+
+        @Override
+        public boolean isSubtype(Collection<? extends AnnotationMirror> rhs, Collection<? extends AnnotationMirror> lhs) {
+            if (lhs.isEmpty() || rhs.isEmpty()) {
+                ErrorReporter.errorAbort("GraphQualifierHierarchy: Empty annotations in lhs: " + lhs + " or rhs: " + rhs);
+            }
+            // TODO: sometimes there are multiple mutability annotations in a type and
+            // the check in the superclass that the sets contain exactly one annotation
+            // fails. I replaced "addAnnotation" calls with "replaceAnnotation" calls,
+            // but then other test cases fail. Some love needed here.
+            for (AnnotationMirror lhsAnno : lhs) {
+                for (AnnotationMirror rhsAnno : rhs) {
+                    if (isSubtype(rhsAnno, lhsAnno)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+    }
+
+
 }

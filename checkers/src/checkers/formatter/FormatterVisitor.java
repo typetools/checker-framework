@@ -8,7 +8,6 @@ import checkers.formatter.quals.ConversionCategory;
 
 import javax.lang.model.type.TypeMirror;
 
-import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodInvocationTree;
 
 /**
@@ -17,16 +16,16 @@ import com.sun.source.tree.MethodInvocationTree;
  *
  * @author Konstantin Weitz
  */
-public class FormatterVisitor extends BaseTypeVisitor<FormatterChecker, FormatterAnnotatedTypeFactory> {
-    public FormatterVisitor(FormatterChecker checker, CompilationUnitTree root) {
-        super(checker, root);
+public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFactory> {
+    public FormatterVisitor(FormatterChecker checker) {
+        super(checker);
     }
 
     @Override
     public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
-        FormatterTreeUtil tu = checker.treeUtil;
+        FormatterTreeUtil tu = atypeFactory.treeUtil;
         if (tu.isFormatCall(node, atypeFactory)) {
-            FormatCall fc = checker.treeUtil.new FormatCall(node, atypeFactory);
+            FormatCall fc = atypeFactory.treeUtil.new FormatCall(node, atypeFactory);
 
             Result<String> sat = fc.isIllegalFormat();
             if (sat.value() != null){

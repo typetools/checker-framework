@@ -29,7 +29,6 @@ import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.AssertTree;
 import com.sun.source.tree.BinaryTree;
-import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.DoWhileLoopTree;
@@ -57,7 +56,7 @@ import com.sun.source.tree.WhileLoopTree;
  * The visitor for the nullness type-system.
  */
 public class NullnessVisitor
-    extends InitializationVisitor<AbstractNullnessChecker, NullnessAnnotatedTypeFactory,
+    extends InitializationVisitor<NullnessAnnotatedTypeFactory,
             NullnessValue, NullnessStore> {
 
     // Error message keys
@@ -73,7 +72,7 @@ public class NullnessVisitor
     private static final /*@CompilerMessageKey*/ String DEREFERENCE_OF_NULLABLE = "dereference.of.nullable";
 
     // Annotation and type constants
-    private final AnnotationMirror NONNULL, NULLABLE, MONOTONICNONNULL;
+    private final AnnotationMirror NONNULL, NULLABLE, MONOTONIC_NONNULL;
     private final TypeMirror stringType;
 
     /**
@@ -86,13 +85,12 @@ public class NullnessVisitor
      */
     private final ExecutableElement collectionToArray;
 
-    public NullnessVisitor(AbstractNullnessChecker checker,
-            CompilationUnitTree root) {
-        super(checker, root);
+    public NullnessVisitor(AbstractNullnessChecker checker) {
+        super(checker);
 
-        NONNULL = checker.NONNULL;
-        NULLABLE = checker.NULLABLE;
-        MONOTONICNONNULL = checker.MONOTONICNONNULL;
+        NONNULL = atypeFactory.NONNULL;
+        NULLABLE = atypeFactory.NULLABLE;
+        MONOTONIC_NONNULL = atypeFactory.MONOTONIC_NONNULL;
         stringType = elements.getTypeElement("java.lang.String").asType();
 
         ProcessingEnvironment env = checker.getProcessingEnvironment();
@@ -111,8 +109,8 @@ public class NullnessVisitor
         // annotation.
         boolean foundInit = false;
         boolean foundNonNull = false;
-        Set<Class<? extends Annotation>> initQuals = checker.getInitializationAnnotations();
-        Set<Class<? extends Annotation>> nonNullQuals = checker.getNullnessAnnotations();
+        Set<Class<? extends Annotation>> initQuals = atypeFactory.getInitializationAnnotations();
+        Set<Class<? extends Annotation>> nonNullQuals = atypeFactory.getNullnessAnnotations();
 
         for (AnnotationMirror anno : useType.getAnnotations()) {
             if (QualifierPolymorphism.isPolyAll(anno)) {
@@ -179,7 +177,7 @@ public class NullnessVisitor
         if (varTree.getKind() == Tree.Kind.VARIABLE) {
             Element elem = TreeUtils
                     .elementFromDeclaration((VariableTree) varTree);
-            if (atypeFactory.fromElement(elem).hasAnnotation(MONOTONICNONNULL)
+            if (atypeFactory.fromElement(elem).hasAnnotation(MONOTONIC_NONNULL)
                     && !checker
                             .getLintOption(
                                     AbstractNullnessChecker.LINT_NOINITFORMONOTONICNONNULL,
@@ -197,8 +195,7 @@ public class NullnessVisitor
             AnnotatedTypeMirror receiverType = atypeFactory
                     .getReceiverType((ExpressionTree) varTree);
             if (receiverType != null
-                    && (checker.isFree(receiverType) || checker
-                            .isUnclassified(receiverType))) {
+                    && (atypeFactory.isFree(receiverType) || atypeFactory.isUnclassified(receiverType))) {
                 if (annos.hasAnnotation(NONNULL)
                         && !valueType.hasAnnotation(NONNULL)) {
                     checker.report(Result.failure(ASSIGNMENT_TYPE_INCOMPATIBLE,
@@ -451,7 +448,7 @@ public class NullnessVisitor
             // about method invocability (we'd rather have only the
             // "dereference.of.nullable" message).
             if (treeReceiver.hasAnnotation(NULLABLE) ||
-                    recvAnnos.contains(MONOTONICNONNULL)) {
+                    recvAnnos.contains(MONOTONIC_NONNULL)) {
                 return;
             }
         }
@@ -514,7 +511,7 @@ public class NullnessVisitor
             for (AnnotationMirror a : atypeFactory.getAnnotatedType(t).getAnnotations()) {
                 // is this an annotation of the nullness checker?
                 boolean nullnessCheckerAnno = containsSameIgnoringValues(
-                                checker.getNullnessAnnotations(), a);
+                                atypeFactory.getNullnessAnnotations(), a);
                 if (nullnessCheckerAnno && !AnnotationUtils.areSame(NONNULL, a)) {
                     // The type is not non-null => warning
                     checker.report(

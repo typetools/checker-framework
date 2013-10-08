@@ -19,6 +19,7 @@ import checkers.quals.DefaultLocation;
 import checkers.quals.DefaultQualifier;
 import checkers.quals.DefaultQualifierInHierarchy;
 import checkers.quals.ImplicitFor;
+import checkers.quals.MonotonicQualifier;
 import checkers.quals.Unqualified;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -46,6 +47,7 @@ import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -53,7 +55,6 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
@@ -81,30 +82,30 @@ import com.sun.source.tree.VariableTree;
  * annotations via {@link ImplicitFor}, and user-specified defaults via
  * {@link DefaultQualifier}.
  */
-public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseTypeChecker<?>,
+public abstract class AbstractBasicAnnotatedTypeFactory<
         Value extends CFAbstractValue<Value>,
         Store extends CFAbstractStore<Value, Store>,
         TransferFunction extends CFAbstractTransfer<Value, Store, TransferFunction>,
         FlowAnalysis extends CFAbstractAnalysis<Value, Store, TransferFunction>>
     extends AnnotatedTypeFactory {
 
-    /** The type checker to use. */
-    protected Checker checker;
-
     /** should use flow by default */
     protected static boolean FLOW_BY_DEFAULT = true;
 
+    /** To cache the supported monotonic type qualifiers. */
+    private Set<Class<? extends Annotation>> supportedMonotonicQuals;
+
     /** to annotate types based on the given tree */
-    protected final TypeAnnotator typeAnnotator;
+    protected TypeAnnotator typeAnnotator;
 
     /** to annotate types based on the given un-annotated types */
-    protected final TreeAnnotator treeAnnotator;
+    protected TreeAnnotator treeAnnotator;
 
     /** to handle any polymorphic types */
-    protected final QualifierPolymorphism poly;
+    protected QualifierPolymorphism poly;
 
     /** to handle defaults specified by the user */
-    protected final QualifierDefaults defaults;
+    protected QualifierDefaults defaults;
 
     // Flow related fields
 
@@ -122,16 +123,19 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
      * @param root the compilation unit to scan
      * @param useFlow whether flow analysis should be performed
      */
-    public AbstractBasicAnnotatedTypeFactory(Checker checker,
-            CompilationUnitTree root, boolean useFlow) {
-        super(checker, checker.getQualifierHierarchy(), checker.getTypeHierarchy(), root);
-        this.checker = checker;
-        this.treeAnnotator = createTreeAnnotator(checker);
-        this.typeAnnotator = createTypeAnnotator(checker);
-        this.useFlow = useFlow;
+    public AbstractBasicAnnotatedTypeFactory(BaseTypeChecker checker, boolean useFlow) {
+        super(checker);
 
-        this.poly = createQualifierPolymorphism();
-        this.defaults = createQualifierDefaults();
+        this.useFlow = useFlow;
+        this.analyses = new LinkedList<>();
+        this.scannedClasses = new HashMap<>();
+        this.flowResult = null;
+        this.regularExitStores = null;
+        this.methodInvocationStores = null;
+        this.returnStatementStores = null;
+
+        this.initializationStore = null;
+        this.initializationStaticStore = null;
 
         // Add common aliases.
         // addAliasedDeclAnnotation(checkers.nullness.quals.Pure.class,
@@ -141,6 +145,19 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
         // all other initialization is finished.
     }
 
+    @Override
+    protected void postInit() {
+        super.postInit();
+
+        this.defaults = createQualifierDefaults();
+        this.treeAnnotator = createTreeAnnotator();
+        this.typeAnnotator = createTypeAnnotator();
+
+        this.poly = createQualifierPolymorphism();
+
+        this.buildIndexTypes();
+    }
+
     /**
      * Creates a type factory for checking the given compilation unit with
      * respect to the given annotation.
@@ -148,13 +165,48 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
      * @param checker the checker to which this type factory belongs
      * @param root the compilation unit to scan
      */
-    public AbstractBasicAnnotatedTypeFactory(Checker checker, CompilationUnitTree root) {
-        this(checker, root, FLOW_BY_DEFAULT);
+    public AbstractBasicAnnotatedTypeFactory(BaseTypeChecker checker) {
+        this(checker, FLOW_BY_DEFAULT);
+    }
+
+
+    @Override
+    public void setRoot(/*@Nullable*/ CompilationUnitTree root) {
+        super.setRoot(root);
+        this.analyses.clear();
+        this.scannedClasses.clear();
+        this.flowResult = null;
+        this.regularExitStores = null;
+        this.methodInvocationStores = null;
+        this.returnStatementStores = null;
+        this.initializationStore = null;
+        this.initializationStaticStore = null;
     }
 
     // **********************************************************************
     // Factory Methods for the appropriate annotator classes
     // **********************************************************************
+
+    /**
+     * Returns an immutable set of the <em>monotonic</em> type qualifiers supported by this
+     * checker.
+     *
+     * @return the monotonic type qualifiers supported this processor, or an empty
+     * set if none
+     * @see MonotonicQualifier
+     */
+    public final Set<Class<? extends Annotation>> getSupportedMonotonicTypeQualifiers() {
+        if (supportedMonotonicQuals == null) {
+            supportedMonotonicQuals = new HashSet<>();
+            for (Class<? extends Annotation> anno : getSupportedTypeQualifiers()) {
+                MonotonicQualifier mono = anno.getAnnotation(MonotonicQualifier.class);
+                if (mono != null) {
+                    supportedMonotonicQuals.add(anno);
+                }
+            }
+        }
+        return supportedMonotonicQuals;
+    }
 
     /**
      * Returns a {@link TreeAnnotator} that adds annotations to a type based
@@ -165,8 +217,8 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
      *
      * @return a tree annotator
      */
-    protected TreeAnnotator createTreeAnnotator(Checker checker) {
-        return new TreeAnnotator(checker, this);
+    protected TreeAnnotator createTreeAnnotator() {
+        return new TreeAnnotator(this);
     }
 
     /**
@@ -175,8 +227,8 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
      *
      * @return a type annotator
      */
-    protected TypeAnnotator createTypeAnnotator(Checker checker) {
-        return new TypeAnnotator(checker, this);
+    protected TypeAnnotator createTypeAnnotator() {
+        return new TypeAnnotator(this);
     }
 
     /**
@@ -193,8 +245,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
      * analysis if they do not follow the checker naming convention.
      */
     @SuppressWarnings({ "unchecked", "rawtypes"})
-    protected FlowAnalysis createFlowAnalysis(Checker checker,
-            List<Pair<VariableElement, Value>> fieldValues) {
+    protected FlowAnalysis createFlowAnalysis(List<Pair<VariableElement, Value>> fieldValues) {
 
         // Try to reflectively load the visitor.
         Class<?> checkerClass = checker.getClass();
@@ -204,10 +255,9 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
                     .replace("Checker", "Analysis")
                     .replace("Subchecker", "Analysis");
             FlowAnalysis result = BaseTypeChecker.invokeConstructorFor(
-                    classToLoad, new Class<?>[] { this.getClass(),
-                            ProcessingEnvironment.class, checkerClass,
-                            List.class }, new Object[] { this, processingEnv, checker,
-                            fieldValues });
+                    classToLoad,
+                    new Class<?>[] { checkerClass, this.getClass(), List.class },
+                    new Object[] { checker, this, fieldValues });
             if (result != null)
                 return result;
             checkerClass = checkerClass.getSuperclass();
@@ -221,9 +271,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
             tmp.add(Pair.<VariableElement, CFValue> of(fieldVal.first,
                     (CFValue) fieldVal.second));
         }
-        return (FlowAnalysis) new CFAnalysis(
-                (AbstractBasicAnnotatedTypeFactory) this, processingEnv, checker,
-                tmp);
+        return (FlowAnalysis) new CFAnalysis(checker, (AbstractBasicAnnotatedTypeFactory) this, tmp);
     }
 
     /**
@@ -245,7 +293,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
     public TransferFunction createFlowTransferFunction(CFAbstractAnalysis<Value, Store, TransferFunction> analysis) {
 
         // Try to reflectively load the visitor.
-        Class<?> checkerClass = this.checker.getClass();
+        Class<?> checkerClass = checker.getClass();
 
         while (checkerClass != BaseTypeChecker.class) {
             final String classToLoad = checkerClass.getName()
@@ -279,7 +327,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
         // TODO: this should be per qualifier hierarchy.
         boolean foundDefaultOtherwise = false;
 
-        for (Class<? extends Annotation> qual : checker.getSupportedTypeQualifiers()) {
+        for (Class<? extends Annotation> qual : getSupportedTypeQualifiers()) {
             DefaultFor defaultFor = qual.getAnnotation(DefaultFor.class);
             boolean hasDefaultFor = false;
             if (defaultFor != null) {
@@ -354,7 +402,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
         IN_PROGRESS, FINISHED
     };
 
-    protected Map<ClassTree, ScanState> scannedClasses = new HashMap<>();
+    protected final Map<ClassTree, ScanState> scannedClasses;
 
     /**
      * The result of the flow analysis. Invariant:
@@ -366,25 +414,25 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
      * Note that flowResult contains analysis results for Trees from multiple
      * classes which are produced by multiple calls to performFlowAnalysis.
      */
-    protected AnalysisResult<Value, Store> flowResult = null;
+    protected AnalysisResult<Value, Store> flowResult;
 
     /**
      * A mapping from methods (or other code blocks) to their regular exit store (used to check
      * postconditions).
      */
-    protected IdentityHashMap<Tree, Store> regularExitStores = null;
+    protected IdentityHashMap<Tree, Store> regularExitStores;
 
     /**
      * A mapping from methods to their a list with all return statements and the
      * corresponding store.
      */
-    protected IdentityHashMap<MethodTree, List<Pair<ReturnNode, TransferResult<Value, Store>>>> returnStatementStores = null;
+    protected IdentityHashMap<MethodTree, List<Pair<ReturnNode, TransferResult<Value, Store>>>> returnStatementStores;
 
     /**
      * A mapping from methods to their a list with all return statements and the
      * corresponding store.
      */
-    protected IdentityHashMap<MethodInvocationTree, Store> methodInvocationStores = null;
+    protected IdentityHashMap<MethodInvocationTree, Store> methodInvocationStores;
 
     /**
      * Returns the regular exit store for a method or another code block (such as static initializers).
@@ -563,11 +611,11 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
     }
 
     // Maintain a deque of analyses to accomodate nested classes.
-    Deque<FlowAnalysis> analyses = new LinkedList<>();
+    protected final Deque<FlowAnalysis> analyses;
     // Maintain for every class the store that is used when we analyze initialization code
-    Store initializationStore = null;
+    Store initializationStore;
     // Maintain for every class the store that is used when we analyze static initialization code
-    Store initializationStaticStore = null;
+    Store initializationStaticStore;
 
     /**
      * Analyze the AST {@code ast} and store the result.
@@ -586,7 +634,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
             boolean isInitializationCode, boolean isStatic) {
         CFGBuilder builder = new CFCFGBuilder(checker, this);
         ControlFlowGraph cfg = builder.run(root, processingEnv, ast);
-        FlowAnalysis newAnalysis = createFlowAnalysis(getChecker(), fieldValues);
+        FlowAnalysis newAnalysis = createFlowAnalysis(fieldValues);
         if (emptyStore == null) {
             emptyStore = newAnalysis.createEmptyStore(!checker.hasOption("concurrentSemantics"));
         }
@@ -823,10 +871,6 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
         return mfuPair;
     }
 
-    public Checker getChecker() {
-        return checker;
-    }
-
     public Store getEmptyStore() {
         return emptyStore;
     }
@@ -837,9 +881,5 @@ public abstract class AbstractBasicAnnotatedTypeFactory<Checker extends BaseType
 
     public void setUseFlow(boolean useFlow) {
         this.useFlow = useFlow;
-    }
-
-    public void setEmptyStore(Store emptyStore) {
-        this.emptyStore = emptyStore;
     }
 }

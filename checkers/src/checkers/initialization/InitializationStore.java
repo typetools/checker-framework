@@ -32,8 +32,9 @@ import javax.lang.model.element.Element;
  * @author Stefan Heule
  * @see InitializationTransfer
  */
-public class InitializationStore<V extends CFAbstractValue<V>, S extends InitializationStore<V, S>> extends
-        CFAbstractStore<V, S> {
+public class InitializationStore<V extends CFAbstractValue<V>,
+            S extends InitializationStore<V, S>>
+        extends CFAbstractStore<V, S> {
 
     /** The list of fields that are initialized. */
     protected final Set<Element> initializedFields;
@@ -60,9 +61,9 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
             return;
         }
         super.insertValue(r, value);
-        InitializationChecker<?> checker = (InitializationChecker<?>) analysis.getFactory().getChecker();
-        QualifierHierarchy qualifierHierarchy = checker.getQualifierHierarchy();
-        AnnotationMirror invariantAnno = checker.getFieldInvariantAnnotation();
+        InitializationAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory = (InitializationAnnotatedTypeFactory<?, ?, ?, ?>) analysis.getTypeFactory();
+        QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
+        AnnotationMirror invariantAnno = atypeFactory.getFieldInvariantAnnotation();
         for (AnnotationMirror a : value.getType().getAnnotations()) {
             if (qualifierHierarchy.isSubtype(a, invariantAnno)) {
                 if (r instanceof FieldAccess) {
@@ -86,8 +87,7 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
     @Override
     public void updateForMethodCall(MethodInvocationNode n,
             AnnotatedTypeFactory atypeFactory, V val) {
-        InitializationChecker<?> checker = (InitializationChecker<?>) analysis.getFactory().getChecker();
-        AnnotationMirror fieldInvariantAnnotation = checker.getFieldInvariantAnnotation();
+        AnnotationMirror fieldInvariantAnnotation = ((InitializationAnnotatedTypeFactory<?, ?, ?, ?>)atypeFactory).getFieldInvariantAnnotation();
 
         // Are there fields that have the 'invariant' annotations and are in the
         // store?

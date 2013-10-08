@@ -4,11 +4,11 @@ package checkers.util;
 import checkers.interning.quals.*;
 */
 
-import checkers.basetype.BaseTypeChecker;
 import checkers.nullness.quals.NonNull;
 import checkers.nullness.quals.Nullable;
 import checkers.nullness.quals.PolyNull;
 import checkers.quals.PolymorphicQualifier;
+import checkers.types.AnnotatedTypeFactory;
 import checkers.types.QualifierHierarchy;
 
 import dataflow.quals.Pure;
@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.util.Elements;
 
 /**
  * Represents the type qualifier hierarchy of a type system.
@@ -75,15 +74,12 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
          */
         protected final Map<AnnotationMirror, AnnotationMirror> polyQualifiers;
 
-        protected final BaseTypeChecker<?> checker;
+        protected final AnnotatedTypeFactory atypeFactory;
 
-        private final Elements elements;
-
-        public MultiGraphFactory(BaseTypeChecker<?> checker) {
+        public MultiGraphFactory(AnnotatedTypeFactory atypeFactory) {
             this.supertypes = AnnotationUtils.createAnnotationMap();
             this.polyQualifiers = new HashMap<AnnotationMirror, AnnotationMirror>();
-            this.checker = checker;
-            this.elements = checker.getProcessingEnvironment().getElementUtils();
+            this.atypeFactory = atypeFactory;
         }
 
         /**
@@ -96,9 +92,9 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
             if (supertypes.containsKey(qual))
                 return;
 
-            Class<? extends Annotation> pqtopclass = QualifierPolymorphism.getPolymorphicQualifierTop(elements, qual);
+            Class<? extends Annotation> pqtopclass = QualifierPolymorphism.getPolymorphicQualifierTop(atypeFactory.getElementUtils(), qual);
             if (pqtopclass != null) {
-                AnnotationMirror pqtop = AnnotationUtils.fromClass(elements, pqtopclass);
+                AnnotationMirror pqtop = AnnotationUtils.fromClass(atypeFactory.getElementUtils(), pqtopclass);
                 if (QualifierPolymorphism.isPolyAll(qual)) {
                     // Use key null as marker for polyall
                     this.polyQualifiers.put(null, qual);
@@ -138,7 +134,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         }
 
         protected QualifierHierarchy createQualifierHierarchy() {
-            return checker.createQualifierHierarchy(this);
+            return atypeFactory.createQualifierHierarchy(this);
         }
 
         private boolean wasBuilt = false;
@@ -165,11 +161,6 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
      * Immutable after construction finishes.
      */
     protected final Map<AnnotationMirror, Set<AnnotationMirror>> supertypesMap;
-
-    /**
-     * Element utilities to use.
-     */
-    protected final Elements elements;
 
     /**
      * The top qualifiers of the individual type hierarchies.
@@ -209,12 +200,10 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         // Calculate the transitive closure
         Map<AnnotationMirror, Set<AnnotationMirror>>  fullMap = buildFullMap(f.supertypes);
 
-        this.elements = f.elements;
-
         Set<AnnotationMirror> newtops = findTops(fullMap);
         Set<AnnotationMirror> newbottoms = findBottoms(fullMap);
 
-        this.polymorphicQualifier = AnnotationUtils.fromClass(elements, PolymorphicQualifier.class);
+        this.polymorphicQualifier = AnnotationUtils.fromClass(f.atypeFactory.getElementUtils(), PolymorphicQualifier.class);
         this.polyQualifiers = f.polyQualifiers;
 
         addPolyRelations(this,
@@ -532,7 +521,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
             AnnotationMirror declTop = kv.getKey();
             AnnotationMirror polyQualifier = kv.getValue();
             if (declTop == null || // PolyAll
-                AnnotationUtils.areSame(declTop, AnnotationUtils.fromClass(elements, PolymorphicQualifier.class))) {
+                AnnotationUtils.areSame(declTop, polymorphicQualifier)) {
                 if (declTop == null || // PolyAll
                         tops.size() == 1) { // un-ambigous single top
                     AnnotationUtils.updateMappingToImmutableSet(fullMap, polyQualifier, tops);

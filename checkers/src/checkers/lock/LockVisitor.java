@@ -20,7 +20,6 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 
-import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
@@ -39,10 +38,10 @@ import com.sun.source.tree.VariableTree;
  * This visitor reports errors ("unguarded.access") or warnings for violations
  * for accessing a field or calling a method without holding their locks.
  */
-public class LockVisitor extends BaseTypeVisitor<LockChecker, LockAnnotatedTypeFactory> {
+public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
-    public LockVisitor(LockChecker checker, CompilationUnitTree root) {
-        super(checker, root);
+    public LockVisitor(LockChecker checker) {
+        super(checker);
     }
 
     @Override

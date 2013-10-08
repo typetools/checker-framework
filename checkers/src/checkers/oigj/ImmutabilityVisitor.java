@@ -12,13 +12,12 @@ import java.util.Collections;
 
 import javax.lang.model.element.Element;
 
-import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
 
-public class ImmutabilityVisitor extends BaseTypeVisitor<ImmutabilitySubchecker, ImmutabilityAnnotatedTypeFactory> {
+public class ImmutabilityVisitor extends BaseTypeVisitor<ImmutabilityAnnotatedTypeFactory> {
 
-    public ImmutabilityVisitor(ImmutabilitySubchecker checker, CompilationUnitTree root) {
-        super(checker, root);
+    public ImmutabilityVisitor(ImmutabilitySubchecker checker) {
+        super(checker);
     }
 
     @Override
@@ -54,9 +53,9 @@ public class ImmutabilityVisitor extends BaseTypeVisitor<ImmutabilitySubchecker,
             return true;
         }
 
-        if (checker.getQualifierHierarchy().isSubtype(
+        if (atypeFactory.getQualifierHierarchy().isSubtype(
                 receiverType.getAnnotations(),
-                Collections.singleton(checker.ASSIGNS_FIELDS)))
+                Collections.singleton(atypeFactory.ASSIGNS_FIELDS)))
             return true;
 
         return false;

@@ -1,6 +1,5 @@
 package checkers.interning;
 
-import checkers.basetype.BaseTypeChecker;
 import checkers.interning.quals.Interned;
 import checkers.interning.quals.PolyInterned;
 import checkers.quals.DefaultQualifier;
@@ -10,7 +9,7 @@ import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
-import checkers.types.SubtypingAnnotatedTypeFactory;
+import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.types.TreeAnnotator;
 import checkers.types.TypeAnnotator;
 
@@ -23,7 +22,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 
 import com.sun.source.tree.BinaryTree;
-import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.Tree;
 
@@ -40,14 +38,14 @@ import com.sun.source.tree.Tree;
  * <li value="5">has the type java.lang.Class
  * </ol>
  *
- * This factory extends {@link SubtypingAnnotatedTypeFactory} and inherits its
+ * This factory extends {@link BasicAnnotatedTypeFactory} and inherits its
  * functionality, including: flow-sensitive qualifier inference, qualifier
  * polymorphism (of {@link PolyInterned}), implicit annotations via
  * {@link ImplicitFor} on {@link Interned} (to handle cases 1, 2, 4), and
  * user-specified defaults via {@link DefaultQualifier}.
  * Case 5 is handled by the stub library.
  */
-public class InterningAnnotatedTypeFactory extends SubtypingAnnotatedTypeFactory<InterningChecker> {
+public class InterningAnnotatedTypeFactory extends BasicAnnotatedTypeFactory {
 
     /** The {@link Interned} annotation. */
     final AnnotationMirror INTERNED, UNQUALIFIED;
@@ -59,29 +57,28 @@ public class InterningAnnotatedTypeFactory extends SubtypingAnnotatedTypeFactory
      * @param checker the checker to use
      * @param root the AST on which this type factory operates
      */
-    public InterningAnnotatedTypeFactory(InterningChecker checker,
-        CompilationUnitTree root) {
-        super(checker, root);
+    public InterningAnnotatedTypeFactory(InterningChecker checker) {
+        super(checker);
         this.INTERNED = AnnotationUtils.fromClass(elements, Interned.class);
         this.UNQUALIFIED = AnnotationUtils.fromClass(elements, Unqualified.class);
 
         // If you update the following, also update ../../../manual/interning-checker.tex .
         addAliasedAnnotation(com.sun.istack.Interned.class, INTERNED);
 
+        this.postInit();
+
         // The null literal is interned -> make Void interned also.
         typeAnnotator.addTypeName(java.lang.Void.class, INTERNED);
-
-        this.postInit();
     }
 
     @Override
-    protected TreeAnnotator createTreeAnnotator(InterningChecker checker) {
-        return new InterningTreeAnnotator(checker);
+    protected TreeAnnotator createTreeAnnotator() {
+        return new InterningTreeAnnotator(this);
     }
 
     @Override
-    protected TypeAnnotator createTypeAnnotator(InterningChecker checker) {
-        return new InterningTypeAnnotator(checker);
+    protected TypeAnnotator createTypeAnnotator() {
+        return new InterningTypeAnnotator(this);
     }
 
     @Override
@@ -96,8 +93,8 @@ public class InterningAnnotatedTypeFactory extends SubtypingAnnotatedTypeFactory
      */
     private class InterningTreeAnnotator  extends TreeAnnotator {
 
-        InterningTreeAnnotator(BaseTypeChecker<?> checker) {
-            super(checker, InterningAnnotatedTypeFactory.this);
+        InterningTreeAnnotator(InterningAnnotatedTypeFactory atypeFactory) {
+            super(atypeFactory);
         }
 
         @Override
@@ -131,8 +128,8 @@ public class InterningAnnotatedTypeFactory extends SubtypingAnnotatedTypeFactory
     private class InterningTypeAnnotator extends TypeAnnotator {
 
         /** Creates an {@link InterningTypeAnnotator} for the given checker. */
-        InterningTypeAnnotator(BaseTypeChecker<?> checker) {
-            super(checker, InterningAnnotatedTypeFactory.this);
+        InterningTypeAnnotator(InterningAnnotatedTypeFactory atypeFactory) {
+            super(atypeFactory);
         }
 
         @Override

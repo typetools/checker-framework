@@ -3,14 +3,12 @@ package checkers.linear;
 import checkers.linear.quals.Linear;
 import checkers.linear.quals.Unusable;
 import checkers.types.AnnotatedTypeMirror;
-import checkers.types.SubtypingAnnotatedTypeFactory;
+import checkers.types.BasicAnnotatedTypeFactory;
 
 import javacutils.AnnotationUtils;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
-
-import com.sun.source.tree.CompilationUnitTree;
 
 /**
  * Adds {@link Unusable} qualifier to a type if it represents:
@@ -23,13 +21,12 @@ import com.sun.source.tree.CompilationUnitTree;
  * </ol>
  *
  */
-public class LinearAnnotatedTypeFactory extends SubtypingAnnotatedTypeFactory<LinearChecker> {
+public class LinearAnnotatedTypeFactory extends BasicAnnotatedTypeFactory {
 
     private final AnnotationMirror LINEAR, UNUSABLE;
 
-    public LinearAnnotatedTypeFactory(LinearChecker checker,
-            CompilationUnitTree root) {
-        super(checker, root);
+    public LinearAnnotatedTypeFactory(LinearChecker checker) {
+        super(checker);
 
         LINEAR = AnnotationUtils.fromClass(elements, Linear.class);
         UNUSABLE = AnnotationUtils.fromClass(elements, Unusable.class);

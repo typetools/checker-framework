@@ -149,7 +149,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         ExecutableElement method = n.getTarget().getMethod();
 
         // case 1: remove information if necessary
-        if (!(analysis.atypeFactory.getProcessingEnv().getOptions().containsKey("assumeSideEffectFree")
+        if (!(analysis.checker.hasOption("assumeSideEffectFree")
               || PurityUtils.isSideEffectFree(atypeFactory, method))) {
             // update field values
             Map<FlowExpressions.FieldAccess, V> newFieldValues = new HashMap<>();
@@ -204,7 +204,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
         // store information about method call if possible
         Receiver methodCall = FlowExpressions.internalReprOf(
-                analysis.getFactory(), n);
+                analysis.getTypeFactory(), n);
         replaceValue(methodCall, val);
     }
 
@@ -381,7 +381,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      */
     public /*@Nullable*/ V getValue(FieldAccessNode n) {
         FlowExpressions.FieldAccess fieldAccess = FlowExpressions
-                .internalReprOfFieldAccess(analysis.getFactory(), n);
+                .internalReprOfFieldAccess(analysis.getTypeFactory(), n);
         return fieldValues.get(fieldAccess);
     }
 
@@ -390,7 +390,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      *         information is available.
      */
     public /*@Nullable*/ V getValue(MethodInvocationNode n) {
-        Receiver method = FlowExpressions.internalReprOf(analysis.getFactory(),
+        Receiver method = FlowExpressions.internalReprOf(analysis.getTypeFactory(),
                 n, true);
         if (method == null) {
             return null;
@@ -404,7 +404,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      */
     public /*@Nullable*/ V getValue(ArrayAccessNode n) {
         FlowExpressions.ArrayAccess arrayAccess = FlowExpressions
-                .internalReprOfArrayAccess(analysis.getFactory(), n);
+                .internalReprOfArrayAccess(analysis.getTypeFactory(), n);
         return arrayValues.get(arrayAccess);
     }
 
@@ -414,7 +414,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      */
     public void updateForAssignment(Node n, /*@Nullable*/ V val) {
         Receiver receiver = FlowExpressions.internalReprOf(
-                analysis.getFactory(), n);
+                analysis.getTypeFactory(), n);
         if (receiver instanceof ArrayAccess) {
             updateForArrayAssignment((ArrayAccess) receiver, val);
         } else if (receiver instanceof FieldAccess) {

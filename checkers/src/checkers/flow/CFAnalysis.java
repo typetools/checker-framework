@@ -1,15 +1,14 @@
 package checkers.flow;
 
-import java.util.List;
-
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.VariableElement;
+import checkers.source.SourceChecker;
+import checkers.types.AbstractBasicAnnotatedTypeFactory;
+import checkers.types.AnnotatedTypeMirror;
 
 import javacutils.Pair;
 
-import checkers.basetype.BaseTypeChecker;
-import checkers.types.AbstractBasicAnnotatedTypeFactory;
-import checkers.types.AnnotatedTypeMirror;
+import java.util.List;
+
+import javax.lang.model.element.VariableElement;
 
 /**
  * The default dataflow analysis used in the Checker Framework.
@@ -19,17 +18,10 @@ import checkers.types.AnnotatedTypeMirror;
  */
 public class CFAnalysis extends CFAbstractAnalysis<CFValue, CFStore, CFTransfer> {
 
-    public <Checker extends BaseTypeChecker<?>> CFAnalysis(
-            AbstractBasicAnnotatedTypeFactory<Checker, CFValue, CFStore, CFTransfer, CFAnalysis> factory,
-            ProcessingEnvironment env, Checker checker) {
-        super(factory, env, checker);
-    }
-
-    public <Checker extends BaseTypeChecker<?>> CFAnalysis(
-            AbstractBasicAnnotatedTypeFactory<Checker, CFValue, CFStore, CFTransfer, CFAnalysis> factory,
-            ProcessingEnvironment env, Checker checker,
+    public CFAnalysis(SourceChecker checker,
+            AbstractBasicAnnotatedTypeFactory<CFValue, CFStore, CFTransfer, CFAnalysis> factory,
             List<Pair<VariableElement, CFValue>> fieldValues) {
-        super(factory, env, checker, fieldValues);
+        super(checker, factory, fieldValues);
     }
 
     @Override
