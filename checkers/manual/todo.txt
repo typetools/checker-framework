@@ -1,6 +1,4 @@
 
-Necessary changes to the manual.  In brackets I (Stefan) wrote the names of people familiar with the particular change, which might be most qualified to make the change.  If no person is listed, than anyone could do the change.
-
 ------------------------------------------------------
 
 New section on concepts and annotations that apply to all type-systems and checkers
@@ -13,9 +11,6 @@ Where would a good place be for this?  At the beginning/end?  Split into multipl
 
 - Pre-/postconditions from a developer perspective:
   - Explain the meta-annotations @PreconditionAnnotation, @ConditionalPostconditionAnnotation and @PostconditionAnnotation.
-
-- Dataflow analysis
-  - Explain the command line parameter -Adotflowdir (probably find a better name first) [Stefan/Charlie].
 
 - Document -ANullnessChecker_option=value mechanism
 
@@ -34,10 +29,7 @@ We found a better naming scheme than Basic vs. Base; it needs to be documented.
 
 ------------------------------------------------------
 
-[Stefan]
-
-Explanations on what flow expressions are supported (i.e. strings in pre/postconditions):
-
+Decide what to say about @KeyFor strings.  Unfortunately not the same set of expressions is allowed as with pre/postconditions.
 
 ------------------------------------------------------
 
