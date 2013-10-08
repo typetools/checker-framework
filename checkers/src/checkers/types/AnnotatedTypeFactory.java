@@ -9,7 +9,10 @@ import checkers.nullness.quals.Nullable;
 import checkers.basetype.BaseTypeChecker;
 import checkers.quals.FromByteCode;
 import checkers.quals.FromStubFile;
+import checkers.quals.PolymorphicQualifier;
 import checkers.quals.StubFiles;
+import checkers.quals.SubtypeOf;
+import checkers.quals.TypeQualifiers;
 import checkers.quals.Unqualified;
 import checkers.source.SourceChecker;
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -21,6 +24,9 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
 import checkers.types.visitors.AnnotatedTypeScanner;
 import checkers.util.AnnotatedTypes;
+import checkers.util.GraphQualifierHierarchy;
+import checkers.util.MultiGraphQualifierHierarchy;
+import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import checkers.util.stub.StubParser;
 import checkers.util.stub.StubResource;
 import checkers.util.stub.StubUtil;
@@ -41,6 +47,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -117,7 +124,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /** Optional! The AST of the source file being operated on. */
     // TODO: when should root be null? What are the use cases?
     // None of the existing test checkers has a null root.
-    protected final /*@Nullable*/ CompilationUnitTree root;
+    // Should not be modified between calls to "visit".
+    protected /*@Nullable*/ CompilationUnitTree root;
 
     /** The processing environment to use for accessing compiler internals. */
     protected final ProcessingEnvironment processingEnv;
@@ -129,15 +137,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     protected final Types types;
 
     /** The state of the visitor. **/
-    final protected VisitorState visitorState;
+    protected final VisitorState visitorState;
 
     /** Represent the annotation relations. **/
     protected final QualifierHierarchy qualHierarchy;
 
-    /** Represent the type relations.
-     * Can be null if the checker doesn't support type hierarchies.
-     */
-    protected final /*@Nullable*/ TypeHierarchy typeHierarchy;
+    /** Represent the type relations. */
+    // TODO: when is this allowed to be null?
+    protected final TypeHierarchy typeHierarchy;
+
+    /** To cache the supported type qualifiers. */
+    private final Set<Class<? extends Annotation>> supportedQuals;
 
     /** Types read from stub files (but not those from the annotated JDK jar file). */
     // Initially null, then assigned in postInit().  Caching is enabled as
@@ -157,7 +167,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /**
      * The checker to use for option handling and resource management.
      */
-    protected final SourceChecker<?> checker;
+    protected final BaseTypeChecker checker;
 
     /**
      * Map from class name (canonical name) of an annotation, to the
@@ -198,25 +208,24 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *            annotated types for
      * @throws IllegalArgumentException if either argument is {@code null}
      */
-    public AnnotatedTypeFactory(SourceChecker<?> checker,
-            QualifierHierarchy qualHierarchy,
-            /*@Nullable*/ TypeHierarchy typeHierarchy,
-            /*@Nullable*/ CompilationUnitTree root) {
+    public AnnotatedTypeFactory(BaseTypeChecker checker) {
         uid = ++uidCounter;
         this.processingEnv = checker.getProcessingEnvironment();
-        this.root = root;
+        // this.root = root;
         this.checker = checker;
         this.trees = Trees.instance(processingEnv);
         this.elements = processingEnv.getElementUtils();
         this.types = processingEnv.getTypeUtils();
         this.visitorState = new VisitorState();
-        this.qualHierarchy = qualHierarchy;
-        this.typeHierarchy = typeHierarchy;
+
+        this.supportedQuals = createSupportedTypeQualifiers();
+
+        this.qualHierarchy = createQualifierHierarchy();
         if (qualHierarchy == null) {
             ErrorReporter.errorAbort("AnnotatedTypeFactory with null qualifier hierarchy not supported.");
         }
-        this.indexTypes = null; // will be set by postInit()
-        this.indexDeclAnnos = null; // will be set by postInit()
+        this.typeHierarchy = createTypeHierarchy();
+
         this.fromByteCode = AnnotationUtils.fromClass(elements, FromByteCode.class);
     }
 
@@ -227,17 +236,203 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * AnnotatedTypeFactory.
      */
     protected void postInit() {
-        buildIndexTypes();
         // TODO: is this the best location for declaring this alias?
         addAliasedDeclAnnotation(org.jmlspecs.annotation.Pure.class,
                 dataflow.quals.Pure.class,
                 AnnotationUtils.fromClass(elements, dataflow.quals.Pure.class));
+
+        if (this.getClass().equals(AnnotatedTypeFactory.class)) {
+            this.buildIndexTypes();
+        }
+    }
+
+    // TODO: document
+    // Set the CompilationUnitTree that should be used.
+    // What's a better name? Maybe "reset" or "start"?
+    public void setRoot(/*@Nullable*/ CompilationUnitTree root) {
+        this.root = root;
+        // There is no need to clear the following caches, they
+        // are all limited by CACHE_SIZE.
+        /*
+        treeCache.clear();
+        fromTreeCache.clear();
+        elementCache.clear();
+        elementToTreeCache.clear();
+        */
     }
 
     @Pure
     @Override
     public String toString() {
         return getClass().getSimpleName() + "#" + uid;
+    }
+
+
+    /** Factory method to easily change what Factory is used to
+     * create a QualifierHierarchy.
+     */
+    protected MultiGraphQualifierHierarchy.MultiGraphFactory createQualifierHierarchyFactory() {
+        return new MultiGraphQualifierHierarchy.MultiGraphFactory(this);
+    }
+
+    /** Factory method to easily change what QualifierHierarchy is
+     * created.
+     * Needs to be public only because the GraphFactory must be able to call this method.
+     * No external use of this method is necessary.
+     */
+    public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
+        return new GraphQualifierHierarchy(factory, null);
+    }
+
+    /**
+     * Returns the type qualifier hierarchy graph to be used by this processor.
+     *
+     * The implementation builds the type qualifier hierarchy for the
+     * {@link #getSupportedTypeQualifiers()} using the
+     * meta-annotations found in them.  The current implementation returns an
+     * instance of {@code GraphQualifierHierarchy}.
+     *
+     * Subclasses may override this method to express any relationships that
+     * cannot be inferred using meta-annotations (e.g. due to lack of
+     * meta-annotations).
+     *
+     * @return an annotation relation tree representing the supported qualifiers
+     */
+    protected QualifierHierarchy createQualifierHierarchy() {
+        Set<Class<? extends Annotation>> supportedTypeQualifiers = getSupportedTypeQualifiers();
+        MultiGraphQualifierHierarchy.MultiGraphFactory factory = this.createQualifierHierarchyFactory();
+
+        return createQualifierHierarchy(elements, supportedTypeQualifiers, factory);
+    }
+
+    /**
+     * Returns the type qualifier hierarchy graph for a given set of type qualifiers and a factory.
+     * <p>
+     *
+     * The implementation builds the type qualifier hierarchy for the
+     * {@code supportedTypeQualifiers}.  The current implementation returns an
+     * instance of {@code GraphQualifierHierarchy}.
+     *
+     * @return an annotation relation tree representing the supported qualifiers
+     */
+    protected static QualifierHierarchy createQualifierHierarchy(
+            Elements elements,
+            Set<Class<? extends Annotation>> supportedTypeQualifiers,
+            MultiGraphFactory factory) {
+
+        for (Class<? extends Annotation> typeQualifier : supportedTypeQualifiers) {
+            AnnotationMirror typeQualifierAnno = AnnotationUtils.fromClass(elements, typeQualifier);
+            assert typeQualifierAnno != null : "Loading annotation \"" + typeQualifier + "\" failed!";
+            factory.addQualifier(typeQualifierAnno);
+            // Polymorphic qualifiers can't declare their supertypes.
+            // An error is raised if one is present.
+            if (typeQualifier.getAnnotation(PolymorphicQualifier.class) != null) {
+                if (typeQualifier.getAnnotation(SubtypeOf.class) != null) {
+                    // This is currently not supported. At some point we might add
+                    // polymorphic qualifiers with upper and lower bounds.
+                    ErrorReporter.errorAbort("BaseTypeChecker: " + typeQualifier + " is polymorphic and specifies super qualifiers. " +
+                        "Remove the @checkers.quals.SubtypeOf or @checkers.quals.PolymorphicQualifier annotation from it.");
+                }
+                continue;
+            }
+            if (typeQualifier.getAnnotation(SubtypeOf.class) == null) {
+                ErrorReporter.errorAbort("BaseTypeChecker: " + typeQualifier + " does not specify its super qualifiers. " +
+                    "Add an @checkers.quals.SubtypeOf annotation to it.");
+            }
+            Class<? extends Annotation>[] superQualifiers =
+                typeQualifier.getAnnotation(SubtypeOf.class).value();
+            for (Class<? extends Annotation> superQualifier : superQualifiers) {
+                if (!supportedTypeQualifiers.contains(superQualifier)) {
+                    continue;
+                }
+                AnnotationMirror superAnno = null;
+                superAnno = AnnotationUtils.fromClass(elements, superQualifier);
+                factory.addSubtype(typeQualifierAnno, superAnno);
+            }
+        }
+
+        QualifierHierarchy hierarchy = factory.build();
+        if (hierarchy.getTypeQualifiers().size() < 1) {
+            ErrorReporter.errorAbort("BaseTypeChecker: invalid qualifier hierarchy: hierarchy requires at least one annotation: " + hierarchy.getTypeQualifiers());
+        }
+
+        return hierarchy;
+    }
+
+    /**
+     * Returns the type qualifier hierarchy graph to be used by this processor.
+     *
+     * @see #createQualifierHierarchy()
+     *
+     * @return the {@link QualifierHierarchy} for this checker
+     */
+    public final QualifierHierarchy getQualifierHierarchy() {
+        //if (qualHierarchy == null)
+        //    qualHierarchy = createQualifierHierarchy();
+        return qualHierarchy;
+    }
+
+
+    /**
+     * Creates the type subtyping checker using the current type qualifier
+     * hierarchy.
+     *
+     * Subclasses may override this method to specify new type-checking
+     * rules beyond the typical java subtyping rules.
+     *
+     * @return  the type relations class to check type subtyping
+     */
+    protected TypeHierarchy createTypeHierarchy() {
+        return new TypeHierarchy(checker, getQualifierHierarchy());
+    }
+
+    public final TypeHierarchy getTypeHierarchy() {
+        //if (typeHierarchy == null)
+        //    typeHierarchy = createTypeHierarchy();
+        return typeHierarchy;
+    }
+
+    /**
+     * If the checker class is annotated with {@link
+     * TypeQualifiers}, return an immutable set with the same set
+     * of classes as the annotation.  If the class is not so annotated,
+     * return an empty set.
+     *
+     * Subclasses may override this method to return an immutable set
+     * of their supported type qualifiers.
+     *
+     * @return the type qualifiers supported this processor, or an empty
+     * set if none
+     *
+     * @see TypeQualifiers
+     */
+    protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
+        Class<? extends BaseTypeChecker> classType = checker.getClass();
+        TypeQualifiers typeQualifiersAnnotation =
+            classType.getAnnotation(TypeQualifiers.class);
+        if (typeQualifiersAnnotation == null)
+            return Collections.emptySet();
+
+        Set<Class<? extends Annotation>> typeQualifiers = new HashSet<Class<? extends Annotation>>();
+        for (Class<? extends Annotation> qualifier : typeQualifiersAnnotation.value()) {
+            typeQualifiers.add(qualifier);
+        }
+        return Collections.unmodifiableSet(typeQualifiers);
+    }
+
+    /**
+     * Returns an immutable set of the type qualifiers supported by this
+     * checker.
+     *
+     * @see #createSupportedTypeQualifiers()
+     *
+     * @return the type qualifiers supported this processor, or an empty
+     * set if none
+     */
+    public final Set<Class<? extends Annotation>> getSupportedTypeQualifiers() {
+        //if (supportedQuals == null)
+        //    supportedQuals = createSupportedTypeQualifiers();
+        return supportedQuals;
     }
 
     // **********************************************************************
@@ -1357,7 +1552,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     public boolean isSupportedQualifier(/*@Nullable*/ AnnotationMirror a) {
         if (a == null) return false;
-        return AnnotationUtils.containsSameIgnoringValues(this.qualHierarchy.getTypeQualifiers(), a);
+        return AnnotationUtils.containsSameIgnoringValues(this.getQualifierHierarchy().getTypeQualifiers(), a);
     }
 
     /** Add the annotation clazz as an alias for the annotation type. */
@@ -1441,14 +1636,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         assert validType(t) : "Invalid type " + t + " for node " + t;
 
         return toAnnotatedType(t);
-    }
-
-    public QualifierHierarchy getQualifierHierarchy() {
-        return this.qualHierarchy;
-    }
-
-    public /*@Nullable*/ TypeHierarchy getTypeHierarchy() {
-        return this.typeHierarchy;
     }
 
     /**
@@ -1729,7 +1916,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /** Sets indexTypes and indexDeclAnnos by side effect, just before returning. */
-    private void buildIndexTypes() {
+    protected void buildIndexTypes() {
         if (this.indexTypes != null || this.indexDeclAnnos != null) {
             ErrorReporter.errorAbort("AnnotatedTypeFactory.buildIndexTypes called more than once");
         }
