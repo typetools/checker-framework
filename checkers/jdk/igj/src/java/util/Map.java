@@ -22,7 +22,7 @@ public interface Map<K, V> {
   public abstract void clear(@Mutable Map<K, V> this);
   public abstract @I Set<K> keySet(@ReadOnly Map<K, V> this);
   public abstract @I Collection<V> values(@ReadOnly Map<K, V> this);
-  public abstract @I Set<@I Map.Entry<K, V>> entrySet(@ReadOnly Map<K, V> this);
+  public abstract @I Set<Map. @I Entry<K, V>> entrySet(@ReadOnly Map<K, V> this);
   public abstract boolean equals(@ReadOnly Map<K, V> this, @ReadOnly Object a1) ;
   public abstract int hashCode(@ReadOnly Map<K, V> this) ;
 }

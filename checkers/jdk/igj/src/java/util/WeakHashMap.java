@@ -18,5 +18,5 @@ public class WeakHashMap<K, V> extends @I AbstractMap<K, V> implements @I Map<K,
   public boolean containsValue(@ReadOnly WeakHashMap<K, V> this, Object a1) { throw new RuntimeException("skeleton method"); }
   public @I Set<K> keySet(@ReadOnly WeakHashMap<K, V> this) { throw new RuntimeException("skeleton method"); }
   public @I Collection<V> values(@ReadOnly WeakHashMap<K, V> this) { throw new RuntimeException("skeleton method"); }
-  public @I Set<@I Map.Entry<K, V>> entrySet(@ReadOnly WeakHashMap<K, V> this) { throw new RuntimeException("skeleton method"); }
+  public @I Set<Map. @I Entry<K, V>> entrySet(@ReadOnly WeakHashMap<K, V> this) { throw new RuntimeException("skeleton method"); }
 }
