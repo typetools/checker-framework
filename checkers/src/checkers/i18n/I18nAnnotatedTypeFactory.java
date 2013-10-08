@@ -1,7 +1,7 @@
 package checkers.i18n;
 
-import checkers.basetype.BaseTypeChecker;
 import checkers.i18n.quals.Localized;
+import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.types.TreeAnnotator;
@@ -11,22 +11,20 @@ import javacutils.AnnotationUtils;
 import javax.lang.model.element.AnnotationMirror;
 
 import com.sun.source.tree.BinaryTree;
-import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.Tree;
 
-public class I18nAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<I18nSubchecker> {
+public class I18nAnnotatedTypeFactory extends BasicAnnotatedTypeFactory {
 
-    public I18nAnnotatedTypeFactory(I18nSubchecker checker,
-            CompilationUnitTree root) {
-        super(checker, root);
+    public I18nAnnotatedTypeFactory(I18nSubchecker checker) {
+        super(checker);
         this.postInit();
     }
 
     @Override
-    public TreeAnnotator createTreeAnnotator(I18nSubchecker checker) {
-        return new I18nTreeAnnotator(checker);
+    public TreeAnnotator createTreeAnnotator() {
+        return new I18nTreeAnnotator(this);
     }
 
     /** Do not propagate types through binary/compound operations.
@@ -34,8 +32,8 @@ public class I18nAnnotatedTypeFactory extends BasicAnnotatedTypeFactory<I18nSubc
     private class I18nTreeAnnotator extends TreeAnnotator {
         private final AnnotationMirror LOCALIZED;
 
-        public I18nTreeAnnotator(BaseTypeChecker<?> checker) {
-            super(checker, I18nAnnotatedTypeFactory.this);
+        public I18nTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
+            super(atypeFactory);
             LOCALIZED = AnnotationUtils.fromClass(elements, Localized.class);
         }
 

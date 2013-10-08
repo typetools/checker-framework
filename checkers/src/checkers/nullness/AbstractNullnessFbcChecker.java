@@ -1,10 +1,7 @@
 package checkers.nullness;
 
-import java.util.Collection;
-import java.util.HashSet;
-
-import checkers.initialization.quals.Initialized;
 import checkers.initialization.quals.FBCBottom;
+import checkers.initialization.quals.Initialized;
 import checkers.initialization.quals.UnderInitialization;
 import checkers.initialization.quals.UnknownInitialization;
 import checkers.nullness.quals.MonotonicNonNull;
@@ -14,6 +11,9 @@ import checkers.nullness.quals.PolyNull;
 import checkers.quals.PolyAll;
 import checkers.quals.TypeQualifiers;
 import checkers.source.SupportedLintOptions;
+
+import java.util.Collection;
+import java.util.HashSet;
 
 /**
  * A concrete instantiation of {@link AbstractNullnessChecker} using

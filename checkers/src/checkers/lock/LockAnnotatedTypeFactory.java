@@ -1,9 +1,14 @@
 package checkers.lock;
 
 import checkers.lock.quals.GuardedBy;
+import checkers.lock.quals.GuardedByTop;
+import checkers.quals.Unqualified;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.BasicAnnotatedTypeFactory;
+import checkers.types.QualifierHierarchy;
 import checkers.util.AnnotationBuilder;
+import checkers.util.GraphQualifierHierarchy;
+import checkers.util.MultiGraphQualifierHierarchy;
 
 import javacutils.AnnotationUtils;
 import javacutils.TreeUtils;
@@ -15,7 +20,6 @@ import java.util.List;
 
 import javax.lang.model.element.AnnotationMirror;
 
-import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -32,17 +36,16 @@ import com.sun.source.tree.Tree;
  * qualifiers only for the locks that are not currently held.
  *
  */
-public class LockAnnotatedTypeFactory
-    extends BasicAnnotatedTypeFactory<LockChecker> {
+public class LockAnnotatedTypeFactory extends BasicAnnotatedTypeFactory {
 
     private List<String> heldLocks = new ArrayList<String>();
-    private final AnnotationMirror GUARDED_BY, UNQUALIFIED;
+    protected final AnnotationMirror GUARDED_BY, GUARDEDBY_TOP, UNQUALIFIED;
 
-    public LockAnnotatedTypeFactory(LockChecker checker,
-            CompilationUnitTree root) {
-        super(checker, root);
-        GUARDED_BY = checker.GUARDEDBY;
-        UNQUALIFIED = checker.UNQUALIFIED;
+    public LockAnnotatedTypeFactory(LockChecker checker) {
+        super(checker);
+        GUARDED_BY = AnnotationUtils.fromClass(elements, GuardedBy.class);
+        GUARDEDBY_TOP = AnnotationUtils.fromClass(elements, GuardedByTop.class);
+        UNQUALIFIED = AnnotationUtils.fromClass(elements, Unqualified.class);
 
         addAliasedAnnotation(net.jcip.annotations.GuardedBy.class, GUARDED_BY);
 
@@ -160,4 +163,41 @@ public class LockAnnotatedTypeFactory
             return super.aliasedAnnotation(a);
         }
     }
+
+    @Override
+    public QualifierHierarchy createQualifierHierarchy(MultiGraphQualifierHierarchy.MultiGraphFactory ignorefactory) {
+        MultiGraphQualifierHierarchy.MultiGraphFactory factory = createQualifierHierarchyFactory();
+
+        factory.addQualifier(GUARDEDBY_TOP);
+        factory.addQualifier(GUARDED_BY);
+        factory.addQualifier(UNQUALIFIED);
+        factory.addSubtype(UNQUALIFIED, GUARDED_BY);
+        factory.addSubtype(GUARDED_BY, GUARDEDBY_TOP);
+
+        return new LockQualifierHierarchy(factory);
+    }
+
+    private final class LockQualifierHierarchy extends GraphQualifierHierarchy {
+
+        public LockQualifierHierarchy(MultiGraphQualifierHierarchy.MultiGraphFactory factory) {
+            super(factory, UNQUALIFIED);
+        }
+
+        @Override
+        public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
+            if (AnnotationUtils.areSameIgnoringValues(rhs, UNQUALIFIED)
+                    && AnnotationUtils.areSameIgnoringValues(lhs, GUARDED_BY)) {
+                return true;
+            }
+            // Ignore annotation values to ensure that annotation is in supertype map.
+            if (AnnotationUtils.areSameIgnoringValues(lhs, GUARDED_BY)) {
+                lhs = GUARDED_BY;
+            }
+            if (AnnotationUtils.areSameIgnoringValues(rhs, GUARDED_BY)) {
+                rhs = GUARDED_BY;
+            }
+            return super.isSubtype(rhs, lhs);
+        }
+    }
+
 }

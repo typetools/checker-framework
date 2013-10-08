@@ -31,7 +31,7 @@ import javax.lang.model.type.DeclaredType;
     PolyInterned.class, PolyAll.class})
 @SupportedLintOptions({"dotequals"})
 @SupportedOptions({"checkclass"})
-public final class InterningChecker extends BaseTypeChecker<InterningAnnotatedTypeFactory> {
+public final class InterningChecker extends BaseTypeChecker {
 
     /**
      * Returns the declared type of which the equality tests should be tested,

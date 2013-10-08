@@ -5,24 +5,10 @@ import checkers.propkey.quals.PropertyKey;
 import checkers.quals.Bottom;
 import checkers.quals.TypeQualifiers;
 import checkers.quals.Unqualified;
-import checkers.util.GraphQualifierHierarchy;
-import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import checkers.source.SupportedOptions;
 
-import javacutils.AnnotationUtils;
-
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Locale;
-import java.util.Properties;
 import java.util.ResourceBundle;
-import java.util.Set;
-
-import javax.annotation.processing.SupportedOptions;
-import javax.lang.model.util.Elements;
-
 
 /**
  * A type-checker that checks that only valid keys are used to access property files
@@ -54,123 +40,6 @@ import javax.lang.model.util.Elements;
  */
 // Subclasses need something similar to this:
 @TypeQualifiers( {PropertyKey.class, Unqualified.class, Bottom.class} )
-// Subclasses need exactly this:
 @SupportedOptions( {"propfiles", "bundlenames"} )
-public class PropertyKeyChecker extends BaseTypeChecker<PropertyKeyAnnotatedTypeFactory<?>> {
-
-    private Set<String> lookupKeys;
-
-    @Override
-    public void initChecker() {
-        super.initChecker();
-        this.lookupKeys =
-            Collections.unmodifiableSet(buildLookupKeys());
-    }
-
-    /**
-     * Returns a set of the valid keys that can be used.
-     */
-    public Set<String> getLookupKeys() {
-        return this.lookupKeys;
-    }
-
-    private Set<String> buildLookupKeys() {
-        Set<String> result = new HashSet<String>();
-
-        if (hasOption("propfiles")) {
-            result.addAll( keysOfPropertyFiles(getOption("propfiles")) );
-        }
-        if (hasOption("bundlenames")) {
-            result.addAll( keysOfResourceBundle(getOption("bundlenames")) );
-        }
-
-        return result;
-    }
-
-    private Set<String> keysOfPropertyFiles(String names) {
-        String[] namesArr = names.split(":");
-
-        if (namesArr == null) {
-            System.err.println("Couldn't parse the properties files: <" + names + ">");
-            return Collections.emptySet();
-        }
-
-        Set<String> result = new HashSet<String>();
-
-        for (String name : namesArr) {
-            try {
-                Properties prop = new Properties();
-
-                InputStream in = null;
-
-                ClassLoader cl = this.getClass().getClassLoader();
-                if (cl == null) {
-                    // the class loader is null if the system class loader was
-                    // used
-                    cl = ClassLoader.getSystemClassLoader();
-                }
-                in = cl.getResourceAsStream(name);
-
-                if (in == null) {
-                    // if the classloader didn't manage to load the file, try
-                    // whether a FileInputStream works. For absolute paths this
-                    // might help.
-                    try {
-                        in = new FileInputStream(name);
-                    } catch (FileNotFoundException e) {
-                        // ignore
-                    }
-                }
-
-                if (in == null) {
-                    System.err.println("Couldn't find the properties file: " + name);
-                    // report(Result.failure("propertykeychecker.filenotfound",
-                    // name), null);
-                    // return Collections.emptySet();
-                    continue;
-                }
-
-                prop.load(in);
-                result.addAll(prop.stringPropertyNames());
-            } catch (Exception e) {
-                // TODO: is there a nicer way to report messages, that are not
-                // connected to an AST node?
-                // One cannot use report, because it needs a node.
-                System.err.println("Exception in PropertyKeyChecker.keysOfPropertyFile: " + e);
-                e.printStackTrace();
-            }
-        }
-
-        return result;
-    }
-
-    private Set<String> keysOfResourceBundle(String bundleNames) {
-        String[] namesArr = bundleNames.split(":");
-
-        if (namesArr == null) {
-            System.err.println("Couldn't parse the resource bundles: <" + bundleNames + ">");
-            return Collections.emptySet();
-        }
-
-        Set<String> result = new HashSet<String>();
-
-        for (String bundleName : namesArr) {
-            ResourceBundle bundle = ResourceBundle.getBundle(bundleName);
-            if (bundle == null) {
-                System.err.println("Couldn't find the resource bundle: <" + bundleName
-                    + "> for locale <" + Locale.getDefault() + ">");
-                continue;
-            }
-
-            result.addAll(bundle.keySet());
-        }
-        return result;
-    }
-
-    @Override
-    public GraphQualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
-        Elements elements = processingEnv.getElementUtils();
-        return new GraphQualifierHierarchy(factory, AnnotationUtils.fromClass(elements, Bottom.class));
-    }
-
+public class PropertyKeyChecker extends BaseTypeChecker {
 }
