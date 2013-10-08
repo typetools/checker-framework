@@ -19,6 +19,6 @@ public class IdentityHashMap<K, V> extends AbstractMap<K, V> implements Map<K, V
   public int hashCode(@ReadOnly IdentityHashMap<K, V> this) { throw new RuntimeException(("skeleton method")); }
   public @PolyRead Set<K> keySet(@PolyRead IdentityHashMap<K, V> this) { throw new RuntimeException(("skeleton method")); }
   public @PolyRead Collection<V> values(@PolyRead IdentityHashMap<K, V> this) { throw new RuntimeException(("skeleton method")); }
-  public @PolyRead Set<@PolyRead Map.Entry<K, V>> entrySet(@PolyRead IdentityHashMap<K, V> this) { throw new RuntimeException(("skeleton method")); }
+  public @PolyRead Set<Map. @PolyRead Entry<K, V>> entrySet(@PolyRead IdentityHashMap<K, V> this) { throw new RuntimeException(("skeleton method")); }
   public Object clone() { throw new RuntimeException("skeleton method"); }
 }
