@@ -1000,7 +1000,9 @@ pseudo-assignment check (as performed by \refclass{basetype}{BaseTypeVisitor}; s
 \begin{itemize}
 
 \item \code{-Aflowdotdir}:
-  Directory for .dot files that visualize the control flow graph.
+  Directory for .dot files that visualize the control flow graph of all the methods and code fragments
+  analyzed by the dataflow analysis.  The graph also contains information about flow-sensitively refined
+  types of various expressions at many program points.
 
 \item \code{-AresourceStats}:
   Whether to output resource statistics at JVM shutdown.
