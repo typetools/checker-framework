@@ -23,7 +23,7 @@ import java.util.HashSet;
         UnderInitialization.class, Initialized.class, UnknownInitialization.class,
         FBCBottom.class, PolyNull.class, PolyAll.class })
 @SupportedLintOptions({
-        AbstractNullnessChecker.LINT_STRICTMONOTONICNONNULLINIT,
+        AbstractNullnessChecker.LINT_NOINITFORMONOTONICNONNULL,
         AbstractNullnessChecker.LINT_REDUNDANTNULLCOMPARISON,
         // Temporary option to forbid non-null array component types,
         // which is allowed by default.

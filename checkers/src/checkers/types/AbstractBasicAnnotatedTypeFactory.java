@@ -134,6 +134,9 @@ public abstract class AbstractBasicAnnotatedTypeFactory<
         this.methodInvocationStores = null;
         this.returnStatementStores = null;
 
+        this.initializationStore = null;
+        this.initializationStaticStore = null;
+
         // Add common aliases.
         // addAliasedDeclAnnotation(checkers.nullness.quals.Pure.class,
         //         Pure.class, AnnotationUtils.fromClass(elements, Pure.class));
@@ -176,6 +179,8 @@ public abstract class AbstractBasicAnnotatedTypeFactory<
         this.regularExitStores = null;
         this.methodInvocationStores = null;
         this.returnStatementStores = null;
+        this.initializationStore = null;
+        this.initializationStaticStore = null;
     }
 
     // **********************************************************************
@@ -528,6 +533,10 @@ public abstract class AbstractBasicAnnotatedTypeFactory<
             visitorState.setMethodReceiver(null);
             visitorState.setMethodTree(null);
 
+            // start without a initialization store
+            initializationStaticStore = null;
+            initializationStore = null;
+
             try {
                 List<MethodTree> methods = new ArrayList<>();
                 for (Tree m : ct.getMembers()) {
@@ -554,7 +563,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<
                         // analyze initializer if present
                         if (initializer != null) {
                             analyze(queue, new CFGStatement(vt),
-                                    fieldValues);
+                                    fieldValues, classTree, true, false);
                             Value value = flowResult.getValue(initializer);
                             if (value != null) {
                                 // Store the abstract value for the field.
@@ -574,7 +583,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<
                         break;
                     case BLOCK:
                         BlockTree b = (BlockTree) m;
-                        analyze(queue, new CFGStatement(b), fieldValues);
+                        analyze(queue, new CFGStatement(b), fieldValues, ct, true, b.isStatic());
                         break;
                     default:
                         assert false : "Unexpected member: " + m.getKind();
@@ -588,7 +597,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<
                 for (MethodTree mt : methods) {
                     analyze(queue,
                             new CFGMethod(mt, TreeUtils
-                                    .enclosingClass(getPath(mt))), fieldValues);
+                                    .enclosingClass(getPath(mt))), fieldValues, classTree, false, false);
                 }
             } finally {
                 visitorState.setClassType(preClassType);
@@ -603,6 +612,10 @@ public abstract class AbstractBasicAnnotatedTypeFactory<
 
     // Maintain a deque of analyses to accomodate nested classes.
     protected final Deque<FlowAnalysis> analyses;
+    // Maintain for every class the store that is used when we analyze initialization code
+    Store initializationStore;
+    // Maintain for every class the store that is used when we analyze static initialization code
+    Store initializationStaticStore;
 
     /**
      * Analyze the AST {@code ast} and store the result.
@@ -613,9 +626,12 @@ public abstract class AbstractBasicAnnotatedTypeFactory<
      *            The abstract values for all fields of the same class.
      * @param ast
      *            The AST to analyze.
+     * @param currentClass The class we are currently looking at.
+     * @param isInitializationCode Are we analyzing a (non-static) initializer block of a class.
      */
     protected void analyze(Queue<ClassTree> queue, UnderlyingAST ast,
-            List<Pair<VariableElement, Value>> fieldValues) {
+            List<Pair<VariableElement, Value>> fieldValues, ClassTree currentClass,
+            boolean isInitializationCode, boolean isStatic) {
         CFGBuilder builder = new CFCFGBuilder(checker, this);
         ControlFlowGraph cfg = builder.run(root, processingEnv, ast);
         FlowAnalysis newAnalysis = createFlowAnalysis(fieldValues);
@@ -623,6 +639,16 @@ public abstract class AbstractBasicAnnotatedTypeFactory<
             emptyStore = newAnalysis.createEmptyStore(!checker.hasOption("concurrentSemantics"));
         }
         analyses.addFirst(newAnalysis);
+        Store initStore = isStatic ? initializationStore : initializationStaticStore;
+        if (isInitializationCode) {
+            if (initStore != null) {
+                // we have already seen initialization code and analyzed it, and
+                // the analysis ended with the store initStore.
+                // use it to start the next analysis.
+                TransferFunction transfer = newAnalysis.getTransferFunction();
+                transfer.setFixedInitialStore(initStore);
+            }
+        }
         analyses.getFirst().performAnalysis(cfg);
         AnalysisResult<Value, Store> result = analyses.getFirst().getResult();
 
@@ -643,6 +669,15 @@ public abstract class AbstractBasicAnnotatedTypeFactory<
             Store regularExitStore = analyses.getFirst().getRegularExitStore();
             if (regularExitStore != null) {
                 regularExitStores.put(block.getCode(), regularExitStore);
+            }
+        }
+
+        if (isInitializationCode) {
+            Store newInitStore = analyses.getFirst().getRegularExitStore();
+            if (isStatic) {
+                initializationStore = newInitStore;
+            } else {
+                initializationStaticStore = newInitStore;
             }
         }
 

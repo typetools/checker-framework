@@ -37,8 +37,8 @@ import java.lang.annotation.Target;
  * More precisely, an expression of type {@code @UnknownInitialization(T.class)}
  * refers to an object that has all fields of {@code T} (and any super-classes)
  * initialized (e.g., to a non-null value in the {@link NullnessChecker}).
- * Just {@code @Raw} is equivalent to {@code @UnknownInitialization
- * Object.class} .
+ * Just {@code @UnknownInitialization} is equivalent to
+ * {@code @UnknownInitialization(Object.class)}.
  *
  * @checker.framework.manual #nullness-checker Nullness Checker
  */

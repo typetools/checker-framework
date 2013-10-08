@@ -1,13 +1,21 @@
+import checkers.initialization.quals.UnderInitialization;
 import checkers.nullness.quals.*;
-// @skip-test
+
 public class FlowConstructor {
 
     String a;
     String b;
 
+    public FlowConstructor(float f) {
+        a = "m";
+        b = "n";
+        semiRawMethod();
+    }
+
     public FlowConstructor(int p) {
         a = "m";
         b = "n";
+        //:: error: (method.invocation.invalid)
         nonRawMethod();
     }
 
@@ -15,10 +23,17 @@ public class FlowConstructor {
         a = "m";
         //:: error: (method.invocation.invalid)
         nonRawMethod();  // error
+        b = "n";
     }
 
     void nonRawMethod() {
         a.toString();
         b.toString();
     }
+
+    void semiRawMethod(@Raw(FlowConstructor.class) @UnderInitialization(FlowConstructor.class) FlowConstructor this) {
+        a.toString();
+        b.toString();
+    }
+
 }

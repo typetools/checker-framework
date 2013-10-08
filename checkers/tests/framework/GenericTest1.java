@@ -9,7 +9,7 @@ public class GenericTest1 {
   public <T> void test(Foo<T> foo) {
     Bar<?, ?, ?> bar = foo instanceof Bar<?, ?, ?>
     // TODO flow: support instanceof / cast flow.
-    // Warning only with -Alint:cast:strict.
+    // Warning only with -AcheckCastElementType.
     //TODO:: warning: (cast.unsafe)
         ? (Bar<?, ?, ?>) foo : null;
   }

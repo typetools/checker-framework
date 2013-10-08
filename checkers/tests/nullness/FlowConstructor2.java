@@ -1,4 +1,3 @@
-// @skip-test
 public class FlowConstructor2 {
   String f;
 

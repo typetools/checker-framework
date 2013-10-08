@@ -341,7 +341,7 @@ public abstract class InitializationAnnotatedTypeFactory<
                 Collection<? extends AnnotationMirror> declaredFieldAnnotations = getDeclAnnotations(element);
                 AnnotatedTypeMirror fieldAnnotations = getAnnotatedType(element);
                 computeFieldAccessType(type, declaredFieldAnnotations, owner,
-                        fieldAnnotations);
+                        fieldAnnotations, element);
             }
         }
     }
@@ -351,6 +351,7 @@ public abstract class InitializationAnnotatedTypeFactory<
         AnnotatedDeclaredType selfType = super.getSelfType(tree);
         TreePath path = getPath(tree);
         MethodTree enclosingMethod = TreeUtils.enclosingMethod(path);
+        boolean done = false;
         // Set the correct type for 'this' inside of constructors.
         while (enclosingMethod != null) {
             if (!TreeUtils.isConstructor(enclosingMethod)) {
@@ -359,38 +360,64 @@ public abstract class InitializationAnnotatedTypeFactory<
                 enclosingMethod = TreeUtils.enclosingMethod(path);
                 continue;
             }
-            ClassTree enclosingClass = TreeUtils.enclosingClass(path);
-            Type classType = ((JCTree) enclosingClass).type;
-            AnnotationMirror annotation = null;
 
-            // If all fields are committed-only, and they are all initialized,
-            // then it is save to switch to @UnderInitialization(CurrentClass).
-            if (areAllFieldsCommittedOnly(enclosingClass)) {
-                Store store = getStoreBefore(tree);
-                if (store != null) {
-                    List<AnnotationMirror> annos = Collections.emptyList();
-                    if (getUninitializedInvariantFields(store, path, false,
-                            annos).size() == 0) {
-                        if (useFbc) {
-                            annotation = createFreeAnnotation(classType);
-                        } else {
-                            annotation = createUnclassifiedAnnotation(classType);
-                        }
-                        selfType.replaceAnnotation(annotation);
-                    }
-                }
-            }
-
-            if (annotation == null) {
-                annotation = getFreeOrRawAnnotationOfSuperType(classType);
-            }
-            selfType.replaceAnnotation(annotation);
+            setSelfTypeInInitializationCode(tree, selfType, path);
+            done = true;
             // Found a constructor -> done.
             // TODO: should we look whether this constructor is
             // enclosed within another constructor?
             break;
         }
+        // set the correct type for initializer blocks
+        if (!done) {
+            ClassTree enclosingClass = TreeUtils.enclosingClass(path);
+            Tree enclosingBlock = TreeUtils.enclosingOfKind(path, Tree.Kind.BLOCK);
+            List<? extends Tree> classMembers = enclosingClass == null ? null : enclosingClass.getMembers();
+            if (enclosingBlock != null
+                    && classMembers.contains(enclosingBlock)) {
+                setSelfTypeInInitializationCode(tree, selfType, path);
+                done = true;
+            }
+            if (!done) {
+                // set the correct type for field initializers
+                VariableTree variableTree = (VariableTree) TreeUtils.enclosingOfKind(path, Tree.Kind.VARIABLE);
+                if (variableTree != null && classMembers.contains(variableTree)) {
+                    setSelfTypeInInitializationCode(tree, selfType, path);
+                    done = true;
+                }
+            }
+        }
+
         return selfType;
+    }
+
+    protected void setSelfTypeInInitializationCode(Tree tree,
+            AnnotatedDeclaredType selfType, TreePath path) {
+        ClassTree enclosingClass = TreeUtils.enclosingClass(path);
+        Type classType = ((JCTree) enclosingClass).type;
+        AnnotationMirror annotation = null;
+
+        // If all fields are committed-only, and they are all initialized,
+        // then it is save to switch to @UnderInitialization(CurrentClass).
+        if (areAllFieldsCommittedOnly(enclosingClass)) {
+            Store store = getStoreBefore(tree);
+            if (store != null) {
+                List<AnnotationMirror> annos = Collections.emptyList();
+                if (getUninitializedInvariantFields(store, path, false,
+                        annos).size() == 0) {
+                    if (useFbc) {
+                        annotation = createFreeAnnotation(classType);
+                    } else {
+                        annotation = createUnclassifiedAnnotation(classType);
+                    }
+                }
+            }
+        }
+
+        if (annotation == null) {
+            annotation = getFreeOrRawAnnotationOfSuperType(classType);
+        }
+        selfType.replaceAnnotation(annotation);
     }
 
     /**
@@ -512,6 +539,13 @@ public abstract class InitializationAnnotatedTypeFactory<
         return false;
     }
 
+    public boolean isInitializedForFrame(AnnotatedTypeMirror type, TypeMirror frame) {
+        AnnotationMirror initializationAnno = type.getAnnotationInHierarchy(UNCLASSIFIED);
+        TypeMirror typeFrame = getTypeFrameFromAnnotation(initializationAnno);
+        Types types = processingEnv.getTypeUtils();
+        return types.isSubtype(typeFrame, frame);
+    }
+
     /**
      * Determine the type of a field access (implicit or explicit) based on the
      * receiver type and the declared annotations for the field
@@ -524,11 +558,12 @@ public abstract class InitializationAnnotatedTypeFactory<
      * @param receiverType
      *            Inferred annotations of the receiver.
      * @param fieldAnnotations
+     * @param element
      */
     private void computeFieldAccessType(AnnotatedTypeMirror type,
             Collection<? extends AnnotationMirror> declaredFieldAnnotations,
             AnnotatedTypeMirror receiverType,
-            AnnotatedTypeMirror fieldAnnotations) {
+            AnnotatedTypeMirror fieldAnnotations, Element element) {
         // not necessary for primitive fields
         if (TypesUtils.isPrimitive(type.getUnderlyingType())) {
             return;
@@ -542,8 +577,15 @@ public abstract class InitializationAnnotatedTypeFactory<
         if (isUnclassified(receiverType)
                 || isFree(receiverType)) {
 
-            type.clearAnnotations();
-            type.addAnnotations(qualHierarchy.getTopAnnotations());
+            TypeMirror fieldDeclarationType = element.getEnclosingElement()
+                    .asType();
+            boolean isInitializedForFrame = isInitializedForFrame(receiverType, fieldDeclarationType);
+            if (isInitializedForFrame) {
+                type.replaceAnnotation(qualHierarchy.getTopAnnotation(UNCLASSIFIED));
+            } else {
+                type.clearAnnotations();
+                type.addAnnotations(qualHierarchy.getTopAnnotations());
+            }
 
             if (!AnnotationUtils.containsSame(declaredFieldAnnotations,
                     NOT_ONLY_COMMITTED) || !useFbc) {

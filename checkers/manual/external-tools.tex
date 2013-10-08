@@ -8,9 +8,9 @@ javac command on your behalf.  See the IDE documentation to learn how to
 customize it, adapting the instructions for javac in Section~\ref{running}.
 If you make another tool support running a checker, please
 inform us via the
-\ahref{http://groups.google.com/group/checker-framework-discuss}{mailing
+\ahref{\url{http://groups.google.com/group/checker-framework-discuss}}{mailing
   list} or
-\ahref{http://code.google.com/p/checker-framework/issues/list}{issue tracker} so
+\ahref{\url{http://code.google.com/p/checker-framework/issues/list}}{issue tracker} so
 we can add it to this manual.
 
 This chapter also discusses type inference tools (see
@@ -218,7 +218,7 @@ The output should be:
 
 \section{Ant task\label{ant-task}}
 
-If you use the \ahref{http://ant.apache.org/}{Ant} build tool to compile
+If you use the \ahref{\url{http://ant.apache.org/}}{Ant} build tool to compile
 your software, then you can add an Ant task that runs a checker.  We assume
 that your Ant file already contains a compilation target that uses the
 \code{javac} task.
@@ -253,7 +253,7 @@ Set the \code{jsr308javac} property:
 \end{smaller}
 %END LATEX
 
-\item Duplicate the compilation target, then modify it slightly as
+\item \textbf{Duplicate} the compilation target, then \textbf{modify} it slightly as
 indicated in this example:
 
 %BEGIN LATEX
@@ -266,8 +266,9 @@ indicated in this example:
     <!-- use jsr308.javac instead of javac -->
     <jsr308.javac ... >
       <compilerarg line="-processor checkers.nullness.NullnessChecker"/>
-      <!-- optional, for implicit imports: <compilerarg value="-J-Djsr308_imports=checkers.nullness.quals.*"/> -->
+      <!-- optional, for implicit imports: <compilerarg value="-J-Djsr308_imports=checkers.nullness.quals.*:dataflow.quals.*"/> -->
       <!-- optional, to not check uses of library methods: <compilerarg value="-AskipUses=^(java\.awt\.|javax\.swing\.)"/> -->
+      <compilerarg line="-Xmaxerrs 10000"/>
       ...
     </jsr308.javac>
   </target>
@@ -330,7 +331,7 @@ run.  You can supply additional arguments to the checker as well.
 
 \section{Maven plugin\label{maven-plugin}}
 
-If you use the \ahref{http://maven.apache.org/}{Maven} tool,
+If you use the \ahref{\url{http://maven.apache.org/}}{Maven} tool,
 then you can specify pluggable type-checking as part of your build
 process.
 
@@ -423,7 +424,7 @@ Within the configuration element you can add a number of parameters.
     <procOnly>false</procOnly>
 \end{Verbatim}
 By default, the Checker Framework Maven plugin will only check source files but will not produce
-class files for the source files it checks (see -proc:only at \url{http://docs.oracle.com/javase/6/docs/technotes/tools/solaris/javac.html}).
+class files for the source files it checks (see \<-proc:only> at \url{http://docs.oracle.com/javase/6/docs/technotes/tools/solaris/javac.html}).
 Setting \code{procOnly} to false will cause the Checker Framework compiler to generate class files.
 Note: If your Maven project's output directory has not been created then the plugin will attempt to
 create it and all required directories preceding it.  The check task will fail
@@ -431,7 +432,7 @@ in the event that these directories cannot be created.
 
 You may want to check only a subset of source files in your project.  To do so you can use the \code{includes} and \code{excludes}
 elements using the standard Maven syntax.  The semantics of including/excluding files are also described
-by DirectoryScanner documentation found at:
+by the DirectoryScanner documentation found at:
 \url{http://plexus.codehaus.org/plexus-utils/apidocs/org/codehaus/plexus/util/DirectoryScanner.html} (see setIncludes/setExcludes)
 
 \begin{Verbatim}
@@ -446,7 +447,7 @@ by DirectoryScanner documentation found at:
 \end{Verbatim}
 
 By default, an error reported by the Checker Framework Maven plugin will cause your build to fail.  To prevent
-a build from failing and still produce error and warning output set \code{failOError} to false.
+a build from failing and still produce error and warning output set \code{failOnError} to false.
 
 \begin{Verbatim}
     <failOnError>false</failOnError>
@@ -500,7 +501,7 @@ The plugin was contributed by Adam Warski.
 % http://jira.codehaus.org/browse/GRADLE-342
 % http://docs.codehaus.org/display/GRADLE/Gradle+0.8+Breaking+Changes
 
-If you fork the compilation task, \ahref{http://www.gradle.org/}{Gradle}
+If you fork the compilation task, \ahref{\url{http://www.gradle.org/}}{Gradle}
 lets you specify the executable to compile java programs.
 
 To specify the appropriate executable, set
@@ -530,7 +531,7 @@ allprojects {
 \section{IntelliJ IDEA\label{intellij}}
 
 IntelliJ IDEA (Maia release)
-\ahref{http://blogs.jetbrains.com/idea/2009/07/type-annotations-jsr-308-support/}{supports}
+\ahref{\url{http://blogs.jetbrains.com/idea/2009/07/type-annotations-jsr-308-support/}}{supports}
 the Type Annotations (JSR-308) syntax.
 See \url{http://blogs.jetbrains.com/idea/2009/07/type-annotations-jsr-308-support/}.
 
@@ -704,4 +705,6 @@ annotations for the Javari Checker, which detects mutation errors.
 
 % LocalWords:  jsr plugin Warski xml buildfile tIDE java Awarns pom lifecycle
 % LocalWords:  IntelliJ Maia newdir classpath Unconfuse nullness Gradle
-% LocalWords:  compilerArgs Xbootclasspath
+% LocalWords:  compilerArgs Xbootclasspath JSR308 jsr308 jsr308javac mvn
+%  LocalWords:  plugins proc procOnly DirectoryScanner setIncludes
+%  LocalWords:  setExcludes checkerFrameworkVersion javacParams javaParams

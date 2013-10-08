@@ -55,7 +55,7 @@ public class RandomTests {
 
     // Casts
     public void cast() {
-        // Warning only with -Alint:cast:strict.
+        // Warning only with -AcheckCastElementType.
         //TODO:: warning: (cast.unsafe)
         //:: warning: [unchecked] unchecked cast
         List<String> l = (List<String>) new HashMap<String, String>();

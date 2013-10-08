@@ -36,7 +36,7 @@ from failure to use interning.
 Interning is such an important design pattern that Java builds it in for
 these types: \<String>, \<Boolean>, \<Byte>, \<Character>, \<Integer>,
 \<Short>.  Every string literal in the program is guaranteed to be interned
-(\ahref{http://docs.oracle.com/javase/specs/jls/se7/html/jls-3.html#jls-3.10.5}{JLS
+(\ahref{\url{http://docs.oracle.com/javase/specs/jls/se7/html/jls-3.html#jls-3.10.5}}{JLS
   \S3.10.5}), and the
 \sunjavadoc{java/lang/String.html#intern()}{String.intern()} method
 performs interning for strings that are computed at run time.
@@ -117,7 +117,7 @@ These qualifiers are part of the Interning type system:
 \begin{figure}
 \includeimage{interning}{2.5cm}
 \caption{Type hierarchy for the Interning type system.}
-\label{fig:interning-hierarchy}
+\label{fig-interning-hierarchy}
 \end{figure}
 
 In order to perform checking, you must annotate your code with the \code{@\refclass{interning/quals}{Interned}}
@@ -274,7 +274,7 @@ If your code is already annotated with a different interning
 annotation, you can reuse that effort.  The Checker Framework comes with
 cleanroom re-implementations of annotations from other tools.  It treats
 them exactly as if you had written the corresponding annotation from the
-Interning Checker, as described in Figure~\ref{fig:interning-refactoring}.
+Interning Checker, as described in Figure~\ref{fig-interning-refactoring}.
 
 
 % These lists should be kept in sync with InterningAnnotatedTypeFactory.java .
@@ -297,18 +297,19 @@ $\Rightarrow$
 %END LATEX
 \caption{Correspondence between other interning annotations and the
   Checker Framework's annotations.}
-\label{fig:interning-refactoring}
+\label{fig-interning-refactoring}
 \end{figure}
 
 Alternately, the Checker Framework can process those other annotations (as
 well as its own, if they also appear in your program).  The Checker
 Framework has its own definition of the annotations on the left side of
-Figure~\ref{fig:interning-refactoring}, so that they can be used as type
+Figure~\ref{fig-interning-refactoring}, so that they can be used as type
 qualifiers.  The Checker Framework interprets them according to the right
-side of Figure~\ref{fig:interning-refactoring}.
+side of Figure~\ref{fig-interning-refactoring}.
 
 
 
 % LocalWords:  plugin MyInternedClass enum InterningExampleWithWarnings java
 % LocalWords:  PolyInterned Alint dotequals quals InterningAnnotatedTypeFactory
-% LocalWords:  javac InterningVisitor JLS Acheckclass UsesObjectEquals
+% LocalWords:  javac InterningVisitor JLS Acheckclass UsesObjectEquals 5cm
+%  LocalWords:  consing valueOf superclasses s2 cleanroom
