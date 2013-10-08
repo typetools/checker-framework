@@ -8,7 +8,6 @@ import checkers.nullness.quals.*;
 import checkers.basetype.BaseTypeChecker;
 import checkers.quals.TypeQualifiers;
 import checkers.types.AnnotatedTypeFactory;
-import checkers.types.GeneralAnnotatedTypeFactory;
 
 import javacutils.AbstractTypeProcessor;
 import javacutils.ElementUtils;
@@ -192,14 +191,14 @@ import com.sun.tools.javac.util.Log;
     // checkers.types.TypeHierarchy.isSubtypeTypeArguments
     "ignoreRawTypeArguments",
 })
-public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
+public abstract class SourceChecker
     extends AbstractTypeProcessor implements ErrorHandler {
 
     // TODO A checker should export itself through a separate interface,
     // and maybe have an interface for all the methods for which it's safe
     // to override.
 
-    /** file name of the localized messages */
+    /** File name of the localized messages. */
     private static final String MSGS_FILE = "messages.properties";
 
     /** Maps error keys to localized/custom error messages. */
@@ -211,9 +210,14 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
     /** Used as a helper for the {@link SourceVisitor}. */
     protected Trees trees;
 
-    /** The source tree that's being scanned. */
+    /** The source tree that is being scanned. */
     protected CompilationUnitTree currentRoot;
-    public TreePath currentPath;
+    
+    /** The source path that is being scanned. */
+    protected TreePath currentPath;
+
+    /** The visitor to use. */
+    protected SourceVisitor<?, ?> visitor;
 
     /** Keys for warning suppressions specified on the command line */
     private String /*@Nullable*/ [] suppressWarnings;
@@ -301,22 +305,13 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
     }
 
     /**
-     * @param root the AST root for the factory
-     * @return an {@link AnnotatedTypeFactory} for use by type-checkers
-     */
-    @SuppressWarnings("unchecked") // unchecked cast to type variable
-    public Factory createFactory(CompilationUnitTree root) {
-        return (Factory) new GeneralAnnotatedTypeFactory(this, root);
-    }
-
-    /**
      * Provides the {@link SourceVisitor} that the checker should use to scan
      * input source trees.
      *
      * @param root the AST root
      * @return a {@link SourceVisitor} to use to scan source trees
      */
-    protected abstract SourceVisitor<?, ?, ?, ?> createSourceVisitor(CompilationUnitTree root);
+    protected abstract SourceVisitor<?, ?> createSourceVisitor();
 
     /**
      * Provides a mapping of error keys to custom error messages.
@@ -595,6 +590,8 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
 
         this.messager = processingEnv.getMessager();
         this.messages = getMessages();
+
+        this.visitor = createSourceVisitor();
     }
 
     /**
@@ -674,10 +671,8 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
         currentRoot = p.getCompilationUnit();
         currentPath = p;
         // Visit the attributed tree.
-        SourceVisitor<?, ?, ?, ?> visitor = null;
         try {
-            visitor = createSourceVisitor(currentRoot);
-            visitor.scan(p, null);
+            visitor.visit(currentRoot, p, null);
         } catch (CheckerError ce) {
             logCheckerError(ce);
         } catch (Throwable t) {
@@ -764,7 +759,7 @@ public abstract class SourceChecker<Factory extends AnnotatedTypeFactory>
      *             if {@code source} is neither a {@link Tree} nor an
      *             {@link Element}
      */
-    protected void message(Diagnostic.Kind kind, Object source, /*@CompilerMessageKey*/ String msgKey,
+    public void message(Diagnostic.Kind kind, Object source, /*@CompilerMessageKey*/ String msgKey,
             Object... args) {
 
         assert messages != null : "null messages";
