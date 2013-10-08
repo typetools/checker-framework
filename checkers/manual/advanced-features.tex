@@ -898,9 +898,13 @@ expression as an argument are:
 
 % TODO: Need to periodically check/update this list.
 \begin{itemize}
-\item \code{@\refclass{nullness/quals}{KeyFor}}
+%\item \code{@\refclass{nullness/quals}{KeyFor}}
+\item \code{@\refclass{checkers/quals}{RequiresQualifier}}
+\item \code{@\refclass{checkers/quals}{EnsuresQualifier}}
+\item \code{@\refclass{checkers/quals}{EnsuresQualifierIf}}
 \item \code{@\refclass{nullness/quals}{RequiresNonNull}}
 \item \code{@\refclass{nullness/quals}{EnsuresNonNull}}
+\item \code{@\refclass{nullness/quals}{EnsuresNonNullIf}}
 \item \code{@\refclass{nullness/quals}{EnsuresNonNullIf}}
 \end{itemize}
 
@@ -910,15 +914,20 @@ The expression is a subset of legal Java expressions:
 \item
   the receiver object, \<this>.
 \item
-  a formal parameter.  Write \<\#> followed by the \textbf{one-based} parameter
-  index.  For example: \<\#1>, \<\#3>.  It is not permitted to write \<\#0>;
-  use \<this> instead.
-
+  the receiver object as seen from the superclass, \<super>.  This can be used
+  to refer to fields shadowed in the subclass (although shadowing fields is
+  discouraged).
 \item
-  a local variable.  This is not applicable for method annotations, but is
-  applicable to type annotations such as
-  \code{@\refclass{nullness/quals}{KeyFor}}.  Write the variable name.  For
-  example: \<myLocalVar>.
+  a formal parameter.  Write \<\#> followed by the \textbf{one-based} parameter
+  index.  For example: \<\#1>, \<\#3>.  It is not permitted to write \<\#0> to
+  refer to the receiver object; use \<this> instead.
+
+% This is not implemented at the moment, as KeyFor does not use flow expressions yet.
+%\item
+%  a local variable.  This is not applicable for method annotations, but is
+%  applicable to type annotations such as
+%  \code{@\refclass{nullness/quals}{KeyFor}}.  Write the variable name.  For
+%  example: \<myLocalVar>.
 \item
   a static variable.  Write the class name and the variable, as in
   \<System.out>.
@@ -927,7 +936,7 @@ The expression is a subset of legal Java expressions:
 
 \item
   a field of any expression.  For example:  \<next>,
-  \<this.next>, \<\#1.next>, \<myLocalVar.next>.
+  \<this.next>, \<\#1.next>. %, \<myLocalVar.next>.
 
 \item
   an array access.  For example:  \<this.myArray[i]>, \<vals[\#1]>.
@@ -937,25 +946,30 @@ The expression is a subset of legal Java expressions:
 \item a method invocation on any expression
   This even works for overloaded methods and methods with type parameters.
   For example:
-  \<m1(x,y.z, \#2)>, \<a.m2("hello")>.
+  \<m1(x, y.z, \#2)>, \<a.m2("hello")>.
 
 \end{itemize}
 
 You may optionally omit a leading ``\<this.>'', just as in Java.  Thus, 
-\<this.next> and \<next> are equivalent, assuming that there is no
-shadowing definition of \<next>.
+\<this.next> and \<next> are equivalent.
 
 One unusual feature is that the method call is allowed to have side
 effects.  If a specification is going to be checked at run time via
 assertions, then the specification must not use methods with side
 effects.  But, our checking is at compile time, so we allow it.
+Also, the current implementation will never able to prove such
+a contract, but it is able to use the information (when checking
+the method body with preconditions, or when checking the callers
+code with postconditions).  This can be useful to annotate trusted
+methods precisely (e.g., \<java.io.BufferedReader.ready()>).
 
-The expression may refer to private fields and method calls.  The client
-cannot directly make use of these private fields and method calls, but they
-may be useful in establishing a precondition that itself refers to private
-fields or methods.  This exposure of implementation details is unfortunate,
-but it enables more expressive and useful specifications to be written, it does not jeopardize soundness nor let the client manipulate the
-representation, and it is simple
+% We want this in the future:
+%The expression may refer to private fields and method calls.  The client
+%cannot directly make use of these private fields and method calls, but they
+%may be useful in establishing a precondition that itself refers to private
+%fields or methods.  This exposure of implementation details is unfortunate,
+%but it enables more expressive and useful specifications to be written, it does not jeopardize soundness nor let the client manipulate the
+%representation, and it is simple
 % simpler than defining specification fields or ghost fields
 %% TODO: we may eventually have an @SpecField annotation
 
