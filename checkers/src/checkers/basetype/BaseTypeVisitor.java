@@ -210,10 +210,10 @@ public class BaseTypeVisitor<Factory extends AbstractBasicAnnotatedTypeFactory<?
         while (checkerClass != BaseTypeChecker.class) {
             final String classToLoad =
                     checkerClass.getName().replace("Checker", "AnnotatedTypeFactory")
-                    .replace("Subchecker", "AnnotatedTypeFactory");
+                                          .replace("Subchecker", "AnnotatedTypeFactory");
 
             AnnotatedTypeFactory result = BaseTypeChecker.invokeConstructorFor(classToLoad,
-                    new Class<?>[] { checkerClass },
+                    new Class<?>[] { BaseTypeChecker.class },
                     new Object[] { checker });
             if (result != null) {
                 return (Factory) result;
