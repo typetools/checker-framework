@@ -1,5 +1,6 @@
 package checkers.formatter;
 
+import checkers.basetype.BaseTypeChecker;
 import checkers.flow.CFStore;
 import checkers.flow.CFValue;
 import checkers.formatter.quals.ConversionCategory;
@@ -42,7 +43,7 @@ public class FormatterAnnotatedTypeFactory extends
 
     protected final FormatterTreeUtil treeUtil;
 
-    public FormatterAnnotatedTypeFactory(FormatterChecker checker) {
+    public FormatterAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
 
         FORMAT = AnnotationUtils.fromClass(elements, Format.class);

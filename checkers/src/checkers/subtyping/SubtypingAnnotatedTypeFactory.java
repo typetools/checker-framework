@@ -12,6 +12,7 @@ public class SubtypingAnnotatedTypeFactory extends BasicAnnotatedTypeFactory {
 
     public SubtypingAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
+        postInit();
     }
 
     @Override

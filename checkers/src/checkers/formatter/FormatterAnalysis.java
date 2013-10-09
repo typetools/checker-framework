@@ -1,5 +1,6 @@
 package checkers.formatter;
 
+import checkers.basetype.BaseTypeChecker;
 import checkers.flow.CFAbstractAnalysis;
 import checkers.flow.CFStore;
 import checkers.flow.CFValue;
@@ -18,7 +19,7 @@ import javax.lang.model.element.VariableElement;
  */
 public class FormatterAnalysis extends
         CFAbstractAnalysis<CFValue, CFStore, FormatterTransfer> {
-    public FormatterAnalysis(FormatterChecker checker,
+    public FormatterAnalysis(BaseTypeChecker checker,
             FormatterAnnotatedTypeFactory factory,
             List<Pair<VariableElement, CFValue>> fieldValues) {
         super(checker, factory, fieldValues);

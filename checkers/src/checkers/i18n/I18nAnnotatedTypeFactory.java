@@ -1,5 +1,6 @@
 package checkers.i18n;
 
+import checkers.basetype.BaseTypeChecker;
 import checkers.i18n.quals.Localized;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
@@ -17,7 +18,7 @@ import com.sun.source.tree.Tree;
 
 public class I18nAnnotatedTypeFactory extends BasicAnnotatedTypeFactory {
 
-    public I18nAnnotatedTypeFactory(I18nSubchecker checker) {
+    public I18nAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         this.postInit();
     }

@@ -1,5 +1,6 @@
 package checkers.oigj;
 
+import checkers.basetype.BaseTypeChecker;
 import checkers.basetype.BaseTypeVisitor;
 import checkers.oigj.quals.Dominator;
 import checkers.types.AnnotatedTypeMirror;
@@ -12,7 +13,7 @@ import com.sun.source.tree.Tree;
 
 public class OwnershipVisitor extends BaseTypeVisitor<OwnershipAnnotatedTypeFactory> {
 
-    public OwnershipVisitor(OwnershipSubchecker checker) {
+    public OwnershipVisitor(BaseTypeChecker checker) {
         super(checker);
     }
 

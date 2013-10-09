@@ -1,5 +1,6 @@
 package checkers.signature;
 
+import checkers.basetype.BaseTypeChecker;
 import checkers.types.BasicAnnotatedTypeFactory;
 
 
@@ -13,7 +14,7 @@ import checkers.types.BasicAnnotatedTypeFactory;
  */
 public class SignatureAnnotatedTypeFactory extends BasicAnnotatedTypeFactory {
 
-    public SignatureAnnotatedTypeFactory(SignatureChecker checker) {
+    public SignatureAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         this.postInit();
     }

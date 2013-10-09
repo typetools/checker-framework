@@ -1,5 +1,6 @@
 package checkers.flow;
 
+import checkers.basetype.BaseTypeChecker;
 import checkers.source.SourceChecker;
 import checkers.types.AbstractBasicAnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeFactory;
@@ -81,7 +82,7 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>,
     // TODO: document.
     protected final int expectedNumberOfAnnotations;
 
-    public CFAbstractAnalysis(SourceChecker checker,
+    public CFAbstractAnalysis(BaseTypeChecker checker,
             AbstractBasicAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory,
             List<Pair<VariableElement, V>> fieldValues) {
         super(checker.getProcessingEnvironment());

@@ -140,11 +140,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     protected final VisitorState visitorState;
 
     /** Represent the annotation relations. **/
-    protected final QualifierHierarchy qualHierarchy;
+    protected QualifierHierarchy qualHierarchy;
 
     /** Represent the type relations. */
     // TODO: when is this allowed to be null?
-    protected final TypeHierarchy typeHierarchy;
+    protected TypeHierarchy typeHierarchy;
 
     /** To cache the supported type qualifiers. */
     private final Set<Class<? extends Annotation>> supportedQuals;
@@ -220,12 +220,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         this.supportedQuals = createSupportedTypeQualifiers();
 
-        this.qualHierarchy = createQualifierHierarchy();
-        if (qualHierarchy == null) {
-            ErrorReporter.errorAbort("AnnotatedTypeFactory with null qualifier hierarchy not supported.");
-        }
-        this.typeHierarchy = createTypeHierarchy();
-
         this.fromByteCode = AnnotationUtils.fromClass(elements, FromByteCode.class);
     }
 
@@ -236,6 +230,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * AnnotatedTypeFactory.
      */
     protected void postInit() {
+        this.qualHierarchy = createQualifierHierarchy();
+        if (qualHierarchy == null) {
+            ErrorReporter.errorAbort("AnnotatedTypeFactory with null qualifier hierarchy not supported.");
+        }
+        this.typeHierarchy = createTypeHierarchy();
+
         // TODO: is this the best location for declaring this alias?
         addAliasedDeclAnnotation(org.jmlspecs.annotation.Pure.class,
                 dataflow.quals.Pure.class,
@@ -407,17 +407,28 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @see TypeQualifiers
      */
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        Class<? extends BaseTypeChecker> classType = checker.getClass();
-        TypeQualifiers typeQualifiersAnnotation =
-            classType.getAnnotation(TypeQualifiers.class);
-        if (typeQualifiersAnnotation == null)
-            return Collections.emptySet();
+        Class<?> classType;
+        TypeQualifiers typeQualifiersAnnotation;
 
-        Set<Class<? extends Annotation>> typeQualifiers = new HashSet<Class<? extends Annotation>>();
-        for (Class<? extends Annotation> qualifier : typeQualifiersAnnotation.value()) {
-            typeQualifiers.add(qualifier);
+        // First see if the AnnotatedTypeFactory has @TypeQualifiers
+        classType = this.getClass();
+        typeQualifiersAnnotation = classType.getAnnotation(TypeQualifiers.class);
+
+        if (typeQualifiersAnnotation == null) {
+            // If not, try the Checker
+            classType = checker.getClass();
+            typeQualifiersAnnotation = classType.getAnnotation(TypeQualifiers.class);
         }
-        return Collections.unmodifiableSet(typeQualifiers);
+
+        if (typeQualifiersAnnotation != null) {
+            Set<Class<? extends Annotation>> typeQualifiers = new HashSet<Class<? extends Annotation>>();
+            for (Class<? extends Annotation> qualifier : typeQualifiersAnnotation.value()) {
+                typeQualifiers.add(qualifier);
+            }
+            return Collections.unmodifiableSet(typeQualifiers);
+        }
+
+        return Collections.emptySet();
     }
 
     /**

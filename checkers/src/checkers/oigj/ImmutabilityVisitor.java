@@ -1,5 +1,6 @@
 package checkers.oigj;
 
+import checkers.basetype.BaseTypeChecker;
 import checkers.basetype.BaseTypeVisitor;
 import checkers.oigj.quals.Assignable;
 import checkers.types.AnnotatedTypeMirror;
@@ -16,7 +17,7 @@ import com.sun.source.tree.Tree;
 
 public class ImmutabilityVisitor extends BaseTypeVisitor<ImmutabilityAnnotatedTypeFactory> {
 
-    public ImmutabilityVisitor(ImmutabilitySubchecker checker) {
+    public ImmutabilityVisitor(BaseTypeChecker checker) {
         super(checker);
     }
 

@@ -1,5 +1,6 @@
 package checkers.util.report;
 
+import checkers.basetype.BaseTypeChecker;
 import checkers.basetype.BaseTypeValidator;
 import checkers.basetype.BaseTypeVisitor;
 import checkers.source.Result;
@@ -55,7 +56,7 @@ public class ReportVisitor extends BaseTypeVisitor<BasicAnnotatedTypeFactory> {
      */
     private final String[] modifiers;
 
-    public ReportVisitor(ReportChecker checker) {
+    public ReportVisitor(BaseTypeChecker checker) {
         super(checker);
 
         if (checker.hasOption("reportTreeKinds")) {

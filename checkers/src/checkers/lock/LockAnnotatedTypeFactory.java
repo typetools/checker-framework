@@ -1,5 +1,6 @@
 package checkers.lock;
 
+import checkers.basetype.BaseTypeChecker;
 import checkers.lock.quals.GuardedBy;
 import checkers.lock.quals.GuardedByTop;
 import checkers.quals.Unqualified;
@@ -41,7 +42,7 @@ public class LockAnnotatedTypeFactory extends BasicAnnotatedTypeFactory {
     private List<String> heldLocks = new ArrayList<String>();
     protected final AnnotationMirror GUARDED_BY, GUARDEDBY_TOP, UNQUALIFIED;
 
-    public LockAnnotatedTypeFactory(LockChecker checker) {
+    public LockAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         GUARDED_BY = AnnotationUtils.fromClass(elements, GuardedBy.class);
         GUARDEDBY_TOP = AnnotationUtils.fromClass(elements, GuardedByTop.class);

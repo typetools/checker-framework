@@ -1,5 +1,6 @@
 package checkers.linear;
 
+import checkers.basetype.BaseTypeChecker;
 import checkers.basetype.BaseTypeVisitor;
 import checkers.linear.quals.Linear;
 import checkers.linear.quals.Unusable;
@@ -26,7 +27,7 @@ import com.sun.source.tree.MethodInvocationTree;
  */
 public class LinearVisitor extends BaseTypeVisitor<LinearAnnotatedTypeFactory> {
 
-    public LinearVisitor(LinearChecker checker) {
+    public LinearVisitor(BaseTypeChecker checker) {
         super(checker);
     }
 

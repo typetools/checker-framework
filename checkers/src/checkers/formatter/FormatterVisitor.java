@@ -1,5 +1,6 @@
 package checkers.formatter;
 
+import checkers.basetype.BaseTypeChecker;
 import checkers.basetype.BaseTypeVisitor;
 import checkers.formatter.FormatterTreeUtil.FormatCall;
 import checkers.formatter.FormatterTreeUtil.InvocationType;
@@ -17,7 +18,7 @@ import com.sun.source.tree.MethodInvocationTree;
  * @author Konstantin Weitz
  */
 public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFactory> {
-    public FormatterVisitor(FormatterChecker checker) {
+    public FormatterVisitor(BaseTypeChecker checker) {
         super(checker);
     }
 

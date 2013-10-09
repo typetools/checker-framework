@@ -1,5 +1,6 @@
 package checkers.units;
 
+import checkers.basetype.BaseTypeChecker;
 import checkers.quals.Bottom;
 import checkers.quals.Unqualified;
 import checkers.types.AnnotatedTypeMirror;
@@ -73,7 +74,7 @@ public class UnitsAnnotatedTypeFactory extends BasicAnnotatedTypeFactory {
 
     private final Map<String, AnnotationMirror> aliasMap = new HashMap<String, AnnotationMirror>();
 
-    public UnitsAnnotatedTypeFactory(UnitsChecker checker) {
+    public UnitsAnnotatedTypeFactory(BaseTypeChecker checker) {
         // use true for flow inference
         super(checker, false);
 

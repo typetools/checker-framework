@@ -1,5 +1,6 @@
 package checkers.i18n;
 
+import checkers.basetype.BaseTypeChecker;
 import checkers.i18n.quals.LocalizableKey;
 import checkers.propkey.PropertyKeyAnnotatedTypeFactory;
 import checkers.types.TreeAnnotator;
@@ -12,7 +13,7 @@ import checkers.types.TreeAnnotator;
 public class LocalizableKeyAnnotatedTypeFactory extends
         PropertyKeyAnnotatedTypeFactory {
 
-    public LocalizableKeyAnnotatedTypeFactory(LocalizableKeyChecker checker) {
+    public LocalizableKeyAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
     }
 
