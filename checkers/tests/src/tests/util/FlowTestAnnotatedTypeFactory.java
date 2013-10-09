@@ -1,5 +1,6 @@
 package tests.util;
 
+import checkers.basetype.BaseTypeChecker;
 import checkers.quals.Bottom;
 import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.types.QualifierHierarchy;
@@ -13,7 +14,7 @@ import javax.lang.model.element.AnnotationMirror;
 public class FlowTestAnnotatedTypeFactory extends BasicAnnotatedTypeFactory {
     protected final AnnotationMirror VALUE, BOTTOM;
 
-    public FlowTestAnnotatedTypeFactory(FlowTestChecker checker) {
+    public FlowTestAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker, true);
         VALUE = AnnotationUtils.fromClass(elements, Value.class);
         BOTTOM = AnnotationUtils.fromClass(elements, Bottom.class);
