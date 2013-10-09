@@ -1,4 +1,3 @@
-// @skip-test Crashes the Checker Framework, but skipped to avoid breaking the build
 
 public class SAMLineParser {
 
