@@ -2,6 +2,7 @@ package checkers.interning;
 
 import static javax.lang.model.util.ElementFilter.methodsIn;
 
+import checkers.basetype.BaseTypeChecker;
 import checkers.basetype.BaseTypeVisitor;
 import checkers.interning.quals.Interned;
 import checkers.interning.quals.UsesObjectEquals;
@@ -68,10 +69,10 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
      * @param checker the checker to use
      * @param root the root of the input program's AST to check
      */
-    public InterningVisitor(InterningChecker checker) {
+    public InterningVisitor(BaseTypeChecker checker) {
         super(checker);
         this.INTERNED = AnnotationUtils.fromClass(elements, Interned.class);
-        typeToCheck = checker.typeToCheck();
+        typeToCheck = typeToCheck();
     }
 
     // Handles the -Acheckclass command-line argument
@@ -714,5 +715,25 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
                 return true;
 
         return false;
+    }
+
+
+    /**
+     * Returns the declared type of which the equality tests should be tested,
+     * if the user explicitly passed one.  The user can pass the class name
+     * via the {@code -Acheckclass=...} option.
+     *
+     * If no class is specified, or the class specified isn't in the
+     * classpath, it returns null.
+     *
+     */
+    DeclaredType typeToCheck() {
+        String className = checker.getOption("checkclass");
+        if (className == null) return null;
+
+        TypeElement classElt = elements.getTypeElement(className);
+        if (classElt == null) return null;
+
+        return types.getDeclaredType(classElt);
     }
 }

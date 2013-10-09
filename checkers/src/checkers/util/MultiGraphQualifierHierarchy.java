@@ -443,7 +443,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
                     "your implicit rules cover all cases and/or " +
                     "use a @DefaulQualifierInHierarchy annotation.");
         } else {
-            System.out.println("MultiGraphQH: " + this);
+            // System.out.println("MultiGraphQH: " + this);
             ErrorReporter.errorAbort("MultiGraphQualifierHierarchy found the unrecognized qualifier: " + a +
                     ". Please ensure that the qualifier is correctly included in the subtype hierarchy.");
         }

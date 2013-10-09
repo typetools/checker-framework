@@ -155,7 +155,7 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory {
      * @param root  the compilation unit the annotation processor is
      *              processing currently
      */
-    public IGJAnnotatedTypeFactory(IGJChecker checker) {
+    public IGJAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
 
         READONLY = AnnotationUtils.fromClass(elements, ReadOnly.class);

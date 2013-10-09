@@ -134,7 +134,7 @@ public class ImmutabilityAnnotatedTypeFactory extends BasicAnnotatedTypeFactory 
      * @param root  the compilation unit the annotation processor is
      *              processing currently
      */
-    public ImmutabilityAnnotatedTypeFactory(ImmutabilitySubchecker checker) {
+    public ImmutabilityAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
 
         READONLY = AnnotationUtils.fromClass(elements, ReadOnly.class);

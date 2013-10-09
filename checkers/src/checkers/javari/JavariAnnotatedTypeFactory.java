@@ -1,5 +1,6 @@
 package checkers.javari;
 
+import checkers.basetype.BaseTypeChecker;
 import checkers.javari.quals.Assignable;
 import checkers.javari.quals.Mutable;
 import checkers.javari.quals.PolyRead;
@@ -106,7 +107,7 @@ public class JavariAnnotatedTypeFactory extends BasicAnnotatedTypeFactory {
      * @param checker the checker to which this factory belongs
      * @param root the AST on which this type factory operates
      */
-    public JavariAnnotatedTypeFactory(JavariChecker checker) {
+    public JavariAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
 
         this.READONLY = AnnotationUtils.fromClass(elements, ReadOnly.class);

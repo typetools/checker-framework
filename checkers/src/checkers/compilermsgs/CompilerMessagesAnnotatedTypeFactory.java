@@ -1,5 +1,6 @@
 package checkers.compilermsgs;
 
+import checkers.basetype.BaseTypeChecker;
 import checkers.compilermsgs.quals.CompilerMessageKey;
 import checkers.propkey.PropertyKeyAnnotatedTypeFactory;
 import checkers.types.TreeAnnotator;
@@ -11,7 +12,7 @@ import checkers.types.TreeAnnotator;
  */
 public class CompilerMessagesAnnotatedTypeFactory extends PropertyKeyAnnotatedTypeFactory {
 
-    public CompilerMessagesAnnotatedTypeFactory(CompilerMessagesChecker checker) {
+    public CompilerMessagesAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
     }
 

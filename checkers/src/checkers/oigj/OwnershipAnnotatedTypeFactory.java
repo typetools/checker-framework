@@ -1,5 +1,6 @@
 package checkers.oigj;
 
+import checkers.basetype.BaseTypeChecker;
 import checkers.oigj.quals.World;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -26,7 +27,7 @@ public class OwnershipAnnotatedTypeFactory extends BasicAnnotatedTypeFactory {
 
     protected final AnnotationMirror BOTTOM_QUAL;
 
-    public OwnershipAnnotatedTypeFactory(OwnershipSubchecker checker) {
+    public OwnershipAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         BOTTOM_QUAL = AnnotationUtils.fromClass(elements, OIGJMutabilityBottom.class);
         this.postInit();

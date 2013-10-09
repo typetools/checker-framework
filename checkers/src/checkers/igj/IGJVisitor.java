@@ -1,5 +1,6 @@
 package checkers.igj;
 
+import checkers.basetype.BaseTypeChecker;
 import checkers.basetype.BaseTypeVisitor;
 import checkers.igj.quals.Assignable;
 import checkers.igj.quals.AssignsFields;
@@ -32,7 +33,7 @@ import com.sun.source.tree.Tree;
  */
 public class IGJVisitor extends BaseTypeVisitor<IGJAnnotatedTypeFactory> {
 
-    public IGJVisitor(IGJChecker checker) {
+    public IGJVisitor(BaseTypeChecker checker) {
         super(checker);
         checkForAnnotatedJdk();
     }

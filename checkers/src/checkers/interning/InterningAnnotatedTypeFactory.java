@@ -1,5 +1,6 @@
 package checkers.interning;
 
+import checkers.basetype.BaseTypeChecker;
 import checkers.interning.quals.Interned;
 import checkers.interning.quals.PolyInterned;
 import checkers.quals.DefaultQualifier;
@@ -57,7 +58,7 @@ public class InterningAnnotatedTypeFactory extends BasicAnnotatedTypeFactory {
      * @param checker the checker to use
      * @param root the AST on which this type factory operates
      */
-    public InterningAnnotatedTypeFactory(InterningChecker checker) {
+    public InterningAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         this.INTERNED = AnnotationUtils.fromClass(elements, Interned.class);
         this.UNQUALIFIED = AnnotationUtils.fromClass(elements, Unqualified.class);

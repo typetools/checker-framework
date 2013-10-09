@@ -1,6 +1,7 @@
 package checkers.javari;
 
 
+import checkers.basetype.BaseTypeChecker;
 import checkers.basetype.BaseTypeVisitor;
 import checkers.javari.quals.Assignable;
 import checkers.source.Result;
@@ -33,7 +34,7 @@ public class JavariVisitor extends BaseTypeVisitor<JavariAnnotatedTypeFactory> {
      * @param checker the {@link JavariChecker} to use
      * @param root the root of the input program's AST to check
      */
-    public JavariVisitor(JavariChecker checker) {
+    public JavariVisitor(BaseTypeChecker checker) {
         super(checker);
         checkForAnnotatedJdk();
     }
