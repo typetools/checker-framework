@@ -256,7 +256,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<
                     .replace("Subchecker", "Analysis");
             FlowAnalysis result = BaseTypeChecker.invokeConstructorFor(
                     classToLoad,
-                    new Class<?>[] { checkerClass, this.getClass(), List.class },
+                    new Class<?>[] { BaseTypeChecker.class, this.getClass(), List.class },
                     new Object[] { checker, this, fieldValues });
             if (result != null)
                 return result;
