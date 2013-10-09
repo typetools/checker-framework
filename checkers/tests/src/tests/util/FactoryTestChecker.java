@@ -255,7 +255,7 @@ public class FactoryTestChecker extends BaseTypeChecker {
     private class ToStringVisitor extends BaseTypeVisitor<AbstractBasicAnnotatedTypeFactory<?, ?, ?, ?>> {
         Map<TreeSpec, String> expected;
 
-        public ToStringVisitor(FactoryTestChecker checker) {
+        public ToStringVisitor(BaseTypeChecker checker) {
             super(checker);
             this.expected = buildExpected(root);
         }

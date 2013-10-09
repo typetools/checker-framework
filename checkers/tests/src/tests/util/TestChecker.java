@@ -1,6 +1,7 @@
 package tests.util;
 
 import checkers.basetype.BaseTypeChecker;
+import checkers.basetype.BaseTypeVisitor;
 import checkers.quals.Bottom;
 import checkers.quals.TypeQualifiers;
 import checkers.quals.Unqualified;
@@ -11,8 +12,6 @@ import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 
 import javacutils.AnnotationUtils;
 
-import javax.annotation.processing.SupportedSourceVersion;
-import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Elements;
 
@@ -24,17 +23,31 @@ import javax.lang.model.util.Elements;
  * <p>
  * This checker should only be used for testing the framework.
  */
-@SupportedSourceVersion(SourceVersion.RELEASE_8)
 @TypeQualifiers({ Odd.class, MonotonicOdd.class, Even.class, Unqualified.class,
         Bottom.class })
 public final class TestChecker extends BaseTypeChecker {
+    @Override
+    protected BaseTypeVisitor<?> createSourceVisitor() {
+        return new TestVisitor(this);
+    }
+}
 
+class TestVisitor extends BaseTypeVisitor<TestAnnotatedTypeFactory> {
+
+    public TestVisitor(BaseTypeChecker checker) {
+        super(checker);
+    }
+
+    @Override
+    protected TestAnnotatedTypeFactory createTypeFactory() {
+        return new TestAnnotatedTypeFactory((BaseTypeChecker)checker);
+    }
 }
 
 class TestAnnotatedTypeFactory extends BasicAnnotatedTypeFactory {
     protected AnnotationMirror BOTTOM;
 
-    public TestAnnotatedTypeFactory(TestChecker checker) {
+    public TestAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker, true);
         Elements elements = processingEnv.getElementUtils();
         BOTTOM = AnnotationUtils.fromClass(elements, Bottom.class);
