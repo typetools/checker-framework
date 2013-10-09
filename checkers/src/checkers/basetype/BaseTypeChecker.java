@@ -111,9 +111,9 @@ public abstract class BaseTypeChecker extends SourceChecker {
         while (checkerClass != BaseTypeChecker.class) {
             final String classToLoad =
                 checkerClass.getName().replace("Checker", "Visitor")
-                .replace("Subchecker", "Visitor");
+                                      .replace("Subchecker", "Visitor");
             BaseTypeVisitor<?> result = invokeConstructorFor(classToLoad,
-                    new Class<?>[] { checkerClass },
+                    new Class<?>[] { BaseTypeChecker.class },
                     new Object[] { this });
             if (result != null)
                 return result;
