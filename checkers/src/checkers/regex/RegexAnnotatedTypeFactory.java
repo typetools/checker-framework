@@ -1,5 +1,6 @@
 package checkers.regex;
 
+import checkers.basetype.BaseTypeChecker;
 import checkers.flow.CFStore;
 import checkers.flow.CFValue;
 import checkers.regex.quals.PartialRegex;
@@ -108,7 +109,7 @@ public class RegexAnnotatedTypeFactory extends AbstractBasicAnnotatedTypeFactory
 
     // TODO use? private TypeMirror[] legalReferenceTypes;
 
-    public RegexAnnotatedTypeFactory(RegexChecker checker) {
+    public RegexAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
 
         patternCompile = TreeUtils.getMethod("java.util.regex.Pattern", "compile", 1, processingEnv);

@@ -1,5 +1,6 @@
 package checkers.linear;
 
+import checkers.basetype.BaseTypeChecker;
 import checkers.linear.quals.Linear;
 import checkers.linear.quals.Unusable;
 import checkers.types.AnnotatedTypeMirror;
@@ -25,7 +26,7 @@ public class LinearAnnotatedTypeFactory extends BasicAnnotatedTypeFactory {
 
     private final AnnotationMirror LINEAR, UNUSABLE;
 
-    public LinearAnnotatedTypeFactory(LinearChecker checker) {
+    public LinearAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
 
         LINEAR = AnnotationUtils.fromClass(elements, Linear.class);

@@ -58,7 +58,7 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
     public static class Visitor extends BaseTypeVisitor<AbstractBasicAnnotatedTypeFactory<?, ?, ?, ?>> {
         String currentClass;
 
-        public Visitor(TypeOutputtingChecker checker) {
+        public Visitor(BaseTypeChecker checker) {
             super(checker);
         }
 

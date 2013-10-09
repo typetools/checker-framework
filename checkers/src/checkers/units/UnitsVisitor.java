@@ -1,5 +1,6 @@
 package checkers.units;
 
+import checkers.basetype.BaseTypeChecker;
 import checkers.basetype.BaseTypeVisitor;
 import checkers.quals.Unqualified;
 import checkers.source.Result;
@@ -15,7 +16,7 @@ import com.sun.source.tree.Tree.Kind;
  * Ensure consistent use of compound assignments.
  */
 public class UnitsVisitor extends BaseTypeVisitor<UnitsAnnotatedTypeFactory> {
-    public UnitsVisitor(UnitsChecker checker) {
+    public UnitsVisitor(BaseTypeChecker checker) {
         super(checker);
     }
 

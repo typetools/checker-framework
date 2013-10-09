@@ -1,5 +1,6 @@
 package checkers.fenum;
 
+import checkers.basetype.BaseTypeChecker;
 import checkers.basetype.BaseTypeVisitor;
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeMirror;
@@ -15,7 +16,7 @@ import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.Tree;
 
 public class FenumVisitor extends BaseTypeVisitor<FenumAnnotatedTypeFactory> {
-    public FenumVisitor(FenumChecker checker) {
+    public FenumVisitor(BaseTypeChecker checker) {
         super(checker);
     }
 

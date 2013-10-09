@@ -1,6 +1,7 @@
 package checkers.regex;
 
 
+import checkers.basetype.BaseTypeChecker;
 import checkers.basetype.BaseTypeVisitor;
 import checkers.regex.quals.Regex;
 import checkers.source.Result;
@@ -45,7 +46,7 @@ public class RegexVisitor extends BaseTypeVisitor<RegexAnnotatedTypeFactory> {
     private final ExecutableElement patternCompile;
     private final VariableElement patternLiteral;
 
-    public RegexVisitor(RegexChecker checker) {
+    public RegexVisitor(BaseTypeChecker checker) {
         super(checker);
         ProcessingEnvironment env = checker.getProcessingEnvironment();
         this.matchResultEnd = TreeUtils.getMethod("java.util.regex.MatchResult", "end", 1, env);

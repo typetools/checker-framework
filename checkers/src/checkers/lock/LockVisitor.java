@@ -1,5 +1,6 @@
 package checkers.lock;
 
+import checkers.basetype.BaseTypeChecker;
 import checkers.basetype.BaseTypeVisitor;
 import checkers.lock.quals.Holding;
 import checkers.source.Result;
@@ -40,7 +41,7 @@ import com.sun.source.tree.VariableTree;
  */
 public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
-    public LockVisitor(LockChecker checker) {
+    public LockVisitor(BaseTypeChecker checker) {
         super(checker);
     }
 

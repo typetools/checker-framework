@@ -1,5 +1,6 @@
 package checkers.fenum;
 
+import checkers.basetype.BaseTypeChecker;
 import checkers.fenum.quals.Fenum;
 import checkers.fenum.quals.FenumTop;
 import checkers.fenum.quals.FenumUnqualified;
@@ -24,7 +25,7 @@ public class FenumAnnotatedTypeFactory extends BasicAnnotatedTypeFactory {
 
     protected AnnotationMirror FENUM, BOTTOM;
 
-    public FenumAnnotatedTypeFactory(FenumChecker checker) {
+    public FenumAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
 
         BOTTOM = AnnotationUtils.fromClass(elements, Bottom.class);
