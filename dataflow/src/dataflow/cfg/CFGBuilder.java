@@ -2206,7 +2206,11 @@ public class CFGBuilder {
             boolean isBoxedPrimitive = TypesUtils.isBoxedPrimitive(nodeType);
             TypeMirror unboxedNodeType =
                 isBoxedPrimitive ? types.unboxedType(nodeType) : nodeType;
-            if (TypesUtils.isNumeric(unboxedNodeType)) {
+            TypeMirror unboxedDestType =
+                TypesUtils.isBoxedPrimitive(destType) ?
+                types.unboxedType(destType) : destType;
+            if (TypesUtils.isNumeric(unboxedNodeType) &&
+                TypesUtils.isNumeric(unboxedDestType)) {
                 if (unboxedNodeType.getKind() == TypeKind.BYTE &&
                     destType.getKind() == TypeKind.SHORT) {
                     if (isBoxedPrimitive) {
@@ -2230,8 +2234,14 @@ public class CFGBuilder {
                 return binaryNumericPromotion(node, destType);
             }
 
-            // TODO: Do we need to cast to lub(box(nodeType)) if the final
-            // case in JLS 15.25 applies?
+            // For the final case in JLS 15.25, apply boxing but not lub.
+            if (TypesUtils.isPrimitive(nodeType) &&
+                (destType.getKind() == TypeKind.DECLARED ||
+                 destType.getKind() == TypeKind.UNION ||
+                 destType.getKind() == TypeKind.INTERSECTION)) {
+                return box(node);
+            }
+
             return node;
         }
 
