@@ -24,6 +24,7 @@ import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.VariableElement;
 
 /**
  * A store that extends {@code CFAbstractStore} and additionally tracks which
@@ -37,7 +38,7 @@ public class InitializationStore<V extends CFAbstractValue<V>,
         extends CFAbstractStore<V, S> {
 
     /** The list of fields that are initialized. */
-    protected final Set<Element> initializedFields;
+    protected final Set<VariableElement> initializedFields;
 
     public InitializationStore(
             CFAbstractAnalysis<V, S, ?> analysis,
@@ -132,7 +133,7 @@ public class InitializationStore<V extends CFAbstractValue<V>,
      * caller needs to ensure that the field belongs to the current class, or is
      * a static field).
      */
-    public void addInitializedField(Element f) {
+    public void addInitializedField(VariableElement f) {
         initializedFields.add(f);
     }
 
