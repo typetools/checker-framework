@@ -1,5 +1,6 @@
 package checkers.nullness;
 
+import checkers.basetype.BaseTypeChecker;
 import checkers.basetype.BaseTypeValidator;
 import checkers.basetype.BaseTypeVisitor;
 import checkers.nullness.quals.KeyFor;
@@ -21,7 +22,7 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 
 public class KeyForVisitor extends BaseTypeVisitor<KeyForAnnotatedTypeFactory> {
-    public KeyForVisitor(KeyForSubchecker checker) {
+    public KeyForVisitor(BaseTypeChecker checker) {
         super(checker);
     }
 
