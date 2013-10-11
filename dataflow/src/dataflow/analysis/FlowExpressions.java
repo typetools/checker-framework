@@ -1,19 +1,5 @@
 package dataflow.analysis;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javacutils.AnnotationProvider;
-import javacutils.ElementUtils;
-import javacutils.TreeUtils;
-import javacutils.TypesUtils;
-
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Name;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
-
 import dataflow.cfg.node.ArrayAccessNode;
 import dataflow.cfg.node.ClassNameNode;
 import dataflow.cfg.node.FieldAccessNode;
@@ -28,6 +14,21 @@ import dataflow.cfg.node.ValueLiteralNode;
 import dataflow.cfg.node.WideningConversionNode;
 import dataflow.util.HashCodeUtils;
 import dataflow.util.PurityUtils;
+
+import javacutils.AnnotationProvider;
+import javacutils.ElementUtils;
+import javacutils.TreeUtils;
+import javacutils.TypesUtils;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 
 /**
  * Collection of classes and helper functions to represent Java expressions
@@ -228,13 +229,13 @@ public class FlowExpressions {
 
     public static class FieldAccess extends Receiver {
         protected Receiver receiver;
-        protected Element field;
+        protected VariableElement field;
 
         public Receiver getReceiver() {
             return receiver;
         }
 
-        public Element getField() {
+        public VariableElement getField() {
             return field;
         }
 
@@ -245,7 +246,7 @@ public class FlowExpressions {
         }
 
         public FieldAccess(Receiver receiver, TypeMirror type,
-                Element fieldElement) {
+                VariableElement fieldElement) {
             super(type);
             this.receiver = receiver;
             this.field = fieldElement;
