@@ -246,8 +246,7 @@ public class InitializationVisitor<
         // Are we dealing with the last static initializer block? If so,
         // then check that all static fields have been initialized.
         if (node.isStatic()) {
-            ClassTree enclosingClass = TreeUtils
-                    .enclosingClass(getCurrentPath());
+            ClassTree enclosingClass = TreeUtils.enclosingClass(getCurrentPath());
             boolean isStaticInitBlock = false;
             boolean isLastStaticInitBlock = true;
             for (Tree m : enclosingClass.getMembers()) {
@@ -264,23 +263,23 @@ public class InitializationVisitor<
                 boolean isStatic = true;
                 Store store = atypeFactory.getRegularExitStore(node);
                 // Add field values for fields with an initializer.
-                for (Pair<VariableElement, Value> t : store.getAnalysis()
-                        .getFieldValues()) {
+                for (Pair<VariableElement, Value> t : store.getAnalysis().getFieldValues()) {
                     store.addInitializedField(t.first);
                 }
+
                 // Check that all static fields are initialized.
-                List<AnnotationMirror> receiverAnnotations = Collections
-                        .emptyList();
-                checkFieldsInitialized(node, isStatic, store,
-                        receiverAnnotations);
+                List<AnnotationMirror> receiverAnnotations = Collections.emptyList();
+                checkFieldsInitialized(node, isStatic, store, receiverAnnotations);
             }
         }
         return super.visitBlock(node, p);
     }
 
-    protected List<VariableTree> initializedFields = new ArrayList<>();
+    protected final List<VariableTree> initializedFields = new ArrayList<>();
+
     @Override
     public Void visitClass(ClassTree node, Void p) {
+        initializedFields.clear();
 
         // call the ATF with any node from this class to trigger the dataflow
         // analysis.
@@ -330,12 +329,10 @@ public class InitializationVisitor<
             boolean isStatic = true;
             Store store = atypeFactory.getEmptyStore();
             // Add field values for fields with an initializer.
-            for (Pair<VariableElement, Value> t : store.getAnalysis()
-                    .getFieldValues()) {
+            for (Pair<VariableElement, Value> t : store.getAnalysis().getFieldValues()) {
                 store.addInitializedField(t.first);
             }
-            List<AnnotationMirror> receiverAnnotations = Collections
-                    .emptyList();
+            List<AnnotationMirror> receiverAnnotations = Collections.emptyList();
             checkFieldsInitialized(node, isStatic, store, receiverAnnotations);
         }
 
@@ -412,7 +409,12 @@ public class InitializationVisitor<
         if (store != null) {
             List<VariableTree> violatingFields = atypeFactory.getUninitializedInvariantFields(store, getCurrentPath(),
                             staticFields, receiverAnnotations);
-            if (!staticFields) {
+
+            if (staticFields) {
+                // TODO: Why is nothing done for static fields?
+                // Do we need the following?
+                // violatingFields.removeAll(store.initializedFields);
+            } else {
                 // remove fields that have already been initialized by an
                 // initializer block
                 violatingFields.removeAll(initializedFields);
