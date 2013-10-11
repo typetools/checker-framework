@@ -1,5 +1,6 @@
 package checkers.nullness;
 
+import checkers.basetype.BaseTypeChecker;
 import checkers.compilermsgs.quals.CompilerMessageKey;
 import checkers.initialization.InitializationVisitor;
 import checkers.nullness.quals.NonNull;
@@ -55,10 +56,8 @@ import com.sun.source.tree.WhileLoopTree;
 /**
  * The visitor for the nullness type-system.
  */
-public class NullnessVisitor
-    extends InitializationVisitor<NullnessAnnotatedTypeFactory,
-            NullnessValue, NullnessStore> {
-
+public class NullnessVisitor extends InitializationVisitor<NullnessAnnotatedTypeFactory,
+        NullnessValue, NullnessStore> {
     // Error message keys
     private static final /*@CompilerMessageKey*/ String ASSIGNMENT_TYPE_INCOMPATIBLE = "assignment.type.incompatible";
     private static final /*@CompilerMessageKey*/ String UNBOXING_OF_NULLABLE = "unboxing.of.nullable";
@@ -85,8 +84,12 @@ public class NullnessVisitor
      */
     private final ExecutableElement collectionToArray;
 
-    public NullnessVisitor(AbstractNullnessChecker checker) {
+    protected final boolean useFbc;
+
+    public NullnessVisitor(BaseTypeChecker checker, boolean useFbc) {
         super(checker);
+
+        this.useFbc = useFbc;
 
         NONNULL = atypeFactory.NONNULL;
         NULLABLE = atypeFactory.NULLABLE;
@@ -100,6 +103,11 @@ public class NullnessVisitor
                 "toArray", 1, env);
 
         checkForAnnotatedJdk();
+    }
+
+    @Override
+    public NullnessAnnotatedTypeFactory createTypeFactory() {
+        return new NullnessAnnotatedTypeFactory((BaseTypeChecker)checker, useFbc);
     }
 
     @Override
@@ -178,8 +186,7 @@ public class NullnessVisitor
             Element elem = TreeUtils
                     .elementFromDeclaration((VariableTree) varTree);
             if (atypeFactory.fromElement(elem).hasAnnotation(MONOTONIC_NONNULL)
-                    && !checker
-                            .getLintOption(
+                    && !checker.getLintOption(
                                     AbstractNullnessChecker.LINT_NOINITFORMONOTONICNONNULL,
                                     AbstractNullnessChecker.LINT_DEFAULT_NOINITFORMONOTONICNONNULL)) {
                 return;
