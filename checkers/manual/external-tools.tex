@@ -513,14 +513,15 @@ To specify command-line arguments, set
 
 \begin{Verbatim}
 allprojects {
-  tasks.withType(Compile).allTasks { Compile compile ->
+  tasks.withType(JavaCompile).all { JavaCompile compile ->
     compile.options.debug = true
     compile.options.compilerArgs = [
       '-version',
       '-implicit:class',
-      '-processor', 'checkers.nullness.NullnessChecker]
-    options.fork = true,
-    compile.options.fork.executable = "$CHECKERS/binary/javac"
+      '-processor', 'checkers.nullness.NullnessChecker'
+    ]
+    options.fork = true
+    options.forkOptions.executable = "$CHECKERS/binary/javac"
   }
 }
 \end{Verbatim}
