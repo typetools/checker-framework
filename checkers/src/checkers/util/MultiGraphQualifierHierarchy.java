@@ -327,7 +327,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
     protected Set</*@Interned*/ String> typeQualifiers = null;
 
     @Override
-    public Set<AnnotationMirror> getTypeQualifiers() {
+    public Set<? extends AnnotationMirror> getTypeQualifiers() {
         return Collections.unmodifiableSet(supertypesMap.keySet());
     }
 
