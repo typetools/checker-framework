@@ -1,15 +1,15 @@
 package dataflow.cfg.node;
 
-import java.util.Collection;
-import java.util.Collections;
-
-import javax.lang.model.element.Element;
+import dataflow.util.HashCodeUtils;
 
 import javacutils.ElementUtils;
 import javacutils.InternalUtils;
 import javacutils.TreeUtils;
 
-import dataflow.util.HashCodeUtils;
+import java.util.Collection;
+import java.util.Collections;
+
+import javax.lang.model.element.VariableElement;
 
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
@@ -28,7 +28,7 @@ import com.sun.source.tree.Tree;
 public class FieldAccessNode extends Node {
 
     protected Tree tree;
-    protected Element element;
+    protected VariableElement element;
     protected String field;
     protected Node receiver;
 
@@ -42,14 +42,14 @@ public class FieldAccessNode extends Node {
         this.field = TreeUtils.getFieldName(tree);
 
         if (tree instanceof MemberSelectTree) {
-            this.element = TreeUtils.elementFromUse((MemberSelectTree) tree);
+            this.element = (VariableElement) TreeUtils.elementFromUse((MemberSelectTree) tree);
         } else {
             assert tree instanceof IdentifierTree;
-            this.element =  TreeUtils.elementFromUse((IdentifierTree) tree);
+            this.element =  (VariableElement) TreeUtils.elementFromUse((IdentifierTree) tree);
         }
     }
 
-    public FieldAccessNode(Element element, Node receiver) {
+    public FieldAccessNode(VariableElement element, Node receiver) {
         super(element.asType());
         this.tree = null;
         this.element = element;
@@ -57,7 +57,7 @@ public class FieldAccessNode extends Node {
         this.field = element.getSimpleName().toString();
     }
 
-    public Element getElement() {
+    public VariableElement getElement() {
         return element;
     }
 

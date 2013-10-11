@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -89,10 +88,10 @@ public class InitializationTransfer<V extends CFAbstractValue<V>, T extends Init
      * Returns the fields that can safely be considered initialized after
      * the method call {@code node}.
      */
-    protected List<Element> initializedFieldsAfterCall(
+    protected List<VariableElement> initializedFieldsAfterCall(
             MethodInvocationNode node,
             ConditionalTransferResult<V, S> transferResult) {
-        List<Element> result = new ArrayList<>();
+        List<VariableElement> result = new ArrayList<>();
         MethodInvocationTree tree = node.getTree();
         ExecutableElement method = TreeUtils.elementFromUse(tree);
         boolean isConstructor = method.getSimpleName().contentEquals("<init>");
@@ -133,7 +132,7 @@ public class InitializationTransfer<V extends CFAbstractValue<V>, T extends Init
      * Adds all the fields of the class {@code clazzElem} that have the
      * 'invariant annotation' to the set of initialized fields {@code result}.
      */
-    protected void markInvariantFieldsAsInitialized(List<Element> result,
+    protected void markInvariantFieldsAsInitialized(List<VariableElement> result,
             TypeElement clazzElem) {
         List<VariableElement> fields = ElementFilter.fieldsIn(clazzElem
                 .getEnclosedElements());
@@ -205,10 +204,10 @@ public class InitializationTransfer<V extends CFAbstractValue<V>, T extends Init
             TransferInput<V, S> in) {
         TransferResult<V, S> result = super.visitMethodInvocation(n, in);
         assert result instanceof ConditionalTransferResult;
-        List<Element> newlyInitializedFields = initializedFieldsAfterCall(n,
+        List<VariableElement> newlyInitializedFields = initializedFieldsAfterCall(n,
                 (ConditionalTransferResult<V, S>) result);
         if (newlyInitializedFields.size() > 0) {
-            for (Element f : newlyInitializedFields) {
+            for (VariableElement f : newlyInitializedFields) {
                 result.getThenStore().addInitializedField(f);
                 result.getElseStore().addInitializedField(f);
             }
