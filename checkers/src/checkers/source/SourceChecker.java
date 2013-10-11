@@ -92,7 +92,7 @@ import com.sun.tools.javac.util.Log;
     //     * introduction.tex contains an overview of all options, which
     //       should be in the same order as this source code file.
     //     * a specific section should contain a detailed discussion.
-    
+
 
     ///
     /// Unsound checking: ignore some errors
@@ -242,7 +242,7 @@ public abstract class SourceChecker
     // to override.
 
     /** File name of the localized messages. */
-    private static final String MSGS_FILE = "messages.properties";
+    protected static final String MSGS_FILE = "messages.properties";
 
     /** Maps error keys to localized/custom error messages. */
     protected Properties messages;
@@ -255,7 +255,7 @@ public abstract class SourceChecker
 
     /** The source tree that is being scanned. */
     protected CompilationUnitTree currentRoot;
-    
+
     /** The source path that is being scanned. */
     protected TreePath currentPath;
 
@@ -1422,7 +1422,7 @@ public abstract class SourceChecker
 
     /**
      * Determine the standard set of suppress warning keys usable for any checker.
-     * 
+     *
      * @see #getSuppressWarningsKeys()
      * @return Collection of warning keys
      */
