@@ -330,13 +330,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 if (typeQualifier.getAnnotation(SubtypeOf.class) != null) {
                     // This is currently not supported. At some point we might add
                     // polymorphic qualifiers with upper and lower bounds.
-                    ErrorReporter.errorAbort("BaseTypeChecker: " + typeQualifier + " is polymorphic and specifies super qualifiers. " +
+                    ErrorReporter.errorAbort("AnnotatedTypeFactory: " + typeQualifier + " is polymorphic and specifies super qualifiers. " +
                         "Remove the @checkers.quals.SubtypeOf or @checkers.quals.PolymorphicQualifier annotation from it.");
                 }
                 continue;
             }
             if (typeQualifier.getAnnotation(SubtypeOf.class) == null) {
-                ErrorReporter.errorAbort("BaseTypeChecker: " + typeQualifier + " does not specify its super qualifiers. " +
+                ErrorReporter.errorAbort("AnnotatedTypeFactory: " + typeQualifier + " does not specify its super qualifiers. " +
                     "Add an @checkers.quals.SubtypeOf annotation to it.");
             }
             Class<? extends Annotation>[] superQualifiers =
@@ -352,8 +352,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
 
         QualifierHierarchy hierarchy = factory.build();
-        if (hierarchy.getTypeQualifiers().size() < 1) {
-            ErrorReporter.errorAbort("BaseTypeChecker: invalid qualifier hierarchy: hierarchy requires at least one annotation: " + hierarchy.getTypeQualifiers());
+
+        if (!hierarchy.isValid()) {
+            ErrorReporter.errorAbort("AnnotatedTypeFactory: invalid qualifier hierarchy: " +
+                    hierarchy.getClass() + " " + hierarchy);
         }
 
         return hierarchy;
