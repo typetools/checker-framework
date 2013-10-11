@@ -1,5 +1,6 @@
 package checkers.initialization;
 
+import checkers.basetype.BaseTypeChecker;
 import checkers.flow.CFAbstractAnalysis;
 import checkers.flow.CFAbstractValue;
 import checkers.initialization.quals.FBCBottom;
@@ -44,7 +45,6 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
 import com.sun.source.tree.ClassTree;
@@ -84,12 +84,10 @@ public abstract class InitializationAnnotatedTypeFactory<
      */
     public final boolean useFbc;
 
-    public InitializationAnnotatedTypeFactory(InitializationChecker checker, boolean useFbc) {
+    public InitializationAnnotatedTypeFactory(BaseTypeChecker checker, boolean useFbc) {
         super(checker, true);
 
         this.useFbc = useFbc;
-
-        Elements elements = processingEnv.getElementUtils();
 
         if (useFbc) {
             COMMITTED = AnnotationUtils.fromClass(elements, Initialized.class);
@@ -463,20 +461,19 @@ public abstract class InitializationAnnotatedTypeFactory<
             TreePath path, boolean isStatic,
             List<? extends AnnotationMirror> receiverAnnotations) {
         ClassTree currentClass = TreeUtils.enclosingClass(path);
-        List<VariableTree> fields = InitializationChecker
-                .getAllFields(currentClass);
+        List<VariableTree> fields = InitializationChecker.getAllFields(currentClass);
         List<VariableTree> violatingFields = new ArrayList<>();
         AnnotationMirror invariant = getFieldInvariantAnnotation();
         for (VariableTree field : fields) {
             if (isUnused(field, receiverAnnotations)) {
                 continue; // don't consider unused fields
             }
-            if (ElementUtils.isStatic(TreeUtils.elementFromDeclaration(field)) == isStatic) {
+            VariableElement fieldElem = TreeUtils.elementFromDeclaration(field);
+            if (ElementUtils.isStatic(fieldElem) == isStatic) {
                 // Does this field need to satisfy the invariant?
                 if (getAnnotatedType(field).hasAnnotation(invariant)) {
                     // Has the field been initialized?
-                    if (!store.isFieldInitialized(TreeUtils
-                            .elementFromDeclaration(field))) {
+                    if (!store.isFieldInitialized(fieldElem)) {
                         violatingFields.add(field);
                     }
                 }
@@ -491,18 +488,19 @@ public abstract class InitializationAnnotatedTypeFactory<
      */
     public List<VariableTree> getInitializedInvariantFields(Store store,
             TreePath path) {
+        // TODO: Instead of passing the TreePath around, can we use
+        // getCurrentClassTree?
         ClassTree currentClass = TreeUtils.enclosingClass(path);
-        List<VariableTree> fields = InitializationChecker
-                .getAllFields(currentClass);
+        List<VariableTree> fields = InitializationChecker.getAllFields(currentClass);
         List<VariableTree> initializedFields = new ArrayList<>();
         AnnotationMirror invariant = getFieldInvariantAnnotation();
         for (VariableTree field : fields) {
-            if (!ElementUtils.isStatic(TreeUtils.elementFromDeclaration(field))) {
+            VariableElement fieldElem = TreeUtils.elementFromDeclaration(field);
+            if (!ElementUtils.isStatic(fieldElem)) {
                 // Does this field need to satisfy the invariant?
                 if (getAnnotatedType(field).hasAnnotation(invariant)) {
                     // Has the field been initialized?
-                    if (store.isFieldInitialized(TreeUtils
-                            .elementFromDeclaration(field))) {
+                    if (store.isFieldInitialized(fieldElem)) {
                         initializedFields.add(field);
                     }
                 }
