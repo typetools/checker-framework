@@ -19,6 +19,7 @@ import dataflow.cfg.node.ImplicitThisLiteralNode;
 import dataflow.cfg.node.LocalVariableNode;
 import dataflow.cfg.node.MethodInvocationNode;
 import dataflow.cfg.node.Node;
+
 import javacutils.ElementUtils;
 import javacutils.InternalUtils;
 import javacutils.Resolver;
@@ -33,6 +34,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
@@ -181,7 +183,7 @@ public class FlowExpressionParseUtil {
             try {
                 // field access
                 TypeMirror receiverType = context.receiver.getType();
-                Element fieldElem = null;
+                VariableElement fieldElem = null;
 
                 // Search for field in each enclosing class.
                 while (receiverType.getKind() == TypeKind.DECLARED) {
