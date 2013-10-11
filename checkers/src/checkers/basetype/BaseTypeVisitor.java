@@ -156,7 +156,7 @@ public class BaseTypeVisitor<Factory extends AbstractBasicAnnotatedTypeFactory<?
         extends SourceVisitor<Void, Void> {
 
     /** The factory to use for obtaining "parsed" version of annotations. */
-    protected Factory atypeFactory;
+    protected final Factory atypeFactory;
 
     /** For obtaining line numbers in -Ashowchecks debugging output. */
     protected final SourcePositions positions;
@@ -224,9 +224,6 @@ public class BaseTypeVisitor<Factory extends AbstractBasicAnnotatedTypeFactory<?
     }
 
     public final Factory getTypeFactory() {
-        if (atypeFactory == null) {
-            atypeFactory = createTypeFactory();
-        }
         return atypeFactory;
     }
 
