@@ -188,7 +188,7 @@ public class FlowExpressionParseUtil {
                 // Search for field in each enclosing class.
                 while (receiverType.getKind() == TypeKind.DECLARED) {
                     fieldElem = resolver.findField(s, receiverType, path);
-                    if (fieldElem.getKind() == ElementKind.FIELD) {
+                    if (fieldElem != null) {
                         break;
                     }
                     receiverType = ((DeclaredType)receiverType).getEnclosingType();
