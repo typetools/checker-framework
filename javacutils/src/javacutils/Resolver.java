@@ -9,6 +9,7 @@ import java.lang.reflect.Method;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 
@@ -99,8 +100,14 @@ public class Resolver {
         try {
             JavacScope scope = (JavacScope) trees.getScope(path);
             Env<AttrContext> env = scope.getEnv();
-            return (VariableElement) wrapInvocation(FIND_IDENT_IN_TYPE, env, type,
+            Element res = wrapInvocation(FIND_IDENT_IN_TYPE, env, type,
                     names.fromString(name), VAR);
+            if (res.getKind() == ElementKind.FIELD) {
+                return (VariableElement) res;
+            } else {
+                // Most likely didn't find the field and the Element is a SymbolNotFoundError
+                return null;
+            }
         } finally {
             log.popDiagnosticHandler(discardDiagnosticHandler);
         }
