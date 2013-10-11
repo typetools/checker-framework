@@ -1,10 +1,9 @@
 package checkers.i18n;
 
+import checkers.basetype.BaseTypeChecker;
 import checkers.i18n.quals.LocalizableKey;
 import checkers.propkey.PropertyKeyAnnotatedTypeFactory;
 import checkers.types.TreeAnnotator;
-
-import com.sun.source.tree.CompilationUnitTree;
 
 /**
  * A PropertyKeyATF that uses LocalizableKey to annotate the keys.
@@ -12,15 +11,14 @@ import com.sun.source.tree.CompilationUnitTree;
  * @author wmdietl
  */
 public class LocalizableKeyAnnotatedTypeFactory extends
-        PropertyKeyAnnotatedTypeFactory<LocalizableKeyChecker> {
+        PropertyKeyAnnotatedTypeFactory {
 
-    public LocalizableKeyAnnotatedTypeFactory(LocalizableKeyChecker checker,
-            CompilationUnitTree root) {
-        super(checker, root);
+    public LocalizableKeyAnnotatedTypeFactory(BaseTypeChecker checker) {
+        super(checker);
     }
 
     @Override
-    public TreeAnnotator createTreeAnnotator(LocalizableKeyChecker checker) {
-        return new KeyLookupTreeAnnotator(checker, this, LocalizableKey.class);
+    public TreeAnnotator createTreeAnnotator() {
+        return new KeyLookupTreeAnnotator(this, LocalizableKey.class);
     }
 }

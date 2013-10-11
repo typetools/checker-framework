@@ -1,6 +1,7 @@
 package checkers.flow;
 
 import checkers.basetype.BaseTypeChecker;
+import checkers.source.SourceChecker;
 import checkers.types.AbstractBasicAnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
@@ -20,11 +21,9 @@ import javacutils.Pair;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
@@ -52,7 +51,9 @@ import checkers.nullness.quals.*;
  * @author Stefan Heule
  *
  */
-public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends CFAbstractStore<V, S>, T extends CFAbstractTransfer<V, S, T>>
+public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>,
+            S extends CFAbstractStore<V, S>,
+            T extends CFAbstractTransfer<V, S, T>>
         extends Analysis<V, S, T> {
     /**
      * The qualifier hierarchy for which to track annotations.
@@ -67,13 +68,13 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
     /**
      * A type factory that can provide static type annotations for AST Trees.
      */
-    protected final AbstractBasicAnnotatedTypeFactory<? extends BaseTypeChecker<?>, V, S, T, ? extends CFAbstractAnalysis<V, S, T>> atypeFactory;
+    protected final AbstractBasicAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>> atypeFactory;
 
     /**
      * A checker used to do error reporting.
      * TODO: if it's only for error reporting, should it be an (extended) ErrorHandler?
      */
-    protected final BaseTypeChecker<?> checker;
+    protected final SourceChecker checker;
 
     // TODO: document.
     protected final List<Pair<VariableElement, V>> fieldValues;
@@ -81,20 +82,13 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
     // TODO: document.
     protected final int expectedNumberOfAnnotations;
 
-    public <Checker extends BaseTypeChecker<?>> CFAbstractAnalysis(
-            AbstractBasicAnnotatedTypeFactory<Checker, V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory,
-            ProcessingEnvironment env, Checker checker) {
-        this(factory, env, checker, Collections.<Pair<VariableElement, V>>emptyList());
-    }
-
-    public <Checker extends BaseTypeChecker<?>> CFAbstractAnalysis(
-            AbstractBasicAnnotatedTypeFactory<Checker, V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory,
-            ProcessingEnvironment env, Checker checker,
+    public CFAbstractAnalysis(BaseTypeChecker checker,
+            AbstractBasicAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory,
             List<Pair<VariableElement, V>> fieldValues) {
-        super(env);
+        super(checker.getProcessingEnvironment());
 
         qualifierHierarchy = factory.getQualifierHierarchy();
-        typeHierarchy = factory.getChecker().getTypeHierarchy();
+        typeHierarchy = factory.getTypeHierarchy();
         this.atypeFactory = factory;
         this.checker = checker;
         transferFunction = createTransferFunction();
@@ -147,7 +141,7 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
         return typeHierarchy;
     }
 
-    public AbstractBasicAnnotatedTypeFactory<? extends BaseTypeChecker<?>, V, S, T, ? extends CFAbstractAnalysis<V, S, T>> getFactory() {
+    public AbstractBasicAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>> getTypeFactory() {
         return atypeFactory;
     }
 
@@ -175,8 +169,8 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>, S extends
     public V createSingleAnnotationValue(AnnotationMirror anno,
             TypeMirror underlyingType) {
         AnnotatedTypeMirror type = AnnotatedTypeMirror.createType(
-                underlyingType, getFactory());
-        Set<? extends AnnotationMirror> tops = getFactory().getQualifierHierarchy()
+                underlyingType, getTypeFactory());
+        Set<? extends AnnotationMirror> tops = getTypeFactory().getQualifierHierarchy()
                 .getTopAnnotations();
         makeTop(type, tops);
         type.replaceAnnotation(anno);

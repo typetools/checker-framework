@@ -1,19 +1,24 @@
 package lubglb;
 
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.util.Elements;
-
-import lubglb.quals.*;
+import checkers.basetype.BaseTypeChecker;
+import checkers.basetype.BaseTypeVisitor;
+import checkers.quals.TypeQualifiers;
+import checkers.types.QualifierHierarchy;
 
 import javacutils.AnnotationUtils;
 
-import checkers.basetype.BaseTypeChecker;
-import checkers.quals.TypeQualifiers;
-import checkers.types.SubtypingAnnotatedTypeFactory;
-import checkers.types.QualifierHierarchy;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.util.Elements;
+
+import lubglb.quals.A;
+import lubglb.quals.B;
+import lubglb.quals.C;
+import lubglb.quals.D;
+import lubglb.quals.E;
+import lubglb.quals.F;
 
 @TypeQualifiers( {A.class, B.class, C.class, D.class, E.class, F.class} )
-public class LubGlbChecker extends BaseTypeChecker<SubtypingAnnotatedTypeFactory<LubGlbChecker>> {
+public class LubGlbChecker extends BaseTypeChecker {
 
     private AnnotationMirror B, C, D, E; // A and F not needed
 
@@ -30,7 +35,7 @@ public class LubGlbChecker extends BaseTypeChecker<SubtypingAnnotatedTypeFactory
         E = AnnotationUtils.fromClass(elements, E.class);
         // F = AnnotationUtils.fromClass(elements, F.class);
 
-        QualifierHierarchy qh = this.getQualifierHierarchy();
+        QualifierHierarchy qh = ((BaseTypeVisitor<?>)visitor).getTypeFactory().getQualifierHierarchy();
 
         // System.out.println("LUB of D and E: " + qh.leastUpperBound(D, E));
         assert qh.leastUpperBound(D, E).equals(C) :

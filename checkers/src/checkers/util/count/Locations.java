@@ -3,7 +3,6 @@ package checkers.util.count;
 import checkers.source.SourceChecker;
 import checkers.source.SourceVisitor;
 import checkers.source.SupportedOptions;
-import checkers.types.AnnotatedTypeFactory;
 
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
@@ -11,7 +10,6 @@ import javax.lang.model.SourceVersion;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.InstanceOfTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
@@ -61,14 +59,14 @@ import com.sun.source.util.TreePath;
  */
 @SupportedOptions({"nolocations", "annotations"})
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
-public class Locations extends SourceChecker<AnnotatedTypeFactory> {
+public class Locations extends SourceChecker {
 
     @Override
-    protected SourceVisitor<?, ?, ?, ?> createSourceVisitor(CompilationUnitTree root) {
-        return new Visitor(this, root);
+    protected SourceVisitor<?, ?> createSourceVisitor() {
+        return new Visitor(this);
     }
 
-    static class Visitor extends SourceVisitor<Locations, AnnotatedTypeFactory, Void, Void> {
+    static class Visitor extends SourceVisitor<Void, Void> {
 
         /** Whether annotation locations should be printed. */
         private final boolean locations;
@@ -76,8 +74,8 @@ public class Locations extends SourceChecker<AnnotatedTypeFactory> {
         /** Whether annotation details should be printed. */
         private final boolean annotations;
 
-        public Visitor(Locations l, CompilationUnitTree root) {
-            super(l, root);
+        public Visitor(Locations l) {
+            super(l);
 
             locations = !checker.hasOption("nolocations");
             annotations = checker.hasOption("annotations");

@@ -4,37 +4,23 @@ package checkers.basetype;
 import checkers.igj.quals.*;
 */
 
-import checkers.quals.MonotonicQualifier;
-import checkers.quals.PolymorphicQualifier;
 import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifiers;
 import checkers.source.SourceChecker;
-import checkers.source.SourceVisitor;
-import checkers.types.AbstractBasicAnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeFactory;
-import checkers.types.SubtypingAnnotatedTypeFactory;
+import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.types.QualifierHierarchy;
 import checkers.types.TypeHierarchy;
-import checkers.util.GraphQualifierHierarchy;
-import checkers.util.MultiGraphQualifierHierarchy;
-import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 
 import javacutils.AbstractTypeProcessor;
-import javacutils.AnnotationUtils;
 import javacutils.ErrorReporter;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.util.Elements;
-
-import com.sun.source.tree.CompilationUnitTree;
 
 /**
  * An abstract {@link SourceChecker} that provides a simple {@link
@@ -92,222 +78,14 @@ import com.sun.source.tree.CompilationUnitTree;
  *
  * @see checkers.quals
  */
-public abstract class BaseTypeChecker<Factory extends AbstractBasicAnnotatedTypeFactory<?, ?, ?, ?, ?>>
-    extends SourceChecker<Factory> {
+public abstract class BaseTypeChecker extends SourceChecker {
 
-    /** To cache the supported type qualifiers. */
-    private Set<Class<? extends Annotation>> supportedQuals;
-
-    /** To cache the supported monotonic type qualifiers. */
-    private Set<Class<? extends Annotation>> supportedMonotonicQuals;
-
-    /** To represent the supported qualifiers and their hierarchy. */
-    private QualifierHierarchy qualHierarchy;
-
-    /** To compare annotated types with respect to qualHierarchy. */
-    private TypeHierarchy typeHierarchy;
-
+    /*
     @Override
     public void initChecker() {
         super.initChecker();
-        this.supportedQuals = this.createSupportedTypeQualifiers();
-        this.qualHierarchy = this.getQualifierHierarchy();
-        this.typeHierarchy = this.createTypeHierarchy();
     }
-
-    // **********************************************************************
-    // Factory Methods, and corresponding getters:
-    // The getter methods are separated from the creation methods to simplify
-    // caching for subclasses
-    // **********************************************************************
-
-    /**
-     * If the checker class is annotated with {@link
-     * TypeQualifiers}, return an immutable set with the same set
-     * of classes as the annotation.  If the class is not so annotated,
-     * return an empty set.
-     *
-     * Subclasses may override this method to return an immutable set
-     * of their supported type qualifiers.
-     *
-     * @return the type qualifiers supported this processor, or an empty
-     * set if none
-     *
-     * @see TypeQualifiers
-     */
-    protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        Class<?> classType = this.getClass();
-        TypeQualifiers typeQualifiersAnnotation =
-            classType.getAnnotation(TypeQualifiers.class);
-        if (typeQualifiersAnnotation == null)
-            return Collections.emptySet();
-
-        Set<Class<? extends Annotation>> typeQualifiers = new HashSet<Class<? extends Annotation>>();
-        for (Class<? extends Annotation> qualifier : typeQualifiersAnnotation.value()) {
-            typeQualifiers.add(qualifier);
-        }
-        return Collections.unmodifiableSet(typeQualifiers);
-    }
-
-    /**
-     * Returns an immutable set of the type qualifiers supported by this
-     * checker.
-     *
-     * @see #createSupportedTypeQualifiers()
-     *
-     * @return the type qualifiers supported this processor, or an empty
-     * set if none
-     */
-    public final Set<Class<? extends Annotation>> getSupportedTypeQualifiers() {
-        if (supportedQuals == null)
-            supportedQuals = createSupportedTypeQualifiers();
-        return supportedQuals;
-    }
-
-    /**
-     * Returns an immutable set of the <em>monotonic</em> type qualifiers supported by this
-     * checker.
-     *
-     * @return the monotonic type qualifiers supported this processor, or an empty
-     * set if none
-     * @see MonotonicQualifier
-     */
-    public final Set<Class<? extends Annotation>> getSupportedMonotonicTypeQualifiers() {
-        if (supportedMonotonicQuals == null) {
-            supportedMonotonicQuals = new HashSet<>();
-            for (Class<? extends Annotation> anno : getSupportedTypeQualifiers()) {
-                MonotonicQualifier mono = anno.getAnnotation(MonotonicQualifier.class);
-                if (mono != null) {
-                    supportedMonotonicQuals.add(anno);
-                }
-            }
-        }
-        return supportedMonotonicQuals;
-    }
-
-    /** Factory method to easily change what Factory is used to
-     * create a QualifierHierarchy.
-     */
-    protected MultiGraphQualifierHierarchy.MultiGraphFactory createQualifierHierarchyFactory() {
-        return new MultiGraphQualifierHierarchy.MultiGraphFactory(this);
-    }
-
-    /** Factory method to easily change what QualifierHierarchy is
-     * created.
-     * Needs to be public only because the GraphFactory must be able to call this method.
-     * No external use of this method is necessary.
-     */
-    public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
-        return new GraphQualifierHierarchy(factory, null);
-    }
-
-    /**
-     * Returns the type qualifier hierarchy graph to be used by this processor.
-     *
-     * The implementation builds the type qualifier hierarchy for the
-     * {@link #getSupportedTypeQualifiers()} using the
-     * meta-annotations found in them.  The current implementation returns an
-     * instance of {@code GraphQualifierHierarchy}.
-     *
-     * Subclasses may override this method to express any relationships that
-     * cannot be inferred using meta-annotations (e.g. due to lack of
-     * meta-annotations).
-     *
-     * @return an annotation relation tree representing the supported qualifiers
-     */
-    protected QualifierHierarchy createQualifierHierarchy() {
-        Set<Class<? extends Annotation>> supportedTypeQualifiers = getSupportedTypeQualifiers();
-        MultiGraphQualifierHierarchy.MultiGraphFactory factory = this.createQualifierHierarchyFactory();
-
-        Elements elements = processingEnv.getElementUtils();
-        return createQualifierHierarchy(elements, supportedTypeQualifiers, factory);
-    }
-
-    /**
-     * Returns the type qualifier hierarchy graph for a given set of type qualifiers and a factory.
-     * <p>
-     *
-     * The implementation builds the type qualifier hierarchy for the
-     * {@code supportedTypeQualifiers}.  The current implementation returns an
-     * instance of {@code GraphQualifierHierarchy}.
-     *
-     * @return an annotation relation tree representing the supported qualifiers
-     */
-    protected static QualifierHierarchy createQualifierHierarchy(
-            Elements elements,
-            Set<Class<? extends Annotation>> supportedTypeQualifiers,
-            MultiGraphFactory factory) {
-
-        for (Class<? extends Annotation> typeQualifier : supportedTypeQualifiers) {
-            AnnotationMirror typeQualifierAnno = AnnotationUtils.fromClass(elements, typeQualifier);
-            assert typeQualifierAnno != null : "Loading annotation \"" + typeQualifier + "\" failed!";
-            factory.addQualifier(typeQualifierAnno);
-            // Polymorphic qualifiers can't declare their supertypes.
-            // An error is raised if one is present.
-            if (typeQualifier.getAnnotation(PolymorphicQualifier.class) != null) {
-                if (typeQualifier.getAnnotation(SubtypeOf.class) != null) {
-                    // This is currently not supported. At some point we might add
-                    // polymorphic qualifiers with upper and lower bounds.
-                    ErrorReporter.errorAbort("BaseTypeChecker: " + typeQualifier + " is polymorphic and specifies super qualifiers. " +
-                        "Remove the @checkers.quals.SubtypeOf or @checkers.quals.PolymorphicQualifier annotation from it.");
-                }
-                continue;
-            }
-            if (typeQualifier.getAnnotation(SubtypeOf.class) == null) {
-                ErrorReporter.errorAbort("BaseTypeChecker: " + typeQualifier + " does not specify its super qualifiers. " +
-                    "Add an @checkers.quals.SubtypeOf annotation to it.");
-            }
-            Class<? extends Annotation>[] superQualifiers =
-                typeQualifier.getAnnotation(SubtypeOf.class).value();
-            for (Class<? extends Annotation> superQualifier : superQualifiers) {
-                if (!supportedTypeQualifiers.contains(superQualifier)) {
-                    continue;
-                }
-                AnnotationMirror superAnno = null;
-                superAnno = AnnotationUtils.fromClass(elements, superQualifier);
-                factory.addSubtype(typeQualifierAnno, superAnno);
-            }
-        }
-
-        QualifierHierarchy hierarchy = factory.build();
-        if (hierarchy.getTypeQualifiers().size() < 1) {
-            ErrorReporter.errorAbort("BaseTypeChecker: invalid qualifier hierarchy: hierarchy requires at least one annotation: " + hierarchy.getTypeQualifiers());
-        }
-
-        return hierarchy;
-    }
-
-    /**
-     * Returns the type qualifier hierarchy graph to be used by this processor.
-     *
-     * @see #createQualifierHierarchy()
-     *
-     * @return the {@link QualifierHierarchy} for this checker
-     */
-    public final QualifierHierarchy getQualifierHierarchy() {
-        if (qualHierarchy == null)
-            qualHierarchy = createQualifierHierarchy();
-        return qualHierarchy;
-    }
-
-    /**
-     * Creates the type subtyping checker using the current type qualifier
-     * hierarchy.
-     *
-     * Subclasses may override this method to specify new type-checking
-     * rules beyond the typical java subtyping rules.
-     *
-     * @return  the type relations class to check type subtyping
-     */
-    protected TypeHierarchy createTypeHierarchy() {
-        return new TypeHierarchy(this, getQualifierHierarchy());
-    }
-
-    public final TypeHierarchy getTypeHierarchy() {
-        if (typeHierarchy == null)
-            typeHierarchy = createTypeHierarchy();
-        return typeHierarchy;
-    }
+    */
 
     /**
      * Returns the appropriate visitor that type-checks the compilation unit
@@ -326,79 +104,30 @@ public abstract class BaseTypeChecker<Factory extends AbstractBasicAnnotatedType
      * @return the type-checking visitor
      */
     @Override
-    protected SourceVisitor<?, ?, ?, ?> createSourceVisitor(CompilationUnitTree root) {
-
+    protected BaseTypeVisitor<?> createSourceVisitor() {
         // Try to reflectively load the visitor.
         Class<?> checkerClass = this.getClass();
 
         while (checkerClass != BaseTypeChecker.class) {
             final String classToLoad =
                 checkerClass.getName().replace("Checker", "Visitor")
-                .replace("Subchecker", "Visitor");
-            BaseTypeVisitor<?, ?> result = invokeConstructorFor(classToLoad,
-                    new Class<?>[] { checkerClass, CompilationUnitTree.class },
-                    new Object[] { this, root });
+                                      .replace("Subchecker", "Visitor");
+            BaseTypeVisitor<?> result = invokeConstructorFor(classToLoad,
+                    new Class<?>[] { BaseTypeChecker.class },
+                    new Object[] { this });
             if (result != null)
                 return result;
             checkerClass = checkerClass.getSuperclass();
         }
 
         // If a visitor couldn't be loaded reflectively, return the default.
-        return new BaseTypeVisitor<BaseTypeChecker<Factory>, Factory>(this, root);
-    }
-
-    /**
-     * Constructs an instance of the appropriate type factory for the
-     * implemented type system.
-     *
-     * The default implementation uses the checker naming convention to create
-     * the appropriate type factory.  If no factory is found, it returns
-     * {@link SubtypingAnnotatedTypeFactory}.  It reflectively invokes the
-     * constructor that accepts this checker and compilation unit tree
-     * (in that order) as arguments.
-     *
-     * Subclasses have to override this method to create the appropriate
-     * visitor if they do not follow the checker naming convention.
-     *
-     * @param root  the currently visited compilation unit
-     * @return the appropriate type factory
-     */
-    @SuppressWarnings("unchecked") // unchecked casts to type parameter
-    @Override
-    public Factory createFactory(CompilationUnitTree root) {
-
-        // Try to reflectively load the type factory.
-        Class<?> checkerClass = this.getClass();
-        while (checkerClass != BaseTypeChecker.class) {
-            final String classToLoad =
-                checkerClass.getName().replace("Checker", "AnnotatedTypeFactory")
-                .replace("Subchecker", "AnnotatedTypeFactory");
-
-            AnnotatedTypeFactory result = invokeConstructorFor(classToLoad,
-                    new Class<?>[] { checkerClass, CompilationUnitTree.class },
-                    new Object[] { this, root });
-            if (result != null) {
-                return (Factory) result;
-            }
-            checkerClass = checkerClass.getSuperclass();
-        }
-        return (Factory) new SubtypingAnnotatedTypeFactory<BaseTypeChecker<Factory>>(this, root);
+        return new BaseTypeVisitor<BasicAnnotatedTypeFactory>(this);
     }
 
 
     // **********************************************************************
     // Misc. methods
     // **********************************************************************
-
-    /** Returns true iff {@code anno} is supported by this checker. */
-    public boolean isSupportedAnnotation(AnnotationMirror anno) {
-        for (Class<? extends Annotation> c : getSupportedTypeQualifiers()) {
-            if (AnnotationUtils.areSameByClass(anno, c)) {
-                return true;
-            }
-        }
-        return false;
-    }
 
     /**
      * Specify supported lint options for all type-checkers.

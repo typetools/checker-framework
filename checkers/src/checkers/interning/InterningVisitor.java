@@ -2,6 +2,18 @@ package checkers.interning;
 
 import static javax.lang.model.util.ElementFilter.methodsIn;
 
+import checkers.basetype.BaseTypeChecker;
+import checkers.basetype.BaseTypeVisitor;
+import checkers.interning.quals.Interned;
+import checkers.interning.quals.UsesObjectEquals;
+import checkers.source.Result;
+import checkers.types.AnnotatedTypeMirror;
+import checkers.util.Heuristics;
+
+import javacutils.AnnotationUtils;
+import javacutils.InternalUtils;
+import javacutils.TreeUtils;
+
 import java.util.Comparator;
 import java.util.List;
 
@@ -9,19 +21,27 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.*;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
+import javax.lang.model.type.WildcardType;
 
-import checkers.basetype.BaseTypeVisitor;
-import checkers.interning.quals.Interned;
-import checkers.interning.quals.UsesObjectEquals;
-import checkers.source.Result;
-import checkers.types.AnnotatedTypeMirror;
-import javacutils.AnnotationUtils;
-import checkers.util.Heuristics;
-import javacutils.InternalUtils;
-import javacutils.TreeUtils;
-
-import com.sun.source.tree.*;
+import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.ConditionalExpressionTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.IfTree;
+import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ParenthesizedTree;
+import com.sun.source.tree.ReturnTree;
+import com.sun.source.tree.Scope;
+import com.sun.source.tree.Tree;
 
 /**
  * A type-checking visitor for the {@link Interned} type
@@ -37,7 +57,7 @@ import com.sun.source.tree.*;
  *
  * @see BaseTypeVisitor
  */
-public final class InterningVisitor extends BaseTypeVisitor<InterningChecker, InterningAnnotatedTypeFactory> {
+public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTypeFactory> {
 
     /** The interned annotation. */
     private final AnnotationMirror INTERNED;
@@ -49,10 +69,10 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningChecker, In
      * @param checker the checker to use
      * @param root the root of the input program's AST to check
      */
-    public InterningVisitor(InterningChecker checker, CompilationUnitTree root) {
-        super(checker, root);
+    public InterningVisitor(BaseTypeChecker checker) {
+        super(checker);
         this.INTERNED = AnnotationUtils.fromClass(elements, Interned.class);
-        typeToCheck = checker.typeToCheck();
+        typeToCheck = typeToCheck();
     }
 
     // Handles the -Acheckclass command-line argument
@@ -572,7 +592,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningChecker, In
                     if (arg.getKind() != Tree.Kind.IDENTIFIER) {
                         return false;
                     }
-                    Element argElt = TreeUtils.elementFromUse((IdentifierTree) arg);
+                    Element argElt = TreeUtils.elementFromUse(arg);
 
                     ExpressionTree exp = tree.getMethodSelect();
                     if (exp.getKind() != Tree.Kind.MEMBER_SELECT) {
@@ -583,7 +603,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningChecker, In
                         return false;
                     }
 
-                    Element refElt = TreeUtils.elementFromUse((IdentifierTree)member.getExpression());
+                    Element refElt = TreeUtils.elementFromUse(member.getExpression());
 
                     if (!((refElt.equals(lhs) && argElt.equals(rhs)) ||
                           ((refElt.equals(rhs) && argElt.equals(lhs))))) {
@@ -695,5 +715,25 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningChecker, In
                 return true;
 
         return false;
+    }
+
+
+    /**
+     * Returns the declared type of which the equality tests should be tested,
+     * if the user explicitly passed one.  The user can pass the class name
+     * via the {@code -Acheckclass=...} option.
+     *
+     * If no class is specified, or the class specified isn't in the
+     * classpath, it returns null.
+     *
+     */
+    DeclaredType typeToCheck() {
+        String className = checker.getOption("checkclass");
+        if (className == null) return null;
+
+        TypeElement classElt = elements.getTypeElement(className);
+        if (classElt == null) return null;
+
+        return types.getDeclaredType(classElt);
     }
 }

@@ -1,16 +1,5 @@
 package checkers.util;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.ExecutableElement;
-
-import javacutils.AnnotationUtils;
-import javacutils.Pair;
-
 import checkers.quals.ConditionalPostconditionAnnotation;
 import checkers.quals.EnsuresQualifier;
 import checkers.quals.EnsuresQualifierIf;
@@ -21,6 +10,17 @@ import checkers.quals.PreconditionAnnotation;
 import checkers.quals.RequiresQualifier;
 import checkers.quals.RequiresQualifiers;
 import checkers.types.AbstractBasicAnnotatedTypeFactory;
+
+import javacutils.AnnotationUtils;
+import javacutils.Pair;
+
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
 
 /**
  * A utility class to handle pre- and postconditions.
@@ -35,13 +35,13 @@ import checkers.types.AbstractBasicAnnotatedTypeFactory;
 public class ContractsUtils {
 
     protected static ContractsUtils instance;
-    protected AbstractBasicAnnotatedTypeFactory<?, ?, ?, ?, ?> factory;
+    protected AbstractBasicAnnotatedTypeFactory<?, ?, ?, ?> factory;
 
     /**
      * Returns an instance of the {@link ContractsUtils} class.
      */
     public static ContractsUtils getInstance(
-            AbstractBasicAnnotatedTypeFactory<?, ?, ?, ?, ?> factory) {
+            AbstractBasicAnnotatedTypeFactory<?, ?, ?, ?> factory) {
         if (instance == null || instance.factory != factory) {
             instance = new ContractsUtils(factory);
         }
@@ -240,8 +240,7 @@ public class ContractsUtils {
     }
 
     // private constructor
-    private ContractsUtils(
-            AbstractBasicAnnotatedTypeFactory<?, ?, ?, ?, ?> factory) {
+    private ContractsUtils(AbstractBasicAnnotatedTypeFactory<?, ?, ?, ?> factory) {
         this.factory = factory;
     }
 }

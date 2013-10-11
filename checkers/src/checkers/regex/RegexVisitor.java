@@ -1,6 +1,7 @@
 package checkers.regex;
 
 
+import checkers.basetype.BaseTypeChecker;
 import checkers.basetype.BaseTypeVisitor;
 import checkers.regex.quals.Regex;
 import checkers.source.Result;
@@ -14,7 +15,6 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 
-import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
@@ -38,7 +38,7 @@ import com.sun.source.tree.Tree.Kind;
  *
  * @see RegexChecker
  */
-public class RegexVisitor extends BaseTypeVisitor<RegexChecker, RegexAnnotatedTypeFactory> {
+public class RegexVisitor extends BaseTypeVisitor<RegexAnnotatedTypeFactory> {
 
     private final ExecutableElement matchResultEnd;
     private final ExecutableElement matchResultGroup;
@@ -46,9 +46,8 @@ public class RegexVisitor extends BaseTypeVisitor<RegexChecker, RegexAnnotatedTy
     private final ExecutableElement patternCompile;
     private final VariableElement patternLiteral;
 
-    public RegexVisitor(RegexChecker checker, CompilationUnitTree root) {
-        super(checker, root);
-
+    public RegexVisitor(BaseTypeChecker checker) {
+        super(checker);
         ProcessingEnvironment env = checker.getProcessingEnvironment();
         this.matchResultEnd = TreeUtils.getMethod("java.util.regex.MatchResult", "end", 1, env);
         this.matchResultGroup = TreeUtils.getMethod("java.util.regex.MatchResult", "group", 1, env);
@@ -95,7 +94,7 @@ public class RegexVisitor extends BaseTypeVisitor<RegexChecker, RegexAnnotatedTy
                 int annoGroups = 0;
                 AnnotatedTypeMirror receiverType = atypeFactory.getAnnotatedType(receiver);
                 if (receiverType.hasAnnotation(Regex.class)) {
-                    annoGroups = checker.getGroupCount(receiverType.getAnnotation(Regex.class));
+                    annoGroups = atypeFactory.getGroupCount(receiverType.getAnnotation(Regex.class));
                 }
                 if (paramGroups > annoGroups) {
                     checker.report(Result.failure("group.count.invalid", paramGroups, annoGroups, receiver), group);

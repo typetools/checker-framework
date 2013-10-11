@@ -7,17 +7,17 @@ import tests.util.*;
 
 // various tests for the precondition mechanism
 class Precondition {
-    
+
     String f1, f2, f3;
     Precondition p;
-    
+
     @RequiresQualifier(expression="f1", qualifier=Odd.class)
     void requiresF1() {
         //:: error: (assignment.type.incompatible)
         @Value String l1 = f1;
         @Odd String l2 = f1;
     }
-    
+
     @Pure
     @RequiresQualifier(expression="f1", qualifier=Odd.class)
     int requiresF1AndPure() {
@@ -26,14 +26,14 @@ class Precondition {
         @Odd String l2 = f1;
         return 1;
     }
-    
+
     @RequiresQualifier(expression="f1", qualifier=Value.class)
     void requiresF1Value() {
         //:: error: (assignment.type.incompatible)
         @Odd String l1 = f1;
         @Value String l2 = f1;
     }
-    
+
     @RequiresQualifier(expression="---", qualifier=Odd.class)
     //:: error: (flowexpr.parse.error)
     void error() {
@@ -42,14 +42,14 @@ class Precondition {
         //:: error: (assignment.type.incompatible)
         @Odd String l2 = f1;
     }
-    
+
     @RequiresQualifier(expression="#1", qualifier=Odd.class)
     void requiresParam(String p) {
         //:: error: (assignment.type.incompatible)
         @Value String l1 = p;
         @Odd String l2 = p;
     }
-    
+
     @RequiresQualifier(expression={"#1","#2"}, qualifier=Odd.class)
     void requiresParams(String p1, String p2) {
         //:: error: (assignment.type.incompatible)
@@ -59,6 +59,7 @@ class Precondition {
         @Odd String l3 = p1;
         @Odd String l4 = p2;
     }
+
     @RequiresQualifier(expression="#1", qualifier=Odd.class)
     //:: error: (flowexpr.parse.index.too.big)
     void param3() {
@@ -74,7 +75,7 @@ class Precondition {
         //:: error: (contracts.precondition.not.satisfied)
         requiresParams(p1, p2);
     }
-    
+
     void t2(@Odd String p1, String p2) {
         f1 = p1;
         requiresF1();
@@ -83,7 +84,7 @@ class Precondition {
         //:: error: (contracts.precondition.not.satisfied)
         requiresF1Value();
     }
-    
+
     void t3(@Odd String p1, String p2) {
         f1 = p1;
         requiresF1AndPure();
@@ -93,7 +94,7 @@ class Precondition {
         //:: error: (contracts.precondition.not.satisfied)
         requiresF1();
     }
-    
+
     void t4(@Odd String p1, String p2, @Value String p3) {
         f1 = p1;
         requiresF1();
@@ -102,24 +103,24 @@ class Precondition {
         requiresParam(p1);
         requiresParams(p1, p1);
     }
-    
-    class inner {
+
+    class Inner {
         @RequiresQualifier(expression="f1", qualifier=Odd.class)
         void foo() {}
     }
-    
+
     @Odd String f4;
-    
+
     @RequiresQualifier(expression="f4", qualifier=Odd.class)
     void requiresF4() {
     }
-    
+
     void tt1() {
         requiresF4();
     }
 
     /***** multiple preconditions ******/
-    
+
     @RequiresQualifiers({
         @RequiresQualifier(expression="f1", qualifier=Value.class),
         @RequiresQualifier(expression="f2", qualifier=Odd.class)
@@ -132,14 +133,14 @@ class Precondition {
         //:: error: (assignment.type.incompatible)
         @Odd String l4 = f1;
     }
-    
+
     @RequiresQualifiers({
         @RequiresQualifier(expression="--", qualifier=Value.class)
     })
     //:: error: (flowexpr.parse.error)
     void error2() {
     }
-    
+
     void t5(@Odd String p1, String p2, @Value String p3) {
         //:: error: (contracts.precondition.not.satisfied)
         multi();
@@ -149,7 +150,7 @@ class Precondition {
         f1 = p3;
         f2 = p1;
         multi();
-        
+
         error2();
     }
 }

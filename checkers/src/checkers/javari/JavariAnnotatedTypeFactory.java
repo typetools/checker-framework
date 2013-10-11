@@ -1,6 +1,10 @@
 package checkers.javari;
 
+import checkers.basetype.BaseTypeChecker;
+import checkers.javari.quals.Assignable;
 import checkers.javari.quals.Mutable;
+import checkers.javari.quals.PolyRead;
+import checkers.javari.quals.QReadOnly;
 import checkers.javari.quals.ReadOnly;
 import checkers.javari.quals.ThisMutable;
 import checkers.types.AnnotatedTypeMirror;
@@ -10,18 +14,28 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
-import checkers.types.SubtypingAnnotatedTypeFactory;
+import checkers.types.BasicAnnotatedTypeFactory;
+import checkers.types.QualifierHierarchy;
+import checkers.types.TypeHierarchy;
 import checkers.types.visitors.AnnotatedTypeScanner;
 import checkers.types.visitors.SimpleAnnotatedTypeScanner;
 import checkers.util.AnnotatedTypes;
+import checkers.util.GraphQualifierHierarchy;
+import checkers.util.MultiGraphQualifierHierarchy;
 
+import javacutils.AnnotationUtils;
 import javacutils.InternalUtils;
 import javacutils.Pair;
 import javacutils.TreeUtils;
 import javacutils.TypesUtils;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -30,7 +44,6 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 
 import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
@@ -76,7 +89,7 @@ import com.sun.source.util.SimpleTreeVisitor;
  * In all other cases, the {@link Mutable} annotation is inserted by default.
  * </ul>
  */
-public class JavariAnnotatedTypeFactory extends SubtypingAnnotatedTypeFactory<JavariChecker> {
+public class JavariAnnotatedTypeFactory extends BasicAnnotatedTypeFactory {
 
     /** Adds annotations from tree context before type resolution. */
     private final JavariTreePreAnnotator treePre;
@@ -85,7 +98,7 @@ public class JavariAnnotatedTypeFactory extends SubtypingAnnotatedTypeFactory<Ja
     private final JavariTypePostAnnotator typePost;
 
     /** The Javari annotations. */
-    private final AnnotationMirror READONLY, THISMUTABLE, MUTABLE, POLYREAD, QREADONLY;
+    protected final AnnotationMirror READONLY, THISMUTABLE, MUTABLE, POLYREAD, QREADONLY, ASSIGNABLE;
 
     /**
      * Creates a new {@link JavariAnnotatedTypeFactory} that operates on a
@@ -94,16 +107,19 @@ public class JavariAnnotatedTypeFactory extends SubtypingAnnotatedTypeFactory<Ja
      * @param checker the checker to which this factory belongs
      * @param root the AST on which this type factory operates
      */
-    public JavariAnnotatedTypeFactory(JavariChecker checker,
-        CompilationUnitTree root) {
-        super(checker, root);
+    public JavariAnnotatedTypeFactory(BaseTypeChecker checker) {
+        super(checker);
+
+        this.READONLY = AnnotationUtils.fromClass(elements, ReadOnly.class);
+        this.THISMUTABLE = AnnotationUtils.fromClass(elements, ThisMutable.class);
+        this.MUTABLE = AnnotationUtils.fromClass(elements, Mutable.class);
+        this.POLYREAD = AnnotationUtils.fromClass(elements, PolyRead.class);
+        this.QREADONLY = AnnotationUtils.fromClass(elements, QReadOnly.class);
+        this.ASSIGNABLE = AnnotationUtils.fromClass(elements, Assignable.class);
+
         this.treePre = new JavariTreePreAnnotator();
         this.typePost = new JavariTypePostAnnotator();
-        this.READONLY = checker.READONLY;
-        this.THISMUTABLE = checker.THISMUTABLE;
-        this.MUTABLE = checker.MUTABLE;
-        this.POLYREAD = checker.POLYREAD;
-        this.QREADONLY = checker.QREADONLY;
+
         postInit();
     }
 
@@ -719,4 +735,68 @@ public class JavariAnnotatedTypeFactory extends SubtypingAnnotatedTypeFactory<Ja
             return super.defaultAction(type, p);
         }
     }
+
+    @Override
+    public QualifierHierarchy createQualifierHierarchy(MultiGraphQualifierHierarchy.MultiGraphFactory factory) {
+        return new JavariQualifierHierarchy(factory);
+    }
+
+    private final class JavariQualifierHierarchy extends GraphQualifierHierarchy {
+
+        public JavariQualifierHierarchy(MultiGraphQualifierHierarchy.MultiGraphFactory factory) {
+            super(factory, MUTABLE);
+        }
+
+        /**
+         * Returns a singleton collection with the most restrictive immutability
+         * annotation that is a supertype of the annotations on both collections.
+         */
+        @Override
+        public Set<AnnotationMirror> leastUpperBounds(Collection<? extends AnnotationMirror> c1,
+                Collection<? extends AnnotationMirror> c2) {
+            Map<String, AnnotationMirror> ann =
+                new HashMap<String, AnnotationMirror>();
+            for (AnnotationMirror anno : c1)
+                ann.put(AnnotationUtils.annotationName(anno).toString(), anno);
+            for (AnnotationMirror anno : c2)
+                ann.put(AnnotationUtils.annotationName(anno).toString(), anno);
+
+            if (ann.containsKey(QReadOnly.class.getCanonicalName()))
+                return Collections.singleton(QREADONLY);
+            else if (ann.containsKey(ReadOnly.class.getCanonicalName()))
+                return Collections.singleton(READONLY);
+            else if (ann.containsKey(PolyRead.class.getCanonicalName()))
+                return Collections.singleton(POLYREAD);
+            else
+                return Collections.singleton(MUTABLE);
+        }
+    }
+
+    /**
+     * Implements the {@code @QReadOnly} behavior on generic types,
+     * creating a new {@link TypeHierarchy} class that allows a
+     * comparison of type arguments to succeed if the left hand side
+     * is annotated with {@code @QReadOnly} or if the regular
+     * comparison succeeds.
+     */
+    @Override
+    protected TypeHierarchy createTypeHierarchy() {
+        return new TypeHierarchy(checker, getQualifierHierarchy()) {
+            /**
+             * Checks if one the parameters is primitive, or if a type is
+             * subtype of another. Primitive types always pass to avoid issues
+             * with boxing.
+             */
+            @Override
+            public boolean isSubtype(AnnotatedTypeMirror sub, AnnotatedTypeMirror sup) {
+                return sub.getKind().isPrimitive() || sup.getKind().isPrimitive() || super.isSubtype(sub, sup);
+            }
+
+            @Override
+            protected boolean isSubtypeAsTypeArgument(AnnotatedTypeMirror rhs, AnnotatedTypeMirror lhs) {
+                return lhs.hasEffectiveAnnotation(QREADONLY) || super.isSubtypeAsTypeArgument(rhs, lhs);
+            }
+         };
+    }
+
 }

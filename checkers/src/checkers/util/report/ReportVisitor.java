@@ -4,9 +4,10 @@ import checkers.basetype.BaseTypeChecker;
 import checkers.basetype.BaseTypeValidator;
 import checkers.basetype.BaseTypeVisitor;
 import checkers.source.Result;
+import checkers.source.SourceChecker;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import checkers.types.SubtypingAnnotatedTypeFactory;
+import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.util.AnnotatedTypes;
 import checkers.util.report.quals.ReportCall;
 import checkers.util.report.quals.ReportCreation;
@@ -32,7 +33,6 @@ import javax.lang.model.element.TypeElement;
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.InstanceOfTree;
 import com.sun.source.tree.MemberSelectTree;
@@ -44,7 +44,7 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
 
-public class ReportVisitor extends BaseTypeVisitor<ReportChecker, SubtypingAnnotatedTypeFactory<ReportChecker>> {
+public class ReportVisitor extends BaseTypeVisitor<BasicAnnotatedTypeFactory> {
 
     /**
      * The tree kinds that should be reported.
@@ -56,8 +56,8 @@ public class ReportVisitor extends BaseTypeVisitor<ReportChecker, SubtypingAnnot
      */
     private final String[] modifiers;
 
-    public ReportVisitor(ReportChecker checker, CompilationUnitTree root) {
-        super(checker, root);
+    public ReportVisitor(BaseTypeChecker checker) {
+        super(checker);
 
         if (checker.hasOption("reportTreeKinds")) {
             String trees = checker.getOption("reportTreeKinds");
@@ -307,8 +307,8 @@ public class ReportVisitor extends BaseTypeVisitor<ReportChecker, SubtypingAnnot
     }
 
     protected class ReportTypeValidator extends BaseTypeValidator {
-        public ReportTypeValidator(BaseTypeChecker<?> checker,
-                BaseTypeVisitor<?, ?> visitor, AnnotatedTypeFactory atypeFactory) {
+        public ReportTypeValidator(SourceChecker checker,
+                BaseTypeVisitor<?> visitor, AnnotatedTypeFactory atypeFactory) {
             super(checker, visitor, atypeFactory);
         }
 

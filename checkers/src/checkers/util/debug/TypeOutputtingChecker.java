@@ -1,5 +1,15 @@
 package checkers.util.debug;
 
+import checkers.basetype.BaseTypeChecker;
+import checkers.basetype.BaseTypeVisitor;
+import checkers.types.AbstractBasicAnnotatedTypeFactory;
+import checkers.types.AnnotatedTypeFactory;
+import checkers.types.AnnotatedTypeMirror;
+import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import checkers.types.GeneralAnnotatedTypeFactory;
+
+import javacutils.TreeUtils;
+
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -7,17 +17,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.Elements;
 
-import javacutils.TreeUtils;
-
-import checkers.source.SourceChecker;
-import checkers.source.SourceVisitor;
-import checkers.types.AnnotatedTypeFactory;
-import checkers.types.AnnotatedTypeMirror;
-import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import checkers.types.GeneralAnnotatedTypeFactory;
-
 import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
@@ -44,22 +44,22 @@ import com.sun.tools.javac.util.Context;
  * 3. Apply a simple diff on the two outputs
  *
  */
-public class TypeOutputtingChecker extends SourceChecker<AnnotatedTypeFactory> {
+public class TypeOutputtingChecker extends BaseTypeChecker {
 
     @Override
-    protected SourceVisitor<?, ?, ?, ?> createSourceVisitor(CompilationUnitTree root) {
-        return new Visitor(this, root);
+    protected BaseTypeVisitor<?> createSourceVisitor() {
+        return new Visitor(this);
     }
 
     /**
      * Prints the types of the class and all of its enclosing
      * fields, methods, and inner classes
      */
-    public static class Visitor extends SourceVisitor<TypeOutputtingChecker, AnnotatedTypeFactory, Void, Void> {
+    public static class Visitor extends BaseTypeVisitor<AbstractBasicAnnotatedTypeFactory<?, ?, ?, ?>> {
         String currentClass;
 
-        public Visitor(TypeOutputtingChecker checker, CompilationUnitTree root) {
-            super(checker, root);
+        public Visitor(BaseTypeChecker checker) {
+            super(checker);
         }
 
         // Print types of classes, methods, and fields
@@ -106,7 +106,7 @@ public class TypeOutputtingChecker extends SourceChecker<AnnotatedTypeFactory> {
         ProcessingEnvironment env = JavacProcessingEnvironment.instance(new Context());
         Elements elements = env.getElementUtils();
 
-        AnnotatedTypeFactory atypeFactory = new GeneralAnnotatedTypeFactory(this, null);
+        AnnotatedTypeFactory atypeFactory = new GeneralAnnotatedTypeFactory(this);
 
         for (String className : args) {
             TypeElement typeElt = elements.getTypeElement(className);

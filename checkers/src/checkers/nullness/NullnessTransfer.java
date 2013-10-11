@@ -66,9 +66,9 @@ public class NullnessTransfer extends
     public NullnessTransfer(NullnessAnalysis analysis) {
         super(analysis);
         this.analysis = analysis;
-        NONNULL = AnnotationUtils.fromClass(analysis.getFactory()
+        NONNULL = AnnotationUtils.fromClass(analysis.getTypeFactory()
                 .getElementUtils(), NonNull.class);
-        NULLABLE = AnnotationUtils.fromClass(analysis.getFactory()
+        NULLABLE = AnnotationUtils.fromClass(analysis.getTypeFactory()
                 .getElementUtils(), Nullable.class);
     }
 
@@ -78,7 +78,7 @@ public class NullnessTransfer extends
      */
     protected void makeNonNull(NullnessStore store, Node node) {
         Receiver internalRepr = FlowExpressions.internalReprOf(
-                analysis.getFactory(), node);
+                analysis.getTypeFactory(), node);
         store.insertValue(internalRepr, NONNULL);
     }
 
@@ -127,7 +127,7 @@ public class NullnessTransfer extends
             List<Node> secondParts = splitAssignments(secondNode);
             for (Node secondPart : secondParts) {
                 Receiver secondInternal = FlowExpressions.internalReprOf(
-                        analysis.getFactory(), secondPart);
+                        analysis.getTypeFactory(), secondPart);
                 if (CFAbstractStore.canInsertReceiver(secondInternal)) {
                     thenStore = thenStore == null ? res.getThenStore()
                             : thenStore;
@@ -206,7 +206,7 @@ public class NullnessTransfer extends
         // argument non-null.
         MethodInvocationTree tree = n.getTree();
         ExecutableElement method = TreeUtils.elementFromUse(tree);
-        AnnotatedExecutableType methodType = analysis.getFactory()
+        AnnotatedExecutableType methodType = analysis.getTypeFactory()
                 .getAnnotatedType(method);
         List<AnnotatedTypeMirror> methodParams = methodType.getParameterTypes();
         List<? extends ExpressionTree> methodArgs = tree.getArguments();
@@ -243,7 +243,7 @@ public class NullnessTransfer extends
         TypeMirror dummy = analysis.getEnv().getTypeUtils()
                 .getPrimitiveType(TypeKind.BOOLEAN);
         AnnotatedTypeMirror annotatedDummy = AnnotatedTypeMirror.createType(
-                dummy, analysis.getFactory());
+                dummy, analysis.getTypeFactory());
         annotatedDummy.addAnnotation(NonNull.class);
         annotatedDummy.addAnnotation(NonRaw.class);
         annotatedDummy.addAnnotation(Initialized.class);

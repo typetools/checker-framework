@@ -58,7 +58,7 @@ public class TypeHierarchy {
     protected final Set<AnnotatedTypeMirror> visited;
 
     /** The type-checker to use. */
-    protected final BaseTypeChecker<?> checker;
+    protected final BaseTypeChecker checker;
 
     /**
      * Constructs an instance of {@code TypeHierarchy} for the type system
@@ -67,7 +67,7 @@ public class TypeHierarchy {
      * @param checker The type-checker to use
      * @param qualifierHierarchy The qualifier hierarchy to use
      */
-    public TypeHierarchy(BaseTypeChecker<?> checker, QualifierHierarchy qualifierHierarchy) {
+    public TypeHierarchy(BaseTypeChecker checker, QualifierHierarchy qualifierHierarchy) {
         this.qualifierHierarchy = qualifierHierarchy;
         this.visited = new HashSet<AnnotatedTypeMirror>();
         this.checker = checker;
