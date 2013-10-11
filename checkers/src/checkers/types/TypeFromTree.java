@@ -647,9 +647,14 @@ abstract class TypeFromTree extends
             } else if (elt instanceof ExecutableElement) {
                 ExecutableElement exElt = (ExecutableElement)elt;
                 int idx = exElt.getTypeParameters().indexOf(tpe);
-                MethodTree meth = (MethodTree)f.declarationFromElement(exElt);
-                AnnotatedTypeMirror result = visit(meth.getTypeParameters().get(idx), f);
-                return result;
+                MethodTree meth = (MethodTree) f.declarationFromElement(exElt);
+                if (meth != null) {
+                    AnnotatedTypeMirror result = visit(meth.getTypeParameters().get(idx), f);
+                    return result;
+                } else {
+                    // ErrorReporter.errorAbort("TypeFromTree.forTypeVariable: did not find source for: " + elt);
+                    return type;
+                }
             } else {
                 // Captured types can have a generic element (owner) that is
                 // not an element at all, namely Symtab.noSymbol.
