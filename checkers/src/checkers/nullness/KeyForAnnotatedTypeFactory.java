@@ -5,6 +5,7 @@ import checkers.nullness.quals.Covariant;
 import checkers.nullness.quals.KeyFor;
 import checkers.nullness.quals.KeyForBottom;
 import checkers.quals.DefaultLocation;
+import checkers.quals.TypeQualifiers;
 import checkers.quals.Unqualified;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -36,16 +37,16 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 
+@TypeQualifiers({ KeyFor.class, Unqualified.class, KeyForBottom.class})
 public class KeyForAnnotatedTypeFactory extends BasicAnnotatedTypeFactory {
 
-    protected AnnotationMirror KEYFOR;
+    protected final AnnotationMirror UNQUALIFIED, KEYFOR;
 
-    public KeyForAnnotatedTypeFactory(KeyForSubchecker checker) {
+    public KeyForAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker, false);
 
-        KEYFOR = AnnotationUtils.fromClass(processingEnv.getElementUtils(), KeyFor.class);
-
-        AnnotationMirror UNQUALIFIED = AnnotationUtils.fromClass(elements, Unqualified.class);
+        KEYFOR = AnnotationUtils.fromClass(elements, KeyFor.class);
+        UNQUALIFIED = AnnotationUtils.fromClass(elements, Unqualified.class);
 
         this.postInit();
 
