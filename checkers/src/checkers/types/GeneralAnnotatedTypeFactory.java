@@ -5,6 +5,8 @@ import checkers.interning.quals.*;
 */
 
 import checkers.basetype.BaseTypeChecker;
+import checkers.util.MultiGraphQualifierHierarchy;
+import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 
 import javacutils.ErrorReporter;
 
@@ -32,12 +34,26 @@ public class GeneralAnnotatedTypeFactory extends AnnotatedTypeFactory {
         return true;
     }
 
+    @Override
+    public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
+        return new GeneralQualifierHierarchy(factory);
+    }
 }
 
 /** A very limited QualifierHierarchy that is used for access to
   * qualifiers from different type systems.
   */
-class GeneralQualifierHierarchy extends QualifierHierarchy {
+class GeneralQualifierHierarchy extends MultiGraphQualifierHierarchy {
+
+    public GeneralQualifierHierarchy(MultiGraphFactory factory) {
+        super(factory);
+    }
+
+    // Always return true
+    @Override
+    public boolean isValid() {
+        return true;
+    }
 
     // Return the qualifier itself instead of the top.
     @Override

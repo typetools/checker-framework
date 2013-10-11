@@ -54,6 +54,6 @@ public abstract class AbstractNullnessChecker extends InitializationChecker {
 
     @Override
     protected BaseTypeVisitor<?> createSourceVisitor() {
-        return new NullnessVisitor(this);
+        return new NullnessVisitor(this, useFbc);
     }
 }

@@ -24,6 +24,15 @@ import javax.lang.model.type.TypeKind;
  */
 public abstract class QualifierHierarchy {
 
+    /**
+     * Determine whether the instance is valid.
+     * @return whether the instance is valid
+     */
+    public boolean isValid() {
+        // For most QH the simplest check is that there are qualifiers.
+        return getTypeQualifiers().size() > 0;
+    }
+
     // **********************************************************************
     // Getter methods about this hierarchy
     // **********************************************************************

@@ -1,5 +1,6 @@
 package checkers.nullness;
 
+import checkers.basetype.BaseTypeChecker;
 import checkers.flow.CFAbstractAnalysis;
 import checkers.initialization.InitializationAnnotatedTypeFactory;
 import checkers.nullness.quals.MonotonicNonNull;
@@ -7,7 +8,6 @@ import checkers.nullness.quals.NonNull;
 import checkers.nullness.quals.Nullable;
 import checkers.nullness.quals.PolyNull;
 import checkers.quals.PolyAll;
-import checkers.quals.Unused;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.GeneralAnnotatedTypeFactory;
@@ -34,7 +34,6 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.Name;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.Elements;
 
@@ -51,7 +50,6 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
-import com.sun.tools.javac.code.Attribute.TypeCompound;
 
 /**
  * The annotated type factory for the nullness type-system.
@@ -76,8 +74,8 @@ public class NullnessAnnotatedTypeFactory
     protected final GeneralAnnotatedTypeFactory generalFactory;
 
     @SuppressWarnings("deprecation") // aliasing to deprecated annotation
-    public NullnessAnnotatedTypeFactory(AbstractNullnessChecker checker) {
-        super(checker, checker.useFbc);
+    public NullnessAnnotatedTypeFactory(BaseTypeChecker checker, boolean useFbc) {
+        super(checker, useFbc);
 
         NONNULL = AnnotationUtils.fromClass(elements, NonNull.class);
         NULLABLE = AnnotationUtils.fromClass(elements, Nullable.class);
@@ -114,17 +112,17 @@ public class NullnessAnnotatedTypeFactory
         // TODO: These heuristics are just here temporarily. They all either
         // need to be replaced, or carefully checked for correctness.
         generalFactory = new GeneralAnnotatedTypeFactory(checker);
-        mapGetHeuristics = new MapGetHeuristics(processingEnv, this,
-                generalFactory);
+        mapGetHeuristics = new MapGetHeuristics(checker, this);
         systemGetPropertyHandler = new SystemGetPropertyHandler(processingEnv,
                 this);
-        // do this last, as it might use the factory again.
-        this.collectionToArrayHeuristics = new CollectionToArrayHeuristics(
-                processingEnv, this);
 
         dependentTypes = new DependentTypes(checker);
 
         postInit();
+
+        // do this last, as it might use the factory again.
+        this.collectionToArrayHeuristics = new CollectionToArrayHeuristics(
+                processingEnv, this);
     }
 
     // handle dependent types
@@ -163,8 +161,7 @@ public class NullnessAnnotatedTypeFactory
     @Override
     public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> constructorFromUse(
             NewClassTree tree) {
-        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> fromUse = super
-                .constructorFromUse(tree);
+        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> fromUse = super.constructorFromUse(tree);
         AnnotatedExecutableType constructor = fromUse.first;
         dependentTypes.handleConstructor(tree,
                 generalFactory.getAnnotatedType(tree), constructor);
@@ -180,8 +177,7 @@ public class NullnessAnnotatedTypeFactory
         List<VariableTree> result = new ArrayList<>();
         for (VariableTree c : candidates) {
             AnnotatedTypeMirror type = getAnnotatedType(c);
-            boolean isPrimitive = TypesUtils.isPrimitive(type
-                    .getUnderlyingType());
+            boolean isPrimitive = TypesUtils.isPrimitive(type.getUnderlyingType());
             if (!isPrimitive) {
                 // primitives do not need to be initialized
                 result.add(c);
