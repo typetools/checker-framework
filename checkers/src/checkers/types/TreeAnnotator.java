@@ -1,6 +1,5 @@
 package checkers.types;
 
-import checkers.basetype.BaseTypeChecker;
 import checkers.quals.ImplicitFor;
 import checkers.quals.TypeQualifiers;
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -68,7 +67,7 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
     private final Map<Pattern, Set<AnnotationMirror>> stringPatterns;
 
     private final QualifierHierarchy qualHierarchy;
-    private final AnnotatedTypeFactory atypeFactory;
+    protected final AnnotatedTypeFactory atypeFactory;
 
     /**
      * Creates a {@link TypeAnnotator} from the given checker, using that checker's
@@ -77,17 +76,17 @@ public class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> 
      *
      * @param checker the type-checker to which this annotator belongs
      */
-    public TreeAnnotator(BaseTypeChecker<?> checker, AnnotatedTypeFactory atypeFactory) {
+    public TreeAnnotator(AnnotatedTypeFactory atypeFactory) {
 
         this.treeKinds = new EnumMap<Kind, Set<AnnotationMirror>>(Kind.class);
         this.treeClasses = new HashMap<Class<?>, Set<AnnotationMirror>>();
         this.stringPatterns = new IdentityHashMap<Pattern, Set<AnnotationMirror>>();
 
-        this.qualHierarchy = checker.getQualifierHierarchy();
+        this.qualHierarchy = atypeFactory.getQualifierHierarchy();
         this.atypeFactory = atypeFactory;
 
         // Get type qualifiers from the checker.
-        Set<Class<? extends Annotation>> quals = checker.getSupportedTypeQualifiers();
+        Set<Class<? extends Annotation>> quals = atypeFactory.getSupportedTypeQualifiers();
 
         // For each qualifier, read the @ImplicitFor annotation and put its tree
         // classes and kinds into maps.

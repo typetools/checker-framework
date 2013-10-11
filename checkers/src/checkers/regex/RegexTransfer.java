@@ -42,7 +42,7 @@ public class RegexTransfer extends
     public TransferResult<CFValue, CFStore> visitMethodInvocation(
             MethodInvocationNode n, TransferInput<CFValue, CFStore> in) {
         RegexAnnotatedTypeFactory factory = (RegexAnnotatedTypeFactory) analysis
-                .getFactory();
+                .getTypeFactory();
         TransferResult<CFValue, CFStore> result = super.visitMethodInvocation(
                 n, in);
 

@@ -1,9 +1,11 @@
 package tests.util;
 
-import java.lang.annotation.Target;
-import java.lang.annotation.ElementType;
+import checkers.quals.SubtypeOf;
+import checkers.quals.TypeQualifier;
+import checkers.quals.Unqualified;
 
-import checkers.quals.*;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Target;
 
 /**
  * Denotes an exception that is particularly important.
