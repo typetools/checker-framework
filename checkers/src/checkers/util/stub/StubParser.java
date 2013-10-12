@@ -20,6 +20,7 @@ import cfjapa.parser.ast.body.TypeDeclaration;
 import cfjapa.parser.ast.body.VariableDeclarator;
 import cfjapa.parser.ast.expr.AnnotationExpr;
 import cfjapa.parser.ast.expr.ArrayInitializerExpr;
+import cfjapa.parser.ast.expr.BooleanLiteralExpr;
 import cfjapa.parser.ast.expr.Expression;
 import cfjapa.parser.ast.expr.FieldAccessExpr;
 import cfjapa.parser.ast.expr.MarkerAnnotationExpr;
@@ -32,7 +33,6 @@ import cfjapa.parser.ast.type.ClassOrInterfaceType;
 import cfjapa.parser.ast.type.ReferenceType;
 import cfjapa.parser.ast.type.Type;
 import cfjapa.parser.ast.type.WildcardType;
-
 import checkers.quals.FromStubFile;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
@@ -42,7 +42,6 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
 import checkers.util.AnnotationBuilder;
-
 import javacutils.AnnotationUtils;
 import javacutils.ElementUtils;
 import javacutils.ErrorReporter;
@@ -1033,6 +1032,18 @@ public class StubParser {
             }
 
             builder.setValue(name, elemarr);
+        } else if (expr instanceof BooleanLiteralExpr) {
+            BooleanLiteralExpr blexpr = (BooleanLiteralExpr) expr;
+            ExecutableElement var = builder.findElement(name);
+            TypeMirror expected = var.getReturnType();
+            if (expected.getKind() == TypeKind.BOOLEAN) {
+                builder.setValue(name, blexpr.getValue());
+            } else if (expected.getKind() == TypeKind.ARRAY) {
+                Boolean[] arr = { blexpr.getValue() };
+                builder.setValue(name, arr);
+            } else {
+                ErrorReporter.errorAbort("StubParser: unhandled annotation attribute type: " + blexpr + " and expected: " + expected);
+            }
         } else {
             ErrorReporter.errorAbort("StubParser: unhandled annotation attribute type: " + expr + " class: " + expr.getClass());
         }
