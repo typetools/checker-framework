@@ -24,6 +24,7 @@ import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.VariableElement;
 
 /**
  * A store that extends {@code CFAbstractStore} and additionally tracks which
@@ -32,11 +33,12 @@ import javax.lang.model.element.Element;
  * @author Stefan Heule
  * @see InitializationTransfer
  */
-public class InitializationStore<V extends CFAbstractValue<V>, S extends InitializationStore<V, S>> extends
-        CFAbstractStore<V, S> {
+public class InitializationStore<V extends CFAbstractValue<V>,
+            S extends InitializationStore<V, S>>
+        extends CFAbstractStore<V, S> {
 
     /** The list of fields that are initialized. */
-    protected final Set<Element> initializedFields;
+    protected final Set<VariableElement> initializedFields;
 
     public InitializationStore(
             CFAbstractAnalysis<V, S, ?> analysis,
@@ -60,9 +62,9 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
             return;
         }
         super.insertValue(r, value);
-        InitializationChecker<?> checker = (InitializationChecker<?>) analysis.getFactory().getChecker();
-        QualifierHierarchy qualifierHierarchy = checker.getQualifierHierarchy();
-        AnnotationMirror invariantAnno = checker.getFieldInvariantAnnotation();
+        InitializationAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory = (InitializationAnnotatedTypeFactory<?, ?, ?, ?>) analysis.getTypeFactory();
+        QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
+        AnnotationMirror invariantAnno = atypeFactory.getFieldInvariantAnnotation();
         for (AnnotationMirror a : value.getType().getAnnotations()) {
             if (qualifierHierarchy.isSubtype(a, invariantAnno)) {
                 if (r instanceof FieldAccess) {
@@ -86,8 +88,7 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
     @Override
     public void updateForMethodCall(MethodInvocationNode n,
             AnnotatedTypeFactory atypeFactory, V val) {
-        InitializationChecker<?> checker = (InitializationChecker<?>) analysis.getFactory().getChecker();
-        AnnotationMirror fieldInvariantAnnotation = checker.getFieldInvariantAnnotation();
+        AnnotationMirror fieldInvariantAnnotation = ((InitializationAnnotatedTypeFactory<?, ?, ?, ?>)atypeFactory).getFieldInvariantAnnotation();
 
         // Are there fields that have the 'invariant' annotations and are in the
         // store?
@@ -132,7 +133,7 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
      * caller needs to ensure that the field belongs to the current class, or is
      * a static field).
      */
-    public void addInitializedField(Element f) {
+    public void addInitializedField(VariableElement f) {
         initializedFields.add(f);
     }
 

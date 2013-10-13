@@ -7,8 +7,6 @@ import java.util.Collection;
 
 import org.junit.runners.Parameterized.Parameters;
 
-import tests.util.Encrypted;
-
 /**
  * Test suite for the Subtyping Checker, using a simple {@link Encrypted}
  * annotation.

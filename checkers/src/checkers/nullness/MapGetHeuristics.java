@@ -6,8 +6,8 @@ import static checkers.util.Heuristics.Matchers.preceededBy;
 import static checkers.util.Heuristics.Matchers.whenTrue;
 import static checkers.util.Heuristics.Matchers.withIn;
 
+import checkers.basetype.BaseTypeChecker;
 import checkers.nullness.quals.KeyFor;
-import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.util.Heuristics.Matcher;
@@ -85,7 +85,7 @@ import com.sun.source.util.TreePath;
 
     private final ProcessingEnvironment processingEnv;
     private final NullnessAnnotatedTypeFactory atypeFactory;
-    private final AnnotatedTypeFactory keyForFactory;
+    private final KeyForAnnotatedTypeFactory keyForFactory;
     private final Resolver2 resolver;
 
     private final ExecutableElement mapGet;
@@ -93,18 +93,18 @@ import com.sun.source.util.TreePath;
     private final ExecutableElement mapKeySet;
     private final ExecutableElement mapContains;
 
-    public MapGetHeuristics(ProcessingEnvironment env,
-            NullnessAnnotatedTypeFactory factory,
-            AnnotatedTypeFactory keyForFactory) {
-        this.processingEnv = env;
+    public MapGetHeuristics(BaseTypeChecker checker,
+            NullnessAnnotatedTypeFactory factory/*,
+            AnnotatedTypeFactory keyForFactory*/) {
+        this.processingEnv = checker.getProcessingEnvironment();
         this.atypeFactory = factory;
-        this.keyForFactory = keyForFactory;
-        this.resolver = new Resolver2(env);
+        this.keyForFactory = new KeyForAnnotatedTypeFactory(checker);
+        this.resolver = new Resolver2(processingEnv);
 
-        mapGet = TreeUtils.getMethod("java.util.Map", "get", 1, env);
-        mapPut = TreeUtils.getMethod("java.util.Map", "put", 2, env);
-        mapKeySet = TreeUtils.getMethod("java.util.Map", "keySet", 0, env);
-        mapContains = TreeUtils.getMethod("java.util.Map", "containsKey", 1, env);
+        mapGet = TreeUtils.getMethod("java.util.Map", "get", 1, processingEnv);
+        mapPut = TreeUtils.getMethod("java.util.Map", "put", 2, processingEnv);
+        mapKeySet = TreeUtils.getMethod("java.util.Map", "keySet", 0, processingEnv);
+        mapContains = TreeUtils.getMethod("java.util.Map", "containsKey", 1, processingEnv);
     }
 
     /**

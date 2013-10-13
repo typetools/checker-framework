@@ -1,15 +1,15 @@
 package checkers.nullness;
 
-import java.util.List;
-
-import javacutils.Pair;
-
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.VariableElement;
-
+import checkers.basetype.BaseTypeChecker;
 import checkers.flow.CFAbstractAnalysis;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.util.AnnotatedTypes;
+
+import javacutils.Pair;
+
+import java.util.List;
+
+import javax.lang.model.element.VariableElement;
 
 /**
  * The analysis class for the non-null type system (serves as factory for the
@@ -20,10 +20,10 @@ import checkers.util.AnnotatedTypes;
 public class NullnessAnalysis extends
         CFAbstractAnalysis<NullnessValue, NullnessStore, NullnessTransfer> {
 
-    public NullnessAnalysis(NullnessAnnotatedTypeFactory factory,
-            ProcessingEnvironment env, AbstractNullnessChecker checker,
+    public NullnessAnalysis(BaseTypeChecker checker,
+            NullnessAnnotatedTypeFactory factory,
             List<Pair<VariableElement, NullnessValue>> fieldValues) {
-        super(factory, env, checker, fieldValues);
+        super(checker, factory, fieldValues);
     }
 
     @Override

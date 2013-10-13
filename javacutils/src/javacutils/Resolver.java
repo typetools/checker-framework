@@ -9,6 +9,8 @@ import java.lang.reflect.Method;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 
 import com.sun.source.util.TreePath;
@@ -92,14 +94,20 @@ public class Resolver {
      *            The tree path to the local scope.
      * @return The element for the field.
      */
-    public Element findField(String name, TypeMirror type, TreePath path) {
+    public VariableElement findField(String name, TypeMirror type, TreePath path) {
         Log.DiagnosticHandler discardDiagnosticHandler =
             new Log.DiscardDiagnosticHandler(log);
         try {
             JavacScope scope = (JavacScope) trees.getScope(path);
             Env<AttrContext> env = scope.getEnv();
-            return wrapInvocation(FIND_IDENT_IN_TYPE, env, type,
+            Element res = wrapInvocation(FIND_IDENT_IN_TYPE, env, type,
                     names.fromString(name), VAR);
+            if (res.getKind() == ElementKind.FIELD) {
+                return (VariableElement) res;
+            } else {
+                // Most likely didn't find the field and the Element is a SymbolNotFoundError
+                return null;
+            }
         } finally {
             log.popDiagnosticHandler(discardDiagnosticHandler);
         }

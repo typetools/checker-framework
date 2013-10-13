@@ -1,5 +1,6 @@
 package checkers.fenum;
 
+import checkers.basetype.BaseTypeChecker;
 import checkers.basetype.BaseTypeVisitor;
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeMirror;
@@ -10,14 +11,13 @@ import javacutils.TreeUtils;
 
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CaseTree;
-import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.Tree;
 
-public class FenumVisitor extends BaseTypeVisitor<FenumChecker, FenumAnnotatedTypeFactory> {
-    public FenumVisitor(FenumChecker checker, CompilationUnitTree root) {
-        super(checker, root);
+public class FenumVisitor extends BaseTypeVisitor<FenumAnnotatedTypeFactory> {
+    public FenumVisitor(BaseTypeChecker checker) {
+        super(checker);
     }
 
     @Override
@@ -27,8 +27,8 @@ public class FenumVisitor extends BaseTypeVisitor<FenumChecker, FenumAnnotatedTy
 
             AnnotatedTypeMirror lhs = atypeFactory.getAnnotatedType(node.getLeftOperand());
             AnnotatedTypeMirror rhs = atypeFactory.getAnnotatedType(node.getRightOperand());
-            if (!(checker.getTypeHierarchy().isSubtype(lhs, rhs)
-                  || checker.getTypeHierarchy().isSubtype(rhs, lhs))) {
+            if (!(atypeFactory.getTypeHierarchy().isSubtype(lhs, rhs)
+                  || atypeFactory.getTypeHierarchy().isSubtype(rhs, lhs))) {
                 checker.report(Result.failure("binary.type.incompatible", lhs, rhs), node);
             }
         }
