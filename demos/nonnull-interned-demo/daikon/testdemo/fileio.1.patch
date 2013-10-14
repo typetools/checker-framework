@@ -1,0 +1,13 @@
+Index: src/daikon/FileIO.java
+===================================================================
+--- src/daikon/FileIO.java	(revision 3589)
++++ src/daikon/FileIO.java	(working copy)
+@@ -1199,7 +1199,7 @@
+         }
+ 
+ 
+-      line = line.intern();
++//      line = line.intern();
+ 
+       // First look for declarations in the dtrace stream
+       if (is_declaration_header (line)) {
