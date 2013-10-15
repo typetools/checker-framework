@@ -224,6 +224,39 @@ implementation cannot handle.  For instance, if the directory name contains
 FileNotFoundException and prints out the directory name with ``\<+>''
 replaced by blanks.
 
+\item
+If you get an error
+
+\begin{Verbatim}
+error: scoping construct for static nested type cannot be annotated
+\end{Verbatim}
+
+\noindent
+then you have probably written something like \<@Nullable java.util.List>.
+The correct syntax is \<java.util.@Nullable List>.  But, it's usually
+better to add \<import java.util.List> to your source file, so that you can
+just write \<@Nullable List>.  Likewise, you must write \<Outer.@Nullable
+StaticNestedClass> rather than \<@Nullable Outer.StaticNestedClass>.
+
+Java 8 requires that a type qualifier be written directly on the type that
+it qualifies, rather than on a scoping mechanism that assists in resolving
+the name.  Examples of scoping mechanisms are package names and outer
+classes of static nested classes.
+
+The reason for the Java 8 syntax is to avoid syntactic irregularity.  When
+writing a member nested class (also known as an inner class), it is
+possible to write annotations on both the outer and the inner class:  \<@A1
+Outer. @A2 Inner>.  Therefore, when writing a static nested class, the
+annotations should go on the same place:  \<Outer. @A3 StaticNested> (rather
+than \<@ConfusingAnnotation Outer. Nested> where
+\<@ConfusingAnnotation> applies to \<Outer> if \<Nested> is a member class
+and applies to \<Nested> if \<Nested> is a static class).  It's not legal
+to write an annotation on the outer class of a static nested class, because
+neither annotations nor instantiations of the outer class affect the static
+nested class.
+
+Similar arguments apply when annotating \<package.Outer.Nested>.
+
 \end{itemize}
 
 
@@ -842,5 +875,6 @@ For details, see file \<LICENSE.txt>.
 % LocalWords:  subtyping containsKey proc classfiles SourceChecker javap jdk
 % LocalWords:  MyFile buildfiles ClassName JRE java jsr308 bootclasspath
 %  LocalWords:  extJavac ZipFile AprintErrorStack AprintAllQualifiers Jlint
-%  LocalWords:  Telmo Correa Papi NoSuchFieldError ZipException Xlint
-%  LocalWords:  FileNotFoundException MyQualifier ImplicitFor
+%  LocalWords:  Telmo Correa Papi NoSuchFieldError ZipException Xlint A1
+%  LocalWords:  FileNotFoundException MyQualifier ImplicitFor A2 A3
+%  LocalWords:  StaticNestedClass StaticNested ConfusingAnnotation
