@@ -77,8 +77,8 @@ public class Locations extends SourceChecker {
         public Visitor(Locations l) {
             super(l);
 
-            locations = !checker.hasOption("nolocations");
-            annotations = checker.hasOption("annotations");
+            locations = !l.hasOption("nolocations");
+            annotations = l.hasOption("annotations");
         }
 
         @Override

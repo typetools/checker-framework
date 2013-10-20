@@ -155,6 +155,9 @@ import com.sun.tools.javac.tree.TreeInfo;
 public class BaseTypeVisitor<Factory extends AbstractBasicAnnotatedTypeFactory<?, ?, ?, ?>>
         extends SourceVisitor<Void, Void> {
 
+    /** The {@link BaseTypeChecker} for error reporting. */
+    protected final BaseTypeChecker checker;
+
     /** The factory to use for obtaining "parsed" version of annotations. */
     protected final Factory atypeFactory;
 
@@ -177,7 +180,7 @@ public class BaseTypeVisitor<Factory extends AbstractBasicAnnotatedTypeFactory<?
     public BaseTypeVisitor(BaseTypeChecker checker) {
         super(checker);
 
-        // Ask the checker for the AnnotatedTypeFactory.
+        this.checker = checker;
         this.atypeFactory = createTypeFactory();
         this.contractsUtils = ContractsUtils.getInstance(atypeFactory);
         this.positions = trees.getSourcePositions();
@@ -220,7 +223,7 @@ public class BaseTypeVisitor<Factory extends AbstractBasicAnnotatedTypeFactory<?
             }
             checkerClass = checkerClass.getSuperclass();
         }
-        return (Factory) new BasicAnnotatedTypeFactory((BaseTypeChecker)checker);
+        return (Factory) new BasicAnnotatedTypeFactory(checker);
     }
 
     public final Factory getTypeFactory() {

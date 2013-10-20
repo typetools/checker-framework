@@ -308,7 +308,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
                     .getTypeFactory().getElementUtils(), p.second);
 
             // Only check if the postcondition concerns this checker
-            if (!analysis.atypeFactory.isSupportedQualifier(annotation)) {
+            if (!analysis.getTypeFactory().isSupportedQualifier(annotation)) {
                 continue;
             }
             if (flowExprContext == null) {

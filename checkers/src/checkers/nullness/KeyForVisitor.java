@@ -5,7 +5,6 @@ import checkers.basetype.BaseTypeValidator;
 import checkers.basetype.BaseTypeVisitor;
 import checkers.nullness.quals.KeyFor;
 import checkers.source.Result;
-import checkers.source.SourceChecker;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 
@@ -36,7 +35,7 @@ public class KeyForVisitor extends BaseTypeVisitor<KeyForAnnotatedTypeFactory> {
 
     private final static class KeyForTypeValidator extends BaseTypeValidator {
 
-        public KeyForTypeValidator(SourceChecker checker,
+        public KeyForTypeValidator(BaseTypeChecker checker,
                 BaseTypeVisitor<?> visitor, AnnotatedTypeFactory atypeFactory) {
             super(checker, visitor, atypeFactory);
         }

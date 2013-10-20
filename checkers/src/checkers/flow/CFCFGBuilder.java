@@ -1,6 +1,6 @@
 package checkers.flow;
 
-import checkers.source.SourceChecker;
+import checkers.basetype.BaseTypeChecker;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 
@@ -65,12 +65,12 @@ import com.sun.source.tree.VariableTree;
 public class CFCFGBuilder extends CFGBuilder {
 
     /** The associated checker. */
-    protected final SourceChecker checker;
+    protected final BaseTypeChecker checker;
 
     /** Type factory to provide types used during CFG building. */
     protected final AnnotatedTypeFactory factory;
 
-    public CFCFGBuilder(SourceChecker checker, AnnotatedTypeFactory factory) {
+    public CFCFGBuilder(BaseTypeChecker checker, AnnotatedTypeFactory factory) {
         super(checker.hasOption("assumeAssertionsAreEnabled"),
               checker.hasOption("assumeAssertionsAreDisabled"));
         if (assumeAssertionsEnabled && assumeAssertionsDisabled) {

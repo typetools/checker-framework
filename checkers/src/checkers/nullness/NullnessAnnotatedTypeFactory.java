@@ -38,6 +38,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.Elements;
 
 import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
@@ -112,17 +113,23 @@ public class NullnessAnnotatedTypeFactory
         // TODO: These heuristics are just here temporarily. They all either
         // need to be replaced, or carefully checked for correctness.
         generalFactory = new GeneralAnnotatedTypeFactory(checker);
-        mapGetHeuristics = new MapGetHeuristics(checker, this);
-        systemGetPropertyHandler = new SystemGetPropertyHandler(processingEnv,
-                this);
+        // Alias the same generalFactory below and ensure that setRoot updates it.
+        mapGetHeuristics = new MapGetHeuristics(checker, this, generalFactory);
+        dependentTypes = new DependentTypes(checker, generalFactory);
 
-        dependentTypes = new DependentTypes(checker);
+        systemGetPropertyHandler = new SystemGetPropertyHandler(processingEnv, this);
 
         postInit();
 
         // do this last, as it might use the factory again.
         this.collectionToArrayHeuristics = new CollectionToArrayHeuristics(
                 processingEnv, this);
+    }
+
+    @Override
+    public void setRoot(CompilationUnitTree root) {
+        generalFactory.setRoot(root);
+        super.setRoot(root);
     }
 
     // handle dependent types
@@ -239,12 +246,12 @@ public class NullnessAnnotatedTypeFactory
 
     @Override
     protected TypeAnnotator createTypeAnnotator() {
-        return new NonNullTypeAnnotator(this);
+        return new NullnessTypeAnnotator(this);
     }
 
     @Override
     protected TreeAnnotator createTreeAnnotator() {
-        return new NonNullTreeAnnotator(this);
+        return new NullnessTreeAnnotator(this);
     }
 
     /**
@@ -287,10 +294,10 @@ public class NullnessAnnotatedTypeFactory
                 || var.getSimpleName().contentEquals("class") || inJavaPackage);
     }
 
-    protected class NonNullTreeAnnotator
+    protected class NullnessTreeAnnotator
         extends InitializationAnnotatedTypeFactory<NullnessValue, NullnessStore, NullnessTransfer, NullnessAnalysis>.CommitmentTreeAnnotator {
 
-        public NonNullTreeAnnotator(NullnessAnnotatedTypeFactory atypeFactory) {
+        public NullnessTreeAnnotator(NullnessAnnotatedTypeFactory atypeFactory) {
             super(atypeFactory);
         }
 
@@ -370,10 +377,10 @@ public class NullnessAnnotatedTypeFactory
         }
     }
 
-    protected class NonNullTypeAnnotator
+    protected class NullnessTypeAnnotator
         extends InitializationAnnotatedTypeFactory<NullnessValue, NullnessStore, NullnessTransfer, NullnessAnalysis>.CommitmentTypeAnnotator {
 
-        public NonNullTypeAnnotator(InitializationAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory) {
+        public NullnessTypeAnnotator(InitializationAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory) {
             super(atypeFactory);
         }
     }
