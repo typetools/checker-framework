@@ -32,15 +32,15 @@ public class DependentTypes {
     // TODO: the implementation of this class needs some serious refactoring
     // and thought (and documentation...).
     // @Dependent expresses the relationship between two separate
-    // type systems. It is not enough to use the GeneralATF, which doesn't
+    // type systems. It is not enough to use the GeneralATF, which doesn'tee
     // apply defaulting appropriate for the second type system.
     // This issue is similar to the interaction between @Unused and
     // the Nullness Checker.
     private final GeneralAnnotatedTypeFactory atypeFactory;
 
-    public DependentTypes(BaseTypeChecker checker) {
+    public DependentTypes(BaseTypeChecker checker, GeneralAnnotatedTypeFactory atypeFactory) {
         this.elements = checker.getProcessingEnvironment().getElementUtils();
-        this.atypeFactory = new GeneralAnnotatedTypeFactory(checker);
+        this.atypeFactory = atypeFactory;
     }
 
     private AnnotationMirror getResult(AnnotationMirror anno) {

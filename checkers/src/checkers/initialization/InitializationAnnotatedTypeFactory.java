@@ -76,18 +76,23 @@ public abstract class InitializationAnnotatedTypeFactory<
     extends AbstractBasicAnnotatedTypeFactory<Value, Store, Transfer, Flow> {
 
     /** Annotation constants */
-    public AnnotationMirror COMMITTED, FREE, FBCBOTTOM, NOT_ONLY_COMMITTED, UNCLASSIFIED;
+    protected final AnnotationMirror COMMITTED, FREE, FBCBOTTOM, NOT_ONLY_COMMITTED, UNCLASSIFIED;
 
     /**
      * Should the initialization type system be FBC? If not, the rawness type
      * system is used for initialization.
      */
-    public final boolean useFbc;
+    protected final boolean useFbc;
+
+    // Cache for the initialization annotations
+    protected final Set<Class<? extends Annotation>> initAnnos;
 
     public InitializationAnnotatedTypeFactory(BaseTypeChecker checker, boolean useFbc) {
         super(checker, true);
 
         this.useFbc = useFbc;
+
+        Set<Class<? extends Annotation>> tempInitAnnos = new HashSet<>();
 
         if (useFbc) {
             COMMITTED = AnnotationUtils.fromClass(elements, Initialized.class);
@@ -95,32 +100,27 @@ public abstract class InitializationAnnotatedTypeFactory<
             NOT_ONLY_COMMITTED = AnnotationUtils.fromClass(elements, NotOnlyInitialized.class);
             FBCBOTTOM = AnnotationUtils.fromClass(elements, FBCBottom.class);
             UNCLASSIFIED = AnnotationUtils.fromClass(elements, UnknownInitialization.class);
+
+            tempInitAnnos.add(UnderInitialization.class);
+            tempInitAnnos.add(Initialized.class);
+            tempInitAnnos.add(UnknownInitialization.class);
+            tempInitAnnos.add(FBCBottom.class);
         } else {
             COMMITTED = AnnotationUtils.fromClass(elements, NonRaw.class);
             FBCBOTTOM = COMMITTED; // @NonRaw is also bottom
             UNCLASSIFIED = AnnotationUtils.fromClass(elements, Raw.class);
+            FREE = null; // unused
+            NOT_ONLY_COMMITTED = null; // unused
+
+            tempInitAnnos.add(Raw.class);
+            tempInitAnnos.add(NonRaw.class);
         }
 
+        initAnnos = Collections.unmodifiableSet(tempInitAnnos);
     }
 
 
-    // Cache for the initialization annotations
-    protected Set<Class<? extends Annotation>> initAnnos;
-
     public Set<Class<? extends Annotation>> getInitializationAnnotations() {
-        if (initAnnos == null) {
-            Set<Class<? extends Annotation>> result = new HashSet<>();
-            if (useFbc) {
-                result.add(UnderInitialization.class);
-                result.add(Initialized.class);
-                result.add(UnknownInitialization.class);
-                result.add(FBCBottom.class);
-            } else {
-                result.add(Raw.class);
-                result.add(NonRaw.class);
-            }
-            initAnnos = Collections.unmodifiableSet(result);
-        }
         return initAnnos;
     }
 
@@ -673,10 +673,9 @@ public abstract class InitializationAnnotatedTypeFactory<
      * and
      * {@link InitializationQualifierHierarchy#leastUpperBoundInitialization(AnnotationMirror, AnnotationMirror)}
      * for appropriate qualifiers.
-     * See proctected subclass NullnessQualifierHierarchy within class {@link checkers.nullness.AbstractNullnessChecker} for an example.
+     * See protected subclass NullnessQualifierHierarchy within class {@link checkers.nullness.AbstractNullnessChecker} for an example.
      */
     protected abstract class InitializationQualifierHierarchy extends MultiGraphQualifierHierarchy {
-        protected Types types = processingEnv.getTypeUtils();
 
         public InitializationQualifierHierarchy(MultiGraphFactory f, Object... arg) {
             super(f, arg);

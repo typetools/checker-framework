@@ -40,12 +40,14 @@ import javax.lang.model.type.ExecutableType;
 
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreePath;
 
 /**
  * The visitor for the freedom-before-commitment type-system. The
@@ -57,8 +59,7 @@ import com.sun.source.tree.VariableTree;
  *
  * @author Stefan Heule
  */
-public class InitializationVisitor<
-        Factory extends InitializationAnnotatedTypeFactory<Value, Store, ?, ?>,
+public class InitializationVisitor<Factory extends InitializationAnnotatedTypeFactory<Value, Store, ?, ?>,
         Value extends CFAbstractValue<Value>,
         Store extends InitializationStore<Value, Store>>
     extends BaseTypeVisitor<Factory> {
@@ -73,7 +74,14 @@ public class InitializationVisitor<
 
     public InitializationVisitor(BaseTypeChecker checker) {
         super(checker);
+        initializedFields = new ArrayList<>();
         checkForAnnotatedJdk();
+    }
+
+    @Override
+    public Void visit(CompilationUnitTree root, TreePath path, Void p) {
+        initializedFields.clear();
+        return super.visit(root, path, p);
     }
 
     @Override
@@ -275,12 +283,10 @@ public class InitializationVisitor<
         return super.visitBlock(node, p);
     }
 
-    protected final List<VariableTree> initializedFields = new ArrayList<>();
+    protected final List<VariableTree> initializedFields;
 
     @Override
     public Void visitClass(ClassTree node, Void p) {
-        initializedFields.clear();
-
         // call the ATF with any node from this class to trigger the dataflow
         // analysis.
         atypeFactory.getAnnotatedType(node);

@@ -41,12 +41,12 @@ import com.sun.source.tree.VariableTree;
 public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> {
     protected boolean isValid = true;
 
-    protected final SourceChecker checker;
+    protected final BaseTypeChecker checker;
     protected final BaseTypeVisitor<?> visitor;
     protected final AnnotatedTypeFactory atypeFactory;
 
     // TODO: clean up coupling between components
-    public BaseTypeValidator(SourceChecker checker,
+    public BaseTypeValidator(BaseTypeChecker checker,
             BaseTypeVisitor<?> visitor,
             AnnotatedTypeFactory atypeFactory) {
         this.checker = checker;
