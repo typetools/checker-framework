@@ -1,10 +1,10 @@
-package checkers.types;
+package checkers.basetype;
 
-import checkers.basetype.BaseTypeChecker;
 import checkers.flow.CFAnalysis;
 import checkers.flow.CFStore;
 import checkers.flow.CFTransfer;
 import checkers.flow.CFValue;
+import checkers.types.AbstractBasicAnnotatedTypeFactory;
 
 import javacutils.Pair;
 
@@ -18,19 +18,19 @@ import javax.lang.model.element.VariableElement;
  *
  * @author Stefan Heule
  */
-public class BasicAnnotatedTypeFactory
+public class BaseAnnotatedTypeFactory
     extends AbstractBasicAnnotatedTypeFactory<CFValue, CFStore, CFTransfer, CFAnalysis> {
 
-    public BasicAnnotatedTypeFactory(BaseTypeChecker checker, boolean useFlow) {
+    public BaseAnnotatedTypeFactory(BaseTypeChecker checker, boolean useFlow) {
         super(checker, useFlow);
 
         // Every subclass must call postInit!
-        if (this.getClass().equals(BasicAnnotatedTypeFactory.class)) {
+        if (this.getClass().equals(BaseAnnotatedTypeFactory.class)) {
             this.postInit();
         }
     }
 
-    public BasicAnnotatedTypeFactory(BaseTypeChecker checker) {
+    public BaseAnnotatedTypeFactory(BaseTypeChecker checker) {
         this(checker, FLOW_BY_DEFAULT);
     }
 
