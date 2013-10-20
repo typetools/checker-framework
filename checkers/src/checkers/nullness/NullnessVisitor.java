@@ -84,12 +84,8 @@ public class NullnessVisitor extends InitializationVisitor<NullnessAnnotatedType
      */
     private final ExecutableElement collectionToArray;
 
-    protected final boolean useFbc;
-
     public NullnessVisitor(BaseTypeChecker checker, boolean useFbc) {
         super(checker);
-
-        this.useFbc = useFbc;
 
         NONNULL = atypeFactory.NONNULL;
         NULLABLE = atypeFactory.NULLABLE;
@@ -107,7 +103,10 @@ public class NullnessVisitor extends InitializationVisitor<NullnessAnnotatedType
 
     @Override
     public NullnessAnnotatedTypeFactory createTypeFactory() {
-        return new NullnessAnnotatedTypeFactory((BaseTypeChecker)checker, useFbc);
+        // We need to directly access useFbc from the checker, because this method gets called
+        // by the superclass constructor and a field in this class would not be initialized
+        // yet. Oh the pain.
+        return new NullnessAnnotatedTypeFactory(checker, ((AbstractNullnessChecker)checker).useFbc);
     }
 
     @Override
