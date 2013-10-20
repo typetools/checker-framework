@@ -1,5 +1,6 @@
 package checkers.interning;
 
+import checkers.basetype.BaseAnnotatedTypeFactory;
 import checkers.basetype.BaseTypeChecker;
 import checkers.interning.quals.Interned;
 import checkers.interning.quals.PolyInterned;
@@ -10,7 +11,6 @@ import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
-import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.types.TreeAnnotator;
 import checkers.types.TypeAnnotator;
 
@@ -39,14 +39,14 @@ import com.sun.source.tree.Tree;
  * <li value="5">has the type java.lang.Class
  * </ol>
  *
- * This factory extends {@link BasicAnnotatedTypeFactory} and inherits its
+ * This factory extends {@link BaseAnnotatedTypeFactory} and inherits its
  * functionality, including: flow-sensitive qualifier inference, qualifier
  * polymorphism (of {@link PolyInterned}), implicit annotations via
  * {@link ImplicitFor} on {@link Interned} (to handle cases 1, 2, 4), and
  * user-specified defaults via {@link DefaultQualifier}.
  * Case 5 is handled by the stub library.
  */
-public class InterningAnnotatedTypeFactory extends BasicAnnotatedTypeFactory {
+public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** The {@link Interned} annotation. */
     final AnnotationMirror INTERNED, UNQUALIFIED;
@@ -56,7 +56,6 @@ public class InterningAnnotatedTypeFactory extends BasicAnnotatedTypeFactory {
      * particular AST.
      *
      * @param checker the checker to use
-     * @param root the AST on which this type factory operates
      */
     public InterningAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);

@@ -5,6 +5,7 @@ import checkers.compilermsgs.quals.CompilerMessageKey;
 import checkers.nullness.quals.*;
 */
 
+import checkers.basetype.BaseAnnotatedTypeFactory;
 import checkers.basetype.BaseTypeChecker;
 import checkers.quals.TypeQualifiers;
 import checkers.types.AnnotatedTypeFactory;
@@ -66,14 +67,14 @@ import com.sun.tools.javac.util.Log;
  *
  * <p>
  *
- * Subclasses must implement the following methods:
+ * TODO update: Subclasses must implement the following methods:
  *
  * <ul>
- *  <li>{@link SourceChecker#getMessages} (for type-qualifier specific error messages)
- *  <li>{@link SourceChecker#createSourceVisitor(CompilationUnitTree)} (for a custom {@link SourceVisitor})
- *  <li>{@link SourceChecker#createFactory} (for a custom {@link AnnotatedTypeFactory})
- *  <li>{@link SourceChecker#getSuppressWarningsKeys} (for honoring
- *      {@link SuppressWarnings} annotations)
+ *  <li>{link SourceChecker#getMessages} (for type-qualifier specific error messages)
+ *  <li>{link SourceChecker#createSourceVisitor(CompilationUnitTree)} (for a custom {@link SourceVisitor})
+ *  <li>{link SourceChecker#createFactory} (for a custom {@link AnnotatedTypeFactory})
+ *  <li>{link SourceChecker#getSuppressWarningsKeys} (for honoring
+ *      {link SuppressWarnings} annotations)
  * </ul>
  *
  * Most type-checker plug-ins will want to extend {@link BaseTypeChecker},
@@ -351,7 +352,6 @@ public abstract class SourceChecker
      * Provides the {@link SourceVisitor} that the checker should use to scan
      * input source trees.
      *
-     * @param root the AST root
      * @return a {@link SourceVisitor} to use to scan source trees
      */
     protected abstract SourceVisitor<?, ?> createSourceVisitor();
@@ -1390,13 +1390,12 @@ public abstract class SourceChecker
      * To specify the annotations that a checker recognizes as type qualifiers,
      * use the {@link TypeQualifiers} annotation on the declaration of
      * subclasses of this class or override the
-     * {@link BaseTypeChecker#getSupportedTypeQualifiers()} method.
+     * {@link BaseAnnotatedTypeFactory#getSupportedTypeQualifiers()} method.
      *
      * @throws Error if a subclass is annotated with
      *         {@link SupportedAnnotationTypes}
      *
      * @see TypeQualifiers
-     * @see BaseTypeChecker#getSupportedAnnotationTypes()
      */
     @Override
     public final Set<String> getSupportedAnnotationTypes() {

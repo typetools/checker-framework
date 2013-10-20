@@ -39,7 +39,6 @@ public abstract class SourceVisitor<R, P>
      * Creates a {@link SourceVisitor} to use for scanning a source tree.
      *
      * @param checker the checker to invoke on the input source tree
-     * @param root the AST root that this scanner will check against
      */
     public SourceVisitor(SourceChecker checker) {
         // Use the checker's processing environment to get the helpers we need.

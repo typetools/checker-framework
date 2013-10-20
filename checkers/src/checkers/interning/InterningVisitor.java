@@ -67,7 +67,6 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
      * Creates a new visitor for type-checking {@link Interned}.
      *
      * @param checker the checker to use
-     * @param root the root of the input program's AST to check
      */
     public InterningVisitor(BaseTypeChecker checker) {
         super(checker);

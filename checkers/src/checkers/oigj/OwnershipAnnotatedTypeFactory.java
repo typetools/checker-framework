@@ -1,10 +1,10 @@
 package checkers.oigj;
 
+import checkers.basetype.BaseAnnotatedTypeFactory;
 import checkers.basetype.BaseTypeChecker;
 import checkers.oigj.quals.World;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.types.QualifierHierarchy;
 import checkers.types.TreeAnnotator;
 import checkers.types.TypeAnnotator;
@@ -23,7 +23,7 @@ import javax.lang.model.element.ElementKind;
 
 import com.sun.source.tree.BinaryTree;
 
-public class OwnershipAnnotatedTypeFactory extends BasicAnnotatedTypeFactory {
+public class OwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     protected final AnnotationMirror BOTTOM_QUAL;
 

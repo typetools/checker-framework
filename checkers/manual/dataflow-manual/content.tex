@@ -325,9 +325,8 @@ The TransferInput represents the set of dataflow facts known to be true immediat
         FlowAnalysis extends CFAbstractAnalysis<Value, Store, TransferFunction>>
     extends AnnotatedTypeFactory\end{verbatim}
     
-    \begin{verbatim}class checkers.types.BasicAnnotatedTypeFactory<
-        Checker extends BaseTypeChecker<?>>
-    extends AbstractBasicAnnotatedTypeFactory<Checker, CFValue, CFStore, CFTransfer, CFAnalysis>\end{verbatim}
+    \begin{verbatim}class checkers.basetype.BaseAnnotatedTypeFactory
+    extends AbstractBasicAnnotatedTypeFactory<CFValue, CFStore, CFTransfer, CFAnalysis>\end{verbatim}
 
 
 
@@ -1398,7 +1397,7 @@ and $<:$ denotes standard Java subtyping.
 %  LocalWords:  AnalysisResult AnnotatedTypeFactory AnnotatedTypeFactorys
 %  LocalWords:  AnnotationProvider getAnnotatedType BaseTypeChecker 414f
 %  LocalWords:  AbstractBasicAnnotatedTypeFactory FlowAnalysis CFAnalysis
-%  LocalWords:  BasicAnnotatedTypeFactory CFGSimple ValueLiteral 1024L txt
+%  LocalWords:  BaseAnnotatedTypeFactory CFGSimple ValueLiteral 1024L txt
 %  LocalWords:  BooleanLiteral CharacterLiteral DoubleLiteral FloatLiteral
 %  LocalWords:  IntegerLiteral LongLiteral NullLiteral ShortLiteral args
 %  LocalWords:  StringLiteral Accessor ArrayAccess FieldAccess ThisLiteral

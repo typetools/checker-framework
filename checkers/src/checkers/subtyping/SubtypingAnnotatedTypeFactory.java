@@ -1,14 +1,14 @@
 package checkers.subtyping;
 
+import checkers.basetype.BaseAnnotatedTypeFactory;
 import checkers.basetype.BaseTypeChecker;
-import checkers.types.BasicAnnotatedTypeFactory;
 
 import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-public class SubtypingAnnotatedTypeFactory extends BasicAnnotatedTypeFactory {
+public class SubtypingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     public SubtypingAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);

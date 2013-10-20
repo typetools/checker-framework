@@ -204,8 +204,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * A subclass must call postInit at the end of its constructor.
      *
      * @param checker the {@link SourceChecker} to which this factory belongs
-     * @param root the root of the syntax tree that this factory produces
-     *            annotated types for
      * @throws IllegalArgumentException if either argument is {@code null}
      */
     public AnnotatedTypeFactory(BaseTypeChecker checker) {

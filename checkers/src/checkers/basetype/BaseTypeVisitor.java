@@ -23,7 +23,6 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
-import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.types.QualifierHierarchy;
 import checkers.types.TypeHierarchy;
 import checkers.types.VisitorState;
@@ -174,8 +173,6 @@ public class BaseTypeVisitor<Factory extends AbstractBasicAnnotatedTypeFactory<?
      * @param checker
      *            the type-checker associated with this visitor (for callbacks to
      *            {@link TypeHierarchy#isSubtype})
-     * @param root
-     *            the root of the AST that this visitor operates on
      */
     public BaseTypeVisitor(BaseTypeChecker checker) {
         super(checker);
@@ -196,14 +193,13 @@ public class BaseTypeVisitor<Factory extends AbstractBasicAnnotatedTypeFactory<?
      *
      * The default implementation uses the checker naming convention to create
      * the appropriate type factory.  If no factory is found, it returns
-     * {@link BasicAnnotatedTypeFactory}.  It reflectively invokes the
+     * {@link BaseAnnotatedTypeFactory}.  It reflectively invokes the
      * constructor that accepts this checker and compilation unit tree
      * (in that order) as arguments.
      *
      * Subclasses have to override this method to create the appropriate
      * visitor if they do not follow the checker naming convention.
      *
-     * @param root  the currently visited compilation unit
      * @return the appropriate type factory
      */
     @SuppressWarnings("unchecked") // unchecked cast to type variable
@@ -223,7 +219,7 @@ public class BaseTypeVisitor<Factory extends AbstractBasicAnnotatedTypeFactory<?
             }
             checkerClass = checkerClass.getSuperclass();
         }
-        return (Factory) new BasicAnnotatedTypeFactory(checker);
+        return (Factory) new BaseAnnotatedTypeFactory(checker);
     }
 
     public final Factory getTypeFactory() {

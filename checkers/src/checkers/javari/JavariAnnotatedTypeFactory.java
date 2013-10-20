@@ -1,5 +1,6 @@
 package checkers.javari;
 
+import checkers.basetype.BaseAnnotatedTypeFactory;
 import checkers.basetype.BaseTypeChecker;
 import checkers.javari.quals.Assignable;
 import checkers.javari.quals.Mutable;
@@ -14,7 +15,6 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
-import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.types.QualifierHierarchy;
 import checkers.types.TypeHierarchy;
 import checkers.types.visitors.AnnotatedTypeScanner;
@@ -89,7 +89,7 @@ import com.sun.source.util.SimpleTreeVisitor;
  * In all other cases, the {@link Mutable} annotation is inserted by default.
  * </ul>
  */
-public class JavariAnnotatedTypeFactory extends BasicAnnotatedTypeFactory {
+public class JavariAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** Adds annotations from tree context before type resolution. */
     private final JavariTreePreAnnotator treePre;
@@ -105,7 +105,6 @@ public class JavariAnnotatedTypeFactory extends BasicAnnotatedTypeFactory {
      * particular AST.
      *
      * @param checker the checker to which this factory belongs
-     * @param root the AST on which this type factory operates
      */
     public JavariAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);

@@ -1,10 +1,10 @@
 package checkers.units;
 
+import checkers.basetype.BaseAnnotatedTypeFactory;
 import checkers.basetype.BaseTypeChecker;
 import checkers.quals.Bottom;
 import checkers.quals.Unqualified;
 import checkers.types.AnnotatedTypeMirror;
-import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.types.QualifierHierarchy;
 import checkers.types.TreeAnnotator;
 import checkers.units.quals.A;
@@ -64,7 +64,7 @@ import com.sun.source.tree.Tree;
  * "s" is a variable of type "@s", the division "m/s" is automatically annotated
  * as "mPERs", the correct unit for the result.
  */
-public class UnitsAnnotatedTypeFactory extends BasicAnnotatedTypeFactory {
+public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     protected final AnnotationMirror mixedUnits = AnnotationUtils.fromClass(elements, MixedUnits.class);
 
