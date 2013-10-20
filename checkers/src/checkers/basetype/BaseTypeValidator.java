@@ -5,7 +5,6 @@ import checkers.compilermsgs.quals.CompilerMessageKey;
 */
 
 import checkers.source.Result;
-import checkers.source.SourceChecker;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
