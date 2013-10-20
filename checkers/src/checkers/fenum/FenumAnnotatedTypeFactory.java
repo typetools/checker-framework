@@ -1,11 +1,11 @@
 package checkers.fenum;
 
+import checkers.basetype.BaseAnnotatedTypeFactory;
 import checkers.basetype.BaseTypeChecker;
 import checkers.fenum.quals.Fenum;
 import checkers.fenum.quals.FenumTop;
 import checkers.fenum.quals.FenumUnqualified;
 import checkers.quals.Bottom;
-import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.types.QualifierHierarchy;
 import checkers.util.GraphQualifierHierarchy;
 import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
@@ -21,7 +21,7 @@ import javax.lang.model.element.AnnotationMirror;
 
 import com.sun.source.tree.Tree;
 
-public class FenumAnnotatedTypeFactory extends BasicAnnotatedTypeFactory {
+public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     protected AnnotationMirror FENUM, BOTTOM;
 

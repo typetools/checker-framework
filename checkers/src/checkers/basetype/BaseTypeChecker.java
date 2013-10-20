@@ -8,7 +8,6 @@ import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifiers;
 import checkers.source.SourceChecker;
 import checkers.types.AnnotatedTypeFactory;
-import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.types.QualifierHierarchy;
 import checkers.types.TypeHierarchy;
 
@@ -67,14 +66,14 @@ import java.util.Set;
  *
  * Subclasses must specify the set of type qualifiers they support either by
  * annotating the subclass with {@link TypeQualifiers} or by overriding the
- * {@link #getSupportedTypeQualifiers()} method.
+ * {@link BaseAnnotatedTypeFactory#getSupportedTypeQualifiers()} method.
  *
  * <p>
  *
  * If the specified type qualifiers are meta-annotated with {@link SubtypeOf},
  * this implementation will automatically construct the type qualifier
  * hierarchy. Otherwise, or if this behavior must be overridden, the subclass
- * may override the {@link #createQualifierHierarchy()} method.
+ * may override the {@link BaseAnnotatedTypeFactory#createQualifierHierarchy()} method.
  *
  * @see checkers.quals
  */
@@ -100,7 +99,6 @@ public abstract class BaseTypeChecker extends SourceChecker {
      * Subclasses have to override this method to create the appropriate
      * visitor if they do not follow the checker naming convention.
      *
-     * @param root  the compilation unit currently being visited
      * @return the type-checking visitor
      */
     @Override
@@ -121,7 +119,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
         }
 
         // If a visitor couldn't be loaded reflectively, return the default.
-        return new BaseTypeVisitor<BasicAnnotatedTypeFactory>(this);
+        return new BaseTypeVisitor<BaseAnnotatedTypeFactory>(this);
     }
 
 

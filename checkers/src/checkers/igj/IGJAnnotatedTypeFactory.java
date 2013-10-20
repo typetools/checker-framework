@@ -1,5 +1,6 @@
 package checkers.igj;
 
+import checkers.basetype.BaseAnnotatedTypeFactory;
 import checkers.basetype.BaseTypeChecker;
 import checkers.igj.quals.AssignsFields;
 import checkers.igj.quals.I;
@@ -13,7 +14,6 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
-import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.types.QualifierHierarchy;
 import checkers.types.TreeAnnotator;
 import checkers.types.TypeAnnotator;
@@ -115,7 +115,7 @@ import com.sun.source.tree.TypeCastTree;
 // To ease dealing with libraries, this inserts the bottom qualifier
 // rather than immutable in many cases, like all literals.
 // Should change that
-public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory {
+public class IGJAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     //
     // IGJ tries to adhere to the various rules specified by the
@@ -152,8 +152,6 @@ public class IGJAnnotatedTypeFactory extends BasicAnnotatedTypeFactory {
      * Constructor for IGJAnnotatedTypeFactory object.
      *
      * @param checker the checker to which this factory belongs
-     * @param root  the compilation unit the annotation processor is
-     *              processing currently
      */
     public IGJAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);

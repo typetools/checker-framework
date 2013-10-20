@@ -1,10 +1,10 @@
 package checkers.propkey;
 
+import checkers.basetype.BaseAnnotatedTypeFactory;
 import checkers.basetype.BaseTypeChecker;
 import checkers.propkey.quals.PropertyKey;
 import checkers.quals.Bottom;
 import checkers.types.AnnotatedTypeMirror;
-import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.types.TreeAnnotator;
 import checkers.util.GraphQualifierHierarchy;
 import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
@@ -35,7 +35,7 @@ import com.sun.source.tree.Tree;
  *
  * @author wmdietl
  */
-public class PropertyKeyAnnotatedTypeFactory extends BasicAnnotatedTypeFactory {
+public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     private final Set<String> lookupKeys;
 
@@ -68,7 +68,7 @@ public class PropertyKeyAnnotatedTypeFactory extends BasicAnnotatedTypeFactory {
     protected class KeyLookupTreeAnnotator extends TreeAnnotator {
         AnnotationMirror theAnnot;
 
-        public KeyLookupTreeAnnotator(BasicAnnotatedTypeFactory atf, Class<? extends Annotation> annot) {
+        public KeyLookupTreeAnnotator(BaseAnnotatedTypeFactory atf, Class<? extends Annotation> annot) {
             super(atf);
             theAnnot = AnnotationUtils.fromClass(elements, annot);
         }

@@ -61,8 +61,6 @@ public class TypeAnnotator extends AnnotatedTypeScanner<Void, Element> {
      * Creates a {@link TypeAnnotator} from the given checker, using that checker's
      * {@link TypeQualifiers} annotation to determine the annotations that are
      * in the type hierarchy.
-     *
-     * @param checker the type-checker to which this annotator belongs
      */
     public TypeAnnotator(AnnotatedTypeFactory atypeFactory) {
 
