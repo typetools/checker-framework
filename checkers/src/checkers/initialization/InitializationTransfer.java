@@ -65,13 +65,11 @@ import com.sun.tools.javac.code.Symbol;
 public class InitializationTransfer<V extends CFAbstractValue<V>, T extends InitializationTransfer<V, T, S>, S extends InitializationStore<V, S>>
         extends CFAbstractTransfer<V, S, T> {
 
-    //protected final InitializationChecker checker;
     protected final InitializationAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory;
 
     public InitializationTransfer(CFAbstractAnalysis<V, S, T> analysis) {
         super(analysis);
         this.atypeFactory = (InitializationAnnotatedTypeFactory<?, ?, ?, ?>) analysis.getTypeFactory();
-        // this.checker = (InitializationChecker) analysis.getTypeFactory().getChecker();
     }
 
     @Override

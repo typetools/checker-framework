@@ -321,7 +321,7 @@ public class KeyForAnnotatedTypeFactory extends BasicAnnotatedTypeFactory {
   }
 
   @Override
-      public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
+  public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
       return new KeyForQualifierHierarchy(factory);
   }
 

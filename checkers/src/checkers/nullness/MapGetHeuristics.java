@@ -10,6 +10,7 @@ import checkers.basetype.BaseTypeChecker;
 import checkers.nullness.quals.KeyFor;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
+import checkers.types.GeneralAnnotatedTypeFactory;
 import checkers.util.Heuristics.Matcher;
 import checkers.util.Resolver2;
 
@@ -85,7 +86,8 @@ import com.sun.source.util.TreePath;
 
     private final ProcessingEnvironment processingEnv;
     private final NullnessAnnotatedTypeFactory atypeFactory;
-    private final KeyForAnnotatedTypeFactory keyForFactory;
+    // private final KeyForAnnotatedTypeFactory keyForFactory;
+    private final GeneralAnnotatedTypeFactory keyForFactory;
     private final Resolver2 resolver;
 
     private final ExecutableElement mapGet;
@@ -94,11 +96,14 @@ import com.sun.source.util.TreePath;
     private final ExecutableElement mapContains;
 
     public MapGetHeuristics(BaseTypeChecker checker,
-            NullnessAnnotatedTypeFactory factory/*,
-            AnnotatedTypeFactory keyForFactory*/) {
+            NullnessAnnotatedTypeFactory factory,
+            GeneralAnnotatedTypeFactory keyForFactory) {
         this.processingEnv = checker.getProcessingEnvironment();
         this.atypeFactory = factory;
-        this.keyForFactory = new KeyForAnnotatedTypeFactory(checker);
+        this.keyForFactory = keyForFactory;
+        // TODO: why do we use a GeneralATF instead of a KeyForATF?
+        // If we use a local ATF, we need to make sure to set the root.
+        // this.keyForFactory = new KeyForAnnotatedTypeFactory(checker);
         this.resolver = new Resolver2(processingEnv);
 
         mapGet = TreeUtils.getMethod("java.util.Map", "get", 1, processingEnv);

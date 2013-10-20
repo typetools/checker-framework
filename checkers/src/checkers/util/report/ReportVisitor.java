@@ -4,7 +4,6 @@ import checkers.basetype.BaseTypeChecker;
 import checkers.basetype.BaseTypeValidator;
 import checkers.basetype.BaseTypeVisitor;
 import checkers.source.Result;
-import checkers.source.SourceChecker;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.BasicAnnotatedTypeFactory;
@@ -307,7 +306,7 @@ public class ReportVisitor extends BaseTypeVisitor<BasicAnnotatedTypeFactory> {
     }
 
     protected class ReportTypeValidator extends BaseTypeValidator {
-        public ReportTypeValidator(SourceChecker checker,
+        public ReportTypeValidator(BaseTypeChecker checker,
                 BaseTypeVisitor<?> visitor, AnnotatedTypeFactory atypeFactory) {
             super(checker, visitor, atypeFactory);
         }

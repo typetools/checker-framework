@@ -22,9 +22,6 @@ import com.sun.source.util.Trees;
 public abstract class SourceVisitor<R, P>
         extends TreePathScanner<R, P> {
 
-    /** The {@link SourceChecker} for error reporting. */
-    protected final SourceChecker checker;
-
     /** The {@link Trees} instance to use for scanning. */
     protected final Trees trees;
 
@@ -45,8 +42,6 @@ public abstract class SourceVisitor<R, P>
      * @param root the AST root that this scanner will check against
      */
     public SourceVisitor(SourceChecker checker) {
-        this.checker = checker;
-
         // Use the checker's processing environment to get the helpers we need.
         ProcessingEnvironment env = checker.getProcessingEnvironment();
 
@@ -55,6 +50,7 @@ public abstract class SourceVisitor<R, P>
         this.types = env.getTypeUtils();
 
         // Install the SourceChecker as the error handler
+        // TODO: having this static state is ugly. Use the context to instantiate.
         ErrorReporter.setHandler(checker);
     }
 
