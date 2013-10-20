@@ -5,6 +5,7 @@ import checkers.compilermsgs.quals.CompilerMessageKey;
 import checkers.nullness.quals.Nullable;
 */
 
+import checkers.basetype.BaseTypeChecker;
 import checkers.basetype.BaseTypeVisitor;
 import checkers.flow.CFAbstractStore;
 import checkers.flow.CFAbstractValue;
@@ -46,6 +47,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreePath;
 
 /**
  * The visitor for the freedom-before-commitment type-system. The
@@ -57,11 +59,10 @@ import com.sun.source.tree.VariableTree;
  *
  * @author Stefan Heule
  */
-public class InitializationVisitor<Checker extends InitializationChecker<? extends Factory>,
-        Factory extends InitializationAnnotatedTypeFactory<?, Value, Store, ?, ?>,
+public class InitializationVisitor<Factory extends InitializationAnnotatedTypeFactory<Value, Store, ?, ?>,
         Value extends CFAbstractValue<Value>,
         Store extends InitializationStore<Value, Store>>
-    extends BaseTypeVisitor<Checker, Factory> {
+    extends BaseTypeVisitor<Factory> {
 
     // Error message keys
     private static final /*@CompilerMessageKey*/ String COMMITMENT_INVALID_CAST = "initialization.invalid.cast";
@@ -71,9 +72,16 @@ public class InitializationVisitor<Checker extends InitializationChecker<? exten
     private static final /*@CompilerMessageKey*/ String COMMITMENT_INVALID_FIELD_WRITE_UNCLASSIFIED = "initialization.invalid.field.write.unknown";
     private static final /*@CompilerMessageKey*/ String COMMITMENT_INVALID_FIELD_WRITE_COMMITTED = "initialization.invalid.field.write.initialized";
 
-    public InitializationVisitor(Checker checker, CompilationUnitTree root) {
-        super(checker, root);
+    public InitializationVisitor(BaseTypeChecker checker) {
+        super(checker);
+        initializedFields = new ArrayList<>();
         checkForAnnotatedJdk();
+    }
+
+    @Override
+    public Void visit(CompilationUnitTree root, TreePath path, Void p) {
+        initializedFields.clear();
+        return super.visit(root, path, p);
     }
 
     @Override
@@ -101,11 +109,11 @@ public class InitializationVisitor<Checker extends InitializationChecker<? exten
             Set<AnnotationMirror> fieldAnnotations =
                     atypeFactory.getAnnotatedType(TreeUtils.elementFromUse(lhs)).getAnnotations();
             if (!AnnotationUtils.containsSameIgnoringValues(
-                    fieldAnnotations, checker.UNCLASSIFIED)) {
+                    fieldAnnotations, atypeFactory.UNCLASSIFIED)) {
                 if (!ElementUtils.isStatic(el)
-                        && !(checker.isCommitted(yType) || checker.isFree(xType) || checker.isFbcBottom(yType))) {
+                        && !(atypeFactory.isCommitted(yType) || atypeFactory.isFree(xType) || atypeFactory.isFbcBottom(yType))) {
                     /*@CompilerMessageKey*/ String err;
-                    if (checker.isCommitted(xType)) {
+                    if (atypeFactory.isCommitted(xType)) {
                         err = COMMITMENT_INVALID_FIELD_WRITE_COMMITTED;
                     } else {
                         err = COMMITMENT_INVALID_FIELD_WRITE_UNCLASSIFIED;
@@ -133,7 +141,7 @@ public class InitializationVisitor<Checker extends InitializationChecker<? exten
                 atypeFactory.HACK_DONT_CALL_POST_AS_MEMBER = old;
                 atypeFactory.shouldReadCache = old2;
                 final AnnotationMirror newAnno = var2.getAnnotationInHierarchy(
-                        checker.getFieldInvariantAnnotation());
+                        atypeFactory.getFieldInvariantAnnotation());
                 if (newAnno != null) {
                     var.replaceAnnotation(newAnno);
                 }
@@ -152,9 +160,9 @@ public class InitializationVisitor<Checker extends InitializationChecker<? exten
             Set<AnnotationMirror> annotationMirrors = atypeFactory.getAnnotatedType(
                     node).getExplicitAnnotations();
             // Fields cannot have commitment annotations.
-            for (Class<? extends Annotation> c : checker.getInitializationAnnotations()) {
+            for (Class<? extends Annotation> c : atypeFactory.getInitializationAnnotations()) {
                 for (AnnotationMirror a : annotationMirrors) {
-                    if (checker.isUnclassified(a)) continue; // unclassified is allowed
+                    if (atypeFactory.isUnclassified(a)) continue; // unclassified is allowed
                     if (AnnotationUtils.areSameByClass(a, c)) {
                         checker.report(Result.failure(
                                 COMMITMENT_INVALID_FIELD_ANNOTATION, node),
@@ -172,8 +180,8 @@ public class InitializationVisitor<Checker extends InitializationChecker<? exten
             AnnotationMirror necessaryAnnotation,
             AnnotationMirror inferredAnnotation, CFAbstractStore<?, ?> store) {
         // also use the information about initialized fields to check contracts
-        AnnotationMirror invariantAnno = checker.getFieldInvariantAnnotation();
-        if (checker.getQualifierHierarchy().isSubtype(invariantAnno,
+        AnnotationMirror invariantAnno = atypeFactory.getFieldInvariantAnnotation();
+        if (atypeFactory.getQualifierHierarchy().isSubtype(invariantAnno,
                 necessaryAnnotation)) {
             if (expr instanceof FieldAccess) {
                 FieldAccess fa = (FieldAccess) expr;
@@ -205,7 +213,7 @@ public class InitializationVisitor<Checker extends InitializationChecker<? exten
         AnnotationMirror exprAnno = null, castAnno = null;
 
         // find commitment annotation
-        for (Class<? extends Annotation> a : checker.getInitializationAnnotations()) {
+        for (Class<? extends Annotation> a : atypeFactory.getInitializationAnnotations()) {
             if (castType.hasAnnotation(a)) {
                 assert castAnno == null;
                 castAnno = castType.getAnnotation(a);
@@ -227,7 +235,7 @@ public class InitializationVisitor<Checker extends InitializationChecker<? exten
             isSubtype = true;
         } else {
             assert exprAnno != null && castAnno != null;
-            isSubtype = checker.getQualifierHierarchy().isSubtype(exprAnno,
+            isSubtype = atypeFactory.getQualifierHierarchy().isSubtype(exprAnno,
                     castAnno);
         }
 
@@ -246,8 +254,7 @@ public class InitializationVisitor<Checker extends InitializationChecker<? exten
         // Are we dealing with the last static initializer block? If so,
         // then check that all static fields have been initialized.
         if (node.isStatic()) {
-            ClassTree enclosingClass = TreeUtils
-                    .enclosingClass(getCurrentPath());
+            ClassTree enclosingClass = TreeUtils.enclosingClass(getCurrentPath());
             boolean isStaticInitBlock = false;
             boolean isLastStaticInitBlock = true;
             for (Tree m : enclosingClass.getMembers()) {
@@ -264,24 +271,22 @@ public class InitializationVisitor<Checker extends InitializationChecker<? exten
                 boolean isStatic = true;
                 Store store = atypeFactory.getRegularExitStore(node);
                 // Add field values for fields with an initializer.
-                for (Pair<VariableElement, Value> t : store.getAnalysis()
-                        .getFieldValues()) {
+                for (Pair<VariableElement, Value> t : store.getAnalysis().getFieldValues()) {
                     store.addInitializedField(t.first);
                 }
+
                 // Check that all static fields are initialized.
-                List<AnnotationMirror> receiverAnnotations = Collections
-                        .emptyList();
-                checkFieldsInitialized(node, isStatic, store,
-                        receiverAnnotations);
+                List<AnnotationMirror> receiverAnnotations = Collections.emptyList();
+                checkFieldsInitialized(node, isStatic, store, receiverAnnotations);
             }
         }
         return super.visitBlock(node, p);
     }
 
-    protected List<VariableTree> initializedFields = new ArrayList<>();
+    protected final List<VariableTree> initializedFields;
+
     @Override
     public Void visitClass(ClassTree node, Void p) {
-
         // call the ATF with any node from this class to trigger the dataflow
         // analysis.
         atypeFactory.getAnnotatedType(node);
@@ -330,12 +335,10 @@ public class InitializationVisitor<Checker extends InitializationChecker<? exten
             boolean isStatic = true;
             Store store = atypeFactory.getEmptyStore();
             // Add field values for fields with an initializer.
-            for (Pair<VariableElement, Value> t : store.getAnalysis()
-                    .getFieldValues()) {
+            for (Pair<VariableElement, Value> t : store.getAnalysis().getFieldValues()) {
                 store.addInitializedField(t.first);
             }
-            List<AnnotationMirror> receiverAnnotations = Collections
-                    .emptyList();
+            List<AnnotationMirror> receiverAnnotations = Collections.emptyList();
             checkFieldsInitialized(node, isStatic, store, receiverAnnotations);
         }
 
@@ -347,7 +350,7 @@ public class InitializationVisitor<Checker extends InitializationChecker<? exten
         if (TreeUtils.isConstructor(node)) {
             Collection<? extends AnnotationMirror> returnTypeAnnotations = getExplicitReturnTypeAnnotations(node);
             // check for invalid constructor return type
-            for (Class<? extends Annotation> c : checker.getInvalidConstructorReturnTypeAnnotations()) {
+            for (Class<? extends Annotation> c : atypeFactory.getInvalidConstructorReturnTypeAnnotations()) {
                 for (AnnotationMirror a : returnTypeAnnotations) {
                     if (AnnotationUtils.areSameByClass(a, c)) {
                         checker.report(Result.failure(
@@ -412,7 +415,12 @@ public class InitializationVisitor<Checker extends InitializationChecker<? exten
         if (store != null) {
             List<VariableTree> violatingFields = atypeFactory.getUninitializedInvariantFields(store, getCurrentPath(),
                             staticFields, receiverAnnotations);
-            if (!staticFields) {
+
+            if (staticFields) {
+                // TODO: Why is nothing done for static fields?
+                // Do we need the following?
+                // violatingFields.removeAll(store.initializedFields);
+            } else {
                 // remove fields that have already been initialized by an
                 // initializer block
                 violatingFields.removeAll(initializedFields);

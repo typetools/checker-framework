@@ -15,15 +15,14 @@ import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Modifier;
 
-import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 
-public class KeyForVisitor extends BaseTypeVisitor<KeyForSubchecker, KeyForAnnotatedTypeFactory> {
-    public KeyForVisitor(KeyForSubchecker checker, CompilationUnitTree root) {
-        super(checker, root);
+public class KeyForVisitor extends BaseTypeVisitor<KeyForAnnotatedTypeFactory> {
+    public KeyForVisitor(BaseTypeChecker checker) {
+        super(checker);
     }
 
     /**
@@ -36,8 +35,8 @@ public class KeyForVisitor extends BaseTypeVisitor<KeyForSubchecker, KeyForAnnot
 
     private final static class KeyForTypeValidator extends BaseTypeValidator {
 
-        public KeyForTypeValidator(BaseTypeChecker<?> checker,
-                BaseTypeVisitor<?, ?> visitor, AnnotatedTypeFactory atypeFactory) {
+        public KeyForTypeValidator(BaseTypeChecker checker,
+                BaseTypeVisitor<?> visitor, AnnotatedTypeFactory atypeFactory) {
             super(checker, visitor, atypeFactory);
         }
 

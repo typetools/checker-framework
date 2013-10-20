@@ -1,14 +1,22 @@
 package checkers.nullness;
 
+import checkers.basetype.BaseTypeChecker;
+import checkers.nullness.quals.Covariant;
 import checkers.nullness.quals.KeyFor;
+import checkers.nullness.quals.KeyForBottom;
 import checkers.quals.DefaultLocation;
+import checkers.quals.TypeQualifiers;
 import checkers.quals.Unqualified;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
-import checkers.types.SubtypingAnnotatedTypeFactory;
+import checkers.types.BasicAnnotatedTypeFactory;
+import checkers.types.QualifierHierarchy;
+import checkers.types.TypeHierarchy;
 import checkers.util.AnnotationBuilder;
+import checkers.util.GraphQualifierHierarchy;
+import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 
 import javacutils.AnnotationUtils;
 import javacutils.ErrorReporter;
@@ -21,25 +29,29 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 
-import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 
-public class KeyForAnnotatedTypeFactory extends SubtypingAnnotatedTypeFactory<KeyForSubchecker> {
+@TypeQualifiers({ KeyFor.class, Unqualified.class, KeyForBottom.class})
+public class KeyForAnnotatedTypeFactory extends BasicAnnotatedTypeFactory {
 
-  public KeyForAnnotatedTypeFactory(KeyForSubchecker checker,
-                                    CompilationUnitTree root) {
-    super(checker, root, false);
+    protected final AnnotationMirror UNQUALIFIED, KEYFOR;
 
-    AnnotationMirror UNQUALIFIED = AnnotationUtils.fromClass(elements, Unqualified.class);
-    this.defaults.addAbsoluteDefault(UNQUALIFIED, DefaultLocation.ALL);
+    public KeyForAnnotatedTypeFactory(BaseTypeChecker checker) {
+        super(checker, false);
 
-    this.postInit();
-  }
+        KEYFOR = AnnotationUtils.fromClass(elements, KeyFor.class);
+        UNQUALIFIED = AnnotationUtils.fromClass(elements, Unqualified.class);
+
+        this.postInit();
+
+        this.defaults.addAbsoluteDefault(UNQUALIFIED, DefaultLocation.ALL);
+    }
 
   /* TODO: we currently do not substitute field types.
    * postAsMemberOf only gives us the type of the receiver expression ("owner"),
@@ -218,4 +230,125 @@ public class KeyForAnnotatedTypeFactory extends SubtypingAnnotatedTypeFactory<Ke
     // System.out.println("result type: " + outType);
     return outType;
   }
+
+  @Override
+  protected TypeHierarchy createTypeHierarchy() {
+      return new KeyForTypeHierarchy(checker, getQualifierHierarchy());
+  }
+
+  private class KeyForTypeHierarchy extends TypeHierarchy {
+
+      public KeyForTypeHierarchy(BaseTypeChecker checker, QualifierHierarchy qualifierHierarchy) {
+          super(checker, qualifierHierarchy);
+      }
+
+      @Override
+      public final boolean isSubtype(AnnotatedTypeMirror rhs, AnnotatedTypeMirror lhs) {
+          if (lhs.getKind() == TypeKind.TYPEVAR &&
+                  rhs.getKind() == TypeKind.TYPEVAR) {
+              // TODO: Investigate whether there is a nicer and more proper way to
+              // get assignments between two type variables working.
+              if (lhs.getAnnotations().isEmpty()) {
+                  return true;
+              }
+          }
+          // Otherwise Covariant would cause trouble.
+          if (rhs.hasAnnotation(KeyForBottom.class)) {
+              return true;
+          }
+          return super.isSubtype(rhs, lhs);
+      }
+
+      @Override
+      protected boolean isSubtypeTypeArguments(AnnotatedDeclaredType rhs, AnnotatedDeclaredType lhs) {
+          if (ignoreRawTypeArguments(rhs, lhs)) {
+              return true;
+          }
+
+          List<AnnotatedTypeMirror> rhsTypeArgs = rhs.getTypeArguments();
+          List<AnnotatedTypeMirror> lhsTypeArgs = lhs.getTypeArguments();
+
+          if (rhsTypeArgs.isEmpty() || lhsTypeArgs.isEmpty())
+              return true;
+
+          TypeElement lhsElem = (TypeElement) lhs.getUnderlyingType().asElement();
+          // TypeElement rhsElem = (TypeElement) lhs.getUnderlyingType().asElement();
+          // the following would be needed if Covariant were per type parameter
+          // AnnotatedDeclaredType lhsDecl = currentATF.fromElement(lhsElem);
+          // AnnotatedDeclaredType rhsDecl = currentATF.fromElement(rhsElem);
+          // List<AnnotatedTypeMirror> lhsTVs = lhsDecl.getTypeArguments();
+          // List<AnnotatedTypeMirror> rhsTVs = rhsDecl.getTypeArguments();
+
+          // TODO: implementation of @Covariant should be done in the standard TypeHierarchy
+          int[] covarVals = null;
+          if (lhsElem.getAnnotation(Covariant.class) != null) {
+              covarVals = lhsElem.getAnnotation(Covariant.class).value();
+          }
+
+
+          if (lhsTypeArgs.size() != rhsTypeArgs.size()) {
+              // This test fails e.g. for casts from a type with one type
+              // argument to a type with two type arguments.
+              // See test case nullness/generics/GenericsCasts
+              // TODO: shouldn't the type be brought to a common type before
+              // this?
+              return true;
+          }
+
+          for (int i = 0; i < lhsTypeArgs.size(); ++i) {
+              boolean covar = false;
+              if (covarVals != null) {
+                  for (int cvv = 0; cvv < covarVals.length; ++cvv) {
+                      if (covarVals[cvv] == i) {
+                          covar = true;
+                      }
+                  }
+              }
+
+              if (covar) {
+                  if (!isSubtype(rhsTypeArgs.get(i), lhsTypeArgs.get(i)))
+                      // TODO: still check whether isSubtypeAsTypeArgument returns true.
+                      // This handles wildcards better.
+                      return isSubtypeAsTypeArgument(rhsTypeArgs.get(i), lhsTypeArgs.get(i));
+              } else {
+                  if (!isSubtypeAsTypeArgument(rhsTypeArgs.get(i), lhsTypeArgs.get(i)))
+                      return false;
+              }
+          }
+
+          return true;
+      }
+  }
+
+  @Override
+  public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
+      return new KeyForQualifierHierarchy(factory);
+  }
+
+  private final class KeyForQualifierHierarchy extends GraphQualifierHierarchy {
+
+      public KeyForQualifierHierarchy(MultiGraphFactory factory) {
+          super(factory, null);
+      }
+
+      @Override
+      public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
+          if (AnnotationUtils.areSameIgnoringValues(lhs, KEYFOR) &&
+                  AnnotationUtils.areSameIgnoringValues(rhs, KEYFOR)) {
+              // If they are both KeyFor annotations, they have to be equal.
+              // TODO: or one a subset of the maps of the other? Ordering of maps?
+              return AnnotationUtils.areSame(lhs, rhs);
+          }
+          // Ignore annotation values to ensure that annotation is in supertype map.
+          if (AnnotationUtils.areSameIgnoringValues(lhs, KEYFOR)) {
+              lhs = KEYFOR;
+          }
+          if (AnnotationUtils.areSameIgnoringValues(rhs, KEYFOR)) {
+              rhs = KEYFOR;
+          }
+          return super.isSubtype(rhs, lhs);
+      }
+  }
+
+
 }

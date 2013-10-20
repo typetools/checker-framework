@@ -1,26 +1,23 @@
 package checkers.compilermsgs;
 
+import checkers.basetype.BaseTypeChecker;
 import checkers.compilermsgs.quals.CompilerMessageKey;
 import checkers.propkey.PropertyKeyAnnotatedTypeFactory;
 import checkers.types.TreeAnnotator;
-
-import com.sun.source.tree.CompilationUnitTree;
 
 /**
  * A PropertyKeyATF that uses CompilerMessageKey to annotate the keys.
  *
  * @author wmdietl
  */
-public class CompilerMessagesAnnotatedTypeFactory extends
-        PropertyKeyAnnotatedTypeFactory<CompilerMessagesChecker> {
+public class CompilerMessagesAnnotatedTypeFactory extends PropertyKeyAnnotatedTypeFactory {
 
-    public CompilerMessagesAnnotatedTypeFactory(CompilerMessagesChecker checker,
-            CompilationUnitTree root) {
-        super(checker, root);
+    public CompilerMessagesAnnotatedTypeFactory(BaseTypeChecker checker) {
+        super(checker);
     }
 
     @Override
-    public TreeAnnotator createTreeAnnotator(CompilerMessagesChecker checker) {
-        return new KeyLookupTreeAnnotator(checker, this, CompilerMessageKey.class);
+    public TreeAnnotator createTreeAnnotator() {
+        return new KeyLookupTreeAnnotator(this, CompilerMessageKey.class);
     }
 }

@@ -4,7 +4,9 @@ package checkers.types;
 import checkers.interning.quals.*;
 */
 
-import checkers.source.SourceChecker;
+import checkers.basetype.BaseTypeChecker;
+import checkers.util.MultiGraphQualifierHierarchy;
+import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 
 import javacutils.ErrorReporter;
 
@@ -13,16 +15,14 @@ import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 
-import com.sun.source.tree.CompilationUnitTree;
-
 /**
  * A "general" annotated type factory that supports qualifiers from any type hierarchy.
  * One big limitation is that it does not support annotations coming from a stub file.
  */
 public class GeneralAnnotatedTypeFactory extends AnnotatedTypeFactory {
 
-    public GeneralAnnotatedTypeFactory(SourceChecker<? extends AnnotatedTypeFactory> checker, CompilationUnitTree root) {
-        super(checker, new GeneralQualifierHierarchy(), null, root);
+    public GeneralAnnotatedTypeFactory(BaseTypeChecker checker) {
+        super(checker);
         postInit();
     }
 
@@ -34,12 +34,26 @@ public class GeneralAnnotatedTypeFactory extends AnnotatedTypeFactory {
         return true;
     }
 
+    @Override
+    public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
+        return new GeneralQualifierHierarchy(factory);
+    }
 }
 
 /** A very limited QualifierHierarchy that is used for access to
   * qualifiers from different type systems.
   */
-class GeneralQualifierHierarchy extends QualifierHierarchy {
+class GeneralQualifierHierarchy extends MultiGraphQualifierHierarchy {
+
+    public GeneralQualifierHierarchy(MultiGraphFactory factory) {
+        super(factory);
+    }
+
+    // Always return true
+    @Override
+    public boolean isValid() {
+        return true;
+    }
 
     // Return the qualifier itself instead of the top.
     @Override

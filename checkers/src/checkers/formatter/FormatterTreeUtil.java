@@ -4,6 +4,7 @@ package checkers.formatter;
 import checkers.compilermsgs.quals.CompilerMessageKey;
 */
 
+import checkers.basetype.BaseTypeChecker;
 import checkers.formatter.quals.ConversionCategory;
 import checkers.formatter.quals.Format;
 import checkers.formatter.quals.FormatMethod;
@@ -53,13 +54,13 @@ import com.sun.source.util.SimpleTreeVisitor;
  * @author Konstantin Weitz
  */
 public class FormatterTreeUtil {
-    public final FormatterChecker checker;
+    public final BaseTypeChecker checker;
     public final ProcessingEnvironment processingEnv;
     private final ExecutableElement formatArgTypesElement;
 
-    public FormatterTreeUtil(FormatterChecker checker, ProcessingEnvironment env) {
+    public FormatterTreeUtil(BaseTypeChecker checker) {
         this.checker = checker;
-        this.processingEnv = env;
+        this.processingEnv = checker.getProcessingEnvironment();
         this.formatArgTypesElement = TreeUtils.getMethod(
                 checkers.formatter.quals.Format.class.getCanonicalName(),
                 "value", 0, processingEnv);

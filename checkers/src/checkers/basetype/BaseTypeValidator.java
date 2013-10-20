@@ -5,6 +5,7 @@ import checkers.compilermsgs.quals.CompilerMessageKey;
 */
 
 import checkers.source.Result;
+import checkers.source.SourceChecker;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -40,13 +41,13 @@ import com.sun.source.tree.VariableTree;
 public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> {
     protected boolean isValid = true;
 
-    protected final BaseTypeChecker<?> checker;
-    protected final BaseTypeVisitor<?, ?> visitor;
+    protected final BaseTypeChecker checker;
+    protected final BaseTypeVisitor<?> visitor;
     protected final AnnotatedTypeFactory atypeFactory;
 
     // TODO: clean up coupling between components
-    public BaseTypeValidator(BaseTypeChecker<?> checker,
-            BaseTypeVisitor<?, ?> visitor,
+    public BaseTypeValidator(BaseTypeChecker checker,
+            BaseTypeVisitor<?> visitor,
             AnnotatedTypeFactory atypeFactory) {
         this.checker = checker;
         this.visitor = visitor;
@@ -296,7 +297,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> {
                 // appear.
                 Set<AnnotationMirror> seenTops = AnnotationUtils.createAnnotationSet();
                 for (AnnotationMirror aOnVar : onVar) {
-                    AnnotationMirror top = checker.getQualifierHierarchy().getTopAnnotation(aOnVar);
+                    AnnotationMirror top = atypeFactory.getQualifierHierarchy().getTopAnnotation(aOnVar);
                     if (seenTops.contains(top)) {
                         this.reportError(type, tree);
                     }
@@ -326,7 +327,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> {
                 AnnotatedTypeMirror lower = type.getLowerBoundField();
                 for (AnnotationMirror aOnVar : onVar) {
                     if (lower.isAnnotatedInHierarchy(aOnVar) &&
-                            !checker.getQualifierHierarchy().isSubtype(
+                            !atypeFactory.getQualifierHierarchy().isSubtype(
                                     lower.getAnnotationInHierarchy(aOnVar),
                                     aOnVar)) {
                         this.reportError(type, tree);
@@ -360,7 +361,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> {
                 // appear.
                 Set<AnnotationMirror> seenTops = AnnotationUtils.createAnnotationSet();
                 for (AnnotationMirror aOnVar : onVar) {
-                    AnnotationMirror top = checker.getQualifierHierarchy().getTopAnnotation(aOnVar);
+                    AnnotationMirror top = atypeFactory.getQualifierHierarchy().getTopAnnotation(aOnVar);
                     if (seenTops.contains(top)) {
                         this.reportError(type, tree);
                     }
@@ -372,7 +373,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> {
                 AnnotatedTypeMirror upper = type.getExtendsBoundField();
                 for (AnnotationMirror aOnVar : onVar) {
                     if (upper.isAnnotatedInHierarchy(aOnVar) &&
-                            !checker.getQualifierHierarchy().isSubtype(aOnVar,
+                            !atypeFactory.getQualifierHierarchy().isSubtype(aOnVar,
                                     upper.getAnnotationInHierarchy(aOnVar))) {
                         this.reportError(type, tree);
                     }
@@ -384,7 +385,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> {
                 AnnotatedTypeMirror lower = type.getSuperBoundField();
                 for (AnnotationMirror aOnVar : onVar) {
                     if (lower.isAnnotatedInHierarchy(aOnVar) &&
-                            !checker.getQualifierHierarchy().isSubtype(
+                            !atypeFactory.getQualifierHierarchy().isSubtype(
                                     lower.getAnnotationInHierarchy(aOnVar),
                                     aOnVar)) {
                         this.reportError(type, tree);

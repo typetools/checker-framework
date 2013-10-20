@@ -1,6 +1,5 @@
 package checkers.types;
 
-import checkers.basetype.BaseTypeChecker;
 import checkers.quals.ImplicitFor;
 import checkers.quals.TypeQualifiers;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -65,17 +64,17 @@ public class TypeAnnotator extends AnnotatedTypeScanner<Void, Element> {
      *
      * @param checker the type-checker to which this annotator belongs
      */
-    public TypeAnnotator(BaseTypeChecker<?> checker, AnnotatedTypeFactory atypeFactory) {
+    public TypeAnnotator(AnnotatedTypeFactory atypeFactory) {
 
         this.typeKinds = new EnumMap<TypeKind, Set<AnnotationMirror>>(TypeKind.class);
         this.typeClasses = new HashMap<Class<? extends AnnotatedTypeMirror>, Set<AnnotationMirror>>();
         this.typeNames = new IdentityHashMap<String, Set<AnnotationMirror>>();
 
-        this.qualHierarchy = checker.getQualifierHierarchy();
+        this.qualHierarchy = atypeFactory.getQualifierHierarchy();
         // this.atypeFactory = atypeFactory;
 
         // Get type qualifiers from the checker.
-        Set<Class<? extends Annotation>> quals = checker.getSupportedTypeQualifiers();
+        Set<Class<? extends Annotation>> quals = atypeFactory.getSupportedTypeQualifiers();
 
         // For each qualifier, read the @ImplicitFor annotation and put its type
         // classes and kinds into maps.

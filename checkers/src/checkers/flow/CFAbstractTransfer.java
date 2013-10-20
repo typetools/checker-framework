@@ -1,6 +1,5 @@
 package checkers.flow;
 
-import checkers.basetype.BaseTypeChecker;
 import checkers.types.AbstractBasicAnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
@@ -125,7 +124,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
      *         by the {@link AnnotatedTypeFactory}.
      */
     protected V getValueFromFactory(Tree tree, Node node) {
-        AbstractBasicAnnotatedTypeFactory<? extends BaseTypeChecker<?>, V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory = analysis.atypeFactory;
+        AbstractBasicAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory = analysis.atypeFactory;
         analysis.setCurrentTree(tree);
         // is there an assignment context node available?
         if (node != null && node.getAssignmentContext() != null) {
@@ -163,7 +162,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
      */
     protected V getValueWithSameAnnotations(TypeMirror type, V annotatedValue) {
         if (annotatedValue == null) return null;
-        AbstractBasicAnnotatedTypeFactory<? extends BaseTypeChecker<?>, V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory = analysis.atypeFactory;
+        AbstractBasicAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory = analysis.atypeFactory;
         AnnotatedTypeMirror at = factory.toAnnotatedType(type);
         at.replaceAnnotations(annotatedValue.getType().getAnnotations());
         return analysis.createAbstractValue(at);
@@ -189,7 +188,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
         S info = analysis.createEmptyStore(sequentialSemantics);
 
         if (underlyingAST.getKind() == Kind.METHOD) {
-            AnnotatedTypeFactory factory = analysis.getFactory();
+            AnnotatedTypeFactory factory = analysis.getTypeFactory();
             for (LocalVariableNode p : parameters) {
                 AnnotatedTypeMirror anno = factory.getAnnotatedType(p
                         .getElement());
@@ -298,8 +297,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
     protected void addInformationFromPreconditions(S info,
             AnnotatedTypeFactory factory, CFGMethod method,
             MethodTree methodTree, ExecutableElement methodElement) {
-        ContractsUtils contracts = ContractsUtils
-                .getInstance(analysis.atypeFactory);
+        ContractsUtils contracts = ContractsUtils.getInstance(analysis.atypeFactory);
         FlowExpressionContext flowExprContext = null;
         Set<Pair<String, String>> preconditions = contracts
                 .getPreconditions(methodElement);
@@ -307,17 +305,16 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
         for (Pair<String, String> p : preconditions) {
             String expression = p.first;
             AnnotationMirror annotation = AnnotationUtils.fromName(analysis
-                    .getFactory().getElementUtils(), p.second);
+                    .getTypeFactory().getElementUtils(), p.second);
 
             // Only check if the postcondition concerns this checker
-            if (!analysis.getFactory().getChecker()
-                    .isSupportedAnnotation(annotation)) {
+            if (!analysis.getTypeFactory().isSupportedQualifier(annotation)) {
                 continue;
             }
             if (flowExprContext == null) {
                 flowExprContext = FlowExpressionParseUtil
                         .buildFlowExprContextForDeclaration(methodTree,
-                                method.getClassTree(), analysis.getFactory());
+                                method.getClassTree(), analysis.getTypeFactory());
             }
 
             FlowExpressions.Receiver expr = null;
@@ -373,7 +370,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
         Tree tree = n.getTree();
         if (tree != null) {
             if (TreeUtils.canHaveTypeAnnotation(tree)) {
-                AbstractBasicAnnotatedTypeFactory<? extends BaseTypeChecker<?>, V, S, T,
+                AbstractBasicAnnotatedTypeFactory<V, S, T,
                         ? extends CFAbstractAnalysis<V, S, T>> factory = analysis.atypeFactory;
                 analysis.setCurrentTree(tree);
                 AnnotatedTypeMirror at = factory.getAnnotatedTypeFromTypeTree(tree);
@@ -525,7 +522,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
                 List<Node> secondParts = splitAssignments(secondNode);
                 for (Node secondPart : secondParts) {
                     Receiver secondInternal = FlowExpressions.internalReprOf(
-                            analysis.getFactory(), secondPart);
+                            analysis.getTypeFactory(), secondPart);
                     if (CFAbstractStore.canInsertReceiver(secondInternal)) {
                         S thenStore = res.getThenStore();
                         S elseStore = res.getElseStore();
@@ -649,15 +646,15 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
         for (Pair<String, String> p : postconditions) {
             String expression = p.first;
             AnnotationMirror anno = AnnotationUtils.fromName(analysis
-                    .getFactory().getElementUtils(), p.second);
+                    .getTypeFactory().getElementUtils(), p.second);
 
             // Only check if the postcondition concerns this checker
-            if (!analysis.getFactory().getChecker().isSupportedAnnotation(anno)) {
+            if (!analysis.getTypeFactory().isSupportedQualifier(anno)) {
                 continue;
             }
             if (flowExprContext == null) {
                 flowExprContext = FlowExpressionParseUtil
-                        .buildFlowExprContextForUse(n, analysis.getFactory());
+                        .buildFlowExprContextForUse(n, analysis.getTypeFactory());
             }
 
             try {
@@ -688,16 +685,16 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
         for (Pair<String, Pair<Boolean, String>> p : conditionalPostconditions) {
             String expression = p.first;
             AnnotationMirror anno = AnnotationUtils.fromName(analysis
-                    .getFactory().getElementUtils(), p.second.second);
+                    .getTypeFactory().getElementUtils(), p.second.second);
             boolean result = p.second.first;
 
             // Only check if the postcondition concerns this checker
-            if (!analysis.getFactory().getChecker().isSupportedAnnotation(anno)) {
+            if (!analysis.getTypeFactory().isSupportedQualifier(anno)) {
                 continue;
             }
             if (flowExprContext == null) {
                 flowExprContext = FlowExpressionParseUtil
-                        .buildFlowExprContextForUse(n, analysis.getFactory());
+                        .buildFlowExprContextForUse(n, analysis.getTypeFactory());
             }
 
             try {
@@ -765,7 +762,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
 
         // Insert into the store if possible.
         Receiver operandInternal = FlowExpressions.internalReprOf(
-                analysis.getFactory(), n.getOperand());
+                analysis.getTypeFactory(), n.getOperand());
         if (CFAbstractStore.canInsertReceiver(operandInternal)) {
             S thenStore = result.getThenStore();
             S elseStore = result.getElseStore();

@@ -9,8 +9,6 @@ import checkers.quals.Unqualified;
 import checkers.source.SupportedLintOptions;
 
 import javax.annotation.processing.SupportedOptions;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.DeclaredType;
 
 /**
  * A type-checker plug-in for the {@link Interned} qualifier that
@@ -31,24 +29,5 @@ import javax.lang.model.type.DeclaredType;
     PolyInterned.class, PolyAll.class})
 @SupportedLintOptions({"dotequals"})
 @SupportedOptions({"checkclass"})
-public final class InterningChecker extends BaseTypeChecker<InterningAnnotatedTypeFactory> {
-
-    /**
-     * Returns the declared type of which the equality tests should be tested,
-     * if the user explicitly passed one.  The user can pass the class name
-     * via the {@code -Acheckclass=...} option.
-     *
-     * If no class is specified, or the class specified isn't in the
-     * classpath, it returns null.
-     *
-     */
-    DeclaredType typeToCheck() {
-        String className = getOption("checkclass");
-        if (className == null) return null;
-
-        TypeElement classElt = processingEnv.getElementUtils().getTypeElement(className);
-        if (classElt == null) return null;
-
-        return processingEnv.getTypeUtils().getDeclaredType(classElt);
-    }
+public final class InterningChecker extends BaseTypeChecker {
 }

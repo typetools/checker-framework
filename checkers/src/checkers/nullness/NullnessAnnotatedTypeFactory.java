@@ -11,9 +11,12 @@ import checkers.quals.PolyAll;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.GeneralAnnotatedTypeFactory;
+import checkers.types.QualifierHierarchy;
 import checkers.types.TreeAnnotator;
 import checkers.types.TypeAnnotator;
 import checkers.util.DependentTypes;
+import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+
 import javacutils.AnnotationUtils;
 import javacutils.ElementUtils;
 import javacutils.InternalUtils;
@@ -21,13 +24,18 @@ import javacutils.Pair;
 import javacutils.TreeUtils;
 import javacutils.TypesUtils;
 
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.util.Elements;
 
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompilationUnitTree;
@@ -48,10 +56,10 @@ import com.sun.source.util.TreePath;
  * The annotated type factory for the nullness type-system.
  */
 public class NullnessAnnotatedTypeFactory
-    extends InitializationAnnotatedTypeFactory<AbstractNullnessChecker, NullnessValue, NullnessStore, NullnessTransfer, NullnessAnalysis> {
+    extends InitializationAnnotatedTypeFactory<NullnessValue, NullnessStore, NullnessTransfer, NullnessAnalysis> {
 
     /** Annotation constants */
-    protected final AnnotationMirror NONNULL, NULLABLE, POLYNULL;
+    protected final AnnotationMirror NONNULL, NULLABLE, POLYNULL, MONOTONIC_NONNULL;
 
     /** Dependent types instance. */
     protected final DependentTypes dependentTypes;
@@ -67,16 +75,15 @@ public class NullnessAnnotatedTypeFactory
     protected final GeneralAnnotatedTypeFactory generalFactory;
 
     @SuppressWarnings("deprecation") // aliasing to deprecated annotation
-    public NullnessAnnotatedTypeFactory(AbstractNullnessChecker checker,
-            CompilationUnitTree root) {
-        super(checker, root);
+    public NullnessAnnotatedTypeFactory(BaseTypeChecker checker, boolean useFbc) {
+        super(checker, useFbc);
 
         NONNULL = AnnotationUtils.fromClass(elements, NonNull.class);
         NULLABLE = AnnotationUtils.fromClass(elements, Nullable.class);
         POLYNULL = AnnotationUtils.fromClass(elements, PolyNull.class);
+        MONOTONIC_NONNULL = AnnotationUtils.fromClass(elements, MonotonicNonNull.class);
 
-        addAliasedAnnotation(checkers.nullness.quals.LazyNonNull.class,
-                AnnotationUtils.fromClass(elements, MonotonicNonNull.class));
+        addAliasedAnnotation(checkers.nullness.quals.LazyNonNull.class, MONOTONIC_NONNULL);
 
         // If you update the following, also update ../../../manual/nullness-checker.tex .
         // Aliases for @Nonnull:
@@ -105,18 +112,24 @@ public class NullnessAnnotatedTypeFactory
 
         // TODO: These heuristics are just here temporarily. They all either
         // need to be replaced, or carefully checked for correctness.
-        generalFactory = new GeneralAnnotatedTypeFactory(checker, root);
-        mapGetHeuristics = new MapGetHeuristics(processingEnv, this,
-                generalFactory);
-        systemGetPropertyHandler = new SystemGetPropertyHandler(processingEnv,
-                this);
+        generalFactory = new GeneralAnnotatedTypeFactory(checker);
+        // Alias the same generalFactory below and ensure that setRoot updates it.
+        mapGetHeuristics = new MapGetHeuristics(checker, this, generalFactory);
+        dependentTypes = new DependentTypes(checker, generalFactory);
+
+        systemGetPropertyHandler = new SystemGetPropertyHandler(processingEnv, this);
+
+        postInit();
+
         // do this last, as it might use the factory again.
         this.collectionToArrayHeuristics = new CollectionToArrayHeuristics(
                 processingEnv, this);
+    }
 
-        dependentTypes = new DependentTypes(checker, root);
-
-        postInit();
+    @Override
+    public void setRoot(CompilationUnitTree root) {
+        generalFactory.setRoot(root);
+        super.setRoot(root);
     }
 
     // handle dependent types
@@ -155,8 +168,7 @@ public class NullnessAnnotatedTypeFactory
     @Override
     public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> constructorFromUse(
             NewClassTree tree) {
-        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> fromUse = super
-                .constructorFromUse(tree);
+        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> fromUse = super.constructorFromUse(tree);
         AnnotatedExecutableType constructor = fromUse.first;
         dependentTypes.handleConstructor(tree,
                 generalFactory.getAnnotatedType(tree), constructor);
@@ -172,8 +184,7 @@ public class NullnessAnnotatedTypeFactory
         List<VariableTree> result = new ArrayList<>();
         for (VariableTree c : candidates) {
             AnnotatedTypeMirror type = getAnnotatedType(c);
-            boolean isPrimitive = TypesUtils.isPrimitive(type
-                    .getUnderlyingType());
+            boolean isPrimitive = TypesUtils.isPrimitive(type.getUnderlyingType());
             if (!isPrimitive) {
                 // primitives do not need to be initialized
                 result.add(c);
@@ -183,10 +194,8 @@ public class NullnessAnnotatedTypeFactory
     }
 
     @Override
-    protected NullnessAnalysis createFlowAnalysis(
-            AbstractNullnessChecker checker,
-            List<Pair<VariableElement, NullnessValue>> fieldValues) {
-        return new NullnessAnalysis(this, processingEnv, checker, fieldValues);
+    protected NullnessAnalysis createFlowAnalysis(List<Pair<VariableElement, NullnessValue>> fieldValues) {
+        return new NullnessAnalysis(checker, this, fieldValues);
     }
 
     @Override
@@ -236,13 +245,13 @@ public class NullnessAnnotatedTypeFactory
     }
 
     @Override
-    protected TypeAnnotator createTypeAnnotator(AbstractNullnessChecker checker) {
-        return new NonNullTypeAnnotator(checker);
+    protected TypeAnnotator createTypeAnnotator() {
+        return new NullnessTypeAnnotator(this);
     }
 
     @Override
-    protected TreeAnnotator createTreeAnnotator(AbstractNullnessChecker checker) {
-        return new NonNullTreeAnnotator(checker);
+    protected TreeAnnotator createTreeAnnotator() {
+        return new NullnessTreeAnnotator(this);
     }
 
     /**
@@ -285,11 +294,11 @@ public class NullnessAnnotatedTypeFactory
                 || var.getSimpleName().contentEquals("class") || inJavaPackage);
     }
 
-    protected class NonNullTreeAnnotator
-        extends InitializationAnnotatedTypeFactory<AbstractNullnessChecker, NullnessValue, NullnessStore, NullnessTransfer, NullnessAnalysis>.CommitmentTreeAnnotator {
+    protected class NullnessTreeAnnotator
+        extends InitializationAnnotatedTypeFactory<NullnessValue, NullnessStore, NullnessTransfer, NullnessAnalysis>.CommitmentTreeAnnotator {
 
-        public NonNullTreeAnnotator(BaseTypeChecker<?> checker) {
-            super(checker);
+        public NullnessTreeAnnotator(NullnessAnnotatedTypeFactory atypeFactory) {
+            super(atypeFactory);
         }
 
         @Override
@@ -368,11 +377,78 @@ public class NullnessAnnotatedTypeFactory
         }
     }
 
-    protected class NonNullTypeAnnotator
-        extends InitializationAnnotatedTypeFactory<AbstractNullnessChecker, NullnessValue, NullnessStore, NullnessTransfer, NullnessAnalysis>.CommitmentTypeAnnotator {
+    protected class NullnessTypeAnnotator
+        extends InitializationAnnotatedTypeFactory<NullnessValue, NullnessStore, NullnessTransfer, NullnessAnalysis>.CommitmentTypeAnnotator {
 
-        public NonNullTypeAnnotator(BaseTypeChecker<?> checker) {
-            super(checker);
+        public NullnessTypeAnnotator(InitializationAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory) {
+            super(atypeFactory);
         }
     }
+
+
+
+
+    // Cache for the nullness annotations
+    protected Set<Class<? extends Annotation>> nullnessAnnos;
+
+    /**
+     * @return The list of annotations of the non-null type system.
+     */
+    public Set<Class<? extends Annotation>> getNullnessAnnotations() {
+        if (nullnessAnnos == null) {
+            Set<Class<? extends Annotation>> result = new HashSet<>();
+            result.add(NonNull.class);
+            result.add(MonotonicNonNull.class);
+            result.add(Nullable.class);
+            result.add(PolyNull.class);
+            result.add(PolyAll.class);
+            nullnessAnnos = Collections.unmodifiableSet(result);
+        }
+        return nullnessAnnos;
+    }
+
+    @Override
+    public Set<Class<? extends Annotation>> getInvalidConstructorReturnTypeAnnotations() {
+        Set<Class<? extends Annotation>> l = new HashSet<>(
+                super.getInvalidConstructorReturnTypeAnnotations());
+        l.addAll(getNullnessAnnotations());
+        return l;
+    }
+
+    @Override
+    public AnnotationMirror getFieldInvariantAnnotation() {
+        Elements elements = processingEnv.getElementUtils();
+        return AnnotationUtils.fromClass(elements, NonNull.class);
+    }
+
+    @Override
+    public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
+        return new NullnessQualifierHierarchy(factory, (Object[]) null);
+    }
+
+    protected class NullnessQualifierHierarchy extends InitializationQualifierHierarchy {
+
+        public NullnessQualifierHierarchy(MultiGraphFactory f, Object[] arg) {
+            super(f, arg);
+        }
+
+        @Override
+        public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
+            if (isInitializationAnnotation(rhs) ||
+                    isInitializationAnnotation(lhs)) {
+                return this.isSubtypeInitialization(rhs, lhs);
+            }
+            return super.isSubtype(rhs, lhs);
+        }
+
+        @Override
+        public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
+            if (isInitializationAnnotation(a1) ||
+                    isInitializationAnnotation(a2)) {
+                return this.leastUpperBoundInitialization(a1, a2);
+            }
+            return super.leastUpperBound(a1, a2);
+        }
+    }
+
 }
