@@ -7,7 +7,7 @@ public class ArrayAssignmentFlow {
 
   public void add_combined(MyPptTopLevel ppt) {
 
-    /*@Nullable*/ Object[] vals = new Object[10];
+    @Nullable Object[] vals = new Object[10];
 
     if (ppt.last_values != null) {
       // Assigning to an array element should not cause flow information
@@ -21,7 +21,7 @@ public class ArrayAssignmentFlow {
 
 
 class MyPptTopLevel {
-  public /*@Nullable*/ MyValueTuple last_values = null;
+  public @Nullable MyValueTuple last_values = null;
 }
 
 class MyValueTuple {
