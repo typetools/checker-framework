@@ -5,15 +5,15 @@ import checkers.quals.*;
 import checkers.initialization.quals.*;
 
 class Initializer {
-    
+
     public static String a;
     public static String b;
-    
+
     //:: error: (initialization.fields.uninitialized)
     static {
         a = "";
     }
-    
+
     public Initializer() {
     }
 }
