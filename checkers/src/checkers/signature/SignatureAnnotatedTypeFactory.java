@@ -1,7 +1,7 @@
 package checkers.signature;
 
+import checkers.basetype.BaseAnnotatedTypeFactory;
 import checkers.basetype.BaseTypeChecker;
-import checkers.types.BasicAnnotatedTypeFactory;
 
 
 // TODO: Does not yet handle method signature annotations, such as
@@ -12,7 +12,7 @@ import checkers.types.BasicAnnotatedTypeFactory;
  * This class is currently not needed.
  * It is retained here to make future extension easier.
  */
-public class SignatureAnnotatedTypeFactory extends BasicAnnotatedTypeFactory {
+public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     public SignatureAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);

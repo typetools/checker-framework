@@ -1,11 +1,11 @@
 package tests.util;
 
+import checkers.basetype.BaseAnnotatedTypeFactory;
 import checkers.basetype.BaseTypeChecker;
 import checkers.basetype.BaseTypeVisitor;
 import checkers.quals.Bottom;
 import checkers.quals.TypeQualifiers;
 import checkers.quals.Unqualified;
-import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.types.QualifierHierarchy;
 import checkers.util.GraphQualifierHierarchy;
 import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
@@ -40,11 +40,11 @@ class TestVisitor extends BaseTypeVisitor<TestAnnotatedTypeFactory> {
 
     @Override
     protected TestAnnotatedTypeFactory createTypeFactory() {
-        return new TestAnnotatedTypeFactory((BaseTypeChecker)checker);
+        return new TestAnnotatedTypeFactory(checker);
     }
 }
 
-class TestAnnotatedTypeFactory extends BasicAnnotatedTypeFactory {
+class TestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     protected AnnotationMirror BOTTOM;
 
     public TestAnnotatedTypeFactory(BaseTypeChecker checker) {

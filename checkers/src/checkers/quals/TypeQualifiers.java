@@ -1,11 +1,16 @@
 package checkers.quals;
 
-import java.lang.annotation.*;
+import checkers.basetype.BaseAnnotatedTypeFactory;
+import checkers.types.AnnotatedTypeMirror;
+
+import java.lang.annotation.Annotation;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 import javax.annotation.processing.SupportedAnnotationTypes;
-
-import checkers.basetype.BaseTypeChecker;
-import checkers.types.AnnotatedTypeMirror;
 
 /**
  * An annotation that lists the type qualifiers supported by the annotated
@@ -21,7 +26,7 @@ import checkers.types.AnnotatedTypeMirror;
  *
  * The checker reflectively queries this annotation, and subsequently the
  * meta-annotations on the annotations in the list, to form the result of
- * {@link BaseTypeChecker#getSupportedTypeQualifiers()} construct the type
+ * {@link BaseAnnotatedTypeFactory#getSupportedTypeQualifiers()} construct the type
  * qualifier hierarchy. The framework also uses this annotation to determine
  * which annotations may be added to an {@link AnnotatedTypeMirror} (an
  * annotation may be added if and only if it is a {@link TypeQualifier} and it
@@ -43,7 +48,7 @@ import checkers.types.AnnotatedTypeMirror;
  * {@link SupportedAnnotationTypes}), while the latter permits type-checking,
  * refactoring by IDEs, etc.
  *
- * @see BaseTypeChecker#getSupportedTypeQualifiers()
+ * @see BaseAnnotatedTypeFactory#getSupportedTypeQualifiers()
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

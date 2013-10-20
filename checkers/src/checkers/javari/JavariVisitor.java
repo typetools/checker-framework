@@ -32,7 +32,6 @@ public class JavariVisitor extends BaseTypeVisitor<JavariAnnotatedTypeFactory> {
      * annotations.
      *
      * @param checker the {@link JavariChecker} to use
-     * @param root the root of the input program's AST to check
      */
     public JavariVisitor(BaseTypeChecker checker) {
         super(checker);

@@ -1,5 +1,6 @@
 package checkers.nullness;
 
+import checkers.basetype.BaseAnnotatedTypeFactory;
 import checkers.basetype.BaseTypeChecker;
 import checkers.nullness.quals.Covariant;
 import checkers.nullness.quals.KeyFor;
@@ -11,7 +12,6 @@ import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
-import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.types.QualifierHierarchy;
 import checkers.types.TypeHierarchy;
 import checkers.util.AnnotationBuilder;
@@ -38,7 +38,7 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 
 @TypeQualifiers({ KeyFor.class, Unqualified.class, KeyForBottom.class})
-public class KeyForAnnotatedTypeFactory extends BasicAnnotatedTypeFactory {
+public class KeyForAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     protected final AnnotationMirror UNQUALIFIED, KEYFOR;
 

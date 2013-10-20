@@ -1,11 +1,11 @@
 package checkers.lock;
 
+import checkers.basetype.BaseAnnotatedTypeFactory;
 import checkers.basetype.BaseTypeChecker;
 import checkers.lock.quals.GuardedBy;
 import checkers.lock.quals.GuardedByTop;
 import checkers.quals.Unqualified;
 import checkers.types.AnnotatedTypeMirror;
-import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.types.QualifierHierarchy;
 import checkers.util.AnnotationBuilder;
 import checkers.util.GraphQualifierHierarchy;
@@ -37,7 +37,7 @@ import com.sun.source.tree.Tree;
  * qualifiers only for the locks that are not currently held.
  *
  */
-public class LockAnnotatedTypeFactory extends BasicAnnotatedTypeFactory {
+public class LockAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     private List<String> heldLocks = new ArrayList<String>();
     protected final AnnotationMirror GUARDED_BY, GUARDEDBY_TOP, UNQUALIFIED;

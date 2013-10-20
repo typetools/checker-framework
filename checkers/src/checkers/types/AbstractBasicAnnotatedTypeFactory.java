@@ -120,7 +120,6 @@ public abstract class AbstractBasicAnnotatedTypeFactory<
      * respect to the given annotation.
      *
      * @param checker the checker to which this type factory belongs
-     * @param root the compilation unit to scan
      * @param useFlow whether flow analysis should be performed
      */
     public AbstractBasicAnnotatedTypeFactory(BaseTypeChecker checker, boolean useFlow) {
@@ -163,7 +162,6 @@ public abstract class AbstractBasicAnnotatedTypeFactory<
      * respect to the given annotation.
      *
      * @param checker the checker to which this type factory belongs
-     * @param root the compilation unit to scan
      */
     public AbstractBasicAnnotatedTypeFactory(BaseTypeChecker checker) {
         this(checker, FLOW_BY_DEFAULT);

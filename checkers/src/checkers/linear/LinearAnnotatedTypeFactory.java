@@ -1,10 +1,10 @@
 package checkers.linear;
 
+import checkers.basetype.BaseAnnotatedTypeFactory;
 import checkers.basetype.BaseTypeChecker;
 import checkers.linear.quals.Linear;
 import checkers.linear.quals.Unusable;
 import checkers.types.AnnotatedTypeMirror;
-import checkers.types.BasicAnnotatedTypeFactory;
 
 import javacutils.AnnotationUtils;
 
@@ -22,7 +22,7 @@ import javax.lang.model.element.Element;
  * </ol>
  *
  */
-public class LinearAnnotatedTypeFactory extends BasicAnnotatedTypeFactory {
+public class LinearAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     private final AnnotationMirror LINEAR, UNUSABLE;
 

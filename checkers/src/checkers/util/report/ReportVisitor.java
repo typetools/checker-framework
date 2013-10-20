@@ -1,12 +1,12 @@
 package checkers.util.report;
 
+import checkers.basetype.BaseAnnotatedTypeFactory;
 import checkers.basetype.BaseTypeChecker;
 import checkers.basetype.BaseTypeValidator;
 import checkers.basetype.BaseTypeVisitor;
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import checkers.types.BasicAnnotatedTypeFactory;
 import checkers.util.AnnotatedTypes;
 import checkers.util.report.quals.ReportCall;
 import checkers.util.report.quals.ReportCreation;
@@ -43,7 +43,7 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
 
-public class ReportVisitor extends BaseTypeVisitor<BasicAnnotatedTypeFactory> {
+public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
 
     /**
      * The tree kinds that should be reported.
