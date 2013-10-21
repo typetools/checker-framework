@@ -1785,7 +1785,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return the path for {@code node} under the current root
      */
     public final TreePath getPath(Tree node) {
-        assert root != null : "root needs to be set when used on trees; factory: " + this.getClass();
+        assert root != null : "AnnotatedTypeFactory.getPath: root needs to be set when used on trees; factory: " + this.getClass();
 
         if (node == null) return null;
 
