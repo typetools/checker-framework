@@ -597,6 +597,16 @@ public abstract class AbstractBasicAnnotatedTypeFactory<
                             new CFGMethod(mt, TreeUtils
                                     .enclosingClass(getPath(mt))), fieldValues, classTree, false, false);
                 }
+
+                // by convention we store the static initialization store as the regular exit
+                // store of the class node, os that it can later be used to check
+                // that all fields are initialized properly.
+                // see InitializationVisitor.visitClass
+                if (initializationStaticStore == null) {
+                    regularExitStores.put(ct, emptyStore);
+                } else {
+                    regularExitStores.put(ct, initializationStaticStore);
+                }
             } finally {
                 visitorState.setClassType(preClassType);
                 visitorState.setClassTree(preClassTree);
@@ -611,9 +621,9 @@ public abstract class AbstractBasicAnnotatedTypeFactory<
     // Maintain a deque of analyses to accomodate nested classes.
     protected final Deque<FlowAnalysis> analyses;
     // Maintain for every class the store that is used when we analyze initialization code
-    Store initializationStore;
+    protected Store initializationStore;
     // Maintain for every class the store that is used when we analyze static initialization code
-    Store initializationStaticStore;
+    protected Store initializationStaticStore;
 
     /**
      * Analyze the AST {@code ast} and store the result.
