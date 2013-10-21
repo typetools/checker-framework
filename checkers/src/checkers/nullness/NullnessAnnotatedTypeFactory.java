@@ -74,6 +74,10 @@ public class NullnessAnnotatedTypeFactory
      */
     protected final GeneralAnnotatedTypeFactory generalFactory;
 
+    // Cache for the nullness annotations
+    protected final Set<Class<? extends Annotation>> nullnessAnnos;
+
+
     @SuppressWarnings("deprecation") // aliasing to deprecated annotation
     public NullnessAnnotatedTypeFactory(BaseTypeChecker checker, boolean useFbc) {
         super(checker, useFbc);
@@ -82,6 +86,14 @@ public class NullnessAnnotatedTypeFactory
         NULLABLE = AnnotationUtils.fromClass(elements, Nullable.class);
         POLYNULL = AnnotationUtils.fromClass(elements, PolyNull.class);
         MONOTONIC_NONNULL = AnnotationUtils.fromClass(elements, MonotonicNonNull.class);
+
+        Set<Class<? extends Annotation>> tempNullnessAnnos = new HashSet<>();
+        tempNullnessAnnos.add(NonNull.class);
+        tempNullnessAnnos.add(MonotonicNonNull.class);
+        tempNullnessAnnos.add(Nullable.class);
+        tempNullnessAnnos.add(PolyNull.class);
+        tempNullnessAnnos.add(PolyAll.class);
+        nullnessAnnos = Collections.unmodifiableSet(tempNullnessAnnos);
 
         addAliasedAnnotation(checkers.nullness.quals.LazyNonNull.class, MONOTONIC_NONNULL);
 
@@ -386,24 +398,10 @@ public class NullnessAnnotatedTypeFactory
     }
 
 
-
-
-    // Cache for the nullness annotations
-    protected Set<Class<? extends Annotation>> nullnessAnnos;
-
     /**
      * @return The list of annotations of the non-null type system.
      */
     public Set<Class<? extends Annotation>> getNullnessAnnotations() {
-        if (nullnessAnnos == null) {
-            Set<Class<? extends Annotation>> result = new HashSet<>();
-            result.add(NonNull.class);
-            result.add(MonotonicNonNull.class);
-            result.add(Nullable.class);
-            result.add(PolyNull.class);
-            result.add(PolyAll.class);
-            nullnessAnnos = Collections.unmodifiableSet(result);
-        }
         return nullnessAnnos;
     }
 
