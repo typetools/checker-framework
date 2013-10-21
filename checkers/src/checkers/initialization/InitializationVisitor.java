@@ -336,15 +336,12 @@ public class InitializationVisitor<Factory extends InitializationAnnotatedTypeFa
             // See AbstractBasicAnnotatedTypeFactory.performFlowAnalysis for why we use
             // the regular exit store of the class here.
             Store store = atypeFactory.getRegularExitStore(node);
-            if (store != null) {
-                // Add field values for fields with an initializer.
-                for (Pair<VariableElement, Value> t : store.getAnalysis().getFieldValues()) {
-                    store.addInitializedField(t.first);
-                }
-                List<AnnotationMirror> receiverAnnotations = Collections.emptyList();
-                checkFieldsInitialized(node, isStatic, store, receiverAnnotations);
+            // Add field values for fields with an initializer.
+            for (Pair<VariableElement, Value> t : store.getAnalysis().getFieldValues()) {
+                store.addInitializedField(t.first);
             }
-            // Anything to do if there is no regular exit store?
+            List<AnnotationMirror> receiverAnnotations = Collections.emptyList();
+            checkFieldsInitialized(node, isStatic, store, receiverAnnotations);
         }
 
         return result;
