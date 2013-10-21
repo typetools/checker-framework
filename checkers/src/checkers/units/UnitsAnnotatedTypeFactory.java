@@ -135,8 +135,10 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     qualSet.add(q);
                     addUnitsRelations(q);
                 } catch (ClassNotFoundException e) {
-                    checker.message(javax.tools.Diagnostic.Kind.WARNING, checker,
-                            "Could not find class for unit: " + qualName + ". Ignoring unit.");
+                    // TODO: use a proper error message key
+                    @SuppressWarnings("CompilerMessages")
+                    /*@checkers.compilermsgs.quals.CompilerMessageKey*/ String msg = "Could not find class for unit: " + qualName + ". Ignoring unit.";
+                    checker.message(javax.tools.Diagnostic.Kind.WARNING, root, msg);
                 }
             }
         }
