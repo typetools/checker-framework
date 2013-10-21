@@ -599,8 +599,9 @@ public abstract class SourceChecker
                 messager = processingEnv.getMessager();
                 messager.printMessage(
                         javax.tools.Diagnostic.Kind.WARNING,
-                        "You have forgotten to call super.initChecker in your "
-                                + "subclass of SourceChecker! Please ensure your checker is properly initialized.");
+                        "You have forgotten to call super.initChecker in your " +
+                                "subclass of SourceChecker, " + this.getClass() +
+                                "! Please ensure your checker is properly initialized.");
             }
             if (shouldAddShutdownHook()) {
                 Runtime.getRuntime().addShutdownHook(new Thread() {
