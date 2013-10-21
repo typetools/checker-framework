@@ -755,7 +755,9 @@ public abstract class AbstractBasicAnnotatedTypeFactory<
 
     protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type,
             boolean iUseFlow) {
-        assert root != null : "root needs to be set when used on trees";
+        assert root != null : "AbstractBasicAnnotatedTypeFactory.annotateImplicit: " +
+            " root needs to be set when used on trees; factory: " + this.getClass();
+
         if (iUseFlow) {
             annotateImplicitWithFlow(tree, type);
         } else {
