@@ -899,6 +899,12 @@ annotated as \<@Pure>.
 
 You can fix the definition by adding \<@Pure> to your method definition.
 Alternately, you can suppress the warning.
+You can suppress each such warning individually using
+\<@SuppressWarnings("purity.invalid.overriding")>,
+or you can use the \<-AsuppressWarnings=purity.invalid.overriding>
+command-line argument to suppress all such warnings.
+% The \<-AassumeSideEffectFree> command-line argument suppresses the
+% warning, but it does more too; don't mention it here.
 In the future, the Checker Framework will support inheriting annotations
 from superclass definitions.
 
