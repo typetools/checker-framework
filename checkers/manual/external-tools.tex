@@ -539,10 +539,23 @@ See \url{http://blogs.jetbrains.com/idea/2009/07/type-annotations-jsr-308-suppor
 \section{Eclipse\label{eclipse}}
 
 There are two ways to run a checker from within the Eclipse IDE:  via Ant
-or using an Eclipse plug-in.  No matter what method you choose, we suggest that
-all Checker Framework annotations be written in the comments.  This will avoid many
+or using an Eclipse plug-in.  These two methods are described below.
+
+No matter what method you choose, we suggest that
+all Checker Framework annotations be written in the comments
+if you are using a version of Eclipse that
+does not support Java 8.  This will avoid many
 text highlighting errors with versions of Eclipse that don't support Java 8 and the
-new JSR308 syntax changes.
+new JSR 308 syntax changes.
+
+Even in a version of Eclipse that supports Java 8's type annotations, you
+still need to run the Checker Framework via Ant or via the plug-in, rather
+than by supplying the \<-processor> command-line option to the ejc
+compiler.  The reason is that the Checker Framework is built upon javac,
+and ejc represents the Java program differently.  (If both javac and ejc
+implemented JSR 198~\cite{JSR198}, then it would be possible to build
+type-checking plug-ins that work with both compilers.)
+
 
 \paragraph{Using an Ant task}
 
