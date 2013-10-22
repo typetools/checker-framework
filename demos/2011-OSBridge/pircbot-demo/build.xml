@@ -1,0 +1,51 @@
+<project name="pircbot-demo" default="check-nullness">
+  <property environment="env"/>
+
+  <presetdef name="jsr308.javac">
+    <javac fork="yes">
+      <!-- JSR308 related compiler arguments -->
+      <compilerarg value="-version"/>
+      <!-- optional, so .class files work with older JVMs: <compilerarg line="-target 5"/> -->
+      <compilerarg value="-implicit:class"/>
+      <compilerarg line="-Xmaxwarns 10000"/>
+      <compilerarg value="-J-Xbootclasspath/p:${env.CHECKERS}/binary/jsr308-all.jar"/>
+
+      <classpath>
+        <pathelement location="${env.CHECKERS}/binary/checkers.jar"/>
+      </classpath>
+    </javac>
+  </presetdef>
+
+  <target name="build"
+          description="Build pircbot without nullness checking">
+    <mkdir dir="bin"/>
+    <javac fork="true" srcdir="src" destdir="bin" includeantruntime="false">
+    </javac>
+  </target>
+
+  <target name="check-nullness"
+          description="Check for nullness errors as they come up"
+          depends="clean">
+    <mkdir dir="bin"/>
+    <jsr308.javac fork="true" srcdir="src" destdir="bin" includeantruntime="false">
+      <compilerarg line="-processor checkers.nullness.NullnessChecker"/>
+      <compilerarg value="-Xbootclasspath/p:${env.CHECKERS}/jdk/jdk.jar"/>
+    </jsr308.javac>
+  </target>
+
+  <target name="check-nullness-all"
+          description="Check for nullness errors in all files"
+          depends="clean">
+    <mkdir dir="bin"/>
+    <jsr308.javac fork="true" srcdir="src" destdir="bin" includeantruntime="false">
+      <compilerarg line="-processor checkers.nullness.NullnessChecker"/>
+      <compilerarg value="-Xbootclasspath/p:${env.CHECKERS}/jdk/jdk.jar"/>
+      <compilerarg value="-Awarns"/>
+    </jsr308.javac>
+  </target>
+
+  <target name="clean">
+    <delete dir="bin"/>
+  </target>
+
+</project>
