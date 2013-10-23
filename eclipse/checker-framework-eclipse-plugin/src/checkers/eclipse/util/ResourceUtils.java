@@ -221,7 +221,12 @@ public class ResourceUtils {
             throws CoreException {
         final Set<String> fileNames = new LinkedHashSet<String>();
         for(final IJavaElement element : elements) {
-            fileNames.addAll(sourceFilesOf(element));
+            final Set<String> files = sourceFilesOf(element);
+            for(String file : files ) {
+                if( file.endsWith(".java") ) {
+                    fileNames.add(file);
+                }
+            }
         }
 
         return fileNames;
