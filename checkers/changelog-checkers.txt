@@ -1,4 +1,4 @@
-Version 1.7.0, ?? October 2013
+Version 1.7.0, 23 October 2013
 
 Format String Checker:
   Ensures that format methods such as System.out.printf are invoked
