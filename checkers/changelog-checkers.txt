@@ -1,4 +1,4 @@
-Version 1.7.0, ?? October 2013
+Version 1.7.0, 23 October 2013
 
 Format String Checker:
   This new type-checker ensures that format methods, such as
