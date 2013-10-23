@@ -235,13 +235,6 @@
     classpath).  Also, ${java.home} is the jre/ directory.
     -->
     <target name="javadoc" depends="prep" description="Create Javadoc documentation">
-        <!--<ant dir="${javacutils.loc}">
-            <target name="javadoc"/>
-        </ant>
-
-        <ant dir="${dataflow.loc}">
-            <target name="javadoc"/>
-        </ant>  -->
 
         <java fork="true"
               failonerror="true"
