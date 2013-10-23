@@ -29,7 +29,7 @@ warn whenever an unannotated method result is used in a non-null context:
 \end{Verbatim}
 
 If the call \emph{can} return null, you should fix the bug in your program by
-removing the \code{@\refclass{nullness/quals}{NonNull}} annotation in your own program.
+removing the \code{@\refclass{checkers/nullness/quals}{NonNull}} annotation in your own program.
 
 If the library call \emph{never} returns null,
 there are several ways to eliminate the compiler warnings.
