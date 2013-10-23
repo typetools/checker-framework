@@ -9,8 +9,8 @@ the type qualifier annotations.
 The Subtyping Checker can accommodate all of the type system enhancements that
 can be declaratively specified (see Chapter~\ref{writing-a-checker}).
 This includes type introduction rules (implicit
-annotations, e.g., literals are implicitly considered \code{@\refclass{nullness/quals}{NonNull}}) via
-the \code{@\refclass{quals}{ImplicitFor}} meta-annotation, and other features such as
+annotations, e.g., literals are implicitly considered \code{@\refclass{checkers/nullness/quals}{NonNull}}) via
+the \code{@\refclass{checkers/quals}{ImplicitFor}} meta-annotation, and other features such as
 flow-sensitive type qualifier inference (Section~\ref{type-refinement}) and
 qualifier polymorphism (Section~\ref{qualifier-polymorphism}).
 
@@ -50,7 +50,7 @@ example,
         \textit{-Aquals=myproject.quals.MyQual,myproject.quals.OtherQual} MyFile.java ...
 \end{alltt}
 
-It serves the same purpose as the \code{@\refclass{quals}{TypeQualifiers}}
+It serves the same purpose as the \code{@\refclass{checkers/quals}{TypeQualifiers}}
 annotation used by other checkers (see section
 \ref{writing-compiler-interface}).
 

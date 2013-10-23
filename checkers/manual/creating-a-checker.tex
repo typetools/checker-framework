@@ -135,7 +135,7 @@ the components of a type system as written using the Checker Framework:
   expressions, a qualifier should be treated as implicitly present even if a
   programmer did not explicitly write it.  For example, in the Nullness
   type system every literal
-  other than \<null> has a \<@\refclass{nullness/quals}{NonNull}> type;
+  other than \<null> has a \<@\refclass{checkers/nullness/quals}{NonNull}> type;
   examples of literals include \<"some string"> and \<java.util.Date.class>.
 
 \item{\ref{extending-visitor}}
@@ -151,7 +151,7 @@ the components of a type system as written using the Checker Framework:
 \item
   Additional rules that are specific to your particular checker.  For
   example, in the Nullness type system, only references with a
-  \<@\refclass{nullness/quals}{NonNull}> type may be dereferenced.  You
+  \<@\refclass{checkers/nullness/quals}{NonNull}> type may be dereferenced.  You
   write these additional rules yourself.
 \end{itemize}
 
@@ -185,13 +185,13 @@ For example:
 \end{Verbatim}
 
 \noindent
-Write the \<@\refclass{quals}{TypeQualifier}> meta-annotation on the annotation definition
+Write the \<@\refclass{checkers/quals}{TypeQualifier}> meta-annotation on the annotation definition
 to indicate that the annotation represents a type qualifier
 and should be processed by the checker.
 Also write a \<@\sunjavadoc{java/lang/annotation/Target.html}{Target}>
 meta-annotation to indicate where the annotation may be written.
 (An annotation that is written on an annotation
-definition, such as \<@\refclass{quals}{TypeQualifier}>, is called a \emph{meta-annotation}.)
+definition, such as \<@\refclass{checkers/quals}{TypeQualifier}>, is called a \emph{meta-annotation}.)
 
 % \noindent
 % The \<@TypeQualifier> meta-annotation
@@ -204,8 +204,8 @@ definition, such as \<@\refclass{quals}{TypeQualifier}>, is called a \emph{meta-
 
 The type hierarchy induced by the qualifiers can be defined either
 declaratively via meta-annotations (Section~\ref{declarative-hierarchy}), or procedurally through
-subclassing \refclass{types}{QualifierHierarchy} or
-\refclass{types}{TypeHierarchy} (Section~\ref{procedural-hierarchy}).
+subclassing \refclass{checkers/types}{QualifierHierarchy} or
+\refclass{checkers/types}{TypeHierarchy} (Section~\ref{procedural-hierarchy}).
 
 
 \subsection{Declaratively defining the qualifier and type hierarchy\label{declarative-hierarchy}}
@@ -216,10 +216,10 @@ hierarchy.
 
 \begin{itemize}
 
-\item \code{@\refclass{quals}{SubtypeOf}} denotes that a qualifier is a subtype of
+\item \code{@\refclass{checkers/quals}{SubtypeOf}} denotes that a qualifier is a subtype of
   another qualifier or qualifiers, specified as an array of class
   literals.  For example, for any type $T$,
-  \code{@\refclass{nullness/quals}{NonNull}} $T$ is a subtype of \code{@\refclass{nullness/quals}{Nullable}} $T$:
+  \code{@\refclass{checkers/nullness/quals}{NonNull}} $T$ is a subtype of \code{@\refclass{checkers/nullness/quals}{Nullable}} $T$:
 
   \begin{Verbatim}
     @TypeQualifier
@@ -228,18 +228,18 @@ hierarchy.
     public @interface NonNull { }
   \end{Verbatim}
 
-  % (The actual definition of \refclass{nullness/quals}{NonNull} is slightly more complex.)
+  % (The actual definition of \refclass{checkers/nullness/quals}{NonNull} is slightly more complex.)
 
 
   %% True, but a distraction.  Move to Javadoc?
   % (It would be more natural to use Java subtyping among the qualifier
   % annotations, but Java forbids annotations from subtyping one another.)
   %
-  \<@\refclass{quals}{SubtypeOf}> accepts multiple annotation classes as an argument,
+  \<@\refclass{checkers/quals}{SubtypeOf}> accepts multiple annotation classes as an argument,
   permitting the type hierarchy to be an arbitrary DAG\@.  For example,
-  in the IGJ type system (Section~\ref{igj-annotations}), \<@\refclass{igj/quals}{Mutable}>
-  and \<@\refclass{igj/quals}{Immutable}> induce two mutually exclusive subtypes of the
-  \<@\refclass{igj/quals}{ReadOnly}> qualifier.
+  in the IGJ type system (Section~\ref{igj-annotations}), \<@\refclass{checkers/igj/quals}{Mutable}>
+  and \<@\refclass{checkers/igj/quals}{Immutable}> induce two mutually exclusive subtypes of the
+  \<@\refclass{checkers/igj/quals}{ReadOnly}> qualifier.
 %TODO: In the IGJ hierarchy I didn't find a use of multiple supertypes. Like
 % this the previous paragraph is confusing, as it does not give a correct
 % example.
@@ -251,11 +251,11 @@ hierarchy.
 
   All type qualifiers, except for polymorphic qualifiers (see below and
   also Section~\ref{qualifier-polymorphism}), need to be
-  properly annotated with \refclass{quals}{SubtypeOf}.
+  properly annotated with \refclass{checkers/quals}{SubtypeOf}.
 
   The top qualifier is annotated with
   \<@SubtypeOf( \{ \} )>.  The top qualifier is the qualifier that is
-  a supertype of all other qualifiers.  For example, \<@\refclass{nullness/quals}{Nullable}>
+  a supertype of all other qualifiers.  For example, \<@\refclass{checkers/nullness/quals}{Nullable}>
   is the top qualifier of the Nullness type system, hence is defined as:
 
   \begin{Verbatim}
@@ -270,7 +270,7 @@ hierarchy.
     \{ \} )} annotation on the top qualifier is necessary.  For an example, see the
   \<Encrypted> type system of Section~\ref{encrypted-example}.
 
-\item \<@\refclass{quals}{PolymorphicQualifier}> denotes that a qualifier is a
+\item \<@\refclass{checkers/quals}{PolymorphicQualifier}> denotes that a qualifier is a
   polymorphic qualifier.  For example:
 
   \begin{Verbatim}
@@ -282,8 +282,8 @@ hierarchy.
 
   For a description of polymorphic qualifiers, see
   Section~\ref{qualifier-polymorphism}.  A polymorphic qualifier needs
-  no \<@\refclass{quals}{SubtypeOf}> meta-annotation and need not be
-  mentioned in any other \<@\refclass{quals}{SubtypeOf}>
+  no \<@\refclass{checkers/quals}{SubtypeOf}> meta-annotation and need not be
+  mentioned in any other \<@\refclass{checkers/quals}{SubtypeOf}>
   meta-annotation.
 
 \end{itemize}
@@ -291,7 +291,7 @@ hierarchy.
 \urldef{\isSubtypeURL}\url{doc/checkers/util/GraphQualifierHierarchy.html#isSubtype(java.util.Collection,%20java.util.Collection)}
 
 The declarative and procedural mechanisms for specifying the hierarchy can
-be used together.  In particular, when using the \<@\refclass{quals}{SubtypeOf}>
+be used together.  In particular, when using the \<@\refclass{checkers/quals}{SubtypeOf}>
 meta-annotation, further customizations may be
 performed procedurally (Section~\ref{procedural-hierarchy})
 by overriding the \ahref{\isSubtypeURL}{\code{isSubtype}} method in the checker class
@@ -305,25 +305,25 @@ However, the declarative mechanism is sufficient for most type systems.
 \urldef{\createTypeHierarchyURL}\url{doc/checkers/basetype/BaseTypeChecker.html#createTypeHierarchy()}
 
 While the declarative syntax suffices for many cases, more complex
-type hierarchies can be expressed by overriding, in \refclass{basetype}{BaseTypeChecker},
+type hierarchies can be expressed by overriding, in \refclass{checkers/basetype}{BaseTypeChecker},
 either \ahref{\createQualifierHierarchyURL}{\<createQualifierHierarchy>} or \ahref{\createTypeHierarchyURL}{\<createTypeHierarchy>} (typically
 only one of these needs to be overridden).
 For more details, see the Javadoc of those methods and of the classes
-\refclass{types}{QualifierHierarchy} and \refclass{types}{TypeHierarchy}.
+\refclass{checkers/types}{QualifierHierarchy} and \refclass{checkers/types}{TypeHierarchy}.
 
-The \refclass{types}{QualifierHierarchy} class represents the qualifier hierarchy (not the
-type hierarchy), e.g., \refclass{igj/quals}{Mutable}
-is a subtype of \refclass{igj/quals}{ReadOnly}.  A type-system designer may subclass
-\refclass{types}{QualifierHierarchy} to express customized qualifier
+The \refclass{checkers/types}{QualifierHierarchy} class represents the qualifier hierarchy (not the
+type hierarchy), e.g., \refclass{checkers/igj/quals}{Mutable}
+is a subtype of \refclass{checkers/igj/quals}{ReadOnly}.  A type-system designer may subclass
+\refclass{checkers/types}{QualifierHierarchy} to express customized qualifier
 relationships (e.g., relationships based on annotation
 arguments).
 
-The \refclass{types}{TypeHierarchy} class represents the type hierarchy ---
+The \refclass{checkers/types}{TypeHierarchy} class represents the type hierarchy ---
 that is, relationships between
 annotated types, rather than merely type qualifiers, e.g., \<@Mutable
-Date> is a subtype of \<@ReadOnly Date>.  The default \refclass{types}{TypeHierarchy} uses
-\refclass{types}{QualifierHierarchy} to determine all subtyping relationships.
-The default \refclass{types}{TypeHierarchy} handles
+Date> is a subtype of \<@ReadOnly Date>.  The default \refclass{checkers/types}{TypeHierarchy} uses
+\refclass{checkers/types}{QualifierHierarchy} to determine all subtyping relationships.
+The default \refclass{checkers/types}{TypeHierarchy} handles
 generic type arguments, array components, type variables, and
 wildcards in a similar manner to the Java standard subtype
 relationship but with taking qualifiers into consideration.  Some type
@@ -349,7 +349,7 @@ A type system designer may set a default annotation.  A user may override
 the default; see Section~\ref{defaults}.
 
 The type system designer may specify a default annotation declaratively,
-using the \code{@\refclass{quals}{DefaultQualifierInHierarchy}}
+using the \code{@\refclass{checkers/quals}{DefaultQualifierInHierarchy}}
 meta-annotation.
 Note that the default will apply to any source code that the checker reads,
 including stub libraries, but will not apply to compiled \code{.class}
@@ -455,7 +455,7 @@ uses \<@Unqualified>, which is shared across multiple type systems:
 % \noindent
 % The interning type system of Section~\ref{interning-checker} also lacks a
 % top qualifier; there is no \<@Uninterned> qualifier that is a supertype of 
-% \<@\refclass{interning/quals}{Interned}>.
+% \<@\refclass{checkers/interning/quals}{Interned}>.
 
 \noindent
 It can be convenient to use \<@Unqualified> as the top type to avoid
@@ -469,8 +469,8 @@ type system that uses \<@Unqualified>, which is unlikely to be desired.
 
 It is best if a type system as an explicit qualifier for every
 possible meaning.  For example,
-the Nullness type system has both \<@\refclass{nullness/quals}{Nullable}> and
-\<@\refclass{nullness/quals}{NonNull}>.  Because it has no built-in meaning
+the Nullness type system has both \<@\refclass{checkers/nullness/quals}{Nullable}> and
+\<@\refclass{checkers/nullness/quals}{NonNull}>.  Because it has no built-in meaning
 for unannotated types; a user may specify a default qualifier.  This
 greater flexibility for the user is usually preferable.
 
@@ -489,20 +489,20 @@ that the type system designer may have intended.
 
 For some types and expressions, a qualifier should be treated as present
 even if a programmer did not explicitly write it.  For example, every
-literal (other than \<null>) has a \<@\refclass{nullness/quals}{NonNull}> type.
+literal (other than \<null>) has a \<@\refclass{checkers/nullness/quals}{NonNull}> type.
 
 The implicit annotations may be specified declaratively and/or procedurally.
 
 
 \subsection{Declaratively specifying implicit annotations\label{declarative-type-introduction}}
 
-The \<@\refclass{quals}{ImplicitFor}> meta-annotation indicates implicit annotations.
-When written on a qualifier, \refclass{quals}{ImplicitFor}
+The \<@\refclass{checkers/quals}{ImplicitFor}> meta-annotation indicates implicit annotations.
+When written on a qualifier, \refclass{checkers/quals}{ImplicitFor}
 specifies the trees (AST nodes) and types for which the framework should
 automatically add that qualifier.
 
 In short, the types and trees can be
-specified via any combination of five fields in \refclass{quals}{ImplicitFor}:
+specified via any combination of five fields in \refclass{checkers/quals}{ImplicitFor}:
 
   \begin{itemize}
   \item \code{trees}: an array of
@@ -517,14 +517,14 @@ specified via any combination of five fields in \refclass{quals}{ImplicitFor}:
   \item \code{typeClasses}: an array of class literals for classes
     implementing \code{javax.lang.model.type.TypeMirror}, e.g.,
     \code{javax.lang.model.type.PrimitiveType}.  Often you should use
-    a subclass of \refclass{types}{AnnotatedTypeMirror}.
+    a subclass of \refclass{checkers/types}{AnnotatedTypeMirror}.
   \item \code{stringPatterns}: an array of regular expressions that will
     be matched against
     string literals, e.g., \code{"[01]+"} for a binary number.  Useful
     for annotations that indicate the format of a string.
   \end{itemize}
 
-For example, consider the definitions of the \<@\refclass{nullness/quals}{NonNull}> and \<@\refclass{nullness/quals}{Nullable}>
+For example, consider the definitions of the \<@\refclass{checkers/nullness/quals}{NonNull}> and \<@\refclass{checkers/nullness/quals}{Nullable}>
 type qualifiers:
 
 %BEGIN LATEX
@@ -558,7 +558,7 @@ type qualifiers:
 \end{smaller}
 %END LATEX
 
-For more details, see the Javadoc for the \refclass{quals}{ImplicitFor}
+For more details, see the Javadoc for the \refclass{checkers/quals}{ImplicitFor}
   annotation, and the Javadoc for the javac classes that are linked from
 it.  You only need to understand a small amount about the javac AST, such
 as the
@@ -573,23 +573,23 @@ Section~\ref{javac-tips} can help you get started.
 
 
 The Checker Framework provides a representation of annotated types,
-\refclass{types}{AnnotatedTypeMirror}, that extends the standard \<TypeMirror>
+\refclass{checkers/types}{AnnotatedTypeMirror}, that extends the standard \<TypeMirror>
 interface but integrates a representation of the annotations into a
 type representation.  A checker's \emph{type factory} class, given an AST
 node, returns the annotated type of that expression.  The Checker
 Framework's abstract
-\emph{base type factory} class, \refclass{types}{AnnotatedTypeFactory},
+\emph{base type factory} class, \refclass{checkers/types}{AnnotatedTypeFactory},
 supplies a uniform, Tree-API-based interface
 for querying the annotations on a program element, regardless of
 whether that element is declared in a source file or in a class file.
 It also handles default annotations, and it optionally performs
 flow-sensitive local type inference.
 
-\refclass{types}{AnnotatedTypeFactory} inserts the qualifiers that the programmer
+\refclass{checkers/types}{AnnotatedTypeFactory} inserts the qualifiers that the programmer
 explicitly inserted in the code.  Yet, certain constructs should be
 treated as having a type qualifier even when the programmer has not
 written one.  The type system designer may subclass
-\refclass{types}{AnnotatedTypeFactory} and override
+\refclass{checkers/types}{AnnotatedTypeFactory} and override
 \code{annotateImplicit(Tree,AnnotatedTypeMirror)} and
 \code{annotateImplicit(Element,AnnotatedTypeMirror)} to account for
 such constructs.
@@ -601,14 +601,14 @@ The Checker Framework provides automatic type refinement as described
 in Section~\ref{type-refinement}.
 
 Class
-\refclass{types}{SubtypingAnnotatedTypeFactory}
+\refclass{checkers/types}{SubtypingAnnotatedTypeFactory}
 provides a 3 parameter constructor that allows subclasses to disable
 flow inference.
 By default the 2 parameter constructor performs flow inference.
 To disable flow inference, call
 \code{super(checker, root, false);}
 in your subtype of
-\refclass{types}{SubtypingAnnotatedTypeFactory}.
+\refclass{checkers/types}{SubtypingAnnotatedTypeFactory}.
 
 
 \section{Visitor: Type rules\label{extending-visitor}}
@@ -618,7 +618,7 @@ particular type are forbidden.
 These rules must be defined procedurally, not declaratively.
 
 The Checker Framework provides a \textit{base visitor class},
-\refclass{basetype}{BaseTypeVisitor}, that performs type-checking at each node of a
+\refclass{checkers/basetype}{BaseTypeVisitor}, that performs type-checking at each node of a
 source file's AST\@.  It uses the visitor design pattern to traverse
 Java syntax trees as provided by Oracle's
 \ahref{\url{http://types.cs.washington.edu/checker-framework/api/javac/tree//index.html}}{Tree
@@ -627,7 +627,7 @@ and it issues a warning whenever the type system is violated.
 
 A checker's visitor overrides one method in the base visitor for each special
 rule in the type qualifier system.  Most type-checkers
-override only a few methods in \refclass{basetype}{BaseTypeVisitor}.  For example, the
+override only a few methods in \refclass{checkers/basetype}{BaseTypeVisitor}.  For example, the
 visitor for the Nullness type system of Chapter~\ref{nullness-checker}
 contains a single 4-line method that warns if an expression of nullable type
 is dereferenced, as in:
@@ -637,9 +637,9 @@ is dereferenced, as in:
 
 
 
-By default, \refclass{basetype}{BaseTypeVisitor} performs subtyping checks that are
+By default, \refclass{checkers/basetype}{BaseTypeVisitor} performs subtyping checks that are
 similar to Java subtype rules, but taking the type qualifiers into account.
-\refclass{basetype}{BaseTypeVisitor} issues these errors:
+\refclass{checkers/basetype}{BaseTypeVisitor} issues these errors:
 
 \begin{itemize}
 
@@ -717,7 +717,7 @@ type-checking rules.
 
 \section{The checker class:  Compiler interface\label{writing-compiler-interface}}
 
-A checker's entry point is a subclass of \refclass{basetype}{BaseTypeChecker}.  This entry
+A checker's entry point is a subclass of \refclass{checkers/basetype}{BaseTypeChecker}.  This entry
 point, which we call the checker class, serves two
 roles:  an interface to the compiler and a factory for constructing
 type-system classes.
@@ -740,11 +740,11 @@ checker classes for the Interning Checker and the Nullness Checker:
 \urldef{\getSupportedTypeQualifiersURL}{\url}{http://types.cs.washington.edu/checker-framework/current/doc/checkers/basetype/BaseTypeChecker.html#getSupportedTypeQualifiers()}
 
 The checker class must be annotated by
-\code{@\refclass{quals}{TypeQualifiers}}, which lists the annotations
+\code{@\refclass{checkers/quals}{TypeQualifiers}}, which lists the annotations
 that make up the type hierarchy for this checker (including
 polymorphic qualifiers), provided as an array of class literals.  Each
 one is a type qualifier whose definition bears the
-\code{@\refclass{quals}{TypeQualifier}} meta-annotation (or is
+\code{@\refclass{checkers/quals}{TypeQualifier}} meta-annotation (or is
 returned by the
 \ahref{\getSupportedTypeQualifiersURL}{\<BaseTypeChecker\-.getSupportedTypeQualifiers>}
 method).
@@ -762,7 +762,7 @@ hierarchy representation.  It is a convention that, for
 a type system named Foo, the compiler
 interface (checker), the visitor, and the annotated type factory are
 named as \<FooChecker>, \<FooVisitor>, and \<FooAnnotatedTypeFactory>.
-\refclass{basetype}{BaseTypeChecker} uses the convention to
+\refclass{checkers/basetype}{BaseTypeChecker} uses the convention to
 reflectively construct the components.  Otherwise, the checker writer
 must specify the component classes for construction.
 
@@ -799,7 +799,7 @@ several related checkers that are designed to be run together.
 
 \item
 You can define an aggregate checker class that combines
-multiple checkers.  Extend \refclass{source}{AggregateChecker} and override
+multiple checkers.  Extend \refclass{checkers/source}{AggregateChecker} and override
 the \<getSupportedTypeCheckers> method, like the following:
 
 \begin{Verbatim}
@@ -990,7 +990,7 @@ changed if the English message is updated.
 \item \code{-Afilenames}: print the name of each file before type-checking it.
 
 \item \code{-Ashowchecks}: print debugging information for each
-pseudo-assignment check (as performed by \refclass{basetype}{BaseTypeVisitor}; see Section
+pseudo-assignment check (as performed by \refclass{checkers/basetype}{BaseTypeVisitor}; see Section
 \ref{extending-visitor}.
 
 \end{itemize}
@@ -1183,7 +1183,7 @@ for method types, and \code{NullType} for the type of the \code{null} literal.
 
 \code{TypeMirror} does not represent annotated types though.  A checker
 should use the Checker Framework types API,
-\refclass{types}{AnnotatedTypeMirror}, instead.  \code{AnnotatedTypeMirror}
+\refclass{checkers/types}{AnnotatedTypeMirror}, instead.  \code{AnnotatedTypeMirror}
 parallels the \code{TypeMirror} API, but also present the type annotations
 associated with the type.
 
@@ -1246,9 +1246,9 @@ for the three interfaces, respectively.
 \emph{Visitors and Scanners}:
 The compiler and the Checker Framework use the visitor pattern
 extensively. For example, visitors are used to traverse the source tree
-(\refclass{basetype}{BaseTypeVisitor} extends
+(\refclass{checkers/basetype}{BaseTypeVisitor} extends
 \refTreeclass{util}{TreePathScanner}) and for type
-checking (\refclass{types}{TreeAnnotator} implements
+checking (\refclass{checkers/types}{TreeAnnotator} implements
 \refTreeclass{tree}{TreeVisitor}).
 
 \emph{Utility classes}:
@@ -1256,19 +1256,19 @@ Some useful methods appear in a utility class.  The Oracle convention is that
 the utility class for a \code{Foo} hierarchy is \code{Foos} (e.g.,
 \refModelclass{util}{Types}, \refModelclass{util}{Elements}, and
 \refTreeclass{util}{Trees}).  The Checker Framework uses a common
-\code{Utils} suffix instead (e.g., \refclass{util}{TypesUtils},
-\refclass{util}{TreeUtils}, \refclass{util}{ElementUtils}), with one
-notable exception: \refclass{util}{AnnotatedTypes}.
+\code{Utils} suffix instead (e.g., \refclass{checkers/util}{TypesUtils},
+\refclass{checkers/util}{TreeUtils}, \refclass{checkers/util}{ElementUtils}), with one
+notable exception: \refclass{checkers/util}{AnnotatedTypes}.
 
 
 \subsection{How a checker fits in the compiler as an annotation processor}
 
 The Checker Framework builds on the Annotation Processing API
 introduced in Java 6.  A type annotation processor is one that extends
-\refclass{source}{AbstractTypeProcessor}; these get run on each class
+\refclass{checkers/source}{AbstractTypeProcessor}; these get run on each class
 source file after the compiler confirms that the class is valid Java code.
 
-The most important methods of \refclass{source}{AbstractTypeProcessor}
+The most important methods of \refclass{checkers/source}{AbstractTypeProcessor}
 are \code{typeProcess} and \code{getSupportedSourceVersion}. The former
 class is where you would insert any sort of method call to walk the AST\@,
 and the latter just returns a constant indicating that we are targeting
