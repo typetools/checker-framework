@@ -11,6 +11,8 @@
     <property file="build.properties"/>
     <property file="../build-common.properties"/>
 
+    <property name="api.doc" value="${basedir}/../api"/>
+
     <import file="../build-common.xml"/>
 
 
@@ -51,7 +53,7 @@
         <mkdir dir="${build}"/>
         <mkdir dir="${build.tests}"/>
         <mkdir dir="${build.tests}/testclasses"/>
-        <mkdir dir="${dist.doc}"/>
+        <mkdir dir="${api.doc}" />
 
         <available property="jp.project"
                    file="${javaparser.loc}/build.xml"/>
@@ -233,13 +235,13 @@
     classpath).  Also, ${java.home} is the jre/ directory.
     -->
     <target name="javadoc" depends="prep" description="Create Javadoc documentation">
-        <ant dir="${javacutils.loc}">
+        <!--<ant dir="${javacutils.loc}">
             <target name="javadoc"/>
         </ant>
 
         <ant dir="${dataflow.loc}">
             <target name="javadoc"/>
-        </ant>
+        </ant>  -->
 
         <java fork="true"
               failonerror="true"
@@ -254,15 +256,15 @@
 
         <!-- This relative path is wrong; running "ant -find" from a
         subdirectory fails. -->
-        <javadoc sourcepath="${src}" destdir="${dist.doc}"
+        <javadoc sourcepath="${src}:${javacutils.loc}/src:${dataflow.loc}/src" destdir="${api.doc}"
                  failonerror="true"
                  executable="${jsr308.langtools}/dist/bin/javadoc"
-                 classpath="${build}:${javac.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar:${tests.junit}"
+                 classpath="${build}:${javacutils.lib}:${dataflow.lib}:${javac.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar:${tests.junit}"
                  excludepackagenames="checkers.util.stub"
                  bootclasspath="${javac.lib}:${javadoc.lib}:${java.home}/lib/rt.jar">
             <package name="checkers.*"/>
-            <link href="http://types.cs.washington.edu/checker-framework/api/jdk/"/>
-            <link href="http://types.cs.washington.edu/checker-framework/api/javac/tree/"/>
+            <package name="javacutils.*"/>
+            <package name="dataflow.*"/>
             <taglet name="javacutils.dist.ManualTaglet" path="${build}"/>
         </javadoc>
     </target>
