@@ -47,14 +47,14 @@ To run the Tainting Checker, supply the \code{-processor
 The Tainting type system uses the following annotations:
 \begin{itemize}
 \item
-  \code{@\refclass{tainting/quals}{Untainted}} indicates
+  \code{@\refclass{checkers/tainting/quals}{Untainted}} indicates
   a type that includes only untainted, trusted values.
 \item
-  \code{@\refclass{tainting/quals}{Tainted}} indicates
+  \code{@\refclass{checkers/tainting/quals}{Tainted}} indicates
   a type that may include only tainted, untrusted values.
   \code{@Tainted} is a supertype of \code{@Untainted}.
 \item
-  \code{@\refclass{tainting/quals}{PolyTainted}} is a qualifier that is
+  \code{@\refclass{checkers/tainting/quals}{PolyTainted}} is a qualifier that is
   polymorphic over tainting (see Section~\ref{qualifier-polymorphism}).
 \end{itemize}
 

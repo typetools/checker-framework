@@ -92,16 +92,16 @@ These qualifiers are part of the Interning type system:
 
 \begin{description}
 
-\item[\code{@\refclass{interning/quals}{Interned}}]
+\item[\code{@\refclass{checkers/interning/quals}{Interned}}]
   indicates a type that includes only interned values (no non-interned
   values).
 
-\item[\<@\refclass{interning/quals}{PolyInterned}>]
+\item[\<@\refclass{checkers/interning/quals}{PolyInterned}>]
   indicates qualifier polymorphism.  For a description of
-  \<@\refclass{interning/quals}{PolyInterned}>, see
+  \<@\refclass{checkers/interning/quals}{PolyInterned}>, see
   Section~\ref{qualifier-polymorphism}.
 
-\item[\<@\refclass{interning/quals}{UsesObjectEquals}>]
+\item[\<@\refclass{checkers/interning/quals}{UsesObjectEquals}>]
   is a class (not type) annotation that indicates that this class's
   \<equals> method is the same as that of \<Object>.  In other words,
   neither this class nor any of its superclasses overrides the \<equals>
@@ -120,7 +120,7 @@ These qualifiers are part of the Interning type system:
 \label{fig-interning-hierarchy}
 \end{figure}
 
-In order to perform checking, you must annotate your code with the \code{@\refclass{interning/quals}{Interned}}
+In order to perform checking, you must annotate your code with the \code{@\refclass{checkers/interning/quals}{Interned}}
 type annotation, which indicates a type for the canonical representation of an
 object:
 
@@ -151,7 +151,7 @@ adds implicit qualifiers, reducing the number of annotations that must
 appear in your code.
 For example, String literals and the null literal are always considered interned, and
 object creation expressions (using \code{new}) are never considered
-\code{@\refclass{interning/quals}{Interned}} unless they are annotated as such, as in
+\code{@\refclass{checkers/interning/quals}{Interned}} unless they are annotated as such, as in
 
 %BEGIN LATEX
 \begin{smaller}
@@ -164,12 +164,12 @@ object creation expressions (using \code{new}) are never considered
 %END LATEX
 
 For a complete description of all implicit interning qualifiers, see the
-Javadoc for \refclass{interning}{InterningAnnotatedTypeFactory}.
+Javadoc for \refclass{checkers/interning}{InterningAnnotatedTypeFactory}.
 
 
 \section{What the Interning Checker checks\label{interning-checks}}
 
-Objects of an \code{@\refclass{interning/quals}{Interned}} type may be safely compared using the ``\code{==}''
+Objects of an \code{@\refclass{checkers/interning/quals}{Interned}} type may be safely compared using the ``\code{==}''
 operator.
 
 The checker issues an error in two cases:
@@ -178,10 +178,10 @@ The checker issues an error in two cases:
 
 \item
   When a reference (in)equality operator (``\code{==}'' or ``\code{!=}'')
-  has an operand of non-\code{@\refclass{interning/quals}{Interned}} type.
+  has an operand of non-\code{@\refclass{checkers/interning/quals}{Interned}} type.
 
 \item
-  When a non-\code{@\refclass{interning/quals}{Interned}} type is used where an \code{@\refclass{interning/quals}{Interned}} type
+  When a non-\code{@\refclass{checkers/interning/quals}{Interned}} type is used where an \code{@\refclass{checkers/interning/quals}{Interned}} type
   is expected.
 
 \end{enumerate}
@@ -204,7 +204,7 @@ javac \code{-Alint} command-line option, like so: \code{-Alint=-dotequals}.
 
 For a complete description of all checks performed by
   the checker, see the Javadoc for
-  \refclass{interning}{InterningVisitor}.
+  \refclass{checkers/interning}{InterningVisitor}.
 
 \label{checking-class}
 You can also restrict which types the checker should examine and type-check,
@@ -234,7 +234,7 @@ interned.)
 
 \section{Examples\label{interning-example}}
 
-To try the Interning Checker on a source file that uses the \code{@\refclass{interning/quals}{Interned}} qualifier,
+To try the Interning Checker on a source file that uses the \code{@\refclass{checkers/interning/quals}{Interned}} qualifier,
 use the following command (where \code{javac} is the JSR 308 compiler that
 is distributed with the Checker Framework):
 
@@ -254,13 +254,13 @@ command:
 
 \noindent
 The compiler will issue an error regarding violation of the semantics of
-\code{@\refclass{interning/quals}{Interned}}.
+\code{@\refclass{checkers/interning/quals}{Interned}}.
 % in the \code{InterningExampleWithWarnings.java} file.
 
 
 The Daikon invariant detector
 (\myurl{http://groups.csail.mit.edu/pag/daikon/}) is also annotated with
-\code{@\refclass{interning/quals}{Interned}}.  From directory \code{java},
+\code{@\refclass{checkers/interning/quals}{Interned}}.  From directory \code{java},
 run \code{make check-interning}.
 
 

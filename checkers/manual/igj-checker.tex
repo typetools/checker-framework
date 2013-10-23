@@ -47,31 +47,31 @@ can be modified).  The following qualifiers are part of the IGJ type system.
 
 \begin{description}
 
-\item[\code{@\refclass{igj/quals}{Immutable}}]
+\item[\code{@\refclass{checkers/igj/quals}{Immutable}}]
   An immutable reference always refers to an immutable object.  Neither the
   reference, nor any aliasing reference, may modify the object.
 
-\item[\code{@\refclass{igj/quals}{Mutable}}]
+\item[\code{@\refclass{checkers/igj/quals}{Mutable}}]
   A mutable reference refers to a mutable object.  The reference, or some
   aliasing mutable reference, may modify the object.
 
-\item[\code{@\refclass{igj/quals}{ReadOnly}}]
+\item[\code{@\refclass{checkers/igj/quals}{ReadOnly}}]
   A readonly reference cannot be used to modify its referent.  The referent
   may be an immutable or a mutable object.  In other words, it is possible
   for the referent to change via an aliasing mutable reference, even though
   the referent cannot be changed via the readonly reference.
 
-\item[\code{@\refclass{igj/quals}{Assignable}}]
+\item[\code{@\refclass{checkers/igj/quals}{Assignable}}]
   The annotated field may be re-assigned regardless of the
   immutability of the enclosing class or object instance.
 
-\item[\code{@\refclass{igj/quals}{AssignsFields}}]
+\item[\code{@\refclass{checkers/igj/quals}{AssignsFields}}]
   is similar to \<@Mutable>, but permits only limited mutation ---
   assignment of fields --- and is intended for use by constructor helper
   methods.  \<@AssignsFields> is assumed to be true of the result of a
   constructor, so it does not need to be written there.
 
-\item[\code{@\refclass{igj/quals}{I}}]
+\item[\code{@\refclass{checkers/igj/quals}{I}}]
   simulates mutability overloading or the template behavior of generics.
   It can be applied to classes, methods, and parameters.  See
   Section~\ref{igj-templating}.
@@ -85,14 +85,14 @@ For additional details, see~\cite{ZibinPAAKE2007}.
 
 The IGJ Checker issues an error whenever mutation happens through a
 readonly reference, when fields of a readonly reference which are not
-explicitly marked with \code{@\refclass{igj/quals}{Assignable}} are
+explicitly marked with \code{@\refclass{checkers/igj/quals}{Assignable}} are
 reassigned, or when a readonly reference is assigned to a mutable
 variable.  The checker also emits a warning when casts increase the
 mutability access of a reference.
 
 % There is no visitor to reference!
 % For a complete description of all checks performed by
-% the checker, see the Javadoc for \refclass{igj}{IGJVisitor}.
+% the checker, see the Javadoc for \refclass{checkers/igj}{IGJVisitor}.
 
 
 \section{Implicit and default qualifiers\label{igj-implicit-qualifiers}}
@@ -103,7 +103,7 @@ appear in your code.
 % For example, ...
 
 For a complete description of all implicit IGJ qualifiers, see the
-Javadoc for \refclass{igj}{IGJAnnotatedTypeFactory}.
+Javadoc for \refclass{checkers/igj}{IGJAnnotatedTypeFactory}.
 
 The default annotation (for types that are unannotated and not given an
 implicit qualifier) is as follows:
@@ -204,7 +204,7 @@ holds and the other two subtype relations do not hold
 not through a combination of generics and annotations.  Use of type
 annotations makes Annotation IGJ backward compatible with Java syntax.
 
-\item Templating over Immutability: The annotation \code{@\refclass{igj/quals}{I}(\emph{id})} is used to template
+\item Templating over Immutability: The annotation \code{@\refclass{checkers/igj/quals}{I}(\emph{id})} is used to template
 over immutability.  See Section~\ref{igj-templating}.
 
 \end{itemize}
@@ -212,20 +212,20 @@ over immutability.  See Section~\ref{igj-templating}.
 
 \subsection{Templating Over Immutability: \code{@I}\label{igj-templating}}
 
-\code{@\refclass{igj/quals}{I}} is a template annotation over IGJ Immutability annotations. It acts
+\code{@\refclass{checkers/igj/quals}{I}} is a template annotation over IGJ Immutability annotations. It acts
 similarly to type variables in Java's generic types, and the name
-\code{@\refclass{igj/quals}{I}} mimics the standard \code{<I>} type variable name used in code
+\code{@\refclass{checkers/igj/quals}{I}} mimics the standard \code{<I>} type variable name used in code
 written in the original IGJ dialect.  The annotation value string is used
-to distinguish between multiple instances of \code{@\refclass{igj/quals}{I}} --- in the
+to distinguish between multiple instances of \code{@\refclass{checkers/igj/quals}{I}} --- in the
 generics-based original dialect, these would be expressed as two type
 variables \code{<I>} and \code{<J>}.
 
 \paragraph{Usage on classes\label{igj-usage-on-classes}}
 
-A class declaration annotated with \code{@\refclass{igj/quals}{I}} can then be
+A class declaration annotated with \code{@\refclass{checkers/igj/quals}{I}} can then be
 used with any IGJ Immutability annotation.  The actual immutability that
-\code{@\refclass{igj/quals}{I}} is resolved to dictates the immutability type for all the non-static
-appearances of \code{@\refclass{igj/quals}{I}} with the same value as the class declaration.
+\code{@\refclass{checkers/igj/quals}{I}} is resolved to dictates the immutability type for all the non-static
+appearances of \code{@\refclass{checkers/igj/quals}{I}} with the same value as the class declaration.
 
   Example:
 \begin{Verbatim}
@@ -247,7 +247,7 @@ appearances of \code{@\refclass{igj/quals}{I}} with the same value as the class 
     }
 \end{Verbatim}
 
-In the last example, \code{@\refclass{igj/quals}{I}} was resolved to \code{@\refclass{igj/quals}{Mutable}} for the instance file.
+In the last example, \code{@\refclass{checkers/igj/quals}{I}} was resolved to \code{@\refclass{checkers/igj/quals}{Mutable}} for the instance file.
 
 \paragraph{Usage on methods\label{igj-usage-on-methods}}
 
@@ -256,13 +256,13 @@ actual IGJ immutability value would be resolved based on the method invocation.
 
 For example, the below method \code{getMidpoint} returns a \code{Point} with the same
 immutability type as the passed parameters if \code{p1} and \code{p2} match
-in immutability, otherwise \code{@\refclass{igj/quals}{I}} is resolved to \code{@\refclass{igj/quals}{ReadOnly}}:
+in immutability, otherwise \code{@\refclass{checkers/igj/quals}{I}} is resolved to \code{@\refclass{checkers/igj/quals}{ReadOnly}}:
 
 \begin{Verbatim}
   static @I Point getMidpoint(@I Point p1, @I Point p2) { ... }
 \end{Verbatim}
 
-The \code{@\refclass{igj/quals}{I}} annotation value distinguishes between \code{@\refclass{igj/quals}{I}}
+The \code{@\refclass{checkers/igj/quals}{I}} annotation value distinguishes between \code{@\refclass{checkers/igj/quals}{I}}
 declarations.  So, the below method \code{findUnion} returns a collection of the same
 immutability type as the \emph{first} collection parameter:
 

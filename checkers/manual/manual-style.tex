@@ -95,21 +95,21 @@
 % Arg 2: class name.
 % In the printed version, only the base class name appears.
 % In the HTML version, it's a link to the Javadoc.
-\newcommand{\refclass}[2]{\ahref{doc/checkers/#1/#2.html}{\<#2>}}
+\newcommand{\refclass}[2]{\ahref{api/#1/#2.html}{\<#2>}}
 % Reference to Checker Framework Javadoc for a method or field.).
-% Arg 1: directory under checkers/, including internal "/", but no leading
-% or trailing "/".
+% Arg 1: package name using "/" as a separator, with no leading or trailing "/".
+%  example: "checkers/nullness/quals"
 % Arg 2: class name.
 % Arg 3: method name.
 % Arg 4: fully-qualified arguments.  Example: "(T)"
 % In the printed version, only "class.method" appears.
 % In the HTML version, it's a link to the Javadoc.
-\newcommand{\refmethod}[4]{\ahref{doc/checkers/#1/#2.html\##3#4}{\<#2.#3>}}
+\newcommand{\refmethod}[4]{\ahref{api/#1/#2.html\##3#4}{\<#2.#3>}}
 % Reference to Sun Javadoc.
 % Arg 1: .html reference, without the .../api/ prefix
 % Arg 2: What will appear in the formatted manual.
 % Do not use \url in the body of any macro
-\newcommand{\sunjavadoc}[2]{\ahref{http://types.cs.washington.edu/checker-framework/api/jdk/#1}{\<#2>}}
+\newcommand{\sunjavadoc}[2]{\ahref{http://types.cs.washington.edu/checker-framework/jdk-api/#1}{\<#2>}}
 
 
 \newcommand{\refwithpage}[1]{\ref{#1}, page~\pageref{#1}}
