@@ -1,8 +1,8 @@
 Version 1.7.0, ?? October 2013
 
 Format String Checker:
-  Ensures that format methods such as System.out.printf are invoked
-  with correct arguments.
+  This new type-checker ensures that format methods, such as
+  System.out.printf, are invoked with correct arguments.
 
 Renamed the Basic Checker to the Subtyping Checker.
 
@@ -11,10 +11,10 @@ Reimplemented the dataflow analysis that performs flow-sensitive type
   Many more Java expressions can be written as annotation arguments.
 
 Initialization Checker:
-  New abstract checker for initialization properties of a particular
-  type-system.  Needs to be combined with another type-system whose proper
-  initialization should be checked.  Based on Freedom Before Commitment.
-  This is the new default initialzation checker for the Nullness Checker.
+  This new abstract type-checker verifies initialization properties.  It
+  needs to be combined with another type system whose proper initialization
+  should be checked.  This is the new default initialzation checker for the
+  Nullness Checker.  It is based on the "Freedom Before Commitment" approach.
 
 Renamed method annotations used by the Nullness Checker:
   @AssertNonNullAfter => @EnsuresNonNull
@@ -25,48 +25,49 @@ Renamed method annotations used by the Nullness Checker:
   @AssertParametersNonNull => [no replacement]
 Removed annotations used by the Nullness Checker:
   @AssertParametersNonNull
-Changed type annotations used by the Initialization Checker:
+Renamed type annotations used by the Initialization Checker:
   @NonRaw => @Initialized
   @Raw => @UnknownInitialization
   new annotation @UnderInitialization
 The old Initialization Checker (that uses @Raw and @NonRaw) can be invoked
   by invoking the NullnessRawnessChecker rather than the NullnessChecker.
 
-Pre- and postconditions about type qualifiers are available for any type-system
+Purity (side effect) analysis uses new annotations @SideEffectFree,
+  @Deterministic, and @TerminatesExecution; @Pure means both @SideEffectFree
+  and @Deterministic.
+
+Pre- and postconditions about type qualifiers are available for any type system
   through @RequiresQualifier, @EnsuresQualifier and @EnsuresQualifierIf.  The
-  contract annotations for the NullnessChecker (e.g. @EnsuresNonNull) are now
+  contract annotations for the Nullness Checker (e.g. @EnsuresNonNull) are now
   only a special case of these general purpose annotations.
-  The meta-annotations @PreconditionAnnotation, @PostconditionAnnotation and
+  The meta-annotations @PreconditionAnnotation, @PostconditionAnnotation, and
   @ConditionalPostconditionAnnotation can be used to create more special-case
-  annotations for other type-systems.
+  annotations for other type systems.
 
 Renamed assertion comment string used by all checkers:
   @SuppressWarnings => @AssumeAssertion
 
 To use an assert statement to suppress warnings, the assertion message must
-  include the string @AssumeAssertion(warningkey).  Previously, just the
+  include the string "@AssumeAssertion(warningkey)".  Previously, just the
   warning key sufficed, but the string @SuppressWarnings(warningkey) was
   recommended.
 
 New command-line options:
   -AonlyDefs and -AonlyUses complement existing -AskipDefs and -AskipUses
-  -AsuppressWarnings suppress warnings matching the given key
+  -AsuppressWarnings Suppress warnings matching the given key
   -AassumeSideEffectFree Unsoundly assume that every method is side-effect-free
   -AignoreRawTypeArguments Ignore subtype tests for type arguments that
     were inferred for a raw type
   -AenablePurity Check the bodies of methods marked as pure
-  -AinvariantArrays replaces -Alint=arrays:invariant 
-  -AcheckCastElementType replaces -Alint=cast:strict
+    (@SideEffectFree or @Deterministic)
   -AsuggestPureMethods Suggest methods that could be marked as pure
   -AassumeAssertionsAreEnabled, -AassumeAssertionsAreDisabled Whether to
     assume that assertions are enabled or disabled
   -AconcurrentSemantics Whether to assume concurrent semantics
-  -Anocheckjdk don't err if no annotated JDK can be found
-  -Aflowdotdir create an image of the control flow graph
-
-Purity (side effect) analysis uses new annotations @SideEffectFree,
-@Deterministic, and @TerminatesExecution; @Pure means both @SideEffectFree
-and @Deterministic.
+  -Anocheckjdk Don't err if no annotated JDK can be found
+  -Aflowdotdir Create an image of the control flow graph
+  -AinvariantArrays replaces -Alint=arrays:invariant 
+  -AcheckCastElementType replaces -Alint=cast:strict
 
 Manual:
   New manual section about array types.
@@ -74,7 +75,7 @@ Manual:
     typestate, or phases of my program with different data properties?",
     "What is the meaning of a type qualifier at a class declaration?"
   Reorganized FAQ chapter into sections.
-  Many other changes.
+  Many other improvements.
 
 ----------------------------------------------------------------------
 
