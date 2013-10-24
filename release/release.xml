@@ -221,8 +221,8 @@
 
         <copy todir="${dest.dir}" file="${checkers}/changelog-checkers.txt" />
 
-        <copy todir="${dest.dir}/doc" flatten="false">
-            <fileset dir="${checkers}/doc">
+        <copy todir="${dest.dir}/api" flatten="false">
+            <fileset dir="${checkers}/../api">
                 <include name="**" />
             </fileset>
         </copy>
