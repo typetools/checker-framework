@@ -53,8 +53,10 @@ public class TreeBuilder {
     protected final TreeMaker maker;
     protected final Names names;
     protected final Symtab symtab;
+    protected final ProcessingEnvironment env;
 
     public TreeBuilder(ProcessingEnvironment env) {
+        this.env = env;
         Context context = ((JavacProcessingEnvironment)env).getContext();
         elements = env.getElementUtils();
         modelTypes = env.getTypeUtils();
@@ -418,27 +420,11 @@ public class TreeBuilder {
      */
     public MemberSelectTree buildValueOfMethodAccess(Tree expr) {
         TypeMirror boxedType = InternalUtils.typeOf(expr);
-        TypeElement boxedElement = (TypeElement)((DeclaredType)boxedType).asElement();
 
         assert TypesUtils.isBoxedPrimitive(boxedType);
-        TypeMirror unboxedType = modelTypes.unboxedType(boxedType);
 
         // Find the valueOf(unboxedType) method of the boxed type
-        Symbol.MethodSymbol valueOfMethod = null;
-
-        for (ExecutableElement method :
-                 ElementFilter.methodsIn(elements.getAllMembers(boxedElement))) {
-            Name methodName = method.getSimpleName();
-
-            if (methodName.contentEquals("valueOf")) {
-                List<? extends VariableElement> params = method.getParameters();
-                if (params.size() == 1 && modelTypes.isSameType(params.get(0).asType(), unboxedType)) {
-                    valueOfMethod = (Symbol.MethodSymbol)method;
-                }
-            }
-        }
-
-        assert valueOfMethod != null : "no valueOf method declared for boxed type";
+        Symbol.MethodSymbol valueOfMethod = getValueOfMethod(env, boxedType);
 
         Type.MethodType methodType = (Type.MethodType)valueOfMethod.asType();
 
@@ -448,6 +434,30 @@ public class TreeBuilder {
         valueOfAccess.setType(methodType);
 
         return valueOfAccess;
+    }
+
+    /**
+     * Returns the valueOf method of a boxed type such as Short or Float.
+     */
+    public static Symbol.MethodSymbol getValueOfMethod(ProcessingEnvironment env, TypeMirror boxedType) {
+        Symbol.MethodSymbol valueOfMethod = null;
+
+        TypeMirror unboxedType = env.getTypeUtils().unboxedType(boxedType);
+        TypeElement boxedElement = (TypeElement)((DeclaredType)boxedType).asElement();
+        for (ExecutableElement method :
+                 ElementFilter.methodsIn(env.getElementUtils().getAllMembers(boxedElement))) {
+            Name methodName = method.getSimpleName();
+
+            if (methodName.contentEquals("valueOf")) {
+                List<? extends VariableElement> params = method.getParameters();
+                if (params.size() == 1 && env.getTypeUtils().isSameType(params.get(0).asType(), unboxedType)) {
+                    valueOfMethod = (Symbol.MethodSymbol)method;
+                }
+            }
+        }
+
+        assert valueOfMethod != null : "no valueOf method declared for boxed type";
+        return valueOfMethod;
     }
 
     /**
