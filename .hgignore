@@ -23,8 +23,10 @@ dot_files
 Makefile.user
 
 # build files
+api
 bin
 build
+# doc is obsolete
 doc
 javaparser/docs/api
 *.jar
