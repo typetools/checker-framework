@@ -24,6 +24,8 @@ import javacutils.ElementUtils;
 import javacutils.InternalUtils;
 import javacutils.Resolver;
 import javacutils.TreeUtils;
+import javacutils.TypesUtils;
+import javacutils.trees.TreeBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +35,7 @@ import java.util.regex.Pattern;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
@@ -45,6 +48,7 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Type.ClassType;
 
 /**
@@ -280,6 +284,23 @@ public class FlowExpressionParseUtil {
 
                 if (methodElement == null || methodElement.getKind() != ElementKind.METHOD) {
                     throw constructParserException(s);
+                }
+
+                ExecutableElement mElem = (ExecutableElement) methodElement;
+
+                for (int i = 0; i < parameters.size(); i++) {
+                    VariableElement formal = mElem.getParameters().get(i);
+                    TypeMirror formalType = formal.asType();
+                    Receiver actual = parameters.get(i);
+                    TypeMirror actualType = actual.getType();
+                    // boxing necessary
+                    if (TypesUtils.isBoxedPrimitive(formalType) && TypesUtils.isPrimitive(actualType)) {
+                        MethodSymbol valueOfMethod = TreeBuilder.getValueOfMethod(env, formalType);
+                        List<Receiver> p = new ArrayList<>();
+                        p.add(actual);
+                        Receiver boxedParam = new PureMethodCall(formalType, valueOfMethod, new ClassName(formalType), p);
+                        parameters.set(i, boxedParam);
+                    }
                 }
             } catch (Throwable t) {
                 throw constructParserException(s);
