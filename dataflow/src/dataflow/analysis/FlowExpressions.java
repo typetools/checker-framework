@@ -131,7 +131,19 @@ public class FlowExpressions {
             ExecutableElement invokedMethod = TreeUtils.elementFromUse(mn
                     .getTree());
 
-            if (PurityUtils.isDeterministic(provider, invokedMethod) || allowNonDeterminitic) {
+            // check if this represents a boxing operation of a constant, in which
+            // case we treat the method call as deterministic, because there is no way
+            // to behave differently in two executions where two constants are being used.
+            boolean considerDeterministic = false;
+            if (invokedMethod.toString().equals("valueOf(long)")
+                    && mn.getTarget().getReceiver().toString().equals("Long")) {
+                Node arg = mn.getArgument(0);
+                if (arg instanceof ValueLiteralNode) {
+                    considerDeterministic = true;
+                }
+            }
+
+            if (PurityUtils.isDeterministic(provider, invokedMethod) || allowNonDeterminitic || considerDeterministic) {
                 List<Receiver> parameters = new ArrayList<>();
                 for (Node p : mn.getArguments()) {
                     parameters.add(internalReprOf(provider, p));
