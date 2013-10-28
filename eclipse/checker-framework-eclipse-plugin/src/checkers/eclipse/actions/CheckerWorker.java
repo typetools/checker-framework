@@ -27,7 +27,7 @@ import checkers.eclipse.javac.JavacError;
 import checkers.eclipse.javac.JavacRunner;
 
 import com.sun.tools.javac.util.Pair;
-source
+
 //TODO: RENAME THIS TO CHECKER JOB
 public class CheckerWorker extends Job {
     private final IJavaProject project;
