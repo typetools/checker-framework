@@ -2,7 +2,7 @@ package checkers.util.debug;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.basetype.BaseTypeVisitor;
-import checkers.types.AbstractBasicAnnotatedTypeFactory;
+import checkers.types.GenericAnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -55,7 +55,7 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
      * Prints the types of the class and all of its enclosing
      * fields, methods, and inner classes
      */
-    public static class Visitor extends BaseTypeVisitor<AbstractBasicAnnotatedTypeFactory<?, ?, ?, ?>> {
+    public static class Visitor extends BaseTypeVisitor<GenericAnnotatedTypeFactory<?, ?, ?, ?>> {
         String currentClass;
 
         public Visitor(BaseTypeChecker checker) {

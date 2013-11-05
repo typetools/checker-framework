@@ -9,7 +9,7 @@ import checkers.quals.PostconditionAnnotation;
 import checkers.quals.PreconditionAnnotation;
 import checkers.quals.RequiresQualifier;
 import checkers.quals.RequiresQualifiers;
-import checkers.types.AbstractBasicAnnotatedTypeFactory;
+import checkers.types.GenericAnnotatedTypeFactory;
 
 import javacutils.AnnotationUtils;
 import javacutils.Pair;
@@ -35,13 +35,13 @@ import javax.lang.model.element.ExecutableElement;
 public class ContractsUtils {
 
     protected static ContractsUtils instance;
-    protected AbstractBasicAnnotatedTypeFactory<?, ?, ?, ?> factory;
+    protected GenericAnnotatedTypeFactory<?, ?, ?, ?> factory;
 
     /**
      * Returns an instance of the {@link ContractsUtils} class.
      */
     public static ContractsUtils getInstance(
-            AbstractBasicAnnotatedTypeFactory<?, ?, ?, ?> factory) {
+            GenericAnnotatedTypeFactory<?, ?, ?, ?> factory) {
         if (instance == null || instance.factory != factory) {
             instance = new ContractsUtils(factory);
         }
@@ -240,7 +240,7 @@ public class ContractsUtils {
     }
 
     // private constructor
-    private ContractsUtils(AbstractBasicAnnotatedTypeFactory<?, ?, ?, ?> factory) {
+    private ContractsUtils(GenericAnnotatedTypeFactory<?, ?, ?, ?> factory) {
         this.factory = factory;
     }
 }

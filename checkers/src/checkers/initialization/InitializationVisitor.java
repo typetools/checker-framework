@@ -333,7 +333,7 @@ public class InitializationVisitor<Factory extends InitializationAnnotatedTypeFa
         // initializer (otherwise, errors are reported there).
         if (!hasStaticInitializer && node.getKind() == Kind.CLASS) {
             boolean isStatic = true;
-            // See AbstractBasicAnnotatedTypeFactory.performFlowAnalysis for why we use
+            // See GenericAnnotatedTypeFactory.performFlowAnalysis for why we use
             // the regular exit store of the class here.
             Store store = atypeFactory.getRegularExitStore(node);
             // Add field values for fields with an initializer.
@@ -414,8 +414,8 @@ public class InitializationVisitor<Factory extends InitializationAnnotatedTypeFa
     // as the current version is contains quite a few ugly parts, is hard to understand,
     // and it is likely that it does not take full advantage of the information
     // about initialization we compute in
-    // AbstractBasicAnnotatedTypeFactory.initializationStaticStore and
-    // AbstractBasicAnnotatedTypeFactory.initializationStore.
+    // GenericAnnotatedTypeFactory.initializationStaticStore and
+    // GenericAnnotatedTypeFactory.initializationStore.
     protected void checkFieldsInitialized(Tree blockNode, boolean staticFields,
             Store store, List<? extends AnnotationMirror> receiverAnnotations) {
         // If the store is null, then the constructor cannot terminate
