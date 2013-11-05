@@ -12,7 +12,7 @@ import checkers.nullness.NullnessChecker;
 import checkers.nullness.quals.NonRaw;
 import checkers.nullness.quals.Raw;
 import checkers.quals.Unused;
-import checkers.types.AbstractBasicAnnotatedTypeFactory;
+import checkers.types.GenericAnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -73,7 +73,7 @@ public abstract class InitializationAnnotatedTypeFactory<
         Store extends InitializationStore<Value, Store>,
         Transfer extends InitializationTransfer<Value, Transfer, Store>,
         Flow extends CFAbstractAnalysis<Value, Store, Transfer>>
-    extends AbstractBasicAnnotatedTypeFactory<Value, Store, Transfer, Flow> {
+    extends GenericAnnotatedTypeFactory<Value, Store, Transfer, Flow> {
 
     /** Annotation constants */
     protected final AnnotationMirror COMMITTED, FREE, FBCBOTTOM, NOT_ONLY_COMMITTED, UNCLASSIFIED;

@@ -1,6 +1,6 @@
 package checkers.flow;
 
-import checkers.types.AbstractBasicAnnotatedTypeFactory;
+import checkers.types.GenericAnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -124,7 +124,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
      *         by the {@link AnnotatedTypeFactory}.
      */
     protected V getValueFromFactory(Tree tree, Node node) {
-        AbstractBasicAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory = analysis.atypeFactory;
+        GenericAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory = analysis.atypeFactory;
         analysis.setCurrentTree(tree);
         // is there an assignment context node available?
         if (node != null && node.getAssignmentContext() != null) {
@@ -162,7 +162,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
      */
     protected V getValueWithSameAnnotations(TypeMirror type, V annotatedValue) {
         if (annotatedValue == null) return null;
-        AbstractBasicAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory = analysis.atypeFactory;
+        GenericAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory = analysis.atypeFactory;
         AnnotatedTypeMirror at = factory.toAnnotatedType(type);
         at.replaceAnnotations(annotatedValue.getType().getAnnotations());
         return analysis.createAbstractValue(at);
@@ -370,7 +370,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
         Tree tree = n.getTree();
         if (tree != null) {
             if (TreeUtils.canHaveTypeAnnotation(tree)) {
-                AbstractBasicAnnotatedTypeFactory<V, S, T,
+                GenericAnnotatedTypeFactory<V, S, T,
                         ? extends CFAbstractAnalysis<V, S, T>> factory = analysis.atypeFactory;
                 analysis.setCurrentTree(tree);
                 AnnotatedTypeMirror at = factory.getAnnotatedTypeFromTypeTree(tree);

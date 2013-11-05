@@ -15,7 +15,7 @@ import checkers.quals.DefaultQualifier;
 import checkers.quals.Unused;
 import checkers.source.Result;
 import checkers.source.SourceVisitor;
-import checkers.types.AbstractBasicAnnotatedTypeFactory;
+import checkers.types.GenericAnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -151,7 +151,7 @@ import com.sun.tools.javac.tree.TreeInfo;
  * DFF version. TODO: missing assignment context: - array initializer
  * expressions should have the component type as context
  */
-public class BaseTypeVisitor<Factory extends AbstractBasicAnnotatedTypeFactory<?, ?, ?, ?>>
+public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?, ?>>
         extends SourceVisitor<Void, Void> {
 
     /** The {@link BaseTypeChecker} for error reporting. */
@@ -261,7 +261,7 @@ public class BaseTypeVisitor<Factory extends AbstractBasicAnnotatedTypeFactory<?
         // For flow-sensitive type checking, it's significant that we get the
         // annotated type of the ClassTree before checking the type of any
         // code within the class.  The call below causes flow analysis to
-        // be run over the class.  See AbstractBasicAnnotatedTypeFactory
+        // be run over the class.  See GenericAnnotatedTypeFactory
         // .annotateImplicitWithFlow where analysis is performed.
         visitorState.setClassType(atypeFactory.getAnnotatedType(node));
         visitorState.setClassTree(node);

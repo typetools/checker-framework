@@ -1,7 +1,7 @@
 package checkers.flow;
 
 import checkers.basetype.BaseTypeChecker;
-import checkers.types.AbstractBasicAnnotatedTypeFactory;
+import checkers.types.GenericAnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 
 import javacutils.Pair;
@@ -19,7 +19,7 @@ import javax.lang.model.element.VariableElement;
 public class CFAnalysis extends CFAbstractAnalysis<CFValue, CFStore, CFTransfer> {
 
     public CFAnalysis(BaseTypeChecker checker,
-            AbstractBasicAnnotatedTypeFactory<CFValue, CFStore, CFTransfer, CFAnalysis> factory,
+            GenericAnnotatedTypeFactory<CFValue, CFStore, CFTransfer, CFAnalysis> factory,
             List<Pair<VariableElement, CFValue>> fieldValues) {
         super(checker, factory, fieldValues);
     }
