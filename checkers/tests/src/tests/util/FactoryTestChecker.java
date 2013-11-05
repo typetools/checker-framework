@@ -4,7 +4,7 @@ import checkers.basetype.BaseTypeChecker;
 import checkers.basetype.BaseTypeVisitor;
 import checkers.source.Result;
 import checkers.source.SourceChecker;
-import checkers.types.AbstractBasicAnnotatedTypeFactory;
+import checkers.types.GenericAnnotatedTypeFactory;
 
 import javacutils.TreeUtils;
 
@@ -252,7 +252,7 @@ public class FactoryTestChecker extends BaseTypeChecker {
      * A specialized visitor that compares the actual and expected types
      * for the specified trees and report an error if they differ
      */
-    private class ToStringVisitor extends BaseTypeVisitor<AbstractBasicAnnotatedTypeFactory<?, ?, ?, ?>> {
+    private class ToStringVisitor extends BaseTypeVisitor<GenericAnnotatedTypeFactory<?, ?, ?, ?>> {
         Map<TreeSpec, String> expected;
 
         public ToStringVisitor(BaseTypeChecker checker) {

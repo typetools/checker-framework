@@ -4,7 +4,7 @@ import checkers.flow.CFAnalysis;
 import checkers.flow.CFStore;
 import checkers.flow.CFTransfer;
 import checkers.flow.CFValue;
-import checkers.types.AbstractBasicAnnotatedTypeFactory;
+import checkers.types.GenericAnnotatedTypeFactory;
 
 import javacutils.Pair;
 
@@ -13,13 +13,13 @@ import java.util.List;
 import javax.lang.model.element.VariableElement;
 
 /**
- * A factory that extends {@link AbstractBasicAnnotatedTypeFactory} to use the
+ * A factory that extends {@link GenericAnnotatedTypeFactory} to use the
  * default flow-sensitive analysis as provided by {@link CFAnalysis}.
  *
  * @author Stefan Heule
  */
 public class BaseAnnotatedTypeFactory
-    extends AbstractBasicAnnotatedTypeFactory<CFValue, CFStore, CFTransfer, CFAnalysis> {
+    extends GenericAnnotatedTypeFactory<CFValue, CFStore, CFTransfer, CFAnalysis> {
 
     public BaseAnnotatedTypeFactory(BaseTypeChecker checker, boolean useFlow) {
         super(checker, useFlow);
