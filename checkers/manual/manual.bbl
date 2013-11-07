@@ -105,6 +105,14 @@ Jaime Quinonez, Matthew~S. Tschantz, and Michael~D. Ernst.
 \newblock In {\em ECOOP 2008 --- Object-Oriented Programming, 22nd European
   Conference}, pages 616--641, Paphos, Cyprus, July~9--11, 2008.
 
+\bibitem[SM11]{SummersM2011}
+Alexander~J. Summers and Peter M{\"u}ller.
+\newblock Freedom before commitment: A lightweight type system for object
+  initialisation.
+\newblock In {\em Object-Oriented Programming Systems, Languages, and
+  Applications (OOPSLA 2011)}, pages 1013--1032, Portland, OR, USA,
+  October~25-27, 2011.
+
 \bibitem[TE05]{TschantzE2005}
 Matthew~S. Tschantz and Michael~D. Ernst.
 \newblock Javari: Adding reference immutability to {Java}.
