@@ -1,5 +1,9 @@
 package dataflow.analysis;
 
+/*>>>
+import checkers.nullness.quals.Nullable;
+*/
+
 import java.util.Map;
 
 import javax.lang.model.type.TypeMirror;
