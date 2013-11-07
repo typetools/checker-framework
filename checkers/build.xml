@@ -234,31 +234,20 @@
     classpath (despite the attempt in the body to add tools.jar to the
     classpath).  Also, ${java.home} is the jre/ directory.
     -->
-    <target name="javadoc" depends="prep" description="Create Javadoc documentation">
-
-        <java fork="true"
-              failonerror="true"
-              classpath="${javac.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar"
-              classname="com.sun.tools.javac.Main">
-            <jvmarg line="-Xbootclasspath/p:${javac.lib}:${javadoc.lib}"/>
-            <arg value="-g"/>
-            <arg line="-d ${build}"/>
-            <arg line="${javacutils.loc}/src/javacutils/dist/ManualTaglet.java"/>
-            <arg line="-version"/>
-        </java>
+    <target name="javadoc" depends="prep,build.check.uptodate" description="Create Javadoc documentation">
 
         <!-- This relative path is wrong; running "ant -find" from a
         subdirectory fails. -->
         <javadoc sourcepath="${src}:${javacutils.loc}/src:${dataflow.loc}/src" destdir="${api.doc}"
                  failonerror="true"
                  executable="${jsr308.langtools}/dist/bin/javadoc"
-                 classpath="${build}:${javacutils.lib}:${dataflow.lib}:${javac.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar:${tests.junit}"
+                 classpath="${build}:${javacutils.lib}:${dataflow.lib}:${javaparser.lib}:${javac.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar:${tests.junit}"
                  excludepackagenames="checkers.util.stub"
                  bootclasspath="${javac.lib}:${javadoc.lib}:${java.home}/lib/rt.jar">
             <package name="checkers.*"/>
             <package name="javacutils.*"/>
             <package name="dataflow.*"/>
-            <taglet name="javacutils.dist.ManualTaglet" path="${build}"/>
+            <taglet name="javacutils.dist.ManualTaglet"/>
         </javadoc>
     </target>
 
