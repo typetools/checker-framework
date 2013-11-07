@@ -1,5 +1,9 @@
 package dataflow.analysis;
 
+/*>>>
+import checkers.nullness.quals.Nullable;
+*/
+
 import dataflow.cfg.node.Node;
 import dataflow.util.HashCodeUtils;
 

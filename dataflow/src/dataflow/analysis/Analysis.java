@@ -1,5 +1,9 @@
 package dataflow.analysis;
 
+/*>>>
+import checkers.nullness.quals.Nullable;
+*/
+
 import dataflow.cfg.ControlFlowGraph;
 import dataflow.cfg.UnderlyingAST;
 import dataflow.cfg.UnderlyingAST.CFGMethod;
@@ -8,7 +12,6 @@ import dataflow.cfg.block.Block;
 import dataflow.cfg.block.ConditionalBlock;
 import dataflow.cfg.block.ExceptionBlock;
 import dataflow.cfg.block.RegularBlock;
-import dataflow.cfg.block.SingleSuccessorBlock;
 import dataflow.cfg.block.SpecialBlock;
 import dataflow.cfg.node.AssignmentNode;
 import dataflow.cfg.node.LocalVariableNode;
