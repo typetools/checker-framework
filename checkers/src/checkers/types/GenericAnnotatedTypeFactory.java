@@ -82,7 +82,7 @@ import com.sun.source.tree.VariableTree;
  * annotations via {@link ImplicitFor}, and user-specified defaults via
  * {@link DefaultQualifier}.
  */
-public abstract class AbstractBasicAnnotatedTypeFactory<
+public abstract class GenericAnnotatedTypeFactory<
         Value extends CFAbstractValue<Value>,
         Store extends CFAbstractStore<Value, Store>,
         TransferFunction extends CFAbstractTransfer<Value, Store, TransferFunction>,
@@ -122,7 +122,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<
      * @param checker the checker to which this type factory belongs
      * @param useFlow whether flow analysis should be performed
      */
-    public AbstractBasicAnnotatedTypeFactory(BaseTypeChecker checker, boolean useFlow) {
+    public GenericAnnotatedTypeFactory(BaseTypeChecker checker, boolean useFlow) {
         super(checker);
 
         this.useFlow = useFlow;
@@ -163,7 +163,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<
      *
      * @param checker the checker to which this type factory belongs
      */
-    public AbstractBasicAnnotatedTypeFactory(BaseTypeChecker checker) {
+    public GenericAnnotatedTypeFactory(BaseTypeChecker checker) {
         this(checker, FLOW_BY_DEFAULT);
     }
 
@@ -269,7 +269,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<
             tmp.add(Pair.<VariableElement, CFValue> of(fieldVal.first,
                     (CFValue) fieldVal.second));
         }
-        return (FlowAnalysis) new CFAnalysis(checker, (AbstractBasicAnnotatedTypeFactory) this, tmp);
+        return (FlowAnalysis) new CFAnalysis(checker, (GenericAnnotatedTypeFactory) this, tmp);
     }
 
     /**
@@ -343,7 +343,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<
                 if (hasDefaultFor) {
                     // A type qualifier should either have a DefaultFor or
                     // a DefaultQualifierInHierarchy annotation
-                    ErrorReporter.errorAbort("AbstractBasicAnnotatedTypeFactory.createQualifierDefaults: " +
+                    ErrorReporter.errorAbort("GenericAnnotatedTypeFactory.createQualifierDefaults: " +
                             "qualifier has both @DefaultFor and @DefaultQualifierInHierarchy annotations: " +
                             qual.getCanonicalName());
                 // } else if (foundDefaultOtherwise) {
@@ -755,7 +755,7 @@ public abstract class AbstractBasicAnnotatedTypeFactory<
 
     protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type,
             boolean iUseFlow) {
-        assert root != null : "AbstractBasicAnnotatedTypeFactory.annotateImplicit: " +
+        assert root != null : "GenericAnnotatedTypeFactory.annotateImplicit: " +
             " root needs to be set when used on trees; factory: " + this.getClass();
 
         if (iUseFlow) {

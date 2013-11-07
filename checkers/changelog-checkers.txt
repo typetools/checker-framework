@@ -1,3 +1,10 @@
+----------------------------------------------------------------------
+
+Implementation details:
+  Renamed AbstractBasicAnnotatedTypeFactory to GenericAnnotatedTypeFactory
+
+----------------------------------------------------------------------
+
 Version 1.7.0, 23 October 2013
 
 Format String Checker:

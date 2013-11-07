@@ -7,7 +7,7 @@ import checkers.formatter.quals.ConversionCategory;
 import checkers.formatter.quals.Format;
 import checkers.formatter.quals.FormatBottom;
 import checkers.formatter.quals.InvalidFormat;
-import checkers.types.AbstractBasicAnnotatedTypeFactory;
+import checkers.types.GenericAnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.QualifierHierarchy;
@@ -35,7 +35,7 @@ import com.sun.source.tree.Tree;
  * @author Konstantin Weitz
  */
 public class FormatterAnnotatedTypeFactory extends
-        AbstractBasicAnnotatedTypeFactory<CFValue, CFStore, FormatterTransfer, FormatterAnalysis> {
+        GenericAnnotatedTypeFactory<CFValue, CFStore, FormatterTransfer, FormatterAnalysis> {
 
     private final AnnotationMirror FORMAT;
     private final AnnotationMirror INVALIDFORMAT;
