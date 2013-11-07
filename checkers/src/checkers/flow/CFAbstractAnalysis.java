@@ -2,7 +2,7 @@ package checkers.flow;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.source.SourceChecker;
-import checkers.types.AbstractBasicAnnotatedTypeFactory;
+import checkers.types.GenericAnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -68,7 +68,7 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>,
     /**
      * A type factory that can provide static type annotations for AST Trees.
      */
-    protected final AbstractBasicAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>> atypeFactory;
+    protected final GenericAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>> atypeFactory;
 
     /**
      * A checker used to do error reporting.
@@ -83,7 +83,7 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>,
     protected final int expectedNumberOfAnnotations;
 
     public CFAbstractAnalysis(BaseTypeChecker checker,
-            AbstractBasicAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory,
+            GenericAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory,
             List<Pair<VariableElement, V>> fieldValues) {
         super(checker.getProcessingEnvironment());
 
@@ -141,7 +141,7 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>,
         return typeHierarchy;
     }
 
-    public AbstractBasicAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>> getTypeFactory() {
+    public GenericAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>> getTypeFactory() {
         return atypeFactory;
     }
 

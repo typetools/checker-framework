@@ -7,7 +7,7 @@ import checkers.regex.quals.PartialRegex;
 import checkers.regex.quals.PolyRegex;
 import checkers.regex.quals.Regex;
 import checkers.regex.quals.RegexBottom;
-import checkers.types.AbstractBasicAnnotatedTypeFactory;
+import checkers.types.GenericAnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.QualifierHierarchy;
@@ -76,7 +76,7 @@ import com.sun.source.tree.Tree;
  * Also, adds {@link PolyRegex} to the type of String/char concatenation of
  * a Regex and a PolyRegex or two PolyRegexs.
  */
-public class RegexAnnotatedTypeFactory extends AbstractBasicAnnotatedTypeFactory<CFValue, CFStore, RegexTransfer, RegexAnalysis> {
+public class RegexAnnotatedTypeFactory extends GenericAnnotatedTypeFactory<CFValue, CFStore, RegexTransfer, RegexAnalysis> {
 
     /**
      * The Pattern.compile method.

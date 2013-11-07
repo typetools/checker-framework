@@ -227,7 +227,7 @@ import com.sun.tools.javac.util.Log;
     /// Miscellaneous debugging options
 
     // Directory for .dot files generated from the CFG
-    // checkers.types.AbstractBasicAnnotatedTypeFactory.analyze
+    // checkers.types.GenericAnnotatedTypeFactory.analyze
     "flowdotdir",
 
     // Whether to output resource statistics at JVM shutdown
