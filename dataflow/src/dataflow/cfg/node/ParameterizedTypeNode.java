@@ -19,7 +19,7 @@ import com.sun.source.tree.Tree;
  *
  * Parameterized types don't represent any computation to be done
  * at runtime, so we might choose to represent them differently by
- * modifying the {@Link Node}s in which parameterized types can occur, such
+ * modifying the {@link Node}s in which parameterized types can occur, such
  * as {@link ObjectCreationNode}s.
  *
  * @author Stefan Heule
