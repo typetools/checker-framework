@@ -12,7 +12,7 @@ import checkers.quals.*;
  * @see java.awt.FlowLayout#RIGHT
  * @see java.awt.FlowLayout#LEADING
  * @see java.awt.FlowLayout#TRAILING
- * @checker.framework.manual #fenum-checker Fake Enum Checker
+ * @checker_framework_manual #fenum-checker Fake Enum Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

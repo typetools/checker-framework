@@ -52,7 +52,7 @@ import java.lang.annotation.Target;
  * command-line option.
  * <p>
  *
- * @checker.framework.manual #type-refinement-purity Side effects, determinism, purity, and flow-sensitive analysis
+ * @checker_framework_manual #type-refinement-purity Side effects, determinism, purity, and flow-sensitive analysis
  *
  * @author Stefan Heule
  */

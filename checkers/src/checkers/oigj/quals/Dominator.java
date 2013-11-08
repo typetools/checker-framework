@@ -6,7 +6,7 @@ import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifier;
 
 /**
- * @checker.framework.manual #oigj-checker OIGJ Checker
+ * @checker_framework_manual #oigj-checker OIGJ Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

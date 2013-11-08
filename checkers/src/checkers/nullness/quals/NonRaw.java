@@ -23,7 +23,7 @@ import java.lang.annotation.Target;
  * reading fields from such objects is fully safe and yields objects of the
  * correct type.
  *
- * @checker.framework.manual #nullness-checker Nullness Checker
+ * @checker_framework_manual #nullness-checker Nullness Checker
  */
 @TypeQualifier
 @SubtypeOf(Raw.class)

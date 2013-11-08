@@ -11,7 +11,7 @@ import checkers.quals.*;
  *
  * @see Untainted
  * @see TaintingChecker
- * @checker.framework.manual #tainting-checker Tainting Checker
+ * @checker_framework_manual #tainting-checker Tainting Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

@@ -49,7 +49,7 @@ import dataflow.quals.SideEffectFree;
  *
  * @see Nullable
  * @see NullnessChecker
- * @checker.framework.manual #nullness-checker Nullness Checker
+ * @checker_framework_manual #nullness-checker Nullness Checker
  */
 @Deprecated
 @Documented

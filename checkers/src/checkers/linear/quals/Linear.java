@@ -6,7 +6,7 @@ import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifier;
 
 /**
- * @checker.framework.manual #linear-checker Linear Checker
+ * @checker_framework_manual #linear-checker Linear Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

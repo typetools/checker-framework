@@ -13,7 +13,7 @@ import checkers.quals.Unqualified;
  *
  * @see GuardedBy
  * @see Holding
- * @checker.framework.manual #lock-checker Lock Checker
+ * @checker_framework_manual #lock-checker Lock Checker
  */
 @TypeQualifiers( { GuardedBy.class, Unqualified.class, GuardedByTop.class } )
 public class LockChecker extends BaseTypeChecker {

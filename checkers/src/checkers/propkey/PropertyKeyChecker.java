@@ -36,7 +36,7 @@ import java.util.ResourceBundle;
  *
  * </ol>
  *
- * @checker.framework.manual #propkey-checker Property File Checker
+ * @checker_framework_manual #propkey-checker Property File Checker
  */
 // Subclasses need something similar to this:
 @TypeQualifiers( {PropertyKey.class, Unqualified.class, Bottom.class} )

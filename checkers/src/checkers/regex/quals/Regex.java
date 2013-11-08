@@ -19,7 +19,7 @@ import java.lang.annotation.Target;
  * {@link java.util.regex.MatchResult MatchResult} indicates the number of regular
  * expression groups.
  *
- * @checker.framework.manual #regex-checker Regex Checker
+ * @checker_framework_manual #regex-checker Regex Checker
  */
 @TypeQualifier
 @SubtypeOf(Unqualified.class)

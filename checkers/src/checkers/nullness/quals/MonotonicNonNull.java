@@ -52,7 +52,7 @@ import java.lang.annotation.Target;
  * @see RequiresNonNull
  * @see MonotonicQualifier
  * @see AbstractNullnessChecker
- * @checker.framework.manual #nullness-checker Nullness Checker
+ * @checker_framework_manual #nullness-checker Nullness Checker
  */
 @Documented
 @TypeQualifier

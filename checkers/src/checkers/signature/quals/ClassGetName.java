@@ -25,7 +25,7 @@ import checkers.quals.TypeQualifier;
  *   [[[I
  * </pre>
  *
- * @checker.framework.manual #signature-checker Signature Checker
+ * @checker_framework_manual #signature-checker Signature Checker
  */
 @TypeQualifier
 @SubtypeOf(UnannotatedString.class)

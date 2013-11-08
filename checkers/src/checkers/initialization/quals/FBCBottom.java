@@ -19,7 +19,7 @@ import com.sun.source.tree.Tree;
  * This annotation may not be written in source code; it is an
  * implementation detail of the checker.
  *
- * @checker.framework.manual #nullness-checker Nullness Checker
+ * @checker_framework_manual #nullness-checker Nullness Checker
  * @author Stefan Heule
  */
 @TypeQualifier
