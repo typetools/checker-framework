@@ -22,7 +22,7 @@ import java.lang.annotation.Target;
  *
  * @see Mutable
  * @see JavariChecker
- * @checker.framework.manual #javari-checker Javari Checker
+ * @checker_framework_manual #javari-checker Javari Checker
  */
 @TypeQualifier
 @SubtypeOf({})

@@ -17,7 +17,7 @@ import java.util.Collection;
  *
  * @see I18nSubchecker
  * @see LocalizableKeyChecker
- * @checker.framework.manual #i18n-checker Internationalization Checker
+ * @checker_framework_manual #i18n-checker Internationalization Checker
  */
 public class I18nChecker extends AggregateChecker {
 

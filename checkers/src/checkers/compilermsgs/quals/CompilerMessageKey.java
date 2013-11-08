@@ -16,7 +16,7 @@ import checkers.quals.TypeQualifier;
  * explicitly.
  *
  * @author wmdietl
- * @checker.framework.manual #compilermsgs-checker Compiler Message Key Checker
+ * @checker_framework_manual #compilermsgs-checker Compiler Message Key Checker
  */
 @TypeQualifier
 @SubtypeOf(PropertyKey.class)

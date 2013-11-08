@@ -23,7 +23,7 @@ import checkers.quals.TypeQualifier;
  * Lcheckers/signature/SignatureChecker; and
  * Lcheckers/signature/SignatureChecker$Inner;.
  *
- * @checker.framework.manual #signature-checker Signature Checker
+ * @checker_framework_manual #signature-checker Signature Checker
  */
 @TypeQualifier
 @SubtypeOf(UnannotatedString.class)

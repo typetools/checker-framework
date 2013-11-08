@@ -4,6 +4,6 @@
  * interning errors.
  *
  * @see checkers.interning.InterningChecker
- * @checker.framework.manual #interning-checker Interning Checker
+ * @checker_framework_manual #interning-checker Interning Checker
  */
 package checkers.interning;

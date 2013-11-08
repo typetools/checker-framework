@@ -32,7 +32,7 @@ import checkers.quals.PreconditionAnnotation;
  *  }
  * </pre>
  *
- * @checker.framework.manual #nullness-checker Nullness Checker
+ * @checker_framework_manual #nullness-checker Nullness Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

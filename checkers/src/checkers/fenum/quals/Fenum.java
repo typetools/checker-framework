@@ -10,7 +10,7 @@ import checkers.quals.*;
  * <tt>@Fenum("cardSuit")</tt> and <tt>@Fenum("faceValue")</tt>, which
  * would be distinct fake enumerations.
  *
- * @checker.framework.manual #fenum-checker Fake Enum Checker
+ * @checker_framework_manual #fenum-checker Fake Enum Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

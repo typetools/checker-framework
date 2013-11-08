@@ -26,7 +26,7 @@ import javax.annotation.processing.SupportedOptions;
  * hierarchy can be passed.</li>
  * </ul>
  *
- * @checker.framework.manual #subtyping-checker Subtying Checker
+ * @checker_framework_manual #subtyping-checker Subtying Checker
  */
 @SupportedOptions( { "quals" })
 public final class SubtypingChecker extends BaseTypeChecker {

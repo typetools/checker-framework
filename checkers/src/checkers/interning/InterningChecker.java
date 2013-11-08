@@ -23,7 +23,7 @@ import javax.annotation.processing.SupportedOptions;
  * {@link Interned}.  Optionally, it suggests using "=="
  * instead of ".equals" where possible.
  *
- * @checker.framework.manual #interning-checker Interning Checker
+ * @checker_framework_manual #interning-checker Interning Checker
  */
 @TypeQualifiers({ Interned.class, Unqualified.class,
     PolyInterned.class, PolyAll.class})

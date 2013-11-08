@@ -23,7 +23,7 @@ import checkers.quals.TypeQualifier;
  * </pre>
  * In this example method descriptor for method 'method': (Ljava/lang/Object;I)Z
  *
- * @checker.framework.manual #signature-checker Signature Checker
+ * @checker_framework_manual #signature-checker Signature Checker
  */
 @TypeQualifier
 @SubtypeOf(UnannotatedString.class)

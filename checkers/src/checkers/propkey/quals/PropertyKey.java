@@ -9,7 +9,7 @@ import checkers.quals.Unqualified;
  * Indicates that the {@code String} type can be used as key in a
  * property file or resource bundle.
  *
- * @checker.framework.manual #propkey-checker Property File Checker
+ * @checker_framework_manual #propkey-checker Property File Checker
  */
 @TypeQualifier
 @SubtypeOf(Unqualified.class)

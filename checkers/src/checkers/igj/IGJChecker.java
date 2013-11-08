@@ -19,7 +19,7 @@ import checkers.quals.TypeQualifiers;
  * {@link Immutable}, {@link I} -- a polymorphic qualifier, {@link Assignable},
  * and {@link AssignsFields}.  The language is specified by the FSE 2007 paper.
  *
- * @checker.framework.manual #igj-checker IGJ Checker
+ * @checker_framework_manual #igj-checker IGJ Checker
  *
  */
 @TypeQualifiers({ ReadOnly.class, Mutable.class, Immutable.class, I.class,

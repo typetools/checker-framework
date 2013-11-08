@@ -17,7 +17,7 @@ import java.lang.annotation.Target;
  * in which every instance of @PolyInterned has been replaced by @Interned, and
  * one in which every instance of @PolyInterned has been erased.
  *
- * @checker.framework.manual #interning-checker Interning Checker
+ * @checker_framework_manual #interning-checker Interning Checker
  */
 @TypeQualifier
 @PolymorphicQualifier

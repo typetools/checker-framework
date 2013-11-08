@@ -15,7 +15,7 @@ import java.lang.annotation.Target;
 /**
  * Denotes a reference that is untainted, i.e. can be trusted.
  *
- * @checker.framework.manual #tainting-checker Tainting Checker
+ * @checker_framework_manual #tainting-checker Tainting Checker
  */
 @TypeQualifier
 @SubtypeOf(Tainted.class)

@@ -38,7 +38,7 @@ import checkers.quals.*;
  * validate the annotations.  Future releases will check for the presence of
  * the key in the map (when possible).
  *
- * @checker.framework.manual #nullness-checker Nullness Checker
+ * @checker_framework_manual #nullness-checker Nullness Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

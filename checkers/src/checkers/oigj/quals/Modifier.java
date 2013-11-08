@@ -5,7 +5,7 @@ import java.lang.annotation.*;
 import checkers.quals.*;
 
 /**
- * @checker.framework.manual #oigj-checker OIGJ Checker
+ * @checker_framework_manual #oigj-checker OIGJ Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

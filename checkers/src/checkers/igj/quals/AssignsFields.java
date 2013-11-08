@@ -16,7 +16,7 @@ import java.lang.annotation.Target;
  * A method with an AssignsFields receiver may not use the receiver to
  * invoke other methods with mutable or immutable receiver.
  *
- * @checker.framework.manual #igj-checker IGJ Checker
+ * @checker_framework_manual #igj-checker IGJ Checker
  */
 // TODO: Document this
 
