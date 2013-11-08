@@ -17,7 +17,7 @@ import java.lang.annotation.Target;
  * This annotation may not be written in source code; it is an
  * implementation detail of the checker.
  *
- * @checker.framework.manual #fenum-checker Fake Enum Checker
+ * @checker_framework_manual #fenum-checker Fake Enum Checker
  */
 @TypeQualifier
 @SubtypeOf( { FenumTop.class } )

@@ -30,7 +30,7 @@ import checkers.nullness.NullnessChecker;
  * @see NonNull
  * @see PolyNull
  * @see NullnessChecker
- * @checker.framework.manual #nullness-checker Nullness Checker
+ * @checker_framework_manual #nullness-checker Nullness Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

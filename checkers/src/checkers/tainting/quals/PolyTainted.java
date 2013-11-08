@@ -7,7 +7,7 @@ import checkers.quals.*;
 /**
  * A polymorphic qualifier for the Tainting type system.
  *
- * @checker.framework.manual #tainting-checker Tainting Checker
+ * @checker_framework_manual #tainting-checker Tainting Checker
  */
 @Documented
 @TypeQualifier

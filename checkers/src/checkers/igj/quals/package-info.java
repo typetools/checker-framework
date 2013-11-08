@@ -3,6 +3,6 @@
  *
  * @see checkers.igj.IGJChecker
  *
- * @checker.framework.manual #igj-checker IGJ Checker
+ * @checker_framework_manual #igj-checker IGJ Checker
  */
 package checkers.igj.quals;

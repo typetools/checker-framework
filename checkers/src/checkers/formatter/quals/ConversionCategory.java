@@ -28,7 +28,7 @@ import java.util.Set;
  * second parameter ({@link ConversionCategory#INT}).
  *
  * @see Format
- * @checker.framework.manual #formatter-checker Format String Checker
+ * @checker_framework_manual #formatter-checker Format String Checker
  * @author Konstantin Weitz
  */
 public enum ConversionCategory {

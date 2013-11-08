@@ -13,7 +13,7 @@ import checkers.quals.TypeQualifier;
  * This annotation may not be written in source code; it is an
  * implementation detail of the checker.
  *
- * @checker.framework.manual #lock-checker Lock Checker
+ * @checker_framework_manual #lock-checker Lock Checker
  */
 @Documented
 @Target({}) // not necessary to be used by the programmer

@@ -40,7 +40,7 @@ import java.lang.annotation.Target;
  * Just {@code @UnknownInitialization} is equivalent to
  * {@code @UnknownInitialization(Object.class)}.
  *
- * @checker.framework.manual #nullness-checker Nullness Checker
+ * @checker_framework_manual #nullness-checker Nullness Checker
  */
 @TypeQualifier
 @SubtypeOf({})

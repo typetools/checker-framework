@@ -29,7 +29,7 @@ import checkers.quals.Unqualified;
  * second parameter ({@link ConversionCategory#INT}). 
  *
  * @see ConversionCategory
- * @checker.framework.manual #formatter-checker Format String Checker
+ * @checker_framework_manual #formatter-checker Format String Checker
  * @author Konstantin Weitz
  */
 @TypeQualifier

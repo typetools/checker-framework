@@ -63,7 +63,7 @@ import java.lang.annotation.Target;
  * immutability, otherwise {@code @I} is resolved to {@code @ReadOnly}.
  *
  *
- * @checker.framework.manual #igj-checker IGJ Checker
+ * @checker_framework_manual #igj-checker IGJ Checker
  */
 @TypeQualifier
 //@PolymorphicQualifier // TODO: uncomment later

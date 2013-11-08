@@ -21,7 +21,7 @@ import checkers.quals.*;
  * @see java.awt.AlphaComposite#SRC_ATOP
  * @see java.awt.AlphaComposite#DST_ATOP
  * @see java.awt.AlphaComposite#XOR
- * @checker.framework.manual #fenum-checker Fake Enum Checker
+ * @checker_framework_manual #fenum-checker Fake Enum Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

@@ -25,7 +25,7 @@ import checkers.quals.TypeQualifier;
  * Fully-qualified names and {@linkplain BinaryName binary names} are the same
  * for top-level classes and only differ by a '.' vs. '$' for inner classes.
  *
- * @checker.framework.manual #signature-checker Signature Checker
+ * @checker_framework_manual #signature-checker Signature Checker
  */
 @TypeQualifier
 @SubtypeOf(UnannotatedString.class)

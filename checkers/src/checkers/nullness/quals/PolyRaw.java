@@ -12,7 +12,7 @@ import checkers.quals.*;
  * in which every instance of @PolyRaw has been replaced by @Raw, and
  * one in which every instance of @PolyRaw has been replaced by @NonRaw.
  *
- * @checker.framework.manual #nullness-checker Nullness Checker
+ * @checker_framework_manual #nullness-checker Nullness Checker
  */
 @Documented
 @TypeQualifier

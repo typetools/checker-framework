@@ -28,7 +28,7 @@ import javax.annotation.processing.SupportedOptions;
  * </ol>
  *
  * @author wmdietl
- * @checker.framework.manual #fenum-checker Fake Enum Checker
+ * @checker_framework_manual #fenum-checker Fake Enum Checker
  */
 @SupportedOptions( { "quals" } )
 public class FenumChecker extends BaseTypeChecker {

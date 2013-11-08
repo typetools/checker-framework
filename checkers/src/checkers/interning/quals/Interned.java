@@ -32,7 +32,7 @@ import com.sun.source.tree.LiteralTree;
  * This annotation is associated with the {@link InterningChecker}.
  *
  * @see InterningChecker
- * @checker.framework.manual #interning-checker Interning Checker
+ * @checker_framework_manual #interning-checker Interning Checker
  */
 @TypeQualifier
 @SubtypeOf(Unqualified.class)

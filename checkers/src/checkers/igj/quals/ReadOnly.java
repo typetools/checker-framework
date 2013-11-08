@@ -17,7 +17,7 @@ import java.lang.annotation.Target;
  * except if the field is marked {@code Assignable}. Only a method with a
  * readonly receiver can be called using a readonly reference.
  *
- * @checker.framework.manual #igj-checker IGJ Checker
+ * @checker_framework_manual #igj-checker IGJ Checker
  */
 @TypeQualifier
 @SubtypeOf({})

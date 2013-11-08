@@ -18,7 +18,7 @@ import java.lang.annotation.Target;
  * An Immutable object cannot be modified. Its fields may be reassigned or
  * mutated only if they are explicitly marked as Mutable or Assignable.
  *
- * @checker.framework.manual #igj-checker IGJ Checker
+ * @checker_framework_manual #igj-checker IGJ Checker
  */
 @TypeQualifier
 @SubtypeOf(ReadOnly.class)

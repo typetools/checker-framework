@@ -9,7 +9,7 @@ import checkers.quals.*;
 /**
  * TODO: document that this is the bottom type for the KeyFor system.
  *
- * @checker.framework.manual #nullness-checker Nullness Checker
+ * @checker_framework_manual #nullness-checker Nullness Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
