@@ -236,6 +236,21 @@
     -->
     <target name="javadoc" depends="prep,build.check.uptodate" description="Create Javadoc documentation">
 
+        <ant dir="${javacutils.loc}">
+            <target name="javadoc"/>
+        </ant>
+
+        <java fork="true"
+              failonerror="true"
+              classpath="${javacutils.lib}:${javac.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar"
+              classname="com.sun.tools.javac.Main">
+            <jvmarg line="-Xbootclasspath/p:${javac.lib}:${javadoc.lib}"/>
+            <arg value="-g"/>
+            <arg line="-d ${build}"/>
+            <arg line="${javacutils.loc}/src/javacutils/dist/ManualTaglet.java"/>
+            <arg line="-version"/>
+        </java>
+
         <!-- This relative path is wrong; running "ant -find" from a
         subdirectory fails. -->
         <javadoc sourcepath="${src}:${javacutils.loc}/src:${dataflow.loc}/src" destdir="${api.doc}"
@@ -247,7 +262,10 @@
             <package name="checkers.*"/>
             <package name="javacutils.*"/>
             <package name="dataflow.*"/>
-            <taglet name="javacutils.dist.ManualTaglet"/>
+            <link href="http://types.cs.washington.edu/checker-framework/api/jdk/"/>
+            <link href="http://types.cs.washington.edu/checker-framework/api/javac/tree/"/>
+            <taglet name="javacutils.dist.ManualTaglet"
+                    path="${javacutils.loc}/build"/>
         </javadoc>
     </target>
 
@@ -861,6 +879,11 @@
         <copy file="jdk/jdk6.jar" tofile="binary/jdk6.jar" overwrite="true" failonerror="false" />
         <copy file="jdk/jdk7.jar" tofile="binary/jdk7.jar" overwrite="true" failonerror="false" />
         <copy file="jdk/jdk8.jar" tofile="binary/jdk8.jar" overwrite="true" failonerror="false" />
+    </target>
+
+    <!-- For debugging -->
+    <target name="showvars" depends="prep">
+        <echo>[java.home] ${java.home}</echo>
     </target>
 
 </project>
