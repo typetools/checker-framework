@@ -506,7 +506,16 @@ public class TypeFromElement {
                 break;
 
             case METHOD_RETURN:
-                annotate(type.getReturnType(), typeAnno);
+                if (symbol.isConstructor()) {
+                    // For constructors, the underlying return type is void.
+                    // Take the type of the enclosing class instead.
+                    Type enclTy = symbol.enclClass().asType();
+                    AnnotatedTypeMirror ret = AnnotatedTypeMirror.createType(enclTy, type.atypeFactory);
+                    annotate(ret, typeAnno);
+                    type.setReturnType(ret);
+                } else {
+                    annotate(type.getReturnType(), typeAnno);
+                }
                 break;
 
             case METHOD_FORMAL_PARAMETER:
