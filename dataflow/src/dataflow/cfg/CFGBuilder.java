@@ -3324,6 +3324,7 @@ public class CFGBuilder {
                 case CLASS:
                 case ENUM:
                 case INTERFACE:
+                case TYPE_PARAMETER:
                     node = new ClassNameNode(tree);
                     break;
                 case FIELD:
