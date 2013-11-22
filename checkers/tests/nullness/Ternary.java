@@ -1,4 +1,3 @@
-// @skip-test
 // Test case for issue #277: http://code.google.com/p/checker-framework/issues/detail?id=277
 
 import checkers.nullness.quals.*;

@@ -2110,62 +2110,83 @@ public class CFGBuilder {
          */
         protected List<Node> convertCallArguments(ExecutableElement method,
                 List<? extends ExpressionTree> actualExprs) {
+            // NOTE: It is important to convert one method argument before
+            // generating CFG nodes for the next argument, since label binding
+            // expects nodes to be generated in execution order.  Therefore,
+            // this method first determines which conversions need to be applied
+            // and then iterates over the actual arguments.
             List<? extends VariableElement> formals = method.getParameters();
 
-            ArrayList<Node> actualNodes = new ArrayList<Node>();
+            ArrayList<Node> convertedNodes = new ArrayList<Node>();
 
-            for (ExpressionTree actual : actualExprs) {
-                actualNodes.add(scan(actual, null));
-            }
-
+            int numFormals = formals.size();
+            int numActuals = actualExprs.size();
             if (method.isVarArgs()) {
                 // Create a new array argument if the actuals outnumber
                 // the formals, or if the last actual is not assignable
                 // to the last formal.
-                int numFormals = formals.size();
                 int lastArgIndex = numFormals - 1;
-                int numActuals = actualExprs.size();
                 TypeMirror lastParamType = formals.get(lastArgIndex).asType();
                 List<Node> dimensions = new ArrayList<>();
                 List<Node> initializers = new ArrayList<>();
 
                 if (numActuals == numFormals - 1) {
-                    // Create an empty array for the last parameter
+                    // Apply method invocation conversion to all actual
+                    // arguments, then create and append an empty array
+                    for (int i = 0; i < numActuals; i++) {
+                        Node actualVal = scan(actualExprs.get(i), null);
+                        convertedNodes.add(methodInvocationConvert(actualVal,
+                                formals.get(i).asType()));
+                    }
+
                     Node lastArgument = new ArrayCreationNode(null,
                             lastParamType, dimensions, initializers);
                     extendWithNode(lastArgument);
 
-                    actualNodes.add(lastArgument);
+                    convertedNodes.add(lastArgument);
                 } else {
                     TypeMirror actualType = InternalUtils.typeOf(actualExprs
                             .get(lastArgIndex));
                     if (numActuals == numFormals
                             && types.isAssignable(actualType, lastParamType)) {
-                        // Normal call with no array creation
+                        // Normal call with no array creation, apply method
+                        // invocation conversion to all arguments.
+                        for (int i = 0; i < numActuals; i++) {
+                            Node actualVal = scan(actualExprs.get(i), null);
+                            convertedNodes.add(methodInvocationConvert(actualVal,
+                                    formals.get(i).asType()));
+                        }
                     } else {
                         assert lastParamType instanceof ArrayType :
                             "variable argument formal must be an array";
+                        // Apply method invocation conversion to lastArgIndex
+                        // arguments and use the remaining ones to initialize
+                        // an array.
+                        for (int i = 0; i < lastArgIndex; i++) {
+                            Node actualVal = scan(actualExprs.get(i), null);
+                            convertedNodes.add(methodInvocationConvert(actualVal,
+                                    formals.get(i).asType()));
+                        }
+
                         TypeMirror elemType =
                             ((ArrayType)lastParamType).getComponentType();
                         for (int i = lastArgIndex; i < numActuals; i++) {
-                            Node actualVal = actualNodes.remove(lastArgIndex);
+                            Node actualVal = scan(actualExprs.get(i), null);
                             initializers.add(assignConvert(actualVal, elemType));
                         }
 
                         Node lastArgument = new ArrayCreationNode(null,
                                 lastParamType, dimensions, initializers);
                         extendWithNode(lastArgument);
-
-                        actualNodes.add(lastArgument);
+                        convertedNodes.add(lastArgument);
                     }
                 }
-            }
-
-            // Convert arguments
-            ArrayList<Node> convertedNodes = new ArrayList<Node>();
-            for (int i = 0; i < formals.size(); i++) {
-                convertedNodes.add(methodInvocationConvert(actualNodes.get(i),
-                        formals.get(i).asType()));
+            } else {
+                for (int i = 0; i < numActuals; i++) {
+                    Node actualVal = scan(actualExprs.get(i), null);
+                    convertedNodes.add(methodInvocationConvert(actualVal,
+                            formals.get(i).asType()));
+                }
             }
 
             return convertedNodes;
@@ -3324,6 +3345,7 @@ public class CFGBuilder {
                 case CLASS:
                 case ENUM:
                 case INTERFACE:
+                case TYPE_PARAMETER:
                     node = new ClassNameNode(tree);
                     break;
                 case FIELD:
