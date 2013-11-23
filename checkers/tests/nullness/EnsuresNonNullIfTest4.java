@@ -1,4 +1,3 @@
-// @skip-test
 
 import dataflow.quals.*;
 import checkers.nullness.quals.*;
