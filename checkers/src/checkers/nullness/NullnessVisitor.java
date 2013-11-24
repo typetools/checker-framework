@@ -198,14 +198,13 @@ public class NullnessVisitor extends InitializationVisitor<NullnessAnnotatedType
             // cast is safe, because varTree is a field
             AnnotatedTypeMirror annos = atypeFactory.getDeclaredAndDefaultedAnnotatedType(varTree);
             // receiverType is null for static field accesses
-            AnnotatedTypeMirror receiverType = atypeFactory
-                    .getReceiverType((ExpressionTree) varTree);
+            AnnotatedTypeMirror receiverType = atypeFactory.getReceiverType((ExpressionTree) varTree);
             if (receiverType != null
                     && (atypeFactory.isFree(receiverType) || atypeFactory.isUnclassified(receiverType))) {
-                if (annos.hasAnnotation(NONNULL)
-                        && !valueType.hasAnnotation(NONNULL)) {
+                if (annos.hasEffectiveAnnotation(NONNULL)
+                        && !valueType.hasEffectiveAnnotation(NONNULL)) {
                     checker.report(Result.failure(ASSIGNMENT_TYPE_INCOMPATIBLE,
-                            atypeFactory.getAnnotatedType(valueExp).toString(),
+                            valueType.toString(),
                             annos.toString()), varTree);
                 }
             }
