@@ -184,7 +184,7 @@ public class NullnessVisitor extends InitializationVisitor<NullnessAnnotatedType
         if (varTree.getKind() == Tree.Kind.VARIABLE) {
             Element elem = TreeUtils
                     .elementFromDeclaration((VariableTree) varTree);
-            if (atypeFactory.fromElement(elem).hasAnnotation(MONOTONIC_NONNULL)
+            if (atypeFactory.fromElement(elem).hasEffectiveAnnotation(MONOTONIC_NONNULL)
                     && !checker.getLintOption(
                                     AbstractNullnessChecker.LINT_NOINITFORMONOTONICNONNULL,
                                     AbstractNullnessChecker.LINT_DEFAULT_NOINITFORMONOTONICNONNULL)) {
@@ -239,7 +239,7 @@ public class NullnessVisitor extends InitializationVisitor<NullnessAnnotatedType
     public Void visitNewArray(NewArrayTree node, Void p) {
         AnnotatedArrayType type = atypeFactory.getAnnotatedType(node);
         AnnotatedTypeMirror componentType = type.getComponentType();
-        if (componentType.hasAnnotation(NONNULL)
+        if (componentType.hasEffectiveAnnotation(NONNULL)
                 && !isNewArrayAllZeroDims(node)
                 && !isNewArrayInToArray(node)
                 && !TypesUtils.isPrimitive(componentType.getUnderlyingType())
