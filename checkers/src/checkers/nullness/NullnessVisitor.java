@@ -184,7 +184,7 @@ public class NullnessVisitor extends InitializationVisitor<NullnessAnnotatedType
         if (varTree.getKind() == Tree.Kind.VARIABLE) {
             Element elem = TreeUtils
                     .elementFromDeclaration((VariableTree) varTree);
-            if (atypeFactory.fromElement(elem).hasAnnotation(MONOTONIC_NONNULL)
+            if (atypeFactory.fromElement(elem).hasEffectiveAnnotation(MONOTONIC_NONNULL)
                     && !checker.getLintOption(
                                     AbstractNullnessChecker.LINT_NOINITFORMONOTONICNONNULL,
                                     AbstractNullnessChecker.LINT_DEFAULT_NOINITFORMONOTONICNONNULL)) {
@@ -198,14 +198,13 @@ public class NullnessVisitor extends InitializationVisitor<NullnessAnnotatedType
             // cast is safe, because varTree is a field
             AnnotatedTypeMirror annos = atypeFactory.getDeclaredAndDefaultedAnnotatedType(varTree);
             // receiverType is null for static field accesses
-            AnnotatedTypeMirror receiverType = atypeFactory
-                    .getReceiverType((ExpressionTree) varTree);
+            AnnotatedTypeMirror receiverType = atypeFactory.getReceiverType((ExpressionTree) varTree);
             if (receiverType != null
                     && (atypeFactory.isFree(receiverType) || atypeFactory.isUnclassified(receiverType))) {
-                if (annos.hasAnnotation(NONNULL)
-                        && !valueType.hasAnnotation(NONNULL)) {
+                if (annos.hasEffectiveAnnotation(NONNULL)
+                        && !valueType.hasEffectiveAnnotation(NONNULL)) {
                     checker.report(Result.failure(ASSIGNMENT_TYPE_INCOMPATIBLE,
-                            atypeFactory.getAnnotatedType(valueExp).toString(),
+                            valueType.toString(),
                             annos.toString()), varTree);
                 }
             }
@@ -240,7 +239,7 @@ public class NullnessVisitor extends InitializationVisitor<NullnessAnnotatedType
     public Void visitNewArray(NewArrayTree node, Void p) {
         AnnotatedArrayType type = atypeFactory.getAnnotatedType(node);
         AnnotatedTypeMirror componentType = type.getComponentType();
-        if (componentType.hasAnnotation(NONNULL)
+        if (componentType.hasEffectiveAnnotation(NONNULL)
                 && !isNewArrayAllZeroDims(node)
                 && !isNewArrayInToArray(node)
                 && !TypesUtils.isPrimitive(componentType.getUnderlyingType())
