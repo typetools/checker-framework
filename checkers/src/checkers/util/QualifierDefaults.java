@@ -645,9 +645,30 @@ public class QualifierDefaults {
 
                 WildcardType wc = (WildcardType) type.getUnderlyingType();
 
-                if (wc.isUnbound()) {
-                    isTypeVarExtendsImplicit = true;
-                    isTypeVarExtendsExplicit = false;
+                if (wc.isUnbound() &&
+                        wc.bound != null) {
+                    // If the wildcard bound is implicit, look what
+                    // the type variable bound would be.
+                    Element tvel = wc.bound.asElement();
+                    TreePath treepath = atypeFactory.getTreeUtils().getPath(tvel);
+                    Tree tree = treepath == null ? null : treepath.getLeaf();
+
+                    if (tree != null &&
+                            tree.getKind() == Tree.Kind.TYPE_PARAMETER) {
+                        TypeParameterTree tptree = (TypeParameterTree) tree;
+
+                        List<? extends Tree> bnds = tptree.getBounds();
+                        if (bnds != null && !bnds.isEmpty()) {
+                            isTypeVarExtendsImplicit = false;
+                            isTypeVarExtendsExplicit = true;
+                        } else {
+                            isTypeVarExtendsImplicit = true;
+                            isTypeVarExtendsExplicit = false;
+                        }
+                    } else {
+                        isTypeVarExtendsImplicit = false;
+                        isTypeVarExtendsExplicit = true;
+                    }
                 } else {
                     isTypeVarExtendsImplicit = false;
                     isTypeVarExtendsExplicit = true;
