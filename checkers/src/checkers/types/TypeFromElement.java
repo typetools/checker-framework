@@ -502,25 +502,13 @@ public class TypeFromElement {
 
             switch (pos.type) {
             case METHOD_RECEIVER:
+                // Assumes that the receiver type is non-null if
+                // we find a METHOD_RECEIVER position.
                 annotate(type.getReceiverType(), typeAnno);
                 break;
 
             case METHOD_RETURN:
-                if (symbol.isConstructor()) {
-                    if (type.getReturnType().getKind() == TypeKind.VOID) {
-                        // For constructors, the underlying return type is void.
-                        // Take the type of the enclosing class instead.
-                        Type enclTy = symbol.enclClass().asType();
-                        AnnotatedTypeMirror ret = AnnotatedTypeMirror.createType(enclTy, type.atypeFactory);
-                        annotate(ret, typeAnno);
-                        type.setReturnType(ret);
-                    } else {
-                        // If we already replaced void, add additional qualifiers.
-                        annotate(type.getReturnType(), typeAnno);
-                    }
-                } else {
-                    annotate(type.getReturnType(), typeAnno);
-                }
+                annotate(type.getReturnType(), typeAnno);
                 break;
 
             case METHOD_FORMAL_PARAMETER:
