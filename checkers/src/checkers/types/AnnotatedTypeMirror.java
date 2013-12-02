@@ -2,6 +2,7 @@ package checkers.types;
 
 /*>>>
 import checkers.nullness.quals.NonNull;
+import checkers.nullness.quals.Nullable;
 import checkers.interning.quals.*;
 */
 
@@ -58,6 +59,7 @@ import javax.lang.model.util.Types;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.Tree;
+import com.sun.tools.javac.code.Symbol.MethodSymbol;
 
 /**
  * Represents an annotated type in the Java programming language.
@@ -1164,13 +1166,23 @@ public abstract class AnnotatedTypeMirror {
         }
 
         /**
+         * The return type of a method or constructor.
+         * For constructors, the return type is not VOID, but the type of
+         * the enclosing class.
+         *
          * @return the return type of this executable type
          */
         public AnnotatedTypeMirror getReturnType() {
             if (returnType == null
+                    && element != null
                     && actualType.getReturnType() != null) {// lazy init
-                returnType = createType(
-                        actualType.getReturnType(), atypeFactory);
+                TypeMirror aret = actualType.getReturnType();
+                if (((MethodSymbol)element).isConstructor()) {
+                        // For constructors, the underlying return type is void.
+                        // Take the type of the enclosing class instead.
+                        aret = element.getEnclosingElement().asType();
+                }
+                returnType = createType(aret, atypeFactory);
             }
             return returnType;
         }
@@ -1184,10 +1196,13 @@ public abstract class AnnotatedTypeMirror {
         }
 
         /**
-         * @return the receiver type of this executable type
+         * @return the receiver type of this executable type;
+         *   null for static methods and constructors of top-level classes
          */
-        public AnnotatedDeclaredType getReceiverType() {
-            if (receiverType == null) {
+        public /*@Nullable*/ AnnotatedDeclaredType getReceiverType() {
+            if (receiverType == null &&
+                    getElement() != null &&
+                    !ElementUtils.isStatic(getElement())) {
                 TypeElement encl = ElementUtils.enclosingClass(getElement());
                 AnnotatedTypeMirror type = createType(encl.asType(), atypeFactory);
                 assert type instanceof AnnotatedDeclaredType;
@@ -1278,7 +1293,11 @@ public abstract class AnnotatedTypeMirror {
                 type.addAnnotations(annotations);
             type.setElement(getElement());
             type.setParameterTypes(erasureList(getParameterTypes()));
-            type.setReceiverType(getReceiverType().getErased());
+            if (getReceiverType() != null) {
+                type.setReceiverType(getReceiverType().getErased());
+            } else {
+                type.setReceiverType(null);
+            }
             type.setReturnType(getReturnType().getErased());
             type.setThrownTypes(erasureList(getThrownTypes()));
 
@@ -1357,7 +1376,11 @@ public abstract class AnnotatedTypeMirror {
                 }
                 sb.append("> ");
             }
-            sb.append(getReturnType().toString(printInvisible));
+            if (getReturnType() != null) {
+                sb.append(getReturnType().toString(printInvisible));
+            } else {
+                sb.append("<UNKNOWNRETURN>");
+            }
             sb.append(' ');
             if (element != null) {
                 sb.append(element.getSimpleName());
@@ -1368,14 +1391,15 @@ public abstract class AnnotatedTypeMirror {
             AnnotatedDeclaredType rcv = getReceiverType();
             if (rcv != null) {
                 sb.append(rcv.toString(printInvisible));
-            } else {
-                sb.append("THIS");
+                sb.append(" this");
             }
-            sb.append(" this");
             if (!getParameterTypes().isEmpty()) {
                 int p = 0;
                 for (AnnotatedTypeMirror atm : getParameterTypes()) {
-                    sb.append(", ");
+                    if (rcv != null ||
+                            p > 0) {
+                        sb.append(", ");
+                    }
                     sb.append(atm.toString(printInvisible));
                     // Output some parameter names to make it look more like a method.
                     // TODO: go to the element and look up real parameter names, maybe.
