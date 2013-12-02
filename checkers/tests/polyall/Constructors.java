@@ -8,7 +8,7 @@ class Constructors {
         // All quals from constructor
         @H1S2 @H2S2 Constructors c1 = new Constructors();
         // Can still specify my own
-        @H1S1 @H2S1 Constructors c2 = new @H1S1 @H2S1 Constructors();
+        @H1S2 @H2Top Constructors c2 = new @H1S2 @H2Top Constructors();
         // Can only specify some of the qualifiers, rest comes
         // from constructor
         @H1S2 @H2S2 Constructors c3 = new @H1S2 Constructors();
@@ -38,8 +38,8 @@ class Constructors {
 
     void test3(@H1S1 @H2S2 String p) {
         @H1S1 @H2S2 Constructors c1 = new Constructors(p);
-        @H1S2 @H2S2 Constructors c2 = new @H1S2 @H2S2 Constructors(p);
-        @H1S2 @H2S2 Constructors c3 = new @H1S2 Constructors(p);
+        @H1S1 @H2S2 Constructors c2 = new @H1S1 @H2S2 Constructors(p);
+        @H1S1 @H2S2 Constructors c3 = new @H1S1 Constructors(p);
 
         //:: error: (assignment.type.incompatible)
         @H1S2 @H2S1 Constructors e1 = new Constructors(p);
@@ -47,6 +47,11 @@ class Constructors {
         @H1S2 @H2S1 Constructors e2 = new @H1S2 @H2S2 Constructors(p);
         //:: error: (assignment.type.incompatible)
         @H1S2 @H2S1 Constructors e3 = new @H1S2 Constructors(p);
+
+        //:: error: (constructor.invocation.invalid)
+        @H1S2 @H2S2 Constructors e4 = new @H1S2 @H2S2 Constructors(p);
+        //:: error: (constructor.invocation.invalid)
+        @H1S2 @H2S2 Constructors e5 = new @H1S2 Constructors(p);
     }
 
     @checkers.nullness.quals.Nullable @H1Poly @H2Poly Constructors(@H1Poly @H2Poly String s, int i) {}
