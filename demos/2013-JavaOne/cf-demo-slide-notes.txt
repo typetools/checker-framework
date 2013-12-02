@@ -1,0 +1,7 @@
+For background information about the unit-related problems, see file
+unit-mixups.html (taken from
+http://lamar.colostate.edu/~hillger/unit-mixups.html).
+
+Mars Climate Orbiter:
+ * pound-foot seconds vs. Newton-seconds
+ * over 10 months of travel
