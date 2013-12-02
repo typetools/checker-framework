@@ -1635,15 +1635,18 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     protected boolean checkConstructorInvocation(AnnotatedDeclaredType dt,
             AnnotatedExecutableType constructor, Tree src) {
-        AnnotatedDeclaredType receiver = constructor.getReceiverType();
-        boolean b = atypeFactory.getTypeHierarchy().isSubtype(dt, receiver) ||
-                atypeFactory.getTypeHierarchy().isSubtype(receiver, dt);
+        AnnotatedDeclaredType ret = (AnnotatedDeclaredType) constructor.getReturnType();
+
+        boolean b = atypeFactory.getTypeHierarchy().isSubtype(dt, ret) ||
+                atypeFactory.getTypeHierarchy().isSubtype(ret, dt);
 
         if (!b) {
             checker.report(Result.failure("constructor.invocation.invalid",
-                    constructor.toString(), dt, receiver), src);
+                    constructor.toString(), dt, ret), src);
         }
         return b;
+        // TODO: what properties should hold for constructor receivers for
+        // inner type instantiations?
     }
 
     /**
