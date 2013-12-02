@@ -188,8 +188,11 @@ public class QualifierPolymorphism {
         List<AnnotatedTypeMirror> arguments = AnnotatedTypes.getAnnotatedTypes(atypeFactory, requiredArgs, tree.getArguments());
 
         Map<AnnotationMirror, Set<? extends AnnotationMirror>> matchingMapping = collector.visit(arguments, requiredArgs);
-        matchingMapping = collector.reduce(matchingMapping,
-                collector.visit(atypeFactory.getReceiverType(tree), type.getReceiverType()));
+
+        if (type.getReceiverType() != null) {
+            matchingMapping = collector.reduce(matchingMapping,
+                    collector.visit(atypeFactory.getReceiverType(tree), type.getReceiverType()));
+        }
 
         if (matchingMapping != null && !matchingMapping.isEmpty()) {
             replacer.visit(type, matchingMapping);
@@ -521,8 +524,14 @@ public class QualifierPolymorphism {
         public Map<AnnotationMirror, Set<? extends AnnotationMirror>> visitWildcard(
                 AnnotatedWildcardType type, AnnotatedTypeMirror actualType) {
             AnnotatedTypeMirror typeSuper = findType(type, actualType);
-            if (typeSuper.getKind() != TypeKind.WILDCARD)
+            if (typeSuper.getKind() != TypeKind.WILDCARD) {
                 return visit(typeSuper, actualType);
+            }
+            // TODO: hack against unbound wildcard introduced by
+            // separate compilation. Test against Issue 257 test.
+            if (((com.sun.tools.javac.code.Type.WildcardType) typeSuper.getUnderlyingType()).isUnbound()) {
+                return Collections.emptyMap();
+            }
             assert typeSuper.getKind() == actualType.getKind() ||
                     // TODO: actualType might be the capture of a wildcard;
                     // better/different check?
@@ -531,8 +540,9 @@ public class QualifierPolymorphism {
                 ") and " + typeSuper + " (" + typeSuper.getKind() + ")";
             AnnotatedWildcardType wcType = (AnnotatedWildcardType)typeSuper;
 
-            if (visited.contains(actualType.getUnderlyingType()))
+            if (visited.contains(actualType.getUnderlyingType())) {
                 return Collections.emptyMap();
+            }
             visited.add(type.getUnderlyingType());
             Map<AnnotationMirror, Set<? extends AnnotationMirror>> result;
             if (type.getExtendsBound() != null && wcType.getExtendsBound() != null)

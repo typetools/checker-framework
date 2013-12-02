@@ -388,10 +388,11 @@ abstract class TypeFromTree extends
 
             AnnotatedTypeMirror result = f.type(node);
             assert result instanceof AnnotatedWildcardType;
-            if (node.getKind() == Tree.Kind.SUPER_WILDCARD)
+            if (node.getKind() == Tree.Kind.SUPER_WILDCARD) {
                 ((AnnotatedWildcardType)result).setSuperBound(bound);
-            else if (node.getKind() == Tree.Kind.EXTENDS_WILDCARD)
+            } else if (node.getKind() == Tree.Kind.EXTENDS_WILDCARD) {
                 ((AnnotatedWildcardType)result).setExtendsBound(bound);
+            }
             return result;
         }
 
@@ -616,10 +617,11 @@ abstract class TypeFromTree extends
 
             AnnotatedTypeMirror result = f.type(node);
             assert result instanceof AnnotatedWildcardType;
-            if (node.getKind() == Tree.Kind.SUPER_WILDCARD)
+            if (node.getKind() == Tree.Kind.SUPER_WILDCARD) {
                 ((AnnotatedWildcardType)result).setSuperBound(bound);
-            else if (node.getKind() == Tree.Kind.EXTENDS_WILDCARD)
+            } else if (node.getKind() == Tree.Kind.EXTENDS_WILDCARD) {
                 ((AnnotatedWildcardType)result).setExtendsBound(bound);
+            }
             return result;
         }
 
