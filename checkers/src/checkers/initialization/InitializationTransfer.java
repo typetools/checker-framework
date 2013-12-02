@@ -62,7 +62,9 @@ import com.sun.tools.javac.code.Symbol;
  *
  * @param <T> The type of the transfer function.
  */
-public class InitializationTransfer<V extends CFAbstractValue<V>, T extends InitializationTransfer<V, T, S>, S extends InitializationStore<V, S>>
+public class InitializationTransfer<V extends CFAbstractValue<V>,
+            T extends InitializationTransfer<V, T, S>,
+            S extends InitializationStore<V, S>>
         extends CFAbstractTransfer<V, S, T> {
 
     protected final InitializationAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory;
@@ -79,7 +81,13 @@ public class InitializationTransfer<V extends CFAbstractValue<V>, T extends Init
         }
         final AnnotatedDeclaredType receiverType = analysis.getTypeFactory()
                 .getAnnotatedType(methodTree).getReceiverType();
-        return atypeFactory.isUnclassified(receiverType) || atypeFactory.isFree(receiverType);
+        if (receiverType != null) {
+            return atypeFactory.isUnclassified(receiverType) ||
+                    atypeFactory.isFree(receiverType);
+        } else {
+            // There is no receiver e.g. in static methods.
+            return false;
+        }
     }
 
     /**
