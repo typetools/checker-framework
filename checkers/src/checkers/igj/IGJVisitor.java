@@ -41,7 +41,7 @@ public class IGJVisitor extends BaseTypeVisitor<IGJAnnotatedTypeFactory> {
     @Override
     protected boolean checkConstructorInvocation(AnnotatedDeclaredType dt,
             AnnotatedExecutableType constructor, Tree src) {
-        Collection<AnnotationMirror> annos = constructor.getReceiverType().getAnnotations();
+        Collection<AnnotationMirror> annos = constructor.getReturnType().getAnnotations();
         if (annos.contains(atypeFactory.I) || annos.contains(atypeFactory.ASSIGNS_FIELDS))
             return true;
         else
