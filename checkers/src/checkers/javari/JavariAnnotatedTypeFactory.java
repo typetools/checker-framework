@@ -394,8 +394,6 @@ public class JavariAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         List<AnnotatedTypeMirror> parameterTypes = AnnotatedTypes.expandVarArgs(this, type, tree.getArguments());
         List<AnnotatedTypeMirror> argumentTypes = AnnotatedTypes.getAnnotatedTypes(this, parameterTypes, tree.getArguments());
 
-        AnnotatedTypeMirror receiverType = type.getReceiverType();
-
         boolean allMutable = true, allPolyRead = true, allThisMutable = true;
 
         // look at parameters and arguments
@@ -422,8 +420,11 @@ public class JavariAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
         }
 
+        AnnotatedTypeMirror receiverType = type.getReceiverType();
+
         // look at receiver type and reference
-        if (receiverType.hasEffectiveAnnotation(POLYREAD)) {
+        if (receiverType != null &&
+                receiverType.hasEffectiveAnnotation(POLYREAD)) {
             // if MemberSelectTree, we can just look at the expression tree
             ExpressionTree exprTree = tree.getMethodSelect();
             AnnotatedTypeMirror exprReceiver = this.getReceiverType(exprTree);
@@ -603,7 +604,8 @@ public class JavariAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         @Override
         public Void visitExecutable(AnnotatedExecutableType type, Element elem) {
             AnnotatedDeclaredType receiver = type.getReceiverType();
-            if (!hasImmutabilityAnnotation(receiver)) {                // case 1
+            if (receiver != null &&
+                    !hasImmutabilityAnnotation(receiver)) {                // case 1
                 AnnotatedDeclaredType owner = (AnnotatedDeclaredType)
                     getAnnotatedType(type.getElement().getEnclosingElement());
                 assert hasImmutabilityAnnotation(owner);
