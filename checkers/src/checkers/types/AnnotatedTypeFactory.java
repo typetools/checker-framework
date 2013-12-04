@@ -759,7 +759,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     typeArgs = new ArrayList<AnnotatedTypeMirror>();
                     AnnotatedDeclaredType declaration = fromElement((TypeElement)dt.getUnderlyingType().asElement());
                     for (AnnotatedTypeMirror typeParam : declaration.getTypeArguments()) {
-                        AnnotatedWildcardType wct = getUninferredWildcardType((AnnotatedTypeVariable) typeParam, false);
+                        AnnotatedWildcardType wct = getUninferredWildcardType((AnnotatedTypeVariable) typeParam);
                         typeArgs.add(wct);
                     }
                 }
@@ -2216,18 +2216,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /**
      * This method is a hack to use when a method type argument
-     * could not be inferred automatically.
+     * could not be inferred automatically or if a raw type is used.
      * The only use should be:
      * checkers.util.AnnotatedTypes.inferTypeArguments(ProcessingEnvironment, AnnotatedTypeFactory, ExpressionTree, ExecutableElement)
-     *
-     * The main point for introducing this method was to better separate
-     * AnnotatetTypes from the classes in this package.
+     * checkers.types.AnnotatedTypeFactory.fromTypeTree(Tree)
      */
-    public AnnotatedWildcardType getUninferredMethodTypeArgument(AnnotatedTypeVariable typeVar) {
-        return getUninferredWildcardType(typeVar, true);
-    }
-
-    protected AnnotatedWildcardType getUninferredWildcardType(AnnotatedTypeVariable typeVar, boolean useHack) {
+    public AnnotatedWildcardType getUninferredWildcardType(AnnotatedTypeVariable typeVar) {
         AnnotatedTypeMirror upperBound = typeVar.getEffectiveUpperBound();
         while (upperBound.getKind() == TypeKind.TYPEVAR) {
             upperBound = ((AnnotatedTypeVariable)upperBound).getEffectiveUpperBound();
@@ -2240,9 +2234,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         AnnotatedWildcardType wctype = (AnnotatedWildcardType) AnnotatedTypeMirror.createType(wc, this);
         wctype.setExtendsBound(upperBound);
         wctype.addAnnotations(typeVar.getAnnotations());
-        if (useHack) {
-            wctype.setMethodTypeArgHack();
-        }
+        wctype.setTypeArgHack();
         return wctype;
     }
 
