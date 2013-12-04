@@ -2164,7 +2164,7 @@ public abstract class AnnotatedTypeMirror {
             type.setExtendsBound(getExtendsBound());
             type.setSuperBound(getSuperBound());
 
-            type.methodTypeArgHack = methodTypeArgHack;
+            type.typeArgHack = typeArgHack;
 
             return type;
         }
@@ -2230,17 +2230,16 @@ public abstract class AnnotatedTypeMirror {
             return sb.toString();
         }
 
-        // Remove the methodTypeArgHack once method type
-        // argument inference (in AnnotatedTypes) is done
-        // correctly.
-        private boolean methodTypeArgHack = false;
+        // Remove the typeArgHack once method type
+        // argument inference and raw type handling is improved.
+        private boolean typeArgHack = false;
 
-        /* package-scope */ void setMethodTypeArgHack() {
-            methodTypeArgHack = true;
+        /* package-scope */ void setTypeArgHack() {
+            typeArgHack = true;
         }
 
-        /* package-scope */ boolean isMethodTypeArgHack() {
-            return methodTypeArgHack;
+        /* package-scope */ boolean isTypeArgHack() {
+            return typeArgHack;
         }
     }
 
