@@ -770,7 +770,7 @@ public class AnnotatedTypes {
             }
 
             if (argument == null) {
-                argument = atypeFactory.getUninferredMethodTypeArgument(typeVar);
+                argument = atypeFactory.getUninferredWildcardType(typeVar);
             }
 
             if (argument != null) {

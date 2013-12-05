@@ -10,13 +10,15 @@ public class MisuseProperties {
     //:: error: (argument.type.incompatible)
     p.put("line.separator", null);
     Hashtable h = p;
+    // Error, because HashTable value has NonNull bound.
     //:: error: (argument.type.incompatible) :: warning: [unchecked] unchecked call to put(K,V) as a member of the raw type java.util.Hashtable
     h.put("line.separator", null);
     //:: error: (argument.type.incompatible)
     System.setProperty("line.separator", null);
 
     Dictionary d1 = p;
-    //:: error: (argument.type.incompatible) :: warning: [unchecked] unchecked call to put(K,V) as a member of the raw type java.util.Dictionary
+    // No error, because Dictionary value has Nullable bound.
+    //:: warning: [unchecked] unchecked call to put(K,V) as a member of the raw type java.util.Dictionary
     d1.put("line.separator", null);
 
     //:: error: (assignment.type.incompatible)
