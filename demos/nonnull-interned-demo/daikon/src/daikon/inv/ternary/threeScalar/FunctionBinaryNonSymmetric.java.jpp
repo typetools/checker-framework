@@ -1,0 +1,48 @@
+#if 0
+  // This file defines symmetric binary functions.  The following
+  // definitions must exist before including this file:
+  //
+  //    FUNCTION
+  //    FUNC
+  //    PRIMITIVE
+#endif
+
+#undef SYMMETRIC
+#define NON_SYMMETRIC 1
+
+  // default is that it is not this function, overriden in the subclass
+  public boolean is ## FUNCTION () {
+    return (false);
+  }
+
+#define PERMUTATION PERM_XYZ
+#include "daikon/inv/ternary/threeScalar/FunctionBinaryGeneric.java.jpp"
+
+#define PERMUTATION PERM_YXZ
+#include "daikon/inv/ternary/threeScalar/FunctionBinaryGeneric.java.jpp"
+
+#define PERMUTATION PERM_ZXY
+#include "daikon/inv/ternary/threeScalar/FunctionBinaryGeneric.java.jpp"
+
+#define PERMUTATION PERM_XZY
+#include "daikon/inv/ternary/threeScalar/FunctionBinaryGeneric.java.jpp"
+
+#define PERMUTATION PERM_YZX
+#include "daikon/inv/ternary/threeScalar/FunctionBinaryGeneric.java.jpp"
+
+#define PERMUTATION PERM_ZYX
+#include "daikon/inv/ternary/threeScalar/FunctionBinaryGeneric.java.jpp"
+
+#if 0
+  // Make sure all arguments are not inadvertantly passed to the next user
+#endif
+
+#undef ARG1_BOUND
+#undef ARG2_BOUND
+#undef BOOLEAN_ARGS
+#undef FUNC
+#undef METHOD_NAME
+#undef FUNCTION
+#undef EQUALITY_SUPPRESS
+#undef EQUALITY_MIN_MAX_SUPPRESS
+#unassert FTYPE
