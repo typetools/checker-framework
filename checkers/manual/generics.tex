@@ -217,42 +217,6 @@ significant when the qualifier hierarchy is more complicated than just
 \<@Nullable> and \<@NonNull>.
 
 
-\subsection{Defaults for bounds}
-Ordinarily, a type parameter declaration with no extends clause means the
-type parameter can be instantiated with any type argument at all.  For
-example:
-
-\begin{Verbatim}
-  class C<T> { ... }
-  class C<T extends Object> { ... }  // identical to previous line
-\end{Verbatim}
-
-\noindent
-However, instantiation may be restricted if a default qualifier is in
-effect (see Section~\ref{defaults}).  For example, the Nullness Checker
-(Chapter~\ref{nullness-checker}) uses a (configurable) default of
-\<@NonNull> (see Section~\ref{null-defaults}).  That means that either
-% of the two declarations
-declaration above is interpreted as
-
-\begin{Verbatim}
-  class C<T extends @NonNull Object> { ... }
-\end{Verbatim}
-
-\noindent
-and an instantiation such as \code{C<@Nullable Number>} is illegal.
-In such a case, to permit all type arguments, the programmer would write
-
-\begin{Verbatim}
-  class C<T extends @Nullable Object> { ... }
-\end{Verbatim}
-
-
-It is possible to set the default qualifier for upper bounds separately
-from other default qualifiers, by writing an annotation such as
-\<@DefaultQualifier(value=Nullable.class, locations={DefaultLocation.UPPER\_BOUNDS})>.
-
-
 \subsection{Type annotations on a use of a generic type variable}
 
 A type annotation on a use of a generic type variable overrides/ignores any type
