@@ -41,6 +41,7 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
+import checkers.types.visitors.AnnotatedTypeMerger;
 import checkers.util.AnnotationBuilder;
 import javacutils.AnnotationUtils;
 import javacutils.ElementUtils;
@@ -491,7 +492,7 @@ public class StubParser {
                     .getVerboseName(elt));
             if (annos == null) {
                 annos = AnnotationUtils.createAnnotationSet();
-                declAnnos.put(ElementUtils.getVerboseName(elt), annos);
+                putOrAddToMap(declAnnos, ElementUtils.getVerboseName(elt), annos);
             }
             annos.add(fromStubFile);
         }
@@ -629,7 +630,7 @@ public class StubParser {
                 annos.add(annoMirror);
         }
         String key = ElementUtils.getVerboseName(elt);
-        declAnnos.put(key, annos);
+        putOrAddToMap(declAnnos, key,annos);
     }
 
     private void annotateParameters(List<? extends AnnotatedTypeMirror> typeArguments,
@@ -805,21 +806,32 @@ public class StubParser {
         }
         m.put(key, value);
     }
-
+    
+    /**
+     * If the key is already in the map, then add the annos to the list.
+     * Otherwise put the key and the annos in the map
+     */
+    private static void putOrAddToMap(Map<String, Set<AnnotationMirror>> map,
+            String key, Set<AnnotationMirror> annos) {
+        if (map.containsKey(key)) {
+            Set<AnnotationMirror> otherannos = map.get(key);
+            map.get(key).addAll(annos);
+        } else {
+            map.put(key, annos);
+        }
+    }
+    
     /** Just like Map.put, but does not throw an error if the key with the same value is already in the map. */
     private static void putNew(Map<Element, AnnotatedTypeMirror> m, Element key, AnnotatedTypeMirror value) {
         if (key == null)
             return;
         if (m.containsKey(key)) {
             AnnotatedTypeMirror value2 = m.get(key);
-            // Are the two values the same?
-            if (AnnotationUtils.areSame(value.getAnnotations(), value2.getAnnotations())) {
-                return;
-            }
-            AnnotatedTypeMirror prev = m.get(key);
-            mergeATM(value, prev);
+            value.accept(new AnnotatedTypeMerger(), value2);
+            m.put(key, value2);
+        } else {
+            m.put(key, value);
         }
-        m.put(key, value);
     }
 
     /**
