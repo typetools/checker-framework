@@ -224,10 +224,17 @@ public class ImmutabilityAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         public Void visitExecutable(AnnotatedExecutableType type, Element elem) {
-            if (hasImmutabilityAnnotation(type.getReceiverType()))
+            AnnotatedDeclaredType receiver;
+            if (type.getElement().getKind() == ElementKind.CONSTRUCTOR) {
+                receiver = (AnnotatedDeclaredType) type.getReturnType();
+            } else {
+                receiver = type.getReceiverType();
+            }
+            if (receiver != null &&
+                    hasImmutabilityAnnotation(receiver)) {
                 return super.visitExecutable(type, elem);
+            }
 
-            AnnotatedDeclaredType receiver = type.getReceiverType();
             TypeElement ownerElement = ElementUtils.enclosingClass(type.getElement());
             AnnotatedDeclaredType ownerType = getAnnotatedType(ownerElement);
 
@@ -237,6 +244,8 @@ public class ImmutabilityAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     receiver.addAnnotation(MUTABLE);
                 else
                     receiver.addAnnotation(ASSIGNS_FIELDS);
+            } else if (receiver == null) {
+                // Nothing to do for static methods.
             } else if (ElementUtils.isObject(ownerElement) || ownerType.hasEffectiveAnnotation(IMMUTABLE)) {
                 // case 3
                 receiver.addAnnotation(BOTTOM_QUAL);

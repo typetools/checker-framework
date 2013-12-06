@@ -248,10 +248,18 @@ public class IGJAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         public Void visitExecutable(AnnotatedExecutableType type, Element elem) {
-            if (hasImmutabilityAnnotation(type.getReceiverType()))
-                return super.visitExecutable(type, elem);
+            AnnotatedDeclaredType receiver;
+            if (type.getElement().getKind() == ElementKind.CONSTRUCTOR) {
+                receiver = (AnnotatedDeclaredType) type.getReturnType();
+            } else {
+                receiver = type.getReceiverType();
+            }
 
-            AnnotatedDeclaredType receiver = type.getReceiverType();
+            if (receiver != null &&
+                    hasImmutabilityAnnotation(receiver)) {
+                return super.visitExecutable(type, elem);
+            }
+
             TypeElement ownerElement = ElementUtils.enclosingClass(type.getElement());
             AnnotatedDeclaredType ownerType = getAnnotatedType(ownerElement);
 
@@ -261,6 +269,8 @@ public class IGJAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     receiver.replaceAnnotation(MUTABLE);
                 else
                     receiver.replaceAnnotation(ASSIGNS_FIELDS);
+            } else if (receiver == null) {
+                // Nothing to do for static methods.
             } else if (ElementUtils.isObject(ownerElement) || ownerType.hasEffectiveAnnotation(IMMUTABLE)) {
                 // case 3
                 receiver.replaceAnnotation(BOTTOM_QUAL);
@@ -761,7 +771,7 @@ public class IGJAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (type.hasAnnotationRelaxed(I))
             return type.getAnnotation(I.class);
         if (hasImmutabilityAnnotation(type)) {
-            return type.getAnnotations().iterator().next();
+            return type.getAnnotationInHierarchy(READONLY);
         } else {
             return null;
         }

@@ -231,7 +231,7 @@ public class TypeHierarchy {
                         // If the rhs is all bottoms, allow.
                         return true;
                     }
-                    if (!wildcard.isMethodTypeArgHack() &&
+                    if (!wildcard.isTypeArgHack() &&
                             (!bnd.isEmpty() && bnd.size() == bot.size()) &&
                             (!qualifierHierarchy.isSubtype(lhs, rhs, bnd, bot) ||
                             !qualifierHierarchy.isSubtype(lhs, rhs, rhs.getEffectiveAnnotations(), bot))) {

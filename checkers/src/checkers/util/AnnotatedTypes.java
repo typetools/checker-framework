@@ -339,24 +339,26 @@ public class AnnotatedTypes {
 
     private static AnnotatedTypeMirror asMemberOfImpl(final Types types, final AnnotatedTypeFactory atypeFactory,
             final AnnotatedTypeMirror t, final Element elem) {
-        if (ElementUtils.isStatic(elem))
+        if (ElementUtils.isStatic(elem)) {
             return atypeFactory.getAnnotatedType(elem);
+        }
 
         // For type variables and wildcards, operate on the upper bound
         if (t.getKind() == TypeKind.TYPEVAR &&
-                ((AnnotatedTypeVariable)t).getUpperBound() != null)
+                ((AnnotatedTypeVariable)t).getUpperBound() != null) {
             return asMemberOf(types, atypeFactory, ((AnnotatedTypeVariable) t).getEffectiveUpperBound(),
                     elem);
+        }
         if (t.getKind() == TypeKind.WILDCARD &&
-                ((AnnotatedWildcardType)t).getExtendsBound() != null)
+                ((AnnotatedWildcardType)t).getExtendsBound() != null) {
             return asMemberOf(types, atypeFactory, ((AnnotatedWildcardType) t).getEffectiveExtendsBound(),
                     elem);
-
+        }
         if (t.getKind() == TypeKind.ARRAY
                 && elem.getKind() == ElementKind.METHOD
                 && elem.getSimpleName().contentEquals("clone")) {
-                AnnotatedExecutableType method = (AnnotatedExecutableType) atypeFactory.getAnnotatedType(elem);
-                return method.substitute(Collections.singletonMap(method.getReturnType(), t));
+            AnnotatedExecutableType method = (AnnotatedExecutableType) atypeFactory.getAnnotatedType(elem);
+            return method.substitute(Collections.singletonMap(method.getReturnType(), t));
         }
 
         final AnnotatedTypeMirror elemType = atypeFactory.getAnnotatedType(elem);
@@ -388,15 +390,17 @@ public class AnnotatedTypes {
         }
 
         // TODO: Potential bug if Raw type is used
-        if (!ownerGeneric)
+        if (!ownerGeneric) {
             return elemType;
+        }
 
         AnnotatedDeclaredType ownerType = atypeFactory.getAnnotatedType(owner);
         AnnotatedDeclaredType base =
             (AnnotatedDeclaredType) asOuterSuper(types, atypeFactory, t, ownerType);
 
-        if (base == null)
+        if (base == null) {
             return elemType;
+        }
 
         List<? extends AnnotatedTypeMirror> ownerParams =
             ownerType.getTypeArguments();
@@ -405,8 +409,9 @@ public class AnnotatedTypes {
         if (!ownerParams.isEmpty()) {
             if (baseParams.isEmpty()) {
                 List<AnnotatedTypeMirror> baseParamsEr = new ArrayList<AnnotatedTypeMirror>();
-                for (AnnotatedTypeMirror arg : ownerParams)
+                for (AnnotatedTypeMirror arg : ownerParams) {
                     baseParamsEr.add(arg.getErased());
+                }
                 return subst(elemType, ownerParams, baseParamsEr);
             }
             return subst(elemType, ownerParams, baseParams);
@@ -765,7 +770,7 @@ public class AnnotatedTypes {
             }
 
             if (argument == null) {
-                argument = atypeFactory.getUninferredMethodTypeArgument(typeVar);
+                argument = atypeFactory.getUninferredWildcardType(typeVar);
             }
 
             if (argument != null) {

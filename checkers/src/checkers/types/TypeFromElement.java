@@ -502,6 +502,8 @@ public class TypeFromElement {
 
             switch (pos.type) {
             case METHOD_RECEIVER:
+                // Assumes that the receiver type is non-null if
+                // we find a METHOD_RECEIVER position.
                 annotate(type.getReceiverType(), typeAnno);
                 break;
 
