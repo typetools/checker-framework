@@ -931,7 +931,7 @@ etc.
 
 \subsection{Annotations indicate normal behavior\label{annotate-normal-behavior}}
 
-You should use annotations to indicate \emph{normal} behavior.  The
+You should use annotations to specify \emph{normal} behavior.  The
 annotations indicate all the values that you \emph{want} to flow to
 reference --- not every value that might possibly flow there if your
 program has a bug.
@@ -958,7 +958,8 @@ describes a possible program execution:  it might be possible for
 
 However, it is never useful for a programmer to pass \code{null}.  It is
 the programmer's intention that \code{null} never flows there.  If
-\code{null} does flow there, the program will not continue normally.
+\code{null} does flow there, the program will not continue normally
+(whether or not it throws a NullPointerException).
 
 Therefore, you should mark such parameters as
 \code{@\refclass{checkers/nullness/quals}{NonNull}}, indicating
