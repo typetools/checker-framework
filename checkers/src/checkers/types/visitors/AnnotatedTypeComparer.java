@@ -9,14 +9,28 @@ import checkers.types.AnnotatedTypeMirror.*;
 
 /**
  * A TypeVisitor that takes an AnnotatedTypeMirror as a parameter, and
- * visits it simultaneously.  Note that the parameter type must be
- * assignable to the visited type, or an assertion fails when visiting
- * an incompatible subtype.
+ * visits it simultaneously.  Both Annotated Type Mirrors must have the
+ * same structure or else the various asserts will fail.
  *
  * @see AnnotatedTypeScanner
  */
-public class AnnotatedTypeComparer<R> extends AnnotatedTypeScanner<R, AnnotatedTypeMirror> {
-
+public abstract class AnnotatedTypeComparer<R> extends AnnotatedTypeScanner<R, AnnotatedTypeMirror> {
+    /**
+     * Compares two annotated type mirrors. 
+     * @param type
+     * @param p 
+     * @return
+     */
+    protected abstract R compare(AnnotatedTypeMirror type, AnnotatedTypeMirror p);
+    
+    /**
+     * Supplies the logic to reduce on how to combine two R objects
+     * @param r1
+     * @param r2
+     * @return
+     */
+    protected abstract R combineRs(R r1, R r2);
+    
     protected R scan(Iterable<? extends AnnotatedTypeMirror> types,
                      Iterable<? extends AnnotatedTypeMirror> p) {
         if (types == null)
@@ -33,6 +47,12 @@ public class AnnotatedTypeComparer<R> extends AnnotatedTypeScanner<R, AnnotatedT
         return r;
     }
 
+
+    @Override
+    protected R reduce(R r1, R r2) {
+        return combineRs(r1, r2);
+    }
+
     protected R scanAndReduce(Iterable<? extends AnnotatedTypeMirror> types, Iterable<? extends AnnotatedTypeMirror> p, R r) {
         return reduce(scan(types, p), r);
     }
@@ -47,6 +67,11 @@ public class AnnotatedTypeComparer<R> extends AnnotatedTypeScanner<R, AnnotatedT
         ErrorReporter.errorAbort("AnnotatedTypeComparer.scanAndReduce: " + p + "is not Iterable<? extends AnnotatedTypeMirror>");
         return null;
     }
+    @Override
+    protected R scan(AnnotatedTypeMirror type, AnnotatedTypeMirror p) {
+        return compare(type, p);
+    }
+
 
 
     @Override
@@ -79,7 +104,7 @@ public class AnnotatedTypeComparer<R> extends AnnotatedTypeScanner<R, AnnotatedT
 
     @Override
     public R visitTypeVariable(AnnotatedTypeVariable type, AnnotatedTypeMirror p) {
-        // assert p instanceof AnnotatedTypeVariable : p;
+        assert p instanceof AnnotatedTypeVariable : p;
         R r;
         if (visitedNodes.containsKey(type)) {
             return visitedNodes.get(type);
@@ -112,4 +137,49 @@ public class AnnotatedTypeComparer<R> extends AnnotatedTypeScanner<R, AnnotatedT
         visitedNodes.put(type, r);
         return r;
     }
+
+    @Override
+    public R visitIntersection(AnnotatedIntersectionType type,
+            AnnotatedTypeMirror p) {
+        assert p instanceof AnnotatedIntersectionType : p;
+
+        if (visitedNodes.containsKey(type)) {
+            return visitedNodes.get(type);
+        }
+        visitedNodes.put(type, null);
+        R r = scan(type.directSuperTypes(),
+                ((AnnotatedIntersectionType) p).directSuperTypes());
+        return r;
+    }
+
+    @Override
+    public R visitNoType(AnnotatedNoType type, AnnotatedTypeMirror p) {
+        assert p instanceof AnnotatedNoType : p;
+        return scan(type, p);
+    }
+
+    @Override
+    public R visitNull(AnnotatedNullType type, AnnotatedTypeMirror p) {
+        assert p instanceof AnnotatedNullType : p;
+        return scan(type, p);
+    }
+
+    @Override
+    public R visitPrimitive(AnnotatedPrimitiveType type, AnnotatedTypeMirror p) {
+        assert p instanceof AnnotatedPrimitiveType : p;
+        return scan(type, p);
+    }
+
+    @Override
+    public R visitUnion(AnnotatedUnionType type, AnnotatedTypeMirror p) {
+        assert p instanceof AnnotatedUnionType : p;
+        if (visitedNodes.containsKey(type)) {
+            return visitedNodes.get(type);
+        }
+        visitedNodes.put(type, null);
+        R r = scan(type.getAlternatives(),
+                ((AnnotatedUnionType) p).getAlternatives());
+        return r;
+    }
+
 }
