@@ -117,6 +117,11 @@ author should place it in the same directory as the Checker class, i.e.,
 the subclass of \code{BaseTypeVisitor}.)  Programmers should only use the
 \<-Astubs> argument for additional stub files they create themselves.
 
+If a method appears in more than one stub file (or twice in the same 
+stub file), then the annotations are merged. If any of the 
+methods have different annotations from the same hierarchy on the same type,
+then the annotation from the last declaration is used.  
+
 % \textbf{The following is not implemented yet}
 % A library writers should create a file \code{library.astub} on the
 % classpath (in the resources directory or the binary jars).
