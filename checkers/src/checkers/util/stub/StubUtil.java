@@ -318,7 +318,17 @@ public class StubUtil {
     public static List<StubResource> allStubFiles(String stub) {
         List<StubResource> resources = new ArrayList<StubResource>();
         File stubFile = new File(stub);
-        allStubFiles(stubFile, resources);
+        if (stubFile.exists()) {
+            allStubFiles(stubFile, resources);
+        } else {
+            // If the stubFile doesn't exist, maybe it is relative to the
+            // current working directory, so try that.
+            String workingDir = System.getProperty("user.dir")
+                    + System.getProperty("file.separator");
+            stubFile = new File(workingDir + stub);
+            if (stubFile.exists())
+                allStubFiles(stubFile, resources);
+        }
         return resources;
     }
 

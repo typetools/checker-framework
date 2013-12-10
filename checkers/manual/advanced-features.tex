@@ -288,7 +288,7 @@ the CLIMB locations:  Casts, Locals, Instanceof, and iMplicit Bounds.
 For example, when the user writes a type such as \<Date> in such a
 location, the Nullness Checker interprets it as \<@Nullable Date> (because
 \<@\code{@\refclass{checkers/nullness/quals}{Nullable}}> is the top qualifier in the
-hierarchy, see Figure~\ref{fig-nullness-hierarchy}.
+hierarchy, see Figure~\ref{fig-nullness-hierarchy}).
 
 %% Users don't care about this detail.
 % The CLIMB-to-top rule is an improvement over a previous defaulting rule,
@@ -297,6 +297,9 @@ hierarchy, see Figure~\ref{fig-nullness-hierarchy}.
 % TODO:  Add wildcard bounds to the set of type-refined locations?
 % Especially in light of
 % https://code.google.com/p/checker-framework/issues/detail?id=260
+
+The rest of this section explains the rationale and implementation of
+CLIMB-to-top.
 
 Casts, local variables (including resource variables in the
 try-with-resources construct, variables in for statements, etc.), and

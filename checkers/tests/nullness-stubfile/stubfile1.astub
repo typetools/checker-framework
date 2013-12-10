@@ -1,0 +1,13 @@
+/*This stub file will be read first*/
+
+import checkers.nullness.quals.*;
+
+package java.lang;
+
+
+public final class  String {
+     public @NonNull String intern();
+     public @Nullable String substring(@NonNull int beginIndex) @NonNull;
+     String(@Nullable String arg0);
+     void getChars(@Nullable int arg0, @NonNull int arg1, @NonNull char @NonNull [] arg2, @NonNull int arg3) @NonNull;
+}
