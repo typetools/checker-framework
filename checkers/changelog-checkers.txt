@@ -1,7 +1,7 @@
 
-Version 1.7.1, 6 December 2013
+Version 1.7.1, 9 December 2013
 
-Fixes for Issues 141, 145, 257, 261, 269, 267, 275, 278, 282, 283, 284.
+Fixes for Issues 141, 145, 257, 261, 269, 267, 275, 278, 282, 283, 284, 285.
 
 Implementation details:
   Renamed AbstractBasicAnnotatedTypeFactory to GenericAnnotatedTypeFactory
