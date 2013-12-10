@@ -1,0 +1,525 @@
+import checkers.signature.quals.*;
+
+package java.lang;
+
+class Class<T> implements Serializable, GenericDeclaration, Type, AnnotatedElement {
+    Class<?> forName(@ClassGetName String className) throws ClassNotFoundException;
+    Class<?> forName(@ClassGetName String name, boolean initialize, ClassLoader loader) throws ClassNotFoundException;
+    @ClassGetName String getName();
+    @ClassGetName String name;
+    @ClassGetName String getName0();
+    @FullyQualifiedName String getCanonicalName();
+}
+
+// Would BinaryNameForNonArray be more accurate for some of these methods?
+class ClassLoader {
+    protected Class<?> loadClass(@BinaryName String name, boolean resolve) throws ClassNotFoundException;
+    Class<?> loadClass(@BinaryName String name) throws ClassNotFoundException;
+    protected Class<?> findClass(@BinaryName String name) throws ClassNotFoundException;
+    @SuppressWarnings("signature")    
+    protected Class<?> defineClass(byte[] b, int off, int len) throws ClassFormatError;
+    protected Class<?> defineClass(@BinaryName String name, byte[] b, int off, int len) throws ClassFormatError;
+    protected Class<?> defineClass(@BinaryName String name, byte[] b, int off, int len, ProtectionDomain protectionDomain) throws ClassFormatError;
+    protected Class<?> defineClass(@BinaryName String name, ByteBuffer b, ProtectionDomain protectionDomain) throws ClassFormatError;
+    protected Class<?> findSystemClass(@BinaryName String name) throws ClassNotFoundException;
+    protected Class<?> findLoadedClass(@BinaryName String name);
+    protected Package definePackage(@FullyQualifiedName String name, String specTitle, String specVersion, String specVendor, String implTitle, String implVersion, String implVendor, URL sealBase) throws IllegalArgumentException;
+
+}
+
+class ClassLoader$SystemClassLoaderAction implements PrivilegedExceptionAction<ClassLoader> {
+    public ClassLoader run() throws Exception {
+	@SuppressWarnings("signature")
+	@BinaryName String cls = System.getProperty("java.system.class.loader");
+	if (cls == null) {
+	    return parent;
+	}
+
+	Constructor ctor = Class.forName(cls, true, parent)
+	    .getDeclaredConstructor(new Class[] { ClassLoader.class });
+	ClassLoader sys = (ClassLoader) ctor.newInstance(
+	    new Object[] { parent });
+	Thread.currentThread().setContextClassLoader(sys);
+	return sys;
+    }
+}
+
+class Package implements AnnotatedElement {
+    @FullyQualifiedName String getName();
+    Package(@FullyQualifiedName String name, String spectitle, String specversion, String specvendor, String impltitle, String implversion, String implvendor, URL sealbase, ClassLoader loader);
+}
+
+class StackTraceElement {
+    public StackTraceElement(@FullyQualifiedName String declaringClass, String methodName, String fileName, int lineNumber);
+    public @FullyQualifiedName String getClassName(); 
+}
+
+class String {
+    public @PolySignature String intern() @PolySignature;
+}
+
+class TypeNotPresentException extends RuntimeException {
+    public TypeNotPresentException(@FullyQualifiedName String typeName, Throwable cause);
+    public @FullyQualifiedName String typeName();
+}
+
+package java.lang.management;
+
+enum PlatformComponent {
+    @SuppressWarnings("signature")
+    CLASS_LOADING(
+        "java.lang.management.ClassLoadingMXBean",
+        "java.lang", "ClassLoading", defaultKeyProperties(),
+        new MXBeanFetcher<ClassLoadingMXBean>() {
+            public List<ClassLoadingMXBean> getMXBeans() {
+                return Collections.singletonList(ManagementFactoryHelper.getClassLoadingMXBean());
+            }
+        }),
+    @SuppressWarnings("signature")
+    COMPILATION(
+        "java.lang.management.CompilationMXBean",
+        "java.lang", "Compilation", defaultKeyProperties(),
+        new MXBeanFetcher<CompilationMXBean>() {
+            public List<CompilationMXBean> getMXBeans() {
+                CompilationMXBean m = ManagementFactoryHelper.getCompilationMXBean();
+                if (m == null) {
+                   return Collections.emptyList();
+                } else {
+                   return Collections.singletonList(m);
+                }
+            }
+        }),
+    @SuppressWarnings("signature")
+    MEMORY(
+        "java.lang.management.MemoryMXBean",
+        "java.lang", "Memory", defaultKeyProperties(),
+        new MXBeanFetcher<MemoryMXBean>() {
+            public List<MemoryMXBean> getMXBeans() {
+                return Collections.singletonList(ManagementFactoryHelper.getMemoryMXBean());
+            }
+        }),
+    @SuppressWarnings("signature")
+    GARBAGE_COLLECTOR(
+        "java.lang.management.GarbageCollectorMXBean",
+        "java.lang", "GarbageCollector", keyProperties("name"),
+        new MXBeanFetcher<GarbageCollectorMXBean>() {
+            public List<GarbageCollectorMXBean> getMXBeans() {
+                return ManagementFactoryHelper.
+                           getGarbageCollectorMXBeans();
+            }
+        }),
+    @SuppressWarnings("signature")
+    MEMORY_MANAGER(
+        "java.lang.management.MemoryManagerMXBean",
+        "java.lang", "MemoryManager", keyProperties("name"),
+        new MXBeanFetcher<MemoryManagerMXBean>() {
+            public List<MemoryManagerMXBean> getMXBeans() {
+                return ManagementFactoryHelper.getMemoryManagerMXBeans();
+            }
+        },
+        GARBAGE_COLLECTOR),
+    @SuppressWarnings("signature")
+    MEMORY_POOL(
+        "java.lang.management.MemoryPoolMXBean",
+        "java.lang", "MemoryPool", keyProperties("name"),
+        new MXBeanFetcher<MemoryPoolMXBean>() {
+            public List<MemoryPoolMXBean> getMXBeans() {
+                return ManagementFactoryHelper.getMemoryPoolMXBeans();
+            }
+        }),
+    @SuppressWarnings("signature")
+    OPERATING_SYSTEM(
+        "java.lang.management.OperatingSystemMXBean",
+        "java.lang", "OperatingSystem", defaultKeyProperties(),
+        new MXBeanFetcher<OperatingSystemMXBean>() {
+            public List<OperatingSystemMXBean> getMXBeans() {
+                return Collections.singletonList(ManagementFactoryHelper.getOperatingSystemMXBean());
+            }
+        }),
+    @SuppressWarnings("signature")
+    RUNTIME(
+        "java.lang.management.RuntimeMXBean",
+        "java.lang", "Runtime", defaultKeyProperties(),
+        new MXBeanFetcher<RuntimeMXBean>() {
+            public List<RuntimeMXBean> getMXBeans() {
+                return Collections.singletonList(ManagementFactoryHelper.getRuntimeMXBean());
+            }
+        }),
+    @SuppressWarnings("signature")
+    THREADING(
+        "java.lang.management.ThreadMXBean",
+        "java.lang", "Threading", defaultKeyProperties(),
+        new MXBeanFetcher<ThreadMXBean>() {
+            public List<ThreadMXBean> getMXBeans() {
+                return Collections.singletonList(ManagementFactoryHelper.getThreadMXBean());
+            }
+        }),
+    @SuppressWarnings("signature")
+    LOGGING(
+        "java.util.logging.PlatformLoggingMXBean",
+        "java.util.logging", "Logging", defaultKeyProperties(),
+        new MXBeanFetcher<PlatformLoggingMXBean>() {
+            public List<PlatformLoggingMXBean> getMXBeans() {
+                return ManagementFactoryHelper.getLoggingMXBean();
+            }
+        }),
+    @SuppressWarnings("signature")
+    BUFFER_POOL(
+        "java.nio.BufferPoolMXBean",
+        "java.nio", "BufferPool", keyProperties("name"),
+        new MXBeanFetcher<BufferPoolMXBean>() {
+            public List<BufferPoolMXBean> getMXBeans() {
+                return ManagementFactoryHelper.getBufferPoolMXBeans();
+            }
+        }),
+    @SuppressWarnings("signature")
+    SUN_GARBAGE_COLLECTOR(
+        "com.sun.management.GarbageCollectorMXBean",
+        "java.lang", "GarbageCollector", keyProperties("name"),
+        new MXBeanFetcher<com.sun.management.GarbageCollectorMXBean>() {
+            public List<com.sun.management.GarbageCollectorMXBean> getMXBeans() {
+                return getGcMXBeanList(com.sun.management.GarbageCollectorMXBean.class);
+            }
+        }),
+    @SuppressWarnings("signature")
+    SUN_OPERATING_SYSTEM(
+        "com.sun.management.OperatingSystemMXBean",
+        "java.lang", "OperatingSystem", defaultKeyProperties(),
+        new MXBeanFetcher<com.sun.management.OperatingSystemMXBean>() {
+            public List<com.sun.management.OperatingSystemMXBean> getMXBeans() {
+                return getOSMXBeanList(com.sun.management.OperatingSystemMXBean.class);
+            }
+        }),
+    @SuppressWarnings("signature")
+    SUN_UNIX_OPERATING_SYSTEM(
+        "com.sun.management.UnixOperatingSystemMXBean",
+        "java.lang", "OperatingSystem", defaultKeyProperties(),
+        new MXBeanFetcher<UnixOperatingSystemMXBean>() {
+            public List<UnixOperatingSystemMXBean> getMXBeans() {
+                return getOSMXBeanList(com.sun.management.UnixOperatingSystemMXBean.class);
+            }
+        }),
+    @SuppressWarnings("signature")
+    HOTSPOT_DIAGNOSTIC(
+        "com.sun.management.HotSpotDiagnosticMXBean",
+        "com.sun.management", "HotSpotDiagnostic", defaultKeyProperties(),
+        new MXBeanFetcher<HotSpotDiagnosticMXBean>() {
+            public List<HotSpotDiagnosticMXBean> getMXBeans() {
+                return Collections.singletonList(ManagementFactoryHelper.getDiagnosticMXBean());
+            }
+        });
+
+    @BinaryName String getMXBeanInterfaceName();
+}
+
+public class MonitorInfo extends LockInfo {
+    public MonitorInfo(@BinaryName String className, int identityHashCode, int stackDepth, StackTraceElement stackFrame);
+    public static MonitorInfo from(CompositeData cd) {
+        if (cd == null) {
+            return null;
+        }
+
+        if (cd instanceof MonitorInfoCompositeData) {
+            return ((MonitorInfoCompositeData) cd).getMonitorInfo();
+        } else {
+            MonitorInfoCompositeData.validateCompositeData(cd);
+            /*  This might be a potentially bug! I have put the annotation so that everything compiles
+                however, there is no information in the documentation of MonitorInfoCompositeData
+                class that getClassName returns a @FullyQualifiedName. */
+            // @SuppressWarnings("signature")
+            /* This comes from sun.management, so I presume it is true. */
+            @SuppressWarnings("signature")
+            @BinaryName String className = MonitorInfoCompositeData.getClassName(cd);
+            int identityHashCode = MonitorInfoCompositeData.getIdentityHashCode(cd);
+            int stackDepth = MonitorInfoCompositeData.getLockedStackDepth(cd);
+            StackTraceElement stackFrame = MonitorInfoCompositeData.getLockedStackFrame(cd);
+            return new MonitorInfo(className,
+                                   identityHashCode,
+                                   stackDepth,
+                                   stackFrame);
+        }
+    }
+}
+
+public class LockInfo {
+    public LockInfo(@ClassGetName String className, int identityHashCode);
+    public @ClassGetName String getClassName();
+}
+
+package java.util;
+
+class ResourceBundle {
+
+    ResourceBundle getBundle(@BinaryName String baseName);
+    ResourceBundle getBundle(@BinaryName String baseName, Control control);
+    ResourceBundle getBundle(@BinaryName String baseName, Locale locale);
+    ResourceBundle getBundle(@BinaryName String baseName, Locale targetLocale, Control control);
+    ResourceBundle getBundle(@BinaryName String baseName, Locale locale, ClassLoader loader);
+    ResourceBundle getBundle(@BinaryName String baseName, Locale targetLocale, ClassLoader loader, Control control);
+}
+
+class ResourceBundle$Control {
+    public @BinaryName String toBundleName(@BinaryName String baseName, Locale locale) {
+	if (locale == Locale.ROOT) {
+	    return baseName;
+	}
+
+	String language = locale.getLanguage();
+	String country = locale.getCountry();
+	String variant = locale.getVariant();
+
+	if (language == "" && country == "" && variant == "") {
+	    return baseName;
+	}
+
+	StringBuilder sb = new StringBuilder(baseName);
+	sb.append('_');
+	if (variant != "") {
+	    sb.append(language).append('_').append(country).append('_').append(variant);
+	} else if (country != "") {
+	    sb.append(language).append('_').append(country);
+	} else {
+	    sb.append(language);
+	}
+	/*  I have to do this to bypass the annotation of toString() method of
+	    StringBuilder (which would be wrong). */
+	@SuppressWarnings("signature")
+	@BinaryName String result = sb.toString();
+	return result;
+
+    }
+
+    public ResourceBundle newBundle(@BinaryName String baseName, Locale locale, String format, ClassLoader loader, boolean reload) throws IllegalAccessException, InstantiationException, IOException;
+    public boolean needsReload(@BinaryName String baseName, Locale locale, String format, ClassLoader loader, ResourceBundle bundle, long loadTime);
+}
+
+class SecurityManager {
+    protected int classDepth(@FullyQualifiedName String name);
+    protected boolean inClass(@FullyQualifiedName String name);
+}
+
+package java.util.logging;
+
+class Level implements Serializable {
+    @SuppressWarnings("signature")
+    protected Level(String name, int value);
+    protected Level(String name, int value, @BinaryName String resourceBundleName);
+    @BinaryName String getResourceBundleName();
+}
+
+class Logger {
+
+    public static Logger getAnonymousLogger() {
+        /* I have to de it to permit null as binary name. */
+        @SuppressWarnings("signature")
+        @BinaryName String temp = null;
+        return getAnonymousLogger(temp);
+    }
+
+    protected Logger(String name, @BinaryName String resourceBundleName);
+    Logger getLogger(String name, @BinaryName String resourceBundleName);
+    Logger getAnonymousLogger(@BinaryName String resourceBundleName);
+    @BinaryName String getResourceBundleName();
+    void logrb(Level level, String sourceClass, String sourceMethod, @BinaryName String bundleName, String msg);
+    void logrb(Level level, String sourceClass, String sourceMethod, @BinaryName String bundleName, String msg, Object param1);
+    void logrb(Level level, String sourceClass, String sourceMethod, @BinaryName String bundleName, String msg, Object[] params);
+    void logrb(Level level, String sourceClass, String sourceMethod, @BinaryName String bundleName, String msg, Throwable thrown);
+}
+
+class LogManager {
+
+    static {
+        AccessController.doPrivileged(new PrivilegedAction<Object>() {
+                public Object run() {
+                    @SuppressWarnings("signature")
+                    @BinaryName String cname = null;
+                    try {
+                        @SuppressWarnings("signature")
+                        @BinaryName String temp = System.getProperty("java.util.logging.manager");
+                        cname = temp;
+                        if (cname != null) {
+                            try {
+                                Class clz = ClassLoader.getSystemClassLoader().loadClass(cname);
+                                manager = (LogManager) clz.newInstance();
+                            } catch (ClassNotFoundException ex) {
+                                Class clz = Thread.currentThread().getContextClassLoader().loadClass(cname);
+                                manager = (LogManager) clz.newInstance();
+                            }
+                        }
+                    } catch (Exception ex) {
+                        System.err.println("Could not load Logmanager \"" + cname + "\"");
+                        ex.printStackTrace();
+                    }
+                    if (manager == null) {
+                        manager = new LogManager();
+                    }
+
+                    // Create and retain Logger for the root of the namespace.
+                    manager.rootLogger = manager.new RootLogger();
+                    manager.addLogger(manager.rootLogger);
+
+                    // Adding the global Logger. Doing so in the Logger.<clinit>
+                    // would deadlock with the LogManager.<clinit>.
+                    Logger.global.setLogManager(manager);
+                    manager.addLogger(Logger.global);
+
+                    // We don't call readConfiguration() here, as we may be running
+                    // very early in the JVM startup sequence.  Instead readConfiguration
+                    // will be called lazily in getLogManager().
+                    return null;
+                }
+            });
+    }
+
+    @SuppressWarnings("signature")
+    Logger demandLogger(String name);
+
+    public void readConfiguration() throws IOException, SecurityException {
+        checkAccess();
+
+        // if a configuration class is specified, load it and use it.
+        @SuppressWarnings("signature")
+        @BinaryName String cname = System.getProperty("java.util.logging.config.class");
+        if (cname != null) {
+            try {
+                // Instantiate the named class.  It is its constructor's
+                // responsibility to initialize the logging configuration, by
+                // calling readConfiguration(InputStream) with a suitable stream.
+                try {
+                    Class clz = ClassLoader.getSystemClassLoader().loadClass(cname);
+                    clz.newInstance();
+                    return;
+                } catch (ClassNotFoundException ex) {
+                    Class clz = Thread.currentThread().getContextClassLoader().loadClass(cname);
+                    clz.newInstance();
+                    return;
+                }
+            } catch (Exception ex) {
+                System.err.println("Logging configuration class \"" + cname + "\" failed");
+                System.err.println("" + ex);
+                // keep going and useful config file.
+            }
+        }
+
+        String fname = System.getProperty("java.util.logging.config.file");
+        if (fname == null) {
+            fname = System.getProperty("java.home");
+            if (fname == null) {
+                throw new Error("Can't find java.home ??");
+            }
+            File f = new File(fname, "lib");
+            f = new File(f, "logging.properties");
+            fname = f.getCanonicalPath();
+        }
+        InputStream in = new FileInputStream(fname);
+        BufferedInputStream bin = new BufferedInputStream(in);
+        try {
+            readConfiguration(bin);
+        } finally {
+            if (in != null) {
+                in.close();
+            }
+        }
+    }
+
+    public void readConfiguration(InputStream ins) throws IOException, SecurityException {
+        checkAccess();
+        reset();
+
+        // Load the properties
+        props.load(ins);
+        // Instantiate new configuration objects.
+        @SuppressWarnings("signature")
+        @BinaryName String names[] = parseClassNames("config");
+
+        for (int i = 0; i < names.length; i++) {
+            String word = names[i];
+            try {
+                Class clz = ClassLoader.getSystemClassLoader().loadClass(word);
+                clz.newInstance();
+            } catch (Exception ex) {
+                System.err.println("Can't load config class \"" + word + "\"");
+                System.err.println("" + ex);
+                // ex.printStackTrace();
+            }
+        }
+
+        // Set levels on any pre-existing loggers, based on the new properties.
+        setLevelsOnExistingLoggers();
+
+        // Notify any interested parties that our properties have changed.
+        changes.firePropertyChange(null, null, null);
+
+        // Note that we need to reinitialize global handles when
+        // they are first referenced.
+        synchronized (this) {
+            initializedGlobalHandlers = false;
+        }
+    }
+
+    @SuppressWarnings("signature")
+    Filter getFilterProperty(String name, Filter defaultValue);
+
+    @SuppressWarnings("signature")
+    Formatter getFormatterProperty(String name, Formatter defaultValue);
+}
+
+class MemoryHandler extends Handler {
+
+    public MemoryHandler() {
+        sealed = false;
+        configure();
+        sealed = true;
+
+        @SuppressWarnings("signature")
+        @BinaryName String name = "???";
+        try {
+            LogManager manager = LogManager.getLogManager();
+            @SuppressWarnings("signature")
+            @BinaryName String temp = manager.getProperty("java.util.logging.MemoryHandler.target");
+            name = temp;
+            Class clz = ClassLoader.getSystemClassLoader().loadClass(name);
+            target = (Handler) clz.newInstance();
+        } catch (Exception ex) {
+            throw new RuntimeException("MemoryHandler can't load handler \"" + name + "\"" , ex);
+        }
+        init();
+    }
+}
+
+package java.io;
+
+class ObjectStreamClass implements Serializable {
+    public @BinaryName String getName();
+}
+
+
+///////////////////////////////////////////////////////////////////////////
+// Non-JDK classes
+//
+
+package org.apache.bcel.generic;
+
+public class ClassGen { //  extends AccessFlags implements Cloneable {
+  public ClassGen(@BinaryName String class_name, @BinaryName String super_class_name, String file_name, int access_flags, String[] interfaces, ConstantPoolGen cp);
+  public ClassGen(@BinaryNameForNonArray String class_name, @BinaryNameForNonArray String super_class_name, String file_name, int access_flags, String[] interfaces);
+  public @BinaryNameForNonArray String getClassName();
+  public @BinaryNameForNonArray String getSuperclassName();
+  // can actually have '/' in place of '.' in name
+  public void setClassName(@BinaryNameForNonArray String name);
+  // can actually have '/' in place of '.' in name
+  public void setSuperclassName(@BinaryNameForNonArray String name);
+}
+
+
+public class ObjectType extends ReferenceType {
+  public @BinaryNameForNonArray String getClassName();
+}
+
+public abstract class Type implements java.io.Serializable {
+  public @BinaryName String toString();
+}
+
+public abstract class FieldOrMethod extends CPInstruction implements LoadClass {
+  public @BinaryNameForNonArray String getClassName(ConstantPoolGen cpg);
+}
