@@ -2,9 +2,6 @@ import checkers.nullness.quals.*;
 import java.util.*;
 
 class WildcardAnnos {
-  // TODO: analogously to type variables, shouldn't the annotation on the wildcard
-  // override whatever is on the bounds?
-  //:: error: (type.invalid)
   @Nullable List<@Nullable ? extends @NonNull Object> l1 = null;
   @Nullable List<@NonNull ? extends @Nullable Object> l2 = null;
 
