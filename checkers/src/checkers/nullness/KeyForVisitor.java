@@ -74,7 +74,13 @@ public class KeyForVisitor extends BaseTypeVisitor<KeyForAnnotatedTypeFactory> {
                 }
             }
 
-            return super.visitDeclared(type, p);
+            // TODO: Should BaseTypeValidator be parametric in the ATF?
+            if (type.isAnnotatedInHierarchy(((KeyForAnnotatedTypeFactory)atypeFactory).KEYFOR)) {
+                return super.visitDeclared(type, p);
+            } else {
+                // TODO: Something went wrong...
+                return null;
+            }
         }
 
         // TODO: primitive types? arrays?

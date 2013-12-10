@@ -434,17 +434,35 @@ abstract class TypeFromTree extends
         @Override
         public AnnotatedTypeMirror visitVariable(VariableTree node,
                 AnnotatedTypeFactory f) {
-
             AnnotatedTypeMirror result = f.fromTypeTree(node.getType());
-            // I would like to use this line:
-            // AnnotatedTypeMirror result = f.toAnnotatedType(elt.asType());
-            // Instead of the above, but the typeAnnotations are not filled into
-            // the VarSymbol of a local variable :-(
-            // TODO: fix this!
+            result.clearAnnotations();
             Element elt = TreeUtils.elementFromDeclaration(node);
 
             TypeFromElement.annotate(result, elt);
             return result;
+
+            /* An alternative I played around with. It unfortunately
+             * ignores stub files, which is not good.
+            com.sun.tools.javac.code.Type undType = ((JCTree)node).type;
+            AnnotatedTypeMirror result;
+
+            if (undType != null) {
+                result = f.toAnnotatedType(undType);
+            } else {
+                // node.getType() ignores the top-level modifiers, which are
+                // in node.getModifiers()
+                result = f.fromTypeTree(node.getType());
+                // We still need to remove all annotations.
+                // result.clearAnnotations();
+            }
+
+            // TODO: Additionally decoding should NOT be necessary.
+            // However, the underlying javac Type doesn't contain
+            // type argument annotations.
+            Element elt = TreeUtils.elementFromDeclaration(node);
+            TypeFromElement.annotate(result, elt);
+
+            return result;*/
         }
 
         @Override

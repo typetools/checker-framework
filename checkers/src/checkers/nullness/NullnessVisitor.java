@@ -160,7 +160,10 @@ public class NullnessVisitor extends InitializationVisitor<NullnessAnnotatedType
 
     @Override
     public boolean isValidUse(AnnotatedPrimitiveType type, Tree tree) {
-        if (!type.hasAnnotation(NONNULL)) {
+        if (tree.getKind() != Tree.Kind.TYPE_CAST &&
+                !type.hasAnnotation(NONNULL)) {
+            // TODO: casts are sometimes inferred as @Nullable.
+            // Find a way to correctly handle that case.
             return false;
         }
         return super.isValidUse(type, tree);
@@ -413,8 +416,9 @@ public class NullnessVisitor extends InitializationVisitor<NullnessAnnotatedType
     /** Case 7: unboxing case: casting to a primitive */
     @Override
     public Void visitTypeCast(TypeCastTree node, Void p) {
-        if (isPrimitive(node) && !isPrimitive(node.getExpression()))
+        if (isPrimitive(node) && !isPrimitive(node.getExpression())) {
             checkForNullability(node.getExpression(), UNBOXING_OF_NULLABLE);
+        }
         return super.visitTypeCast(node, p);
     }
 

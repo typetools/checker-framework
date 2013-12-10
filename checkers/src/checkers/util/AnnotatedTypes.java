@@ -612,9 +612,6 @@ public class AnnotatedTypes {
      */
     public static Map<AnnotatedTypeVariable, AnnotatedTypeMirror>
     findTypeArguments(final ProcessingEnvironment processingEnv, final AnnotatedTypeFactory atypeFactory, final ExpressionTree expr) {
-        Map<AnnotatedTypeVariable, AnnotatedTypeMirror> typeArguments =
-            new HashMap<AnnotatedTypeVariable, AnnotatedTypeMirror>();
-
         ExecutableElement elt;
         if (expr instanceof MethodInvocationTree ||
                 expr instanceof NewClassTree) {
@@ -626,8 +623,9 @@ public class AnnotatedTypes {
         }
 
         // Is the method a generic method?
-        if (elt.getTypeParameters().isEmpty())
-            return typeArguments;
+        if (elt.getTypeParameters().isEmpty()) {
+            return Collections.emptyMap();
+        }
 
         List<? extends Tree> targs;
         if (expr instanceof MethodInvocationTree) {
@@ -644,6 +642,8 @@ public class AnnotatedTypes {
         if (!targs.isEmpty()) {
             List<? extends TypeParameterElement> tvars = elt.getTypeParameters();
 
+            Map<AnnotatedTypeVariable, AnnotatedTypeMirror> typeArguments =
+                    new HashMap<AnnotatedTypeVariable, AnnotatedTypeMirror>();
             for (int i = 0; i < elt.getTypeParameters().size(); ++i) {
                 AnnotatedTypeVariable typeVar = (AnnotatedTypeVariable) atypeFactory.getAnnotatedType(tvars.get(i));
                 AnnotatedTypeMirror typeArg = atypeFactory.getAnnotatedTypeFromTypeTree(targs.get(i));
@@ -651,7 +651,9 @@ public class AnnotatedTypes {
             }
             return typeArguments;
         } else {
-            return inferTypeArguments(processingEnv, atypeFactory, expr, elt);
+            Map<AnnotatedTypeVariable, AnnotatedTypeMirror> typeArguments =
+                    inferTypeArguments(processingEnv, atypeFactory, expr, elt);
+            return typeArguments;
         }
     }
 
@@ -732,11 +734,12 @@ public class AnnotatedTypes {
 
                     TypeHierarchy typeHierarchy = atypeFactory.getTypeHierarchy();
 
-                    if (argument == null || retinf != null &&
+                    if (argument == null || (retinf != null &&
                             types.isSubtype(argument.getUnderlyingType(), retinf.getUnderlyingType()) &&
-                            typeHierarchy.isSubtype(argument, retinf)) {
-                        // Only use a type inferred from the assignment context if it is a supertype
-                        // of the type inferred by the arguments.
+                            (retinf.getKind() == TypeKind.TYPEVAR ||
+                                typeHierarchy.isSubtype(argument, retinf)))) {
+                        // Use a type inferred from the assignment context if it is a supertype
+                        // of the type inferred by the arguments or if it is a type variable.
                         argument = retinf;
                     }
                 }

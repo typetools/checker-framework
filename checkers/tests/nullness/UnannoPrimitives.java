@@ -4,6 +4,7 @@ class UnannoPrimitives {
   //:: error: (type.invalid)
   @Nullable int f;
 
+  //TODO:: error: (type.invalid)
   @NonNull int g;
 
   void local() {
@@ -17,6 +18,7 @@ class UnannoPrimitives {
     //:: error: (type.invalid)
     @Nullable int f;
 
+    //TODO:: error: (type.invalid)
     @NonNull int g;
   }
 
@@ -31,4 +33,17 @@ class UnannoPrimitives {
   byte @Nullable [] d1b = {4};
 
   @SuppressWarnings("ha!") byte[] d2 = {4};
+
+  //:: error: (type.invalid)
+  Object ar = new @Nullable byte[] {4};
+
+  //TODO:: error: (type.invalid)
+  Object ar2 = new @NonNull byte[] {42};
+
+  void testCasts(Integer i1) {
+    Object i2 = (int) i1;
+    //TODO:: error: (type.invalid)
+    Object i3 = (@Nullable int) i1;
+  }
+
 }

@@ -15,7 +15,6 @@ import checkers.quals.DefaultQualifier;
 import checkers.quals.Unused;
 import checkers.source.Result;
 import checkers.source.SourceVisitor;
-import checkers.types.GenericAnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -23,6 +22,7 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import checkers.types.GenericAnnotatedTypeFactory;
 import checkers.types.QualifierHierarchy;
 import checkers.types.TypeHierarchy;
 import checkers.types.VisitorState;
@@ -398,9 +398,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             }
 
             // constructor return types are null
-            if (node.getReturnType() != null) {
-                typeValidator.visit(methodType.getReturnType(),
-                        node.getReturnType());
+            Tree ret = node.getReturnType();
+            if (ret != null &&
+                    methodType.getReturnType().getKind() != TypeKind.VOID) {
+                validateTypeOf(ret);
+            } else {
+                // TODO: ensure constructor return types are valid
             }
 
             AnnotatedDeclaredType enclosingType = (AnnotatedDeclaredType) atypeFactory
@@ -1032,9 +1035,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         checkTypeArguments(node, constructor.getTypeVariables(),
                 typeargs, node.getTypeArguments());
 
-        AnnotatedDeclaredType dt = atypeFactory.getAnnotatedType(node);
-        checkConstructorInvocation(dt, constructor, node);
-        validateTypeOf(node);
+        boolean valid = validateTypeOf(node);
+
+        if (valid) {
+            AnnotatedDeclaredType dt = atypeFactory.getAnnotatedType(node);
+            checkConstructorInvocation(dt, constructor, node);
+        }
 
         return super.visitNewClass(node, p);
     }
@@ -1347,12 +1353,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     @Override
     public Void visitTypeCast(TypeCastTree node, Void p) {
-        boolean valid = validateTypeOf(node.getType());
+        // validate "node" instead of "node.getType()" to prevent duplicate errors.
+        boolean valid = validateTypeOf(node) && validateTypeOf(node.getExpression());
         if (valid) {
             checkTypecastSafety(node, p);
             checkTypecastRedundancy(node, p);
         }
         return super.visitTypeCast(node, p);
+        // return scan(node.getExpression(), p);
     }
 
     @Override
@@ -1390,6 +1398,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      */
     protected void commonAssignmentCheck(Tree varTree, ExpressionTree valueExp,
             /*@CompilerMessageKey*/ String errorKey) {
+        if (!validateTypeOf(varTree)) {
+            return;
+        }
+
         AnnotatedTypeMirror var = atypeFactory.getDefaultedAnnotatedType(varTree, valueExp);
         assert var != null : "no variable found for tree: " + varTree;
 
@@ -1434,6 +1446,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             NewArrayTree arrayTree = (NewArrayTree) valueExp;
             assert arrayTree.getInitializers() != null : "array initializers are not expected to be null in: " + valueExp;
             checkArrayInitialization(compType, arrayTree.getInitializers());
+        }
+        if (!validateTypeOf(valueExp)) {
+            return;
         }
         AnnotatedTypeMirror valueType = atypeFactory.getAnnotatedType(valueExp);
         assert valueType != null : "null type for expression: " + valueExp;

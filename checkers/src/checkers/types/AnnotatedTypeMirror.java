@@ -91,45 +91,61 @@ public abstract class AnnotatedTypeMirror {
      */
     public static AnnotatedTypeMirror createType(TypeMirror type,
         AnnotatedTypeFactory atypeFactory) {
-        if (type == null)
+        if (type == null) {
+            ErrorReporter.errorAbort("AnnotatedTypeMirror.createType: input type must not be null!");
             return null;
-        if (replacer == null)
-            replacer = new Replacer(atypeFactory.types);
+        }
 
-        type = ((com.sun.tools.javac.code.Type)type).unannotatedType();
+        com.sun.tools.javac.code.Type jctype = ((com.sun.tools.javac.code.Type)type);
+        type = jctype.unannotatedType();
 
+        AnnotatedTypeMirror result;
         switch (type.getKind()) {
             case ARRAY:
-                return new AnnotatedArrayType((ArrayType) type, atypeFactory);
+                result = new AnnotatedArrayType((ArrayType) type, atypeFactory);
+                break;
             case DECLARED:
-                return new AnnotatedDeclaredType((DeclaredType) type, atypeFactory);
+                result = new AnnotatedDeclaredType((DeclaredType) type, atypeFactory);
+                break;
             case ERROR:
                 ErrorReporter.errorAbort("AnnotatedTypeMirror.createType: input should type-check already! Found error type: " + type);
                 return null; // dead code
             case EXECUTABLE:
-                return new AnnotatedExecutableType((ExecutableType) type, atypeFactory);
+                result = new AnnotatedExecutableType((ExecutableType) type, atypeFactory);
+                break;
             case VOID:
             case PACKAGE:
             case NONE:
-                return new AnnotatedNoType((NoType) type, atypeFactory);
+                result = new AnnotatedNoType((NoType) type, atypeFactory);
+                break;
             case NULL:
-                return new AnnotatedNullType((NullType) type, atypeFactory);
+                result = new AnnotatedNullType((NullType) type, atypeFactory);
+                break;
             case TYPEVAR:
-                return new AnnotatedTypeVariable((TypeVariable) type, atypeFactory);
+                result = new AnnotatedTypeVariable((TypeVariable) type, atypeFactory);
+                break;
             case WILDCARD:
-                return new AnnotatedWildcardType((WildcardType) type, atypeFactory);
+                result = new AnnotatedWildcardType((WildcardType) type, atypeFactory);
+                break;
             case INTERSECTION:
-                return new AnnotatedIntersectionType((IntersectionType) type, atypeFactory);
+                result = new AnnotatedIntersectionType((IntersectionType) type, atypeFactory);
+                break;
             case UNION:
-                return new AnnotatedUnionType((UnionType) type, atypeFactory);
+                result = new AnnotatedUnionType((UnionType) type, atypeFactory);
+                break;
             default:
                 if (type.getKind().isPrimitive()) {
-                    return new AnnotatedPrimitiveType((PrimitiveType) type, atypeFactory);
+                    result = new AnnotatedPrimitiveType((PrimitiveType) type, atypeFactory);
+                    break;
                 }
                 ErrorReporter.errorAbort("AnnotatedTypeMirror.createType: unidentified type " +
                         type + " (" + type.getKind() + ")");
                 return null; // dead code
         }
+        /*if (jctype.isAnnotated()) {
+            result.addAnnotations(jctype.getAnnotationMirrors());
+        }*/
+        return result;
     }
 
     /** The factory to use for lazily creating annotated types. */
@@ -947,8 +963,9 @@ public abstract class AnnotatedTypeMirror {
             if (typeArgs == null) {
                 typeArgs = new ArrayList<AnnotatedTypeMirror>();
                 if (!((DeclaredType)actualType).getTypeArguments().isEmpty()) { // lazy init
-                    for (TypeMirror t : ((DeclaredType)actualType).getTypeArguments())
+                    for (TypeMirror t : ((DeclaredType)actualType).getTypeArguments()) {
                         typeArgs.add(createType(t, atypeFactory));
+                    }
                 }
                 typeArgs = Collections.unmodifiableList(typeArgs);
             }
@@ -2445,8 +2462,12 @@ public abstract class AnnotatedTypeMirror {
     }
 
     private static void setSuperTypeFinder(AnnotatedTypeFactory factory) {
-        if (superTypeFinder == null || superTypeFinder.atypeFactory != factory)
+        if (superTypeFinder == null || superTypeFinder.atypeFactory != factory) {
             superTypeFinder = new SuperTypeFinder(factory);
+        }
+        if (replacer == null) {
+            replacer = new Replacer(factory.types);
+        }
     }
 
     private static SuperTypeFinder superTypeFinder;

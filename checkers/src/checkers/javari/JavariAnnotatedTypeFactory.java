@@ -525,6 +525,12 @@ public class JavariAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             else                                                    // case 3
                 p.replaceAnnotation(THISMUTABLE);
 
+            if (p.getKind().isPrimitive()) {
+                // READONLY is invalid for primitives. Fix the type.
+                // I think it would be cleaner to treat readonly primitives as
+                // final.
+                p.replaceAnnotation(MUTABLE);
+            }
             return super.visitMemberSelect(node, p);
         }
 
