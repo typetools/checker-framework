@@ -204,8 +204,11 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> {
             // ParameterizedTypeTree));
             break;
         default:
-            System.err.printf("TypeValidator.visitDeclared unhandled tree: %s of kind %s\n",
-                            tree, tree.getKind());
+            // the parameterized type is the result of some expression tree.
+            // No need to do anything further.
+            break;
+            // System.err.printf("TypeValidator.visitDeclared unhandled tree: %s of kind %s\n",
+            //                 tree, tree.getKind());
         }
 
         return Pair.of(typeargtree, type);
@@ -368,6 +371,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> {
                 }
             }
 
+            /* TODO: see note with visitTypeVariable
             if (type.getExtendsBoundField() != null) {
                 AnnotatedTypeMirror upper = type.getExtendsBoundField();
                 for (AnnotationMirror aOnVar : onVar) {
@@ -379,6 +383,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> {
                 }
                 upper.replaceAnnotations(onVar);
             }
+            */
 
             if (type.getSuperBoundField() != null) {
                 AnnotatedTypeMirror lower = type.getSuperBoundField();
