@@ -441,7 +441,7 @@ public class FormatterTreeUtil {
                                 try {
                                     return Class.forName(e.getQualifiedName().toString());
                                 } catch (ClassNotFoundException e1) {
-                                    throw new RuntimeException(e1);
+                                    return null; // the lookup should work for all the classes we care about
                                 }
                             }
                         }, Void.TYPE);

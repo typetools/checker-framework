@@ -41,6 +41,7 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
+import checkers.types.visitors.AnnotatedTypeMerger;
 import checkers.util.AnnotationBuilder;
 import javacutils.AnnotationUtils;
 import javacutils.ElementUtils;
@@ -491,7 +492,7 @@ public class StubParser {
                     .getVerboseName(elt));
             if (annos == null) {
                 annos = AnnotationUtils.createAnnotationSet();
-                declAnnos.put(ElementUtils.getVerboseName(elt), annos);
+                putOrAddToMap(declAnnos, ElementUtils.getVerboseName(elt), annos);
             }
             annos.add(fromStubFile);
         }
@@ -629,7 +630,7 @@ public class StubParser {
                 annos.add(annoMirror);
         }
         String key = ElementUtils.getVerboseName(elt);
-        declAnnos.put(key, annos);
+        putOrAddToMap(declAnnos, key,annos);
     }
 
     private void annotateParameters(List<? extends AnnotatedTypeMirror> typeArguments,
@@ -805,86 +806,33 @@ public class StubParser {
         }
         m.put(key, value);
     }
-
+    
+    /**
+     * If the key is already in the map, then add the annos to the list.
+     * Otherwise put the key and the annos in the map
+     */
+    private static void putOrAddToMap(Map<String, Set<AnnotationMirror>> map,
+            String key, Set<AnnotationMirror> annos) {
+        if (map.containsKey(key)) {
+            map.get(key).addAll(annos);
+        } else {
+            map.put(key, annos);
+        }
+    }
+    
     /** Just like Map.put, but does not throw an error if the key with the same value is already in the map. */
     private static void putNew(Map<Element, AnnotatedTypeMirror> m, Element key, AnnotatedTypeMirror value) {
         if (key == null)
             return;
         if (m.containsKey(key)) {
             AnnotatedTypeMirror value2 = m.get(key);
-            // Are the two values the same?
-            if (AnnotationUtils.areSame(value.getAnnotations(), value2.getAnnotations())) {
-                return;
-            }
-            AnnotatedTypeMirror prev = m.get(key);
-            mergeATM(value, prev);
-        }
-        m.put(key, value);
-    }
-
-    /**
-     * Merge the qualifiers from the second parameter into the first parameter.
-     * Modifies the first parameter directly.
-     * Raises an exception if both types have a qualifier in a given hierarchy.
-     *
-     * @param into target type
-     * @param from source type
-     */
-    // Should we move this to AnnotationUtils? The way collisions are handled is specific.
-    private static void mergeATM(AnnotatedTypeMirror into, AnnotatedTypeMirror from) {
-        assert into.getClass() == from.getClass();
-        // Everybody needs to merge the main qualifier.
-        for (AnnotationMirror afrom : from.getAnnotations()) {
-            if (into.isAnnotatedInHierarchy(afrom) &&
-                    !AnnotationUtils.areSame(into.getAnnotationInHierarchy(afrom), afrom)) {
-                // TODO: raise error on the caller, this message might not help in debugging.
-                ErrorReporter.errorAbort("StubParser: key is already in map: " + LINE_SEPARATOR
-                        + " existing: " + into + " new: " + from);
-                return; // dead code
-            } else {
-                into.addAnnotation(afrom);
-            }
-        }
-
-        if (from instanceof AnnotatedArrayType) {
-            AnnotatedArrayType cinto = (AnnotatedArrayType) into;
-            AnnotatedArrayType cfrom = (AnnotatedArrayType) from;
-            // Also merge the component types.
-            mergeATM(cinto.getComponentType(), cfrom.getComponentType());
-        } else if (from instanceof AnnotatedDeclaredType) {
-            AnnotatedDeclaredType cinto = (AnnotatedDeclaredType) into;
-            AnnotatedDeclaredType cfrom = (AnnotatedDeclaredType) from;
-            mergeATMs(cinto.getTypeArguments(), cfrom.getTypeArguments());
-        } else if (from instanceof AnnotatedExecutableType) {
-            AnnotatedExecutableType cinto = (AnnotatedExecutableType) into;
-            AnnotatedExecutableType cfrom = (AnnotatedExecutableType) from;
-            mergeATMs(cinto.getTypeVariables(), cinto.getTypeVariables());
-            mergeATM(cinto.getReturnType(), cfrom.getReturnType());
-            mergeATM(cinto.getReceiverType(), cfrom.getReceiverType());
-            mergeATMs(cinto.getParameterTypes(), cfrom.getParameterTypes());
-            mergeATMs(cinto.getThrownTypes(), cfrom.getThrownTypes());
-        } else if (from instanceof AnnotatedTypeVariable) {
-            AnnotatedTypeVariable cinto = (AnnotatedTypeVariable) into;
-            AnnotatedTypeVariable cfrom = (AnnotatedTypeVariable) from;
-            mergeATM(cinto.getLowerBound(), cfrom.getLowerBound());
-            mergeATM(cinto.getUpperBound(), cfrom.getUpperBound());
-        } else if (from instanceof AnnotatedWildcardType) {
-            AnnotatedWildcardType cinto = (AnnotatedWildcardType) into;
-            AnnotatedWildcardType cfrom = (AnnotatedWildcardType) from;
-            mergeATM(cinto.getSuperBound(), cfrom.getSuperBound());
-            mergeATM(cinto.getExtendsBound(), cfrom.getExtendsBound());
+            value.accept(new AnnotatedTypeMerger(), value2);
+            m.put(key, value2);
         } else {
-            // Remainder: No, Null, Primitive
-            // Nothing to do.
+            m.put(key, value);
         }
     }
 
-    private static void mergeATMs(List<? extends AnnotatedTypeMirror> into, List<? extends AnnotatedTypeMirror> from) {
-        assert into.size() == from.size();
-        for (int i=0; i<into.size(); ++i) {
-            mergeATM(into.get(i), from.get(i));
-        }
-    }
 
     /** Just like Map.putAll, but errs if any key is already in the map. */
     private static <K,V> void putAllNew(Map<K,V> m, Map<K,V> m2) {
