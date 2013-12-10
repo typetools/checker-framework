@@ -202,10 +202,9 @@ public class CFTreeBuilder extends TreeBuilder {
     private Attribute.TypeCompound attributeFromAnnotationMirror(AnnotationMirror am) {
         // Create a new Attribute to match the AnnotationMirror.
         List<Pair<Symbol.MethodSymbol, Attribute>> values = List.nil();
-        for (Map.Entry<? extends ExecutableElement,
-                 ? extends AnnotationValue> entry :
+        for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry :
                  am.getElementValues().entrySet()) {
-            Attribute attribute = attributeFromAnnotationValue(entry.getValue());
+            Attribute attribute = attributeFromAnnotationValue(entry.getKey(), entry.getValue());
             values = values.append(new Pair<>((Symbol.MethodSymbol)entry.getKey(),
                                               attribute));
         }
@@ -219,15 +218,22 @@ public class CFTreeBuilder extends TreeBuilder {
      * Returns a newly created Attribute corresponding to an argument
      * AnnotationValue.
      *
+     * @param meth the ExecutableElement that is assigned the value, needed for empty arrays.
      * @param am  an AnnotationValue, which may be part of an AST or an internally
      *            created subclass.
      * @return  a new Attribute corresponding to the AnnotationValue
      */
-    private Attribute attributeFromAnnotationValue(AnnotationValue av) {
-        return av.accept(new AttributeCreator(), null);
+    private Attribute attributeFromAnnotationValue(ExecutableElement meth, AnnotationValue av) {
+        return av.accept(new AttributeCreator(meth), null);
     }
 
     class AttributeCreator implements AnnotationValueVisitor<Attribute, Void> {
+        private final ExecutableElement meth;
+
+        public AttributeCreator(ExecutableElement meth) {
+            this.meth = meth;
+        }
+
         @Override
         public Attribute visit(AnnotationValue av, Void p) {
             return av.accept(this, p);
@@ -322,12 +328,16 @@ public class CFTreeBuilder extends TreeBuilder {
 
         @Override
         public Attribute visitArray(java.util.List<? extends AnnotationValue> vals, Void p) {
-            List<Attribute> valAttrs = List.nil();
-            for (AnnotationValue av : vals) {
-                valAttrs = valAttrs.append(av.accept(this, p));
+            if (!vals.isEmpty()) {
+                List<Attribute> valAttrs = List.nil();
+                for (AnnotationValue av : vals) {
+                    valAttrs = valAttrs.append(av.accept(this, p));
+                }
+                ArrayType arrayType = modelTypes.getArrayType(valAttrs.get(0).type);
+                return new Attribute.Array((Type)arrayType, valAttrs);
+            } else {
+                return new Attribute.Array((Type) meth.getReturnType(), List.<Attribute>nil());
             }
-            ArrayType arrayType = modelTypes.getArrayType(valAttrs.get(0).type);
-            return new Attribute.Array((Type)arrayType, valAttrs);
         }
 
         @Override
