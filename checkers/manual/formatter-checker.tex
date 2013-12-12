@@ -121,7 +121,7 @@ string --- that is, a string that cannot be used as a format string.  For
 example, the type of \code{"\%y"} is \<@InvalidFormat String>.
 \code{@\refclass{checkers/formatter/quals}{FormatBottom}} is the type of the
 \code{null} literal.
-\code{@\refclass{checkers/formatter/quals}{Unqualified}} is the default that is
+\code{@\refclass{checkers/quals}{Unqualified}} is the default that is
 applied to strings that are not literals and on which the user has not
 written a \<@Format> annotation.
 
@@ -288,7 +288,7 @@ If the Format String Checker issues no errors, it provides the following guarant
 The following guarantees hold for every format method invocation:
 
 \begin{enumerate} 
-    \item The format method's first parameter (or second if a \sunjavadoc{java/util/Locale}{Locale} is provided) is a valid 
+    \item The format method's first parameter (or second if a \sunjavadoc{java/util}{Locale} is provided) is a valid
         format string (or \code{null}).
 
     \item A warning is issued if one of the format string's conversion categories is \code{UNUSED}.
@@ -376,7 +376,7 @@ Case \ref{formatter-array-warning}:
 % 
 % \begin{enumerate} 
 % \item Issue an \emph{error}, if the format method's first format argument (or
-%     second if a \sunjavadoc{java/util/Locale}{Locale} is provided) is not a
+%     second if a \sunjavadoc{java/util}{Locale} is provided) is not a
 %     \code{String} annotated with the \code{@Format} qualifier. 
 % \item Issue a \emph{warning}, if any of the \code{@Format} string's 
 %     conversion categories is \code{UNUSED}.
@@ -514,7 +514,7 @@ literal is a valid format string or not.  When a string is computed or is
 obtained from an external resource, then the string must be trusted or tested.
 
 One way to test a string is to call the
-\refmethod{checkers/formatter}{FormatterUtil}{asFormat}{(String, ConversionCategory...)} 
+\refmethod{checkers/formatter}{FormatUtil}{asFormat}{(String, ConversionCategory...)}
 method to check whether the format string is valid and its format
 specifiers match certain conversion categories.
 If this is not the case, \<asFormat> raises an exception.  Your code should
@@ -542,7 +542,7 @@ therefore passes the type-checker:
     Scanner s = new Scanner(System.in);
     String format = s.next()
     try {
-        format = FormatterUtil.asFormat(format, GENERAL, INT); 
+        format = FormatUtil.asFormat(format, GENERAL, INT);
     } catch (IllegalFormatException e) {
         // Replace this by your own error handling.
         System.err.println("The user entered the following invalid format string: " + format);
@@ -552,12 +552,12 @@ therefore passes the type-checker:
     System.out.printf(format,"hello",1337); 
 \end{Verbatim}
 
-\noindent A potential disadvantage of using the \code{FormatterUtil} class is that your code becomes
+\noindent A potential disadvantage of using the \code{FormatUtil} class is that your code becomes
 dependent on the Checker Framework at run time as well as at compile time. You
 can avoid this by adding the Checker Framework to your project, or by copying
-the \code{FormatterUtil} class into your own code.
+the \code{FormatUtil} class into your own code.
 
 %  LocalWords:  printf InvalidFormat Formatter FormatBottom specifier's
 %  LocalWords:  ConversionCategory isValidCodePoint BigInteger BigDecimal
-%  LocalWords:  5cm varargs TODO Formattable formatTo FormatterUtil java
+%  LocalWords:  5cm varargs TODO Formattable formatTo FormatUtil java
 %  LocalWords:  asFormat printFloatAndInt 5cm 4cm 5cm 4cm
