@@ -300,9 +300,8 @@ However, the declarative mechanism is sufficient for most type systems.
 
 
 \subsection{Procedurally defining the qualifier and type hierarchy\label{procedural-hierarchy}}
-
-\urldef{\createQualifierHierarchyURL}\url{api/checkers/basetype/BaseTypeVisitor.html#createQualifierHierarchy()}
-\urldef{\createTypeHierarchyURL}\url{api/checkers/basetype/BaseTypeVisitor.html#createTypeHierarchy()}
+\urldef{\createQualifierHierarchyURL}\url{api/checkers/types/AnnotatedTypeFactory.html#createQualifierHierarchy()}
+\urldef{\createTypeHierarchyURL}\url{api/checkers/types/AnnotatedTypeFactory.html#createTypeHierarchy()}
 
 While the declarative syntax suffices for many cases, more complex
 type hierarchies can be expressed by overriding, in \refclass{checkers/basetype}{BaseTypeVisitor},
@@ -737,7 +736,7 @@ checker classes for the Interning Checker and the Nullness Checker:
 \end{Verbatim}
 
 
-\urldef{\getSupportedTypeQualifiersURL}{\url}{http://types.cs.washington.edu/checker-framework/current/api/checkers/basetype/BaseTypeChecker.html#getSupportedTypeQualifiers()}
+\urldef{\getSupportedTypeQualifiersURL}{\url}{http://types.cs.washington.edu/checker-framework/current/api/checkers/types/AnnotatedTypeFactory.html#getSupportedTypeQualifiers()}
 
 The checker class must be annotated by
 \code{@\refclass{checkers/quals}{TypeQualifiers}}, which lists the annotations
