@@ -1,0 +1,65 @@
+import daikon.*; 
+import daikon.inv.*; 
+import daikon.split.*; 
+
+public final class Math__BigFloat_bdiv__38 extends Splitter { 
+
+  public String condition() { 
+    return "orig($p) != 0 && orig($p) != orig($x._p) && $x._p == orig($x._p) && (orig($x.sign).equals(\"+\") || orig($x.sign).equals(\"-\")) && (orig($y.sign).equals(\"+\") || orig($y.sign).equals(\"-\"))"; 
+  } 
+
+  VarInfo $x__p_varinfo; // $x._p
+
+  static DummyInvariant dummyInvFactory;
+  DummyInvariant dummyInv;
+
+  public Math__BigFloat_bdiv__38() { } 
+  public Math__BigFloat_bdiv__38(Ppt ppt) { 
+    $x__p_varinfo = ppt.find_var_by_name("$x._p");
+  }
+
+  public Splitter instantiate(Ppt ppt) { 
+    return new Math__BigFloat_bdiv__38(ppt); 
+  } 
+
+  public boolean valid() { 
+    return ($x__p_varinfo != null);
+  } 
+
+  public boolean test(ValueTuple vt) { 
+    /* writeTestBody: 1 declarations */
+    long $x__p = $x__p_varinfo.getIntValue(vt);
+    return(orig_$p!=0&&orig_$p!=orig_$x__p&&$x__p==orig_$x__p&&(orig_$x_sign.equals("+")||orig_$x_sign.equals("-"))&&(orig_$y_sign.equals("+")||orig_$y_sign.equals("-"))); 
+  } 
+
+  public String repr() { 
+    return "Math__BigFloat_bdiv__38: "
+      + "$x__p_varinfo = " + $x__p_varinfo.repr() + " "
+      ;
+  } 
+
+  public void makeDummyInvariant(DummyInvariant inv) { 
+    dummyInvFactory = inv; 
+  } 
+
+  public void instantiateDummy(PptTopLevel ppt) { 
+    dummyInv = null; 
+    VarInfo $x__p_vi = ppt.find_var_by_name("$x._p");
+    if ($x__p_vi != null) {
+      dummyInv = dummyInvFactory.instantiate(ppt, new VarInfo[] {$x__p_vi});
+    }
+  } 
+
+  public DummyInvariant getDummyInvariant() { 
+    return dummyInv; 
+  } 
+
+  public int[] getIntArray(long[] longArray) { 
+    int[] intArray = new int[longArray.length]; 
+    for (int i = 0; i < intArray.length; i++) { 
+      intArray[i] = (int) longArray[i]; 
+    } 
+    return intArray; 
+  } 
+
+} 
