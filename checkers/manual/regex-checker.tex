@@ -165,7 +165,6 @@ your own code.
 String regex = getRegexFromUser();
 if (! RegexUtil.isRegex(regex)) {
    throw new RuntimeException("Error parsing regex " + regex, RegexUtil.regexException(regex));
-   // or: System.out.println("Error parsing regex \"" + regex + "\": " + RegexUtil.regexError(regex));
 }
 Pattern p = Pattern.compile(regex);
 \end{Verbatim}
