@@ -1,0 +1,58 @@
+import daikon.*; 
+import daikon.inv.*; 
+import daikon.split.*; 
+
+public final class Math__BigFloat_bmul__41 extends Splitter { 
+
+  public String condition() { 
+    return "(orig($x.sign).equals(\"+\") || orig($x.sign).equals(\"-\")) && (orig($y.sign).equals(\"+\") || orig($y.sign).equals(\"-\"))"; 
+  } 
+
+
+  static DummyInvariant dummyInvFactory;
+  DummyInvariant dummyInv;
+
+  public Math__BigFloat_bmul__41() { } 
+  public Math__BigFloat_bmul__41(Ppt ppt) { 
+  }
+
+  public Splitter instantiate(Ppt ppt) { 
+    return new Math__BigFloat_bmul__41(ppt); 
+  } 
+
+  public boolean valid() { 
+    /* no variables were found */
+    return false;
+  } 
+
+  public boolean test(ValueTuple vt) { 
+    /* writeTestBody: 0 declarations */
+    return((orig_$x_sign.equals("+")||orig_$x_sign.equals("-"))&&(orig_$y_sign.equals("+")||orig_$y_sign.equals("-"))); 
+  } 
+
+  public String repr() { 
+    return "Math__BigFloat_bmul__41: "
+      ;
+  } 
+
+  public void makeDummyInvariant(DummyInvariant inv) { 
+    dummyInvFactory = inv; 
+  } 
+
+  public void instantiateDummy(PptTopLevel ppt) { 
+    dummyInv = null; 
+  } 
+
+  public DummyInvariant getDummyInvariant() { 
+    return dummyInv; 
+  } 
+
+  public int[] getIntArray(long[] longArray) { 
+    int[] intArray = new int[longArray.length]; 
+    for (int i = 0; i < intArray.length; i++) { 
+      intArray[i] = (int) longArray[i]; 
+    } 
+    return intArray; 
+  } 
+
+} 
