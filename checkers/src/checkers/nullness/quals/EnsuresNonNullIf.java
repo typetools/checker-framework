@@ -20,7 +20,7 @@ import checkers.quals.ConditionalPostconditionAnnotation;
  * A common example is that the <tt>equals</tt> method is annotated as follows:
  * <pre><code>   @EnsuresNonNullIf(expression="#1", result=true)
  *   public boolean equals(@Nullable Object obj) { ... }</code></pre>
- * because, if <tt>equals</tt> returns true, then the first (#0) argument to
+ * because, if <tt>equals</tt> returns true, then the first (#1) argument to
  * <tt>equals</tt> was not null.
  * <p>
  *

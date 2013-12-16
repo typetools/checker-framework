@@ -37,7 +37,7 @@ public class KeyForValidation {
     @KeyFor("j") Object k;
     @KeyFor("f") Object l;
 
-    // TODO: should we allow this or should it be #0?
+    // TODO: should we allow this or should it be #1?
     @KeyFor("p") Object o;
   }
 }
