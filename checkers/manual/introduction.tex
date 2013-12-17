@@ -1123,18 +1123,20 @@ could otherwise be statically dispatched.
 
 When you first run a type-checker on your code, it is likely to issue
 warnings or errors.  For each warning, try to understand why the checker
-issues it.  (For example, if you are using the
+issues it.  For example, if you are using the
 \ahrefloc{nullness-checker}{Nullness Checker}
 (\chapterpageref{nullness-checker}), try to understand why it cannot prove
-that no null pointer exception ever occurs.)  The reason will sometimes be
-an actually possible null dereference, sometimes be a weakness of the
-annotations, and sometimes be a weakness of the checker.  You will need to
+that no null pointer exception ever occurs.  There are three general
+reasons, listed below.  You will need to
 examine your code, and possibly write test cases, to understand the reason.
 
-If there is an actual possible null dereference, then fix your code to
-prevent that crash.
+\begin{enumerate}
+\item
+There is a bug in your code, such as an actual possible null dereference.
+Fix your code to prevent that crash.
 
-If there is a weakness in the annotations, then improve the annotations.
+\item
+There is a weakness in the annotations.  Improve the annotations.
 For example, continuing the Nullness Checker example, if a particular
 variable is annotated as \code{@\refclass{checkers/nullness/quals}{Nullable}} but it
 actually never contains \<null> at run time, then change the annotation to 
@@ -1143,14 +1145,20 @@ annotations in your code, or in the annotations in a library that your code
 calls.  Another possible problem is that a library is unannotated (see
 \chapterpageref{annotating-libraries}).
 
-If there is a weakness in the checker, then your code is safe --- it never
-suffers the specific run-time error --- but the checker cannot prove this
-fact.  This is most often because the checker is not omniscient, and some
-tricky coding paradigms are beyond its analysis capabilities; in this
-case, you should suppress the warning (see
-\chapterpageref{suppressing-warnings}).  In other cases, the problem is a
-bug in the checker; in this case, please report the bug (see
-\chapterpageref{reporting-bugs}).
+\item
+There is a weakness in the type-checker.  Then your code is safe --- it never
+suffers the error at run time --- but the checker cannot prove this
+fact.  The checker is not omniscient, and some
+tricky coding paradigms are beyond its analysis capabilities.  In this
+case, you should suppress the warning; see
+\chapterpageref{suppressing-warnings}.  (Alternatively, if the weakness is
+a bug in the checker, then  please report the bug; see
+\chapterpageref{reporting-bugs}.)
+\end{enumerate}
+
+If you have trouble understanding a Checker Framework warning message, you
+can search for its text in this manual.
+Oftentimes there is an explanation of what to do.
 
 
 % LocalWords:  NonNull zipfile processor classfiles annotationname javac htoc
