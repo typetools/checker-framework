@@ -1,11 +1,11 @@
 
 Checker Framework redesign/refactoring:
 
-* change from AST visiting to CFG visiting, so that each type system doesn't
-  have to implement special logic to infer where boxing and unboxing occurs.
-
 * eliminate use of reflection in composing a type-checker from
   similarly-named classes; force this to be explicit
+
+* change from AST visiting to CFG visiting, so that each type system doesn't
+  have to implement special logic to infer where boxing and unboxing occurs.
 
 * there are currently multiple ways to obtain an error reporter and other
   global values.  Put these in a Checker Framework environment, and make all
