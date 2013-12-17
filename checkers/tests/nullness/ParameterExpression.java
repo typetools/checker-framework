@@ -17,6 +17,7 @@ public class ParameterExpression {
   }
 
   @SuppressWarnings("assert.postcondition.not.satisfied")
+  // "#0" is illegal syntax; it should be "#1"
   @EnsuresNonNull("#0")
   //:: error: (flowexpr.parse.error)
   public void m2(final @Nullable Object o) {
