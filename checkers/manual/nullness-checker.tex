@@ -1641,6 +1641,46 @@ You are likely to want to annotate \<initHelper()> with
 Section~\ref{nullness-method-annotations}.
 
 
+You may get the ``call to \ldots\ is not allowed on the given receiver''
+error even if your constructor has already initialized all the fields.  
+For this code:
+
+\begin{Verbatim}
+public class MyClass {
+  @NonNull Object field;
+  public MyClass() {
+    field = new Object();
+    helperMethod();
+  }
+  private void helperMethod() {
+  }
+}
+\end{Verbatim}
+
+\noindent
+the Nullness Checker issues the following warning:
+
+\begin{Verbatim}
+MyClass.java:7: error: call to helperMethod() not allowed on the given receiver.
+    helperMethod();
+                ^
+  found   : @UnderInitialization(MyClass.class) @NonNull MyClass
+  required: @Initialized @NonNull MyClass
+1 error
+\end{Verbatim}
+
+The reason is that even though the object under construction has had all
+the fields declared in \<MyClass> initialized, there might be a subclass of
+\<MyClass>.  Thus, the receiver of \<helperMethod> should be declared as 
+\<@UnderInitialization(MyClass.class)>, which says that initialization has
+completed for all the \<MyClass> fields but may not have been completed
+overall.  If \<helperMethod> had been a public method that could be called
+initialization was actually complete, then the receiver should have type
+\<@UnknownInitialization>, which is the supertype of
+\<@UnknownInitialization> and \<@UnderInitialization>.
+
+
+
 \subsection{More details about initialization checking\label{initialization-checking}}
 
 
@@ -2272,4 +2312,6 @@ Section~\ref{type-refinement}.
 %  LocalWords:  noInitForMonotonicNonNull UnknownInitialization isArray
 %  LocalWords:  UnderInitialization PolyInitialized getComponentType 2in
 %  LocalWords:  isEmpty AssumeAssertion cleanroom vararg OtherClass 75in
-%  LocalWords:  NullnessRawnessChecker mymap mykey KeyType ValueType
+%  LocalWords:  NullnessRawnessChecker mymap mykey KeyType ValueType 5cm
+%  LocalWords:  dereferenced dereference Dereferencing initializers 5in
+%  LocalWords:  initHelper helperMethod

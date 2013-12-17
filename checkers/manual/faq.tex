@@ -37,6 +37,7 @@ the answers, or other questions to include here.
 
 \faqtocpara{\ref{faq-warnings-section}: How to handle warnings}
 \\ \ref{faq-handling-warnings}: What should I do if a checker issues a warning about my code?
+\\ \ref{faq-interpreting-warnings}: What does a certain Checker Framework warning message mean?
 \\ \ref{faq-no-absolute-guarantee}: Can a pluggable type-checker give an absolute guarantee of correctness?
 \\ \ref{faq-concurrency}: What guarantee does the Checker Framework give for concurrent code?
 \\ \ref{faq-awarns}: How do I make compilation succeed even if a checker issues errors?
@@ -54,6 +55,7 @@ the answers, or other questions to include here.
 \faqtocpara{\ref{faq-semantics-section}: Semantics of type annotations}
 \\ \ref{faq-list-map-nonnull-typeargs}: Why are the type parameters to \<List> and \<Map> annotated as \<@NonNull>?
 \\ \ref{faq-typestate}: How can I handle typestate, or phases of my program with different data properties?
+\\ \ref{faq-implicit-bounds}: Why are explicit and implicit bounds defaulted differently?
 
 \faqtocpara{\ref{faq-create-a-checker-section}: Creating a new checker}
 \\ \ref{faq-create-a-checker}: How do I create a new checker?
@@ -270,6 +272,12 @@ the \code{-processor} command-line option.
 \subsection{What should I do if a checker issues a warning about my code?\label{faq-handling-warnings}}
 
 For a discussion of this issue, see Section~\ref{handling-warnings}.
+
+
+\subsection{What does a certain Checker Framework warning message mean?\label{faq-interpreting-warnings}}
+
+Search through this manual for the text of the warning message.
+Oftentimes there is an explanation of it.
 
 
 \subsection{Can a pluggable type-checker give an absolute guarantee of correctness?\label{faq-no-absolute-guarantee}}
@@ -779,6 +787,62 @@ method.
 You can also use a typestate checker (see
 \chapterpageref{typestate-checker}), but they have not been as extensively
 tested.
+
+
+\subsection{Why are explicit and implicit bounds defaulted differently?\label{faq-implicit-bounds}}
+
+The following two bits of code have the same semantics under Java, but are
+treated differently by the Checker Framework's CLIMB-to-top defaulting
+rules (Section~\ref{climb-to-top}):
+
+\begin{Verbatim}
+class MyClass<T> { ... }
+class MyClass<T extends Object> { ... }
+\end{Verbatim}
+
+The difference is the annotation on the upper bound of the type argument
+\<T>.  They are treated in the following.
+
+\begin{Verbatim}
+class MyClass<T>  ==  class MyClass<T extends @TOPTYPEANNO Object> { ... }
+class MyClass<T extends Object>  ==  class MyClass<T extends @DEFAULTANNO Object>
+\end{Verbatim}
+
+\noindent
+\<@TOPTYPEANNO> is the top annotation in the type qualifier hierarchy.  For
+example, for the nullness type system, the top type annotation is
+\<@Nullable>; as shown in Figure~\ref{fig-nullness-hierarchy}.
+\<@DEFAULTANNO> is the default annotation for the type system.  For
+example, for the nullness type system, the default type annotation is
+\<@NonNull>.
+
+In some type systems, the top qualifier and the default are the same.  For
+such type systems, the two code snippets shown above are treated the same.
+An example is the regular expression type system; see
+Figure~\ref{fig-regex-hierarchy}.
+
+The CLIMB-to-top rule reduces the code edits required to annotate an
+existing program, and it treats types written in the program consistently.
+
+When a user writes no upper bound, as in
+\code{class C<T> \ttlcb\ ... \ttrcb}, 
+then Java permits the class to be instantiated with any type parameter.
+The Checker Framework behaves exactly the same, no matter what the default
+is for a particular type system -- and no matter whether the user has
+changed the default locally.
+
+When a user writes an upper bound, as in 
+\code{class C<T extends OtherClass> \ttlcb\ ... \ttrcb},
+then the Checker Framework treats this occurrence of \<OtherClass> exactly
+like any other occurrence, and applies the usual defaulting rules.  Use of
+\<Object> is treated consistenly with all other types in this location and
+all other occurrences of \<Object> in the program.
+
+It is uncommon for a user to write \<Object> as an upper bound with no type
+qualifier:
+\code{class C<T extends Object> \ttlcb\ ... \ttrcb}.
+It is better style to write no upper bound or to write an explicit type
+annotation on \<Object>.
 
 
 \section{Creating a new checker\label{faq-create-a-checker-section}}
