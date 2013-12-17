@@ -540,24 +540,19 @@ appropriate when the Nullness Checker issues a warning, but the programmer
 knows for sure that the warning is a false positive, because the value
 cannot ever be null at run time.
 
-%% TODO:
-%% This command got lost/removed during a previous merge
-%% -- however, it is still referenced in the text!?!
-\newcommand{\nullnessSuppressionString}{nullness}
-
 \begin{enumerate}
 \item
-  Use an assertion.  If the string ``\<\nullnessSuppressionString>''
+  Use an assertion.  If the string ``\<@AssumeAssertion(nullness)>''
   appears in the message body, then the Nullness Checker treats the
   assertion as suppressing a warning and assumes that the assertion always
   succeeds.  For example, the checker assumes that no null pointer
   exception can occur in code such as
 \begin{Verbatim}
-  assert x != null : "@SuppressWarnings(nullness)";
+  assert x != null : "@AssumeAssertion(nullness)";
   ... x.f ...
 \end{Verbatim}
 
-  If the string ``\<\nullnessSuppressionString>'' does not appear in the
+  If the string ``\<@AssumeAssertion(nullness)>'' does not appear in the
   assertion message, then the Nullness Checker treats the assertion as being
   used for defensive programming, and it warns if the method might throw a
   nullness-related exception.
