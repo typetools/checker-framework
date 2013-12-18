@@ -66,18 +66,22 @@ the source code) for checkers.nullness.NullnessVisitor, or by creating the
 test and observing the failure.
 
 To indicate the expected failure, insert the line
-  //:: (<error-message-key>)
+  //:: error: (<error-message-key>)
 directly preceding the expected error line.
 If multiple errors are expected on a single line, duplicate everthing
 except the "//" comment characters, as in
-  //:: (<error-message-key1>) :: (<error-message-key2>)
+  //:: error: (<error-message-key1>) :: error: (<error-message-key2>)
+If a warning rather than an error is expected, insert the line
+  //:: warning: (<warning-message-key>)
+If a stub parser warning is expected, insert the line
+//warning: StubParser: <stub parser warning>
 
 So the final test case would be:
 
 class MyNullnessTest {
   void method() {
     Object nullable = null;
-    //:: (dereference.of.nullable)
+    //:: error: (dereference.of.nullable)
     nullable.toString();   // should emit error
   }
 }
