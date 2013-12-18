@@ -16,6 +16,7 @@ public class NullnessStubfileTest extends ParameterizedCheckerTest {
                 "nullness",
                 "-Anomsgtext",
                 "-AprintErrorStack",
+                "-AstubWarnIfNotFound",
                 "-Astubs="
                         + "tests/nullness-stubfile/stubfile1.astub:"
                         + "tests/nullness-stubfile/stubfile2.astub");
