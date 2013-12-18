@@ -1,3 +1,6 @@
+//warning: StubParser: Method thisMethodIsNotReal(String) not found in type java.lang.String
+//warning: StubParser: Type not found: java.lang.NotARealClass
+//warning: StubParser: Type not found: not.real.NotARealClassInNotRealPackage
 import checkers.nullness.quals.*;
 
 /*
