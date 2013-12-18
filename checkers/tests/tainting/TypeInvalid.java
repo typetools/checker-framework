@@ -1,34 +1,50 @@
-// Test case for issue 292: https://code.google.com/p/checker-framework/issues/detail?id=292
+// Test case for Issue 292:
+// https://code.google.com/p/checker-framework/issues/detail?id=292
+
+// TODO: ensure that type validation is consistently performed for each
+// possible tree.
+// We should also add a jtreg version of this test to
+// ensure that each error is only output once and in the right place.
 
 import checkers.tainting.quals.*;
 
-class TypeInvalid {
+abstract class TypeInvalid {
     // Duplication forbidden
     //:: error: (type.invalid)
     void bad(@Tainted @Untainted TypeInvalid c) {
         //:: error: (type.invalid)
-        Object o = new @Tainted @Untainted TypeInvalid();
+        Object o = new @Tainted @Untainted Object();
         //:: error: (type.invalid)
-        o = new @Tainted @Untainted TypeInvalid();
+        o = new @Tainted @Untainted Object();
         //:: error: (type.invalid)
-        o = o.equals(new @Tainted @Untainted TypeInvalid());
+        o = o.equals(new @Tainted @Untainted Object());
         //:: error: (type.invalid)
-        o = (Object) new @Tainted @Untainted TypeInvalid();
+        o = (Object) new @Tainted @Untainted Object();
         //:: error: (type.invalid)
         o = (@Tainted @Untainted TypeInvalid) o;
         //:: error: (type.invalid)
-        o = (new @Tainted @Untainted TypeInvalid()) instanceof Object;
+        o = (new @Tainted @Untainted Object()) instanceof Object;
         //:: error: (type.invalid)
         o = o instanceof @Tainted @Untainted TypeInvalid;
-
-        // TODO: ensure that type validation is consistently performed for each
-        // possible tree.
-        // We should also add a jtreg version of this test to
-        // ensure that each error is only output once.
     }
 
     //:: error: (type.invalid)
-    @Tainted @Untainted Object bar() { return null; }
+    @Tainted @Untainted Object bar() {
+	return null;
+    }
+
+    //:: error: (type.invalid)
+    abstract @Tainted @Untainted Object absbar();
+
+    void voidmethod() {}
+
+    TypeInvalid() {}
+
+    //:: error: (type.invalid)
+    @Tainted @Untainted TypeInvalid(int p) {}
+
+    //:: error: (type.invalid)
+    void recv(@Tainted @Untainted TypeInvalid this) {}
 
     //:: error: (type.invalid)
     @Tainted @Untainted Object field;

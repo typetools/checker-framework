@@ -397,14 +397,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 }
             }
 
-            // constructor return types are null
-            Tree ret = node.getReturnType();
-            if (ret != null &&
-                    methodType.getReturnType().getKind() != TypeKind.VOID) {
-                validateTypeOf(ret);
-            } else {
-                // TODO: ensure constructor return types are valid
-            }
+            // Passing the whole method/constructor validates the return type
+            validateTypeOf(node);
 
             // Validate types in throws clauses
             for (ExpressionTree thr : node.getThrows()) {
@@ -2174,6 +2168,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             break;
         case METHOD:
             type = atypeFactory.getMethodReturnType((MethodTree) tree);
+            if (type == null ||
+                        type.getKind() == TypeKind.VOID) {
+                // Nothing to do for void methods.
+                // Note that for a constructor the AnnotatedExecutableType does
+                // not use void as return type.
+                return true;
+            }
             break;
         default:
             type = atypeFactory.getAnnotatedType(tree);
