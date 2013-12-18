@@ -148,9 +148,7 @@ As an illustration, a stub file for the Interning type system
   }
 \end{Verbatim}
 
-
-
-
+Note, annotations in comments are ignored.
 
 The stub file format is allowed to differ from Java source code in the
 following ways:
@@ -210,6 +208,7 @@ import sparta.checkers.quals.FlowPermission;
   other words, all classes from a package must appear together.
 
 \end{description}
+
 
 
 \subsection{Creating a stub file\label{stub-creating}}
@@ -324,6 +323,7 @@ The stub file reader has several limitations.  We will fix these in a
 future release.
 
 \begin{itemize}
+
 \item 
   The receiver is written after the method parameter list, instead of as an
   explicit first parameter.  That is, instead of
