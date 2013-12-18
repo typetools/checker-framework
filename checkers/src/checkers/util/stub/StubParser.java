@@ -844,9 +844,11 @@ public class StubParser {
     private static Set<String> warnings = new HashSet<String>();
 
     /** Issues the given warning, only if it has not been previously issued. */
-    private static void stubWarning(String warning) {
+    private void stubWarning(String warning) {
         if (warnings.add(warning)) {
-            System.err.println("StubParser: " + warning);
+            processingEnv.getMessager().printMessage(
+                    javax.tools.Diagnostic.Kind.WARNING,
+                    "StubParser: " + warning);
         }
     }
 
