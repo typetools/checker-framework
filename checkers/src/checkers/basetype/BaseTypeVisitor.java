@@ -406,6 +406,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 // TODO: ensure constructor return types are valid
             }
 
+            // Validate types in throws clauses
+            for (ExpressionTree thr : node.getThrows()) {
+                validateTypeOf(thr);
+            }
+
             AnnotatedDeclaredType enclosingType = (AnnotatedDeclaredType) atypeFactory
                     .getAnnotatedType(methodElement.getEnclosingElement());
 
@@ -1061,17 +1066,26 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             MethodTree enclosingMethod =
                     TreeUtils.enclosingMethod(getCurrentPath());
 
-            AnnotatedTypeMirror ret = atypeFactory.getMethodReturnType(enclosingMethod, node);
-            visitorState.setAssignmentContext(Pair.of((Tree) node, ret));
+            boolean valid = validateTypeOf(enclosingMethod);
 
-            commonAssignmentCheck(ret, node.getExpression(),
-                    "return.type.incompatible", false);
+            if (valid) {
+                AnnotatedTypeMirror ret = atypeFactory.getMethodReturnType(enclosingMethod, node);
+                visitorState.setAssignmentContext(Pair.of((Tree) node, ret));
 
+                commonAssignmentCheck(ret, node.getExpression(),
+                        "return.type.incompatible", false);
+            }
             return super.visitReturn(node, p);
         } finally {
             visitorState.setAssignmentContext(preAssCtxt);
         }
     }
+
+    /** TODO: something similar to visitReturn should be done.
+    public Void visitThrow(ThrowTree node, Void p) {
+        return super.visitThrow(node, p);
+    }
+    */
 
     /**
      * Ensure that the annotation arguments comply to their declarations. This
@@ -2140,6 +2154,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /**
      * Tests whether the tree expressed by the passed type tree is a valid type,
      * and emits an error if that is not the case (e.g. '@Mutable String').
+     * If the tree is a method or constructor, check the return type.
      *
      * @param tree  the AST type supplied by the user
      */
@@ -2156,6 +2171,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         case SUPER_WILDCARD:
         case ANNOTATED_TYPE:
             type = atypeFactory.getAnnotatedTypeFromTypeTree(tree);
+            break;
+        case METHOD:
+            type = atypeFactory.getMethodReturnType((MethodTree) tree);
             break;
         default:
             type = atypeFactory.getAnnotatedType(tree);
