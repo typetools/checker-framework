@@ -18,6 +18,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 
 /**
@@ -50,8 +51,15 @@ public class IGJVisitor extends BaseTypeVisitor<IGJAnnotatedTypeFactory> {
 
     @Override
     public boolean isValidUse(AnnotatedDeclaredType elemType, AnnotatedDeclaredType use, Tree tree) {
-        if (elemType.hasEffectiveAnnotation(atypeFactory.I) || use.hasEffectiveAnnotation(atypeFactory.READONLY))
+        if (elemType.hasEffectiveAnnotation(atypeFactory.I) ||
+                use.hasEffectiveAnnotation(atypeFactory.READONLY)) {
             return true;
+        }
+        if (use.hasEffectiveAnnotation(atypeFactory.ASSIGNS_FIELDS) &&
+                tree.getKind() == Tree.Kind.METHOD &&
+                TreeUtils.isConstructor((MethodTree) tree)) {
+            return true;
+        }
 
         return super.isValidUse(elemType, use, tree);
     }
