@@ -1401,6 +1401,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return Pair.of(con, typeargs);
     }
 
+    /**
+     * Returns the return type of the method {@code m}.
+     */
+    public AnnotatedTypeMirror getMethodReturnType(MethodTree m) {
+        AnnotatedExecutableType methodType = getAnnotatedType(m);
+        AnnotatedTypeMirror ret = methodType.getReturnType();
+        return ret;
+    }
 
     /**
      * Returns the return type of the method {@code m} at the return statement {@code r}.
