@@ -53,6 +53,19 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> {
         this.atypeFactory = atypeFactory;
     }
 
+    /** The entry point to the type validator.
+     * Validate the type against the given tree.
+     * Neither this method nor visit should be called directly by a visitor,
+     * only use {@see BaseTypeVisitor#validateTypeOf(Tree)}.
+     *
+     * @param type The type to validate.
+     * @param tree The tree from which the type originated.
+     *   Note that the tree might be a method tree - the
+     *     return type should then be validated.
+     *   Note that the tree might be a variable tree - the
+     *     field type should then be validated.
+     * @return True, iff the type is valid.
+     */
     public boolean isValid(AnnotatedTypeMirror type, Tree tree) {
         this.isValid = true;
         visit(type, tree);
