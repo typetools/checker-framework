@@ -18,6 +18,9 @@ language that is not supported by Java (see section ``Comparison to Perl
 Ordinarily, the programmer does not learn of these errors until run time.
 The Regex Checker warns about these problems at compile time.
 
+For further details, including case studies, see a paper about the Regex
+Checker~\cite{SpishakDE2012}.
+
 To run the Regex Checker, supply the \code{-processor
   checkers.regex.RegexChecker} command-line option to javac.
 
@@ -88,17 +91,19 @@ parameters.
 \begin{figure}
 \begin{Verbatim}
 public @Regex String parenthesize(@Regex String regex) {
-    return "(" + regex + ")"; // Even though the parentheses are not @Regex Strings, the checker still treats
-                              // the whole expression as a @Regex String
+    return "(" + regex + ")"; // Even though the parentheses are not @Regex Strings,
+                              // the whole expression is a @Regex String
 }
 \end{Verbatim}
 \caption{An example of the Regex Checker's support for concatenation
-of non-regular expression Strings to produce valid regular expression Strings.}
+of non-regular-expression Strings to produce valid regular expression Strings.}
 \label{fig-regex-partial}
 \end{figure}
 
-The Regex Checker supports concatenation of non-regular expression Strings
-that produce valid regular expression Strings. For an example see
+In general, concatenating a non-regular-expression String with any other
+string yields a non-regular-expression String.  The Regex Checker can
+sometimes determine that concatenation of non-regular-expression Strings
+will produce valid regular expression Strings. For an example see
 Figure~\ref{fig-regex-partial}.
 
 
