@@ -1,5 +1,6 @@
 package lubglb.quals;
 
+import checkers.quals.DefaultQualifierInHierarchy;
 import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifier;
 
@@ -10,6 +11,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @TypeQualifier
+@DefaultQualifierInHierarchy
 @SubtypeOf({})
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

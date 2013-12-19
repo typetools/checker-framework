@@ -13,8 +13,15 @@ abstract class Issue295 {
         Box(T value) { this.value = value; }
     }
 
+    abstract <MTL> MTL load(Factory<MTL> p);
+
+    abstract class Factory<TF> {
+        abstract TF create();
+    }
+
     <MT1> void f1(Factory<Box<@Nullable MT1>> f) {
-        Box<@Nullable MT1> v = load(f);
+        Box<@Nullable MT1> v = f.create();
+        v = load(f);
     }
 
     <MT2> void f2(Factory<Box<@Nullable MT2>> f) {
@@ -39,12 +46,6 @@ abstract class Issue295 {
 
     <MT7> void f1noquals(Factory<Box<String>> f) {
         Box<String> v = load(f);
-    }
-
-    abstract <MTL> MTL load(Factory<MTL> p);
-
-    abstract class Factory<TF> {
-        abstract TF create();
     }
 }
 
