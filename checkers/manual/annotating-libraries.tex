@@ -344,6 +344,16 @@ in a stub file one has to write
   does not handle nested classes.  To work around this, it permits a
   top-level class to be written with a \<\$> in its name, and applies the
   annotations to the appropriate nested class.
+
+\item
+  Annotations must be written before the package name on a fully qualified 
+  types rather than directly on the type it qualifies.  However, it is usually not 
+  necessary to write the fully qualified name.  
+  
+  \begin{Verbatim}
+          void init(@Nullable java.security.SecureRandom random);
+   \end{Verbatim}
+
 \end{itemize}
 
 If these limitations are a problem, then you should insert annotations
