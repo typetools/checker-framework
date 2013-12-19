@@ -1,0 +1,105 @@
+===========================================================================
+
+More secure and reliable Java programming
+
+Are you tired of null pointer exceptions, unintended side effects, SQL
+injections, concurrency errors, mistaken equality tests, and other
+run-time errors that appear during testing or in the field?
+
+This talk will tell you about easy-to-use tools that guarantee the
+absence of these and many other important errors.  You will also learn
+how to create a new tool that detects and prevents other run-time
+errors -- whatever errors are important in your own project.  The
+tools are easy to use and can be applied to as much or as little of
+your codebase as you feel appropriate.  You can use them today, but
+Java 8's type annotations add syntactic support for them.
+
+===========================================================================
+
+The presentation will describe the theory and practice of pluggable
+type-checking with concrete examples.  It will show real bugs that
+have been discovered and show the effort that is required.  It will
+give a way of thinking about what problems are amenable to this
+approach and what problems are not.  It will tie this to the type
+annotations feature that will appear in Java 8.  It will describe a
+practical toolset that attendees can start using today, even before
+Java 8 is released.
+
+Are you tired of null pointer exceptions, unintended side effects, SQL
+injections, concurrency errors, mistaken equality tests, and other
+run-time errors that appear during testing or in the field?
+
+This talk will tell you about easy-to-use tools that guarantee the
+absence of these and many other important errors.  You will also learn
+how to create a new tool that detects and prevents other run-time
+errors -- whatever errors are important in your own project.  The
+tools are easy to use and can be applied to as much or as little of
+your codebase as you feel appropriate.  You can use them today, but
+Java 8's type annotations add syntactic support for them.
+
+The new tools work by creating a pluggable type system.  A pluggable
+type system augments the built-in type system of Java, enabling better
+compile-time guarantees.  We will explain what a pluggable type system
+is, how to use it, and even how to create your own.  Building upon the
+Checker Framework (http://types.cs.washington.edu/checker-framework/),
+you can create a simple pluggable type-checker in 2 minutes, and you
+can enhance it thereafter.
+
+The pluggable types are easy to use, even for novices.  They are much
+less verbose than generics, and they actually reduce the size of your
+code by replacing English text in Javadoc by terse, formally-verified
+annotations.  They have found hundreds of bugs in over 3 million lines
+of well-tested open source code, including from Oracle, Google,
+Apache, etc.  In addition to finding bugs, they encourage better
+software design and lead to more secure and reliable programs.
+
+===========================================================================
+
+Objective 1: Learn how a compiler can detect and prevent run-time
+errors, beyond the built-in Java type system.
+
+Objective 2: Learn how to express domain-specific design properties
+formally, and guarantee their correctness.
+
+Objective 3: Learn about practical open-source tools for code quality.
+
+
+===========================================================================
+
+Michael D. Ernst is the specification co-lead for Java's Type
+Annotations feature ("JSR 308"), which was awarded the ``most
+innovative JSR'' award in 2007.  Ernst was honored as a ``Java Rock
+Star'' for a crowd-pleasing JavaOne presentation.
+
+Ernst is also an Associate Professor in the Computer Science &
+Engineering department at the University of Washington.  His research
+aims to make software more reliable, more secure, and easier (and more
+fun!) to produce. His primary technical interests are in software
+engineering and related areas, including programming languages, type
+theory, security, program analysis, bug prediction, testing, and
+verification. Ernst's research combines strong theoretical foundations
+with realistic experimentation, with an eye to changing the way that
+software developers work.
+
+Dr. Ernst was previously a tenured professor at MIT, and before that a
+researcher at Microsoft Research.
+
+More information is available at his homepage:
+http://homes.cs.washington.edu/~mernst/.
+
+
+Werner Dietl is a post-doctoral research associate at the University
+of Washington, where he is a member of the programming languages and
+software engineering group.
+
+His research agenda is to provide developers with sound help in
+eliminating latent defects.  He combines theoretical results with
+practical tools so developers can create high-quality, trustworthy
+software and reduce the enormous impact of software defects.
+To achieve this goal, he applies his expertise in programming
+languages and software engineering to the domains of verification,
+security, and systems.
+
+Previously, he was a research and teaching assistant at the Chair of
+Programming Methodology, ETH Zurich. More information is available at
+his homepage, http://homes.cs.washington.edu/~wmdietl/.
