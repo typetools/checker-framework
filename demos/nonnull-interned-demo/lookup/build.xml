@@ -1,0 +1,23 @@
+<project name="lookup-demo" default="lookup" basedir=".">
+
+    <import file="../lib/ant.xml"/>
+    <property file="${user.home}/.jsr308-demos.properties"/>
+    <property file="../demo.properties"/>
+    
+    <target name="lookup">
+        <run-demo checker="checkers.nullness.NullnessChecker" srcpath="src"
+            files="${basedir}/src/utilMDE/UtilMDE.java"/>
+    </target>
+
+    <target name="check-lookup">
+      <check-demo-common target="lookup" step="0"/>
+      <check-demo-common target="lookup" step="1"/>
+      <echo message="lookup demo works as expected" />
+      <revert-demo target="lookup" step="1"/>
+      <revert-demo target="lookup" step="0"/>
+    </target>
+
+    <target name="check-demo" depends="check-lookup">
+      <echo message="lookup demo works as expected"/>
+    </target>
+</project>
