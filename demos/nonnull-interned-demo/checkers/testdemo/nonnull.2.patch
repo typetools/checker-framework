@@ -1,0 +1,13 @@
+Index: src/checkers/nonnull/NonnullAnnotatedTypeFactory.java
+===================================================================
+--- src/checkers/nonnull/NonnullAnnotatedTypeFactory.java	(revision 3850)
++++ src/checkers/nonnull/NonnullAnnotatedTypeFactory.java	(working copy)
+@@ -201,7 +201,7 @@
+         @Nullable Element elt = InternalUtils.symbol(id);
+ 
+         // If it's an enum type, add a @NonNull annotation.
+-        if (elt.getKind() == ElementKind.ENUM_CONSTANT)
++        if (elt != null && elt.getKind() == ElementKind.ENUM_CONSTANT)
+             type.include(NonNull.class);
+     }
+ 

@@ -1,0 +1,31 @@
+Index: src/daikon/VarInfo.java
+===================================================================
+--- src/daikon/VarInfo.java	(revision 3589)
++++ src/daikon/VarInfo.java	(working copy)
+@@ -3587,7 +3587,7 @@
+                               seq.comparability, seq.aux);
+     vi.setup_derived_base (seq, begin, end);
+     vi.str_name = seq.apply_subscript (String.format ("%s..%s", begin_str,
+-                                                      end_str));
++                                                      end_str)).intern();
+ 
+     // If there is a parent ppt (set in setup_derived_base), set the
+     // parent variable accordingly.  If all of the original variables, used
+@@ -3664,7 +3664,7 @@
+                               VarInfoAux.getDefault());
+     vi.setup_derived_base (seq, index);
+     vi.var_kind = VarInfo.VarKind.FIELD;
+-    vi.str_name = seq.apply_subscript (index_str);
++    vi.str_name = seq.apply_subscript (index_str).intern();
+     if (vi.parent_ppt != null) {
+       if ((seq.parent_variable == null) &&
+           ((index == null) || (index.parent_variable == null)))
+@@ -3802,7 +3802,7 @@
+     vi.function_args = null;
+     vi.relative_name = func_name;
+ 
+-    vi.str_name = String.format ("%s.%s()", str.name(), func_name);
++    vi.str_name = String.format ("%s.%s()", str.name(), func_name).intern();
+ 
+     if (vi.parent_ppt != null) {
+       if (str.parent_variable == null)
