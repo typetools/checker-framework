@@ -1127,10 +1127,11 @@ public class AnnotatedTypes {
             AnnotatedTypeMirror ...types) {
         // System.out.println("AnnotatedTypes.addAnnotationsImpl: alub: " + alub +
         //        "\n   visited: " + visited +
-        //        "\n   types: " + Arrays.toString(types));
+        //        "\n   types: " + java.util.Arrays.toString(types));
 
         AnnotatedTypeMirror origalub = alub;
         boolean shouldAnnoOrig = false;
+        Set<AnnotationMirror> putOnOrig = AnnotationUtils.createAnnotationSet();
 
         // get rid of wildcards and type variables
         if (alub.getKind() == TypeKind.WILDCARD) {
@@ -1152,6 +1153,7 @@ public class AnnotatedTypes {
                 shouldAnnoOrig = true;
             }
             if (types[i].getKind() == TypeKind.WILDCARD) {
+                putOnOrig.addAll(types[i].getAnnotations());
                 AnnotatedWildcardType wildcard = (AnnotatedWildcardType) types[i];
                 if (wildcard.getExtendsBound() != null)
                     types[i] = wildcard.getEffectiveExtendsBound();
@@ -1159,6 +1161,7 @@ public class AnnotatedTypes {
                     types[i] = wildcard.getEffectiveSuperBound();
             }
             if (types[i].getKind() == TypeKind.TYPEVAR) {
+                putOnOrig.addAll(types[i].getAnnotations());
                 AnnotatedTypeVariable typevar = (AnnotatedTypeVariable) types[i];
                 if (typevar.getUpperBound() != null)
                     types[i] = typevar.getEffectiveUpperBound();
@@ -1222,7 +1225,13 @@ public class AnnotatedTypes {
         if (alub != origalub && shouldAnnoOrig) {
             // These two are not the same if origalub is a wildcard or type variable.
             // In that case, add the found annotations to the type variable also.
-            origalub.replaceAnnotations(alub.getAnnotations());
+            // Do not put the annotations inferred for the declared type
+            // on a type variable/wildcard.
+            // origalub.replaceAnnotations(alub.getAnnotations());
+            // Instead, keep track of the annotations that originally
+            // existed on the type variable, stored in putOnOrig, and
+            // put them back on now.
+            origalub.replaceAnnotations(putOnOrig);
         }
     }
 
