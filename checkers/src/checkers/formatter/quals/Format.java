@@ -16,13 +16,11 @@ import checkers.quals.Unqualified;
  * The annotation's value represents the valid parameters that may be passed to
  * the format function. For example:
  *
- * <blockquote>
- * <pre>
+ * <blockquote><pre>
  * {@literal @}Format({ConversionCategory.GENERAL, ConversionCategory.INT})
  * String f = "String '%s' has length %d";
  * String.format(f, "Example", 7);
- * </pre>
- * </blockquote>
+ * </pre></blockquote>
  *
  * The annotation describes that the format string requires any Object as the
  * first parameter ({@link ConversionCategory#GENERAL}) and an integer as the
