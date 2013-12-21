@@ -14,6 +14,9 @@ Checker Framework redesign/refactoring:
   An alternative (but not as good?):  isSubtype could return information about the specific error (like 3rd type parameter is the one that doesn't match, for example).
   Problem: type hierarchy doesn't have access to the Checker.
    * could return an error object, or pass in something that will handle errors.
+  (Werner calls this a "declarative interface".)
+  [Jonathan should propose an interface.]
+  [Werner will write some code in the meanwhile to direct the discussion.]
 
 * CF cleanups based on langtools cleanups -- typeFromElement and typeFromTree hacks can be removed [Werner]
 
