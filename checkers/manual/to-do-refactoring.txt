@@ -1,5 +1,7 @@
 
-Checker Framework redesign/refactoring:
+Checker Framework redesign/refactoring (in priority order):
+
+(Throughout the refactorings, incrementally update the manual.)
 
 * Document the difference between getAnnotation and getEffectiveAnnotation
 
@@ -23,15 +25,24 @@ Checker Framework redesign/refactoring:
 
 * AnnotatedTypeFactory changes (Stuart); see below
 
-* eliminate use of reflection in composing a type-checker from
-  similarly-named classes; force this to be explicit
+* Eliminate use of reflection in composing a type-checker from
+  similarly-named classes; force this to be explicit.  This will make the
+  type-checkers a bit more verbose, but easier to understand and debug.
+  Examples throughout the manual may need to be updated.
 
 * change from AST visiting to CFG visiting, so that each type system doesn't
   have to implement special logic to infer where boxing, unboxing, and
-  other desugarings occur.
+  other desugarings occur -- that can be done once, correctly, by CFG
+  construction.
   TypeVisitor or SourceVisitor should be over the CFG.
   This can be independent of Stuart's changes.
   Should the new interface be over the CFG too?
+  A nice side effect is that if the CFG duplicates code (such as that for
+  finally blocks), then we get path/context-sensitive treatment of that
+  code for free since we analyze it twice.  One challenge would be avoiding
+  producing two error messages for the same expression, but that feature
+  could be deferred because the system can be useful even before that
+  feature is implemented.
 
 * there are currently multiple ways to obtain an error reporter and other
   global values.  Put these in a Checker Framework environment, and make all
@@ -63,11 +74,15 @@ Checker Framework redesign/refactoring:
 * use a single Processor implementation and ensure checker writers never have
 to worry about the Processor interface.  Invocation could be done a number of
 ways:
-javac --processor checkers.CheckerFramework -Acheckers:checker1:checker2:checker
+javac --processor checkerFramework.CheckerFramework -Acheckers:checker1:checker2:checker
 javac --checkers checker1:checker2:checkers3 
 By the way, the second option will work with both the jsr308 and Java8
 compilers as the --checkers could be translated by CheckerMain into the first
-form.  
+form.  [I don't see how a Java 8 compiler could handle the --checkers
+option; it will only work with a non-standard javac binary.  But maybe the
+proposal is to always require that (e.g., via "java -jar checkers.jar") and
+never support direct use of javac.]
+[This feels low-priority to Mike.]
 
 ===========================================================================
 
