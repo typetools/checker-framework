@@ -111,6 +111,6 @@ public class MessageFormat extends Format {
             throw new RuntimeException("skeleton method");
         }
 
-        public final static Field ARGUMENT;
+        public final static Field ARGUMENT = null;
     }
 }

@@ -7,7 +7,7 @@ import dataflow.quals.SideEffectFree;
 
 public final class String implements java.io.Serializable, Comparable<String>, CharSequence {
   private static final long serialVersionUID = 0;
-  public final static java.util.Comparator<String> CASE_INSENSITIVE_ORDER;
+  public final static java.util.Comparator<String> CASE_INSENSITIVE_ORDER = null;
   @SideEffectFree public String() { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public String(String a1) { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public String(char[] a1) { throw new RuntimeException("skeleton method"); }

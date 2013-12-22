@@ -150,7 +150,7 @@ public final class Character implements java.io.Serializable, Comparable<Charact
   public final static int MAX_RADIX = 36;
   public final static char MIN_VALUE = 0;
   public final static char MAX_VALUE = 65535;
-  public final static Class<Character> TYPE;
+  public final static Class<Character> TYPE = null;
   public final static byte UNASSIGNED = 0;
   public final static byte UPPERCASE_LETTER = 1;
   public final static byte LOWERCASE_LETTER = 2;
