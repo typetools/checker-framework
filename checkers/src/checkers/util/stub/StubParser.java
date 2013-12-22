@@ -117,11 +117,12 @@ public class StubParser {
      * Mapping of a name access expression that has already been encountered
      * to the resolved variable element.
      */
-     private final Map<NameExpr, VariableElement> nexprcache;
-     /**
+    private final Map<NameExpr, VariableElement> nexprcache;
+
+    /**
      * Annotation to added to every method and constructor in the stub file.
      */
-     private final AnnotationMirror fromStubFile;
+    private final AnnotationMirror fromStubFile;
 
 
     /**
@@ -160,7 +161,7 @@ public class StubParser {
         faexprcache = new HashMap<FieldAccessExpr, VariableElement>();
         nexprcache = new HashMap<NameExpr, VariableElement>();
 
-        this.fromStubFile =   AnnotationUtils.fromClass(elements, FromStubFile.class);
+        this.fromStubFile = AnnotationUtils.fromClass(elements, FromStubFile.class);
     }
 
 
@@ -169,6 +170,7 @@ public class StubParser {
     private Map<String, AnnotationMirror> annosInPackage(PackageElement packageElement) {
         return createImportedAnnotationsMap(ElementFilter.typesIn(packageElement.getEnclosedElements()));
     }
+
     /** All annotations declarations nested inside of a class. */
     private Map<String, AnnotationMirror> annosInType(TypeElement typeElement) {
         return createImportedAnnotationsMap(ElementFilter.typesIn(typeElement.getEnclosedElements()));
@@ -247,7 +249,7 @@ public class StubParser {
                     if (importType == null && !importDecl.isStatic()) {
                         // Class or nested class (according to JSL), but we can't resolve
 
-                            stubWarning("Imported type not found: " + imported);
+                        stubWarning("Imported type not found: " + imported);
                     } else if (importType == null) {
                         // Nested Field
 
@@ -271,7 +273,7 @@ public class StubParser {
                             Element annoElt = anno.getAnnotationType().asElement();
                             putNew(result, annoElt.getSimpleName().toString(), anno);
                         } else {
-                                stubWarning("Could not load import: " + imported);
+                            stubWarning("Could not load import: " + imported);
                         }
                     } else {
                         // Class or nested class
@@ -333,14 +335,14 @@ public class StubParser {
         // couldn't find type.  not in class path
         // TODO: Should throw exception?!
         if (typeElt == null) {
-                stubWarning("Type not found: " + typeName);
+            stubWarning("Type not found: " + typeName);
             return;
         }
 
         if (typeElt.getKind() == ElementKind.ENUM) {
-                stubWarning("Skipping enum type: " + typeName);
+            stubWarning("Skipping enum type: " + typeName);
         } else if (typeElt.getKind() == ElementKind.ANNOTATION_TYPE) {
-                stubWarning("Skipping annotation type: " + typeName);
+            stubWarning("Skipping annotation type: " + typeName);
         } else if (typeDecl instanceof ClassOrInterfaceDeclaration) {
             parseType((ClassOrInterfaceDeclaration)typeDecl, typeElt, atypes, declAnnos);
         } // else it's an EmptyTypeDeclaration.  TODO:  An EmptyTypeDeclaration can have annotations, right?
@@ -383,7 +385,6 @@ public class StubParser {
                                               decl, typeParameters,
                                               elt, elt.getClass(), type, type.getClass(), typeArguments.size(), typeArguments,
                                               theCompilationUnit));
-        
                 }
                 /*
                 throw new Error(String.format("parseType:  mismatched sizes for params and args%n  decl=%s%n  typeParameters=%s%n  elt=%s (%s)%n  type=%s (%s)%n  typeArguments (size %d)=%s%n",
@@ -631,7 +632,9 @@ public class StubParser {
             return;
 
         if (typeParameters.size() != typeArguments.size()) {
-            stubAlwaysWarn(String.format("annotateParameters: mismatched sizes%n  typeParameters (size %d)=%s%n  typeArguments (size %d)=%s%n", typeParameters.size(), typeParameters, typeArguments.size(), typeArguments));
+            stubAlwaysWarn(String.format("annotateParameters: mismatched sizes%n  typeParameters (size %d)=%s%n  typeArguments (size %d)=%s%n",
+                            typeParameters.size(), typeParameters,
+                            typeArguments.size(), typeArguments));
         }
         for (int i = 0; i < typeParameters.size(); ++i) {
             TypeParameter param = typeParameters.get(i);
@@ -669,11 +672,18 @@ public class StubParser {
                 ClassOrInterfaceDeclaration ciDecl = (ClassOrInterfaceDeclaration) member;
                 String nestedClass = typeDecl.getName() + "." + ciDecl.getName();
                 if (nestedClassWarnings.add(nestedClass)) { // avoid duplicate warnings
-                    stubAlwaysWarn(String.format("Warning: ignoring nested class in %s at line %d:%n    class %s { class %s { ... } }%n", filename, ciDecl.getBeginLine(), typeDecl.getName(), ciDecl.getName())
-                    +"\n"+String.format("  Instead, write the nested class as a top-level class:%n    class %s { ... }%n    class %s$%s { ... }%n", typeDecl.getName(), typeDecl.getName(), ciDecl.getName()));
+                    stubAlwaysWarn(
+                            String.format("Warning: ignoring nested class in %s at line %d:%n    class %s { class %s { ... } }%n",
+                                    filename, ciDecl.getBeginLine(),
+                                    typeDecl.getName(), ciDecl.getName())
+                            + "\n"
+                            + String.format(
+                                    "  Instead, write the nested class as a top-level class:%n    class %s { ... }%n    class %s$%s { ... }%n",
+                                    typeDecl.getName(), typeDecl.getName(),
+                                    ciDecl.getName()));
                 }
             } else {
-                    stubWarning(String.format("StubParser: Ignoring element of type %s in getMembers", member.getClass()));
+                stubWarning(String.format("StubParser: Ignoring element of type %s in getMembers", member.getClass()));
             }
         }
         // // remove null keys, which can result from findElement returning null
@@ -687,7 +697,7 @@ public class StubParser {
             if (superType.getUnderlyingType().asElement().getSimpleName().contentEquals(typeString))
                 return superType;
         }
-            stubWarning("Type " + typeString + " not found");
+        stubWarning("Type " + typeString + " not found");
         if (debugStubParser)
             for (AnnotatedDeclaredType superType : types)
                 stubDebug(String.format("  %s%n", superType));
@@ -708,7 +718,7 @@ public class StubParser {
                 return method;
             }
         }
-            stubWarning("Method " + wantedMethodString + " not found in type " + typeElt);
+        stubWarning("Method " + wantedMethodString + " not found in type " + typeElt);
         if (debugStubParser)
             for (ExecutableElement method : ElementFilter.methodsIn(typeElt.getEnclosedElements()))
                 stubDebug(String.format("  %s%n", method));
@@ -726,8 +736,8 @@ public class StubParser {
                     && StubUtil.toString(method).equals(wantedMethodString))
                 return method;
         }
-      
-            stubWarning("Constructor " + wantedMethodString + " not found in type " + typeElt);
+
+        stubWarning("Constructor " + wantedMethodString + " not found in type " + typeElt);
         if (debugStubParser)
             for (ExecutableElement method : ElementFilter.constructorsIn(typeElt.getEnclosedElements()))
                 stubDebug(String.format("  %s%n", method));
@@ -747,7 +757,7 @@ public class StubParser {
             }
         }
 
-            stubWarning("Field " + fieldName + " not found in type " + typeElt);
+        stubWarning("Field " + fieldName + " not found in type " + typeElt);
         if (debugStubParser)
             for (VariableElement field : ElementFilter.fieldsIn(typeElt.getEnclosedElements()))
                 stubDebug(String.format("  %s%n", field));
@@ -757,11 +767,11 @@ public class StubParser {
     private TypeElement findType(String typeName, String... msg) {
         TypeElement classElement = elements.getTypeElement(typeName);
         if (classElement == null) {
-                if (msg.length == 0) {
-                    stubWarning("Type not found: " + typeName);
-                } else {
-                    stubWarning(msg[0] + ": " + typeName);
-                }
+            if (msg.length == 0) {
+                stubWarning("Type not found: " + typeName);
+            } else {
+                stubWarning(msg[0] + ": " + typeName);
+            }
         }
         return classElement;
     }
@@ -769,7 +779,7 @@ public class StubParser {
     private PackageElement findPackage(String packageName) {
         PackageElement packageElement = elements.getPackageElement(packageName);
         if (packageElement == null) {
-                stubWarning("Imported package not found: " + packageName);
+            stubWarning("Imported package not found: " + packageName);
         }
         return packageElement;
     }
@@ -836,12 +846,13 @@ public class StubParser {
                     "StubParser: " + warning);
         }
     }
+
     /**
      * Issues a warning even if -AstubWarnIfNotFound or -AstubDebugs options are not passed.
      * @param warning
      */
     private void stubAlwaysWarn(String warning) {
-        if (warnings.add(warning) ) {
+        if (warnings.add(warning)) {
             processingEnv.getMessager().printMessage(
                     javax.tools.Diagnostic.Kind.WARNING,
                     "StubParser: " + warning);
@@ -1032,7 +1043,7 @@ public class StubParser {
         // Imported but invalid types or fields will have warnings from above,
         // only warn on fields missing an import
         if (res == null && !importFound) {
-                stubWarning("Static field " + nexpr.getName() + " is not imported");
+            stubWarning("Static field " + nexpr.getName() + " is not imported");
         }
 
         nexprcache.put(nexpr, res);
@@ -1061,7 +1072,7 @@ public class StubParser {
             }
 
             if (rcvElt == null) {
-                    stubWarning("Type " + faexpr.getScope().toString() + " not found");
+                stubWarning("Type " + faexpr.getScope().toString() + " not found");
                 return null;
             }
         }

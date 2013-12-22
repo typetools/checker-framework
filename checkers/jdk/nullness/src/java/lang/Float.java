@@ -16,7 +16,7 @@ public final class Float extends Number implements Comparable<Float> {
   public final static int MAX_EXPONENT = 0;
   public final static int MIN_EXPONENT = 0;
   public final static int SIZE = 32;
-  public final static Class<Float> TYPE;
+  public final static Class<Float> TYPE = null;
   @SideEffectFree public static String toString(float a1) { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public static String toHexString(float a1) { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public static Float valueOf(String a1) throws NumberFormatException { throw new RuntimeException("skeleton method"); }

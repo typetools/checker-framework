@@ -9,10 +9,10 @@ import checkers.nullness.quals.Nullable;
 
 public class File implements Serializable, Comparable<File> {
   private static final long serialVersionUID = 0;
-  public final static char separatorChar;
-  public final static String separator;
-  public final static char pathSeparatorChar;
-  public final static String pathSeparator;
+  public final static char separatorChar = ':';
+  public final static String separator = ":";
+  public final static char pathSeparatorChar = '/';
+  public final static String pathSeparator = "/";
   public File(String a1) { throw new RuntimeException("skeleton method"); }
   public File(@Nullable String a1, String a2) { throw new RuntimeException("skeleton method"); }
   public File(@Nullable File a1, String a2) { throw new RuntimeException("skeleton method"); }

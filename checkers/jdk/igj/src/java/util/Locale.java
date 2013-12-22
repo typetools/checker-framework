@@ -3,29 +3,29 @@ import checkers.igj.quals.*;
 
 @Immutable
 public final class Locale implements @Immutable Cloneable, java.io. @Immutable Serializable {
-    private static final long serialVersionUID = 0L;
-  public final static Locale ENGLISH;
-  public final static Locale FRENCH;
-  public final static Locale GERMAN;
-  public final static Locale ITALIAN;
-  public final static Locale JAPANESE;
-  public final static Locale KOREAN;
-  public final static Locale CHINESE;
-  public final static Locale SIMPLIFIED_CHINESE;
-  public final static Locale TRADITIONAL_CHINESE;
-  public final static Locale FRANCE;
-  public final static Locale GERMANY;
-  public final static Locale ITALY;
-  public final static Locale JAPAN;
-  public final static Locale KOREA;
-  public final static Locale CHINA;
-  public final static Locale PRC;
-  public final static Locale TAIWAN;
-  public final static Locale UK;
-  public final static Locale US;
-  public final static Locale CANADA;
-  public final static Locale CANADA_FRENCH;
-  public final static Locale ROOT;
+  private static final long serialVersionUID = 0L;
+  public final static Locale ENGLISH = null;
+  public final static Locale FRENCH = null;
+  public final static Locale GERMAN = null;
+  public final static Locale ITALIAN = null;
+  public final static Locale JAPANESE = null;
+  public final static Locale KOREAN = null;
+  public final static Locale CHINESE = null;
+  public final static Locale SIMPLIFIED_CHINESE = null;
+  public final static Locale TRADITIONAL_CHINESE = null;
+  public final static Locale FRANCE = null;
+  public final static Locale GERMANY = null;
+  public final static Locale ITALY = null;
+  public final static Locale JAPAN = null;
+  public final static Locale KOREA = null;
+  public final static Locale CHINA = null;
+  public final static Locale PRC = null;
+  public final static Locale TAIWAN = null;
+  public final static Locale UK = null;
+  public final static Locale US = null;
+  public final static Locale CANADA = null;
+  public final static Locale CANADA_FRENCH = null;
+  public final static Locale ROOT = null;
   public Locale(String a1, String a2, String a3) { throw new RuntimeException("skeleton method"); }
   public Locale(String a1, String a2) { throw new RuntimeException("skeleton method"); }
   public Locale(String a1) { throw new RuntimeException("skeleton method"); }

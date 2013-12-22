@@ -4,7 +4,7 @@ import dataflow.quals.SideEffectFree;
 import checkers.nullness.quals.Nullable;
 import checkers.nullness.quals.PolyNull;
 
-public class Arrays{
+public class Arrays {
   protected Arrays() {}
   public static void sort(long[] a1) { throw new RuntimeException("skeleton method"); }
   public static void sort(long[] a1, int a2, int a3) { throw new RuntimeException("skeleton method"); }
@@ -69,8 +69,8 @@ public class Arrays{
   public static void fill(float[] a1, int a2, int a3, float a4) { throw new RuntimeException("skeleton method"); }
   public static void fill(Object[] a1, Object a2) { throw new RuntimeException("skeleton method"); }
   public static void fill(Object[] a1, int a2, int a3, Object a4) { throw new RuntimeException("skeleton method"); }
-  public static <T> @Nullable T [] copyOf(@Nullable T [] a1, int a2) { throw new RuntimeException("skeleton method"); }
-  public static <T, U> @Nullable T [] copyOf(@Nullable U [] a1, int a2, Class<? extends T[]> a3) { throw new RuntimeException("skeleton method"); }
+  public static <T extends @Nullable Object> @Nullable T [] copyOf(T [] a1, int a2) { throw new RuntimeException("skeleton method"); }
+  public static <T extends @Nullable Object, U extends @Nullable Object> @Nullable T [] copyOf(U [] a1, int a2, Class<? extends T[]> a3) { throw new RuntimeException("skeleton method"); }
   public static byte[] copyOf(byte[] a1, int a2) { throw new RuntimeException("skeleton method"); }
   public static short[] copyOf(short[] a1, int a2) { throw new RuntimeException("skeleton method"); }
   public static int[] copyOf(int[] a1, int a2) { throw new RuntimeException("skeleton method"); }
@@ -79,8 +79,8 @@ public class Arrays{
   public static float[] copyOf(float[] a1, int a2) { throw new RuntimeException("skeleton method"); }
   public static double[] copyOf(double[] a1, int a2) { throw new RuntimeException("skeleton method"); }
   public static boolean[] copyOf(boolean[] a1, int a2) { throw new RuntimeException("skeleton method"); }
-  public static <T> @Nullable T[] copyOfRange(@Nullable T[] a1, int a2, int a3) { throw new RuntimeException("skeleton method"); }
-  public static <T, U> @Nullable T[] copyOfRange(U[] a1, int a2, int a3, Class<? extends T[]> a4) { throw new RuntimeException("skeleton method"); }
+  public static <T extends @Nullable Object> @Nullable T[] copyOfRange(T[] a1, int a2, int a3) { throw new RuntimeException("skeleton method"); }
+  public static <T extends @Nullable Object, U extends @Nullable Object> @Nullable T[] copyOfRange(U[] a1, int a2, int a3, Class<? extends T[]> a4) { throw new RuntimeException("skeleton method"); }
   public static byte[] copyOfRange(byte[] a1, int a2, int a3) { throw new RuntimeException("skeleton method"); }
   public static short[] copyOfRange(short[] a1, int a2, int a3) { throw new RuntimeException("skeleton method"); }
   public static int[] copyOfRange(int[] a1, int a2, int a3) { throw new RuntimeException("skeleton method"); }
