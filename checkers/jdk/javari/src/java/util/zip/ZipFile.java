@@ -9,8 +9,8 @@ import java.nio.charset.Charset;
 import java.util.Enumeration;
 
 public class ZipFile implements ZipConstants, Closeable {
-    public static final int OPEN_READ;
-    public static final int OPEN_DELETE;
+    public static final int OPEN_READ = 0;
+    public static final int OPEN_DELETE = 0;
 
     public ZipFile(String name) throws IOException {
         throw new RuntimeException("skeleton method");

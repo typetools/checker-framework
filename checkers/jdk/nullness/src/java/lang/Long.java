@@ -10,7 +10,7 @@ public final class Long extends Number implements Comparable<Long> {
   private static final long serialVersionUID = 0;
   public final static long MIN_VALUE = -9223372036854775808L;
   public final static long MAX_VALUE = 9223372036854775807L;
-  public final static Class<Long> TYPE;
+  public final static Class<Long> TYPE = null;
   public final static int SIZE = 64;
   @SideEffectFree public static String toString(long a1, int a2) { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public static String toHexString(long a1) { throw new RuntimeException("skeleton method"); }
