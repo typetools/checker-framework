@@ -10,7 +10,7 @@ public final class Integer extends Number implements Comparable<Integer> {
   private static final long serialVersionUID = 0;
   public final static int MIN_VALUE = -2147483648;
   public final static int MAX_VALUE = 2147483647;
-  public final static Class<Integer> TYPE;
+  public final static Class<Integer> TYPE = null;
   public final static int SIZE = 32;
   @SideEffectFree public static String toString(int a1, int a2) { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public static String toHexString(int a1) { throw new RuntimeException("skeleton method"); }

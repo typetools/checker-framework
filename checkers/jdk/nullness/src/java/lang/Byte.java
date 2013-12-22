@@ -9,7 +9,7 @@ public final class Byte extends Number implements Comparable<Byte> {
   private static final long serialVersionUID = 0;
   public final static byte MIN_VALUE = -128;
   public final static byte MAX_VALUE = 127;
-  public final static Class<Byte> TYPE;
+  public final static Class<Byte> TYPE = null;
   public final static int SIZE = 8;
   @SideEffectFree public static String toString(byte a1) { throw new RuntimeException("skeleton method"); }
   @Pure public static Byte valueOf(byte a1) { throw new RuntimeException("skeleton method"); }

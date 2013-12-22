@@ -83,11 +83,11 @@ public abstract class ResourceBundle {
     }
 
     public static class Control {
-        public static final List<String> FORMAT_DEFAULT;
-        public static final List<String> FORMAT_CLASS;
-        public static final List<String> FORMAT_PROPERTIES;
-        public static final long TTL_DONT_CACHE;
-        public static final long TTL_NO_EXPIRATION_CONTROL;
+        public static final List<String> FORMAT_DEFAULT = null;
+        public static final List<String> FORMAT_CLASS = null;
+        public static final List<String> FORMAT_PROPERTIES = null;
+        public static final long TTL_DONT_CACHE = 0;
+        public static final long TTL_NO_EXPIRATION_CONTROL = 0;
 
         protected Control() {
             throw new RuntimeException("skeleton method");

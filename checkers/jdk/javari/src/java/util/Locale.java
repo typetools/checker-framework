@@ -4,31 +4,29 @@ import checkers.javari.quals.*;
 import java.io.*;
 
 public final class Locale implements Cloneable, Serializable {
-
-    static public final Locale ENGLISH;
-    static public final Locale FRENCH;
-    static public final Locale GERMAN;
-    static public final Locale ITALIAN;
-    static public final Locale JAPANESE;
-    static public final Locale KOREAN;
-    static public final Locale CHINESE;
-    static public final Locale SIMPLIFIED_CHINESE;
-    static public final Locale TRADITIONAL_CHINESE;
-    static public final Locale FRANCE;
-    static public final Locale GERMANY;
-    static public final Locale ITALY;
-    static public final Locale JAPAN;
-    static public final Locale KOREA;
-    static public final Locale CHINAE;
-    static public final Locale PRC;
-    static public final Locale TAIWAN; 
-    static public final Locale UK;
-    static public final Locale US;
-    static public final Locale CANADA;
-    static public final Locale CANADA_FRENCH;
-    static public final Locale ROOT;
-
-    static final long serialVersionUID = 9149081749638150636L;
+  private static final long serialVersionUID = 0L;
+  public final static Locale ENGLISH = null;
+  public final static Locale FRENCH = null;
+  public final static Locale GERMAN = null;
+  public final static Locale ITALIAN = null;
+  public final static Locale JAPANESE = null;
+  public final static Locale KOREAN = null;
+  public final static Locale CHINESE = null;
+  public final static Locale SIMPLIFIED_CHINESE = null;
+  public final static Locale TRADITIONAL_CHINESE = null;
+  public final static Locale FRANCE = null;
+  public final static Locale GERMANY = null;
+  public final static Locale ITALY = null;
+  public final static Locale JAPAN = null;
+  public final static Locale KOREA = null;
+  public final static Locale CHINA = null;
+  public final static Locale PRC = null;
+  public final static Locale TAIWAN = null;
+  public final static Locale UK = null;
+  public final static Locale US = null;
+  public final static Locale CANADA = null;
+  public final static Locale CANADA_FRENCH = null;
+  public final static Locale ROOT = null;
 
     public Locale(String language, String country, String variant) {
         throw new RuntimeException("skeleton method");

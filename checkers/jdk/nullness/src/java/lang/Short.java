@@ -9,7 +9,7 @@ public final class Short extends Number implements Comparable<Short> {
   private static final long serialVersionUID = 0;
   public final static short MIN_VALUE = -32768;
   public final static short MAX_VALUE = 32767;
-  public final static Class<Short> TYPE;
+  public final static Class<Short> TYPE = null;
   public final static int SIZE = 16;
   @SideEffectFree public static String toString(short a1) { throw new RuntimeException("skeleton method"); }
   @Pure public static short parseShort(String a1) throws NumberFormatException { throw new RuntimeException("skeleton method"); }
