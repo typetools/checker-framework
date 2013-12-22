@@ -22,16 +22,19 @@ Replace it and document how to achieve CLIMB-to-top instead.
 
 ------------------------------------------------------
 
-Decide what to say about @KeyFor strings.  Unfortunately not the same set of expressions is allowed as with pre/postconditions.
-
-------------------------------------------------------
-
 Explain relationship between XXXChecker and XXXAnnotatedTypeFactory:  if
 the Checker is a subtype of BaseTypeChecker, the AnnotatedTypeFactory has
 to be a subtype of AbstractBasicAnnotatedTypeFactory, because
 BaseTypeVisitor assumes that.
+[Defer this because it is being rewritten.]
 
-We found a better naming scheme than Basic vs. Base; it needs to be documented.
+Basic* is gone.
+Base* (in checker-framework/checkers/src/checkers/basetype) does:
+ * subtype tests
+ * type validation
+ * default annotations
+ * visitor
+ * etc.
 
 ------------------------------------------------------
 
