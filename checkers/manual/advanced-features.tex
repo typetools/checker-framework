@@ -32,14 +32,29 @@ doing a costly run-time check at every array assignment; nonetheless, it is
 undesirable to learn about a type error only via a run-time crash rather
 than at compile time.
 
-The Checker Framework is stricter than Java, in the sense that it treats
+When you pass the \<-AinvariantArrays> command-line option,
+the Checker Framework is stricter than Java, in the sense that it treats
 arrays invariantly rather than covariantly.  This means that a type system
 built upon the Checker Framework is sound:  you get a compile-time
 guarantee without the need for any run-time checks.  But it also means that
 the Checker Framework rejects code that is similar to what Java unsoundly
 accepts.  The guarantee and the compile-time checks are about your
 extended type system.  The Checker Framework does not reject the example
-code above, in the absence of any type annotations.
+code above, which contains no type annotations.
+
+Java's covariant array typing is sound if the array is used in a read-only
+fashion:  that is, if the array's elements are accessed but the array is
+not modified.  However, fact about read-only usage is not built into any of
+the type-checkers except those that are specifically about immutability:
+IGJ (see \chapterpageref{igj-checker}) and Javari (see
+\chapterpageref{javari-checker}).  Therefore, when using other type systems
+along with <-AinvariantArrays>, you will need to suppress any warnings that
+are false positives because the array is treated in a read-only way.
+
+% An alternative would be for the Nullness Checker to read and trust (but not
+% verify) existing IGJ/Javari annotations; this would be unsound but would be
+% a better and more explicit way of suppressing the warning.
+
 
 
 \section{Context-sensitive type inference for array constructors\label{array-context-sensitive}}
@@ -1223,4 +1238,5 @@ class @Marsupial-Animal {
 %  LocalWords:  AenablePurity AassumeSideEffectFree iMplicit instanceof m2
 %  LocalWords:  AassumeAssertionsAreEnabled myArray vals propkey forName
 %  LocalWords:  fenum igj javari i18n RequiresQualifier EnsuresQualifier
-%  LocalWords:  EnsuresQualifierIf AsuppressWarnings
+%  LocalWords:  EnsuresQualifierIf AsuppressWarnings AinvariantArrays
+%  LocalWords:  formatter
