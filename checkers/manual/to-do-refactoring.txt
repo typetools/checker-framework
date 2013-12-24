@@ -46,6 +46,23 @@ Checker Framework redesign/refactoring (in priority order):
   producing two error messages for the same expression, but that feature
   could be deferred because the system can be useful even before that
   feature is implemented.
+Stefan says:
+I have three comments that might be useful to consider when performing this
+transformation:
+- We currently have a generic MarkerNode which we use (mostly for debugging)
+  to keep some of the structure of high-level constructs that we don't need
+  in the CFG, such as locking or try-catch blocks.  I'd except this structure
+  to be more important for type-checkers, so it might be worth having
+  explicit types for the different kinds.
+- If the CFG is used for type-checking, then somebody should go carefully
+  over the CFGBuilder to make sure it does not unsoundly approximate the
+  source program.  Some approximations might be sound for flow-sensitive
+  type-refinement (and only lead to missed opportunities for type
+  refinement), but are not sound when type-checking.  I don't have a concrete
+  example in mind, but the TODOs might be a good starting point.
+- A challenge will be how to deal with type-checking errors that occur for
+  CFG nodes without direct source-level counter-part (which were introduced
+  as part of desugaring), but I'm sure you are aware of this.
 
 * there are currently multiple ways to obtain an error reporter and other
   global values.  Put these in a Checker Framework environment, and make all
