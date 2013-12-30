@@ -364,7 +364,7 @@ you can find the Checker Framework in Maven Central (MC):
   existing \code{<dependencies>} section and add a new
   \code{<dependencies>} item:
 
-\begin{Verbatim}
+\begin{alltt}
     <dependencies>
         ... existing <dependency> items ...
 
@@ -372,17 +372,17 @@ you can find the Checker Framework in Maven Central (MC):
         <dependency>
             <groupId>types.checkers</groupId>
             <artifactId>checkers-quals</artifactId>
-            <version>1.7.1</version>
+            <version>\ReleaseVersion{}</version>
         </dependency>
 
     </dependencies>
-\end{Verbatim}
+\end{alltt}
 
 \item Attach the plugin to your build lifecycle by adding a new
   \code{<plugin>} item within \code{<plugins>}, or a new \code{<plugins>}
   item if necessary.
 
-\begin{Verbatim}
+\begin{alltt}
     <build>
         <plugins>
             ... existing <plugin> items ...
@@ -390,7 +390,7 @@ you can find the Checker Framework in Maven Central (MC):
             <plugin>
                 <groupId>types.checkers</groupId>
                 <artifactId>checkers-maven-plugin</artifactId>
-                <version>1.7.1</version>
+                <version>\ReleaseVersion{}</version>
                 <executions>
                     <execution>
                         <!-- run the checkers after compilation; this can also be any later phase -->
@@ -412,7 +412,7 @@ you can find the Checker Framework in Maven Central (MC):
               </plugin>
         </plugins>
     </build>
-\end{Verbatim}
+\end{alltt}
 
 The above example attaches the "check" goal to the "process-lifecycle" phase which occurs directly after
 the "compile" phase (see \url{http://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html}).
@@ -467,8 +467,8 @@ You may want to run the Checker Framework using a Java version that differs from
 \end{Verbatim}
 
 The version of the Checker Framework run by the Maven plugin will share the same version as the Maven plugin
-by default.  That is, if you are using the Checker Framework Maven plugin version 1.7.1 then it will run the
-Checker Framework version 1.7.1 when checking source code.  However, you can specify an earlier
+by default.  That is, if you are using the Checker Framework Maven plugin version \ReleaseVersion{} then it will run the
+Checker Framework version \ReleaseVersion{} when checking source code.  However, you can specify an earlier
 or later version of the Checker Framework using the \code{checkerFrameworkVersion} element.
 Note: The Checker Framework Maven plugin will only work with Checker Framework versions 1.5.0 and higher.
 
