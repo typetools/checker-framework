@@ -1,9 +1,6 @@
 // Test case for issue 295:
 // https://code.google.com/p/checker-framework/issues/detail?id=295
 
-// Skipped until the issue is fixed.
-// @skip-test
-
 import checkers.nullness.quals.Nullable;
 
 abstract class Issue295 {
