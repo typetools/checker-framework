@@ -28,8 +28,9 @@ import checkers.nullness.quals.*;
     "cast"})
 public final class NullnessUtils {
 
-    private NullnessUtils()
-    { throw new AssertionError("shouldn't be instantiated"); }
+    private NullnessUtils() {
+        throw new AssertionError("shouldn't be instantiated");
+    }
 
     /**
      * A method that suppresses warnings from the Nullness Checker.
@@ -74,6 +75,7 @@ public final class NullnessUtils {
      * @return the argument, casted to have the type qualifier @NonNull
      */
     public static
+    @EnsuresNonNull("#1")
     <T extends @Nullable Object>
     @NonNull T castNonNull(T ref) {
         assert ref != null : "Misuse of castNonNull: called with a null argument";
@@ -88,6 +90,7 @@ public final class NullnessUtils {
      * @see #castNonNull(Object)
      */
     public static
+    @EnsuresNonNull("#1")
     <T extends @Nullable Object>
     @NonNull T @NonNull []
             castNonNullDeep(T @Nullable [] arr) {
@@ -102,6 +105,7 @@ public final class NullnessUtils {
      * @see #castNonNull(Object)
      */
     public static
+    @EnsuresNonNull("#1")
     <T extends @Nullable Object>
     @NonNull T @NonNull [][]
             castNonNullDeep(T @Nullable [] @Nullable [] arr) {
@@ -116,6 +120,7 @@ public final class NullnessUtils {
      * @see #castNonNull(Object)
      */
     public static
+    @EnsuresNonNull("#1")
     <T extends @Nullable Object>
     @NonNull T @NonNull [][][]
             castNonNullDeep(T @Nullable [] @Nullable [] @Nullable [] arr) {
@@ -130,6 +135,7 @@ public final class NullnessUtils {
      * @see #castNonNull(Object)
      */
     public static
+    @EnsuresNonNull("#1")
     <T extends @Nullable Object>
     @NonNull T @NonNull [][][][]
             castNonNullDeep(T @Nullable [] @Nullable [] @Nullable [] @Nullable [] arr) {
@@ -144,6 +150,7 @@ public final class NullnessUtils {
      * @see #castNonNull(Object)
      */
     public static
+    @EnsuresNonNull("#1")
     <T extends @Nullable Object>
     @NonNull T @NonNull [][][][][]
             castNonNullDeep(T @Nullable [] @Nullable [] @Nullable [] @Nullable [] @Nullable [] arr) {
