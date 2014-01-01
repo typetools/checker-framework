@@ -533,9 +533,8 @@ In such cases, you may be able to use the \<@AssumeAssertion> comment in
 an \<assert> statement (see Section~\ref{assumeassertion}).
 
 For situations when all of these approaches are inconvenient,
-the Nullness Checker provides two additional ways to suppress warnings:
-via the \<castNonNull> method and the
-\<@AssertParametersNonNull> annotation.  These are
+the Nullness Checker provides an additional way to suppress warnings:
+via the \<castNonNull> method.  This is
 appropriate when the Nullness Checker issues a warning, but the programmer
 knows for sure that the warning is a false positive, because the value
 cannot ever be null at run time.
@@ -604,11 +603,12 @@ the following code:
   defensive programming.  See Section~\ref{defensive-programming} for an
   explanation of the distinction.
 
-\item
-  Use the \code{@\refclass{checkers/nullness/quals}{AssertParametersNonNull}}
-  annotation.  It is used on \<castNonNull>, and may be used on other
-  methods with the same semantics; it should probably never be used in any
-  other situation.
+%% AssertParametersNonNull was removed. Use EnsuresNonNull instead.
+%% \item
+%%   Use the \code{@\refclass{checkers/nullness/quals}{AssertParametersNonNull}}
+%%   annotation.  It is used on \<castNonNull>, and may be used on other
+%%   methods with the same semantics; it should probably never be used in any
+%%   other situation.
 
 \end{enumerate}
 
@@ -2305,7 +2305,7 @@ developers are working to correct this bug.
 % LocalWords:  Nullability typeargs nulltest EnsuresNonNullIf listFiles faq
 % LocalWords:  isDirectory AssertionError intraprocedurally SuppressWarnings rB
 % LocalWords:  FindBugs's getObject RequiresNonNull EnsuresNonNull KeyFor
-% LocalWords:  AssertParametersNonNull nonnull EnsuresNonNull ReadOnly arg
+% LocalWords:  nonnull EnsuresNonNull ReadOnly arg
 % LocalWords:  keySet getField keyfor param TypeName containsValue indexOf nraA
 % LocalWords:  lastIndexOf deref getProperty getProperties classliteral MyClass
 % LocalWords:  typeofthis nraB nrbB rO nroO nroB 5cm IGJ containsKey enum
