@@ -1,10 +1,8 @@
 import checkers.nullness.NullnessUtils;
 import checkers.nullness.quals.*;
 
-/*
+/**
  * Test class checkers.nullness.NullnessUtils.
- * Note that this test case will fail in Eclipse, because the annotations
- * in comments used by NullnessUtils are ignored.
  */
 class TestNullnessUtils {
     void testRef1(@Nullable Object o) {
@@ -15,6 +13,12 @@ class TestNullnessUtils {
     void testRef2(@Nullable Object o) {
         // another way to use as a cast:
         NullnessUtils.castNonNull(o).toString();
+    }
+
+    void testRef3(@Nullable Object o) {
+        // use as statement:
+        NullnessUtils.castNonNull(o);
+        o.toString();
     }
 
     void testArr1(@Nullable Object @NonNull [] a) {
@@ -28,6 +32,15 @@ class TestNullnessUtils {
     void testArr2(@Nullable Object @NonNull [] a) {
         // another way to use as a cast:
         NullnessUtils.castNonNullDeep(a)[0].toString();
+    }
+
+    void testArr3(@Nullable Object @NonNull [] a) {
+        // use as statement:
+        NullnessUtils.castNonNullDeep(a);
+        a.toString();
+        // TODO: @EnsuresNonNull cannot express that
+        // all the array components are non-null.
+        // a[0].toString();
     }
 
     /*
