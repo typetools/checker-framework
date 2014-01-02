@@ -488,7 +488,11 @@ public final class TreeUtils {
     }
 
     /**
-     * Returns true if the tree is of a diamond type
+     * Returns true if the tree is of a diamond type.
+     * In contrast to the implementation in TreeInfo, this version
+     * works on Trees.
+     *
+     * @see com.sun.tools.javac.tree.TreeInfo#isDiamond(JCTree)
      */
     public static final boolean isDiamondTree(Tree tree) {
         switch (tree.getKind()) {
