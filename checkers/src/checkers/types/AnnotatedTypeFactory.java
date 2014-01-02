@@ -1481,6 +1481,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 // Look at what Attr and Resolve are doing and rework this whole method.
             }
             break;
+        case TYPEVAR:
+            // TODO: this should NOT be necessary.
+            // dataflow.cfg.node.MethodAccessNode.MethodAccessNode(ExpressionTree, Node)
+            // Uses an ExecutableElement, which did not substitute type variables.
+            break;
         default:
             ErrorReporter.errorAbort("AnnotatedTypeFactory.fromNewClassContextHelper: unexpected context: " +
                     ctxtype + " (" + ctxtype.getKind() + ")");
