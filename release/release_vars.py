@@ -35,17 +35,23 @@ def append_to_PATH(paths):
 
 #---------------------------------------------------------------------------------
 
-#The location the test site is build in
-HTTP_PATH_TO_DEV_SITE  = "http://homes.cs.washington.edu/~jburke/dev/jsr308"
-FILE_PATH_TO_DEV_SITE  = "/homes/gws/jburke/public_html/dev"
+#Maximum allowable size of files when downloading, 2gi
+MAX_DOWNLOAD_SIZE=2000000000
+
+#The location the test site is built in
+HTTP_PATH_TO_DEV_SITE  = "http://http://types.cs.washington.edu/dev"
+FILE_PATH_TO_DEV_SITE  = "/cse/www2/types/dev/"
 
 #The location the test site is pushed to when it is ready
 HTTP_PATH_TO_LIVE_SITE  = "http://types.cs.washington.edu"
-FILE_PATH_TO_LIVE_SITE  = "/homes/gws/jburke/public_html/live"
+FILE_PATH_TO_LIVE_SITE  = "/cse/www2/types"
+
+#Location in which we will download files to run sanity checks
+SANITY_DIR = "/scratch/jsr308-release/sanity"
 
 #Every time a release is built the changes/tags are pushed here
 #When a release is deployed all INTERM repos get pushed to LIVE_REPOS
-INTERM_REPO_ROOT    = "/homes/gws/jburke/interm/"
+INTERM_REPO_ROOT    = "/scratch/jsr308-release/interm"
 INTERM_CHECKER_REPO = os.path.join(INTERM_REPO_ROOT, "checker-framework")
 INTERM_JSR308_REPO  = os.path.join(INTERM_REPO_ROOT, "jsr308-langtools")
 INTERM_ANNO_REPO    = os.path.join(INTERM_REPO_ROOT, "annotation-tools")
@@ -56,6 +62,7 @@ LIVE_CHECKER_REPO = LIVE_REPO_ROOT + "checker-framework"
 LIVE_JSR308_REPO  = LIVE_REPO_ROOT + "jsr308-langtools"
 LIVE_ANNO_REPO    = LIVE_REPO_ROOT + "annotation-tools"
 LIVE_PLUME_LIB    = LIVE_REPO_ROOT + "plume-lib"
+LIVE_PLUME_BIB    = LIVE_REPO_ROOT + "plume-bib"
 
 # "USER = os.getlogin()" does not work; see http://bugs.python.org/issue584566
 # Another alternative is: USER = os.getenv('USER')
@@ -67,7 +74,7 @@ EMAIL_TO='jsr308-discuss@googlegroups.com, checker-framework-discuss@googlegroup
 
 #Location of the project directories in which we will build the actual projects
 #When we build these projects are pushed to the INTERM repositories
-BUILD_DIR        = "/scratch/jburke/dev/"
+BUILD_DIR        = "/scratch/jsr308-release/build/"
 CHECKER_FRAMEWORK = os.path.join(BUILD_DIR, 'checker-framework')
 CHECKER_FRAMEWORK_RELEASE = os.path.join(CHECKER_FRAMEWORK, 'release')
 CHECKER_BIN_DIR    = os.path.join(CHECKER_FRAMEWORK, 'checkers', 'binary')
@@ -96,7 +103,8 @@ PLUME_BIB = os.path.join(BUILD_DIR, 'plume-bib')
 
 MAVEN_PLUGIN_DIR = os.path.join(CHECKER_FRAMEWORK, 'maven-plugin')
 MAVEN_PLUGIN_POM = os.path.join(MAVEN_PLUGIN_DIR,  'pom.xml')
-MAVEN_LIVE_REPO = 'file:///homes/gws/jburke/m2-live-repo'
+MAVEN_DEV_REPO  = 'file:///cse/www2/types/dev/m2-repo'
+MAVEN_LIVE_REPO = 'file:///cse/www2/types/m2-repo'
 
 RELEASE_REPOS = ( CHECKER_FRAMEWORK,   JSR308_LANGTOOLS,   ANNO_TOOLS )
 INTERM_REPOS  = ( INTERM_CHECKER_REPO, INTERM_JSR308_REPO, INTERM_ANNO_REPO )
@@ -131,6 +139,7 @@ os.environ['TEXINPUTS'] =  '.:/scratch/secs-jenkins/tools/hevea-1.10/lib/hevea:/
 os.environ['PERLLIB']   =  getAndAppend('PERLLIB', ":")  + "/homes/gws/mernst/bin/src/perl/lib/perl5/site_perl/5.10.0:/homes/gws/jburke/perl_lib"
 os.environ['PERL5LIB']  =  getAndAppend('PERL5LIB', ":") + "/homes/gws/mernst/bin/src/perl/lib/perl5/site_perl/5.10.0:/homes/gws/jburke/perl_lib"
 os.environ['JAVA_7_HOME'] =  '/scratch/secs-jenkins/java/jdk1.7.0'
+os.environ['JAVA_8_HOME'] =  '/scratch/jsr308-release/java/jdk1.8.0'
 os.environ['JAVA_HOME']   =  os.environ['JAVA_7_HOME']
 
 EDITOR = os.getenv('EDITOR')

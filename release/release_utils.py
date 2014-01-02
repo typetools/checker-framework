@@ -22,6 +22,7 @@ import os
 import pwd
 import re
 import shutil
+import errno
 
 #=========================================================================================
 # Parse Args Utils #TODO: Perhaps use argparse module
@@ -32,10 +33,14 @@ def match_arg( arg ):
             matched_project = project
     return matched_project
 
-def read_args( argv, error_call_back ):
-    matched_projects = {LT_OPT  : False,
-                        AFU_OPT : False,
-                        CF_OPT  : False}
+def read_projects( argv, error_call_back ):
+    matched_projects = {
+        LT_OPT  : False,
+        AFU_OPT : False,
+        CF_OPT  : False
+    }
+
+    auto = False
 
     arg_length = len(sys.argv)
 
@@ -55,7 +60,7 @@ def read_args( argv, error_call_back ):
 
         matched_project = match_arg( argv[index] )
         if matched_project == None:
-            println( "Unmatched project: " + argv[index] )
+            print( "Unmatched project: " + argv[index] )
             error = True
         else:
             matched_projects[ matched_project[0] ] = True
@@ -98,6 +103,13 @@ def duplicate( str, times ):
 def pad_to( original_str, filler, size ):
     missing = size - len(original_str)
     return original_str + duplicate( filler, missing )
+
+def read_auto( argv ):
+    for index in range( 1, len( argv ) ):
+        if argv[index] == "--auto":
+            return True
+
+    return False
 
 #=========================================================================================
 # Command utils
@@ -210,6 +222,35 @@ def current_distribution(site):
     text = urllib2.urlopen(url=site).read()
     result = ver_re.search(text)
     return result.group(1)
+
+def current_distribution(checker_framework_dir):
+    """
+    Reads the checker framework version from build-common.properties
+    returns the version of the current release
+    """
+    ver_re = re.compile( r"""build.version = (\d\.\d\.\d(?:\.\d){0,1})""" )
+    build_props_location = os.path.join( checker_framework_dir, "build-common.properties" )
+    build_props = open( build_props_location )
+
+    for line in build_props:
+        match = ver_re.search(line)
+        if match:
+            return match.group(1)
+
+    print( "Couldn't find checker framework version in file: " + build_props_location )
+    sys.exit(1)
+
+def extract_from_site( site, open_tag, close_tag ):
+    """
+    Reads a string from between open and close tag at the given url
+    """
+    regex_str = open_tag + "(.*)" + close_tag
+
+    ver_re = re.compile(regex_str)
+    text = urllib2.urlopen(url=site).read()
+    result = ver_re.search(text)
+    return result.group(1)
+
     
 def latest_openjdk(site):
     ver_re = re.compile(r"Build b(\d+)")
@@ -296,9 +337,12 @@ def update_projects(paths):
 #Then add a tag for this release
 #And push these changes 
 def commit_tag_and_push(version, path, tag_prefix):
-    execute('hg -R %s commit -m "new release %s"' % (path, version))
-    execute('hg -R %s tag %s%s' % (path, tag_prefix, version))
-    execute('hg -R %s push' % path)
+    print("\t" + ('hg -R %s commit -m "new release %s"' % (path, version)) )
+    print("\t" + ('hg -R %s tag %s%s' % (path, tag_prefix, version)) )
+    print("\t" + ('hg -R %s push' % path) )
+    #execute('hg -R %s commit -m "new release %s"' % (path, version))
+    #execute('hg -R %s tag %s%s' % (path, tag_prefix, version))
+    #execute('hg -R %s push' % path)
     
 # Retrive the changes since the tag (prefix + prev_version)
 def retrieve_changes(root, prev_version, prefix):
@@ -373,6 +417,21 @@ def check_repos(repos, fail_on_error):
 
 #=========================================================================================
 # File Utils
+
+def download_binary( source_url, destination, max_size ):
+    http_response = urllib2.urlopen(url=source_url)
+    content_length = http_response.headers['content-length']
+
+    if content_length is None:
+        raise Exception( "No content-length when downloading: " + source_url )
+
+    if int( content_length ) > max_size:
+        raise Exception( "Content-length ( " + content_length + " ) greater than max_size ( " + max_size + " ) " )
+
+    dest_file = open(destination,'wb')
+    dest_file.write(http_response.read())
+    dest_file.close()
+
 def file_contains(path, text):
     f = open(path, 'r')
     contents = f.read()
@@ -421,6 +480,16 @@ def find_first_instance(regex, file, delim=""):
                     return m.group(0)
     return None
 
+def delete_path( path ):
+    shutil.rmtree(path)
+
+def prompt_or_auto_delete( path, auto ):
+    if not auto:
+        prompt_to_delete(path)
+    else:
+        print
+        delete_path( path )
+
 def prompt_to_delete(path):
     if os.path.exists(path):
         result = prompt_w_suggestion("Delete the following file:\n %s [Yes|No]" % path, "no", "^(Yes|yes|No|no)$")
@@ -434,6 +503,23 @@ def force_symlink( source, symlink_path ):
         if e.errno == errno.EEXIST:
             os.remove( symlink_path )
             os.symlink( source, symlink_path )
+
+#note strs to find is mutated
+def are_in_file( file_path, strs_to_find ):
+    file = open( file_path )
+
+    for line in file:
+        if len( strs_to_find ) == 0:
+                    return True
+
+        index = 0
+        while index < len( strs_to_find ):
+            if strs_to_find[index] in line:
+                del strs_to_find[index]
+            else:
+                index = index + 1
+
+    return len( strs_to_find ) == 0
 
 #=========================================================================================
 # Change Log utils
@@ -573,76 +659,63 @@ def mvn_deploy_mvn_plugin(pluginDir, pom, version, mavenRepo):
 def checklinks(makeFile, site_url=None):
     os.putenv('jsr308_www_online', site_url) # set environment var for subshell
     return execute('make -f %s checklinks' % makeFile, halt_if_fail=False)
-    
-#Output email announcement template
-def format_email(version, to, checkersLog, jsr308Log, checkers_header=None, langtools_header=None):
-    if checkers_header == None:
-        checkers_header = changelog_header(checkersLog)
-    if langtools_header == None:
-        langtools_header = changelog_header(jsr308Log)
 
-    template = """
-
-def find_project_locations( ):
-    afu_version       = max_version( AFU_INTERM_RELEASES_DIR    )
-    jsr308_cf_version = max_version( JSR308_INTERM_RELEASES_DIR )
-
-    return {
-        LT_OPT : {
-            project_name : LT_OPT,
-
-            repo_source  : INTERM_JSR308_REPO,
-            repo_dest    : LIVE_JSR308_REPO,
-
-            deployment_source : os.path.join( JSR308_INTERM_RELEASES_DIR, jsr308_cf_version )
-            deployment_dest   : os.path.join( JSR308_LIVE_RELEASES_DIR,   jsr308_cf_version )
-        },
-
-        AFU_OPT : {
-            project_name : AFU_OPT,
-
-            repo_source  : INTERM_AFU_REPO,
-            repo_dest    : LIVE_AFU_REPO,
-
-            deployment_source : os.path.join( AFU_INTERM_RELEASES_DIR, afu_version )
-            deployment_dest   : os.path.join( AFU_LIVE_RELEASES_DIR,   afu_version )
-        },
-
-        CF_OPT : {
-            project_name : CF_OPT,
-
-            repo_source : INTERM_CHECKER_REPO,
-            repo_dest   : LIVE_CHECKER_REPO,
-
-            deployment_source : os.path.join( CHECKER_INTERM_RELEASES_DIR, jsr308_cf_version )
-            deployment_dest   : os.path.join( CHECKER_LIVE_RELEASES_DIR,   jsr308_cf_version )
-        }
-    }
+#def find_project_locations( ):
+#    afu_version       = max_version( AFU_INTERM_RELEASES_DIR    )
+#    jsr308_cf_version = max_version( JSR308_INTERM_RELEASES_DIR )
+#
+#    return {
+#        LT_OPT : {
+#            project_name : LT_OPT,
+#
+#            repo_source  : INTERM_JSR308_REPO,
+#            repo_dest    : LIVE_JSR308_REPO,
+#
+#            deployment_source : os.path.join( JSR308_INTERM_RELEASES_DIR, jsr308_cf_version )
+#            deployment_dest   : os.path.join( JSR308_LIVE_RELEASES_DIR,   jsr308_cf_version )
+#        },
+#
+#        AFU_OPT : {
+#            project_name : AFU_OPT,
+#
+#            repo_source  : INTERM_AFU_REPO,
+#            repo_dest    : LIVE_AFU_REPO,
+#
+#            deployment_source : os.path.join( AFU_INTERM_RELEASES_DIR, afu_version )
+#            deployment_dest   : os.path.join( AFU_LIVE_RELEASES_DIR,   afu_version )
+#        },
+#
+#        CF_OPT : {
+#            project_name : CF_OPT,
+#
+#            repo_source : INTERM_CHECKER_REPO,
+#            repo_dest   : LIVE_CHECKER_REPO,
+#
+#            deployment_source : os.path.join( CHECKER_INTERM_RELEASES_DIR, jsr308_cf_version )
+#            deployment_dest   : os.path.join( CHECKER_LIVE_RELEASES_DIR,   jsr308_cf_version )
+#        }
+#    }
      #project_name, repo_source, repo_dest, deployment_source, deployment_dest
-=================== BEGINING OF EMAIL =====================
 
-To:  %s
-Subject: Release %s of the Checker Framework and Type Annotations compiler
+def get_announcement_email( version ):
+    return """
+    To:  jsr308-discuss@googlegroups.com, checker-framework-discuss@googlegroups.com
+    Subject: Release %s of the Checker Framework and Type Annotations compiler
 
-We have released a new version of the Type Annotations (JSR 308) compiler,
-the Checker Framework, and the Eclipse plugin for the Checker Framework.
- * The Type Annotations compiler supports the type annotation syntax that is
-   planned for a future version of the Java language.
- * The Checker Framework lets you create and/or run pluggable type-checkers,
-   in order to detect and prevent bugs in your code.  
- * The Eclipse plugin makes it more convenient to run the Checker Framework.
+    We have released a new version of the Type Annotations (JSR 308) compiler,
+    the Checker Framework, and the Eclipse plugin for the Checker Framework.
+     * The Type Annotations compiler supports the type annotation syntax that is
+       planned for a future version of the Java language.
+     * The Checker Framework lets you create and/or run pluggable type-checkers,
+       in order to detect and prevent bugs in your code.
+     * The Eclipse plugin makes it more convenient to run the Checker Framework.
 
-You can find documentation and download links for these projects at:
-http://types.cs.washington.edu/jsr308/
+    You can find documentation and download links for these projects at:
+    http://types.cs.washington.edu/jsr308/
 
-Notable changes include:
-[[ FILL ME HERE ]]
+    Changes for the Checker Framework
+    <<Insert latest Checker Framework changelog update>>
 
-Changes for the Checker Framework
-%s
-Changes for the Type Annotations Compiler
-%s
-
-=================== END OF EMAIL ==========================
-    """ % (to, version, checkers_header, langtools_header)
-    return template
+    Changes for the Type Annotations Compiler
+    <<Insert latest Jsr308-langtool changelog update>>
+    """ % ( version )
