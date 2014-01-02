@@ -29,10 +29,16 @@
 
         <fail unless="langtools"   message="langtools property is not set!"  />
         <fail unless="release.ver" message="release.ver property is not set!"/>
+        <fail unless="afu.properties"      message="afu.properties property is not set!"/>
+        <fail unless="afu.release.date"    message="afu.release.date property is not set!"/>
 
+        <property name="jsr308WebPage"   value="${langtools}/doc/jsr308-webpage.html" />
         <property name="jsr308WebPage"   value="${langtools}/doc/jsr308-webpage.html" />
         <property name="jsr308Readme"    value="${langtools}/doc/README-jsr308.html"  />
         <property name="langtools.make"  value="${langtools}/make"                    />
+
+        <!-- for afu.date.0 and afu.date.1 -->
+        <loadproperties srcFile="${afu.properties}"/>
 
         <update file="${jsr308WebPage}"
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
@@ -41,6 +47,14 @@
         <update file="${jsr308WebPage}"
                 start="${compiler.ver.0}" end="${compiler.ver.1}"
                 with="${release.ver}, ${release.date}"/>
+
+        <update file="${jsr308WebPage}"
+                start="${checkers.date.0}" end="${checkers.date.1}"
+                with="${release.date}"/>
+
+        <update file="${jsr308WebPage}"
+                start="${afu.date.0}" end="${afu.date.1}"
+                with="${afu.release.date}"/>
 
         <!-- I can only find these in design.tex and they are commented out but
              for now I will keep these in -->
@@ -62,13 +76,18 @@
 
     <target name="update-checker-framework-versions" description="updates version info in Checker Framework documents and build configs">
 
-        <fail unless="checkers"    message="checkers property is not set!"   />
-        <fail unless="release.ver" message="release.ver property is not set!"/>
+        <fail unless="checkers"            message="checkers property is not set!"   />
+        <fail unless="release.ver"         message="release.ver property is not set!"/>
+        <fail unless="afu.properties"      message="afu.properties property is not set!"/>
+        <fail unless="afu.release.date"    message="afu.release.date property is not set!"/>
 
         <property name="checkers.manual"      value="${checkers}/manual"                       />
         <property name="checkersWebPage"      value="${checkers.manual}/checkers-webpage.html" />
         <property name="checkers.binary.poms" value="${checkers}/binary/poms"                  />
         <property name="maven.plugin"         value="${checkers}/../maven-plugin"              />
+
+        <!-- for afu.date.0 and afu.date.1 -->
+        <loadproperties srcFile="${afu.properties}"/>
 
         <update file="${checkersWebPage}"
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
@@ -78,18 +97,33 @@
                 start="${compiler.ver.0}" end="${compiler.ver.1}"
                 with="${release.ver}, ${release.date}"/>
 
+        <update file="${checkersWebPage}"
+                start="${checkers.date.0}" end="${checkers.date.1}"
+                with="${release.date}"/>
+
+        <update file="${checkersWebPage}"
+                start="${afu.date.0}" end="${afu.date.1}"
+                with="${afu.release.date}"/>
+
         <replaceregexp file="${checkers.manual}/introduction.tex" byline="true"
                        match="1.7.0-jsr308-\S*" replace="1.7.0-jsr308-${release.ver}"/>
 
         <replaceregexp file="${checkers.manual}/external-tools.tex" byline="true"
                        match="1.7.0-jsr308-\S*" replace="1.7.0-jsr308-${release.ver}"/>
 
+        <replaceregexp file="${checkers}/../build-common.properties" byline="true"
+                       match="build.version = \d\.\d\.\d(?:\.\d){0,1}" replace="build.version = ${release.ver}"/>
+
         <update file="${checkers}/build.properties"
                 start="build.version = " with="${release.ver}"/>
 
         <update file="${checkers.manual}/manual.tex"
-                start="${manual.ver.0}" end="${manual.ver.1}"
+                start="${release.info.0}" end="${release.info.1}"
                 with="${release.ver} (${release.date})"/>
+
+        <update file="${checkers.manual}/manual.tex"
+                start="${release.ver.0}" end="${release.ver.1}"
+                with="${release.ver}"/>
 
         <!-- Checker Framework Maven artifacts -->
         <update file="${checkers.binary.poms}/checkersPom.xml"
@@ -109,6 +143,10 @@
                 with="${release.ver}"/>
 
         <update file="${maven.plugin}/pom.xml"
+                start="${checkers.ver.0}" end="${checkers.ver.1}"
+                with="${release.ver}"/>
+
+        <update file="${maven.plugin}/mvn-examples/HelloGalaxy/pom.xml"
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
                 with="${release.ver}"/>
     </target>
