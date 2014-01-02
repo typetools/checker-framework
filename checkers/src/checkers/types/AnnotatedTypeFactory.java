@@ -1424,28 +1424,67 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     public AnnotatedDeclaredType fromNewClass(NewClassTree tree) {
-        if (!TreeUtils.isDiamondTree(tree))
-            return (AnnotatedDeclaredType)fromTypeTree(tree.getIdentifier());
+        if (!TreeUtils.isDiamondTree(tree)) {
+            return (AnnotatedDeclaredType) fromTypeTree(tree.getIdentifier());
+        }
+        AnnotatedDeclaredType type = (AnnotatedDeclaredType) toAnnotatedType(((JCTree)tree).type);
 
-        AnnotatedDeclaredType type = (AnnotatedDeclaredType)toAnnotatedType(((JCTree)tree).type);
-        if (tree.getIdentifier().getKind() == Tree.Kind.ANNOTATED_TYPE)
-            type.addAnnotations(InternalUtils.annotationsFromTree((AnnotatedTypeTree)tree));
-        Pair<Tree, AnnotatedTypeMirror> ctx = this.visitorState.getAssignmentContext();
-        if (ctx != null) {
-            AnnotatedTypeMirror ctxtype = ctx.second;
-            if (ctxtype.getKind() == TypeKind.DECLARED) {
-                if (types.isSameType(types.erasure(ctxtype.actualType), types.erasure(type.actualType))) {
-                    AnnotatedDeclaredType adctx = (AnnotatedDeclaredType) ctxtype;
-                    assert type.getTypeArguments().size() == adctx.getTypeArguments().size() :
-                        "Strange type argument size mismatch";
-                    type.setTypeArguments(adctx.getTypeArguments());
-                } else {
-                    // TODO: the LHS is some supertype of the created object.
-                    // Find a way to determine type arguments.
-                }
+        if (tree.getIdentifier().getKind() == Tree.Kind.ANNOTATED_TYPE) {
+            // TODO: try to remove this - javac should add the annotations to the type already.
+            type.addAnnotations(InternalUtils.annotationsFromTree((AnnotatedTypeTree)tree.getIdentifier()));
+        }
+
+        if (((com.sun.tools.javac.code.Type)type.actualType).tsym.getTypeParameters().nonEmpty()) {
+            Pair<Tree, AnnotatedTypeMirror> ctx = this.visitorState.getAssignmentContext();
+            if (ctx != null) {
+                AnnotatedTypeMirror ctxtype = ctx.second;
+                fromNewClassContextHelper(type, ctxtype);
             }
         }
         return type;
+    }
+
+    // This method extracts the ugly hacky parts.
+    // This method should be rewritten and in particular diamonds should be
+    // implemented cleanly.
+    // See Issue 289.
+    private void fromNewClassContextHelper(AnnotatedDeclaredType type, AnnotatedTypeMirror ctxtype) {
+        switch (ctxtype.getKind()) {
+        case DECLARED:
+            AnnotatedDeclaredType adctx = (AnnotatedDeclaredType) ctxtype;
+
+            if (type.getTypeArguments().size() == adctx.getTypeArguments().size()) {
+                // Try to simply take the type arguments from LHS.
+                List<AnnotatedTypeMirror> oldArgs = type.getTypeArguments();
+                List<AnnotatedTypeMirror> newArgs = adctx.getTypeArguments();
+                for (int i = 0; i < type.getTypeArguments().size(); ++i) {
+                    if (!types.isSameType(oldArgs.get(i).actualType, newArgs.get(i).actualType)) {
+                        // One of the underlying types doesn't match. Give up.
+                        return;
+                    }
+                }
+
+                type.setTypeArguments(newArgs);
+
+                /* It would be nice to call isSubtype for a basic sanity check.
+                 * However, the type might not have been completely initialized yet,
+                 * so isSubtype might fail.
+                 *
+                if (!typeHierarchy.isSubtype(type, ctxtype)) {
+                    // Simply taking the newArgs didn't result in a valid subtype.
+                    // Give up and simply use the inferred types.
+                    type.setTypeArguments(oldArgs);
+                }
+                */
+            } else {
+                // TODO: Find a way to determine annotated type arguments.
+                // Look at what Attr and Resolve are doing and rework this whole method.
+            }
+            break;
+        default:
+            ErrorReporter.errorAbort("AnnotatedTypeFactory.fromNewClassContextHelper: unexpected context: " +
+                    ctxtype + " (" + ctxtype.getKind() + ")");
+        }
     }
 
     /**
