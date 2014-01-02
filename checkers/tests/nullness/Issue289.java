@@ -13,6 +13,11 @@ class Issue289 {
 
     List<@Nullable Object> lno = new ArrayList<>();
     List<@Nullable String> lns = new ArrayList<>();
+
+    List<List<String>> lls = new ArrayList<>();
+    lls.add(new ArrayList<>());
+
+    // TODO: add a similar test that uses method type variables.
   }
 
   // TODO: work on more complex examples:
