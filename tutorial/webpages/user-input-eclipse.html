@@ -160,11 +160,11 @@ incompatible types in argument.
 
 				<pre>  import checkers.regex.RegexUtil;
 ...
-		if (!RegexUtil.isRegex(userInput)) {
-			System.out.println("Input is not a regular expression \"" + userInput + "\": "
-				+ RegexUtil.regexException(userInput).getMessage());
-			System.exit(1);
-		} 
+        if (!RegexUtil.isRegex(regex, 1)) {
+            System.out.println("Input is not a regular expression \"" + regex
+                    + "\": " + RegexUtil.regexException(regex).getMessage());
+            System.exit(1);
+        }
 ...
 </pre>
 			</section>
