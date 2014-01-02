@@ -337,12 +337,9 @@ def update_projects(paths):
 #Then add a tag for this release
 #And push these changes 
 def commit_tag_and_push(version, path, tag_prefix):
-    print("\t" + ('hg -R %s commit -m "new release %s"' % (path, version)) )
-    print("\t" + ('hg -R %s tag %s%s' % (path, tag_prefix, version)) )
-    print("\t" + ('hg -R %s push' % path) )
-    #execute('hg -R %s commit -m "new release %s"' % (path, version))
-    #execute('hg -R %s tag %s%s' % (path, tag_prefix, version))
-    #execute('hg -R %s push' % path)
+    execute('hg -R %s commit -m "new release %s"' % (path, version))
+    execute('hg -R %s tag %s%s' % (path, tag_prefix, version))
+    execute('hg -R %s push' % path)
     
 # Retrive the changes since the tag (prefix + prev_version)
 def retrieve_changes(root, prev_version, prefix):
