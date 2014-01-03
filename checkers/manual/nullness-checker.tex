@@ -227,7 +227,6 @@ been assigned.
 \item[\code{@\refclass{checkers/initialization/quals}{Initialized}}]
 \item[\code{@\refclass{checkers/initialization/quals}{UnknownInitialization}}]
 \item[\code{@\refclass{checkers/initialization/quals}{UnderInitialization}}]
-\item[\code{@\refclass{checkers/initialization/quals}{PolyInitialized}}]
 \end{description}
 
 \noindent
@@ -569,7 +568,7 @@ cannot ever be null at run time.
 
 
 \item
-  Use the \refmethod{checkers/nullness}{NullnessUtils}{castNonNull}{(T)} method.
+  Use the \refmethod{checkers/nullness}{NullnessUtils}{castNonNull}{-T-} method.
 
 The Nullness
  Checker considers both the return value, and also the argument, to
@@ -693,7 +692,7 @@ Nullness Checker warnings would be suppressed.
 
 Because it is important to distinguish between the two uses of assertions
 (defensive programming vs.~suppressing warnings), the Checker Framework
-introduces the \refmethod{checkers/nullness}{NullnessUtils}{castNonNull}{(T)} method.
+introduces the \refmethod{checkers/nullness}{NullnessUtils}{castNonNull}{-T-} method.
 Unlike existing assertions and
 methods, \<castNonNull> is intended only to suppress false warnings that are
 issued by the Nullness Checker, not for defensive programming.
@@ -705,7 +704,7 @@ facts that are guaranteed to be true (that is, these assertions will never
 fail at run time), then you can cause the Nullness Checker to suppress
 warnings related to them, just as it does for \<castNonNull>.
 Annotate its definition just as
-\refmethod{checkers/nullness}{NullnessUtils}{castNonNull}{(T)} is annotated (see the
+\refmethod{checkers/nullness}{NullnessUtils}{castNonNull}{-T-} is annotated (see the
 source code for the Checker Framework).
 % TODO:
 % For an assert statement, XXXXX.
@@ -1274,10 +1273,6 @@ The initialization hierarchy contains these qualifiers:
   constructor, \code{this} has
   \code{@\refclass{checkers/initialization/quals}{UnderInitialization}} type until
   all the \code{@NonNull} fields have been assigned.
-
-\item[\code{@\refclass{checkers/initialization/quals}{PolyInitialized}}]
-  indicates qualifier polymorphism over initialization (see
-  Section~\ref{qualifier-polymorphism}).
 
 \end{description}
 
@@ -2312,7 +2307,7 @@ developers are working to correct this bug.
 % LocalWords:  JUnit's 5in field1 field2 superclasses Foo C1 C2 2in 75in PolyRaw
 %  LocalWords:  NullnessChecker redundantNullComparison 5cm instanceof 5in
 %  LocalWords:  noInitForMonotonicNonNull UnknownInitialization isArray
-%  LocalWords:  UnderInitialization PolyInitialized getComponentType 2in
+%  LocalWords:  UnderInitialization getComponentType 2in
 %  LocalWords:  isEmpty AssumeAssertion cleanroom vararg OtherClass 75in
 %  LocalWords:  NullnessRawnessChecker mymap mykey KeyType ValueType 5cm
 %  LocalWords:  dereferenced dereference Dereferencing initializers 5in
