@@ -76,6 +76,8 @@ def create_interm_version_dirs( jsr308_version, afu_version, auto ):
 def update_project_symlink( project_name, interm_dir ):
     project_dev_site = os.path.join(FILE_PATH_TO_DEV_SITE, project_name)
     link_path   = os.path.join( project_dev_site, "current" )
+
+    print( "Writing symlink: " + link_path + "\nto directory: " + interm_dir )
     force_symlink( interm_dir, link_path )
 
 def build_jsr308_langtools_release(auto, version, afu_release_date, checker_framework_interm_dir, jsr308_interm_dir):
