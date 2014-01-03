@@ -145,17 +145,20 @@ incompatible types in argument.
 			</section>
 			<section id="validate">
 				<h4>3. Fix the Code</h4>
-
 				<p>
-					If the user passes an invalid regular expression, <b> print an
-						error message</b> and terminate. To fix the incompatible types, verify
-					the user input using the <a
-						href="http://types.cs.washington.edu/checker-framework/current/doc/checkers/regex/RegexUtil.html#isRegex(java.lang.String)">RegexUtil.isRegex(String)</a>
-					method. The <a
-						href="http://types.cs.washington.edu/checker-framework/current/doc/checkers/regex/RegexUtil.html">
-						RegexUtil</a> class is collection of utility methods for regular
-					expressions. Below are all the changes that need to be made to
-					RegexExample.java to correctly handle the user input.
+					To fix, <b>verify the user input</b> using the
+					RegexUtil.isRegex(String) method. You must <b>import
+						checkers.regex.RegexUtil</b>. Please see the <a
+						href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#annotating-with-regex">
+						Regex chapter</a> in the manual for a full discussion of
+					<code>RegexUtil</code>
+					class. If it is not a valid regular expression, <b>print an
+						error message</b> and do not check for matches. If it is a valid
+					regular expression, preform as before. It is not necessary to add
+					an annotation to regex because the Regex Checker adds <a
+						href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#effective-qualifier">
+						implicit qualifiers</a>. Below are all the changes that need to be
+					made to RegexExample.java to correctly handle the user input.
 				</p>
 
 				<pre>  import checkers.regex.RegexUtil;
