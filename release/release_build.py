@@ -109,9 +109,6 @@ def build_jsr308_langtools_release(auto, version, afu_release_date, checker_fram
 
     update_project_symlink( "jsr308", jsr308_interm_dir )
 
-    #push the release changes to the intermediate repository
-    #commit_tag_and_push(version, JSR308_LANGTOOLS, "jsr308-")
-
     return
 
 def get_current_date():
@@ -136,8 +133,7 @@ def get_afu_version( auto ):
     return new_version
 
 def build_annotation_tools_release( auto, version, afu_interm_dir ):
-
-    jv = execute('java -version', True)
+    jv = execute( 'java -version', True )
 
     date = get_current_date()
 
@@ -152,9 +148,6 @@ def build_annotation_tools_release( auto, version, afu_interm_dir ):
     execute( ant_cmd )
 
     update_project_symlink( "annotation-file-utilities", afu_interm_dir )
-
-    #Push release changes to the intermediate repository
-    #commit_tag_and_push(version, ANNO_TOOLS, "")
 
 def build_and_locally_deploy_maven(version, checker_framework_interm_dir):
     protocol_length = len("file://")
@@ -221,8 +214,6 @@ def build_checker_framework_release(auto, version, afu_release_date, checker_fra
 
     update_project_symlink( "checker-framework", checker_framework_interm_dir )
 
-    #push the release changes to the intermediate repository
-    #commit_tag_and_push(version, CHECKER_FRAMEWORK, "checkers-")
     return
 
 def commit_to_interm_projects(jsr308_version, afu_version, projects_to_release):
