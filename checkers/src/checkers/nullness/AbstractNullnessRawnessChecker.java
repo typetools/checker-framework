@@ -10,9 +10,6 @@ import checkers.quals.PolyAll;
 import checkers.quals.TypeQualifiers;
 import checkers.source.SupportedLintOptions;
 
-import java.util.Collection;
-import java.util.HashSet;
-
 /**
  * A concrete instantiation of {@link AbstractNullnessChecker} using rawness.
  */
@@ -31,13 +28,6 @@ public class AbstractNullnessRawnessChecker extends AbstractNullnessChecker {
 
     public AbstractNullnessRawnessChecker() {
         super(false);
-    }
-
-    @Override
-    public Collection<String> getSuppressWarningsKeys() {
-        Collection<String> result = new HashSet<>(super.getSuppressWarningsKeys());
-        result.add("rawness");
-        return result;
     }
 
 }
