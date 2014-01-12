@@ -2033,7 +2033,7 @@ When you write \code{@\refclass{checkers/nullness/quals}{Raw} MyClass x;}, that
 means that variable \<x> is initialized for all superclasses of \<MyClass>,
 and (possibly) uninitialized for \<MyClass> and all subclasses.
 
-When you write \code{@\refclass{checkers/nullness/quals}{NonRaw}(Foo.class)} MyClass
+When you write \code{@\refclass{checkers/nullness/quals}{NonRaw}(Foo.class) MyClass
   x;}, that means that variable \<x> is initialized for \<Foo> and all its
 superclasses, and (possibly) uninitialized for all subclasses of \<Foo>.
 
