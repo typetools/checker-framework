@@ -455,7 +455,7 @@ by the DirectoryScanner documentation found at:
 \end{Verbatim}
 
 By default, an error reported by the Checker Framework Maven plugin will cause your build to fail.  To prevent
-a build from failing and still produce error and warning output set \code{failOnError} to false.
+a build from failing and still produce error and warning output, set \code{failOnError} to false.
 
 \begin{Verbatim}
     <failOnError>false</failOnError>
@@ -546,9 +546,8 @@ See \url{http://blogs.jetbrains.com/idea/2009/07/type-annotations-jsr-308-suppor
 
 \section{Eclipse\label{eclipse}}
 
-An early access (prerelease) version of Eclipse that supports type
-annotations is available; see
-\url{http://dev.eclipse.org/mhonarc/lists/eclipse-dev/msg09679.html}.  It
+Eclipse supports type
+annotations.  It
 does not enable running the Checker Framework, nor is it necessary for
 running the Checker Framework.
 
@@ -714,5 +713,6 @@ annotations for the Javari Checker, which detects mutation errors.
 % LocalWords:  jsr plugin Warski xml buildfile tIDE java Awarns pom lifecycle
 % LocalWords:  IntelliJ Maia newdir classpath Unconfuse nullness Gradle
 % LocalWords:  compilerArgs Xbootclasspath JSR308 jsr308 jsr308javac mvn
-%  LocalWords:  plugins proc procOnly DirectoryScanner setIncludes
+%  LocalWords:  plugins proc procOnly DirectoryScanner setIncludes groupId
 %  LocalWords:  setExcludes checkerFrameworkVersion javacParams javaParams
+%%  LocalWords:  artifactId quals failOnError ejc
