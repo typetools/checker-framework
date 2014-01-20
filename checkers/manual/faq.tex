@@ -38,7 +38,7 @@ the answers, or other questions to include here.
 \faqtocpara{\ref{faq-warnings-section}: How to handle warnings}
 \\ \ref{faq-handling-warnings}: What should I do if a checker issues a warning about my code?
 \\ \ref{faq-interpreting-warnings}: What does a certain Checker Framework warning message mean?
-\\ \ref{faq-no-absolute-guarantee}: Can a pluggable type-checker give an absolute guarantee of correctness?
+\\ \ref{faq-no-absolute-guarantee}: Can a pluggable type-checker guarantee that my code is correct?
 \\ \ref{faq-concurrency}: What guarantee does the Checker Framework give for concurrent code?
 \\ \ref{faq-awarns}: How do I make compilation succeed even if a checker issues errors?
 \\ \ref{faq-100-warnings}: Why does the checker always say there are 100 errors or warnings?
@@ -87,7 +87,10 @@ incorrect side effects,
 security errors such as information leakage or SQL injection,
 partially-initialized data,
 wrong units of measurement,
-and many other errors.  Even where type-checking does not discover a
+and many other errors.
+Every programmer makes errors sometimes and works with other people
+who do.
+Even where type-checking does not discover a
 problem directly, it can indicate code with bad smells, thus revealing
 problems, improving documentation, and making future maintenance easier.
 
@@ -277,38 +280,49 @@ For a discussion of this issue, see Section~\ref{handling-warnings}.
 \subsection{What does a certain Checker Framework warning message mean?\label{faq-interpreting-warnings}}
 
 Search through this manual for the text of the warning message.
-Oftentimes there is an explanation of it.
+Oftentimes the manual explains it.  If not, ask on the \ahref{\url{http://groups.google.com/group/checker-framework-discuss}}{mailing list}.
 
 
-\subsection{Can a pluggable type-checker give an absolute guarantee of correctness?\label{faq-no-absolute-guarantee}}
+\subsection{Can a pluggable type-checker guarantee that my code is correct?\label{faq-no-absolute-guarantee}}
 
-Each checker looks for certain errors.  You can use multiple checkers, but
-even then your program might still contain other kinds of errors.
+Each checker looks for certain errors.  You can use multiple checkers to
+detect more errors in your code, but you will never have a guarantee that
+your code is completely bug-free.
 
-If you run a pluggable checker on only part of the code of a program, then
-you do not get a guarantee that all parts of the program satisfy the type
-system (that is, are error-free).  An example is a framework that clients
-are intended to extend.  In this case, you should recommend that clients
+If the type-checker issues no warning, then you have a guarantee that your
+code is free of some particular error.  There are some limitations to the
+guarantee.
+
+Most importantly, if you run a pluggable checker on only part of a program, then
+you only get a guarantee that those parts of the program are error-free.
+For example, suppose you have type-checked a framework that clients
+are intended to extend.  You should recommend that clients
 run the pluggable checker.  There is no way to force users to do so, so you
 may want to retain dynamic checks or use other mechanisms to detect errors.
 
-There are other circumstances in which a static type-checker may fail to
-detect a possible type error.  In Java, these include arrays, casts,
-reflection, separate compilation (bytecodes from unverified sources),
-native code, etc.  (For details, see section~\ref{checker-guarantees}.)
-Java uses dynamic checks for most of these, so that the
-type error cannot cause a security vulnerability or a crash.  The pluggable
-type-checkers inherit many (not all) of these weaknesses of Java
-type-checking, but do not currently have built-in dynamic checkers.
+Section~\ref{checker-guarantees} states other limitations to a checker's
+guarantee, such as regarding concurrency.  Java's type system is also
+unsound in certain situations, such as for arrays and casts (however, the
+Checker Framework is sound for arrays and casts).  Java uses dynamic checks
+is some places it is unsound, so that errors are thrown at run time.  The
+pluggable type-checkers do not currently have built-in dynamic checkers to
+check for the places they are unsound.
 Writing dynamic checkers would be an interesting and valuable project.
+
+Other types of dynamism in a Java application do not jeopardize the
+guarantee, because the type-checker is conservative.  For example, at a
+method call, dynamic dispatch chooses some implementation of the method,
+but it is impossible to know at compile time which one it will be.  The
+type-checker gives a guarantee no matter what implementation of the method
+is invoked.
 
 % This paragraph is weak.
 
-Even if a tool such as a pluggable checker cannot give an ironclad
-guarantee of correctness, it is still useful.  It can finding errors, 
-excluding certain types of possible problems (e.g., restricting the
-possible class of problems), and increasing confidence in a piece of
-software.
+Even if a pluggable checker cannot give an ironclad
+guarantee of correctness, it is still useful.  It can find errors, 
+exclude certain types of possible problems (e.g., restricting the
+possible class of problems), improve documentation, and increase confidence
+in your software.
 
 
 \subsection{What guarantee does the Checker Framework give for concurrent code?\label{faq-concurrency}}
@@ -319,7 +333,7 @@ and prevent certain concurrency errors.
 
 By default, the Checker Framework assumes that the code that it is checking
 is sequential:  that is, there are no concurrent accesses from another
-thread.  This means that The Checker Framework is unsound for concurrent
+thread.  This means that the Checker Framework is unsound for concurrent
 code, in the sense that it may fail to warn about a possible null
 dereference.  For example, the Nullness Checker issues no warning for this
 code:
@@ -331,6 +345,7 @@ code:
 \end{Verbatim}
 
 \noindent
+This code is safe when run on its own.
 However, in the presence of multithreading, the call to \<toString> may
 fail because another thread may set \<myobject.myfield> to \<null> after
 the nullness check in the \<if> condition, but before the \<if> body is
