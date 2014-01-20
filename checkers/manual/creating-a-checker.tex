@@ -861,7 +861,7 @@ javac -processor Mine -Alint=flag
 \subsubsection{Named string values}
 
 For more complicated options, one can use the standard annotation
-processing \code{SupportedOptions} annotation on the checker, as in:
+processing \code{@SupportedOptions} annotation on the checker, as in:
 
 \begin{Verbatim}
 @SupportedOptions({"info"})
@@ -1162,7 +1162,7 @@ Since this section of the manual was written, the useful ``The Hitchhiker's
 Guide to javac'' has become available at
 \url{http://openjdk.java.net/groups/compiler/doc/hhgtjavac/index.html}.
 See it first, and then refer to this section.  (This section of the manual
-should be revsed, or parts eliminated, in light of that document.)
+should be revised, or parts eliminated, in light of that document.)
 
 
 A checker built using the Checker Framework makes use of a few interfaces
@@ -1345,4 +1345,9 @@ mailing list archives at
 % LocalWords:  DefaultQualifier bytecode NullType strictfp ClassTree TypesUtils
 % LocalWords:  ForEachTree ElementKind TreeAnnotator TreeUtils ElementUtils ecj
 % LocalWords:  AnnotatedTypes AbstractTypeProcessor gcj hardcoding jsr
-% LocalWords:  typeProcess getSupportedSourceVersion fenum classpath
+% LocalWords:  typeProcess getSupportedSourceVersion fenum classpath astub
+%%  LocalWords:  addAbsoluteDefault BaseAnnotatedTypeFactory superclasses
+%%  LocalWords:  SupportedOptions AprintAllQualifiers InvisibleQualifier
+%%  LocalWords:  Adetailedmsgtext AprintErrorStack Aignorejdkastub Astubs
+%%  LocalWords:  Anocheckjdk AstubDebug Aflowdotdir AresourceStats
+%%  LocalWords:  classfiles
