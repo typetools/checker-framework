@@ -598,13 +598,20 @@ Unsound checking: ignore some errors
 \item \<-AsuppressWarnings>
   Suppress all warnings matching the given key; see
   Section~\ref{suppresswarnings-command-line}
-\item \<-AassumeSideEffectFree>
-  Unsoundly assume that every method is side-effect-free; see
-  Section~\ref{type-refinement-purity}.
 \item \<-AignoreRawTypeArguments>
   Ignore subtype tests for type arguments that were inferred for a raw
   type.  If possible, it is better to write the type arguments.  See
   Section~\ref{generics-raw-types}.
+\item \<-AassumeSideEffectFree>
+  Unsoundly assume that every method is side-effect-free; see
+  Section~\ref{type-refinement-purity}.
+\item \<-AassumeAssertionsAreEnabled>, \<-AassumeAssertionsAreDisabled>
+  Whether to assume that assertions are enabled or disabled; see Section~\ref{type-refinement-assertions}.
+\end{itemize}
+
+\label{unsound-by-default}
+More sound (strict) checking: enable errors that are disabled by default
+\begin{itemize}
 \item \<-AenablePurity>
   Check the bodies of methods marked \<@SideEffectFree>, \<@Deterministic>,
   and \<@Pure> to ensure the method satisfies the annotation.  By default,
@@ -615,6 +622,18 @@ Unsound checking: ignore some errors
   another only if they have exactly the same element type.  By default,
   the Checker Framework unsoundly permits covariant array subtyping, just
   as Java does.  See Section~\ref{invariant-arrays}.
+\item \<-AconcurrentSemantics>
+  Whether to assume concurrent semantics (field values may change at any
+  time) or sequential semantics; see Section~\ref{faq-concurrency}.
+\end{itemize}
+
+Type-checking modes:  enable/disable functionality
+\begin{itemize}
+\item \<-Alint>
+  Enable or disable optional checks; see Section~\ref{lint-options}.
+\item \<-AsuggestPureMethods>
+  Suggest methods that could be marked \<@SideEffectFree>,
+  \<@Deterministic>, or \<@Pure>; see Section~\ref{type-refinement-purity}.
 \item \<-AcheckCastElementType>
   In a cast, require that parameterized type arguments and array elements
   are the same.  By default, the Checker Framework unsoundly permits them
@@ -624,22 +643,6 @@ Unsound checking: ignore some errors
   Treat checker errors as warnings.  If you use this, you
   may wish to also supply \code{-Xmaxwarns 10000}, because by default
   \<javac> prints at most 100 warnings.
-\end{itemize}
-
-
-Type-checking modes:  enable/disable functionality
-\begin{itemize}
-\item \<-Alint>
-  Enable or disable optional checks; see Section~\ref{lint-options}.
-\item \<-AsuggestPureMethods>
-  Suggest methods that could be marked \<@SideEffectFree>,
-  \<@Deterministic>, or \<@Pure>; see Section~\ref{type-refinement-purity}.
-\item \<-AassumeAssertionsAreEnabled>, \<-AassumeAssertionsAreDisabled>
-  Whether to assume that assertions are enabled or disabled; see Section~\ref{type-refinement-assertions}.
-\item \<-AconcurrentSemantics>
-  Whether to assume concurrent semantics (field values may change at any
-  time) or sequential semantics; see Section~\ref{faq-concurrency}.
-
 \end{itemize}
 
 Stub libraries
@@ -799,16 +802,23 @@ There are some limitations to the guarantee.
   annotations.
 
 \item
-  Reflection can violate the Java type system, and
-  the checkers are not sophisticated enough to reason about the possible
-  effects of reflection.  Similarly, deserialization and cloning can
-  create objects that could not result from normal constructor calls, and
-  that therefore may violate the property being checked.
+  The Checker Framework is, by default, unsound in a few places where a
+  conservative analysis would issue too many false positive warnings.
+  These are listed in Section~\ref{unsound-by-default}; as of January 2014,
+  they are: (1) purity annotations are trusted, (2) array types are
+  covariant, and (3) programs are assumed to be single-threaded.
+  You can supply a command-line argument to make the Checker Framework
+  sound for each of these cases.
 
-\item
-  The Checker Framework assumes it is checking single-threaded code.
-  Concurrent access to variables (that is, race conditions) could cause
-  errors that the Checker Framework does not report.
+%% This isn't an unsoundness in the Checker Framework:  for any type system
+%% that does not include a conservative library annotation for
+%% Method.invoke, it is a bug in that particular type-checker.
+% \item
+%   Reflection can violate the Java type system, and
+%   the checkers are not sophisticated enough to reason about the possible
+%   effects of reflection.  Similarly, deserialization and cloning can
+%   create objects that could not result from normal constructor calls, and
+%   that therefore may violate the property being checked.
 
 \item
   The Checker Framework does not yet support annotations on intersection
