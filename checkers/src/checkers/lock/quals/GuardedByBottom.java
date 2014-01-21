@@ -3,11 +3,12 @@ package checkers.lock.quals;
 
 import java.lang.annotation.*;
 
+import checkers.quals.DefaultQualifierInHierarchy;
 import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifier;
 
 /**
- * The top of the guarded-by qualifier hierarchy.
+ * The bottom of the guarded-by qualifier hierarchy.
  * <p>
  *
  * This annotation may not be written in source code; it is an
@@ -16,8 +17,9 @@ import checkers.quals.TypeQualifier;
  * @checker_framework_manual #lock-checker Lock Checker
  */
 @TypeQualifier
-@SubtypeOf({})
+@SubtypeOf(GuardedBy.class)
+@DefaultQualifierInHierarchy
 @Documented
 @Target({}) // not necessary to be used by the programmer
 @Retention(RetentionPolicy.RUNTIME)
-public @interface GuardedByTop {}
+public @interface GuardedByBottom {}
