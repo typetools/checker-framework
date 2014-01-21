@@ -2,8 +2,6 @@ package checkers.units;
 
 import checkers.basetype.BaseAnnotatedTypeFactory;
 import checkers.basetype.BaseTypeChecker;
-import checkers.quals.Bottom;
-import checkers.quals.Unqualified;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.QualifierHierarchy;
 import checkers.types.TreeAnnotator;
@@ -21,7 +19,9 @@ import checkers.units.quals.Speed;
 import checkers.units.quals.Substance;
 import checkers.units.quals.Temperature;
 import checkers.units.quals.Time;
+import checkers.units.quals.UnitsBottom;
 import checkers.units.quals.UnitsMultiple;
+import checkers.units.quals.UnknownUnits;
 import checkers.units.quals.cd;
 import checkers.units.quals.g;
 import checkers.units.quals.h;
@@ -78,7 +78,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         // use true for flow inference
         super(checker, false);
 
-        AnnotationMirror BOTTOM = AnnotationUtils.fromClass(elements, Bottom.class);
+        AnnotationMirror BOTTOM = AnnotationUtils.fromClass(elements, UnitsBottom.class);
 
         this.postInit();
 
@@ -149,8 +149,8 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         getUnitsRel().put("checkers.units.UnitsRelationsDefault",
                 new UnitsRelationsDefault().init(processingEnv));
 
-        // Explicitly add the Unqualified type.
-        qualSet.add(Unqualified.class);
+        // Explicitly add the top type.
+        qualSet.add(UnknownUnits.class);
 
         // Only add the directly supported units. Shorthands like kg are
         // handled automatically by aliases.
@@ -195,7 +195,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         // Use the framework-provided bottom qualifier. It will automatically be
         // at the bottom of the qualifier hierarchy.
-        qualSet.add(Bottom.class);
+        qualSet.add(UnitsBottom.class);
 
         return Collections.unmodifiableSet(qualSet);
     }
@@ -325,7 +325,8 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         private boolean noUnits(AnnotatedTypeMirror t) {
             Set<AnnotationMirror> annos = t.getAnnotations();
             return annos.isEmpty() ||
-                    (annos.size()==1 && AnnotatedTypeMirror.isUnqualified(annos.iterator().next()));
+                    (annos.size() == 1 &&
+                    AnnotationUtils.areSameByClass(annos.iterator().next(), UnknownUnits.class));
         }
 
         @Override
@@ -363,7 +364,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     @Override
     public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
-        return new UnitsQualifierHierarchy(factory, AnnotationUtils.fromClass(elements, Bottom.class));
+        return new UnitsQualifierHierarchy(factory, AnnotationUtils.fromClass(elements, UnitsBottom.class));
     }
 
     protected class UnitsQualifierHierarchy extends GraphQualifierHierarchy {
