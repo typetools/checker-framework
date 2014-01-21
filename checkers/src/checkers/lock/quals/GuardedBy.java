@@ -65,11 +65,11 @@ import checkers.quals.TypeQualifier;
  * @see Holding
  * @checker_framework_manual #lock-checker Lock Checker
  */
+@TypeQualifier
+@SubtypeOf(GuardedByTop.class)
 @Documented
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
-@TypeQualifier
-@SubtypeOf({ GuardedByTop.class })
 public @interface GuardedBy {
     String value();
 }
