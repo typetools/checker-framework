@@ -2,7 +2,6 @@ package checkers.regex.quals;
 
 import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifier;
-import checkers.quals.Unqualified;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -22,7 +21,7 @@ import java.lang.annotation.Target;
  * @checker_framework_manual #regex-checker Regex Checker
  */
 @TypeQualifier
-@SubtypeOf(Unqualified.class)
+@SubtypeOf(UnknownRegex.class)
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})

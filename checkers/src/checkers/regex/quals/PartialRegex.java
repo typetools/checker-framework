@@ -5,7 +5,6 @@ import java.lang.annotation.Target;
 import checkers.quals.InvisibleQualifier;
 import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifier;
-import checkers.quals.Unqualified;
 
 /**
  * Indicates a String that is not a syntactically valid regular expression.
@@ -21,7 +20,7 @@ import checkers.quals.Unqualified;
  */
 @TypeQualifier
 @InvisibleQualifier
-@SubtypeOf(Unqualified.class)
+@SubtypeOf(UnknownRegex.class)
 @Target({}) // empty target prevents programmers from writing this in a program
 public @interface PartialRegex {
 
