@@ -2,7 +2,6 @@ package checkers.propkey.quals;
 
 import java.lang.annotation.*;
 
-import checkers.quals.DefaultQualifierInHierarchy;
 import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifier;
 
