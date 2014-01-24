@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ErrorType;
@@ -33,9 +34,14 @@ import org.checkerframework.framework.base.QualifiedTypeMirror.QualifiedWildcard
 
 public class TypeAnnotator<Q> extends TypeVisitor2<QualifiedTypeMirror<Q>, Element> {
     private AnnotationConverter<Q> annotationConverter;
+    private Q topQual;
+    private Q bottomQual;
 
-    public TypeAnnotator(AnnotationConverter<Q> annotationConverter) {
+    public TypeAnnotator(AnnotationConverter<Q> annotationConverter,
+            Q topQual, Q bottomQual) {
         this.annotationConverter = annotationConverter;
+        this.topQual = topQual;
+        this.bottomQual = bottomQual;
     }
 
     private List<QualifiedTypeMirror<Q>> mapVisit(
@@ -47,11 +53,19 @@ public class TypeAnnotator<Q> extends TypeVisitor2<QualifiedTypeMirror<Q>, Eleme
         return result;
     }
 
+    protected Q getQualifier(TypeMirror type, Element elt) {
+        Q qual = annotationConverter.fromAnnotations(type.getAnnotationMirrors());
+        if (qual == null) {
+            qual = topQual;
+        }
+        return qual;
+    }
+
     @Override
     public QualifiedTypeMirror<Q> visitArray(ArrayType type, Element elt) {
         return new QualifiedArrayType<Q>(
                 type,
-                annotationConverter.fromAnnotations(type.getAnnotationMirrors()),
+                getQualifier(type, elt),
                 this.visit(type.getComponentType(), elt));
     }
 
@@ -59,7 +73,7 @@ public class TypeAnnotator<Q> extends TypeVisitor2<QualifiedTypeMirror<Q>, Eleme
     public QualifiedTypeMirror<Q> visitDeclared(DeclaredType type, Element elt) {
         QualifiedTypeMirror<Q> result = new QualifiedDeclaredType<Q>(
                 type,
-                annotationConverter.fromAnnotations(type.getAnnotationMirrors()),
+                getQualifier(type, elt),
                 this.mapVisit(type.getTypeArguments(), elt));
 
         return result;
@@ -82,17 +96,43 @@ public class TypeAnnotator<Q> extends TypeVisitor2<QualifiedTypeMirror<Q>, Eleme
             qualifiedTypeVariables.add(qualifiedTypeVar);
         }
 
-        QualifiedTypeMirror<Q> qualifiedReceiverType = null;
-        if (type.getReceiverType() != null) {
-            qualifiedReceiverType = this.visit(type.getReceiverType(), elt);
+        TypeMirror constructedType = null;
+        if (elt.getKind() == ElementKind.CONSTRUCTOR) {
+            Element enclosing = elt.getEnclosingElement();
+            assert enclosing.getKind() == ElementKind.CLASS :
+                   "expected CONSTRUCTOR to be enclosed by a CLASS";
+            constructedType = enclosing.asType();
         }
+
+
+        // If this is a constructor, replace the receiver type with the type of
+        // the enclosing class, for compatibility with AnnotatedTypeMirror.
+        TypeMirror receiverType = type.getReceiverType();
+        if (constructedType != null) {
+            receiverType = constructedType;
+        }
+
+        QualifiedTypeMirror<Q> qualifiedReceiverType = null;
+        if (receiverType != null) {
+            qualifiedReceiverType = this.visit(receiverType, elt);
+        }
+
+
+        // If this is a constructor, replace the return type with the type of
+        // the enclosing class.
+        TypeMirror returnType = type.getReturnType();
+        if (constructedType != null) {
+            returnType = constructedType;
+        }
+
+        QualifiedTypeMirror<Q> qualifiedReturnType = this.visit(returnType, elt);
 
         return new QualifiedExecutableType<Q>(
                 type,
-                annotationConverter.fromAnnotations(type.getAnnotationMirrors()),
+                getQualifier(type, elt),
                 this.mapVisit(type.getParameterTypes(), elt),
                 qualifiedReceiverType,
-                this.visit(type.getReturnType(), elt),
+                qualifiedReturnType,
                 this.mapVisit(type.getThrownTypes(), elt),
                 qualifiedTypeVariables);
     }
@@ -101,7 +141,7 @@ public class TypeAnnotator<Q> extends TypeVisitor2<QualifiedTypeMirror<Q>, Eleme
     public QualifiedTypeMirror<Q> visitIntersection(IntersectionType type, Element elt) {
         return new QualifiedIntersectionType<Q>(
                 type,
-                annotationConverter.fromAnnotations(type.getAnnotationMirrors()),
+                getQualifier(type, elt),
                 this.mapVisit(type.getBounds(), elt));
     }
 
@@ -109,28 +149,28 @@ public class TypeAnnotator<Q> extends TypeVisitor2<QualifiedTypeMirror<Q>, Eleme
     public QualifiedTypeMirror<Q> visitNoType(NoType type, Element elt) {
         return new QualifiedNoType<Q>(
                 type,
-                annotationConverter.fromAnnotations(type.getAnnotationMirrors()));
+                getQualifier(type, elt));
     }
 
     @Override
     public QualifiedTypeMirror<Q> visitNull(NullType type, Element elt) {
         return new QualifiedNullType<Q>(
                 type,
-                annotationConverter.fromAnnotations(type.getAnnotationMirrors()));
+                getQualifier(type, elt));
     }
 
     @Override
     public QualifiedTypeMirror<Q> visitPrimitive(PrimitiveType type, Element elt) {
         return new QualifiedPrimitiveType<Q>(
                 type,
-                annotationConverter.fromAnnotations(type.getAnnotationMirrors()));
+                getQualifier(type, elt));
     }
 
     @Override
     public QualifiedTypeMirror<Q> visitTypeVariable(TypeVariable type, Element elt) {
         return new QualifiedTypeVariable<Q>(
                 type,
-                annotationConverter.fromAnnotations(type.getAnnotationMirrors()),
+                getQualifier(type, elt),
                 this.visit(type.getUpperBound(), elt),
                 this.visit(type.getLowerBound(), elt));
     }
@@ -139,7 +179,7 @@ public class TypeAnnotator<Q> extends TypeVisitor2<QualifiedTypeMirror<Q>, Eleme
     public QualifiedTypeMirror<Q> visitUnion(UnionType type, Element elt) {
         return new QualifiedUnionType<Q>(
                 type,
-                annotationConverter.fromAnnotations(type.getAnnotationMirrors()),
+                getQualifier(type, elt),
                 this.mapVisit(type.getAlternatives(), elt));
     }
 
@@ -147,7 +187,7 @@ public class TypeAnnotator<Q> extends TypeVisitor2<QualifiedTypeMirror<Q>, Eleme
     public QualifiedTypeMirror<Q> visitWildcard(WildcardType type, Element elt) {
         return new QualifiedWildcardType<Q>(
                 type,
-                annotationConverter.fromAnnotations(type.getAnnotationMirrors()),
+                getQualifier(type, elt),
                 this.visit(type.getExtendsBound(), elt),
                 this.visit(type.getSuperBound(), elt));
     }
