@@ -8,8 +8,10 @@ import javax.lang.model.element.QualifiedNameable;
 
 import org.checkerframework.framework.base.AnnotationConverter;
 
-import org.checkerframework.checkers.tainting.annotations.Tainted;
-import org.checkerframework.checkers.tainting.annotations.Untainted;
+//import org.checkerframework.checkers.tainting.annotations.Tainted;
+//import org.checkerframework.checkers.tainting.annotations.Untainted;
+import checkers.tainting.quals.Tainted;
+import checkers.tainting.quals.Untainted;
 
 
 public class TaintingAnnotationConverter implements AnnotationConverter<Tainting> {
