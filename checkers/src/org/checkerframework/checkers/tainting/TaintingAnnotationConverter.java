@@ -35,11 +35,14 @@ public class TaintingAnnotationConverter implements AnnotationConverter<Tainting
     @Override
     public Tainting fromAnnotations(Collection<? extends AnnotationMirror> annos) {
         for (AnnotationMirror anno : annos) {
-            if (taintedName.equals(getAnnotationTypeName(anno))) {
+            String name = getAnnotationTypeName(anno);
+            if (taintedName.equals(name)) {
                 return Tainting.TAINTED;
+            } else if (untaintedName.equals(name)) {
+                return Tainting.UNTAINTED;
             }
         }
-        return Tainting.UNTAINTED;
+        return null;
     }
 
     @Override
