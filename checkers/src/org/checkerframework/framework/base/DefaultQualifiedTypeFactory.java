@@ -61,7 +61,8 @@ public abstract class DefaultQualifiedTypeFactory<Q> implements QualifiedTypeFac
     }
 
     protected TypeAnnotator<Q> createTypeAnnotator() {
-        return new TypeAnnotator<Q>(getAnnotationConverter());
+        return new TypeAnnotator<Q>(getAnnotationConverter(),
+                getQualifierHierarchy().getTop(), getQualifierHierarchy().getBottom());
     }
 
 

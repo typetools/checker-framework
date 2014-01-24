@@ -43,12 +43,6 @@ public class CheckerAdapter<Q> extends BaseTypeChecker {
 
                 return factoryAdapter;
             }
-
-            @Override
-            public boolean isValidUse(AnnotatedDeclaredType declarationType,
-                    AnnotatedDeclaredType useType, Tree tree) {
-                return true;
-            }
         };
     }
 }
