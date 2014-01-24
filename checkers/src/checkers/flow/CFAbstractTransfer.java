@@ -71,7 +71,15 @@ import com.sun.source.tree.VariableTree;
  * information through assignments and uses the {@link AnnotatedTypeFactory} to
  * provide checker-specific logic how to combine types (e.g., what is the type
  * of a string concatenation, given the types of the two operands) and as an
- * abstraction function (e.g., determine the annotations on literals)..
+ * abstraction function (e.g., determine the annotations on literals).
+ * <p>
+ *
+ * Design note:  CFAbstractTransfer and its subclasses are supposed to act
+ * as transfer functions.  But, since the AnnotatedTypeFactory already
+ * existed and performed checker-independent type propagation,
+ * CFAbstractTransfer delegates work to it instead of duplicating some
+ * logic in CFAbstractTransfer.  The checker-specific subclasses of
+ * CFAbstractTransfer do implement transfer function logic themselves.
  *
  * @author Charlie Garrett
  * @author Stefan Heule
