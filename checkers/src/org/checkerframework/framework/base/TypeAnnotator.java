@@ -96,33 +96,27 @@ public class TypeAnnotator<Q> extends TypeVisitor2<QualifiedTypeMirror<Q>, Eleme
             qualifiedTypeVariables.add(qualifiedTypeVar);
         }
 
-        TypeMirror constructedType = null;
-        if (elt.getKind() == ElementKind.CONSTRUCTOR) {
-            Element enclosing = elt.getEnclosingElement();
-            assert enclosing.getKind() == ElementKind.CLASS :
-                   "expected CONSTRUCTOR to be enclosed by a CLASS";
-            constructedType = enclosing.asType();
-        }
+        boolean isConstructor = (elt.getKind() == ElementKind.CONSTRUCTOR);
+
+        Element enclosing = elt.getEnclosingElement();
+        TypeMirror enclosingType = enclosing.asType();
 
 
         // If this is a constructor, replace the receiver type with the type of
         // the enclosing class, for compatibility with AnnotatedTypeMirror.
         TypeMirror receiverType = type.getReceiverType();
-        if (constructedType != null) {
-            receiverType = constructedType;
+        if (receiverType == null) {
+            receiverType = enclosingType;
         }
 
-        QualifiedTypeMirror<Q> qualifiedReceiverType = null;
-        if (receiverType != null) {
-            qualifiedReceiverType = this.visit(receiverType, elt);
-        }
+        QualifiedTypeMirror<Q> qualifiedReceiverType = this.visit(receiverType, elt);
 
 
         // If this is a constructor, replace the return type with the type of
         // the enclosing class.
         TypeMirror returnType = type.getReturnType();
-        if (constructedType != null) {
-            returnType = constructedType;
+        if (isConstructor) {
+            returnType = enclosingType;
         }
 
         QualifiedTypeMirror<Q> qualifiedReturnType = this.visit(returnType, elt);
