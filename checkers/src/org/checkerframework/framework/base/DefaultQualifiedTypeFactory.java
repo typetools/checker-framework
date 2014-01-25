@@ -22,6 +22,7 @@ public abstract class DefaultQualifiedTypeFactory<Q> implements QualifiedTypeFac
     private TypeHierarchy<Q> typeHierarchy;
     private AnnotationConverter<Q> annotationConverter;
 
+    private TreeAnnotator<Q> treeAnnotator;
     private TypeAnnotator<Q> typeAnnotator;
 
     private QualifiedTypeFactoryAdapter<Q> adapter;
@@ -47,11 +48,16 @@ public abstract class DefaultQualifiedTypeFactory<Q> implements QualifiedTypeFac
     }
 
 
-    /*
+    TreeAnnotator<Q> getTreeAnnotator() {
+        if (this.treeAnnotator == null) {
+            this.treeAnnotator = createTreeAnnotator();
+        }
+        return this.treeAnnotator;
+    }
+
     protected TreeAnnotator<Q> createTreeAnnotator() {
         return new TreeAnnotator<Q>();
     }
-    */
 
     TypeAnnotator<Q> getTypeAnnotator() {
         if (this.typeAnnotator == null) {
