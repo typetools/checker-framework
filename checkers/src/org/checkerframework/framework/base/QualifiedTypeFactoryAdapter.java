@@ -74,6 +74,24 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
     }
 
     @Override
+    protected checkers.types.TreeAnnotator createTreeAnnotator() {
+        if (!(underlying instanceof DefaultQualifiedTypeFactory)) {
+            return null;
+        }
+
+        @SuppressWarnings("unchecked")
+        DefaultQualifiedTypeFactory<Q> defaultUnderlying =
+            (DefaultQualifiedTypeFactory<Q>)underlying;
+        TreeAnnotator<Q> underlyingAnnotator = defaultUnderlying.getTreeAnnotator();
+        TreeAnnotatorAdapter<Q> adapter = new TreeAnnotatorAdapter<Q>(
+                underlyingAnnotator,
+                getCheckerAdapter().getTypeMirrorConverter(),
+                this);
+
+        return adapter;
+    }
+
+    @Override
     protected checkers.types.TypeAnnotator createTypeAnnotator() {
         if (!(underlying instanceof DefaultQualifiedTypeFactory)) {
             return null;

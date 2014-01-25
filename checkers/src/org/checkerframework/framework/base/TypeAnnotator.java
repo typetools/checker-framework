@@ -5,6 +5,7 @@ import java.util.List;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ErrorType;
@@ -105,11 +106,14 @@ public class TypeAnnotator<Q> extends TypeVisitor2<QualifiedTypeMirror<Q>, Eleme
         // If this is a constructor, replace the receiver type with the type of
         // the enclosing class, for compatibility with AnnotatedTypeMirror.
         TypeMirror receiverType = type.getReceiverType();
-        if (receiverType == null) {
+        if (receiverType == null && !elt.getModifiers().contains(Modifier.STATIC)) {
             receiverType = enclosingType;
         }
 
-        QualifiedTypeMirror<Q> qualifiedReceiverType = this.visit(receiverType, elt);
+        QualifiedTypeMirror<Q> qualifiedReceiverType = null;
+        if (receiverType != null) {
+            qualifiedReceiverType = this.visit(receiverType, elt);
+        }
 
 
         // If this is a constructor, replace the return type with the type of

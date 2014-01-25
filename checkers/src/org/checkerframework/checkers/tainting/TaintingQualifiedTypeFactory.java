@@ -1,7 +1,16 @@
 package org.checkerframework.checkers.tainting;
 
+import java.util.ArrayList;
+
+import javax.lang.model.type.TypeMirror;
+import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.Tree;
+
 import org.checkerframework.framework.base.DefaultQualifiedTypeFactory;
 import org.checkerframework.framework.base.QualifierHierarchy;
+import org.checkerframework.framework.base.QualifiedTypeMirror;
+import org.checkerframework.framework.base.QualifiedTypeMirror.QualifiedDeclaredType;
+import org.checkerframework.framework.base.TreeAnnotator;
 
 public class TaintingQualifiedTypeFactory extends DefaultQualifiedTypeFactory<Tainting> {
     @Override
@@ -12,5 +21,20 @@ public class TaintingQualifiedTypeFactory extends DefaultQualifiedTypeFactory<Ta
     @Override
     protected TaintingAnnotationConverter createAnnotationConverter() {
         return new TaintingAnnotationConverter();
+    }
+
+    @Override
+    protected TreeAnnotator<Tainting> createTreeAnnotator() {
+        return new TreeAnnotator<Tainting>() {
+            @Override
+            public QualifiedTypeMirror<Tainting> visitLiteral(LiteralTree tree, TypeMirror type) {
+                if (tree.getKind() == Tree.Kind.STRING_LITERAL) {
+                    return new QualifiedDeclaredType<Tainting>(
+                            type, Tainting.UNTAINTED, new ArrayList<>());
+                } else {
+                    return super.visitLiteral(tree, type);
+                }
+            }
+        };
     }
 }
