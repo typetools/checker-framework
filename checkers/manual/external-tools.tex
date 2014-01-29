@@ -461,6 +461,13 @@ a build from failing and still produce error and warning output, set \code{failO
     <failOnError>false</failOnError>
 \end{Verbatim}
 
+Errors reported by the Checker Framework Maven plugin use a similar format to the Maven compiler plugin. If
+you want to see the exact output of the Checker Framework compiler instead, use the following option:
+
+\begin{Verbatim}
+    <useJavacOutput>true</useJavacOutput>
+\end{Verbatim}
+
 You may want to run the Checker Framework using a Java version that differs from the version running Maven.  The
 \code{executable} element specifies a Java executable to use when running the Checker Framework.
 
