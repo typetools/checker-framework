@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import checkers.eclipse.util.PluginUtil;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.search.IJavaSearchConstants;
 import org.eclipse.jdt.internal.ui.dialogs.OpenTypeSelectionDialog;
@@ -215,7 +216,7 @@ public class CustomPreferencesPage extends PreferencePage implements
         IPreferenceStore store = doGetPreferenceStore();
 
         store.setValue(CheckerPreferences.PREF_CHECKER_CUSTOM_CLASSES,
-        		JavaUtils.join(",", customCheckers.getItems()));
+        		PluginUtil.join(",", customCheckers.getItems()));
 
         /*
          * store.setValue(CheckerPreferences.PREF_CHECKER_CUSTOM_CLASS_AUTOBUILD,
