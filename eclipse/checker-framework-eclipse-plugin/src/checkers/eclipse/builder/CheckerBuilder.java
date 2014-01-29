@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import checkers.eclipse.util.PluginUtil;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
@@ -19,7 +20,6 @@ import checkers.eclipse.CheckerPlugin;
 import checkers.eclipse.actions.CheckerManager;
 import checkers.eclipse.actions.CheckerWorker;
 import checkers.eclipse.prefs.CheckerPreferences;
-import checkers.eclipse.util.JavaUtils;
 import checkers.eclipse.util.MutexSchedulingRule;
 import checkers.eclipse.util.ResourceUtils;
 
@@ -96,8 +96,8 @@ public class CheckerBuilder extends IncrementalProjectBuilder
             List<String> checkerNames)
     {
         Job checkerJob = new CheckerWorker(project,
-                sourceNames.toArray(new String[] {}), JavaUtils.join(",",
-                        checkerNames));
+                sourceNames.toArray(new String[] {}), PluginUtil.join(",",
+                checkerNames));
 
         checkerJob.setUser(true);
         checkerJob.setPriority(Job.BUILD);
