@@ -127,6 +127,22 @@ public class PluginUtil {
         return lines;
     }
 
+    public static <T> String join(final String delimiter, final T[] objs) {
+
+        boolean notFirst = false;
+        final StringBuffer sb = new StringBuffer();
+
+        for(final Object obj : objs) {
+            if(notFirst) {
+                sb.append(delimiter);
+            }
+            sb.append(obj.toString());
+            notFirst = true;
+        }
+
+        return sb.toString();
+    }
+
     /**
      * TODO: Either create/use a util class
      */
