@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import checkers.eclipse.prefs.CheckerPreferences;
-import checkers.eclipse.util.JavaUtils;
+import checkers.eclipse.util.PluginUtil;
 import org.eclipse.jface.preference.IPreferenceStore;
 
 import checkers.eclipse.CheckerPlugin;
@@ -69,7 +69,7 @@ public class CheckerManager {
 
     public static void storeCustomClasses(final String [] customClasses) {
         final IPreferenceStore store = getPrefStore();
-        final String classString = JavaUtils.join(",", customClasses);
+        final String classString = PluginUtil.join(",", customClasses);
 
         store.setValue(CheckerPreferences.PREF_CHECKER_CUSTOM_CLASSES, classString);
     }
@@ -80,7 +80,7 @@ public class CheckerManager {
 
         String toStore = "";
         if(!selectedClasses.isEmpty()) {
-            toStore = JavaUtils.join(";", selectedClasses);
+            toStore = PluginUtil.join(";", selectedClasses);
         }
 
         store.setValue(CheckerPreferences.PREF_CHECKER_SELECTED_CHECKERS, toStore);

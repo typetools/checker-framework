@@ -143,20 +143,15 @@ public class PluginUtil {
         return sb.toString();
     }
 
-    /**
-     * TODO: Either create/use a util class
-     */
-    public static <T> String join(final String delimiter, final Collection<T> objs) {
+    public static String join(String delimiter, Iterable<?> values) {
+        StringBuilder sb = new StringBuilder();
 
-        boolean notFirst = false;
-        final StringBuffer sb = new StringBuffer();
-
-        for(final Object obj : objs) {
-            if(notFirst) {
+        boolean isntFirst = false;
+        for (Object value : values) {
+            if (isntFirst)
                 sb.append(delimiter);
-            }
-            sb.append(obj.toString());
-            notFirst = true;
+            sb.append(value);
+            isntFirst = true;
         }
 
         return sb.toString();

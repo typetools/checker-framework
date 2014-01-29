@@ -20,7 +20,6 @@ import checkers.eclipse.CheckerPlugin;
 import checkers.eclipse.actions.CheckerManager;
 import checkers.eclipse.prefs.CheckerPreferences;
 import checkers.eclipse.util.Command;
-import checkers.eclipse.util.JavaUtils;
 
 /**
  * Runs the Checker Framework (i.e. javac with the
@@ -95,7 +94,7 @@ public class CommandlineJavacRunner implements CheckersRunner {
             final List<String> cmd = createCommand(srcFofn, processors, classpathFofn, bootClasspath, new PrintStream(out));
 
             if (verbose) {
-                out.println(JavaUtils.join(" ", cmd));
+                out.println(PluginUtil.join(" ", cmd));
                 out.println();
                 out.println("Classpath:    \n\t" + classpath + "\n");
                 out.println("Source Files: \n\t" + PluginUtil.join("\n\t", fileNames));
@@ -121,7 +120,7 @@ public class CommandlineJavacRunner implements CheckersRunner {
      * see -Djsr308_imports in the Checker Framework Manual
      */
     private String implicitAnnotations(final String [] processors) {
-        return JavaUtils.join(File.pathSeparator, CheckerManager.getSelectedQuals(processors));
+        return PluginUtil.join(File.pathSeparator, CheckerManager.getSelectedQuals(processors));
     }
 
     /**

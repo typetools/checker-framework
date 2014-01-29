@@ -1,6 +1,7 @@
 package checkers.eclipse.actions;
 
 import checkers.eclipse.util.JavaUtils;
+import checkers.eclipse.util.PluginUtil;
 import checkers.fenum.FenumChecker;
 import checkers.i18n.I18nChecker;
 import checkers.igj.IGJChecker;
@@ -86,8 +87,8 @@ public class CheckerInfo
         String str = "fromClassPath(" + classPath + ", " + qualsPath + ")";
         try  {
         final String [] pathTokens = classPath.split("\\.");
-            str += "[" + JavaUtils.join(" ", pathTokens) + "]";
-        final String className = JavaUtils.join(" ", splitAtUppercase(pathTokens[pathTokens.length - 1]));
+            str += "[" + PluginUtil.join(" ", pathTokens) + "]";
+        final String className = PluginUtil.join(" ", splitAtUppercase(pathTokens[pathTokens.length - 1]));
             str += "className = " + className;
             return new CheckerInfo(className, classPath, qualsPath);
         } catch(Exception e) {
