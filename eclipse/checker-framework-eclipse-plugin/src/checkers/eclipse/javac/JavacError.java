@@ -78,6 +78,9 @@ public class JavacError {
 	private static final String headMessagePatternString = "^(.*):(\\d*): (?:(?:warning|error)?: ?)?\\((.*)\\) \\$\\$ (\\d*) ";
 	private static final Pattern headMessagePattern = Pattern
 			.compile(headMessagePatternString + ".*");
+
+    private static final Pattern trimmingPattern = Pattern.compile(headMessagePatternString + "(.*)");
+
 	private static final String argumentMessagePatternString = "\\$\\$ (.*) ";
 	private static final String tailMessagePatternString = "\\$\\$ (?:(?:\\( (-?\\d+), (-?\\d+) \\))|null) \\$\\$ (.*)$";
 	private static final Pattern noProcessorPattern = Pattern
@@ -96,6 +99,20 @@ public class JavacError {
 		sb.append(tailMessagePatternString);
 		return Pattern.compile(sb.toString());
 	}
+
+    /**
+     * If errorStr matches the expected pattern of an error report this method will return the
+     * part of the errorStr WITHOUT the adetailedmsg information.  Otherwise errorStr is just returned.
+     */
+    public static String trimDetails(final String errorStr) {
+        final Matcher matcher = trimmingPattern.matcher(errorStr);
+        if( matcher.matches() ) {
+            int shave = matcher.group(4).length() + matcher.group(5).length() + " $$ ".length();
+            return errorStr.substring(0, errorStr.length() - shave);
+        }
+
+        return errorStr;
+    }
 
 	public static List<JavacError> parse(String javacoutput) {
 		if (VERBOSE)

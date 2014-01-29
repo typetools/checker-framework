@@ -9,6 +9,7 @@ import java.util.*;
 
 import checkers.eclipse.prefs.OptionLine;
 import checkers.eclipse.util.PluginUtil;
+import checkers.eclipse.util.Util;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
@@ -104,7 +105,7 @@ public class CommandlineJavacRunner implements CheckersRunner {
             checkResult = Command.exec(cmdArr);
 
             if (verbose) {
-                out.println(checkResult);
+                printTrimmedOutput(out, checkResult);
                 out.println("\n*******************\n");
             }
 
@@ -248,5 +249,13 @@ public class CommandlineJavacRunner implements CheckersRunner {
      */
     public List<JavacError> getErrors() {
         return JavacError.parse(checkResult);
+    }
+
+    public static void printTrimmedOutput(final MessageConsoleStream out, final String output) {
+
+        List<String> lines = Arrays.asList(output.split(Util.NL));
+        for( final String line : lines ) {
+            out.println(JavacError.trimDetails(line));
+        }
     }
 }
