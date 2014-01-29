@@ -5,6 +5,8 @@ import java.lang.annotation.Annotation;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 
+import com.sun.source.tree.Tree;
+
 /**
  * An implementation of AnnotationProvider returns annotations on
  * Java AST elements.
@@ -20,4 +22,17 @@ public interface AnnotationProvider {
      */
     public AnnotationMirror getDeclAnnotation(Element elt,
             Class<? extends Annotation> anno);
+    
+    /**
+     * Return the annotation on <code>tree</code> that has the class
+     * <code>target</code>. If no annotation for the given target class exists,
+     * the result is <code>null</code>
+     * 
+     * @param tree
+     *            The tree of which the annotation is returned
+     * @param target
+     *            The class of the annotation
+     */
+    public AnnotationMirror getAnnotationMirror(Tree tree,
+            Class<? extends Annotation> target);
 }
