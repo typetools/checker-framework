@@ -43,7 +43,7 @@ public class CommandlineJavacRunner implements CheckersRunner {
     /**
      * checkers to run
      */
-    protected final String processors;
+    protected final String [] processors;
 
     /**
      * The classpath for this project
@@ -65,7 +65,7 @@ public class CommandlineJavacRunner implements CheckersRunner {
      */
     protected File checkersJar;
 
-    public CommandlineJavacRunner(final String[] fileNames, final String processors,
+    public CommandlineJavacRunner(final String[] fileNames, final String [] processors,
             final String classpath, final String bootClasspath) {
         this.fileNames = Arrays.asList(fileNames);
         this.processors = processors;
@@ -120,8 +120,8 @@ public class CommandlineJavacRunner implements CheckersRunner {
      * @return The implicit annotations that should be used when running the Checker Framework compiler
      * see -Djsr308_imports in the Checker Framework Manual
      */
-    private String implicitAnnotations() {
-        return JavaUtils.join(File.pathSeparator, CheckerManager.getSelectedQuals());
+    private String implicitAnnotations(final String [] processors) {
+        return JavaUtils.join(File.pathSeparator, CheckerManager.getSelectedQuals(processors));
     }
 
     /**
@@ -134,14 +134,14 @@ public class CommandlineJavacRunner implements CheckersRunner {
      * @param bootClassPath The Eclipse project's bootclasspath
      * @return A list of strings that (when separated by spaces) will form a call to the Checker Framework compiler
      */
-    protected List<String> createCommand( final File srcFofn, final String processors,
+    protected List<String> createCommand( final File srcFofn, final String [] processors,
                                           final File classpathFofn, final String bootClassPath,
                                           PrintStream out)  {
         final Map<PluginUtil.CheckerProp, Object> props = new HashMap<PluginUtil.CheckerProp, Object>();
 
         final IPreferenceStore prefs = CheckerPlugin.getDefault().getPreferenceStore();
         if (prefs.getBoolean(CheckerPreferences.PREF_CHECKER_IMPLICIT_IMPORTS)) {
-            props.put(PluginUtil.CheckerProp.IMPLICIT_IMPORTS, implicitAnnotations());
+            props.put(PluginUtil.CheckerProp.IMPLICIT_IMPORTS, implicitAnnotations(processors));
         }
 
         final List<String> miscOptions = new ArrayList<String>();
@@ -156,9 +156,10 @@ public class CommandlineJavacRunner implements CheckersRunner {
         addProcessorOptions(props, prefs);
 
 
+        final String procsStr = PluginUtil.join(",", processors);
         final String jdkPath = prefs.getString(CheckerPreferences.PREF_CHECKER_JDK_PATH);
 
-        return PluginUtil.getCmd(null, null, null, srcFofn, processors,
+        return PluginUtil.getCmd(null, null, null, srcFofn, procsStr,
                 checkersJar.getAbsolutePath(),
                 jdkPath, classpathFofn, bootClassPath,
                 props, out, true, null);

@@ -128,7 +128,7 @@ public class CheckerWorker extends Job {
 			runner = new JavacRunner(sourceFiles, checkerNames.split(","),
 					classpaths.fst + File.pathSeparator + classpaths.snd);
 		} else {
-			runner = new CommandlineJavacRunner(sourceFiles, checkerNames,
+			runner = new CommandlineJavacRunner(sourceFiles, checkerNames.split(","),
 					classpaths.fst, classpaths.snd);
 		}
 		runner.run();
