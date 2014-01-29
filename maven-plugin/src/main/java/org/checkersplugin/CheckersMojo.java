@@ -1,10 +1,8 @@
 package org.checkersplugin;
 
-import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugin.CompilationFailureException;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.ArtifactResolver;
 import org.apache.maven.artifact.factory.ArtifactFactory;
@@ -15,9 +13,6 @@ import org.apache.maven.toolchain.ToolchainManager;
 
 import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.cli.Commandline;
-import org.codehaus.plexus.util.cli.CommandLineUtils;
-import org.codehaus.plexus.util.cli.CommandLineException;
-import org.codehaus.plexus.compiler.CompilerError;
 
 import java.io.*;
 import java.util.*;
@@ -106,6 +101,13 @@ public class CheckersMojo extends AbstractMojo {
      * @parameter default-value="true"
      */
      private boolean procOnly;
+
+
+    /**
+     * If true, the error reporting output will show the verbatim javac output
+     * @parameter default-value="false"
+     */
+    private boolean useJavacOutput;
 
     /**
      * DEPENDENCIES
@@ -221,9 +223,9 @@ public class CheckersMojo extends AbstractMojo {
 
         log.info("Running Checker Framework version: " + checkerFrameworkVersion);
 
-        final String processor = ( processors.size() > 0 ) ? StringUtils.join(processors.iterator(), ",") : null;
+        final String processor = (processors.size() > 0) ? StringUtils.join(processors.iterator(), ",") : null;
 
-        if ( processors.size() == 0 ) {
+        if (processors.size() == 0) {
             log.warn("No checkers have been specified.");
         } else {
             log.info("Running processor(s): " + processor);
@@ -240,7 +242,7 @@ public class CheckersMojo extends AbstractMojo {
 
         final Commandline cl = new Commandline();
 
-        if ( StringUtils.isEmpty(executable) ) {
+        if (StringUtils.isEmpty(executable)) {
             executable = "java";
         }
 
@@ -248,27 +250,27 @@ public class CheckersMojo extends AbstractMojo {
         cl.setExecutable(executablePath);
 
         //TODO: SEEMS THAT WHEN WE ARE USING @ ARGS THE CLASSPATH FROM THE JAR IS OVERRIDDEN - FIX THIS
-        final String classpath  = checkersJar.getAbsolutePath() + File.pathSeparator
-        		+ StringUtils.join(classpathElements.iterator(), File.pathSeparator);
+        final String classpath = checkersJar.getAbsolutePath() + File.pathSeparator
+                + StringUtils.join(classpathElements.iterator(), File.pathSeparator);
 
         File srcFofn = null;
         File cpFofn = null;
         try {
             srcFofn = PluginUtil.writeTmpSrcFofn("CFPlugin-maven-src", true, PluginUtil.toFiles(sources));
-            cpFofn  = PluginUtil.writeTmpCpFile("CFPlugin-maven-cp",   true, classpath);
+            cpFofn = PluginUtil.writeTmpCpFile("CFPlugin-maven-cp", true, classpath);
         } catch (IOException e) {
-            if(srcFofn != null && srcFofn.exists()) {
+            if (srcFofn != null && srcFofn.exists()) {
                 srcFofn.delete();
             }
-            if(cpFofn  != null && cpFofn.exists()) {
+            if (cpFofn != null && cpFofn.exists()) {
                 cpFofn.delete();
             }
             throw new MojoExecutionException("Exception trying to write command file fofn!", e);
         }
 
-        final File outputDirFile = new File( outputDirectory );
-        if( !procOnly && !outputDirFile.exists() )  {
-            if( ! outputDirFile.mkdirs() ) {
+        final File outputDirFile = new File(outputDirectory);
+        if (!procOnly && !outputDirFile.exists()) {
+            if (!outputDirFile.mkdirs()) {
                 throw new MojoExecutionException("Could not create output directory: " + outputDirFile.getAbsolutePath());
             }
         }
@@ -284,7 +286,7 @@ public class CheckersMojo extends AbstractMojo {
         // And executing
         cl.addArguments(arguments.toArray(new String[arguments.size()]));
 
-        executeCommandLine(cl, log);
+        createCommandLineExecutor().executeCommandLine(cl, log, failOnError);
         srcFofn.delete();
         cpFofn.delete();
     }
@@ -318,99 +320,6 @@ public class CheckersMojo extends AbstractMojo {
         return props;
     }
 
-    /**
-     * Execute the given command line and log any errors and debug info
-     * @param cl
-     * @param log
-     * @throws MojoExecutionException
-     * @throws MojoFailureException
-     */
-    private void executeCommandLine(final Commandline cl, final Log log) throws MojoExecutionException, MojoFailureException {
-        CommandLineUtils.StringStreamConsumer out = new CommandLineUtils.StringStreamConsumer();
-        CommandLineUtils.StringStreamConsumer err = new CommandLineUtils.StringStreamConsumer();
-
-        log.debug("command line: " + Arrays.toString(cl.getCommandline()));
-
-        // Executing the command
-        final int exitCode;
-        try {
-            exitCode = CommandLineUtils.executeCommandLine(cl, out, err);
-        } catch (CommandLineException e) {
-            throw new MojoExecutionException("Unable to execute the Checker Framework, executable: " + executable +
-                    ", command line: " + Arrays.toString(cl.getCommandline()), e);
-        }
-
-        // Parsing the messages from the compiler
-        final List<CompilerError> messages;
-        try {
-            messages = JavacErrorMessagesParser.parseMessages(err.getOutput());
-        } catch (RuntimeException e) {
-            throw new MojoExecutionException("Unable to parse messages.", e);
-        }
-
-        // Sanity check - if the exit code is non-zero, there should be some messages
-        if (exitCode != 0 && messages.isEmpty()) {
-            throw new MojoExecutionException("Exit code from the compiler was not zero (" + exitCode +
-                    "), but no messages reported. Error stream content: " + err.getOutput() +
-                    " command line: " + Arrays.toString(cl.getCommandline()));
-        }
-
-        if (messages.isEmpty()) {
-            log.info("No errors found by the processor(s).");
-        } else {
-            if (failOnError) {
-                final List<CompilerError> warnings = new ArrayList<CompilerError>();
-                final List<CompilerError> errors   = new ArrayList<CompilerError>();
-                for (final CompilerError message : messages) {
-                    if (message.isError()) {
-                        errors.add(message);
-                    } else {
-                        warnings.add(message);
-                    }
-                }
-
-                if (!warnings.isEmpty()) {
-                    logErrors(warnings, "warning", true, log);
-                }
-
-                logErrors(errors, "error", false, log);
-
-                throw new MojoFailureException(null, "Errors found by the processor(s)", CompilationFailureException.longMessage(errors));
-
-            } else {
-                log.info("Run with debug logging in order to view the compiler command line");
-                for (final CompilerError compilerError : messages) {
-                    log.warn(compilerError.toString());
-                }
-            }
-        }
-    }
-
-    /**
-     * Print a header with the given label and print all errors similar to the style
-     * maven itself uses
-     * @param errors Errors to print
-     * @param label The label (usually ERRORS or WARNINGS) to head the error list
-     * @param log The log to which the messages are printed
-     */
-    private static final void logErrors(final List<CompilerError> errors, final String label,
-                                        boolean warn, final Log log) {
-        log.info("-------------------------------------------------------------");
-        log.warn("CHECKER FRAMEWORK " + label.toUpperCase() + ": ");
-        log.info("-------------------------------------------------------------");
-        for (final CompilerError error : errors) {
-            final String msg = error.toString().trim();
-            if(warn) {
-                log.warn(msg);
-            } else {
-                log.error(msg);
-            }
-        }
-
-        final String labelLc = label.toLowerCase() + ((errors.size() == 1) ? "" : "s");
-        log.info(errors.size() + " " + labelLc);
-        log.info("-------------------------------------------------------------");
-    }
 
     /**
      * Find the location of all the necessary Checker Framework related artifacts.  If the
@@ -428,5 +337,13 @@ public class CheckersMojo extends AbstractMojo {
 
         jdk7Jar    = PathUtils.getFrameworkJar("jdk7", checkerFrameworkVersion,
                 artifactFactory, artifactResolver, remoteArtifactRepositories, localRepository);
+    }
+
+    public CommandLineExceutor createCommandLineExecutor() {
+        if( useJavacOutput ) {
+            return new JavacIOExecutor(executable);
+        } else {
+            return new MavenIOExecutor(executable);
+        }
     }
 }
