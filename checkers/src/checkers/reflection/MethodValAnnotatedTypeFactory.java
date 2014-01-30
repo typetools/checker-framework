@@ -42,7 +42,7 @@ import com.sun.source.tree.Tree;
  * an {@link AnnotationProvider} that provides {@link ClassVal},
  * {@link StringVal}, and {@link ArrayLen} annotations.
  * 
- * @author plvines <plvines@cs.washington.edu>
+ * @author plvines
  * @author rjust
  */
 public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
