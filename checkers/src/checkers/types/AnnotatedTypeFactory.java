@@ -497,6 +497,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return type;
     }
 
+    @Override
+    public AnnotationMirror getAnnotationMirror(Tree tree, Class<? extends Annotation> target) {
+        AnnotationMirror mirror = AnnotationUtils.fromClass(elements, target);
+        if (isSupportedQualifier(mirror)) {
+            AnnotatedTypeMirror atm = getAnnotatedType(tree);
+            return atm.getAnnotation(target);
+        }
+        return null;
+    }
+
     /**
      * Determines the annotated type of an AST node.
      *

@@ -1,0 +1,9 @@
+//package checkers.value;
+package mypackage;
+import  checkers.value.quals.*;
+
+// class  Test{
+    
+//     public static @Analyzable String methodTest();
+
+// }
