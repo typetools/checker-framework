@@ -1,6 +1,7 @@
 package checkers.eclipse.actions;
 
 import checkers.fenum.FenumChecker;
+import checkers.formatter.FormatterChecker;
 import checkers.i18n.I18nChecker;
 import checkers.igj.IGJChecker;
 import checkers.interning.InterningChecker;
@@ -63,6 +64,14 @@ public class CheckerActions
         public FenumAction()
         {
             super(FenumChecker.class.getCanonicalName());
+        }
+    }
+
+    public static class FormatterAction extends RunCheckerAction
+    {
+        public FormatterAction()
+        {
+            super(FormatterChecker.class.getCanonicalName());
         }
     }
 
