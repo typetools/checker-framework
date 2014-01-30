@@ -1,7 +1,9 @@
 package checkers.eclipse.actions;
 
 import checkers.eclipse.util.JavaUtils;
+import checkers.eclipse.util.PluginUtil;
 import checkers.fenum.FenumChecker;
+import checkers.formatter.FormatterChecker;
 import checkers.i18n.I18nChecker;
 import checkers.igj.IGJChecker;
 import checkers.interning.InterningChecker;
@@ -54,7 +56,9 @@ public class CheckerInfo
                     new CheckerInfo("Nullness Checker",  NullnessChecker.class.getCanonicalName(),  "checkers.nullness.quals.*"),
                     new CheckerInfo("Javari Checker",    JavariChecker.class.getCanonicalName(),    "checkers.javari.quals.*"),
                     new CheckerInfo("Interning Checker", InterningChecker.class.getCanonicalName(), "checkers.interning.quals.*"),
-                    new CheckerInfo("Fenum Checker",     FenumChecker.class.getCanonicalName(),     "checkers.fenum.quals.*"),
+
+                    new CheckerInfo("Fenum Checker",         FenumChecker.class.getCanonicalName(),     "checkers.fenum.quals.*"),
+                    new CheckerInfo("Format String Checker", FormatterChecker.class.getCanonicalName(), "checkers.formatter.quals.*"),
 
                     new CheckerInfo("Linear Checker",    LinearChecker.class.getCanonicalName(),    "checkers.linear.quals.*"),
                     new CheckerInfo("Lock Checker",      LockChecker.class.getCanonicalName(),      "checkers.lock.quals.*"),
@@ -86,8 +90,8 @@ public class CheckerInfo
         String str = "fromClassPath(" + classPath + ", " + qualsPath + ")";
         try  {
         final String [] pathTokens = classPath.split("\\.");
-            str += "[" + JavaUtils.join(" ", pathTokens) + "]";
-        final String className = JavaUtils.join(" ", splitAtUppercase(pathTokens[pathTokens.length - 1]));
+            str += "[" + PluginUtil.join(" ", pathTokens) + "]";
+        final String className = PluginUtil.join(" ", splitAtUppercase(pathTokens[pathTokens.length - 1]));
             str += "className = " + className;
             return new CheckerInfo(className, classPath, qualsPath);
         } catch(Exception e) {

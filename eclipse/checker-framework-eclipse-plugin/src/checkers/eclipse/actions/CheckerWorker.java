@@ -218,8 +218,8 @@ public class CheckerWorker extends Job {
 			throws JavaModelException {
 		Pair<List<String>, List<String>> paths = classPathEntries(project);
 
-		return new Pair<String, String>(JavaUtils.join(File.pathSeparator,
-				paths.fst), JavaUtils.join(File.pathSeparator, paths.snd));
+		return new Pair<String, String>(PluginUtil.join(File.pathSeparator,
+				paths.fst), PluginUtil.join(File.pathSeparator, paths.snd));
 	}
 
 	private Pair<List<String>, List<String>> classPathEntries(
