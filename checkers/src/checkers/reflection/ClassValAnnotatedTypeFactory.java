@@ -38,7 +38,7 @@ import checkers.quals.TypeQualifiers;
  * AnnotatedTypeFactory for the Class Value type system. This factory requires
  * an {@link AnnotationProvider} that provides {@link StringVal} annotations.
  * 
- * @author plvines <plvines@cs.washington.edu>
+ * @author plvines
  * @author rjust
  * 
  */

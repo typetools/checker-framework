@@ -2,7 +2,7 @@ package checkers.value;
 
 /**
  * This file contains methods that simulate the functions of the Binary and
- * Unary operators in java (e.g. +, -, <, ++, etc.). The purpose of doing this
+ * Unary operators in java (e.g. +, -, &lt;, ++, etc.). The purpose of doing this
  * is to streamline the code for evaluating operators in
  * ValueAnnotatedTypeFactory and make it more similar to the code for evaluating
  * methods as well. The naming is the same name as the operator has when
