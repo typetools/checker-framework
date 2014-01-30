@@ -2,6 +2,7 @@ package checkers.eclipse.actions;
 
 import java.util.List;
 
+import checkers.eclipse.util.PluginUtil;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.IJavaElement;
@@ -9,7 +10,6 @@ import org.eclipse.jface.viewers.ISelection;
 
 import checkers.eclipse.CheckerPlugin;
 import checkers.eclipse.prefs.CheckerPreferences;
-import checkers.eclipse.util.JavaUtils;
 import checkers.eclipse.util.MutexSchedulingRule;
 
 /**
@@ -86,7 +86,7 @@ public abstract class RunCheckerAction extends CheckerHandler
             	actualNames = event.getParameter("checker-framework-eclipse-plugin.checker");
             } else {
                 List<String> names = getClassNameFromPrefs();
-                actualNames = JavaUtils.join(",", names);
+                actualNames = PluginUtil.join(",", names);
             }
 
             checkerJob = new CheckerWorker(elements, actualNames);

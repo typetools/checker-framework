@@ -9,6 +9,7 @@ import java.util.*;
 
 import checkers.eclipse.prefs.OptionLine;
 import checkers.eclipse.util.PluginUtil;
+import checkers.eclipse.util.Util;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
@@ -20,7 +21,6 @@ import checkers.eclipse.CheckerPlugin;
 import checkers.eclipse.actions.CheckerManager;
 import checkers.eclipse.prefs.CheckerPreferences;
 import checkers.eclipse.util.Command;
-import checkers.eclipse.util.JavaUtils;
 
 /**
  * Runs the Checker Framework (i.e. javac with the
@@ -95,7 +95,7 @@ public class CommandlineJavacRunner implements CheckersRunner {
             final List<String> cmd = createCommand(srcFofn, processors, classpathFofn, bootClasspath, new PrintStream(out));
 
             if (verbose) {
-                out.println(JavaUtils.join(" ", cmd));
+                out.println(PluginUtil.join(" ", cmd));
                 out.println();
                 out.println("Classpath:    \n\t" + classpath + "\n");
                 out.println("Source Files: \n\t" + PluginUtil.join("\n\t", fileNames));
@@ -105,7 +105,7 @@ public class CommandlineJavacRunner implements CheckersRunner {
             checkResult = Command.exec(cmdArr);
 
             if (verbose) {
-                out.println(checkResult);
+                printTrimmedOutput(out, checkResult);
                 out.println("\n*******************\n");
             }
 
@@ -121,7 +121,7 @@ public class CommandlineJavacRunner implements CheckersRunner {
      * see -Djsr308_imports in the Checker Framework Manual
      */
     private String implicitAnnotations(final String [] processors) {
-        return JavaUtils.join(File.pathSeparator, CheckerManager.getSelectedQuals(processors));
+        return PluginUtil.join(File.pathSeparator, CheckerManager.getSelectedQuals(processors));
     }
 
     /**
@@ -249,5 +249,13 @@ public class CommandlineJavacRunner implements CheckersRunner {
      */
     public List<JavacError> getErrors() {
         return JavacError.parse(checkResult);
+    }
+
+    public static void printTrimmedOutput(final MessageConsoleStream out, final String output) {
+
+        List<String> lines = Arrays.asList(output.split(Util.NL));
+        for( final String line : lines ) {
+            out.println(JavacError.trimDetails(line));
+        }
     }
 }
