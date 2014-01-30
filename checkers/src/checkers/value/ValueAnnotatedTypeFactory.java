@@ -9,7 +9,6 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.QualifierHierarchy;
 import checkers.types.TreeAnnotator;
-import checkers.types.TypeAnnotator;
 import checkers.util.AnnotationBuilder;
 import checkers.util.MultiGraphQualifierHierarchy;
 import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
@@ -61,7 +60,7 @@ import com.sun.source.tree.UnaryTree;
 import com.sun.source.util.TreePath;
 
 /**
- * @author plvines <plvines@cs.washington.edu>
+ * @author plvines
  * 
  *         AnnotatedTypeFactory for the Value type system.
  * 
@@ -89,8 +88,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /**
      * Constructor. Initializes all the AnnotationMirror constants.
      * 
-     * @param checker
-     * @param root
+     * @param checker The checker used with this AnnotatedTypeFactory
      * 
      */
     public ValueAnnotatedTypeFactory(BaseTypeChecker checker) {
@@ -421,49 +419,13 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     }
 
-    /**
-     * Create the type annotator for this AnnotatedTypeFactory
-     * 
-     * @param checker
-     * 
-     * @return
-     */
-    @Override
-    protected TypeAnnotator createTypeAnnotator() {
-        return new ValueTypeAnnotator();
-    }
-
-    /**
-     * Create the tree annotator for this AnnotatedTypeFactory, which contains
-     * the customized visit methods
-     * 
-     * @param checker
-     * 
-     * @return
-     */
     @Override
     protected TreeAnnotator createTreeAnnotator() {
         return new ValueTreeAnnotator(this);
     }
 
     /**
-     * Just a BaseTypeChecker
-     * 
-     * @param checker
-     * 
-     */
-    protected class ValueTypeAnnotator extends TypeAnnotator {
-        public ValueTypeAnnotator() {
-            super(ValueAnnotatedTypeFactory.this);
-        }
-    }
-
-    /**
-     * 
-     * @param checker
-     * @param factory
-     * 
-     * @return
+     * The TreeAnnotator for this AnnotatedTypeFactory 
      */
     protected class ValueTreeAnnotator extends TreeAnnotator {
 

@@ -9,7 +9,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * This represents a Class<T> object where the upper bound of the value of <T>
+ * This represents a Class&lt;T&gt; object where the upper bound of the value of T
  * is known. This is a list of values, so that if the object could have multiple
  * different upper bounds each is represented
  */

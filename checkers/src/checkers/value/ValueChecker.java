@@ -4,7 +4,7 @@ import checkers.basetype.BaseTypeChecker;
 import checkers.basetype.BaseTypeVisitor;
 
 /**
- * @author plvines <plvines@cs.washington.edu>
+ * @author plvines
  * 
  */
 public class ValueChecker extends BaseTypeChecker {
