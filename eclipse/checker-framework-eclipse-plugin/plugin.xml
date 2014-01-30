@@ -112,6 +112,11 @@
             style="push">
           </command>
           <command
+            commandId="checkers.eclipse.runformatter"
+            label="Formatting Checker"
+            style="push">
+          </command>
+          <command
             commandId="checkers.eclipse.runigj"
             label="IGJ Checker"
             style="push">
@@ -266,6 +271,12 @@
       id="checkers.eclipse.runfenum"
       name="Run Fenum Checker">
     </command>
+    <command
+      categoryId="checkers.eclipse.category"
+      defaultHandler="checkers.eclipse.actions.CheckerActions$FormatterAction"
+      id="checkers.eclipse.runformatter"
+      name="Run Format String Checker">
+     </command>
     
     <command
       categoryId="checkers.eclipse.category"
