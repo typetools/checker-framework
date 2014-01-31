@@ -20,6 +20,7 @@ import javax.lang.model.util.Types;
 public abstract class QualifiedTypeMirror<Q> {
     private final TypeMirror underlying;
     private final Q qualifier;
+    Exception where;
 
     private QualifiedTypeMirror(TypeMirror underlying, Q qualifier) {
         if (qualifier == null) {
@@ -29,6 +30,11 @@ public abstract class QualifiedTypeMirror<Q> {
 
         this.underlying = underlying;
         this.qualifier = qualifier;
+        try {
+            throw new RuntimeException("where");
+        } catch (Exception e) {
+            this.where = e;
+        }
     }
 
     public abstract <R,P> R accept(QualifiedTypeVisitor<Q,R,P> visitor, P p);
@@ -49,8 +55,26 @@ public abstract class QualifiedTypeMirror<Q> {
         return qualifier;
     }
 
+    @Override
     public String toString() {
         return qualifier + " " + underlying;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null || obj.getClass() != this.getClass()) {
+            return false;
+        }
+        @SuppressWarnings("unchecked")
+        QualifiedTypeMirror<Q> other = (QualifiedTypeMirror<Q>)obj;
+        return this.qualifier.equals(other.qualifier)
+            && this.underlying.equals(other.underlying);
+    }
+
+    @Override
+    public int hashCode() {
+        return this.qualifier.hashCode() * 17
+            + this.underlying.hashCode() * 37;
     }
 
 
@@ -117,6 +141,8 @@ public abstract class QualifiedTypeMirror<Q> {
             List<? extends QualifiedTypeMirror<Q>> qualified,
             List<? extends TypeMirror> unqualified) {
         if (!typeMirrorListsMatch(qualified, unqualified)) {
+            System.err.printf("MISMATCH!! %s <-> %s\n", qualified, unqualified);
+            qualified.get(0).where.printStackTrace();
             throw new IllegalArgumentException(
                     "qualified and unqualified " + description +
                     " TypeMirrors must be identical");
@@ -207,8 +233,25 @@ public abstract class QualifiedTypeMirror<Q> {
             return componentType;
         }
 
+        @Override
         public String toString() {
             return getComponentType() + " " + getQualifier() + " []";
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!super.equals(obj))
+                return false;
+            // super.equals ensures that 'obj.getClass() == this.getClass()'.
+            @SuppressWarnings("unchecked")
+            QualifiedArrayType<Q> other = (QualifiedArrayType<Q>)obj;
+            return this.componentType.equals(other.componentType);
+        }
+
+        @Override
+        public int hashCode() {
+            return super.hashCode()
+                + componentType.hashCode() * 43;
         }
     }
 
@@ -239,6 +282,7 @@ public abstract class QualifiedTypeMirror<Q> {
             return typeArguments;
         }
 
+        @Override
         public String toString() {
             StringBuilder sb = new StringBuilder();
             sb.append(getQualifier());
@@ -249,6 +293,22 @@ public abstract class QualifiedTypeMirror<Q> {
                 sb.append("<").append(commaSeparatedList(typeArguments)).append(">");
             }
             return sb.toString();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!super.equals(obj))
+                return false;
+            // super.equals ensures that 'obj.getClass() == this.getClass()'.
+            @SuppressWarnings("unchecked")
+            QualifiedDeclaredType<Q> other = (QualifiedDeclaredType<Q>)obj;
+            return this.typeArguments.equals(other.typeArguments);
+        }
+
+        @Override
+        public int hashCode() {
+            return super.hashCode()
+                + typeArguments.hashCode() * 43;
         }
     }
 
@@ -322,6 +382,7 @@ public abstract class QualifiedTypeMirror<Q> {
             return typeVariables;
         }
 
+        @Override
         public String toString() {
             StringBuilder sb = new StringBuilder();
             sb.append(getQualifier()).append(" : ");
@@ -344,6 +405,34 @@ public abstract class QualifiedTypeMirror<Q> {
             }
 
             return sb.toString();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!super.equals(obj))
+                return false;
+            // super.equals ensures that 'obj.getClass() == this.getClass()'.
+            @SuppressWarnings("unchecked")
+            QualifiedExecutableType<Q> other = (QualifiedExecutableType<Q>)obj;
+            return this.parameterTypes.equals(other.parameterTypes)
+                && (this.receiverType == null ?
+                        other.receiverType == null :
+                        this.receiverType.equals(other.receiverType))
+                && (this.returnType == null ?
+                        other.returnType == null :
+                        this.returnType.equals(other.returnType))
+                && this.thrownTypes.equals(other.thrownTypes)
+                && this.typeVariables.equals(other.typeVariables);
+        }
+
+        @Override
+        public int hashCode() {
+            return super.hashCode()
+                + parameterTypes.hashCode() * 43
+                + (this.receiverType == null ? 0 : this.receiverType.hashCode() * 67)
+                + (this.returnType == null ? 0 : this.returnType.hashCode() * 83)
+                + thrownTypes.hashCode() * 109
+                + typeVariables.hashCode() * 127;
         }
     }
 
@@ -373,8 +462,25 @@ public abstract class QualifiedTypeMirror<Q> {
             return bounds;
         }
 
+        @Override
         public String toString() {
             return punctuatedList(" & ", bounds);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!super.equals(obj))
+                return false;
+            // super.equals ensures that 'obj.getClass() == this.getClass()'.
+            @SuppressWarnings("unchecked")
+            QualifiedIntersectionType<Q> other = (QualifiedIntersectionType<Q>)obj;
+            return this.bounds.equals(other.bounds);
+        }
+
+        @Override
+        public int hashCode() {
+            return super.hashCode()
+                + bounds.hashCode() * 43;
         }
     }
 
@@ -395,6 +501,9 @@ public abstract class QualifiedTypeMirror<Q> {
         public NoType getUnderlyingType() {
             return (NoType)super.getUnderlyingType();
         }
+
+        // Use superclass implementation of 'toString', 'equals', and
+        // 'hashCode'.
     }
 
     public static final class QualifiedNullType<Q> extends QualifiedTypeMirror<Q> {
@@ -411,6 +520,9 @@ public abstract class QualifiedTypeMirror<Q> {
         public NullType getUnderlyingType() {
             return (NullType)super.getUnderlyingType();
         }
+
+        // Use superclass implementation of 'toString', 'equals', and
+        // 'hashCode'.
     }
 
     public static final class QualifiedPrimitiveType<Q> extends QualifiedTypeMirror<Q> {
@@ -427,6 +539,9 @@ public abstract class QualifiedTypeMirror<Q> {
         public PrimitiveType getUnderlyingType() {
             return (PrimitiveType)super.getUnderlyingType();
         }
+
+        // Use superclass implementation of 'toString', 'equals', and
+        // 'hashCode'.
     }
 
     // There is no QualifiedReferenceType.  If we really need one, we can add
@@ -469,6 +584,7 @@ public abstract class QualifiedTypeMirror<Q> {
             return lowerBound;
         }
 
+        @Override
         public String toString() {
             StringBuilder sb = new StringBuilder();
             sb.append(getQualifier()).append(" ")
@@ -476,6 +592,24 @@ public abstract class QualifiedTypeMirror<Q> {
                     .append(" extends ").append(upperBound)
                     .append(" super ").append(lowerBound);
             return sb.toString();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!super.equals(obj))
+                return false;
+            // super.equals ensures that 'obj.getClass() == this.getClass()'.
+            @SuppressWarnings("unchecked")
+            QualifiedTypeVariable<Q> other = (QualifiedTypeVariable<Q>)obj;
+            return this.upperBound.equals(other.upperBound)
+                && this.lowerBound.equals(other.lowerBound);
+        }
+
+        @Override
+        public int hashCode() {
+            return super.hashCode()
+                + upperBound.hashCode() * 43
+                + lowerBound.hashCode() * 67;
         }
     }
 
@@ -505,8 +639,25 @@ public abstract class QualifiedTypeMirror<Q> {
             return alternatives;
         }
 
+        @Override
         public String toString() {
             return punctuatedList(" | ", alternatives);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!super.equals(obj))
+                return false;
+            // super.equals ensures that 'obj.getClass() == this.getClass()'.
+            @SuppressWarnings("unchecked")
+            QualifiedUnionType<Q> other = (QualifiedUnionType<Q>)obj;
+            return this.alternatives.equals(other.alternatives);
+        }
+
+        @Override
+        public int hashCode() {
+            return super.hashCode()
+                + alternatives.hashCode() * 43;
         }
     }
 
@@ -545,12 +696,31 @@ public abstract class QualifiedTypeMirror<Q> {
             return superBound;
         }
 
+        @Override
         public String toString() {
             StringBuilder sb = new StringBuilder();
             sb.append(getQualifier()).append(" ?")
                     .append(" extends ").append(extendsBound)
                     .append(" super ").append(superBound);
             return sb.toString();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!super.equals(obj))
+                return false;
+            // super.equals ensures that 'obj.getClass() == this.getClass()'.
+            @SuppressWarnings("unchecked")
+            QualifiedWildcardType<Q> other = (QualifiedWildcardType<Q>)obj;
+            return this.extendsBound.equals(other.extendsBound)
+                && this.superBound.equals(other.superBound);
+        }
+
+        @Override
+        public int hashCode() {
+            return super.hashCode()
+                + extendsBound.hashCode() * 43
+                + superBound.hashCode() * 67;
         }
     }
 }
