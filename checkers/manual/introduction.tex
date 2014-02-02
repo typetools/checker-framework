@@ -769,8 +769,6 @@ program violates the guarantee.
 
 There are some limitations to the guarantee.
 
-\urldef{\jlsintersectiontypesurl}{\url}{http://docs.oracle.com/javase/specs/jls/se7/html/jls-4.html#jls-4.9}
-
 \begin{itemize}
 
 \item
@@ -812,12 +810,6 @@ There are some limitations to the guarantee.
   The Checker Framework assumes it is checking single-threaded code.
   Concurrent access to variables (that is, race conditions) could cause
   errors that the Checker Framework does not report.
-
-\item
-  The Checker Framework does not yet support annotations on intersection
-  types (see
-  \ahref{\jlsintersectiontypesurl}{JLS \S4.9}).  As a result, checkers cannot provide guarantees about
-  intersection types.
 
 \item
   Specific checkers may have other limitations; see their documentation for
