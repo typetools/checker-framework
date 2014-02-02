@@ -125,7 +125,12 @@ public class TypeHierarchy {
 
             for (AnnotationMirror am : qualifierHierarchy.getTopAnnotations()) {
                 if (!out.isAnnotatedInHierarchy(am)) {
-                    out.addAnnotation(qualifierHierarchy.getPolymorphicAnnotation(am));
+                    AnnotationMirror poly = qualifierHierarchy.getPolymorphicAnnotation(am);
+                    if (poly != null) {
+                        out.addAnnotation(poly);
+                    } else {
+                        out.addAnnotation(qualifierHierarchy.getBottomAnnotation(am));
+                    }
                 }
             }
         } else {
@@ -207,8 +212,12 @@ public class TypeHierarchy {
                 && (lhsBase.getKind() == TypeKind.WILDCARD || lhsBase.getKind() == TypeKind.TYPEVAR)) {
             if (lhsBase.getKind() == TypeKind.WILDCARD && rhs.getKind() != TypeKind.WILDCARD) {
                 AnnotatedWildcardType wildcard = (AnnotatedWildcardType)lhsBase;
-                if (wildcard.getSuperBound() != null
-                        && isSubtypeImpl(rhs, wildcard.getEffectiveSuperBound())) {
+                if (wildcard.isTypeArgHack()) {
+                    AnnotatedTypeMirror bnd = ((AnnotatedTypeVariable)wildcard.getExtendsBound()).getEffectiveUpperBound();
+                    return isSubtypeImpl(rhs, bnd);
+                }
+                if (wildcard.getSuperBound() != null &&
+                        isSubtypeImpl(rhs, wildcard.getEffectiveSuperBound())) {
                     return true;
                 }
                 if (!wildcard.getAnnotations().isEmpty()
@@ -231,8 +240,7 @@ public class TypeHierarchy {
                         // If the rhs is all bottoms, allow.
                         return true;
                     }
-                    if (!wildcard.isTypeArgHack() &&
-                            (!bnd.isEmpty() && bnd.size() == bot.size()) &&
+                    if (!bnd.isEmpty() && bnd.size() == bot.size() &&
                             (!qualifierHierarchy.isSubtype(lhs, rhs, bnd, bot) ||
                             !qualifierHierarchy.isSubtype(lhs, rhs, rhs.getEffectiveAnnotations(), bot))) {
                         return false;
@@ -583,7 +591,13 @@ public class TypeHierarchy {
                     return false;
                 }
             }
-            lhs = ((AnnotatedWildcardType)lhs).getEffectiveExtendsBound();
+            if (((AnnotatedWildcardType)lhs).isTypeArgHack()) {
+                // If it is the hack wildcard, also skip over the type variable.
+                lhs = ((AnnotatedTypeVariable)((AnnotatedWildcardType)lhs)
+                        .getEffectiveExtendsBound()).getEffectiveUpperBound();
+            } else {
+                lhs = ((AnnotatedWildcardType)lhs).getEffectiveExtendsBound();
+            }
             if (lhs == null)
                 return true;
 
