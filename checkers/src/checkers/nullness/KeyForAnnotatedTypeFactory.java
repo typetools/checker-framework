@@ -5,9 +5,9 @@ import checkers.basetype.BaseTypeChecker;
 import checkers.nullness.quals.Covariant;
 import checkers.nullness.quals.KeyFor;
 import checkers.nullness.quals.KeyForBottom;
+import checkers.nullness.quals.UnknownKeyFor;
 import checkers.quals.DefaultLocation;
 import checkers.quals.TypeQualifiers;
-import checkers.quals.Unqualified;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -37,20 +37,20 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 
-@TypeQualifiers({ KeyFor.class, Unqualified.class, KeyForBottom.class})
+@TypeQualifiers({ KeyFor.class, UnknownKeyFor.class, KeyForBottom.class})
 public class KeyForAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-    protected final AnnotationMirror UNQUALIFIED, KEYFOR;
+    protected final AnnotationMirror UNKNOWN, KEYFOR;
 
     public KeyForAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker, false);
 
         KEYFOR = AnnotationUtils.fromClass(elements, KeyFor.class);
-        UNQUALIFIED = AnnotationUtils.fromClass(elements, Unqualified.class);
+        UNKNOWN = AnnotationUtils.fromClass(elements, UnknownKeyFor.class);
 
         this.postInit();
 
-        this.defaults.addAbsoluteDefault(UNQUALIFIED, DefaultLocation.ALL);
+        this.defaults.addAbsoluteDefault(UNKNOWN, DefaultLocation.ALL);
     }
 
   /* TODO: we currently do not substitute field types.
