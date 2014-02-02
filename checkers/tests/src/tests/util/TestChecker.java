@@ -6,6 +6,7 @@ import checkers.basetype.BaseTypeVisitor;
 import checkers.quals.Bottom;
 import checkers.quals.TypeQualifiers;
 import checkers.quals.Unqualified;
+import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.QualifierHierarchy;
 import checkers.util.GraphQualifierHierarchy;
 import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
@@ -14,6 +15,8 @@ import javacutils.AnnotationUtils;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Elements;
+
+import com.sun.source.tree.Tree;
 
 /**
  * A simple checker used for testing the Checker Framework. It treats the
@@ -41,6 +44,14 @@ class TestVisitor extends BaseTypeVisitor<TestAnnotatedTypeFactory> {
     @Override
     protected TestAnnotatedTypeFactory createTypeFactory() {
         return new TestAnnotatedTypeFactory(checker);
+    }
+
+    @Override
+    public boolean isValidUse(AnnotatedDeclaredType type,
+            AnnotatedDeclaredType useType, Tree tree) {
+        // TODO: super would result in error, b/c of
+        // default on classes.
+        return true;
     }
 }
 
