@@ -42,14 +42,10 @@ import com.sun.source.tree.Tree;
  * This class takes care of two of the attributes of {@link ImplicitFor};
  * the others are handled in {@link TreeAnnotator}.
  *
- * The Element parameter is the use-site of the type.
- * TODO: the parameter is null if no Element is available, e.g. for a cast.
- *
  * @see TreeAnnotator
  */
-public class TypeAnnotator extends AnnotatedTypeScanner<Void, Element> {
+public class TypeAnnotator extends AnnotatedTypeScanner<Void, Void> {
 
-    // TODO: like in TreeAnnotator, these should be maps to Set<AM>.
     private final Map<TypeKind, Set<AnnotationMirror>> typeKinds;
     private final Map<Class<? extends AnnotatedTypeMirror>, Set<AnnotationMirror>> typeClasses;
     private final Map<String, Set<AnnotationMirror>> typeNames;
@@ -121,10 +117,10 @@ public class TypeAnnotator extends AnnotatedTypeScanner<Void, Element> {
     }
 
     @Override
-    protected Void scan(AnnotatedTypeMirror type, Element elem) {
+    protected Void scan(AnnotatedTypeMirror type, Void p) {
 
         if (type == null) // on bounds, etc.
-            return super.scan(type, elem);
+            return super.scan(type, p);
 
         // If the type's fully-qualified name is in the appropriate map, annotate
         // the type. Do this before looking at kind or class, as this information
@@ -156,16 +152,16 @@ public class TypeAnnotator extends AnnotatedTypeScanner<Void, Element> {
             }
         }
 
-        return super.scan(type, elem);
+        return super.scan(type, p);
     }
 
     @Override
-    public Void visitExecutable(AnnotatedExecutableType t, Element elem) {
+    public Void visitExecutable(AnnotatedExecutableType t, Void p) {
         // skip the receiver
-        scan(t.getReturnType(), elem);
-        scanAndReduce(t.getParameterTypes(), elem, null);
-        scanAndReduce(t.getThrownTypes(), elem, null);
-        scanAndReduce(t.getTypeVariables(), elem, null);
+        scan(t.getReturnType(), p);
+        scanAndReduce(t.getParameterTypes(), p, null);
+        scanAndReduce(t.getThrownTypes(), p, null);
+        scanAndReduce(t.getTypeVariables(), p, null);
         return null;
     }
 }
