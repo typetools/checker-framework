@@ -16,7 +16,7 @@ import com.sun.source.tree.Tree.Kind;
 /**
  * A meta-annotation that specifies the trees and types for which the framework
  * should automatically add that qualifier. These types and trees can be
- * specified via any combination of four fields.
+ * specified via any combination of six attributes.
  *
  * <p>
  * For example, the {@link Nullable} annotation is annotated
