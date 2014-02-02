@@ -9,7 +9,14 @@ package checkers.quals;
  * @see DefaultQualifier
  * @see javax.lang.model.element.ElementKind
  */
+// TODO: variable naming is inconsistently singular or plural.
 public enum DefaultLocation {
+
+    /**
+     * Apply default annotations to all unannotated raw types
+     * of fields.
+     */
+    FIELD,
 
     /**
      * Apply default annotations to all unannotated raw types
@@ -36,6 +43,7 @@ public enum DefaultLocation {
      * of receiver types.
      */
     RECEIVERS,
+
     /**
      * Apply default annotations to all unannotated raw types
      * of formal parameter types.
@@ -60,6 +68,7 @@ public enum DefaultLocation {
      * TODO: more doc, relation to other UPPER_BOUNDS
      */
     UPPER_BOUNDS,
+
     /**
      * Apply default annotations to unannotated, but explicit upper bounds:
      * <code>&lt;T extends Object&gt;</code>
@@ -67,6 +76,7 @@ public enum DefaultLocation {
      * TODO: more doc, relation to other UPPER_BOUNDS
      */
     EXPLICIT_UPPER_BOUNDS,
+
     /**
      * Apply default annotations to unannotated type variables:
      * <code>&lt;T&gt;</code>
