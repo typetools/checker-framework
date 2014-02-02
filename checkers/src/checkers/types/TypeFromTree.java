@@ -607,8 +607,6 @@ abstract class TypeFromTree extends
             result.addAnnotations(annotations);
             result.getUpperBound().addAnnotations(annotations);
 
-            assert result instanceof AnnotatedTypeVariable;
-
             switch (bounds.size()) {
             case 0: break;
             case 1:
