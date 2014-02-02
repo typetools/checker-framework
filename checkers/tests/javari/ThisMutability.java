@@ -29,6 +29,8 @@ public class ThisMutability {
         m = tm;     // error
 
         // Why should this error be expected?
+        // Because this creates a mutable alias
+        // to a readonly object!
         // "this" is @ReadOnly, but field is @Assignable
         //TODO:: error: (assignment.type.incompatible)
         tm = ro;    // error
