@@ -663,7 +663,7 @@
             <sequential>
                 <property name="coverage.options" value=""/>    <!-- default -->
                 <property name="coverage.classpath" value=""/>  <!-- default -->
-                <property name="checkers.classpath" value="${javac.lib}:${basedir}/${checkers.jar.file}:${basedir}/${javaparser.lib}:${basedir}/${javacutils.lib}:${basedir}/${dataflow.lib}"/>
+                <property name="checkers.classpath" value="${javac.lib}:${javap.lib}:${basedir}/${checkers.jar.file}:${javaparser.lib}:${javacutils.lib}:${dataflow.lib}"/>
                 <jtreg
                     dir="jtreg"
                     workDir="${build.jtreg.dir}/@{name}/work"
@@ -671,7 +671,7 @@
                     samevm="@{samevm}" verbose="@{verbose}"
                     failonerror="false" resultproperty="jtreg.@{name}.result"
                     javacoptions="-g"
-                    vmoptions="${coverage.options} -Xbootclasspath/p:${basedir}/binary/${jdkName}:${coverage.classpath}:${build.classes.dir}:${checkers.classpath} @{jpda.jvmargs}">
+                    vmoptions="${coverage.options} -Xbootclasspath/p:${basedir}/binary/${jdkName}:${coverage.classpath}:${build}:${checkers.classpath} @{jpda.jvmargs}">
                     <arg line="@{keywords}"/>
                     <arg line="@{options}"/>
                     <arg line="@{tests}"/>
