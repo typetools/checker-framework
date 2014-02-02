@@ -411,7 +411,7 @@ public class InitializationVisitor<Factory extends InitializationAnnotatedTypeFa
      * true) are initialized in the given store.
      */
     // TODO: the code for checking if fields are initialized should be re-written,
-    // as the current version is contains quite a few ugly parts, is hard to understand,
+    // as the current version contains quite a few ugly parts, is hard to understand,
     // and it is likely that it does not take full advantage of the information
     // about initialization we compute in
     // GenericAnnotatedTypeFactory.initializationStaticStore and
