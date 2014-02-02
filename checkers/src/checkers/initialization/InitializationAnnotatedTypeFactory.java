@@ -471,7 +471,7 @@ public abstract class InitializationAnnotatedTypeFactory<
             VariableElement fieldElem = TreeUtils.elementFromDeclaration(field);
             if (ElementUtils.isStatic(fieldElem) == isStatic) {
                 // Does this field need to satisfy the invariant?
-                if (getAnnotatedType(field).hasAnnotation(invariant)) {
+                if (getAnnotatedType(field).hasEffectiveAnnotation(invariant)) {
                     // Has the field been initialized?
                     if (!store.isFieldInitialized(fieldElem)) {
                         violatingFields.add(field);
@@ -498,7 +498,7 @@ public abstract class InitializationAnnotatedTypeFactory<
             VariableElement fieldElem = TreeUtils.elementFromDeclaration(field);
             if (!ElementUtils.isStatic(fieldElem)) {
                 // Does this field need to satisfy the invariant?
-                if (getAnnotatedType(field).hasAnnotation(invariant)) {
+                if (getAnnotatedType(field).hasEffectiveAnnotation(invariant)) {
                     // Has the field been initialized?
                     if (store.isFieldInitialized(fieldElem)) {
                         initializedFields.add(field);
@@ -538,7 +538,7 @@ public abstract class InitializationAnnotatedTypeFactory<
     }
 
     public boolean isInitializedForFrame(AnnotatedTypeMirror type, TypeMirror frame) {
-        AnnotationMirror initializationAnno = type.getAnnotationInHierarchy(UNCLASSIFIED);
+        AnnotationMirror initializationAnno = type.getEffectiveAnnotationInHierarchy(UNCLASSIFIED);
         TypeMirror typeFrame = getTypeFrameFromAnnotation(initializationAnno);
         Types types = processingEnv.getTypeUtils();
         return types.isSubtype(typeFrame, frame);
@@ -610,8 +610,9 @@ public abstract class InitializationAnnotatedTypeFactory<
         }
 
         @Override
-        public Void visitExecutable(AnnotatedExecutableType t, Element elem) {
-            Void result = super.visitExecutable(t, elem);
+        public Void visitExecutable(AnnotatedExecutableType t, Void p) {
+            Void result = super.visitExecutable(t, p);
+            Element elem = t.getElement();
             if (elem.getKind() == ElementKind.CONSTRUCTOR) {
                 AnnotatedDeclaredType receiverType = t.getReceiverType();
                 DeclaredType underlyingType = receiverType.getUnderlyingType();
@@ -660,7 +661,9 @@ public abstract class InitializationAnnotatedTypeFactory<
 
         @Override
         public Void visitLiteral(LiteralTree tree, AnnotatedTypeMirror type) {
-            if (tree.getKind() != Tree.Kind.NULL_LITERAL) type.addAnnotation(COMMITTED);
+            if (tree.getKind() != Tree.Kind.NULL_LITERAL) {
+                type.addAnnotation(COMMITTED);
+            }
             return super.visitLiteral(tree, type);
         }
     }
@@ -705,10 +708,14 @@ public abstract class InitializationAnnotatedTypeFactory<
             if (isCommitted(lhs)) {
                 return isFbcBottom(rhs);
             }
-            // @Initialized is only a subtype of @UnknownInitialization.
             boolean unc2 = isUnclassified(lhs);
+            if (unc2) {
+                // If the LHS is unclassified, subtyping always holds.
+                return true;
+            }
+            // @Initialized is only a subtype of @UnknownInitialization.
             if (isCommitted(rhs)) {
-                return unc2;
+                return false;
             }
             // @FBCBottom is a supertype of nothing.
             if (isFbcBottom(lhs)) {
