@@ -34,6 +34,20 @@ import com.sun.tools.javac.code.TypeAnnotationPosition.TypePathEntryKind;
 /**
  * A utility class used to extract the annotations from an element and inserts
  * them into the elements type.
+ *
+ * In a way, this class is a hack: the Type representation for the Elements should
+ * contain all annotations that we want.
+ * However, due to javac bugs
+ * http://mail.openjdk.java.net/pipermail/type-annotations-dev/2013-December/001449.html
+ * decoding the type annotations from the Element is necessary.
+ *
+ * Even once these bugs are fixed, this class might be useful: in ElementFromType
+ * it is easy to add additional annotations to the element and have them stored in the
+ * bytecode by the compiler.
+ * It would be more work (and might not work in the end) to instead modify the Type
+ * directly.
+ * The interaction between TypeFromElement and ElementFromType allows us to write
+ * the defaulted annotations into the Element and have them read later by other parts.
  */
 public class TypeFromElement {
     /**
@@ -137,6 +151,7 @@ public class TypeFromElement {
                     case METHOD_RETURN:
                     case METHOD_FORMAL_PARAMETER:
                     case METHOD_RECEIVER:
+                    case THROWS:
                     case LOCAL_VARIABLE:
                     case RESOURCE_VARIABLE:
                     case EXCEPTION_PARAMETER:
