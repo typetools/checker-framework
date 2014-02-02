@@ -1,6 +1,6 @@
 import checkers.igj.quals.*;
 
-public class OverrideGenericMethod<T extends Exception> {
+public class OverrideGenericMethod<T extends @ReadOnly Exception> {
     void test() {
         OverrideGenericMethod<@Immutable Exception> o = null;
     }
@@ -31,4 +31,9 @@ public class OverrideGenericMethod<T extends Exception> {
         @Override
         protected void take(@Immutable Exception e) { }
     }
+}
+
+// An implicit bound uses the top type.
+class TestImplicitBound<T> {
+    TestImplicitBound<@ReadOnly Object> f;
 }
