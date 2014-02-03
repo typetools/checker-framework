@@ -115,11 +115,8 @@ def get_current_date():
     return CURRENT_DATE.strftime("%d %b %Y")
 
 def get_afu_version( auto ):
-    version_regex = "<!-- afu-version -->(\\d+\\.\\d+\\.?\\d?),.*<!-- /afu-version -->"
     anno_html = os.path.join(ANNO_FILE_UTILITIES, "annotation-file-utilities.html")
-    version   = find_first_instance(version_regex, anno_html, "")
-    if version is None:
-        raise Exception( "Could not detect Annotation File Utilities version in file " + anno_html )
+    version = get_afu_version_from_html( anno_html )
 
     print "Current Annotation File Utilities Version: " + version
     suggested_version = increment_version( version )
@@ -249,8 +246,8 @@ def main(argv):
     #check we are cloning LIVE -> INTERM, INTERM -> RELEASE
     update_repos()
 
-    check_repos(INTERM_REPOS,  False )
-    check_repos(RELEASE_REPOS, False )
+    check_repos( INTERM_REPOS,  False )
+    check_repos( RELEASE_REPOS, False )
 
     if not auto:
         continue_script = prompt_w_suggestion("Replace files then type yes to continue", "no", "^(Yes|yes|No|no)$")
