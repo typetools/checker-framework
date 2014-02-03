@@ -2,7 +2,6 @@ package checkers.oigj;
 
 import checkers.basetype.BaseAnnotatedTypeFactory;
 import checkers.basetype.BaseTypeChecker;
-import checkers.oigj.quals.World;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.QualifierHierarchy;
@@ -13,15 +12,13 @@ import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 
 import javacutils.AnnotationUtils;
 import javacutils.ErrorReporter;
-import javacutils.TypesUtils;
 
 import java.util.Collection;
 
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 
 import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.ClassTree;
 
 public class OwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
@@ -33,7 +30,6 @@ public class OwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         this.postInit();
     }
 
-
     @Override
     protected TreeAnnotator createTreeAnnotator() {
         return new OwnershipTreeAnnotator(this);
@@ -44,6 +40,13 @@ public class OwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return new OwnershipTypeAnnotator(this);
     }
 
+    // TODO: do store annotations into the Element -> remove this override
+    // Currently, many test cases fail without this.
+    @Override
+    public void storeClassTree(ClassTree tree) {
+    }
+
+
     private class OwnershipTypeAnnotator extends TypeAnnotator {
 
         public OwnershipTypeAnnotator(OwnershipAnnotatedTypeFactory atypeFactory) {
@@ -51,15 +54,15 @@ public class OwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         @Override
-        public Void visitDeclared(AnnotatedDeclaredType type, Element elem) {
+        public Void visitDeclared(AnnotatedDeclaredType type, Void p) {
             if (type.isAnnotatedInHierarchy(BOTTOM_QUAL))
-                return super.visitDeclared(type, elem);
+                return super.visitDeclared(type, p);
 
-            if (elem != null &&
+            /*if (elem != null &&
                     elem.getKind() == ElementKind.CLASS &&
                     TypesUtils.isObject(type.getUnderlyingType()))
-                type.addAnnotation(World.class);
-            return super.visitDeclared(type, elem);
+                type.addAnnotation(World.class);*/
+            return super.visitDeclared(type, p);
         }
     }
 
