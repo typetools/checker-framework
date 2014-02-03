@@ -1,7 +1,8 @@
 package java.util;
 import checkers.javari.quals.*;
 
-public interface Map<K,V> {
+public interface Map<K extends @ReadOnly Object,
+        V extends @ReadOnly Object> {
     int size(@ReadOnly Map<K,V> this);
     boolean isEmpty(@ReadOnly Map<K,V> this);
     boolean containsKey(@ReadOnly Object key);

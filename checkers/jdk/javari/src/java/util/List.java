@@ -1,7 +1,7 @@
 package java.util;
 import checkers.javari.quals.*;
 
-public interface List<E> extends Collection<E> {
+public interface List<E extends @ReadOnly Object> extends Collection<E> {
     int size(@ReadOnly List<E> this);
     boolean isEmpty(@ReadOnly List<E> this);
     boolean contains(@ReadOnly List<E> this, @ReadOnly Object o);
