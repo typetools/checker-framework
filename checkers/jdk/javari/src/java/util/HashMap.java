@@ -4,7 +4,8 @@ import java.io.*;
 
 import com.sun.jndi.url.rmi.*;
 
-public class HashMap<K,V>
+public class HashMap<K extends @ReadOnly Object,
+         V extends @ReadOnly Object>
     extends AbstractMap<K,V>
     implements Map<K,V>, Cloneable, Serializable {
 

@@ -2,7 +2,7 @@ package java.util;
 import checkers.igj.quals.*;
 
 @I
-public interface Iterator<E> {
+public interface Iterator<E extends @ReadOnly Object> {
   public abstract boolean hasNext(@ReadOnly Iterator<E> this);
   // For a justification of this annotation, see section
   // "Iterators and their abstract state" in the Checker Framework Manual.

@@ -91,7 +91,7 @@ public class Arrays {
     public static boolean[] copyOfRange(boolean @ReadOnly [] original, int from, int to) { throw new RuntimeException("skeleton method"); }
     // In JDK7, should instead be: @SafeVarargs
     @SuppressWarnings({"varargs","unchecked"})
-    public static <T> List<T> asList(T... a) { throw new RuntimeException("skeleton method"); }
+    public static <T extends @ReadOnly Object> List<T> asList(T... a) { throw new RuntimeException("skeleton method"); }
     public static int hashCode(@ReadOnly long a[]) { throw new RuntimeException("skeleton method"); }
     public static int hashCode(@ReadOnly int a[]) { throw new RuntimeException("skeleton method"); }
     public static int hashCode(@ReadOnly short a[]) { throw new RuntimeException("skeleton method"); }
