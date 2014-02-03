@@ -1,7 +1,7 @@
 package java.util;
 import checkers.javari.quals.*;
 
-public class TreeMap<K, V> extends AbstractMap<K, V> implements NavigableMap<K, V>, Cloneable, java.io.Serializable {
+public class TreeMap<K extends @ReadOnly Object, V extends @ReadOnly Object> extends AbstractMap<K, V> implements NavigableMap<K, V>, Cloneable, java.io.Serializable {
     private static final long serialVersionUID = 0L;
   public TreeMap() { throw new RuntimeException(("skeleton method")); }
   public TreeMap(Comparator<? super K> a1) { throw new RuntimeException(("skeleton method")); }

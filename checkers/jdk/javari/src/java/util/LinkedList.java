@@ -1,7 +1,7 @@
 package java.util;
 import checkers.javari.quals.*;
 
-public class LinkedList<E> extends AbstractSequentialList<E> implements List<E>, Deque<E>, Cloneable, java.io.Serializable {
+public class LinkedList<E extends @ReadOnly Object> extends AbstractSequentialList<E> implements List<E>, Deque<E>, Cloneable, java.io.Serializable {
     private static final long serialVersionUID = 0L;
   public LinkedList() { throw new RuntimeException(("skeleton method")); }
   public @PolyRead LinkedList(@PolyRead Collection<? extends E> a1) { throw new RuntimeException(("skeleton method")); }
