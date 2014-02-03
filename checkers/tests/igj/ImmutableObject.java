@@ -19,7 +19,8 @@ public class ImmutableObject {
 
     static void isReadOnly(@ReadOnly ImmutableObject o) { }
     static void isImmutable(@Immutable ImmutableObject o) { }
-    //:: error: (type.invalid)
+    // The @Immutable on class should be an upper bound, not a default
+    //TODO:: error: (type.invalid)
     static void isMutable(@Mutable ImmutableObject o) { }
 
     void defaultMethod() { }
