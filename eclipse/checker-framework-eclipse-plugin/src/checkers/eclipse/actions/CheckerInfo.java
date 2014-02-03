@@ -1,7 +1,9 @@
 package checkers.eclipse.actions;
 
 import checkers.eclipse.util.JavaUtils;
+import checkers.eclipse.util.PluginUtil;
 import checkers.fenum.FenumChecker;
+import checkers.formatter.FormatterChecker;
 import checkers.i18n.I18nChecker;
 import checkers.igj.IGJChecker;
 import checkers.interning.InterningChecker;
@@ -12,9 +14,7 @@ import checkers.nullness.NullnessChecker;
 import checkers.regex.RegexChecker;
 import checkers.tainting.TaintingChecker;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * Stores information that describes a particular checker such as its label, the
@@ -26,7 +26,7 @@ import java.util.List;
 public class CheckerInfo
 {
 
-    private static List<CheckerInfo> checkers = null;
+    private static Map<String, CheckerInfo> checkers;
 
     private final String label;
     private final String processor;
@@ -49,13 +49,16 @@ public class CheckerInfo
         return tokens.toArray(new String[tokens.size()]);
     }
 
-    public static List<CheckerInfo> getCheckers() {
+    private static void initCheckers() {
         if(checkers == null) {
-            checkers = Arrays.asList(
+
+            final List<CheckerInfo> checkerList = Arrays.asList(
                     new CheckerInfo("Nullness Checker",  NullnessChecker.class.getCanonicalName(),  "checkers.nullness.quals.*"),
                     new CheckerInfo("Javari Checker",    JavariChecker.class.getCanonicalName(),    "checkers.javari.quals.*"),
                     new CheckerInfo("Interning Checker", InterningChecker.class.getCanonicalName(), "checkers.interning.quals.*"),
-                    new CheckerInfo("Fenum Checker",     FenumChecker.class.getCanonicalName(),     "checkers.fenum.quals.*"),
+
+                    new CheckerInfo("Fenum Checker",         FenumChecker.class.getCanonicalName(),     "checkers.fenum.quals.*"),
+                    new CheckerInfo("Format String Checker", FormatterChecker.class.getCanonicalName(), "checkers.formatter.quals.*"),
 
                     new CheckerInfo("Linear Checker",    LinearChecker.class.getCanonicalName(),    "checkers.linear.quals.*"),
                     new CheckerInfo("Lock Checker",      LockChecker.class.getCanonicalName(),      "checkers.lock.quals.*"),
@@ -64,8 +67,22 @@ public class CheckerInfo
 
                     new CheckerInfo("I18n Checker",      I18nChecker.class.getCanonicalName(),      "checkers.i18n.quals.*")
             );
-        }
 
+            final Map<String, CheckerInfo> modifiableCheckers = new LinkedHashMap<String, CheckerInfo>();
+            for (final CheckerInfo checkerInfo : checkerList) {
+                modifiableCheckers.put(checkerInfo.getClassPath(), checkerInfo);
+            }
+            checkers = Collections.unmodifiableMap(modifiableCheckers);
+        }
+    }
+
+    public static List<CheckerInfo> getCheckers() {
+        initCheckers();
+        return new ArrayList<CheckerInfo>(checkers.values());
+    }
+
+    public static Map<String, CheckerInfo> getPathToCheckerInfo() {
+        initCheckers();
         return checkers;
     }
 
@@ -73,8 +90,8 @@ public class CheckerInfo
         String str = "fromClassPath(" + classPath + ", " + qualsPath + ")";
         try  {
         final String [] pathTokens = classPath.split("\\.");
-            str += "[" + JavaUtils.join(" ", pathTokens) + "]";
-        final String className = JavaUtils.join(" ", splitAtUppercase(pathTokens[pathTokens.length - 1]));
+            str += "[" + PluginUtil.join(" ", pathTokens) + "]";
+        final String className = PluginUtil.join(" ", splitAtUppercase(pathTokens[pathTokens.length - 1]));
             str += "className = " + className;
             return new CheckerInfo(className, classPath, qualsPath);
         } catch(Exception e) {
