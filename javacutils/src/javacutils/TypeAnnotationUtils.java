@@ -162,7 +162,7 @@ public class TypeAnnotationUtils {
      * AnnotationValue.
      *
      * @param meth the ExecutableElement that is assigned the value, needed for empty arrays.
-     * @param am  an AnnotationValue, which may be part of an AST or an internally
+     * @param av  an AnnotationValue, which may be part of an AST or an internally
      *            created subclass.
      * @return  a new Attribute corresponding to the AnnotationValue
      */
