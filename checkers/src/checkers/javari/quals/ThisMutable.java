@@ -2,6 +2,8 @@ package checkers.javari.quals;
 
 import java.lang.annotation.Target;
 
+import checkers.quals.DefaultFor;
+import checkers.quals.DefaultLocation;
 import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifier;
 
@@ -18,4 +20,5 @@ import checkers.quals.TypeQualifier;
 @TypeQualifier
 @Target({}) // empty target prevents programmers from writing this in a program
 @SubtypeOf(ReadOnly.class)
+@DefaultFor(DefaultLocation.FIELD)
 public @interface ThisMutable {}
