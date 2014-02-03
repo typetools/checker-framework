@@ -3,10 +3,10 @@ package tests.reflection;
 import checkers.basetype.BaseTypeChecker;
 import checkers.quals.Bottom;
 import checkers.quals.TypeQualifiers;
-import checkers.quals.Unqualified;
 import checkers.reflection.ReflectionResolutionAnnotatedTypeFactory;
 import checkers.types.QualifierHierarchy;
 import checkers.units.quals.Mass;
+import checkers.units.quals.UnknownUnits;
 import checkers.units.quals.g;
 import checkers.units.quals.kg;
 import checkers.util.GraphQualifierHierarchy;
@@ -23,7 +23,7 @@ import javax.lang.model.element.AnnotationMirror;
  * @author rjust
  */
 @TypeQualifiers({ Mass.class, kg.class, g.class, Bottom.class,
-        Unqualified.class })
+        UnknownUnits.class })
 public final class ReflectionTestAnnotatedTypeFactory extends
         ReflectionResolutionAnnotatedTypeFactory {
     public ReflectionTestAnnotatedTypeFactory(BaseTypeChecker checker) {
