@@ -1,25 +1,22 @@
 package checkers.javari.quals;
 
-import java.lang.annotation.*;
-
-import checkers.javari.JavariChecker;
-
-import static java.lang.annotation.ElementType.*;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Indicates that a field is assignable, even if it is inside a {@link ReadOnly}
- * instance.
+ * Indicates the annotated {@code Field} may be re-assigned regardless of the
+ * immutability of the enclosing class or object instance.
  *
  * <p>
  *
  * This annotation is part of the Javari language.
  *
- * @see JavariChecker
  * @checker_framework_manual #javari-checker Javari Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({FIELD})
-public @interface Assignable {
-
-}
+@Target(ElementType.FIELD)
+public @interface Assignable {}
