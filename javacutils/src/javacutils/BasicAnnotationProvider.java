@@ -7,6 +7,8 @@ import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 
+import com.sun.source.tree.Tree;
+
 public class BasicAnnotationProvider implements AnnotationProvider {
 
     @Override
@@ -22,6 +24,12 @@ public class BasicAnnotationProvider implements AnnotationProvider {
             }
         }
 
+        return null;
+    }
+
+    @Override
+    public AnnotationMirror getAnnotationMirror(Tree tree,
+            Class<? extends Annotation> target) {
         return null;
     }
 }

@@ -3,9 +3,10 @@ package checkers.eclipse.actions;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import checkers.eclipse.prefs.CheckerPreferences;
-import checkers.eclipse.util.JavaUtils;
+import checkers.eclipse.util.PluginUtil;
 import org.eclipse.jface.preference.IPreferenceStore;
 
 import checkers.eclipse.CheckerPlugin;
@@ -30,21 +31,21 @@ public class CheckerManager {
     }
 
     /**
-     * Check to see which classes have been selected and return the quals paths
-     * of those that are selected.
+     * For each processor in processors, check to see if we recognize that processor and
+     * add its implicit imports to the "selected" list.  Return selected.
      * 
      * @return a list of quals paths to use as imports
      */
-    public static List<String> getSelectedQuals() {
+    public static List<String> getSelectedQuals(final String [] processors) {
         List<String> selected = new ArrayList<String>();
 
-        IPreferenceStore store = getPrefStore();
+        final Map<String, CheckerInfo> pathToChecker = CheckerInfo.getPathToCheckerInfo();
 
-        for (CheckerInfo processor : CheckerInfo.getCheckers()) {
-            String label = processor.getLabel();
-            boolean selection = store.getBoolean(label);
-            if (selection)
-                selected.add(processor.getQualsPath());
+        for (String processor : processors ) {
+            final String trimmedProc = processor.trim();
+            if (pathToChecker.containsKey(trimmedProc)) {
+                selected.add(pathToChecker.get(trimmedProc).getQualsPath());
+            }
         }
 
         return selected;
@@ -68,7 +69,7 @@ public class CheckerManager {
 
     public static void storeCustomClasses(final String [] customClasses) {
         final IPreferenceStore store = getPrefStore();
-        final String classString = JavaUtils.join(",", customClasses);
+        final String classString = PluginUtil.join(",", customClasses);
 
         store.setValue(CheckerPreferences.PREF_CHECKER_CUSTOM_CLASSES, classString);
     }
@@ -79,7 +80,7 @@ public class CheckerManager {
 
         String toStore = "";
         if(!selectedClasses.isEmpty()) {
-            toStore = JavaUtils.join(";", selectedClasses);
+            toStore = PluginUtil.join(";", selectedClasses);
         }
 
         store.setValue(CheckerPreferences.PREF_CHECKER_SELECTED_CHECKERS, toStore);

@@ -46,13 +46,13 @@
 	<persistent value="true"/>
   </extension>
    
-  <extension
+  <!--extension
     point="org.eclipse.ui.ide.markerResolution">
     <markerResolutionGenerator
       markerType="checker.framework.eclipse.plugin.marker"
       class="checkers.eclipse.marker.CheckerResolutionGenerator">
     </markerResolutionGenerator>
-  </extension>
+  </extension-->
   
   <extension
     point="org.eclipse.ui.menus">
@@ -109,6 +109,11 @@
           <command
             commandId="checkers.eclipse.runfenum"
             label="Fenum Checker"
+            style="push">
+          </command>
+          <command
+            commandId="checkers.eclipse.runformatter"
+            label="Formatting Checker"
             style="push">
           </command>
           <command
@@ -266,6 +271,12 @@
       id="checkers.eclipse.runfenum"
       name="Run Fenum Checker">
     </command>
+    <command
+      categoryId="checkers.eclipse.category"
+      defaultHandler="checkers.eclipse.actions.CheckerActions$FormatterAction"
+      id="checkers.eclipse.runformatter"
+      name="Run Format String Checker">
+     </command>
     
     <command
       categoryId="checkers.eclipse.category"
