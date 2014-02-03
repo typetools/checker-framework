@@ -39,7 +39,6 @@ import dataflow.cfg.node.ReturnNode;
 
 import javacutils.AnnotationUtils;
 import javacutils.ErrorReporter;
-import javacutils.InternalUtils;
 import javacutils.Pair;
 import javacutils.TreeUtils;
 
@@ -357,6 +356,8 @@ public abstract class GenericAnnotatedTypeFactory<
             }
         }
 
+        // If Unqualified is a supported qualifier, make it the default.
+        // This is for convenience only. Maybe remove.
         AnnotationMirror unqualified = AnnotationUtils.fromClass(elements, Unqualified.class);
         if (!foundDefaultOtherwise &&
                 this.isSupportedQualifier(unqualified)) {
@@ -762,8 +763,7 @@ public abstract class GenericAnnotatedTypeFactory<
             annotateImplicitWithFlow(tree, type);
         } else {
             treeAnnotator.visit(tree, type);
-            Element elt = InternalUtils.symbol(tree);
-            typeAnnotator.visit(type, elt);
+            typeAnnotator.visit(type, null);
             defaults.annotate(tree, type);
         }
     }
@@ -803,10 +803,7 @@ public abstract class GenericAnnotatedTypeFactory<
         }
 
         treeAnnotator.visit(tree, type);
-
-        Element elt = InternalUtils.symbol(tree);
-
-        typeAnnotator.visit(type, elt);
+        typeAnnotator.visit(type, null);
         defaults.annotate(tree, type);
 
         Value as = getInferredValueFor(tree);
@@ -869,7 +866,7 @@ public abstract class GenericAnnotatedTypeFactory<
 
     @Override
     public void annotateImplicit(Element elt, AnnotatedTypeMirror type) {
-        typeAnnotator.visit(type, elt);
+        typeAnnotator.visit(type, null);
         defaults.annotate(elt, type);
     }
 

@@ -19,6 +19,15 @@ import checkers.nullness.NullnessChecker;
  * For example, warnings issued by the Nullness Checker can be suppressed using
  * {@code @SuppressWarnings("nullness")} because {@link NullnessChecker} is
  * annotated with {@code @SuppressWarningsKey("nullness")}.
+ * 
+ * TODO: the previous paragraph about the Nullness Checker is out-of-date.
+ * We only consider this meta-annotation on the most-concrete SourceChecker subclass
+ * and only use the suppression keys listed there.
+ * For the Nullness Checker we add multiple suppression keys along the hierarchy.
+ * Should we change the semantics of this annotation to look for it on all
+ * classes from the most-concrete class up to SourceChecker?
+ * (That would make the behavior consistent with e.g. our SupportedOptions.
+ * Is there ever a reason where that would be unwanted?
  */
 @Inherited
 @Documented

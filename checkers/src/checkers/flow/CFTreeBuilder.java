@@ -1,22 +1,13 @@
 package checkers.flow;
 
 import checkers.types.AnnotatedTypeMirror;
-
+import javacutils.TypeAnnotationUtils;
 import javacutils.trees.TreeBuilder;
 
-import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.AnnotationValue;
-import javax.lang.model.element.AnnotationValueVisitor;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.ArrayType;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 
 import com.sun.source.tree.Tree;
@@ -28,7 +19,6 @@ import com.sun.tools.javac.code.TypeAnnotationPosition;
 import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.List;
-import com.sun.tools.javac.util.Pair;
 
 /**
  * The TreeBuilder permits the creation of new AST Trees using the
@@ -50,10 +40,10 @@ public class CFTreeBuilder extends TreeBuilder {
      * @return  a Tree representing the annotated type
      */
     public Tree buildAnnotatedType(AnnotatedTypeMirror annotatedType) {
-        return AnnotatedType(annotatedType);
+        return createAnnotatedType(annotatedType);
     }
 
-    private Tree AnnotatedType(AnnotatedTypeMirror annotatedType) {
+    private Tree createAnnotatedType(AnnotatedTypeMirror annotatedType) {
         // Implementation based on com.sun.tools.javac.tree.TreeMaker.Type
 
         // Convert the annotations from a set of AnnotationMirrors
@@ -62,22 +52,18 @@ public class CFTreeBuilder extends TreeBuilder {
         List<JCTree.JCAnnotation> annotationTrees = List.nil();
 
         for (AnnotationMirror am : annotations) {
-            // We can only make annotation trees out of annotations
-            // that actually appear in an AST Tree.  Other annotations,
-            // such as @Unqualified, are skipped.
-            if (!AnnotatedTypeMirror.isUnqualified(am)) {
-                Attribute.TypeCompound typeCompound =
-                    attributeFromAnnotationMirror(am);
-                JCTree.JCAnnotation annotationTree =
+            // TODO: what TypeAnnotationPosition should be used?
+            Attribute.TypeCompound typeCompound =
+                    TypeAnnotationUtils.createTypeCompoundFromAnnotationMirror(env, am, new TypeAnnotationPosition());
+            JCTree.JCAnnotation annotationTree =
                     maker.Annotation(typeCompound);
-                JCTree.JCAnnotation typeAnnotationTree =
+            JCTree.JCAnnotation typeAnnotationTree =
                     maker.TypeAnnotation(annotationTree.getAnnotationType(),
-                                         annotationTree.getArguments());
+                            annotationTree.getArguments());
 
-                typeAnnotationTree.attribute = typeCompound;
+            typeAnnotationTree.attribute = typeCompound;
 
-                annotationTrees = annotationTrees.append(typeAnnotationTree);
-            }
+            annotationTrees = annotationTrees.append(typeAnnotationTree);
         }
 
         // Convert the underlying type from a TypeMirror to an
@@ -125,12 +111,12 @@ public class CFTreeBuilder extends TreeBuilder {
             AnnotatedTypeMirror.AnnotatedWildcardType wildcard =
                 (AnnotatedTypeMirror.AnnotatedWildcardType) annotatedType;
             if (wildcard.getExtendsBound() != null) {
-                Tree annotatedExtendsBound = AnnotatedType(wildcard.getExtendsBound());
+                Tree annotatedExtendsBound = createAnnotatedType(wildcard.getExtendsBound());
                 underlyingTypeTree =
                     maker.Wildcard(maker.TypeBoundKind(BoundKind.EXTENDS),
                                    (JCTree)annotatedExtendsBound);
             } else if (wildcard.getSuperBound() != null) {
-                Tree annotatedSuperBound = AnnotatedType(wildcard.getSuperBound());
+                Tree annotatedSuperBound = createAnnotatedType(wildcard.getSuperBound());
                 underlyingTypeTree =
                     maker.Wildcard(maker.TypeBoundKind(BoundKind.SUPER),
                                    (JCTree)annotatedSuperBound);
@@ -151,7 +137,7 @@ public class CFTreeBuilder extends TreeBuilder {
                 List<JCTree.JCExpression> typeArgTrees = List.nil();
                 for (AnnotatedTypeMirror arg : annotatedDeclaredType.getTypeArguments()) {
                     typeArgTrees =
-                        typeArgTrees.append((JCTree.JCExpression)AnnotatedType(arg));
+                        typeArgTrees.append((JCTree.JCExpression)createAnnotatedType(arg));
                 }
                 JCTree.JCExpression clazz =
                     (JCTree.JCExpression) ((JCTree.JCTypeApply)underlyingTypeTree).getType();
@@ -163,7 +149,7 @@ public class CFTreeBuilder extends TreeBuilder {
             AnnotatedTypeMirror.AnnotatedArrayType annotatedArrayType =
                 (AnnotatedTypeMirror.AnnotatedArrayType)annotatedType;
             Tree annotatedComponentTree =
-                AnnotatedType(annotatedArrayType.getComponentType());
+                createAnnotatedType(annotatedArrayType.getComponentType());
             underlyingTypeTree =
                 maker.TypeArray((JCTree.JCExpression)annotatedComponentTree);
             break;
@@ -189,161 +175,5 @@ public class CFTreeBuilder extends TreeBuilder {
         annotatedTypeTree.setType((Type)annotatedType.getUnderlyingType());
 
         return annotatedTypeTree;
-    }
-
-    /**
-     * Returns a newly created Attribute.TypeCompound corresponding to an
-     * argument AnnotationMirror.
-     *
-     * @param am  an AnnotationMirror, which may be part of an AST or an internally
-     *            created subclass.
-     * @return  a new Attribute.TypeCompound corresponding to the AnnotationMirror
-     */
-    private Attribute.TypeCompound attributeFromAnnotationMirror(AnnotationMirror am) {
-        // Create a new Attribute to match the AnnotationMirror.
-        List<Pair<Symbol.MethodSymbol, Attribute>> values = List.nil();
-        for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry :
-                 am.getElementValues().entrySet()) {
-            Attribute attribute = attributeFromAnnotationValue(entry.getKey(), entry.getValue());
-            values = values.append(new Pair<>((Symbol.MethodSymbol)entry.getKey(),
-                                              attribute));
-        }
-        Attribute.Compound compound =
-            new Attribute.Compound((Type.ClassType)am.getAnnotationType(),
-                                   values);
-        return new Attribute.TypeCompound(compound, new TypeAnnotationPosition());
-    }
-
-    /**
-     * Returns a newly created Attribute corresponding to an argument
-     * AnnotationValue.
-     *
-     * @param meth the ExecutableElement that is assigned the value, needed for empty arrays.
-     * @param am  an AnnotationValue, which may be part of an AST or an internally
-     *            created subclass.
-     * @return  a new Attribute corresponding to the AnnotationValue
-     */
-    private Attribute attributeFromAnnotationValue(ExecutableElement meth, AnnotationValue av) {
-        return av.accept(new AttributeCreator(meth), null);
-    }
-
-    class AttributeCreator implements AnnotationValueVisitor<Attribute, Void> {
-        private final ExecutableElement meth;
-
-        public AttributeCreator(ExecutableElement meth) {
-            this.meth = meth;
-        }
-
-        @Override
-        public Attribute visit(AnnotationValue av, Void p) {
-            return av.accept(this, p);
-        }
-
-        @Override
-        public Attribute visit(AnnotationValue av) {
-            return visit(av, null);
-        }
-
-        @Override
-        public Attribute visitBoolean(boolean b, Void p) {
-            TypeMirror booleanType = modelTypes.getPrimitiveType(TypeKind.BOOLEAN);
-            return new Attribute.Constant((Type)booleanType, b);
-        }
-
-        @Override
-        public Attribute visitByte(byte b, Void p) {
-            TypeMirror byteType = modelTypes.getPrimitiveType(TypeKind.BYTE);
-            return new Attribute.Constant((Type)byteType, b);
-        }
-
-        @Override
-        public Attribute visitChar(char c, Void p) {
-            TypeMirror charType = modelTypes.getPrimitiveType(TypeKind.CHAR);
-            return new Attribute.Constant((Type)charType, c);
-        }
-
-        @Override
-        public Attribute visitDouble(double d, Void p) {
-            TypeMirror doubleType = modelTypes.getPrimitiveType(TypeKind.DOUBLE);
-            return new Attribute.Constant((Type)doubleType, d);
-        }
-
-        @Override
-        public Attribute visitFloat(float f, Void p) {
-            TypeMirror floatType = modelTypes.getPrimitiveType(TypeKind.FLOAT);
-            return new Attribute.Constant((Type)floatType, f);
-        }
-
-        @Override
-        public Attribute visitInt(int i, Void p) {
-            TypeMirror intType = modelTypes.getPrimitiveType(TypeKind.INT);
-            return new Attribute.Constant((Type)intType, i);
-        }
-
-        @Override
-        public Attribute visitLong(long i, Void p) {
-            TypeMirror longType = modelTypes.getPrimitiveType(TypeKind.LONG);
-            return new Attribute.Constant((Type)longType, i);
-        }
-
-        @Override
-        public Attribute visitShort(short s, Void p) {
-            TypeMirror shortType = modelTypes.getPrimitiveType(TypeKind.SHORT);
-            return new Attribute.Constant((Type)shortType, s);
-        }
-
-        @Override
-        public Attribute visitString(String s, Void p) {
-            TypeMirror stringType = elements.getTypeElement("java.lang.String").asType();
-            return new Attribute.Constant((Type)stringType, s);
-        }
-
-        @Override
-        public Attribute visitType(TypeMirror t, Void p) {
-            if (t instanceof Type) {
-                return new Attribute.Class(javacTypes, (Type)t);
-            }
-
-            assert false : "Unexpected type of TypeMirror: " + t.getClass();
-            return null;
-        }
-
-        @Override
-        public Attribute visitEnumConstant(VariableElement c, Void p) {
-            if (c instanceof Symbol.VarSymbol) {
-                Symbol.VarSymbol sym = (Symbol.VarSymbol) c;
-                if (sym.getKind() == ElementKind.ENUM_CONSTANT) {
-                    return new Attribute.Enum(sym.type, sym);
-                }
-            }
-
-            assert false : "Unexpected type of VariableElement: " + c.getClass();
-            return null;
-        }
-
-        @Override
-        public Attribute visitAnnotation(AnnotationMirror a, Void p) {
-            return attributeFromAnnotationMirror(a);
-        }
-
-        @Override
-        public Attribute visitArray(java.util.List<? extends AnnotationValue> vals, Void p) {
-            if (!vals.isEmpty()) {
-                List<Attribute> valAttrs = List.nil();
-                for (AnnotationValue av : vals) {
-                    valAttrs = valAttrs.append(av.accept(this, p));
-                }
-                ArrayType arrayType = modelTypes.getArrayType(valAttrs.get(0).type);
-                return new Attribute.Array((Type)arrayType, valAttrs);
-            } else {
-                return new Attribute.Array((Type) meth.getReturnType(), List.<Attribute>nil());
-            }
-        }
-
-        @Override
-        public Attribute visitUnknown(AnnotationValue av, Void p) {
-            assert false : "Unexpected type of AnnotationValue: " + av.getClass();
-            return null;
-        }
     }
 }

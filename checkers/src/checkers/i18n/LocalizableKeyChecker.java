@@ -8,8 +8,8 @@ import java.util.Locale;
 import checkers.i18n.quals.LocalizableKey;
 import checkers.propkey.PropertyKeyChecker;
 import checkers.propkey.quals.PropertyKey;
+import checkers.propkey.quals.UnknownPropertyKey;
 import checkers.quals.TypeQualifiers;
-import checkers.quals.Unqualified;
 
 /**
  * A type-checker that checks that only valid localizable keys are used
@@ -37,7 +37,7 @@ import checkers.quals.Unqualified;
  *
  * </ol>
  */
-@TypeQualifiers( {LocalizableKey.class, PropertyKey.class, Unqualified.class} )
+@TypeQualifiers( {LocalizableKey.class, PropertyKey.class, UnknownPropertyKey.class} )
 @SupportedOptions( {"propfiles", "bundlenames"} )
 public class LocalizableKeyChecker extends PropertyKeyChecker {
 }

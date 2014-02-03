@@ -2,9 +2,9 @@ package checkers.units;
 
 import checkers.basetype.BaseTypeChecker;
 import checkers.basetype.BaseTypeVisitor;
-import checkers.quals.Unqualified;
 import checkers.source.Result;
 import checkers.types.AnnotatedTypeMirror;
+import checkers.units.quals.UnknownUnits;
 
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
@@ -34,7 +34,7 @@ public class UnitsVisitor extends BaseTypeVisitor<UnitsAnnotatedTypeFactory> {
                 checker.report(Result.failure("compound.assignment.type.incompatible",
                         varType, exprType), node);
             }
-        } else if (exprType.getAnnotation(Unqualified.class) == null) {
+        } else if (exprType.getAnnotation(UnknownUnits.class) == null) {
             // Only allow mul/div with unqualified units
             checker.report(Result.failure("compound.assignment.type.incompatible",
                     varType, exprType), node);

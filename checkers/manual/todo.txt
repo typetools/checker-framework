@@ -1,6 +1,10 @@
 Necessary changes to the manual.
 
 ------------------------------------------------------
+The warning output now contains the most specific error key that
+can be used to suppress that warning.
+Update all example output in the manual to account for this.
+------------------------------------------------------
 
 New section on concepts and annotations that apply to all type-systems and checkers
 

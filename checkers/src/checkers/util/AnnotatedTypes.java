@@ -619,7 +619,7 @@ public class AnnotatedTypes {
         } else {
             // This case should never happen.
             ErrorReporter.errorAbort("AnnotatedTypes.findTypeArguments: unexpected tree: " + expr);
-            elt = null;
+            return null; // dead code
         }
 
         // Is the method a generic method?
@@ -635,7 +635,7 @@ public class AnnotatedTypes {
         } else {
             // This case should never happen.
             ErrorReporter.errorAbort("AnnotatedTypes.findTypeArguments: unexpected tree: " + expr);
-            targs = null;
+            return null; // dead code
         }
 
         // Has the user supplied type arguments?

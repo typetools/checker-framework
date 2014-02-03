@@ -47,6 +47,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeVariable;
 
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
@@ -184,6 +185,12 @@ public class IGJAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return new IGJTypePostAnnotator(this);
     }
 
+    // TODO: do store annotations into the Element -> remove this override
+    // Currently, many test cases fail without this.
+    @Override
+    public void storeClassTree(ClassTree tree) {
+    }
+
     // **********************************************************************
     // add implicit annotations
     // **********************************************************************
@@ -203,12 +210,32 @@ public class IGJAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          *  Enum and annotations  are immutable
          */
         @Override
-        public Void visitDeclared(AnnotatedDeclaredType type, Element elem) {
+        public Void visitDeclared(AnnotatedDeclaredType type, Void p) {
             if (!hasImmutabilityAnnotation(type)) {
                 // Actual element
                 TypeElement element = (TypeElement)type.getUnderlyingType().asElement();
                 AnnotatedDeclaredType elementType = fromElement(element);
-                ElementKind elemKind = elem != null ? elem.getKind() : ElementKind.OTHER;
+                // ElementKind elemKind = elem != null ? elem.getKind() : ElementKind.OTHER;
+
+                if (TypesUtils.isBoxedPrimitive(type.getUnderlyingType())
+                        || element.getQualifiedName().contentEquals("java.lang.String")
+                        || ElementUtils.isObject(element)) {
+                    // variation of case 1
+                    // TODO: These cases are more of hacks and they should
+                    // really be immutable or readonly
+                    type.addAnnotation(BOTTOM_QUAL);
+                } else if (elementType.hasEffectiveAnnotation(IMMUTABLE)) {
+                    // case 2: known immutable types
+                    type.addAnnotation(IMMUTABLE);
+                }
+            }
+            return null; //super.visitDeclared(type, p);
+            /*
+            if (!hasImmutabilityAnnotation(type)) {
+                // Actual element
+                TypeElement element = (TypeElement)type.getUnderlyingType().asElement();
+                AnnotatedDeclaredType elementType = fromElement(element);
+                // ElementKind elemKind = elem != null ? elem.getKind() : ElementKind.OTHER;
 
                 if (TypesUtils.isBoxedPrimitive(type.getUnderlyingType())
                         || element.getQualifiedName().contentEquals("java.lang.String")
@@ -220,21 +247,21 @@ public class IGJAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 } else if (elementType.hasEffectiveAnnotation(IMMUTABLE)) {
                     // case 2: known immutable types
                     type.replaceAnnotation(IMMUTABLE);
-                } else if (elemKind == ElementKind.LOCAL_VARIABLE) {
-                    type.replaceAnnotation(READONLY);
+                //} else if (elemKind == ElementKind.LOCAL_VARIABLE) {
+                //    type.replaceAnnotation(READONLY);
                 } else if (elementType.hasEffectiveAnnotation(MUTABLE)) { // not immutable
                     // case 7: mutable by default
                     type.replaceAnnotation(MUTABLE);
-                } else if (elemKind.isClass() || elemKind.isInterface()) {
+                //} else if (elemKind.isClass() || elemKind.isInterface()) {
                     // case 9: class or interface declaration
-                    type.replaceAnnotation(BOTTOM_QUAL);
-                } else if (elemKind.isField()) {
+                //    type.replaceAnnotation(BOTTOM_QUAL);
+                //} else if (elemKind.isField()) {
                     /*
                         && type.getElement() != null // We don't know the field context here
                         && getAnnotatedType(ElementUtils.enclosingClass(type.getElement())).hasEffectiveAnnotation(IMMUTABLE)) {
                     type.replaceAnnotation(IMMUTABLE);
                     TODO: This case is not exercised by any of the test cases. Is it needed?
-                    */
+                    
                 } else if (element.getKind().isClass() || element.getKind().isInterface()) {
                     // case 10
                     type.replaceAnnotation(MUTABLE);
@@ -243,11 +270,12 @@ public class IGJAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 }
 
             }
-            return super.visitDeclared(type, elem);
+            return super.visitDeclared(type, p);
+            */
         }
 
         @Override
-        public Void visitExecutable(AnnotatedExecutableType type, Element elem) {
+        public Void visitExecutable(AnnotatedExecutableType type, Void p) {
             AnnotatedDeclaredType receiver;
             if (type.getElement().getKind() == ElementKind.CONSTRUCTOR) {
                 receiver = (AnnotatedDeclaredType) type.getReturnType();
@@ -257,7 +285,7 @@ public class IGJAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
             if (receiver != null &&
                     hasImmutabilityAnnotation(receiver)) {
-                return super.visitExecutable(type, elem);
+                return super.visitExecutable(type, p);
             }
 
             TypeElement ownerElement = ElementUtils.enclosingClass(type.getElement());
@@ -279,47 +307,47 @@ public class IGJAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 receiver.replaceAnnotation(MUTABLE);
             }
 
-            return super.visitExecutable(type, elem);
+            return super.visitExecutable(type, p);
         }
 
         @Override
-        public Void visitTypeVariable(AnnotatedTypeVariable type, Element elem) {
+        public Void visitTypeVariable(AnnotatedTypeVariable type, Void p) {
             // In a declaration the upperbound is ReadOnly, while
             // the upper bound in a use is Mutable
             if (type.getUpperBoundField() != null
                     && !hasImmutabilityAnnotation(type.getUpperBoundField())) {
-                ElementKind elemKind = elem != null ? elem.getKind() : ElementKind.OTHER;
-                if (elemKind.isClass() || elemKind.isInterface()
+                // ElementKind elemKind = elem != null ? elem.getKind() : ElementKind.OTHER;
+                /*if (elemKind.isClass() || elemKind.isInterface()
                         || elemKind == ElementKind.CONSTRUCTOR
                         || elemKind == ElementKind.METHOD)
                     // case 5: upper bound within a class/method declaration
                     type.getUpperBoundField().replaceAnnotation(READONLY);
-                else if (TypesUtils.isObject(type.getUnderlyingType()))
+                else*/ if (TypesUtils.isObject(type.getUnderlyingType()))
                     // case 10: remaining cases
                     type.getUpperBoundField().replaceAnnotation(MUTABLE);
             }
 
-            return super.visitTypeVariable(type, elem);
+            return super.visitTypeVariable(type, p);
         }
 
         @Override
-        public Void visitWildcard(AnnotatedWildcardType type, Element elem) {
+        public Void visitWildcard(AnnotatedWildcardType type, Void p) {
             // In a declaration the upper bound is ReadOnly, while
             // the upper bound in a use is Mutable
             if (type.getExtendsBound() != null
                     && !hasImmutabilityAnnotation(type.getExtendsBound())) {
-                ElementKind elemKind = elem != null ? elem.getKind() : ElementKind.OTHER;
-                if (elemKind.isClass() || elemKind.isInterface()
+                // ElementKind elemKind = elem != null ? elem.getKind() : ElementKind.OTHER;
+                /*if (elemKind.isClass() || elemKind.isInterface()
                         || elemKind == ElementKind.CONSTRUCTOR
                         || elemKind == ElementKind.METHOD)
                     // case 5: upper bound within a class/method declaration
                     type.getExtendsBound().replaceAnnotation(READONLY);
-                else if (TypesUtils.isObject(type.getUnderlyingType()))
+                else*/ if (TypesUtils.isObject(type.getUnderlyingType()))
                     // case 10: remaining cases
                     type.getExtendsBound().replaceAnnotation(MUTABLE);
             }
 
-            return super.visitWildcard(type, elem);
+            return super.visitWildcard(type, p);
         }
     }
 
@@ -337,11 +365,15 @@ public class IGJAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         public Void visitNewClass(NewClassTree node, AnnotatedTypeMirror p) {
+            /*
             if (node.getClassBody() != null) {
+                System.out.println("Visit anonymous: " + node + " + input: " + p);
                 AnnotatedTypeMirror tt = IGJAnnotatedTypeFactory.this.getAnnotatedType(node.getIdentifier());
                 p.replaceAnnotations(tt.getAnnotations());
+                System.out.println("  final type: " + p);
                 // Is this the right way to handle anonymous classes?
-            } else if (!hasImmutabilityAnnotation(p)) {
+            } else */ 
+            if (!hasImmutabilityAnnotation(p)) {
                 AnnotatedTypeMirror ct = fromElement(
                         ((AnnotatedDeclaredType)p).getUnderlyingType().asElement());
 

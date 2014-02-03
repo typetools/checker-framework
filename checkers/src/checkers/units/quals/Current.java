@@ -7,9 +7,9 @@ import checkers.quals.*;
 /**
  * Electric current.
  */
+@TypeQualifier
+@SubtypeOf(UnknownUnits.class)
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-@TypeQualifier
-@SubtypeOf(Unqualified.class)
 public @interface Current {}

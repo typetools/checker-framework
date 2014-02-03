@@ -3,7 +3,6 @@ package checkers.i18n.quals;
 import checkers.quals.ImplicitFor;
 import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifier;
-import checkers.quals.Unqualified;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -20,7 +19,7 @@ import com.sun.source.tree.Tree.Kind;
  * @checker_framework_manual #i18n-checker Internationalization Checker
  */
 @TypeQualifier
-@SubtypeOf(Unqualified.class)
+@SubtypeOf(UnknownLocalized.class)
 @ImplicitFor( trees = {
         /* All integer literals */
         Kind.INT_LITERAL,

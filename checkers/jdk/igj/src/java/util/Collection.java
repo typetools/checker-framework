@@ -2,7 +2,7 @@ package java.util;
 import checkers.igj.quals.*;
 
 @I
-public interface Collection<E> extends @I Iterable<E> {
+public interface Collection<E extends @ReadOnly Object> extends @I Iterable<E> {
   public abstract int size(@ReadOnly Collection<E> this);
   public abstract boolean isEmpty(@ReadOnly Collection<E> this);
   public abstract boolean contains(@ReadOnly Collection<E> this, @ReadOnly Object a1);
