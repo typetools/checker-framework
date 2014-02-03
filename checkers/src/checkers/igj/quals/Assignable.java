@@ -10,6 +10,10 @@ import java.lang.annotation.Target;
  * Indicates the annotated {@code Field} may be re-assigned regardless of the
  * immutability of the enclosing class or object instance.
  *
+ * <p>
+ *
+ * This annotation is part of the IGJ language.
+ *
  * @checker_framework_manual #igj-checker IGJ Checker
  */
 @Documented
