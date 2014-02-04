@@ -212,7 +212,7 @@ def max_version( strs ):
     return version_as_str
 
 
-def current_distribution(site):
+def current_distribution_by_website(site):
     """
     Reads the checker framework version from the checker framework website and
     returns the version of the current release
@@ -315,9 +315,25 @@ def is_version_increased(old_version, new_version):
 def find_latest_version( version_dir ):
     return max_version( filter( os.path.isdir, os.listdir(version_dir) ) )
 
+def get_afu_version_from_html( html_file_path ):
+    version_regex = "<!-- afu-version -->(\\d+\\.\\d+\\.?\\d?),.*<!-- /afu-version -->"
+    version   = find_first_instance(version_regex, html_file_path, "")
+    if version is None:
+        raise Exception( "Could not detect Annotation File Utilities version in file " + html_file_path )
+
+    return version
+
+
     
 #=========================================================================================
 # Mercurial Utils
+
+def hg_push_or_fail( repo_root ):
+    cmd = 'hg -R %s push' % repo_root
+    print("EXE: " + cmd)
+    #result = os.system('hg -R %s push' % repo_root)
+    #if result is not 0:
+    #    raise Exception("Could not push to: " + repo_root)
 
 def hg_push( repo_root ):
     execute('hg -R %s push' % repo_root)
@@ -493,13 +509,13 @@ def prompt_to_delete(path):
         if result == "Yes" or result == "yes":
             shutil.rmtree(path)
 
-def force_symlink( source, symlink_path ):
+def force_symlink( target_of_link, path_to_symlink ):
     try:
-        os.symlink( source, symlink_path )
+        os.symlink( target_of_link, path_to_symlink )
     except OSError, e:
         if e.errno == errno.EEXIST:
-            os.remove( symlink_path )
-            os.symlink( source, symlink_path )
+            os.remove( path_to_symlink )
+            os.symlink( target_of_link, path_to_symlink )
 
 #note strs to find is mutated
 def are_in_file( file_path, strs_to_find ):

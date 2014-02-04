@@ -39,7 +39,7 @@ def append_to_PATH(paths):
 MAX_DOWNLOAD_SIZE=2000000000
 
 #The location the test site is built in
-HTTP_PATH_TO_DEV_SITE  = "http://http://types.cs.washington.edu/dev"
+HTTP_PATH_TO_DEV_SITE  = "http://types.cs.washington.edu/dev"
 FILE_PATH_TO_DEV_SITE  = "/cse/www2/types/dev/"
 
 #The location the test site is pushed to when it is ready
@@ -126,9 +126,15 @@ JSR308_INTERM_RELEASES_DIR  = os.path.join( FILE_PATH_TO_DEV_SITE, "jsr308",    
 AFU_INTERM_RELEASES_DIR     = os.path.join( FILE_PATH_TO_DEV_SITE, "annotation-file-utilities", "releases" )
 CHECKER_INTERM_RELEASES_DIR = os.path.join( FILE_PATH_TO_DEV_SITE, "checker-framework",         "releases" )
 
-JSR308_LIVE_RELEASES_DIR  = os.path.join( FILE_PATH_TO_LIVE_SITE, "jsr308",                     "releases" )
-AFU_LIVE_RELEASES_DIR     = os.path.join( FILE_PATH_TO_LIVE_SITE, "annotation-file-utilities",  "releases" )
-CHECKER_LIVE_RELEASES_DIR = os.path.join( FILE_PATH_TO_LIVE_SITE, "checker-framework",          "releases" )
+
+JSR308_LIVE_SITE = os.path.join( FILE_PATH_TO_LIVE_SITE, "jsr308" )
+JSR308_LIVE_RELEASES_DIR = os.path.join( JSR308_LIVE_SITE, "releases" )
+
+AFU_LIVE_SITE = os.path.join( FILE_PATH_TO_LIVE_SITE, "annotation-file-utilities" )
+AFU_LIVE_RELEASES_DIR = os.path.join( AFU_LIVE_SITE,  "releases" )
+
+CHECKER_LIVE_SITE = os.path.join( FILE_PATH_TO_LIVE_SITE, "checker-framework" )
+CHECKER_LIVE_RELEASES_DIR = os.path.join( CHECKER_LIVE_SITE, "releases" )
 
 CURRENT_DATE=datetime.date.today()
 
