@@ -60,13 +60,15 @@ def run_sanity_check( new_checkers_release_zip, release_version ):
 
 def copy_release_dir( path_to_dev, path_to_live, release_version ):
     source_location = os.path.join( path_to_dev, release_version )
-    dest_parent = os.path.join( path_to_live, "releases" )
     dest_location = os.path.join( path_to_live, release_version )
+
+    if os.path.exists( dest_location ):
+        prompt_to_delete( dest_location )
 
     if os.path.exists( dest_location ):
         raise Exception( "Destination location exists: " + dest_location )
 
-    cmd = "cp -r %s %s" % ( source_location, dest_parent )
+    cmd = "cp -r %s %s" % ( source_location, dest_location )
     execute( cmd )
 
     return dest_location
@@ -77,9 +79,9 @@ def copy_releases_to_live_site( checker_version, afu_version):
     copy_release_dir( AFU_INTERM_RELEASES_DIR, AFU_LIVE_RELEASES_DIR, afu_version )
 
 def update_release_symlinks( checker_version, afu_version ):
-    force_symlink( os.path.join( JSR308_LIVE_RELEASES_DIR, checker_version ),  os.path.join( JSR308_LIVE_SITE,  "current" ) )
+    force_symlink( os.path.join( JSR308_LIVE_RELEASES_DIR,  checker_version ), os.path.join( JSR308_LIVE_SITE,  "current" ) )
     force_symlink( os.path.join( CHECKER_LIVE_RELEASES_DIR, checker_version ), os.path.join( CHECKER_LIVE_SITE, "current" ) )
-    force_symlink( os.path.join( AFU_LIVE_RELEASES_DIR, checker_version ),     os.path.join( AFU_LIVE_SITE,     "current" ) )
+    force_symlink( os.path.join( AFU_LIVE_RELEASES_DIR,     afu_version ),     os.path.join( AFU_LIVE_SITE,     "current" ) )
 
 def ensure_group_access_to_releases():
     ensure_group_access( JSR308_LIVE_RELEASES_DIR )
@@ -138,10 +140,13 @@ def main(argv):
     ensure_group_access_to_releases()
     update_release_symlinks( new_checker_version, new_afu_version )
 
-    push_maven_artifacts_to_release_repo( new_checker_version )
+    continue_script = prompt_w_suggestion("Push the release to Google code repositories?  This is irreversible.", "no", "^(Yes|yes|No|no)$")
+    if continue_script == "yes" or continue_script == "Yes":
+        push_maven_artifacts_to_release_repo( new_checker_version )
+
     #run maven sanity check
 
-    push_interm_to_release_repos()
+    #push_interm_to_release_repos()
 
     continue_or_exit( "Please follow these instructions to release the Eclipse plugin:\n<path to Eclipse release instructions>\n" )
     continue_or_exit( "Please log in to google code and mark all issues that were 'pushed' to 'fixed'." )
