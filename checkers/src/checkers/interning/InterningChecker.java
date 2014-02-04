@@ -3,9 +3,9 @@ package checkers.interning;
 import checkers.basetype.BaseTypeChecker;
 import checkers.interning.quals.Interned;
 import checkers.interning.quals.PolyInterned;
+import checkers.interning.quals.UnknownInterned;
 import checkers.quals.PolyAll;
 import checkers.quals.TypeQualifiers;
-import checkers.quals.Unqualified;
 import checkers.source.SupportedLintOptions;
 
 import javax.annotation.processing.SupportedOptions;
@@ -25,7 +25,7 @@ import javax.annotation.processing.SupportedOptions;
  *
  * @checker_framework_manual #interning-checker Interning Checker
  */
-@TypeQualifiers({ Interned.class, Unqualified.class,
+@TypeQualifiers({ Interned.class, UnknownInterned.class,
     PolyInterned.class, PolyAll.class})
 @SupportedLintOptions({"dotequals"})
 @SupportedOptions({"checkclass"})

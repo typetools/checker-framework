@@ -4,9 +4,9 @@ import checkers.basetype.BaseAnnotatedTypeFactory;
 import checkers.basetype.BaseTypeChecker;
 import checkers.interning.quals.Interned;
 import checkers.interning.quals.PolyInterned;
+import checkers.interning.quals.UnknownInterned;
 import checkers.quals.DefaultQualifier;
 import checkers.quals.ImplicitFor;
-import checkers.quals.Unqualified;
 import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -49,7 +49,7 @@ import com.sun.source.tree.Tree;
 public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** The {@link Interned} annotation. */
-    final AnnotationMirror INTERNED, UNQUALIFIED;
+    final AnnotationMirror INTERNED, TOP;
 
     /**
      * Creates a new {@link InterningAnnotatedTypeFactory} that operates on a
@@ -60,7 +60,7 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public InterningAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         this.INTERNED = AnnotationUtils.fromClass(elements, Interned.class);
-        this.UNQUALIFIED = AnnotationUtils.fromClass(elements, Unqualified.class);
+        this.TOP = AnnotationUtils.fromClass(elements, UnknownInterned.class);
 
         // If you update the following, also update ../../../manual/interning-checker.tex .
         addAliasedAnnotation(com.sun.istack.Interned.class, INTERNED);
@@ -102,13 +102,13 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (TreeUtils.isCompileTimeString(node)) {
                 type.replaceAnnotation(INTERNED);
             } else if (TreeUtils.isStringConcatenation(node)) {
-                type.replaceAnnotation(UNQUALIFIED);
+                type.replaceAnnotation(TOP);
             } else if ((type.getKind().isPrimitive()) ||
                     node.getKind() == Tree.Kind.EQUAL_TO ||
                     node.getKind() == Tree.Kind.NOT_EQUAL_TO) {
                 type.replaceAnnotation(INTERNED);
             } else {
-                type.replaceAnnotation(UNQUALIFIED);
+                type.replaceAnnotation(TOP);
             }
             return super.visitBinary(node, type);
         }
@@ -117,7 +117,7 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          */
         @Override
         public Void visitCompoundAssignment(CompoundAssignmentTree node, AnnotatedTypeMirror type) {
-          type.replaceAnnotation(UNQUALIFIED);
+          type.replaceAnnotation(TOP);
           return super.visitCompoundAssignment(node, type);
         }
     }
@@ -133,16 +133,19 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         @Override
-        public Void visitDeclared(AnnotatedDeclaredType t, Element elem) {
+        public Void visitDeclared(AnnotatedDeclaredType t, Void p) {
 
             // case 3: Enum types, and the Enum class itself, are interned
             Element elt = t.getUnderlyingType().asElement();
             assert elt != null;
             if (elt.getKind() == ElementKind.ENUM) {
                 t.replaceAnnotation(INTERNED);
+            } else if (InterningAnnotatedTypeFactory.this.fromElement(elt).hasAnnotation(INTERNED)) {
+                // If the class/interface has an @Interned annotation, use it.
+                t.replaceAnnotation(INTERNED);
             }
 
-            return super.visitDeclared(t, elem);
+            return super.visitDeclared(t, p);
         }
     }
 

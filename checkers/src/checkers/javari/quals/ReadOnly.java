@@ -1,6 +1,8 @@
 package checkers.javari.quals;
 
 import checkers.javari.JavariChecker;
+import checkers.quals.DefaultFor;
+import checkers.quals.DefaultLocation;
 import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifier;
 
@@ -26,6 +28,7 @@ import java.lang.annotation.Target;
  */
 @TypeQualifier
 @SubtypeOf({})
+@DefaultFor({ DefaultLocation.IMPLICIT_UPPER_BOUNDS })
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})

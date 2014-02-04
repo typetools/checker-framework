@@ -110,6 +110,11 @@ import com.sun.tools.javac.util.Log;
     // checkers.source.SourceChecker.createSuppressWarnings
     "suppressWarnings",
 
+    // With each warning, in addition to the concrete error key,
+    // output the suppress warning keys that can be used to
+    // suppress that warning.
+    "showSuppressWarningKeys",
+
     // Unsoundly ignore side effects
     "assumeSideEffectFree",
 
@@ -836,6 +841,8 @@ public abstract class SourceChecker
         } else if (this.processingEnv.getOptions() != null /*nnbug*/
                 && this.processingEnv.getOptions().containsKey("detailedmsgtext")) {
             StringBuilder sb = new StringBuilder();
+            // TODO: should we also have some type system identifier here?
+            // E.g. Which subclass of SourceChecker we are? Or also the SuppressWarnings keys?
             sb.append(defaultFormat);
             sb.append(DETAILS_SEPARATOR);
             if (args != null) {
@@ -866,7 +873,13 @@ public abstract class SourceChecker
             fmtString = sb.toString();
 
         } else {
-            fmtString = fullMessageOf(msgKey, defaultFormat);
+            final String suppressing;
+            if (this.processingEnv.getOptions().containsKey("showSuppressWarningKeys")) {
+                suppressing = String.format("[%s:%s] ", this.getSuppressWarningsKeys(), msgKey);
+            } else {
+                suppressing = String.format("[%s] ", msgKey);
+            }
+            fmtString = suppressing + fullMessageOf(msgKey, defaultFormat);
         }
         String messageText;
         try {

@@ -69,7 +69,7 @@ public class InternalUtils {
      * @return the {@code {@link Symbol}} for the given tree, or null if one
      *         could not be found
      */
-    public static /*@Nullable*/ Element symbol(/*@Nullable*/ Tree tree) {
+    public static /*@Nullable*/ Element symbol(Tree tree) {
         if (tree == null) {
             ErrorReporter.errorAbort("InternalUtils.symbol: tree is null");
             return null; // dead code

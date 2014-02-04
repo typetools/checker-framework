@@ -10,7 +10,6 @@ import checkers.initialization.quals.FBCBottom;
 import checkers.initialization.quals.Initialized;
 import checkers.quals.InvisibleQualifier;
 import checkers.quals.TypeQualifier;
-import checkers.quals.Unqualified;
 import checkers.types.visitors.AnnotatedTypeScanner;
 import checkers.types.visitors.AnnotatedTypeVisitor;
 import checkers.types.visitors.SimpleAnnotatedTypeVisitor;
@@ -693,11 +692,6 @@ public abstract class AnnotatedTypeMirror {
      */
     public void clearAnnotations() {
         annotations.clear();
-    }
-
-    public static boolean isUnqualified(AnnotationMirror anno) {
-        String aname = Unqualified.class.getCanonicalName();
-        return ((TypeElement)anno.getAnnotationType().asElement()).getQualifiedName().contentEquals(aname);
     }
 
     private static boolean isInvisibleQualified(AnnotationMirror anno) {
