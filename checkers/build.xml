@@ -34,13 +34,19 @@
 
     <property name="JAVA_7_HOME" value="${env.JAVA_7_HOME}" />
     <property name="JAVA_8_HOME" value="${env.JAVA_8_HOME}" />
+    <property name="JAVA_9_HOME" value="${env.JAVA_9_HOME}" />
 
     <condition property="jdkName" value="jdk7.jar">
         <contains string="${java.version}" substring="1.7"/>
     </condition>
 
-    <condition property="jdkName" value="jdk8.jar" else="jdk6.jar">
+    <condition property="jdkName" value="jdk8.jar">
         <contains string="${java.version}" substring="1.8"/>
+    </condition>
+
+    <!-- TODO: raise an error if no supported version found. -->
+    <condition property="jdkName" value="jdk9.jar" else="UNSUPPORTED">
+        <contains string="${java.version}" substring="1.9"/>
     </condition>
 
 
@@ -90,13 +96,13 @@
 
     <target name="clean" description="Remove generated files"
             depends="clean-nojdk">
-        <delete file="binary/jdk6.jar"/>
         <delete file="binary/jdk7.jar"/>
         <delete file="binary/jdk8.jar"/>
+        <delete file="binary/jdk9.jar"/>
 
-        <delete file="jdk/jdk6.jar"/>
         <delete file="jdk/jdk7.jar"/>
         <delete file="jdk/jdk8.jar"/>
+        <delete file="jdk/jdk9.jar"/>
     </target>
 
     <target name="clean-nojdk" description="Remove generated files, but not the jdkX.jar files">
@@ -829,9 +835,10 @@
         <fail unless="javac.exist" message="Could not find javac.jar: ${javac.lib}" />
     </target>
 
-    <target name="all.jdks.jar" description="Build jdkX.jar using JAVA_X_HOME (with X in 6, 7, and 8)">
+    <target name="all.jdks.jar" description="Build jdkX.jar using JAVA_X_HOME (with X in 7, 8, and 9)">
         <fail unless="JAVA_7_HOME" message="Property &quot;JAVA_7_HOME&quot; needs to be set!"/>
         <fail unless="JAVA_8_HOME" message="Property &quot;JAVA_8_HOME&quot; needs to be set!"/>
+        <fail unless="JAVA_9_HOME" message="Property &quot;JAVA_9_HOME&quot; needs to be set!"/>
 
         <exec executable="ant" failonerror="true">
             <arg line="jdk.jar"/>
@@ -841,6 +848,11 @@
         <exec executable="ant" failonerror="true">
             <arg line="jdk.jar"/>
             <env key="JAVA_HOME"  value="${JAVA_8_HOME}"/>
+        </exec>
+
+        <exec executable="ant" failonerror="true">
+            <arg line="jdk.jar"/>
+            <env key="JAVA_HOME"  value="${JAVA_9_HOME}"/>
         </exec>
 
     </target>
@@ -882,6 +894,7 @@
             <or>
                 <available file="jdk/jdk7.jar"/>
                 <available file="jdk/jdk8.jar"/>
+                <available file="jdk/jdk9.jar"/>
             </or>
         </condition>
 
@@ -890,6 +903,7 @@
 
         <copy file="jdk/jdk7.jar" tofile="binary/jdk7.jar" overwrite="true" failonerror="false" />
         <copy file="jdk/jdk8.jar" tofile="binary/jdk8.jar" overwrite="true" failonerror="false" />
+        <copy file="jdk/jdk9.jar" tofile="binary/jdk9.jar" overwrite="true" failonerror="false" />
     </target>
 
     <!-- For debugging -->
