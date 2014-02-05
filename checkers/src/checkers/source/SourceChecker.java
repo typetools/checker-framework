@@ -1572,6 +1572,6 @@ public abstract class SourceChecker
 
     @Override
     public final SourceVersion getSupportedSourceVersion() {
-        return SourceVersion.RELEASE_8;
+        return SourceVersion.RELEASE_9;
     }
 }
