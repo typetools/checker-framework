@@ -12,9 +12,6 @@ import checkers.quals.PolyAll;
 import checkers.quals.TypeQualifiers;
 import checkers.source.SupportedLintOptions;
 
-import java.util.Collection;
-import java.util.HashSet;
-
 /**
  * A concrete instantiation of {@link AbstractNullnessChecker} using
  * freedom-before-commitment.
@@ -35,13 +32,6 @@ public class AbstractNullnessFbcChecker extends AbstractNullnessChecker {
 
     public AbstractNullnessFbcChecker() {
         super(true);
-    }
-
-    @Override
-    public Collection<String> getSuppressWarningsKeys() {
-        Collection<String> result = new HashSet<>(super.getSuppressWarningsKeys());
-        result.add("fbc");
-        return result;
     }
 
 }

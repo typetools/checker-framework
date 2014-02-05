@@ -2,7 +2,7 @@ package java.util;
 import checkers.igj.quals.*;
 
 @I
-public class ArrayList<E> extends @I AbstractList<E> implements @I List<E>, @I RandomAccess, @I Cloneable, java.io. @I Serializable {
+public class ArrayList<E extends @ReadOnly Object> extends @I AbstractList<E> implements @I List<E>, @I RandomAccess, @I Cloneable, java.io. @I Serializable {
     private static final long serialVersionUID = 0L;
   public ArrayList(int a1) { throw new RuntimeException("skeleton method"); }
   public ArrayList() { throw new RuntimeException("skeleton method"); }

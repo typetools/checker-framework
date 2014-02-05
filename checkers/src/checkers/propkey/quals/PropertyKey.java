@@ -3,7 +3,6 @@ package checkers.propkey.quals;
 import java.lang.annotation.*;
 import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifier;
-import checkers.quals.Unqualified;
 
 /**
  * Indicates that the {@code String} type can be used as key in a
@@ -12,7 +11,7 @@ import checkers.quals.Unqualified;
  * @checker_framework_manual #propkey-checker Property File Checker
  */
 @TypeQualifier
-@SubtypeOf(Unqualified.class)
+@SubtypeOf(UnknownPropertyKey.class)
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})

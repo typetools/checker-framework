@@ -15,10 +15,9 @@ import checkers.quals.TypeQualifier;
  *
  * @checker_framework_manual #lock-checker Lock Checker
  */
+@TypeQualifier
+@SubtypeOf({})
 @Documented
 @Target({}) // not necessary to be used by the programmer
 @Retention(RetentionPolicy.RUNTIME)
-@TypeQualifier
-@SubtypeOf({})
-public @interface GuardedByTop {
-}
+public @interface GuardedByTop {}

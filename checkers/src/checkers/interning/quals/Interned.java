@@ -4,7 +4,6 @@ import checkers.interning.InterningChecker;
 import checkers.quals.ImplicitFor;
 import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifier;
-import checkers.quals.Unqualified;
 import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 
 import java.lang.annotation.Documented;
@@ -35,7 +34,7 @@ import com.sun.source.tree.LiteralTree;
  * @checker_framework_manual #interning-checker Interning Checker
  */
 @TypeQualifier
-@SubtypeOf(Unqualified.class)
+@SubtypeOf(UnknownInterned.class)
 @ImplicitFor(
         treeClasses = { LiteralTree.class },
         typeClasses = { AnnotatedPrimitiveType.class })

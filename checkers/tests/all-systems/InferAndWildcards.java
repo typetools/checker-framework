@@ -1,8 +1,9 @@
 import checkers.nullness.quals.*;
+import checkers.javari.quals.*;
 
 @SuppressWarnings({"interning", "oigj"})
 class InferAndWildcards {
-    <UUU extends @Nullable Object> @Nullable Class<? extends UUU> b(Class<UUU> clazz) {
+    <UUU extends @Nullable @ReadOnly Object> @Nullable Class<? extends UUU> b(Class<UUU> clazz) {
         return clazz;
     }
 

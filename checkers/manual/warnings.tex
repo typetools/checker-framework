@@ -140,6 +140,14 @@ because Java does not permit annotations (such as \<@SuppressWarnings>) on
 assignments or other statements or expressions.
 
 
+% TODO: improve description
+
+Each warning from the compiler also issues the most concrete
+suppression key that can be used to suppress that warning.
+Additionally, the \code{-AshowSuppressWarningKeys} command-line option
+can be used to show all applicable suppression keys.
+
+
 \subsubsection{Good practices when suppressing warnings}
 
 \paragraph{Suppress warnings in the smallest possible scope}

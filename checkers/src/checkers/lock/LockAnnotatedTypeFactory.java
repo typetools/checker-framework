@@ -3,8 +3,8 @@ package checkers.lock;
 import checkers.basetype.BaseAnnotatedTypeFactory;
 import checkers.basetype.BaseTypeChecker;
 import checkers.lock.quals.GuardedBy;
+import checkers.lock.quals.GuardedByBottom;
 import checkers.lock.quals.GuardedByTop;
-import checkers.quals.Unqualified;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.QualifierHierarchy;
 import checkers.util.AnnotationBuilder;
@@ -40,13 +40,13 @@ import com.sun.source.tree.Tree;
 public class LockAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     private List<String> heldLocks = new ArrayList<String>();
-    protected final AnnotationMirror GUARDED_BY, GUARDEDBY_TOP, UNQUALIFIED;
+    protected final AnnotationMirror GUARDED_BY, GUARDEDBY_TOP, GUARDEDBY_BOT;
 
     public LockAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         GUARDED_BY = AnnotationUtils.fromClass(elements, GuardedBy.class);
         GUARDEDBY_TOP = AnnotationUtils.fromClass(elements, GuardedByTop.class);
-        UNQUALIFIED = AnnotationUtils.fromClass(elements, Unqualified.class);
+        GUARDEDBY_BOT = AnnotationUtils.fromClass(elements, GuardedByBottom.class);
 
         addAliasedAnnotation(net.jcip.annotations.GuardedBy.class, GUARDED_BY);
 
@@ -69,7 +69,7 @@ public class LockAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         String lock = AnnotationUtils.getElementValue(guarded, "value", String.class, false);
         if (heldLocks.contains(lock)) {
-            type.replaceAnnotation(UNQUALIFIED);
+            type.replaceAnnotation(GUARDEDBY_BOT);
         }
     }
 
@@ -171,8 +171,9 @@ public class LockAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         factory.addQualifier(GUARDEDBY_TOP);
         factory.addQualifier(GUARDED_BY);
-        factory.addQualifier(UNQUALIFIED);
-        factory.addSubtype(UNQUALIFIED, GUARDED_BY);
+        factory.addQualifier(GUARDEDBY_BOT);
+
+        factory.addSubtype(GUARDEDBY_BOT, GUARDED_BY);
         factory.addSubtype(GUARDED_BY, GUARDEDBY_TOP);
 
         return new LockQualifierHierarchy(factory);
@@ -181,12 +182,12 @@ public class LockAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     private final class LockQualifierHierarchy extends GraphQualifierHierarchy {
 
         public LockQualifierHierarchy(MultiGraphQualifierHierarchy.MultiGraphFactory factory) {
-            super(factory, UNQUALIFIED);
+            super(factory, GUARDEDBY_BOT);
         }
 
         @Override
         public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
-            if (AnnotationUtils.areSameIgnoringValues(rhs, UNQUALIFIED)
+            if (AnnotationUtils.areSameIgnoringValues(rhs, GUARDEDBY_BOT)
                     && AnnotationUtils.areSameIgnoringValues(lhs, GUARDED_BY)) {
                 return true;
             }

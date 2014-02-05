@@ -276,7 +276,9 @@ public class QualifierDefaults {
                 elt = nearestEnclosingExceptLocal(tree);
                 // elt = nearestEnclosing(tree);
         }
-        // System.out.println("applyDefaults on tree " + tree + " gives elt: " + elt);
+        // System.out.println("applyDefaults on tree " + tree +
+        //        " gives elt: " + elt + "(" + elt.getKind() + ")");
+
         if (elt != null) {
             applyDefaultsElement(elt, type);
         }
@@ -485,6 +487,13 @@ public class QualifierDefaults {
                 }
 
                 switch (location) {
+                case FIELD: {
+                    if (scope.getKind() == ElementKind.FIELD &&
+                            t == type) {
+                        doApply(t, qual);
+                    }
+                    break;
+                }
                 case LOCAL_VARIABLE: {
                     if (scope.getKind() == ElementKind.LOCAL_VARIABLE &&
                             t == type) {
