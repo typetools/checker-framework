@@ -51,6 +51,8 @@ public class IGJVisitor extends BaseTypeVisitor<IGJAnnotatedTypeFactory> {
 
     @Override
     public boolean isValidUse(AnnotatedDeclaredType elemType, AnnotatedDeclaredType use, Tree tree) {
+        return true;
+        /*
         if (elemType.hasEffectiveAnnotation(atypeFactory.I) ||
                 use.hasEffectiveAnnotation(atypeFactory.READONLY)) {
             return true;
@@ -62,6 +64,7 @@ public class IGJVisitor extends BaseTypeVisitor<IGJAnnotatedTypeFactory> {
         }
 
         return super.isValidUse(elemType, use, tree);
+        */
     }
 
     /**

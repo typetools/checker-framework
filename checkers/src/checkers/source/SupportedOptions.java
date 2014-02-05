@@ -15,7 +15,7 @@ import java.lang.annotation.Target;
  *
  * In contrast to
  * {@link javax.annotation.processing.SupportedOptions}
- * note that this qualifier is @code{Inerited}.
+ * note that this qualifier is @code{Inherited}.
  *
  * @see SupportedLintOptions
  * @see javax.annotation.processing.SupportedOptions

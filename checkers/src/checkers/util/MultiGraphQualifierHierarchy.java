@@ -274,7 +274,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
             }
         }
         ErrorReporter.errorAbort("MultiGraphQualifierHierarchy: did not find the bottom corresponding to qualifier " + start +
-                " all bottoms: " + bottoms);
+                "; all bottoms: " + bottoms + "; this: " + this);
         return null;
     }
 
@@ -286,9 +286,10 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         } else if (polyQualifiers.containsKey(polymorphicQualifier)) {
             return polyQualifiers.get(polymorphicQualifier);
         } else {
-        ErrorReporter.errorAbort("MultiGraphQualifierHierarchy: did not find the polymorphic qualifier corresponding to qualifier " + start +
-                " all polymorphic qualifiers: " + polyQualifiers);
-        return null;
+            // No polymorphic qualifier exists for that hierarchy.
+            ErrorReporter.errorAbort("MultiGraphQualifierHierarchy: did not find the polymorphic qualifier corresponding to qualifier " + start +
+                    "; all polymorphic qualifiers: " + polyQualifiers  + "; this: " + this);
+            return null;
         }
     }
 

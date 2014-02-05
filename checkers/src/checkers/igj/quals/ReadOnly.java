@@ -1,5 +1,7 @@
 package checkers.igj.quals;
 
+import checkers.quals.DefaultFor;
+import checkers.quals.DefaultLocation;
 import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifier;
 
@@ -21,6 +23,12 @@ import java.lang.annotation.Target;
  */
 @TypeQualifier
 @SubtypeOf({})
+// TODO: Would these make sense? Some tests break with them.
+// @ImplicitFor(types={TypeKind.BOOLEAN, TypeKind.BYTE, TypeKind.CHAR,
+//        TypeKind.DOUBLE, TypeKind.FLOAT, TypeKind.INT, TypeKind.LONG,
+//        TypeKind.SHORT})
+@DefaultFor({ DefaultLocation.LOCAL_VARIABLE, DefaultLocation.RESOURCE_VARIABLE,
+    DefaultLocation.IMPLICIT_UPPER_BOUNDS })
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
