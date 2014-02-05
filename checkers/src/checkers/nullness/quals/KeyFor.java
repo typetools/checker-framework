@@ -40,11 +40,11 @@ import checkers.quals.*;
  *
  * @checker_framework_manual #nullness-checker Nullness Checker
  */
+@TypeQualifier
+@SubtypeOf(UnknownKeyFor.class)
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-@TypeQualifier
-@SubtypeOf(Unqualified.class)
 public @interface KeyFor {
     /**
      * Java expression(s) that evaluate to a map for which the annotated type is a key.

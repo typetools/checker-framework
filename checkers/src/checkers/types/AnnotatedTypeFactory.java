@@ -13,12 +13,10 @@ import checkers.quals.PolymorphicQualifier;
 import checkers.quals.StubFiles;
 import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifiers;
-import checkers.quals.Unqualified;
 import checkers.source.SourceChecker;
 import checkers.types.AnnotatedTypeMirror.AnnotatedArrayType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
-import checkers.types.AnnotatedTypeMirror.AnnotatedIntersectionType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
@@ -72,6 +70,9 @@ import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
+// The following imports are from com.sun, but they are all
+// @jdk.Exported and therefore somewhat safe to use.
+// Try to avoid using non-@jdk.Exported classes.
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
@@ -87,9 +88,6 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
-import com.sun.tools.javac.code.Symbol;
-import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.TreeInfo;
 
 /**
  * The methods of this class take an element or AST node, and return the
@@ -493,6 +491,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         AnnotatedTypeMirror type = fromElement(elt);
         annotateInheritedFromClass(type);
         annotateImplicit(elt, type);
+        // Do we want to store the annotations back into the Element?
         // System.out.println("AnnotatedTypeFactory::getAnnotatedType(Element) result: " + type);
         return type;
     }
@@ -566,8 +565,21 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         } else {
             // No caching otherwise
         }
+
+        if (tree.getKind() == Tree.Kind.CLASS) {
+            storeClassTree((ClassTree) tree);
+        }
+
         // System.out.println("AnnotatedTypeFactory::getAnnotatedType(Tree) result: " + type);
         return type;
+    }
+
+    /**
+     * Put annotations back into the Element and therefore the bytecode.
+     * Override if you want/need to disable this feature.
+     */
+    protected void storeClassTree(ClassTree tree) {
+        ElementFromType.store(processingEnv, this, tree);
     }
 
     /**
@@ -658,7 +670,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             return;
         }
 
-        if (elt instanceof Symbol.MethodSymbol) {
+        if (elt.getKind() == ElementKind.CONSTRUCTOR ||
+                elt.getKind() == ElementKind.METHOD) {
             // Only add @FromByteCode to Methods and Constructors
             if (ElementUtils.isElementFromByteCode(elt)) {
                 Set<AnnotationMirror> annos = indexDeclAnnos.get(ElementUtils
@@ -792,10 +805,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param type the converted annotated type
      */
     private AnnotatedTypeMirror fromTreeWithVisitor(TypeFromTree converter, Tree tree) {
-        if (tree == null)
+        if (tree == null) {
             ErrorReporter.errorAbort("AnnotatedTypeFactory.fromTreeWithVisitor: null tree");
-        if (converter == null)
+            return null; // dead code
+        }
+        if (converter == null) {
             ErrorReporter.errorAbort("AnnotatedTypeFactory.fromTreeWithVisitor: null visitor");
+            return null; // dead code
+        }
         AnnotatedTypeMirror result = converter.visit(tree, this);
         checkRep(result);
         return result;
@@ -1102,15 +1119,19 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         // TODO: Can we reuse getSelfType for outer this accesses?
 
         AnnotatedDeclaredType methodReceiver = getCurrentMethodReceiver(tree);
-        if (methodReceiver != null &&
-                !(methodReceiver.getAnnotations().size() == 1 &&
-                  methodReceiver.getAnnotation(Unqualified.class) != null)) {
-            // TODO: this only takes the main annotations. What about other annotations?
+        if (shouldTakeFromReceiver(methodReceiver)) {
+            // TODO: this only takes the main annotations.
+            // What about other annotations (annotations on the type argument, outer types, ...)
             type.clearAnnotations();
             type.addAnnotations(methodReceiver.getAnnotations());
         }
 
         return type;
+    }
+
+    // Determine whether we should take annotations from the given method receiver.
+    private boolean shouldTakeFromReceiver(AnnotatedDeclaredType methodReceiver) {
+        return methodReceiver != null;
     }
 
     /**
@@ -1233,9 +1254,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     public AnnotatedDeclaredType getSelfType(Tree tree) {
         AnnotatedDeclaredType type = getCurrentClassType(tree);
         AnnotatedDeclaredType methodReceiver = getCurrentMethodReceiver(tree);
-        if (methodReceiver != null &&
-                !(methodReceiver.getAnnotations().size() == 1 &&
-                  methodReceiver.hasAnnotation(Unqualified.class))) {
+        if (shouldTakeFromReceiver(methodReceiver)) {
+            // TODO what about all annotations on the receiver?
+            // Code is also duplicated above.
             type.clearAnnotations();
             type.addAnnotations(methodReceiver.getAnnotations());
         }
@@ -1437,7 +1458,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (!TreeUtils.isDiamondTree(tree)) {
             return (AnnotatedDeclaredType) fromTypeTree(tree.getIdentifier());
         }
-        AnnotatedDeclaredType type = (AnnotatedDeclaredType) toAnnotatedType(((JCTree)tree).type);
+        AnnotatedDeclaredType type = (AnnotatedDeclaredType) toAnnotatedType(InternalUtils.typeOf(tree));
 
         if (tree.getIdentifier().getKind() == Tree.Kind.ANNOTATED_TYPE) {
             // TODO: try to remove this - javac should add the annotations to the type already.
@@ -1696,8 +1717,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     public AnnotatedTypeMirror type(Tree node) {
 
         // Attempt to obtain the type via JCTree.
-        if (((JCTree)node).type != null) {
-            AnnotatedTypeMirror result = toAnnotatedType(((JCTree)node).type);
+        if (InternalUtils.typeOf(node) != null) {
+            AnnotatedTypeMirror result = toAnnotatedType(InternalUtils.typeOf(node));
             return result;
         }
 
@@ -1713,6 +1734,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /**
      * Gets the declaration tree for the element, if the source is available.
+     *
+     * TODO: would be nice to move this to InternalUtils/TreeUtils.
      *
      * @param elt   an element
      * @return the tree declaration of the element if found
@@ -1747,7 +1770,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             fromElt = trees.getTree(elt);
             break;
         default:
-            fromElt = TreeInfo.declarationFor((Symbol)elt, (JCTree)root);
+            fromElt = com.sun.tools.javac.tree.TreeInfo.declarationFor((com.sun.tools.javac.code.Symbol) elt,
+                    (com.sun.tools.javac.tree.JCTree) root);
             break;
         }
         if (shouldCache)
@@ -1786,13 +1810,31 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     protected final AnnotatedDeclaredType getCurrentMethodReceiver(Tree tree) {
         AnnotatedDeclaredType res = visitorState.getMethodReceiver();
         if (res == null) {
-            MethodTree enclosingMethod = TreeUtils.enclosingMethod(getPath(tree));
-            if (enclosingMethod != null) {
-                AnnotatedExecutableType method = getAnnotatedType(enclosingMethod);
-                res = method.getReceiverType();
-                // TODO: three tests fail if one adds the following, which would make
-                // sense, or not?
-                // visitorState.setMethodReceiver(res);
+            TreePath path = getPath(tree);
+            if (path != null) {
+                MethodTree enclosingMethod = TreeUtils.enclosingMethod(path);
+                ClassTree enclosingClass = TreeUtils.enclosingClass(path);
+
+                boolean found = false;
+
+                for (Tree member : enclosingClass.getMembers()) {
+                    if (member.getKind() == Tree.Kind.METHOD) {
+                        if (member == enclosingMethod) {
+                            found = true;
+                        }
+                    }
+                }
+
+                if (found && enclosingMethod != null) {
+                    AnnotatedExecutableType method = getAnnotatedType(enclosingMethod);
+                    res = method.getReceiverType();
+                    // TODO: three tests fail if one adds the following, which would make
+                    // sense, or not?
+                    // visitorState.setMethodReceiver(res);
+                } else {
+                    // We are within an anonymous class or field initializer
+                    res = this.getAnnotatedType(enclosingClass);
+                }
             }
         }
         return res;
@@ -1817,6 +1859,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (path == null) {
             ErrorReporter.errorAbort(String.format("AnnotatedTypeFactory.getMostInnerClassOrMethod: getPath(tree)=>null%n  TreePath.getPath(root, tree)=>%s\n  for tree (%s) = %s%n  root=%s",
                                                    TreePath.getPath(root, tree), tree.getClass(), tree, root));
+            return null; // dead code
         }
         for (Tree pathTree : path) {
             if (pathTree instanceof MethodTree)
@@ -2284,17 +2327,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * checkers.types.AnnotatedTypeFactory.fromTypeTree(Tree)
      */
     public AnnotatedWildcardType getUninferredWildcardType(AnnotatedTypeVariable typeVar) {
-        AnnotatedTypeMirror upperBound = typeVar.getEffectiveUpperBound();
-        while (upperBound.getKind() == TypeKind.TYPEVAR) {
-            upperBound = ((AnnotatedTypeVariable)upperBound).getEffectiveUpperBound();
-        }
-        if (upperBound.getKind() == TypeKind.INTERSECTION) {
-            // Use the class type of an intersection type.
-            upperBound = ((AnnotatedIntersectionType)upperBound).directSuperTypes().get(0);
-        }
-        WildcardType wc = types.getWildcardType(upperBound.getUnderlyingType(), null);
+        WildcardType wc = types.getWildcardType(typeVar.getUnderlyingType(), null);
         AnnotatedWildcardType wctype = (AnnotatedWildcardType) AnnotatedTypeMirror.createType(wc, this);
-        wctype.setExtendsBound(upperBound);
+        wctype.setExtendsBound(typeVar);
         wctype.addAnnotations(typeVar.getAnnotations());
         wctype.setTypeArgHack();
         return wctype;

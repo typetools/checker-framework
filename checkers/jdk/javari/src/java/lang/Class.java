@@ -31,7 +31,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.lang.annotation.Annotation;
 
-public final @ReadOnly class Class<T> implements java.io.Serializable,
+public final @ReadOnly class Class<T extends @ReadOnly Object> implements java.io.Serializable,
                   java.lang.reflect.GenericDeclaration,
                   java.lang.reflect.Type,
                   java.lang.reflect.AnnotatedElement {
