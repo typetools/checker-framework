@@ -28,18 +28,17 @@ public class TypeAnnotatorAdapter<Q> extends checkers.types.TypeAnnotator {
             return null;
         }
 
+        // We don't actually read any information from the input ATM aside from
+        // its underlying type, so we don't need to convert it to a QTM.
+
+        // Produce a qualified version of the ATM's underlying type.
         TypeMirror type = atm.getUnderlyingType();
-        if (elt != null && elt.getKind() == ElementKind.PARAMETER) {
-            // For some reason, atm.getUnderlyingType returns the type of the
-            // parameter with annotations removed.  We can get the proper
-            // TypeMirror from the Element itself.
-            type = elt.asType();
-        }
-
         ExtendedTypeMirror wrappedType = converter.getWrapper().wrap(type, elt);
-
         QualifiedTypeMirror<Q> qtm = underlying.visit(wrappedType, elt);
-        converter.bindTypes(qtm, atm);
+
+        // Update the input ATM with the new qualifiers.
+        converter.applyQualifiers(qtm, atm);
+
         return null;
     }
 }

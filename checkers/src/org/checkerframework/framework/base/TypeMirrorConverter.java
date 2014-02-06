@@ -23,59 +23,55 @@ import org.checkerframework.framework.util.WrappedTypeFactory;
 import org.checkerframework.framework.base.QualifiedTypeMirror.*;
 
 class TypeMirrorConverter<Q> {
+    private CheckerAdapter<Q> checkerAdapter;
     private ProcessingEnvironment processingEnv;
-    private ExecutableElement qualIndexElement;
-    private ExecutableElement typeIndexElement;
+    private ExecutableElement indexElement;
     private AnnotationMirror blankKey;
-    private AnnotatedTypeFactory dummyATF;
+    private QualifiedTypeFactoryAdapter<Q> typeFactory;
     private WrappedTypeFactory wrapper;
 
     private int nextIndex = 0;
 
     private HashMap<Q, Integer> qualToIndex;
     private HashMap<Integer, Q> indexToQual;
-    private HashMap<QualifiedTypeMirror<Q>, Integer> qualTypeToIndex;
-    private HashMap<Integer, QualifiedTypeMirror<Q>> indexToQualType;
-    private HashMap<QualifiedTypeMirror<Q>, AnnotatedTypeMirror> qualTypeToAnnoType;
 
     @TypeQualifier
     @SubtypeOf({})
     public static @interface Key {
-        int qualIndex() default -1;
-        int typeIndex() default -1;
+        int index() default -1;
         String desc() default "";
     }
 
 
     public TypeMirrorConverter(ProcessingEnvironment processingEnv, CheckerAdapter<Q> checkerAdapter) {
+        this.checkerAdapter = checkerAdapter;
         this.processingEnv = processingEnv;
-        this.qualIndexElement = TreeUtils.getMethod(Key.class.getCanonicalName(), "qualIndex", 0, processingEnv);
-        this.typeIndexElement = TreeUtils.getMethod(Key.class.getCanonicalName(), "typeIndex", 0, processingEnv);
+        this.indexElement = TreeUtils.getMethod(Key.class.getCanonicalName(), "index", 0, processingEnv);
         this.blankKey = AnnotationUtils.fromClass(processingEnv.getElementUtils(), Key.class);
-        this.dummyATF = new BaseAnnotatedTypeFactory(checkerAdapter) {
-            @Override
-            public boolean isSupportedQualifier(AnnotationMirror anno) {
-                return true;
-            }
-        };
+        // typeFactory will be lazily initialized, to break a circular
+        // dependency between this class and QualifiedTypeFactoryAdapter.
+        this.typeFactory = null;
         this.wrapper = new WrappedTypeFactory(processingEnv.getElementUtils(),
                 processingEnv.getTypeUtils());
 
         this.qualToIndex = new HashMap<>();
         this.indexToQual = new HashMap<>();
-        this.qualTypeToIndex = new HashMap<>();
-        this.indexToQualType = new HashMap<>();
-        this.qualTypeToAnnoType = new HashMap<>();
+    }
+
+    private QualifiedTypeFactoryAdapter<Q> getTypeFactory() {
+        if (typeFactory == null) {
+            typeFactory = checkerAdapter.getTypeFactory();
+        }
+        return typeFactory;
     }
 
     public WrappedTypeFactory getWrapper() {
         return wrapper;
     }
 
-    private AnnotationMirror createKey(int qualIndex, int typeIndex, Object desc) {
+    private AnnotationMirror createKey(int index, Object desc) {
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, Key.class.getCanonicalName());
-        builder.setValue("qualIndex", qualIndex);
-        builder.setValue("typeIndex", typeIndex);
+        builder.setValue("index", index);
         builder.setValue("desc", "" + desc);
         return builder.build();
     }
@@ -92,24 +88,10 @@ class TypeMirrorConverter<Q> {
         }
     }
 
-    private int getIndexForType(QualifiedTypeMirror<Q> qtm) {
-        if (qualTypeToIndex.containsKey(qtm)) {
-            return qualTypeToIndex.get(qtm);
-        } else {
-            int index = nextIndex++;
-            qualTypeToIndex.put(qtm, index);
-            indexToQualType.put(index, qtm);
-            return index;
-        }
+    private int getIndex(AnnotationMirror anno) {
+        return getAnnotationField(anno, indexElement);
     }
 
-    private int getQualifierIndex(AnnotationMirror anno) {
-        return getAnnotationField(anno, qualIndexElement);
-    }
-
-    private int getTypeIndex(AnnotationMirror anno) {
-        return getAnnotationField(anno, typeIndexElement);
-    }
 
     private int getAnnotationField(AnnotationMirror anno, ExecutableElement element) {
         AnnotationValue value = anno.getElementValues().get(element);
@@ -122,63 +104,106 @@ class TypeMirrorConverter<Q> {
     }
 
 
-    public void bindTypes(QualifiedTypeMirror<Q> qtm, AnnotatedTypeMirror atm) {
+    /* QTM -> ATM conversion functions */
+
+    /** Given a QualifiedTypeMirror and an AnnotatedTypeMirror with the same
+     * underlying TypeMirror, recursively update annotations on the
+     * AnnotatedTypeMirror to match the qualifiers present on the
+     * QualifiedTypeMirror.  After running applyQualifiers, calling
+     * getQualifiedType on the AnnotatedTypeMirror should produce a
+     * QualifiedTypeMirror which is identical to the one initially passed to
+     * applyQualifiers.
+     */
+    public void applyQualifiers(QualifiedTypeMirror<Q> qtm, AnnotatedTypeMirror atm) {
         if (qtm == null && atm == null) {
             return;
         }
         assert qtm != null && atm != null;
 
-        // Recursively create entries for all component QTM-ATM pairs.
-        BIND_TYPE_COMPONENTS_VISITOR.visit(qtm, atm);
-
-        int qualIndex = getIndexForQualifier(qtm.getQualifier());
-        int typeIndex = getIndexForType(qtm);
-
-        // Create entries for this QTM-ATM pair.
-        AnnotationMirror key = createKey(qualIndex, typeIndex, qtm.getQualifier());
+        // Apply the qualifier for this QTM-ATM pair.
+        int index = getIndexForQualifier(qtm.getQualifier());
+        AnnotationMirror key = createKey(index, qtm.getQualifier());
 
         atm.clearAnnotations();
         atm.addAnnotation(key);
-        qualTypeToAnnoType.put(qtm, atm);
+
+        // Recursively create entries for all component QTM-ATM pairs.
+        APPLY_COMPONENT_QUALIFIERS_VISITOR.visit(qtm, atm);
     }
 
-    private void bindTypeLists(List<? extends QualifiedTypeMirror<Q>> qtms, List<? extends AnnotatedTypeMirror> atms) {
+    /** Given a QualifiedTypeMirror, produce an AnnotatedTypeMirror with the
+     * same underlying TypeMirror and with annotations corresponding to the
+     * qualifiers on the input QualifiedTypeMirror.  As with applyQualifiers,
+     * calling getQualifiedType on the resulting AnnotatedTypeMirror should
+     * produce a QualifiedTypeMirror that is identical to the one passed as
+     * input.
+     */
+    public AnnotatedTypeMirror getAnnotatedType(QualifiedTypeMirror<Q> qtm) {
+        if (qtm == null) {
+            return null;
+        }
+        AnnotatedTypeMirror atm = AnnotatedTypeMirror.createType(
+                qtm.getUnderlyingType().getRaw(), getTypeFactory());
+        applyQualifiers(qtm, atm);
+        return atm;
+    }
+
+    /** applyQualifiers lifted to operate on lists of augmented TypeMirrors.
+     */
+    private void applyQualifiersToLists(List<? extends QualifiedTypeMirror<Q>> qtms, List<? extends AnnotatedTypeMirror> atms) {
         assert(qtms.size() == atms.size());
         for (int i = 0; i < qtms.size(); ++i) {
-            bindTypes(qtms.get(i), atms.get(i));
+            applyQualifiers(qtms.get(i), atms.get(i));
         }
     }
 
-    private SimpleQualifiedTypeVisitor<Q, Void, AnnotatedTypeMirror> BIND_TYPE_COMPONENTS_VISITOR =
+    /** A visitor to recursively applyQualifiers to components of the
+     * TypeMirrors.
+     *
+     * This also has some special handling for ExecutableTypes.  Both
+     * AnnotatedTypeMirror and ExtendedTypeMirror (the underlying types used by
+     * QualifiedTypeMirror) track the corresponding ExecutableElement (unlike
+     * raw javac TypeMirrors), and this visitor updates that element if
+     * necessary to make the augmented TypeMirrors correspond.
+     */
+    private SimpleQualifiedTypeVisitor<Q, Void, AnnotatedTypeMirror> APPLY_COMPONENT_QUALIFIERS_VISITOR =
         new SimpleQualifiedTypeVisitor<Q, Void, AnnotatedTypeMirror>() {
             public Void visitArray(QualifiedArrayType<Q> qtm, AnnotatedTypeMirror rawAtm) {
                 AnnotatedArrayType atm = (AnnotatedArrayType)rawAtm;
-                bindTypes(qtm.getComponentType(), atm.getComponentType());
+                applyQualifiers(qtm.getComponentType(), atm.getComponentType());
                 return null;
             }
 
             public Void visitDeclared(QualifiedDeclaredType<Q> qtm, AnnotatedTypeMirror rawAtm) {
                 AnnotatedDeclaredType atm = (AnnotatedDeclaredType)rawAtm;
-                bindTypeLists(qtm.getTypeArguments(), atm.getTypeArguments());  
+                applyQualifiersToLists(qtm.getTypeArguments(), atm.getTypeArguments());  
                 return null;
             }
 
             public Void visitExecutable(QualifiedExecutableType<Q> qtm, AnnotatedTypeMirror rawAtm) {
                 AnnotatedExecutableType atm = (AnnotatedExecutableType)rawAtm;
-                if (atm.getElement() == null) {
-                    atm.setElement(qtm.getUnderlyingType().asElement());
+
+                // Update the ExecutableElement if necessary.  This should
+                // happen before the recursive applyQualifiers calls, since it
+                // may cause the receiver and return types of the ATM to become
+                // non-null.
+                ExecutableElement elt = qtm.getUnderlyingType().asElement();
+                if (atm.getElement() != elt) {
+                    assert elt != null;
+                    atm.setElement(elt);
                 }
-                bindTypeLists(qtm.getParameterTypes(), atm.getParameterTypes());
-                bindTypes(qtm.getReceiverType(), atm.getReceiverType());
-                bindTypes(qtm.getReturnType(), atm.getReturnType());
-                bindTypeLists(qtm.getThrownTypes(), atm.getThrownTypes());
-                bindTypeLists(qtm.getTypeVariables(), atm.getTypeVariables());
+
+                applyQualifiersToLists(qtm.getParameterTypes(), atm.getParameterTypes());
+                applyQualifiers(qtm.getReceiverType(), atm.getReceiverType());
+                applyQualifiers(qtm.getReturnType(), atm.getReturnType());
+                applyQualifiersToLists(qtm.getThrownTypes(), atm.getThrownTypes());
+                applyQualifiersToLists(qtm.getTypeVariables(), atm.getTypeVariables());
                 return null;
             }
 
             public Void visitIntersection(QualifiedIntersectionType<Q> qtm, AnnotatedTypeMirror rawAtm) {
                 AnnotatedIntersectionType atm = (AnnotatedIntersectionType)rawAtm;
-                bindTypeLists(qtm.getBounds(), atm.directSuperTypes());
+                applyQualifiersToLists(qtm.getBounds(), atm.directSuperTypes());
                 return null;
             }
 
@@ -199,139 +224,41 @@ class TypeMirrorConverter<Q> {
 
             public Void visitTypeVariable(QualifiedTypeVariable<Q> qtm, AnnotatedTypeMirror rawAtm) {
                 AnnotatedTypeVariable atm = (AnnotatedTypeVariable)rawAtm;
-                bindTypes(qtm.getLowerBound(), atm.getLowerBound());
-                bindTypes(qtm.getUpperBound(), atm.getUpperBound());
+                applyQualifiers(qtm.getLowerBound(), atm.getLowerBound());
+                applyQualifiers(qtm.getUpperBound(), atm.getUpperBound());
                 return null;
             }
 
             public Void visitUnion(QualifiedUnionType<Q> qtm, AnnotatedTypeMirror rawAtm) {
                 AnnotatedUnionType atm = (AnnotatedUnionType)rawAtm;
-                bindTypeLists(qtm.getAlternatives(), atm.getAlternatives());
+                applyQualifiersToLists(qtm.getAlternatives(), atm.getAlternatives());
                 return null;
             }
 
             public Void visitWildcard(QualifiedWildcardType<Q> qtm, AnnotatedTypeMirror rawAtm) {
                 AnnotatedWildcardType atm = (AnnotatedWildcardType)rawAtm;
-                bindTypes(qtm.getExtendsBound(), atm.getExtendsBound());
-                bindTypes(qtm.getSuperBound(), atm.getSuperBound());
+                applyQualifiers(qtm.getExtendsBound(), atm.getExtendsBound());
+                applyQualifiers(qtm.getSuperBound(), atm.getSuperBound());
                 return null;
             }
         };
 
 
-    /** Update the QualifiedTypeMirrors associated with an AnnotatedTypeMirror
-     * to make them consistent with the AnnotatedTypeMirror's associated
-     * qualifiers.
-     *
-     * @return true iff some part of the type needed an update
+    /* ATM -> QTM conversion functions */
+
+    /** Given an AnnotatedTypeMirror, construct a QualifiedTypeMirror with the
+     * same underlying type with the qualifiers extracted from the
+     * AnnotatedTypeMirror's @Key annotations.
      */
-    public boolean updateType(AnnotatedTypeMirror atm) {
+    public QualifiedTypeMirror<Q> getQualifiedType(AnnotatedTypeMirror atm) {
         if (atm == null) {
-            return false;
+            return null;
         }
-
-        boolean needsUpdate = false;
-
-        // Recursively update the ATM's components.
-        if (UPDATE_TYPE_COMPONENTS_VISITOR.visit(atm)) {
-            // Some component needed an update.
-            needsUpdate = true;
-        }
-
-        AnnotationMirror key = atm.getAnnotation(Key.class);
-        if (key == null) {
-            // If it has no @Key, we have nothing to do.
-            return needsUpdate;
-        }
-
-        int qualIndex = getQualifierIndex(key);
-        int typeIndex = getTypeIndex(key);
-        if (typeIndex == -1) {
-            needsUpdate = true;
-        } else {
-            // If it has a Key, the Key should have a valid qualIndex.
-            assert qualIndex != -1 : "Key.qualIndex should always be a valid index";
-            if (indexToQualType.get(typeIndex).getQualifier() !=
-                    indexToQual.get(qualIndex)) {
-                needsUpdate = true;
-            }
-        }
-
-        if (needsUpdate) {
-            Q qual = indexToQual.get(qualIndex);
-            QualifiedTypeMirror<Q> qtm = UPDATED_QTM_BUILDER.visit(atm, qual);
-
-            typeIndex = getIndexForType(qtm);
-            key = createKey(qualIndex, typeIndex, qual);
-            atm.clearAnnotations();
-            atm.addAnnotation(key);
-            qualTypeToAnnoType.put(qtm, atm);
-        }
-        return needsUpdate;
+        return UPDATED_QTM_BUILDER.visit(atm, getQualifier(atm));
     }
 
-    private boolean updateTypeList(List<? extends AnnotatedTypeMirror> atms) {
-        boolean result = false;
-        for (int i = 0; i < atms.size(); ++i) {
-            if (updateType(atms.get(i))) {
-                result = true;
-            }
-        }
-        return result;
-    }
-
-    private SimpleAnnotatedTypeVisitor<Boolean, Void> UPDATE_TYPE_COMPONENTS_VISITOR =
-        new SimpleAnnotatedTypeVisitor<Boolean, Void>() {
-            public Boolean visitArray(AnnotatedArrayType atm, Void v) {
-                return updateType(atm.getComponentType());
-            }
-
-            public Boolean visitDeclared(AnnotatedDeclaredType atm, Void v) {
-                return updateTypeList(atm.getTypeArguments());  
-            }
-
-            public Boolean visitExecutable(AnnotatedExecutableType atm, Void v) {
-                return updateTypeList(atm.getParameterTypes())
-                    || updateType(atm.getReceiverType())
-                    || updateType(atm.getReturnType())
-                    || updateTypeList(atm.getThrownTypes())
-                    || updateTypeList(atm.getTypeVariables());
-            }
-
-            public Boolean visitIntersection(AnnotatedIntersectionType atm, Void v) {
-                return updateTypeList(atm.directSuperTypes());
-            }
-
-            public Boolean visitNoType(AnnotatedNoType atm, Void v) {
-                // NoType has no components.
-                return false;
-            }
-
-            public Boolean visitNull(AnnotatedNullType atm, Void v) {
-                // NullType has no components.
-                return false;
-            }
-
-            public Boolean visitPrimitive(AnnotatedPrimitiveType atm, Void v) {
-                // PrimitiveType has no components.
-                return false;
-            }
-
-            public Boolean visitTypeVariable(AnnotatedTypeVariable atm, Void v) {
-                return updateType(atm.getLowerBound())
-                    || updateType(atm.getUpperBound());
-            }
-
-            public Boolean visitUnion(AnnotatedUnionType atm, Void v) {
-                return updateTypeList(atm.getAlternatives());
-            }
-
-            public Boolean visitWildcard(AnnotatedWildcardType atm, Void v) {
-                return updateType(atm.getExtendsBound())
-                    || updateType(atm.getSuperBound());
-            }
-        };
-
+    /** getQualifiedType lifted to operate on a list of AnnotatedTypeMirrors.
+     */
     List<QualifiedTypeMirror<Q>> getQualifiedTypeList(List<? extends AnnotatedTypeMirror> atms) {
         List<QualifiedTypeMirror<Q>> result = new ArrayList<>();
         for (int i = 0; i < atms.size(); ++i) {
@@ -340,6 +267,9 @@ class TypeMirrorConverter<Q> {
         return result;
     }
 
+    /** A visitor to recursively construct QualifiedTypeMirrors from
+     * AnnotatedTypeMirrors.
+     */
     private SimpleAnnotatedTypeVisitor<QualifiedTypeMirror<Q>, Q> UPDATED_QTM_BUILDER =
         new SimpleAnnotatedTypeVisitor<QualifiedTypeMirror<Q>, Q>() {
             public QualifiedTypeMirror<Q> visitArray(AnnotatedArrayType atm, Q qual) {
@@ -429,86 +359,44 @@ class TypeMirrorConverter<Q> {
         };
 
 
-    public QualifiedTypeMirror<Q> getQualifiedType(AnnotatedTypeMirror atm) {
-        if (!atm.hasAnnotation(Key.class)) {
-            return null;
-        }
+    /* Conversion functions between qualifiers and @Key AnnotationMirrors */
 
-        int typeIndex = getTypeIndex(atm.getAnnotation(Key.class));
-        if (typeIndex == -1) {
-            // Side-effecting the input - ugh.  At least it's idempotent.
-            updateType(atm);
-            typeIndex = getTypeIndex(atm.getAnnotation(Key.class));
-        }
-        return indexToQualType.get(typeIndex);
-    }
-
-
-
-/*
-    private AnnotationMirror createKey(Object desc) {
-    }
-
-    private int getIndex(AnnotationMirror anno) {
-        AnnotationValue value = anno.getElementValues().get(indexElement);
-        if (value == null) {
-            throw new IllegalArgumentException("@Key annotation contains no index");
-        }
-        assert(value.getValue() instanceof Integer);
-        Integer index = (Integer)value.getValue();
-        return index;
-    }
-
-
-    private void insert(Q qual) {
-        AnnotationMirror key = createKey(qual);
-        int index = getIndex(key);
-
-        qualToAnno.put(qual, key);
-        indexToQual.put(index, qual);
-    }
-
-    private void insertType(QualifiedTypeMirror<Q> qtm) {
-        AnnotatedTypeMirror atm = AnnotatedTypeMirror.createType(
-                qtm.getUnderlyingType(), null);
-        bindTypes(qtm, atm);
-    }
-
-    public void bindTypes(QualifiedTypeMirror<Q> qtm, AnnotatedTypeMirror atm) {
-    }
-*/
-
-
+    /** Get the qualifier corresponding to a Key annotation.
+     */
     public Q getQualifier(AnnotationMirror anno) {
         if (anno == null) {
             return null;
         }
-        int index = getQualifierIndex(anno);
+        int index = getIndex(anno);
         return indexToQual.get(index);
     }
 
+    /** Get the qualifier corresponding to the Key annotation present on an
+     * AnnotatedTypeMirror, or null if no such annotation exists.
+     */
     public Q getQualifier(AnnotatedTypeMirror atm) {
         return getQualifier(atm.getAnnotation(Key.class));
     }
 
+    /** Get an AnnotationMirror for a Key annotation encoding the specified
+     * qualifier.
+     */
     public AnnotationMirror getAnnotation(Q qual) {
-        return createKey(getIndexForQualifier(qual), -1, qual);
-    }
-
-    public AnnotatedTypeMirror getAnnotatedType(QualifiedTypeMirror<Q> qtm) {
-        if (!qualTypeToAnnoType.containsKey(qtm)) {
-            AnnotatedTypeMirror atm = AnnotatedTypeMirror.createType(
-                    qtm.getUnderlyingType().getRaw(), dummyATF);
-            bindTypes(qtm, atm);
-        }
-        return qualTypeToAnnoType.get(qtm);
+        return createKey(getIndexForQualifier(qual), qual);
     }
 
 
+    /* Miscellaneous utility functions */
+
+    /** Check if an AnnotationMirror is a valid Key annotation.
+     */
     public boolean isKey(AnnotationMirror anno) {
+        // TODO: this should check that 'anno' has a valid index.
         return anno != null && blankKey.getAnnotationType().equals(anno.getAnnotationType());
     }
 
+    /** Get a Key annotation containing no index.
+     */
     public AnnotationMirror getBlankKeyAnnotation() {
         return blankKey;
     }
