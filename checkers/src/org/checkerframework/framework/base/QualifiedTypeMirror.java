@@ -158,7 +158,7 @@ public abstract class QualifiedTypeMirror<Q> {
         }
 
         if (qualified == null || unqualified == null ||
-                qualified.getUnderlyingType() != unqualified) {
+                !qualified.getUnderlyingType().equals(unqualified)) {
             return false;
         }
 
