@@ -29,10 +29,9 @@ public class TreeAnnotatorAdapter<Q> extends checkers.types.TreeAnnotator {
         QualifiedTypeMirror<Q> qtm = underlying.visitBinary(node,
                 converter.getWrapper().wrap(atm.getUnderlyingType()));
         if (qtm != null) {
-            converter.bindTypes(qtm, atm);
+            converter.applyQualifiers(qtm, atm);
         } else {
             super.visitBinary(node, atm);
-            converter.updateType(atm);
         }
         return null;
     }
@@ -41,10 +40,9 @@ public class TreeAnnotatorAdapter<Q> extends checkers.types.TreeAnnotator {
         QualifiedTypeMirror<Q> qtm = underlying.visitLiteral(node,
                 converter.getWrapper().wrap(atm.getUnderlyingType()));
         if (qtm != null) {
-            converter.bindTypes(qtm, atm);
+            converter.applyQualifiers(qtm, atm);
         } else {
             super.visitLiteral(node, atm);
-            converter.updateType(atm);
         }
         return null;
     }
