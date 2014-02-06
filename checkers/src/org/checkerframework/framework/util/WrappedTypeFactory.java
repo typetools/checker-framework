@@ -3,6 +3,7 @@ package org.checkerframework.framework.util;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -28,17 +29,25 @@ import org.checkerframework.framework.util.WrappedTypeMirror;
 import static org.checkerframework.framework.util.WrappedTypeMirror.*;
 
 public class WrappedTypeFactory {
+    private ProcessingEnvironment processingEnv;
     private WrappedDeclaredType wrappedObject;
     private WrappedNullType wrappedNull;
 
-    public WrappedTypeFactory(Elements elements, Types types) {
-        DeclaredType rawObject = types.getDeclaredType(elements.getTypeElement("java.lang.Object"));
+    public WrappedTypeFactory(ProcessingEnvironment processingEnv) {
+        this.processingEnv = processingEnv;
+
+        DeclaredType rawObject = processingEnv.getTypeUtils().getDeclaredType(
+                processingEnv.getElementUtils().getTypeElement("java.lang.Object"));
         this.wrappedObject = this.wrap(rawObject);
 
-        NullType rawNull = types.getNullType();
+        NullType rawNull = processingEnv.getTypeUtils().getNullType();
         this.wrappedNull = this.wrap(rawNull);
     }
 
+
+    public ProcessingEnvironment getProcessingEnvironment() {
+        return processingEnv;
+    }
 
     public WrappedDeclaredType getWrappedObject() {
         return this.wrappedObject;
