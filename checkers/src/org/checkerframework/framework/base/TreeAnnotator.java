@@ -9,13 +9,15 @@ import com.sun.source.tree.TreeVisitor;
 
 import checkers.types.AnnotatedTypeMirror;
 
+import org.checkerframework.framework.util.ExtendedTypeMirror;
+
 
 public class TreeAnnotator<Q> {
-    public QualifiedTypeMirror<Q> visitBinary(BinaryTree node, TypeMirror type) {
+    public QualifiedTypeMirror<Q> visitBinary(BinaryTree node, ExtendedTypeMirror type) {
         return null;
     }
 
-    public QualifiedTypeMirror<Q> visitLiteral(LiteralTree node, TypeMirror type) {
+    public QualifiedTypeMirror<Q> visitLiteral(LiteralTree node, ExtendedTypeMirror type) {
         return null;
     }
 }

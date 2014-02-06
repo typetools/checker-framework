@@ -1,10 +1,10 @@
 package org.checkerframework.framework.util;
 
 import java.util.List;
-import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 
 public interface ExtendedExecutableType extends ExtendedTypeMirror {
-    Element asElement();
+    ExecutableElement asElement();
     List<? extends ExtendedTypeMirror> getParameterTypes();
     ExtendedTypeMirror getReceiverType();
     ExtendedTypeMirror getReturnType();
