@@ -91,6 +91,11 @@ public abstract class AnnotatedTypeMirror {
             return null;
         }
 
+        /*
+        com.sun.tools.javac.code.Type jctype = ((com.sun.tools.javac.code.Type)type);
+        type = jctype.unannotatedType();
+        */
+
         AnnotatedTypeMirror result;
         switch (type.getKind()) {
             case ARRAY:
