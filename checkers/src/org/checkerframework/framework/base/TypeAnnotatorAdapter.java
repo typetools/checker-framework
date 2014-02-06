@@ -6,6 +6,8 @@ import javax.lang.model.type.TypeMirror;
 
 import checkers.types.AnnotatedTypeMirror;
 
+import org.checkerframework.framework.util.ExtendedTypeMirror;
+
 public class TypeAnnotatorAdapter<Q> extends checkers.types.TypeAnnotator {
     private TypeAnnotator<Q> underlying;
     private TypeMirrorConverter<Q> converter;
@@ -34,7 +36,9 @@ public class TypeAnnotatorAdapter<Q> extends checkers.types.TypeAnnotator {
             type = elt.asType();
         }
 
-        QualifiedTypeMirror<Q> qtm = underlying.visit(type, elt);
+        ExtendedTypeMirror wrappedType = converter.getWrapper().wrap(type, elt);
+
+        QualifiedTypeMirror<Q> qtm = underlying.visit(wrappedType, elt);
         converter.bindTypes(qtm, atm);
         return null;
     }

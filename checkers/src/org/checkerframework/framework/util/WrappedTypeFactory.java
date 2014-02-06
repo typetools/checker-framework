@@ -5,6 +5,7 @@ import java.util.List;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
@@ -148,7 +149,13 @@ public class WrappedTypeFactory {
 
             @Override
             public WrappedTypeMirror visitExecutable(ExecutableType type, Element elt) {
-                return new WrappedExecutableType(type, elt, WrappedTypeFactory.this);
+                if (!(elt instanceof ExecutableElement)) {
+                    throw new IllegalArgumentException(
+                            "tried to wrap ExecutableType using non-Executable Element");
+                }
+                @SuppressWarnings("unchecked")
+                ExecutableElement execElt = (ExecutableElement)elt;
+                return new WrappedExecutableType(type, execElt, WrappedTypeFactory.this);
             }
 
             @Override
