@@ -514,18 +514,19 @@ public abstract class WrappedTypeMirror implements ExtendedTypeMirror {
             super(raw, factory);
 
             TypeMirror rawExtendsBound = raw.getExtendsBound();
-            if (rawExtendsBound != null) {
-                this.extendsBound = factory.wrap(rawExtendsBound);
-            } else {
-                this.extendsBound = factory.getWrappedObject();
+            if (rawExtendsBound == null) {
+                // This scary-looking code is copied directly from
+                // AnnotatedTypeMirror.AnnotatedWildcardType.
+
+                // Take the upper bound of the type variable the wildcard is bound to.
+                com.sun.tools.javac.code.Type.WildcardType wct = (com.sun.tools.javac.code.Type.WildcardType) raw;
+                com.sun.tools.javac.util.Context ctx = ((com.sun.tools.javac.processing.JavacProcessingEnvironment) factory.getProcessingEnvironment()).getContext();
+                rawExtendsBound = com.sun.tools.javac.code.Types.instance(ctx).upperBound(wct);
             }
+            this.extendsBound = factory.wrap(rawExtendsBound);
 
             TypeMirror rawSuperBound = raw.getSuperBound();
-            if (rawSuperBound != null) {
-                this.superBound = factory.wrap(rawSuperBound);
-            } else {
-                this.superBound = factory.getWrappedNull();
-            }
+            this.superBound = factory.wrap(rawSuperBound);
         }
 
         @Override @SuppressWarnings("unchecked")
@@ -556,14 +557,16 @@ public abstract class WrappedTypeMirror implements ExtendedTypeMirror {
             @SuppressWarnings("unchecked")
             WrappedWildcardType other = (WrappedWildcardType)obj;
             return this.extendsBound.equals(other.extendsBound)
-                && this.superBound.equals(other.superBound);
+                && (this.superBound == null ?
+                        other.superBound == null :
+                        this.superBound.equals(other.superBound));
         }
 
         @Override
         public int hashCode() {
             return super.hashCode()
                 + extendsBound.hashCode() * 43
-                + superBound.hashCode() * 67;
+                + (superBound == null ? 0 : superBound.hashCode() * 67);
         }
     }
 }
