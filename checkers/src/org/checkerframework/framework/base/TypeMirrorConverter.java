@@ -51,8 +51,7 @@ class TypeMirrorConverter<Q> {
         // typeFactory will be lazily initialized, to break a circular
         // dependency between this class and QualifiedTypeFactoryAdapter.
         this.typeFactory = null;
-        this.wrapper = new WrappedTypeFactory(processingEnv.getElementUtils(),
-                processingEnv.getTypeUtils());
+        this.wrapper = new WrappedTypeFactory(processingEnv);
 
         this.qualToIndex = new HashMap<>();
         this.indexToQual = new HashMap<>();
@@ -338,8 +337,8 @@ class TypeMirrorConverter<Q> {
                 return new QualifiedTypeVariable<Q>(
                         wrapper.wrap(atm.getUnderlyingType(), atm.getUnderlyingType().asElement()),
                         qual,
-                        getQualifiedType(atm.getLowerBound()),
-                        getQualifiedType(atm.getUpperBound()));
+                        getQualifiedType(atm.getUpperBound()),
+                        getQualifiedType(atm.getLowerBound()));
             }
 
             public QualifiedTypeMirror<Q> visitUnion(AnnotatedUnionType atm, Q qual) {

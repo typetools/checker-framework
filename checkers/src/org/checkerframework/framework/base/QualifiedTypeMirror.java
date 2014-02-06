@@ -715,14 +715,16 @@ public abstract class QualifiedTypeMirror<Q> {
             @SuppressWarnings("unchecked")
             QualifiedWildcardType<Q> other = (QualifiedWildcardType<Q>)obj;
             return this.extendsBound.equals(other.extendsBound)
-                && this.superBound.equals(other.superBound);
+                && (this.superBound == null ?
+                        other.superBound == null :
+                        this.superBound.equals(other.superBound));
         }
 
         @Override
         public int hashCode() {
             return super.hashCode()
                 + extendsBound.hashCode() * 43
-                + superBound.hashCode() * 67;
+                + (superBound == null ? 0 : superBound.hashCode() * 67);
         }
     }
 }
