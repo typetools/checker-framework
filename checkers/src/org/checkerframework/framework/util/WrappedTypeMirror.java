@@ -7,6 +7,8 @@ import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ErrorType;
@@ -185,14 +187,14 @@ public abstract class WrappedTypeMirror implements ExtendedTypeMirror {
     }
 
     static class WrappedExecutableType extends WrappedTypeMirror implements ExtendedExecutableType {
-        private Element element;
+        private ExecutableElement element;
         private List<? extends ExtendedTypeMirror> parameterTypes;
         private ExtendedTypeMirror receiverType;
         private ExtendedTypeMirror returnType;
         private List<? extends ExtendedTypeMirror> thrownTypes;
         private List<? extends ExtendedTypeVariable> typeVariables;
 
-        public WrappedExecutableType(ExecutableType raw, Element element, WrappedTypeFactory factory) {
+        public WrappedExecutableType(ExecutableType raw, ExecutableElement element, WrappedTypeFactory factory) {
             super(raw, factory);
             this.element = element;
             this.parameterTypes = factory.wrap(raw.getParameterTypes());
@@ -201,11 +203,20 @@ public abstract class WrappedTypeMirror implements ExtendedTypeMirror {
             this.thrownTypes = factory.wrap(raw.getThrownTypes());
             this.typeVariables = factory.wrapTypeVariables(raw.getTypeVariables());
 
-            if (this.element != null && this.element.getKind() == ElementKind.CONSTRUCTOR) {
+            if (this.element != null) {
                 Element classElt = this.element.getEnclosingElement();
-                assert classElt.getKind() == ElementKind.CLASS;
-                this.returnType = factory.wrap(classElt.asType());
-                // TODO: maybe need to do the same for this.receiverType
+
+                if (this.element.getKind() == ElementKind.CONSTRUCTOR) {
+                    assert classElt.getKind() == ElementKind.CLASS;
+                    this.returnType = factory.wrap(classElt.asType());
+                }
+
+                if (this.receiverType == null && !this.element.getModifiers().contains(Modifier.STATIC)) {
+                    // TODO: This might not be the right thing to do for
+                    // constructors - but I think it matches what ATM does.
+                    this.receiverType = factory.wrap(classElt.asType());
+                }
+
             }
         }
 
@@ -220,7 +231,7 @@ public abstract class WrappedTypeMirror implements ExtendedTypeMirror {
         }
 
         @Override
-        public Element asElement() {
+        public ExecutableElement asElement() {
             return element;
         }
 
@@ -247,6 +258,17 @@ public abstract class WrappedTypeMirror implements ExtendedTypeMirror {
         @Override
         public List<? extends ExtendedTypeVariable> getTypeVariables() {
             return typeVariables;
+        }
+
+        @Override
+        public String toString() {
+            return
+                this.typeVariables + " " +
+                this.returnType + " " +
+                this.element.getSimpleName() + "(" +
+                this.receiverType + ", " +
+                this.parameterTypes + ") throws " +
+                this.thrownTypes;
         }
 
         @Override

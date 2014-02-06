@@ -11,6 +11,7 @@ import org.checkerframework.framework.base.QualifierHierarchy;
 import org.checkerframework.framework.base.QualifiedTypeMirror;
 import org.checkerframework.framework.base.QualifiedTypeMirror.QualifiedDeclaredType;
 import org.checkerframework.framework.base.TreeAnnotator;
+import org.checkerframework.framework.util.ExtendedTypeMirror;
 
 public class TaintingQualifiedTypeFactory extends DefaultQualifiedTypeFactory<Tainting> {
     @Override
@@ -27,7 +28,7 @@ public class TaintingQualifiedTypeFactory extends DefaultQualifiedTypeFactory<Ta
     protected TreeAnnotator<Tainting> createTreeAnnotator() {
         return new TreeAnnotator<Tainting>() {
             @Override
-            public QualifiedTypeMirror<Tainting> visitLiteral(LiteralTree tree, TypeMirror type) {
+            public QualifiedTypeMirror<Tainting> visitLiteral(LiteralTree tree, ExtendedTypeMirror type) {
                 if (tree.getKind() == Tree.Kind.STRING_LITERAL) {
                     return new QualifiedDeclaredType<Tainting>(
                             type, Tainting.UNTAINTED, new ArrayList<>());
