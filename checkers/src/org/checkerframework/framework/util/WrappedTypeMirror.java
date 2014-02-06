@@ -27,6 +27,9 @@ public abstract class WrappedTypeMirror implements ExtendedTypeMirror {
     private TypeMirror raw;
 
     private WrappedTypeMirror(TypeMirror raw, WrappedTypeFactory factory) {
+        if (raw == null) {
+            throw new IllegalArgumentException("raw TypeMirror must be non-null");
+        }
         this.raw = raw;
     }
 
@@ -54,6 +57,26 @@ public abstract class WrappedTypeMirror implements ExtendedTypeMirror {
         return raw.getAnnotationsByType(annotationType);
     }
 
+    @Override
+    public String toString() {
+        return raw.toString();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null || obj.getClass() != this.getClass()) {
+            return false;
+        }
+        @SuppressWarnings("unchecked")
+        WrappedTypeMirror other = (WrappedTypeMirror)obj;
+        return this.raw.equals(other.raw);
+    }
+
+    @Override
+    public int hashCode() {
+        return raw.hashCode();
+    }
+
     static class WrappedArrayType extends WrappedReferenceType implements ExtendedArrayType {
         private WrappedTypeMirror componentType;
         public WrappedArrayType(ArrayType raw, WrappedTypeFactory factory) {
@@ -74,6 +97,22 @@ public abstract class WrappedTypeMirror implements ExtendedTypeMirror {
         @Override
         public ExtendedTypeMirror getComponentType() {
             return componentType;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!super.equals(obj))
+                return false;
+            // super.equals ensures that 'obj.getClass() == this.getClass()'.
+            @SuppressWarnings("unchecked")
+            WrappedArrayType other = (WrappedArrayType)obj;
+            return this.componentType.equals(other.componentType);
+        }
+
+        @Override
+        public int hashCode() {
+            return super.hashCode()
+                + componentType.hashCode() * 43;
         }
     }
 
@@ -110,6 +149,22 @@ public abstract class WrappedTypeMirror implements ExtendedTypeMirror {
         @Override
         public List<WrappedTypeMirror> getTypeArguments() {
             return typeArguments;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!super.equals(obj))
+                return false;
+            // super.equals ensures that 'obj.getClass() == this.getClass()'.
+            @SuppressWarnings("unchecked")
+            WrappedDeclaredType other = (WrappedDeclaredType)obj;
+            return this.typeArguments.equals(other.typeArguments);
+        }
+
+        @Override
+        public int hashCode() {
+            return super.hashCode()
+                + typeArguments.hashCode() * 43;
         }
     }
 
@@ -193,6 +248,38 @@ public abstract class WrappedTypeMirror implements ExtendedTypeMirror {
         public List<? extends ExtendedTypeVariable> getTypeVariables() {
             return typeVariables;
         }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!super.equals(obj))
+                return false;
+            // super.equals ensures that 'obj.getClass() == this.getClass()'.
+            @SuppressWarnings("unchecked")
+            WrappedExecutableType other = (WrappedExecutableType)obj;
+            return (this.element == null ?
+                        other.element == null :
+                        this.element.equals(other.element))
+                && this.parameterTypes.equals(other.parameterTypes)
+                && (this.receiverType == null ?
+                        other.receiverType == null :
+                        this.receiverType.equals(other.receiverType))
+                && (this.returnType == null ?
+                        other.returnType == null :
+                        this.returnType.equals(other.returnType))
+                && this.thrownTypes.equals(other.thrownTypes)
+                && this.typeVariables.equals(other.typeVariables);
+        }
+
+        @Override
+        public int hashCode() {
+            return super.hashCode()
+                + (element == null ? 0 : element.hashCode() * 149)
+                + parameterTypes.hashCode() * 43
+                + (receiverType == null ? 0 : receiverType.hashCode() * 67)
+                + (returnType == null ? 0 : returnType.hashCode() * 83)
+                + thrownTypes.hashCode() * 109
+                + typeVariables.hashCode() * 127;
+        }
     }
 
     static class WrappedIntersectionType extends WrappedTypeMirror implements ExtendedIntersectionType {
@@ -217,6 +304,22 @@ public abstract class WrappedTypeMirror implements ExtendedTypeMirror {
         public List<? extends ExtendedTypeMirror> getBounds() {
             return bounds;
         }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!super.equals(obj))
+                return false;
+            // super.equals ensures that 'obj.getClass() == this.getClass()'.
+            @SuppressWarnings("unchecked")
+            WrappedIntersectionType other = (WrappedIntersectionType)obj;
+            return this.bounds.equals(other.bounds);
+        }
+
+        @Override
+        public int hashCode() {
+            return super.hashCode()
+                + bounds.hashCode() * 43;
+        }
     }
 
     static class WrappedNoType extends WrappedTypeMirror implements ExtendedNoType {
@@ -233,6 +336,9 @@ public abstract class WrappedTypeMirror implements ExtendedTypeMirror {
         public <R,P> R accept(ExtendedTypeVisitor<R,P> v, P p) {
             return v.visitNoType(this, p);
         }
+
+        // Use superclass implementation of 'toString', 'equals', and
+        // 'hashCode'.
     }
 
     static class WrappedNullType extends WrappedReferenceType implements ExtendedNullType {
@@ -249,6 +355,9 @@ public abstract class WrappedTypeMirror implements ExtendedTypeMirror {
         public <R,P> R accept(ExtendedTypeVisitor<R,P> v, P p) {
             return v.visitNull(this, p);
         }
+
+        // Use superclass implementation of 'toString', 'equals', and
+        // 'hashCode'.
     }
 
     static class WrappedPrimitiveType extends WrappedTypeMirror implements ExtendedPrimitiveType {
@@ -265,6 +374,9 @@ public abstract class WrappedTypeMirror implements ExtendedTypeMirror {
         public <R,P> R accept(ExtendedTypeVisitor<R,P> v, P p) {
             return v.visitPrimitive(this, p);
         }
+
+        // Use superclass implementation of 'toString', 'equals', and
+        // 'hashCode'.
     }
 
     static abstract class WrappedReferenceType extends WrappedTypeMirror implements ExtendedReferenceType {
@@ -312,6 +424,24 @@ public abstract class WrappedTypeMirror implements ExtendedTypeMirror {
         public ExtendedTypeMirror getUpperBound() {
             return upperBound;
         }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!super.equals(obj))
+                return false;
+            // super.equals ensures that 'obj.getClass() == this.getClass()'.
+            @SuppressWarnings("unchecked")
+            WrappedTypeVariable other = (WrappedTypeVariable)obj;
+            return this.upperBound.equals(other.upperBound)
+                && this.lowerBound.equals(other.lowerBound);
+        }
+
+        @Override
+        public int hashCode() {
+            return super.hashCode()
+                + upperBound.hashCode() * 43
+                + lowerBound.hashCode() * 67;
+        }
     }
 
     static class WrappedUnionType extends WrappedTypeMirror implements ExtendedUnionType {
@@ -335,6 +465,22 @@ public abstract class WrappedTypeMirror implements ExtendedTypeMirror {
         @Override
         public List<? extends ExtendedTypeMirror> getAlternatives() {
             return alternatives;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!super.equals(obj))
+                return false;
+            // super.equals ensures that 'obj.getClass() == this.getClass()'.
+            @SuppressWarnings("unchecked")
+            WrappedUnionType other = (WrappedUnionType)obj;
+            return this.alternatives.equals(other.alternatives);
+        }
+
+        @Override
+        public int hashCode() {
+            return super.hashCode()
+                + alternatives.hashCode() * 43;
         }
     }
 
@@ -378,6 +524,24 @@ public abstract class WrappedTypeMirror implements ExtendedTypeMirror {
         @Override
         public ExtendedTypeMirror getSuperBound() {
             return superBound;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!super.equals(obj))
+                return false;
+            // super.equals ensures that 'obj.getClass() == this.getClass()'.
+            @SuppressWarnings("unchecked")
+            WrappedWildcardType other = (WrappedWildcardType)obj;
+            return this.extendsBound.equals(other.extendsBound)
+                && this.superBound.equals(other.superBound);
+        }
+
+        @Override
+        public int hashCode() {
+            return super.hashCode()
+                + extendsBound.hashCode() * 43
+                + superBound.hashCode() * 67;
         }
     }
 }
