@@ -93,7 +93,7 @@ public class TestInput {
             opts.add(processor);
         }
         opts.add("-source");
-        opts.add("1.8");
+        opts.add("1.9");
         // Always output warnings for unchecked constructs
         opts.add("-Xlint:unchecked");
         // Use short javac diagnostics
