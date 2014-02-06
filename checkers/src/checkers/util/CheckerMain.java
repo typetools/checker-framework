@@ -366,11 +366,14 @@ public class CheckerMain {
         final double jreVersion = getJreVersion();
         final String fileName;
         if (jreVersion == 1.4 || jreVersion == 1.5 || jreVersion == 1.6) {
+            // TODO: raise an error, these versions are no longer supported.
             fileName = "jdk6.jar";
         } else if (jreVersion == 1.7) {
             fileName = "jdk7.jar";
         } else if (jreVersion == 1.8) {
             fileName = "jdk8.jar";
+        } else if (jreVersion == 1.9) {
+            fileName = "jdk9.jar";
         } else {
             throw new AssertionError("Unsupported JRE version: " + jreVersion);
         }
