@@ -37,34 +37,6 @@ public class TypeAnnotationUtils {
     private TypeAnnotationUtils() { throw new AssertionError("Class TypeAnnotationUtils cannot be instantiated."); }
 
     /**
-     * Create a new TypeAnnotationPosition with the same values as the input.
-     *
-     * @param tapos The input value.
-     * @return A new copy of the input.
-     */
-    public static TypeAnnotationPosition copyTypeAnnotationPosition(
-            TypeAnnotationPosition tapos) {
-        TypeAnnotationPosition res = new TypeAnnotationPosition();
-        res.isValidOffset = tapos.isValidOffset;
-        res.bound_index = tapos.bound_index;
-        res.exception_index = tapos.exception_index;
-        res.location = List.from(tapos.location);
-        if (tapos.lvarIndex != null)
-            res.lvarIndex = Arrays.copyOf(tapos.lvarIndex, tapos.lvarIndex.length);
-        if (tapos.lvarLength != null)
-            res.lvarLength = Arrays.copyOf(tapos.lvarLength, tapos.lvarLength.length);
-        if (tapos.lvarOffset != null)
-            res.lvarOffset = Arrays.copyOf(tapos.lvarOffset, tapos.lvarOffset.length);
-        res.offset = tapos.offset;
-        res.onLambda = tapos.onLambda;
-        res.parameter_index = tapos.parameter_index;
-        res.pos = tapos.pos;
-        res.type = tapos.type;
-        res.type_index = tapos.type_index;
-        return res;
-    }
-
-    /**
      * Check whether a TypeCompound is contained in a list of TypeCompounds.
      *
      * @param list The input list of TypeCompounds.
