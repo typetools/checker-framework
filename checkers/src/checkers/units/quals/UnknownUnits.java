@@ -7,6 +7,7 @@ import java.lang.annotation.Target;
 import java.lang.annotation.ElementType;
 
 import checkers.quals.DefaultQualifierInHierarchy;
+import checkers.quals.InvisibleQualifier;
 import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifier;
 
@@ -14,6 +15,7 @@ import checkers.quals.TypeQualifier;
  * UnknownUnits is the top type of the type hierarchy.
  */
 @TypeQualifier
+@InvisibleQualifier
 @SubtypeOf({})
 @DefaultQualifierInHierarchy
 @Documented
