@@ -38,16 +38,22 @@ import com.sun.tools.javac.util.List;
 
 
 /**
- * A helper class that puts the annotations from an AnnotatedTypeMirror
- * back into an Element, so that they get stored in the bytecode by the compiler.
+ * A helper class that puts the annotations from an AnnotatedTypeMirrors
+ * back into the corresponding Elements, so that they get stored in the bytecode by the compiler.
  *
  * This has kind-of the symmetric function to {@code TypeFromElement}.
- * It doesn't produce a new Element, it modifies an existing Element.
  *
  * This class deals with javac internals and liberally imports such classes.
  */
-public class ElementFromType {
+public class TypesIntoElements {
 
+    /**
+     * The entry point.
+     *
+     * @param processingEnv The environment.
+     * @param atypeFactory The type factory.
+     * @param tree The ClassTree to process.
+     */
     public static void store(ProcessingEnvironment processingEnv, AnnotatedTypeFactory atypeFactory, ClassTree tree) {
         Symbol.ClassSymbol csym = (Symbol.ClassSymbol) TreeUtils.elementFromDeclaration(tree);
         Types types = processingEnv.getTypeUtils();
@@ -241,11 +247,15 @@ public class ElementFromType {
     }
 
     // return List.nil() not null if there are no TypeCompounds to return.
-    public static List<Attribute.TypeCompound> generateTypeCompounds(ProcessingEnvironment processingEnv,
+    private static List<Attribute.TypeCompound> generateTypeCompounds(ProcessingEnvironment processingEnv,
             AnnotatedTypeMirror type, TypeAnnotationPosition tapos) {
         return new TCConvert(processingEnv).scan(type, tapos);
     }
 
+    /**
+     * Convert an AnnotatedTypeMirror and a TypeAnnotationPosition into the
+     * corresponding TypeCompounds.
+     */
     private static class TCConvert extends AnnotatedTypeScanner<List<Attribute.TypeCompound>, TypeAnnotationPosition> {
 
         private final ProcessingEnvironment processingEnv;
@@ -258,7 +268,7 @@ public class ElementFromType {
         public List<TypeCompound> scan(AnnotatedTypeMirror type,
                 TypeAnnotationPosition pos) {
             if (pos == null) {
-                ErrorReporter.errorAbort("ElementFromType: invalid usage, null pos with type: " + type);
+                ErrorReporter.errorAbort("TypesIntoElements: invalid usage, null pos with type: " + type);
             }
             if (type == null) {
                 return List.nil();

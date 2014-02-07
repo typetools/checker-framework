@@ -10,7 +10,7 @@ import static com.sun.tools.classfile.TypeAnnotation.TargetType.*;
 
 public class Classes {
 
-    /* TODO: store extends/implements in ElementFromType.
+    /* TODO: store extends/implements in TypesIntoElements.
     @TADescriptions({
         @TADescription(annotation = "checkers/nullness/quals/NonNull", type = CLASS_EXTENDS, typeIndex=-1),
         @TADescription(annotation = "checkers/initialization/quals/Initialized", type = CLASS_EXTENDS, typeIndex=-1),

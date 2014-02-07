@@ -491,8 +491,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         AnnotatedTypeMirror type = fromElement(elt);
         annotateInheritedFromClass(type);
         annotateImplicit(elt, type);
-        // Do we want to store the annotations back into the Element?
-        // System.out.println("AnnotatedTypeFactory::getAnnotatedType(Element) result: " + type);
         return type;
     }
 
@@ -567,7 +565,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
 
         if (tree.getKind() == Tree.Kind.CLASS) {
-            storeClassTree((ClassTree) tree);
+            postProcessClassTree((ClassTree) tree);
         }
 
         // System.out.println("AnnotatedTypeFactory::getAnnotatedType(Tree) result: " + type);
@@ -575,11 +573,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Put annotations back into the Element and therefore the bytecode.
-     * Override if you want/need to disable this feature.
+     * Called by getAnnotatedType(Tree) for each ClassTree after determining the type.
+     * The default implementation uses this to store the defaulted AnnotatedTypeMirrors
+     * back into the corresponding Elements.
+     * Subclasses might want to override this method if storing defaulted types is
+     * not desirable.
      */
-    protected void storeClassTree(ClassTree tree) {
-        ElementFromType.store(processingEnv, this, tree);
+    protected void postProcessClassTree(ClassTree tree) {
+        TypesIntoElements.store(processingEnv, this, tree);
     }
 
     /**
