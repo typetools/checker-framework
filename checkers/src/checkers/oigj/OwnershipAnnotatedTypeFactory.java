@@ -43,7 +43,7 @@ public class OwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     // TODO: do store annotations into the Element -> remove this override
     // Currently, many test cases fail without this.
     @Override
-    public void storeClassTree(ClassTree tree) {
+    public void postProcessClassTree(ClassTree tree) {
     }
 
 

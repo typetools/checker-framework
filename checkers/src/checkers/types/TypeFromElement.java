@@ -41,12 +41,12 @@ import com.sun.tools.javac.code.TypeAnnotationPosition.TypePathEntryKind;
  * http://mail.openjdk.java.net/pipermail/type-annotations-dev/2013-December/001449.html
  * decoding the type annotations from the Element is necessary.
  *
- * Even once these bugs are fixed, this class might be useful: in ElementFromType
+ * Even once these bugs are fixed, this class might be useful: in TypesIntoElements
  * it is easy to add additional annotations to the element and have them stored in the
  * bytecode by the compiler.
  * It would be more work (and might not work in the end) to instead modify the Type
  * directly.
- * The interaction between TypeFromElement and ElementFromType allows us to write
+ * The interaction between TypeFromElement and TypesIntoElements allows us to write
  * the defaulted annotations into the Element and have them read later by other parts.
  */
 public class TypeFromElement {
