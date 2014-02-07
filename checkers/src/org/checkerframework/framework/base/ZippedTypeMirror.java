@@ -107,7 +107,7 @@ public abstract class ZippedTypeMirror implements ExtendedTypeMirror {
         return base.hashCode() * 17 + annotated.hashCode() * 37;
     }
 
-    private static ExtendedTypeMirror zip(ExtendedTypeMirror base, AnnotatedTypeMirror annotated) {
+    public static ExtendedTypeMirror zip(ExtendedTypeMirror base, AnnotatedTypeMirror annotated) {
         if (base == null) {
             return null;
         }
@@ -145,7 +145,7 @@ public abstract class ZippedTypeMirror implements ExtendedTypeMirror {
         }
     }
 
-    private static <ETM extends ExtendedTypeMirror> List<ETM> zip(
+    private static <ETM extends ExtendedTypeMirror> List<ETM> zipLists(
             List<? extends ETM> bases, List<? extends AnnotatedTypeMirror> annotateds) {
         if (bases == null) {
             return null;
@@ -167,6 +167,13 @@ public abstract class ZippedTypeMirror implements ExtendedTypeMirror {
         }
 
         return result;
+    }
+
+    public static ExtendedTypeMirror unzip(ExtendedTypeMirror type) {
+        while (type instanceof ZippedTypeMirror) {
+            type = ((ZippedTypeMirror)type).getBase();
+        }
+        return type;
     }
 
     public static class ZippedArrayType extends ZippedReferenceType implements ExtendedArrayType {
@@ -241,7 +248,7 @@ public abstract class ZippedTypeMirror implements ExtendedTypeMirror {
         @Override
         public List<ExtendedTypeMirror> getTypeArguments() {
             if (typeArguments == null) {
-                typeArguments = zip(getBase().getTypeArguments(),
+                typeArguments = zipLists(getBase().getTypeArguments(),
                         getAnnotated().getTypeArguments());
             }
             return typeArguments;
@@ -282,7 +289,7 @@ public abstract class ZippedTypeMirror implements ExtendedTypeMirror {
         @Override
         public List<? extends ExtendedTypeMirror> getParameterTypes() {
             if (parameterTypes == null) {
-                parameterTypes = zip(getBase().getParameterTypes(),
+                parameterTypes = zipLists(getBase().getParameterTypes(),
                         getAnnotated().getParameterTypes());
             }
             return parameterTypes;
@@ -309,7 +316,7 @@ public abstract class ZippedTypeMirror implements ExtendedTypeMirror {
         @Override
         public List<? extends ExtendedTypeMirror> getThrownTypes() {
             if (thrownTypes == null) {
-                thrownTypes = zip(getBase().getThrownTypes(),
+                thrownTypes = zipLists(getBase().getThrownTypes(),
                         getAnnotated().getThrownTypes());
             }
             return thrownTypes;
@@ -318,7 +325,7 @@ public abstract class ZippedTypeMirror implements ExtendedTypeMirror {
         @Override
         public List<? extends ExtendedTypeVariable> getTypeVariables() {
             if (typeVariables == null) {
-                typeVariables = zip(getBase().getTypeVariables(),
+                typeVariables = zipLists(getBase().getTypeVariables(),
                         getAnnotated().getTypeVariables());
             }
             return typeVariables;
@@ -350,7 +357,7 @@ public abstract class ZippedTypeMirror implements ExtendedTypeMirror {
         @Override
         public List<? extends ExtendedTypeMirror> getBounds() {
             if (bounds == null) {
-                bounds = zip(getBase().getBounds(),
+                bounds = zipLists(getBase().getBounds(),
                         getAnnotated().directSuperTypes());
             }
             return bounds;
@@ -498,7 +505,7 @@ public abstract class ZippedTypeMirror implements ExtendedTypeMirror {
         @Override
         public List<? extends ExtendedTypeMirror> getAlternatives() {
             if (alternatives == null) {
-                alternatives = zip(getBase().getAlternatives(),
+                alternatives = zipLists(getBase().getAlternatives(),
                         getAnnotated().getAlternatives());
             }
             return alternatives;

@@ -106,6 +106,8 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
                 getCheckerAdapter().getTypeMirrorConverter(),
                 this);
 
+        underlyingAnnotator.setAdapter(adapter);
+
         return adapter;
     }
 

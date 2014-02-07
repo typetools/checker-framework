@@ -20,21 +20,24 @@ public class TypeAnnotatorAdapter<Q> extends checkers.types.TypeAnnotator {
         this.converter = converter;
     }
 
-    @Override
-    protected Void scan(AnnotatedTypeMirror atm, Element elt) {
-        if (atm.hasAnnotation(atm.getAnnotation(TypeMirrorConverter.Key.class)) &&
-                    converter.getQualifiedType(atm) != null) {
-            // Sometimes we get an ATM that has already been fully processed.
-            return null;
+    public Q getExistingQualifier(ExtendedTypeMirror type) {
+        if (type instanceof ZippedTypeMirror) {
+            AnnotatedTypeMirror atm = ((ZippedTypeMirror)type).getAnnotated();
+            if (atm.hasAnnotation(TypeMirrorConverter.Key.class)) {
+                return converter.getQualifier(atm);
+            }
         }
 
-        // We don't actually read any information from the input ATM aside from
-        // its underlying type, so we don't need to convert it to a QTM.
+        return null;
+    }
 
+    @Override
+    protected Void scan(AnnotatedTypeMirror atm, Element elt) {
         // Produce a qualified version of the ATM's underlying type.
         TypeMirror type = atm.getUnderlyingType();
         ExtendedTypeMirror wrappedType = converter.getWrapper().wrap(type, elt);
-        QualifiedTypeMirror<Q> qtm = underlying.visit(wrappedType, elt);
+        ExtendedTypeMirror zippedType = ZippedTypeMirror.zip(wrappedType, atm);
+        QualifiedTypeMirror<Q> qtm = underlying.visit(zippedType, elt);
 
         // Update the input ATM with the new qualifiers.
         converter.applyQualifiers(qtm, atm);

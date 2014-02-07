@@ -30,7 +30,7 @@ public abstract class QualifiedTypeMirror<Q> {
                     "cannot construct QualifiedTypeMirror with null qualifier");
         }
 
-        this.underlying = underlying;
+        this.underlying = ZippedTypeMirror.unzip(underlying);
         this.qualifier = qualifier;
         try {
             throw new RuntimeException("where");
@@ -143,7 +143,6 @@ public abstract class QualifiedTypeMirror<Q> {
             List<? extends QualifiedTypeMirror<Q>> qualified,
             List<? extends ExtendedTypeMirror> unqualified) {
         if (!typeMirrorListsMatch(qualified, unqualified)) {
-            System.err.printf("MISMATCH!! %s <-> %s\n", qualified, unqualified);
             qualified.get(0).where.printStackTrace();
             throw new IllegalArgumentException(
                     "qualified and unqualified " + description +
