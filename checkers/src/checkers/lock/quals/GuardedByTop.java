@@ -3,6 +3,7 @@ package checkers.lock.quals;
 
 import java.lang.annotation.*;
 
+import checkers.quals.InvisibleQualifier;
 import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifier;
 
@@ -16,6 +17,7 @@ import checkers.quals.TypeQualifier;
  * @checker_framework_manual #lock-checker Lock Checker
  */
 @TypeQualifier
+@InvisibleQualifier
 @SubtypeOf({})
 @Documented
 @Target({}) // not necessary to be used by the programmer
