@@ -1,3 +1,14 @@
+Version 1.7.4, 1 March 2014
+
+Defaulted type qualifiers are now stored in the Element and written
+to the final bytecode.
+
+Reduce special treatment of checkers.quals.Unqualified.
+
+Fixes for Issues 240, 265.
+
+----------------------------------------------------------------------
+
 Version 1.7.3, 4 February 2014
 
 Fixes for Issues 210, 253, 280, 288.
