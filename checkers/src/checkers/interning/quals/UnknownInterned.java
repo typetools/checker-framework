@@ -2,6 +2,7 @@ package checkers.interning.quals;
 
 import checkers.interning.InterningChecker;
 import checkers.quals.DefaultQualifierInHierarchy;
+import checkers.quals.InvisibleQualifier;
 import checkers.quals.SubtypeOf;
 import checkers.quals.TypeQualifier;
 
@@ -22,6 +23,7 @@ import java.lang.annotation.Target;
  * @checker_framework_manual #interning-checker Interning Checker
  */
 @TypeQualifier
+@InvisibleQualifier
 @SubtypeOf({})
 @DefaultQualifierInHierarchy
 @Documented
