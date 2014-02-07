@@ -40,11 +40,17 @@ public class TypeAnnotator<Q> implements ExtendedTypeVisitor<QualifiedTypeMirror
     private Q topQual;
     private Q bottomQual;
 
+    private TypeAnnotatorAdapter<Q> adapter;
+
     public TypeAnnotator(AnnotationConverter<Q> annotationConverter,
             Q topQual, Q bottomQual) {
         this.annotationConverter = annotationConverter;
         this.topQual = topQual;
         this.bottomQual = bottomQual;
+    }
+
+    void setAdapter(TypeAnnotatorAdapter<Q> adapter) {
+        this.adapter = adapter;
     }
 
     public QualifiedTypeMirror<Q> visit(ExtendedTypeMirror type, Element elt) {
@@ -64,10 +70,26 @@ public class TypeAnnotator<Q> implements ExtendedTypeVisitor<QualifiedTypeMirror
     }
 
     protected Q getQualifier(ExtendedTypeMirror type, Element elt) {
-        Q qual = annotationConverter.fromAnnotations(type.getAnnotationMirrors());
+        Q qual;
+
+        // Sometimes the Framework makes us re-process partially-annotated
+        // ATMs.  In that case, we should use the existing qualifier from the
+        // last pass whenever one exists.
+        qual = adapter.getExistingQualifier(type);
+
+        // There was no previous annotation, so try to get one from the
+        // AnnotationConverter.
+        if (qual == null) {
+            qual = annotationConverter.fromAnnotations(type.getAnnotationMirrors());
+        }
+
+        // As a last resort, default to top.
+        // TODO: make the default an argument to this function (and maybe also
+        // to the visitX methods), so it can be changed more easily).
         if (qual == null) {
             qual = topQual;
         }
+
         return qual;
     }
 
