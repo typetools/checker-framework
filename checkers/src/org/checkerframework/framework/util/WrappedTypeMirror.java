@@ -81,6 +81,7 @@ public abstract class WrappedTypeMirror implements ExtendedTypeMirror {
 
     static class WrappedArrayType extends WrappedReferenceType implements ExtendedArrayType {
         private WrappedTypeMirror componentType;
+
         public WrappedArrayType(ArrayType raw, WrappedTypeFactory factory) {
             super(raw, factory);
             this.componentType = factory.wrap(raw.getComponentType());
