@@ -288,7 +288,7 @@ If the Format String Checker issues no errors, it provides the following guarant
 The following guarantees hold for every format method invocation:
 
 \begin{enumerate} 
-    \item The format method's first parameter (or second if a \sunjavadoc{java/util}{Locale} is provided) is a valid
+    \item The format method's first parameter (or second if a \sunjavadoc{java/util/Locale.html}{Locale} is provided) is a valid
         format string (or \code{null}).
 
     \item A warning is issued if one of the format string's conversion categories is \code{UNUSED}.
@@ -376,7 +376,7 @@ Case \ref{formatter-array-warning}:
 % 
 % \begin{enumerate} 
 % \item Issue an \emph{error}, if the format method's first format argument (or
-%     second if a \sunjavadoc{java/util}{Locale} is provided) is not a
+%     second if a \sunjavadoc{java/util\Locale.html}{Locale} is provided) is not a
 %     \code{String} annotated with the \code{@Format} qualifier. 
 % \item Issue a \emph{warning}, if any of the \code{@Format} string's 
 %     conversion categories is \code{UNUSED}.
