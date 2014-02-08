@@ -1,0 +1,16 @@
+This directory is for temporary tests for the Nullness Checker
+
+The point is that putting them here permits them to be run quickly, rather
+than (say) putting them in the main nullness test suite and having to run
+that entire suite.
+
+Don't check any files into this directory, just use them in your local
+copy.
+
+
+To add a new file to the test suite, just add it to this directory.
+For more details, see
+  ../README
+
+To run the tests, do
+  ant -e -find build.xml nullness-temp
