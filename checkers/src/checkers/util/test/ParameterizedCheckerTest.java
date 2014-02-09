@@ -20,19 +20,8 @@ public abstract class ParameterizedCheckerTest extends CheckerTest {
         this.testFile = testFile;
     }
 
-    /**
-     * Creates a new parameterized checker test.
-     * This constructor is deprecated, use
-     * {@link #ParameterizedCheckerTest(File, Class, String, String...)} instead.
-     */
-    @Deprecated
-    public ParameterizedCheckerTest(File testFile,
-                String checkerName, String checkerDir, String... checkerOptions) {
-        super(checkerName, checkerDir, checkerOptions);
-        this.testFile = testFile;
-    }
-
-    @Test public void run() {
+    @Test
+    public void run() {
         test(testFile);
     }
 
