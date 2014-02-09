@@ -11,6 +11,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -35,7 +36,7 @@ abstract public class CheckerTest {
     protected final String checkerDir;
 
     /** Extra options to pass to javac when running the checker. */
-    protected final String[] checkerOptions;
+    protected final List<String> checkerOptions;
 
     /**
      * Creates a new checker test.
@@ -48,23 +49,7 @@ abstract public class CheckerTest {
             String checkerDir, String... checkerOptions) {
         this.checkerName = checker.getName();
         this.checkerDir = "tests" + File.separator + checkerDir;
-        this.checkerOptions = Arrays.copyOf(checkerOptions, checkerOptions.length);
-    }
-
-    /**
-     * Creates a new checker test.
-     * This constructor is deprecated, use
-     * {@link #CheckerTest(Class, String, String...)} instead.
-     *
-     * @param checkerName the fully-qualified class name of the checker to use
-     * @param checkerDir the path to the directory of test inputs
-     * @param checkerOptions options to pass to the compiler when running tests
-     */
-    @Deprecated
-    public CheckerTest(String checkerName, String checkerDir, String... checkerOptions) {
-        this.checkerName = checkerName;
-        this.checkerDir = "tests" + File.separator + checkerDir;
-        this.checkerOptions = Arrays.copyOf(checkerOptions, checkerOptions.length);
+        this.checkerOptions = Arrays.asList(checkerOptions);
     }
 
     /**
@@ -107,7 +92,7 @@ abstract public class CheckerTest {
             = fileManager.getJavaFileObjectsFromStrings(fileStrings);
 
         // files need to compile cleanly without any errors
-        TestRun pureCompilation = TestInput.compileAndCheck(tests, null, new String[]{});
+        TestRun pureCompilation = TestInput.compileAndCheck(checkerDir, tests, null, Collections.<String>emptyList());
         if (!pureCompilation.getResult()) {
             String message = "Java file is not valid Java code: " + fileStrings;
             System.err.println(message);
@@ -117,7 +102,7 @@ abstract public class CheckerTest {
             throw new IllegalArgumentException(message);
         }
 
-        return TestInput.compileAndCheck(tests, checkerName, checkerOptions);
+        return TestInput.compileAndCheck(checkerDir, tests, checkerName, checkerOptions);
     }
 
     /**
@@ -130,7 +115,7 @@ abstract public class CheckerTest {
         Iterable<? extends JavaFileObject> tests
             = fileManager.getJavaFileObjects(files);
 
-        return TestInput.compileAndCheck(tests, checkerName, checkerOptions);
+        return TestInput.compileAndCheck(checkerDir, tests, checkerName, checkerOptions);
     }
 
     /**
@@ -142,22 +127,23 @@ abstract public class CheckerTest {
     protected void runTest(File expectedFile, File ... javaFiles) {
         TestRun run = getTest(javaFiles);
         if (expectedFile.exists()) {
-            checkTestResult(run, expectedFile, TestUtilities.shouldSucceed(expectedFile), joinPrefixed(javaFiles, " ", this.checkerDir + File.separator), this.checkerOptions);
+            checkTestResult(run, expectedFile, TestUtilities.shouldSucceed(expectedFile),
+                    joinPrefixed(javaFiles, " ", this.checkerDir + File.separator), this.checkerOptions);
         } else {
             List<String> expectedErrors = TestUtilities.expectedDiagnostics(javaFiles);
-            checkTestResult(run, expectedErrors, expectedErrors.isEmpty(), joinPrefixed(javaFiles, " ", this.checkerDir + File.separator), this.checkerOptions);
+            checkTestResult(run, expectedErrors, expectedErrors.isEmpty(),
+                    joinPrefixed(javaFiles, " ", this.checkerDir + File.separator), this.checkerOptions);
         }
     }
 
-    protected static void test(final String checkerName, final String [] checkerOptions, File ... javaFiles) {
-
+    protected static void test(final String checkerName, final List<String> checkerOptions, File ... javaFiles) {
         final JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         StandardJavaFileManager fileManager
                 = compiler.getStandardFileManager(null, null, null);
         Iterable<? extends JavaFileObject> tests
                 = fileManager.getJavaFileObjects(javaFiles);
 
-        TestRun run = TestInput.compileAndCheck(tests, checkerName, checkerOptions);
+        TestRun run = TestInput.compileAndCheck(null, tests, checkerName, checkerOptions);
         List<String> expectedErrors = TestUtilities.expectedDiagnostics(javaFiles);
         checkTestResult(run, expectedErrors, expectedErrors.isEmpty(), join(javaFiles, " "), checkerOptions);
     }
@@ -185,7 +171,8 @@ abstract public class CheckerTest {
          checkTestResult(run, expectedFile, shouldSucceed, join(javaFiles, " "), this.checkerOptions);
      }
 
-    protected static void checkTestResult(TestRun run, File expectedFile, boolean shouldSucceed, String javaFile,  final String [] checkerOptions) {
+    protected static void checkTestResult(TestRun run, File expectedFile, boolean shouldSucceed,
+            String javaFile, final List<String> checkerOptions) {
         if (shouldSucceed)
             assertSuccess(run);
         else
@@ -201,7 +188,8 @@ abstract public class CheckerTest {
         assertDiagnostics(list, expectedFile, javaFile, checkerOptions);
     }
 
-    protected static void checkTestResult(TestRun run, List<String> expectedErrors, boolean shouldSucceed, String javaFile, final String [] checkerOptions) {
+    protected static void checkTestResult(TestRun run, List<String> expectedErrors,
+            boolean shouldSucceed, String javaFile, final List<String> checkerOptions) {
         String msg = null;
         if (shouldSucceed)
             msg = assertSuccess(run);
@@ -249,7 +237,7 @@ abstract public class CheckerTest {
      */
     protected static void assertDiagnostics(/*@ReadOnly*/ List</*@ReadOnly*/ Diagnostic<? extends JavaFileObject>> actualDiagnostics,
             /*@ReadOnly*/ File expectedDiagnosticFile,
-            String javaFile, final String [] checkerOptions) {
+            String javaFile, final List<String> checkerOptions) {
 
         try {
             BufferedReader reader = new BufferedReader(new FileReader(expectedDiagnosticFile));
@@ -287,7 +275,7 @@ abstract public class CheckerTest {
     protected static void assertDiagnostics(String msg,
             /*@ReadOnly*/ List</*@ReadOnly*/ Diagnostic<? extends JavaFileObject>> actual_diagnostics,
             List</*@ReadOnly*/ String> expected_diagnostics,
-            String filename, final String [] checkerOptions) {
+            String filename, final List<String> checkerOptions) {
         // String cs = (checkerDir == "" ? "" : checkerDir + File.separator); // "interned"
 
         List<String> expectedList = new LinkedList<String>();
