@@ -628,7 +628,7 @@
     </target>
 
     <target name="jtreg-tests" depends="-def-jtreg,jar"
-	    description="Run jtreg tests">
+            description="Run jtreg tests">
         <jtreg-tool name="all" tests="."/>
     </target>
 
@@ -740,7 +740,7 @@
             <arg line="-version"/>
             <arg line="-proc:only"/>
             <arg line="-processor ${checker-name}"/>
-	    <arg line="${checker-args}"/>
+            <arg line="${checker-args}"/>
         </java>
         <delete file="${tmpdir}/srcfiles-checkers.txt"/>
     </target>
