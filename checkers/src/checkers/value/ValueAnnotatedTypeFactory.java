@@ -554,7 +554,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         @Override
         public Void visitTypeCast(TypeCastTree tree, AnnotatedTypeMirror type) {
             if (isClassCovered(type)) {
-                String castedToString = type.toString();
+                String castedToString = type.getUnderlyingType().toString();
                 handleCast(tree.getExpression(), castedToString, type);
             }
             return super.visitTypeCast(tree, type);
