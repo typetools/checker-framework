@@ -1,0 +1,23 @@
+package checkers.value.quals;
+
+import checkers.quals.DefaultQualifierInHierarchy;
+import checkers.quals.SubtypeOf;
+import checkers.quals.TypeQualifier;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+/**
+ * 
+ * {@link UnknownVal} is a type annotation that indicates that the value is not
+ * known.
+ * 
+ */
+@TypeQualifier
+@SubtypeOf({})
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ ElementType.TYPE_PARAMETER, ElementType.TYPE_USE })
+@DefaultQualifierInHierarchy
+public @interface UnknownVal {
+}

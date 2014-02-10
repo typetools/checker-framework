@@ -1,0 +1,237 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+  <title>Tutorial: Preventing Runtime Errors at Compile Time</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <link rel="icon" type="image/png" href="../../jsr308/favicon-jsr308.png" />
+</head>
+<body>
+
+<h1>Tutorial: Preventing Runtime Errors at Compile Time with the Checker Framework</h1>
+
+<p>
+In this self-paced tutorial, you will learn to use the Checker Framework to
+improve code quality.  In particular, the Checker Framework will give a
+compile-time guarantee that certain run-time errors cannot occur.
+</p>
+
+
+<h2>Resources</h2>
+
+<ul>
+  <li>
+    <a href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html">The Checker Framework Manual</a>
+  </li>
+
+  <li>
+    <a href="http://types.cs.washington.edu/checker-framework/">The Checker Framework homepage</a>
+  </li>
+
+  <li>
+    <a href="http://types.cs.washington.edu/jsr308/">Type Annotations (JSR 308)</a>
+  </li>
+  <li>
+    Feel free to <b>contact</b> us!  Email
+    <a href="mailto:checker-framework-dev@googlegroups.com">checker-framework-dev@googlegroups.com</a>
+  </li>
+</ul>
+
+
+
+<h2>Install the Checker Framework</h2>
+
+<p>
+<a href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#installation">Install
+  the Checker Framework</a>.
+</p>
+
+<p>
+Be sure that running <tt>javac -version</tt> produces an output string that
+contains <tt>jsr308</tt>.
+</p>
+
+<p>
+Follow the instructions for an
+<a href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#example-use">example
+  use</a> of the Nullness Checker.
+</p>
+
+<!--
+<p>
+The following instructions assume a <code>CHECKERS</code> environment
+variable that is set to the
+<code>checker-framework/checkers/</code> directory within
+your Checker Framework installation, but you can use absolute pathnames
+instead.
+</p>
+-->
+
+
+<h2>Find missing input validation</h2>
+
+<p>
+We will find and correct errors in how the 
+<a href="Search.java">Search.java</a>.
+application uses regular expressions.
+Currently, when the user provides invalid inputs, the program crashes with
+a stack trace, which is offputting and uninformative to users.
+The <tt>Search.java</tt> application is incorrect in that it does not
+validate user input.  You will correct this problem.
+</p>
+
+<p>
+Download <a href="Search.java">Search.java</a>.
+</p>
+
+<p>
+Type check <tt>Search.java</tt> by running the following command, using the
+Checker Framework's <tt>javac</tt>:
+</p>
+
+<pre>
+javac -processor checkers.regex.RegexChecker Search.java
+</pre>
+
+<p>
+The Regex Checker finds the error &mdash; the missing validation.  Correct
+the problem by adding proper validation, and verify that your solution is
+correct by re-running the Regex Checker until it issues no errors.
+</p>
+
+<p>
+<b>TODO:  Give away the answer, by supplying a link that gives the missing
+  validation lines, for use by users who get stuck.</b>
+</p>
+
+
+
+<h2>Write an Encryption Checker</h2>
+
+<p>
+You will write your own declarative type checker to ensure
+encrypted communication!
+</p>
+
+<p>
+Demo application: <a href="EncryptionDemo.java">EncryptionDemo.java</a>.
+</p>
+
+<p>
+In the session we will write a new Encrypted annotation.
+You compile it like any other Java class:
+</p>
+
+<pre>
+javac .../Encrypted.java
+</pre>
+
+<p>
+You then use the Basic Checker to check the demo program, like so:
+<p>
+
+<pre>
+$CHECKERS/binary/javac -processor checkers.basic.BasicChecker -Aquals=encrypted.quals.Encrypted .../EncryptionDemo.java
+</pre>
+
+<p>
+[It is sometimes necessary to provide the location of the annotation
+class on the bootclasspath. Use the "-Xbootclasspath/p:yourpath"
+parameter for this.]
+</p>
+
+
+<h2>Find a security error in the Personal Blog project</h2>
+
+<p>
+As a first demonstration, we will use the
+Personal Blog demonstration.
+You can download the
+<a href="personalblog-demo.zip">project here</a>.
+Unzip it into a directory.
+An Ant build file is there.
+In Eclipse, you can import the folder as a new project.
+</p>
+
+
+
+<h2>Abstract of the tutorial</h2>
+
+<p>
+A pluggable type system extends a language's built-in type system to
+confer additional compile-time guarantees.  We will explain the theory and
+practice of pluggable types.  The material is relevant for researchers who
+wish to apply type theory, and for anyone who wishes to increase confidence
+in their code.  After this session, you will have the knowledge to:
+analyze a problem to determine whether pluggable type-checking is
+appropriate; design a domain-specific type system; implement a simple
+type-checker (in as little as 4 lines of code!); scale a simple
+type-checker to more sophisticated properties; and better appreciate both
+object-oriented types and flexible verification techniques.
+</p>
+
+<p>
+While the theory is general, our hands-on exercises will use a
+state-of-the-art system, the Checker Framework, that works for the Java
+language, scales to millions of lines of code, and is being adopted in the
+research and industrial communities.  Such a framework enables researchers
+to easily evaluate their type systems in the context of a widely-used
+industrial language, Java.   It enables non-researchers to verify their
+code in a lightweight way and to create custom analyses.  And it enables
+students to better appreciate type system concepts.
+</p>
+
+<p>We will:</p>
+<ul>
+<li>guide the audience through installing the Checker Framework,
+  including how to set up Eclipse integration;</li>
+<li>teach how to use some of the checkers included with the Checker
+  Framework;</li>
+<li>discuss other types of errors that one would like to be prevented at
+  compile time;</li>
+<li>and teach how to write a new type checker to prevent the errors we
+  come up with in our discussion.</li>
+</ul>
+
+<p>
+Audience participation is desired! We expect the audience to come
+prepared with a laptop with a working Java environment (Eclipse
+optional).
+</p>
+
+
+<hr />
+
+<p>
+<a href="http://homes.cs.washington.edu/~wmdietl/">Werner Dietl</a>
+and
+<a href="http://homes.cs.washington.edu/~mernst/">Michael D. Ernst</a>,
+University of Washington.
+</p>
+
+<p>
+Last updated: April 28, 2013
+</p>
+
+</body>
+</html>
+
+<!--
+Local Variables:
+time-stamp-start: "^Last updated: "
+time-stamp-end: "\\.?$"
+time-stamp-format: "%:b %:d, %:y"
+time-stamp-line-limit: -50
+End:
+-->
+
+<!--  LocalWords:  PircBot getEncoding NonNullOnEntry outputThread inputThread
+ -->
+<!--  LocalWords:  setEncoding charset IRC NullPointerException InetAddress ip
+ -->
+<!--  LocalWords:  dccSendChatRequest inetAddress getDccInetAddress getAddress
+ -->
+<!--  LocalWords:  getInetAddress updateUser newUser onTopic
+ -->
+<!--  LocalWords:  processServerResponse
+ -->
