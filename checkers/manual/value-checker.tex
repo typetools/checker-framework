@@ -1,0 +1,128 @@
+\htmlhr
+\chapter{Value Checker\label{value-checker}}
+
+The Value Checker attempts to track the values of variables in a
+program at any given point in the execution. This checker is intended
+primarily as a tool for other checkers to use; the Reflection Checker,
+for example, makes use of the Value Checker extensively for attempting
+to determine the target of reflective calls, see
+Section~\ref{reflection-checker}.
+
+By itself, the Value Checker does not provide much useful
+functionality unless a programmer wants to attempt to enforce specific
+constraints on the values of a variable, such as indicating a certain
+int should always be either 0 or 1.
+
+To run the Value Checker, supply the -processor
+checkers.value.ValueChecker command-line option to javac.
+
+\section{Value Annotations}
+
+The Value Checker uses annotations to track values for all Java
+primitives, their wrappers (e.g. int, and Integer), Strings, and the
+length field of arrays. The types covered correspond to the names of
+the annotations as shown in Figure~\ref{fig-value-hierarchy}
+
+\begin{figure}
+\includeimage{value-hierarchy}{9cm}
+\caption{The overall annotation hierarchy of the Value
+annotations. Dashed lines indicate partial subtyping relationships
+based on the contents of the value arrays (explained further in
+Figure~\ref{fig-value-subtyping}. Qualifiers in gray are used
+internally by the type system but should never be written by a
+programmer.}
+\label{fig-value-hierarchy}
+\end{figure}
+
+Each annotation has an array of values representing all the values the
+annotated type could be. This array is limited to 10 entries for
+performance reasons. Therefore, if a variable, due to program logic,
+could be more than 10 different values at any given point the Value
+Checker gives up and it is annotated as @UnknownVal instead.
+
+In addition to the hierarchy shown above, an annotation is also
+considered a subtype of another annotation if its value array is a
+subset of the value array of the other annotation (see
+Figure~\ref{fig-value-subtype}. This allows the possible values of
+variables to continue to be tracked even when code branches cannot be
+predicted at compile-time as in~\ref{fig-value-multivalue}.
+
+\begin{figure}
+\includeimage{value-subtype}{2.5cm}
+\caption{Subtyping relationship between value annotations of the same type.}
+\label{fig-value-subtype}
+\end{figure}
+
+\begin{figure}
+\begin{Verbatim}
+public void foo(boolean b) {
+       int i = 1; // i is @IntVal({1})
+       if ( b ){  
+          i = 2; // i is now @IntVal({2})
+       }        
+       // i is now @IntVal({1,2})
+       
+       i = i + 1; // i is now @IntVal({2,3})
+}
+\end{Verbatim}
+\caption{An example of the Value Checker accumulating possible values
+    of a variable.}
+\label{fig-regex-partial}
+\end{figure}
+
+The third subtyping relationship among the value annotations is the
+hierarchy of numeric value types. If two annotations satisfy the
+subset relationship described above and one of them is numerically a
+less precise type than the other it will be automatically ``casted''
+up to the type of the other. The full extent of this subtyping is
+shown in Figure~\ref{fig-value-subtyping}
+
+\begin{figure}
+\includeimage{value-subtyping}{9cm}
+\caption{Subtyping of different numeric value annotations.}
+\label{fig-value-subtyping}
+\end{figure}
+
+\subsection{@Analyzable}
+In addition to the value annotations on variables discussed above,
+the Value Checker also uses a method annotation,
+@Analyzable. As part of the Value Checker operation the checker
+attempts to resolve operators (e.g. !, +, ==) and method calls to
+track the values returned. By default only the methods used by String
+and the wrapper classes are annotated with @Analyzable. However, a
+programmer can additionally annotate their own methods with
+@Analyzable if appropriate.
+
+Annotating a method with @Analyzable will allow the value of the
+return of that method to be tracked via the Value Checker, so long as
+all inputs to the function have known value annotations as well.
+
+Since an @Analyzable method is resolved by performing a reflective
+call at compile-time, it should only be added to a method (and only
+add useful functionality) if the method meets the following
+conditions:
+
+\begin{enumerate}
+
+\item The method must be \code{@\refclass{dataflow/quals}{Pure}} (side-effect free and deterministic)
+
+\item The method must only call other \code{@Analyzable} methods
+
+\item The method must be available on the Classpath (since it will be reflectively called at compile-time)
+
+\item The method's parameters are only Strings and/or Java primitives
+(the types covered by the Value Checker)
+
+\item The method returns a String or Java primitive (the types covered
+by the Value Checker)
+
+\end{enumerate}
+
+\section{Warnings}
+The Value Checker may issue warnings, mostly based on failing to
+resolve methods marked as @Analyzable but which were not able to be
+resolved when the checker was run. These will be displayed as warnings when
+the checker is run but the only negative effect is that the return
+value of the function will be @UnknownVal instead of being able to be
+resolved to a specific value annotation.
+
