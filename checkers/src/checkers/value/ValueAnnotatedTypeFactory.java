@@ -724,68 +724,68 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
-            if (isClassCovered(type)) {
+            if (!isClassCovered(type)) {
                 return super.visitBinary(tree, type);
             }
-                Tree.Kind operation = tree.getKind();
-                String finalTypeString = type.getUnderlyingType().toString();
+            Tree.Kind operation = tree.getKind();
+            String finalTypeString = type.getUnderlyingType().toString();
 
-                AnnotatedTypeMirror lhsType = getAnnotatedType(tree
-                        .getLeftOperand());
-                AnnotatedTypeMirror rhsType = getAnnotatedType(tree
-                        .getRightOperand());
-                if (!nonValueAnno(lhsType) && !nonValueAnno(rhsType)) {
+            AnnotatedTypeMirror lhsType = getAnnotatedType(tree
+                    .getLeftOperand());
+            AnnotatedTypeMirror rhsType = getAnnotatedType(tree
+                    .getRightOperand());
+            if (!nonValueAnno(lhsType) && !nonValueAnno(rhsType)) {
 
-                    Class<?> argClass = null;
+                Class<?> argClass = null;
 
-                    // Non-Comparison Binary Operation
-                    if (operation != Tree.Kind.EQUAL_TO
-                            && operation != Tree.Kind.NOT_EQUAL_TO
-                            && operation != Tree.Kind.GREATER_THAN
-                            && operation != Tree.Kind.GREATER_THAN_EQUAL
-                            && operation != Tree.Kind.LESS_THAN
-                            && operation != Tree.Kind.LESS_THAN_EQUAL) {
-                        argClass = getTypeValueClass(finalTypeString, tree);
+                // Non-Comparison Binary Operation
+                if (operation != Tree.Kind.EQUAL_TO
+                        && operation != Tree.Kind.NOT_EQUAL_TO
+                        && operation != Tree.Kind.GREATER_THAN
+                        && operation != Tree.Kind.GREATER_THAN_EQUAL
+                        && operation != Tree.Kind.LESS_THAN
+                        && operation != Tree.Kind.LESS_THAN_EQUAL) {
+                    argClass = getTypeValueClass(finalTypeString, tree);
+                    handleBinaryCast(tree.getLeftOperand(), lhsType,
+                            tree.getRightOperand(), rhsType,
+                            finalTypeString);
+                }
+                // Comparison Binary Operation We're okay to cast
+                // everything to DoubleVal *UNLESS* we're
+                // comparing StringsVals, so we do This
+                // potentially means we could remove the
+                // non-double versions of comparisons in
+                // Operators.java
+                else {
+
+                    if (AnnotationUtils.areSameIgnoringValues(
+                            lhsType.getAnnotationInHierarchy(UNKNOWNVAL),
+                            STRINGVAL)) {
+                        argClass = getAnnotationValueClass(lhsType
+                                .getAnnotationInHierarchy(UNKNOWNVAL));
+                    } else {
+                        argClass = getTypeValueClass("double", tree);
+
                         handleBinaryCast(tree.getLeftOperand(), lhsType,
-                                tree.getRightOperand(), rhsType,
-                                finalTypeString);
-                    }
-                    // Comparison Binary Operation We're okay to cast
-                    // everything to DoubleVal *UNLESS* we're
-                    // comparing StringsVals, so we do This
-                    // potentially means we could remove the
-                    // non-double versions of comparisons in
-                    // Operators.java
-                    else {
-
-                        if (AnnotationUtils.areSameIgnoringValues(
-                                lhsType.getAnnotationInHierarchy(UNKNOWNVAL),
-                                STRINGVAL)) {
-                            argClass = getAnnotationValueClass(lhsType
-                                    .getAnnotationInHierarchy(UNKNOWNVAL));
-                        } else {
-                            argClass = getTypeValueClass("double", tree);
-
-                            handleBinaryCast(tree.getLeftOperand(), lhsType,
-                                    tree.getRightOperand(), rhsType, "double");
-                        }
-                    }
-                    AnnotationMirror lhsAnno = lhsType
-                            .getAnnotationInHierarchy(UNKNOWNVAL);
-                    AnnotationMirror rhsAnno = rhsType
-                            .getAnnotationInHierarchy(UNKNOWNVAL);
-
-                    AnnotationMirror newAnno = evaluateBinaryOperator(lhsAnno,
-                            rhsAnno, operation.toString(), argClass, tree);
-
-                    if (newAnno != null) {
-                        type.replaceAnnotation(newAnno);
-
-                        return null;
+                                tree.getRightOperand(), rhsType, "double");
                     }
                 }
+                AnnotationMirror lhsAnno = lhsType
+                        .getAnnotationInHierarchy(UNKNOWNVAL);
+                AnnotationMirror rhsAnno = rhsType
+                        .getAnnotationInHierarchy(UNKNOWNVAL);
 
-                type.replaceAnnotation(UNKNOWNVAL);
+                AnnotationMirror newAnno = evaluateBinaryOperator(lhsAnno,
+                        rhsAnno, operation.toString(), argClass, tree);
+
+                if (newAnno != null) {
+                    type.replaceAnnotation(newAnno);
+
+                    return null;
+                }
+            }
+            type.replaceAnnotation(UNKNOWNVAL);
+            
             return null;
         }
 
