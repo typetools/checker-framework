@@ -70,10 +70,11 @@ import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
-// The following imports are from com.sun, but they are all
-// @jdk.Exported and therefore somewhat safe to use.
-// Try to avoid using non-@jdk.Exported classes.
-import com.sun.source.tree.AnnotatedTypeTree;
+//The following imports are from com.sun, but they are all
+//@jdk.Exported and therefore somewhat safe to use.
+//Try to avoid using non-@jdk.Exported classes.
+
+import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
@@ -1456,23 +1457,29 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     public AnnotatedDeclaredType fromNewClass(NewClassTree tree) {
+        AnnotatedDeclaredType type;
         if (!TreeUtils.isDiamondTree(tree)) {
-            return (AnnotatedDeclaredType) fromTypeTree(tree.getIdentifier());
+            type = (AnnotatedDeclaredType) fromTypeTree(tree.getIdentifier());
+        } else {
+            type = (AnnotatedDeclaredType) toAnnotatedType(InternalUtils.typeOf(tree));
         }
-        AnnotatedDeclaredType type = (AnnotatedDeclaredType) toAnnotatedType(InternalUtils.typeOf(tree));
 
-        if (tree.getIdentifier().getKind() == Tree.Kind.ANNOTATED_TYPE) {
+        if (tree.getClassBody() != null) {
             // TODO: try to remove this - javac should add the annotations to the type already.
-            type.addAnnotations(InternalUtils.annotationsFromTree((AnnotatedTypeTree)tree.getIdentifier()));
+            List<? extends AnnotationTree> annos = tree.getClassBody().getModifiers().getAnnotations();
+            type.replaceAnnotations(InternalUtils.annotationsFromTypeAnnotationTrees(annos));
         }
 
-        if (((com.sun.tools.javac.code.Type)type.actualType).tsym.getTypeParameters().nonEmpty()) {
-            Pair<Tree, AnnotatedTypeMirror> ctx = this.visitorState.getAssignmentContext();
-            if (ctx != null) {
-                AnnotatedTypeMirror ctxtype = ctx.second;
-                fromNewClassContextHelper(type, ctxtype);
+        if (TreeUtils.isDiamondTree(tree)) {
+            if (((com.sun.tools.javac.code.Type)type.actualType).tsym.getTypeParameters().nonEmpty()) {
+                Pair<Tree, AnnotatedTypeMirror> ctx = this.visitorState.getAssignmentContext();
+                if (ctx != null) {
+                    AnnotatedTypeMirror ctxtype = ctx.second;
+                    fromNewClassContextHelper(type, ctxtype);
+                }
             }
         }
+
         return type;
     }
 
