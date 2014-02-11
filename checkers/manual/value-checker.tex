@@ -45,7 +45,7 @@ considered a subtype of another annotation if its value array is a
 subset of the value array of the other annotation (see
 Figure~\ref{fig-value-subtype}. This allows the possible values of
 variables to continue to be tracked even when code branches cannot be
-predicted at compile-time as in~\ref{fig-value-multivalue}.
+predicted at compile-time as in Figure~\ref{fig-value-multivalue}.
 
 \begin{figure}
 \includeimage{value-subtype}{2.5cm}
@@ -56,18 +56,18 @@ predicted at compile-time as in~\ref{fig-value-multivalue}.
 \begin{figure}
 \begin{Verbatim}
 public void foo(boolean b) {
-       int i = 1; // i is @IntVal({1})
-       if ( b ){  
-          i = 2; // i is now @IntVal({2})
-       }        
-       // i is now @IntVal({1,2})
-       
-       i = i + 1; // i is now @IntVal({2,3})
+   int i = 1;     // i is @IntVal({1})
+   if (b) {  
+      i = 2;      // i is now @IntVal({2})
+   }        
+   // i is now @IntVal({1,2})
+   
+   i = i + 1;     // i is now @IntVal({2,3})
 }
 \end{Verbatim}
 \caption{An example of the Value Checker accumulating possible values
     of a variable.}
-\label{fig-regex-partial}
+\label{fig-value-multivalue}
 \end{figure}
 
 The third subtyping relationship among the value annotations is the
