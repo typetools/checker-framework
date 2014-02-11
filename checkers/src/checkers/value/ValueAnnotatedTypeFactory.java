@@ -724,8 +724,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
-            super.visitBinary(tree, type);
             if (isClassCovered(type)) {
+                return super.visitBinary(tree, type);
+            }
                 Tree.Kind operation = tree.getKind();
                 String finalTypeString = type.getUnderlyingType().toString();
 
@@ -785,7 +786,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 }
 
                 type.replaceAnnotation(UNKNOWNVAL);
-            }
             return null;
         }
 
