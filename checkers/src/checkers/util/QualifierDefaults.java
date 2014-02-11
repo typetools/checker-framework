@@ -432,7 +432,8 @@ public class QualifierDefaults {
 
         /**
          * Returns true if the given qualifier should be applied to the given type.  Currently we do not
-         * apply defaults to void types, packages, wildcards, and type variables
+         * apply defaults to void types, packages, wildcards, and type variables.
+         *
          * @param type Type to which qual would be applied
          * @param qual A default qualifier to apply
          * @return true if this application should proceed
@@ -441,6 +442,9 @@ public class QualifierDefaults {
                 final AnnotationMirror qual) {
 
             return !( type == null ||
+                    // TODO: executables themselves should not be annotated
+                    // For some reason polyall-tests failes with this.
+                    // type.getKind() == TypeKind.EXECUTABLE ||
                     type.getKind() == TypeKind.NONE ||
                     type.getKind() == TypeKind.WILDCARD ||
                     type.getKind() == TypeKind.TYPEVAR  ||
