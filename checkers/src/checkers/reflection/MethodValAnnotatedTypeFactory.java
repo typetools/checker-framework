@@ -461,7 +461,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         params.add(1);
                     } else {
                         // Was not a class, error
-                        System.out.println("HERE");
+                        //System.out.println("HERE");
                         params.add(-1);
                     }
                 }
@@ -484,7 +484,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     params.add(args.size() - 1);
                 } else {
                     // were not all classes, error
-                    System.out.println("HERE2");
+                   // System.out.println("HERE2");
                     params.add(-1);
                 }
             }
@@ -492,7 +492,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // If current annotation system doesn't handle it, we
             // wind up here
             else {
-                System.out.println("HERE3");
+              //  System.out.println("HERE3");
                 params.add(-1);
             }
             return params;
