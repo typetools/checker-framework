@@ -261,7 +261,7 @@ public class IGJAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         && getAnnotatedType(ElementUtils.enclosingClass(type.getElement())).hasEffectiveAnnotation(IMMUTABLE)) {
                     type.replaceAnnotation(IMMUTABLE);
                     TODO: This case is not exercised by any of the test cases. Is it needed?
-                    
+
                 } else if (element.getKind().isClass() || element.getKind().isInterface()) {
                     // case 10
                     type.replaceAnnotation(MUTABLE);
@@ -372,7 +372,7 @@ public class IGJAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 p.replaceAnnotations(tt.getAnnotations());
                 System.out.println("  final type: " + p);
                 // Is this the right way to handle anonymous classes?
-            } else */ 
+            } else */
             if (!hasImmutabilityAnnotation(p)) {
                 AnnotatedTypeMirror ct = fromElement(
                         ((AnnotatedDeclaredType)p).getUnderlyingType().asElement());

@@ -149,7 +149,7 @@ public class QualifierPolymorphism {
     }
 
     public static boolean isPolymorphicQualified(AnnotationMirror qual) {
-        return getPolymorphicQualifier(qual)!=null;
+        return getPolymorphicQualifier(qual) != null;
     }
 
     public static boolean isPolyAll(AnnotationMirror qual) {
@@ -225,7 +225,7 @@ public class QualifierPolymorphism {
             if (type != null) {
                 for (Map.Entry<AnnotationMirror, Set<? extends AnnotationMirror>> pqentry : matches.entrySet()) {
                     AnnotationMirror poly = pqentry.getKey();
-                    if (poly!=null && type.hasAnnotation(poly)) {
+                    if (poly != null && type.hasAnnotation(poly)) {
                         type.removeAnnotation(poly);
                         Set<? extends AnnotationMirror> quals = pqentry.getValue();
                         type.replaceAnnotations(quals);
@@ -253,7 +253,8 @@ public class QualifierPolymorphism {
                         if (top == null) {
                             // poly is PolyAll -> add all tops not explicitly given
                             type.addMissingAnnotations(topQuals);
-                        } else if (type.getKind()!=TypeKind.TYPEVAR && type.getKind()!=TypeKind.WILDCARD) {
+                        } else if (type.getKind() != TypeKind.TYPEVAR &&
+                                type.getKind() != TypeKind.WILDCARD) {
                             // Do not add the top qualifiers to type variables and wildcards
                             type.addAnnotation(top);
                         }
@@ -294,7 +295,7 @@ public class QualifierPolymorphism {
                 AnnotationMirror key1 = kv1.getKey();
                 Set<? extends AnnotationMirror> a1Annos = kv1.getValue();
                 Set<? extends AnnotationMirror> a2Annos = r2.get(key1);
-                if (a2Annos!=null && !a2Annos.isEmpty()) {
+                if (a2Annos != null && !a2Annos.isEmpty()) {
                     r2remain.remove(key1);
                     Set<? extends AnnotationMirror> lubs = qualhierarchy.leastUpperBounds(a1Annos, a2Annos);
                     res.put(key1, lubs);
@@ -346,9 +347,9 @@ public class QualifierPolymorphism {
                 visited.add(actualType.getUnderlyingType());
 
                 Map<AnnotationMirror, Set<? extends AnnotationMirror>> result;
-                if (wctype.getUnderlyingType().getExtendsBound()!=null) {
+                if (wctype.getUnderlyingType().getExtendsBound() != null) {
                     result = visit(type, wctype.getExtendsBound());
-                } else if (wctype.getUnderlyingType().getSuperBound()!=null) {
+                } else if (wctype.getUnderlyingType().getSuperBound() != null) {
                     // TODO: is the logic different for super bounds?
                     result = visit(type, wctype.getSuperBound());
                 } else {
