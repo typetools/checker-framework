@@ -7,6 +7,7 @@ import com.sun.source.tree.TreeVisitor;
 
 import checkers.types.AnnotatedTypeMirror;
 
+import org.checkerframework.framework.util.WrappedAnnotatedTypeMirror;
 
 public class TreeAnnotatorAdapter<Q> extends checkers.types.TreeAnnotator {
     private TreeAnnotator<Q> underlying;
@@ -27,7 +28,7 @@ public class TreeAnnotatorAdapter<Q> extends checkers.types.TreeAnnotator {
 
     public Void visitBinary(BinaryTree node, AnnotatedTypeMirror atm) {
         QualifiedTypeMirror<Q> qtm = underlying.visitBinary(node,
-                converter.getWrapper().wrap(atm.getUnderlyingType()));
+                WrappedAnnotatedTypeMirror.wrap(atm));
         if (qtm != null) {
             converter.applyQualifiers(qtm, atm);
         } else {
@@ -38,7 +39,7 @@ public class TreeAnnotatorAdapter<Q> extends checkers.types.TreeAnnotator {
 
     public Void visitLiteral(LiteralTree node, AnnotatedTypeMirror atm) {
         QualifiedTypeMirror<Q> qtm = underlying.visitLiteral(node,
-                converter.getWrapper().wrap(atm.getUnderlyingType()));
+                WrappedAnnotatedTypeMirror.wrap(atm));
         if (qtm != null) {
             converter.applyQualifiers(qtm, atm);
         } else {
