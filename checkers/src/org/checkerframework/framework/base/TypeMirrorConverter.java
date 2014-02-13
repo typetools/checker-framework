@@ -14,6 +14,7 @@ import checkers.types.AnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.*;
 import checkers.types.visitors.SimpleAnnotatedTypeVisitor;
+import checkers.util.AnnotatedTypes;
 import checkers.util.AnnotationBuilder;
 
 import javacutils.AnnotationUtils;
@@ -135,8 +136,14 @@ class TypeMirrorConverter<Q> {
         if (qtm == null) {
             return null;
         }
-        AnnotatedTypeMirror atm = AnnotatedTypeMirror.createType(
+        AnnotatedTypeMirror atm;
+        if (qtm.getUnderlyingType() instanceof WrappedAnnotatedTypeMirror) {
+            atm = AnnotatedTypes.deepCopy(
+                    ((WrappedAnnotatedTypeMirror)qtm.getUnderlyingType()).unwrap());
+        } else {
+            atm = AnnotatedTypeMirror.createType(
                 qtm.getUnderlyingType().getRaw(), getTypeFactory());
+        }
         applyQualifiers(qtm, atm);
         return atm;
     }
