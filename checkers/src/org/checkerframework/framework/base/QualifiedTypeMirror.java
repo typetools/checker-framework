@@ -22,7 +22,6 @@ import org.checkerframework.framework.util.ExtendedTypeMirror;
 public abstract class QualifiedTypeMirror<Q> {
     private final ExtendedTypeMirror underlying;
     private final Q qualifier;
-    Exception where;
 
     private QualifiedTypeMirror(ExtendedTypeMirror underlying, Q qualifier) {
         if (qualifier == null) {
@@ -30,13 +29,8 @@ public abstract class QualifiedTypeMirror<Q> {
                     "cannot construct QualifiedTypeMirror with null qualifier");
         }
 
-        this.underlying = ZippedTypeMirror.unzip(underlying);
+        this.underlying = underlying;
         this.qualifier = qualifier;
-        try {
-            throw new RuntimeException("where");
-        } catch (Exception e) {
-            this.where = e;
-        }
     }
 
     public abstract <R,P> R accept(QualifiedTypeVisitor<Q,R,P> visitor, P p);
@@ -143,7 +137,6 @@ public abstract class QualifiedTypeMirror<Q> {
             List<? extends QualifiedTypeMirror<Q>> qualified,
             List<? extends ExtendedTypeMirror> unqualified) {
         if (!typeMirrorListsMatch(qualified, unqualified)) {
-            qualified.get(0).where.printStackTrace();
             throw new IllegalArgumentException(
                     "qualified and unqualified " + description +
                     " TypeMirrors must be identical");

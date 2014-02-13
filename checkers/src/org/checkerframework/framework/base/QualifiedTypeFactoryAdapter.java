@@ -1,5 +1,6 @@
 package org.checkerframework.framework.base;
 
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import com.sun.source.tree.Tree;
 
@@ -109,6 +110,11 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
         underlyingAnnotator.setAdapter(adapter);
 
         return adapter;
+    }
+
+    @Override
+    public boolean isSupportedQualifier(AnnotationMirror anno) {
+        return true;
     }
 
 

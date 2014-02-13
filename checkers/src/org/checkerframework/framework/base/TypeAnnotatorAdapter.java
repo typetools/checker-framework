@@ -5,8 +5,10 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.type.TypeMirror;
 
 import checkers.types.AnnotatedTypeMirror;
+import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 
 import org.checkerframework.framework.util.ExtendedTypeMirror;
+import org.checkerframework.framework.util.WrappedAnnotatedTypeMirror;
 
 public class TypeAnnotatorAdapter<Q> extends checkers.types.TypeAnnotator {
     private TypeAnnotator<Q> underlying;
@@ -21,8 +23,8 @@ public class TypeAnnotatorAdapter<Q> extends checkers.types.TypeAnnotator {
     }
 
     public Q getExistingQualifier(ExtendedTypeMirror type) {
-        if (type instanceof ZippedTypeMirror) {
-            AnnotatedTypeMirror atm = ((ZippedTypeMirror)type).getAnnotated();
+        if (type instanceof WrappedAnnotatedTypeMirror) {
+            AnnotatedTypeMirror atm = ((WrappedAnnotatedTypeMirror)type).unwrap();
             if (atm.hasAnnotation(TypeMirrorConverter.Key.class)) {
                 return converter.getQualifier(atm);
             }
@@ -33,11 +35,9 @@ public class TypeAnnotatorAdapter<Q> extends checkers.types.TypeAnnotator {
 
     @Override
     protected Void scan(AnnotatedTypeMirror atm, Element elt) {
-        // Produce a qualified version of the ATM's underlying type.
-        TypeMirror type = atm.getUnderlyingType();
-        ExtendedTypeMirror wrappedType = converter.getWrapper().wrap(type, elt);
-        ExtendedTypeMirror zippedType = ZippedTypeMirror.zip(wrappedType, atm);
-        QualifiedTypeMirror<Q> qtm = underlying.visit(zippedType, elt);
+        // Produce a qualified version of the ATM.
+        WrappedAnnotatedTypeMirror watm = WrappedAnnotatedTypeMirror.wrap(atm);
+        QualifiedTypeMirror<Q> qtm = underlying.visit(watm, elt);
 
         // Update the input ATM with the new qualifiers.
         converter.applyQualifiers(qtm, atm);
