@@ -103,6 +103,7 @@ public class TypeAnnotator<Q> implements ExtendedTypeVisitor<QualifiedTypeMirror
 
     @Override
     public QualifiedTypeMirror<Q> visitDeclared(ExtendedDeclaredType type, Element elt) {
+        List<? extends QualifiedTypeMirror<Q>> args = this.mapVisit(type.getTypeArguments(), elt);
         QualifiedTypeMirror<Q> result = new QualifiedDeclaredType<Q>(
                 type,
                 getQualifier(type, elt),

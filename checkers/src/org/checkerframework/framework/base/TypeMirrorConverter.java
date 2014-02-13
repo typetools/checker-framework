@@ -19,8 +19,8 @@ import checkers.util.AnnotationBuilder;
 import javacutils.AnnotationUtils;
 import javacutils.TreeUtils;
 
-import org.checkerframework.framework.util.WrappedTypeFactory;
 import org.checkerframework.framework.base.QualifiedTypeMirror.*;
+import org.checkerframework.framework.util.WrappedAnnotatedTypeMirror;
 
 class TypeMirrorConverter<Q> {
     private CheckerAdapter<Q> checkerAdapter;
@@ -28,7 +28,6 @@ class TypeMirrorConverter<Q> {
     private ExecutableElement indexElement;
     private AnnotationMirror blankKey;
     private QualifiedTypeFactoryAdapter<Q> typeFactory;
-    private WrappedTypeFactory wrapper;
 
     private int nextIndex = 0;
 
@@ -51,7 +50,6 @@ class TypeMirrorConverter<Q> {
         // typeFactory will be lazily initialized, to break a circular
         // dependency between this class and QualifiedTypeFactoryAdapter.
         this.typeFactory = null;
-        this.wrapper = new WrappedTypeFactory(processingEnv);
 
         this.qualToIndex = new HashMap<>();
         this.indexToQual = new HashMap<>();
@@ -62,10 +60,6 @@ class TypeMirrorConverter<Q> {
             typeFactory = checkerAdapter.getTypeFactory();
         }
         return typeFactory;
-    }
-
-    public WrappedTypeFactory getWrapper() {
-        return wrapper;
     }
 
     private AnnotationMirror createKey(int index, Object desc) {
@@ -273,14 +267,14 @@ class TypeMirrorConverter<Q> {
         new SimpleAnnotatedTypeVisitor<QualifiedTypeMirror<Q>, Q>() {
             public QualifiedTypeMirror<Q> visitArray(AnnotatedArrayType atm, Q qual) {
                 return new QualifiedArrayType<Q>(
-                        wrapper.wrap(atm.getUnderlyingType()),
+                        WrappedAnnotatedTypeMirror.wrap(atm),
                         qual,
                         getQualifiedType(atm.getComponentType()));
             }
 
             public QualifiedTypeMirror<Q> visitDeclared(AnnotatedDeclaredType atm, Q qual) {
                 return new QualifiedDeclaredType<Q>(
-                        wrapper.wrap(atm.getUnderlyingType(), atm.getUnderlyingType().asElement()),
+                        WrappedAnnotatedTypeMirror.wrap(atm),
                         qual,
                         getQualifiedTypeList(atm.getTypeArguments()));
             }
@@ -296,7 +290,7 @@ class TypeMirrorConverter<Q> {
                 }
 
                 return new QualifiedExecutableType<Q>(
-                        wrapper.wrap(atm.getUnderlyingType(), atm.getElement()),
+                        WrappedAnnotatedTypeMirror.wrap(atm),
                         qual,
                         getQualifiedTypeList(atm.getParameterTypes()),
                         getQualifiedType(atm.getReceiverType()),
@@ -307,7 +301,7 @@ class TypeMirrorConverter<Q> {
 
             public QualifiedTypeMirror<Q> visitIntersection(AnnotatedIntersectionType atm, Q qual) {
                 return new QualifiedIntersectionType<Q>(
-                        wrapper.wrap(atm.getUnderlyingType()),
+                        WrappedAnnotatedTypeMirror.wrap(atm),
                         qual,
                         getQualifiedTypeList(atm.directSuperTypes()));
             }
@@ -315,27 +309,27 @@ class TypeMirrorConverter<Q> {
             public QualifiedTypeMirror<Q> visitNoType(AnnotatedNoType atm, Q qual) {
                 // NoType has no components.
                 return new QualifiedNoType<Q>(
-                        wrapper.wrap(atm.getUnderlyingType()),
+                        WrappedAnnotatedTypeMirror.wrap(atm),
                         qual);
             }
 
             public QualifiedTypeMirror<Q> visitNull(AnnotatedNullType atm, Q qual) {
                 // NullType has no components.
                 return new QualifiedNullType<Q>(
-                        wrapper.wrap(atm.getUnderlyingType()),
+                        WrappedAnnotatedTypeMirror.wrap(atm),
                         qual);
             }
 
             public QualifiedTypeMirror<Q> visitPrimitive(AnnotatedPrimitiveType atm, Q qual) {
                 // PrimitiveType has no components.
                 return new QualifiedPrimitiveType<Q>(
-                        wrapper.wrap(atm.getUnderlyingType()),
+                        WrappedAnnotatedTypeMirror.wrap(atm),
                         qual);
             }
 
             public QualifiedTypeMirror<Q> visitTypeVariable(AnnotatedTypeVariable atm, Q qual) {
                 return new QualifiedTypeVariable<Q>(
-                        wrapper.wrap(atm.getUnderlyingType(), atm.getUnderlyingType().asElement()),
+                        WrappedAnnotatedTypeMirror.wrap(atm),
                         qual,
                         getQualifiedType(atm.getUpperBound()),
                         getQualifiedType(atm.getLowerBound()));
@@ -343,14 +337,14 @@ class TypeMirrorConverter<Q> {
 
             public QualifiedTypeMirror<Q> visitUnion(AnnotatedUnionType atm, Q qual) {
                 return new QualifiedUnionType<Q>(
-                        wrapper.wrap(atm.getUnderlyingType()),
+                        WrappedAnnotatedTypeMirror.wrap(atm),
                         qual,
                         getQualifiedTypeList(atm.getAlternatives()));
             }
 
             public QualifiedTypeMirror<Q> visitWildcard(AnnotatedWildcardType atm, Q qual) {
                 return new QualifiedWildcardType<Q>(
-                        wrapper.wrap(atm.getUnderlyingType()),
+                        WrappedAnnotatedTypeMirror.wrap(atm),
                         qual,
                         getQualifiedType(atm.getExtendsBound()),
                         getQualifiedType(atm.getSuperBound()));
