@@ -426,8 +426,8 @@ public abstract class WrappedAnnotatedTypeMirror implements ExtendedTypeMirror {
         }
 
         @Override
-        public AnnotatedWildcardType unwrap() {
-            return (AnnotatedWildcardType)super.unwrap();
+        public AnnotatedUnionType unwrap() {
+            return (AnnotatedUnionType)super.unwrap();
         }
 
         @Override
@@ -454,6 +454,11 @@ public abstract class WrappedAnnotatedTypeMirror implements ExtendedTypeMirror {
         @Override @SuppressWarnings("unchecked")
         public WildcardType getRaw() {
             return (WildcardType)super.getRaw();
+        }
+
+        @Override
+        public AnnotatedWildcardType unwrap() {
+            return (AnnotatedWildcardType)super.unwrap();
         }
 
         @Override
