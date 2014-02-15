@@ -620,6 +620,13 @@
         </antcall>
     </target>
 
+    <target name="guieffects-tests" depends="jar,build-tests"
+            description="Run tests for the GUI Effects Checker">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.GUIEffectsTest"/>
+        </antcall>
+    </target>
+
     <target name="value-tests" depends="jar,build-tests"
             description="Run tests for constant value propagation">
         <antcall target="-run-tests">
