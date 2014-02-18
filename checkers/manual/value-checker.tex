@@ -91,13 +91,13 @@ to a call of an @Analyzable method are constant-value types then the
 return value of that call is also assigned a constant-value type
 corresponding to execution of the call.
 
-@Analyzable method calls are executed at compile-time by performing a
-reflective call on the annotated method. This requires that the
-annotated method is on the Classpath for the compiler. 
-
-Additionally, @Analyzable methods must
+@Analyzable methods must
 be \code{@\refclass{dataflow/quals}{Pure}} (side-effect free and
-deterministic) and any methods called must also be \code{@Analyzable}.
+deterministic).
+
+Additionally, @Analyzable methods must be on the Classpath for the
+compiler because they are reflectively called at compile-time to
+perform the constant value analysis.
 
 \section{Warnings}
 The Value Checker may issue warnings, mostly based on failing to
