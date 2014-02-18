@@ -528,8 +528,8 @@ suppress warnings; see below.
 Occasionally, it is inconvenient or
 verbose to use the \<@SuppressWarnings> annotation.  For example, Java does
 not permit annotations such as \<@SuppressWarnings> to appear on statements.
-In such cases, you may be able to use the \<@AssumeAssertion> comment in
-an \<assert> statement (see Section~\ref{assumeassertion}).
+In such cases, you may be able to use the \<@AssumeAssertion> string in
+an \<assert> message (see Section~\ref{assumeassertion}).
 
 For situations when all of these approaches are inconvenient,
 the Nullness Checker provides an additional way to suppress warnings:
@@ -541,7 +541,7 @@ cannot ever be null at run time.
 \begin{enumerate}
 \item
   Use an assertion.  If the string ``\<@AssumeAssertion(nullness)>''
-  appears in the message body, then the Nullness Checker treats the
+  appears in the message, then the Nullness Checker treats the
   assertion as suppressing a warning and assumes that the assertion always
   succeeds.  For example, the checker assumes that no null pointer
   exception can occur in code such as

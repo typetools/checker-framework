@@ -79,7 +79,7 @@ warnings via
 \item
   the \code{-AsuppressWarnings} command-line option (Section~\ref{suppresswarnings-command-line}),
 \item
-  the \code{@AssumeAssertion} comment in an \<assert> statement (Section~\ref{assumeassertion}),
+  the \code{@AssumeAssertion} string in an \<assert> message (Section~\ref{assumeassertion}),
 \item
   the \code{-AskipUses} and \code{-AonlyUses} command-line options (Section~\ref{askipuses}),
 \item
@@ -230,7 +230,7 @@ When possible, it is better to write a \<@SuppressWarnings> annotation with a
 smaller scope, rather than using the \<-AsuppressWarnings> command-line option.
 
 
-\subsection{\code{@AssumeAssertion} comment in an \<assert> statement\label{assumeassertion}}
+\subsection{\code{@AssumeAssertion} string in an \<assert> message\label{assumeassertion}}
 
 You can suppress a warning by \<assert>ing that some property is true, and
 placing the string \<@AssumeAssertion(\emph{warningkey})> in the assertion
