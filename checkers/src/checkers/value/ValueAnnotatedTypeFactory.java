@@ -61,9 +61,9 @@ import com.sun.source.util.TreePath;
 
 /**
  * @author plvines
- * 
+ *
  *         AnnotatedTypeFactory for the Value type system.
- * 
+ *
  */
 @TypeQualifiers({ ArrayLen.class, BoolVal.class, CharVal.class,
         DoubleVal.class, IntVal.class, StringVal.class, BottomVal.class,
@@ -87,9 +87,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /**
      * Constructor. Initializes all the AnnotationMirror constants.
-     * 
+     *
      * @param checker The checker used with this AnnotatedTypeFactory
-     * 
+     *
      */
     public ValueAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
@@ -186,7 +186,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         /**
          * @param factory
          *            MultiGraphFactory to use to construct this
-         * 
+         *
          * @return
          */
         public ValueQualifierHierarchy(
@@ -203,10 +203,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * and a2 are both in {DoubleVal, IntVal, CharVal} then they will be
          * converted upwards: CharVal -> IntVal -> DoubleVal to arrive at a
          * common annotation type.
-         * 
+         *
          * @param a1
          * @param a2
-         * 
+         *
          * @return the least upper bound of a1 and a2
          */
         @Override
@@ -338,10 +338,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * Computes subtyping as per the subtyping in the qualifier hierarchy
          * structure unless both annotations are Value. In this case, rhs is a
          * subtype of lhs iff lhs contains at least every element of rhs
-         * 
+         *
          * @param rhs
          * @param lhs
-         * 
+         *
          * @return true if rhs is a subtype of lhs, false otherwise
          */
         @Override
@@ -425,7 +425,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * The TreeAnnotator for this AnnotatedTypeFactory 
+     * The TreeAnnotator for this AnnotatedTypeFactory
      */
     protected class ValueTreeAnnotator extends TreeAnnotator {
 
@@ -512,7 +512,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         /**
          * Do one level, pop from list, recurse if not done
-         * 
+         *
          * @param dimensions
          * @param type
          */
@@ -520,7 +520,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * Recursive method to handle array initializations. Recursively
          * descends the initializer to find each dimension's size and create the
          * appropriate annotation for it.
-         * 
+         *
          * @param dimensions
          *            a list of ExpressionTrees where each ExpressionTree is a
          *            specifier of the size of that dimension (should be an
@@ -665,7 +665,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * will be an error if you try to assign an incremented value to a
          * CharVal, ByteVal, ShortVal, or FloatVal, even if that is what the
          * incremented value originally was.
-         * 
+         *
          * @param tree
          * @param type
          */
@@ -785,7 +785,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 }
             }
             type.replaceAnnotation(UNKNOWNVAL);
-            
+
             return null;
         }
 
@@ -793,7 +793,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * Casts the two arguments of a binary operator to the final type of
          * that operator. i.e. double + int -> double so DoubleVal + IntVal ->
          * DoubleVal
-         * 
+         *
          * @param lhs
          * @param lhsType
          * @param rhs
@@ -813,7 +813,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * BinaryOperators.java. This method's arguments need to be correct
          * (such as annotations not being UnknownVal or being of different value
          * annotation types) so be careful you are going to call this.
-         * 
+         *
          * @param lhsAnno
          *            the value annotation of the LHS argument (Not UnknownVal)
          * @param rhsAnno
@@ -823,7 +823,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * @param argClass
          *            the Class of the operations arguments (used for reflective
          *            code)
-         * 
+         *
          * @return
          */
         private AnnotationMirror evaluateBinaryOperator(
@@ -857,9 +857,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         /**
          * Simple method to take a MemberSelectTree representing a method call
          * and determine if the method's return is annotated with @Analyzable.
-         * 
+         *
          * @param method
-         * 
+         *
          * @return
          */
         private boolean methodIsAnalyzable(Element method) {
@@ -985,7 +985,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         /**
          * Evaluates the possible results of a method and returns an annotation
          * containing those results.
-         * 
+         *
          * @param recType
          *            the AnnotatedTypeMirror of the receiver
          * @param method
@@ -996,7 +996,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * @param retType
          *            the AnnotatedTypeMirror of the tree being evaluated, used
          *            to determine the type of AnnotationMirr to return
-         * 
+         *
          * @return an AnnotationMirror of the type specified by retType's
          *         underlyingType and with its value array populated by all the
          *         possible evaluations of method. Or UnknownVal
@@ -1030,7 +1030,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * recursion, all possible values for an argument are incremented
          * through and the method is invoked on each one and the result is added
          * to the results list.
-         * 
+         *
          * @param argArrayDeque
          *            ArrayDeque of Lists of Objects representing possible
          *            values for each argument
@@ -1087,7 +1087,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         }
                     }
                 } catch (InvocationTargetException e) {
-                    checker.report(Result.warning("method.evaluated.exception",
+                    checker.report(Result.warning("method.evaluation.exception",
                             method, e.getTargetException().toString()), tree);
                     results = new ArrayList<Object>();
                 } catch (ReflectiveOperationException e) {
@@ -1180,7 +1180,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         /**
          * Attempts to evaluate a New call by retrieving the constructor and
          * invoking it reflectively.
-         * 
+         *
          * @param constructor
          *            the constructor to invoke
          * @param argTypes
@@ -1188,7 +1188,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * @param retType
          *            AnnotatedTypeMirror of the tree being evaluate, used to
          *            determine what the return AnnotationMirror should be
-         * 
+         *
          * @return an AnnotationMirror containing all the possible values of the
          *         New call based on combinations of argument values
          */
@@ -1209,7 +1209,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         /**
          * Recurses through all the possible argument values and invokes the
          * constructor on each one, adding the result to the results list
-         * 
+         *
          * @param argArrayDeque
          *            ArrayDeque of List of Object containing all the argument
          *            values
@@ -1320,7 +1320,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * If the receiverType object has an ArrayLen annotation it returns an
          * IntVal with all the ArrayLen annotation's values as its possible
          * values.
-         * 
+         *
          * @param receiverType
          */
         private AnnotationMirror handleArrayLength(
@@ -1343,14 +1343,14 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         /**
          * Evalautes a static field access by getting the field reflectively
          * from the field name and class name
-         * 
+         *
          * @param fieldName
          *            the field to be access
          * @param recType
          *            the AnnotatedTypeMirror of the tree being evaluated, used
          *            to create the return annotation and to reflectively create
          *            the Class object to get the field from
-         * 
+         *
          * @return
          */
         private AnnotationMirror evaluateStaticFieldAccess(Name fieldName,
@@ -1384,9 +1384,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * To get the Class corresponding to the value array a value annotation
          * has for a given type, use getTypeValueClass. (e.g. "int" return
          * Long.class)
-         * 
+         *
          * @param stringType
-         * 
+         *
          * @return
          */
         private Class<?> getClass(String stringType, Tree tree) {
@@ -1461,9 +1461,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * IntVal stores its values as a List<Long>. To get the primitive Class
          * corresponding to a string name, use getClass (e.g. "int" and
          * "java.lang.Integer" give int.class)
-         * 
+         *
          * @param stringType
-         * 
+         *
          * @return
          */
         private Class<?> getTypeValueClass(String stringType, Tree tree) {
@@ -1508,9 +1508,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         /**
          * Gets a Class[] from a List of AnnotatedTypeMirror by calling getClass
          * on the underlying type of each element
-         * 
+         *
          * @param typeList
-         * 
+         *
          * @return
          */
         private Class<?>[] getClassList(List<AnnotatedTypeMirror> typeList,
@@ -1530,11 +1530,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * while ensuring the actual type of each element is the same type as
          * the underlyingType of the typeMirror input (so an Integer returns a
          * list of Integer, not Long)
-         * 
+         *
          * @param typeMirror
          *            the AnnotatedTypeMirror to pull values from and use to
          *            determine what type to cast the values to
-         * 
+         *
          * @return List of Object where each element is the same type as the
          *         underlyingType of typeMirror
          */
@@ -1580,10 +1580,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * evaluate method and constructor invocations, which will pop argument
          * values off and push them onto another deque, so the order actually
          * gets reversed twice and the original order is maintained.
-         * 
+         *
          * @param argTypes
          *            a List of AnnotatedTypeMirror elements
-         * 
+         *
          * @return an ArrayDeque containing List of Object where each list
          *         corresponds to the annotation values of an
          *         AnnotatedTypeMirror passed in.
@@ -1592,17 +1592,15 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 List<AnnotatedTypeMirror> argTypes, Tree tree) {
             ArrayDeque<List<Object>> allArgValues = new ArrayDeque<List<Object>>();
 
-            int count = 0;
             for (AnnotatedTypeMirror a : argTypes) {
                 allArgValues.push(getCastedValues(a, tree));
-                count++;
             }
             return allArgValues;
         }
 
         /**
          * Changes all elements in a List of Object from origClass to newClass.
-         * 
+         *
          * @param listToFix
          * @param origClass
          *            is in {Double.class, Long.class}
@@ -1653,12 +1651,12 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         /**
          * Overloaded version to accept an AnnotatedTypeMirror
-         * 
+         *
          * @param resultType
          *            is evaluated using getClass to derived a Class object for
          *            passing to the other resultAnnotationHandler function
          * @param results
-         * 
+         *
          * @return
          */
         private AnnotationMirror resultAnnotationHandler(
@@ -1679,12 +1677,12 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * apply to, with the annotation containing results in its value field.
          * Annotations should never have empty value fields, so if |results| ==
          * 0 then UnknownVal is returned.
-         * 
+         *
          * @param resultClass
          *            the Class to return an annotation
          * @param results
          *            the results to go in the annotation's value field
-         * 
+         *
          * @return an AnnotationMirror containing results and corresponding to
          *         resultClass, if possible. UnknownVal otherwise
          */
@@ -1776,7 +1774,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * specified by the value of castTypeString. If this conversion is not
          * possible, the AnnotatedTypeMirror remains unchanged. Otherwise, the
          * new annotation is created and replaces the old annotation on type
-         * 
+         *
          * @param tree
          *            the ExpressionTree for the object being cast
          * @param castTypeString
@@ -1791,7 +1789,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (!nonValueAnno(treeType)) {
                 AnnotationMirror treeAnno = treeType
                         .getAnnotationInHierarchy(UNKNOWNVAL);
-                AnnotationMirror newQual = treeAnno;
 
                 String anno = "checkers.value.quals.";
                 if (castTypeString.equals("boolean")) {
@@ -1894,10 +1891,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         /**
          * To make these numerous calls to check if an annotation is UnknownVal
          * or ArrayLen a little nicer looking
-         * 
+         *
          * @param mirror
          *            the AnnotatedTypeMirror to check
-         * 
+         *
          * @return true if the AnnotatedTypeMirror contains the UnknownVal or
          *         ArrayLen AnnotationMirror, false otherwise
          */
