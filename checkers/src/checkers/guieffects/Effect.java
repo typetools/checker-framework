@@ -4,6 +4,9 @@ import checkers.guieffects.quals.PolyUIEffect;
 import checkers.guieffects.quals.SafeEffect;
 import checkers.guieffects.quals.UIEffect;
 
+import dataflow.quals.Pure;
+import dataflow.quals.SideEffectFree;
+
 import java.lang.annotation.Annotation;
 
 public final class Effect {
@@ -46,6 +49,7 @@ public final class Effect {
     public boolean isPoly() { return annotClass.equals(PolyUIEffect.class); }
     public Class<? extends Annotation> getAnnot() { return annotClass; }
 
+    @SideEffectFree
     @Override
     public String toString() {
         return annotClass.getSimpleName();
@@ -63,6 +67,7 @@ public final class Effect {
             return super.equals(o);
     }
 
+    @Pure
     @Override
     public int hashCode() {
         return 31 + annotClass.hashCode();
