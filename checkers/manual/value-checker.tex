@@ -95,9 +95,9 @@ corresponding to execution of the call.
 be \code{@\refclass{dataflow/quals}{Pure}} (side-effect free and
 deterministic).
 
-Additionally, @Analyzable methods must be on the Classpath for the
-compiler because they are reflectively called at compile-time to
-perform the constant value analysis.
+Additionally, @Analyzable methods and any methods they call must be on
+the Classpath for the compiler because they are reflectively called at
+compile-time to perform the constant value analysis.
 
 \section{Warnings}
 The Value Checker may issue warnings, mostly based on failing to
