@@ -161,6 +161,7 @@ def build_and_locally_deploy_maven(version, checker_framework_interm_dir):
     mvn_deploy( CHECKERS_QUALS,  CHECKERS_QUALS_POM,  MAVEN_DEV_REPO )
     mvn_deploy( JAVAC_BINARY,    JAVAC_BINARY_POM,    MAVEN_DEV_REPO )
     mvn_deploy( JDK7_BINARY,     JDK7_BINARY_POM,     MAVEN_DEV_REPO )
+    mvn_deploy( JDK8_BINARY,     JDK8_BINARY_POM,     MAVEN_DEV_REPO )
 
     return
 
