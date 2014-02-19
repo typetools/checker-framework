@@ -185,7 +185,7 @@ following ways:
   fully-qualified form:
 
 \begin{Verbatim}
-@Sources(sparta.checkers.quals.FlowPermission.ANY)
+@Source(sparta.checkers.quals.FlowPermission.ANY)
 \end{Verbatim}
 
 \noindent
@@ -194,7 +194,16 @@ or correctly import the enum class:
 \begin{Verbatim}
 import sparta.checkers.quals.FlowPermission;
 ...
-@Sources(FlowPermission.ANY)
+@Source(FlowPermission.ANY)
+\end{Verbatim}
+
+\noindent
+or statically import the enum constants:
+
+\begin{Verbatim}
+import static sparta.checkers.quals.FlowPermission.*;
+...
+@Source(ANY)
 \end{Verbatim}
 
   Importing all packages from a class (\<import my.package.*;>) only

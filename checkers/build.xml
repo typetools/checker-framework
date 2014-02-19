@@ -620,6 +620,13 @@
         </antcall>
     </target>
 
+    <target name="guieffects-tests" depends="jar,build-tests"
+            description="Run tests for the GUI Effects Checker">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.GUIEffectsTest"/>
+        </antcall>
+    </target>
+
     <target name="value-tests" depends="jar,build-tests"
             description="Run tests for constant value propagation">
         <antcall target="-run-tests">
@@ -628,7 +635,7 @@
     </target>
 
     <target name="jtreg-tests" depends="-def-jtreg,jar"
-	    description="Run jtreg tests">
+            description="Run jtreg tests">
         <jtreg-tool name="all" tests="."/>
     </target>
 
@@ -740,7 +747,7 @@
             <arg line="-version"/>
             <arg line="-proc:only"/>
             <arg line="-processor ${checker-name}"/>
-	    <arg line="${checker-args}"/>
+            <arg line="${checker-args}"/>
         </java>
         <delete file="${tmpdir}/srcfiles-checkers.txt"/>
     </target>
@@ -767,7 +774,7 @@
             description="Run the compiler message keys checker on the Framework">
         <antcall target="-run-checker">
             <param name="checker-name" value="checkers.compilermsgs.CompilerMessagesChecker"/>
-            <param name="checker-args" value="-Awarns -Apropfiles=./src/checkers/lock/messages.properties:./src/checkers/javari/messages.properties:./src/checkers/interning/messages.properties:./src/checkers/basetype/messages.properties:./src/checkers/nullness/messages.properties:./src/checkers/initialization/messages.properties:./src/checkers/linear/messages.properties:./src/checkers/regex/messages.properties:./src/checkers/util/report/messages.properties:./src/checkers/formatter/messages.properties"/>
+            <param name="checker-args" value="-Awarns -Apropfiles=./src/checkers/lock/messages.properties:./src/checkers/javari/messages.properties:./src/checkers/interning/messages.properties:./src/checkers/basetype/messages.properties:./src/checkers/nullness/messages.properties:./src/checkers/initialization/messages.properties:./src/checkers/linear/messages.properties:./src/checkers/regex/messages.properties:./src/checkers/util/report/messages.properties:./src/checkers/formatter/messages.properties:./src/checkers/value/messages.properties:./src/checkers/guieffects/messages.properties"/>
         </antcall>
     </target>
 

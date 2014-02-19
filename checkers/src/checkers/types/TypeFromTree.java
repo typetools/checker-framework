@@ -7,6 +7,7 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedIntersectionType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
 import checkers.util.AnnotatedTypes;
+import checkers.util.QualifierPolymorphism;
 
 import javacutils.AnnotationUtils;
 import javacutils.ErrorReporter;
@@ -328,6 +329,7 @@ abstract class TypeFromTree extends
             // Therefore, ensure to only add the qualifiers that are explicitly on
             // the constructor, but then take the possibly substituted qualifier.
             AnnotatedExecutableType ex = f.constructorFromUse(node).first;
+
             ExecutableElement ctor = TreeUtils.elementFromUse(node);
             // TODO: There will be a nicer way to access this in 308 soon.
             List<TypeCompound> decall = ((com.sun.tools.javac.code.Symbol)ctor).getRawTypeAttributes();
@@ -337,16 +339,36 @@ abstract class TypeFromTree extends
                     decret.add(da);
                 }
             }
+
+            // Collect all polymorphic qualifiers; we should substitute them.
+            Set<AnnotationMirror> polys = AnnotationUtils.createAnnotationSet();
+            for (AnnotationMirror anno : type.getAnnotations()) {
+                if (QualifierPolymorphism.isPolymorphicQualified(anno)) {
+                    polys.add(anno);
+                }
+            }
+
             for (AnnotationMirror cta : ex.getReturnType().getAnnotations()) {
+                AnnotationMirror ctatop = f.getQualifierHierarchy().getTopAnnotation(cta);
                 if (f.isSupportedQualifier(cta) &&
                         !type.isAnnotatedInHierarchy(cta)) {
                     for (AnnotationMirror fromDecl : decret) {
                         if (f.isSupportedQualifier(fromDecl) &&
-                                AnnotationUtils.areSame(f.getQualifierHierarchy().getTopAnnotation(cta),
-                                f.getQualifierHierarchy().getTopAnnotation(fromDecl))) {
+                                AnnotationUtils.areSame(ctatop,
+                                        f.getQualifierHierarchy().getTopAnnotation(fromDecl))) {
                             type.addAnnotation(cta);
                             break;
                         }
+                    }
+                }
+
+                // Go through the polymorphic qualifiers and see whether
+                // there is anything left to replace.
+                for (AnnotationMirror pa : polys) {
+                    if (AnnotationUtils.areSame(ctatop,
+                            f.getQualifierHierarchy().getTopAnnotation(pa))) {
+                        type.replaceAnnotation(cta);
+                        break;
                     }
                 }
             }

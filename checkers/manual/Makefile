@@ -21,6 +21,7 @@ linear-checker.tex \
 igj-checker.tex \
 javari-checker.tex \
 subtyping-checker.tex \
+value-checker.tex \
 external-checkers.tex \
 typestate-checker.tex \
 generics.tex \
