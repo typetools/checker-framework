@@ -18,7 +18,6 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 
 /**

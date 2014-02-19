@@ -1146,6 +1146,41 @@ public abstract class AnnotatedTypeMirror {
             return this.actualType;
         }
 
+        /* TODO: it never makes sense to add annotations to an executable type -
+         * instead, they should be added to the right component.
+         * For simpler, more regular use, we might want to allow querying for annotations.
+         *
+        @Override
+        public void addAnnotations(Iterable<? extends AnnotationMirror> annotations) {
+            //Thread.dumpStack();
+            super.addAnnotations(annotations);
+        }
+        @Override
+        public void addAnnotation(AnnotationMirror a) {
+            //Thread.dumpStack();
+            super.addAnnotation(a);
+        }
+        @Override
+        public void addAnnotation(Class<? extends Annotation> a) {
+            //Thread.dumpStack();
+            super.addAnnotation(a);
+        }
+
+        @Override
+        public Set<AnnotationMirror> getAnnotations() {
+            Thread.dumpStack();
+            return null;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (!(o instanceof AnnotatedExecutableType))
+                return false;
+            // TODO compare components
+            return true;
+        }
+        */
+
         /**
          * Sets the parameter types of this executable type
          * @param params the parameter types
@@ -1273,8 +1308,7 @@ public abstract class AnnotatedTypeMirror {
         public AnnotatedExecutableType getCopy(boolean copyAnnotations) {
             AnnotatedExecutableType type =
                 new AnnotatedExecutableType(getUnderlyingType(), atypeFactory);
-            if (copyAnnotations)
-                type.addAnnotations(annotations);
+
             type.setElement(getElement());
             type.setParameterTypes(getParameterTypes());
             type.setReceiverType(getReceiverType());
@@ -1300,8 +1334,6 @@ public abstract class AnnotatedTypeMirror {
                 new AnnotatedExecutableType(
                         (ExecutableType) types.erasure(getUnderlyingType()),
                         atypeFactory);
-            if (true)
-                type.addAnnotations(annotations);
             type.setElement(getElement());
             type.setParameterTypes(erasureList(getParameterTypes()));
             if (getReceiverType() != null) {

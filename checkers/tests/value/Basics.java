@@ -115,4 +115,10 @@ class Basics {
         //:: error: (assignment.type.incompatible)
         @StringVal({ "test1" }) String c = a;
     }
+
+    public void stringCastTest() {
+        Object a = "test1";
+        @StringVal({ "test1" }) String b = (String) a;
+        @StringVal({ "test1" }) String c = (java.lang.String) b;
+    }
 }
