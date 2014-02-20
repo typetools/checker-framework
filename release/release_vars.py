@@ -82,11 +82,13 @@ CHECKERS_BINARY    = os.path.join(CHECKER_BIN_DIR, 'checkers.jar'       )
 CHECKERS_QUALS     = os.path.join(CHECKER_BIN_DIR, 'checkers-quals.jar' )
 JAVAC_BINARY       = os.path.join(CHECKER_BIN_DIR, 'javac.jar')
 JDK7_BINARY        = os.path.join(CHECKER_BIN_DIR, 'jdk7.jar' )
+JDK8_BINARY        = os.path.join(CHECKER_BIN_DIR, 'jdk8.jar' )
 
 CHECKERS_BINARY_POM  = os.path.join(CHECKER_BIN_DIR, 'poms', 'checkersPom.xml'      )
 CHECKERS_QUALS_POM   = os.path.join(CHECKER_BIN_DIR, 'poms', 'checkersQualsPom.xml' )
 JAVAC_BINARY_POM     = os.path.join(CHECKER_BIN_DIR, 'poms', 'compilerPom.xml'      )
 JDK7_BINARY_POM      = os.path.join(CHECKER_BIN_DIR, 'poms', 'jdk7Pom.xml'          )
+JDK8_BINARY_POM      = os.path.join(CHECKER_BIN_DIR, 'poms', 'jdk8Pom.xml'          )
 
 CHECKERS_CHANGELOG = os.path.join(CHECKER_FRAMEWORK, 'checkers', 'changelog-checkers.txt')
 
@@ -145,7 +147,7 @@ os.environ['TEXINPUTS'] =  '.:/scratch/secs-jenkins/tools/hevea-1.10/lib/hevea:/
 os.environ['PERLLIB']   =  getAndAppend('PERLLIB', ":")  + "/homes/gws/mernst/bin/src/perl/lib/perl5/site_perl/5.10.0:/homes/gws/jburke/perl_lib"
 os.environ['PERL5LIB']  =  getAndAppend('PERL5LIB', ":") + "/homes/gws/mernst/bin/src/perl/lib/perl5/site_perl/5.10.0:/homes/gws/jburke/perl_lib"
 os.environ['JAVA_7_HOME'] =  '/scratch/secs-jenkins/java/jdk1.7.0'
-os.environ['JAVA_8_HOME'] =  '/scratch/jsr308-release/java/jdk1.8.0'
+os.environ['JAVA_8_HOME'] =  '/scratch/secs-jenkins/java/jdk1.8.0'
 os.environ['JAVA_HOME']   =  os.environ['JAVA_7_HOME']
 
 EDITOR = os.getenv('EDITOR')
