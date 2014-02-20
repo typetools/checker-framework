@@ -30,7 +30,7 @@ Export-Package: checkers.basetype,
  checkers.flow,
  checkers.i18n,
  checkers.i18n.quals,
- checkers.igj,
+ checkers.igj,                                                                                                                 E
  checkers.igj.quals,
  checkers.interning,
  checkers.interning.quals,
