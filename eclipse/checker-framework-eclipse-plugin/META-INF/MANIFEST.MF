@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: checker.framework.eclipse.plugin;singleton:=true
-Bundle-Version: 1.7.2
+Bundle-Version: 1.7.4
 Bundle-ClassPath: lib/jdk7.jar,
  lib/jdk8.jar,
  lib/checkers.jar,
@@ -30,7 +30,7 @@ Export-Package: checkers.basetype,
  checkers.flow,
  checkers.i18n,
  checkers.i18n.quals,
- checkers.igj,
+ checkers.igj,                                                                                                                 E
  checkers.igj.quals,
  checkers.interning,
  checkers.interning.quals,
