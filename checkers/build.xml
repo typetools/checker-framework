@@ -857,10 +857,10 @@
             <env key="JAVA_HOME"  value="${JAVA_8_HOME}"/>
         </exec>
 
-        <exec executable="ant" failonerror="true">
+        <!--<exec executable="ant" failonerror="true">
             <arg line="jdk.jar"/>
             <env key="JAVA_HOME"  value="${JAVA_9_HOME}"/>
-        </exec>
+        </exec>-->
 
     </target>
 
