@@ -145,9 +145,20 @@ You can use JDK 8 at run time, or compile
 with a Java 7 compiler that will ignore the annotations in comments.
 
 \item
-A ``class file not found'' error may be due to a JDK version mismatch.
-For instance, you might be using JDK 7, but you get an error that refers to a class that was in a
-previous version of the JDK but has subsequently been removed, such as:
+A ``class file for \ldots\ not found'' error, especially for an inner class
+in the JDK, is probably due to a JDK version mismatch.
+
+In general, Java issues a ``class file for \ldots\ not found'' error when
+your classpath contains code that was compiled
+with some library, but your classpath does not contain that library itself.
+
+For example, suppose that when you run the compiler, you are using JDK 8,
+but some library on your classpath was compiled against JDK 7, and the
+compiled library refers to a class that only appears in JDK 7.  (If only
+one version of Java existed, or the Checker Framework didn't try to support
+multiple different versions of Java, this would not be a problem.)
+
+Examples of classes that were in JDK 6 but were removed in JDK 7 include:
 
 \begin{Verbatim}
   class file for java.io.File$LazyInitialization not found
@@ -155,27 +166,28 @@ previous version of the JDK but has subsequently been removed, such as:
   java.lang.NoClassDefFoundError: java/util/Hashtable$EmptyEnumerator
 \end{Verbatim}
 
-Or, 
-% you might be using JDK 6, but
-you get an error that refers to a class
-that has been introduced in a newer version of the JDK, such as:
+Examples of classes that were in JDK 7 but were removed in JDK 8 include:
+
+\begin{Verbatim}
+  class file for java.util.TimeZone$DisplayNames not found
+\end{Verbatim}
+
+Examples of classes that were not in JDK 6 but were introduced in JDK 7 include:
 
 \begin{Verbatim}
   class file for java.util.Vector$Itr not found
 \end{Verbatim}
 
-This problem occurs when your classpath contains code that was compiled
-with one version of the JDK and refers to its implementation details, but
-your classpath does not contain that version of the JDK itself.
-
-You can solve the problem by re-generating \code{binary/jdk6.jar}
-or \code{binary/jdk7.jar} and \code{binary/jdk.jar}.
-You can do this by running
+You may be able to solve the problem by running
 
 \begin{Verbatim}
   cd checkers
   ant jdk.jar bindist
 \end{Verbatim}
+
+\noindent
+to re-generate files \code{checkers/jdk/jdk\{7,8\}.jar} and \code{checkers/binary/jdk\{7,8\}.jar}.
+
 
 
 \item
