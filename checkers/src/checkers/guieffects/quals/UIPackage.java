@@ -1,0 +1,17 @@
+package checkers.guieffects.quals;
+
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+/**
+ * Package annotation to make all classes within a package {@code @UIType}.
+ *
+ * @checker_framework_manual #guieffects-checker GUI Effects Checker
+ */
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.PACKAGE})
+public @interface UIPackage {}
