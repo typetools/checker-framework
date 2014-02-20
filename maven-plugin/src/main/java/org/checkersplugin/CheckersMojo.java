@@ -200,9 +200,9 @@ public class CheckersMojo extends AbstractMojo {
     private File javacJar;
 
     /**
-     * The location of the jdk7 jar
+     * The location of the annotated jdk jar
      */
-    private File jdk7Jar;
+    private File jdkJar;
 
     /**
      * Main control method for the Checker Maven Plugin.  Scans for sources, resolves classpath, and passes these
@@ -278,7 +278,7 @@ public class CheckersMojo extends AbstractMojo {
         final Map<PluginUtil.CheckerProp, Object> props = makeProps();
 
         final List<String> arguments = PluginUtil.getCmdArgsOnly(
-                javacJar, jdk7Jar,
+                javacJar, jdkJar,
                 srcFofn, processor, checkersJar.getAbsolutePath(),
                 null, cpFofn, null, props, null,
                 procOnly, outputDirectory);
@@ -335,7 +335,8 @@ public class CheckersMojo extends AbstractMojo {
         javacJar    = PathUtils.getFrameworkJar("compiler", checkerFrameworkVersion,
                 artifactFactory, artifactResolver, remoteArtifactRepositories, localRepository);
 
-        jdk7Jar    = PathUtils.getFrameworkJar("jdk7", checkerFrameworkVersion,
+        final String jdkVersionStr = PluginUtil.getJdkJarPrefix();
+        jdkJar = PathUtils.getFrameworkJar(jdkVersionStr, checkerFrameworkVersion,
                 artifactFactory, artifactResolver, remoteArtifactRepositories, localRepository);
     }
 

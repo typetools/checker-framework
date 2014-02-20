@@ -26,10 +26,7 @@ import checkers.types.GenericAnnotatedTypeFactory;
 import checkers.types.QualifierHierarchy;
 import checkers.types.TypeHierarchy;
 import checkers.types.VisitorState;
-import checkers.util.AnnotatedTypes;
-import checkers.util.CheckerMain;
-import checkers.util.ContractsUtils;
-import checkers.util.FlowExpressionParseUtil;
+import checkers.util.*;
 import checkers.util.FlowExpressionParseUtil.FlowExpressionContext;
 import checkers.util.FlowExpressionParseUtil.FlowExpressionParseException;
 
@@ -2307,7 +2304,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 }
 
                 if (!foundNN) {
-                    String jdkJarName = CheckerMain.getJdkJarName();
+                    String jdkJarName = PluginUtil.getJdkJarName();
 
                     checker.getProcessingEnvironment().getMessager().printMessage(Kind.WARNING,
                         "You do not seem to be using the distributed annotated JDK.  To fix the" +

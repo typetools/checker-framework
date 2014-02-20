@@ -25,6 +25,8 @@ package checkers.util;
 
 import java.io.*;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class PluginUtil {
 
@@ -415,4 +417,58 @@ public class PluginUtil {
         cmd.remove(0);
         return cmd;
     }
+
+    /**
+     * Extract the first two version numbers from java.version (e.g. 1.6 from 1.6.whatever)
+     * @return The first two version numbers from java.version (e.g. 1.6 from 1.6.whatever)
+     */
+    public static double getJreVersion() {
+        final Pattern versionPattern = Pattern.compile("^(\\d\\.\\d+)\\..*$");
+        final String  jreVersionStr = System.getProperty("java.version");
+        final Matcher versionMatcher = versionPattern.matcher(jreVersionStr);
+
+        final double version;
+        if (versionMatcher.matches()) {
+            version = Double.parseDouble(versionMatcher.group(1));
+        } else {
+            throw new RuntimeException("Could not determine version from property java.version=" + jreVersionStr);
+        }
+
+        return version;
+    }
+
+    /**
+     * Determine the version of the JRE that we are currently running and select a jdkX where
+     * X is the version of Java that is being run (e.g. 6, 7, ...)
+     * @return The jdkX where X is the version of Java that is being run (e.g. 6, 7, ...)
+     */
+    public static String getJdkJarPrefix() {
+        final double jreVersion = getJreVersion();
+        final String prefix;
+        if (jreVersion == 1.4 || jreVersion == 1.5 || jreVersion == 1.6) {
+            // TODO: raise an error, these versions are no longer supported.
+            prefix = "jdk6";
+        } else if (jreVersion == 1.7) {
+            prefix = "jdk7";
+        } else if (jreVersion == 1.8) {
+            prefix = "jdk8";
+        } else if (jreVersion == 1.9) {
+            prefix = "jdk9";
+        } else {
+            throw new AssertionError("Unsupported JRE version: " + jreVersion);
+        }
+
+        return prefix;
+    }
+
+    /**
+     * Determine the version of the JRE that we are currently running and select a jdkX.jar where
+     * X is the version of Java that is being run (e.g. 6, 7, ...)
+     * @return The jdkX.jar where X is the version of Java that is being run (e.g. 6, 7, ...)
+     */
+    public static String getJdkJarName() {
+        final String fileName = getJdkJarPrefix() + ".jar";
+        return fileName;
+    }
+
 }

@@ -96,6 +96,7 @@ def push_maven_artifacts_to_release_repo( version ):
     mvn_deploy( CHECKERS_QUALS,  CHECKERS_QUALS_POM,  MAVEN_LIVE_REPO )
     mvn_deploy( JAVAC_BINARY,    JAVAC_BINARY_POM,    MAVEN_LIVE_REPO )
     mvn_deploy( JDK7_BINARY,     JDK7_BINARY_POM,     MAVEN_LIVE_REPO )
+    mvn_deploy( JDK8_BINARY,     JDK8_BINARY_POM,     MAVEN_LIVE_REPO )
 
 def push_interm_to_release_repos():
     hg_push_or_fail( INTERM_JSR308_REPO )
