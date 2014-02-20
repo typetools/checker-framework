@@ -333,7 +333,6 @@ public class StubParser {
         String typeName = (packageName == null ? "" : packageName + ".") + typeDecl.getName().replace('$', '.');
         TypeElement typeElt = elements.getTypeElement(typeName);
         // couldn't find type.  not in class path
-        // TODO: Should throw exception?!
         if (typeElt == null) {
             stubWarning("Type not found: " + typeName);
             return;
@@ -792,8 +791,6 @@ public class StubParser {
         if (key == null)
             return;
         if (m.containsKey(key) && !m.get(key).equals(value)) {
-            // TODO: instead of failing, can we try merging the information from
-            // multiple stub files?
             ErrorReporter.errorAbort("StubParser: key is already in map: " + LINE_SEPARATOR
                             + "  " + key + " => " + m.get(key) + LINE_SEPARATOR
                             + "while adding: " + LINE_SEPARATOR
@@ -911,7 +908,11 @@ public class StubParser {
         return annoMirror;
     }
 
-    // TODO: The only compile time constants supported here are Strings
+    /*
+     * Handles expressions in annotations. 
+     * Supports String and boolean literals, but not other literals
+     * as documented in the stub file limiation section of the manual.
+     */
     private void handleExpr(AnnotationBuilder builder, String name,
             Expression expr) {
         if (expr instanceof FieldAccessExpr || expr instanceof NameExpr) {
