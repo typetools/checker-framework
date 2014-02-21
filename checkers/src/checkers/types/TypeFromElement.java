@@ -5,7 +5,7 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
-
+import checkers.util.AnnotatedTypes;
 import javacutils.ElementUtils;
 import javacutils.ErrorReporter;
 
@@ -287,6 +287,9 @@ public class TypeFromElement {
 
         VarSymbol symbol = (VarSymbol) element;
 
+        // Add declaration annotations to the field type
+        addAnnotationsToElt(type, symbol.getAnnotationMirrors());
+
         for (Attribute.TypeCompound anno : symbol.getRawTypeAttributes()) {
             TypeAnnotationPosition pos = anno.position;
             switch (pos.type) {
@@ -332,6 +335,9 @@ public class TypeFromElement {
         }
 
         VarSymbol symbol = (VarSymbol) element;
+
+        // Add declaration annotations to the local variable type
+        addAnnotationsToElt(type, symbol.getAnnotationMirrors());
 
         for (Attribute.TypeCompound anno : symbol.getRawTypeAttributes()) {
 
@@ -507,7 +513,14 @@ public class TypeFromElement {
         // System.out.println("AnnotateExec: " + element);
         MethodSymbol symbol = (MethodSymbol) element;
 
+        // Add declaration annotations to the return type
+        addAnnotationsToElt(type.getReturnType(), symbol.getAnnotationMirrors());
+
         final List<AnnotatedTypeMirror> params = type.getParameterTypes();
+        for (int i = 0; i < params.size(); ++i) {
+            // Add declaration annotations to the parameter type
+            addAnnotationsToElt(params.get(i), element.getParameters().get(i).getAnnotationMirrors());
+        }
 
         // Used in multiple cases below
         final List<AnnotatedTypeVariable> typeParams = type.getTypeVariables();
@@ -607,6 +620,25 @@ public class TypeFromElement {
             }
             }
         }
+    }
+
+    /**
+     * For backwards-compatibility: treat declaration annotations
+     * as type annotations, if we now understand them as type annotations.
+     * In particular, this allows the transition from JSR 305 declaration
+     * annotations to JSR 308 type annotations.
+     *
+     * There are some caveats to this: the interpretation for declaration
+     * and type annotations differs, in particular for arrays and inner
+     * types. See the manual for a discussion.
+     *
+     * @param type The type to annotate
+     * @param annotations The annotations to add
+     */
+    private static void addAnnotationsToElt(AnnotatedTypeMirror type,
+            List<? extends AnnotationMirror> annotations) {
+        AnnotatedTypeMirror innerType = AnnotatedTypes.innerMostType(type);
+        innerType.addAnnotations(annotations);
     }
 
     private static void annotate(AnnotatedTypeMirror type, Attribute.TypeCompound anno) {
