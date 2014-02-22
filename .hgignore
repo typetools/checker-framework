@@ -77,6 +77,9 @@ checkers/manual/dataflow-manual/dataflow.out
 checkers/manual/dataflow-manual/dataflow.pdf
 
 checkers/tests/nullness-extra/*.class
+checkers/tests/nullness-extra/compat/Out.txt
+checkers/tests/nullness-extra/compat/javax/annotation/Nullable.class
+checkers/tests/nullness-extra/compat/lib/Lib.class
 checkers/tests/nullness-extra/multiple-errors/*.class
 checkers/tests/nullness-extra/multiple-errors/Out.txt
 checkers/tests/nullness-extra/package-anno/Out.txt
