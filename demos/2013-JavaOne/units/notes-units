@@ -1,4 +1,5 @@
-Preparation:  mv -f Projectile.java-orig Projectile.java
+Preparation:
+  cp -f Projectile.java-orig Projectile.java
 
 Explain the program.
 
