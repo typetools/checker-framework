@@ -1,5 +1,5 @@
 Preparation:
-  mv -f RestrictionTest.java-orig Restriction.java
+  cp -f RestrictionTest.java-orig RestrictionTest.java
   javac RestrictionType.java
 
 Android uses int constants instead of Java enums.
