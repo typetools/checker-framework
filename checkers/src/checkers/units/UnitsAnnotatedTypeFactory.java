@@ -6,6 +6,8 @@ import checkers.types.AnnotatedTypeMirror;
 import checkers.types.QualifierHierarchy;
 import checkers.types.TreeAnnotator;
 import checkers.units.quals.A;
+import checkers.units.quals.Acceleration;
+import checkers.units.quals.Angle;
 import checkers.units.quals.Area;
 import checkers.units.quals.C;
 import checkers.units.quals.Current;
@@ -23,6 +25,7 @@ import checkers.units.quals.UnitsBottom;
 import checkers.units.quals.UnitsMultiple;
 import checkers.units.quals.UnknownUnits;
 import checkers.units.quals.cd;
+import checkers.units.quals.degrees;
 import checkers.units.quals.g;
 import checkers.units.quals.h;
 import checkers.units.quals.km2;
@@ -30,10 +33,12 @@ import checkers.units.quals.kmPERh;
 import checkers.units.quals.m;
 import checkers.units.quals.m2;
 import checkers.units.quals.mPERs;
+import checkers.units.quals.mPERs2;
 import checkers.units.quals.min;
 import checkers.units.quals.mm2;
 import checkers.units.quals.mol;
 import checkers.units.quals.s;
+import checkers.units.quals.radians;
 import checkers.util.AnnotationBuilder;
 import checkers.util.GraphQualifierHierarchy;
 import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
@@ -192,6 +197,13 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         qualSet.add(Temperature.class);
         qualSet.add(C.class);
         qualSet.add(K.class);
+
+        qualSet.add(Acceleration.class);
+        qualSet.add(mPERs2.class);
+
+        qualSet.add(Angle.class);
+        qualSet.add(degrees.class);
+        qualSet.add(radians.class);
 
         // Use the framework-provided bottom qualifier. It will automatically be
         // at the bottom of the qualifier hierarchy.
