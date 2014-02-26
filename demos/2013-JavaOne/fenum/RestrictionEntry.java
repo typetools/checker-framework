@@ -1,14 +1,14 @@
 /*
  * Copyright (C) 2013 The Android Open Source Project
  *
- * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+ * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -25,17 +25,17 @@ import java.lang.annotation.Inherited;
  * Applications can expose restrictions for a restricted user on a
  * multiuser device. The administrator can configure these restrictions that will then be
  * applied to the restricted user. Each RestrictionsEntry is one configurable restriction.
- * &lt;p/&gt;
+ * <p/>
  * Any application that chooses to expose such restrictions does so by implementing a
  * receiver that handles the {@link Intent#ACTION_GET_RESTRICTION_ENTRIES} action.
- * The receiver then returns a result bundle that contains an entry called &quot;restrictions&quot;, whose
- * value is an ArrayList&lt;RestrictionsEntry&gt;.
+ * The receiver then returns a result bundle that contains an entry called "restrictions", whose
+ * value is an ArrayList<RestrictionsEntry>.
  */
 public class RestrictionEntry implements Parcelable {
 
     /**
      * A type of restriction. Use this type for information that needs to be transferred across
-     * but shouldn&#39;t be presented to the user in the UI. Stores a single String value.
+     * but shouldn't be presented to the user in the UI. Stores a single String value.
      */
     public static final int TYPE_NULL         = 0;
 
@@ -153,7 +153,7 @@ public class RestrictionEntry implements Parcelable {
 
     /**
      * Returns the currently selected string value.
-     * @return the currently selected value, which can be null for types that aren&#39;t for holding
+     * @return the currently selected value, which can be null for types that aren't for holding
      * single string values.
      */
     public String getSelectedString() {
@@ -207,12 +207,12 @@ public class RestrictionEntry implements Parcelable {
     /**
      * Sets a list of string values that can be selected by the user. If no user-visible entries
      * are set by a call to {@link #setChoiceEntries(String[])}, these values will be the ones
-     * shown to the user. Values will be chosen from this list as the user&#39;s selection and the
+     * shown to the user. Values will be chosen from this list as the user's selection and the
      * selected values can be retrieved by a call to {@link #getAllSelectedStrings()}, or
      * {@link #getSelectedString()}, depending on whether it is a multi-select type or choice type.
      * This method is not relevant for types other than
      * {@link #TYPE_CHOICE}, and {@link #TYPE_MULTI_SELECT}.
-     * @param choiceValues an array of Strings which will be the selected values for the user&#39;s
+     * @param choiceValues an array of Strings which will be the selected values for the user's
      * selections.
      * @see #getChoiceValues()
      * @see #getAllSelectedStrings()
@@ -314,7 +314,7 @@ public class RestrictionEntry implements Parcelable {
 
     private boolean equalArrays(String[] one, String[] other) {
         if (one.length != other.length) return false;
-        for (int i = 0; i &lt; one.length; i++) {
+        for (int i = 0; i < one.length; i++) {
             if (!one[i].equals(other[i])) return false;
         }
         return true;
@@ -326,13 +326,13 @@ public class RestrictionEntry implements Parcelable {
         if (!(o instanceof RestrictionEntry)) return false;
         final RestrictionEntry other = (RestrictionEntry) o;
         // Make sure that either currentValue matches or currentValues matches.
-        return type == other.type &amp;&amp; key.equals(other.key)
-                &amp;&amp;
-                ((currentValues == null &amp;&amp; other.currentValues == null
-                  &amp;&amp; currentValue != null &amp;&amp; currentValue.equals(other.currentValue))
+        return type == other.type && key.equals(other.key)
+                &&
+                ((currentValues == null && other.currentValues == null
+                  && currentValue != null && currentValue.equals(other.currentValue))
                  ||
-                 (currentValue == null &amp;&amp; other.currentValue == null
-                  &amp;&amp; currentValues != null &amp;&amp; equalArrays(currentValues, other.currentValues)));
+                 (currentValue == null && other.currentValue == null
+                  && currentValues != null && equalArrays(currentValues, other.currentValues)));
     }
 
     @Override
@@ -354,7 +354,7 @@ public class RestrictionEntry implements Parcelable {
     private String[] readArray(Parcel in) {
         int count = in.readInt();
         String[] values = new String[count];
-        for (int i = 0; i &lt; count; i++) {
+        for (int i = 0; i < count; i++) {
             values[i] = in.readString();
         }
         return values;
@@ -381,7 +381,7 @@ public class RestrictionEntry implements Parcelable {
             dest.writeInt(0);
         } else {
             dest.writeInt(values.length);
-            for (int i = 0; i &lt; values.length; i++) {
+            for (int i = 0; i < values.length; i++) {
                 dest.writeString(values[i]);
             }
         }
@@ -399,7 +399,7 @@ public class RestrictionEntry implements Parcelable {
         writeArray(dest, currentValues);
     }
 
-    public static final Creator&lt;RestrictionEntry&gt; CREATOR = new Creator&lt;RestrictionEntry&gt;() {
+    public static final Creator<RestrictionEntry> CREATOR = new Creator<RestrictionEntry>() {
         public RestrictionEntry createFromParcel(Parcel source) {
             return new RestrictionEntry(source);
         }
@@ -411,6 +411,6 @@ public class RestrictionEntry implements Parcelable {
 
     @Override
     public String toString() {
-        return &quot;RestrictionsEntry {type=&quot; + type + &quot;, key=&quot; + key + &quot;, value=&quot; + currentValue + &quot;}&quot;;
+        return "RestrictionsEntry {type=" + type + ", key=" + key + ", value=" + currentValue + "}";
     }
 }
