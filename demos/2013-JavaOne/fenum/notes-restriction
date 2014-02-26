@@ -1,5 +1,5 @@
 Preparation:
-  cp -f RestrictionTest.java-orig RestrictionTest.java
+  \cp -f RestrictionTest.java-orig RestrictionTest.java
   javac RestrictionType.java
 
 Android uses int constants instead of Java enums.
@@ -29,7 +29,7 @@ the info in a field and return it.
 
 - The Restriction.java file compiles without any warning:
 
-javac -cp android.jar:. Restriction.java
+javac -cp android.jar:. RestrictionTest.java
 
 But it's incorrect.  This is hard to notice because 5 is between two legal
 values of the argument.
