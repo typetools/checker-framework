@@ -1,5 +1,5 @@
 Preparation:
-  cp -f Projectile.java-orig Projectile.java
+  \cp -f Projectile.java-orig Projectile.java
 
 Explain the program.
 

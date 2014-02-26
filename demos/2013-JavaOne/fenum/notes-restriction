@@ -1,6 +1,7 @@
 Preparation:
   \cp -f RestrictionTest.java-orig RestrictionTest.java
   javac RestrictionType.java
+and copy android.jar from the Android "ADT bundle" to this directory
 
 Android uses int constants instead of Java enums.
 This has two problems:
