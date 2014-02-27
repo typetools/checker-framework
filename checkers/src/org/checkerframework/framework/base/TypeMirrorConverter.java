@@ -21,7 +21,21 @@ import javacutils.AnnotationUtils;
 import javacutils.TreeUtils;
 
 import org.checkerframework.framework.base.QualifiedTypeMirror.*;
+import org.checkerframework.framework.util.ExtendedArrayType;
+import org.checkerframework.framework.util.ExtendedDeclaredType;
+import org.checkerframework.framework.util.ExtendedErrorType;
+import org.checkerframework.framework.util.ExtendedExecutableType;
+import org.checkerframework.framework.util.ExtendedIntersectionType;
+import org.checkerframework.framework.util.ExtendedNoType;
+import org.checkerframework.framework.util.ExtendedNullType;
+import org.checkerframework.framework.util.ExtendedPrimitiveType;
+import org.checkerframework.framework.util.ExtendedTypeVariable;
+import org.checkerframework.framework.util.ExtendedUnionType;
+import org.checkerframework.framework.util.ExtendedWildcardType;
+import org.checkerframework.framework.util.ExtendedTypeMirror;
+import org.checkerframework.framework.util.ExtendedTypeVisitor;
 import org.checkerframework.framework.util.WrappedAnnotatedTypeMirror;
+import org.checkerframework.framework.util.WrappedAnnotatedTypeMirror.*;
 
 class TypeMirrorConverter<Q> {
     private CheckerAdapter<Q> checkerAdapter;
@@ -168,6 +182,8 @@ class TypeMirrorConverter<Q> {
      */
     private SimpleQualifiedTypeVisitor<Q, Void, AnnotatedTypeMirror> APPLY_COMPONENT_QUALIFIERS_VISITOR =
         new SimpleQualifiedTypeVisitor<Q, Void, AnnotatedTypeMirror>() {
+            private IdentityHashMap<AnnotatedTypeVariable, Void> seenATVs = new IdentityHashMap<>();
+
             public Void visitArray(QualifiedArrayType<Q> qtm, AnnotatedTypeMirror rawAtm) {
                 AnnotatedArrayType atm = (AnnotatedArrayType)rawAtm;
                 applyQualifiers(qtm.getComponentType(), atm.getComponentType());
@@ -224,8 +240,31 @@ class TypeMirrorConverter<Q> {
 
             public Void visitTypeVariable(QualifiedTypeVariable<Q> qtm, AnnotatedTypeMirror rawAtm) {
                 AnnotatedTypeVariable atm = (AnnotatedTypeVariable)rawAtm;
-                applyQualifiers(qtm.getLowerBound(), atm.getLowerBound());
-                applyQualifiers(qtm.getUpperBound(), atm.getUpperBound());
+                if (!seenATVs.containsKey(atm)) {
+                    seenATVs.put(atm, null);
+                    QualifiedTypeParameterBounds<Q> bounds =
+                        getTypeFactory().getUnderlying()
+                            .getQualifiedTypeParameterBounds(qtm.asElement());
+                    try {
+                        if (seenATVs.size() == 1) {
+                            // We're at the top level.  Make sure both bounds
+                            // are filled in.
+                            applyQualifiers(bounds.getUpperBound(), atm.getUpperBound());
+                            applyQualifiers(bounds.getLowerBound(), atm.getLowerBound());
+                        } else {
+                            if (atm.getUpperBoundField() != null) {
+                                applyQualifiers(bounds.getUpperBound(),
+                                        atm.getUpperBoundField());
+                            }
+                            if (atm.getLowerBoundField() != null) {
+                                applyQualifiers(bounds.getLowerBound(),
+                                        atm.getLowerBoundField());
+                            }
+                        }
+                    } finally {
+                        seenATVs.remove(atm);
+                    }
+                }
                 return null;
             }
 
@@ -254,15 +293,22 @@ class TypeMirrorConverter<Q> {
         if (atm == null) {
             return null;
         }
-        return UPDATED_QTM_BUILDER.visit(atm, getQualifier(atm));
+        return getQualifiedTypeFromWrapped(WrappedAnnotatedTypeMirror.wrap(atm));
+    }
+
+    private QualifiedTypeMirror<Q> getQualifiedTypeFromWrapped(WrappedAnnotatedTypeMirror watm) {
+        if (watm == null) {
+            return null;
+        }
+        return watm.accept(UPDATED_QTM_BUILDER, getQualifier(watm.unwrap()));
     }
 
     /** getQualifiedType lifted to operate on a list of AnnotatedTypeMirrors.
      */
-    List<QualifiedTypeMirror<Q>> getQualifiedTypeList(List<? extends AnnotatedTypeMirror> atms) {
+    private List<QualifiedTypeMirror<Q>> getQualifiedTypeList(List<? extends ExtendedTypeMirror> watms) {
         List<QualifiedTypeMirror<Q>> result = new ArrayList<>();
-        for (int i = 0; i < atms.size(); ++i) {
-            result.add(getQualifiedType(atms.get(i)));
+        for (int i = 0; i < watms.size(); ++i) {
+            result.add(getQualifiedTypeFromWrapped((WrappedAnnotatedTypeMirror)watms.get(i)));
         }
         return result;
     }
@@ -270,91 +316,85 @@ class TypeMirrorConverter<Q> {
     /** A visitor to recursively construct QualifiedTypeMirrors from
      * AnnotatedTypeMirrors.
      */
-    private SimpleAnnotatedTypeVisitor<QualifiedTypeMirror<Q>, Q> UPDATED_QTM_BUILDER =
-        new SimpleAnnotatedTypeVisitor<QualifiedTypeMirror<Q>, Q>() {
-            public QualifiedTypeMirror<Q> visitArray(AnnotatedArrayType atm, Q qual) {
-                return new QualifiedArrayType<Q>(
-                        WrappedAnnotatedTypeMirror.wrap(atm),
-                        qual,
-                        getQualifiedType(atm.getComponentType()));
+    private ExtendedTypeVisitor<QualifiedTypeMirror<Q>, Q> UPDATED_QTM_BUILDER =
+        new ExtendedTypeVisitor<QualifiedTypeMirror<Q>, Q>() {
+            private IdentityHashMap<ExtendedTypeVariable, QualifiedTypeVariable<Q>> typeVarMap =
+                new IdentityHashMap<>();
+
+            public QualifiedTypeMirror<Q> visitArray(ExtendedArrayType extended, Q qual) {
+                WrappedAnnotatedArrayType watm = (WrappedAnnotatedArrayType)extended;
+                return new QualifiedArrayType<Q>(watm, qual,
+                        getQualifiedTypeFromWrapped(watm.getComponentType()));
             }
 
-            public QualifiedTypeMirror<Q> visitDeclared(AnnotatedDeclaredType atm, Q qual) {
-                return new QualifiedDeclaredType<Q>(
-                        WrappedAnnotatedTypeMirror.wrap(atm),
-                        qual,
-                        getQualifiedTypeList(atm.getTypeArguments()));
+            public QualifiedTypeMirror<Q> visitDeclared(ExtendedDeclaredType extended, Q qual) {
+                WrappedAnnotatedDeclaredType watm = (WrappedAnnotatedDeclaredType)extended;
+                return new QualifiedDeclaredType<Q>(watm, qual,
+                        getQualifiedTypeList(watm.getTypeArguments()));
             }
 
-            public QualifiedTypeMirror<Q> visitExecutable(AnnotatedExecutableType atm, Q qual) {
-                List<AnnotatedTypeVariable> annotatedTypeVariables = atm.getTypeVariables();
+            public QualifiedTypeMirror<Q> visitError(ExtendedErrorType extended, Q qual) {
+                throw new IllegalArgumentException("impossible: ERROR type in WrappedAnnotatedTypeMirror");
+            }
+
+            public QualifiedTypeMirror<Q> visitExecutable(ExtendedExecutableType extended, Q qual) {
+                WrappedAnnotatedExecutableType watm = (WrappedAnnotatedExecutableType)extended;
+
+                List<? extends ExtendedTypeVariable> extendedTypeVariables = watm.getTypeVariables();
                 List<QualifiedTypeVariable<Q>> qualifiedTypeVariables = new ArrayList<>();
-                for (int i = 0; i < annotatedTypeVariables.size(); ++i) {
+                for (int i = 0; i < extendedTypeVariables.size(); ++i) {
                     @SuppressWarnings("unchecked")
                     QualifiedTypeVariable<Q> qualified =
-                        (QualifiedTypeVariable<Q>)getQualifiedType(annotatedTypeVariables.get(i));
+                        (QualifiedTypeVariable<Q>)getQualifiedTypeFromWrapped(
+                                (WrappedAnnotatedTypeVariable)extendedTypeVariables.get(i));
                     qualifiedTypeVariables.add(qualified);
                 }
 
-                return new QualifiedExecutableType<Q>(
-                        WrappedAnnotatedTypeMirror.wrap(atm),
-                        qual,
-                        getQualifiedTypeList(atm.getParameterTypes()),
-                        getQualifiedType(atm.getReceiverType()),
-                        getQualifiedType(atm.getReturnType()),
-                        getQualifiedTypeList(atm.getThrownTypes()),
+                return new QualifiedExecutableType<Q>(watm, qual,
+                        getQualifiedTypeList(watm.getParameterTypes()),
+                        getQualifiedTypeFromWrapped(watm.getReceiverType()),
+                        getQualifiedTypeFromWrapped(watm.getReturnType()),
+                        getQualifiedTypeList(watm.getThrownTypes()),
                         qualifiedTypeVariables);
             }
 
-            public QualifiedTypeMirror<Q> visitIntersection(AnnotatedIntersectionType atm, Q qual) {
-                return new QualifiedIntersectionType<Q>(
-                        WrappedAnnotatedTypeMirror.wrap(atm),
-                        qual,
-                        getQualifiedTypeList(atm.directSuperTypes()));
+            public QualifiedTypeMirror<Q> visitIntersection(ExtendedIntersectionType extended, Q qual) {
+                WrappedAnnotatedIntersectionType watm = (WrappedAnnotatedIntersectionType)extended;
+                return new QualifiedIntersectionType<Q>(watm, qual,
+                        getQualifiedTypeList(watm.getBounds()));
             }
 
-            public QualifiedTypeMirror<Q> visitNoType(AnnotatedNoType atm, Q qual) {
+            public QualifiedTypeMirror<Q> visitNoType(ExtendedNoType extended, Q qual) {
                 // NoType has no components.
-                return new QualifiedNoType<Q>(
-                        WrappedAnnotatedTypeMirror.wrap(atm),
-                        qual);
+                return new QualifiedNoType<Q>(extended, qual);
             }
 
-            public QualifiedTypeMirror<Q> visitNull(AnnotatedNullType atm, Q qual) {
+            public QualifiedTypeMirror<Q> visitNull(ExtendedNullType extended, Q qual) {
                 // NullType has no components.
-                return new QualifiedNullType<Q>(
-                        WrappedAnnotatedTypeMirror.wrap(atm),
-                        qual);
+                return new QualifiedNullType<Q>(extended, qual);
             }
 
-            public QualifiedTypeMirror<Q> visitPrimitive(AnnotatedPrimitiveType atm, Q qual) {
+            public QualifiedTypeMirror<Q> visitPrimitive(ExtendedPrimitiveType extended, Q qual) {
                 // PrimitiveType has no components.
-                return new QualifiedPrimitiveType<Q>(
-                        WrappedAnnotatedTypeMirror.wrap(atm),
-                        qual);
+                return new QualifiedPrimitiveType<Q>(extended, qual);
             }
 
-            public QualifiedTypeMirror<Q> visitTypeVariable(AnnotatedTypeVariable atm, Q qual) {
-                return new QualifiedTypeVariable<Q>(
-                        WrappedAnnotatedTypeMirror.wrap(atm),
-                        qual,
-                        getQualifiedType(atm.getUpperBound()),
-                        getQualifiedType(atm.getLowerBound()));
+            public QualifiedTypeMirror<Q> visitTypeVariable(ExtendedTypeVariable extended, Q qual) {
+                WrappedAnnotatedTypeVariable watm = (WrappedAnnotatedTypeVariable)extended;
+                return new QualifiedTypeVariable<Q>(watm, qual);
             }
 
-            public QualifiedTypeMirror<Q> visitUnion(AnnotatedUnionType atm, Q qual) {
-                return new QualifiedUnionType<Q>(
-                        WrappedAnnotatedTypeMirror.wrap(atm),
-                        qual,
-                        getQualifiedTypeList(atm.getAlternatives()));
+            public QualifiedTypeMirror<Q> visitUnion(ExtendedUnionType extended, Q qual) {
+                WrappedAnnotatedUnionType watm = (WrappedAnnotatedUnionType)extended;
+                return new QualifiedUnionType<Q>(watm, qual,
+                        getQualifiedTypeList(watm.getAlternatives()));
             }
 
-            public QualifiedTypeMirror<Q> visitWildcard(AnnotatedWildcardType atm, Q qual) {
-                return new QualifiedWildcardType<Q>(
-                        WrappedAnnotatedTypeMirror.wrap(atm),
-                        qual,
-                        getQualifiedType(atm.getExtendsBound()),
-                        getQualifiedType(atm.getSuperBound()));
+            public QualifiedTypeMirror<Q> visitWildcard(ExtendedWildcardType extended, Q qual) {
+                WrappedAnnotatedWildcardType watm = (WrappedAnnotatedWildcardType)extended;
+                return new QualifiedWildcardType<Q>(watm, qual,
+                        getQualifiedTypeFromWrapped(watm.getExtendsBound()),
+                        getQualifiedTypeFromWrapped(watm.getSuperBound()));
             }
         };
 

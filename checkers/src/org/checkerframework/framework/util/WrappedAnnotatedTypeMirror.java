@@ -2,6 +2,7 @@ package org.checkerframework.framework.util;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
+import java.util.IdentityHashMap;
 import java.util.List;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -27,11 +28,64 @@ import javax.lang.model.util.Types;
 
 import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.*;
+import checkers.util.AnnotatedTypes;
 
 // WARNING: Do not allow the underlying AnnotatedTypeMirror to be mutated
 // while the WrappedAnnotatedTypeMirror is live!  Things will probably break!
 public abstract class WrappedAnnotatedTypeMirror implements ExtendedTypeMirror {
     private AnnotatedTypeMirror raw;
+
+    private static class Factory {
+        public WrappedAnnotatedTypeMirror wrap(AnnotatedTypeMirror atm) {
+            if (atm == null) {
+                return null;
+            }
+
+            switch (atm.getKind()) {
+                case ARRAY:
+                    return new WrappedAnnotatedArrayType((AnnotatedArrayType)atm, this);
+                case DECLARED:
+                    return new WrappedAnnotatedDeclaredType((AnnotatedDeclaredType)atm, this);
+                case EXECUTABLE:
+                    return new WrappedAnnotatedExecutableType((AnnotatedExecutableType)atm, this);
+                case VOID:
+                case PACKAGE:
+                case NONE:
+                    return new WrappedAnnotatedNoType((AnnotatedNoType)atm, this);
+                case NULL:
+                    return new WrappedAnnotatedNullType((AnnotatedNullType)atm, this);
+                case TYPEVAR:
+                    return new WrappedAnnotatedTypeVariable((AnnotatedTypeVariable)atm, this);
+                case WILDCARD:
+                    return new WrappedAnnotatedWildcardType((AnnotatedWildcardType)atm, this);
+                case INTERSECTION:
+                    return new WrappedAnnotatedIntersectionType((AnnotatedIntersectionType)atm, this);
+                case UNION:
+                    return new WrappedAnnotatedUnionType((AnnotatedUnionType)atm, this);
+                default:
+                    if (atm.getKind().isPrimitive()) {
+                        return new WrappedAnnotatedPrimitiveType((AnnotatedPrimitiveType)atm, this);
+                    }
+                    throw new IllegalArgumentException("unexpected type kind: " + atm.getKind());
+            }
+        }
+
+        public List<WrappedAnnotatedTypeMirror> wrapList(List<? extends AnnotatedTypeMirror> atms) {
+            List<WrappedAnnotatedTypeMirror> watms = new ArrayList<>();
+            for (AnnotatedTypeMirror atm : atms) {
+                watms.add(wrap(atm));
+            }
+            return watms;
+        }
+
+        public List<WrappedAnnotatedTypeVariable> wrapTypeVarList(List<? extends AnnotatedTypeVariable> atms) {
+            List<WrappedAnnotatedTypeVariable> watms = new ArrayList<>();
+            for (AnnotatedTypeVariable atm : atms) {
+                watms.add((WrappedAnnotatedTypeVariable)wrap(atm));
+            }
+            return watms;
+        }
+    }
 
     private WrappedAnnotatedTypeMirror(AnnotatedTypeMirror raw) {
         if (raw == null) {
@@ -41,53 +95,8 @@ public abstract class WrappedAnnotatedTypeMirror implements ExtendedTypeMirror {
     }
 
     public static WrappedAnnotatedTypeMirror wrap(AnnotatedTypeMirror atm) {
-        if (atm == null) {
-            return null;
-        }
-
-        switch (atm.getKind()) {
-            case ARRAY:
-                return new WrappedAnnotatedArrayType((AnnotatedArrayType)atm);
-            case DECLARED:
-                return new WrappedAnnotatedDeclaredType((AnnotatedDeclaredType)atm);
-            case EXECUTABLE:
-                return new WrappedAnnotatedExecutableType((AnnotatedExecutableType)atm);
-            case VOID:
-            case PACKAGE:
-            case NONE:
-                return new WrappedAnnotatedNoType((AnnotatedNoType)atm);
-            case NULL:
-                return new WrappedAnnotatedNullType((AnnotatedNullType)atm);
-            case TYPEVAR:
-                return new WrappedAnnotatedTypeVariable((AnnotatedTypeVariable)atm);
-            case WILDCARD:
-                return new WrappedAnnotatedWildcardType((AnnotatedWildcardType)atm);
-            case INTERSECTION:
-                return new WrappedAnnotatedIntersectionType((AnnotatedIntersectionType)atm);
-            case UNION:
-                return new WrappedAnnotatedUnionType((AnnotatedUnionType)atm);
-            default:
-                if (atm.getKind().isPrimitive()) {
-                    return new WrappedAnnotatedPrimitiveType((AnnotatedPrimitiveType)atm);
-                }
-                throw new IllegalArgumentException("unexpected type kind: " + atm.getKind());
-        }
-    }
-
-    private static List<WrappedAnnotatedTypeMirror> wrapList(List<? extends AnnotatedTypeMirror> atms) {
-        List<WrappedAnnotatedTypeMirror> watms = new ArrayList<>();
-        for (AnnotatedTypeMirror atm : atms) {
-            watms.add(wrap(atm));
-        }
-        return watms;
-    }
-
-    private static List<WrappedAnnotatedTypeVariable> wrapTypeVarList(List<? extends AnnotatedTypeVariable> atms) {
-        List<WrappedAnnotatedTypeVariable> watms = new ArrayList<>();
-        for (AnnotatedTypeVariable atm : atms) {
-            watms.add((WrappedAnnotatedTypeVariable)wrap(atm));
-        }
-        return watms;
+        //return new Factory().wrap(AnnotatedTypes.deepCopy(atm));
+        return new Factory().wrap(atm);
     }
 
 
@@ -141,12 +150,12 @@ public abstract class WrappedAnnotatedTypeMirror implements ExtendedTypeMirror {
         return raw.hashCode();
     }
 
-    static class WrappedAnnotatedArrayType extends WrappedAnnotatedReferenceType implements ExtendedArrayType {
+    public static class WrappedAnnotatedArrayType extends WrappedAnnotatedReferenceType implements ExtendedArrayType {
         private WrappedAnnotatedTypeMirror componentType;
 
-        public WrappedAnnotatedArrayType(AnnotatedArrayType raw) {
+        private WrappedAnnotatedArrayType(AnnotatedArrayType raw, Factory factory) {
             super(raw);
-            this.componentType = wrap(raw.getComponentType());
+            this.componentType = factory.wrap(raw.getComponentType());
         }
 
         @Override @SuppressWarnings("unchecked")
@@ -165,19 +174,19 @@ public abstract class WrappedAnnotatedTypeMirror implements ExtendedTypeMirror {
         }
 
         @Override
-        public ExtendedTypeMirror getComponentType() {
+        public WrappedAnnotatedTypeMirror getComponentType() {
             return componentType;
         }
     }
 
-    static class WrappedAnnotatedDeclaredType extends WrappedAnnotatedReferenceType implements ExtendedDeclaredType {
+    public static class WrappedAnnotatedDeclaredType extends WrappedAnnotatedReferenceType implements ExtendedDeclaredType {
         private WrappedAnnotatedTypeMirror enclosingType;
         private List<WrappedAnnotatedTypeMirror> typeArguments;
 
-        public WrappedAnnotatedDeclaredType(AnnotatedDeclaredType raw) {
+        private WrappedAnnotatedDeclaredType(AnnotatedDeclaredType raw, Factory factory) {
             super(raw);
-            this.enclosingType = wrap(raw.getEnclosingType());
-            this.typeArguments = wrapList(raw.getTypeArguments());
+            this.enclosingType = factory.wrap(raw.getEnclosingType());
+            this.typeArguments = factory.wrapList(raw.getTypeArguments());
         }
 
         @Override @SuppressWarnings("unchecked")
@@ -211,20 +220,20 @@ public abstract class WrappedAnnotatedTypeMirror implements ExtendedTypeMirror {
         }
     }
 
-    static class WrappedAnnotatedExecutableType extends WrappedAnnotatedTypeMirror implements ExtendedExecutableType {
-        private List<? extends ExtendedTypeMirror> parameterTypes;
-        private ExtendedTypeMirror receiverType;
-        private ExtendedTypeMirror returnType;
-        private List<? extends ExtendedTypeMirror> thrownTypes;
-        private List<? extends ExtendedTypeVariable> typeVariables;
+    public static class WrappedAnnotatedExecutableType extends WrappedAnnotatedTypeMirror implements ExtendedExecutableType {
+        private List<? extends WrappedAnnotatedTypeMirror> parameterTypes;
+        private WrappedAnnotatedTypeMirror receiverType;
+        private WrappedAnnotatedTypeMirror returnType;
+        private List<? extends WrappedAnnotatedTypeMirror> thrownTypes;
+        private List<? extends WrappedAnnotatedTypeVariable> typeVariables;
 
-        public WrappedAnnotatedExecutableType(AnnotatedExecutableType raw) {
+        private WrappedAnnotatedExecutableType(AnnotatedExecutableType raw, Factory factory) {
             super(raw);
-            this.parameterTypes = wrapList(raw.getParameterTypes());
-            this.receiverType = wrap(raw.getReceiverType());
-            this.returnType = wrap(raw.getReturnType());
-            this.thrownTypes = wrapList(raw.getThrownTypes());
-            this.typeVariables = wrapTypeVarList(raw.getTypeVariables());
+            this.parameterTypes = factory.wrapList(raw.getParameterTypes());
+            this.receiverType = factory.wrap(raw.getReceiverType());
+            this.returnType = factory.wrap(raw.getReturnType());
+            this.thrownTypes = factory.wrapList(raw.getThrownTypes());
+            this.typeVariables = factory.wrapTypeVarList(raw.getTypeVariables());
         }
 
         @Override @SuppressWarnings("unchecked")
@@ -253,32 +262,32 @@ public abstract class WrappedAnnotatedTypeMirror implements ExtendedTypeMirror {
         }
 
         @Override
-        public ExtendedTypeMirror getReceiverType() {
+        public WrappedAnnotatedTypeMirror getReceiverType() {
             return receiverType;
         }
 
         @Override
-        public ExtendedTypeMirror getReturnType() {
+        public WrappedAnnotatedTypeMirror getReturnType() {
             return returnType;
         }
 
         @Override
-        public List<? extends ExtendedTypeMirror> getThrownTypes() {
+        public List<? extends WrappedAnnotatedTypeMirror> getThrownTypes() {
             return thrownTypes;
         }
 
         @Override
-        public List<? extends ExtendedTypeVariable> getTypeVariables() {
+        public List<? extends WrappedAnnotatedTypeVariable> getTypeVariables() {
             return typeVariables;
         }
     }
 
-    static class WrappedAnnotatedIntersectionType extends WrappedAnnotatedTypeMirror implements ExtendedIntersectionType {
-        private List<? extends ExtendedTypeMirror> bounds;
+    public static class WrappedAnnotatedIntersectionType extends WrappedAnnotatedTypeMirror implements ExtendedIntersectionType {
+        private List<? extends WrappedAnnotatedTypeMirror> bounds;
 
-        public WrappedAnnotatedIntersectionType(AnnotatedIntersectionType raw) {
+        private WrappedAnnotatedIntersectionType(AnnotatedIntersectionType raw, Factory factory) {
             super(raw);
-            this.bounds = wrapList(raw.directSuperTypes());
+            this.bounds = factory.wrapList(raw.directSuperTypes());
         }
 
         @Override @SuppressWarnings("unchecked")
@@ -297,13 +306,13 @@ public abstract class WrappedAnnotatedTypeMirror implements ExtendedTypeMirror {
         }
 
         @Override
-        public List<? extends ExtendedTypeMirror> getBounds() {
+        public List<? extends WrappedAnnotatedTypeMirror> getBounds() {
             return bounds;
         }
     }
 
-    static class WrappedAnnotatedNoType extends WrappedAnnotatedTypeMirror implements ExtendedNoType {
-        public WrappedAnnotatedNoType(AnnotatedNoType raw) {
+    public static class WrappedAnnotatedNoType extends WrappedAnnotatedTypeMirror implements ExtendedNoType {
+        private WrappedAnnotatedNoType(AnnotatedNoType raw, Factory factory) {
             super(raw);
         }
 
@@ -323,8 +332,8 @@ public abstract class WrappedAnnotatedTypeMirror implements ExtendedTypeMirror {
         }
     }
 
-    static class WrappedAnnotatedNullType extends WrappedAnnotatedReferenceType implements ExtendedNullType {
-        public WrappedAnnotatedNullType(AnnotatedNullType raw) {
+    public static class WrappedAnnotatedNullType extends WrappedAnnotatedReferenceType implements ExtendedNullType {
+        private WrappedAnnotatedNullType(AnnotatedNullType raw, Factory factory) {
             super(raw);
         }
 
@@ -344,8 +353,8 @@ public abstract class WrappedAnnotatedTypeMirror implements ExtendedTypeMirror {
         }
     }
 
-    static class WrappedAnnotatedPrimitiveType extends WrappedAnnotatedTypeMirror implements ExtendedPrimitiveType {
-        public WrappedAnnotatedPrimitiveType(AnnotatedPrimitiveType raw) {
+    public static class WrappedAnnotatedPrimitiveType extends WrappedAnnotatedTypeMirror implements ExtendedPrimitiveType {
+        private WrappedAnnotatedPrimitiveType(AnnotatedPrimitiveType raw, Factory factory) {
             super(raw);
         }
 
@@ -366,19 +375,14 @@ public abstract class WrappedAnnotatedTypeMirror implements ExtendedTypeMirror {
     }
 
     static abstract class WrappedAnnotatedReferenceType extends WrappedAnnotatedTypeMirror implements ExtendedReferenceType {
-        public WrappedAnnotatedReferenceType(AnnotatedTypeMirror raw) {
+        private WrappedAnnotatedReferenceType(AnnotatedTypeMirror raw) {
             super(raw);
         }
     }
 
-    static class WrappedAnnotatedTypeVariable extends WrappedAnnotatedReferenceType implements ExtendedTypeVariable {
-        private ExtendedTypeMirror lowerBound;
-        private ExtendedTypeMirror upperBound;
-
-        public WrappedAnnotatedTypeVariable(AnnotatedTypeVariable raw) {
+    public static class WrappedAnnotatedTypeVariable extends WrappedAnnotatedReferenceType implements ExtendedTypeVariable {
+        private WrappedAnnotatedTypeVariable(AnnotatedTypeVariable raw, Factory factory) {
             super(raw);
-            this.lowerBound = wrap(raw.getLowerBound());
-            this.upperBound = wrap(raw.getUpperBound());
         }
 
         @Override @SuppressWarnings("unchecked")
@@ -400,24 +404,14 @@ public abstract class WrappedAnnotatedTypeMirror implements ExtendedTypeMirror {
         public Element asElement() {
             return getRaw().asElement();
         }
-
-        @Override
-        public ExtendedTypeMirror getLowerBound() {
-            return lowerBound;
-        }
-
-        @Override
-        public ExtendedTypeMirror getUpperBound() {
-            return upperBound;
-        }
     }
 
-    static class WrappedAnnotatedUnionType extends WrappedAnnotatedTypeMirror implements ExtendedUnionType {
-        private List<? extends ExtendedTypeMirror> alternatives;
+    public static class WrappedAnnotatedUnionType extends WrappedAnnotatedTypeMirror implements ExtendedUnionType {
+        private List<? extends WrappedAnnotatedTypeMirror> alternatives;
 
-        public WrappedAnnotatedUnionType(AnnotatedUnionType raw) {
+        private WrappedAnnotatedUnionType(AnnotatedUnionType raw, Factory factory) {
             super(raw);
-            this.alternatives = wrapList(raw.getAlternatives());
+            this.alternatives = factory.wrapList(raw.getAlternatives());
         }
 
         @Override @SuppressWarnings("unchecked")
@@ -436,19 +430,19 @@ public abstract class WrappedAnnotatedTypeMirror implements ExtendedTypeMirror {
         }
 
         @Override
-        public List<? extends ExtendedTypeMirror> getAlternatives() {
+        public List<? extends WrappedAnnotatedTypeMirror> getAlternatives() {
             return alternatives;
         }
     }
 
-    static class WrappedAnnotatedWildcardType extends WrappedAnnotatedTypeMirror implements ExtendedWildcardType {
-        private ExtendedTypeMirror extendsBound;
-        private ExtendedTypeMirror superBound;
+    public static class WrappedAnnotatedWildcardType extends WrappedAnnotatedTypeMirror implements ExtendedWildcardType {
+        private WrappedAnnotatedTypeMirror extendsBound;
+        private WrappedAnnotatedTypeMirror superBound;
 
-        public WrappedAnnotatedWildcardType(AnnotatedWildcardType raw) {
+        private WrappedAnnotatedWildcardType(AnnotatedWildcardType raw, Factory factory) {
             super(raw);
-            this.extendsBound = wrap(raw.getExtendsBound());
-            this.superBound = wrap(raw.getSuperBound());
+            this.extendsBound = factory.wrap(raw.getExtendsBound());
+            this.superBound = factory.wrap(raw.getSuperBound());
         }
 
         @Override @SuppressWarnings("unchecked")
@@ -467,12 +461,12 @@ public abstract class WrappedAnnotatedTypeMirror implements ExtendedTypeMirror {
         }
 
         @Override
-        public ExtendedTypeMirror getExtendsBound() {
+        public WrappedAnnotatedTypeMirror getExtendsBound() {
             return extendsBound;
         }
 
         @Override
-        public ExtendedTypeMirror getSuperBound() {
+        public WrappedAnnotatedTypeMirror getSuperBound() {
             return superBound;
         }
 

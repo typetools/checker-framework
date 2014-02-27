@@ -22,6 +22,9 @@ interface QualifiedTypeFactory<Q> {
     QualifiedTypeMirror<Q> getQualifiedType(Tree tree);
     QualifiedTypeMirror<Q> getQualifiedTypeFromTypeTree(Tree typeTree);
 
+    // Get the qualified bounds of a type parameter, identified by its Element.
+    QualifiedTypeParameterBounds<Q> getQualifiedTypeParameterBounds(Element element);
+
     // Get the hierarchies for this type system.
     QualifierHierarchy<Q> getQualifierHierarchy();
     TypeHierarchy<Q> getTypeHierarchy();

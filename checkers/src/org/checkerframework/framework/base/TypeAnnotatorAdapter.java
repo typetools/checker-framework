@@ -37,10 +37,13 @@ public class TypeAnnotatorAdapter<Q> extends checkers.types.TypeAnnotator {
     protected Void scan(AnnotatedTypeMirror atm, Element elt) {
         // Produce a qualified version of the ATM.
         WrappedAnnotatedTypeMirror watm = WrappedAnnotatedTypeMirror.wrap(atm);
+        //System.err.printf("SCANNING\n  input: %s\n", atm);
         QualifiedTypeMirror<Q> qtm = underlying.visit(watm, elt);
+        //System.err.printf("  qualified: %s\n", qtm);
 
         // Update the input ATM with the new qualifiers.
         converter.applyQualifiers(qtm, atm);
+        //System.err.printf("  result: %s\n", atm);
 
         return null;
     }

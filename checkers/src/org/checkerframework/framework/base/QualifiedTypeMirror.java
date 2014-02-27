@@ -3,6 +3,9 @@ package org.checkerframework.framework.base;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
@@ -544,21 +547,13 @@ public abstract class QualifiedTypeMirror<Q> {
     // ExtendedDeclaredType, ExtendedNullType, ExtendedTypeVariable).
 
     public static final class QualifiedTypeVariable<Q> extends QualifiedTypeMirror<Q> {
-        private final QualifiedTypeMirror<Q> upperBound;
-        private final QualifiedTypeMirror<Q> lowerBound;
-
-        public QualifiedTypeVariable(ExtendedTypeMirror underlying, Q qualifier,
-                QualifiedTypeMirror<Q> upperBound,
-                QualifiedTypeMirror<Q> lowerBound) {
+        public QualifiedTypeVariable(ExtendedTypeMirror underlying, Q qualifier) {
             super(underlying, qualifier);
             checkUnderlyingKind(underlying, TypeKind.TYPEVAR);
-            checkTypeMirrorsMatch("upper bound",
-                    upperBound, getUnderlyingType().getUpperBound());
-            checkTypeMirrorsMatch("lower bound",
-                    lowerBound, getUnderlyingType().getLowerBound());
-
-            this.upperBound = upperBound;
-            this.lowerBound = lowerBound;
+            if (getUnderlyingType().asElement().getKind() != ElementKind.TYPE_PARAMETER) {
+                throw new IllegalArgumentException(
+                        "underlying type's asElement() must have kind TYPE_PARAMETER");
+            }
         }
 
         @Override
@@ -570,41 +565,19 @@ public abstract class QualifiedTypeMirror<Q> {
             return (ExtendedTypeVariable)super.getUnderlyingType();
         }
 
-        public QualifiedTypeMirror<Q> getUpperBound() {
-            return upperBound;
-        }
-
-        public QualifiedTypeMirror<Q> getLowerBound() {
-            return lowerBound;
+        public TypeParameterElement asElement() {
+            return (TypeParameterElement)getUnderlyingType().asElement();
         }
 
         @Override
         public String toString() {
             StringBuilder sb = new StringBuilder();
             sb.append(getQualifier()).append(" ")
-                    .append(getUnderlyingType().asElement().getSimpleName())
-                    .append(" extends ").append(upperBound)
-                    .append(" super ").append(lowerBound);
+                    .append(getUnderlyingType().asElement().getSimpleName());
             return sb.toString();
         }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (!super.equals(obj))
-                return false;
-            // super.equals ensures that 'obj.getClass() == this.getClass()'.
-            @SuppressWarnings("unchecked")
-            QualifiedTypeVariable<Q> other = (QualifiedTypeVariable<Q>)obj;
-            return this.upperBound.equals(other.upperBound)
-                && this.lowerBound.equals(other.lowerBound);
-        }
-
-        @Override
-        public int hashCode() {
-            return super.hashCode()
-                + upperBound.hashCode() * 43
-                + lowerBound.hashCode() * 67;
-        }
+        
+        // Use superclass 'equals' and 'hashCode'
     }
 
     public static final class QualifiedUnionType<Q> extends QualifiedTypeMirror<Q> {
