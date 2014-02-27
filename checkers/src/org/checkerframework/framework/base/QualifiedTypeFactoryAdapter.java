@@ -23,6 +23,10 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
         this.postInit();
     }
 
+    QualifiedTypeFactory<Q> getUnderlying() {
+        return underlying;
+    }
+
     @SuppressWarnings("unchecked")
     private CheckerAdapter<Q> getCheckerAdapter() {
         return (CheckerAdapter<Q>)checker;

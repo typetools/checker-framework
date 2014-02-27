@@ -172,9 +172,7 @@ public class TypeAnnotator<Q> implements ExtendedTypeVisitor<QualifiedTypeMirror
     public QualifiedTypeMirror<Q> visitTypeVariable(ExtendedTypeVariable type, Element elt) {
         return new QualifiedTypeVariable<Q>(
                 type,
-                getQualifier(type, elt),
-                this.visit(type.getUpperBound(), elt),
-                this.visit(type.getLowerBound(), elt));
+                getQualifier(type, elt));
     }
 
     @Override

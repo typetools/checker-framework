@@ -1,9 +1,12 @@
 package org.checkerframework.framework.base;
 
+import java.util.HashMap;
 import java.util.List;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
 
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -11,12 +14,18 @@ import com.sun.source.tree.Tree;
 
 import javacutils.Pair;
 
+import checkers.types.AnnotatedTypeMirror;
+import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
+
 import org.checkerframework.framework.base.QualifiedTypeMirror;
 import org.checkerframework.framework.base.QualifiedTypeMirror.QualifiedDeclaredType;
 import org.checkerframework.framework.base.QualifiedTypeMirror.QualifiedExecutableType;
 import org.checkerframework.framework.base.QualifiedTypeMirror.QualifiedTypeVariable;
+import org.checkerframework.framework.util.WrappedAnnotatedTypeMirror;
 
 public abstract class DefaultQualifiedTypeFactory<Q> implements QualifiedTypeFactory<Q> {
+    private HashMap<TypeParameterElement, QualifiedTypeParameterBounds<Q>> paramBoundsMap =
+        new HashMap<>();
 
     private QualifierHierarchy<Q> qualifierHierarchy;
     private TypeHierarchy<Q> typeHierarchy;
@@ -45,6 +54,36 @@ public abstract class DefaultQualifiedTypeFactory<Q> implements QualifiedTypeFac
     @Override
     public final QualifiedTypeMirror<Q> getQualifiedTypeFromTypeTree(Tree typeTree) {
         return adapter.superGetAnnotatedTypeFromTypeTree(typeTree);
+    }
+
+
+    @Override
+    public final QualifiedTypeParameterBounds<Q> getQualifiedTypeParameterBounds(Element elt) {
+        if (elt.getKind() != ElementKind.TYPE_PARAMETER) {
+            throw new IllegalArgumentException("expected a TYPE_PARAMETER, not " + elt.getKind());
+        }
+        TypeParameterElement paramElt = (TypeParameterElement)elt;
+        if (!paramBoundsMap.containsKey(paramElt)) {
+            QualifiedTypeParameterBounds<Q> bounds = computeQualifiedTypeParameterBounds(paramElt);
+            paramBoundsMap.put(paramElt, bounds);
+        }
+        return paramBoundsMap.get(paramElt);
+    }
+
+    protected QualifiedTypeParameterBounds<Q> computeQualifiedTypeParameterBounds(
+            TypeParameterElement paramElt) {
+        AnnotatedTypeVariable atm = (AnnotatedTypeVariable)adapter.fromElement(paramElt);
+        TypeAnnotator<Q> annotator = getTypeAnnotator();
+
+        WrappedAnnotatedTypeMirror wrappedUpper =
+            WrappedAnnotatedTypeMirror.wrap(atm.getUpperBound());
+        QualifiedTypeMirror<Q> upper = annotator.visit(wrappedUpper, paramElt);
+
+        WrappedAnnotatedTypeMirror wrappedLower =
+            WrappedAnnotatedTypeMirror.wrap(atm.getLowerBound());
+        QualifiedTypeMirror<Q> lower = annotator.visit(wrappedLower, paramElt);
+
+        return new QualifiedTypeParameterBounds<Q>(upper, lower);
     }
 
 
