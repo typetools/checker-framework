@@ -1,0 +1,46 @@
+While people get seated, have a slide up to encourage
+people to get online and start downloading the CF and demos.
+
+Intro and overview of JSR 308 and the Checker Framework
+  Why we want pluggable type checkers
+  JSR 308: will be in Java 8, built on OpenJDK, very stable
+  CF: basic ideas
+  Mike: 10 mins
+
+ICSE case study as further motivation
+  Werner: 15 mins
+
+Checker Framework setup and usage
+  Show the URL and get everyone moving
+  Werner: 1 min
+
+Interactive:
+  Eclipse and command line installation
+    hopefully less than 10 mins
+
+  Personal blog demo:
+    We provide the annotated source code and
+    together walk through the problem and the solutions
+    David: 10 mins
+
+Writing a declarative checker: Signature Checker
+  David: 5 mins
+
+Brain-storming type systems with the participants:
+  David continues and gives
+  1st slide: List of distributed checkers.
+  2nd slide: What are type system properties.
+  All three of us will stand on stage and try to answer suggestions
+  People suggest run-time errors that should be avoided and
+  we try to find type qualifiers and a hierarchy that could be used.
+  10 mins
+
+Interactive:
+  Either work on the newly developed type system (with their own code), or
+  with an existing type checker on their own code with, or
+  on the IRC demo.
+  40 mins
+
+Highlight advanced features and future
+Wrap-up
+  Mike: 5 mins
