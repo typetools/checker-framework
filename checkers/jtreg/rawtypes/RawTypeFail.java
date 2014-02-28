@@ -12,4 +12,5 @@ import java.util.HashMap;
 class RawTypeFail {
     Map mr = new HashMap();
     Map<String, Object> mc = mr;
+    Map<String, Object> mc2 = new HashMap();
 }
