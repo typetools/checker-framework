@@ -76,11 +76,10 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>,
      */
     protected final SourceChecker checker;
 
-    // TODO: document.
+    /**
+     * Initial abstract types for fields.
+     */
     protected final List<Pair<VariableElement, V>> fieldValues;
-
-    // TODO: document.
-    protected final int expectedNumberOfAnnotations;
 
     public CFAbstractAnalysis(BaseTypeChecker checker,
             GenericAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory,
@@ -92,7 +91,6 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>,
         this.atypeFactory = factory;
         this.checker = checker;
         transferFunction = createTransferFunction();
-        expectedNumberOfAnnotations = qualifierHierarchy.getWidth();
         this.fieldValues = fieldValues;
     }
 
