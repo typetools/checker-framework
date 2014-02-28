@@ -166,22 +166,27 @@ public class ControlFlowGraph {
      *         ordering, which is the reverse of depth-first postorder sequence.
      */
     public List<Block> getDepthFirstOrderedBlocks() {
-        Deque<Block> dfsPostorder = new LinkedList<>();
-        addDFSPostorder(entryBlock, new HashSet<Block>(), dfsPostorder);
-        
-        List<Block> depthFirstOrder = new LinkedList<>();
-        for (Iterator<Block> iter = dfsPostorder.descendingIterator(); iter.hasNext(); ) {
-            depthFirstOrder.add(iter.next());
+        Set<Block> visited = new HashSet<Block>();
+        List<Block> dfsOrder = new LinkedList<>();
+        Deque<Block> worklist = new LinkedList<>();
+
+        worklist.add(entryBlock);
+
+        while (!worklist.isEmpty()) {
+            Block next = worklist.removeFirst();
+            addDFSPostorder(next, visited, worklist);
+            dfsOrder.add(next);
         }
-        return depthFirstOrder;
+
+        return dfsOrder;
     }
 
     private void addDFSPostorder(Block cur, Set<Block> visited,
-            Deque<Block> ordered) {
+            Deque<Block> worklist) {
         if (!visited.contains(cur)) {
             visited.add(cur);
 
-            Queue<Block> succs = new LinkedList<>();
+            Deque<Block> succs = new LinkedList<>();
             if (cur.getType() == BlockType.CONDITIONAL_BLOCK) {
                 ConditionalBlock ccur = ((ConditionalBlock) cur);
                 succs.add(ccur.getThenSuccessor());
@@ -201,11 +206,10 @@ public class ControlFlowGraph {
                 }
             }
 
-            for (Block b : succs) {
-                addDFSPostorder(b, visited, ordered);
+            // I want a "addAllFirst" here, write it myself:
+            for (Iterator<Block> iter = succs.descendingIterator(); iter.hasNext(); ) {
+                worklist.addFirst(iter.next());
             }
-
-            ordered.add(cur);
         }
     }
 
