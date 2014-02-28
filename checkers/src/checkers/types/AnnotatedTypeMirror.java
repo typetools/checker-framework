@@ -873,8 +873,12 @@ public abstract class AnnotatedTypeMirror {
          * typeArgs will contain inferred type arguments, which
          * might be too conservative at the moment.
          * TODO: improve inference.
+         *
+         * Ideally, the field would be final. However, when
+         * we determine the supertype of a raw type, we need
+         * to set wasRaw for the supertype.
          */
-        protected final boolean wasRaw;
+        private boolean wasRaw;
 
         /** The enclosing Type **/
         protected AnnotatedDeclaredType enclosingType;
@@ -974,6 +978,15 @@ public abstract class AnnotatedTypeMirror {
          */
         public boolean wasRaw() {
             return wasRaw;
+        }
+
+        /**
+         * Set the wasRaw flag to true.
+         * This should only be necessary when determining
+         * the supertypes of a raw type.
+         */
+        private void setWasRaw() {
+            this.wasRaw = true;
         }
 
         @Override
@@ -2636,6 +2649,11 @@ public abstract class AnnotatedTypeMirror {
             }
             TypeFromElement.annotateSupers(supertypes, typeElement);
 
+            if (type.wasRaw()) {
+                for (AnnotatedDeclaredType adt : supertypes) {
+                    adt.setWasRaw();
+                }
+            }
             return supertypes;
         }
 
@@ -2670,6 +2688,11 @@ public abstract class AnnotatedTypeMirror {
                 }
                 adt.setTypeArguments(newtas);
                 supertypes.add(adt);
+            }
+            if (type.wasRaw()) {
+                for (AnnotatedDeclaredType adt : supertypes) {
+                    adt.setWasRaw();
+                }
             }
             return supertypes;
         }
