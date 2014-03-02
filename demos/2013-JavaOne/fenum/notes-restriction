@@ -14,7 +14,7 @@ introduces 4 constants for "type of restriction".
 
 - Neither setType() nor getType() specifies the valid range for the parameter/return or what happens when the value is invalid.
 
-Show file RestrictionEntry or the following network URLs:
+Show file RestrictionEntry.java or the following network URLs:
 http://developer.android.com/reference/android/content/RestrictionEntry.html#getType%28%29
 http://developer.android.com/reference/android/content/RestrictionEntry.html#setType%28int%29
 
