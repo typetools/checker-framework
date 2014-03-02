@@ -1028,12 +1028,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         checkArguments(params, passedArguments);
 
-        // Get the constructor type.
-        // TODO: What is the difference between "type" and "constructor"?
-        // Using "constructor" seems to work equally well...
-        // AnnotatedExecutableType type =
-        //   atypeFactory.getAnnotatedType(InternalUtils.constructor(node));
-
         checkTypeArguments(node, constructor.getTypeVariables(),
                 typeargs, node.getTypeArguments());
 
