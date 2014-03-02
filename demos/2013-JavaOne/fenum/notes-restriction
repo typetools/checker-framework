@@ -28,7 +28,7 @@ source code we will surely learn that, right?
 setType/getType perform no data validation at all - they simply store
 the info in a field and return it.
 
-- The Restriction.java file compiles without any warning:
+- The RestrictionTest.java file compiles without any warning:
 
 javac -cp android.jar:. RestrictionTest.java
 
