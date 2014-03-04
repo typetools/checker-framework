@@ -415,7 +415,7 @@ execution of the method.
         \item \textbf{Conditional basic block.} A \emph{conditional basic block}
         does not contain any nodes and is used as a \emph{split point} after the execution
         of a node of boolean type. It has exactly two successors (both non-exceptional): a then
-        successor that is reached when the previous node evaluates to tee and the else successor
+        successor that is reached when the previous node evaluates to true and the else successor
         that is reached when the previous node evaluates to false.
         There is always exactly a single predecessor block for every conditional basic block, which
         is either a regular basic block or an exception basic block. In both cases, the last node
@@ -484,7 +484,7 @@ never be executed at run time?
 In the visualization, a string representation of the node is used, followed by
 the node type in square brackets. Note that the string representation often also includes
 more than just the ``top-level'' node. For instance, the addition expression \code{a + b[0];}
-will generate appear as ``a + b[0] [ NumericalAddition]'' rather than ``a'' plus some temporary.
+will appear as ``a + b[0] [ NumericalAddition ]'' rather than ``a'' plus some temporary variable.
 This is done for clarity, so that it is easy to see what expressions are summed up and because
 we don't create internal names for expression results.
 
@@ -717,7 +717,7 @@ Note that the CFG correctly represents short-circuiting.  The expression \code{b
 only executed if \code{b1} is false and \code{b3} is only evaluated if \code{b1} and \code{b2}
 are false.
 
-Observe in \autoref{fig:CFGConditionalOr} that the flow rule between the first conditional block and its then successor is \code{THEN_TO_THEN}, rather than the default flow rule for such edges \code{THEN_TO_BOTH}, which is present on the edge from the last conditional block to its then successor.  \code{THEN_TO_THEN} is a more precise rule which propagates the then store from the predecessor of the conditional block to the then store of the then successor and leaves the else store of the successor untouched.  This is a valid rule for propagating information along the short-circuit edge of a conditional or expression because \code{b1 || (b2 || b3)} being false implies that \code{b1} is false, so dataflow information that obtains when \code{b1} is true has no effect on the dataflow information obtains when \code{b1 || (b2 || b3)} is false.  To put it another way, if control reaches the block containing \code{b1 || (b2 || b3)} and that expression is false, then control must have flowed along along the else branches of both conditional blocks and only the facts that obtain along those edges need to be kept in the else store of the block containing \code{b1 || (b2 || b3)}.
+Observe in \autoref{fig:CFGConditionalOr} that the flow rule between the first conditional block and its then successor is \code{THEN_TO_THEN}, rather than the default flow rule for such edges \code{THEN_TO_BOTH}, which is present on the edge from the last conditional block to its then successor.  \code{THEN_TO_THEN} is a more precise rule which propagates the then store from the predecessor of the conditional block to the then store of the then successor and leaves the else store of the successor untouched.  This is a valid rule for propagating information along the short-circuit edge of a conditional or expression because \code{b1 || (b2 || b3)} being false implies that \code{b1} is false, so dataflow information that obtains when \code{b1} is true has no effect on the dataflow information obtains when \code{b1 || (b2 || b3)} is false.  To put it another way, if control reaches the block containing \code{b1 || (b2 || b3)} and that expression is false, then control must have flowed along the else branches of both conditional blocks and only the facts that obtain along those edges need to be kept in the else store of the block containing \code{b1 || (b2 || b3)}.
 
 \flow{ConditionalOr}{Example of a conditional or expression (\code{||}) with short-circuiting and
 more precise flow rules.}
@@ -731,6 +731,10 @@ To relieve the user of our dataflow framework from manually determining
 the two cases, we consistently use \code{FieldAccessNode} for field accesses,
 where the receiver might be an \code{ImplicitThisNode}.
 For instance, this is shown in the earlier example \autoref{lst:CFGFieldAssignment}.
+
+\begin{workinprogress}
+I don't see a \code{implicitThisNode} in \autoref{lst:CFGFieldAssignment}.
+\end{workinprogress}
 
 
 \subsubsection{Assert statements}
