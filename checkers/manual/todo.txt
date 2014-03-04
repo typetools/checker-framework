@@ -1,0 +1,56 @@
+Necessary changes to the manual.
+
+------------------------------------------------------
+The warning output now contains the most specific error key that
+can be used to suppress that warning.
+Update all example output in the manual to account for this.
+------------------------------------------------------
+
+New section on concepts and annotations that apply to all type-systems and checkers
+
+Where would a good place be for this?  At the beginning/end?  Split into multiple sections?
+
+- Pre-/postconditions from a user perspective:
+  - Explain the generic pre- and postcondition annotations: @EnsuresAnnotation/@EnsuresAnnotations, @EnsuresAnnotationIf/@EnsuresAnnotationsIf and @RequiresAnnotation/@RequiresAnnotations.
+  - Explain what kind of strings are supported (see text near the end of this documentat; use that to augment the existing Checker Framework documentation).
+
+- Pre-/postconditions from a developer perspective:
+  - Explain the meta-annotations @PreconditionAnnotation, @ConditionalPostconditionAnnotation and @PostconditionAnnotation.
+
+- Document -ANullnessChecker_option=value mechanism
+
+------------------------------------------------------
+
+The Javadoc for DefaultQualifieers uses ALL_EXCEPT_LOCALS in an example.
+Replace it and document how to achieve CLIMB-to-top instead.
+
+------------------------------------------------------
+
+Explain relationship between XXXChecker and XXXAnnotatedTypeFactory:  if
+the Checker is a subtype of BaseTypeChecker, the AnnotatedTypeFactory has
+to be a subtype of AbstractBasicAnnotatedTypeFactory, because
+BaseTypeVisitor assumes that.
+[Defer this because it is being rewritten.]
+
+Basic* is gone.
+Base* (in checker-framework/checkers/src/checkers/basetype) does:
+ * subtype tests
+ * type validation
+ * default annotations
+ * visitor
+ * etc.
+
+------------------------------------------------------
+
+Eclipse setup
+-------------
+Describe checker-framework.importorder and formatter.
+Should these developer-focused configs be moved somewhere else?
+
+------------------------------------------------------
+
+Changelog
+
+Don't forget to update the changelog if you make changes.
+
+------------------------------------------------------

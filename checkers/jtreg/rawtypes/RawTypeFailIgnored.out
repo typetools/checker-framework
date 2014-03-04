@@ -1,0 +1,2 @@
+RawTypeFail.java:14:30: compiler.warn.prob.found.req: (compiler.misc.unchecked.assign), java.util.Map, java.util.Map<java.lang.String,java.lang.Object>
+1 warning
