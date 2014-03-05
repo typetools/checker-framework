@@ -1,3 +1,10 @@
+Version 1.7.5, 5 March 2014
+
+Minor improvements to documentation and demos.
+Support a few new units in the UnitsChecker.
+
+----------------------------------------------------------------------
+
 Version 1.7.4, 19 February 2014
 
 Error messages now display the error key that can be used in
