@@ -299,10 +299,10 @@ writes a type such as \<Date>, the Nullness Checker interprets it as
 We recommend that the type system apply that default qualifier to most but
 not all types.  In particular, we recommend the CLIMB-to-top rule.  This
 rule states that the \emph{top} qualifier in the hierarchy is applied to
-the CLIMB locations:  Casts, Locals, Instanceof, and iMplicit Bounds.
+the CLIMB locations:  \textbf{C}asts, \textbf{L}ocals, \textbf{I}nstanceof, and i\textbf{M}plicit \textbf{B}ounds.
 For example, when the user writes a type such as \<Date> in such a
 location, the Nullness Checker interprets it as \<@Nullable Date> (because
-\<@\code{@\refclass{checkers/nullness/quals}{Nullable}}> is the top qualifier in the
+\<\code{@\refclass{checkers/nullness/quals}{Nullable}}> is the top qualifier in the
 hierarchy, see Figure~\ref{fig-nullness-hierarchy}).
 
 %% Users don't care about this detail.
