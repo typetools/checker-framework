@@ -1307,36 +1307,35 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     type.replaceAnnotation(handleArrayLength(receiverType));
                 }
             } 
+            
+            if (isClassCovered(elem.asType())){
+                if (ElementUtils.isCompileTimeConstant(elem)) {
 
-            if (ElementUtils.isCompileTimeConstant(elem)) {
+                    ArrayList<Object> value = new ArrayList<Object>(1);
+                    value.add(((VariableElement) elem).getConstantValue());
 
-                ArrayList<Object> value = new ArrayList<Object>(1);
-                value.add(((VariableElement) elem).getConstantValue());
-                
-                AnnotationMirror newAnno = resultAnnotationHandler(elem.asType(), value, tree);
+                    AnnotationMirror newAnno = resultAnnotationHandler(elem.asType(), value, tree);
 
-                if (newAnno != null) {
-                    type.replaceAnnotation(newAnno);
-                } else {
-                    type.replaceAnnotation(UNKNOWNVAL);
+                    if (newAnno != null) {
+                        type.replaceAnnotation(newAnno);
+                    } else {
+                        type.replaceAnnotation(UNKNOWNVAL);
+                    }
+
                 }
-
-            }
-            // Check that:
-            // A) the element is a field 
-            // B) the field is static final
-            // C) the field is not "class"
-            else if (elem.getKind() == javax.lang.model.element.ElementKind.FIELD && ElementUtils.isStatic(elem) && ElementUtils.isFinal(elem) && !tree.getIdentifier().toString().equals("class")) {
-                TypeMirror retType = elem.asType();
-                AnnotationMirror newAnno = evaluateStaticFieldAccess(tree.getIdentifier(), getAnnotatedType(tree.getExpression()), retType, tree);
-
-                if (newAnno != null) {
-                    type.replaceAnnotation(newAnno);
-                } else {
-                    type.replaceAnnotation(UNKNOWNVAL);
+                // Check that:
+                // A) the element is a field 
+                // B) the field is static final
+                // C) the field is not "class"
+                else if (elem.getKind() == javax.lang.model.element.ElementKind.FIELD && ElementUtils.isStatic(elem) && ElementUtils.isFinal(elem) && !tree.getIdentifier().toString().equals("class")) {
+                    TypeMirror retType = elem.asType();
+                    AnnotationMirror newAnno = evaluateStaticFieldAccess(tree.getIdentifier(), getAnnotatedType(tree.getExpression()), retType, tree);
+                    if (newAnno != null) {
+                        type.replaceAnnotation(newAnno);
+                    } else {
+                        type.replaceAnnotation(UNKNOWNVAL);
+                    }
                 }
-
-                
             }
             return null;
         }
@@ -1402,8 +1401,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         private boolean isClassCovered(AnnotatedTypeMirror type) {
-            return coveredClassStrings.contains(type.getUnderlyingType()
-                    .toString());
+            return isClassCovered(type.getUnderlyingType());
+        }
+
+        private boolean isClassCovered(TypeMirror type) {
+            return coveredClassStrings.contains(type.toString());
         }
 
         /**
