@@ -27,10 +27,6 @@ class Fields {
         @IntVal({1024}) int d = java.awt.GridBagConstraints.ABOVE_BASELINE;
         //:: error: (assignment.type.incompatible)
         d = java.awt.GridBagConstraints.LAST_LINE_END;
-
-        @IntVal({2}) int e = android.bluetooth.BluetoothProfile.STATE_CONNECTED;
-        //:: error: (assignment.type.incompatible)
-        e = android.bluetooth.BluetoothProfile.STATE_DISCONNECTED;
     }
 
 }
