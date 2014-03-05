@@ -281,7 +281,7 @@ Javadoc for \refclass{checkers/nullness}{NullnessAnnotatedTypeFactory}.
 
 Unannotated references are treated as if they had a default annotation.
 The standard defaulting rule is  ``CLIMB to top'',  described in
-Section~\ref{defaults}.  Its effect is to default all types to
+Section~\ref{climb-to-top}.  Its effect is to default all types to
 \<@NonNull>, except that \<@Nullable> is used for casts, locals,
 instanceof, and implicit bounds.  A user can choose a different defaulting
 rule.
@@ -464,7 +464,7 @@ Section~\ref{null-defaults}) your code uses.  You only need one of these tools.
 \item
   Inference of \code{@\refclass{checkers/nullness/quals}{Nullable}}:
   %
-  If your code uses the standard CLIMB-to-top (non-null-except-locals) default or
+  If your code uses the standard CLIMB-to-top default (Section~\ref{climb-to-top}) or
   the \refclass{checkers/nullness/quals}{NonNull} default, then use the
   \ahref{\url{http://plse.cs.washington.edu/daikon/download/doc/daikon.html#AnnotateNullable}}{AnnotateNullable}
   tool of the \ahref{\url{http://plse.cs.washington.edu/daikon/}}{Daikon invariant

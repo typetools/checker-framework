@@ -1,6 +1,7 @@
 Preparation:
-  mv -f RestrictionTest.java-orig Restriction.java
+  \cp -f RestrictionTest.java-orig RestrictionTest.java
   javac RestrictionType.java
+and copy android.jar from the Android "ADT bundle" to this directory
 
 Android uses int constants instead of Java enums.
 This has two problems:
@@ -13,7 +14,7 @@ introduces 4 constants for "type of restriction".
 
 - Neither setType() nor getType() specifies the valid range for the parameter/return or what happens when the value is invalid.
 
-Show file RestrictionEntry or the following network URLs:
+Browse to file RestrictionEntry.html or the following network URLs:
 http://developer.android.com/reference/android/content/RestrictionEntry.html#getType%28%29
 http://developer.android.com/reference/android/content/RestrictionEntry.html#setType%28int%29
 
@@ -27,9 +28,9 @@ source code we will surely learn that, right?
 setType/getType perform no data validation at all - they simply store
 the info in a field and return it.
 
-- The Restriction.java file compiles without any warning:
+- The RestrictionTest.java file compiles without any warning:
 
-javac -cp android.jar:. Restriction.java
+javac -cp android.jar:. RestrictionTest.java
 
 But it's incorrect.  This is hard to notice because 5 is between two legal
 values of the argument.
