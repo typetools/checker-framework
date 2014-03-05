@@ -1304,8 +1304,12 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 if (tree.getIdentifier().contentEquals("length")) {
                     type.replaceAnnotation(handleArrayLength(receiverType));
                 }
-            } else if (elem.getKind() == javax.lang.model.element.ElementKind.FIELD && elem.getModifiers().containsAll(PUBLIC_STATIC_FINAL_SET)) {
-
+            } 
+            // Check that:
+            // A) the element is a field 
+            // B) the field is public static final
+            // C) the field is not "class"
+            else if (elem.getKind() == javax.lang.model.element.ElementKind.FIELD && elem.getModifiers().containsAll(PUBLIC_STATIC_FINAL_SET) && !tree.getIdentifier().toString().equals("class")) {
                 TypeMirror retType = elem.asType();
                 AnnotationMirror newAnno = evaluateStaticFieldAccess(
                         tree.getIdentifier(),
@@ -1366,7 +1370,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 Class<?> recClass = Class.forName(recType.getUnderlyingType()
                         .toString());
                 Field field = recClass.getField(fieldName.toString());
-
                 ArrayList<Object> result = new ArrayList<Object>(1);
                 result.add(field.get(recClass));
 
