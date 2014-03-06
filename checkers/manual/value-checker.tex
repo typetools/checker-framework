@@ -1,22 +1,19 @@
 \htmlhr
-\chapter{Value Checker\label{value-checker}}
+\chapter{Constant Value Checker\label{value-checker}}
 
-The Value Checker attempts to track the values of variables in a
-program at any given point in the execution. This checker is intended
-primarily as a tool for other checkers to use; the Reflection Checker,
-for example, makes use of the Value Checker extensively for attempting
-to determine the target of reflective calls, see
-Section~\ref{reflection-checker}.
+The Constant Value Checker is a constant propagation analysis: for
+each variable, it determines whether that variable's value can be
+known at compile time.
 
-By itself, the Value Checker does not provide much useful
-functionality unless a programmer wants to attempt to enforce specific
-constraints on the values of a variable, such as indicating a certain
-int should always be either 0 or 1.
 
-To run the Value Checker, supply the -processor
+The Constant Vlaue Checker is automatically run by every other type
+checker, but it is rarely used directly by programmers.
+
+To run just the Value Checker, supply the -processor
 checkers.value.ValueChecker command-line option to javac.
 
-\section{Value Annotations}
+\section{Annotations}
+\subsection{Value Annotations}
 
 The Value Checker uses annotations to track values for all Java
 primitives, their wrappers (e.g. int, and Integer), Strings, and the
@@ -24,11 +21,9 @@ length field of arrays. The types covered correspond to the names of
 the annotations as shown in Figure~\ref{fig-value-hierarchy}
 
 \begin{figure}
-\includeimage{value-hierarchy}{9cm}
+\includeimage{value-hierarchy3}{9cm}
 \caption{The overall annotation hierarchy of the Value
-annotations. Dashed lines indicate partial subtyping relationships
-based on the contents of the value arrays (explained further in
-Figure~\ref{fig-value-subtyping}. Qualifiers in gray are used
+annotations. Qualifiers in gray are used
 internally by the type system but should never be written by a
 programmer.}
 \label{fig-value-hierarchy}
@@ -75,7 +70,7 @@ hierarchy of numeric value types. If two annotations satisfy the
 subset relationship described above and one of them is numerically a
 less precise type than the other it will be automatically ``casted''
 up to the type of the other. The full extent of this subtyping is
-shown in Figure~\ref{fig-value-subtyping}
+shown in Figure~\ref{fig-value-subtyping}.
 
 \begin{figure}
 \includeimage{value-subtyping}{9cm}
@@ -84,39 +79,25 @@ shown in Figure~\ref{fig-value-subtyping}
 \end{figure}
 
 \subsection{@Analyzable}
-In addition to the value annotations on variables discussed above,
-the Value Checker also uses a method annotation,
-@Analyzable. As part of the Value Checker operation the checker
-attempts to resolve operators (e.g. !, +, ==) and method calls to
-track the values returned. By default only the methods used by String
-and the wrapper classes are annotated with @Analyzable. However, a
-programmer can additionally annotate their own methods with
-@Analyzable if appropriate.
+In addition to the value annotations on variables discussed above, the
+Value Checker also uses a method annotation, @Analyzable. The Constant
+Value Checker resolves operators (e.g. !, +, ==) and method calls when
+performed on expressions with constant value types to track the values
+returned. 
 
-Annotating a method with @Analyzable will allow the value of the
-return of that method to be tracked via the Value Checker, so long as
-all inputs to the function have known value annotations as well.
+Annotating a method with @Analyzable causes the Constant Value Checker
+to be able to track the return value of that method; if all arguments
+to a call of an @Analyzable method are constant-value types then the
+return value of that call is also assigned a constant-value type
+corresponding to execution of the call.
 
-Since an @Analyzable method is resolved by performing a reflective
-call at compile-time, it should only be added to a method (and only
-add useful functionality) if the method meets the following
-conditions:
+@Analyzable methods must
+be \code{@\refclass{dataflow/quals}{Pure}} (side-effect free and
+deterministic).
 
-\begin{enumerate}
-
-\item The method must be \code{@\refclass{dataflow/quals}{Pure}} (side-effect free and deterministic)
-
-\item The method must only call other \code{@Analyzable} methods
-
-\item The method must be available on the Classpath (since it will be reflectively called at compile-time)
-
-\item The method's parameters are only Strings and/or Java primitives
-(the types covered by the Value Checker)
-
-\item The method returns a String or Java primitive (the types covered
-by the Value Checker)
-
-\end{enumerate}
+Additionally, @Analyzable methods and any methods they call must be on
+the Classpath for the compiler because they are reflectively called at
+compile-time to perform the constant value analysis.
 
 \section{Warnings}
 The Value Checker may issue warnings, mostly based on failing to

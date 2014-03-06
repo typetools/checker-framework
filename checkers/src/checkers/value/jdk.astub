@@ -10,21 +10,12 @@ class Base64{
     @Analyzable static byte[] encode(byte[] input, int offset, int len, int flags);
     @Analyzable static String encodeToString(byte[] input, int offset, int len, int flags);
     @Analyzable static String encodeToString(byte[] input, int flags);
-    
-    // @Analyzable int CRLF;
-    @Analyzable int DEFAULT;
-    // @Analyzable int NO_CLOSE:
-    // @Analyzable int NO_PADDING;
-    // @Analyzable int NO_WRAP;
-    // @Analyzable int URL_SAFE;
 }
 
 
 package java.lang;
 
 class Boolean{
-    @Analyzable static Boolean FALSE;
-    @Analyzable static Boolean TRUE;
     @Analyzable boolean booleanValue();
     @Analyzable static boolean getBoolean(String name);
     @Analyzable static boolean parseBoolean(String s);
@@ -35,9 +26,6 @@ class Boolean{
 }
 
 class Byte{
-    @Analyzable static byte MAX_VALUE;
-    @Analyzable static byte MIN_VALUE;
-    @Analyzable static int SIZE;
     @Analyzable byte byteValue();
     @Analyzable static Byte decode(String nm);
     @Analyzable double doubleValue();
@@ -55,70 +43,6 @@ class Byte{
 }
 
 class Character{
-    @Analyzable static byte COMBINING_SPACING_MARK;
-    @Analyzable static byte CONNECTOR_PUNCTUATION;
-    @Analyzable static byte CONTROL;
-    @Analyzable static byte CURRENCY_SYMBOL;
-    @Analyzable static byte DASH_PUNCTUATION;
-    @Analyzable static byte DECIMAL_DIGIT_NUMBER;
-    @Analyzable static byte DIRECTIONALITY_ARABIC_NUMBER;
-    @Analyzable static byte DIRECTIONALITY_BOUNDARY_NEUTRAL;
-    @Analyzable static byte DIRECTIONALITY_COMMON_NUMBER_SEPARATOR;
-    @Analyzable static byte DIRECTIONALITY_EUROPEAN_NUMBER;
-    @Analyzable static byte DIRECTIONALITY_EUROPEAN_NUMBER_SEPARATOR;
-    @Analyzable static byte DIRECTIONALITY_EUROPEAN_NUMBER_TERMINATOR;
-    @Analyzable static byte DIRECTIONALITY_LEFT_TO_RIGHT;
-    @Analyzable static byte DIRECTIONALITY_LEFT_TO_RIGHT_EMBEDDING;
-    @Analyzable static byte DIRECTIONALITY_LEFT_TO_RIGHT_OVERRIDE;
-    @Analyzable static byte DIRECTIONALITY_NONSPACING_MARK;
-    @Analyzable static byte DIRECTIONALITY_OTHER_NEUTRALS;
-    @Analyzable static byte DIRECTIONALITY_PARAGRAPH_SEPARATOR;
-    @Analyzable static byte DIRECTIONALITY_POP_DIRECTIONAL_FORMAT;
-    @Analyzable static byte DIRECTIONALITY_RIGHT_TO_LEFT;
-    @Analyzable static byte DIRECTIONALITY_RIGHT_TO_LEFT_ARABIC;
-    @Analyzable static byte DIRECTIONALITY_RIGHT_TO_LEFT_EMBEDDING;
-    @Analyzable static byte DIRECTIONALITY_RIGHT_TO_LEFT_OVERRIDE;
-    @Analyzable static byte DIRECTIONALITY_SEGMENT_SEPARATOR;
-    @Analyzable static byte DIRECTIONALITY_UNDEFINED;
-    @Analyzable static byte DIRECTIONALITY_WHITESPACE;
-    @Analyzable static byte ENCLOSING_MARK;
-    @Analyzable static byte END_PUNCTUATION;
-    @Analyzable static byte FINAL_QUOTE_PUNCTUATION;
-    @Analyzable static byte FORMAT;
-    @Analyzable static byte INITIAL_QUOTE_PUNCTUATION;
-    @Analyzable static byte LETTER_NUMBER;
-    @Analyzable static byte LINE_SEPARATOR;
-    @Analyzable static byte LOWERCASE_LETTER;
-    @Analyzable static byte MATH_SYMBOL;
-    @Analyzable static int MAX_CODE_POINT;
-    @Analyzable static char MAX_HIGH_SURROGATE;
-    @Analyzable static char MAX_LOW_SURROGATE;
-    @Analyzable static int MAX_RADIX;
-    @Analyzable static char MAX_SURROGATE;
-    @Analyzable static char MAX_VALUE;
-    @Analyzable static int MIN_CODE_POINT;
-    @Analyzable static char MIN_HIGH_SURROGATE;
-    @Analyzable static char MIN_LOW_SURROGATE;
-    @Analyzable static int MIN_RADIX;
-    @Analyzable static int MIN_SUPPLEMENTARY_CODE_POINT;
-    @Analyzable static char MIN_SURROGATE;
-    @Analyzable static char MIN_VALUE;
-    @Analyzable static byte MODIFIER_LETTER;
-    @Analyzable static byte MODIFIER_SYMBOL;
-    @Analyzable static byte NON_SPACING_MARK;
-    @Analyzable static byte OTHER_LETTER;
-    @Analyzable static byte OTHER_NUMBER;
-    @Analyzable static byte OTHER_PUNCTUATION;
-    @Analyzable static byte OTHER_SYMBOL;
-    @Analyzable static byte PARAGRAPH_SEPARATOR;
-    @Analyzable static byte PRIVATE_USE;
-    @Analyzable static int SIZE;
-    @Analyzable static byte SPACE_SEPARATOR;
-    @Analyzable static byte START_PUNCTUATION;
-    @Analyzable static byte SURROGATE;
-    @Analyzable static byte TITLECASE_LETTER;
-    @Analyzable static byte UNASSIGNED;
-    @Analyzable static byte UPPERCASE_LETTER;
     @Analyzable static int charCount(int codePoint);
     @Analyzable char charValue();
     @Analyzable static int codePointAt(char[] a, int index);
@@ -196,15 +120,6 @@ class Character{
 }
 
 class Double{
-    @Analyzable static int MAX_VALUE;
-    @Analyzable static int MAX_EXPONENT;
-    @Analyzable static int MIN_EXPONENT;
-    @Analyzable static int MIN_NORMAL;
-    @Analyzable static int MIN_VALUE;
-    @Analyzable static int NaN;
-    @Analyzable static int NEGATIVE_INFINITY;
-    @Analyzable static int POSITIVE_INFINITY;
-    @Analyzable static int SIZE;
     @Analyzable byte byteValue();
     @Analyzable static int compare(double d1, double d2);
     @Analyzable static long doubleToLongBits(double value);
@@ -227,15 +142,6 @@ class Double{
     @Analyzable static Double valueOf(String s);
 }
 class Float{
-    @Analyzable static int MAX_EXPONENT;
-    @Analyzable static float MAX_VALUE;
-    @Analyzable static int MIN_EXPONENT;
-    @Analyzable static float MIN_NORMAL;
-    @Analyzable static float MIN_VALUE;
-    @Analyzable static float NaN;
-    @Analyzable static float NEGATIVE_INFINITY;
-    @Analyzable static float POSITIVE_INFINITY;
-    @Analyzable static int SIZE;
     @Analyzable byte byteValue();
     @Analyzable static int compare(float f1, float f2);
     @Analyzable double doubleValue();
@@ -259,9 +165,6 @@ class Float{
 }
 
 class Integer{
-    @Analyzable static int MAX_VALUE;
-    @Analyzable static int MIN_VALUE;
-    @Analyzable static int SIZE;
     @Analyzable static int bitCount(int i);
     @Analyzable byte byteValue();
     @Analyzable static Integer decode(String nm);
@@ -296,9 +199,6 @@ class Integer{
 }
 
 class Long{
-    @Analyzable static long MAX_VALUE;
-    @Analyzable static long MIN_VALUE;
-    @Analyzable static int SIZE;
     @Analyzable static int bitCount(long i);
     @Analyzable byte byteValue();
     @Analyzable static Long decode(String nm);
@@ -333,9 +233,6 @@ class Long{
 }
 
 class Short{
-    @Analyzable static short MAX_VALUE;
-    @Analyzable static short MIN_VALUE;
-    @Analyzable static int SIZE;
     @Analyzable byte byteValue();
     @Analyzable static Short decode(String nm);
     @Analyzable double doubleValue();
