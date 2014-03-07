@@ -7,13 +7,14 @@ import checkers.interning.quals.*;
 import checkers.basetype.BaseTypeChecker;
 import checkers.util.MultiGraphQualifierHierarchy;
 import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
-
 import javacutils.ErrorReporter;
 
 import java.util.Collection;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
+
+import com.sun.source.tree.ClassTree;
 
 /**
  * A "general" annotated type factory that supports qualifiers from any type hierarchy.
@@ -24,6 +25,16 @@ public class GeneralAnnotatedTypeFactory extends AnnotatedTypeFactory {
     public GeneralAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         postInit();
+    }
+
+    @Override
+    protected void postProcessClassTree(ClassTree tree) {
+        // Do not store the qualifiers determined by this factory.
+        // This factory adds declaration annotations as type annotations,
+        // because TypeFromElement needs to read declaration annotations
+        // and this factory blindly supports all annotations.
+        // When storing those annotation to bytecode, the compiler chokes.
+        // See testcase tests/nullness/GeneralATFStore.java
     }
 
     /** Return true to support any qualifier.
