@@ -14,7 +14,7 @@ import java.lang.annotation.*;
 
 class Fail {
   @FailAnno(value="Fail", flag=true)
-  String f;
+  String f = "fail";
 
   Object x = Fail.class;
 }
