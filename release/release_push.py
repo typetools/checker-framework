@@ -139,7 +139,7 @@ def main(argv):
 
     copy_releases_to_live_site( new_checker_version, new_afu_version )
     ensure_group_access_to_releases()
-    update_release_symlinks( new_checker_version, new_afu_version )
+    #update_release_symlinks( new_checker_version, new_afu_version )
 
     continue_script = prompt_w_suggestion("Push the release to Google code repositories?  This is irreversible.", "no", "^(Yes|yes|No|no)$")
     if continue_script == "yes" or continue_script == "Yes":
