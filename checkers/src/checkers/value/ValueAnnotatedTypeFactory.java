@@ -28,12 +28,12 @@ import checkers.value.quals.UnknownVal;
 
 import javacutils.AnnotationUtils;
 import javacutils.TreeUtils;
+import javacutils.ElementUtils;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -42,6 +42,8 @@ import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.lang.model.type.TypeMirror;
 
@@ -75,6 +77,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     protected final AnnotationMirror INTVAL, DOUBLEVAL, BOOLVAL, CHARVAL,
             ARRAYLEN, STRINGVAL, BOTTOMVAL, UNKNOWNVAL, ANALYZABLE, SHORTVAL,
             BYTEVAL, LONGVAL, FLOATVAL;
+    
+    protected static final Set<Modifier> PUBLIC_STATIC_FINAL_SET = new HashSet<Modifier>(3);
+        
 
     private long t = 0;
 
@@ -93,6 +98,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     public ValueAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
+        PUBLIC_STATIC_FINAL_SET.add(Modifier.PUBLIC);
+        PUBLIC_STATIC_FINAL_SET.add(Modifier.FINAL);
+        PUBLIC_STATIC_FINAL_SET.add(Modifier.STATIC);
         INTVAL = AnnotationUtils.fromClass(elements, IntVal.class);
         CHARVAL = AnnotationUtils.fromClass(elements, CharVal.class);
         BOOLVAL = AnnotationUtils.fromClass(elements, BoolVal.class);
@@ -924,7 +932,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                             } while (method == null && recType != null);
 
                             if (method != null) {
-                                isStatic = Modifier.isStatic(method
+                                isStatic = java.lang.reflect.Modifier.isStatic(method
                                         .getModifiers());
                             } else {
                                 type.replaceAnnotation(UNKNOWNVAL);
@@ -940,7 +948,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                                     ((MemberSelectTree) methodTree)
                                             .getIdentifier().toString(),
                                     argClasses);
-                            isStatic = Modifier.isStatic(method.getModifiers());
+                            isStatic = java.lang.reflect.Modifier.isStatic(method.getModifiers());
                         }
 
                         // Check if this is a method that can be evaluated
@@ -1007,7 +1015,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             List<Object> recValues = null;
             // If we are going to need the values of the receiver, get them.
             // Otherwise they can be null because the method is static
-            if (!Modifier.isStatic(method.getModifiers())) {
+            if (!java.lang.reflect.Modifier.isStatic(method.getModifiers())) {
                 recValues = getCastedValues(recType, tree);
             }
 
@@ -1298,21 +1306,37 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 if (tree.getIdentifier().contentEquals("length")) {
                     type.replaceAnnotation(handleArrayLength(receiverType));
                 }
-            } else if (methodIsAnalyzable(elem)
-                    && elem.getKind() == javax.lang.model.element.ElementKind.FIELD) {
-                TypeMirror retType = elem.asType();
-                AnnotationMirror newAnno = evaluateStaticFieldAccess(
-                        tree.getIdentifier(),
-                        getAnnotatedType(tree.getExpression()), retType, tree);
+            } 
+            
+            if (isClassCovered(elem.asType())){
+                if (ElementUtils.isCompileTimeConstant(elem)) {
 
-                if (newAnno != null) {
-                    type.replaceAnnotation(newAnno);
-                } else {
-                    type.replaceAnnotation(UNKNOWNVAL);
+                    ArrayList<Object> value = new ArrayList<Object>(1);
+                    value.add(((VariableElement) elem).getConstantValue());
+
+                    AnnotationMirror newAnno = resultAnnotationHandler(elem.asType(), value, tree);
+
+                    if (newAnno != null) {
+                        type.replaceAnnotation(newAnno);
+                    } else {
+                        type.replaceAnnotation(UNKNOWNVAL);
+                    }
+
                 }
-
+                // Check that:
+                // A) the element is a field 
+                // B) the field is static final
+                // C) the field is not "class"
+                else if (elem.getKind() == javax.lang.model.element.ElementKind.FIELD && ElementUtils.isStatic(elem) && ElementUtils.isFinal(elem) && !tree.getIdentifier().toString().equals("class")) {
+                    TypeMirror retType = elem.asType();
+                    AnnotationMirror newAnno = evaluateStaticFieldAccess(tree.getIdentifier(), getAnnotatedType(tree.getExpression()), retType, tree);
+                    if (newAnno != null) {
+                        type.replaceAnnotation(newAnno);
+                    } else {
+                        type.replaceAnnotation(UNKNOWNVAL);
+                    }
+                }
             }
-
             return null;
         }
 
@@ -1360,12 +1384,16 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 Class<?> recClass = Class.forName(recType.getUnderlyingType()
                         .toString());
                 Field field = recClass.getField(fieldName.toString());
-
                 ArrayList<Object> result = new ArrayList<Object>(1);
                 result.add(field.get(recClass));
 
                 return resultAnnotationHandler(retType, result, tree);
-            } catch (ReflectiveOperationException e) {
+            } 
+            catch (ClassNotFoundException e){
+                checker.report(Result.warning("class.not.found", recType.getUnderlyingType()), tree);
+                return null;
+            }
+            catch (ReflectiveOperationException e) {
                 checker.report(Result.warning("field.access.failed", fieldName,
                         recType.getUnderlyingType()), tree);
                 return null;
@@ -1373,8 +1401,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         private boolean isClassCovered(AnnotatedTypeMirror type) {
-            return coveredClassStrings.contains(type.getUnderlyingType()
-                    .toString());
+            return isClassCovered(type.getUnderlyingType());
+        }
+
+        private boolean isClassCovered(TypeMirror type) {
+            return coveredClassStrings.contains(type.toString());
         }
 
         /**
