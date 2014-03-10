@@ -625,10 +625,8 @@ If you supply the \code{-J-Djsr308\_imports} argument via an Ant buildfile,
 you do not need the extra quoting.
 
 \item
-If it is not possible to set the environment variable (for example, Maven
-bug \ahref{\url{http://jira.codehaus.org/browse/PLXCOMP-190}}{PLXCOMP-190}
-makes it impossible to use the \code{-J-Djsr308\_imports} command-line
-argument), you can instead use a different javac command-line argument:
+If it is not possible to set the environment variable,
+you can instead use a different javac command-line argument:
 \code{-jsr308\_imports ...} or \code{-Djsr308.imports=...} (they have the
 same effect).  The same syntax for the packages/classes, and the same
 warnings about quoting from the command line, apply as for the
