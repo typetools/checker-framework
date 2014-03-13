@@ -77,11 +77,11 @@ public abstract class DefaultQualifiedTypeFactory<Q> implements QualifiedTypeFac
 
         WrappedAnnotatedTypeMirror wrappedUpper =
             WrappedAnnotatedTypeMirror.wrap(atm.getUpperBound());
-        QualifiedTypeMirror<Q> upper = annotator.visit(wrappedUpper, paramElt);
+        QualifiedTypeMirror<Q> upper = annotator.visit(wrappedUpper, null);
 
         WrappedAnnotatedTypeMirror wrappedLower =
             WrappedAnnotatedTypeMirror.wrap(atm.getLowerBound());
-        QualifiedTypeMirror<Q> lower = annotator.visit(wrappedLower, paramElt);
+        QualifiedTypeMirror<Q> lower = annotator.visit(wrappedLower, null);
 
         return new QualifiedTypeParameterBounds<Q>(upper, lower);
     }
