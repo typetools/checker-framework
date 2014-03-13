@@ -35,7 +35,7 @@ import org.checkerframework.framework.base.QualifiedTypeMirror.QualifiedTypeVari
 import org.checkerframework.framework.base.QualifiedTypeMirror.QualifiedUnionType;
 import org.checkerframework.framework.base.QualifiedTypeMirror.QualifiedWildcardType;
 
-public class TypeAnnotator<Q> implements ExtendedTypeVisitor<QualifiedTypeMirror<Q>, Element> {
+public class TypeAnnotator<Q> implements ExtendedTypeVisitor<QualifiedTypeMirror<Q>, Void> {
     private AnnotationConverter<Q> annotationConverter;
     private Q topQual;
     private Q bottomQual;
@@ -53,23 +53,23 @@ public class TypeAnnotator<Q> implements ExtendedTypeVisitor<QualifiedTypeMirror
         this.adapter = adapter;
     }
 
-    public QualifiedTypeMirror<Q> visit(ExtendedTypeMirror type, Element elt) {
+    public QualifiedTypeMirror<Q> visit(ExtendedTypeMirror type, Void p) {
         if (type == null) {
             return null;
         }
-        return type.accept(this, elt);
+        return type.accept(this, null);
     }
 
     private List<QualifiedTypeMirror<Q>> mapVisit(
-            List<? extends ExtendedTypeMirror> types, Element elt) {
+            List<? extends ExtendedTypeMirror> types, Void p) {
         List<QualifiedTypeMirror<Q>> result = new ArrayList<>();
         for (ExtendedTypeMirror type : types) {
-            result.add(this.visit(type, elt));
+            result.add(this.visit(type, null));
         }
         return result;
     }
 
-    protected Q getQualifier(ExtendedTypeMirror type, Element elt) {
+    protected Q getQualifier(ExtendedTypeMirror type, Void p) {
         Q qual;
 
         // Sometimes the Framework makes us re-process partially-annotated
@@ -94,101 +94,101 @@ public class TypeAnnotator<Q> implements ExtendedTypeVisitor<QualifiedTypeMirror
     }
 
     @Override
-    public QualifiedTypeMirror<Q> visitArray(ExtendedArrayType type, Element elt) {
+    public QualifiedTypeMirror<Q> visitArray(ExtendedArrayType type, Void p) {
         return new QualifiedArrayType<Q>(
                 type,
-                getQualifier(type, elt),
-                this.visit(type.getComponentType(), elt));
+                getQualifier(type, null),
+                this.visit(type.getComponentType(), null));
     }
 
     @Override
-    public QualifiedTypeMirror<Q> visitDeclared(ExtendedDeclaredType type, Element elt) {
-        List<? extends QualifiedTypeMirror<Q>> args = this.mapVisit(type.getTypeArguments(), elt);
+    public QualifiedTypeMirror<Q> visitDeclared(ExtendedDeclaredType type, Void p) {
+        List<? extends QualifiedTypeMirror<Q>> args = this.mapVisit(type.getTypeArguments(), null);
         QualifiedTypeMirror<Q> result = new QualifiedDeclaredType<Q>(
                 type,
-                getQualifier(type, elt),
-                this.mapVisit(type.getTypeArguments(), elt));
+                getQualifier(type, null),
+                this.mapVisit(type.getTypeArguments(), null));
 
         return result;
     }
 
     @Override
-    public QualifiedTypeMirror<Q> visitError(ExtendedErrorType type, Element elt) {
+    public QualifiedTypeMirror<Q> visitError(ExtendedErrorType type, Void p) {
         throw new UnsupportedOperationException("saw unexpected ExtendedErrorType");
     }
 
     @Override
-    public QualifiedTypeMirror<Q> visitExecutable(ExtendedExecutableType type, Element elt) {
+    public QualifiedTypeMirror<Q> visitExecutable(ExtendedExecutableType type, Void p) {
         // QualifiedExecutableType requires a list of QualifiedTypeVariables
         // rather than a list of generic QualifiedTypeMirrors.
         List<QualifiedTypeVariable<Q>> qualifiedTypeVariables = new ArrayList<>();
         for (ExtendedTypeVariable typeVar : type.getTypeVariables()) {
             @SuppressWarnings("unchecked")
             QualifiedTypeVariable<Q> qualifiedTypeVar =
-                (QualifiedTypeVariable<Q>)this.visit(typeVar, elt);
+                (QualifiedTypeVariable<Q>)this.visit(typeVar, null);
             qualifiedTypeVariables.add(qualifiedTypeVar);
         }
 
         return new QualifiedExecutableType<Q>(
                 type,
-                getQualifier(type, elt),
-                this.mapVisit(type.getParameterTypes(), elt),
-                this.visit(type.getReceiverType(), elt),
-                this.visit(type.getReturnType(), elt),
-                this.mapVisit(type.getThrownTypes(), elt),
+                getQualifier(type, null),
+                this.mapVisit(type.getParameterTypes(), null),
+                this.visit(type.getReceiverType(), null),
+                this.visit(type.getReturnType(), null),
+                this.mapVisit(type.getThrownTypes(), null),
                 qualifiedTypeVariables);
     }
 
     @Override
-    public QualifiedTypeMirror<Q> visitIntersection(ExtendedIntersectionType type, Element elt) {
+    public QualifiedTypeMirror<Q> visitIntersection(ExtendedIntersectionType type, Void p) {
         return new QualifiedIntersectionType<Q>(
                 type,
-                getQualifier(type, elt),
-                this.mapVisit(type.getBounds(), elt));
+                getQualifier(type, null),
+                this.mapVisit(type.getBounds(), null));
     }
 
     @Override
-    public QualifiedTypeMirror<Q> visitNoType(ExtendedNoType type, Element elt) {
+    public QualifiedTypeMirror<Q> visitNoType(ExtendedNoType type, Void p) {
         return new QualifiedNoType<Q>(
                 type,
-                getQualifier(type, elt));
+                getQualifier(type, null));
     }
 
     @Override
-    public QualifiedTypeMirror<Q> visitNull(ExtendedNullType type, Element elt) {
+    public QualifiedTypeMirror<Q> visitNull(ExtendedNullType type, Void p) {
         return new QualifiedNullType<Q>(
                 type,
-                getQualifier(type, elt));
+                getQualifier(type, null));
     }
 
     @Override
-    public QualifiedTypeMirror<Q> visitPrimitive(ExtendedPrimitiveType type, Element elt) {
+    public QualifiedTypeMirror<Q> visitPrimitive(ExtendedPrimitiveType type, Void p) {
         return new QualifiedPrimitiveType<Q>(
                 type,
-                getQualifier(type, elt));
+                getQualifier(type, null));
     }
 
     @Override
-    public QualifiedTypeMirror<Q> visitTypeVariable(ExtendedTypeVariable type, Element elt) {
+    public QualifiedTypeMirror<Q> visitTypeVariable(ExtendedTypeVariable type, Void p) {
         return new QualifiedTypeVariable<Q>(
                 type,
-                getQualifier(type, elt));
+                getQualifier(type, null));
     }
 
     @Override
-    public QualifiedTypeMirror<Q> visitUnion(ExtendedUnionType type, Element elt) {
+    public QualifiedTypeMirror<Q> visitUnion(ExtendedUnionType type, Void p) {
         return new QualifiedUnionType<Q>(
                 type,
-                getQualifier(type, elt),
-                this.mapVisit(type.getAlternatives(), elt));
+                getQualifier(type, null),
+                this.mapVisit(type.getAlternatives(), null));
     }
 
     @Override
-    public QualifiedTypeMirror<Q> visitWildcard(ExtendedWildcardType type, Element elt) {
+    public QualifiedTypeMirror<Q> visitWildcard(ExtendedWildcardType type, Void p) {
         return new QualifiedWildcardType<Q>(
                 type,
-                getQualifier(type, elt),
-                this.visit(type.getExtendsBound(), elt),
-                this.visit(type.getSuperBound(), elt));
+                getQualifier(type, null),
+                this.visit(type.getExtendsBound(), null),
+                this.visit(type.getSuperBound(), null));
     }
 }
