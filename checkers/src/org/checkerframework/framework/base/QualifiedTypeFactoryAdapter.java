@@ -6,6 +6,8 @@ import com.sun.source.tree.Tree;
 
 import checkers.basetype.BaseAnnotatedTypeFactory;
 import checkers.types.AnnotatedTypeMirror;
+import checkers.types.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
 import checkers.util.MultiGraphQualifierHierarchy;
 import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 
@@ -154,5 +156,20 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
     QualifiedTypeMirror<Q> superGetAnnotatedTypeFromTypeTree(Tree tree) {
         return converter.getQualifiedType(
                 super.getAnnotatedTypeFromTypeTree(tree));
+    }
+
+
+    @Override
+    public AnnotatedWildcardType getWildcardBoundedBy(AnnotatedTypeMirror upper) {
+        AnnotatedWildcardType result = super.getWildcardBoundedBy(upper);
+        typeAnnotator.scanAndReduce(result, null, null);
+        return result;
+    }
+
+    @Override
+    public AnnotatedWildcardType getUninferredWildcardType(AnnotatedTypeVariable var) {
+        AnnotatedWildcardType result = super.getUninferredWildcardType(var);
+        typeAnnotator.scanAndReduce(result, null, null);
+        return result;
     }
 }
