@@ -122,7 +122,20 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
 
     @Override
     public boolean isSupportedQualifier(AnnotationMirror anno) {
-        return true;
+        if (!(underlying instanceof DefaultQualifiedTypeFactory)) {
+            return true;
+        }
+
+        if (anno == null) {
+            return false;
+        }
+
+        DefaultQualifiedTypeFactory<Q> defaultUnderlying =
+            (DefaultQualifiedTypeFactory<Q>)underlying;
+        AnnotationConverter<Q> annoConverter = defaultUnderlying.getAnnotationConverter();
+
+        return annoConverter.isAnnotationSupported(anno)
+            || converter.isKey(anno);
     }
 
 
