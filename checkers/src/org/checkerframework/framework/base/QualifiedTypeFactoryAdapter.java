@@ -11,6 +11,8 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedWildcardType;
 import checkers.util.MultiGraphQualifierHierarchy;
 import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 
+import org.checkerframework.framework.util.WrappedAnnotatedTypeMirror;
+
 class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
     private QualifiedTypeFactory<Q> underlying;
     private TypeMirrorConverter<Q> converter;
@@ -131,8 +133,9 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
     }
 
     QualifiedTypeMirror<Q> superGetAnnotatedType(Element elt) {
-        return converter.getQualifiedType(
-                super.getAnnotatedType(elt));
+        AnnotatedTypeMirror atm = super.getAnnotatedType(elt);
+        typeAnnotator.visit(atm, null);
+        return converter.getQualifiedType(atm);
     }
 
     @Override
@@ -143,8 +146,9 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
     }
 
     QualifiedTypeMirror<Q> superGetAnnotatedType(Tree tree) {
-        return converter.getQualifiedType(
-                super.getAnnotatedType(tree));
+        AnnotatedTypeMirror atm = super.getAnnotatedType(tree);
+        typeAnnotator.visit(atm, null);
+        return converter.getQualifiedType(atm);
     }
 
     @Override
@@ -154,8 +158,9 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
     }
 
     QualifiedTypeMirror<Q> superGetAnnotatedTypeFromTypeTree(Tree tree) {
-        return converter.getQualifiedType(
-                super.getAnnotatedTypeFromTypeTree(tree));
+        AnnotatedTypeMirror atm = super.getAnnotatedTypeFromTypeTree(tree);
+        typeAnnotator.visit(atm, null);
+        return converter.getQualifiedType(atm);
     }
 
 
