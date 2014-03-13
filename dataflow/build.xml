@@ -14,28 +14,25 @@
     <import file="${basedir}/../build-common.xml"/>
 
 
-    <property name="build.reports" value="${build}/reports"/>
-    <property name="build.tests" value="tests/build"/>
-
     <target name="prep" depends="prep-all"
             description="Create required directories">
         <mkdir dir="${build}"/>
         <mkdir dir="${dist.doc}"/>
 
-        <available property="javacutils.project"
-                   file="${javacutils.loc}/build.xml"/>
-        <antcall target="-prep-javacutils-compile"/>
+        <available property="javacutil.project"
+                   file="${javacutil.loc}/build.xml"/>
+        <antcall target="-prep-javacutil-compile"/>
     </target>
 
-    <target name="-prep-javacutils-compile" if="javacutils.project"
-            description="Compile javacutils utilities project">
-        <ant dir="${javacutils.loc}">
+    <target name="-prep-javacutil-compile" if="javacutil.project"
+            description="Compile javacutil project">
+        <ant dir="${javacutil.loc}">
             <target name="dist"/>
         </ant>
     </target>
 
     <target name="clean" description="Remove generated files">
-        <ant dir="${javacutils.loc}">
+        <ant dir="${javacutil.loc}">
             <target name="clean"/>
         </ant>
 
@@ -60,18 +57,18 @@
             <mapper type="glob" from="*.java" to="${build}/*.class"/>
         </uptodate>
 
-        <uptodate property="javacutils.lib.uptodate" targetfile="${build}" srcfile="${javacutils.lib}"/>
+        <uptodate property="javacutil.lib.uptodate" targetfile="${build}" srcfile="${javacutil.lib}"/>
 
         <condition property="build.uptodate">
             <and>
                 <isset property="src.files.uptodate"/>
-                <isset property="javacutils.lib.uptodate"/>
+                <isset property="javacutil.lib.uptodate"/>
             </and>
         </condition>
 
         <!--
         <echo message="src.files.uptodate: ${src.files.uptodate}"/>
-        <echo message="javacutils.lib.uptodate: ${javacutils.lib.uptodate}"/>
+        <echo message="javacutil.lib.uptodate: ${javacutil.lib.uptodate}"/>
         <echo message="build.uptodate: ${build.uptodate}"/>
         -->
     </target>
@@ -90,7 +87,7 @@
         <echo message="${src.files.spaceseparated_df}" file="${tmpdir}/srcfiles-dataflow.txt"/>
         <java fork="true"
               failonerror="true"
-              classpath="${javac.lib}:${javacutils.lib}"
+              classpath="${javac.lib}:${javacutil.lib}"
               classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
@@ -116,50 +113,32 @@
     <!-- TODO: add a type-checking target that doesn't use
          -XDTA:noannotations in comments. -->
 
-    <target name="docs" depends="javadoc"/>
-
     <!--
     This target seems to only work if tools.jar is already in the
     classpath (despite the attempt in the body to add tools.jar to the
     classpath).  Also, ${java.home} is the jre/ directory.
     -->
-    <target name="javadoc" depends="prep" description="Create Javadoc documentation">
-        <ant dir="${javacutils.loc}">
+    <target name="javadoc" depends="prep,prep-ManualTaglet" description="Create Javadoc documentation">
+        <ant dir="${javacutil.loc}">
             <target name="javadoc"/>
         </ant>
-
-        <java fork="true"
-              failonerror="true"
-              classpath="${javacutils.lib}:${javac.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar"
-              classname="com.sun.tools.javac.Main">
-            <jvmarg line="-Xbootclasspath/p:${javac.lib}:${javadoc.lib}"/>
-            <arg value="-g"/>
-            <arg line="-d ${build}"/>
-            <arg line="${javacutils.loc}/src/javacutils/dist/ManualTaglet.java"/>
-            <arg line="-version"/>
-        </java>
 
         <!-- This relative path is wrong; running "ant -find" from a
         subdirectory fails. -->
         <javadoc sourcepath="${src}" destdir="${dist.doc}"
                  failonerror="true"
                  executable="${jsr308.langtools}/dist/bin/javadoc"
-                 classpath="${build}:${javacutils.lib}:${javac.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar"
+                 classpath="${build}:${javacutil.lib}:${javac.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar"
                  bootclasspath="${javac.lib}:${javadoc.lib}:${java.home}/lib/rt.jar">
             <package name="dataflow.*"/>
             <link href="http://types.cs.washington.edu/checker-framework/api/jdk/"/>
             <link href="http://types.cs.washington.edu/checker-framework/api/javac/tree/"/>
-            <taglet name="javacutils.dist.ManualTaglet" path="${build}"/>
+            <taglet name="javacutil.dist.ManualTaglet" path="${build}"/>
             <arg line="-XDTA:noannotationsincomments"/>
         </javadoc>
     </target>
 
-    <target name="dist" depends="jar"
-            description="Create jar file">
-    </target>
-
-    <!-- This creates dataflow.jar -->
-    <target name="jar" depends="build"
+    <target name="dist"
             description="Create jar file">
         <jar destfile="${dataflow.lib}" basedir="${build}"/>
     </target>
