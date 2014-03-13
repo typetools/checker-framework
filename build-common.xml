@@ -1,14 +1,26 @@
 <!--
-  This file is shared between the javacutils, dataflow, and checkers
-  subprojects.
-  Properties that are likely to need adaption by developers should
-  instead go into build-common.properties.
+  This is a configuration file for use by Ant when building the 
+  Checker Framework.
+  This file is shared between all subprojects.
 -->
 <project name="imports">
 
+    <!--
+      Properties that are likely to need adaptation by developers should
+      instead go into build-common.properties.
+    -->
+
     <property name="src" value="src"/>
     <property name="build" value="build"/>
+    <property name="build.reports" value="${build}/reports"/>
+    <property name="build.jtreg.dir" value="${build}/jtreg"/>
+
+    <property name="tests" value="tests"/>
+    <property name="tests.build" value="${tests}/build"/>
+
+    <!-- TODO describe distinction -->
     <property name="dist.doc" value="doc"/>
+    <property name="api.doc" value="${basedir}/../api"/>
 
     <property name="tmpdir"
               value="${java.io.tmpdir}/${user.name}/${ant.project.name}" />
@@ -60,6 +72,21 @@ in 'build-common.properties'
 points to version ${build.version} of the 'javac.jar' library."/>
 
     </target>
+
+
+    <target name="prep-ManualTaglet">
+        <java fork="true"
+              failonerror="true"
+              classpath="${javac.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar"
+              classname="com.sun.tools.javac.Main">
+            <jvmarg line="-Xbootclasspath/p:${javac.lib}:${javadoc.lib}"/>
+            <arg value="-g"/>
+            <arg line="-d ${build}"/>
+            <arg line="${javacutil.loc}/src/org/checkerframework/javacutil/dist/ManualTaglet.java"/>
+            <arg line="-version"/>
+        </java>
+    </target>
+
 
     <target name="tags" depends="prep" description="Create Emacs TAGS table">
         <exec executable="/bin/sh" failonerror="true">

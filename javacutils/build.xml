@@ -1,7 +1,7 @@
 <!--
   This is an Ant build file for compiling shared javac utilities.
 -->
-<project name="javacutils" default="dist" basedir=".">
+<project name="javacutil" default="dist" basedir=".">
 
     <description>
         Builds a library of utilities shared by sub-projects in the Checker Framework.
@@ -21,7 +21,7 @@
 
     <target name="clean" description="Remove generated files">
         <delete dir="${build}"/>
-        <delete file="${javacutils.lib}"/>
+        <delete file="${javacutil.lib}"/>
         <delete dir="${dist.doc}"/>
         <delete dir="${temp.dir}"/>
     </target>
@@ -46,12 +46,12 @@
                 <fileset dir="${src}">
                     <include name="**/*.java"/>
 		    <!-- ManualTaglet should probably be somewhere else rather than in this directory. -->
-                    <exclude name="javacutils/dist/**"/>
+                    <exclude name="javacutil/dist/**"/>
                 </fileset>
             </path>
         </pathconvert>
 
-        <echo message="${src.files.spaceseparated_jc}" file="${tmpdir}/srcfiles-javacutils.txt"/>
+        <echo message="${src.files.spaceseparated_jc}" file="${tmpdir}/srcfiles-javacutil.txt"/>
         <java fork="true"
               failonerror="true"
               classpath="${javac.lib}"
@@ -60,13 +60,13 @@
             <arg value="-g"/>
             <arg line="-sourcepath ${src}"/>
             <arg line="-d ${build}"/>
-            <arg line="@${tmpdir}/srcfiles-javacutils.txt"/>
+            <arg line="@${tmpdir}/srcfiles-javacutil.txt"/>
             <arg line="-version"/>
             <arg line="-XDTA:noannotationsincomments"/>
             <arg line="-Xlint"/>
             <arg line="-Werror"/>
         </java>
-        <delete file="${tmpdir}/srcfiles-javacutils.txt"/>
+        <delete file="${tmpdir}/srcfiles-javacutil.txt"/>
 
         <!--
         Touch doesn't work on a directory, so can't do:
@@ -81,27 +81,16 @@
          -XDTA:noannotations in comments. -->
 
     <target name="dist" depends="build" description="Create jar file">
-        <jar destfile="${javacutils.lib}" basedir="${build}"/>
+        <jar destfile="${javacutil.lib}" basedir="${build}"/>
     </target>
-
-    <target name="docs" depends="javadoc"/>
 
     <!--
     This target seems to only work if tools.jar is already in the
     classpath (despite the attempt in the body to add tools.jar to the
     classpath).  Also, ${java.home} is the jre/ directory.
     -->
-    <target name="javadoc" depends="prep" description="Create Javadoc documentation">
-        <java fork="true"
-              failonerror="true"
-              classpath="${javac.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar"
-              classname="com.sun.tools.javac.Main">
-            <jvmarg line="-Xbootclasspath/p:${javac.lib}:${javadoc.lib}"/>
-            <arg value="-g"/>
-            <arg line="-d ${build}"/>
-            <arg line="src/javacutils/dist/ManualTaglet.java"/>
-            <arg line="-version"/>
-        </java>
+    <target name="javadoc" depends="prep,prep-ManualTaglet"
+            description="Create Javadoc documentation">
 
         <!-- This relative path is wrong; running "ant -find" from a
         subdirectory fails. -->
@@ -110,10 +99,10 @@
                  executable="${jsr308.langtools}/dist/bin/javadoc"
                  classpath="${build}:${javac.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar"
                  bootclasspath="${javac.lib}:${javadoc.lib}:${java.home}/lib/rt.jar">
-            <package name="javacutils.*"/>
+            <package name="javacutil.*"/>
             <link href="http://types.cs.washington.edu/checker-framework/api/jdk/"/>
             <link href="http://types.cs.washington.edu/checker-framework/api/javac/tree/"/>
-            <taglet name="javacutils.dist.ManualTaglet" path="${build}"/>
+            <taglet name="javacutil.dist.ManualTaglet" path="${build}"/>
             <arg line="-XDTA:noannotationsincomments"/>
         </javadoc>
     </target>
