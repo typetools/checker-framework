@@ -127,18 +127,19 @@
         subdirectory fails. -->
         <javadoc sourcepath="${src}" destdir="${dist.doc}"
                  failonerror="true"
-                 executable="${jsr308.langtools}/dist/bin/javadoc"
+                 executable="${javadoc.bin}"
                  classpath="${build}:${javacutil.lib}:${javac.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar"
                  bootclasspath="${javac.lib}:${javadoc.lib}:${java.home}/lib/rt.jar">
-            <package name="dataflow.*"/>
+            <package name="org.checkerframework.dataflow.*"/>
             <link href="http://types.cs.washington.edu/checker-framework/api/jdk/"/>
             <link href="http://types.cs.washington.edu/checker-framework/api/javac/tree/"/>
-            <taglet name="javacutil.dist.ManualTaglet" path="${build}"/>
+            <taglet name="org.checkerframework.javacutil.dist.ManualTaglet" path="${build}"/>
             <arg line="-XDTA:noannotationsincomments"/>
         </javadoc>
     </target>
 
     <target name="dist"
+            depends="build"
             description="Create jar file">
         <jar destfile="${dataflow.lib}" basedir="${build}"/>
     </target>

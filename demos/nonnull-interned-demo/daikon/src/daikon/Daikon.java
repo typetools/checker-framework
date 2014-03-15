@@ -30,8 +30,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
-import checkers.interning.quals.Interned;
-
 import utilMDE.Assert;
 import utilMDE.FileIOException;
 import utilMDE.Fmt;

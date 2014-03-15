@@ -1,6 +1,6 @@
 package checkers.types;
 
-import checkers.quals.*;
+
 
 import java.lang.annotation.Annotation;
 import java.util.*;
@@ -24,7 +24,7 @@ import com.sun.tools.javac.comp.*;
  *
  * @see AnnotationTarget
  */
-@DefaultQualifier(checkers.nullness.quals.NonNull.class)
+@DefaultQualifier(NonNull.class)
 public final class InternalAnnotation implements AnnotationData {
 
     /** The annotation's Target. */

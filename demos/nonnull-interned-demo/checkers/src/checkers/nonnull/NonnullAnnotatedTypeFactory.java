@@ -7,8 +7,6 @@ import javax.lang.model.element.*;
 import javax.lang.model.type.*;
 import javax.lang.model.util.*;
 
-import checkers.quals.*;
-import checkers.initialization.quals.Initialized;
 import checkers.types.*;
 import checkers.util.*;
 import checkers.types.InternalUtils;
@@ -32,7 +30,7 @@ import com.sun.tools.javac.tree.*;
  *  <li>literals (except the null literal) and arrays of literals
  * </ul>
  */
-@DefaultQualifier(checkers.nullness.quals.NonNull.class)
+@DefaultQualifier(NonNull.class)
 public class NonnullAnnotatedTypeFactory extends AnnotatedTypeFactory {
 
     /** Used to perform flow-sensitive nonnull analysis. */

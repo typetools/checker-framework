@@ -3,8 +3,6 @@ package java.lang;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 
-import checkers.quals.*;
-
 public final class Class<T> implements java.io.Serializable, java.lang.reflect.GenericDeclaration, java.lang.reflect.Type, java.lang.reflect.AnnotatedElement {
   public @NonNull String toString() { throw new RuntimeException("skeleton method"); }
   public static @NonNull Class<?> forName(@NonNull String a1) throws ClassNotFoundException { throw new RuntimeException("skeleton method"); }

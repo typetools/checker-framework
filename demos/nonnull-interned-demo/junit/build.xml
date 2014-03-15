@@ -11,7 +11,7 @@
 
     <!-- Typecheck assert -->
     <target name="assert">
-        <run-demo checker="checkers.nullness.NullnessChecker" srcpath="src"
+        <run-demo checker="org.checkerframework.checker.nullness.NullnessChecker" srcpath="src"
             files="${basedir}/src/org/junit/Assert.java"/>
     </target>
 
@@ -36,7 +36,7 @@
       </pathconvert>
         <java fork="true"
               failonerror="true"
-	      classpath="${compiler.lib}:${checkers.lib}"
+	      classpath="${compiler.lib}:${checker.lib}"
 	      classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${compiler.lib}"/>
             <arg value="-g"/>
@@ -56,7 +56,7 @@
       </pathconvert>
       <java fork="true"
             failonerror="true"
-            classpath="${compiler.lib}:${checkers.lib}:${build}"
+            classpath="${compiler.lib}:${checker.lib}:${build}"
             classname="com.sun.tools.javac.Main">
         <jvmarg line="-Xbootclasspath/p:${compiler.lib}"/>
         <arg value="-g"/>
@@ -69,7 +69,7 @@
     <target name="-run-test" depends="build-tests">
       <java fork="true"
             failonerror="true"
-            classpath="${build.tests}:${build}:${compiler.lib}:${checkers.lib}"
+            classpath="${build.tests}:${build}:${compiler.lib}:${checker.lib}"
             classname="org.junit.runner.JUnitCore">
         <jvmarg line="-Xbootclasspath/p:${compiler.lib}"/>
         <jvmarg line="-ea"/>

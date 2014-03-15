@@ -1,4 +1,4 @@
-import checkers.quals.*;
+import org.checkerframework.framework.qual.*;
 
 class PrimitiveDotClass {
 

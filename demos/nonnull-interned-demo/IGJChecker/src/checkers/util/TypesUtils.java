@@ -14,7 +14,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.*;
 import javax.lang.model.type.*;
 
-import checkers.quals.*;
+
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 
 /**
@@ -22,7 +22,7 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
  * 
  */
 // TODO: This class needs significant restructuring
-@DefaultQualifier(checkers.nullness.quals.NonNull.class)
+@DefaultQualifier(NonNull.class)
 public final class TypesUtils {
 
     private ProcessingEnvironment env;

@@ -1,6 +1,6 @@
 package checkers.types;
 
-import checkers.quals.*;
+
 
 import java.util.*;
 
@@ -17,7 +17,7 @@ import javax.lang.model.util.*;
  * annotation to a {@link String} literal in a pre-processing step before
  * typechecking).
  */
-@DefaultQualifier(checkers.nullness.quals.NonNull.class)
+@DefaultQualifier(NonNull.class)
 class SyntheticAnnotation implements AnnotationData {
     
     /** The type of the annotation. */

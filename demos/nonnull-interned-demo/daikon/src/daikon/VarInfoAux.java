@@ -5,8 +5,6 @@ import java.util.*;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
-import checkers.interning.quals.Interned;
-
 /**
  * Represents additional information about a VarInfo that frontends
  * tell Daikon.  For example, whether order matters in a collection.

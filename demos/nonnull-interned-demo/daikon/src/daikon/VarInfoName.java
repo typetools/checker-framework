@@ -10,8 +10,6 @@ import daikon.chicory.DaikonVariableInfo;
 
 import utilMDE.*;
 
-import checkers.interning.quals.Interned;
-
 import java.util.logging.Logger;
 import java.util.logging.Level;
 

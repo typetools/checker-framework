@@ -1,6 +1,6 @@
 package java.util;
 
-import checkers.quals.*;
+
 
 public class Collections {
   public final static java.util.Set EMPTY_SET = new HashSet();

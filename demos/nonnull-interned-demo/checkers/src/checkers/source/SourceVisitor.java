@@ -3,7 +3,6 @@ package checkers.source;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.util.*;
 
-import checkers.quals.*;
 import checkers.types.AnnotatedTypeFactory;
 
 import com.sun.source.tree.CompilationUnitTree;
@@ -20,7 +19,7 @@ import com.sun.source.util.*;
  * instead, checking is performed within each method and errors are reported as
  * errors are found.
  */
-@DefaultQualifier(checkers.nullness.quals.NonNull.class)
+@DefaultQualifier(NonNull.class)
 public abstract class SourceVisitor<R, P> extends TreePathScanner<R, P> {
 
     /** The {@link SourceChecker} to invoke on the input source tree. */

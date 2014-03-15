@@ -3,9 +3,8 @@ package tests;
 import java.io.File;
 import java.util.Collection;
 
+import org.checkerframework.framework.test.ParameterizedCheckerTest;
 import org.junit.runners.Parameterized.Parameters;
-
-import checkers.util.test.ParameterizedCheckerTest;
 
 /**
  * Tests the reflection resolution using a toy type system.

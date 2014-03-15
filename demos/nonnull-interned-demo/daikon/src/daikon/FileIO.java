@@ -12,8 +12,6 @@ import static daikon.VarInfo.VarKind;
 import static daikon.VarInfo.VarFlags;
 import static daikon.VarInfo.LangFlags;
 
-import checkers.interning.quals.Interned;
-
 import utilMDE.*;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -340,7 +338,7 @@ public final class FileIO {
       vi_array[ii++] = new VarInfo (vd);
     }
 
-    PptTopLevel newppt = null; 
+    PptTopLevel newppt = null;
     return newppt;
   }
 

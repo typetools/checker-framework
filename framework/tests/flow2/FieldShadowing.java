@@ -1,18 +1,18 @@
-import checkers.util.test.*;
+import org.checkerframework.framework.test.*;
 
 import java.util.*;
-import dataflow.quals.Pure;
-import checkers.quals.*;
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.framework.qual.*;
 import tests.util.*;
 
 // various tests for the precondition mechanism
 class FieldShadowing {
-    
+
     String f;
-    
+
     class Sub extends FieldShadowing {
         String f;
-        
+
         @Pure
         @RequiresQualifier(expression="f", qualifier=Odd.class)
         int reqSub() {
@@ -23,7 +23,7 @@ class FieldShadowing {
             i = 1;
             return 1;
         }
-        
+
         @Pure
         @RequiresQualifier(expression="super.f", qualifier=Odd.class)
         int reqSuper() {
@@ -32,14 +32,14 @@ class FieldShadowing {
             @Odd String l1 = super.f;
             return 1;
         }
-        
+
         void t1(@Odd String p1) {
             f = p1;
             //:: error: (contracts.precondition.not.satisfied)
             reqSuper();
             reqSub();
         }
-        
+
         void t2(@Odd String p1) {
             super.f = p1;
             //:: error: (contracts.precondition.not.satisfied)

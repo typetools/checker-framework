@@ -1,6 +1,6 @@
 package java.util;
 
-import checkers.quals.*;
+
 
 public class Arrays{
   public static void sort(long[] a1) { throw new RuntimeException("skeleton method"); }

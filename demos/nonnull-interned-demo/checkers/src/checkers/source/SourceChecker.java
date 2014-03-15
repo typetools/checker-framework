@@ -10,7 +10,6 @@ import javax.lang.model.type.*;
 import javax.lang.model.util.*;
 import javax.tools.Diagnostic;
 
-import checkers.quals.*;
 import checkers.types.*;
 import checkers.util.*;
 
@@ -41,7 +40,7 @@ import com.sun.source.util.*;
  *      @SuppressWarnings annotations)
  * </ul>
  */
-@DefaultQualifier(checkers.nullness.quals.NonNull.class)
+@DefaultQualifier(NonNull.class)
 public abstract class SourceChecker extends AbstractProcessor {
 
     /** Provides access to compiler helpers/internals. */
@@ -194,7 +193,7 @@ public abstract class SourceChecker extends AbstractProcessor {
             arg = (arg == null) ? null :
                 messages.getProperty(arg.toString(), arg.toString());
         }
-        
+
         if (kind == Diagnostic.Kind.NOTE) {
             System.err.println("(NOTE) " + String.format(msgKey.toString(), args));
             return;
@@ -218,11 +217,11 @@ public abstract class SourceChecker extends AbstractProcessor {
             throw new IllegalArgumentException("invalid position source: "
                     + source.getClass().getName());
     }
-    
+
     /**
      * Determines whether one of the annotations in the given set of {@link
      * AnnotationMirror}s is a {@link SuppressWarnings} annotation with the
-     * SuppressWarnings key corresponding to this checker. 
+     * SuppressWarnings key corresponding to this checker.
      *
      * @param annos the annotations to search
      * @return true if one of {@code annos} is a {@link SuppressWarnings}
@@ -240,7 +239,7 @@ public abstract class SourceChecker extends AbstractProcessor {
         // SuppressWarnings key.
         for (AnnotationMirror am : annos) {
             AnnotationData ad = af.createAnnotation(am);
-            
+
             { // Skip annotations that aren't @SuppressWarnings.
                 @Nullable String annoName = AnnotationUtils.annotationName(ad);
                 if (!("java.lang.SuppressWarnings".equals(annoName)))
@@ -256,13 +255,13 @@ public abstract class SourceChecker extends AbstractProcessor {
 
         return false;
     }
-    
+
     /**
      * Determines whether the warnings pertaining to a given tree should be
      * suppressed (namely, if its containing method has a @SuppressWarnings
      * annotation for which one of the values is the key provided by the {@link
      * SourceChecker#getSuppressWarningsKey} method).
-     * 
+     *
      * @param tree the tree that might be a source of a warning
      * @return true if no warning should be emitted for the given tree because
      *         it is contained by a method with an appropriately-valued
@@ -274,20 +273,20 @@ public abstract class SourceChecker extends AbstractProcessor {
         @Nullable String swKey = this.getSuppressWarningsKey();
         if (swKey == null)
             return false;
-        
+
         @Nullable Element thisElt = InternalUtils.symbol(tree);
         if (thisElt != null && checkSuppressWarnings(thisElt.getAnnotationMirrors()))
             return true;
-        
-        // Get the method tree, and ultimately, its element. 
+
+        // Get the method tree, and ultimately, its element.
         @Nullable TreePath path = trees.getPath(this.currentRoot, tree);
         if (path == null) /*nnbug*/
             return false;
 
-        @Nullable MethodTree method = TreeUtils.enclosingMethod(path); 
+        @Nullable MethodTree method = TreeUtils.enclosingMethod(path);
         if (method == null)
             return false;
-        
+
         @Nullable Element elt = InternalUtils.symbol(method);
         if (elt == null)
             return false;
@@ -306,7 +305,7 @@ public abstract class SourceChecker extends AbstractProcessor {
 
         return checkSuppressWarnings(elt.getAnnotationMirrors());
     }
-    
+
     /**
      * Reports a result. By default, it prints it to the screen via the
      * compiler's internal messeger if the result is non-success; otherwise,
@@ -324,7 +323,7 @@ public abstract class SourceChecker extends AbstractProcessor {
             return;
         if (src instanceof Element && shouldSuppressWarnings((Element)src))
             return;
-        
+
         if (r.isSuccess())
             return;
 
@@ -337,7 +336,7 @@ public abstract class SourceChecker extends AbstractProcessor {
                 this.message(Diagnostic.Kind.NOTE, src, msg.getMessageKey(), msg.getArgs());
         }
     }
-    
+
     /**
      * Determines whether checking against members of the class with the given
      * name should be performed. This method will return true only when the
@@ -442,7 +441,7 @@ public abstract class SourceChecker extends AbstractProcessor {
     public Set<String> getSupportedAnnotationTypes() {
         return Collections.<@NonNull String>singleton("*");
     }
-    
+
     /**
      * Returns the lint options recognized by this checker. Lint options are
      * those which can be checked for via {@link SourceChecker#getLintOption}.
@@ -474,6 +473,6 @@ public abstract class SourceChecker extends AbstractProcessor {
      *         and errors that it issues
      */
     protected @Nullable String getSuppressWarningsKey() {
-        return null; 
+        return null;
     }
 }

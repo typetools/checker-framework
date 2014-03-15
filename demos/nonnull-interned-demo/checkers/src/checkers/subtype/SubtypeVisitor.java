@@ -7,7 +7,6 @@ import javax.lang.model.type.*;
 import javax.lang.model.util.*;
 import static javax.lang.model.util.ElementFilter.*;
 
-import checkers.quals.*;
 import checkers.source.*;
 import checkers.types.*;
 import checkers.util.*;
@@ -21,7 +20,7 @@ import com.sun.source.util.TreePath;
  * A type-checking visitor for type qualifiers for which the qualified type
  * is the subtype of the unqualified type.
  */
-@DefaultQualifier(checkers.nullness.quals.NonNull.class)
+@DefaultQualifier(NonNull.class)
 public abstract class SubtypeVisitor extends SourceVisitor<Void, Void> {
 
     /** The checker associated with this visitor. */
@@ -54,8 +53,8 @@ public abstract class SubtypeVisitor extends SourceVisitor<Void, Void> {
         AnnotatedClassType variable = factory.getClass(node.getVariable());
 
         if (!checker.isSubtype(expression, variable)) {
-            checker.report(Result.failure("assignment.invalid", 
-                        variable.toCondensedString(), 
+            checker.report(Result.failure("assignment.invalid",
+                        variable.toCondensedString(),
                         expression.toCondensedString()), node
                     .getExpression());
         }
@@ -77,7 +76,7 @@ public abstract class SubtypeVisitor extends SourceVisitor<Void, Void> {
         AnnotatedClassType variable = factory.getClass(node);
 
         if (!checker.isSubtype(init, variable))
-            checker.report(Result.failure("assignment.invalid", 
+            checker.report(Result.failure("assignment.invalid",
                         variable.toCondensedString(),
                         init.toCondensedString()), variable
                     .getElement());
@@ -111,7 +110,7 @@ public abstract class SubtypeVisitor extends SourceVisitor<Void, Void> {
                 .getAnnotatedParameterTypes();
 
         ExecutableElement m = method.getElement();
-        
+
         // Skip checking method invocations (i.e., super) inside the
         // (synthetic) constructors of anonymous inner classes, since they're
         // synthesized without any annotations on their arguments.
@@ -125,12 +124,12 @@ public abstract class SubtypeVisitor extends SourceVisitor<Void, Void> {
             arguments.add(factory.getClass(arg));
 
         int maxParam = (m.isVarArgs() ? parameters.size() - 1 : parameters.size());
-        
+
         for (int i = 0; i < maxParam && i < arguments.size(); i++) {
             if (!checker.isSubtype(arguments.get(i), parameters.get(i))) {
                 @Nullable Tree argTree = node.getArguments().get(i);
                 assert argTree != null; /*nninvariant*/
-                checker.report(Result.failure("argument.invalid", 
+                checker.report(Result.failure("argument.invalid",
                             parameters.get(i).toCondensedString(),
                             arguments.get(i).toCondensedString()), argTree);
             }
@@ -158,7 +157,7 @@ public abstract class SubtypeVisitor extends SourceVisitor<Void, Void> {
             }
 
             if (!checker.isSubtypeIgnoringTypeParameters(receiver, method.getAnnotatedReceiverType()))
-                checker.report(Result.failure("receiver.invalid", 
+                checker.report(Result.failure("receiver.invalid",
                             method.getAnnotatedReturnType().toCondensedString(),
                             receiver.toCondensedString()), ms);
         }
@@ -186,7 +185,7 @@ public abstract class SubtypeVisitor extends SourceVisitor<Void, Void> {
         AnnotatedMethodType meth = factory.getMethod(enclosingMethod);
 
         if (!checker.isSubtype(ret, meth.getAnnotatedReturnType()))
-            checker.report(Result.failure("return.invalid", 
+            checker.report(Result.failure("return.invalid",
                         meth.getAnnotatedReturnType().toCondensedString(),
                         ret.toCondensedString()), node);
 
@@ -311,7 +310,7 @@ public abstract class SubtypeVisitor extends SourceVisitor<Void, Void> {
     @Override
     public @Nullable Void visitEnhancedForLoop(EnhancedForLoopTree tree, Void p) {
 
-        GenericsUtils g = 
+        GenericsUtils g =
             new GenericsUtils(checker.getProcessingEnvironment(), factory);
         @Nullable Element elt = InternalUtils.symbol(tree.getExpression());
         @Nullable TypeMirror iterableType = g.iteratedType(tree);
@@ -344,8 +343,8 @@ public abstract class SubtypeVisitor extends SourceVisitor<Void, Void> {
 
         @Nullable Element classElt = method.getElement().getEnclosingElement();
         assert classElt != null; /*nninvariant*/
-            
-        GenericsUtils g = 
+
+        GenericsUtils g =
             new GenericsUtils(checker.getProcessingEnvironment(), factory);
 
         Set<AnnotationData> methodReturn =
@@ -359,7 +358,7 @@ public abstract class SubtypeVisitor extends SourceVisitor<Void, Void> {
                         overrider);
                 break;
             }
-        
+
         // Get the parameters for both methods.
         List<AnnotatedClassType> methodParams =
             method.getAnnotatedParameterTypes();
@@ -383,7 +382,7 @@ public abstract class SubtypeVisitor extends SourceVisitor<Void, Void> {
             assert vType != null; // FIXME: flow workaround
             Set<AnnotationData> superAnnos = g.annotationsFor(vType, classElt); // FIXME: checker bug (flow)
             Set<AnnotationData> methodAnnos = methodParam.getAnnotationData(true);
-  
+
             Set<AnnotationData> intersection = new HashSet<AnnotationData>();
             intersection.addAll(superAnnos);
             if (intersection.retainAll(methodAnnos))
@@ -412,7 +411,7 @@ public abstract class SubtypeVisitor extends SourceVisitor<Void, Void> {
                 amt.getAnnotatedReceiverType().hasAnnotationAt(checker.getAnnotation(),
                     AnnotationLocation.RAW))
             checker.report(Result.failure("missing.this"), node);
-        
+
         // FIXME: Ideally, the commented code below would be used, but it
         // produces "cannot find symbol: java" errors.
 //        Scope scope = this.trees.getScope(path);

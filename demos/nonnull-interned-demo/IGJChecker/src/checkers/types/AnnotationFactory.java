@@ -1,7 +1,5 @@
 package checkers.types;
 
-import checkers.quals.*;
-
 import java.util.*;
 
 import javax.annotation.processing.*;
@@ -13,7 +11,7 @@ import javax.lang.model.util.*;
  * Creates new annotations as {@link AnnotationMirror}s that may be added to
  * {@link AnnotatedTypeMirror}s. 
  */ 
-@DefaultQualifier(checkers.nullness.quals.NonNull.class)
+@DefaultQualifier(NonNull.class)
 public class AnnotationFactory {
 
     /** The environment to use. */

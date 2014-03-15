@@ -1,6 +1,6 @@
 package utilMDE;
 
-import checkers.quals.*;
+
 import java.io.*;
 import java.util.*;
 import java.util.regex.*;
@@ -75,7 +75,7 @@ import com.sun.javadoc.FieldDoc;
  *  non-options as an array
  * </ul>
  **/
-@DefaultQualifier(checkers.nullness.quals.NonNull.class)
+@DefaultQualifier(NonNull.class)
 public class Options {
 
   /** Information about an option **/

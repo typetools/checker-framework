@@ -1,10 +1,10 @@
 package tests.util;
 
-import checkers.quals.SubtypeOf;
-import checkers.quals.TypeQualifier;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
+
+import org.checkerframework.framework.qual.SubtypeOf;
+import org.checkerframework.framework.qual.TypeQualifier;
 
 /** A subtype of SuperQual. */
 @TypeQualifier

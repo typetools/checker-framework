@@ -1,7 +1,7 @@
-import dataflow.quals.TerminatesExecution;
-import checkers.util.test.*;
+import org.checkerframework.dataflow.qual.TerminatesExecution;
+import org.checkerframework.framework.test.*;
 import java.util.*;
-import checkers.quals.*;
+import org.checkerframework.framework.qual.*;
 import tests.util.*;
 
 // various tests for @TerminatesExecution
@@ -9,7 +9,7 @@ class Termination {
 
     @TerminatesExecution
     void exit() {}
-    
+
     void t1(@Odd String p1, String p2, boolean b1) {
         String l1 = p2;
         if (b1) {
@@ -19,7 +19,7 @@ class Termination {
         }
         @Odd String l3 = l1;
     }
-    
+
     void t2(@Odd String p1, String p2, boolean b1) {
         String l1 = p2;
         if (b1) {

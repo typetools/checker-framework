@@ -2,7 +2,6 @@ package checkers.nonnull;
 
 import checkers.source.*;
 import checkers.subtype.*;
-import checkers.quals.*;
 import checkers.types.*;
 
 import com.sun.source.tree.*;
@@ -15,7 +14,7 @@ import javax.lang.model.element.*;
  *
  * @see SubtypeVisitor
  */
-@DefaultQualifier(checkers.nullness.quals.NonNull.class)
+@DefaultQualifier(NonNull.class)
 public class NonnullVisitor extends SubtypeVisitor {
 
     /**

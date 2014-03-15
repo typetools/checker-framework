@@ -1,6 +1,6 @@
 package java.util;
 
-import checkers.quals.*;
+
 
 public abstract interface Map<K, V> {
   public abstract interface Entry<K, V> {

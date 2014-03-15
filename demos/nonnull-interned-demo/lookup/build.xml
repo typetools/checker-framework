@@ -5,7 +5,7 @@
     <property file="../demo.properties"/>
     
     <target name="lookup">
-        <run-demo checker="checkers.nullness.NullnessChecker" srcpath="src"
+        <run-demo checker="org.checkerframework.checker.nullness.NullnessChecker" srcpath="src"
             files="${basedir}/src/utilMDE/UtilMDE.java"/>
     </target>
 

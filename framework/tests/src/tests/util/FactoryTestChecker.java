@@ -1,13 +1,5 @@
 package tests.util;
 
-import checkers.basetype.BaseTypeChecker;
-import checkers.basetype.BaseTypeVisitor;
-import checkers.source.Result;
-import checkers.source.SourceChecker;
-import checkers.types.GenericAnnotatedTypeFactory;
-
-import javacutils.TreeUtils;
-
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -23,6 +15,13 @@ import javax.annotation.processing.SupportedOptions;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.tools.JavaFileObject;
+
+import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.common.basetype.BaseTypeVisitor;
+import org.checkerframework.framework.source.Result;
+import org.checkerframework.framework.source.SourceChecker;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
+import org.checkerframework.javacutil.TreeUtils;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;

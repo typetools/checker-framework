@@ -7,7 +7,6 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.*;
 
-import checkers.quals.*;
 import checkers.util.ElementUtils;
 
 import com.sun.source.tree.Tree;
@@ -23,7 +22,7 @@ import com.sun.source.tree.Tree;
  * "default" annotation, or implicitly present (e.g., {@code @NonNull} for
  * {@link String} literals).
  */
-@DefaultQualifier(checkers.nullness.quals.NonNull.class)
+@DefaultQualifier(NonNull.class)
 public class AnnotatedClassType {
 
     /** The element node related to this annotated type. */
@@ -31,7 +30,7 @@ public class AnnotatedClassType {
 
     /** The tree node related to this annotated type. */
     protected Tree tree;
-    
+
     protected TypeMirror type;
 
     /**
@@ -67,7 +66,7 @@ public class AnnotatedClassType {
         extends HashSet<A> {
 
         protected ProcessingEnvironment env;
-        
+
         /**
          * Determines whether or not this {@link AnnotationSet} contains an annotation
          * with the given type at the given location.
@@ -102,7 +101,7 @@ public class AnnotatedClassType {
         includes.env = env;
         this.excludes = new AnnotationSet<AnnotationData>();
         excludes.env = env;
-        
+
         this.env = env;
         this.annotations = new AnnotationFactory(env);
     }
@@ -418,16 +417,16 @@ public class AnnotatedClassType {
             return ElementUtils.getType(element);
         return type;
     }
-    
+
     /**
      * sets the underlying TypeMirror associated with this type
-     * 
+     *
      * @param type  underlying TypeMirror
      */
     public void setUnderlyingType(TypeMirror type) {
         this.type = type;
     }
-    
+
     /**
      * @return the locations of all annotations in this class type
      *

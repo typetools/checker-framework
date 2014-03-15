@@ -3,7 +3,7 @@
 
 package utilMDE;
 
-import checkers.quals.*;
+
 import java.io.*;
 import java.util.*;
 import java.util.zip.*;

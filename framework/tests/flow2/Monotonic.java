@@ -1,19 +1,19 @@
-import checkers.util.test.*;
+import org.checkerframework.framework.test.*;
 
 import java.util.*;
-import checkers.quals.*;
+import org.checkerframework.framework.qual.*;
 import tests.util.*;
 
 class Monotonic {
-    
+
     String f1;
     @MonotonicOdd String f2;
     @MonotonicOdd String f2b;
     @Odd String f3;
     Monotonic[] ms;
-    
+
     void nonpure() {}
-    
+
     void t1(@Odd String p1) {
         //:: error: (assignment.type.incompatible)
         @Odd String l1 = f2;
@@ -23,14 +23,14 @@ class Monotonic {
             @Odd String l3 = f2;
         }
     }
-    
+
     void t2(@Odd String p1) {
         //:: error: (assignment.type.incompatible)
         f2 = f1;
         //:: error: (monotonic.type.incompatible)
         f2 = f2b; // assigning @MonotonicOdd to @MonotonicOdd is not allowed
     }
-    
+
     void t3(@Odd String p1) {
         //:: error: (assignment.type.incompatible)
         @Odd String l1 = f2;
@@ -39,7 +39,7 @@ class Monotonic {
         nonpure();
         @Odd String l3 = f2;
     }
-    
+
     void t4(@Odd String p1) {
         //:: error: (assignment.type.incompatible)
         @Odd String l1 = f2;

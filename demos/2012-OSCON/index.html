@@ -90,7 +90,7 @@ Checker Framework's <tt>javac</tt>:
 </p>
 
 <pre>
-javac -processor checkers.regex.RegexChecker Search.java
+javac -processor org.checkerframework.checker.regex.RegexChecker Search.java
 </pre>
 
 <p>
@@ -127,11 +127,11 @@ javac .../Encrypted.java
 </pre>
 
 <p>
-You then use the Basic Checker to check the demo program, like so:
+You then use the Subtype Checker to check the demo program, like so:
 <p>
 
 <pre>
-$CHECKERS/binary/javac -processor checkers.basic.BasicChecker -Aquals=encrypted.quals.Encrypted .../EncryptionDemo.java
+$CHECKERS/bin/javac -processor org.checkerframework.common.subtype.SubtypeChecker -Aquals=encrypted.quals.Encrypted .../EncryptionDemo.java
 </pre>
 
 <p>

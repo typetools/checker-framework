@@ -8,10 +8,10 @@
       <!-- optional, so .class files work with older JVMs: <compilerarg line="-target 5"/> -->
       <compilerarg value="-implicit:class"/>
       <compilerarg line="-Xmaxwarns 10000"/>
-      <compilerarg value="-J-Xbootclasspath/p:${env.CHECKERS}/binary/jsr308-all.jar"/>
+      <compilerarg value="-J-Xbootclasspath/p:${env.CHECKERS}/dist/checker.jar"/>
 
       <classpath>
-        <pathelement location="${env.CHECKERS}/binary/checkers.jar"/>
+        <pathelement location="${env.CHECKERS}/dist/checker.jar"/>
       </classpath>
     </javac>
   </presetdef>
@@ -28,7 +28,7 @@
           depends="clean">
     <mkdir dir="bin"/>
     <jsr308.javac fork="true" srcdir="src" destdir="bin" includeantruntime="false">
-      <compilerarg line="-processor checkers.nullness.NullnessChecker"/>
+      <compilerarg line="-processor org.checkerframework.checker.nullness.NullnessChecker"/>
       <compilerarg value="-Xbootclasspath/p:${env.CHECKERS}/jdk/jdk.jar"/>
     </jsr308.javac>
   </target>
@@ -38,7 +38,7 @@
           depends="clean">
     <mkdir dir="bin"/>
     <jsr308.javac fork="true" srcdir="src" destdir="bin" includeantruntime="false">
-      <compilerarg line="-processor checkers.nullness.NullnessChecker"/>
+      <compilerarg line="-processor org.checkerframework.checker.nullness.NullnessChecker"/>
       <compilerarg value="-Xbootclasspath/p:${env.CHECKERS}/jdk/jdk.jar"/>
       <compilerarg value="-Awarns"/>
     </jsr308.javac>

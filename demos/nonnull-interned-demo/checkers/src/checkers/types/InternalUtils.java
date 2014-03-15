@@ -1,6 +1,6 @@
 package checkers.types;
 
-import checkers.quals.*;
+
 
 import javax.lang.model.element.*;
 
@@ -15,7 +15,7 @@ import com.sun.tools.javac.tree.JCTree.*;
  * methods in this class depend on the use of Sun javac internals; any procedure
  * in the checkers framework that uses a non-public API should be placed here.
  */
-@DefaultQualifier(checkers.nullness.quals.NonNull.class)
+@DefaultQualifier(NonNull.class)
 public class InternalUtils {
     
     /** Cannot be instantiated. */

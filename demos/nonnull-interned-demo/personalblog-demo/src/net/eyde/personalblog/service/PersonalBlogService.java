@@ -17,7 +17,7 @@ import net.sf.hibernate.cfg.Configuration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import checkers.tainting.quals.Untainted;
+import org.checkerframework.checker.tainting.qual.Untainted;
 
 /**
  *

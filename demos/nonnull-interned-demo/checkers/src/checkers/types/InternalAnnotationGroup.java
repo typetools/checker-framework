@@ -1,6 +1,6 @@
 package checkers.types;
 
-import checkers.quals.*;
+
 
 import java.util.*;
 
@@ -12,7 +12,7 @@ import com.sun.source.util.TreeScanner;
  * Represents a group of annotations and their associated element. Useful for
  * {@link TreeScanner}s.
  */
-@DefaultQualifier(checkers.nullness.quals.NonNull.class)
+@DefaultQualifier(NonNull.class)
 final class InternalAnnotationGroup implements Iterable<InternalAnnotation> {
 
     /** An annotation group with no annotations. */

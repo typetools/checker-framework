@@ -1,29 +1,27 @@
 package tests.reflection;
 
-import checkers.basetype.BaseTypeChecker;
-import checkers.quals.Bottom;
-import checkers.quals.TypeQualifiers;
-import checkers.reflection.ReflectionResolutionAnnotatedTypeFactory;
-import checkers.types.QualifierHierarchy;
-import checkers.units.quals.Mass;
-import checkers.units.quals.UnknownUnits;
-import checkers.units.quals.g;
-import checkers.units.quals.kg;
-import checkers.util.GraphQualifierHierarchy;
-import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
-
-import javacutils.AnnotationUtils;
-
 import javax.lang.model.element.AnnotationMirror;
+
+import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.common.reflection.ReflectionResolutionAnnotatedTypeFactory;
+import org.checkerframework.framework.qual.Bottom;
+import org.checkerframework.framework.qual.TypeQualifiers;
+import org.checkerframework.framework.qual.Unqualified;
+import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.util.GraphQualifierHierarchy;
+import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.javacutil.AnnotationUtils;
+
+import tests.util.Even;
+import tests.util.Odd;
 
 /**
  * AnnotatedTypeFactory with reflection resolution enabled. The used qualifier
  * hierarchy is straightforward and only intended for test purposes.
- * 
+ *
  * @author rjust
  */
-@TypeQualifiers({ Mass.class, kg.class, g.class, Bottom.class,
-        UnknownUnits.class })
+@TypeQualifiers({ Even.class, Odd.class, Bottom.class, Unqualified.class })
 public final class ReflectionTestAnnotatedTypeFactory extends
         ReflectionResolutionAnnotatedTypeFactory {
     public ReflectionTestAnnotatedTypeFactory(BaseTypeChecker checker) {

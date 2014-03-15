@@ -10,7 +10,7 @@ import javax.lang.model.util.Elements;
 
 import java.util.*;
 
-import checkers.quals.*;
+
 
 import checkers.types.*;
 

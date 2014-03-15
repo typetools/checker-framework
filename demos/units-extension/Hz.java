@@ -1,7 +1,6 @@
 import java.lang.annotation.*;
 
-import checkers.quals.*;
-import checkers.units.quals.*;
+import org.checkerframework.framework.qual.*;
 
 /**
  * Hertz (Hz), a unit of frequency.

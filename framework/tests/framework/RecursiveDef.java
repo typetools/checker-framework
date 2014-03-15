@@ -1,5 +1,5 @@
 
 class Addressable<T extends Addressable> implements Comparable<T> {
-    @dataflow.quals.Pure
+    @org.checkerframework.dataflow.qual.Pure
     public int compareTo(T t) { return 0; }
 }

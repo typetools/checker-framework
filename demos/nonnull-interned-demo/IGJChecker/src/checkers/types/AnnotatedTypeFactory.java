@@ -7,7 +7,6 @@ import javax.lang.model.element.*;
 import javax.lang.model.type.*;
 import javax.lang.model.util.*;
 
-import checkers.nullness.quals.*;
 import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import checkers.types.AnnotatedTypeMirror.AnnotatedPrimitiveType;
@@ -66,9 +65,9 @@ public class AnnotatedTypeFactory {
     private final AnnotatedDeclaredType objectType;
 
     /** Various Caches **/
-    private Map<Tree, @Immutable AnnotatedTypeMirror> treeCache = createLRUCache(CACHE_SIZE);
-    private Map<Element, AnnotatedTypeMirror> elementCache = createLRUCache(CACHE_SIZE);
-    private Map<Element, Tree> elementToTreeCache  = createLRUCache(CACHE_SIZE);
+    private final Map<Tree, @Immutable AnnotatedTypeMirror> treeCache = createLRUCache(CACHE_SIZE);
+    private final Map<Element, AnnotatedTypeMirror> elementCache = createLRUCache(CACHE_SIZE);
+    private final Map<Element, Tree> elementToTreeCache  = createLRUCache(CACHE_SIZE);
 
     /**
      * Constructs a factory from the given {@link ProcessingEnvironment}
@@ -681,7 +680,7 @@ public class AnnotatedTypeFactory {
         return supertypes;
     }
 
-    private SuperTypeFinder superTypeFinder = new SuperTypeFinder();
+    private final SuperTypeFinder superTypeFinder = new SuperTypeFinder();
     private class SuperTypeFinder extends
     SimpleAnnotatedTypeVisitor<List<? extends AnnotatedTypeMirror>, Void> {
 
@@ -887,7 +886,7 @@ public class AnnotatedTypeFactory {
     /**
      *
      */
-    private AnnotatedTypeScanner<Void, Map<TypeParameterElement, AnnotatedTypeMirror>>
+    private final AnnotatedTypeScanner<Void, Map<TypeParameterElement, AnnotatedTypeMirror>>
         replacer = new AnnotatedTypeScanner<Void, Map<TypeParameterElement, AnnotatedTypeMirror>>() {
 
         public Void visitDeclared(AnnotatedDeclaredType type, Map<TypeParameterElement, AnnotatedTypeMirror> mapping) {

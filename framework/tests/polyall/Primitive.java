@@ -1,4 +1,4 @@
-import checkers.quals.PolyAll;
+import org.checkerframework.framework.qual.PolyAll;
 import polyall.quals.*;
 
 class Primitive {

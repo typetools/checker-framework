@@ -1,9 +1,9 @@
-import checkers.util.test.*;
+import org.checkerframework.framework.test.*;
 
 import java.util.*;
-import dataflow.quals.Pure;
-import dataflow.quals.Pure.Kind;
-import checkers.quals.*;
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.Pure.Kind;
+import org.checkerframework.framework.qual.*;
 import tests.util.*;
 
 // various tests for the checker to automatically suggest pure methods (most methods have been copied from Purity.java)

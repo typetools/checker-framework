@@ -1,10 +1,6 @@
 package java.lang;
 
-import java.util.Locale;
-
-import checkers.nullness.quals.*;
-
-@checkers.quals.DefaultQualifier(checkers.nullness.quals.NonNull.class)
+@DefaultQualifier(NonNull.class)
 
 public final class String implements java.io.Serializable, java.lang.Comparable<java.lang.String>, java.lang.CharSequence {
   private static final long serialVersionUID = 0;
@@ -76,7 +72,7 @@ public final class String implements java.io.Serializable, java.lang.Comparable<
   public java.lang.String toString() { throw new RuntimeException("skeleton method"); }
   public char[] toCharArray() { throw new RuntimeException("skeleton method"); }
   public static java.lang.String format(java.lang.String a1, @Nullable Object... a2) { throw new RuntimeException("skeleton method"); }
-  public static java.lang.String format(@Nullable Locale a1, java.lang.String a2, @Nullable Object... a3) { throw new RuntimeException("skeleton method"); }
+  public static java.lang.String format(java.util.@Nullable Locale a1, java.lang.String a2, @Nullable Object... a3) { throw new RuntimeException("skeleton method"); }
   public static java.lang.String valueOf(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }
   public static java.lang.String valueOf(char[] a1) { throw new RuntimeException("skeleton method"); }
   public static java.lang.String valueOf(char[] a1, int a2, int a3) { throw new RuntimeException("skeleton method"); }

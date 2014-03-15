@@ -1,6 +1,6 @@
 package checkers.types;
 
-import checkers.quals.*;
+
 
 import java.util.ArrayList;
 import java.util.Collections;

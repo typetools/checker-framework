@@ -1,0 +1,9 @@
+#Organize Import Order
+#Wed Jul 17 14:09:04 PDT 2013
+6=com
+5=org
+4=javax
+3=java
+2=org.checkerframework.javacutil
+1=org.checkerframework.dataflow
+0=org.checkerframework.checker

@@ -15,7 +15,7 @@ import javax.lang.model.element.*;
 import javax.lang.model.type.*;
 import javax.lang.model.util.*;
 
-import checkers.quals.*;
+
 import checkers.types.AnnotationData;
 import checkers.types.AnnotationLocation;
 import checkers.util.GenericsUtils.LocationVisitor;
@@ -25,7 +25,7 @@ import checkers.util.GenericsUtils.LocationVisitor;
  * 
  */
 // TODO: This class needs significant restructuring
-@DefaultQualifier(checkers.nullness.quals.NonNull.class)
+@DefaultQualifier(NonNull.class)
 public final class TypesUtils {
 
     private ProcessingEnvironment env;

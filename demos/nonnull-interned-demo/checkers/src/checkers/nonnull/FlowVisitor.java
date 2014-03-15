@@ -1,6 +1,5 @@
 package checkers.nonnull;
 
-import checkers.quals.*;
 import checkers.types.*;
 
 import com.sun.source.tree.*;
@@ -20,9 +19,9 @@ import static checkers.types.InternalUtils.*;
  * checked variable is nonnull. For local variables, the scope ends where the
  * variable is first reassigned; for fields and method parameters, the scope
  * ends where the variable is first reassigned or where it is first passed as
- * an argument to a method. 
+ * an argument to a method.
  */
-@DefaultQualifier(checkers.nullness.quals.NonNull.class)
+@DefaultQualifier(NonNull.class)
 class FlowVisitor extends TreePathScanner<Void, Void> {
 
     /** The root of the source tree (required for pathfinding). */
@@ -35,7 +34,7 @@ class FlowVisitor extends TreePathScanner<Void, Void> {
     private final Deque<FlowScope> scopes = new ArrayDeque<FlowScope>();
 
     /** A stack of scopes for method-wide checks (asserts, returns). */
-    private final Deque<Set<FlowScope>> methodScopes 
+    private final Deque<Set<FlowScope>> methodScopes
         = new ArrayDeque<Set<FlowScope>>();
 
     /** The set of completed scopes. */
@@ -49,7 +48,7 @@ class FlowVisitor extends TreePathScanner<Void, Void> {
      * subtree of the given tree root. It uses the provided {@link
      * SourcePositions} to determine a range of positions for which an element
      * is nonnull.
-     * 
+     *
      * @param root the root of the subtree that will be checked
      * @param srcPos {@link SourcePositions} for producing ranges
      * @param factory the factory to use for determining the @NonNull-ness of a
@@ -61,7 +60,7 @@ class FlowVisitor extends TreePathScanner<Void, Void> {
         this.srcPos = srcPos;
         this.factory = factory;
     }
-    
+
     /**
      * Retrieves the results of the completed analysis.
      *
@@ -70,16 +69,16 @@ class FlowVisitor extends TreePathScanner<Void, Void> {
     public Set<? extends FlowScope> getResults() {
         return Collections.<@NonNull FlowScope>unmodifiableSet(results);
     }
-    
+
     @Override
     public @Nullable Void visitMethod(MethodTree node, Void p) {
 
         HashSet<FlowScope> thisMethodScopes = new HashSet<FlowScope>();
         methodScopes.push(thisMethodScopes);
-        
+
         super.visitMethod(node, p);
 
-        
+
         methodScopes.pop();
 
         for (FlowScope scope : thisMethodScopes) {
@@ -88,7 +87,7 @@ class FlowVisitor extends TreePathScanner<Void, Void> {
         }
 
         results.addAll(thisMethodScopes);
-        
+
         return null;
     }
 
@@ -104,16 +103,16 @@ class FlowVisitor extends TreePathScanner<Void, Void> {
         @Nullable Element nnElement = InternalUtils.symbol(nnExpression);
         if (nnElement == null)
             throw new AssertionError(nnExpression + " has no Element");
-        
-        FlowScope scope = new FlowScope(nnElement, 
-                    srcPos.getEndPosition(root, nnExpression)); 
+
+        FlowScope scope = new FlowScope(nnElement,
+                    srcPos.getEndPosition(root, nnExpression));
         scope.complete(srcPos.getEndPosition(root, node));
         results.add(scope);
-        
+
         // TODO: this might not be necessary, as an optimization
         return super.visitBinary(node, p);
     }
-    
+
     @Override
     public @Nullable Void visitAssert(AssertTree node, Void p) {
 
@@ -126,13 +125,13 @@ class FlowVisitor extends TreePathScanner<Void, Void> {
         @Nullable Element nnElement = InternalUtils.symbol(nnExpression);
         if (nnElement == null)
             throw new AssertionError(nnExpression + " has no Element");
-        
-        FlowScope scope = new FlowScope(nnElement, 
-                    srcPos.getEndPosition(root, node.getCondition())); 
+
+        FlowScope scope = new FlowScope(nnElement,
+                    srcPos.getEndPosition(root, node.getCondition()));
         methodScopes.peek().add(scope);
 
         return super.visitAssert(node, p);
-        
+
     }
 
     @Override
@@ -148,7 +147,7 @@ class FlowVisitor extends TreePathScanner<Void, Void> {
             return super.visitWhileLoop(node, p);
 
         ExpressionTree nnExpression = cond.getOperand();
-        
+
         @Nullable Element nnElement = InternalUtils.symbol(nnExpression);
         if (nnElement == null)
             throw new AssertionError(nnExpression + " has no Element");
@@ -157,9 +156,9 @@ class FlowVisitor extends TreePathScanner<Void, Void> {
                 srcPos.getStartPosition(root, stmt));
         scopes.push(scope);
 
-        boolean terminates = checkReturnOrThrow(stmt); 
+        boolean terminates = checkReturnOrThrow(stmt);
         if (terminates) {
-            FlowScope retScope = 
+            FlowScope retScope =
                 new FlowScope(nnElement, srcPos.getEndPosition(root, node));
             methodScopes.peek().add(retScope);
         }
@@ -175,7 +174,7 @@ class FlowVisitor extends TreePathScanner<Void, Void> {
         results.add(scope);
         return null;
     }
-    
+
     @Override
     public @Nullable Void visitIf(IfTree node, Void p) {
 
@@ -184,8 +183,8 @@ class FlowVisitor extends TreePathScanner<Void, Void> {
         // "if (x == null)" check, respectively.
         //
         // nnExpression is the variable that the check makes nonnull, e.g., "x"
-        // in "if (x != null)". 
-        
+        // in "if (x != null)".
+
         @Nullable FlowCondition cond = FlowCondition.create(node.getCondition());
         if (cond == null)
             return super.visitIf(node, p);
@@ -219,11 +218,11 @@ class FlowVisitor extends TreePathScanner<Void, Void> {
 
         boolean terminates = checkReturnOrThrow(otherStatement);
         if (terminates) {
-            FlowScope retScope 
-                = new FlowScope(nnElement, srcPos.getEndPosition(root, node)); 
+            FlowScope retScope
+                = new FlowScope(nnElement, srcPos.getEndPosition(root, node));
             methodScopes.peek().add(retScope);
         }
-            
+
         // Continue scanning the if statement's "then" and "else" blocks.
         super.visitIf(node, p);
 
@@ -271,12 +270,12 @@ class FlowVisitor extends TreePathScanner<Void, Void> {
         }
         return false;
     }
-    
-    private boolean checkReturnOrThrow(StatementTree statement) { 
+
+    private boolean checkReturnOrThrow(StatementTree statement) {
 
         if (statement == null)
             return false;
-       
+
         if (statement.getKind() == Tree.Kind.BLOCK) {
            for (StatementTree s : ((BlockTree)statement).getStatements())
                if (terminates(s))
@@ -289,7 +288,7 @@ class FlowVisitor extends TreePathScanner<Void, Void> {
 
     private void appendScopeFromPosition(Element elt, long pos) {
 
-        FlowScope scope = new FlowScope(elt, pos); 
+        FlowScope scope = new FlowScope(elt, pos);
         methodScopes.peek().add(scope);
     }
 
@@ -307,11 +306,11 @@ class FlowVisitor extends TreePathScanner<Void, Void> {
             @Nullable Element nnElement = InternalUtils.symbol(node);
             if (nnElement == null)
                 throw new AssertionError(node.getName() + " has no Element");
-            
+
             if (nnElement.getKind() != ElementKind.LOCAL_VARIABLE) /*nnbug*/
                 return super.visitVariable(node, p);
 
-            FlowScope scope = new FlowScope(nnElement, 
+            FlowScope scope = new FlowScope(nnElement,
                         srcPos.getEndPosition(root, expr));
             if (!methodScopes.isEmpty())
                 methodScopes.peek().add(scope);
@@ -319,7 +318,7 @@ class FlowVisitor extends TreePathScanner<Void, Void> {
 
         return super.visitVariable(node, p);
     }
-    
+
     @Override
     public Void visitAssignment(AssignmentTree node, Void p) {
 
@@ -354,13 +353,13 @@ class FlowVisitor extends TreePathScanner<Void, Void> {
             @Nullable Element nnElement = InternalUtils.symbol(variable);
             if (nnElement == null)
                 throw new AssertionError(variable + " has no Element");
-            
-            FlowScope scope = new FlowScope(nnElement, 
+
+            FlowScope scope = new FlowScope(nnElement,
                         srcPos.getEndPosition(root, expr));
             if (!methodScopes.isEmpty())
                 methodScopes.peek().add(scope);
         }
-        
+
         return super.visitAssignment(node, p);
     }
 
@@ -371,10 +370,10 @@ class FlowVisitor extends TreePathScanner<Void, Void> {
         // If the most recent scope hasn't been completed and there's a method
         // invocation (and the scope element isn't a local variable), complete
         // the scope just before the method invocation.
-        if (scope != null && !scope.isComplete() 
+        if (scope != null && !scope.isComplete()
                 && scope.getElement().getKind() != ElementKind.LOCAL_VARIABLE)
             scope.complete(srcPos.getEndPosition(root, node.getMethodSelect()));
-        
+
         return super.visitMethodInvocation(node, p);
     }
 

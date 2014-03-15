@@ -1,6 +1,6 @@
 package checkers.types;
 
-import checkers.quals.*;
+
 
 import java.util.*;
 
@@ -16,7 +16,7 @@ import javax.lang.model.type.*;
  *
  * @see AnnotationFactory
  */
-@DefaultQualifier(checkers.nullness.quals.NonNull.class)
+@DefaultQualifier(NonNull.class)
 public interface AnnotationData {
 
     /**

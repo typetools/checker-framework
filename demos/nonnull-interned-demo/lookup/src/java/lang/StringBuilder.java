@@ -1,7 +1,5 @@
 package java.lang;
 
-import checkers.quals.*;
-
 public final class StringBuilder{
   public StringBuilder() { throw new RuntimeException("skeleton method"); }
   public StringBuilder(int a1) { throw new RuntimeException("skeleton method"); }

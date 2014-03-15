@@ -2,9 +2,6 @@ package org.junit;
 
 import org.junit.internal.ArrayComparisonFailure;
 
-import checkers.nullness.quals.NonNull;
-import checkers.quals.DefaultQualifier;
-
 /**
  * A set of assertion methods useful for writing tests. Only failed assertions are recorded.
  * These methods can be used directly: <code>Assert.assertEquals(...)</code>, however, they
@@ -17,7 +14,7 @@ import checkers.quals.DefaultQualifier;
  *
  * @see AssertionError
  */
-@DefaultQualifier(checkers.nullness.quals.Nullable.class)
+@DefaultQualifier(Nullable.class)
 public class Assert {
 	/**
 	 * Protect constructor since it is a static only class
