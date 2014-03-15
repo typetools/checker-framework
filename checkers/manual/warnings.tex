@@ -232,9 +232,11 @@ smaller scope, rather than using the \<-AsuppressWarnings> command-line option.
 
 \subsection{\code{@AssumeAssertion} string in an \<assert> message\label{assumeassertion}}
 
+\begin{sloppypar}
 You can suppress a warning by \<assert>ing that some property is true, and
 placing the string \<@AssumeAssertion(\emph{warningkey})> in the assertion
 message.
+\end{sloppypar}
 
 For example, in this code:
 
@@ -398,12 +400,14 @@ Each of the distributed checkers supports at least the following lint options:
   \code{cast} Enable or disable all cast-related warnings.
 
 \item
+\begin{sloppypar}
   \code{all} Enable or disable all lint warnings, including
   checker-specific ones if any.  Examples include \code{redundantNullComparison} for the
   Nullness Checker (see Section~\ref{lint-nulltest}) and \<dotequals> for
   the Interning Checker (see Section~\ref{lint-dotequals}).  This option
   does not enable/disable the checker's standard checks, just its optional
   ones.
+\end{sloppypar}
 
 \item
   \code{none} The inverse of \<all>:  disable or enable all lint warnings,
@@ -594,20 +598,24 @@ ignore the
 they do not support annotations in comments.  Thus, your code can compile
 whether or not the Type Annotations compiler is being used.
 
+\begin{sloppypar}
 You can specify multiple packages/classes separated by the classpath separator
 (same as the file path separator:  \<;> for Windows, and \<:> for Unix and
 Mac).  For example, to implicitly import the Nullness, Interning, and dataflow
 qualifiers, set \code{jsr308\_imports} to
 \code{checkers.nullness.quals.*:checkers.interning.quals.*:dataflow.quals.*}.
+\end{sloppypar}
 
 Three ways to set an environment variable are:
 \begin{itemize}
 \item
+\begin{sloppypar}
   Set the environment variable in your shell.  For example, in bash, you
   could do \code{export jsr308\_imports='checkers.nullness.quals.*:dataflow.quals.*'}.
   This takes effect for all subsequent commands in that shell.  To take
   effect for all shells that you run, put the command in your
   \verb|~/.bashrc| file.
+\end{sloppypar}
 \item
   Set the environment variable for a single command.  For example, in bash
   prefix the \code{javac} command by

@@ -48,12 +48,14 @@ Checker) include the Fake Enumeration Checker
 Or, you can copy and then modify a different existing checker --- whether
 one distributed with the Checker Framework or a third-party one.
 
+\begin{sloppypar}
 You can place your checker's source files wherever you like.  When you
 compile your checker, \<\$CHECKERS/binary/checkers.jar> and \<\$CHECKERS/binary/javac.jar>
 should be on your classpath.  (If you wish to modify an existing checker in place,
 or to place the source code for your new checker in your own private copy of the
 Checker Framework source code, then you need to be able to re-compile the
 Checker Framework, as described in Section~\ref{build-source}.)
+\end{sloppypar}
 
 The rest of this chapter contains many details for people who want to write more powerful
 checkers.
@@ -361,12 +363,14 @@ Note that the default will apply to any source code that the checker reads,
 including stub libraries, but will not apply to compiled \code{.class}
 files that the checker reads.
 
+\begin{sloppypar}
 Alternately, the type system designer may specify a default procedurally,
 by calling the
 \ahref{\addAbsoluteDefaultURL}{\<QualifierDefaults.addAbsoluteDefault>}
 method.  You may do this even if you have declaratively defined the
 qualifier hierarchy; see the Nullness Checker's implementation for an
 example.
+\end{sloppypar}
 
 
 Recall that defaults are distinct
@@ -517,9 +521,12 @@ specified via any combination of five fields in \refclass{checkers/quals}{Implic
   \item \code{types}: an array of
     \refModelclass{type}{TypeKind}, e.g., \code{ARRAY}
     or \code{BOOLEAN}
-  \item \code{treeClasses}: an array of class literals for classes
+  \item
+    \begin{sloppypar}
+    \code{treeClasses}: an array of class literals for classes
     implementing \refTreeclass{tree}{Tree}, e.g.,
     \code{LiteralTree.class} or \code{ExpressionTree.class}
+    \end{sloppypar}
   \item \code{typeClasses}: an array of class literals for classes
     implementing \code{javax.lang.model.type.TypeMirror}, e.g.,
     \code{javax.lang.model.type.PrimitiveType}.  Often you should use
@@ -772,6 +779,7 @@ named as \<FooChecker>, \<FooVisitor>, and \<FooAnnotatedTypeFactory>.
 reflectively construct the components.  Otherwise, the checker writer
 must specify the component classes for construction.
 
+\begin{sloppypar}
 A checker can customize the default error messages through a
 \sunjavadoc{java/util/Properties.html}{Properties}-loadable text file named
 \<messages.properties> that appears in the same directory as the checker class.
@@ -783,6 +791,7 @@ the checker defines.
 It is also allowed to override messages defined in superclasses, but this
 is rarely needed.
 For more details about message keys, see Section~\refwithpageparen{compiler-message-keys}.
+\end{sloppypar}
 
 
 \subsection{Bundling multiple checkers}
@@ -1183,9 +1192,11 @@ source code and classfiles.
 A \refModelclass{type}{TypeMirror} represents a Java type.
 % Java declaration, statement, or expression.
 
+\begin{sloppypar}
 There is a \code{TypeMirror} interface to represent each type kind,
 e.g., \code{PrimitiveType} for primitive types, \code{ExecutableType}
 for method types, and \code{NullType} for the type of the \code{null} literal.
+\end{sloppypar}
 
 \code{TypeMirror} does not represent annotated types though.  A checker
 should use the Checker Framework types API,
