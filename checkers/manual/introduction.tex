@@ -187,8 +187,11 @@ The installation process is simple!  It has two required steps and one
 optional step.
 \begin{enumerate}
 \item
-  Download the Checker Framework distribution
-  (\ahrefurl{http://types.cs.washington.edu/checker-framework/current/checkers.zip}).
+  Download the Checker Framework distribution:
+  %BEGIN LATEX
+  \\
+  %END LATEX
+  \ahrefurl{http://types.cs.washington.edu/checker-framework/current/checkers.zip}
 \item 
   Unzip it to create a \code{checker-framework} directory.
 
@@ -716,8 +719,9 @@ checker is a type of ``annotation processor''.
   to turn on parsing annotation comments even when they
   contain spaces; applicable only to the Type Annotations compiler;
   see Section~\ref{annotations-in-comments}
-\item \<-J> Supply an argument to the JVM that is running javac; example:
-  \<-J-Djsr308\_imports=checkers.nullness.quals.*:dataflow.quals.*>; see Section~\ref{implicit-import-statements}
+\item \<-J> Supply an argument to the JVM that is running javac; example: \\
+  \<-J-Djsr308\_imports=checkers.nullness.quals.*:dataflow.quals.*> \\
+  See Section~\ref{implicit-import-statements}
 \end{itemize}
 
 
@@ -728,11 +732,13 @@ plugin, even if you do not explicitly pass the \code{-processor}
 command-line option.  This can make your command line shorter, and ensures
 that your code is checked even if you forget the command-line option.
 
+\begin{sloppypar}
 To enable auto-discovery, place a configuration file named
 \code{META-INF/services/javax.annotation.processing.Processor}
 in your classpath.  The file contains the names of the checker plugins to
 be used, listed one per line.  For instance, to run the Nullness Checker and the
 Interning Checker automatically, the configuration file should contain:
+\end{sloppypar}
 
 %BEGIN LATEX
 \begin{smaller}
@@ -992,8 +998,10 @@ A subclass is permitted to \emph{strengthen} the contract; for example,
 if a method does \emph{not} accept \code{null} as an argument, then an
 overriding definition is permitted to accept \code{null}.
 
+\begin{sloppypar}
 As a bad example, consider an erroneous \code{@Nullable} annotation at
 line 141 of \ahref{\url{http://code.google.com/p/google-collections/source/browse/trunk/src/com/google/common/collect/Multiset.java}}{\code{com/google/common/collect/Multiset.java}}, version r78:
+\end{sloppypar}
 
 \begin{Verbatim}
 101  public interface Multiset<E> extends Collection<E> {
