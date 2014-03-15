@@ -1,7 +1,5 @@
 package daikon.chicory;
 
-import checkers.interning.quals.Interned;
-
 import utilMDE.*;
 
 import java.util.*;

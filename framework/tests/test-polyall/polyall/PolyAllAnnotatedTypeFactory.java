@@ -1,10 +1,10 @@
 package polyall;
 
-import checkers.basetype.BaseAnnotatedTypeFactory;
-import checkers.basetype.BaseTypeChecker;
-import checkers.types.QualifierHierarchy;
-import checkers.util.MultiGraphQualifierHierarchy;
-import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
+import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
+import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 
 public class PolyAllAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 

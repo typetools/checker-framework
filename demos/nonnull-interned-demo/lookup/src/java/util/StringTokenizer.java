@@ -1,6 +1,6 @@
 package java.util;
 
-import checkers.quals.*;
+
 
 public class StringTokenizer implements java.util.Enumeration<@NonNull Object> {
   public StringTokenizer(@NonNull String a1, @NonNull String a2, boolean a3) { throw new RuntimeException("skeleton method"); }

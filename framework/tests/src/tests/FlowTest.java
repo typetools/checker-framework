@@ -1,10 +1,9 @@
 package tests;
 
-import checkers.util.test.ParameterizedCheckerTest;
-
 import java.io.File;
 import java.util.Collection;
 
+import org.checkerframework.framework.test.ParameterizedCheckerTest;
 import org.junit.runners.Parameterized.Parameters;
 
 /**

@@ -1,6 +1,6 @@
 package java.lang.reflect;
 
-import checkers.quals.*;
+
 
 public abstract interface ParameterizedType{
   public abstract

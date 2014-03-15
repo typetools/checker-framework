@@ -1,12 +1,12 @@
-import checkers.util.test.*;
+import org.checkerframework.framework.test.*;
 
 import java.util.*;
-import checkers.quals.*;
+import org.checkerframework.framework.qual.*;
 import tests.util.*;
-import dataflow.quals.Deterministic;
-import dataflow.quals.Pure;
-import dataflow.quals.SideEffectFree;
-import dataflow.quals.Pure.Kind;
+import org.checkerframework.dataflow.qual.Deterministic;
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.dataflow.qual.Pure.Kind;
 
 // various tests for the @Pure annotation
 class Purity {
@@ -199,7 +199,7 @@ class Purity {
  
      class MyClass extends Object {
          //:: error: (purity.invalid.overriding)
-         public boolean equals(Object other) { return true; }
+         public int hashCode() { return 42; }
      }
 
 }

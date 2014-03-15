@@ -1,6 +1,6 @@
 package daikon.inv;
 
-import checkers.quals.*;
+
 
 /**
  * This class is an enumerated type representing the possible results of

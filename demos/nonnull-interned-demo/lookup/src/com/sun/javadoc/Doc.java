@@ -1,7 +1,5 @@
 package com.sun.javadoc;
 
-import checkers.quals.*;
-
 public abstract interface Doc extends java.lang.Comparable<java.lang.Object> {
   public abstract @NonNull java.lang.String commentText();
   public abstract @NonNull com.sun.javadoc.Tag[@NonNull] tags();

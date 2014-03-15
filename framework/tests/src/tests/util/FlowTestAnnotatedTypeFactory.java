@@ -1,15 +1,14 @@
 package tests.util;
 
-import checkers.basetype.BaseAnnotatedTypeFactory;
-import checkers.basetype.BaseTypeChecker;
-import checkers.quals.Bottom;
-import checkers.types.QualifierHierarchy;
-import checkers.util.GraphQualifierHierarchy;
-import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
-
-import javacutils.AnnotationUtils;
-
 import javax.lang.model.element.AnnotationMirror;
+
+import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
+import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.framework.qual.Bottom;
+import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.util.GraphQualifierHierarchy;
+import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.javacutil.AnnotationUtils;
 
 public class FlowTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     protected final AnnotationMirror VALUE, BOTTOM;

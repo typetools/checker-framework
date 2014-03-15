@@ -1,7 +1,5 @@
 package com.sun.javadoc;
 
-import checkers.quals.*;
-
 public abstract interface FieldDoc extends MemberDoc {
   public abstract @NonNull com.sun.javadoc.Type type();
   public abstract boolean isTransient();

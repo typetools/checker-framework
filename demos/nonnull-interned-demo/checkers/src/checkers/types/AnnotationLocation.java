@@ -1,6 +1,6 @@
 package checkers.types;
 
-import checkers.quals.*;
+
 
 import java.util.*;
 
@@ -37,7 +37,7 @@ import com.sun.source.tree.Tree;
  * </table>
  *
  */
-@DefaultQualifier(checkers.nullness.quals.NonNull.class)
+@DefaultQualifier(NonNull.class)
 public final class AnnotationLocation {
 
     /** The location for an annotation on a raw type. */

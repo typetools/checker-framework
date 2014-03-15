@@ -1,6 +1,6 @@
 package java.util.regex;
 
-import checkers.quals.*;
+
 
 public final class Pattern{
   public final static int UNIX_LINES = 1;

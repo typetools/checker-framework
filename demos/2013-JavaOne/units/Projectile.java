@@ -1,4 +1,3 @@
-import checkers.units.quals.*;
 
 
 class Projectile {
@@ -10,7 +9,7 @@ class Projectile {
                             @radians double launchAngle) {
     return Math.pow(launchVelocity, 2) * Math.sin(2 * launchAngle) / 9.81;
   }
-  
+
   // predicate in user code
   /** Returns true if the distance is beyond the range of the projectile. */
   boolean amISafe(@mPERs double launchVelocity,
@@ -33,13 +32,13 @@ class Projectile {
 
   void main() {
     init();
-    
+
     // Returns true!
     amISafe(myLaunchVelocity, myLaunchAngle, myDistance);
 
     // projectileRange(100, 45) => 912
     // projectileRange(100, MATH.pi/4) = 1020
-  }  
+  }
 
 }
 
@@ -59,5 +58,5 @@ class Projectile {
 
 /* Local Variables: */
 /* compile-command: "javac Projectile.java" */
-/* eval: (setq compile-history '("javac -processor checkers.units.UnitsChecker Projectile.java")) */
+/* eval: (setq compile-history '("javac -processor org.checkerframework.checker.units.UnitsChecker Projectile.java")) */
 /* End: */

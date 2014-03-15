@@ -1,7 +1,5 @@
 package checkers.nonnull;
 
-import checkers.quals.*;
-
 import com.sun.source.tree.*;
 import com.sun.source.util.*;
 
@@ -15,7 +13,7 @@ import com.sun.source.util.*;
  * ExpressionTree}s, a flow-sensitive analysis like {@link FlowVisitor} that
  * uses this class doesn't need to know about specific types of conditions.
  */
-@DefaultQualifier(checkers.nullness.quals.NonNull.class)
+@DefaultQualifier(NonNull.class)
 class FlowCondition {
    
     /** The operand for the conditional check. */

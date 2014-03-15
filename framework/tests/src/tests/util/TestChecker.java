@@ -1,20 +1,19 @@
 package tests.util;
 
-import checkers.basetype.BaseAnnotatedTypeFactory;
-import checkers.basetype.BaseTypeChecker;
-import checkers.basetype.BaseTypeVisitor;
-import checkers.quals.Bottom;
-import checkers.quals.TypeQualifiers;
-import checkers.quals.Unqualified;
-import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import checkers.types.QualifierHierarchy;
-import checkers.util.GraphQualifierHierarchy;
-import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
-
-import javacutils.AnnotationUtils;
-
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Elements;
+
+import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
+import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.common.basetype.BaseTypeVisitor;
+import org.checkerframework.framework.qual.Bottom;
+import org.checkerframework.framework.qual.TypeQualifiers;
+import org.checkerframework.framework.qual.Unqualified;
+import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.framework.util.GraphQualifierHierarchy;
+import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.javacutil.AnnotationUtils;
 
 import com.sun.source.tree.Tree;
 

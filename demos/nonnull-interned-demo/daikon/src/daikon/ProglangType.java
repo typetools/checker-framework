@@ -5,8 +5,6 @@ import java.io.*;
 
 import utilMDE.*;
 
-import checkers.interning.quals.Interned;
-
 /**
  * Represents the type of a variable, for its declared, dtrace file
  * representation, and internal representations.  ProgLangTypes are

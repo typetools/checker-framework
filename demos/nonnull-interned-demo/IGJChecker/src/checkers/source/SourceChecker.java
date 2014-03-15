@@ -7,7 +7,7 @@ import javax.annotation.processing.*;
 import javax.lang.model.element.*;
 import javax.tools.Diagnostic;
 
-import checkers.quals.*;
+
 import checkers.types.*;
 import checkers.util.*;
 

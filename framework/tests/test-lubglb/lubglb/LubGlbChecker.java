@@ -1,14 +1,13 @@
 package lubglb;
 
-import checkers.basetype.BaseTypeChecker;
-import checkers.basetype.BaseTypeVisitor;
-import checkers.quals.TypeQualifiers;
-import checkers.types.QualifierHierarchy;
-
-import javacutils.AnnotationUtils;
-
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Elements;
+
+import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.common.basetype.BaseTypeVisitor;
+import org.checkerframework.framework.qual.TypeQualifiers;
+import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.javacutil.AnnotationUtils;
 
 import lubglb.quals.A;
 import lubglb.quals.B;

@@ -1,6 +1,6 @@
-import checkers.quals.DefaultQualifiers;
-import checkers.quals.DefaultQualifier;
-import checkers.quals.DefaultLocation;
+import org.checkerframework.framework.qual.DefaultQualifiers;
+import org.checkerframework.framework.qual.DefaultQualifier;
+import org.checkerframework.framework.qual.DefaultLocation;
 
 import polyall.quals.*;
 

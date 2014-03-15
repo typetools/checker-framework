@@ -8,9 +8,6 @@ import java.util.*;
 
 import utilMDE.*;
 
-import checkers.interning.quals.Interned;
-
-
 /**
  * This is the data structure that holds the tuples of values seen so far
  * (and how many times each was seen) for a particular program point.  VarInfo

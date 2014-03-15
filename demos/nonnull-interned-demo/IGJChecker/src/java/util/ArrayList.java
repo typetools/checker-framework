@@ -1,5 +1,4 @@
 package java.util;
-import checkers.igj.quals.*;
 
 @I
 public class ArrayList<E> extends java.util. @I AbstractList<E> implements java.util. @I List<E>, java.util. @I RandomAccess, java.lang. @I Cloneable, java.io. @I Serializable {

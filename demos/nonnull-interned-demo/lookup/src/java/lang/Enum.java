@@ -1,7 +1,5 @@
 package java.lang;
 
-import checkers.quals.*;
-
 public abstract class Enum<E extends java.lang.Enum<E>> implements java.lang.Comparable<E>, java.io.Serializable {
   public final java.lang.String name() { throw new RuntimeException("skeleton method"); }
   public final int ordinal() { throw new RuntimeException("skeleton method"); }

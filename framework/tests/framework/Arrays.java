@@ -1,5 +1,4 @@
 import java.lang.annotation.*;
-import checkers.interning.quals.Interned;
 import tests.util.*;
 
 class Arrays {
@@ -35,21 +34,22 @@ class Arrays {
 
         // w/175:
         @D Object @C [] @B [] @A [] o3;
+    }
 
-
+    void moreTest() {
         // Assignments:
 
-        @Interned String[] s = null;
-        String @Interned [] t = null;
+        String[] s = null;
+        String [] t = null;
 
         s[0] = null;
         t[0] = null;
 
-        (new @Interned String[1])[0] = null;
-        (new String @Interned [1])[0] = null;
+        (new String[1])[0] = null;
+        (new String [1])[0] = null;
 
-        (new @Interned String[] { "foo" })[0] = null;
-        (new String @Interned [] { "foo" })[0] = null;
+        (new String[] { "foo" })[0] = null;
+        (new String [] { "foo" })[0] = null;
     }
 
     void test2() {

@@ -1,7 +1,5 @@
 package java.lang;
 
-import checkers.quals.*;
-
 public class Object{
   public Object() { throw new RuntimeException("skeleton method"); }
   public boolean equals(@Nullable Object a1) { throw new RuntimeException("skeleton method"); }

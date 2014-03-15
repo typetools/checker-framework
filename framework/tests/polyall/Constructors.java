@@ -1,4 +1,4 @@
-import checkers.quals.*;
+import org.checkerframework.framework.qual.*;
 import polyall.quals.*;
 
 class Constructors {
@@ -54,10 +54,10 @@ class Constructors {
         @H1S2 @H2S2 Constructors e5 = new @H1S2 Constructors(p);
     }
 
-    @checkers.nullness.quals.Nullable @H1Poly @H2Poly Constructors(@H1Poly @H2Poly String s, int i) {}
+    @tests.util.Encrypted @H1Poly @H2Poly Constructors(@H1Poly @H2Poly String s, int i) {}
 
     void test4(@H1S1 @H2S2 String p) {
         @H1S1 @H2S2 Constructors c1 = new Constructors(p, 4);
-        @H1S1 @H2S2 Constructors c2 = new @checkers.nullness.quals.Nullable Constructors(p);
+        @H1S1 @H2S2 Constructors c2 = new @tests.util.Encrypted Constructors(p);
     }
 }

@@ -14,7 +14,7 @@ import com.sun.source.tree.*;
 import com.sun.source.util.SimpleTreeVisitor;
 import com.sun.tools.javac.tree.JCTree;
 
-import checkers.quals.*;
+
 
 /**
  * Generates AnnotatedTypeMirrors with Javari annotations from Trees and Elements.

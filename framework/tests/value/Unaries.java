@@ -1,4 +1,4 @@
-import checkers.value.quals.*;
+import org.checkerframework.common.value.qual.*;
 
 class Unaries {
 

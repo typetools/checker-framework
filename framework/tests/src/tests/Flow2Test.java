@@ -1,15 +1,14 @@
 package tests;
 
-import checkers.util.test.ParameterizedCheckerTest;
-
 import java.io.File;
 import java.util.Collection;
 
+import org.checkerframework.framework.test.ParameterizedCheckerTest;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
  * Tests for the flow-sensitive part of the framework. These tests complement
- * the tests of {@link FlowTest} and have been written when the dataflow
+ * the tests of {@link FlowTest} and have been written when the org.checkerframework.dataflow
  * analysis has been completely rewritten.
  *
  * @author Stefan Heule

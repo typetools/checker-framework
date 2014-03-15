@@ -1,18 +1,18 @@
-import checkers.util.test.*;
+import org.checkerframework.framework.test.*;
 import java.util.*;
 
-import dataflow.quals.Deterministic;
-import dataflow.quals.Pure;
-import checkers.quals.*;
+import org.checkerframework.dataflow.qual.Deterministic;
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.framework.qual.*;
 import tests.util.*;
 
 // various tests about keeping information in the store about pure method calls
 class StorePure {
-    
+
     String f1, f2;
-    
+
     // various pure methods
-    
+
     @Pure String pure1() { return null; }
     @Pure String pure1b() { return null; }
     @Deterministic String pure1c() { return null; }
@@ -20,7 +20,7 @@ class StorePure {
     @Pure String pure3(boolean b) { return null; }
     @Pure String pure4(String o) { return null; }
     void nonpure() {}
-    
+
     void t1(@Odd String p1, String p2, boolean b1) {
         String l0 = "";
         if (pure1() == p1) {
@@ -34,14 +34,14 @@ class StorePure {
             @Odd String l3 = pure1();
         }
     }
-    
+
     // check that it only works for deterministic methods
     void t1b(@Odd String p1, String p2, boolean b1) {
         if (pure1c() == p1) {
             @Odd String l1 = pure1c();
         }
     }
-    
+
     void t2(@Odd String p1, String p2, boolean b1) {
         String l0 = "";
         if (pure1() == p1) {
@@ -55,7 +55,7 @@ class StorePure {
             @Odd String l3 = pure1();
         }
     }
-    
+
     void t3(@Odd String p1, String p2, boolean b1) {
         String l0 = "";
         if (pure2(1) == p1) {
@@ -69,7 +69,7 @@ class StorePure {
             @Odd String l3 = pure2(1);
         }
     }
-    
+
     void t4(@Odd String p1, String p2, boolean b1) {
         String l0 = "";
         if (pure2(1) == p1) {
@@ -83,7 +83,7 @@ class StorePure {
             @Odd String l3 = pure2(1);
         }
     }
-    
+
     void t5(@Odd String p1, String p2, boolean b1) {
         String l0 = "";
         if (pure3(true) == p1) {
@@ -97,7 +97,7 @@ class StorePure {
             @Odd String l3 = pure3(true);
         }
     }
-    
+
     void t6(@Odd String p1, String p2, boolean b1) {
         String l0 = "";
         if (pure3(true) == p1) {
@@ -111,7 +111,7 @@ class StorePure {
             @Odd String l3 = pure3(true);
         }
     }
-    
+
     // local variable as argument
     void t7(@Odd String p1, String p2, boolean b1) {
         String l0 = "";

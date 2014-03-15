@@ -24,16 +24,14 @@ Makefile.user
 
 # build files
 api
-bin
 build
-# doc is obsolete
-doc
-javaparser/docs/api
+dist
+stubparser/docs/api
 *.jar
-checkers/jdk/**/*.class
-checkers/jdk/jdk.jar
+checker/jdk/**/*.class
+checker/jdk/jdk.jar
 *.pyc
-checkers/binary/buildbin
+checker/binary/buildbin
 demos/nonnull-interned-demo/**/*.class
 demos/units-extension/*.class
 
@@ -63,30 +61,30 @@ manual003.gif
 manual003.png
 manual004.gif
 manual004.png
-checkers/manual/figures/*.eps
-checkers/manual/figures/*.pdf
-checkers/manual/figures/*.png
-checkers/manual/figures/signature-types-with-canonicalname.dia
-checkers/manual/*.png
+checker/manual/figures/*.eps
+checker/manual/figures/*.pdf
+checker/manual/figures/*.png
+checker/manual/figures/signature-types-with-canonicalname.dia
+checker/manual/*.png
 
 # dataflow manual
-checkers/manual/dataflow-manual/dataflow.aux
-checkers/manual/dataflow-manual/dataflow.dvi
-checkers/manual/dataflow-manual/dataflow.log
-checkers/manual/dataflow-manual/dataflow.out
-checkers/manual/dataflow-manual/dataflow.pdf
+checker/manual/dataflow-manual/dataflow.aux
+checker/manual/dataflow-manual/dataflow.dvi
+checker/manual/dataflow-manual/dataflow.log
+checker/manual/dataflow-manual/dataflow.out
+checker/manual/dataflow-manual/dataflow.pdf
 
-checkers/tests/nullness-extra/*.class
-checkers/tests/nullness-extra/compat/Out.txt
-checkers/tests/nullness-extra/compat/javax/annotation/Nullable.class
-checkers/tests/nullness-extra/compat/lib/Lib.class
-checkers/tests/nullness-extra/multiple-errors/*.class
-checkers/tests/nullness-extra/multiple-errors/Out.txt
-checkers/tests/nullness-extra/package-anno/Out.txt
-checkers/tests/nullness-extra/package-anno/test/*.class
-checkers/tests/nullness/generics/*.class
-checkers/tests/nullness-temp/*.java
-checkers/tests/nullness-temp/*.class
+checker/tests/nullness-extra/*.class
+checker/tests/nullness-extra/compat/Out.txt
+checker/tests/nullness-extra/compat/javax/annotation/Nullable.class
+checker/tests/nullness-extra/compat/lib/Lib.class
+checker/tests/nullness-extra/multiple-errors/*.class
+checker/tests/nullness-extra/multiple-errors/Out.txt
+checker/tests/nullness-extra/package-anno/Out.txt
+checker/tests/nullness-extra/package-anno/test/*.class
+checker/tests/nullness/generics/*.class
+checker/tests/nullness-temp/*.java
+checker/tests/nullness-temp/*.class
 
 # release tmps
 tmp
@@ -107,4 +105,4 @@ syntax: regexp
 (.*/)?\.\#.*
 
 syntax: regexp
-^checkers/tests/nullness-extra/multiple-errors/Out\.txt$
+^checker/tests/nullness-extra/multiple-errors/Out\.txt$

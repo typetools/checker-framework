@@ -1,5 +1,5 @@
 JAVAC=../lib/javac.jar
-CHECKERS=../lib/checkers.jar
+CHECKERS=../lib/checker.jar
 
 lookup:
-	javac -cp $(CHECKERS) -processor checkers.nullness.NullnessChecker -sourcepath src:jdk/src src/utilMDE/UtilMDE.java
+	javac -cp $(CHECKERS) -processor org.checkerframework.checker.nullness.NullnessChecker -sourcepath src:jdk/src src/utilMDE/UtilMDE.java

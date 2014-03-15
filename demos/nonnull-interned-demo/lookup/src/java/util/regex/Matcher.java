@@ -1,6 +1,6 @@
 package java.util.regex;
 
-import checkers.quals.*;
+
 
 public final class Matcher{
   public @NonNull Pattern pattern() { throw new RuntimeException("skeleton method"); }

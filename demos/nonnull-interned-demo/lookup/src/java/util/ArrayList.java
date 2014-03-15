@@ -1,6 +1,6 @@
 package java.util;
 
-import checkers.quals.*;
+
 
 public class ArrayList<E> extends java.util.AbstractList<E> implements java.util.List<E>, java.util.RandomAccess, java.lang.Cloneable, java.io.Serializable {
   public ArrayList(int a1) { throw new RuntimeException("skeleton method"); }

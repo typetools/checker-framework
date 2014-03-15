@@ -1,6 +1,6 @@
 package checkers.types;
 
-import checkers.quals.*;
+
 
 import com.sun.source.tree.Tree;
 
@@ -15,7 +15,7 @@ import javax.lang.model.util.*;
  * Creates new annotations or converts existing annotations in the internal
  * annotation representation ({@link AnnotationData}) used by this framework.
  */ 
-@DefaultQualifier(checkers.nullness.quals.NonNull.class)
+@DefaultQualifier(NonNull.class)
 public class AnnotationFactory {
 
     // TODO: move creation methods from InternalAnnotation to this class

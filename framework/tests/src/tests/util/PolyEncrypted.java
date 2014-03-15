@@ -1,10 +1,10 @@
 package tests.util;
 
-import checkers.quals.PolymorphicQualifier;
-import checkers.quals.TypeQualifier;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
+
+import org.checkerframework.framework.qual.PolymorphicQualifier;
+import org.checkerframework.framework.qual.TypeQualifier;
 
 @PolymorphicQualifier
 @TypeQualifier

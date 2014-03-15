@@ -2,62 +2,48 @@
   This is a configuration file for use by Ant when building the 
   Checker Framework.
   This top-level build file simply delegates to the subprojects.
+  It assumes that the "checker" project is aware of all dependencies
+  and that it is sufficient to run targets from there.
 -->
-<project name="checkerframework" default="dist" basedir=".">
+<project name="checkerframework" default="dist"
+        basedir=".">
 
-    <property file="build-common.properties"/>
+  <target name="dist"
+          description="Compile and jar all subprojects">
+    <ant dir="checker">
+      <target name="dist"/>
+    </ant>
+  </target>
 
-    <property name="subproject-locs"
-              value="${javacutil.loc},${dataflow.loc},${stubparser.loc},${framework.loc},${checker.loc}"/>
+  <target name="build"
+          description="Compile all subprojects">
+    <ant dir="checker">
+      <target name="build"/>
+    </ant>
+  </target>
 
-    <taskdef resource="net/sf/antcontrib/antcontrib.properties">
-        <classpath>
-            <pathelement location="${antcontrib.lib}"/>
-        </classpath>
-    </taskdef>
+  <target name="clean"
+          description="Clean all subprojects">
+    <ant dir="checker">
+      <target name="clean"/>
+    </ant>
+  </target>
 
-    <target name="build"
-            description="Compile all subprojects">
-        <for list="${subproject-locs}" param="project">
-            <sequential>
-                <ant dir="@{project}">
-                    <target name="build"/>
-                </ant>
-            </sequential>
-        </for>
-    </target>
+  <target name="tests" depends="dist"
+          description="Generate javadoc for all subprojects">
+    <ant dir="checker">
+      <target name="all-tests-nojdk"/>
+    </ant>
+    <ant dir="demos/nonnull-interned-demo">
+      <target name="check-demo"/>
+    </ant>
+  </target>
 
-    <target name="clean"
-            description="Clean all subprojects">
-        <for list="${subproject-locs}" param="project">
-            <sequential>
-                <ant dir="@{project}">
-                    <target name="clean"/>
-                </ant>
-            </sequential>
-        </for>
-    </target>
-
-    <target name="dist"
-            description="Compile and prepare for release in all subprojects">
-        <for list="${subproject-locs}" param="project">
-            <sequential>
-                <ant dir="@{project}">
-                    <target name="dist"/>
-                </ant>
-            </sequential>
-        </for>
-    </target>
-
-    <target name="javadoc"
-            description="Generate javadoc for all subprojects">
-        <for list="${subproject-locs}" param="project">
-            <sequential>
-                <ant dir="@{project}">
-                    <target name="javadoc"/>
-                </ant>
-            </sequential>
-        </for>
-    </target>
+  <target name="javadoc"
+          description="Generate javadoc for all subprojects">
+    <ant dir="checker">
+      <target name="javadoc"/>
+    </ant>
+  </target>
 
 </project>

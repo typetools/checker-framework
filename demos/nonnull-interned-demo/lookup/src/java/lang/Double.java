@@ -1,7 +1,5 @@
 package java.lang;
 
-import checkers.quals.*;
-
 public final class Double extends java.lang.Number implements java.lang.Comparable<java.lang.Double> {
   public final static double POSITIVE_INFINITY = 1.0 / 0.0;
   public final static double NEGATIVE_INFINITY = -1.0 / 0.0;

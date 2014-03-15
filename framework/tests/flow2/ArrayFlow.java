@@ -1,7 +1,7 @@
-import checkers.util.test.*;
+import org.checkerframework.framework.test.*;
 import java.util.*;
-import dataflow.quals.Pure;
-import checkers.quals.*;
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.framework.qual.*;
 import tests.util.*;
 
 class ArrayFlow {
@@ -16,7 +16,7 @@ class ArrayFlow {
         if (a2[0] == odd) {
             @Odd String l3 = a2[0];
         }
-        
+
         int i = 1;
         a2[i] = odd;
         @Odd String l4 = a2[i];

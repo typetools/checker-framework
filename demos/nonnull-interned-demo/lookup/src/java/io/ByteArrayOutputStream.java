@@ -1,7 +1,5 @@
 package java.io;
 
-import checkers.quals.*;
-
 public class ByteArrayOutputStream extends OutputStream {
   public ByteArrayOutputStream() { throw new RuntimeException("skeleton method"); }
   public ByteArrayOutputStream(int a1) { throw new RuntimeException("skeleton method"); }

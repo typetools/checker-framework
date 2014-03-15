@@ -18,8 +18,6 @@ import checkers.metaquals.TypeQualifier;
 import checkers.util.AnnotationUtils;
 import checkers.util.ElementUtils;
 
-import checkers.igj.quals.*;
-
 /**
  * Represents a annotated type in the JSR308 Java programming language. Types
  * include primitive types, declared types (class and interface types), array

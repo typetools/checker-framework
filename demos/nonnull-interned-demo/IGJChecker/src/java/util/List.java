@@ -1,5 +1,4 @@
 package java.util;
-import checkers.igj.quals.*;
 
 @I
 public interface List<E> extends java.util. @I Collection<E> {

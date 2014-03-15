@@ -1,6 +1,6 @@
 package checkers.util;
 
-import checkers.quals.*;
+
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -15,7 +15,7 @@ import javax.lang.model.type.TypeMirror;
  * A Utility class for analyzing {@code Element}s
  * 
  */
-@DefaultQualifier(checkers.nullness.quals.NonNull.class)
+@DefaultQualifier(NonNull.class)
 public class ElementUtils {
 
     private ElementUtils() {

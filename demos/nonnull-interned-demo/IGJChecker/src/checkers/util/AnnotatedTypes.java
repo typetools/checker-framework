@@ -23,10 +23,7 @@ import com.sun.source.util.TreePath;
 
 import checkers.types.*;
 import checkers.types.AnnotatedTypeMirror.*;
-import checkers.nullness.quals.Nullable;
-import checkers.nullness.quals.NonNull;
 
-import checkers.igj.quals.*;
 
 /**
  * Utility methods for operating on {@code AnnotatedTypeMirror}. This

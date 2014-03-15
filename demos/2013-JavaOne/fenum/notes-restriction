@@ -46,7 +46,7 @@ and the method signatures.
 
 - Compile like this:
 
-javac -processor checkers.fenum.FenumChecker -Aquals=RestrictionType -Astubs=android.astub -cp android.jar:. Restriction.java
+javac -processor org.checkerframework.checker.fenum.FenumChecker -Aquals=RestrictionType -Astubs=android.astub -cp android.jar:. Restriction.java
 
 Note that we do not need to add any annotations in Restriction.java to get
 useful feedback.
