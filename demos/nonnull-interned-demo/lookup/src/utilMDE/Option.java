@@ -1,6 +1,6 @@
 package utilMDE;
 
-import checkers.quals.*;
+
 import java.lang.annotation.*;
 
 /**
@@ -13,7 +13,7 @@ import java.lang.annotation.*;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-@DefaultQualifier(checkers.nullness.quals.NonNull.class)
+@DefaultQualifier(NonNull.class)
 public @interface Option {
   String value();
 }

@@ -1,9 +1,5 @@
 package checkers.types;
 
-import checkers.nullness.quals.*;
-import checkers.quals.DefaultQualifier;
-import checkers.igj.quals.*;
-
 import java.util.*;
 
 import javax.annotation.processing.*;

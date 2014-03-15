@@ -3,7 +3,7 @@ package checkers.javari;
 import checkers.basetype.*;
 import checkers.source.SuppressWarningsKey;
 import checkers.types.*;
-import checkers.quals.*;
+
 
 import java.util.*;
 

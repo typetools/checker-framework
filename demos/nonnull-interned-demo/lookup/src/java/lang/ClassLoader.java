@@ -1,7 +1,5 @@
 package java.lang;
 
-import checkers.quals.*;
-
 public abstract class ClassLoader{
   public Class<?> loadClass(String a1) throws ClassNotFoundException { throw new RuntimeException("skeleton method"); }
   public java.net.URL getResource(String a1) { throw new RuntimeException("skeleton method"); }

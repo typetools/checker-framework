@@ -3,9 +3,8 @@ package tests;
 import java.io.File;
 import java.util.Collection;
 
+import org.checkerframework.framework.test.ParameterizedCheckerTest;
 import org.junit.runners.Parameterized.Parameters;
-
-import checkers.util.test.ParameterizedCheckerTest;
 
 /**
  * Tests the constant value propagation type system.
@@ -16,7 +15,7 @@ import checkers.util.test.ParameterizedCheckerTest;
 public class ValueTest extends ParameterizedCheckerTest {
 
     public ValueTest(File testFile) {
-        super(testFile, checkers.value.ValueChecker.class, "value", "-Anomsgtext");
+        super(testFile, org.checkerframework.common.value.ValueChecker.class, "value", "-Anomsgtext");
     }
 
     @Parameters

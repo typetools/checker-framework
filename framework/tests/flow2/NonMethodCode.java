@@ -1,19 +1,19 @@
-import checkers.util.test.*;
+import org.checkerframework.framework.test.*;
 import java.util.*;
-import checkers.quals.*;
+import org.checkerframework.framework.qual.*;
 import tests.util.*;
 
 class NonMethodCode {
 
     @Odd String f1 = null;
     String g1 = "def";
-    
+
     static @Odd String sf1 = null;
     static String sg1 = "def";
-    
+
     // test flow for field initializer
     @Odd String f2 = g1 == f1 ? g1 : f1;
-    
+
     // test flow for initializer blocks
     {
         String l1 = f1;
@@ -24,7 +24,7 @@ class NonMethodCode {
         //:: error: (assignment.type.incompatible)
         @Odd String l4 = g1;
     }
-    
+
     // test flow for static initializer blocks
     static {
         String l1 = sf1;
@@ -35,5 +35,5 @@ class NonMethodCode {
         //:: error: (assignment.type.incompatible)
         @Odd String l4 = sg1;
     }
-    
+
 }

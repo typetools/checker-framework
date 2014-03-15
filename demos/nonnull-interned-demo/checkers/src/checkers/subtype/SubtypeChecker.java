@@ -11,7 +11,6 @@ import javax.lang.model.element.*;
 import javax.lang.model.type.*;
 import javax.lang.model.util.Elements;
 
-import checkers.quals.*;
 import checkers.source.*;
 import checkers.types.*;
 
@@ -37,7 +36,7 @@ import com.sun.source.tree.*;
 @SupportedSourceVersion(SourceVersion.RELEASE_7)
 @SupportedAnnotationTypes({"*"})
 @SupportedLintOptions({"cast", "cast:redundant"})
-@DefaultQualifier(checkers.nullness.quals.NonNull.class)
+@DefaultQualifier(NonNull.class)
 public abstract class SubtypeChecker extends SourceChecker {
 
     /** The annotation to check (in isSubtype). */
@@ -46,7 +45,7 @@ public abstract class SubtypeChecker extends SourceChecker {
     public Class<? extends Annotation> getAnnotation() {
         return this.annotation;
     }
-    
+
     /**
      * Creates an annotation processor for checking subtype qualifiers. The
      * processor will perform checking using the annotation class named by the
@@ -120,7 +119,7 @@ public abstract class SubtypeChecker extends SourceChecker {
         if (child.getTree() != null && child.getTree().getKind() == Tree.Kind.NULL_LITERAL &&
                 !parent.hasAnnotationAt(this.annotation, AnnotationLocation.RAW))
             return true;
-        
+
         if (child.getElement() != null) {
             Elements elts = env.getElementUtils();
             Element childElt = child.getElement();
@@ -134,27 +133,27 @@ public abstract class SubtypeChecker extends SourceChecker {
               && parent.hasAnnotationAt(this.annotation, AnnotationLocation.RAW))
             return false;
 
-        for (AnnotationLocation location : 
+        for (AnnotationLocation location :
                 parent.getAnnotatedTypeArgumentLocations()) {
             if (!child.hasAnnotationAt(this.annotation, location)
-                    && !child.hasWildcardAt(location) 
-                    && parent.hasAnnotationAt(this.annotation, location)) 
+                    && !child.hasWildcardAt(location)
+                    && parent.hasAnnotationAt(this.annotation, location))
                 return false;
         }
 
-        if (child.getUnderlyingType() != null 
+        if (child.getUnderlyingType() != null
                 && (child.getUnderlyingType().getKind() == TypeKind.ARRAY))
             return true;
 
-        boolean skipInner = false; 
+        boolean skipInner = false;
         if (parent.getUnderlyingType() instanceof DeclaredType) {
-            DeclaredType dt = (DeclaredType)parent.getUnderlyingType(); 
+            DeclaredType dt = (DeclaredType)parent.getUnderlyingType();
             if (dt.getTypeArguments().isEmpty())
                 skipInner = true;
         }
 
 
-        for (AnnotationLocation location : 
+        for (AnnotationLocation location :
                 child.getAnnotatedTypeArgumentLocations()) {
             if (!location.equals(AnnotationLocation.RAW) && skipInner)
                 continue;

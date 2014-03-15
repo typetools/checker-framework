@@ -1,5 +1,4 @@
 package java.util;
-import checkers.igj.quals.*;
 
 public class Collections {
   public final static @Immutable Set EMPTY_SET = null;

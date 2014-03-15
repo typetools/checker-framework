@@ -1,7 +1,5 @@
 package checkers.types;
 
-import checkers.quals.*;
-
 import java.util.List;
 
 import javax.annotation.processing.ProcessingEnvironment;
@@ -15,7 +13,7 @@ import javax.lang.model.element.*;
  * they were included via a "default" annotation or written directly as part of
  * the method invocation.
  */
-@DefaultQualifier(checkers.nullness.quals.NonNull.class)
+@DefaultQualifier(NonNull.class)
 public class AnnotatedMethodType {
 
     /** The element related to the annotated method. */
@@ -35,11 +33,11 @@ public class AnnotatedMethodType {
 
     /** The processing environment (for utilities and context). */
     protected final ProcessingEnvironment env;
-    
+
     AnnotatedMethodType(ProcessingEnvironment env) {
         this.env = env;
     }
-    
+
     /**
      * @return the annotated return type for the method
      */

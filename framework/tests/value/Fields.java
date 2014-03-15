@@ -1,4 +1,4 @@
-import checkers.value.quals.*;
+import org.checkerframework.common.value.qual.*;
 
 import javax.swing.plaf.BorderUIResource;
 

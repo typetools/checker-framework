@@ -1,7 +1,5 @@
 package checkers.nonnull;
 
-import checkers.quals.*;
-
 import javax.annotation.processing.*;
 import javax.lang.model.element.*;
 
@@ -15,7 +13,7 @@ import javax.lang.model.element.*;
  *
  * @see SourcePositions
  */
-@DefaultQualifier(checkers.nullness.quals.NonNull.class)
+@DefaultQualifier(NonNull.class)
 class FlowScope {
 
     /** The variable for this scope. */

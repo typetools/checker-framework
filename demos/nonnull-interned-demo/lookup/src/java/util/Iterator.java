@@ -1,6 +1,6 @@
 package java.util;
 
-import checkers.quals.*;
+
 
 public abstract interface Iterator<E> {
   public abstract boolean hasNext();

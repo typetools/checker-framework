@@ -1,6 +1,6 @@
-import checkers.quals.EnsuresQualifier;
-import checkers.quals.EnsuresQualifierIf;
-import checkers.quals.RequiresQualifier;
+import org.checkerframework.framework.qual.EnsuresQualifier;
+import org.checkerframework.framework.qual.EnsuresQualifierIf;
+import org.checkerframework.framework.qual.RequiresQualifier;
 import tests.util.EnsuresOdd;
 import tests.util.EnsuresOddIf;
 import tests.util.Odd;
@@ -109,13 +109,13 @@ class ContractsOverriding {
         void m3() {
             g = odd;
         }
-        
+
         @EnsuresQualifier(expression = "this.f", qualifier = Odd.class)
         void m4() {
             f = odd;
         }
     }
-    
+
     static class Sub3 extends Super3 {
         String g;
 
@@ -138,13 +138,13 @@ class ContractsOverriding {
             g = odd;
             return true;
         }
-        
+
         @Override
         @EnsuresOddIf(expression="f", result=true)
         boolean m4() {
             return super.m4();
         }
-        
+
         @Override
         // invalid result
         @EnsuresOddIf(expression="f", result=false)
@@ -176,13 +176,13 @@ class ContractsOverriding {
             g = odd;
             return true;
         }
-        
+
         @EnsuresQualifierIf(expression = "this.f", qualifier = Odd.class, result=true)
         boolean m4() {
             f = odd;
             return true;
         }
-        
+
         @EnsuresQualifierIf(expression = "this.f", qualifier = Odd.class, result=true)
         boolean m5() {
             f = odd;

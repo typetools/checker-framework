@@ -1,8 +1,8 @@
 package polyall;
 
-import checkers.basetype.BaseTypeChecker;
-import checkers.quals.PolyAll;
-import checkers.quals.TypeQualifiers;
+import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.framework.qual.PolyAll;
+import org.checkerframework.framework.qual.TypeQualifiers;
 
 import polyall.quals.H1Bot;
 import polyall.quals.H1Poly;

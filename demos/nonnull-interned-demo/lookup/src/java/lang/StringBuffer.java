@@ -1,7 +1,5 @@
 package java.lang;
 
-import checkers.quals.*;
-
 public final class StringBuffer{
   public StringBuffer() { throw new RuntimeException("skeleton method"); }
   public StringBuffer(int a1) { throw new RuntimeException("skeleton method"); }

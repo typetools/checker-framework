@@ -1,7 +1,7 @@
 package tests.reflection;
 
-import checkers.basetype.BaseTypeChecker;
-import checkers.basetype.BaseTypeVisitor;
+import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.common.basetype.BaseTypeVisitor;
 
 /**
  * Checker for a simple type system to test reflection resolution.

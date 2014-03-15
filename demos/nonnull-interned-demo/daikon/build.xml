@@ -5,7 +5,7 @@
     <property file="../demo.properties"/>
     
     <target name="varinfo">
-        <run-demo checker="checkers.interning.InterningChecker"
+        <run-demo checker="org.checkerframework.checker.interning.InterningChecker"
                 srcpath="${basedir}/src/"
                 files="${basedir}/src/daikon/VarInfo.java"
                 lint="-dotequals"
@@ -21,7 +21,7 @@
     </target>
 
     <target name="fileio">
-        <run-demo checker="checkers.interning.InterningChecker"
+        <run-demo checker="org.checkerframework.checker.interning.InterningChecker"
                 srcpath="${basedir}/src/"
                 files="${basedir}/src/daikon/FileIO.java"
                 lint="-dotequals"

@@ -1,7 +1,6 @@
 package tests;
 
-import checkers.util.test.CheckerTest;
-
+import org.checkerframework.framework.test.CheckerTest;
 import org.junit.Test;
 
 import tests.util.Encrypted;
@@ -13,7 +12,7 @@ import tests.util.Encrypted;
 public class SubtypingSuperSubTest extends CheckerTest {
 
     public SubtypingSuperSubTest() {
-        super(checkers.subtyping.SubtypingChecker.class,
+        super(org.checkerframework.common.subtyping.SubtypingChecker.class,
                 "subtyping",
                 "-Anomsgtext",
                 "-Aquals=tests.util.SubQual,tests.util.SuperQual");

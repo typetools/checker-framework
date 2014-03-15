@@ -1,6 +1,6 @@
 package utilMDE;
 
-import checkers.quals.*;
+
 
 import java.io.*;
 import java.util.*;
@@ -36,7 +36,7 @@ import com.sun.javadoc.*;
  * '\include{filename}'. <p>
  *
  **/
-@DefaultQualifier(checkers.nullness.quals.NonNull.class)
+@DefaultQualifier(NonNull.class)
 public class Lookup {
 
   /** Show detailed help information and exit. **/

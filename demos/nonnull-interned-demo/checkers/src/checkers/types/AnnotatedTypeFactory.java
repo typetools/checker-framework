@@ -7,7 +7,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.*;
 import javax.lang.model.type.*;
 
-import checkers.quals.*;
+
 import checkers.util.*;
 import checkers.types.InternalUtils;
 
@@ -25,7 +25,7 @@ import com.sun.tools.javac.tree.*;
  * operate on a single syntax tree at a time) to have a single factory per
  * scanner instance.
  */
-@DefaultQualifier(checkers.nullness.quals.NonNull.class)
+@DefaultQualifier(NonNull.class)
 public class AnnotatedTypeFactory {
 
     /** The {@link Trees} instance to use for tree node pathfinding. */

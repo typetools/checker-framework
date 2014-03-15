@@ -1,7 +1,5 @@
 package com.sun.javadoc;
 
-import checkers.quals.*;
-
 public abstract interface ProgramElementDoc extends Doc {
   public abstract @Nullable com.sun.javadoc.ClassDoc containingClass();
   public abstract @NonNull com.sun.javadoc.PackageDoc containingPackage();

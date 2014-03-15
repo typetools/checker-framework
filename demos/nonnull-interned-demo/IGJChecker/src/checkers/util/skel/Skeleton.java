@@ -1,6 +1,6 @@
 package checkers.util;
 
-import checkers.quals.*;
+
 
 import java.io.*;
 import java.util.*;

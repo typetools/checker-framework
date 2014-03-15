@@ -1,7 +1,5 @@
 package java.io;
 
-import checkers.quals.*;
-
 public class StringWriter extends Writer {
   public StringWriter() { throw new RuntimeException("skeleton method"); }
   public StringWriter(int a1) { throw new RuntimeException("skeleton method"); }

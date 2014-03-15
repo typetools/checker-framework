@@ -6,7 +6,6 @@ import java.util.Properties;
 
 import javax.annotation.processing.ProcessingEnvironment;
 
-import checkers.quals.*;
 import checkers.source.SourceVisitor;
 import checkers.source.SupportedLintOptions;
 import checkers.subtype.SubtypeChecker;
@@ -26,7 +25,7 @@ import javax.lang.model.SourceVersion;
 @SupportedSourceVersion(SourceVersion.RELEASE_7)
 @SupportedAnnotationTypes({"checkers.nullness.quals.NonNull","checkers.quals.Nullable"})
 @SupportedLintOptions({"flow", "cast", "cast:redundant"})
-@DefaultQualifier(checkers.nullness.quals.NonNull.class)
+@DefaultQualifier(NonNull.class)
 public class NonnullChecker extends SubtypeChecker {
 
     /**

@@ -1,4 +1,3 @@
-import android.content.RestrictionEntry;
 
 class RestrictionTest {
 
@@ -44,5 +43,5 @@ class RestrictionTest {
 
 /* Local Variables: */
 /* compile-command: "javac -cp android.jar:. RestrictionTest.java" */
-/* eval: (setq compile-history '("javac -processor checkers.fenum.FenumChecker -Aquals=RestrictionType -Astubs=android.astub -cp android.jar:. RestrictionTest.java")) */
+/* eval: (setq compile-history '("javac -processor org.checkerframework.checker.fenum.FenumChecker -Aquals=RestrictionType -Astubs=android.astub -cp android.jar:. RestrictionTest.java")) */
 /* End: */

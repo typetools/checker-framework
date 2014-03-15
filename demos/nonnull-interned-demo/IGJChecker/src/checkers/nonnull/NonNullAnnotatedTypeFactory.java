@@ -7,7 +7,7 @@ import javax.lang.model.element.*;
 import javax.lang.model.type.*;
 
 import checkers.flow.*;
-import checkers.quals.*;
+
 import checkers.types.*;
 import checkers.types.AnnotatedTypeMirror.*;
 import checkers.util.*;

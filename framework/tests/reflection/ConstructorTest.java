@@ -1,10 +1,12 @@
-import checkers.units.quals.g;
-import checkers.units.quals.kg;
-import checkers.units.quals.Mass;
+// Skip this test for now and re-write it using a framework type system
+//@skip-test
+
+import static org.checkerframework.checker.unit.UnitsTools.*;
+import org.checkerframework.checker.units.qual.g;
+import org.checkerframework.checker.units.qual.kg;
+import org.checkerframework.checker.units.qual.Mass;
 
 import java.lang.reflect.Constructor;
-
-import static checkers.units.UnitsTools.*;
 
 class ConstructorTest {
 

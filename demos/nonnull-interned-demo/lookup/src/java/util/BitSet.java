@@ -1,6 +1,6 @@
 package java.util;
 
-import checkers.quals.*;
+
 
 public class BitSet implements Cloneable, java.io.Serializable {
   public BitSet() { throw new RuntimeException("skeleton method"); }

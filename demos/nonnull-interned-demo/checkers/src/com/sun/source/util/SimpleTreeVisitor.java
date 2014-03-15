@@ -26,7 +26,7 @@
 package com.sun.source.util;
 
 import com.sun.source.tree.*;
-import checkers.nullness.quals.*;
+import org.checkerframework.checker.nullness.qual.*;
 
 /**
  * A simple visitor for tree nodes.

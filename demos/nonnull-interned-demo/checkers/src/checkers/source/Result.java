@@ -1,7 +1,5 @@
 package checkers.source;
 
-import checkers.quals.*;
-
 import java.util.*;
 
 /**
@@ -10,10 +8,10 @@ import java.util.*;
  * {@link Result}s created during typechecking can be reported using
  * {@link SourceChecker#report}, which ultimately delivers an error
  * or warning message via the JSR 199 compiler interface.
- * 
+ *
  * @see SourceChecker#report
  */
-@DefaultQualifier(checkers.nullness.quals.NonNull.class)
+@DefaultQualifier(NonNull.class)
 public final class Result {
 
     private static enum Type {
@@ -43,7 +41,7 @@ public final class Result {
 
     /**
      * Creates a new failure result with the given message key.
-     * 
+     *
      * @param messageKey
      *            the key representing the reason for failure
      * @param args
@@ -58,7 +56,7 @@ public final class Result {
 
     /**
      * Creates a new warning result with the given message.
-     * 
+     *
      * @param messageKey
      *            the key for the warning message
      * @param args
@@ -86,7 +84,7 @@ public final class Result {
 
     /**
      * Merges two results into one.
-     * 
+     *
      * @param r
      *            the result to merge with this result
      * @return a result that is the success result if both this and
@@ -136,10 +134,10 @@ public final class Result {
 	    List<String> msgKeys = new LinkedList<String>();
 	    for (DiagMessage msg : getDiagMessages())
 	        msgKeys.add(msg.getMessageKey());
-	    
+
 		return Collections.<@NonNull String>unmodifiableList(msgKeys);
 	}
-	
+
     /**
      * @return an unmodifiable list of the message pairs
      */
@@ -162,16 +160,16 @@ public final class Result {
 
     /**
      * A class that represents the diangosis messages.
-     * 
-     * {@code DiagMessage} encapsulate the message key which would identify 
+     *
+     * {@code DiagMessage} encapsulate the message key which would identify
      * the relevant standard error message according to the user locale.
-     * 
-     * The optional arguments are possible custom strings for the error 
+     *
+     * The optional arguments are possible custom strings for the error
      * message.
      *
      */
     public static class DiagMessage {
-        private String message;
+        private final String message;
         private Object[] args;
 
         protected DiagMessage(String message, Object[] args) {

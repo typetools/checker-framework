@@ -1,6 +1,5 @@
 package checkers.util;
 
-import checkers.quals.*;
 import checkers.types.*;
 
 import com.sun.source.tree.*;
@@ -16,7 +15,7 @@ import javax.lang.model.util.*;
 /**
  * A utility class for working with annotations.
  */
-@DefaultQualifier(checkers.nullness.quals.NonNull.class)
+@DefaultQualifier(NonNull.class)
 public class AnnotationUtils {
 
     private final ProcessingEnvironment env;

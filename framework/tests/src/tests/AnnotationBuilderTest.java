@@ -2,21 +2,21 @@ package tests;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import javacutils.AnnotationUtils;
-import javacutils.ErrorReporter;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeMirror;
 
+import org.checkerframework.framework.source.SourceChecker;
+import org.checkerframework.framework.util.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ErrorReporter;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import tests.util.AnnoWithStringArg;
+import tests.util.Encrypted;
 import tests.util.TestChecker;
-import checkers.igj.quals.I;
-import checkers.nullness.quals.NonNull;
-import checkers.source.SourceChecker;
-import checkers.util.AnnotationBuilder;
 
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
@@ -32,21 +32,21 @@ public class AnnotationBuilderTest {
 
     @Test
     public void createAnnoWithoutValues() {
-        AnnotationBuilder builder = new AnnotationBuilder(env, NonNull.class);
+        AnnotationBuilder builder = new AnnotationBuilder(env, Encrypted.class);
         // AnnotationMirror anno =
         builder.build();
     }
 
     @Test
     public void createAnnoWithoutValues1() {
-        AnnotationBuilder builder = new AnnotationBuilder(env, I.class);
+        AnnotationBuilder builder = new AnnotationBuilder(env, AnnoWithStringArg.class);
         AnnotationMirror anno = builder.build();
         assertEquals(0, anno.getElementValues().size());
     }
 
     @Test
     public void createAnnoWithValues0() {
-        AnnotationBuilder builder = new AnnotationBuilder(env, I.class);
+        AnnotationBuilder builder = new AnnotationBuilder(env, AnnoWithStringArg.class);
         builder.setValue("value", "m");
         AnnotationMirror anno = builder.build();
         assertEquals(1, anno.getElementValues().size());
@@ -54,14 +54,14 @@ public class AnnotationBuilderTest {
 
     @Test(expected = SourceChecker.CheckerError.class)
     public void buildingTwice() {
-        AnnotationBuilder builder = new AnnotationBuilder(env, NonNull.class);
+        AnnotationBuilder builder = new AnnotationBuilder(env, Encrypted.class);
         builder.build();
         builder.build();
     }
 
     @Test(expected = SourceChecker.CheckerError.class)
     public void addingValuesAfterBuilding() {
-        AnnotationBuilder builder = new AnnotationBuilder(env, I.class);
+        AnnotationBuilder builder = new AnnotationBuilder(env, AnnoWithStringArg.class);
         builder.setValue("value", "m");
         // AnnotationMirror anno =
         builder.build();
@@ -70,13 +70,13 @@ public class AnnotationBuilderTest {
 
     @Test(expected = SourceChecker.CheckerError.class)
     public void notFoundElements() {
-        AnnotationBuilder builder = new AnnotationBuilder(env, I.class);
+        AnnotationBuilder builder = new AnnotationBuilder(env, AnnoWithStringArg.class);
         builder.setValue("n", "m");
     }
 
     @Test(expected = SourceChecker.CheckerError.class)
     public void illegalValue() {
-        AnnotationBuilder builder = new AnnotationBuilder(env, I.class);
+        AnnotationBuilder builder = new AnnotationBuilder(env, AnnoWithStringArg.class);
         builder.setValue("value", 1);
     }
 

@@ -1,6 +1,6 @@
 package checkers.interned;
 
-import checkers.quals.*;
+
 import checkers.types.*;
 import checkers.util.*;
 

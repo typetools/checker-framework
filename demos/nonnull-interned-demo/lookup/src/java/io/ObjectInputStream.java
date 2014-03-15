@@ -1,7 +1,5 @@
 package java.io;
 
-import checkers.quals.*;
-
 public class ObjectInputStream extends InputStream implements ObjectInput, ObjectStreamConstants {
   public static abstract class GetField{
     public GetField() { throw new RuntimeException("skeleton method"); }

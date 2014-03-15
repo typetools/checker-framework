@@ -1,6 +1,6 @@
 package java.util;
 
-import checkers.quals.*;
+
 
 public abstract interface Collection<E> extends java.lang.Iterable<E> {
   public abstract int size();
