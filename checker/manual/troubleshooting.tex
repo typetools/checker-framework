@@ -162,6 +162,12 @@ compiled library refers to a class that only appears in JDK 7.  (If only
 one version of Java existed, or the Checker Framework didn't try to support
 multiple different versions of Java, this would not be a problem.)
 
+Examples of classes that were in JDK 7 but were removed in JDK 8 include:
+
+\begin{Verbatim}
+  class file for java.util.TimeZone$DisplayNames not found
+\end{Verbatim}
+
 Examples of classes that were in JDK 6 but were removed in JDK 7 include:
 
 \begin{Verbatim}
@@ -170,10 +176,10 @@ Examples of classes that were in JDK 6 but were removed in JDK 7 include:
   java.lang.NoClassDefFoundError: java/util/Hashtable$EmptyEnumerator
 \end{Verbatim}
 
-Examples of classes that were in JDK 7 but were removed in JDK 8 include:
+Examples of classes that were not in JDK 7 but were introduced in JDK 8 include:
 
 \begin{Verbatim}
-  class file for java.util.TimeZone$DisplayNames not found
+  The type java.lang.Class$ReflectionData cannot be resolved
 \end{Verbatim}
 
 Examples of classes that were not in JDK 6 but were introduced in JDK 7 include:
@@ -394,11 +400,15 @@ Unsupported major.minor version 51.0
 \end{Verbatim}
 
 means that you have compiled some files into the Java 7 format (version
-51.0), but you are trying to run them with Java 6.  Run \<java -version> to
+51.0), but you are trying to run them with Java 6.
+(Likewise, ``Unsupported major.minor version 52.0''
+means that you have compiled some files into the Java 8 format (version
+52.0), but you are trying to run them with Java 7 or earlier.)
+Run \<java -version> to
 determine the version of Java you are using and use a newer version,
 and/or use the \<-target>
 command-line option to \<javac> to specify the version of the class files
-that are created, such as \<javac -target 6 ...>.
+that are created, such as \<javac -target 7 ...>.
 
 
 
