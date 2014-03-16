@@ -870,8 +870,10 @@ tells you about, one at a time.
 Here are some other tips:
 \begin{itemize}
 \item
+    \begin{sloppypar}
     In any file where you write an annotation such as \code{@Nullable},
     don't forget to add \code{import org.checkerframework.checker.nullness.qual.*;}.
+    \end{sloppypar}
 \item
     To indicate an array that can be null, write, for example: \code{int
       @Nullable []}. \\
@@ -1660,6 +1662,7 @@ MyClass.java:7: error: call to helperMethod() not allowed on the given receiver.
 1 error
 \end{Verbatim}
 
+\begin{sloppypar}
 The reason is that even though the object under construction has had all
 the fields declared in \<MyClass> initialized, there might be a subclass of
 \<MyClass>.  Thus, the receiver of \<helperMethod> should be declared as 
@@ -1669,7 +1672,7 @@ overall.  If \<helperMethod> had been a public method that could be called
 initialization was actually complete, then the receiver should have type
 \<@UnknownInitialization>, which is the supertype of
 \<@UnknownInitialization> and \<@UnderInitialization>.
-
+\end{sloppypar}
 
 
 \subsection{More details about initialization checking\label{initialization-checking}}
@@ -1677,9 +1680,10 @@ initialization was actually complete, then the receiver should have type
 
 \paragraph{Suppressing warnings}
 
+\begin{sloppypar}
 You can suppress warnings related to partially-initialized objects with
 \<@SuppressWarnings("initialization")>.
-
+\end{sloppypar}
 
 \paragraph{Checking initialization of all fields, not just \code{@NonNull} ones}
 
@@ -2163,9 +2167,11 @@ types.)
 
 \paragraph{Suppressing warnings}
 
+\begin{sloppypar}
 You can suppress warnings related to partially-initialized objects with
 \<@SuppressWarnings("rawness")>.  Do not confuse this with the unrelated
 \<@SuppressWarnings("rawtypes")> annotation for non-instantiated generic types!
+\end{sloppypar}
 
 
 \paragraph{Checking initialization of all fields, not just \code{@NonNull} ones}
