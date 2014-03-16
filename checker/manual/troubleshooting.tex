@@ -1,6 +1,7 @@
 \htmlhr
 \chapter{Troubleshooting and getting help\label{troubleshooting}}
 
+\begin{sloppypar}
 The manual might already answer your question, so first please look for
 your answer in the manual,
 including this chapter and the FAQ (Chapter~\ref{faq}).
@@ -12,6 +13,7 @@ If you want to help out, you can give feedback (including on the
 documentation), choose a bug and fix it, or select a
 project from the ideas list at
 \url{http://code.google.com/p/checker-framework/wiki/Ideas}.
+\end{sloppypar}
 
 
 \section{Common problems and solutions\label{common-problems}}
@@ -63,6 +65,7 @@ package org.checkerframework.checker.nullness.quals does not exist
 \end{Verbatim}
 
   \noindent
+\begin{sloppypar}
   despite no apparent use of \code{import org.checkerframework.checker.nullness.qual.*;} in
   the source code, then perhaps
   \code{jsr308\_imports} is set as a Java system property, a shell
@@ -70,6 +73,7 @@ package org.checkerframework.checker.nullness.quals does not exist
   Section~\ref{jsr308_imports}).  You can solve this by unsetting the
   variable/option, or by ensuring that the \code{checker.jar} file is on
   your classpath.
+\end{sloppypar}
 
 If the error is 
 
@@ -244,11 +248,13 @@ error: scoping construct for static nested type cannot be annotated
 \end{Verbatim}
 
 \noindent
+\begin{sloppypar}
 then you have probably written something like \<@Nullable java.util.List>.
 The correct syntax is \<java.util.@Nullable List>.  But, it's usually
 better to add \<import java.util.List> to your source file, so that you can
 just write \<@Nullable List>.  Likewise, you must write \<Outer.@Nullable
 StaticNestedClass> rather than \<@Nullable Outer.StaticNestedClass>.
+\end{sloppypar}
 
 Java 8 requires that a type qualifier be written directly on the type that
 it qualifies, rather than on a scoping mechanism that assists in resolving
