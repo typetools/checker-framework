@@ -147,6 +147,7 @@ methods return a \<String> error message and \<Pattern\-Syntax\-Exception>,
 respectively, detailing why the given String is not a syntactically valid
 regular expression with at least the given number of capturing groups.
 
+\begin{sloppypar}
 If you detect that a \<String> is not a valid regular expression but would like
 to report the error higher up the call stack (potentially where you can
 provide a more detailed error message) you can throw a
@@ -156,6 +157,7 @@ functionally the same as a
 except it is checked to guarantee that the error will be handled up the
 call stack.  For more details, see the Javadoc for
 \refclass{checker/regex}{RegexUtil.CheckedPatternSyntaxException}.
+\end{sloppypar}
 
 A potential disadvantage of using the \<RegexUtil> class is that your code becomes
 dependent on the Checker Framework at run time as well as at compile time.
