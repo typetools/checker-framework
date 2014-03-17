@@ -2,7 +2,7 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>types.checkers</groupId>
+  <groupId>org.checkerframework</groupId>
   <artifactId>MvnExample</artifactId>
   <version>1.0-SNAPSHOT</version>
   <packaging>jar</packaging>
@@ -23,9 +23,9 @@
     </dependency>
 
     <dependency>
-      <groupId>types.checkers</groupId>
-      <artifactId>checkers-quals</artifactId>
-      <version><!-- checker-framework-version -->1.7.5<!-- /checker-framework-version --></version>
+      <groupId>org.checkerframework</groupId>
+      <artifactId>checker-quals</artifactId>
+      <version><!-- checker-framework-version -->1.7.6<!-- /checker-framework-version --></version>
     </dependency>
 
     <dependency>
@@ -60,9 +60,9 @@
   <build>
     <plugins>
       <plugin>
-        <groupId>types.checkers</groupId>
-        <artifactId>checkers-maven-plugin</artifactId>
-        <version><!-- checker-framework-version -->1.7.5<!-- /checker-framework-version --></version>
+        <groupId>org.checkerframework</groupId>
+        <artifactId>checkerframework-maven-plugin</artifactId>
+        <version><!-- checker-framework-version -->1.7.6<!-- /checker-framework-version --></version>
         <executions>
            <execution>
              <!-- run the checkers after compilation; this can also be any later phase -->
@@ -76,10 +76,10 @@
           <!-- required configuration options -->
           <!-- a list of processors to run -->
           <processors>
-              <processor>checkers.nullness.NullnessChecker</processor>
+              <processor>org.checkerframework.checker.nullness.NullnessChecker</processor>
           </processors>
 
-            <checkerFrameworkVersion><!-- checker-framework-version -->1.7.5<!-- /checker-framework-version --></checkerFrameworkVersion>
+            <checkerFrameworkVersion><!-- checker-framework-version -->1.7.6<!-- /checker-framework-version --></checkerFrameworkVersion>
 
           <!-- setting procOnly to false will result in actual generation of class files -->
           <procOnly>false</procOnly>
