@@ -1,4 +1,4 @@
-package org.checkersplugin;
+package org.checkerframework.mavenplugin;
 
 import java.io.BufferedReader;
 import java.io.IOException;

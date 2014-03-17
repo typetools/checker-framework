@@ -1,7 +1,7 @@
-package types.checkers.galaxy;
+package org.checkerframework.galaxy;
 
-import checkers.nullness.quals.NonNull;
-import checkers.nullness.quals.Nullable;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 import org.apache.commons.lang3.text.StrBuilder;
 

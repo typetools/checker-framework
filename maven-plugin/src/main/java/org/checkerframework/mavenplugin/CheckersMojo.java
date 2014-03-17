@@ -1,4 +1,4 @@
-package org.checkersplugin;
+package org.checkerframework.mavenplugin;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -188,11 +188,11 @@ public class CheckersMojo extends AbstractMojo {
      */
     private List<?> classpathElements;
 
-
     /**
      * The location of the Checker Framework jar
      */
-    private File checkersJar;
+    private File checkerJar;
+
 
     /**
      * The location of the compiler jar
@@ -250,7 +250,8 @@ public class CheckersMojo extends AbstractMojo {
         cl.setExecutable(executablePath);
 
         //TODO: SEEMS THAT WHEN WE ARE USING @ ARGS THE CLASSPATH FROM THE JAR IS OVERRIDDEN - FIX THIS
-        final String classpath = checkersJar.getAbsolutePath() + File.pathSeparator
+        final String classpath =
+                checkerJar.getAbsolutePath() + File.pathSeparator
                 + StringUtils.join(classpathElements.iterator(), File.pathSeparator);
 
         File srcFofn = null;
@@ -279,7 +280,7 @@ public class CheckersMojo extends AbstractMojo {
 
         final List<String> arguments = PluginUtil.getCmdArgsOnly(
                 javacJar, jdkJar,
-                srcFofn, processor, checkersJar.getAbsolutePath(),
+                srcFofn, processor, checkerJar.getAbsolutePath(),
                 null, cpFofn, null, props, null,
                 procOnly, outputDirectory);
 
@@ -328,8 +329,7 @@ public class CheckersMojo extends AbstractMojo {
      * @throws MojoExecutionException
      */
     private final void locateArtifacts() throws MojoExecutionException {
-
-        checkersJar = PathUtils.getFrameworkJar("framework", checkerFrameworkVersion,
+        checkerJar = PathUtils.getFrameworkJar("checker", checkerFrameworkVersion,
                 artifactFactory, artifactResolver, remoteArtifactRepositories, localRepository);
 
         javacJar    = PathUtils.getFrameworkJar("compiler", checkerFrameworkVersion,

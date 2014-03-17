@@ -1,4 +1,4 @@
-package org.checkersplugin;
+package org.checkerframework.mavenplugin;
 
 import org.apache.maven.plugin.CompilationFailureException;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -15,7 +15,7 @@ import java.util.List;
 
 /**
  * A CommandLineExecutor that reports the output and error streams with no additional processing.
- * @see org.checkersplugin.CommandLineExceutor
+ * @see org.checkerframework.mavenplugin.CommandLineExceutor
  */
 public class JavacIOExecutor implements CommandLineExceutor {
     private final String pathToExecutable;
