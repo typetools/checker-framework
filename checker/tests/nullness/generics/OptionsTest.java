@@ -31,8 +31,8 @@ public class OptionsTest {
 }
 
 /* Local Variables: */
-/* compile-command: "javac -processor org.checkerframework.checker.nullness.NullnessChecker -Xbootclasspath/p:$CHECKERS/jdk/jdk.jar OptionsTest.java" */
-/* compile-history: ("javac -processor org.checkerframework.checker.nullness.NullnessChecker -Xbootclasspath/p:$CHECKERS/jdk/jdk.jar OptionsTest.java") */
+/* compile-command: "javac -processor org.checkerframework.checker.nullness.NullnessChecker -Xbootclasspath/p:$CHECKERFRAMEWORK/checker/dist/jdk7.jar OptionsTest.java" */
+/* compile-history: ("javac -processor org.checkerframework.checker.nullness.NullnessChecker -Xbootclasspath/p:$CHECKERFRAMEWORK/checker/dist/jdk7.jar OptionsTest.java") */
 /* End: */
 
 
