@@ -21,10 +21,10 @@ import java.util.regex.Pattern;
  *
  * NOTE: There are multiple copies of this file in the following projects/locations:
  * maven-plugin/
- *     org.checkersplugin.PluginUtil
+ *     org.checkerframework.mavenplugin.PluginUtil
  *
  * checker-framework-eclipse-plugin/
- *     checkers.eclipse.util.PluginUtil
+ *     org.checkerframework.eclipse.util.PluginUtil
  *
  * checker-framework/
  *     org.checkerframework.framework.util.PluginUtil
