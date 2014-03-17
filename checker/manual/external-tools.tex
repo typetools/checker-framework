@@ -374,8 +374,8 @@ you can find the Checker Framework in Maven Central (MC):
 
         <!-- annotations from the Checker Framework: nullness, interning, locking, ... -->
         <dependency>
-            <groupId>types.checkers</groupId>
-            <artifactId>checkers-quals</artifactId>
+            <groupId>org.checkerframework</groupId>
+            <artifactId>checker-quals</artifactId>
             <version>\ReleaseVersion{}</version>
         </dependency>
 
@@ -392,8 +392,8 @@ you can find the Checker Framework in Maven Central (MC):
             ... existing <plugin> items ...
 
             <plugin>
-                <groupId>types.checkers</groupId>
-                <artifactId>checkers-maven-plugin</artifactId>
+                <groupId>org.checkerframework</groupId>
+                <artifactId>checkerframework-maven-plugin</artifactId>
                 <version>\ReleaseVersion{}</version>
                 <executions>
                     <execution>
@@ -424,7 +424,7 @@ This means that any maven target that exercises that phase will also run the Che
 (e.g., \<mvn package>, \<mvn verify>).
 
 To run only checking:
-\code{mvn checkers:check}
+\code{mvn checkerframework:check}
 
 \item Add optional parameters
 
