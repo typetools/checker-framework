@@ -1,4 +1,4 @@
-package org.checkersplugin;
+package org.checkerframework.mavenplugin;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -32,7 +32,7 @@ import org.codehaus.plexus.util.StringUtils;
  * @author Adam Warski (adam at warski dot org)
  */
 public class PathUtils {
-    private final static String CHECKER_FRAMEWORK_GROUPD_ID = "types.checkers";
+    private final static String CHECKER_FRAMEWORK_GROUPD_ID = "org.checkerframework";
     private final static String DEFAULT_INCLUSION_PATTERN = "**/*.java";
 
     /**

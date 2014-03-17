@@ -26,11 +26,11 @@ when executing Maven, then the plugin will attempt to download them.
 Remember that a Maven artifact is uniquely identified by its group id,
 artifact name, and version.
 
-The artifacts have a shared group id of "types.checkers".
+The artifacts have a shared group id of "org.checkerframework".
 
 The artifact names are:
-  checkers-maven-plugin - the Checker Framework maven plugin itself
-  checkers-quals - checkers-quals.jar
+  checkerframework-maven-plugin - the Checker Framework maven plugin itself
+  checker-quals - checkers-quals.jar
   compiler - jsr308-langtools compiler's javac.jar
   framework - checkers.jar
   jdk7 - jdk7.jar
@@ -51,16 +51,16 @@ artifacts with a new version number.  (You do not have to install the Maven
 plugin locally, though.)  Follow these instructions:
 
 1.  Increment the version number in the poms found in
-$CHECKERS/binary/poms.  (Try to choose a change, like adding ".001" at the
+checkerframework/maven-plugin/poms.  (Try to choose a change, like adding ".001" at the
 very end, that is unlikely to be the next version that the Checker
 Framework developers choose.)  Make sure that the new version numbers all
 agree.
 
 2.  Run:
-  sh $CHECKERS/binary/poms/localInstall.sh
-This command installs all of the jars in $CHECKERS/binary as artifacts in
+  sh checkerframework/maven-plugin/poms/localInstall.sh
+This command installs all of the jars in checkerframework/checker/dist as artifacts in
 your "local repository" (the local cache of downloaded artifacts) using the
-version number found in the corresponding pom file in $CHECKERS/binary/poms .
+version number found in the corresponding pom file in checkerframework/maven-plugin/poms.
 
 3.  For the project on which you are applying the Checker Framework, make
 sure the element "checkerFrameworkVersion" matches the version created in step 1.
@@ -80,7 +80,7 @@ The following simple commands allow you to build the plugin, install it
 locally, and install it to a repository.
 
 1. Update the Maven plugin version number in
-$CHECKERS/../maven-plugin/pom.xml.  (Try to choose a change, like adding
+checkerframework/maven-plugin/pom.xml.  (Try to choose a change, like adding
 ".001" at the very end, that is unlikely to be the next version that the
 Checker Framework developers choose.)
 
@@ -117,12 +117,12 @@ checkers/binary/poms/localInstall.sh for example -Dfile arguments).
 
     mvn deploy:deploy-file \
     -DartifactId=checkersplugin \
-    -Dfile=$CHECKERS/../maven-plugin/target/checkers-maven-plugin-<latest-version>.jar \
+    -Dfile=checkerframework/maven-plugin/target/checkers-maven-plugin-<latest-version>.jar \
     -Dversion=<latest-version> \
     -Durl=file://<your path>/maven/m2-repo \
-    -DgroupId=types.checkers \
+    -DgroupId=org.checkerframework \
     -Dpackaging=jar \
-    -DpomFile=$CHECKERS/../maven-plugin/pom.xml \
+    -DpomFile=checkerframework/maven-plugin/pom.xml \
     -DgeneratePom=false 
 
 Note that the url property must start with a protocol such as "file://".
