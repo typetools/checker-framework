@@ -94,14 +94,14 @@
 
         <div class="alert alert-info">
         <strong>Note:</strong> You may want to add <strong>
-            <a href="http://types.cs.washington.edu/checker-framework/checker-plugin/update-site/lib/checkers-quals.jar">
-                checkers-quals.jar
+            <a href="http://types.cs.washington.edu/checker-framework/checker-plugin/update-site/lib/checker-qual.jar">
+                checker-qual.jar
             </a></strong> to your classpath for each Eclipse project you wish to check.
             It provides the annotations used by the
             <a href="http://types.cs.washington.edu/checker-framework/">Checker Framework</a> for
-            its built-in type-checkers.  <br/> To add the checkers-quals.jar to your Eclipse project, download the
+            its built-in type checkers.  <br/> To add the checker-qual.jar to your Eclipse project, download the
             jar from the above link.  Then right click the project you wish to check and select
-            Properties -> Java Build Path -> Libraries -> Add External Jars.  Select checkers-quals.jar from
+            Properties -> Java Build Path -> Libraries -> Add External Jars.  Select checker-qual.jar from
             the directory in which it's saved.
         </div>
     </div>
@@ -116,7 +116,7 @@
         <h4>Running a Built-In Checker</h4>
         <p>
             Here is how to run one or more 
-            <a href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#introduction">built-in type-checkers</a>
+            <a href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#introduction">built-in type checkers</a>
             from the Checker Framework:
         </p>
         <div class="well">
@@ -168,7 +168,7 @@
                             located below the table.</li>
                         <li>A dialog should pop up.  In the text field at the top of the dialog, type the class name of your
                             checker without the package name
-                            (e.g., NullnessChecker, NOT checkers.nullness.NullnessChecker)</li>
+                            (e.g., NullnessChecker, NOT org.checkerframework.checker.nullness.NullnessChecker)</li>
                         <li>One or more classes should appear in a list below the text-field.  Select your checker.</li>
                         <li>Press "OK".</li>
                         <li>The dialog will close and your custom checker should now appear in the "Checkers" table.
