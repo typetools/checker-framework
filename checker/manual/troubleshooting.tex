@@ -92,7 +92,7 @@ If you get an error like one of the following,
 \begin{smaller}
 %END LATEX
 \begin{Verbatim}
-...\build.xml:59: Error running ${env.CHECKERS}\binary\javac.bat compiler
+...\build.xml:59: Error running ${env.CHECKERFRAMEWORK}\checker\bin\javac.bat compiler
 \end{Verbatim}
 
 \begin{Verbatim}
@@ -103,7 +103,7 @@ If you get an error like one of the following,
 %END LATEX
 
 \noindent
-then the problem may be that you have not set the \code{CHECKERS} environment
+then the problem may be that you have not set the \code{CHECKERFRAMEWORK} environment
 variable, as described in Section~\ref{javac-installation}.  Or, maybe
 you made it a user variable instead of a system variable.
 
@@ -119,7 +119,7 @@ The type com.sun.source.util.AbstractTypeProcessor cannot be resolved.
 
 \noindent
 then you are likely NOT using the Checker Framework compiler.  Use
-either \code{\$CHECKERS/bin/javac} or \code{"java -jar \$CHECKERS/dist/checker.jar"}.
+either \code{\$CHECKERFRAMEWORK/checker/bin/javac} or \code{"java -jar \$CHECKERFRAMEWORK/checker/dist/checker.jar"}.
 
 \item
 If you get the error

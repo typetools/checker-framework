@@ -51,6 +51,6 @@ class Constructors {
 
 
 /* Local Variables: */
-/* compile-command: "javac -processor org.checkerframework.checker.nullness.NullnessChecker -Xbootclasspath/p:$CHECKERS/jdk/jdk.jar Constructors.java" */
-/* compile-history: ("javac -processor org.checkerframework.checker.nullness.NullnessChecker -Xbootclasspath/p:$CHECKERS/jdk/jdk.jar Constructors.java") */
+/* compile-command: "javac -processor org.checkerframework.checker.nullness.NullnessChecker -Xbootclasspath/p:$CHECKERFRAMEWORK/checker/dist/jdk7.jar Constructors.java" */
+/* compile-history: ("javac -processor org.checkerframework.checker.nullness.NullnessChecker -Xbootclasspath/p:$CHECKERFRAMEWORK/checker/dist/jdk7.jar Constructors.java") */
 /* End: */

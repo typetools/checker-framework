@@ -17,13 +17,13 @@ rebuilding the JDK; for example,
 
 To run an individual test (check one source code file), do something like:
 
-  cd $CHECKERS/tests/nullness
-  (cd $CHECKERS && ant -e jar) && javac -processor org.checkerframework.checker.nullness.NullnessChecker -Xbootclasspath/p:$CHECKERS/jdk/jdk.jar -implicit:class AssertNonNullTest.java
+  cd $CHECKERFRAMEWORK/checker/tests/nullness
+  (cd $CHECKERFRAMEWORK && ant -e dist) && javac -processor org.checkerframework.checker.nullness.NullnessChecker -Xbootclasspath/p:$CHECKERFRAMEWORK/checker/dist/jdk7.jar -implicit:class AssertNonNullTest.java
 
 or
 
-  cd $CHECKERS/tests/framework
-  (cd $CHECKERS && ant -e jar) && javac -implicit:class -processor tests.util.TestChecker -classpath $CHECKERS/tests/build -Xbootclasspath/p:$CHECKERS/jdk/jdk.jar -implicit:class GenericTest10.java
+  cd $CHECKERFRAMEWORK/checker/tests/framework
+  (cd $CHECKERFRAMEWORK && ant -e dist) && javac -implicit:class -processor tests.util.TestChecker -classpath $CHECKERFRAMEWORK/checker/tests/build -Xbootclasspath/p:$CHECKERFRAMEWORK/checker/dist/jdk7.jar -implicit:class GenericTest10.java
 
 where the specific checker and command-line arguments are often clear from
 the directory name but can also be determined from
@@ -111,7 +111,7 @@ comment, or in a Java comment.
 
 To disable all tests for a given type system, temporarily move away a file;
 for example,
-  mv $CHECKERS/tests/src/tests/OIGJTest.java $CHECKERS/tests/src/tests/OIGJTest.java-SAVE
+  mv $CHECKERFRAMEWORK/checker/tests/src/tests/OIGJTest.java $CHECKERFRAMEWORK/checker/tests/src/tests/OIGJTest.java-SAVE
 [Is there a better way?]
 
 
