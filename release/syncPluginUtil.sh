@@ -1,8 +1,8 @@
 #!/bin/sh
 
-MASTER=$CHECKERS"/src/org/checkerframework/framework/util/PluginUtil.java"
-ECLIPSE=$CHECKERS"/../eclipse/checker-framework-eclipse-plugin/src/checkers/eclipse/util/PluginUtil.java"
-MAVEN=$CHECKERS"/../maven-plugin/src/main/java/org/checkersplugin/PluginUtil.java"
+MASTER=$CHECKERFRAMEWORK"/framework/src/org/checkerframework/framework/util/PluginUtil.java"
+ECLIPSE=$CHECKERFRAMEWORK"/eclipse/checker-framework-eclipse-plugin/src/checkers/eclipse/util/PluginUtil.java"
+MAVEN=$CHECKERFRAMEWORK"/maven-plugin/src/main/java/org/checkerframework/mavenplugin/PluginUtil.java"
 
 tail +2 $MASTER  &> ".PluginUtil_master.java"
 
