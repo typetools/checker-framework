@@ -5,13 +5,14 @@ For general user instructions, see the homepage at:
 http://types.cs.washington.edu/checker-framework/eclipse
 
 
-Prerequisites: checkers.jar, checkers-quals.jar, checkers.jar, javac.jar, jdk6.jar, and jdk7.jar.  Some of these are redundant (and will be removed in the future).
+Prerequisites: checker.jar, checker-quals.jar, javac.jar, jdk6.jar, and jdk7.jar.
+Some of these are redundant (and will be removed in the future).
 These are all available from the checker-framework and jsr308 projects
 respectively. For instructions on building these, see the documentation for
 the Checker Framework and jsr308 (section 25.3).
 
 You must put the above libraries in the lib folder (create one if missing)
-in the checker-plugin folder.
+in the checker-framework-eclipse-plugin folder.
 
 
 ==== Opening the Plugin Project ====
@@ -26,7 +27,7 @@ Right Click The Plugin Project -> PDE Tools -> Update Classpath
 
 ==== Debugging/Running the plugin ====
 
-Since the plugin requires all the jars in the lib directory to be on the class path, if it's installed via the update-site (discussed below) then the plugin jar will be extracted into the plugins directory.  Unfortunately, this leads to a slightly different directory layout then the project directory (the bin/classes/checkers dir becomes a top level dir).  This means that the classpath used when the plugin is run as an actual plugin is different then the one needed to run the plugin from the eclipse project.  So (for now anyways), you must copy the bin/classes/checkers to checker-framework-eclipse-plugin if you want to run the plugin using the following instructions:
+Since the plugin requires all the jars in the lib directory to be on the class path, if it's installed via the update-site (discussed below) then the plugin jar will be extracted into the plugins directory.  Unfortunately, this leads to a slightly different directory layout then the project directory (the bin/classes/checker dir becomes a top level dir).  This means that the classpath used when the plugin is run as an actual plugin is different then the one needed to run the plugin from the eclipse project.  So (for now anyways), you must copy the bin/classes/checker to checker-framework-eclipse-plugin if you want to run the plugin using the following instructions:
   
 open the checker-framework-eclipse-plugin project in Eclipse. Click on the
 plugin.xml and use the "run" action in Eclipse, which should open a dialog
