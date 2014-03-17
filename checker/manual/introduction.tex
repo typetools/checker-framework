@@ -197,12 +197,12 @@ optional step.
 
 %% Not needed any more.
 %   Then, set the
-%   \code{CHECKERS} environment variable to the
-%   \code{checker-framework/checkers} directory.  For instance, if you use
+%   \code{CHECKERFRAMEWORK} environment variable to the
+%   \code{checker-framework} directory.  For instance, if you use
 %   the bash shell, then add this to your \code{.bashrc} file (don't forget
 %   to replace the ``\code{...}''!):
 % \begin{Verbatim}
-%   export CHECKERS=.../checker-framework/checkers
+%   export CHECKERFRAMEWORK=.../checker-framework
 % \end{Verbatim}
 %   Also execute it on the command line, or log out and back in.
 
@@ -220,9 +220,9 @@ optional step.
   You can use the Checker Framework compiler in three ways.  You can use any one of them.  However, if
   you are using the Windows command shell, you must use the last one.
 
-  First, set a \code{CHECKERS} environment variable to the
-  \code{.../checker-framework/checkers} directory.  Alternately, you can
-  use an absolute path where the below instructions use the \code{CHECKERS}
+  First, set a \code{CHECKERFRAMEWORK} environment variable to the
+  \code{.../checker-framework} directory.  Alternately, you can
+  use an absolute path where the below instructions use the \code{CHECKERFRAMEWORK}
   environment variable.
 
   % Is the last one required for Cygwin, as well as for the Windows command shell?
@@ -230,17 +230,17 @@ optional step.
   \begin{itemize}
   \item
     Add directory
-    \code{\$CHECKERS/binary} to your path, \emph{before} any other
+    \code{\$CHECKERFRAMEWORK/checker/bin} to your path, \emph{before} any other
     directory that contains a \<javac> executable.  Now, whenever
     you run \code{javac}, you will use the updated compiler.  If you are
     using the bash shell, a way to do this is to add the following to your
     \verb|~/.bashrc| file:
 \begin{Verbatim}
-  export PATH=${CHECKERS}/binary:${PATH}
+  export PATH=${CHECKERFRAMEWORK}/checker/bin:${PATH}
 \end{Verbatim}
   \item
     Whenever this document tells you to run \code{javac}, you
-    can instead run \code{\$CHECKERS/bin/javac}.
+    can instead run \code{\$CHECKERFRAMEWORK/checker/bin/javac}.
 
     You can simplify this by introducing an alias.  Then,
     whenever this document tells you to run \code{javac}, instead use that
@@ -248,7 +248,7 @@ optional step.
     \verb|~/.bashrc| file:
 % No Windows example because this doesn't work under Windows.
 \begin{Verbatim}
-  alias javacheck='$CHECKERS/bin/javac'
+  alias javacheck='$CHECKERFRAMEWORK/checker/bin/javac'
 \end{Verbatim}
 
  \item
@@ -256,20 +256,20 @@ optional step.
    run checker.jar via \<java> (not \<javac>) as in:
 
 \begin{Verbatim}
-  java -jar $CHECKERS/dist/checker.jar ...
+  java -jar $CHECKERFRAMEWORK/checker/dist/checker.jar ...
 \end{Verbatim}
 
    More generally, anywhere that you use \<javac.jar>, you can substitute
-   \<\$CHECKERS/dist/checker.jar>; the result is to use the Checker
+   \<\$CHECKERFRAMEWORK/checker/dist/checker.jar>; the result is to use the Checker
    Framework compiler instead of the regular \<javac>.
 
 %     Note: Previous versions of these instructions required the use of
-%     \$CHECKERS/bin/javac.jar and providing jsr308-all.jar on the bootclasspath.
+%     \$CHECKERFRAMEWORK/checker/bin/javac.jar and providing jsr308-all.jar on the bootclasspath.
 %     This is no longer the case.  The provided javac script and checker.jar
 %     will automatically fix up the classpath and bootclasspath for use with
 %     the Checker Framework and call the type-annotations compiler appropriately.
 %     jsr308-all.jar no longer exists.  Finally, anywhere javac.jar might be used
-%     you can substitute \$CHECKERS/dist/checker.jar in order to use
+%     you can substitute \$CHECKERFRAMEWORK/checker/dist/checker.jar in order to use
 %     the Checker Framework.
 
     You can simplify the above command by introducing an alias.  Then,
@@ -278,10 +278,10 @@ optional step.
 
 \begin{Verbatim}
   # Unix
-  alias javacheck='java -jar $CHECKERS/dist/checker.jar'
+  alias javacheck='java -jar $CHECKERFRAMEWORK/checker/dist/checker.jar'
 
   # Windows
-  doskey javacheck=java -jar %CHECKERS%\dist\checker.jar $*
+  doskey javacheck=java -jar %CHECKERFRAMEWORK%\checker\dist\checker.jar $*
 \end{Verbatim}
 \end{itemize}
 
@@ -556,7 +556,7 @@ Two concrete examples (using the Nullness Checker) are:
 %END LATEX
 \begin{Verbatim}
   javac -processor org.checkerframework.checker.nullness.NullnessChecker MyFile.java
-  java -jar $CHECKERS/dist/checker.jar -processor org.checkerframework.checker.nullness.NullnessChecker MyFile.java
+  java -jar $CHECKERFRAMEWORK/checker/dist/checker.jar -processor org.checkerframework.checker.nullness.NullnessChecker MyFile.java
 \end{Verbatim}
 %BEGIN LATEX
 \end{smaller}

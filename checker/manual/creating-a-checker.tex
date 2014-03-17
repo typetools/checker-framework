@@ -50,7 +50,7 @@ one distributed with the Checker Framework or a third-party one.
 
 \begin{sloppypar}
 You can place your checker's source files wherever you like.  When you
-compile your checker, \<\$CHECKERS/dist/checker.jar> and \<\$CHECKERS/dist/javac.jar>
+compile your checker, \<\$CHECKERFRAMEWORK/framework/dist/framework.jar> and \<\$CHECKERFRAMEWORK/framework/dist/javac.jar>
 should be on your classpath.  (If you wish to modify an existing checker in place,
 or to place the source code for your new checker in your own private copy of the
 Checker Framework source code, then you need to be able to re-compile the
@@ -1065,7 +1065,7 @@ can step into its source code if needed.
 You can also set up remote (or local) debugging using the following command as a template:
 
 \begin{Verbatim}
-java -jar $CHECKERS/dist/checker.jar \
+java -jar $CHECKERFRAMEWORK/framework/dist/framework.jar \
     -J-Xdebug -J-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005 \
     -processor org.checkerframework.checker.nullness.NullnessChecker \
     src/sandbox/FileToCheck.java
