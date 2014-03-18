@@ -12,7 +12,12 @@
 % \def\codesize{\smaller}
 \def\codesize{\relax}           % for "pslatex"
 %HEVEA \def\codesize{\relax}
-\newcommand{\code}[1]{\ifmmode{\mbox{\codesize\ttfamily{#1}}}\else{\codesize\ttfamily #1}\fi}
+
+%BEGIN LATEX
+\DeclareRobustCommand{\code}[1]{\codesize{\path{#1}}}
+%END LATEX
+%HEVEA \newcommand{\code}[1]{\codesize{\texttt{#1}}}
+
 % This can't handle a URL with an embedded "#" -- at least at UW CSE
 \newcommand{\myurl}[1]{{\codesize\url{#1}}}
 %HEVEA \def\myurl{\url}
@@ -96,6 +101,14 @@
 % In the printed version, only the base class name appears.
 % In the HTML version, it's a link to the Javadoc.
 \newcommand{\refclass}[2]{\ahref{api/org/checkerframework/#1/#2.html}{\<#2>}}
+
+% Reference to Checker Framework Javadoc for a qualified class
+% (not a method, etc.). 
+% This function outputs an @ and then relies on \refclass for the
+% actual formatting.
+\newcommand{\refqualclass}[2]{\code{@}\refclass{#1}{#2}}
+
+
 % Reference to Checker Framework Javadoc for a method or field.).
 % Arg 1: package name using "/" as a separator, with no leading or trailing "/".
 %  example: "checkers/nullness/quals"
