@@ -41,31 +41,31 @@ The following six annotations make up the Javari type system.
 
 \begin{description}
 
-\item[\code{@\refclass{checker/javari/qual}{ReadOnly}}]
+\item[\refqualclass{checker/javari/qual}{ReadOnly}]
   indicates a type that provides only read-only access.  A reference of
   this type may not be used to modify its referent, but aliasing references
   to that object might change it.
 
-\item[\code{@\refclass{checker/javari/qual}{Mutable}}]
+\item[\refqualclass{checker/javari/qual}{Mutable}]
   indicates a mutable type.
   
-\item[\code{@\refclass{checker/javari/qual}{Assignable}}]
+\item[\refqualclass{checker/javari/qual}{Assignable}]
   is a field annotation, not a type qualifier.  It indicates that the given
   field may always be assigned, no matter what the type of the reference
   used to access the field.
   
-\item[\code{@\refclass{checker/javari/qual}{QReadOnly}}]
+\item[\refqualclass{checker/javari/qual}{QReadOnly}]
   corresponds to Javari's ``\code{?\ readonly}'' for wildcard types.  An
   example of its use is \code{List<@QReadOnly Date>}.  It allows only the
   operations which are allowed for both readonly and mutable types.
 
-\item[\code{@\refclass{checker/javari/qual}{PolyRead}}]
+\item[\refqualclass{checker/javari/qual}{PolyRead}]
   (previously named \code{@RoMaybe}) specifies polymorphism over
   mutability; it simulates mutability overloading.  It can be applied to
   methods and parameters.  See Section~\ref{qualifier-polymorphism} and the
-  \code{@\refclass{checker/javari/qual}{PolyRead}} Javadoc for more details.
+  \refqualclass{checker/javari/qual}{PolyRead} Javadoc for more details.
 
-\item[\code{@\refclass{checker/javari/qual}{ThisMutable}}]
+\item[\refqualclass{checker/javari/qual}{ThisMutable}]
   means that the mutability of the field is the same as that of the
   reference that contains it.  \code{@ThisMutable} is the default on
   fields, and does not make sense to write elsewhere.  Therefore,
@@ -107,7 +107,7 @@ that use those libraries.
 
 The checker issues an error whenever mutation happens through a readonly
 reference, when fields of a readonly reference which are not explicitly
-marked with \code{@\refclass{checker/javari/qual}{Assignable}} are reassigned, or
+marked with \refqualclass{checker/javari/qual}{Assignable} are reassigned, or
 when a readonly expression is assigned to a mutable variable.  The checker
 also emits a warning when casts increase the mutability access of a
 reference.
