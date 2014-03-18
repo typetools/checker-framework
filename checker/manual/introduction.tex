@@ -420,8 +420,8 @@ described in Sections~\ref{writing-annotations} and \ref{running}.
 
 \begin{enumerate}
 
-\item The programmer writes annotations, such as \code{@\refclass{checker/nullness/qual}{NonNull}} and
-  \code{@\refclass{checker/interning/qual}{Interned}}, that specify additional information about Java types.
+\item The programmer writes annotations, such as \refqualclass{checker/nullness/qual}{NonNull} and
+  \refqualclass{checker/interning/qual}{Interned}, that specify additional information about Java types.
   (Or, the programmer uses an inference tool to automatically insert
   annotations in his code:  see Sections~\ref{nullness-inference} and~\ref{javari-inference}.)
   It is possible to annotate only part of your code:  see
@@ -769,9 +769,9 @@ annotation processing including all pluggable type-checking.
 
 A checker can guarantee that a particular property holds throughout the
 code.  For example, the Nullness Checker (Chapter~\ref{nullness-checker})
-guarantees that every expression whose type is a \code{@\refclass{checker/nullness/qual}{NonNull}} type never
+guarantees that every expression whose type is a \refqualclass{checker/nullness/qual}{NonNull} type never
 evaluates to null.  The Interning Checker (Chapter~\ref{interning-checker})
-guarantees that every expression whose type is an \code{@\refclass{checker/interning/qual}{Interned}} type
+guarantees that every expression whose type is an \refqualclass{checker/interning/qual}{Interned} type
 evaluates to an interned value.  The checker makes its guarantee by
 examining every part of your program and verifying that no part of the
 program violates the guarantee.
@@ -958,7 +958,7 @@ as an argument.  Examples include
   com.google.common.base.Preconditions.checkNotNull(Object)
 \end{Verbatim}
 
-\code{@\refclass{checker/nullness/qual}{Nullable}} (see Section~\ref{nullness-annotations})
+\refqualclass{checker/nullness/qual}{Nullable} (see Section~\ref{nullness-annotations})
 might seem like a reasonable annotation for the parameter,
 for two reasons.  First, \code{null} is a legal argument with a
 well-defined semantics:  throw an exception.  Second, \code{@Nullable}
@@ -974,7 +974,7 @@ the programmer's intention that \code{null} never flows there.  If
 (whether or not it throws a NullPointerException).
 
 Therefore, you should mark such parameters as
-\code{@\refclass{checker/nullness/qual}{NonNull}}, indicating
+\refqualclass{checker/nullness/qual}{NonNull}, indicating
 the intended use of the method.  When you use the \code{@NonNull}
 annotation, the checker is able to issue compile-time warnings about
 possible run-time exceptions, which is its purpose.  Marking the parameter
@@ -1152,9 +1152,9 @@ Fix your code to prevent that crash.
 \item
 There is a weakness in the annotations.  Improve the annotations.
 For example, continuing the Nullness Checker example, if a particular
-variable is annotated as \code{@\refclass{checker/nullness/qual}{Nullable}} but it
+variable is annotated as \refqualclass{checker/nullness/qual}{Nullable} but it
 actually never contains \<null> at run time, then change the annotation to 
-\code{@\refclass{checker/nullness/qual}{NonNull}}.  The weakness might be in the
+\refqualclass{checker/nullness/qual}{NonNull}.  The weakness might be in the
 annotations in your code, or in the annotations in a library that your code
 calls.  Another possible problem is that a library is unannotated (see
 \chapterpageref{annotating-libraries}).
