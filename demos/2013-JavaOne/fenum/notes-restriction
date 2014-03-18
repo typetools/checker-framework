@@ -1,0 +1,54 @@
+Preparation:
+  \cp -f RestrictionTest.java-orig RestrictionTest.java
+  javac RestrictionType.java
+and copy android.jar from the Android "ADT bundle" to this directory
+
+Android uses int constants instead of Java enums.
+This has two problems:
+ * documentation
+ * error checking
+
+- Documentation:
+http://developer.android.com/reference/android/content/RestrictionEntry.html
+introduces 4 constants for "type of restriction".
+
+- Neither setType() nor getType() specifies the valid range for the parameter/return or what happens when the value is invalid.
+
+Browse to file RestrictionEntry.html or the following network URLs:
+http://developer.android.com/reference/android/content/RestrictionEntry.html#getType%28%29
+http://developer.android.com/reference/android/content/RestrictionEntry.html#setType%28int%29
+
+We can't tell what getType() returns, what is a legal input to setType(),
+or what setType() does when its input is illegal.  But, if we read the
+source code we will surely learn that, right?
+
+- Show the implementation in RestrictionEntry.java
+(taken from https://android.googlesource.com/platform/frameworks/base/+/master/core/java/android/content/RestrictionEntry.java):
+
+setType/getType perform no data validation at all - they simply store
+the info in a field and return it.
+
+- The RestrictionTest.java file compiles without any warning:
+
+javac -cp android.jar:. RestrictionTest.java
+
+But it's incorrect.  This is hard to notice because 5 is between two legal
+values of the argument.
+
+- Show RestrictionType.java, which defines the type qualifier @RestrictionType.
+It has two meta-annotations:
+ * one defines the syntax -- @RestrictionType is a type annotation
+ * the other defines the semantics -- @RestrictionType is a Fake Enumeration
+
+- We can use @RestrictionType to annotate the Android SDK.
+Show android.astub.  Using @RestrictionType documents both the constants
+and the method signatures.
+
+- Compile like this:
+
+javac -processor org.checkerframework.checker.fenum.FenumChecker -Aquals=RestrictionType -Astubs=android.astub -cp android.jar:. Restriction.java
+
+Note that we do not need to add any annotations in Restriction.java to get
+useful feedback.
+
+Correct the errors one-by-one.

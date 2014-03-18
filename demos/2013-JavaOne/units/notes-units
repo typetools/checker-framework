@@ -1,0 +1,20 @@
+Preparation:
+  \cp -f Projectile.java-orig Projectile.java
+
+Explain the program.
+
+The program compiles fine:
+  javac Projectile.java
+
+Now use pluggable type-checking:
+  javac -processor org.checkerframework.checker.units.UnitsChecker Projectile
+
+Consider a velocity of 100 m/s and a launch angle of
+45 degrees = pi/4 radians:
+
+projectileRange(100, pi/4) = 1020
+projectileRange(100, 45 /* incorrectly using degrees instead */) = 912
+
+Thus, if you ran isSafelyDownRange to check if 1000 meters is a safe distance,
+but you used 45 degrees instead of pi/4 radians, you would be told it is safe
+when it is in fact not safe.
