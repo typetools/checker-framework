@@ -31,7 +31,7 @@ stubparser/docs/api
 checker/jdk/**/*.class
 checker/jdk/jdk.jar
 *.pyc
-checker/binary/buildbin
+checker/build-temp
 checker/examples/**/*.class
 
 # manual files

@@ -726,7 +726,7 @@
       Binary release of the Checker Framework; it includes javac.
      -->
 
-    <property name="temp.dir" value="binary/buildbin"/>
+    <property name="temp.dir" value="build-temp"/>
 
     <target name="-prep-dist"
             description="Ensure that the necessary jar files exist">
