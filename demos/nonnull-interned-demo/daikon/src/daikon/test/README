@@ -1,3 +1,0 @@
-This directory contains the (small and fast to run) Daikon unit tests.
-Daikon also has a much more substantial set of regression tests; in the
-  CVS repository, they can be found at invariants/tests/.

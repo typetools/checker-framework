@@ -1,2 +1,0 @@
-Premain-Class: daikon.chicory.ChicoryPremain
-Can-Redefine-Classes: true
