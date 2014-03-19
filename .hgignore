@@ -32,8 +32,7 @@ checker/jdk/**/*.class
 checker/jdk/jdk.jar
 *.pyc
 checker/binary/buildbin
-demos/nonnull-interned-demo/**/*.class
-demos/units-extension/*.class
+checker/examples/**/*.class
 
 # manual files
 bib
