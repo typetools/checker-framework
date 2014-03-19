@@ -456,8 +456,10 @@ by the DirectoryScanner documentation found at:
     </excludes>
 \end{Verbatim}
 
-By default, an error reported by the Checker Framework Maven plugin will cause your build to fail.  To prevent
-a build from failing and still produce error and warning output, set \code{failOnError} to false.
+By default, an error reported by the Checker Framework Maven plugin will cause your build to fail.
+Maven also occasionally causes a build to fail when it encounters a message it does not recognize,
+even if that message is not an error or a warning. To prevent a build from failing and still produce
+error and warning output, set \code{failOnError} to false.
 
 \begin{Verbatim}
     <failOnError>false</failOnError>

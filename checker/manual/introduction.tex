@@ -1114,7 +1114,9 @@ pseudo-typedef antipattern~\cite{Goetz2006:typedef}.  Even if compatibility
 is not a concern, a code change may introduce bugs, whereas adding
 annotations does not change the run-time behavior.  It is possible to add
 annotations to existing code, including code you do not maintain or cannot
-change.  It is possible to annotate primitive types without converting them
+change (for code that strictly cannot be changed, it is recommended to add
+annotations in comments --- see Section~\ref{annotations-in-comments}).
+It is possible to annotate primitive types without converting them
 to wrappers, which would make the code both uglier and slower.
 
 Type qualifiers can be applied to any type, including final classes that

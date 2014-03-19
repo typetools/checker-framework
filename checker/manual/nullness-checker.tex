@@ -501,7 +501,7 @@ Section~\ref{suppressing-warnings}).  An example use is
     @Nullable Object getObject(...) { ... }
 
     void myMethod() {
-      // The programmer knows that this partucular call never returns null,
+      // The programmer knows that this particular call never returns null,
       // perhaps based on the arguments or the state of other objects.
       @SuppressWarnings("nullness")
       @NonNull Object o2 = getObject(...);
@@ -753,7 +753,7 @@ possibility of a null pointer exception at run time), use the following command:
 \end{Verbatim}
 
 \noindent
-The compiler will issue three warnings regarding violation of the semantics of
+The compiler will issue two warnings regarding violation of the semantics of
 \refqualclass{checker/nullness/quals}{NonNull}.
 % in the \code{NonNullExampleWithWarnings.java} file.
 
@@ -888,11 +888,11 @@ assert var != null : "@SuppressWarnings(nullness)";
 \end{Verbatim}
 \item
     To indicate that a routine returns the same value every time it is
-    called, use \refqualclass{dataflow/quals}{Pure} (see Section~\ref{nullness-method-annotations}).
+    called, use \refqualclass{dataflow/quals}{Pure} (see Section~\ref{type-refinement-purity}).
 \item
     To indicate a method precondition (a contract stating the conditions
     under which a client is allowed to call it), you can use annotations
-    such as \refqualclass{checker/nullness/quals}{RequiresNonNull} (see Section~\ref{nullness-method-annotations}.
+    such as \refqualclass{checker/nullness/quals}{RequiresNonNull} (see Section~\ref{nullness-method-annotations}).
 \end{itemize}
 
 
@@ -1396,8 +1396,8 @@ command-line option (see Section~\ref{lint-uninitialized}).
 
 So far, we have discussed initialization as if it is an all-or-nothing property:
 an object is non-initialized until initialization completes, and then it is initialized.  The full truth is a bit more complex:  during the
-initialization process, an object can be partially initialized, and as the
-object's superclass constructors complete, its initialization status.  The
+initialization process an object can be partially initialized, and as the
+object's superclass constructors complete, its initialization status is updated.  The
 Initialization Checker lets you express such properties when necessary.
 
 Consider a simple example:
@@ -1615,7 +1615,7 @@ then you can indicate that:
 
 \begin{Verbatim}
 class MyClass {
-  void initHelper(@UnknownInitialization MyClass this,*/ String param1) { ... }
+  void initHelper(@UnknownInitialization MyClass this, String param1) { ... }
 }
 \end{Verbatim}
 
@@ -1668,7 +1668,7 @@ the fields declared in \<MyClass> initialized, there might be a subclass of
 \<MyClass>.  Thus, the receiver of \<helperMethod> should be declared as 
 \<@UnderInitialization(MyClass.class)>, which says that initialization has
 completed for all the \<MyClass> fields but may not have been completed
-overall.  If \<helperMethod> had been a public method that could be called
+overall.  If \<helperMethod> had been a public method that could also be called after
 initialization was actually complete, then the receiver should have type
 \<@UnknownInitialization>, which is the supertype of
 \<@UnknownInitialization> and \<@UnderInitialization>.
@@ -1694,7 +1694,7 @@ just the \code{@NonNull} ones.  See Section~\ref{lint-uninitialized}.
 
 \paragraph{Use of method annotations}
 
-A method with a non-initialized receiver may assumes that a few fields (but not all
+A method with a non-initialized receiver may assume that a few fields (but not all
 of them) are non-null, and it sometimes sets some more fields to non-null
 values.  To express these concepts, use the
 \refqualclass{checker/nullness/quals}{RequiresNonNull},
@@ -1733,7 +1733,7 @@ In practice, you can use whichever one you prefer.
 
 To run the Nullness Checker with the rawness variant of the Initialization
 Checker, invoke the NullnessRawnessChecker rather than the NullnessChecker;
-that is, supply the \code{-processor org.checkerframework.checker.nullness.NullnessChecker}
+that is, supply the \code{-processor org.checkerframework.checker.nullness.NullnessRawnessChecker}
 command-line option to javac.
 
 
@@ -2206,7 +2206,7 @@ annotation has nothing to do with the raw types of Java Generics.
 \section{Map Key Checker\label{map-key-checker}}
 
 The Map Key Checker uses the \refqualclass{checker/nullness/quals}{KeyFor}
-annotation to declare that a is value a key in a given map.
+annotation to declare that a value is a key in a given map.
 
 This is relevant to the Nullness Checker because
 Java's

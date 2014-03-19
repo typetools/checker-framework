@@ -189,11 +189,11 @@ The checker issues an error in two cases:
 This example shows both sorts of problems:
 
 \begin{Verbatim}
-            Object  obj;
-  @Interned Object iobj;
+            Date  date;
+  @Interned Date idate;
   ...
-  if (obj == iobj) { ... }  // error: reference equality test is unsafe
-  iobj = obj;               // error: iobj's referent may no longer be interned
+  if (date == idate) { ... }  // error: reference equality test is unsafe
+  idate = date;               // error: idate's referent may no longer be interned
 \end{Verbatim}
 
 \label{lint-dotequals}
