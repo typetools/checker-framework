@@ -13,10 +13,11 @@
 \def\codesize{\relax}           % for "pslatex"
 %HEVEA \def\codesize{\relax}
 
-%BEGIN LATEX
-\DeclareRobustCommand{\code}[1]{\codesize{\path{#1}}}
-%END LATEX
-%HEVEA \newcommand{\code}[1]{\codesize{\texttt{#1}}}
+\newcommand{\code}[1]{\ifmmode{\mbox{\codesize\ttfamily{#1}}}\else{\codesize\ttfamily #1}\fi}
+%%BEGIN LATEX
+%\DeclareRobustCommand{\code}[1]{\codesize{\path{#1}}}
+%%END LATEX
+%%HEVEA \newcommand{\code}[1]{\codesize{\texttt{#1}}}
 
 % This can't handle a URL with an embedded "#" -- at least at UW CSE
 \newcommand{\myurl}[1]{{\codesize\url{#1}}}
