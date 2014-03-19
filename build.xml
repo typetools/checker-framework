@@ -30,12 +30,9 @@
   </target>
 
   <target name="tests" depends="dist"
-          description="Generate javadoc for all subprojects">
+          description="Run test cases for all subprojects">
     <ant dir="checker">
       <target name="all-tests-nojdk"/>
-    </ant>
-    <ant dir="demos/nonnull-interned-demo">
-      <target name="check-demo"/>
     </ant>
   </target>
 
