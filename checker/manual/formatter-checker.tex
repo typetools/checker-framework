@@ -64,9 +64,9 @@ string.
 % \sunjavadoc{java/io/PrintStream.html#printf(java.lang.String,java.lang.Object...)}{System.out.printf}.
 A format specifier is introduced by a \code{\%} character. For example,
 \code{String.format("The \%s is \%d.","answer",42)} yields
-\code{"The answer is 42."}.  \code{"\%s \%d"} is
+\code{"The answer is 42."}.  \code{"The \%s is \%d."} is
 the format string, \code{"\%s"} and \code{"\%d"} are the format specifiers;
-\code{"hello"} and \code{42} are format arguments.
+\code{"answer"} and \code{42} are format arguments.
 
 
 \section{Format String Checker annotations\label{formatter-annotations}}
@@ -87,7 +87,7 @@ signatures.
 % for example, will fail despite the fact that \code{"\%d"} is valid.
 
 The \refqualclass{checker/formatter/qual}{Format} qualifier is parameterized with
-a list of conversion categories that impose restricts on the format arguments.
+a list of conversion categories that impose restrictions on the format arguments.
 Conversion categories are explained in more detail in
 Section~\ref{formatter-categories}.  The type qualifier for \code{"\%d \%f"} is
 for example \code{@Format(\{INT, FLOAT\})}.
