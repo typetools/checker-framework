@@ -71,7 +71,7 @@ the format string, \code{"\%s"} and \code{"\%d"} are the format specifiers;
 
 \section{Format String Checker annotations\label{formatter-annotations}}
 
-The \code{@\refclass{checker/formatter/qual}{Format}} qualifier on a string type
+The \refqualclass{checker/formatter/qual}{Format} qualifier on a string type
 indicates a \emph{valid} format string.  The JDK documentation for the
 \<Formatter> class explains the requirements for a
 \sunjavadoc{java/util/Formatter.html#syntax}{\textrm{valid format string}}.
@@ -86,7 +86,7 @@ signatures.
 % invocation will succeed. The format method invocation \code{String.format("\%d","hello")}
 % for example, will fail despite the fact that \code{"\%d"} is valid.
 
-The \code{@\refclass{checker/formatter/qual}{Format}} qualifier is parameterized with
+The \refqualclass{checker/formatter/qual}{Format} qualifier is parameterized with
 a list of conversion categories that impose restricts on the format arguments.
 Conversion categories are explained in more detail in
 Section~\ref{formatter-categories}.  The type qualifier for \code{"\%d \%f"} is
@@ -118,12 +118,12 @@ String>, expresses that contract.
 Figure~\ref{fig-formatter-hierarchy} shows all the type qualifiers.
 The annotations other than \<@Format> are only used
 internally and cannot be written in your code.
-\code{@\refclass{checker/formatter/qual}{InvalidFormat}} indicates an invalid format
+\refqualclass{checker/formatter/qual}{InvalidFormat} indicates an invalid format
 string --- that is, a string that cannot be used as a format string.  For
 example, the type of \code{"\%y"} is \<@InvalidFormat String>.
-\code{@\refclass{checker/formatter/quals}{FormatBottom}} is the type of the
+\refqualclass{checker/formatter/quals}{FormatBottom} is the type of the
 \code{null} literal.
-\code{@\refclass{framework/qual}{Unqualified}} is the default that is
+\refqualclass{framework/qual}{Unqualified} is the default that is
 applied to strings that are not literals and on which the user has not
 written a \<@Format> annotation.
 
