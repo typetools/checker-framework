@@ -184,11 +184,8 @@
     classpath (despite the attempt in the body to add tools.jar to the
     classpath).  Also, ${java.home} is the jre/ directory.
     -->
-    <target name="javadoc" depends="prep,prep-ManualTaglet,build.check.uptodate" description="Create Javadoc documentation">
+    <target name="javadoc" depends="prep,prep-ManualTaglet,build.check.uptodate" unless="javadoc.uptodate" description="Create Javadoc documentation">
 
-        <ant dir="${framework.loc}">
-            <target name="javadoc"/>
-        </ant>
 
         <!-- This relative path is wrong; running "ant -find" from a
         subdirectory fails. -->
@@ -198,6 +195,7 @@
                  classpath="${build}:${framework.lib}:${javac.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar:${junit.lib}"
                  excludepackagenames="org.checkerframework.framework.stub"
                  bootclasspath="${javac.lib}:${javadoc.lib}:${java.home}/lib/rt.jar">
+
             <package name="org.checkerframework.javacutil.*"/>
             <package name="org.checkerframework.dataflow.*"/>
             <!-- TODO: should contain stubparser, but there
@@ -212,6 +210,16 @@
             <taglet name="org.checkerframework.javacutil.dist.ManualTaglet"
                     path="${javacutil.loc}/build"/>
         </javadoc>
+    </target>
+
+    <target name="javadoc.jar" depends="javadoc" description="Create jar of all javadoc documentation">
+        <jar destfile="${checker.javadoc.lib}" basedir="${api.doc}"></jar>
+    </target>
+
+    <target name="sources.jar" description="Create a jar of all source files except those in the jdk directory.">
+        <jar destfile="${checker.sources.lib}">
+            <fileset dir=".." includes="**/src/**" excludes="**/jdk/**,**/dist/**"/>
+        </jar>
     </target>
 
     <!-- This creates checker.jar -->
