@@ -184,8 +184,11 @@
     classpath (despite the attempt in the body to add tools.jar to the
     classpath).  Also, ${java.home} is the jre/ directory.
     -->
-    <target name="javadoc" depends="prep,prep-ManualTaglet,build.check.uptodate" unless="javadoc.uptodate" description="Create Javadoc documentation">
+    <target name="javadoc" depends="prep,prep-ManualTaglet,build.check.uptodate" description="Create Javadoc documentation">
 
+        <ant dir="${framework.loc}">
+            <target name="javadoc"/>
+        </ant>
 
         <!-- This relative path is wrong; running "ant -find" from a
         subdirectory fails. -->
