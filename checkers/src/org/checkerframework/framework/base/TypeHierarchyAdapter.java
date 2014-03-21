@@ -6,8 +6,14 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedDeclaredType;
 
 import org.checkerframework.framework.base.QualifiedTypeMirror.QualifiedDeclaredType;
 
+/** Adapter class for {@link TypeHierarchy}, extending
+ * {@link checkers.types.TypeHierarchy checkers.types.TypeHierarchy}.
+ */
 class TypeHierarchyAdapter<Q> extends checkers.types.TypeHierarchy {
     private TypeHierarchy<Q> underlying;
+    /** A copy of {@link underlying} with a more precise type, or null if
+     * {@link underlying} is not a {@link DefaultTypeHierarchy} instance.
+     */
     private DefaultTypeHierarchy<Q> defaultUnderlying;
     private TypeMirrorConverter<Q> converter;
 
@@ -19,11 +25,15 @@ class TypeHierarchyAdapter<Q> extends checkers.types.TypeHierarchy {
         this.underlying = underlying;
 
         if (underlying instanceof DefaultTypeHierarchy) {
-            @SuppressWarnings("unchecked")
             DefaultTypeHierarchy<Q> defaultUnderlying =
                 (DefaultTypeHierarchy<Q>)underlying;
             this.defaultUnderlying = defaultUnderlying;
         } else {
+            // It's fine to leave 'defaultUnderlying' null here, because only
+            // 'DefaultTypeHierarchy' is able to invoke the annotation-based
+            // code that uses 'defaultUnderlying'.  (Note that 'isSubtype', the
+            // only public entry point, uses 'underlying', not
+            // 'defaultUnderlying'.)
             this.defaultUnderlying = null;
         }
 
@@ -70,6 +80,8 @@ class TypeHierarchyAdapter<Q> extends checkers.types.TypeHierarchy {
                 converter.getAnnotatedType(b));
     }
 
+    // No 'isSubtypeImpl', because that method is final.
+
     boolean superIsSubtypeImpl(QualifiedTypeMirror<Q> a, QualifiedTypeMirror<Q> b) {
         return super.isSubtypeImpl(
                 converter.getAnnotatedType(a),
@@ -77,14 +89,12 @@ class TypeHierarchyAdapter<Q> extends checkers.types.TypeHierarchy {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     protected boolean isSubtypeTypeArguments(AnnotatedDeclaredType a, AnnotatedDeclaredType b) {
         return defaultUnderlying.isSubtypeTypeArguments(
                 (QualifiedDeclaredType<Q>)converter.getQualifiedType(a),
                 (QualifiedDeclaredType<Q>)converter.getQualifiedType(b));
     }
 
-    @SuppressWarnings("unchecked")
     boolean superIsSubtypeTypeArguments(QualifiedDeclaredType<Q> a, QualifiedDeclaredType<Q> b) {
         return super.isSubtypeTypeArguments(
                 (AnnotatedDeclaredType)converter.getAnnotatedType(a),

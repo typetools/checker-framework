@@ -1,5 +1,7 @@
 package org.checkerframework.framework.util;
 
+/** A visitor interface for {@link ExtendedTypeMirror}, patterned after
+ * {@link javax.lang.model.type.TypeVisitor}. */
 public interface ExtendedTypeVisitor<R,P> {
     R visitArray(ExtendedArrayType t, P p);
     R visitDeclared(ExtendedDeclaredType t, P p);

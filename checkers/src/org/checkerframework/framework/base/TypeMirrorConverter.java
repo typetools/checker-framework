@@ -37,22 +37,53 @@ import org.checkerframework.framework.util.ExtendedTypeVisitor;
 import org.checkerframework.framework.util.WrappedAnnotatedTypeMirror;
 import org.checkerframework.framework.util.WrappedAnnotatedTypeMirror.*;
 
+/**
+ * Helper class used by adapters to convert between {@link QualifiedTypeMirror}
+ * and {@link AnnotatedTypeMirror}.
+ *
+ * Only adapters should ever have a reference to this class.  All adapters for
+ * a single type system must use the same {@link TypeMirrorConverter} instance,
+ * since converting from {@link QualifiedTypeMirror} to {@link
+ * AnnotatedTypeMirror} and back will fail if the two conversion steps are
+ * performed with different instances.
+ */
+/* This class uses a lookup table and a special annotation '@Key' to encode
+ * qualifiers as annotations.  Each '@Key' annotation contains a single index,
+ * which is a key into the lookup table indicating a particular qualifier.
+ */
 class TypeMirrorConverter<Q> {
+    /** The checker adapter, used for lazy initialization of {@link
+     * typeFactory}. */
     private CheckerAdapter<Q> checkerAdapter;
+    /** Annotation processing environment, used to construct new {@link Key}
+     * {@link AnnotationMirror}s. */
     private ProcessingEnvironment processingEnv;
+    /** The {@link Element} corresponding to the {@link Key.index} field. */
     private ExecutableElement indexElement;
+    /** A {@link Key} annotation with no <code>index</code> set. */
     private AnnotationMirror blankKey;
+    /** The type factory adapter, used to construct {@link
+     * AnnotatedTypeMirror}s. */
     private QualifiedTypeFactoryAdapter<Q> typeFactory;
 
+    /** The next unused index in the lookup table. */
     private int nextIndex = 0;
 
+    /** The qualifier-to-index half of the lookup table.  This lets us ensure
+     * that the same qualifier maps to the same <code>@Key</code> annotation.
+     */
     private HashMap<Q, Integer> qualToIndex;
+    /** The index-to-qualifier half of the lookup table.  This is used for
+     * annotated-to-qualified conversions. */
     private HashMap<Integer, Q> indexToQual;
 
     @TypeQualifier
     @SubtypeOf({})
     public static @interface Key {
+        /** An index into the lookup table. */
         int index() default -1;
+        /** A string representation of the qualifier this {@link Key}
+         * represents.  This lets us have slightly nicer error messages. */
         String desc() default "";
     }
 
@@ -70,6 +101,8 @@ class TypeMirrorConverter<Q> {
         this.indexToQual = new HashMap<>();
     }
 
+    /** Returns the type factory to use for building {@link
+     * AnnotatedTypeMirror}s, running lazy initialization if necessary. */
     private QualifiedTypeFactoryAdapter<Q> getTypeFactory() {
         if (typeFactory == null) {
             typeFactory = checkerAdapter.getTypeFactory();
@@ -77,6 +110,8 @@ class TypeMirrorConverter<Q> {
         return typeFactory;
     }
 
+    /** Constructs a new {@link Key} annotation with the provided index, using
+     * <code>desc.toString()</code> to set the {@link Key.desc} field. */
     private AnnotationMirror createKey(int index, Object desc) {
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, Key.class.getCanonicalName());
         builder.setValue("index", index);
@@ -85,6 +120,10 @@ class TypeMirrorConverter<Q> {
     }
 
 
+    /** Returns the index that represents <code>qual</code>.  If
+     * <code>qual</code> has not been assigned an index yet, a new index will
+     * be generated and assigned to it.
+     */
     private int getIndexForQualifier(Q qual) {
         if (qualToIndex.containsKey(qual)) {
             return qualToIndex.get(qual);
@@ -96,11 +135,14 @@ class TypeMirrorConverter<Q> {
         }
     }
 
+    /** Returns the <code>index</code> field of a {@link Key} {@link
+     * AnnotationMirror}. */
     private int getIndex(AnnotationMirror anno) {
         return getAnnotationField(anno, indexElement);
     }
 
-
+    /** Helper function to obtain an integer field value from an {@link
+     * AnnotationMirror}. */
     private int getAnnotationField(AnnotationMirror anno, ExecutableElement element) {
         AnnotationValue value = anno.getElementValues().get(element);
         if (value == null) {
