@@ -2815,16 +2815,6 @@ public abstract class AnnotatedTypeMirror {
             }
         }
 
-        // TODO: this is a hack to make the system work for the FBC type-system
-        /* FIXME!
-        if (lAnno != null && uAnno != null
-                && AnnotationUtils.areSameByClass(lAnno, FBCBottom.class)
-                && AnnotationUtils.areSameByClass(uAnno, Initialized.class)) {
-            lowerBound.replaceAnnotation(uAnno);
-            return;
-        }
-        */
-
         if (uAnno == null) {
             // TODO: The subtype tests below fail with empty annotations.
             // Is there anything better to do here?
