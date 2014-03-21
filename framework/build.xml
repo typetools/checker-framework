@@ -225,7 +225,7 @@
     <!-- Testing -->
 
     <target name="build-tests" depends="prep" description="Compile tests">
-        <pathconvert pathsep=" " property="src.tests">
+        <pathconvert pathsep=" " property="framework.src.tests">
             <path>
                 <fileset dir="${tests}">
                     <include name="src/tests/**/*.java"/>
@@ -243,7 +243,7 @@
             <arg value="-g"/>
             <arg line="-sourcepath ${tests}"/>
             <arg line="-d ${tests.build}"/>
-            <arg line="${src.tests}"/>
+            <arg line="${framework.src.tests}"/>
         </java>
     </target>
 
