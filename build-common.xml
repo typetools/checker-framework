@@ -77,7 +77,7 @@ points to version ${build.version} of the 'javac.jar' library."/>
     <target name="prep-ManualTaglet">
         <java fork="true"
               failonerror="true"
-              classpath="${javac.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar"
+              classpath="${javac.lib}:${javadoc.lib}"
               classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${javac.lib}:${javadoc.lib}"/>
             <arg value="-g"/>
