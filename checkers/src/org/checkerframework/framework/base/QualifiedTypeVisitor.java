@@ -12,6 +12,10 @@ import org.checkerframework.framework.base.QualifiedTypeMirror.QualifiedTypeVari
 import org.checkerframework.framework.base.QualifiedTypeMirror.QualifiedUnionType;
 import org.checkerframework.framework.base.QualifiedTypeMirror.QualifiedWildcardType;
 
+/**
+ * A visitor for {@link QualifiedTypeMirror}s, patterned after {@link
+ * javax.lang.model.type.TypeVisitor}.
+ */
 public interface QualifiedTypeVisitor<Q,R,P> {
     R visit(QualifiedTypeMirror<Q> type);
     R visit(QualifiedTypeMirror<Q> type, P p);

@@ -35,6 +35,12 @@ import org.checkerframework.framework.base.QualifiedTypeMirror.QualifiedTypeVari
 import org.checkerframework.framework.base.QualifiedTypeMirror.QualifiedUnionType;
 import org.checkerframework.framework.base.QualifiedTypeMirror.QualifiedWildcardType;
 
+/**
+ * {@link DefaultQualifiedTypeFactory} component for annotating a {@link
+ * ExtendedTypeMirror} with qualifiers.  The default implementation uses an
+ * {@link AnnotationConverter} to process any annotations that are present on
+ * the type, and uses the top qualifier if there are no annotations.
+ */
 public class TypeAnnotator<Q> implements ExtendedTypeVisitor<QualifiedTypeMirror<Q>, Void> {
     private AnnotationConverter<Q> annotationConverter;
     private Q topQual;
@@ -53,6 +59,7 @@ public class TypeAnnotator<Q> implements ExtendedTypeVisitor<QualifiedTypeMirror
         this.adapter = adapter;
     }
 
+
     public QualifiedTypeMirror<Q> visit(ExtendedTypeMirror type, Void p) {
         if (type == null) {
             return null;
@@ -69,7 +76,12 @@ public class TypeAnnotator<Q> implements ExtendedTypeVisitor<QualifiedTypeMirror
         return result;
     }
 
-    protected Q getQualifier(ExtendedTypeMirror type, Void p) {
+    /**
+     * Default handler to obtain an appropriate qualifier from an {@link
+     * ExtendedTypeMirror}.  The default implementation uses the {@link
+     * AnnotationConverter} to produce qualifier.
+     */
+    protected Q getQualifier(ExtendedTypeMirror type) {
         Q qual;
 
         // Sometimes the Framework makes us re-process partially-annotated
@@ -85,7 +97,9 @@ public class TypeAnnotator<Q> implements ExtendedTypeVisitor<QualifiedTypeMirror
 
         // As a last resort, default to top.
         // TODO: make the default an argument to this function (and maybe also
-        // to the visitX methods), so it can be changed more easily).
+        // to the visitX methods), to make it easier to change the default in
+        // specific situations (such as giving wildcard lower bounds a
+        // different default from their upper bounds).
         if (qual == null) {
             qual = topQual;
         }
@@ -97,7 +111,7 @@ public class TypeAnnotator<Q> implements ExtendedTypeVisitor<QualifiedTypeMirror
     public QualifiedTypeMirror<Q> visitArray(ExtendedArrayType type, Void p) {
         return new QualifiedArrayType<Q>(
                 type,
-                getQualifier(type, null),
+                getQualifier(type),
                 this.visit(type.getComponentType(), null));
     }
 
@@ -106,7 +120,7 @@ public class TypeAnnotator<Q> implements ExtendedTypeVisitor<QualifiedTypeMirror
         List<? extends QualifiedTypeMirror<Q>> args = this.mapVisit(type.getTypeArguments(), null);
         QualifiedTypeMirror<Q> result = new QualifiedDeclaredType<Q>(
                 type,
-                getQualifier(type, null),
+                getQualifier(type),
                 this.mapVisit(type.getTypeArguments(), null));
 
         return result;
@@ -131,7 +145,7 @@ public class TypeAnnotator<Q> implements ExtendedTypeVisitor<QualifiedTypeMirror
 
         return new QualifiedExecutableType<Q>(
                 type,
-                getQualifier(type, null),
+                getQualifier(type),
                 this.mapVisit(type.getParameterTypes(), null),
                 this.visit(type.getReceiverType(), null),
                 this.visit(type.getReturnType(), null),
@@ -143,7 +157,7 @@ public class TypeAnnotator<Q> implements ExtendedTypeVisitor<QualifiedTypeMirror
     public QualifiedTypeMirror<Q> visitIntersection(ExtendedIntersectionType type, Void p) {
         return new QualifiedIntersectionType<Q>(
                 type,
-                getQualifier(type, null),
+                getQualifier(type),
                 this.mapVisit(type.getBounds(), null));
     }
 
@@ -151,35 +165,35 @@ public class TypeAnnotator<Q> implements ExtendedTypeVisitor<QualifiedTypeMirror
     public QualifiedTypeMirror<Q> visitNoType(ExtendedNoType type, Void p) {
         return new QualifiedNoType<Q>(
                 type,
-                getQualifier(type, null));
+                getQualifier(type));
     }
 
     @Override
     public QualifiedTypeMirror<Q> visitNull(ExtendedNullType type, Void p) {
         return new QualifiedNullType<Q>(
                 type,
-                getQualifier(type, null));
+                getQualifier(type));
     }
 
     @Override
     public QualifiedTypeMirror<Q> visitPrimitive(ExtendedPrimitiveType type, Void p) {
         return new QualifiedPrimitiveType<Q>(
                 type,
-                getQualifier(type, null));
+                getQualifier(type));
     }
 
     @Override
     public QualifiedTypeMirror<Q> visitTypeVariable(ExtendedTypeVariable type, Void p) {
         return new QualifiedTypeVariable<Q>(
                 type,
-                getQualifier(type, null));
+                getQualifier(type));
     }
 
     @Override
     public QualifiedTypeMirror<Q> visitUnion(ExtendedUnionType type, Void p) {
         return new QualifiedUnionType<Q>(
                 type,
-                getQualifier(type, null),
+                getQualifier(type),
                 this.mapVisit(type.getAlternatives(), null));
     }
 
@@ -187,7 +201,7 @@ public class TypeAnnotator<Q> implements ExtendedTypeVisitor<QualifiedTypeMirror
     public QualifiedTypeMirror<Q> visitWildcard(ExtendedWildcardType type, Void p) {
         return new QualifiedWildcardType<Q>(
                 type,
-                getQualifier(type, null),
+                getQualifier(type),
                 this.visit(type.getExtendsBound(), null),
                 this.visit(type.getSuperBound(), null));
     }

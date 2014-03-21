@@ -12,6 +12,10 @@ import checkers.types.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.ExtendedTypeMirror;
 
 
+/**
+ * {@link DefaultQualifiedTypeFactory} component for computing the qualified
+ * type of a {@link Tree}.
+ */
 public class TreeAnnotator<Q> {
     public QualifiedTypeMirror<Q> visitBinary(BinaryTree node, ExtendedTypeMirror type) {
         return null;

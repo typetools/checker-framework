@@ -10,7 +10,11 @@ import checkers.types.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.util.ExtendedTypeMirror;
 import org.checkerframework.framework.util.WrappedAnnotatedTypeMirror;
 
-public class TypeAnnotatorAdapter<Q> extends checkers.types.TypeAnnotator {
+/**
+ * Adapter for {@link TypeAnnotator}, extending
+ * {@link checkers.types.TypeAnnotator checkers.types.TypeAnnotator}.
+ */
+class TypeAnnotatorAdapter<Q> extends checkers.types.TypeAnnotator {
     private TypeAnnotator<Q> underlying;
     private TypeMirrorConverter<Q> converter;
 
@@ -22,6 +26,14 @@ public class TypeAnnotatorAdapter<Q> extends checkers.types.TypeAnnotator {
         this.converter = converter;
     }
 
+    /**
+     * Return the qualifier indicated by the <code>@Key</code> annotation on an
+     * {@link ExtendedTypeMirror}, or <code>null</code> if there is no such
+     * annotation.  The default {@link TypeAnnotator} implementation uses this
+     * method to avoid re-processing a type more than once, which will likely
+     * produce wrong results (since {@link TypeMirrorConverter} removes the
+     * existing annotations when it adds the <code>@Key</code>).
+     */
     public Q getExistingQualifier(ExtendedTypeMirror type) {
         if (type instanceof WrappedAnnotatedTypeMirror) {
             AnnotatedTypeMirror atm = ((WrappedAnnotatedTypeMirror)type).unwrap();
@@ -37,13 +49,10 @@ public class TypeAnnotatorAdapter<Q> extends checkers.types.TypeAnnotator {
     protected Void scan(AnnotatedTypeMirror atm, Void p) {
         // Produce a qualified version of the ATM.
         WrappedAnnotatedTypeMirror watm = WrappedAnnotatedTypeMirror.wrap(atm);
-        //System.err.printf("SCANNING\n  input: %s\n", atm);
         QualifiedTypeMirror<Q> qtm = underlying.visit(watm, null);
-        //System.err.printf("  qualified: %s\n", qtm);
 
         // Update the input ATM with the new qualifiers.
         converter.applyQualifiers(qtm, atm);
-        //System.err.printf("  result: %s\n", atm);
 
         return null;
     }

@@ -22,8 +22,27 @@ import org.checkerframework.framework.util.ExtendedUnionType;
 import org.checkerframework.framework.util.ExtendedWildcardType;
 import org.checkerframework.framework.util.ExtendedTypeMirror;
 
+/**
+ * A {@link ExtendedTypeMirror} with a qualifier for the top level and for
+ * each component of the type.  For example, the qualified version of 
+ * <code>int[]</code> has one qualifier on the top-level {@link
+ * QualifiedArrayType} and another on the {@link QualifiedPrimitiveType}
+ * representing <code>int</code>.
+ *
+ * A {@link QualifiedTypeMirror} is immutable and always has exactly one
+ * non-null qualifier.  In addition, the structure of the {@link
+ * QualifiedTypeMirror} always matches the structure of the underlying {@link
+ * ExtendedTypeMirror}.  That is, for any type with components (such as
+ * <code>DeclaredType</code>, which has a list of type arguments as a
+ * component), it will always be the case that
+ * <code>qtm.getUnderlyingType().getComponent()</code> is equivalent to
+ * <code>qtm.getComponent().getUnderlyingType()</code> according to
+ * <code>Object.equals</code>.
+ */
 public abstract class QualifiedTypeMirror<Q> {
+    /** The underlying {@link ExtendedTypeMirror}. */
     private final ExtendedTypeMirror underlying;
+    /** The qualifier in the main qualifier position of this type. */
     private final Q qualifier;
 
     private QualifiedTypeMirror(ExtendedTypeMirror underlying, Q qualifier) {
@@ -36,21 +55,21 @@ public abstract class QualifiedTypeMirror<Q> {
         this.qualifier = qualifier;
     }
 
+    /** Applies a {@link QualifiedTypeVisitor} to this qualified type. */
     public abstract <R,P> R accept(QualifiedTypeVisitor<Q,R,P> visitor, P p);
 
+    /** Gets the underlying {@link ExtendedTypeMirror}. */
     public ExtendedTypeMirror getUnderlyingType() {
         return underlying;
     }
 
+    /** Gets the {@link TypeKind} of the underlying type. */
     public final TypeKind getKind() {
         return underlying.getKind();
     }
 
+    /** Gets the qualifier in the main qualifier position of this type. */
     public final /*@NonNull*/ Q getQualifier() {
-        return qualifier;
-    }
-
-    public Q getEffectiveQualifier() {
         return qualifier;
     }
 
@@ -110,9 +129,8 @@ public abstract class QualifiedTypeMirror<Q> {
     /** Check that the underlying ExtendedTypeMirror has a primitive TypeKind, and
      * throw an exception if it does not.
      */
-    // This method is here instead of in QualifiedPrimitiveType so that its
-    // exception message can be kept consistent with the message from
-    // checkUnderlyingKind.
+    // This method is here instead of in QualifiedPrimitiveType to keep it near
+    // the other 'checkUnderlyingKind' methods.
     private static void checkUnderlyingKindIsPrimitive(ExtendedTypeMirror underlying) {
         TypeKind actualKind = underlying.getKind();
         if (!actualKind.isPrimitive()) {
@@ -120,6 +138,7 @@ public abstract class QualifiedTypeMirror<Q> {
                     "underlying ExtendedTypeMirror must have primitive kind, not " + actualKind);
         }
     }
+
 
     /** Helper function to raise an appropriate exception in case of a mismatch
      * between qualified and unqualified versions of the same ExtendedTypeMirror.
@@ -146,6 +165,9 @@ public abstract class QualifiedTypeMirror<Q> {
         }
     }
 
+    /** Helper function for checkTypeMirrorsMatch.  Returns a boolean
+     * indicating whether the qualified and unqualified types are
+     * representations of the same type. */
     private static <Q> boolean typeMirrorsMatch(
             QualifiedTypeMirror<Q> qualified, ExtendedTypeMirror unqualified) {
         if (qualified == null && unqualified == null) {
@@ -185,10 +207,10 @@ public abstract class QualifiedTypeMirror<Q> {
         return true;
     }
 
-    private static String commaSeparatedList(List<? extends Object> objs) {
-        return punctuatedList(", ", objs);
-    }
 
+    /** Helper function for subclass toString methods.  Concatenates together
+     * the results of calling toString on each of 'objs', with 'punct' between
+     * each pair of elements. */
     private static String punctuatedList(String punct, List<? extends Object> objs) {
         StringBuilder sb = new StringBuilder();
         boolean first = true;
@@ -201,6 +223,11 @@ public abstract class QualifiedTypeMirror<Q> {
             sb.append(obj);
         }
         return sb.toString();
+    }
+
+    /** Shorthand for puncuatedList(", ", objs). */
+    private static String commaSeparatedList(List<? extends Object> objs) {
+        return punctuatedList(", ", objs);
     }
 
 
@@ -222,6 +249,7 @@ public abstract class QualifiedTypeMirror<Q> {
             return visitor.visitArray(this, p);
         }
 
+        @Override
         public ExtendedArrayType getUnderlyingType() {
             return (ExtendedArrayType)super.getUnderlyingType();
         }
@@ -271,6 +299,7 @@ public abstract class QualifiedTypeMirror<Q> {
             return visitor.visitDeclared(this, p);
         }
 
+        @Override
         public ExtendedDeclaredType getUnderlyingType() {
             return (ExtendedDeclaredType)super.getUnderlyingType();
         }
@@ -355,6 +384,7 @@ public abstract class QualifiedTypeMirror<Q> {
             return visitor.visitExecutable(this, p);
         }
 
+        @Override
         public ExtendedExecutableType getUnderlyingType() {
             return (ExtendedExecutableType)super.getUnderlyingType();
         }
@@ -451,6 +481,7 @@ public abstract class QualifiedTypeMirror<Q> {
             return visitor.visitIntersection(this, p);
         }
 
+        @Override
         public ExtendedIntersectionType getUnderlyingType() {
             return (ExtendedIntersectionType)super.getUnderlyingType();
         }
@@ -495,6 +526,7 @@ public abstract class QualifiedTypeMirror<Q> {
             return visitor.visitNoType(this, p);
         }
 
+        @Override
         public ExtendedNoType getUnderlyingType() {
             return (ExtendedNoType)super.getUnderlyingType();
         }
@@ -514,6 +546,7 @@ public abstract class QualifiedTypeMirror<Q> {
             return visitor.visitNull(this, p);
         }
 
+        @Override
         public ExtendedNullType getUnderlyingType() {
             return (ExtendedNullType)super.getUnderlyingType();
         }
@@ -533,6 +566,7 @@ public abstract class QualifiedTypeMirror<Q> {
             return visitor.visitPrimitive(this, p);
         }
 
+        @Override
         public ExtendedPrimitiveType getUnderlyingType() {
             return (ExtendedPrimitiveType)super.getUnderlyingType();
         }
@@ -561,6 +595,7 @@ public abstract class QualifiedTypeMirror<Q> {
             return visitor.visitTypeVariable(this, p);
         }
 
+        @Override
         public ExtendedTypeVariable getUnderlyingType() {
             return (ExtendedTypeVariable)super.getUnderlyingType();
         }
@@ -598,6 +633,7 @@ public abstract class QualifiedTypeMirror<Q> {
             return visitor.visitUnion(this, p);
         }
 
+        @Override
         public ExtendedUnionType getUnderlyingType() {
             return (ExtendedUnionType)super.getUnderlyingType();
         }
@@ -651,6 +687,7 @@ public abstract class QualifiedTypeMirror<Q> {
             return visitor.visitWildcard(this, p);
         }
 
+        @Override
         public ExtendedWildcardType getUnderlyingType() {
             return (ExtendedWildcardType)super.getUnderlyingType();
         }
