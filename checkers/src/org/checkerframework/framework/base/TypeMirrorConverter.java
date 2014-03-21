@@ -473,7 +473,8 @@ class TypeMirrorConverter<Q> {
     /** Check if an AnnotationMirror is a valid Key annotation.
      */
     public boolean isKey(AnnotationMirror anno) {
-        // TODO: this should check that 'anno' has a valid index.
+        // TODO: This should probably also check that 'anno' has a value in its
+        // 'index' field.
         return anno != null && blankKey.getAnnotationType().equals(anno.getAnnotationType());
     }
 
