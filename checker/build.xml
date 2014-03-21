@@ -231,7 +231,7 @@
         <javadoc sourcepath="${src}:${javacutil.loc}/${src}:${dataflow.loc}/${src}:${stubparser.loc}/${src}:${framework.loc}/${src}" destdir="${api.doc}"
                  failonerror="true"
                  executable="${javadoc.bin}"
-                 classpath="${build}:${javac.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar:${junit.lib}"
+                 classpath="${build}:${javac.lib}:${javadoc.lib}:${junit.lib}"
                  excludepackagenames="org.checkerframework.framework.stub"
                  bootclasspath="${javac.lib}:${javadoc.lib}:${java.home}/lib/rt.jar">
 
@@ -247,7 +247,7 @@
             <link href="http://types.cs.washington.edu/checker-framework/api/jdk/"/>
             <link href="http://types.cs.washington.edu/checker-framework/api/javac/tree/"/>
             <taglet name="org.checkerframework.javacutil.dist.ManualTaglet"
-                    path="${javacutil.loc}/build"/>
+                    path="${build}:${javacutil.loc}/${build}:${javacutil.lib}"/>
         </javadoc>
     </target>
 
