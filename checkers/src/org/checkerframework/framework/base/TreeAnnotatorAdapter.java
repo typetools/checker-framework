@@ -9,7 +9,11 @@ import checkers.types.AnnotatedTypeMirror;
 
 import org.checkerframework.framework.util.WrappedAnnotatedTypeMirror;
 
-public class TreeAnnotatorAdapter<Q> extends checkers.types.TreeAnnotator {
+/**
+ * Adapter for {@link TreeAnnotator}, extending
+ * {@link checkers.types.TreeAnnotator checkers.types.TreeAnnotator}. 
+ */
+class TreeAnnotatorAdapter<Q> extends checkers.types.TreeAnnotator {
     private TreeAnnotator<Q> underlying;
     private TypeMirrorConverter<Q> converter;
 
@@ -26,6 +30,9 @@ public class TreeAnnotatorAdapter<Q> extends checkers.types.TreeAnnotator {
         return converter;
     }
 
+    // TODO: Having the underlying method return 'null' to signal 'use default
+    // implementation' is a total hack and will probably make some checker
+    // developers unhappy.  Provide proper 'superVisitX' methods instead.
     public Void visitBinary(BinaryTree node, AnnotatedTypeMirror atm) {
         QualifiedTypeMirror<Q> qtm = underlying.visitBinary(node,
                 WrappedAnnotatedTypeMirror.wrap(atm));

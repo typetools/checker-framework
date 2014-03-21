@@ -30,11 +30,20 @@ import checkers.types.AnnotatedTypeMirror;
 import checkers.types.AnnotatedTypeMirror.*;
 import checkers.util.AnnotatedTypes;
 
-// WARNING: Do not allow the underlying AnnotatedTypeMirror to be mutated
-// while the WrappedAnnotatedTypeMirror is live!  Things will probably break!
+/**
+ * A wrapper to adapt an {@link AnnotatedTypeMirror} to the {@link
+ * ExtendedTypeMirror} interface.  Instances of this class are immutable.
+ */
 public abstract class WrappedAnnotatedTypeMirror implements ExtendedTypeMirror {
     private AnnotatedTypeMirror raw;
 
+    /**
+     * Helper class for the {@link wrap} method.
+     */
+    // TODO: This used to be necessary to keep track of previously visited type
+    // variables, but I think the new type variable handling makes it
+    // unnecessary.  Pull the methods in this class out as static methods of
+    // WATM, and remove the 'Factory' argument of the WATM constructors.
     private static class Factory {
         public WrappedAnnotatedTypeMirror wrap(AnnotatedTypeMirror atm) {
             if (atm == null) {
@@ -94,17 +103,33 @@ public abstract class WrappedAnnotatedTypeMirror implements ExtendedTypeMirror {
         this.raw = raw;
     }
 
+    /**
+     * Constructs a {@link WrappedAnnotatedTypeMirror} from an {@link
+     * AnnotatedTypeMirror}.  The {@link WrappedAnnotatedTypeMirror} returned
+     * by this method will be backed by a deep copy of the input
+     * {@link AnnotatedTypeMirror}, so later mutations of the input will not
+     * affect the wrapped version.
+     */
     public static WrappedAnnotatedTypeMirror wrap(AnnotatedTypeMirror atm) {
+        // TODO: Uh oh... something is broken in TypeMirrorConverter.  Using
+        // 'deepCopy' here (which is necessary to make WATM instances actually
+        // be immutable) results in lots of "cannot construct
+        // QualifiedTypeMirror with null qualifier" errors.
+
         //return new Factory().wrap(AnnotatedTypes.deepCopy(atm));
         return new Factory().wrap(atm);
     }
 
-
+    /**
+     * Unwrap a {@link WrappedAnnotatedTypeMirror} to obtain the original
+     * {@link AnnotatedTypeMirror}.
+     */
     public AnnotatedTypeMirror unwrap() {
         return this.raw;
     }
 
-    @Override public TypeMirror getRaw() {
+    @Override
+    public TypeMirror getRaw() {
         return raw.getUnderlyingType();
     }
 
@@ -140,7 +165,6 @@ public abstract class WrappedAnnotatedTypeMirror implements ExtendedTypeMirror {
         if (obj == null || obj.getClass() != this.getClass()) {
             return false;
         }
-        @SuppressWarnings("unchecked")
         WrappedAnnotatedTypeMirror other = (WrappedAnnotatedTypeMirror)obj;
         return this.raw.equals(other.raw);
     }
@@ -158,7 +182,7 @@ public abstract class WrappedAnnotatedTypeMirror implements ExtendedTypeMirror {
             this.componentType = factory.wrap(raw.getComponentType());
         }
 
-        @Override @SuppressWarnings("unchecked")
+        @Override
         public ArrayType getRaw() {
             return (ArrayType)super.getRaw();
         }
@@ -189,7 +213,7 @@ public abstract class WrappedAnnotatedTypeMirror implements ExtendedTypeMirror {
             this.typeArguments = factory.wrapList(raw.getTypeArguments());
         }
 
-        @Override @SuppressWarnings("unchecked")
+        @Override
         public DeclaredType getRaw() {
             return (DeclaredType)super.getRaw();
         }
@@ -236,7 +260,7 @@ public abstract class WrappedAnnotatedTypeMirror implements ExtendedTypeMirror {
             this.typeVariables = factory.wrapTypeVarList(raw.getTypeVariables());
         }
 
-        @Override @SuppressWarnings("unchecked")
+        @Override
         public ExecutableType getRaw() {
             return (ExecutableType)super.getRaw();
         }
@@ -290,7 +314,7 @@ public abstract class WrappedAnnotatedTypeMirror implements ExtendedTypeMirror {
             this.bounds = factory.wrapList(raw.directSuperTypes());
         }
 
-        @Override @SuppressWarnings("unchecked")
+        @Override
         public IntersectionType getRaw() {
             return (IntersectionType)super.getRaw();
         }
@@ -316,7 +340,7 @@ public abstract class WrappedAnnotatedTypeMirror implements ExtendedTypeMirror {
             super(raw);
         }
 
-        @Override @SuppressWarnings("unchecked")
+        @Override
         public NoType getRaw() {
             return (NoType)super.getRaw();
         }
@@ -337,7 +361,7 @@ public abstract class WrappedAnnotatedTypeMirror implements ExtendedTypeMirror {
             super(raw);
         }
 
-        @Override @SuppressWarnings("unchecked")
+        @Override
         public NullType getRaw() {
             return (NullType)super.getRaw();
         }
@@ -358,7 +382,7 @@ public abstract class WrappedAnnotatedTypeMirror implements ExtendedTypeMirror {
             super(raw);
         }
 
-        @Override @SuppressWarnings("unchecked")
+        @Override
         public PrimitiveType getRaw() {
             return (PrimitiveType)super.getRaw();
         }
@@ -385,7 +409,7 @@ public abstract class WrappedAnnotatedTypeMirror implements ExtendedTypeMirror {
             super(raw);
         }
 
-        @Override @SuppressWarnings("unchecked")
+        @Override
         public TypeVariable getRaw() {
             return (TypeVariable)super.getRaw();
         }
@@ -414,7 +438,7 @@ public abstract class WrappedAnnotatedTypeMirror implements ExtendedTypeMirror {
             this.alternatives = factory.wrapList(raw.getAlternatives());
         }
 
-        @Override @SuppressWarnings("unchecked")
+        @Override
         public UnionType getRaw() {
             return (UnionType)super.getRaw();
         }
@@ -445,7 +469,7 @@ public abstract class WrappedAnnotatedTypeMirror implements ExtendedTypeMirror {
             this.superBound = factory.wrap(raw.getSuperBound());
         }
 
-        @Override @SuppressWarnings("unchecked")
+        @Override
         public WildcardType getRaw() {
             return (WildcardType)super.getRaw();
         }

@@ -12,6 +12,24 @@ import javacutils.AnnotationUtils;
 import checkers.util.MultiGraphQualifierHierarchy;
 import checkers.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 
+/**
+ * An adapter for {@link QualifierHierarchy}, extending {@link
+ * MultiGraphQualifierHierarchy}.
+ *
+ * Note that {@link QualifierHierarchyAdapter.Implementation} is the actual
+ * {@link MultiGraphQualifierHierarchy} implementation, not {@link
+ * QualifierHierarchyAdapter}.  To construct an instance, call:
+ * <code>new QualifierHierarchyAdapter(underlying, converter).createImplementation(factory)</code>.
+ */
+/* We need this 'Implementation' silliness because MultiGraphQualifierHierarchy
+ * calls some of its own methods from inside the constructor.  The call to the
+ * 'super' constructor has to be the first statement in the subtype
+ * constructor, so 'underlying' and 'converter' (which QHA methods rely on to
+ * do their jobs) must be available *before* the constructor is called.  The
+ * only good way I know of to do this is to put the necessary information in a
+ * nonstatic inner class.  This requires presenting a slightly bizarre API to
+ * users of QualifierHierarchyAdapter, but it's an internal ("package" access)
+ * class, so that's not too much of a problem. */
 class QualifierHierarchyAdapter<Q> {
     private QualifierHierarchy<Q> underlying;
     private TypeMirrorConverter<Q> converter;
@@ -22,6 +40,11 @@ class QualifierHierarchyAdapter<Q> {
         this.converter = converter;
     }
 
+    /**
+     * Construct an instance of {@link
+     * QualifierHierarchyAdapter.Implementation} using the parameters passed to
+     * the {@link QualifierHierarchyAdapter} constructor.
+     */
     public Implementation createImplementation(MultiGraphFactory f) {
         return new Implementation(f);
     }
