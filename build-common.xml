@@ -74,7 +74,7 @@ points to version ${build.version} of the 'javac.jar' library."/>
     </target>
 
 
-    <target name="prep-ManualTaglet">
+    <target name="prep-ManualTaglet" depends="prep">
         <java fork="true"
               failonerror="true"
               classpath="${javac.lib}:${javadoc.lib}"
