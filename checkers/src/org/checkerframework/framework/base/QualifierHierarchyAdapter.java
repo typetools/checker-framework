@@ -97,6 +97,15 @@ class QualifierHierarchyAdapter<Q> {
 
         @Override
         public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
+            // TODO: Clean up this nonsense.
+            //
+            // 2014-03-21: Commenting out this check currently causes only one
+            // test failure (tests/tainting/ExtendsAndAnnotation.java) with the
+            // expected "@Key annotations contains no index()" error.  I'm not
+            // sure if the explanation given below is still accurate.
+            //
+            // ---
+            //
             // This check is a hack to work around a particular case that shows
             // up when annotations are applied to type variables.  Here is an
             // example:
@@ -120,12 +129,9 @@ class QualifierHierarchyAdapter<Q> {
             //    returned to the UQATF's fromMember method, where it is
             //    rewritten to have an appropriate @Key annotation instead.
             //
-            // TODO: having this check probably causes us to skip some
-            // important checks in the case where the type variable has
-            // annotations on its upper/lower bounds.
-            //
-            // TODO(2013-12-18): figure out if this is still necessary after all
-            // the recent userqual design changes
+            // Having this check might cause us to skip some important checks
+            // in the case where the type variable has annotations on its
+            // upper/lower bounds.
             if (!converter.isKey(rhs) || !converter.isKey(lhs))
                 return false;
 
