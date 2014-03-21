@@ -356,17 +356,10 @@ public abstract class QualifiedTypeMirror<Q> {
             checkUnderlyingKind(underlying, TypeKind.EXECUTABLE);
             checkTypeMirrorListsMatch("parameter",
                     parameterTypes, getUnderlyingType().getParameterTypes());
-            // TODO: This is a hack to make constructor types work.  According
-            // to javac, constructors have type 'void ()', while according to
-            // the checker framework, they are 'TheClass (TheClass this)'.  We
-            // use the checker framework version for compatibility, which means
-            // the receiver and return types may not actually match.
-            /*
             checkTypeMirrorsMatch("receiver",
                     receiverType, getUnderlyingType().getReceiverType());
             checkTypeMirrorsMatch("return",
                     returnType, getUnderlyingType().getReturnType());
-            */
             checkTypeMirrorListsMatch("thrown",
                     thrownTypes, getUnderlyingType().getThrownTypes());
             checkTypeMirrorListsMatch("type variable",
