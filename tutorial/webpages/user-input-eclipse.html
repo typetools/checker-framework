@@ -148,7 +148,7 @@ incompatible types in argument.
 				<p>
 					To fix, <b>verify the user input</b> using the
 					RegexUtil.isRegex(String) method. You must <b>import
-						checkers.regex.RegexUtil</b>. Please see the <a
+						org.checkerframework.checker.regex.RegexUtil</b>. Please see the <a
 						href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#annotating-with-regex">
 						Regex chapter</a> in the manual for a full discussion of
 					<code>RegexUtil</code>
@@ -161,7 +161,7 @@ incompatible types in argument.
 					made to RegexExample.java to correctly handle the user input.
 				</p>
 
-				<pre>  import checkers.regex.RegexUtil;
+				<pre>  import org.checkerframework.checker.regex.RegexUtil;
 ...
         if (!RegexUtil.isRegex(regex, 1)) {
             System.out.println("Input is not a regular expression \"" + regex
