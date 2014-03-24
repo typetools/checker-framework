@@ -90,7 +90,7 @@ public class NullnessExample {
 
 				<p>
 					To <b>run the Nullness Checker</b>, simply pass -processor with
-					checkers.nullness.NullnessChecker. Note:
+					org.checkerframework.checker.nullness.NullnessChecker. Note:
 					<code>javacheck</code>
 					should be an alias to the Checker Framework compiler. See the <a
 						href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#installation">
@@ -98,14 +98,16 @@ public class NullnessExample {
 				</p>
 
 				<pre>
-javacheck -processor checkers.nullness.NullnessChecker NullnessExample.java
+javacheck -processor org.checkerframework.checker.nullness.NullnessChecker NullnessExample.java
 </pre>
 
 				<p>The following error will be produced.</p>
 
 				<pre>
-NullnessExample.java:4: error: dereference of possibly-null reference myObject
+NullnessExample.java:9: error: [dereference.of.nullable] dereference of possibly-null reference myObject
         System.out.println(myObject.toString());
+                           ^
+1 error
 </pre>
 			</section>
 
@@ -132,7 +134,7 @@ public class NullnessExample {
 				<p>No errors should be produced.</p>
 
 				<pre>
-javacheck -processor checkers.nullness.NullnessChecker NullnessExample.java
+javacheck -processor org.checkerframework.checker.nullness.NullnessChecker NullnessExample.java
 </pre>
 			</section>
 
@@ -161,7 +163,7 @@ javacheck -processor checkers.nullness.NullnessChecker NullnessExample.java
 </body>
 </html>
 
-<!--  LocalWords:  Plugin plugin VM SDK plugins quals classpath 
+<!--  LocalWords:  Plugin plugin VM SDK plugins quals classpath
  -->
 <!--  LocalWords:  NullnessChecker plugin's hg
  -->

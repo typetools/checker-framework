@@ -81,7 +81,7 @@
 					<ol>
 						<li><a href="#import">Import <em>encryption-checker</em>
 								project</li>
-						<li><a href="#setup"> Set Up the Basic Checker to run the
+						<li><a href="#setup"> Set Up the Subtyping Checker to run the
 								Encryption Checker</li>
 						<li><a href="#run1">Run the Encryption Checker</a>--2 errors</li>
 						<li><a href="#error1">Suppress the first error</a></li>
@@ -112,18 +112,18 @@
 					</section>
 
 					<section id="setup">
-						<h4>2. Set Up the Basic Checker</h4>
+						<h4>2. Set Up the Subtyping Checker</h4>
 
-						<p>The Encryption Checker is built on top of the Basic
+						<p>The Encryption Checker is built on top of the Subtyping 
 							Checker. Use the following steps to setup it up with in the
 							Eclipse plugin.</p>
 						<div class="well">
 							<ol>
 								<li>Navigate to Eclipse->Preferences->Checker Framework</li>
 								<li>Click Add</li>
-								<li>Type in <strong class="text-success">BasicChecker</strong>
+								<li>Type in <strong class="text-success">SubtypingChecker</strong>
 								</li>
-								<li>Select BasicChecker - checkers.basic (not the one from
+								<li>Select SubtypingChecker - org.checkerframework.common.subtyping (not the one from
 									sun) and click Ok</li>
 								<li>Under Additional compiler parameters, add <strong
 									class="text-success">-Aquals=myquals.Encrypted</strong></li>
@@ -137,7 +137,7 @@
 
 						<p>
 							Right Click on the <em>src</em> package, select Checker
-							Framework->Run Custom Checker->Basic Checker. You should see the
+							Framework->Run Custom Checker->Subtyping Checker. You should see the
 							following errors:
 						</p>
 						<pre>
@@ -231,8 +231,8 @@ void sendPassword() {
 						<li>Click Add External Jars</li>
 						<li>Navigate to
 							eclipse->plugins->checker.framework.eclipse.plugin_VERSION->lib</li>
-						<li>Select checkers.jar, javac.jar and either jdk6.jar or
-							jdk7.jar depending on the version the JRE you are duplicating.
+						<li>Select javac.jar and either jdk7.jar or
+							jdk8.jar depending on the version the JRE you are duplicating.
 							Click Open</li>
 						<li>Move the three jars to the top of the system libraries
 							list. Click Finish</li>
