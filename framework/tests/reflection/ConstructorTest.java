@@ -1,19 +1,17 @@
-// Skip this test for now and re-write it using a framework type system
-//@skip-test
 
-import static org.checkerframework.checker.unit.UnitsTools.*;
-import org.checkerframework.checker.units.qual.g;
-import org.checkerframework.checker.units.qual.kg;
-import org.checkerframework.checker.units.qual.Mass;
+import tests.reflection.qual.Top;
+import tests.reflection.qual.Sibling1;
+import tests.reflection.qual.Sibling2;
 
 import java.lang.reflect.Constructor;
 
 class ConstructorTest {
-
-    public @g ConstructorTest(@g int a) {
+    @Sibling1 int sibling1;
+    @Sibling2 int sibling2;
+    public @Sibling1 ConstructorTest(@Sibling1 int a) {
     }
 
-    public @kg ConstructorTest(@kg int a, @kg int b) {
+    public @Sibling2 ConstructorTest(@Sibling2 int a, @Sibling2 int b) {
     }
 
     public void pass1() {
@@ -21,8 +19,8 @@ class ConstructorTest {
             Class<?> c = Class.forName("ConstructorTest");
             Constructor init = c
                     .getConstructor(new Class<?>[] { Integer.class });
-            @g int i = g;
-            @g Object o = init.newInstance(i);
+            @Sibling1 int i = sibling1;
+            @Sibling1 Object o = init.newInstance(i);
         } catch (Exception ignore) {
         }
     }
@@ -32,9 +30,9 @@ class ConstructorTest {
             Class<?> c = Class.forName("ConstructorTest");
             Constructor init = c.getConstructor(new Class<?>[] { Integer.class,
                     Integer.class });
-            @kg int a = kg;
+            @Sibling2 int a = sibling2;
             int b = a;
-            @Mass Object inst = init.newInstance(a, b);
+            @Top Object inst = init.newInstance(a, b);
         } catch (Exception ignore) {
         }
     }
@@ -45,7 +43,7 @@ class ConstructorTest {
             Constructor init = c
                     .getConstructor(new Class<?>[] { Integer.class });
             //:: error: (argument.type.incompatible)
-            Object o = init.newInstance(kg);
+            Object o = init.newInstance(sibling2);
         } catch (Exception ignore) {
         }
     }
@@ -56,7 +54,7 @@ class ConstructorTest {
             Constructor init = c
                     .getConstructor(new Class<?>[] { Integer.class });
             //:: error: (argument.type.incompatible)
-            @g Object o = init.newInstance(new Object[] { kg });
+            @Sibling1 Object o = init.newInstance(new Object[] { sibling2 });
         } catch (Exception ignore) {
         }
     }
@@ -66,10 +64,10 @@ class ConstructorTest {
             Class<?> c = Class.forName("ConstructorTest");
             Constructor init = c.getConstructor(new Class<?>[] { Integer.class,
                     Integer.class });
-            @kg int a = kg;
-            @g int b = g;
+            @Sibling2 int a = sibling2;
+            @Sibling1 int b = sibling1;
             //:: error: (argument.type.incompatible)
-            @kg Object inst = init.newInstance(a, b);
+            @Sibling2 Object inst = init.newInstance(a, b);
         } catch (Exception ignore) {
         }
     }
