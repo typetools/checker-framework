@@ -1,0 +1,2 @@
+If you add a new unit qualifier to this package, make sure
+to also modify the UnitsAnnotatedTypeFactory accordingly.
