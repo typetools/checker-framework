@@ -1,3 +1,4 @@
+import tests.reflection.qual.ReflectBottom;
 import tests.reflection.qual.Top;
 import tests.reflection.qual.Sibling1;
 import tests.reflection.qual.Sibling2;
@@ -8,27 +9,26 @@ public class MethodTest {
 
     @Sibling1 int sibling1;
     @Sibling2 int sibling2;
-    
-    public void pass1() {
+    public void pass1(@ReflectBottom MethodTest this ) {
         try {
             Class<?> c = Class.forName("MethodTest$SuperClass");
             Method m = c.getMethod("getA", new Class[] {});
-            @Sibling1 Object a = m.invoke(this, (Object[]) null);
+            @Sibling1 Object a = m.invoke(this, (@ReflectBottom Object[]) null);
         } catch (Exception ignore) {
         }
     }
 
-    public void pass2() {
+    public void pass2(@ReflectBottom MethodTest this) {
         String str = "get" + "A";
         try {
             Class<?> c = Class.forName("MethodTest$SuperClass");
             Method m = c.getMethod(str, new Class[] {});
-            @Sibling1 Object a = m.invoke(this, (Object[]) null);
+            @Sibling1 Object a = m.invoke(this, (@ReflectBottom Object[]) null);
         } catch (Exception ignore) {
         }
     }
 
-    public void pass3() {
+    public void pass3(@ReflectBottom MethodTest this) {
         String str = "get";
         str += "A";
         try {
@@ -38,12 +38,12 @@ public class MethodTest {
             //and remove the expected error
 
             //:: error: (assignment.type.incompatible)
-            @Sibling1 Object a = m.invoke(this, (Object[]) null);
+            @Sibling1 Object a = m.invoke(this, (@ReflectBottom Object[]) null);
         } catch (Exception ignore) {
         }
     }
 
-    public void pass4() {
+    public void pass4(@ReflectBottom MethodTest this) {
         String str = "setA";
         @Sibling1 int val1 = sibling1;
         @Sibling1 Integer val2 = val1;
@@ -57,11 +57,11 @@ public class MethodTest {
     }
 
     // Test resolution of methods declared in super class
-    public void pass5() {
+    public void pass5(@ReflectBottom MethodTest this) {
         try {
             Class<?> c = Class.forName("MethodTest$SubClass");
             Method m = c.getMethod("getB", new Class[0]);
-            @Sibling2 Object o = m.invoke(this, (Object[]) null);
+            @Sibling2 Object o = m.invoke(this, (@ReflectBottom Object[]) null);
         } catch (Exception ignore) {
         }
     }
@@ -88,17 +88,17 @@ public class MethodTest {
     }
 
 
-    public void pass8() {
+    public void pass8(@ReflectBottom MethodTest this) {
         String str = "setA";
         try {
             Class<?> c = Class.forName("MethodTest$SuperClass");
             Method m = c.getMethod(str, new Class[] { Integer.class });
-            m.invoke(this, new Object[] { sibling1 });
+            m.invoke(this, sibling1 );
         } catch (Exception ignore) {
         }
     }
 
-    public void pass9() {
+    public void pass9(@ReflectBottom MethodTest this) {
         String str = "getA";
         if (true) {
             str = "getB";
@@ -106,7 +106,7 @@ public class MethodTest {
         try {
             Class<?> c = Class.forName("MethodTest$SubClass");
             Method m = c.getMethod(str, new Class[0]);
-            @Top Object o = m.invoke(this, (Object[]) null);
+            @Top Object o = m.invoke(this, (@ReflectBottom Object[]) null);
         } catch (Exception ignore) {
         }
     }
@@ -117,7 +117,7 @@ public class MethodTest {
         try {
             Class<?> c = inst.getClass();
             Method m = c.getMethod("getA", new Class[0]);
-            @Sibling1 Object o = m.invoke(inst, (Object[]) null);
+            @Sibling1 Object o = m.invoke(inst, (@ReflectBottom Object[]) null);
         } catch (Exception ignore) {
         }
     }
@@ -137,7 +137,7 @@ public class MethodTest {
         try {
             Class<?> c = SuperClass.class;
             Method m = c.getMethod("getA", new Class[0]);
-            @Sibling1 Object o = m.invoke(new SuperClass(), new Object[0]);
+            @Sibling1 Object o = m.invoke(new SuperClass(), new @ReflectBottom Object @ReflectBottom [0]);
         } catch (Exception ignore) {
         }
     }
@@ -154,17 +154,17 @@ public class MethodTest {
     }
 
     // Test unresolvable methods
-    public void fail2(String str) {
+    public void fail2(@ReflectBottom MethodTest this, String str) {
         try {
             Class<?> c = Class.forName(str);
             Method m = c.getMethod("getA", new Class[] { Integer.class });
             //:: error: (assignment.type.incompatible)
-            @Sibling1 Object o = m.invoke(this, (Object[]) null);
+            @Sibling1 Object o = m.invoke(this, (@ReflectBottom Object[]) null);
         } catch (Exception ignore) {
         }
     }
 
-    public void fail3() {
+    public void fail3(@ReflectBottom MethodTest this) {
         String str = "setB";
         try {
             Class<?> c = Class.forName("MethodTest$SuperClass");
@@ -175,7 +175,7 @@ public class MethodTest {
         }
     }
 
-    public void fail4() {
+    public void fail4(@ReflectBottom MethodTest this) {
         String str = "setA";
         try {
             Class<?> c = Class.forName("MethodTest$SubClass");
@@ -186,7 +186,7 @@ public class MethodTest {
         }
     }
 
-    public void fail5() {
+    public void fail5(@ReflectBottom MethodTest this) {
         String str = "setAB";
         try {
             Class<?> c = Class.forName("MethodTest$SubClass");
@@ -198,7 +198,7 @@ public class MethodTest {
         }
     }
 
-    public void fail6() {
+    public void fail6(@ReflectBottom MethodTest this) {
         String str = "setA";
         if (true) {
             str = "setB";
