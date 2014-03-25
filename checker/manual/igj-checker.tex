@@ -47,31 +47,31 @@ can be modified).  The following qualifiers are part of the IGJ type system.
 
 \begin{description}
 
-\item[\refqualclass{checker/igj/quals}{Immutable}]
+\item[\refqualclass{checker/igj/qual}{Immutable}]
   An immutable reference always refers to an immutable object.  Neither the
   reference, nor any aliasing reference, may modify the object.
 
-\item[\refqualclass{checker/igj/quals}{Mutable}]
+\item[\refqualclass{checker/igj/qual}{Mutable}]
   A mutable reference refers to a mutable object.  The reference, or some
   aliasing mutable reference, may modify the object.
 
-\item[\refqualclass{checker/igj/quals}{ReadOnly}]
+\item[\refqualclass{checker/igj/qual}{ReadOnly}]
   A readonly reference cannot be used to modify its referent.  The referent
   may be an immutable or a mutable object.  In other words, it is possible
   for the referent to change via an aliasing mutable reference, even though
   the referent cannot be changed via the readonly reference.
 
-\item[\refqualclass{checker/igj/quals}{Assignable}]
+\item[\refqualclass{checker/igj/qual}{Assignable}]
   The annotated field may be re-assigned regardless of the
   immutability of the enclosing class or object instance.
 
-\item[\refqualclass{checker/igj/quals}{AssignsFields}]
+\item[\refqualclass{checker/igj/qual}{AssignsFields}]
   is similar to \<@Mutable>, but permits only limited mutation ---
   assignment of fields --- and is intended for use by constructor helper
   methods.  \<@AssignsFields> is assumed to be true of the result of a
   constructor, so it does not need to be written there.
 
-\item[\refqualclass{checker/igj/quals}{I}]
+\item[\refqualclass{checker/igj/qual}{I}]
   simulates mutability overloading or the template behavior of generics.
   It can be applied to classes, methods, and parameters.  See
   Section~\ref{igj-templating}.
@@ -85,7 +85,7 @@ For additional details, see~\cite{ZibinPAAKE2007}.
 
 The IGJ Checker issues an error whenever mutation happens through a
 readonly reference, when fields of a readonly reference which are not
-explicitly marked with \refqualclass{checker/igj/quals}{Assignable} are
+explicitly marked with \refqualclass{checker/igj/qual}{Assignable} are
 reassigned, or when a readonly reference is assigned to a mutable
 variable.  The checker also emits a warning when casts increase the
 mutability access of a reference.
@@ -204,7 +204,7 @@ holds and the other two subtype relations do not hold
 not through a combination of generics and annotations.  Use of type
 annotations makes Annotation IGJ backward compatible with Java syntax.
 
-\item Templating over Immutability: The annotation \refqualclass{checker/igj/quals}{I}\<(>\emph{\<id>}\<)> is used to template
+\item Templating over Immutability: The annotation \refqualclass{checker/igj/qual}{I}\<(>\emph{\<id>}\<)> is used to template
 over immutability.  See Section~\ref{igj-templating}.
 
 \end{itemize}
@@ -212,20 +212,20 @@ over immutability.  See Section~\ref{igj-templating}.
 
 \subsection{Templating Over Immutability: \code{@I}\label{igj-templating}}
 
-\refqualclass{checker/igj/quals}{I} is a template annotation over IGJ Immutability annotations. It acts
+\refqualclass{checker/igj/qual}{I} is a template annotation over IGJ Immutability annotations. It acts
 similarly to type variables in Java's generic types, and the name
-\refqualclass{checker/igj/quals}{I} mimics the standard \code{<I>} type variable name used in code
+\refqualclass{checker/igj/qual}{I} mimics the standard \code{<I>} type variable name used in code
 written in the original IGJ dialect.  The annotation value string is used
-to distinguish between multiple instances of \refqualclass{checker/igj/quals}{I} --- in the
+to distinguish between multiple instances of \refqualclass{checker/igj/qual}{I} --- in the
 generics-based original dialect, these would be expressed as two type
 variables \code{<I>} and \code{<J>}.
 
 \paragraph{Usage on classes\label{igj-usage-on-classes}}
 
-A class declaration annotated with \refqualclass{checker/igj/quals}{I} can then be
+A class declaration annotated with \refqualclass{checker/igj/qual}{I} can then be
 used with any IGJ Immutability annotation.  The actual immutability that
-\refqualclass{checker/igj/quals}{I} is resolved to dictates the immutability type for all the non-static
-appearances of \refqualclass{checker/igj/quals}{I} with the same value as the class declaration.
+\refqualclass{checker/igj/qual}{I} is resolved to dictates the immutability type for all the non-static
+appearances of \refqualclass{checker/igj/qual}{I} with the same value as the class declaration.
 
   Example:
 \begin{Verbatim}
@@ -247,7 +247,7 @@ appearances of \refqualclass{checker/igj/quals}{I} with the same value as the cl
     }
 \end{Verbatim}
 
-In the last example, \refqualclass{checker/igj/quals}{I} was resolved to \refqualclass{checker/igj/quals}{Mutable} for the instance file.
+In the last example, \refqualclass{checker/igj/qual}{I} was resolved to \refqualclass{checker/igj/qual}{Mutable} for the instance file.
 
 \paragraph{Usage on methods\label{igj-usage-on-methods}}
 
@@ -256,13 +256,13 @@ actual IGJ immutability value would be resolved based on the method invocation.
 
 For example, the below method \code{getMidpoint} returns a \code{Point} with the same
 immutability type as the passed parameters if \code{p1} and \code{p2} match
-in immutability, otherwise \refqualclass{checker/igj/quals}{I} is resolved to \refqualclass{checker/igj/quals}{ReadOnly}:
+in immutability, otherwise \refqualclass{checker/igj/qual}{I} is resolved to \refqualclass{checker/igj/qual}{ReadOnly}:
 
 \begin{Verbatim}
   static @I Point getMidpoint(@I Point p1, @I Point p2) { ... }
 \end{Verbatim}
 
-The \refqualclass{checker/igj/quals}{I} annotation value distinguishes between \refqualclass{checker/igj/quals}{I}
+The \refqualclass{checker/igj/qual}{I} annotation value distinguishes between \refqualclass{checker/igj/qual}{I}
 declarations.  So, the below method \code{findUnion} returns a collection of the same
 immutability type as the \emph{first} collection parameter:
 
