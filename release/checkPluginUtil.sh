@@ -9,9 +9,9 @@ esac
 #Fail on error status
 
 FRAMEWORK_DIR=$myDir"/.."
-MASTER=$FRAMEWORK_DIR"/checkers/src/checkers/util/PluginUtil.java"
-ECLIPSE=$FRAMEWORK_DIR"/eclipse/checker-framework-eclipse-plugin/src/checkers/eclipse/util/PluginUtil.java"
-MAVEN=$FRAMEWORK_DIR"/maven-plugin/src/main/java/org/checkersplugin/PluginUtil.java"
+MASTER=$FRAMEWORK_DIR"/framework/src/org/checkerframework/framework/util/PluginUtil.java"
+ECLIPSE=$FRAMEWORK_DIR"/eclipse/checker-framework-eclipse-plugin/src/org/checkerframework/eclipse/util/PluginUtil.java"
+MAVEN=$FRAMEWORK_DIR"/maven-plugin/src/main/java/org/checkerframework/mavenplugin/PluginUtil.java"
 
 tail -n +2 $MASTER   &> ".PluginUtil_master.java"
 tail -n +2 $ECLIPSE  &> ".PluginUtil_eclipse.java"

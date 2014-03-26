@@ -31,8 +31,8 @@ def update_repos():
     for live_to_interm in LIVE_TO_INTERM_REPOS:
         clone_or_update_repo( live_to_interm[0], live_to_interm[1] )
 
-    for interm_to_release in INTERM_TO_RELEASE_REPOS:
-        clone_or_update_repo( interm_to_release[0], interm_to_release[1] )
+    for interm_to_build in INTERM_TO_BUILD_REPOS:
+        clone_or_update_repo( interm_to_build[0], interm_to_build[1] )
 
     clone_or_update_repo( LIVE_PLUME_LIB, PLUME_LIB )
     clone_or_update_repo( LIVE_PLUME_BIB, PLUME_BIB )
@@ -94,7 +94,7 @@ def build_jsr308_langtools_release(auto, version, afu_release_date, checker_fram
     execute("ant -Dhalt.on.test.failure=true clean-and-build-all-tools build-javadoc build-doclets", True, False, JSR308_MAKE)
 
     #zip up jsr308-langtools project and place it in jsr308_interm_dir
-    ant_props = "-Dlangtools=%s -Ddest.dir=%s -Dfile.name=%s -Dversion=%s" % (JSR308_LANGTOOLS, jsr308_interm_dir, "jsr308-langtools.zip", version)
+    ant_props = "-Dlangtools=%s  -Dcheckerframework=%s -Ddest.dir=%s -Dfile.name=%s -Dversion=%s" % (JSR308_LANGTOOLS, CHECKER_FRAMEWORK, jsr308_interm_dir, "jsr308-langtools.zip", version)
     ant_cmd   = "ant -f release.xml %s zip-langtools " % ant_props
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
@@ -157,8 +157,8 @@ def build_and_locally_deploy_maven(version, checker_framework_interm_dir):
     mvn_deploy_mvn_plugin( MAVEN_PLUGIN_DIR, MAVEN_PLUGIN_POM, version, MAVEN_DEV_REPO )
 
     # Deploy jsr308 and checker-qual jars to maven repo
-    mvn_deploy( CHECKERS_BINARY, CHECKERS_BINARY_POM, MAVEN_DEV_REPO )
-    mvn_deploy( CHECKERS_QUALS,  CHECKERS_QUALS_POM,  MAVEN_DEV_REPO )
+    mvn_deploy( CHECKER_BINARY, CHECKER_BINARY_POM, MAVEN_DEV_REPO )
+    mvn_deploy( CHECKER_QUAL,   CHECKER_QUAL_POM,   MAVEN_DEV_REPO )
     mvn_deploy( JAVAC_BINARY,    JAVAC_BINARY_POM,    MAVEN_DEV_REPO )
     mvn_deploy( JDK7_BINARY,     JDK7_BINARY_POM,     MAVEN_DEV_REPO )
     mvn_deploy( JDK8_BINARY,     JDK8_BINARY_POM,     MAVEN_DEV_REPO )
@@ -166,12 +166,12 @@ def build_and_locally_deploy_maven(version, checker_framework_interm_dir):
     return
 
 def build_checker_framework_release(auto, version, afu_release_date, checker_framework_interm_dir, jsr308_interm_dir):
-    checkers_dir = os.path.join(CHECKER_FRAMEWORK, "checkers")
+    checker_dir = os.path.join(CHECKER_FRAMEWORK, "checker")
 
     afu_build_properties = os.path.join( ANNO_FILE_UTILITIES, "build.properties" )
 
     #update jsr308_langtools versions
-    ant_props = "-Dcheckers=%s -Drelease.ver=%s -Dafu.properties=%s -Dafu.release.date==\"%s\"" % (checkers_dir, version, afu_build_properties, afu_release_date)
+    ant_props = "-Dchecker=%s -Drelease.ver=%s -Dafu.properties=%s -Dafu.release.date==\"%s\"" % (checker_dir, version, afu_build_properties, afu_release_date)
     ant_cmd   = "ant -f release.xml %s update-checker-framework-versions " % ant_props
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
@@ -181,28 +181,28 @@ def build_checker_framework_release(auto, version, afu_release_date, checker_fra
     #Add changelog editing
 
     #build the checker framework binaries and documents, run checker framework tests
-    execute("ant -Dhalt.on.test.failure=true dist", True, False, checkers_dir)
+    execute("ant -Dhalt.on.test.failure=true dist-release", True, False, checker_dir)
 
     #make the Checker Framework Manual
-    checkers_manual_dir = os.path.join(checkers_dir, "manual")
+    checkers_manual_dir = os.path.join(checker_dir, "manual")
     execute("make manual.pdf manual.html", True, False, checkers_manual_dir)
 
     #make the checker framework tutorial
     checkers_tutorial_dir = os.path.join(CHECKER_FRAMEWORK, "tutorial")
     execute("make", True, False, checkers_tutorial_dir)
 
-    #zip up checkers.zip and put it in releases_iterm_dir
-    ant_props = "-Dcheckers=%s -Ddest.dir=%s -Dfile.name=%s -Dversion=%s" % (checkers_dir, checker_framework_interm_dir, "checkers.zip", version)
+    #zip up checker-framework.zip and put it in releases_iterm_dir
+    ant_props = "-Dchecker=%s -Ddest.dir=%s -Dfile.name=%s -Dversion=%s" % (checker_dir, checker_framework_interm_dir, "checker-framework.zip", version)
     ant_cmd   = "ant -f release.xml %s zip-checker-framework " % ant_props
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
-    ant_props = "-Dcheckers=%s -Ddest.dir=%s -Dfile.name=%s -Dversion=%s" % (checkers_dir, checker_framework_interm_dir, "mvn-examples.zip", version)
+    ant_props = "-Dchecker=%s -Ddest.dir=%s -Dfile.name=%s -Dversion=%s" % (checker_dir, checker_framework_interm_dir, "mvn-examples.zip", version)
     ant_cmd   = "ant -f release.xml %s zip-maven-examples " % ant_props
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
     #copy the remaining checker-framework website files to release_interm_dir
-    ant_props = "-Dcheckers=%s -Ddest.dir=%s -Dmanual.name=%s -Dcheckers.webpage=%s" % (
-                 checkers_dir, checker_framework_interm_dir, "checkers-manual", "checkers-webpage.html"
+    ant_props = "-Dchecker=%s -Ddest.dir=%s -Dmanual.name=%s -Dchecker.webpage=%s" % (
+                 checker_dir, checker_framework_interm_dir, "checkers-manual", "checkers-webpage.html"
     )
 
     ant_cmd   = "ant -f release.xml %s checker-framework-website-docs " % ant_props
@@ -242,13 +242,13 @@ def main(argv):
     print( "\nPATH:\n" + os.environ['PATH'] + "\n" )
 
     clean_repos( INTERM_REPOS,  not auto )
-    clean_repos( RELEASE_REPOS, not auto )
+    clean_repos( BUILD_REPOS, not auto )
 
     #check we are cloning LIVE -> INTERM, INTERM -> RELEASE
     update_repos()
 
-    check_repos( INTERM_REPOS,  False )
-    check_repos( RELEASE_REPOS, False )
+    check_repos( INTERM_REPOS, False )
+    check_repos( BUILD_REPOS,  False )
 
     if not auto:
         continue_script = prompt_w_suggestion("Replace files then type yes to continue", "no", "^(Yes|yes|No|no)$")
