@@ -297,7 +297,7 @@ hierarchy.
 
 \end{itemize}
 
-\urldef{\isSubtypeURL}\url{api/framework/util/GraphQualifierHierarchy.html#isSubtype-java.util.Collection-java.util.Collection-}
+\urldef{\isSubtypeURL}\url{api/org/checkerframework/framework/util/GraphQualifierHierarchy.html#isSubtype-java.util.Collection-java.util.Collection-}
 
 The declarative and procedural mechanisms for specifying the hierarchy can
 be used together.  In particular, when using the \refqualclass{framework/qual}{SubtypeOf}
@@ -309,8 +309,8 @@ However, the declarative mechanism is sufficient for most type systems.
 
 
 \subsection{Procedurally defining the qualifier and type hierarchy\label{procedural-hierarchy}}
-\urldef{\createQualifierHierarchyURL}\url{api/framework/type/AnnotatedTypeFactory.html#createQualifierHierarchy--}
-\urldef{\createTypeHierarchyURL}\url{api/framework/type/AnnotatedTypeFactory.html#createTypeHierarchy--}
+\urldef{\createQualifierHierarchyURL}\url{api/org/checkerframework/framework/type/AnnotatedTypeFactory.html#createQualifierHierarchy--}
+\urldef{\createTypeHierarchyURL}\url{api/org/checkerframework/framework/type/AnnotatedTypeFactory.html#createTypeHierarchy--}
 
 While the declarative syntax suffices for many cases, more complex
 type hierarchies can be expressed by overriding, in \refclass{common/basetype}{BaseTypeVisitor},
@@ -351,7 +351,7 @@ manner (e.g.,
 
 % This paragraph is out of place.
 
-\urldef{\addAbsoluteDefaultURL}\url{api/framework/util/QualifierDefaults.html#addAbsoluteDefault-javax.lang.model.element.AnnotationMirror-org.checkerframework.framework.qual.DefaultLocation-}
+\urldef{\addAbsoluteDefaultURL}\url{api/org/checkerframework/framework/util/QualifierDefaults.html#addAbsoluteDefault-javax.lang.model.element.AnnotationMirror-org.checkerframework.framework.qual.DefaultLocation-}
 
 A type system designer may set a default annotation.  A user may override
 the default; see Section~\ref{defaults}.
@@ -750,7 +750,7 @@ checker classes for the Interning Checker and the Nullness Checker:
 \end{Verbatim}
 
 
-\urldef{\getSupportedTypeQualifiersURL}{\url}{http://types.cs.washington.edu/checker-framework/current/api/framework/type/AnnotatedTypeFactory.html#getSupportedTypeQualifiers--}
+\urldef{\getSupportedTypeQualifiersURL}{\url}{http://types.cs.washington.edu/checker-framework/current/api/org/checkerframework/framework/type/AnnotatedTypeFactory.html#getSupportedTypeQualifiers--}
 
 The checker class must be annotated by
 \refqualclass{framework/qual}{TypeQualifiers}, which lists the annotations
@@ -762,7 +762,7 @@ returned by the
 \ahref{\getSupportedTypeQualifiersURL}{\<BaseTypeChecker\-.getSupportedTypeQualifiers>}
 method).
 
-\urldef{\reportURL}{\url}{http://types.cs.washington.edu/checker-framework/current/api/framework/source/SourceChecker.html#report-checkers.source.Result-java.lang.Object-}
+\urldef{\reportURL}{\url}{http://types.cs.washington.edu/checker-framework/current/api/org/checkerframework/framework/source/SourceChecker.html#report-org.checkerframework.framework.source.Result-java.lang.Object-}
 
 The checker class bridges between the compiler and the rest of the checker.  It
 invokes the type-rule check visitor on every Java source file being
