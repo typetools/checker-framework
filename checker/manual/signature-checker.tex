@@ -35,24 +35,24 @@ Figure~\ref{fig-signature-hierarchy} shows how they are related.
 
 \begin{description}
 
-\item[\refqualclass{checker/signature/quals}{FullyQualifiedName}]
+\item[\refqualclass{checker/signature/qual}{FullyQualifiedName}]
   A \emph{fully qualified name} (\ahref{\jlsfullyqualifiednameurl}{JLS \S
     6.7}), such as
   \<package.Outer.Inner>, is used in Java code and in messages to
   the user.
 
-\item[\refqualclass{checker/signature/quals}{BinaryName}]
+\item[\refqualclass{checker/signature/qual}{BinaryName}]
   A \emph{binary name} (\ahref{\jlsbinarynameurl}{JLS \S 13.1}), such as
   \<package.Outer\$Inner>, is
   the representation of a type in its own \<.class> file.
 
-\item[\refqualclass{checker/signature/quals}{FieldDescriptor}]
+\item[\refqualclass{checker/signature/qual}{FieldDescriptor}]
   A \emph{field descriptor} (\ahref{\jvmsfielddescriptorurl}{JVMS \S 4.3.2}), such as
   \<Lpackage/Outer\$Inner;>, is used in a \<.class> file's constant pool,
   for example to refer to other types; it abbreviates primitives and
   arrays, and uses internal form (\ahref{\jvmsinternalformurl}{JVMS \S 4.2}) for class names.
 
-\item[\refqualclass{checker/signature/quals}{ClassGetName}]
+\item[\refqualclass{checker/signature/qual}{ClassGetName}]
 \begin{sloppypar}
   The type representation used by the
   \ahref{\classgetnameurl}{\<Class.getName()>}, \<Class.forName(String)>,
@@ -62,7 +62,7 @@ Figure~\ref{fig-signature-hierarchy} shows how they are related.
   ``\<.>''~where the field descriptor uses ``\</>''.
 \end{sloppypar}
 
-\item[\refqualclass{checker/signature/quals}{SourceName}]
+\item[\refqualclass{checker/signature/qual}{SourceName}]
   A source name is a string that is a valid fully qualified name \emph{and}
   a valid binary name.  A programmer should never or rarely use this --- you should
   know how you intend to use a given variable.  The checker infers it for
@@ -101,7 +101,7 @@ Java defines one format for the string representation of a method signature:
 
 \begin{description}
 
-\item[\refqualclass{checker/signature/quals}{MethodDescriptor}]
+\item[\refqualclass{checker/signature/qual}{MethodDescriptor}]
   A \emph{method descriptor} (\ahref{\jvmsmethoddescriptorurl}{JVMS \S
     4.3.3}) identifies a method's signature (its parameter and return
   types), just as a field descriptor identifies a 
