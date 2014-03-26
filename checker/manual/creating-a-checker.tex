@@ -297,7 +297,7 @@ hierarchy.
 
 \end{itemize}
 
-\urldef{\isSubtypeURL}\url{api/checkers/util/GraphQualifierHierarchy.html#isSubtype-java.util.Collection-java.util.Collection-}
+\urldef{\isSubtypeURL}\url{api/framework/util/GraphQualifierHierarchy.html#isSubtype-java.util.Collection-java.util.Collection-}
 
 The declarative and procedural mechanisms for specifying the hierarchy can
 be used together.  In particular, when using the \refqualclass{framework/qual}{SubtypeOf}
@@ -309,8 +309,8 @@ However, the declarative mechanism is sufficient for most type systems.
 
 
 \subsection{Procedurally defining the qualifier and type hierarchy\label{procedural-hierarchy}}
-\urldef{\createQualifierHierarchyURL}\url{api/checkers/types/AnnotatedTypeFactory.html#createQualifierHierarchy--}
-\urldef{\createTypeHierarchyURL}\url{api/checkers/types/AnnotatedTypeFactory.html#createTypeHierarchy--}
+\urldef{\createQualifierHierarchyURL}\url{api/framework/type/AnnotatedTypeFactory.html#createQualifierHierarchy--}
+\urldef{\createTypeHierarchyURL}\url{api/framework/type/AnnotatedTypeFactory.html#createTypeHierarchy--}
 
 While the declarative syntax suffices for many cases, more complex
 type hierarchies can be expressed by overriding, in \refclass{common/basetype}{BaseTypeVisitor},
@@ -351,7 +351,7 @@ manner (e.g.,
 
 % This paragraph is out of place.
 
-\urldef{\addAbsoluteDefaultURL}\url{api/checkers/util/QualifierDefaults.html#addAbsoluteDefault-javax.lang.model.element.AnnotationMirror-checkers.quals.DefaultLocation-}
+\urldef{\addAbsoluteDefaultURL}\url{api/framework/util/QualifierDefaults.html#addAbsoluteDefault-javax.lang.model.element.AnnotationMirror-checkers.quals.DefaultLocation-}
 
 A type system designer may set a default annotation.  A user may override
 the default; see Section~\ref{defaults}.
@@ -412,7 +412,7 @@ will not type-check unless \<null> has the bottom type:
 \end{Verbatim}
 
 You don't necessarily have to define a new bottom qualifier.  But, You can
-use \<checkers.quals.Bottom> if your type system does not already have an
+use \<framework.qual.Bottom> if your type system does not already have an
 appropriate bottom qualifier.
 
 If your type system has a special bottom type that is used \emph{only} for
@@ -750,7 +750,7 @@ checker classes for the Interning Checker and the Nullness Checker:
 \end{Verbatim}
 
 
-\urldef{\getSupportedTypeQualifiersURL}{\url}{http://types.cs.washington.edu/checker-framework/current/api/checkers/types/AnnotatedTypeFactory.html#getSupportedTypeQualifiers--}
+\urldef{\getSupportedTypeQualifiersURL}{\url}{http://types.cs.washington.edu/checker-framework/current/api/fraamework/type/AnnotatedTypeFactory.html#getSupportedTypeQualifiers--}
 
 The checker class must be annotated by
 \refqualclass{framework/qual}{TypeQualifiers}, which lists the annotations
@@ -762,7 +762,7 @@ returned by the
 \ahref{\getSupportedTypeQualifiersURL}{\<BaseTypeChecker\-.getSupportedTypeQualifiers>}
 method).
 
-\urldef{\reportURL}{\url}{http://types.cs.washington.edu/checker-framework/current/api/checkers/source/SourceChecker.html#report-checkers.source.Result-java.lang.Object-}
+\urldef{\reportURL}{\url}{http://types.cs.washington.edu/checker-framework/current/api/framework/source/SourceChecker.html#report-checkers.source.Result-java.lang.Object-}
 
 The checker class bridges between the compiler and the rest of the checker.  It
 invokes the type-rule check visitor on every Java source file being
@@ -1038,8 +1038,8 @@ $ javac -processor org.checkerframework.checker.interning.InterningChecker \
 
 [InterningChecker] InterningExampleWithWarnings.java
  success (line  18): STRING_LITERAL "foo"
-     actual: DECLARED @checkers.interning.quals.Interned java.lang.String
-   expected: DECLARED @checkers.interning.quals.Interned java.lang.String
+     actual: DECLARED @checker.interning.quals.Interned java.lang.String
+   expected: DECLARED @checker.interning.quals.Interned java.lang.String
  success (line  19): NEW_CLASS new String("bar")
      actual: DECLARED java.lang.String
    expected: DECLARED java.lang.String
@@ -1047,7 +1047,7 @@ examples/InterningExampleWithWarnings.java:21: (not.interned)
     if (foo == bar)
             ^
  success (line  22): STRING_LITERAL "foo == bar"
-     actual: DECLARED @checkers.interning.quals.Interned java.lang.String
+     actual: DECLARED @checker.interning.quals.Interned java.lang.String
    expected: DECLARED java.lang.String
 1 error
 \end{Verbatim}
@@ -1138,6 +1138,7 @@ java -jar $CHECKERFRAMEWORK/framework/dist/framework.jar \
 
 
 
+%%% Rather out of date!
 %% Not relevant to most readers.  Can go in a README file in our repository.
 % \section{Putting your checker in the repository\label{writing-repository}}
 %
@@ -1242,7 +1243,7 @@ There is a Tree interface for each Java source structure, e.g.,
 for a method invocation, and \code{ForEachTree} for an enhanced-for-loop
 statement.
 
-You should limit your use of trees. A checkers uses Trees mainly to
+You should limit your use of trees. A checker uses Trees mainly to
 traverse the source code and retrieve the types/elements corresponding to
 them.  Then, the checker performs any needed checks on the types/elements instead.
 

@@ -191,7 +191,7 @@ Examples of classes that were not in JDK 6 but were introduced in JDK 7 include:
 You may be able to solve the problem by running
 
 \begin{Verbatim}
-  cd checkers
+  cd checker
   ant jdk.jar bindist
 \end{Verbatim}
 
@@ -557,7 +557,7 @@ in the Checker Framework release.)
 % Why is this necessary?  What goes wrong if it is not set?  Can I avoid
 % the need to set it?  It's used for:
 %  * the location of tools.jar, below.
-%  * the default location of RTJAR, in checkers/jdk/Makefile.
+%  * the default location of RTJAR, in checker/jdk/Makefile.
 Set the \<JAVA\_HOME> environment variable to the location of your JDK 
 7 installation (not the JRE installation, and not JDK 6).
 This needs to be an Oracle JDK.
@@ -638,10 +638,10 @@ the Checker Framework build finds it using relative paths.
 
 \begin{enumerate}
 % \item
-% Edit \code{checkers/build.properties} file so that the
+% Edit \code{checker/build.properties} file so that the
 % \code{compiler.lib} property specifies the location of the JSR 308
 % \code{javac.jar} library.  (If you also installed the JSR 308 compiler from
-% source, and you made the \code{checkers} and \code{jsr308-langtools} directories
+% source, and you made the \code{checker-framework} and \code{jsr308-langtools} directories
 % siblings, then you don't need to edit \code{checker/build.properties}.)
 
 \item
@@ -734,7 +734,7 @@ Run \code{make} in the \code{checker/manual} directory to build both the PDF and
 %   siblings.
 
 
-% (A checkers implementation builds on
+% (A checker implementation builds on
 % standard mechanisms such as JSR 269 annotation processing, but also
 % accesses the compiler's AST. In the long run, a checker built using the
 % Checker Framework should not be dependent on any compiler specifics.)
