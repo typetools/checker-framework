@@ -749,6 +749,13 @@
     </target>
 
 
+<target name="check-tutorial" description="Test to see if the tutorial is working as expected">
+<!--The tutorial build file is written relative to its location, 
+    so useNativeBasedir is required. -->
+      <ant dir="${framework.loc}/../tutorial/tests/" useNativeBasedir="true">
+          <target name="check-tutorial"/>
+      </ant>
+</target>
     <!-- TODO: like for -run-checker this only checks checker/src.
          Improve both. -->
     <!-- Depend on dist-nojdk to make sure everything compiles. -->
