@@ -1,8 +1,17 @@
 #!/bin/sh
 
-MASTER=$CHECKERFRAMEWORK"/framework/src/org/checkerframework/framework/util/PluginUtil.java"
-ECLIPSE=$CHECKERFRAMEWORK"/eclipse/checker-framework-eclipse-plugin/src/org/checkerframework/eclipse/util/PluginUtil.java"
-MAVEN=$CHECKERFRAMEWORK"/maven-plugin/src/main/java/org/checkerframework/mavenplugin/PluginUtil.java"
+myDir="`dirname $0`"
+case `uname -s` in
+    CYGWIN*)
+      myDir=`cygpath -m $myDir`
+      ;;
+esac
+#Fail on error status
+
+FRAMEWORK_DIR=$myDir"/.."
+MASTER=$FRAMEWORK_DIR"/framework/src/org/checkerframework/framework/util/PluginUtil.java"
+ECLIPSE=$FRAMEWORK_DIR"/eclipse/checker-framework-eclipse-plugin/src/org/checkerframework/eclipse/util/PluginUtil.java"
+MAVEN=$FRAMEWORK_DIR"/maven-plugin/src/main/java/org/checkerframework/mavenplugin/PluginUtil.java"
 
 tail +2 $MASTER  &> ".PluginUtil_master.java"
 

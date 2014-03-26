@@ -76,73 +76,73 @@
 
     <target name="update-checker-framework-versions" description="updates version info in Checker Framework documents and build configs">
 
-        <fail unless="checkers"            message="checkers property is not set!"   />
+        <fail unless="checker"            message="checker property is not set!"   />
         <fail unless="release.ver"         message="release.ver property is not set!"/>
         <fail unless="afu.properties"      message="afu.properties property is not set!"/>
         <fail unless="afu.release.date"    message="afu.release.date property is not set!"/>
 
-        <property name="checkers.manual"      value="${checkers}/manual"                       />
-        <property name="checkersWebPage"      value="${checkers.manual}/checkers-webpage.html" />
-        <property name="checkers.binary.poms" value="${checkers}/binary/poms"                  />
-        <property name="maven.plugin"         value="${checkers}/../maven-plugin"              />
+        <property name="checker.manual"      value="${checker}/manual"                       />
+        <property name="checkerWebPage"      value="${checker.manual}/checkers-webpage.html" />
+        <property name="checker.binary.poms" value="${checker}/binary/poms"                  />
+        <property name="maven.plugin"         value="${checker}/../maven-plugin"              />
 
         <!-- for afu.date.0 and afu.date.1 -->
         <loadproperties srcFile="${afu.properties}"/>
 
-        <update file="${checkersWebPage}"
+        <update file="${checkerWebPage}"
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
                 with="${release.ver}, ${release.date}"/>
 
-        <update file="${checkersWebPage}"
+        <update file="${checkerWebPage}"
                 start="${compiler.ver.0}" end="${compiler.ver.1}"
                 with="${release.ver}, ${release.date}"/>
 
-        <update file="${checkersWebPage}"
+        <update file="${checkerWebPage}"
                 start="${checkers.date.0}" end="${checkers.date.1}"
                 with="${release.date}"/>
 
-        <update file="${checkersWebPage}"
+        <update file="${checkerWebPage}"
                 start="${afu.date.0}" end="${afu.date.1}"
                 with="${afu.release.date}"/>
 
-        <replaceregexp file="${checkers.manual}/introduction.tex" byline="true"
+        <replaceregexp file="${checker.manual}/introduction.tex" byline="true"
                        match="1.7.0-jsr308-\S*" replace="1.7.0-jsr308-${release.ver}"/>
 
-        <replaceregexp file="${checkers.manual}/external-tools.tex" byline="true"
+        <replaceregexp file="${checker.manual}/external-tools.tex" byline="true"
                        match="1.7.0-jsr308-\S*" replace="1.7.0-jsr308-${release.ver}"/>
 
-        <replaceregexp file="${checkers}/../build-common.properties" byline="true"
+        <replaceregexp file="${checker}/../build-common.properties" byline="true"
                        match="build.version = \d\.\d\.\d(?:\.\d){0,1}" replace="build.version = ${release.ver}"/>
 
-        <update file="${checkers}/build.properties"
+        <update file="${checker}/build.properties"
                 start="build.version = " with="${release.ver}"/>
 
-        <update file="${checkers.manual}/manual.tex"
+        <update file="${checker.manual}/manual.tex"
                 start="${release.info.0}" end="${release.info.1}"
                 with="${release.ver} (${release.date})"/>
 
-        <update file="${checkers.manual}/manual.tex"
+        <update file="${checker.manual}/manual.tex"
                 start="${release.ver.0}" end="${release.ver.1}"
                 with="${release.ver}"/>
 
         <!-- Checker Framework Maven artifacts -->
-        <update file="${checkers.binary.poms}/checkersPom.xml"
+        <update file="${checker.binary.poms}/checkerPom.xml"
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
                 with="${release.ver}"/>
 
-        <update file="${checkers.binary.poms}/checkersQualsPom.xml"
+        <update file="${checker.binary.poms}/checkerQualsPom.xml"
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
                 with="${release.ver}"/>
 
-        <update file="${checkers.binary.poms}/compilerPom.xml"
+        <update file="${checker.binary.poms}/compilerPom.xml"
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
                 with="${release.ver}"/>
 
-        <update file="${checkers.binary.poms}/jdk7Pom.xml"
+        <update file="${checker.binary.poms}/jdk7Pom.xml"
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
                 with="${release.ver}"/>
 
-        <update file="${checkers.binary.poms}/jdk8Pom.xml"
+        <update file="${checker.binary.poms}/jdk8Pom.xml"
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
                 with="${release.ver}"/>
 
@@ -157,11 +157,16 @@
 
     <target name="zip-langtools" description="Creates a zip archive for JSR308-Langtools.">
 
+        <fail unless="checkerframework" message="checkerframework property is not set!"/>
         <fail unless="langtools"   message="langtools property is not set!" />
         <fail unless="dest.dir"    message="dest.dir property is not set!"  />
         <fail unless="file.name"   message="file.name property is not set!" />
         <fail unless="version"     message="version number is not set!"     />
 
+        <property name="langtools.excludes" value="${checkerframework}/release/langtools-excludes"/>
+        <available file="${langtools.excludes}"  property="langtools.excludes.available"/>
+        <fail unless="${langtools.excludes.available}" message="${langtools.excludes} includes file not available"/>
+        
         <zip destfile="${dest.dir}/${file.name}">
             <zipfileset dir="${langtools}" prefix="jsr308-langtools-${version}"
                         excludesfile="release/langtools-excludes"/>
@@ -182,31 +187,59 @@
 
     <target name="zip-checker-framework" description="Creates a zip archive for the Checker Framework.">
 
-        <fail unless="checkers"    message="checkers property is not set!" />
+        <fail unless="checker"     message="checker property is not set!" />
         <fail unless="dest.dir"    message="dest.dir property is not set!"  />
         <fail unless="file.name"   message="file.name property is not set!" />
         <fail unless="version"     message="version number is not set!"     />
 
-        <!-- Todo: Make this use the version number for the unzipped checker-framework dir -->
-        <chmod file="${checkers}/binary/javac" perm="+x"/>
-        <zip destfile="${dest.dir}/${file.name}">
-            <zipfileset dir="${checkers}" prefix="checker-framework-${version}"
-                        includesfile="release/checkers-includes"
-                        excludesfile="release/checkers-excludes"/>
-            <zipfileset dir="${checkers}" prefix="checker-framework-${version}"
-                        includes="**/javac" filemode="755"/>
+        <property name="dest.file" value="${dest.dir}/${file.name}"/>
+        <property name="checkerframework" value="${checker}/.."/>
+
+        <property name="checker.includes" value="release/checker-includes"/>
+        <property name="checker.excludes" value="release/checker-excludes"/>
+
+        <available file="${checker.includes}"  property="checker.includes.available"/>
+        <available file="${checker.excludes}"  property="checker.excludes.available"/>
+
+        <fail unless="${checker.includes.available}" message="${checker.includes} includes file not available"/>
+        <fail unless="${checker.excludes.available}" message="${checker.excludes} excludes file not available"/>
+
+        <chmod file="${checker}/bin/javac" perm="+x"/>
+
+        <delete file="${dest.file}"/>
+
+        <zip destfile="${dest.file}" update="true">
+            <zipfileset dir="${checker}" prefix="checker-framework-${version}"
+                        includes="${checker.includes}" excludes="${checker.excludes}"/>
+
+            <zipfileset dir="${checker}" prefix="checker-framework-${version}"
+                        includes="bin/javac" filemode="755"/>
+
+            <zipfileset dir="${checkerframework}" prefix="checker-framework-${version}"
+                        includes="api/** changelog-checkerframework.txt README.txt tutorial.zip"/>
         </zip>
 
     </target>
 
+    <target name="zip-tutorial" description="Create a zip archive for the directory tutorial.">
+        <fail unless="checker"    message="checker property is not set!" />
+        <fail unless="dest.dir"   message="dest.dir property is not set!"  />
+
+        <zip destfile="${dest.dir}/$tutorial.zip">
+            <zipfileset dir="${checker}" prefix="tutorial"
+                        includes="tutorial/**"
+                        excludes="tutorial/test/** tutorial/Makefile tutorial/README"/>
+        </zip>
+    </target>
+
     <target name="zip-maven-examples" description="Create a zip archive for the directory maven-plugin/mvn-examples.">
-        <fail unless="checkers"    message="checkers property is not set!" />
+        <fail unless="checker"    message="checker property is not set!" />
         <fail unless="dest.dir"    message="dest.dir property is not set!"  />
         <fail unless="file.name"   message="file.name property is not set!" />
         <fail unless="version"     message="version is not set!" />
 
         <zip destfile="${dest.dir}/${file.name}">
-            <zipfileset dir="${checkers}/../maven-plugin/mvn-examples" filemode="755" prefix="maven-examples-${version}"/>
+            <zipfileset dir="${checker}/../maven-plugin/mvn-examples" filemode="755" prefix="maven-examples-${version}"/>
         </zip>
     </target>
 
@@ -233,43 +266,43 @@
     <target name="checker-framework-website-docs" description="Copies the relevant Checker Framework files to the given directory">
 
         <!-- The directory in which the Checker Framework has been built -->
-        <fail unless="checkers"   message="checkers property is not set!" />
+        <fail unless="checker"   message="checker property is not set!" />
 
         <!-- THe -->
         <fail unless="dest.dir"   message="dest.dir property is not set!" />
         <fail unless="manual.name"        message="manual.name property is not set!" />
-        <fail unless="checkers.webpage"   message="checkers.webpage property is not set!" />
+        <fail unless="checker.webpage"   message="checker.webpage property is not set!" />
 
         <!-- //TODO: PERHAPS CHECK THAT THESE FILES EXIST -->
-        <property name="checkers.manual"   value="${checkers}/manual" />
-        <property name="checkers.tutorial" value="${checkers}/../tutorial" />
+        <property name="checker.manual"   value="${checker}/manual" />
+        <property name="checker.tutorial" value="${checker}/../tutorial" />
         <property name="web.root"          value="${dest.dir}/../.." />
 
-        <copy file="${checkers.manual}/manual.html" tofile="${dest.dir}/${manual.name}.html"/>
-        <copy file="${checkers.manual}/manual.pdf"  tofile="${dest.dir}/${manual.name}.pdf"/>
+        <copy file="${checker.manual}/manual.html" tofile="${dest.dir}/${manual.name}.html"/>
+        <copy file="${checker.manual}/manual.pdf"  tofile="${dest.dir}/${manual.name}.pdf"/>
 
-        <copy file="${checkers.manual}/${checkers.webpage}" tofile="${dest.dir}/${checkers.webpage}" />
+        <copy file="${checker.manual}/${checker.webpage}" tofile="${dest.dir}/${checker.webpage}" />
 
         <copy todir="${dest.dir}" flatten="true">
-            <fileset dir="${checkers.manual}">
+            <fileset dir="${checker.manual}">
                 <include name="*.png"/>
                 <include name="*.gif"/>
             </fileset>
         </copy>
 
         <copy todir="${dest.dir}/tutorial" >
-            <fileset dir="${checkers.tutorial}" includes="**"/>
+            <fileset dir="${checker.tutorial}" includes="**"/>
         </copy>
 
-        <copy todir="${dest.dir}" file="${checkers}/changelog-checkers.txt" />
+        <copy todir="${dest.dir}" file="${checker}/../changelog-checkerframework.txt" />
 
         <copy todir="${dest.dir}/api" flatten="false">
-            <fileset dir="${checkers}/../api">
+            <fileset dir="${checker}/../api">
                 <include name="**" />
             </fileset>
         </copy>
 
-        <symlink overwrite="true" link="${dest.dir}/index.html" resource="${dest.dir}/${checkers.webpage}" />
+        <symlink overwrite="true" link="${dest.dir}/index.html" resource="${dest.dir}/${checker.webpage}" />
         <symlink overwrite="true"
                  link="${web.root}/current/favicon-jsr308.png" resource="${web.root}/favicon-jsr308.png"/>
 

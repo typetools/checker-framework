@@ -77,20 +77,16 @@ EMAIL_TO='jsr308-discuss@googlegroups.com, checker-framework-discuss@googlegroup
 BUILD_DIR        = "/scratch/jsr308-release/build/"
 CHECKER_FRAMEWORK = os.path.join(BUILD_DIR, 'checker-framework')
 CHECKER_FRAMEWORK_RELEASE = os.path.join(CHECKER_FRAMEWORK, 'release')
-CHECKER_BIN_DIR    = os.path.join(CHECKER_FRAMEWORK, 'checkers', 'binary')
-CHECKERS_BINARY    = os.path.join(CHECKER_BIN_DIR, 'checkers.jar'       )
-CHECKERS_QUALS     = os.path.join(CHECKER_BIN_DIR, 'checkers-quals.jar' )
-JAVAC_BINARY       = os.path.join(CHECKER_BIN_DIR, 'javac.jar')
-JDK7_BINARY        = os.path.join(CHECKER_BIN_DIR, 'jdk7.jar' )
-JDK8_BINARY        = os.path.join(CHECKER_BIN_DIR, 'jdk8.jar' )
+CHECKER_BIN_DIR  = os.path.join(CHECKER_FRAMEWORK, 'checker', 'dist')
+CHECKER_BINARY   = os.path.join(CHECKER_BIN_DIR, 'checker.jar'       )
+CHECKER_QUAL     = os.path.join(CHECKER_BIN_DIR, 'checker-qual.jar' )
+JAVAC_BINARY     = os.path.join(CHECKER_BIN_DIR, 'javac.jar')
+JDK7_BINARY      = os.path.join(CHECKER_BIN_DIR, 'jdk7.jar' )
+JDK8_BINARY      = os.path.join(CHECKER_BIN_DIR, 'jdk8.jar' )
 
-CHECKERS_BINARY_POM  = os.path.join(CHECKER_BIN_DIR, 'poms', 'checkersPom.xml'      )
-CHECKERS_QUALS_POM   = os.path.join(CHECKER_BIN_DIR, 'poms', 'checkersQualsPom.xml' )
-JAVAC_BINARY_POM     = os.path.join(CHECKER_BIN_DIR, 'poms', 'compilerPom.xml'      )
-JDK7_BINARY_POM      = os.path.join(CHECKER_BIN_DIR, 'poms', 'jdk7Pom.xml'          )
-JDK8_BINARY_POM      = os.path.join(CHECKER_BIN_DIR, 'poms', 'jdk8Pom.xml'          )
+FRAMEWORK_BINARY = os.path.join(CHECKER_FRAMEWORK, 'framework', 'dist', 'framework.jar' )
 
-CHECKERS_CHANGELOG = os.path.join(CHECKER_FRAMEWORK, 'checkers', 'changelog-checkers.txt')
+CHECKER_CHANGELOG = os.path.join(CHECKER_FRAMEWORK, 'changelog-checkerframework.txt')
 
 JSR308_LANGTOOLS    = os.path.join(BUILD_DIR, 'jsr308-langtools')
 JSR308_LT_DOC       = os.path.join(JSR308_LANGTOOLS, 'doc')
@@ -108,11 +104,18 @@ MAVEN_PLUGIN_POM = os.path.join(MAVEN_PLUGIN_DIR,  'pom.xml')
 MAVEN_DEV_REPO  = 'file:///cse/www2/types/dev/m2-repo'
 MAVEN_LIVE_REPO = 'file:///cse/www2/types/m2-repo'
 
-RELEASE_REPOS = ( CHECKER_FRAMEWORK,   JSR308_LANGTOOLS,   ANNO_TOOLS )
+MAVEN_POMS_DIR = os.path.join(MAVEN_PLUGIN_DIR, 'poms')
+CHECKER_BINARY_POM  = os.path.join(MAVEN_POMS_DIR, 'checkerPom.xml'        )
+CHECKER_QUAL_POM    = os.path.join(MAVEN_POMS_DIR, 'checkerQualPom.xml'    )
+JAVAC_BINARY_POM     = os.path.join(MAVEN_POMS_DIR, 'compilerPom.xml'      )
+JDK7_BINARY_POM      = os.path.join(MAVEN_POMS_DIR, 'jdk7Pom.xml'          )
+JDK8_BINARY_POM      = os.path.join(MAVEN_POMS_DIR, 'jdk8Pom.xml'          )
+
+BUILD_REPOS = ( CHECKER_FRAMEWORK,   JSR308_LANGTOOLS,   ANNO_TOOLS )
 INTERM_REPOS  = ( INTERM_CHECKER_REPO, INTERM_JSR308_REPO, INTERM_ANNO_REPO )
 LIVE_REPOS    = ( LIVE_CHECKER_REPO,   LIVE_JSR308_REPO,   LIVE_ANNO_REPO   )
 
-INTERM_TO_RELEASE_REPOS = (
+INTERM_TO_BUILD_REPOS = (
   ( INTERM_CHECKER_REPO, CHECKER_FRAMEWORK ),
   ( INTERM_JSR308_REPO,  JSR308_LANGTOOLS  ),
   ( INTERM_ANNO_REPO,    ANNO_TOOLS        )
@@ -139,6 +142,8 @@ CHECKER_LIVE_SITE = os.path.join( FILE_PATH_TO_LIVE_SITE, "checker-framework" )
 CHECKER_LIVE_RELEASES_DIR = os.path.join( CHECKER_LIVE_SITE, "releases" )
 
 CURRENT_DATE=datetime.date.today()
+
+os.environ['CHECKERFRAMEWORK'] = CHECKER_FRAMEWORK
 
 #Environment variables for tools needed during the build
 os.environ['PLUME_LIB'] =  PLUME_LIB
