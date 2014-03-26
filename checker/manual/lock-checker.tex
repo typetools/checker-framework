@@ -30,7 +30,7 @@ other is a method annotation.
 \item[\refqualclass{checker/lock/qual}{GuardedBy}]
   indicates a type whose value may be accessed only when the given lock is
   held.
-  See the \ahref{api/checkers/lock/quals/GuardedBy.html}{GuardedBy
+  See the \ahref{api/checker/lock/quals/GuardedBy.html}{GuardedBy
     Javadoc} for an explanation of the argument and other details.  The lock
   acquisition and the value access may be arbitrarily far in the future;
   or, if the value is never accessed, the lock never need be held.
@@ -207,7 +207,7 @@ Lock Checker, as described in Figure~\ref{fig-lock-refactoring}.
 \end{tabular}
 &
 $\Rightarrow$
-~checkers.lock.quals.GuardedBy~
+~checker.lock.quals.GuardedBy~
 \end{tabular}
 \end{center}
 %BEGIN LATEX
