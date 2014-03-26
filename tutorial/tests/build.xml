@@ -1,4 +1,4 @@
-<project name="personalblog" basedir="../eclipse-projects/personalblog-demo/" default="check-pblog">
+<project name="personalblog" basedir="../eclipse-projects/personalblog-demo/" default="check-tutorial">
 
     <property file="../../../build-common.properties"/>
     <import file="ant.xml"/>
@@ -13,8 +13,7 @@
       <revert-demo target="check-tainting" step="0" dir="../../tests/testdemo"/>
     </target>
 
-    <target name="check-demo" depends="check-pblog">
-      <echo message="personalblog taintness demo works as expected"/>
+    <target name="check-tutorial" depends="check-pblog">
     </target>
 
 </project>
