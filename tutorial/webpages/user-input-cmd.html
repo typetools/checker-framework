@@ -81,25 +81,20 @@
 					with a valid regular expression and a matching string such as <strong
 						class="text-success">[01]??\d-([0123]??\d)-\d{4}+
 						01-24-2013 </strong> and then run with an invalid and a matching string one
-					such as <strong class="text-success">[01]??[\d-([0123]??\d)-\d{4}+
-						01-24-2013 </strong>.
+					such as <strong class="text-success">[01]??[\d-[0123]??\d-\d{4}+ 01-24-2013 </strong>.
 				<pre>
-javac RegexExample.java
-java RegexExample \(*apple\) apple
-Exception in thread "main" java.util.regex.PatternSyntaxException: Illegal character range near index 24
-[01]??[\d-([0123]??\d)-\d{4}+
-                        ^
+java RegexExample [01]??[\d-[0123]??\d-\d{4}+ 01-24-2013
+Exception in thread "main" java.util.regex.PatternSyntaxException: Unclosed character class near index 23
+[01]??[d-[0123]??d-d{4}+
+                       ^
 	at java.util.regex.Pattern.error(Pattern.java:1924)
-	at java.util.regex.Pattern.range(Pattern.java:2594)
-	at java.util.regex.Pattern.clazz(Pattern.java:2507)
+	at java.util.regex.Pattern.clazz(Pattern.java:2493)
 	at java.util.regex.Pattern.sequence(Pattern.java:2030)
 	at java.util.regex.Pattern.expr(Pattern.java:1964)
 	at java.util.regex.Pattern.compile(Pattern.java:1665)
 	at java.util.regex.Pattern.<init>(Pattern.java:1337)
 	at java.util.regex.Pattern.compile(Pattern.java:1022)
 	at RegexExample.main(RegexExample.java:13)
-
-    
 				</pre>
 
 				<p>The user has made an error by passing in an invalid regular
@@ -119,19 +114,22 @@ Exception in thread "main" java.util.regex.PatternSyntaxException: Illegal chara
 					warning, because regex is not of type
 					<code>@Regex String</code>
 					which is required for strings passed to
-					<code>Pattern.compile()</code>
-					.
+					<code>Pattern.compile()</code>.
+					The checker also prints out an "group.count.invalid" warning because
+					no groups are guaranteed to exist.
 				</p>
 
 				<pre>
-javacheck -processor checkers.regex.RegexChecker RegexExample.java 
-RegexExample.java:13: error: incompatible types in argument.
-		Pattern pat = Pattern.compile(regex);
-		                              ^
+javacheck -processor org.checkerframework.checker.regex.RegexChecker RegexExample.java
+RegexExample.java:13: error: [argument.type.incompatible] incompatible types in argument.
+        Pattern pat = Pattern.compile(regex);
+                                      ^
   found   : String
   required: @Regex String
-
-1 error
+RegexExample.java:18: error: [group.count.invalid] invalid groups parameter 1. Only 0 groups are guaranteed to exist for mat.
+                System.out.println("Group: " + mat.group(1));
+                                                         ^
+2 errors
 </pre>
 
 			</section>
@@ -140,8 +138,8 @@ RegexExample.java:13: error: incompatible types in argument.
 
 				<p>
 					To fix, <b>verify the user input</b> using the
-					RegexUtil.isRegex(String) method. You must <b>import
-						checkers.regex.RegexUtil</b>. Please see the <a
+					RegexUtil.isRegex(String, int) method. You must <b>import
+						org.checkerframework.checker.regex.RegexUtil</b>. Please see the <a
 						href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#annotating-with-regex">
 						Regex chapter</a> in the manual for a full discussion of
 					<code>RegexUtil</code>
@@ -154,7 +152,7 @@ RegexExample.java:13: error: incompatible types in argument.
 					made to RegexExample.java to correctly handle the user input.
 				</p>
 
-				<pre>  import checkers.regex.RegexUtil;
+				<pre>  import org.checkerframework.checker.regex.RegexUtil;
 ...
         if (!RegexUtil.isRegex(regex, 1)) {
             System.out.println("Input is not a regular expression \"" + regex
@@ -165,13 +163,8 @@ RegexExample.java:13: error: incompatible types in argument.
 			</section>
 			<section id="run2">
 				<h4>4. Run the Regex Checker</h4>
-				<p>
-					The
-					<code>checkers-quals.jar</code>
-					needs to be on the classpath.
-				</p>
 				<pre>
-javacheck -cp $CHECKERS/binary/checkers-quals.jar -processor checkers.regex.RegexChecker RegexExample.java
+javacheck -processor org.checkerframework.checker.regex.RegexChecker RegexExample.java
 </pre>
 			</section>
 			<section id="runex2">
@@ -183,6 +176,11 @@ javacheck -cp $CHECKERS/binary/checkers-quals.jar -processor checkers.regex.Rege
 					matching string used before are <strong class="text-success">[01]??[\d-([0123]??\d)-\d{4}+
 						01-24-2013 </strong>.
 				</p>
+<pre>
+java -cp ".:$CHECKERFRAMEWORK/checker/dist/checker.jar" RegexExample  [01]??[\d-\([0123]??\d\)-\d{4}+ 01-24-2013
+Input is not a regular expression "[01]??[d-([0123]??d)-d{4}+": Illegal character range near index 9
+[01]??[d-([0123]??d)-d{4}+
+</pre>
 				<p>
 					For a full discussion of this checker, please see the <a
 						href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#regex-checker">
@@ -214,7 +212,7 @@ javacheck -cp $CHECKERS/binary/checkers-quals.jar -processor checkers.regex.Rege
 </body>
 </html>
 
-<!--  LocalWords:  Plugin plugin VM SDK plugins quals classpath 
+<!--  LocalWords:  Plugin plugin VM SDK plugins quals classpath
  -->
 <!--  LocalWords:  NullnessChecker plugin's hg
  -->
