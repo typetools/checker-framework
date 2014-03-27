@@ -1,26 +1,0 @@
-d - build class from name
-^d$apublic static funal classfuna€kb€kb€kbinal class "<Q> extends QualifiedTypeMirror<Q> {}kk
-
-c - build constructor from class
-^wwwwyw}opublic "(TypeMirror underlying, Q qualifier)€kb,){ €kb€kb {super(underlying, qualifier);checkUnderlyingKind(underlying, TODO);}
-
-u - build getUnderlyingType from constructor }
-ma$%{{jwwwwwlllllllllyw'aopublic " getUnderlyingType() {return (")super.getUnderlyingType();}:€kb
-
-g - build getter from field declaration
-^c2wpublic$ybA€kb {}koreturn ";k$bgUligetea()jjoj
-
-r - build constructor argument from field declaration
-A€kb,^dw.>>.j
-
-s - build this.x = x from field declaration
-$bd^>>ywithis." = j
-
-w - wrap RHS of assignment in 'new ArrayList<>(...)'
-$i)binew ArrayList<>(j
-
-m - build checkTypeMirrorsMatch from field declaration
-$bd^>>wxbc$checkTypeMirrorsMatch("DEC€kbSC",", getUnderlyingType().get "());^wwwwwgUlXj
-
-n - change checkTypeMirrorsMatch to checkTypeMirrorListsMatch
-^llllllllllllllliListjj
