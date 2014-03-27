@@ -184,7 +184,7 @@ The Checker Framework derives from CFGBuilder in order to desugar
 enhanced for loops that make explicit use of type annotations provided
 by the checker in use.
 
-    \begin{verbatim}class checkers.flow.CFCFGBuilder extends CFGBuilder\end{verbatim}
+    \begin{verbatim}class org.checkerframework.framework.flow.CFCFGBuilder extends CFGBuilder\end{verbatim}
 
 
 \subsubsection{FlowExpressions}
@@ -199,7 +199,7 @@ FlowExpressions are keys in the store of abstract values.
 
 Java expressions that appear in method pre- and postconditions are
 parsed into FlowExpressions using helper routines in
-\code{checkers.util.FlowExpressionParseUtil}.
+\code{org.checkerframework.framework.util.FlowExpressionParseUtil}.
 
 
 \subsubsection{AbstractValue}
@@ -218,9 +218,9 @@ two AbstractValues.
 For the Checker Framework, abstract values are essentially
 AnnotatedTypeMirrors.
 
-    \begin{verbatim}abstract class checkers.flow.CFAbstractValue<V extends CFAbstractValue<V>> implements AbstractValue<V>\end{verbatim}
+    \begin{verbatim}abstract class org.checkerframework.framework.flow.CFAbstractValue<V extends CFAbstractValue<V>> implements AbstractValue<V>\end{verbatim}
 
-    \begin{verbatim}class checkers.flow.CFValue extends CFAbstractValue<CFValue>\end{verbatim}
+    \begin{verbatim}class org.checkerframework.framework.flow.CFValue extends CFAbstractValue<CFValue>\end{verbatim}
 
 For the NullnessCheckers, abstract values additionally track the
 meaning of PolyNull, which may be either Nullable or NonNull.  The
@@ -230,7 +230,7 @@ checkers often also support a Poly* qualifier, but only the
 NullnessChecker tracks the meaning of its poly qualifier using the
 dataflow analysis.
 
-        \begin{verbatim}class checkers.nullness.NullnessValue extends CFAbstractValue<NullnessValue>\end{verbatim}
+        \begin{verbatim}class org.checkerframework.checker.nullness.NullnessValue extends CFAbstractValue<NullnessValue>\end{verbatim}
 
 
 \subsubsection{Store}
@@ -245,22 +245,22 @@ AbstractValues, one can take the least upper bound of two Stores.
 The Checker Framework store restricts the type of abstract values it
 may contain.
 
-    \begin{verbatim}abstract class checkers.flow.CFAbstractStore<V extends CFAbstractValue<V>,
+    \begin{verbatim}abstract class org.checkerframework.framework.flow.CFAbstractStore<V extends CFAbstractValue<V>,
         S extends CFAbstractStore<V, S>>
     implements Store<S>\end{verbatim}
 
-    \begin{verbatim}class checkers.flow.CFStore extends CFAbstractStore<CFValue, CFStore>\end{verbatim}
+    \begin{verbatim}class org.checkerframework.framework.flow.CFStore extends CFAbstractStore<CFValue, CFStore>\end{verbatim}
 
 An InitializationStore tracks which fields of the `self' reference
 have been initialized.
 
-    \begin{verbatim}class checkers.initialization.InitializationStore<
+    \begin{verbatim}class org.checkerframework.checker.initialization.InitializationStore<
         V extends CFAbstractValue<V>, S extends InitializationStore<V, S>>
     extends CFAbstractStore<V, S>\end{verbatim}
 
 A NullnessStore additionally tracks the meaning of PolyNull.
 
-    \begin{verbatim}class checkers.nullness.NullnessStore extends
+    \begin{verbatim}class org.checkerframework.checker.nullness.NullnessStore extends
         InitializationStore<NullnessValue, NullnessStore>\end{verbatim}
 
 
@@ -323,20 +323,20 @@ serve as the default for most checkers.  The class constrains the type
 of abstract values and it overrides many node visitor methods to
 refine the abstract values in their TransferResults.
 
-    \begin{verbatim}abstract class checkers.flow.CFAbstractTransfer<
+    \begin{verbatim}abstract class org.checkerframework.framework.flow.CFAbstractTransfer<
         V extends CFAbstractValue<V>,
         S extends CFAbstractStore<V, S>,
         T extends CFAbstractTransfer<V, S, T>>
     extends AbstractNodeVisitor<TransferResult<V, S>, TransferInput<V, S>>
     implements TransferFunction<V, S>\end{verbatim}
 
-    \begin{verbatim}class checkers.flow.CFTransfer
+    \begin{verbatim}class org.checkerframework.framework.flow.CFTransfer
         extends CFAbstractTransfer<CFValue, CFStore, CFTransfer>\end{verbatim}
 
 The Initialization Checker's transfer function tracks which fields of
 the `self' reference have been initialized.
 
-    \begin{verbatim}class checkers.initialization.InitializationTransfer<
+    \begin{verbatim}class org.checkerframework.checker.initialization.InitializationTransfer<
         V extends CFAbstractValue<V>,
         T extends InitializationTransfer<V, T, S>,
         S extends InitializationStore<V, S>>
@@ -345,7 +345,7 @@ the `self' reference have been initialized.
 The Regex Checker's transfer function overrides visitMethodInvocation
 to special case isRegex and asRegex methods.
 
-    \begin{verbatim}class checkers.regex.RegexTransfer
+    \begin{verbatim}class org.checkerframework.checker.regex.RegexTransfer
        extends CFAbstractTransfer<CFValue, CFStore, RegexTransfer>\end{verbatim}
 
 
@@ -372,19 +372,19 @@ abstract values, stores, and the transfer function.
         T extends CFAbstractTransfer<V, S, T>>
     extends Analysis<V, S, T>\end{verbatim}
 
-    \begin{verbatim}class checkers.flow.CFAnalysis
+    \begin{verbatim}class org.checkerframework.framework.flow.CFAnalysis
     extends CFAbstractAnalysis<CFValue, CFStore, CFTransfer>\end{verbatim}
 
 The Nullness Checkers' analysis overrides the factory methods for
 abstract values, stores, and the transfer function.
 
-    \begin{verbatim}class checkers.nullness.NullnessAnalysis
+    \begin{verbatim}class org.checkerframework.checker.nullness.NullnessAnalysis
     extends CFAbstractAnalysis<NullnessValue, NullnessStore, NullnessTransfer>\end{verbatim}
 
 The RegexChecker's analysis overrides the factory methods for abstract
 values, stores, and the transfer function.
 
-    \begin{verbatim}class checkers.regex.RegexAnalysis
+    \begin{verbatim}class org.checkerframework.checker.regex.RegexAnalysis
     extends CFAbstractAnalysis<CFValue, CFStore, RegexTransfer>\end{verbatim}
 
 
@@ -410,16 +410,16 @@ AnnotatedTypeFactorys are not part of the Dataflow Framework, per se,
 but they are parameterized by the Dataflow Framework classes that they
 use.
 
-    \begin{verbatim}class checkers.types.AnnotatedTypeFactory
+    \begin{verbatim}class org.checkerframework.framework.type.AnnotatedTypeFactory
     implements AnnotationProvider\end{verbatim}
 
 In the Checker Framework, dataflow analysis is performed on demand,
 one class at a time, the first time that a ClassTree is passed to
 getAnnotatedType.  This is implemented in the abstract class
-AbstractBasicAnnotatedTypeFactory with concrete implementation in
-BasicAnnotatedTypeFactory.
+GenericAnnotatedTypeFactory with concrete implementation in
+BaseAnnotatedTypeFactory.
 
-    \begin{verbatim}abstract class checkers.types.AbstractBasicAnnotatedTypeFactory<
+    \begin{verbatim}abstract class org.checkerframework.framework.type.GenericAnnotatedTypeFactory<
         Checker extends BaseTypeChecker<?>,
         Value extends CFAbstractValue<Value>,
         Store extends CFAbstractStore<Value, Store>,
@@ -427,8 +427,8 @@ BasicAnnotatedTypeFactory.
         FlowAnalysis extends CFAbstractAnalysis<Value, Store, TransferFunction>>
     extends AnnotatedTypeFactory\end{verbatim}
 
-    \begin{verbatim}class checkers.basetype.BaseAnnotatedTypeFactory
-    extends AbstractBasicAnnotatedTypeFactory<CFValue, CFStore, CFTransfer, CFAnalysis>\end{verbatim}
+    \begin{verbatim}class org.checkerframework.common.basetype.BaseAnnotatedTypeFactory
+    extends GenericAnnotatedTypeFactory<CFValue, CFStore, CFTransfer, CFAnalysis>\end{verbatim}
 
 
 
@@ -1293,13 +1293,13 @@ interface, which defines the following operations:
 The store is analysis-dependent, but the framework provides a default
 store implementation which can be reused.  The default implementation
 is
-\begin{verbatim}checkers.flow.CFStore\end{verbatim}
+\begin{verbatim}org.checkerframework.framework.flow.CFStore\end{verbatim}
 
 What information is tracked in the store depends on the analysis to be
  performed.  Some examples of stores include
 \begin{verbatim}
-checkers.initialization.InitializationStore
-checkers.nullness.NullnessStore
+org.checkerframework.checker.initialization.InitializationStore
+org.checkerframework.checker.nullness.NullnessStore
 \end{verbatim}
 
 Every store is associated with a particular point in the control-flow
@@ -1517,7 +1517,7 @@ I feel like there is a missing cross-reference or two to this section.
 
 \subsection{Overview}
 
-The default flow-sensitive analysis \code{checkers.flow.CFAnalysis}
+The default flow-sensitive analysis \code{org.checkerframework.framework.flow.CFAnalysis}
 works for the qualifier hierarchy of any checker defined in the
 Checker Framework.  This generality is both a strength and a weakness
 because the default analysis can always run but the facts it can
@@ -1750,7 +1750,7 @@ and $<:$ denotes standard Java subtyping.
 %  LocalWords:  CFAbstractAnalysis NullnessTransfer RegexChecker's lp 'c'
 %  LocalWords:  AnalysisResult AnnotatedTypeFactory AnnotatedTypeFactorys
 %  LocalWords:  AnnotationProvider getAnnotatedType BaseTypeChecker 414f
-%  LocalWords:  AbstractBasicAnnotatedTypeFactory FlowAnalysis CFAnalysis
+%  LocalWords:  GenericAnnotatedTypeFactory FlowAnalysis CFAnalysis
 %  LocalWords:  BaseAnnotatedTypeFactory CFGSimple ValueLiteral 1024L txt
 %  LocalWords:  BooleanLiteral CharacterLiteral DoubleLiteral FloatLiteral
 %  LocalWords:  IntegerLiteral LongLiteral NullLiteral ShortLiteral args
