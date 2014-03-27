@@ -412,7 +412,7 @@ will not type-check unless \<null> has the bottom type:
 \end{Verbatim}
 
 You don't necessarily have to define a new bottom qualifier.  But, You can
-use \<framework.qual.Bottom> if your type system does not already have an
+use \<org.checkerframework.framework.qual.Bottom> if your type system does not already have an
 appropriate bottom qualifier.
 
 If your type system has a special bottom type that is used \emph{only} for
@@ -750,7 +750,7 @@ checker classes for the Interning Checker and the Nullness Checker:
 \end{Verbatim}
 
 
-\urldef{\getSupportedTypeQualifiersURL}{\url}{http://types.cs.washington.edu/checker-framework/current/api/org/checkerframework/framework/type/AnnotatedTypeFactory.html#getSupportedTypeQualifiers--}
+\urldef{\getSupportedTypeQualifiersURL}{\url}{http://types.cs.washington.edu/dev/checker-framework/api/org/checkerframework/framework/type/AnnotatedTypeFactory.html#getSupportedTypeQualifiers--}
 
 The checker class must be annotated by
 \refqualclass{framework/qual}{TypeQualifiers}, which lists the annotations
@@ -762,7 +762,7 @@ returned by the
 \ahref{\getSupportedTypeQualifiersURL}{\<BaseTypeChecker\-.getSupportedTypeQualifiers>}
 method).
 
-\urldef{\reportURL}{\url}{http://types.cs.washington.edu/checker-framework/current/api/org/checkerframework/framework/source/SourceChecker.html#report-org.checkerframework.framework.source.Result-java.lang.Object-}
+\urldef{\reportURL}{\url}{http://types.cs.washington.edu/dev/checker-framework/api/org/checkerframework/framework/source/SourceChecker.html#report-org.checkerframework.framework.source.Result-java.lang.Object-}
 
 The checker class bridges between the compiler and the rest of the checker.  It
 invokes the type-rule check visitor on every Java source file being

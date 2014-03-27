@@ -207,7 +207,7 @@ see the \code{messages.properties} files in
 %BEGIN LATEX
 \\
 %END LATEX
-\code{checker-framework/checker/src/checker/\emph{checkername}/messages.properties}.
+\code{checker-framework/checker/src/org/checkerframework/checker/\emph{checkername}/messages.properties}.
 Each checker is built on the \code{basetype} checker and inherits its
 properties.  Thus, to find all the error keys for a checker, you usually
 need to examine its own \code{messages.properties} file and that of
@@ -372,7 +372,7 @@ are type-checking the whole thing.
 
 The \code{-Alint} option enables or disables optional checks, analogously to
 javac's \code{-Xlint} option.
-Each distributed checker supports at least the following lint options:
+Each of the distributed checkers supports at least the following lint options:
 
 % For the current list of lint options supported by all checkers, see
 % method BaseTypeChecker.getSupportedLintOptions().
