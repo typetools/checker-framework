@@ -78,15 +78,15 @@
 
 			<pre>
 $ ant
-Buildfile: /Users/smillst/src/jsr308/checker-framework/tutorial/src/personalblog-demo/build.xml
+Buildfile: .../personalblog-demo/build.xml
 
 clean:
 
 check-tainting:
-    [mkdir] Created dir: /Users/smillst/src/jsr308/checker-framework/tutorial/src/personalblog-demo/bin
-[jsr308.javac] Compiling 2 source files to /Users/smillst/src/jsr308/checker-framework/tutorial/src/personalblog-demo/bin
+    [mkdir] Created dir: .../personalblog-demo/bin
+[jsr308.javac] Compiling 2 source files to .../personalblog-demo/bin
 [jsr308.javac] javac 1.7.0-jsr308-1.5.0
-[jsr308.javac] /Users/smillst/src/jsr308/checker-framework/tutorial/src/personalblog-demo/src/net/eyde/personalblog/service/PersonalBlogService.java:175: error: incompatible types in argument.
+[jsr308.javac] .../personalblog-demo/src/net/eyde/personalblog/service/PersonalBlogService.java:175: error: incompatible types in argument.
 [jsr308.javac]                     "where post.category like '%", category,
 [jsr308.javac]                                                    ^
 [jsr308.javac]   found   : @Tainted String
@@ -94,7 +94,7 @@ check-tainting:
 [jsr308.javac] 1 error
 
 BUILD FAILED
-/Users/smillst/src/jsr308/checker-framework/tutorial/src/personalblog-demo/build.xml:35: Compile failed; see the compiler error output for details.
+.../personalblog-demo/build.xml:35: Compile failed; see the compiler error output for details.
 
 Total time: 2 seconds
 
@@ -127,16 +127,16 @@ Total time: 2 seconds
 			<h4>3. Rebuild with Ant</h4>
 			<pre>
 $ ant
-Buildfile: /Users/smillst/src/jsr308/checker-framework/tutorial/src/personalblog-demo/build.xml
+Buildfile: .../personalblog-demo/build.xml
 
 clean:
-   [delete] Deleting directory /Users/smillst/src/jsr308/checker-framework/tutorial/src/personalblog-demo/bin
+   [delete] Deleting directory .../personalblog-demo/bin
 
 check-tainting:
-    [mkdir] Created dir: /Users/smillst/src/jsr308/checker-framework/tutorial/src/personalblog-demo/bin
-[jsr308.javac] Compiling 2 source files to /Users/smillst/src/jsr308/checker-framework/tutorial/src/personalblog-demo/bin
+    [mkdir] Created dir: .../personalblog-demo/bin
+[jsr308.javac] Compiling 2 source files to .../personalblog-demo/bin
 [jsr308.javac] javac 1.7.0-jsr308-1.5.0
-[jsr308.javac] /Users/smillst/src/jsr308/checker-framework/tutorial/src/personalblog-demo/src/net/eyde/personalblog/struts/action/ReadAction.java:58: error: incompatible types in argument.
+[jsr308.javac] .../personalblog-demo/src/net/eyde/personalblog/struts/action/ReadAction.java:58: error: incompatible types in argument.
 [jsr308.javac]                   	pblog.getPostsByCategory(reqCategory));
 [jsr308.javac]                   	                         ^
 [jsr308.javac]   found   : @Tainted String
@@ -144,7 +144,7 @@ check-tainting:
 [jsr308.javac] 1 error
 
 BUILD FAILED
-/Users/smillst/src/jsr308/checker-framework/tutorial/src/personalblog-demo/build.xml:35: Compile failed; see the compiler error output for details.
+.../personalblog-demo/build.xml:35: Compile failed; see the compiler error output for details.
 
 Total time: 2 seconds
 
@@ -168,7 +168,7 @@ Total time: 2 seconds
 			</b> as shown below.
 			</p>
 			<pre>
-    String reqCategory = <b>validate</b>(cleanNull(request.getParameter("cat"))); 
+    String reqCategory = <b>validate</b>(cleanNull(request.getParameter("cat")));
 </pre>
 		</section>
 
@@ -178,14 +178,14 @@ Total time: 2 seconds
 			There should be no errors.
 			<pre>
 $ ant
-Buildfile: /Users/smillst/src/jsr308/checker-framework/tutorial/src/personalblog-demo/build.xml
+Buildfile: .../personalblog-demo/build.xml
 
 clean:
-   [delete] Deleting directory /Users/smillst/src/jsr308/checker-framework/tutorial/src/personalblog-demo/bin
+   [delete] Deleting directory .../personalblog-demo/bin
 
 check-tainting:
-    [mkdir] Created dir: /Users/smillst/src/jsr308/checker-framework/tutorial/src/personalblog-demo/bin
-[jsr308.javac] Compiling 2 source files to /Users/smillst/src/jsr308/checker-framework/tutorial/src/personalblog-demo/bin
+    [mkdir] Created dir: .../personalblog-demo/bin
+[jsr308.javac] Compiling 2 source files to .../personalblog-demo/bin
 [jsr308.javac] javac 1.7.0-jsr308-1.5.0
 
 BUILD SUCCESSFUL
@@ -212,7 +212,7 @@ Total time: 2 seconds
 </body>
 </html>
 
-<!--  LocalWords:  Plugin plugin VM SDK plugins quals classpath 
+<!--  LocalWords:  Plugin plugin VM SDK plugins quals classpath
  -->
 <!--  LocalWords:  NullnessChecker plugin's hg
  -->

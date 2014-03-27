@@ -239,8 +239,8 @@ correct, so it requires even fewer annotations.
 Each annotation that a programmer writes replaces a sentence or phrase of
 English descriptive text that would otherwise have been written in the
 Javadoc.  So, use of annotations actually reduces the overall size of the
-documentation, at the same time as making it less ambiguous and
-machine-processable.
+documentation, at the same time as making it machine-processable
+and less ambiguous.
 
 
 \subsection{Will using the Checker Framework slow down my program?  Will it slow down the compiler?\label{faq-slowdown}}
@@ -788,14 +788,14 @@ express this property as follows:
 
 \begin{enumerate}
 \item
-Annotate the field type as \refqualclass{checker/nullness/quals}{MonotonicNonNull}.
+Annotate the field type as \refqualclass{checker/nullness/qual}{MonotonicNonNull}.
 \item
-Annotate the method that sets the field as \refqualclass{checker/nullness/quals}{EnsuresNonNull}\<(">\emph{\<myFieldName>}\<")>.
+Annotate the method that sets the field as \refqualclass{checker/nullness/qual}{EnsuresNonNull}\<(">\emph{\<myFieldName>}\<")>.
 (If method \<m1> calls method \<m2>, which actually sets the field, then
 you would probably write this annotation on both \<m1> and \<m2>.)
 \item
 Annotate any method that depends on the field being non-null as
-\refqualclass{checker/nullness/quals}{RequiresNonNull}\<(">\emph{\<myFieldName>}\<")>.
+\refqualclass{checker/nullness/qual}{RequiresNonNull}\<(">\emph{\<myFieldName>}\<")>.
 The type-checker will verify that such a method is only called when the
 field isn't null --- that is, the method is only called after the setting
 method.

@@ -108,7 +108,7 @@ Need to double-check whether the code adds exceptions properly.  Also, does
 division possibly throw a DivideByZero exception?
 \end{workinprogress}
 
-    \begin{verbatim}class dataflow.cfg.node.*Node\end{verbatim}
+    \begin{verbatim}class org.checkerframework.dataflow.cfg.node.*Node\end{verbatim}
 
 
 \subsubsection{Blocks}
@@ -118,47 +118,47 @@ Nodes are grouped into basic blocks using a hierarchy of Block
 classes.  The hierarchy is composed of five interfaces, two abstract
 classes, and four concrete classes.
 
-    \begin{verbatim}interface dataflow.cfg.block.Block\end{verbatim}
+    \begin{verbatim}interface org.checkerframework.dataflow.cfg.block.Block\end{verbatim}
 
-    \begin{verbatim}abstract class dataflow.cfg.block.BlockImpl implements Block\end{verbatim}
+    \begin{verbatim}abstract class org.checkerframework.dataflow.cfg.block.BlockImpl implements Block\end{verbatim}
 
-    \begin{verbatim}interface dataflow.cfg.block.SingleSuccessorBlock extends Block\end{verbatim}
+    \begin{verbatim}interface org.checkerframework.dataflow.cfg.block.SingleSuccessorBlock extends Block\end{verbatim}
 
-    \begin{verbatim}abstract class dataflow.cfg.block.SingleSuccessorBlockImpl extends BlockImpl implements
+    \begin{verbatim}abstract class org.checkerframework.dataflow.cfg.block.SingleSuccessorBlockImpl extends BlockImpl implements
         SingleSuccessorBlock\end{verbatim}
 
 A RegularBlock contains no exception-raising operations and has a
 single control-flow successor.
 
-    \begin{verbatim}interface dataflow.cfg.block.RegularBlock extends SingleSuccessorBlock\end{verbatim}
+    \begin{verbatim}interface org.checkerframework.dataflow.cfg.block.RegularBlock extends SingleSuccessorBlock\end{verbatim}
 
-    \begin{verbatim}class dataflow.cfg.block.RegularBlockImpl extends SingleSuccessorBlockImpl implements
+    \begin{verbatim}class org.checkerframework.dataflow.cfg.block.RegularBlockImpl extends SingleSuccessorBlockImpl implements
         RegularBlock\end{verbatim}
 
 An ExceptionBlock contains a single operation that may raise an
 exception, with one or more exceptional successors and a single normal
 control-flow successor.
 
-    \begin{verbatim}interface dataflow.cfg.block.ExceptionBlock extends SingleSuccessorBlock\end{verbatim}
+    \begin{verbatim}interface org.checkerframework.dataflow.cfg.block.ExceptionBlock extends SingleSuccessorBlock\end{verbatim}
 
-    \begin{verbatim}class dataflow.cfg.block.ExceptionBlockImpl extends SingleSuccessorBlockImpl implements
+    \begin{verbatim}class org.checkerframework.dataflow.cfg.block.ExceptionBlockImpl extends SingleSuccessorBlockImpl implements
         ExceptionBlock\end{verbatim}
 
 A SpecialBlock represents method entry or exit, including exceptional
 exit which is represented separately from normal exit.
 
-    \begin{verbatim}interface dataflow.cfg.block.SpecialBlock extends SingleSuccessorBlock\end{verbatim}
+    \begin{verbatim}interface org.checkerframework.dataflow.cfg.block.SpecialBlock extends SingleSuccessorBlock\end{verbatim}
 
-    \begin{verbatim}class dataflow.cfg.block.SpecialBlockImpl extends SingleSuccessorBlockImpl implements
+    \begin{verbatim}class org.checkerframework.dataflow.cfg.block.SpecialBlockImpl extends SingleSuccessorBlockImpl implements
         SpecialBlock\end{verbatim}
 
 A ConditionalBlock contains no operations at all.  It represents a
 control-flow split to either a `then' or an `else' successor based on
 the immediately preceding boolean-valued Node.
 
-    \begin{verbatim}interface dataflow.cfg.block.ConditionalBlock extends Block\end{verbatim}
+    \begin{verbatim}interface org.checkerframework.dataflow.cfg.block.ConditionalBlock extends Block\end{verbatim}
 
-    \begin{verbatim}class dataflow.cfg.block.ConditionalBlockImpl extends BlockImpl implements ConditionalBlock\end{verbatim}
+    \begin{verbatim}class org.checkerframework.dataflow.cfg.block.ConditionalBlockImpl extends BlockImpl implements ConditionalBlock\end{verbatim}
 
 
 
@@ -170,7 +170,7 @@ expression as a graph of Blocks with distinguished entry, exit, and
 exceptional exit SpecialBlocks.  ControlFlowGraphs are produced by the
 CFGBuilder classes and are treated as immutable once they are built.
 
-    \begin{verbatim}class dataflow.cfg.ControlFlowGraph\end{verbatim}
+    \begin{verbatim}class org.checkerframework.dataflow.cfg.ControlFlowGraph\end{verbatim}
 
 \subsubsubsection{CFGBuilder}
 \label{sec:cfg_builder_classes}
@@ -178,13 +178,13 @@ CFGBuilder classes and are treated as immutable once they are built.
 The CFGBuilder classes visit an AST and produce a corresponding
 ControlFlowGraph as described in \autoref{sec:ast_to_cfg_translation}.
 
-    \begin{verbatim}class dataflow.cfg.CFGBuilder\end{verbatim}
+    \begin{verbatim}class org.checkerframework.dataflow.cfg.CFGBuilder\end{verbatim}
 
 The Checker Framework derives from CFGBuilder in order to desugar
 enhanced for loops that make explicit use of type annotations provided
 by the checker in use.
 
-    \begin{verbatim}class checkers.flow.CFCFGBuilder extends CFGBuilder\end{verbatim}
+    \begin{verbatim}class org.checkerframework.framework.flow.CFCFGBuilder extends CFGBuilder\end{verbatim}
 
 
 \subsubsection{FlowExpressions}
@@ -195,11 +195,11 @@ expressions, called FlowExpressions: local variables, field accesses,
 array accesses, references to \code{this}, and pure method calls.
 FlowExpressions are keys in the store of abstract values.
 
-    \begin{verbatim}class dataflow.analysis.FlowExpressions\end{verbatim}
+    \begin{verbatim}class org.checkerframework.dataflow.analysis.FlowExpressions\end{verbatim}
 
 Java expressions that appear in method pre- and postconditions are
 parsed into FlowExpressions using helper routines in
-\code{checkers.util.FlowExpressionParseUtil}.
+\code{org.checkerframework.framework.util.FlowExpressionParseUtil}.
 
 
 \subsubsection{AbstractValue}
@@ -213,14 +213,14 @@ vary widely among different users of the Dataflow Framework, but they
 share a common feature that one can compute the least upper bound of
 two AbstractValues.
 
-    \begin{verbatim}interface dataflow.analysis.AbstractValue<V extends AbstractValue<V>>\end{verbatim}
+    \begin{verbatim}interface org.checkerframework.dataflow.analysis.AbstractValue<V extends AbstractValue<V>>\end{verbatim}
 
 For the Checker Framework, abstract values are essentially
 AnnotatedTypeMirrors.
 
-    \begin{verbatim}abstract class checkers.flow.CFAbstractValue<V extends CFAbstractValue<V>> implements AbstractValue<V>\end{verbatim}
+    \begin{verbatim}abstract class org.checkerframework.framework.flow.CFAbstractValue<V extends CFAbstractValue<V>> implements AbstractValue<V>\end{verbatim}
 
-    \begin{verbatim}class checkers.flow.CFValue extends CFAbstractValue<CFValue>\end{verbatim}
+    \begin{verbatim}class org.checkerframework.framework.flow.CFValue extends CFAbstractValue<CFValue>\end{verbatim}
 
 For the NullnessCheckers, abstract values additionally track the
 meaning of PolyNull, which may be either Nullable or NonNull.  The
@@ -230,7 +230,7 @@ checkers often also support a Poly* qualifier, but only the
 NullnessChecker tracks the meaning of its poly qualifier using the
 dataflow analysis.
 
-        \begin{verbatim}class checkers.nullness.NullnessValue extends CFAbstractValue<NullnessValue>\end{verbatim}
+        \begin{verbatim}class org.checkerframework.checker.nullness.NullnessValue extends CFAbstractValue<NullnessValue>\end{verbatim}
 
 
 \subsubsection{Store}
@@ -240,27 +240,27 @@ A Store is a set of dataflow facts computed by an analysis, so it is a
 mapping from FlowExpressions to AbstractValues.  As with
 AbstractValues, one can take the least upper bound of two Stores.
 
-    \begin{verbatim}interface dataflow.analysis.Store<S extends Store<S>>\end{verbatim}
+    \begin{verbatim}interface org.checkerframework.dataflow.analysis.Store<S extends Store<S>>\end{verbatim}
 
 The Checker Framework store restricts the type of abstract values it
 may contain.
 
-    \begin{verbatim}abstract class checkers.flow.CFAbstractStore<V extends CFAbstractValue<V>,
+    \begin{verbatim}abstract class org.checkerframework.framework.flow.CFAbstractStore<V extends CFAbstractValue<V>,
         S extends CFAbstractStore<V, S>>
     implements Store<S>\end{verbatim}
 
-    \begin{verbatim}class checkers.flow.CFStore extends CFAbstractStore<CFValue, CFStore>\end{verbatim}
+    \begin{verbatim}class org.checkerframework.framework.flow.CFStore extends CFAbstractStore<CFValue, CFStore>\end{verbatim}
 
 An InitializationStore tracks which fields of the `self' reference
 have been initialized.
 
-    \begin{verbatim}class checkers.initialization.InitializationStore<
+    \begin{verbatim}class org.checkerframework.checker.initialization.InitializationStore<
         V extends CFAbstractValue<V>, S extends InitializationStore<V, S>>
     extends CFAbstractStore<V, S>\end{verbatim}
 
 A NullnessStore additionally tracks the meaning of PolyNull.
 
-    \begin{verbatim}class checkers.nullness.NullnessStore extends
+    \begin{verbatim}class org.checkerframework.checker.nullness.NullnessStore extends
         InitializationStore<NullnessValue, NullnessStore>\end{verbatim}
 
 
@@ -280,7 +280,7 @@ true immediately before the node to be analyzed.  A TransferInput may
 contain a single store, or a pair of `then' and `else' stores when
 following a boolean-valued expression.
 
-    \begin{verbatim}class dataflow.analysis.TransferInput<
+    \begin{verbatim}class org.checkerframework.dataflow.analysis.TransferInput<
         A extends AbstractValue<A>,
         S extends Store<S>>\end{verbatim}
 
@@ -294,16 +294,16 @@ ConditionalTransferResult that contains both a `then' and an `else'
 store, while most other Nodes produce a RegularTransferResult with a
 single store.
 
-    \begin{verbatim}abstract class dataflow.analysis.TransferResult<
+    \begin{verbatim}abstract class org.checkerframework.dataflow.analysis.TransferResult<
         A extends AbstractValue<A>,
         S extends Store<S>>\end{verbatim}
 
-    \begin{verbatim}class dataflow.analysis.ConditionalTransferResult<
+    \begin{verbatim}class org.checkerframework.dataflow.analysis.ConditionalTransferResult<
         A extends AbstractValue<A>,
         S extends Store<S>>
     extends TransferResult<A, S>\end{verbatim}
 
-    \begin{verbatim}class dataflow.analysis.RegularTransferResult<
+    \begin{verbatim}class org.checkerframework.dataflow.analysis.RegularTransferResult<
         A extends AbstractValue<A>,
         S extends Store<S>>
     extends TransferResult<A, S>\end{verbatim}
@@ -313,7 +313,7 @@ single store.
 
 A TransferFunction is a NodeVisitor that takes an input and produces an output.
 
-    \begin{verbatim}interface dataflow.analysis.TransferFunction<
+    \begin{verbatim}interface org.checkerframework.dataflow.analysis.TransferFunction<
         A extends AbstractValue<A>,
         S extends Store<S>>
     extends NodeVisitor<TransferResult<A, S>, TransferInput<A, S>>\end{verbatim}
@@ -323,20 +323,20 @@ serve as the default for most checkers.  The class constrains the type
 of abstract values and it overrides many node visitor methods to
 refine the abstract values in their TransferResults.
 
-    \begin{verbatim}abstract class checkers.flow.CFAbstractTransfer<
+    \begin{verbatim}abstract class org.checkerframework.framework.flow.CFAbstractTransfer<
         V extends CFAbstractValue<V>,
         S extends CFAbstractStore<V, S>,
         T extends CFAbstractTransfer<V, S, T>>
     extends AbstractNodeVisitor<TransferResult<V, S>, TransferInput<V, S>>
     implements TransferFunction<V, S>\end{verbatim}
 
-    \begin{verbatim}class checkers.flow.CFTransfer
+    \begin{verbatim}class org.checkerframework.framework.flow.CFTransfer
         extends CFAbstractTransfer<CFValue, CFStore, CFTransfer>\end{verbatim}
 
 The Initialization Checker's transfer function tracks which fields of
 the `self' reference have been initialized.
 
-    \begin{verbatim}class checkers.initialization.InitializationTransfer<
+    \begin{verbatim}class org.checkerframework.checker.initialization.InitializationTransfer<
         V extends CFAbstractValue<V>,
         T extends InitializationTransfer<V, T, S>,
         S extends InitializationStore<V, S>>
@@ -345,7 +345,7 @@ the `self' reference have been initialized.
 The Regex Checker's transfer function overrides visitMethodInvocation
 to special case isRegex and asRegex methods.
 
-    \begin{verbatim}class checkers.regex.RegexTransfer
+    \begin{verbatim}class org.checkerframework.checker.regex.RegexTransfer
        extends CFAbstractTransfer<CFValue, CFStore, RegexTransfer>\end{verbatim}
 
 
@@ -356,7 +356,7 @@ An Analysis performs iterative dataflow analysis over a control flow
 graph using a given transfer function.  Currently only forward
 analyses are supported.
 
-    \begin{verbatim}class dataflow.analysis.Analysis<
+    \begin{verbatim}class org.checkerframework.dataflow.analysis.Analysis<
         A extends AbstractValue<A>,
         S extends Store<S>,
         T extends TransferFunction<A, S>>\end{verbatim}
@@ -366,25 +366,25 @@ the default analysis of most checkers.  This class adds information
 about the type hierarchy being analyzed and acts as a factory for
 abstract values, stores, and the transfer function.
 
-    \begin{verbatim}abstract class dataflow.analysis.CFAbstractAnalysis<
+    \begin{verbatim}abstract class org.checkerframework.dataflow.analysis.CFAbstractAnalysis<
         V extends CFAbstractValue<V>,
         S extends CFAbstractStore<V, S>,
         T extends CFAbstractTransfer<V, S, T>>
     extends Analysis<V, S, T>\end{verbatim}
 
-    \begin{verbatim}class checkers.flow.CFAnalysis
+    \begin{verbatim}class org.checkerframework.framework.flow.CFAnalysis
     extends CFAbstractAnalysis<CFValue, CFStore, CFTransfer>\end{verbatim}
 
 The Nullness Checkers' analysis overrides the factory methods for
 abstract values, stores, and the transfer function.
 
-    \begin{verbatim}class checkers.nullness.NullnessAnalysis
+    \begin{verbatim}class org.checkerframework.checker.nullness.NullnessAnalysis
     extends CFAbstractAnalysis<NullnessValue, NullnessStore, NullnessTransfer>\end{verbatim}
 
 The RegexChecker's analysis overrides the factory methods for abstract
 values, stores, and the transfer function.
 
-    \begin{verbatim}class checkers.regex.RegexAnalysis
+    \begin{verbatim}class org.checkerframework.checker.regex.RegexAnalysis
     extends CFAbstractAnalysis<CFValue, CFStore, RegexTransfer>\end{verbatim}
 
 
@@ -399,7 +399,7 @@ AbstractValues for either Nodes or Trees and it can re-run the
 transfer function to compute Stores that are valid immediately before
 or after any Tree.
 
-    \begin{verbatim}class dataflow.analysis.AnalysisResult<A extends AbstractValue<A>,
+    \begin{verbatim}class org.checkerframework.dataflow.analysis.AnalysisResult<A extends AbstractValue<A>,
                                        S extends Store<S>>\end{verbatim}
 
 
@@ -410,16 +410,16 @@ AnnotatedTypeFactorys are not part of the Dataflow Framework, per se,
 but they are parameterized by the Dataflow Framework classes that they
 use.
 
-    \begin{verbatim}class checkers.types.AnnotatedTypeFactory
+    \begin{verbatim}class org.checkerframework.framework.type.AnnotatedTypeFactory
     implements AnnotationProvider\end{verbatim}
 
 In the Checker Framework, dataflow analysis is performed on demand,
 one class at a time, the first time that a ClassTree is passed to
 getAnnotatedType.  This is implemented in the abstract class
-AbstractBasicAnnotatedTypeFactory with concrete implementation in
-BasicAnnotatedTypeFactory.
+GenericAnnotatedTypeFactory with concrete implementation in
+BaseAnnotatedTypeFactory.
 
-    \begin{verbatim}abstract class checkers.types.AbstractBasicAnnotatedTypeFactory<
+    \begin{verbatim}abstract class org.checkerframework.framework.type.GenericAnnotatedTypeFactory<
         Checker extends BaseTypeChecker<?>,
         Value extends CFAbstractValue<Value>,
         Store extends CFAbstractStore<Value, Store>,
@@ -427,8 +427,8 @@ BasicAnnotatedTypeFactory.
         FlowAnalysis extends CFAbstractAnalysis<Value, Store, TransferFunction>>
     extends AnnotatedTypeFactory\end{verbatim}
 
-    \begin{verbatim}class checkers.basetype.BaseAnnotatedTypeFactory
-    extends AbstractBasicAnnotatedTypeFactory<CFValue, CFStore, CFTransfer, CFAnalysis>\end{verbatim}
+    \begin{verbatim}class org.checkerframework.common.basetype.BaseAnnotatedTypeFactory
+    extends GenericAnnotatedTypeFactory<CFValue, CFStore, CFTransfer, CFAnalysis>\end{verbatim}
 
 
 
@@ -1293,13 +1293,13 @@ interface, which defines the following operations:
 The store is analysis-dependent, but the framework provides a default
 store implementation which can be reused.  The default implementation
 is
-\begin{verbatim}checkers.flow.CFStore\end{verbatim}
+\begin{verbatim}org.checkerframework.framework.flow.CFStore\end{verbatim}
 
 What information is tracked in the store depends on the analysis to be
  performed.  Some examples of stores include
 \begin{verbatim}
-checkers.initialization.InitializationStore
-checkers.nullness.NullnessStore
+org.checkerframework.checker.initialization.InitializationStore
+org.checkerframework.checker.nullness.NullnessStore
 \end{verbatim}
 
 Every store is associated with a particular point in the control-flow
@@ -1467,7 +1467,7 @@ information about fields under concurrent semantics.
 
 As a proof-of-concept, I (Stefan) implemented a constant propagation
 analysis for local variables and integer values.  The main class is
-\code{dataflow.cfg.playground.ConstantPropagationPlayground}.  I
+\code{org.checkerframework.dataflow.cfg.playground.ConstantPropagationPlayground}.  I
 describe the most important aspects here.
 
 \textbf{Abstract values.} A class \code{Constant} is used as an
@@ -1517,7 +1517,7 @@ I feel like there is a missing cross-reference or two to this section.
 
 \subsection{Overview}
 
-The default flow-sensitive analysis \code{checkers.flow.CFAnalysis}
+The default flow-sensitive analysis \code{org.checkerframework.framework.flow.CFAnalysis}
 works for the qualifier hierarchy of any checker defined in the
 Checker Framework.  This generality is both a strength and a weakness
 because the default analysis can always run but the facts it can
@@ -1750,7 +1750,7 @@ and $<:$ denotes standard Java subtyping.
 %  LocalWords:  CFAbstractAnalysis NullnessTransfer RegexChecker's lp 'c'
 %  LocalWords:  AnalysisResult AnnotatedTypeFactory AnnotatedTypeFactorys
 %  LocalWords:  AnnotationProvider getAnnotatedType BaseTypeChecker 414f
-%  LocalWords:  AbstractBasicAnnotatedTypeFactory FlowAnalysis CFAnalysis
+%  LocalWords:  GenericAnnotatedTypeFactory FlowAnalysis CFAnalysis
 %  LocalWords:  BaseAnnotatedTypeFactory CFGSimple ValueLiteral 1024L txt
 %  LocalWords:  BooleanLiteral CharacterLiteral DoubleLiteral FloatLiteral
 %  LocalWords:  IntegerLiteral LongLiteral NullLiteral ShortLiteral args

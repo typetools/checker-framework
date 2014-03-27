@@ -74,9 +74,10 @@
 			<p>
 				Consider a hypothetical Encrypted type qualifier, which denotes that
 				the representation of an object (such as a String, CharSequence, or
-				byte[]) is encrypted. This project has two source files: <a
-					href="../src/myquals/Encrypted.java"> Encrypted.java</a> , the type
-				annotation definition, and <a
+				byte[]) is encrypted. This project has three source files: <a
+					href="../src/myquals/Encrypted.java"> Encrypted.java</a> and
+					<a href="../src/myquals/PossibleUnencrypted.java"> PossibleUnencrypted.java</a> , the type
+				annotation definitions, and <a
 					href="../src/encrypted/EncryptionDemo.java">EncryptedDemo.java</a>
 				, the example program that use the Encrypted checker.
 			</p>
@@ -85,8 +86,8 @@
 			<div class="well">
 				<h5>Outline</h5>
 				<ol>
-					<li><a href="#annotation">Write the type annotation
-							definition</a></li>
+					<li><a href="#annotation">Write type annotation
+							definitions</a></li>
 					<li><a href="#run1">Run the Encryption Checker</a>--2 errors</li>
 					<li><a href="#error1">Suppress the first error</a></li>
 					<li><a href="#run2">Run the Encryption Checker</a>--1 error</li>
@@ -95,19 +96,20 @@
 			</div>
 		</section>
 		<section id="annotation">
-			<h4>1.Write the type annotation definition</h4>
+			<h4>1. Write the type annotation definitions</h4>
 			<p>
-				For this example, the annotation definition has already been
-				written. It is Encrypted.java. Please see the <a
+				For this example, the annotation definitions have already been
+				written, Encrypted.java and PossibleUnencrypted.java. Please see the <a
 					href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#writing-a-checker">
 					manual</a> for further explanation of this file.
 			</p>
 			<p>This code needs to be compiled with the Checker Framework
 				compiler.</p>
 			<pre>
-                    $ javacheck myquals/Encrypted.java
+$ javacheck myquals/Encrypted.java
+$ javacheck myquals/PossibleUnencrypted.java
                 </pre>
-			<p>The resulting .class file should either be on your classpath,
+			<p>The resulting .class files should either be on your classpath,
 				or on the processor path (set via the -processorpath command-line
 				option to javac).</p>
 		</section>
@@ -117,23 +119,24 @@
 			<p>
 				The
 				<code>@Encrypted</code>
-				annotations have already been written in EncryptionDemo.java. <b>Invoke
-					the compiler</b> with the Basic Checker, specifying the @Encrypted
-				annotation using the -Aquals option. You should add the Encrypted
-				classfile to the processor classpath:
+				annotations have already been written in EncryptionDemo.java.  Types
+				without annotations are defaulted to <code>@PossibleUnencrypted</code>. <b>Invoke
+					the compiler</b> with the Subtyping Checker, specifying the @Encrypted and @PossibleUnencrypted
+				annotations using the -Aquals option. You should add the Encrypted and PossibleUnencrypted
+				classfiles to the processor classpath:
 			</p>
 
 			<pre>
-javacheck  -processor checkers.basic.BasicChecker -Aquals=myquals.Encrypted encrypted/EncryptionDemo.java
-encrypted/EncryptionDemo.java:20: error: incompatible types in assignment.
-		/*@Encrypted*/ int encryptInt = (character + OFFSET) % Character.MAX_VALUE ;
-		                                                     ^
-  found   : int
+javacheck  -processor org.checkerframework.common.subtyping.SubtypingChecker -Aquals=myquals.Encrypted,myquals.PossibleNotEncrypted
+encrypted/EncryptionDemo.java:21: error: [assignment.type.incompatible] incompatible types in assignment.
+        /*@Encrypted*/ int encryptInt = (character + OFFSET) % Character.MAX_VALUE ;
+                                                             ^
+  found   : @PossibleUnencrypted int
   required: @Encrypted int
-encrypted/EncryptionDemo.java:31: error: incompatible types in argument.
-		sendOverInternet(password);
-		                 ^
-  found   : String
+encrypted/EncryptionDemo.java:32: error: [argument.type.incompatible] incompatible types in argument.
+        sendOverInternet(password);
+                         ^
+  found   : @PossibleUnencrypted String
   required: @Encrypted String
 2 errors
                 </pre>
@@ -150,7 +153,7 @@ encrypted/EncryptionDemo.java:31: error: incompatible types in argument.
 
 			<pre>
 // The SuppressWarnings is necessary because, the type system is not capable of
-//validating that the return value is encrypted. -SOM 01/25/2013
+// validating that the return value is encrypted. -SOM 01/25/2013
 @SuppressWarnings("encrypted")
 private /*@Encrypted*/ char encryptCharacter(char character) {
                 </pre>
@@ -161,13 +164,11 @@ private /*@Encrypted*/ char encryptCharacter(char character) {
 			<p>You should just see the following error.</p>
 
 			<pre>
-Source Files: 
- .../src/encrypted/EncryptionDemo.java
-.../src/encrypted/EncryptionDemo.java:24: error: incompatible types in argument.
-sendOverInternet(password);
-^
-found   : String
-required: @Encrypted String
+encrypted/EncryptionDemo.java:34: error: [argument.type.incompatible] incompatible types in argument.
+        sendOverInternet(password);
+                         ^
+  found   : @PossibleUnencrypted String
+  required: @Encrypted String
 1 error
                 </pre>
 
@@ -190,7 +191,7 @@ void sendPassword() {
 			<div class="page-header short">
 				<h2>
 					The End<small><strong> Return to the <a
-							href="../index.html">main page</a> of the Tutorial. 
+							href="../index.html">main page</a> of the Tutorial.
 				</h2>
 			</div>
 
@@ -203,7 +204,7 @@ void sendPassword() {
 </body>
 </html>
 
-<!--  LocalWords:  Plugin plugin VM SDK plugins quals classpath 
+<!--  LocalWords:  Plugin plugin VM SDK plugins quals classpath
  -->
 <!--  LocalWords:  NullnessChecker plugin's hg
  -->

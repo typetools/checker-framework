@@ -27,10 +27,10 @@ other is a method annotation.
 
 \begin{description}
 
-\item[\refqualclass{checker/lock/quals}{GuardedBy}]
+\item[\refqualclass{checker/lock/qual}{GuardedBy}]
   indicates a type whose value may be accessed only when the given lock is
   held.
-  See the \ahref{api/checkers/lock/quals/GuardedBy.html}{GuardedBy
+  See the \ahref{api/org/checkerframework/checker/lock/qual/GuardedBy.html}{GuardedBy
     Javadoc} for an explanation of the argument and other details.  The lock
   acquisition and the value access may be arbitrarily far in the future;
   or, if the value is never accessed, the lock never need be held.
@@ -45,7 +45,7 @@ other is a method annotation.
 \end{figure}
 
 
-\item[\refqualclass{checker/lock/quals}{Holding}]
+\item[\refqualclass{checker/lock/qual}{Holding}]
   is a method annotation (not a type qualifier).  It indicates that when
   the method is called, the given lock must be held by the caller.
   In other words, the given lock is already held at the time the method is
@@ -207,7 +207,7 @@ Lock Checker, as described in Figure~\ref{fig-lock-refactoring}.
 \end{tabular}
 &
 $\Rightarrow$
-~checkers.lock.quals.GuardedBy~
+~org.checkerframework.checker.lock.qual.GuardedBy~
 \end{tabular}
 \end{center}
 %BEGIN LATEX
@@ -244,8 +244,8 @@ The book \ahref{\url{http://jcip.net/}}{\emph{Java Concurrency in Practice}}~\ci
 \end{itemize}
 
 The Lock Checker renames the method annotation to
-\refqualclass{checker/lock/quals}{Holding}, and it generalizes the 
-\refqualclass{checker/lock/quals}{GuardedBy} annotation into a type qualifier
+\refqualclass{checker/lock/qual}{Holding}, and it generalizes the 
+\refqualclass{checker/lock/qual}{GuardedBy} annotation into a type qualifier
 that can apply not just to a field but to an arbitrary type (including the
 type of a parameter, return value, local variable, generic type parameter,
 etc.).  This makes the annotations more expressive and also more amenable

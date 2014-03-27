@@ -183,7 +183,7 @@ has, in the ellipsis, these declarations:
 \noindent
 Then the following expressions would be legal, inside a given implementation.
 (Compilable source code appears as file
-\<checker-framework/checkers/tests/nullness/GenericsExample.java>.)
+\<checker-framework/checker/tests/nullness/generics/GenericsExample.java>.)
 
 \begin{tabular}{|l|c|c|c|c|} \hline
                         & MyList1 & MyList2 & MyList3 & MyList4 \\ \hline
@@ -272,7 +272,7 @@ of \code{List<String>}.
 
 When a type parameter is used in a read-only way --- that is, when values
 of that type are read but are never assigned --- then it is safe for the
-type to be \emph{covariant} in the type parameter.  Use the \refqualclass{checker/nullness/quals}{Covariant} annotation to indicate
+type to be \emph{covariant} in the type parameter.  Use the \refqualclass{checker/nullness/qual}{Covariant} annotation to indicate
 this.
 When a type parameter is covariant, two instantiations of the class with
 different type arguments have the same subtyping relationship as the type
@@ -338,8 +338,8 @@ matching signature for the purpose of type-checking.  This is the same as
 Java's rule for resolving overloaded methods.
 
 To \emph{define} a polymorphic qualifier, mark the definition with
-\refqualclass{checker/quals}{PolymorphicQualifier}.  For example,
-\refqualclass{checker/nullness/quals}{PolyNull} is a polymorphic type
+\refqualclass{framework/qual}{PolymorphicQualifier}.  For example,
+\refqualclass{checker/nullness/qual}{PolyNull} is a polymorphic type
 qualifier for the Nullness type system:
 
 \begin{Verbatim}

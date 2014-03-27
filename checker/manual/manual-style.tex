@@ -13,10 +13,11 @@
 \def\codesize{\relax}           % for "pslatex"
 %HEVEA \def\codesize{\relax}
 
-%BEGIN LATEX
-\DeclareRobustCommand{\code}[1]{\codesize{\path{#1}}}
-%END LATEX
-%HEVEA \newcommand{\code}[1]{\codesize{\texttt{#1}}}
+\newcommand{\code}[1]{\ifmmode{\mbox{\codesize\ttfamily{#1}}}\else{\codesize\ttfamily #1}\fi}
+%%BEGIN LATEX
+%\DeclareRobustCommand{\code}[1]{\codesize{\path{#1}}}
+%%END LATEX
+%%HEVEA \newcommand{\code}[1]{\codesize{\texttt{#1}}}
 
 % This can't handle a URL with an embedded "#" -- at least at UW CSE
 \newcommand{\myurl}[1]{{\codesize\url{#1}}}
@@ -95,7 +96,7 @@
 
 
 % Reference to Checker Framework Javadoc for a class (not a method, etc.).
-% Arg 1: directory under checkers/, including internal "/", but no leading
+% Arg 1: directory under checker/, including internal "/", but no leading
 % or trailing "/".
 % Arg 2: class name.
 % In the printed version, only the base class name appears.
@@ -111,7 +112,7 @@
 
 % Reference to Checker Framework Javadoc for a method or field.).
 % Arg 1: package name using "/" as a separator, with no leading or trailing "/".
-%  example: "checkers/nullness/quals"
+%  example: "checker/nullness/quals"
 % Arg 2: class name.
 % Arg 3: method name.
 % Arg 4: fully-qualified arguments.  Example: "(T)"
