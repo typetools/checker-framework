@@ -64,7 +64,7 @@ The checker supports two ways to introduce a new fake enum (fenum):
 file \code{\emph{MyFenum}.java}:
 
 \begin{alltt}
-package \textit{myproject}.quals;
+package \textit{myproject}.qual;
 
 import java.lang.annotation.*;
 import org.checkerframework.framework.qual.SubtypeOf;
@@ -120,7 +120,7 @@ If you define your own annotation, provide the name of the annotation using the
 
 \begin{alltt}
   javac -processor org.checkerframework.checker.fenum.FenumChecker
-        \textit{-Aquals=myproject.quals.MyFenum} MyFile.java ...
+        \textit{-Aquals=myproject.qual.MyFenum} MyFile.java ...
 \end{alltt}
 
 
