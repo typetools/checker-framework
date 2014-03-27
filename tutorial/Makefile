@@ -20,10 +20,10 @@ sourcefiles.zip: copy-checkers-quals clean-classes copy-files-from-eclipse
 	zip -r sourcefiles.zip src/
 
 copy-files-from-eclipse:
-	mkdir -p src/myquals 
+	mkdir -p src/myqual
 	mkdir -p src/encrypted 
 	cp eclipse-projects/checker-framework-tutorial/src/*.java src
-	cp eclipse-projects/encryption-checker/src/myquals/*.java src/myquals/
+	cp eclipse-projects/encryption-checker/src/myqual/*.java src/myqual/
 	cp eclipse-projects/encryption-checker/src/encrypted/*.java src/encrypted/
 	cp -r eclipse-projects/personalblog-demo src
 
