@@ -92,13 +92,13 @@ def push_maven_artifacts_to_release_repo( version ):
     mvn_deploy_mvn_plugin( MAVEN_PLUGIN_DIR, MAVEN_PLUGIN_POM, version, MAVEN_LIVE_REPO )
 
     # Deploy jsr308 and checker-qual jars to maven repo
-    mvn_deploy( CHECKERS_BINARY, CHECKERS_BINARY_POM, MAVEN_LIVE_REPO )
-    mvn_deploy( CHECKERS_QUALS,  CHECKERS_QUALS_POM,  MAVEN_LIVE_REPO )
+    mvn_deploy( CHECKER_BINARY, CHECKER_BINARY_POM, MAVEN_LIVE_REPO )
+    mvn_deploy( CHECKER_QUAL,   CHECKER_QUAL_POM,   MAVEN_LIVE_REPO )
     mvn_deploy( JAVAC_BINARY,    JAVAC_BINARY_POM,    MAVEN_LIVE_REPO )
     mvn_deploy( JDK7_BINARY,     JDK7_BINARY_POM,     MAVEN_LIVE_REPO )
     mvn_deploy( JDK8_BINARY,     JDK8_BINARY_POM,     MAVEN_LIVE_REPO )
 
-def push_interm_to_release_repos():
+def push_interm_to_build_repos():
     hg_push_or_fail( INTERM_JSR308_REPO )
     hg_push_or_fail( INTERM_ANNO_REPO )
     hg_push_or_fail( INTERM_CHECKER_REPO )
@@ -147,7 +147,7 @@ def main(argv):
 
     #run maven sanity check
 
-    #push_interm_to_release_repos()
+    #push_interm_to_build_repos()
 
     continue_or_exit( "Please follow these instructions to release the Eclipse plugin:\n<path to Eclipse release instructions>\n" )
     continue_or_exit( "Please log in to google code and mark all issues that were 'pushed' to 'fixed'." )

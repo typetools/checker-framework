@@ -61,7 +61,7 @@ on your classpath.  See the installation instructions
 If you get an error such as
 
 \begin{Verbatim}
-package org.checkerframework.checker.nullness.quals does not exist
+package org.checkerframework.checker.nullness.qual does not exist
 \end{Verbatim}
 
   \noindent
@@ -78,7 +78,7 @@ package org.checkerframework.checker.nullness.quals does not exist
 If the error is 
 
 \begin{Verbatim}
-package 'org.checkerframework.checker.nullness.quals does not exist
+package org.checkerframework.checker.nullness.qual does not exist
 \end{Verbatim}
 
 \noindent
@@ -191,7 +191,7 @@ Examples of classes that were not in JDK 6 but were introduced in JDK 7 include:
 You may be able to solve the problem by running
 
 \begin{Verbatim}
-  cd checkers
+  cd checker
   ant jdk.jar bindist
 \end{Verbatim}
 
@@ -547,7 +547,7 @@ hg clone https://code.google.com/p/annotation-tools/ annotation-tools
 in the Checker Framework release.)
 
 % TODO: the AFU and JSR 308 source code is not included in the
-% checkers.zip file!
+% checker-framework.zip file!
 
 
 \subsection{Build the Type Annotations compiler}
@@ -557,7 +557,7 @@ in the Checker Framework release.)
 % Why is this necessary?  What goes wrong if it is not set?  Can I avoid
 % the need to set it?  It's used for:
 %  * the location of tools.jar, below.
-%  * the default location of RTJAR, in checkers/jdk/Makefile.
+%  * the default location of RTJAR, in checker/jdk/Makefile.
 Set the \<JAVA\_HOME> environment variable to the location of your JDK 
 7 installation (not the JRE installation, and not JDK 6).
 This needs to be an Oracle JDK.
@@ -638,10 +638,10 @@ the Checker Framework build finds it using relative paths.
 
 \begin{enumerate}
 % \item
-% Edit \code{checkers/build.properties} file so that the
+% Edit \code{checker/build.properties} file so that the
 % \code{compiler.lib} property specifies the location of the JSR 308
 % \code{javac.jar} library.  (If you also installed the JSR 308 compiler from
-% source, and you made the \code{checkers} and \code{jsr308-langtools} directories
+% source, and you made the \code{checker-framework} and \code{jsr308-langtools} directories
 % siblings, then you don't need to edit \code{checker/build.properties}.)
 
 \item
@@ -714,15 +714,15 @@ Run \code{make} in the \code{checker/manual} directory to build both the PDF and
 % This creates a \code{jsr308-langtools} directory.
 % 
 % \item Download the Checker Framework distribution zipfile from
-% \myurl{http://types.cs.washington.edu/checker-framework/current/checkers.zip},
+% \myurl{http://types.cs.washington.edu/checker-framework/current/checker-framework.zip},
 % and unzip it to create a \code{checkers} directory.  We recommend that the
 % \code{checkers} directory and the \code{jsr308-langtools} directory be siblings.
 % Example commands:
 % 
 % \begin{Verbatim}
 %   cd $JSR308
-%   wget http://types.cs.washington.edu/checker-framework/current/checkers.zip
-%   unzip checkers.zip
+%   wget http://types.cs.washington.edu/checker-framework/current/checker-framework.zip
+%   unzip checker-framework.zip
 % \end{Verbatim}
 % 
 % You will also need to adjust the path to \<javac> in any Ant buildfiles,
@@ -734,7 +734,7 @@ Run \code{make} in the \code{checker/manual} directory to build both the PDF and
 %   siblings.
 
 
-% (A checkers implementation builds on
+% (A checker implementation builds on
 % standard mechanisms such as JSR 269 annotation processing, but also
 % accesses the compiler's AST. In the long run, a checker built using the
 % Checker Framework should not be dependent on any compiler specifics.)
@@ -879,7 +879,7 @@ grateful.
 Differences from previous versions of the checkers and framework can be found
 in the \code{changelog-checkers.txt} file.  This file is included in the
 Checker Framework distribution and is also available on the web at
-\myurl{http://types.cs.washington.edu/checker-framework/current/changelog-checkers.txt}.
+\myurl{http://types.cs.washington.edu/checker-framework/current/changelog-checkerframework.txt}.
 
 Two different licenses apply to different parts of the Checker Framework.
 \begin{itemize}

@@ -1,0 +1,4 @@
+bin/**
+dist/**
+manual/manual.html
+manual/manual.pdf

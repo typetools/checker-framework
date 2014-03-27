@@ -43,23 +43,23 @@ without specifying whether it will take meters or kilometers.
 The following kind annotations are defined:
 
 \begin{description}
-\item[\refqualclass{checker/units/quals}{Area}]
+\item[\refqualclass{checker/units/qual}{Area}]
 
-\item[\refqualclass{checker/units/quals}{Current}]
+\item[\refqualclass{checker/units/qual}{Current}]
 
-\item[\refqualclass{checker/units/quals}{Length}]
+\item[\refqualclass{checker/units/qual}{Length}]
 
-\item[\refqualclass{checker/units/quals}{Luminance}]
+\item[\refqualclass{checker/units/qual}{Luminance}]
 
-\item[\refqualclass{checker/units/quals}{Mass}]
+\item[\refqualclass{checker/units/qual}{Mass}]
 
-\item[\refqualclass{checker/units/quals}{Speed}]
+\item[\refqualclass{checker/units/qual}{Speed}]
 
-\item[\refqualclass{checker/units/quals}{Substance}]
+\item[\refqualclass{checker/units/qual}{Substance}]
 
-\item[\refqualclass{checker/units/quals}{Temperature}]
+\item[\refqualclass{checker/units/qual}{Temperature}]
 
-\item[\refqualclass{checker/units/quals}{Time}]
+\item[\refqualclass{checker/units/qual}{Time}]
 \end{description}
 
 % \medskip
@@ -71,48 +71,48 @@ measurement is defined:
 \begin{enumerate}
 \item For \code{@Area}:
   the derived units
-  square millimeters \refqualclass{checker/units/quals}{mm2},
-  square meters \refqualclass{checker/units/quals}{m2}, and
-  square kilometers \refqualclass{checker/units/quals}{km2}
+  square millimeters \refqualclass{checker/units/qual}{mm2},
+  square meters \refqualclass{checker/units/qual}{m2}, and
+  square kilometers \refqualclass{checker/units/qual}{km2}
 
 \item For \code{@Current}:
-  Ampere \refqualclass{checker/units/quals}{A}
+  Ampere \refqualclass{checker/units/qual}{A}
 
 \item For \code{@Length}:
-  Meters \refqualclass{checker/units/quals}{m}
+  Meters \refqualclass{checker/units/qual}{m}
   and the derived units
-  millimeters \refqualclass{checker/units/quals}{mm} and
-  kilometers \refqualclass{checker/units/quals}{km}
+  millimeters \refqualclass{checker/units/qual}{mm} and
+  kilometers \refqualclass{checker/units/qual}{km}
 
 \item For \code{@Luminance}:
-  Candela \refqualclass{checker/units/quals}{cd}
+  Candela \refqualclass{checker/units/qual}{cd}
 
 \item For \code{@Mass}:
-  kilograms \refqualclass{checker/units/quals}{kg}
+  kilograms \refqualclass{checker/units/qual}{kg}
   and the derived unit
-  grams \refqualclass{checker/units/quals}{g}
+  grams \refqualclass{checker/units/qual}{g}
 
 \item For \code{@Speed}:
-  meters per second \refqualclass{checker/units/quals}{mPERs} and
-  kilometers per hour \refqualclass{checker/units/quals}{kmPERh}
+  meters per second \refqualclass{checker/units/qual}{mPERs} and
+  kilometers per hour \refqualclass{checker/units/qual}{kmPERh}
 
 \item For \code{@Substance}:
-  Mole \refqualclass{checker/units/quals}{mol}
+  Mole \refqualclass{checker/units/qual}{mol}
 
 \item For \code{@Temperature}:
-  Kelvin \refqualclass{checker/units/quals}{K}
+  Kelvin \refqualclass{checker/units/qual}{K}
   and the derived unit
-  Celsius \refqualclass{checker/units/quals}{C}
+  Celsius \refqualclass{checker/units/qual}{C}
 
 \item For \code{@Time}:
-  seconds \refqualclass{checker/units/quals}{s}
+  seconds \refqualclass{checker/units/qual}{s}
   and the derived units
-  minutes \refqualclass{checker/units/quals}{min} and
-  hours \refqualclass{checker/units/quals}{h}
+  minutes \refqualclass{checker/units/qual}{min} and
+  hours \refqualclass{checker/units/qual}{h}
 \end{enumerate}
 
 
-You may specify SI unit prefixes, using enumeration \code{\refclass{checker/units/quals}{Prefix}}.
+You may specify SI unit prefixes, using enumeration \code{\refclass{checker/units/qual}{Prefix}}.
 The basic SI units
 (\code{@s}, \code{@m}, \code{@g}, \code{@A}, \code{@K},
  \code{@mol}, \code{@cd})
@@ -230,7 +230,7 @@ If you define your own units, provide the name of the annotations using the
 
 \begin{alltt}
   javac -processor org.checkerframework.checker.units.UnitsChecker \ttbs
-        \textit{-Aunits=myproject.quals.MyUnit,myproject.quals.MyOtherUnit} MyFile.java ...
+        \textit{-Aunits=myproject.qual.MyUnit,myproject.qual.MyOtherUnit} MyFile.java ...
 \end{alltt}
 \end{itemize}
 

@@ -162,6 +162,7 @@ public final class DumpVisitor implements VoidVisitor<Object> {
             return buf.toString();
         }
 
+        /*@org.checkerframework.dataflow.qual.SideEffectFree*/
         @Override
         public String toString() {
             return getSource();

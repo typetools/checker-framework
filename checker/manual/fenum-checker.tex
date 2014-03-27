@@ -64,7 +64,7 @@ The checker supports two ways to introduce a new fake enum (fenum):
 file \code{\emph{MyFenum}.java}:
 
 \begin{alltt}
-package \textit{myproject}.quals;
+package \textit{myproject}.qual;
 
 import java.lang.annotation.*;
 import org.checkerframework.framework.qual.SubtypeOf;
@@ -80,7 +80,7 @@ public @interface \textit{MyFenum} \ttlcb\ttrcb
 You only need to adapt the italicized package, annotation, and file names in the example.
 
 
-\item Use the provided \refqualclass{checker/fenum/quals}{Fenum} annotation, which takes a
+\item Use the provided \refqualclass{checker/fenum/qual}{Fenum} annotation, which takes a
 \code{String} argument to distinguish different fenums.
 For example, \code{@Fenum("A")} and \code{@Fenum("B")} are two distinct fenums.
 \end{enumerate}
@@ -120,12 +120,12 @@ If you define your own annotation, provide the name of the annotation using the
 
 \begin{alltt}
   javac -processor org.checkerframework.checker.fenum.FenumChecker
-        \textit{-Aquals=myproject.quals.MyFenum} MyFile.java ...
+        \textit{-Aquals=myproject.qual.MyFenum} MyFile.java ...
 \end{alltt}
 
 
 \item
-If your code uses the \refqualclass{checker/fenum/quals}{Fenum} annotation, you do
+If your code uses the \refqualclass{checker/fenum/qual}{Fenum} annotation, you do
 not need the \code{-Aquals} option:
 
 \begin{Verbatim}

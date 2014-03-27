@@ -8,9 +8,9 @@ program is run.  See Section~\ref{nullness-checks} for more details about
 the guarantee and what is checked.
 
 The most important annotations supported by the Nullness Checker are 
-\refqualclass{checker/nullness/quals}{NonNull} and 
-\refqualclass{checker/nullness/quals}{Nullable}.
-\refqualclass{checker/nullness/quals}{NonNull} is rarely written, because it is
+\refqualclass{checker/nullness/qual}{NonNull} and 
+\refqualclass{checker/nullness/qual}{Nullable}.
+\refqualclass{checker/nullness/qual}{NonNull} is rarely written, because it is
 the default.  All of the annotations are explained in
 Section~\ref{nullness-annotations}.
 
@@ -33,7 +33,7 @@ The checker issues a warning in these cases:
 \begin{enumerate}
 
 \item
-  When an expression of non-\refqualclass{checker/nullness/quals}{NonNull} type
+  When an expression of non-\refqualclass{checker/nullness/qual}{NonNull} type
   is dereferenced, because it might cause a null pointer exception.
   Dereferences occur not only when a field is accessed, but when an array
   is indexed, an exception is thrown, a lock is taken in a synchronized
@@ -42,14 +42,14 @@ The checker issues a warning in these cases:
   \refclass{checker/nullness}{NullnessVisitor}.
 
 \item
-  When an expression of \refqualclass{checker/nullness/quals}{NonNull} type
+  When an expression of \refqualclass{checker/nullness/qual}{NonNull} type
   might become null, because it
   is a misuse of the type:  the null value could flow to a dereference that
   the checker does not warn about.
 
-  As a special case of an of \refqualclass{checker/nullness/quals}{NonNull}
+  As a special case of an of \refqualclass{checker/nullness/qual}{NonNull}
   type becoming null, the checker also warns whenever a field of
-  \refqualclass{checker/nullness/quals}{NonNull} type is not initialized in a
+  \refqualclass{checker/nullness/qual}{NonNull} type is not initialized in a
   constructor.  Also see the discussion of the \code{-Alint=uninitialized}
   command-line option below.
 
@@ -93,13 +93,13 @@ command-line option.)
   \label{lint-uninitialized}%
   If you supply the \code{-Alint=uninitialized} command-line option, then
   the checker warns if a constructor fails to initialize any field,
-  including \refqualclass{checker/nullness/quals}{Nullable} types and primitive
+  including \refqualclass{checker/nullness/qual}{Nullable} types and primitive
   types.  Such a warning is unrelated to whether your code might throw a
   null pointer exception.  However, you might want to enable this warning
   because it is better code style to supply an explicit initializer, even
   if there is a default value such as \code{0} or \code{false}.
   This command-line option does not affect the Nullness Checker's tests
-  that fields of \refqualclass{checker/nullness/quals}{NonNull} type are
+  that fields of \refqualclass{checker/nullness/qual}{NonNull} type are
   initialized --- such initialization is mandatory, not optional.
 
 \end{enumerate}
@@ -121,12 +121,12 @@ The nullness hierarchy contains these qualifiers:
 
 \begin{description}
 
-\item[\refqualclass{checker/nullness/quals}{Nullable}]
+\item[\refqualclass{checker/nullness/qual}{Nullable}]
   indicates a type that includes the null value.  For example, the type \code{Boolean}
   is nullable:  a variable of type \code{Boolean} always has one of the
   values \code{TRUE}, \code{FALSE}, or \code{null}.
 
-\item[\refqualclass{checker/nullness/quals}{NonNull}]
+\item[\refqualclass{checker/nullness/qual}{NonNull}]
   indicates a type that does not include the null value.  The type
   \code{boolean} is non-null; a variable of type \code{boolean} always has
   one of the values \code{true} or \code{false}.  The type \code{@NonNull
@@ -138,19 +138,19 @@ The nullness hierarchy contains these qualifiers:
   The \<@NonNull> annotation is rarely written in a program, because it is
   the default (see Section~\ref{null-defaults}).
 
-\item[\refqualclass{checker/nullness/quals}{PolyNull}]
+\item[\refqualclass{checker/nullness/qual}{PolyNull}]
   indicates qualifier polymorphism.  For a description of
-  \refqualclass{checker/nullness/quals}{PolyNull}, see
+  \refqualclass{checker/nullness/qual}{PolyNull}, see
   Section~\ref{qualifier-polymorphism}.
 
-\item[\refqualclass{checker/nullness/quals}{MonotonicNonNull}]
+\item[\refqualclass{checker/nullness/qual}{MonotonicNonNull}]
   indicates a reference that may be \code{null}, but if it ever becomes
   non-\code{null}, then it never becomes \code{null} again.  This is
   appropriate for lazily-initialized fields, among other uses.  When the
   variable is read, its type is treated as
-  \refqualclass{checker/nullness/quals}{Nullable}, but when the variable is
+  \refqualclass{checker/nullness/qual}{Nullable}, but when the variable is
   assigned, its type is treated as
-  \refqualclass{checker/nullness/quals}{NonNull}.
+  \refqualclass{checker/nullness/qual}{NonNull}.
 
   Because the Nullness Checker works intraprocedurally (it analyzes one
   method at a time), when a \code{MonotonicNonNull} field is first read within a
@@ -200,13 +200,13 @@ apply to the method itself rather than to some particular type.
 
 \begin{description}
 
-\item[\refqualclass{checker/nullness/quals}{RequiresNonNull}]
+\item[\refqualclass{checker/nullness/qual}{RequiresNonNull}]
   indicates a method precondition:  The annotated method expects the
   specified variables (typically field references) to be non-null when the
   method is invoked.
 
-\item[\refqualclass{checker/nullness/quals}{EnsuresNonNull}]
-\item[\refqualclass{checker/nullness/quals}{EnsuresNonNullIf}]
+\item[\refqualclass{checker/nullness/qual}{EnsuresNonNull}]
+\item[\refqualclass{checker/nullness/qual}{EnsuresNonNullIf}]
   indicates a method postcondition.  With \<@EnsuresNonNull>, the given
   expressions are non-null after the method returns; this is useful for a
   method that initializes a field, for example.  With
@@ -225,9 +225,9 @@ an object is fully initialized --- that is, whether all of its fields have
 been assigned.
 
 \begin{description}
-\item[\refqualclass{checker/initialization/quals}{Initialized}]
-\item[\refqualclass{checker/initialization/quals}{UnknownInitialization}]
-\item[\refqualclass{checker/initialization/quals}{UnderInitialization}]
+\item[\refqualclass{checker/initialization/qual}{Initialized}]
+\item[\refqualclass{checker/initialization/qual}{UnknownInitialization}]
+\item[\refqualclass{checker/initialization/qual}{UnderInitialization}]
 \end{description}
 
 \noindent
@@ -238,9 +238,9 @@ details, see Section~\ref{initialization-checker}.
 A slightly simpler variant, called the Rawness Initialization Checker, is also available:
 
 \begin{description}
-\item[\refqualclass{checker/nullness/quals}{Raw}]
-\item[\refqualclass{checker/nullness/quals}{NonRaw}]
-\item[\refqualclass{checker/nullness/quals}{PolyRaw}]
+\item[\refqualclass{checker/nullness/qual}{Raw}]
+\item[\refqualclass{checker/nullness/qual}{NonRaw}]
+\item[\refqualclass{checker/nullness/qual}{PolyRaw}]
 \end{description}
 
 \noindent
@@ -251,12 +251,12 @@ details, see Section~\ref{initialization-rawness-checker}.
 \subsection{Map key qualifiers\label{map-key-qualifiers}}
 
 The Nullness Checker invokes a Map Key Checker, whose annotation,
-\refqualclass{checker/nullness/quals}{KeyFor}, indicates that
+\refqualclass{checker/nullness/qual}{KeyFor}, indicates that
 a value is a key for a given map.  This indicates whether
 \code{map.containsKey(value)} would evaluate to \code{true}.
 
 \begin{description}
-\item[\refqualclass{checker/nullness/quals}{KeyFor}]
+\item[\refqualclass{checker/nullness/qual}{KeyFor}]
 \end{description}
 
 Use of this annotation can help you to type-check more code.  For details,
@@ -295,7 +295,7 @@ rule.
 % possible but are not as useful.
 % \begin{itemize}
 % \item
-%   \refqualclass{checker/nullness/quals}{Nullable}:  Unannotated types are regarded as possibly-null, or
+%   \refqualclass{checker/nullness/qual}{Nullable}:  Unannotated types are regarded as possibly-null, or
 %   nullable.  This default is backward-compatible with Java, which permits
 %   any reference to be null.  You can activate this default by writing
 %   a \code{@DefaultQualifier(Nullable.class)} annotation on a
@@ -304,18 +304,18 @@ rule.
 %   % /variable
 %   declaration.
 % \item
-%   \refqualclass{checker/nullness/quals}{NonNull}:  Unannotated types are treated as non-null.
+%   \refqualclass{checker/nullness/qual}{NonNull}:  Unannotated types are treated as non-null.
 %   % This may leads to fewer annotations written in your code.
 %   You can activate this
 %   default via the
 %   \code{@DefaultQualifier(NonNull.class)} annotation.
 % \item
 %   Non-null except locals (NNEL):  Unannotated types are treated as
-%   \refqualclass{checker/nullness/quals}{NonNull}, \emph{except} that the
+%   \refqualclass{checker/nullness/qual}{NonNull}, \emph{except} that the
 %   unannotated raw type of a local variable is treated as
-%   \refqualclass{checker/nullness/quals}{Nullable}.  (Any generic arguments to a
+%   \refqualclass{checker/nullness/qual}{Nullable}.  (Any generic arguments to a
 %   local variable still default to
-%   \refqualclass{checker/nullness/quals}{NonNull}.)  This is the standard
+%   \refqualclass{checker/nullness/qual}{NonNull}.)  This is the standard
 %   behavior.  You can explicitly activate this default via the
 %   \code{@DefaultQualifier(value=NonNull.class,
 %     locations=\discretionary{}{}{}\{DefaultLocation\discretionary{}{}{}.ALL\_EXCEPT\_LOCALS\})}
@@ -333,7 +333,7 @@ rule.
 \subsection{Conditional nullness\label{conditional-nullness}}
 
 The Nullness Checker supports a form of conditional nullness types, via the
-\refqualclass{checker/nullness/quals}{EnsuresNonNullIf} method annotations.
+\refqualclass{checker/nullness/qual}{EnsuresNonNullIf} method annotations.
 The annotation on a method declares that some expressions are non-null, if
 the method returns true (false, respectively).
 
@@ -378,7 +378,7 @@ The argument to \code{@EnsuresNonNullIf} is a Java expression, including method 
 (as shown above), method formal parameters, fields, etc.; for details, see
 Section~\ref{java-expressions-as-arguments}.
 More examples of the use of these annotations appear in the Javadoc for
-\refqualclass{checker/nullness/quals}{EnsuresNonNullIf}.
+\refqualclass{checker/nullness/qual}{EnsuresNonNullIf}.
 
 
 \subsection{Nullness and arrays\label{nullness-arrays}}
@@ -463,16 +463,16 @@ Section~\ref{null-defaults}) your code uses.  You only need one of these tools.
 \begin{itemize}
 
 \item
-  Inference of \refqualclass{checker/nullness/quals}{Nullable}:
+  Inference of \refqualclass{checker/nullness/qual}{Nullable}:
   %
   If your code uses the standard CLIMB-to-top default (Section~\ref{climb-to-top}) or
-  the \refclass{checker/nullness/quals}{NonNull} default, then use the
+  the \refclass{checker/nullness/qual}{NonNull} default, then use the
   \ahref{\url{http://plse.cs.washington.edu/daikon/download/doc/daikon.html#AnnotateNullable}}{AnnotateNullable}
   tool of the \ahref{\url{http://plse.cs.washington.edu/daikon/}}{Daikon invariant
     detector}.
 
 \item
-  Inference of \refqualclass{checker/nullness/quals}{NonNull}:
+  Inference of \refqualclass{checker/nullness/qual}{NonNull}:
   %
   If your code uses the Nullable default, use one of these tools:
 \begin{itemize}
@@ -501,7 +501,7 @@ Section~\ref{suppressing-warnings}).  An example use is
     @Nullable Object getObject(...) { ... }
 
     void myMethod() {
-      // The programmer knows that this partucular call never returns null,
+      // The programmer knows that this particular call never returns null,
       // perhaps based on the arguments or the state of other objects.
       @SuppressWarnings("nullness")
       @NonNull Object o2 = getObject(...);
@@ -605,7 +605,7 @@ the following code:
 
 %% AssertParametersNonNull was removed. Use EnsuresNonNull instead.
 %% \item
-%%   Use the \refqualclass{checker/nullness/quals}{AssertParametersNonNull}
+%%   Use the \refqualclass{checker/nullness/qual}{AssertParametersNonNull}
 %%   annotation.  It is used on \<castNonNull>, and may be used on other
 %%   methods with the same semantics; it should probably never be used in any
 %%   other situation.
@@ -734,7 +734,7 @@ default).  This will prevent the checker from issuing a warning about the
 
 \subsection{Tiny examples\label{nullness-tiny-examples}}
 
-To try the Nullness Checker on a source file that uses the \refqualclass{checker/nullness/quals}{NonNull} qualifier,
+To try the Nullness Checker on a source file that uses the \refqualclass{checker/nullness/qual}{NonNull} qualifier,
 use the following command (where \code{javac} is the JSR 308 compiler that
 is distributed with the Checker Framework):
 
@@ -753,8 +753,8 @@ possibility of a null pointer exception at run time), use the following command:
 \end{Verbatim}
 
 \noindent
-The compiler will issue three warnings regarding violation of the semantics of
-\refqualclass{checker/nullness/quals}{NonNull}.
+The compiler will issue two warnings regarding violation of the semantics of
+\refqualclass{checker/nullness/qual}{NonNull}.
 % in the \code{NonNullExampleWithWarnings.java} file.
 
 
@@ -794,7 +794,7 @@ Run the command \code{make check-nullness}.
 % % \noindent
 % % where \code{checkers} is the location of the Checker Framework installation.
 %
-% You can view the annotated source code, which contains \refqualclass{checker/nullness/quals}{NonNull} annotations, in
+% You can view the annotated source code, which contains \refqualclass{checker/nullness/qual}{NonNull} annotations, in
 % the
 % %BEGIN LATEX
 % \begin{smaller}
@@ -814,7 +814,7 @@ Here are some tips about getting started using the Nullness Checker on a
 legacy codebase.  For more generic advice (not specific to the Nullness
 Checker), see Section~\ref{get-started-with-legacy-code}.
 
-Your goal is to add \refqualclass{checker/nullness/quals}{Nullable} annotations
+Your goal is to add \refqualclass{checker/nullness/qual}{Nullable} annotations
 to the types of any variables that can be null.  (The default is to assume
 that a variable is non-null unless it has a \code{@Nullable} annotation.)
 Then, you will run the Nullness Checker.  Each of its errors indicates
@@ -840,8 +840,8 @@ corresponding annotation:
 \item
   \code{\emph{TypeName} \emph{field} = null;}:  when a field is initialized to
   \code{null} in its declaration, then it needs either a
-  \refqualclass{checker/nullness/quals}{Nullable} or a
-  \refqualclass{checker/nullness/quals}{MonotonicNonNull} annotation.  If the field
+  \refqualclass{checker/nullness/qual}{Nullable} or a
+  \refqualclass{checker/nullness/qual}{MonotonicNonNull} annotation.  If the field
   is always set to a non-null value in the constructor, then you can just
   change the declaration to \code{\emph{Type} \emph{field};}, without an
   initializer, and write no type annotation (because the default is
@@ -888,19 +888,19 @@ assert var != null : "@SuppressWarnings(nullness)";
 \end{Verbatim}
 \item
     To indicate that a routine returns the same value every time it is
-    called, use \refqualclass{dataflow/quals}{Pure} (see Section~\ref{nullness-method-annotations}).
+    called, use \refqualclass{dataflow/qual}{Pure} (see Section~\ref{type-refinement-purity}).
 \item
     To indicate a method precondition (a contract stating the conditions
     under which a client is allowed to call it), you can use annotations
-    such as \refqualclass{checker/nullness/quals}{RequiresNonNull} (see Section~\ref{nullness-method-annotations}.
+    such as \refqualclass{checker/nullness/qual}{RequiresNonNull} (see Section~\ref{nullness-method-annotations}).
 \end{itemize}
 
 
 
 \section{Other tools for nullness checking\label{nullness-related-work}}
 
-\newcommand{\linktoNonNull}{\refclass{checker/nullness/quals}{NonNull}}
-\newcommand{\linktoNullable}{\refclass{checker/nullness/quals}{Nullable}}
+\newcommand{\linktoNonNull}{\refclass{checker/nullness/qual}{NonNull}}
+\newcommand{\linktoNullable}{\refclass{checker/nullness/qual}{Nullable}}
 
 The Checker Framework's nullness annotations are similar to annotations used
 in IntelliJ IDEA, FindBugs, JML, the JSR 305 proposal, NetBeans, and other tools.  Also
@@ -936,7 +936,7 @@ Nullness Checker, as described in Figure~\ref{fig-nullness-refactoring}.
 \end{tabular}
 &
 $\Rightarrow$
-~checkers.nullness.quals.NonNull~
+~org.checkerframework.checker.nullness.qual.NonNull~
 \\
 \
 \\
@@ -957,7 +957,7 @@ $\Rightarrow$
 \end{tabular}
 &
 $\Rightarrow$
-~checkers.nullness.quals.Nullable~
+~org.checkerframework.checker.nullness.qual.Nullable~
 \end{tabular}
 \end{center}
 %BEGIN LATEX
@@ -1187,7 +1187,7 @@ particular, the Nullness Checker issues a warning for code like this:
 \end{Verbatim}
 
 \noindent
-When a field \<f> is declared with a \refqualclass{checker/nullness/quals}{NonNull}
+When a field \<f> is declared with a \refqualclass{checker/nullness/qual}{NonNull}
 type, then code can depend on the fact that the field is not \<null>.
 However, this guarantee does not hold for a partially-initialized object.
 
@@ -1250,15 +1250,15 @@ The initialization hierarchy contains these qualifiers:
 
 \begin{description}
 
-\item[\refqualclass{checker/initialization/quals}{Initialized}]
+\item[\refqualclass{checker/initialization/qual}{Initialized}]
   indicates a type that contains a fully-initialized object.  \code{Initialized}
   is the default, so there is little need for a programmer to write this
   explicitly.
 
-\item[\refqualclass{checker/initialization/quals}{UnknownInitialization}]
+\item[\refqualclass{checker/initialization/qual}{UnknownInitialization}]
   indicates a type that may contain a partially-initialized object.  In a
   partially-initialized object, fields that are annotated as
-  \refqualclass{checker/nullness/quals}{NonNull} may be null because the field
+  \refqualclass{checker/nullness/qual}{NonNull} may be null because the field
   has not yet been assigned.
 
   \<@UnknownInitialization> takes a parameter that is the class the object
@@ -1269,12 +1269,12 @@ The initialization hierarchy contains these qualifiers:
   Just \<@UnknownInitialization> is equivalent to
   \<@UnknownInitialization(Object.class)>.
 
-\item[\refqualclass{checker/initialization/quals}{UnderInitialization}]
+\item[\refqualclass{checker/initialization/qual}{UnderInitialization}]
   indicates a type that contains a partially-initialized object that is
   under initialization --- that is, its constructor is currently executing.
   It is otherwise the same as \<@UnknownInitialization>.  Within the
   constructor, \code{this} has
-  \refqualclass{checker/initialization/quals}{UnderInitialization} type until
+  \refqualclass{checker/initialization/qual}{UnderInitialization} type until
   all the \code{@NonNull} fields have been assigned.
 
 \end{description}
@@ -1290,10 +1290,10 @@ The initialization hierarchy contains these qualifiers:
 
 If a reference has
 \code{@UnknownInitialization} or \code{@UnderInitialization} type, then all of its \code{@NonNull} fields are treated as
-\refqualclass{checker/nullness/quals}{MonotonicNonNull}:  when read, they are
-treated as being \refqualclass{checker/nullness/quals}{Nullable}, but when
+\refqualclass{checker/nullness/qual}{MonotonicNonNull}:  when read, they are
+treated as being \refqualclass{checker/nullness/qual}{Nullable}, but when
 written, they are treated as being
-\refqualclass{checker/nullness/quals}{NonNull}.
+\refqualclass{checker/nullness/qual}{NonNull}.
 
 The initialization hierarchy is orthogonal to the nullness hierarchy.  It
 is legal for a reference to be \<@NonNull @UnderInitialization>, \<@Nullable @UnderInitialization>,
@@ -1349,8 +1349,8 @@ class C {
 \subsection{How an object becomes initialized\label{becoming-initialized}}
 
 Within the constructor,
-\code{this} starts out with \refqualclass{checker/initialization/quals}{UnderInitialization} type.
-As soon as all of the \refqualclass{checker/nullness/quals}{NonNull} fields
+\code{this} starts out with \refqualclass{checker/initialization/qual}{UnderInitialization} type.
+As soon as all of the \refqualclass{checker/nullness/qual}{NonNull} fields
 have been initialized, then \code{this} is treated as initialized.
 (See
 Section~\ref{becoming-initialized-clarification} for a slight clarification of
@@ -1376,7 +1376,7 @@ default in the field declaration, or be assigned in the constructor or in a
 helper method that the constructor calls.  If
 your code initializes (some) fields in a helper method, you will need to
 annotate the helper method with an annotation such as
-\refqualclass{checker/nullness/quals}{EnsuresNonNull}\code{(\{"field1", "field2"\})}
+\refqualclass{checker/nullness/qual}{EnsuresNonNull}\code{(\{"field1", "field2"\})}
 for all the fields that the helper method assigns.
 It's a bit odd, but you use that same annotation, \code{@EnsuresNonNull},
 to indicate that a primitive field has its value set in a helper method,
@@ -1396,8 +1396,8 @@ command-line option (see Section~\ref{lint-uninitialized}).
 
 So far, we have discussed initialization as if it is an all-or-nothing property:
 an object is non-initialized until initialization completes, and then it is initialized.  The full truth is a bit more complex:  during the
-initialization process, an object can be partially initialized, and as the
-object's superclass constructors complete, its initialization status.  The
+initialization process an object can be partially initialized, and as the
+object's superclass constructors complete, its initialization status is updated.  The
 Initialization Checker lets you express such properties when necessary.
 
 Consider a simple example:
@@ -1451,7 +1451,7 @@ The Nullness Checker lets you indicate where the dividing line is between
 the initialized and non-initialized classes.
 The \<@UnderInitialization(\emph{classliteral})>
 indicates the first class that is known to be fully initialized.
-When you write \refqualclass{checker/initialization/quals}{UnderInitialization}\code{(OtherClass.class) MyClass x;}, that
+When you write \refqualclass{checker/initialization/qual}{UnderInitialization}\code{(OtherClass.class) MyClass x;}, that
 means that variable \<x> is initialized for \<OtherClass> and its
 superclasses, and \<x> is (possibly) uninitialized for \<MyClass> and all subclasses.
 
@@ -1459,11 +1459,11 @@ superclasses, and \<x> is (possibly) uninitialized for \<MyClass> and all subcla
 
 We can now state a clarification of Section~\ref{becoming-initialized}'s rule
 for an object becoming initialized.
-As soon as all of the \refqualclass{checker/nullness/quals}{NonNull} fields
+As soon as all of the \refqualclass{checker/nullness/qual}{NonNull} fields
 in class $C$ have been initialized, then \code{this} is treated as
-\refqualclass{checker/initialization/quals}{UnderInitialization}\code{(\emph{C})}, rather than
+\refqualclass{checker/initialization/qual}{UnderInitialization}\code{(\emph{C})}, rather than
 treated as simply 
-\refqualclass{checker/initialization/quals}{Initialized}.
+\refqualclass{checker/initialization/qual}{Initialized}.
 
 The example above lists 4 moments during construction.  At those moments,
 the type of the object being constructed is:
@@ -1572,16 +1572,16 @@ There are several ways to address a warning ``error:  the constructor does
 not initialize fields: \ldots''.
 \begin{itemize}
 \item
-  Declare the field as \refqualclass{checker/nullness/quals}{Nullable}.  Recall
+  Declare the field as \refqualclass{checker/nullness/qual}{Nullable}.  Recall
   that if you did not write an annotation, the field defaults to
-  \refqualclass{checker/nullness/quals}{NonNull}.
+  \refqualclass{checker/nullness/qual}{NonNull}.
 \item
-  Declare the field as \refqualclass{checker/nullness/quals}{MonotonicNonNull}.
+  Declare the field as \refqualclass{checker/nullness/qual}{MonotonicNonNull}.
   This is appropriate if the field starts out as \<null> but is later set
   to a non-null value.  You may then wish to use the
-  \refqualclass{checker/nullness/quals}{EnsuresNonNull} annotation to indicate
+  \refqualclass{checker/nullness/qual}{EnsuresNonNull} annotation to indicate
   which methods set the field, and the
-  \refqualclass{checker/nullness/quals}{RequiresNonNull} annotation to indicate
+  \refqualclass{checker/nullness/qual}{RequiresNonNull} annotation to indicate
   which methods require the field to be non-null.
 \item
   Initialize the field in the constructor or in the field's initializer, if 
@@ -1608,14 +1608,14 @@ Foo.java:123: error: call to initHelper() not allowed on the given receiver.
 The problem is that the current object (\<this>) is under initialization,
 but the receiver formal parameter (Section~\ref{faq-receiver}) of method
 \<initHelper()> is implicitly annotated as
-\refqualclass{checker/initialization/quals}{Initialized}.  If
+\refqualclass{checker/initialization/qual}{Initialized}.  If
 \<initHelper()> doesn't depend on its receiver being initialized --- that
 is, it's OK to call \<x.initHelper> even if \<x> is not initialized ---
 then you can indicate that:
 
 \begin{Verbatim}
 class MyClass {
-  void initHelper(@UnknownInitialization MyClass this,*/ String param1) { ... }
+  void initHelper(@UnknownInitialization MyClass this, String param1) { ... }
 }
 \end{Verbatim}
 
@@ -1630,7 +1630,7 @@ class MyClass {
 
 \noindent
 You are likely to want to annotate \<initHelper()> with
-\refqualclass{checker/nullness/quals}{EnsuresNonNull} as well; see
+\refqualclass{checker/nullness/qual}{EnsuresNonNull} as well; see
 Section~\ref{nullness-method-annotations}.
 
 
@@ -1668,7 +1668,7 @@ the fields declared in \<MyClass> initialized, there might be a subclass of
 \<MyClass>.  Thus, the receiver of \<helperMethod> should be declared as 
 \<@UnderInitialization(MyClass.class)>, which says that initialization has
 completed for all the \<MyClass> fields but may not have been completed
-overall.  If \<helperMethod> had been a public method that could be called
+overall.  If \<helperMethod> had been a public method that could also be called after
 initialization was actually complete, then the receiver should have type
 \<@UnknownInitialization>, which is the supertype of
 \<@UnknownInitialization> and \<@UnderInitialization>.
@@ -1694,12 +1694,12 @@ just the \code{@NonNull} ones.  See Section~\ref{lint-uninitialized}.
 
 \paragraph{Use of method annotations}
 
-A method with a non-initialized receiver may assumes that a few fields (but not all
+A method with a non-initialized receiver may assume that a few fields (but not all
 of them) are non-null, and it sometimes sets some more fields to non-null
 values.  To express these concepts, use the
-\refqualclass{checker/nullness/quals}{RequiresNonNull},
-\refqualclass{checker/nullness/quals}{EnsuresNonNull}, and
-\refqualclass{checker/nullness/quals}{EnsuresNonNullIf} method annotations;
+\refqualclass{checker/nullness/qual}{RequiresNonNull},
+\refqualclass{checker/nullness/qual}{EnsuresNonNull}, and
+\refqualclass{checker/nullness/qual}{EnsuresNonNullIf} method annotations;
 see Section~\ref{nullness-method-annotations}.
 
 
@@ -1721,19 +1721,19 @@ annotations.
 The Checker Framework supports two different initialization checkers that
 are integrated with the Nullness Checker.
 One uses the three annotations 
-\refqualclass{checker/initialization/quals}{Initialized},
-\refqualclass{checker/initialization/quals}{UnknownInitialization}, and
-\refqualclass{checker/initialization/quals}{UnderInitialization}.
+\refqualclass{checker/initialization/qual}{Initialized},
+\refqualclass{checker/initialization/qual}{UnknownInitialization}, and
+\refqualclass{checker/initialization/qual}{UnderInitialization}.
 The other uses the two annotations
-\refqualclass{checker/nullness/quals}{Raw} (which corresponds to \code{@UnknownInitialization}) and
-\refqualclass{checker/nullness/quals}{NonRaw} (which corresponds to \code{@Initialized}).
+\refqualclass{checker/nullness/qual}{Raw} (which corresponds to \code{@UnknownInitialization}) and
+\refqualclass{checker/nullness/qual}{NonRaw} (which corresponds to \code{@Initialized}).
 The rawness type system is slightly easier to use but slightly less
 expressive.
 In practice, you can use whichever one you prefer.
 
 To run the Nullness Checker with the rawness variant of the Initialization
 Checker, invoke the NullnessRawnessChecker rather than the NullnessChecker;
-that is, supply the \code{-processor org.checkerframework.checker.nullness.NullnessChecker}
+that is, supply the \code{-processor org.checkerframework.checker.nullness.NullnessRawnessChecker}
 command-line option to javac.
 
 
@@ -1777,10 +1777,10 @@ particular, the Nullness Checker issues a warning for code like this:
 
 \noindent
 In general, code can depend that field \<f> is not \<null>, because the
-field is declared with a \refqualclass{checker/nullness/quals}{NonNull} type.
+field is declared with a \refqualclass{checker/nullness/qual}{NonNull} type.
 However, this guarantee does not hold for a partially-initialized object.
 
-The Nullness Checker uses the \refqualclass{checker/nullness/quals}{Raw} annotation to indicate that an object
+The Nullness Checker uses the \refqualclass{checker/nullness/qual}{Raw} annotation to indicate that an object
 is not yet fully initialized --- that is, not all its \<@NonNull> fields have been
 assigned.  Rawness is mostly relevant within the constructor, or for
 references to \code{this} that escape the constructor (say, by being stored
@@ -1833,24 +1833,24 @@ The rawness hierarchy contains these qualifiers:
 
 \begin{description}
 
-\item[\refqualclass{checker/nullness/quals}{Raw}]
+\item[\refqualclass{checker/nullness/qual}{Raw}]
   indicates a type that may contain a partially-initialized object.  In a
   partially-initialized object, fields that are annotated as
-  \refqualclass{checker/nullness/quals}{NonNull} may be null because the field
+  \refqualclass{checker/nullness/qual}{NonNull} may be null because the field
   has not yet been assigned.  Within the constructor,
-  \code{this} has \refqualclass{checker/nullness/quals}{Raw} type until all
+  \code{this} has \refqualclass{checker/nullness/qual}{Raw} type until all
   the \code{@NonNull} fields have been assigned.
   A partially-initialized object (\code{this} in a constructor) may be
   passed to a helper method or stored in a variable; if so, the method
   receiver, or the field, would have to be annotated as \<@Raw>.
 
 % Cut this?
-\item[\refqualclass{checker/nullness/quals}{NonRaw}]
+\item[\refqualclass{checker/nullness/qual}{NonRaw}]
   indicates a type that contains a fully-initialized object.  \code{NonRaw}
   is the default, so there is little need for a programmer to write this
   explicitly.
 
-\item[\refqualclass{checker/nullness/quals}{PolyRaw}]
+\item[\refqualclass{checker/nullness/qual}{PolyRaw}]
   indicates qualifier polymorphism over rawness (see
   Section~\ref{qualifier-polymorphism}).
 
@@ -1862,10 +1862,10 @@ The rawness hierarchy contains these qualifiers:
 
 If a reference has
 \code{@Raw} type, then all of its \code{@NonNull} fields are treated as
-\refqualclass{checker/nullness/quals}{MonotonicNonNull}:  when read, they are
-treated as being \refqualclass{checker/nullness/quals}{Nullable}, but when
+\refqualclass{checker/nullness/qual}{MonotonicNonNull}:  when read, they are
+treated as being \refqualclass{checker/nullness/qual}{Nullable}, but when
 written, they are treated as being
-\refqualclass{checker/nullness/quals}{NonNull}.
+\refqualclass{checker/nullness/qual}{NonNull}.
 
 
 The rawness hierarchy is orthogonal to the nullness hierarchy.  It
@@ -1922,8 +1922,8 @@ class C {
 \subsubsection{How an object becomes non-raw\label{becoming-non-raw}}
 
 Within the constructor,
-\code{this} starts out with \refqualclass{checker/nullness/quals}{Raw} type.
-As soon as all of the \refqualclass{checker/nullness/quals}{NonNull} fields
+\code{this} starts out with \refqualclass{checker/nullness/qual}{Raw} type.
+As soon as all of the \refqualclass{checker/nullness/qual}{NonNull} fields
 have been initialized, then \code{this} is treated as non-raw.
 % TODO:  (See
 % Section~\ref{becoming-non-raw-clarification} for a slight clarification of
@@ -1945,7 +1945,7 @@ have a default value of null.
 
 
 % and can only be passed to methods when the corresponding parameter is
-% annotated with \refqualclass{checker/nullness/quals}{Raw}.  Similar
+% annotated with \refqualclass{checker/nullness/qual}{Raw}.  Similar
 % restrictions apply to assigning \code{this} to a field.
 
 All \code{@NonNull} fields must either have a
@@ -1953,7 +1953,7 @@ default in the field declaration, or be assigned in the constructor or in a
 helper method that the constructor calls.  If
 your code initializes (some) fields in a helper method, you will need to
 annotate the helper method with an annotation such as
-\refqualclass{checker/nullness/quals}{EnsuresNonNull}\code{(\{"field1", "field2"\})}
+\refqualclass{checker/nullness/qual}{EnsuresNonNull}\code{(\{"field1", "field2"\})}
 for all the fields that the helper method assigns.
 It's a bit odd, but you use that same annotation, \code{@EnsuresNonNull},
 to indicate that a primitive field has its value set in a helper method,
@@ -2034,11 +2034,11 @@ indicates the first class \emph{below} the dividing line, or
 \<@NonRaw(\emph{classliteral})> indicates the first class \emph{above} the
 dividing line.
 
-When you write \refqualclass{checker/nullness/quals}{Raw}\code{ MyClass x;}, that
+When you write \refqualclass{checker/nullness/qual}{Raw}\code{ MyClass x;}, that
 means that variable \<x> is initialized for all superclasses of \<MyClass>,
 and (possibly) uninitialized for \<MyClass> and all subclasses.
 
-When you write \refqualclass{checker/nullness/quals}{NonRaw}\code{(Foo.class) MyClass
+When you write \refqualclass{checker/nullness/qual}{NonRaw}\code{(Foo.class) MyClass
   x;}, that means that variable \<x> is initialized for \<Foo> and all its
 superclasses, and (possibly) uninitialized for all subclasses of \<Foo>.
 
@@ -2053,11 +2053,11 @@ rarely see it written.
 
 We can now state a clarification of Section~\ref{becoming-non-raw}'s rule
 for an object becoming non-raw.
-As soon as all of the \refqualclass{checker/nullness/quals}{NonNull} fields
+As soon as all of the \refqualclass{checker/nullness/qual}{NonNull} fields
 have been initialized, then \code{this} is treated as
-\refqualclass{checker/nullness/quals}{NonRaw}\code{(\emph{typeofthis})}, rather than
+\refqualclass{checker/nullness/qual}{NonRaw}\code{(\emph{typeofthis})}, rather than
 treated as simply 
-\refqualclass{checker/nullness/quals}{NonRaw}.
+\refqualclass{checker/nullness/qual}{NonRaw}.
 
 The example above lists 4 moments during construction.  At those moments,
 the type of the object being constructed is:
@@ -2186,9 +2186,9 @@ just the \code{@NonNull} ones.  See Section~\ref{lint-uninitialized}.
 A method with a raw receiver often assumes that a few fields (but not all
 of them) are non-null, and sometimes sets some more fields to non-null
 values.  To express these concepts, use the
-\refqualclass{checker/nullness/quals}{RequiresNonNull},
-\refqualclass{checker/nullness/quals}{EnsuresNonNull}, and
-\refqualclass{checker/nullness/quals}{EnsuresNonNullIf} method annotations;
+\refqualclass{checker/nullness/qual}{RequiresNonNull},
+\refqualclass{checker/nullness/qual}{EnsuresNonNull}, and
+\refqualclass{checker/nullness/qual}{EnsuresNonNullIf} method annotations;
 see Section~\ref{nullness-method-annotations}.
 
 
@@ -2199,14 +2199,14 @@ The name ``raw'' comes from a research paper that proposed this
 approach~\cite{FahndrichL2003}.
 A better name might have been ``not yet initialized'' or ``partially
 initialized'', but the term ``raw'' is now well-known.
-The \refqualclass{checker/nullness/quals}{Raw}
+The \refqualclass{checker/nullness/qual}{Raw}
 annotation has nothing to do with the raw types of Java Generics.
 
 
 \section{Map Key Checker\label{map-key-checker}}
 
-The Map Key Checker uses the \refqualclass{checker/nullness/quals}{KeyFor}
-annotation to declare that a is value a key in a given map.
+The Map Key Checker uses the \refqualclass{checker/nullness/qual}{KeyFor}
+annotation to declare that a value is a key in a given map.
 
 This is relevant to the Nullness Checker because
 Java's
@@ -2233,7 +2233,7 @@ the possibility of returning null.
 Thus, for the Nullness Checker to guarantee that the value returned from \code{Map.get} is
 non-null, it is necessary that the map contains only non-null values,
 \emph{and} the key is in the map.
-The \refqualclass{checker/nullness/quals}{KeyFor} annotation states the latter
+The \refqualclass{checker/nullness/qual}{KeyFor} annotation states the latter
 property.
 
 If a type is annotated as \code{@KeyFor("m")}, then any value v with that type

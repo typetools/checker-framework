@@ -1,9 +1,12 @@
 package org.checkerframework.javacutil;
 
 /*>>>
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.checker.interning.qual.*;
 */
+
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Inherited;
@@ -95,6 +98,7 @@ public class AnnotationUtils {
                 getElementValues() {
                 return Collections.emptyMap();
             }
+            /*@SideEffectFree*/
             @Override
             public String toString() {
                 return toString;

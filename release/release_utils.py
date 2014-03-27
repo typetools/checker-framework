@@ -386,6 +386,7 @@ def repo_exists(repo):
 
 def strip(repo):
     strip_args = ['hg', '-R', repo, 'strip', '--no-backup', 'roots(outgoing())']
+    print "Executing: " + " ".join(strip_args)
     out, err = subprocess.Popen(strip_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
 
     match = re.match("\d+ files updated, \d+ files merged, \d+ files removed, \d+ files unresolved", out)
@@ -407,8 +408,8 @@ def purge(repo):
 
 def clean_repo(repo, prompt):
     if maybe_prompt_yn( 'Remove all modified files, untracked files and outgoing commits from %s ?' % repo, prompt ):
+        revert(repo) #avoids the issue when you add changes to test after a release_build
         strip(repo)
-        revert(repo)
         purge(repo)
     print ''
 
@@ -663,7 +664,7 @@ def mvn_plugin_version(pluginDir):
     return version
 
 def mvn_deploy_mvn_plugin(pluginDir, pom, version, mavenRepo):
-    jarFile = "%s/target/checkers-maven-plugin-%s.jar" % (pluginDir, version)
+    jarFile = "%s/target/checkerframework-maven-plugin-%s.jar" % (pluginDir, version)
     return mvn_deploy(jarFile, pom, mavenRepo)
 
 #=========================================================================================
@@ -719,7 +720,7 @@ def get_announcement_email( version ):
     the Checker Framework, and the Eclipse plugin for the Checker Framework.
      * The Type Annotations compiler supports the type annotation syntax that is
        planned for a future version of the Java language.
-     * The Checker Framework lets you create and/or run pluggable type-checkers,
+     * The Checker Framework lets you create and/or run pluggable type checkers,
        in order to detect and prevent bugs in your code.
      * The Eclipse plugin makes it more convenient to run the Checker Framework.
 

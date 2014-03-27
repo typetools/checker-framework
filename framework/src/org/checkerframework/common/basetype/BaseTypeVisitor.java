@@ -2308,7 +2308,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                         System.getProperty("line.separator") +
                         "problem, supply this argument (first, fill in the \"...\") when you run javac:" +
                         System.getProperty("line.separator") +
-                        "  -Xbootclasspath/p:.../checkers/dist/" + jdkJarName);
+                        "  -Xbootclasspath/p:.../checker/dist/" + jdkJarName);
                 }
             }
         }

@@ -168,7 +168,7 @@ qualifier on a type --- the qualifier that the checkers treat as being present.
   positive error messages.  See Section~\ref{type-refinement}.
 
   % Type
-  % qualifier refinement is implemented by the \refclass{checker/flow}{Flow} class.
+  % qualifier refinement is implemented by the \refclass{framework/flow}{Flow} class.
 
 \end{enumerate}
 
@@ -209,7 +209,7 @@ appropriate import statement exists.  Otherwise, it should be
 fully-qualified, like \code{"org.checkerframework.checker.nullness.qual.NonNull"}.
 The optional second argument indicates where the default
 applies.  If the second argument is omitted, the specified annotation is
-the default in all locations.  See the Javadoc of \refclass{checker/qual}{DefaultQualifier} for details.
+the default in all locations.  See the Javadoc of \refclass{framework/qual}{DefaultQualifier} for details.
 
 For example, using the Nullness type system (Chapter~\ref{nullness-checker}):
 
@@ -961,7 +961,6 @@ expression as an argument are:
 \item \refqualclass{framework/qual}{EnsuresQualifierIf}
 \item \refqualclass{checker/nullness/qual}{RequiresNonNull}
 \item \refqualclass{checker/nullness/qual}{EnsuresNonNull}
-\item \refqualclass{checker/nullness/qual}{EnsuresNonNullIf}
 \item \refqualclass{checker/nullness/qual}{EnsuresNonNullIf}
 \end{itemize}
 
