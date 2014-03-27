@@ -1,4 +1,4 @@
-import checkers.units.quals.*;
+import org.checkerframework.checker.units.qual.*;
 
 public class Demo {
     @Hz int frq;
