@@ -1,11 +1,10 @@
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 
-import checkers.types.AnnotatedTypeMirror;
-import checkers.util.AnnotationUtils;
-import checkers.util.AnnotationBuilder;
-
-import checkers.units.*;
+import org.checkerframework.checker.units.UnitsRelations;
+import org.checkerframework.checker.units.qual.*;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.util.AnnotationBuilder;
 
 /** Relations among units of frequency. */
 public class FrequencyRelations implements UnitsRelations {
@@ -14,11 +13,11 @@ public class FrequencyRelations implements UnitsRelations {
 
     public UnitsRelations init(ProcessingEnvironment env) {
         AnnotationBuilder builder = new AnnotationBuilder(env, Hz.class);
-        builder.setValue("value", checkers.units.quals.Prefix.one);
+        builder.setValue("value", Prefix.one);
         hz = builder.build();
 
-        builder = new AnnotationBuilder(env, checkers.units.quals.s.class);
-        builder.setValue("value", checkers.units.quals.Prefix.one);
+        builder = new AnnotationBuilder(env,  org.checkerframework.checker.units.qual.s.class);
+        builder.setValue("value", Prefix.one);
         s = builder.build();
 
         return this;
