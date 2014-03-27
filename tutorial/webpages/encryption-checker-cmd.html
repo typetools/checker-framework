@@ -75,8 +75,8 @@
 				Consider a hypothetical Encrypted type qualifier, which denotes that
 				the representation of an object (such as a String, CharSequence, or
 				byte[]) is encrypted. This project has three source files: <a
-					href="../src/myquals/Encrypted.java"> Encrypted.java</a> and
-					<a href="../src/myquals/PossibleUnencrypted.java"> PossibleUnencrypted.java</a> , the type
+					href="../src/myqual/Encrypted.java"> Encrypted.java</a> and
+					<a href="../src/myqual/PossibleUnencrypted.java"> PossibleUnencrypted.java</a> , the type
 				annotation definitions, and <a
 					href="../src/encrypted/EncryptionDemo.java">EncryptedDemo.java</a>
 				, the example program that use the Encrypted checker.
@@ -106,8 +106,8 @@
 			<p>This code needs to be compiled with the Checker Framework
 				compiler.</p>
 			<pre>
-$ javacheck myquals/Encrypted.java
-$ javacheck myquals/PossibleUnencrypted.java
+$ javacheck myqual/Encrypted.java
+$ javacheck myqual/PossibleUnencrypted.java
                 </pre>
 			<p>The resulting .class files should either be on your classpath,
 				or on the processor path (set via the -processorpath command-line
@@ -127,7 +127,7 @@ $ javacheck myquals/PossibleUnencrypted.java
 			</p>
 
 			<pre>
-javacheck  -processor org.checkerframework.common.subtyping.SubtypingChecker -Aquals=myquals.Encrypted,myquals.PossibleNotEncrypted
+javacheck  -processor org.checkerframework.common.subtyping.SubtypingChecker -Aquals=myqual.Encrypted,myqual.PossibleUnencrypted encrypted/EncryptionDemo.java
 encrypted/EncryptionDemo.java:21: error: [assignment.type.incompatible] incompatible types in assignment.
         /*@Encrypted*/ int encryptInt = (character + OFFSET) % Character.MAX_VALUE ;
                                                              ^
@@ -191,7 +191,7 @@ void sendPassword() {
 			<div class="page-header short">
 				<h2>
 					The End<small><strong> Return to the <a
-							href="../index.html">main page</a> of the Tutorial.
+							href="../index.html">main page</a> of the Tutorial</strong></small>.
 				</h2>
 			</div>
 

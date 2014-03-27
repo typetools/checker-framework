@@ -2,7 +2,7 @@ package encrypted;
 
 
 /*>>>
-import myquals.Encrypted;
+import myqual.Encrypted;
 */
 
 public class EncryptionDemo {
