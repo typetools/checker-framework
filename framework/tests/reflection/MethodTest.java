@@ -1,35 +1,34 @@
-// Skip this test for now and re-write it using a framework type system
-//@skip-test
-
-import static org.checkerframework.checker.units.UnitsTools.*;
-import org.checkerframework.checker.units.qual.g;
-import org.checkerframework.checker.units.qual.kg;
-import org.checkerframework.checker.units.qual.Mass;
+import tests.reflection.qual.ReflectBottom;
+import tests.reflection.qual.Top;
+import tests.reflection.qual.Sibling1;
+import tests.reflection.qual.Sibling2;
 
 import java.lang.reflect.Method;
 
 public class MethodTest {
 
-    public void pass1() {
+    @Sibling1 int sibling1;
+    @Sibling2 int sibling2;
+    public void pass1(@ReflectBottom MethodTest this ) {
         try {
             Class<?> c = Class.forName("MethodTest$SuperClass");
             Method m = c.getMethod("getA", new Class[] {});
-            @g Object a = m.invoke(this, (Object[]) null);
+            @Sibling1 Object a = m.invoke(this, (@ReflectBottom Object[]) null);
         } catch (Exception ignore) {
         }
     }
 
-    public void pass2() {
+    public void pass2(@ReflectBottom MethodTest this) {
         String str = "get" + "A";
         try {
             Class<?> c = Class.forName("MethodTest$SuperClass");
             Method m = c.getMethod(str, new Class[] {});
-            @g Object a = m.invoke(this, (Object[]) null);
+            @Sibling1 Object a = m.invoke(this, (@ReflectBottom Object[]) null);
         } catch (Exception ignore) {
         }
     }
 
-    public void pass3() {
+    public void pass3(@ReflectBottom MethodTest this) {
         String str = "get";
         str += "A";
         try {
@@ -39,15 +38,15 @@ public class MethodTest {
             //and remove the expected error
 
             //:: error: (assignment.type.incompatible)
-            @g Object a = m.invoke(this, (Object[]) null);
+            @Sibling1 Object a = m.invoke(this, (@ReflectBottom Object[]) null);
         } catch (Exception ignore) {
         }
     }
 
-    public void pass4() {
+    public void pass4(@ReflectBottom MethodTest this) {
         String str = "setA";
-        @g int val1 = g;
-        @g Integer val2 = val1;
+        @Sibling1 int val1 = sibling1;
+        @Sibling1 Integer val2 = val1;
         try {
             Class<?> c = Class.forName("MethodTest$SuperClass");
             Method m = c.getMethod(str, new Class[] { Integer.class });
@@ -58,11 +57,11 @@ public class MethodTest {
     }
 
     // Test resolution of methods declared in super class
-    public void pass5() {
+    public void pass5(@ReflectBottom MethodTest this) {
         try {
             Class<?> c = Class.forName("MethodTest$SubClass");
             Method m = c.getMethod("getB", new Class[0]);
-            @kg Object o = m.invoke(this, (Object[]) null);
+            @Sibling2 Object o = m.invoke(this, (@ReflectBottom Object[]) null);
         } catch (Exception ignore) {
         }
     }
@@ -72,8 +71,8 @@ public class MethodTest {
         try {
             Class<?> c = MethodTest.class;
             Method m = c
-                    .getMethod("convertKg2g", new Class[] { Integer.class });
-            @g Object o = m.invoke(null, kg);
+                    .getMethod("convertSibling2ToSibling1", new Class[] { Integer.class });
+            @Sibling1 Object o = m.invoke(null, sibling2);
         } catch (Exception ignore) {
         }
     }
@@ -82,24 +81,24 @@ public class MethodTest {
     public void pass7() {
         try {
             Class<?> c = MethodTest.class;
-            Method m = c.getMethod("convertKg2g", new Class[] { int.class });
-            @g Object o = m.invoke(null, kg);
+            Method m = c.getMethod("convertSibling2ToSibling1", new Class[] { int.class });
+            @Sibling1 Object o = m.invoke(null, sibling2);
         } catch (Exception ignore) {
         }
     }
 
 
-    public void pass8() {
+    public void pass8(@ReflectBottom MethodTest this) {
         String str = "setA";
         try {
             Class<?> c = Class.forName("MethodTest$SuperClass");
             Method m = c.getMethod(str, new Class[] { Integer.class });
-            m.invoke(this, new Object[] { g });
+            m.invoke(this, sibling1 );
         } catch (Exception ignore) {
         }
     }
 
-    public void pass9() {
+    public void pass9(@ReflectBottom MethodTest this) {
         String str = "getA";
         if (true) {
             str = "getB";
@@ -107,7 +106,7 @@ public class MethodTest {
         try {
             Class<?> c = Class.forName("MethodTest$SubClass");
             Method m = c.getMethod(str, new Class[0]);
-            @Mass Object o = m.invoke(this, (Object[]) null);
+            @Top Object o = m.invoke(this, (@ReflectBottom Object[]) null);
         } catch (Exception ignore) {
         }
     }
@@ -118,7 +117,7 @@ public class MethodTest {
         try {
             Class<?> c = inst.getClass();
             Method m = c.getMethod("getA", new Class[0]);
-            @g Object o = m.invoke(inst, (Object[]) null);
+            @Sibling1 Object o = m.invoke(inst, (@ReflectBottom Object[]) null);
         } catch (Exception ignore) {
         }
     }
@@ -127,8 +126,8 @@ public class MethodTest {
         try {
             Class<?> c = this.getClass();
             Method m = c
-                    .getMethod("convertKg2g", new Class[] { Integer.class });
-            @g Object o = m.invoke(null, kg);
+                    .getMethod("convertSibling2ToSibling1", new Class[] { Integer.class });
+            @Sibling1 Object o = m.invoke(null, sibling2);
         } catch (Exception ignore) {
         }
     }
@@ -138,7 +137,7 @@ public class MethodTest {
         try {
             Class<?> c = SuperClass.class;
             Method m = c.getMethod("getA", new Class[0]);
-            @g Object o = m.invoke(new SuperClass(), new Object[0]);
+            @Sibling1 Object o = m.invoke(new SuperClass(), new @ReflectBottom Object @ReflectBottom [0]);
         } catch (Exception ignore) {
         }
     }
@@ -147,59 +146,59 @@ public class MethodTest {
         try {
             Class<?> c = MethodTest.class;
             Method m = c
-                    .getMethod("convertKg2g", new Class[] { Integer.class });
+                    .getMethod("convertSibling2ToSibling1", new Class[] { Integer.class });
             //:: error: (argument.type.incompatible)
-            Object o = m.invoke(null, g);
+            Object o = m.invoke(null, sibling1);
         } catch (Exception ignore) {
         }
     }
 
     // Test unresolvable methods
-    public void fail2(String str) {
+    public void fail2(@ReflectBottom MethodTest this, String str) {
         try {
             Class<?> c = Class.forName(str);
             Method m = c.getMethod("getA", new Class[] { Integer.class });
             //:: error: (assignment.type.incompatible)
-            @g Object o = m.invoke(this, (Object[]) null);
+            @Sibling1 Object o = m.invoke(this, (@ReflectBottom Object[]) null);
         } catch (Exception ignore) {
         }
     }
 
-    public void fail3() {
+    public void fail3(@ReflectBottom MethodTest this) {
         String str = "setB";
         try {
             Class<?> c = Class.forName("MethodTest$SuperClass");
             Method m = c.getMethod(str, new Class[] { Integer.class });
             //:: error: (argument.type.incompatible)
-            m.invoke(this, g);
+            m.invoke(this, sibling1);
         } catch (Exception ignore) {
         }
     }
 
-    public void fail4() {
+    public void fail4(@ReflectBottom MethodTest this) {
         String str = "setA";
         try {
             Class<?> c = Class.forName("MethodTest$SubClass");
             Method m = c.getMethod(str, new Class[] { Integer.class });
             //:: error: (argument.type.incompatible)
-            m.invoke(this, new Object[] { kg });
+            m.invoke(this, new Object[] { sibling2 });
         } catch (Exception ignore) {
         }
     }
 
-    public void fail5() {
+    public void fail5(@ReflectBottom MethodTest this) {
         String str = "setAB";
         try {
             Class<?> c = Class.forName("MethodTest$SubClass");
             Method m = c.getMethod(str, new Class[] { Integer.class,
                     Integer.class });
             //:: error: (argument.type.incompatible)
-            m.invoke(this, new Object[] { g, kg });
+            m.invoke(this, new Object[] { sibling1, sibling2 });
         } catch (Exception ignore) {
         }
     }
 
-    public void fail6() {
+    public void fail6(@ReflectBottom MethodTest this) {
         String str = "setA";
         if (true) {
             str = "setB";
@@ -208,20 +207,20 @@ public class MethodTest {
             Class<?> c = Class.forName("MethodTest$SubClass");
             Method m = c.getMethod(str, new Class[] { Integer.class });
             //:: error: (argument.type.incompatible)
-            m.invoke(this, new Object[] { g });
+            m.invoke(this, new Object[] { sibling1 });
         } catch (Exception ignore) {
         }
     }
 
     public void fail7() {
-        @kg MethodTest inst = new @kg MethodTest(); 
+        @Sibling2 MethodTest inst = new @Sibling2 MethodTest(); 
         try {
             Class<?> c = MethodTest.class;
-            Method m = c.getMethod("convertKg2g", new Class[]{Integer.class});
+            Method m = c.getMethod("convertSibling2ToSibling1", new Class[]{Integer.class});
             // TODO: The required bottom type for the receiver of a static
             // method might be overly conservative. 
             //:: error: (argument.type.incompatible)
-            @g Object o = m.invoke(inst, kg);
+            @Sibling1 Object o = m.invoke(inst, sibling2);
         } catch (Exception ignore) {}
     }
 
@@ -231,13 +230,13 @@ public class MethodTest {
             Class<?> c = SuperClass.class;
             Method m = c.getMethod("setC", new Class[] { Integer.class });
             //:: error: (argument.type.incompatible)
-            Object o = m.invoke(new SuperClass(), new Object[] { kg });
+            Object o = m.invoke(new SuperClass(), new Object[] { sibling2 });
         } catch (Exception ignore) {
         }
     }
 
-    public static @g int convertKg2g(@kg int a) {
-        return fromKiloGramToGram(a);
+    public static @Sibling1 int convertSibling2ToSibling1(@Sibling2 int a) {
+        return (@Sibling1 int) 1;
     }
 
     // TODO: Does the testing framework somehow support the compilation of 
@@ -246,41 +245,41 @@ public class MethodTest {
     }
 
     private class SuperClass {
-        private @g int a;
-        private @kg int b;
-        private @g Integer c;
+        private @Sibling1 int a;
+        private @Sibling2 int b;
+        private @Sibling1 Integer c;
 
         public SuperClass() {
-            this.a = g;
-            this.b = kg;
+            this.a = sibling1;
+            this.b = sibling2;
         }
 
-        public @g int getA() {
+        public @Sibling1 int getA() {
             return a;
         }
 
-        public void setA(@g int a) {
+        public void setA(@Sibling1 int a) {
             this.a = a;
         }
 
-        public @kg int getB() {
+        public @Sibling2 int getB() {
             return b;
         }
 
-        public void setB(@kg int b) {
+        public void setB(@Sibling2 int b) {
             this.b = b;
         }
 
-        public void setAB(@g int a, @kg int b) {
+        public void setAB(@Sibling1 int a, @Sibling2 int b) {
             this.a = a;
             this.b = b;
         }
 
-        public void setC(@g int c) {
+        public void setC(@Sibling1 int c) {
             this.c = c;
         }
 
-        public void setC(@g Integer c) {
+        public void setC(@Sibling1 Integer c) {
             this.c = c;
         }
     }

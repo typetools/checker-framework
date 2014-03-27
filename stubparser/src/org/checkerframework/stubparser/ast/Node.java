@@ -21,6 +21,11 @@
  */
 package org.checkerframework.stubparser.ast;
 
+/*>>>
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
+*/
+
 import org.checkerframework.stubparser.ast.visitor.DumpVisitor;
 import org.checkerframework.stubparser.ast.visitor.EqualsVisitor;
 import org.checkerframework.stubparser.ast.visitor.GenericVisitor;
@@ -28,7 +33,7 @@ import org.checkerframework.stubparser.ast.visitor.VoidVisitor;
 
 /**
  * Abstract class for all nodes of the AST.
- * 
+ *
  * @author Julio Vilmar Gesser
  */
 public abstract class Node {
@@ -58,7 +63,7 @@ public abstract class Node {
 
     /**
      * Accept method for visitor support.
-     * 
+     *
      * @param <R>
      *            the type the return value of the visitor
      * @param <A>
@@ -73,7 +78,7 @@ public abstract class Node {
 
     /**
      * Accept method for visitor support.
-     * 
+     *
      * @param <A>
      *            the type the argument passed for the visitor
      * @param v
@@ -85,7 +90,7 @@ public abstract class Node {
 
     /**
      * Return the begin column of this node.
-     * 
+     *
      * @return the begin column of this node
      */
     public final int getBeginColumn() {
@@ -94,7 +99,7 @@ public abstract class Node {
 
     /**
      * Return the begin line of this node.
-     * 
+     *
      * @return the begin line of this node
      */
     public final int getBeginLine() {
@@ -110,7 +115,7 @@ public abstract class Node {
 
     /**
      * Return the end column of this node.
-     * 
+     *
      * @return the end column of this node
      */
     public final int getEndColumn() {
@@ -119,7 +124,7 @@ public abstract class Node {
 
     /**
      * Return the end line of this node.
-     * 
+     *
      * @return the end line of this node
      */
     public final int getEndLine() {
@@ -128,7 +133,7 @@ public abstract class Node {
 
     /**
      * Sets the begin column of this node.
-     * 
+     *
      * @param beginColumn
      *            the begin column of this node
      */
@@ -138,7 +143,7 @@ public abstract class Node {
 
     /**
      * Sets the begin line of this node.
-     * 
+     *
      * @param beginLine
      *            the begin line of this node
      */
@@ -155,7 +160,7 @@ public abstract class Node {
 
     /**
      * Sets the end column of this node.
-     * 
+     *
      * @param endColumn
      *            the end column of this node
      */
@@ -165,7 +170,7 @@ public abstract class Node {
 
     /**
      * Sets the end line of this node.
-     * 
+     *
      * @param endLine
      *            the end line of this node
      */
@@ -175,9 +180,10 @@ public abstract class Node {
 
     /**
      * Return the String representation of this node.
-     * 
+     *
      * @return the String representation of this node
      */
+    /*@SideEffectFree*/
     @Override
     public final String toString() {
         DumpVisitor visitor = new DumpVisitor();
@@ -185,6 +191,7 @@ public abstract class Node {
         return visitor.getSource();
     }
 
+    /*@Pure*/
     @Override
     public final int hashCode() {
         return toString().hashCode();

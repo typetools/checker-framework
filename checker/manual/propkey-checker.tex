@@ -30,7 +30,7 @@ The general Property File Checker ensures that a resource key is located
 in a specified property file or resource bundle.
 
 
-The annotation \refqualclass{checker/propkey/quals}{PropertyKey}
+The annotation \refqualclass{checker/propkey/qual}{PropertyKey}
 indicates that the qualified \code{String} is a valid key
 found in the property file or resource bundle.
 You do not need to annotate \code{String} literals.
@@ -84,10 +84,12 @@ following two command-line options:
 \section{Internationalization Checker\label{i18n-checker}}
 
 The Internationalization Checker, or I18n Checker, verifies that your code is properly
-internationalized.  Internationalization is the process of adapting
-software to different languages and locales.  Internationalization is
-sometimes called localization (though the terms are not
-identical), and is sometimes called i18n (because the word starts with ``i'',
+internationalized.  Internationalization is the process of designing software so that
+it can be adapted to different languages and locales without needing to change the code.
+Localization is the process of adapting internationalized software to specific languages
+and locales.
+
+Internationalization is sometimes called i18n (because the word starts with ``i'',
 ends with ``n'', and has 18 characters in between; localization is similarly
 sometimes abbreviated as l10n).
 
@@ -123,11 +125,11 @@ The Internationalization Checker verifies these two properties:
 The Internationalization Checker supports two annotations:
 
 \begin{enumerate}
-\item \refqualclass{checker/i18n/quals}{Localized}: indicates that the qualified
+\item \refqualclass{checker/i18n/qual}{Localized}: indicates that the qualified
 \code{String} is a message that has been localized and/or formatted with
 respect to the used locale.
 
-\item \refqualclass{checker/i18n/quals}{LocalizableKey}: indicates that the
+\item \refqualclass{checker/i18n/qual}{LocalizableKey}: indicates that the
 qualified \code{String} or \code{Object} is a valid key found in the
 localization resource.
 This annotation is a specialization of the \code{@PropertyKey} annotation, that
@@ -170,9 +172,9 @@ Instead of using the Property File Checker, we use a specialized checker,
 giving us more precise documentation of the intended use of \code{String}s.
 
 The single annotation used by this checker is 
-\refqualclass{checker/compilermsgs/quals}{CompilerMessageKey}.
+\refqualclass{checker/compilermsgs/qual}{CompilerMessageKey}.
 The Checker Framework is completely annotated;
-for example, class \code{checkers.source.Result}
+for example, class \code{org.checkerframework.framework.source.Result}
 uses \code{@CompilerMessageKey} in methods \code{failure} and \code{warning}.
 For most users of the Checker Framework there will be no need to annotate any
 \code{String}s, as the checker looks up all \code{String} literals and adds

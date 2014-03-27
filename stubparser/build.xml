@@ -30,7 +30,7 @@
     </target>
 
     <target name="gen-parser" description="Generate parser files">
-        <javacc target="src/japa/parser/java_1_5.jj"
+        <javacc target="src/org/checkerframework/stubparser/java_1_5.jj"
                 javacchome="${javacc.home}" />
     </target>
 

@@ -55,7 +55,7 @@ different shell, you may need to slightly adjust the commands.
 
 \item
   Download the latest Checker Framework distribution
-  % (\ahrefurl{http://types.cs.washington.edu/checker-framework/current/checkers.zip})
+  % (\ahrefurl{http://types.cs.washington.edu/checker-framework/current/checker-framework.zip})
   and unzip it.  You can put it anywhere you like by changing the
   definition of environment variable \code{JSR308} below; a standard place
   is in a
@@ -65,11 +65,11 @@ different shell, you may need to slightly adjust the commands.
   export JSR308=$HOME/jsr308
   mkdir -p ${JSR308}
   cd ${JSR308}
-  # or:  wget http://types.cs.washington.edu/checker-framework/current/checkers.zip
-  curl -O http://types.cs.washington.edu/checker-framework/current/checkers.zip
-  unzip checkers.zip
-  chmod +x checker-framework/checkers/bin/javac
-  checker-framework/checkers/bin/javac -version
+  # or:  wget http://types.cs.washington.edu/checker-framework/current/checker-framework.zip
+  curl -O http://types.cs.washington.edu/checker-framework/current/checker-framework.zip
+  unzip checker-framework.zip
+  chmod +x checker-framework/checker/bin/javac
+  checker-framework/checker/bin/javac -version
 \end{Verbatim}
 
 The output of the last command should be:
@@ -115,7 +115,7 @@ the new \code{javac} compiler.
 
 \item
   Download the latest Checker Framework distribution
-  % (\ahrefurl{http://types.cs.washington.edu/checker-framework/current/checkers.zip})
+  % (\ahrefurl{http://types.cs.washington.edu/checker-framework/current/checker-framework.zip})
   and unzip it to create a \<checkers> directory.  You can put it anywhere
   you like; a standard place is in a new directory under \<C:\ttbs{}Program
   Files>.
@@ -123,10 +123,10 @@ the new \code{javac} compiler.
 \begin{enumerate}
 \item
   Save the file
-  \ahrefurl{http://types.cs.washington.edu/checker-framework/current/checkers.zip}
+  \ahrefurl{http://types.cs.washington.edu/checker-framework/current/checker-framework.zip}
   to your Desktop.
 \item
-  Double-click the \<checkers.zip> file on your computer.  Click on
+  Double-click the \<checker-framework.zip> file on your computer.  Click on
   the \<checkers> directory, then Select \<Extract all files>, and use
   \<C:\ttbs{}Program Files> as the destination.  You will obtain a new
   \<C:\ttbs{}Program Files\ttbs{}checker-framework> folder.
@@ -375,7 +375,7 @@ you can find the Checker Framework in Maven Central (MC):
         <!-- annotations from the Checker Framework: nullness, interning, locking, ... -->
         <dependency>
             <groupId>org.checkerframework</groupId>
-            <artifactId>checker-quals</artifactId>
+            <artifactId>checker-qual</artifactId>
             <version>\ReleaseVersion{}</version>
         </dependency>
 
@@ -456,8 +456,10 @@ by the DirectoryScanner documentation found at:
     </excludes>
 \end{Verbatim}
 
-By default, an error reported by the Checker Framework Maven plugin will cause your build to fail.  To prevent
-a build from failing and still produce error and warning output, set \code{failOnError} to false.
+By default, an error reported by the Checker Framework Maven plugin will cause your build to fail.
+Maven also occasionally causes a build to fail when it encounters a message it does not recognize,
+even if that message is not an error or a warning. To prevent a build from failing and still produce
+error and warning output, set \code{failOnError} to false.
 
 \begin{Verbatim}
     <failOnError>false</failOnError>

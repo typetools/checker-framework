@@ -68,6 +68,8 @@
         <delete file="jdk/jdk7.jar"/>
         <delete file="jdk/jdk8.jar"/>
         <delete file="jdk/jdk9.jar"/>
+
+        <delete dir="${dist}"/>
     </target>
 
     <target name="clean-nojdk" description="Remove generated files, but not the jdkX.jar files">
@@ -81,6 +83,9 @@
 
         <delete file="${checker.lib}"/>
         <delete file="${checker.qual.lib}"/>
+        <delete file="${checker.sources.lib}"/>
+        <delete file="${checker.javadoc.lib}"/>
+
         <delete failonerror="false">
             <fileset dir="${tests.build}" includes="**/*.class"/>
             <fileset dir="jdk" includes="**/*.class"/>
@@ -101,7 +106,20 @@
             <exclude name=""/>
         </fileset>
 
-        <fileset id="src.astub.files" dir="${src}" includes="**/*.properties,**/*.astub"/>
+        <fileset id="dataflow.src.astub.files" dir="${dataflow.loc}/${src}">
+            <include name="**/*.properties"/>
+            <include name="**/*.astub"/>
+        </fileset>
+
+        <fileset id="framework.src.astub.files" dir="${framework.loc}/${src}">
+            <include name="**/*.properties"/>
+            <include name="**/*.astub"/>
+        </fileset>
+
+        <fileset id="checker.src.astub.files" dir="${checker.loc}/${src}">
+            <include name="**/*.properties"/>
+            <include name="**/*.astub"/>
+        </fileset>
 
         <!-- I can't figure out how to combine filesets (or even selectors)
              to get just one *.uptodate property, so do them individually
@@ -113,7 +131,9 @@
         </uptodate>
 
         <uptodate property="src.astub.files.uptodate" targetfile="${build}">
-          <srcfiles refid="src.astub.files"/>
+          <srcfiles refid="dataflow.src.astub.files"/>
+          <srcfiles refid="framework.src.astub.files"/>
+          <srcfiles refid="checker.src.astub.files"/>
         </uptodate>
 
         <uptodate property="framework.lib.uptodate" targetfile="${build}" srcfile="${framework.lib}"/>
@@ -139,12 +159,32 @@
             description="Compile files.  Does not update any jars">
 
         <copy todir="${build}" preservelastmodified="true">
-            <fileset refid="src.astub.files"/>
+            <fileset refid="dataflow.src.astub.files"/>
+            <fileset refid="framework.src.astub.files"/>
+            <fileset refid="checker.src.astub.files"/>
         </copy>
 
         <pathconvert pathsep=" " property="src.files.spaceseparated">
             <path>
                 <fileset dir="${src}">
+                    <include name="**/*.java"/>
+                </fileset>
+                <!-- Recompile dependent projects with annotations-in-comments
+                     enabled, in order to get classes with qualified types. -->
+                <fileset dir="${javacutil.loc}/${src}">
+                    <include name="**/*.java"/>
+                <!-- Exclude ManualTaglet to not depend on javadoc. -->
+                    <exclude name="**/javacutil/dist/**"/>
+                </fileset>
+                <!-- Do not re-compile the stubparser, as it is not lint clean.
+                <fileset dir="${stubparser.loc}/${src}">
+                    <include name="**/*.java"/>
+                </fileset>
+                -->
+                <fileset dir="${dataflow.loc}/${src}">
+                    <include name="**/*.java"/>
+                </fileset>
+                <fileset dir="${framework.loc}/${src}">
                     <include name="**/*.java"/>
                 </fileset>
             </path>
@@ -186,32 +226,42 @@
     -->
     <target name="javadoc" depends="prep,prep-ManualTaglet,build.check.uptodate" description="Create Javadoc documentation">
 
-        <ant dir="${framework.loc}">
-            <target name="javadoc"/>
-        </ant>
-
         <!-- This relative path is wrong; running "ant -find" from a
         subdirectory fails. -->
         <javadoc sourcepath="${src}:${javacutil.loc}/${src}:${dataflow.loc}/${src}:${stubparser.loc}/${src}:${framework.loc}/${src}" destdir="${api.doc}"
                  failonerror="true"
                  executable="${javadoc.bin}"
-                 classpath="${build}:${framework.lib}:${javac.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar:${junit.lib}"
+                 classpath="${build}:${javac.lib}:${javadoc.lib}:${junit.lib}"
                  excludepackagenames="org.checkerframework.framework.stub"
                  bootclasspath="${javac.lib}:${javadoc.lib}:${java.home}/lib/rt.jar">
+
             <package name="org.checkerframework.javacutil.*"/>
             <package name="org.checkerframework.dataflow.*"/>
-            <!-- TODO: should contain stubparser, but there
+            <!-- TODO: should contain stubparser, but there are
                  build errors with it!
             <package name="org.checkerframework.stubparser.*"/>
             -->
             <package name="org.checkerframework.framework.*"/>
+            <package name="org.checkerframework.common.*"/>
             <package name="org.checkerframework.checker.*"/>
 
             <link href="http://types.cs.washington.edu/checker-framework/api/jdk/"/>
             <link href="http://types.cs.washington.edu/checker-framework/api/javac/tree/"/>
             <taglet name="org.checkerframework.javacutil.dist.ManualTaglet"
-                    path="${javacutil.loc}/build"/>
+                    path="${build}:${javacutil.loc}/${build}:${javacutil.lib}"/>
         </javadoc>
+    </target>
+
+    <target name="javadoc.jar" depends="javadoc" description="Create jar of all javadoc documentation">
+        <jar destfile="${checker.javadoc.lib}" basedir="${api.doc}"></jar>
+    </target>
+
+    <target name="sources.jar" description="Create a jar of all source files except those in the jdk directory.">
+        <jar destfile="${checker.sources.lib}">
+            <fileset dir=".."
+                includes="**/src/**"
+                excludes="**/jdk/**,**/dist/**,eclipse/**,maven-plugin/**,tutorial/**,checker/tests/**,framework/tests/**"/>
+        </jar>
     </target>
 
     <!-- This creates checker.jar -->
@@ -219,7 +269,8 @@
             description="Create checker.jar file">
         <delete dir="${build.reports}"/>
 
-        <unjar src="${framework.lib}" dest="${build}" />
+        <!-- Only unjar the stubparser - everything else is recompiled. -->
+        <unjar src="${stubparser.lib}" dest="${build}" />
 
         <jar destfile="${checker.lib}" basedir="${build}" excludes="polyall/,tests/,lubglb/,jtreg/">
             <manifest>
@@ -256,7 +307,7 @@
 
         <java fork="true"
               failonerror="true"
-              classpath="${javac.lib}:${junit.lib}:${build}:${framework.lib}"
+              classpath="${build}:${javac.lib}:${junit.lib}"
               classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
@@ -282,8 +333,6 @@
                 <pathelement path="${build}"/>
                 <pathelement path="${tests.build}"/>
                 <pathelement path="${javac.lib}"/>
-                <pathelement path="${framework.lib}"/>
-                <pathelement path="${checker.lib}"/>
                 <pathelement path="${junit.lib}"/>
             </classpath>
 
@@ -306,7 +355,7 @@
     <target name="all-tests-nojar" depends="build-tests"
             description="Run tests for all checkers, WITHOUT building anything">
       <ant dir="${framework.loc}">
-          <target name="all-tests"/>
+          <target name="all-tests-nojar"/>
       </ant>
 
       <!-- TODO: for all -nojdk targets:
@@ -327,8 +376,6 @@
               <pathelement path="${build}"/>
               <pathelement path="${tests.build}"/>
               <pathelement path="${javac.lib}"/>
-              <pathelement path="${framework.lib}"/>
-              <pathelement path="${checker.lib}"/>
               <pathelement path="${junit.lib}"/>
           </classpath>
 
@@ -582,7 +629,7 @@
             <sequential>
                 <property name="coverage.options" value=""/>    <!-- default -->
                 <property name="coverage.classpath" value=""/>  <!-- default -->
-                <property name="checker.classpath" value="${javac.lib}:${javap.lib}:${framework.lib}:${checker.lib}"/>
+                <property name="checker.classpath" value="${build}:${javac.lib}:${javap.lib}:${checker.lib}"/>
                 <jtreg
                     dir="jtreg"
                     workDir="${build.jtreg.dir}/@{name}/work"
@@ -623,13 +670,36 @@
                     <include name="**/*.java"/>
                     <exclude name=""/>
                 </fileset>
+                <fileset dir="${javacutil.loc}/${src}">
+                    <include name="**/*.java"/>
+                    <!-- Exclude ManualTaglet to not depend on javadoc. -->
+                    <exclude name="**/javacutil/dist/**"/>
+                </fileset>
+
+                <fileset dir="${stubparser.loc}/${src}">
+                    <include name="**/*.java"/>
+                    <!-- Ignore the huge, auto-generated parser.
+                         TODO: might be a nice benchmark for performance optimization? -->
+                    <exclude name="**/AST*.java"/>
+                    <exclude name="**/Token.java"/>
+                </fileset>
+                <!-- Do not check dataflow, it doesn't have all purity
+                     annotations. TODO: should be easy to fix. Or solved
+                     once we inherit those annotations.
+                <fileset dir="${dataflow.loc}/${src}">
+                    <include name="**/*.java"/>
+                </fileset>
+                -->
+                <fileset dir="${framework.loc}/${src}">
+                    <include name="**/*.java"/>
+                </fileset>
             </path>
         </pathconvert>
 
         <echo message="${src.files}" file="${tmpdir}/srcfiles-checker.txt"/>
         <java fork="true"
               failonerror="true"
-              classpath="${javac.lib}:${framework.lib}:${checker.lib}:${junit.lib}"
+              classpath="${build}:${javac.lib}:${checker.lib}:${framework.lib}:${junit.lib}"
               classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
@@ -666,9 +736,8 @@
             description="Run the compiler message keys checker on the Framework">
         <antcall target="-run-checker">
             <param name="checker-name" value="org.checkerframework.checker.compilermsgs.CompilerMessagesChecker"/>
-            <param name="checker-args" value="-Awarns -Apropfiles=./src/org/checkerframework/checker/lock/messages.properties:./src/org/checkerframework/checker/javari/messages.properties:./src/org/checkerframework/checker/interning/messages.properties:./src/org/checkerframework/checker/basetype/messages.properties:./src/org/checkerframework/checker/nullness/messages.properties:./src/org/checkerframework/checker/initialization/messages.properties:./src/org/checkerframework/checker/linear/messages.properties:./src/org/checkerframework/checker/regex/messages.properties:./src/org/checkerframework/checker/util/report/messages.properties:./src/org/checkerframework/checker/formatter/messages.properties:./src/org/checkerframework/checker/value/messages.properties:./src/org/checkerframework/checker/guieffects/messages.properties"/>
+            <param name="checker-args" value="-Awarns -Apropfiles=./src/org/checkerframework/checker/lock/messages.properties:./src/org/checkerframework/checker/javari/messages.properties:./src/org/checkerframework/checker/interning/messages.properties:${framework.loc}/src/org/checkerframework/common/basetype/messages.properties:./src/org/checkerframework/checker/nullness/messages.properties:./src/org/checkerframework/checker/initialization/messages.properties:./src/org/checkerframework/checker/linear/messages.properties:./src/org/checkerframework/checker/regex/messages.properties:${framework.loc}/src/org/checkerframework/common/util/report/messages.properties:./src/org/checkerframework/checker/formatter/messages.properties:${framework.loc}/src/org/checkerframework/common/value/messages.properties:./src/org/checkerframework/checker/guieffects/messages.properties"/>
         </antcall>
-        <!-- TODO: add framework .properties files -->
     </target>
 
     <target name="check-purity"
@@ -680,6 +749,13 @@
     </target>
 
 
+<target name="check-tutorial" description="Test to see if the tutorial is working as expected">
+<!--The tutorial build file is written relative to its location, 
+    so useNativeBasedir is required. -->
+      <ant dir="${framework.loc}/../tutorial/tests/" useNativeBasedir="true">
+          <target name="check-tutorial"/>
+      </ant>
+</target>
     <!-- TODO: like for -run-checker this only checks checker/src.
          Improve both. -->
     <!-- Depend on dist-nojdk to make sure everything compiles. -->
@@ -689,7 +765,7 @@
         <javac failonerror="true"
                 includeantruntime="false"
                 bootclasspath="${javac.lib}:${java.home}/lib/rt.jar"
-                classpath="${javac.lib}:${framework.lib}:${checker.lib}:${junit.lib}"
+                classpath="${javac.lib}:${checker.lib}:${junit.lib}"
                 srcdir="${src}"
                 includes="**/*.java"
                 excludes="org/checkerframework/checker/nullness/NullnessUtils.java org/checkerframework/checker/regex/RegexUtils.java"
@@ -706,7 +782,6 @@
             <compilerarg value="org.checkerframework.common.util.debug.EmptyProcessor"/>
             -->
         </javac>
-        <delete file="${tmpdir}/srcfiles-checker.txt"/>
     </target>
 
 
