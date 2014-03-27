@@ -154,8 +154,8 @@ There are three type qualifiers for instantiating a generic effect:
 default method effect for the class to \code{@UIEffect}.
 \item \code{@PolyUI} instantiates the effect to \code{@PolyUIEffect} for the same instantiation as
 the current (containing) class.  For example, this is the qualifier of the receiver \code{this}
-inside a \code{@PolyUIEffect} method, which is how one effect-polymorphic method may call another in
-the same class.
+inside a method of a \code{@PolyUIType} class, which is how one method of an effect-polymorphic
+class may call an effect-polymorphic method of the same class.
 \end{itemize}
 
 As an example:
