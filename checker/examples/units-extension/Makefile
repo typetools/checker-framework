@@ -1,4 +1,4 @@
-JAVAC?=../../checkers/bin/javac
+JAVAC?=../../bin/javac
 
 FILES=Frequency.java \
   FrequencyRelations.java \
