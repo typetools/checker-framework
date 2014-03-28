@@ -1,14 +1,0 @@
-generate class from basename (Array, Executable, etc.)
-^d$i	static class Wrapped"Type extends WrappedTypeMirror implements Extended"Type {public Wrapped"Type("Type raw, WrappedTypeFactory factory) {super(raw);}@Override @SuppressWarnings("unchecked")public "Type getRaw() {return ("type€kb€kb€kb€kbType) raw;€kb€kb€kb€kb€kbraw;super.getRaw();}@Overridepublic <R,P> R accept(ExtendedTypeVisiso€kb€kbtor<R,P> v, P p) {v.visit"(this, p);}@Override€kb	}j
-
-generate getter method from private field
-mayy{j$%O@Overridepcwpublic$byegUligetA€kb() {return ";}'aj
-
-generate constructor assignment from private field
-ma$bye}}kOthis." = factory.wrap(raw.get "());bbXgUl'aj
-
-generate WrappedTypeFactory.VISITOR method from basename
-^d$i			@Overridepublic WrappedTypeMirror visit"("Type type, Element elt) {return new Wrapped"t€kbType(type, WrappedTypeFactory.this);}j
-
-generate WrappedTypeFactory.wrap method from basename
-d$i	public Wrapped"Type wrap("Type type) {return (Wrapped"Type)wrapthis.wrap((TypeMirror)type);}{o@Override}j
