@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
 /**
  * Class declaration annotation to make methods default to {@code @UI}.
  *
- * @checker_framework_manual #guieffects-checker GUI Effects Checker
+ * @checker_framework_manual #guieffect-checker GUI Effect Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
