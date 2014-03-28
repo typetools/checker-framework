@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
 /**
  * Annotation for the polymorphic effect on methods, or on field accesses.
  *
- * @checker_framework_manual #guieffects-checker GUI Effects Checker
+ * @checker_framework_manual #guieffect-checker GUI Effect Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

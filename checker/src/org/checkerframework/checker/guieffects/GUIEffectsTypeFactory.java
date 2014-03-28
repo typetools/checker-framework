@@ -31,7 +31,7 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 
 /**
- * Annotated type factory for the GUI Effects Checker.
+ * Annotated type factory for the GUI Effect Checker.
  */
 public class GUIEffectsTypeFactory extends BaseAnnotatedTypeFactory {
 

@@ -17,7 +17,7 @@ import com.sun.source.tree.Tree;
  * Annotation to override the UI effect on a class, and make a field or method
  * safe for non-UI code to use.
  *
- * @checker_framework_manual #guieffects-checker GUI Effects Checker
+ * @checker_framework_manual #guieffect-checker GUI Effect Checker
  */
 @TypeQualifier
 @SubtypeOf({UI.class})

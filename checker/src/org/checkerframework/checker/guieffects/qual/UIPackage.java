@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
 /**
  * Package annotation to make all classes within a package {@code @UIType}.
  *
- * @checker_framework_manual #guieffects-checker GUI Effects Checker
+ * @checker_framework_manual #guieffect-checker GUI Effect Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
