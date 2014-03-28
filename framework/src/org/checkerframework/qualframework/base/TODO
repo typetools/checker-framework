@@ -1,5 +1,0 @@
- - Raw types are broken.  ATF.fromTypeTree adds fictitious arguments to raw
-   types based on context.
- - Uncomment typeMirrorsMatch checks for QualifiedExecutableType's receiver and
-   return types.
- - toStrings for WrappedTypeMirror
