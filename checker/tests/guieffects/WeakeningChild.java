@@ -1,4 +1,4 @@
-import org.checkerframework.checker.guieffects.qual.SafeEffect;
+import org.checkerframework.checker.guieffect.qual.SafeEffect;
 
 // Should not inherit @UI!
 public class WeakeningChild extends UIParent {

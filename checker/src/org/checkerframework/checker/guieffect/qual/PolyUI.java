@@ -1,4 +1,4 @@
-package org.checkerframework.checker.guieffects.qual;
+package org.checkerframework.checker.guieffect.qual;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;

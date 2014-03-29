@@ -1,8 +1,8 @@
-import org.checkerframework.checker.guieffects.qual.PolyUIEffect;
-import org.checkerframework.checker.guieffects.qual.PolyUIType;
-import org.checkerframework.checker.guieffects.qual.UI;
-import org.checkerframework.checker.guieffects.qual.UIEffect;
-import org.checkerframework.checker.guieffects.qual.UIType;
+import org.checkerframework.checker.guieffect.qual.PolyUIEffect;
+import org.checkerframework.checker.guieffect.qual.PolyUIType;
+import org.checkerframework.checker.guieffect.qual.UI;
+import org.checkerframework.checker.guieffect.qual.UIEffect;
+import org.checkerframework.checker.guieffect.qual.UIType;
 
 public class AnonInnerDefaults {
 
