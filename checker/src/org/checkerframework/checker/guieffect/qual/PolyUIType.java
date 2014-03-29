@@ -1,4 +1,4 @@
-package org.checkerframework.checker.guieffects.qual;
+package org.checkerframework.checker.guieffect.qual;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -7,13 +7,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Class declaration annotation to make methods default to {@code @Safe}.
- * While the normal default is already {@code @Safe} methods,
- * this is useful for a type inside a package marked {@code @UIPackage}.
+ * Annotation for the polymorphic type declaration.
  *
  * @checker_framework_manual #guieffect-checker GUI Effect Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
-public @interface SafeType {}
+public @interface PolyUIType {}

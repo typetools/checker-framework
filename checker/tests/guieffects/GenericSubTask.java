@@ -1,5 +1,5 @@
-import org.checkerframework.checker.guieffects.qual.PolyUI;
-import org.checkerframework.checker.guieffects.qual.PolyUIEffect;
+import org.checkerframework.checker.guieffect.qual.PolyUI;
+import org.checkerframework.checker.guieffect.qual.PolyUIEffect;
 
 @PolyUI
 public class GenericSubTask implements @PolyUI IGenericTask {

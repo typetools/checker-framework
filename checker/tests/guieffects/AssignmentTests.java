@@ -1,7 +1,7 @@
-import org.checkerframework.checker.guieffects.qual.AlwaysSafe;
-import org.checkerframework.checker.guieffects.qual.PolyUI;
-import org.checkerframework.checker.guieffects.qual.PolyUIType;
-import org.checkerframework.checker.guieffects.qual.UI;
+import org.checkerframework.checker.guieffect.qual.AlwaysSafe;
+import org.checkerframework.checker.guieffect.qual.PolyUI;
+import org.checkerframework.checker.guieffect.qual.PolyUIType;
+import org.checkerframework.checker.guieffect.qual.UI;
 
 public class AssignmentTests {
     public static @PolyUIType class P { }
