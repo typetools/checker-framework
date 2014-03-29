@@ -1,6 +1,6 @@
-import org.checkerframework.checker.guieffects.qual.PolyUIEffect;
-import org.checkerframework.checker.guieffects.qual.SafeEffect;
-import org.checkerframework.checker.guieffects.qual.UIEffect;
+import org.checkerframework.checker.guieffect.qual.PolyUIEffect;
+import org.checkerframework.checker.guieffect.qual.SafeEffect;
+import org.checkerframework.checker.guieffect.qual.UIEffect;
 
 // Should not inherit @UI!
 public class UIChild extends UIParent {

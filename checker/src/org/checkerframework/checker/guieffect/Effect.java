@@ -1,10 +1,10 @@
-package org.checkerframework.checker.guieffects;
+package org.checkerframework.checker.guieffect;
 
 import java.lang.annotation.Annotation;
 
-import org.checkerframework.checker.guieffects.qual.PolyUIEffect;
-import org.checkerframework.checker.guieffects.qual.SafeEffect;
-import org.checkerframework.checker.guieffects.qual.UIEffect;
+import org.checkerframework.checker.guieffect.qual.PolyUIEffect;
+import org.checkerframework.checker.guieffect.qual.SafeEffect;
+import org.checkerframework.checker.guieffect.qual.UIEffect;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 

@@ -1,5 +1,5 @@
 package java.lang;
-import org.checkerframework.checker.guieffects.qual.*;
+import org.checkerframework.checker.guieffect.qual.*;
 @PolyUIType class Object {
     @SafeEffect Class<? extends Object> getClass() @PolyUI;
 }
@@ -81,7 +81,7 @@ package java.beans;
 @UIPackage
 package java.awt.event;
 
-import org.checkerframework.checker.guieffects.qual.*;
+import org.checkerframework.checker.guieffect.qual.*;
 
 @UIType interface ActionListener extends EventListener {
     @UIEffect void actionPerformed(ActionEvent e);
@@ -92,7 +92,7 @@ import org.checkerframework.checker.guieffects.qual.*;
 @UIPackage
 package javax.swing;
 
-import org.checkerframework.checker.guieffects.qual.*;
+import org.checkerframework.checker.guieffect.qual.*;
 @UIType class JComponent extends Container implements Serializable, HasGetTransferHandler {
     @SafeEffect void revalidate();
 }

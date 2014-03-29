@@ -1,4 +1,4 @@
-package org.checkerframework.checker.guieffects;
+package org.checkerframework.checker.guieffect;
 
 import java.util.Stack;
 
@@ -6,12 +6,12 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 
-import org.checkerframework.checker.guieffects.qual.AlwaysSafe;
-import org.checkerframework.checker.guieffects.qual.PolyUI;
-import org.checkerframework.checker.guieffects.qual.PolyUIEffect;
-import org.checkerframework.checker.guieffects.qual.SafeEffect;
-import org.checkerframework.checker.guieffects.qual.UI;
-import org.checkerframework.checker.guieffects.qual.UIEffect;
+import org.checkerframework.checker.guieffect.qual.AlwaysSafe;
+import org.checkerframework.checker.guieffect.qual.PolyUI;
+import org.checkerframework.checker.guieffect.qual.PolyUIEffect;
+import org.checkerframework.checker.guieffect.qual.SafeEffect;
+import org.checkerframework.checker.guieffect.qual.UI;
+import org.checkerframework.checker.guieffect.qual.UIEffect;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.source.Result;
@@ -29,7 +29,7 @@ import com.sun.source.tree.Tree;
 /**
  * Require that only UI code invokes code with the UI effect.
  */
-public class GUIEffectsVisitor extends BaseTypeVisitor<GUIEffectsTypeFactory> {
+public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
 
     protected final boolean debugSpew;
 
@@ -37,18 +37,18 @@ public class GUIEffectsVisitor extends BaseTypeVisitor<GUIEffectsTypeFactory> {
     protected final Stack<Effect> effStack;
     protected final Stack<MethodTree> currentMethods;
 
-    public GUIEffectsVisitor(BaseTypeChecker checker) {
+    public GuiEffectVisitor(BaseTypeChecker checker) {
         super(checker);
         debugSpew = checker.getLintOption("debugSpew", false);
         if (debugSpew)
-            System.err.println("Running GUIEffectsVisitor");
+            System.err.println("Running GuiEffectVisitor");
         effStack = new Stack<Effect>();
         currentMethods = new Stack<MethodTree>();
     }
 
     @Override
-    protected GUIEffectsTypeFactory createTypeFactory() {
-        return new GUIEffectsTypeFactory(checker, debugSpew);
+    protected GuiEffectTypeFactory createTypeFactory() {
+        return new GuiEffectTypeFactory(checker, debugSpew);
     }
 
     // The issue is that the receiver implicitly receives an @AlwaysSafe anno, so calls on @UI

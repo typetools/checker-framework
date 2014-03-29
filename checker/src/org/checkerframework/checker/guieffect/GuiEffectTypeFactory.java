@@ -1,4 +1,4 @@
-package org.checkerframework.checker.guieffects;
+package org.checkerframework.checker.guieffect;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -9,16 +9,16 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
-import org.checkerframework.checker.guieffects.qual.AlwaysSafe;
-import org.checkerframework.checker.guieffects.qual.PolyUI;
-import org.checkerframework.checker.guieffects.qual.PolyUIEffect;
-import org.checkerframework.checker.guieffects.qual.PolyUIType;
-import org.checkerframework.checker.guieffects.qual.SafeEffect;
-import org.checkerframework.checker.guieffects.qual.SafeType;
-import org.checkerframework.checker.guieffects.qual.UI;
-import org.checkerframework.checker.guieffects.qual.UIEffect;
-import org.checkerframework.checker.guieffects.qual.UIPackage;
-import org.checkerframework.checker.guieffects.qual.UIType;
+import org.checkerframework.checker.guieffect.qual.AlwaysSafe;
+import org.checkerframework.checker.guieffect.qual.PolyUI;
+import org.checkerframework.checker.guieffect.qual.PolyUIEffect;
+import org.checkerframework.checker.guieffect.qual.PolyUIType;
+import org.checkerframework.checker.guieffect.qual.SafeEffect;
+import org.checkerframework.checker.guieffect.qual.SafeType;
+import org.checkerframework.checker.guieffect.qual.UI;
+import org.checkerframework.checker.guieffect.qual.UIEffect;
+import org.checkerframework.checker.guieffect.qual.UIPackage;
+import org.checkerframework.checker.guieffect.qual.UIType;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.source.Result;
@@ -33,11 +33,11 @@ import com.sun.source.tree.Tree;
 /**
  * Annotated type factory for the GUI Effect Checker.
  */
-public class GUIEffectsTypeFactory extends BaseAnnotatedTypeFactory {
+public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
 
     protected final boolean debugSpew;
 
-    public GUIEffectsTypeFactory(BaseTypeChecker checker, boolean spew) {
+    public GuiEffectTypeFactory(BaseTypeChecker checker, boolean spew) {
         // use true for flow inference
         super(checker, false);
 
@@ -339,28 +339,28 @@ public class GUIEffectsTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected TreeAnnotator createTreeAnnotator() {
-        return new GUIEffectsTreeAnnotator();
+        return new GuiEffectTreeAnnotator();
     }
 
     /**
      * A class for adding annotations based on tree.
      */
-    private class GUIEffectsTreeAnnotator extends TreeAnnotator {
+    private class GuiEffectTreeAnnotator extends TreeAnnotator {
 
-        GUIEffectsTreeAnnotator() {
-            super(GUIEffectsTypeFactory.this);
+        GuiEffectTreeAnnotator() {
+            super(GuiEffectTypeFactory.this);
         }
 
         public boolean hasExplicitUIEffect(ExecutableElement methElt) {
-            return GUIEffectsTypeFactory.this.getDeclAnnotation(methElt, UIEffect.class) != null;
+            return GuiEffectTypeFactory.this.getDeclAnnotation(methElt, UIEffect.class) != null;
         }
 
         public boolean hasExplicitSafeEffect(ExecutableElement methElt) {
-            return GUIEffectsTypeFactory.this.getDeclAnnotation(methElt, SafeEffect.class) != null;
+            return GuiEffectTypeFactory.this.getDeclAnnotation(methElt, SafeEffect.class) != null;
         }
 
         public boolean hasExplicitPolyUIEffect(ExecutableElement methElt) {
-            return GUIEffectsTypeFactory.this.getDeclAnnotation(methElt, PolyUIEffect.class) != null;
+            return GuiEffectTypeFactory.this.getDeclAnnotation(methElt, PolyUIEffect.class) != null;
         }
 
         public boolean hasExplicitEffect(ExecutableElement methElt) {
