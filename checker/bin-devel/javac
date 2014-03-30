@@ -26,7 +26,7 @@ jdkPaths="${mydir}"/../jdk/annotated
 cfDir="${mydir}"/../..
 # Put "checker" last, as "ant bindist" puts other projects
 # into the checker/build directory.
-buildDirs="${cfDir}"/dataflow/build:"${cfDir}"/javacutil/build:"${cfDir}"/javaparser/build:"${cfDir}"/checker/build
+buildDirs="${cfDir}"/dataflow/build:"${cfDir}"/javacutil/build:"${cfDir}"/stubparser/build:"${cfDir}"/framework/build:"${cfDir}"/checker/build
 
 eval "java" \
      "-DCheckerDevelMain.cp=${buildDirs} " \
