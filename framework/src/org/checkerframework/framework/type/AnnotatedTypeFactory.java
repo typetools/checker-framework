@@ -35,20 +35,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
-
-//The following imports are from com.sun, but they are all
-//@jdk.Exported and therefore somewhat safe to use.
-//Try to avoid using non-@jdk.Exported classes.
-
-
-
-
-
-
-
-
-
-
+import javax.tools.Diagnostic.Kind;
 
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.qual.SideEffectFree;
@@ -81,6 +68,10 @@ import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.trees.DetachedVarSymbol;
+
+//The following imports are from com.sun, but they are all
+//@jdk.Exported and therefore somewhat safe to use.
+//Try to avoid using non-@jdk.Exported classes.
 
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
@@ -2283,8 +2274,19 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         // Go through all annotations found.
         for (AnnotationMirror annotation : annotationMirrors) {
-            List<? extends AnnotationMirror> annotationsOnAnnotation = annotation
-                    .getAnnotationType().asElement().getAnnotationMirrors();
+            List<? extends AnnotationMirror> annotationsOnAnnotation;
+            try {
+                annotationsOnAnnotation = annotation.getAnnotationType().asElement().getAnnotationMirrors();
+            } catch (com.sun.tools.javac.code.Symbol.CompletionFailure cf) {
+                // Fix for Issue 309: If a CompletionFailure occurs, issue a warning.
+                // I didn't find a nicer alternative to check whether the Symbol can be completed.
+                // The completer field of a Symbol might be non-null also in successful cases.
+                // Issue a warning (exception only happens once) and continue.
+                checker.message(Kind.WARNING, annotation.getAnnotationType().asElement(),
+                        "annotation.not.completed", ElementUtils.getVerboseName(element), annotation);
+                continue;
+            }
+            // First call copier, if exception, continue normal modula laws.
             for (AnnotationMirror a : annotationsOnAnnotation) {
                 if (AnnotationUtils.areSameByClass(a, metaAnnotation)) {
                     result.add(Pair.of(annotation, a));
