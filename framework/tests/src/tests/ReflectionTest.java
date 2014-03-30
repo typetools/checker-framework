@@ -10,9 +10,9 @@ import org.junit.runners.Parameterized.Parameters;
 
 /**
  * Tests the reflection resolution using a toy type system.
- * 
+ *
  * @author rjust, smillst
- * 
+ *
  */
 public class ReflectionTest extends ParameterizedCheckerTest {
 
@@ -28,12 +28,12 @@ public class ReflectionTest extends ParameterizedCheckerTest {
     @Override
     protected void test(File testFile) {
         final List<String> optionsWithStub = new ArrayList<>(checkerOptions);
-        optionsWithStub.add("-Astubs="+ getFullPath(testFile, "reflection.astub"));
-        test(checkerName, optionsWithStub,testFile);
+        optionsWithStub.add("-Astubs=" + getFullPath(testFile, "reflection.astub"));
+        test(checkerName, optionsWithStub, testFile);
     }
 
     protected String getFullPath(final File javaFile, final String filename) {
         final String dirname = javaFile.getParentFile().getAbsolutePath();
-        return dirname + System.getProperty("file.separator")+filename;
+        return dirname + System.getProperty("file.separator") + filename;
     }
 }
