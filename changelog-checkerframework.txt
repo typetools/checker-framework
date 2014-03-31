@@ -3,6 +3,8 @@ Version 1.8.0, 18 March 2014
 Restructure the Checker Framework project and package layout,
 using the org.checkerframework prefix.
 
+Added the GUI Effect Checker, which prevents "invalid thread access" errors when a background thread in a GUI attempts to access the UI.
+
 ----------------------------------------------------------------------
 
 Version 1.7.5, 5 March 2014
