@@ -74,11 +74,6 @@ public abstract class QualifiedTypeMirror<Q> {
     }
 
     @Override
-    public String toString() {
-        return qualifier + " " + underlying;
-    }
-
-    @Override
     public boolean equals(Object obj) {
         if (obj == null || obj.getClass() != this.getClass()) {
             return false;
@@ -524,8 +519,12 @@ public abstract class QualifiedTypeMirror<Q> {
             return (ExtendedNoType)super.getUnderlyingType();
         }
 
-        // Use superclass implementation of 'toString', 'equals', and
-        // 'hashCode'.
+        @Override
+        public String toString() {
+            return getQualifier() + " " + getUnderlyingType();
+        }
+
+        // Use superclass implementation of 'equals' and 'hashCode'.
     }
 
     public static final class QualifiedNullType<Q> extends QualifiedTypeMirror<Q> {
@@ -544,8 +543,12 @@ public abstract class QualifiedTypeMirror<Q> {
             return (ExtendedNullType)super.getUnderlyingType();
         }
 
-        // Use superclass implementation of 'toString', 'equals', and
-        // 'hashCode'.
+        @Override
+        public String toString() {
+            return getQualifier() + " " + getUnderlyingType();
+        }
+
+        // Use superclass implementation of 'equals' and 'hashCode'.
     }
 
     public static final class QualifiedPrimitiveType<Q> extends QualifiedTypeMirror<Q> {
@@ -564,8 +567,12 @@ public abstract class QualifiedTypeMirror<Q> {
             return (ExtendedPrimitiveType)super.getUnderlyingType();
         }
 
-        // Use superclass implementation of 'toString', 'equals', and
-        // 'hashCode'.
+        @Override
+        public String toString() {
+            return getQualifier() + " " + getUnderlyingType();
+        }
+
+        // Use superclass implementation of 'equals' and 'hashCode'.
     }
 
     // There is no QualifiedReferenceType.  If we really need one, we can add
