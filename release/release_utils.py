@@ -121,7 +121,11 @@ def execute(command_args, halt_if_fail=True, capture_output=False, working_dir=N
     args = shlex.split(command_args) if isinstance(command_args, str) else command_args
 
     if capture_output:
-        return subprocess.Popen(args, stdout=subprocess.PIPE, cwd=working_dir).communicate()[0]
+        process = subprocess.Popen(args, stdout=subprocess.PIPE, cwd=working_dir)
+        out = process.communicate()[0]
+        process.wait()
+        return out
+
     else:
         r = subprocess.call(args, cwd=working_dir)
         if halt_if_fail and r:
@@ -694,14 +698,6 @@ def mvn_sign_and_deploy_all(url, repo_id, pom_file, artifact_jar, source_jar, ja
 
 #=========================================================================================
 # Misc. Utils
-
-def run_link_checker(site, output):
-    bin_dir = "/homes/gws/mernst/bin/share-plume/"
-    link_checker = os.path.join( bin_dir, "checklink" )
-    args_file = os.path.join( bin_dir, "checklink-args.txt" )
-    cmd = "%s -q -r -e `cat %s` %s &> %s" % (link_checker, args, site, output)
-    print "Checking links: " + cmd
-    execute( cmd )
 
 #def find_project_locations( ):
 #    afu_version       = max_version( AFU_INTERM_RELEASES_DIR    )

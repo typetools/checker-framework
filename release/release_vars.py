@@ -161,13 +161,13 @@ CHECKER_LIVE_RELEASES_DIR = os.path.join( CHECKER_LIVE_SITE, "releases" )
 CURRENT_DATE=datetime.date.today()
 
 os.environ['CHECKERFRAMEWORK'] = CHECKER_FRAMEWORK
-
+perl_libs = "/homes/gws/jburke/perl_lib/:/homes/gws/mernst/bin/src/perl:/homes/gws/mernst/bin/src/perl/share/perl5:/homes/gws/mernst/bin/src/perl/lib/perl5/site_perl/5.10.0/:/homes/gws/mernst/bin/src/perl/lib64/perl5/:/homes/gws/mernst/research/steering/colony-2003/experiment-scripts:/usr/share/perl5/"
 #Environment variables for tools needed during the build
 os.environ['PLUME_LIB'] =  PLUME_LIB
 os.environ['BIBINPUTS']=  '.:' + PLUME_BIB
 os.environ['TEXINPUTS'] =  '.:/scratch/secs-jenkins/tools/hevea-1.10/lib/hevea:/usr/share/texmf/tex/latex/hevea/:/homes/gws/mernst/tex/sty:/homes/gws/mernst/tex:..:'
-os.environ['PERLLIB']   =  getAndAppend('PERLLIB', ":")  + "/homes/gws/mernst/bin/src/perl/lib/perl5/site_perl/5.10.0:/homes/gws/jburke/perl_lib"
-os.environ['PERL5LIB']  =  getAndAppend('PERL5LIB', ":") + "/homes/gws/mernst/bin/src/perl/lib/perl5/site_perl/5.10.0:/homes/gws/jburke/perl_lib"
+os.environ['PERLLIB']   =  getAndAppend('PERLLIB', ":")  + perl_libs
+os.environ['PERL5LIB']  =  getAndAppend('PERL5LIB', ":") + perl_libs
 os.environ['JAVA_7_HOME'] =  '/scratch/secs-jenkins/java/jdk1.7.0'
 os.environ['JAVA_8_HOME'] =  '/scratch/secs-jenkins/java/jdk1.8.0'
 os.environ['JAVA_HOME']   =  os.environ['JAVA_7_HOME']
