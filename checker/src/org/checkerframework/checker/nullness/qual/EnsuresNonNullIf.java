@@ -65,7 +65,7 @@ public @interface EnsuresNonNullIf {
     /**
      * Java expression(s) that are non-null after the method returns the
      * given result.
-     * @see <a href="http://types.cs.washington.edu/checker-framework/current/org.checkerframework.checker-manual.html#java-expressions-as-arguments">Syntax of Java expressions</a>
+     * @see <a href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#java-expressions-as-arguments">Syntax of Java expressions</a>
      */
     String[] expression();
 
