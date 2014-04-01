@@ -83,8 +83,9 @@
 
         <property name="checker.manual"      value="${checker}/manual"                       />
         <property name="checkerWebPage"      value="${checker.manual}/checkers-webpage.html" />
-        <property name="checker.binary.poms" value="${checker}/binary/poms"                  />
-        <property name="maven.plugin"         value="${checker}/../maven-plugin"              />
+        <property name="maven.plugin"         value="${checker}/../maven-plugin"             />
+        <property name="checker.binary.poms"  value="${maven.plugin}/poms"                   />
+        <property name="checker.release.poms" value="${maven.plugin}/release/"               />
 
         <!-- for afu.date.0 and afu.date.1 -->
         <loadproperties srcFile="${afu.properties}"/>
@@ -125,34 +126,68 @@
                 start="${release.ver.0}" end="${release.ver.1}"
                 with="${release.ver}"/>
 
+
         <!-- Checker Framework Maven artifacts -->
+
+        <!-- checker -->
         <update file="${checker.binary.poms}/checkerPom.xml"
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
                 with="${release.ver}"/>
 
-        <update file="${checker.binary.poms}/checkerQualsPom.xml"
+        <update file="${checker.release.poms}/checkerReleasePom.xml"
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
                 with="${release.ver}"/>
 
+        <!-- checker-qual -->
+        <update file="${checker.binary.poms}/checkerQualPom.xml"
+                start="${checkers.ver.0}" end="${checkers.ver.1}"
+                with="${release.ver}"/>
+
+        <update file="${checker.release.poms}/checkerQualReleasePom.xml"
+                start="${checkers.ver.0}" end="${checkers.ver.1}"
+                with="${release.ver}"/>
+
+        <!-- jsr308 compiler -->
         <update file="${checker.binary.poms}/compilerPom.xml"
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
                 with="${release.ver}"/>
 
+        <update file="${checker.release.poms}/compilerReleasePom.xml"
+                start="${checkers.ver.0}" end="${checkers.ver.1}"
+                with="${release.ver}"/>
+
+        <!-- jdk7 -->
         <update file="${checker.binary.poms}/jdk7Pom.xml"
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
                 with="${release.ver}"/>
 
+        <update file="${checker.release.poms}/jdk7ReleasePom.xml"
+                start="${checkers.ver.0}" end="${checkers.ver.1}"
+                with="${release.ver}"/>
+
+        <!-- jdk8 -->
         <update file="${checker.binary.poms}/jdk8Pom.xml"
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
                 with="${release.ver}"/>
 
+        <update file="${checker.release.poms}/jdk8ReleasePom.xml"
+                start="${checkers.ver.0}" end="${checkers.ver.1}"
+                with="${release.ver}"/>
+
+        <!-- compiler plugin -->
         <update file="${maven.plugin}/pom.xml"
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
                 with="${release.ver}"/>
 
+        <update file="${checker.release.poms}/mavenPluginReleasePom.xml"
+                start="${checkers.ver.0}" end="${checkers.ver.1}"
+                with="${release.ver}"/>
+
+        <!-- examples -->
         <update file="${maven.plugin}/mvn-examples/HelloGalaxy/pom.xml"
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
                 with="${release.ver}"/>
+
     </target>
 
     <target name="zip-langtools" description="Creates a zip archive for JSR308-Langtools.">
@@ -195,9 +230,10 @@
         <property name="dest.file" value="${dest.dir}/${file.name}"/>
         <property name="checkerframework" value="${checker}/.."/>
 
-        <property name="checker.includes" value="release/checker-includes"/>
-        <property name="checker.excludes" value="release/checker-excludes"/>
+        <property name="checker.includes" value="${checkerframework}/release/checker-includes"/>
+        <property name="checker.excludes" value="${checkerframework}/release/checker-excludes"/>
 
+        <echo message="${checker.includes}" />
         <available file="${checker.includes}"  property="checker.includes.available"/>
         <available file="${checker.excludes}"  property="checker.excludes.available"/>
 
@@ -210,7 +246,7 @@
 
         <zip destfile="${dest.file}" update="true">
             <zipfileset dir="${checker}" prefix="checker-framework-${version}"
-                        includes="${checker.includes}" excludes="${checker.excludes}"/>
+                        includesfile="${checker.includes}" excludesfile="${checker.excludes}"/>
 
             <zipfileset dir="${checker}" prefix="checker-framework-${version}"
                         includes="bin/javac" filemode="755"/>
@@ -241,6 +277,31 @@
         <zip destfile="${dest.dir}/${file.name}">
             <zipfileset dir="${checker}/../maven-plugin/mvn-examples" filemode="755" prefix="maven-examples-${version}"/>
         </zip>
+    </target>
+
+    <target name="jar-maven-extras" description="Create jars with readmes to fill in for required maven artifacts!">
+        <!-- All Maven artifacts should have a sources/javadoc jar in order to be submitted to Maven central.
+             At the moment we only have these for the checker artifact so for now we can create dummies with
+             READMEs in them and pass those to Central.  This is the recommended way of handling this
+             situation.  See: https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide -->
+
+        <fail unless="maven.plugin.dir" message="maven.plugin.dir property is not set!"  />
+        <fail unless="dest.dir"         message="dest.dir property is not set!" />
+
+        <property name="maven.release.dir" value="${maven.plugin.dir}/release"/>
+
+        <jar destfile="${dest.dir}/checker-qual-source.jar"  basedir="${maven.release.dir}" includes="README-checker-qual"/>
+        <jar destfile="${dest.dir}/checker-qual-javadoc.jar" basedir="${maven.release.dir}" includes="README-checker-qual"/>
+
+        <jar destfile="${dest.dir}/compiler-source.jar"  basedir="${maven.release.dir}" includes="README-compiler"/>
+        <jar destfile="${dest.dir}/compiler-javadoc.jar" basedir="${maven.release.dir}" includes="README-compiler"/>
+
+        <jar destfile="${dest.dir}/jdk7-source.jar"  basedir="${maven.release.dir}" includes="README-jdk"/>
+        <jar destfile="${dest.dir}/jdk7-javadoc.jar" basedir="${maven.release.dir}" includes="README-jdk"/>
+
+        <jar destfile="${dest.dir}/jdk8-source.jar"  basedir="${maven.release.dir}" includes="README-jdk"/>
+        <jar destfile="${dest.dir}/jdk8-javadoc.jar" basedir="${maven.release.dir}" includes="README-jdk"/>
+
     </target>
 
     <target name="langtools-website-docs" description="Copies the relevant JSR308 Langtools files to the given directory">

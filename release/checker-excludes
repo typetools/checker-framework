@@ -1,3 +1,4 @@
 bin/README
 bin/javac
 checker/bin-devel/javac
+dist/*.asc
