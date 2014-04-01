@@ -504,6 +504,11 @@ def prompt_or_auto_delete( path, auto ):
         print
         delete_path( path )
 
+def is_yes(prompt_results):
+    if prompt_results == "yes" or prompt_results == "Yes":
+        return True
+    return False
+
 def prompt_to_delete(path):
     if os.path.exists(path):
         result = prompt_w_suggestion("Delete the following file:\n %s [Yes|No]" % path, "no", "^(Yes|yes|No|no)$")
@@ -667,12 +672,28 @@ def mvn_deploy_mvn_plugin(pluginDir, pom, version, mavenRepo):
     jarFile = "%s/target/checkerframework-maven-plugin-%s.jar" % (pluginDir, version)
     return mvn_deploy(jarFile, pom, mavenRepo)
 
+def mvn_sign_and_deploy(url, repo_id, pom_file, file, classifier):
+    cmd = "mvn gpg:sign-and-deploy-file -Durl=%s -DrepositoryId=%s -DpomFile=%s -Dfile=%s" % (url, repo_id, pom_file, file)
+    if classifier is not None:
+        cmd += " -Dclassifier=" + classifier
+
+    execute(cmd)
+
+def mvn_sign_and_deploy_all(url, repo_id, pom_file, artifact_jar, source_jar, javadoc_jar):
+    mvn_sign_and_deploy(url, repo_id, pom_file, artifact_jar, None)
+    mvn_sign_and_deploy(url, repo_id, pom_file, source_jar,  "sources")
+    mvn_sign_and_deploy(url, repo_id, pom_file, javadoc_jar, "javadoc")
+
 #=========================================================================================
 # Misc. Utils
 
-def checklinks(makeFile, site_url=None):
-    os.putenv('jsr308_www_online', site_url) # set environment var for subshell
-    return execute('make -f %s checklinks' % makeFile, halt_if_fail=False)
+def run_link_checker(site, output):
+    bin_dir = "/homes/gws/mernst/bin/share-plume/"
+    link_checker = os.path.join( bin_dir, "checklink" )
+    args_file = os.path.join( bin_dir, "checklink-args.txt" )
+    cmd = "%s -q -r -e `cat %s` %s &> %s" % (link_checker, args, site, output)
+    print "Checking links: " + cmd
+    execute( cmd )
 
 #def find_project_locations( ):
 #    afu_version       = max_version( AFU_INTERM_RELEASES_DIR    )
