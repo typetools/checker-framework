@@ -46,6 +46,10 @@ FILE_PATH_TO_DEV_SITE  = "/cse/www2/types/dev/"
 HTTP_PATH_TO_LIVE_SITE  = "http://types.cs.washington.edu"
 FILE_PATH_TO_LIVE_SITE  = "/cse/www2/types"
 
+SONATYPE_OSS_URL = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+SONATYPE_STAGING_REPO_ID = "sonatype-nexus-staging"
+SONATYPE_RELEASE_DIRECTIONS_URL = "https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide#SonatypeOSSMavenRepositoryUsageGuide-8a.ReleaseIt"
+
 #Location in which we will download files to run sanity checks
 SANITY_DIR = "/scratch/jsr308-release/sanity"
 
@@ -78,8 +82,13 @@ BUILD_DIR        = "/scratch/jsr308-release/build/"
 CHECKER_FRAMEWORK = os.path.join(BUILD_DIR, 'checker-framework')
 CHECKER_FRAMEWORK_RELEASE = os.path.join(CHECKER_FRAMEWORK, 'release')
 CHECKER_BIN_DIR  = os.path.join(CHECKER_FRAMEWORK, 'checker', 'dist')
-CHECKER_BINARY   = os.path.join(CHECKER_BIN_DIR, 'checker.jar'       )
-CHECKER_QUAL     = os.path.join(CHECKER_BIN_DIR, 'checker-qual.jar' )
+
+CHECKER_BINARY   = os.path.join(CHECKER_BIN_DIR, 'checker.jar' )
+CHECKER_SOURCE   = os.path.join(CHECKER_BIN_DIR, 'checker-source.jar' )
+CHECKER_JAVADOC  = os.path.join(CHECKER_BIN_DIR, 'checker-javadoc.jar' )
+
+CHECKER_QUAL        = os.path.join(CHECKER_BIN_DIR, 'checker-qual.jar' )
+
 JAVAC_BINARY     = os.path.join(CHECKER_BIN_DIR, 'javac.jar')
 JDK7_BINARY      = os.path.join(CHECKER_BIN_DIR, 'jdk7.jar' )
 JDK8_BINARY      = os.path.join(CHECKER_BIN_DIR, 'jdk8.jar' )
@@ -105,11 +114,19 @@ MAVEN_DEV_REPO  = 'file:///cse/www2/types/dev/m2-repo'
 MAVEN_LIVE_REPO = 'file:///cse/www2/types/m2-repo'
 
 MAVEN_POMS_DIR = os.path.join(MAVEN_PLUGIN_DIR, 'poms')
-CHECKER_BINARY_POM  = os.path.join(MAVEN_POMS_DIR, 'checkerPom.xml'        )
-CHECKER_QUAL_POM    = os.path.join(MAVEN_POMS_DIR, 'checkerQualPom.xml'    )
-JAVAC_BINARY_POM     = os.path.join(MAVEN_POMS_DIR, 'compilerPom.xml'      )
-JDK7_BINARY_POM      = os.path.join(MAVEN_POMS_DIR, 'jdk7Pom.xml'          )
-JDK8_BINARY_POM      = os.path.join(MAVEN_POMS_DIR, 'jdk8Pom.xml'          )
+CHECKER_BINARY_POM  = os.path.join( MAVEN_POMS_DIR, 'checkerPom.xml'     )
+CHECKER_QUAL_POM    = os.path.join( MAVEN_POMS_DIR, 'checkerQualPom.xml' )
+JAVAC_BINARY_POM    = os.path.join( MAVEN_POMS_DIR, 'compilerPom.xml'    )
+JDK7_BINARY_POM     = os.path.join( MAVEN_POMS_DIR, 'jdk7Pom.xml'        )
+JDK8_BINARY_POM     = os.path.join( MAVEN_POMS_DIR, 'jdk8Pom.xml'        )
+
+MAVEN_RELEASE_DIR = os.path.join(MAVEN_PLUGIN_DIR, 'release')
+CHECKER_BINARY_RELEASE_POM  = os.path.join( MAVEN_RELEASE_DIR, 'checkerReleasePom.xml'     )
+CHECKER_QUAL_RELEASE_POM    = os.path.join( MAVEN_RELEASE_DIR, 'checkerQualReleasePom.xml' )
+JAVAC_BINARY_RELEASE_POM    = os.path.join( MAVEN_RELEASE_DIR, 'compilerReleasePom.xml'    )
+JDK7_BINARY_RELEASE_POM     = os.path.join( MAVEN_RELEASE_DIR, 'jdk7ReleasePom.xml'        )
+JDK8_BINARY_RELEASE_POM     = os.path.join( MAVEN_RELEASE_DIR, 'jdk8ReleasePom.xml'        )
+MAVEN_PLUGIN_RELEASE_POM    = os.path.join( MAVEN_RELEASE_DIR, 'mavenPluginReleasePom.xml' )
 
 BUILD_REPOS = ( CHECKER_FRAMEWORK,   JSR308_LANGTOOLS,   ANNO_TOOLS )
 INTERM_REPOS  = ( INTERM_CHECKER_REPO, INTERM_JSR308_REPO, INTERM_ANNO_REPO )
