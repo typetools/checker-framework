@@ -43,16 +43,14 @@ import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedWild
  */
 public class TypeAnnotator<Q> implements ExtendedTypeVisitor<QualifiedTypeMirror<Q>, Void> {
     private AnnotationConverter<Q> annotationConverter;
-    private Q topQual;
-    private Q bottomQual;
+    private Q defaultQual;
 
     private TypeAnnotatorAdapter<Q> adapter;
 
     public TypeAnnotator(AnnotationConverter<Q> annotationConverter,
-            Q topQual, Q bottomQual) {
+            Q defaultQual) {
         this.annotationConverter = annotationConverter;
-        this.topQual = topQual;
-        this.bottomQual = bottomQual;
+        this.defaultQual = defaultQual;
     }
 
     void setAdapter(TypeAnnotatorAdapter<Q> adapter) {
@@ -101,7 +99,7 @@ public class TypeAnnotator<Q> implements ExtendedTypeVisitor<QualifiedTypeMirror
         // specific situations (such as giving wildcard lower bounds a
         // different default from their upper bounds).
         if (qual == null) {
-            qual = topQual;
+            qual = defaultQual;
         }
 
         return qual;
