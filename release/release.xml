@@ -252,7 +252,11 @@
                         includes="bin/javac" filemode="755"/>
 
             <zipfileset dir="${checkerframework}" prefix="checker-framework-${version}"
-                        includes="api/** changelog-checkerframework.txt README.txt tutorial.zip"/>
+                        includes="api/** changelog-checkerframework.txt README.txt"/>
+
+            <zipfileset dir="${checkerframework}" prefix="checker-framework-${version}"
+                        includes="tutorial/**"
+                        excludes="tutorial/tests/** tutorial/eclipse-projects/** tutorial/src/** tutorial/test/** tutorial/Makefile tutorial/README"/>
         </zip>
 
     </target>
@@ -262,9 +266,9 @@
         <fail unless="dest.dir"   message="dest.dir property is not set!"  />
 
         <zip destfile="${dest.dir}/$tutorial.zip">
-            <zipfileset dir="${checker}" prefix="tutorial"
+            <zipfileset dir="${checkerframework}" prefix="tutorial"
                         includes="tutorial/**"
-                        excludes="tutorial/test/** tutorial/Makefile tutorial/README"/>
+                        excludes="tutorial/test/** tutorial/src/** tutorial/Makefile tutorial/README"/>
         </zip>
     </target>
 
