@@ -6,8 +6,8 @@ import static org.checkerframework.checker.tainting.Tainting.*;
 
 public class TaintingQualifierHierarchy implements QualifierHierarchy<Tainting> {
     @Override
-    public boolean isSubtype(Tainting a, Tainting b) {
-        return a == UNTAINTED || b == TAINTED;
+    public boolean isSubtype(Tainting subtype, Tainting supertype) {
+        return subtype == UNTAINTED || supertype == TAINTED;
     }
 
     @Override

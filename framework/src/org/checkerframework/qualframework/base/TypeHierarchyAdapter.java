@@ -42,62 +42,62 @@ class TypeHierarchyAdapter<Q> extends org.checkerframework.framework.type.TypeHi
 
 
     @Override
-    public boolean isSubtype(AnnotatedTypeMirror a, AnnotatedTypeMirror b) {
+    public boolean isSubtype(AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype) {
         return underlying.isSubtype(
-                converter.getQualifiedType(a),
-                converter.getQualifiedType(b));
+                converter.getQualifiedType(subtype),
+                converter.getQualifiedType(supertype));
     }
 
-    boolean superIsSubtype(QualifiedTypeMirror<Q> a, QualifiedTypeMirror<Q> b) {
+    boolean superIsSubtype(QualifiedTypeMirror<Q> subtype, QualifiedTypeMirror<Q> supertype) {
         return super.isSubtype(
-                converter.getAnnotatedType(a),
-                converter.getAnnotatedType(b));
+                converter.getAnnotatedType(subtype),
+                converter.getAnnotatedType(supertype));
     }
 
     @Override
-    protected boolean isSubtypeAsArrayComponent(AnnotatedTypeMirror a, AnnotatedTypeMirror b) {
+    protected boolean isSubtypeAsArrayComponent(AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype) {
         return defaultUnderlying.isSubtypeAsArrayComponent(
-                converter.getQualifiedType(a),
-                converter.getQualifiedType(b));
+                converter.getQualifiedType(subtype),
+                converter.getQualifiedType(supertype));
     }
 
-    boolean superIsSubtypeAsArrayComponent(QualifiedTypeMirror<Q> a, QualifiedTypeMirror<Q> b) {
+    boolean superIsSubtypeAsArrayComponent(QualifiedTypeMirror<Q> subtype, QualifiedTypeMirror<Q> supertype) {
         return super.isSubtypeAsArrayComponent(
-                converter.getAnnotatedType(a),
-                converter.getAnnotatedType(b));
+                converter.getAnnotatedType(subtype),
+                converter.getAnnotatedType(supertype));
     }
 
     @Override
-    protected boolean isSubtypeAsTypeArgument(AnnotatedTypeMirror a, AnnotatedTypeMirror b) {
+    protected boolean isSubtypeAsTypeArgument(AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype) {
         return defaultUnderlying.isSubtypeAsTypeArgument(
-                converter.getQualifiedType(a),
-                converter.getQualifiedType(b));
+                converter.getQualifiedType(subtype),
+                converter.getQualifiedType(supertype));
     }
 
-    boolean superIsSubtypeAsTypeArgument(QualifiedTypeMirror<Q> a, QualifiedTypeMirror<Q> b) {
+    boolean superIsSubtypeAsTypeArgument(QualifiedTypeMirror<Q> subtype, QualifiedTypeMirror<Q> supertype) {
         return super.isSubtypeAsTypeArgument(
-                converter.getAnnotatedType(a),
-                converter.getAnnotatedType(b));
+                converter.getAnnotatedType(subtype),
+                converter.getAnnotatedType(supertype));
     }
 
     // No 'isSubtypeImpl', because that method is final.
 
-    boolean superIsSubtypeImpl(QualifiedTypeMirror<Q> a, QualifiedTypeMirror<Q> b) {
+    boolean superIsSubtypeImpl(QualifiedTypeMirror<Q> subtype, QualifiedTypeMirror<Q> supertype) {
         return super.isSubtypeImpl(
-                converter.getAnnotatedType(a),
-                converter.getAnnotatedType(b));
+                converter.getAnnotatedType(subtype),
+                converter.getAnnotatedType(supertype));
     }
 
     @Override
-    protected boolean isSubtypeTypeArguments(AnnotatedDeclaredType a, AnnotatedDeclaredType b) {
+    protected boolean isSubtypeTypeArguments(AnnotatedDeclaredType subtype, AnnotatedDeclaredType supertype) {
         return defaultUnderlying.isSubtypeTypeArguments(
-                (QualifiedDeclaredType<Q>)converter.getQualifiedType(a),
-                (QualifiedDeclaredType<Q>)converter.getQualifiedType(b));
+                (QualifiedDeclaredType<Q>)converter.getQualifiedType(subtype),
+                (QualifiedDeclaredType<Q>)converter.getQualifiedType(supertype));
     }
 
-    boolean superIsSubtypeTypeArguments(QualifiedDeclaredType<Q> a, QualifiedDeclaredType<Q> b) {
+    boolean superIsSubtypeTypeArguments(QualifiedDeclaredType<Q> subtype, QualifiedDeclaredType<Q> supertype) {
         return super.isSubtypeTypeArguments(
-                (AnnotatedDeclaredType)converter.getAnnotatedType(a),
-                (AnnotatedDeclaredType)converter.getAnnotatedType(b));
+                (AnnotatedDeclaredType)converter.getAnnotatedType(subtype),
+                (AnnotatedDeclaredType)converter.getAnnotatedType(supertype));
     }
 }
