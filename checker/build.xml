@@ -742,13 +742,13 @@
     </target>
 
 
-<target name="check-tutorial" description="Test to see if the tutorial is working as expected">
-<!--The tutorial build file is written relative to its location, 
-    so useNativeBasedir is required. -->
-      <ant dir="${framework.loc}/../tutorial/tests/" useNativeBasedir="true">
-          <target name="check-tutorial"/>
-      </ant>
-</target>
+    <target name="check-tutorial" description="Test to see if the tutorial is working as expected">
+    <!--The tutorial build file is written relative to its location,
+        so useNativeBasedir is required. -->
+          <ant dir="${framework.loc}/../tutorial/tests/" useNativeBasedir="true">
+              <target name="check-tutorial"/>
+          </ant>
+    </target>
     <!-- TODO: like for -run-checker this only checks checker/src.
          Improve both. -->
     <!-- Depend on dist-nojdk to make sure everything compiles. -->
@@ -839,7 +839,7 @@
 
     </target>
 
-    <target name="dist-release" depends="clean, dist-all, all-tests-nojar, javadoc"
+    <target name="dist-release" depends="clean, dist-all, all-tests-nojar, javadoc.jar, sources.jar"
             description="Everything necessary to prepare this project for distribution: binary distribution, testing, and documentation.">
     </target>
 
