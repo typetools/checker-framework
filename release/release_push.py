@@ -22,7 +22,7 @@ def check_release_version( previous_release, new_release ):
 def run_sanity_check( new_checkers_release_zip, release_version ):
     execute( "mkdir -p " + SANITY_DIR )
 
-    sanity_zip = os.path.join( SANITY_DIR, "checkers.zip" )
+    sanity_zip = os.path.join( SANITY_DIR, "checker-framework.zip" )
 
     print( "Attempting to download %s to %s" % ( new_checkers_release_zip, sanity_zip ) )
     download_binary( new_checkers_release_zip, sanity_zip, MAX_DOWNLOAD_SIZE )
@@ -43,7 +43,7 @@ def run_sanity_check( new_checkers_release_zip, release_version ):
     nullness_example = os.path.join( deploy_dir, "examples", "NullnessExampleWithWarnings.java" )
     nullness_output  = os.path.join( deploy_dir, "output.log" )
 
-    cmd = sanity_javac + " -processor checkers.nullness.NullnessChecker " + nullness_example + " -Anomsgtext &> " + nullness_output
+    cmd = sanity_javac + " -processor org.checkerframework.checker.nullness.NullnessChecker " + nullness_example + " -Anomsgtext &> " + nullness_output
     execute( cmd, False )
 
     expected_errors = [ "NullnessExampleWithWarnings.java:25: error: (assignment.type.incompatible)",
@@ -127,12 +127,29 @@ def stage_maven_artifacts_in_maven_central():
 
     delete_path( mvn_dist )
 
-def check_all_links(jsr308_website, afu_website, checker_website, suffix ):
+def run_link_checker( site, output ):
+    check_links_script = os.path.join(CHECKER_FRAMEWORK_RELEASE, "checkLinks.sh")
+    cmd = ["sh", check_links_script, site]
+
+    out_file = open( output, 'w+' )
+
+    print("Executing: " + " ".join(cmd) )
+    process = subprocess.Popen(cmd, stdout=out_file, stderr=out_file)
+    process.communicate()
+    process.wait()
+    out_file.close()
+
+    if process.returncode != 0:
+        raise Exception('Non-zero return code( %s ) while executing %s' % (process.returncode, cmd))
+
+    return output
+
+def check_all_links( jsr308_website, afu_website, checker_website, suffix ):
     jsr308Check  = run_link_checker( jsr308_website,  "/tmp/jsr308." + suffix + ".check" )
     afuCheck     = run_link_checker( afu_website,     "/tmp/afu." + suffix + ".check" )
     checkerCheck = run_link_checker( checker_website, "/tmp/checker-framework." + suffix + ".check" )
     print( "Link checker results can be found at:\n" +
-           "\t" + jsr308check  + "\n" +
+           "\t" + jsr308Check  + "\n" +
            "\t" + afuCheck     + "\n" +
            "\t" + checkerCheck + "\n" )
 
@@ -142,7 +159,7 @@ def check_all_links(jsr308_website, afu_website, checker_website, suffix ):
         delete( afuCheck )
         delete( checkerCheck )
 
-def push_interm_to_build_repos():
+def push_interm_to_release_repos():
     hg_push_or_fail( INTERM_JSR308_REPO )
     hg_push_or_fail( INTERM_ANNO_REPO )
     hg_push_or_fail( INTERM_CHECKER_REPO )
@@ -156,41 +173,59 @@ def main(argv):
     stage_maven_artifacts_in_maven_central()
 
 def main(argv):
-    prompt_w_suggestion(
-        "In order to stage artifacts for the Sonatype Central repositories "   +
+    print(
+        "\nVerify Sonatype Credentials\n" +
+          "---------------------------\n" +
+        "In order to stage artifacts to the Sonatype Central repositories "   +
         "you will need an account at:\n"        +
-        "https://issues.sonatype.org/\n"        +
+        "https://issues.sonatype.org/\n\n"       +
+
         "You will also need to setup your Maven settings.xml to include your " +
         "Sonatype credentials as outline in: \n" +
-        "https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide#SonatypeOSSMavenRepositoryUsageGuide-7b.StageExistingArtifacts\n" +
+        "https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide#SonatypeOSSMavenRepositoryUsageGuide-7b.StageExistingArtifacts\n\n" +
         "Finally, section 2 in the above link will also describe how to be added to " +
-        "an existing repository's committers list.", "yes" )
+        "an existing repository's committers list.\n\n" )
 
-    dev_jsr308_site  = os.path.join( HTTP_PATH_TO_DEV_SITE,  "jsr308" )
-    live_jsr308_site = os.path.join( HTTP_PATH_TO_LIVE_SITE, "jsr308" )
+    continue_or_exit("")
 
-    dev_checker_website  = os.path.join( HTTP_PATH_TO_DEV_SITE, "checker-framework" )
+
+    print( "\n\nChecking Release Versions\n" +
+                "-------------------------\n" )
+    dev_jsr308_website  = os.path.join( HTTP_PATH_TO_DEV_SITE,  "jsr308" )
+    live_jsr308_website = os.path.join( HTTP_PATH_TO_LIVE_SITE, "jsr308" )
+    dev_afu_website  = os.path.join( HTTP_PATH_TO_DEV_SITE,  "annotation-file-utilities" )
+    live_afu_website = os.path.join( HTTP_PATH_TO_LIVE_SITE, "annotation-file-utilities" )
+
+    dev_checker_website  = os.path.join( HTTP_PATH_TO_DEV_SITE,  "checker-framework" )
     live_checker_website = os.path.join( HTTP_PATH_TO_LIVE_SITE, "checker-framework" )
     current_checker_version = current_distribution_by_website( live_checker_website )
     new_checker_version     = current_distribution( CHECKER_FRAMEWORK )
     check_release_version( current_checker_version, new_checker_version )
 
     #note, get_afu_version_from_html uses the file path not the web url
-    dev_afu_website  = os.path.join( FILE_PATH_TO_DEV_SITE, "annotation-file-utilities", "index.html" )
-    live_afu_website = os.path.join( FILE_PATH_TO_LIVE_SITE, "annotation-file-utilities", "index.html" )
-    current_afu_version = get_afu_version_from_html( live_afu_website )
-    new_afu_version     = get_afu_version_from_html( dev_afu_website )
+    dev_afu_website_file  = os.path.join( FILE_PATH_TO_DEV_SITE,  "annotation-file-utilities", "index.html" )
+    live_afu_website_file = os.path.join( FILE_PATH_TO_LIVE_SITE, "annotation-file-utilities", "index.html" )
+    current_afu_version = get_afu_version_from_html( live_afu_website_file )
+    new_afu_version     = get_afu_version_from_html( dev_afu_website_file )
     check_release_version( current_afu_version, new_afu_version )
 
-    new_checkers_release_zip = os.path.join( dev_checker_website, "current", "checkers.zip" )
+    new_checkers_release_zip = os.path.join( dev_checker_website, "current", "checker-framework.zip" )
 
-    continue_or_exit("Please ensure that you have run release_build.py since the last push to" +
-                     "any of the JSR308, AFU, or Checker Framework repositories?" )
+    print("Checker Framework/JSR308:  current-version=%s    new-version=%s\n" % (current_checker_version, new_checker_version ) )
+    print("AFU:                       current-version=%s    new-version=%s\n" % (current_afu_version, new_afu_version ) )
 
+    continue_or_exit("Please ensure that you have run release_build.py since the last push to " +
+                     "any of the JSR308, AFU, or Checker Framework repositories." )
+
+
+    print( "\n\nCheck Dev Site Links\n" +
+               "--------------------\n" )
     continue_script = prompt_w_suggestion("Run link Checker on DEV site?", "yes", "^(Yes|yes|No|no)$")
     if is_yes( continue_script ):
         check_all_links( dev_jsr308_website, dev_afu_website, dev_checker_website, "dev" )
 
+    print( "\n\nSmoke Tests\n" +
+               "-----------\n" )
     continue_or_exit(
        "Please build and install the Eclipse plugin using the latest artifacts. See:\n" +
        "https://code.google.com/p/checker-framework/source/browse/eclipse/developer-README\n\n" +
@@ -200,36 +235,45 @@ def main(argv):
 
        "Note: You will be prompted to run the Maven tutorial (automatically, via this script) below.\n\n" )
 
-    run_santity = prompt_w_suggestion(" Run command-line sanity check?", "yes", "^(Yes|yes|No|no)$")
-    if is_yes( run_santity ):
+    run_sanity = prompt_w_suggestion(" Run command-line sanity check?", "yes", "^(Yes|yes|No|no)$")
+    if is_yes( run_sanity ):
         run_sanity_check( new_checkers_release_zip, new_checker_version )
 
     #Run Maven tutorial
+    print( "Please run the Maven examples\n" )
 
+    print( "\n\nPush Website\n" +
+               "------------\n" )
     continue_or_exit("Copy release to the live website?")
     copy_releases_to_live_site( new_checker_version, new_afu_version )
     ensure_group_access_to_releases()
     update_release_symlinks( new_checker_version, new_afu_version )
 
+    print( "\n\nCheck Dev Site Links\n" +
+               "--------------------\n" )
     continue_script = prompt_w_suggestion("Run link Checker on LIVE site?", "yes", "^(Yes|yes|No|no)$")
     if is_yes( continue_script ):
         check_all_links( live_jsr308_website, live_afu_website, live_checker_website, "live" )
 
+    print( "\n\nPush Maven Artifacts\n" +
+               "--------------------\n" )
     continue_script = prompt_w_suggestion("Push Maven artifacts to our repository?", "no", "^(Yes|yes|No|no)$")
     if continue_script == "yes" or continue_script == "Yes":
         push_maven_artifacts_to_release_repo( new_checker_version )
+        print( "Pushed Maven Artifacts to repos" )
 
     continue_script = prompt_w_suggestion("Stage Maven artifacts in Maven Central?", "no", "^(Yes|yes|No|no)$")
     if continue_script == "yes" or continue_script == "Yes":
-        stage_maven_artifacts_in_maven_central( new_checker_version )
+        #stage_maven_artifacts_in_maven_central( new_checker_version )
         print( "Maven artifacts have been staged!  To deploy, log into https://oss.sonatype.org using your " +
                "Sonatype credentials and follow the release instructions at: " + SONATYPE_RELEASE_DIRECTIONS_URL )
 
+    print( "\n\nCommit to Repositories\n" +
+               "----------------------\n" )
     continue_script = prompt_w_suggestion("Push the release to Google code repositories?  This is irreversible.", "no", "^(Yes|yes|No|no)$")
     if continue_script == "yes" or continue_script == "Yes":
-        push_interm_to_build_repos()
-
-
+        push_interm_to_release_repos()
+        print( "Pushed to repos" )
 
     continue_or_exit( "Please follow these instructions to release the Eclipse plugin:\n<path to Eclipse release instructions>\n" )
     continue_or_exit( "Please log in to google code and mark all issues that were 'pushed' to 'fixed'." )
