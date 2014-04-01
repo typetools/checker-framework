@@ -387,13 +387,16 @@ def repo_exists(repo):
 def strip(repo):
     strip_args = ['hg', '-R', repo, 'strip', '--no-backup', 'roots(outgoing())']
     print "Executing: " + " ".join(strip_args)
-    out, err = subprocess.Popen(strip_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+    process = subprocess.Popen(strip_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+    out, err = process.communicate()
+    process.wait()
 
     match = re.match("\d+ files updated, \d+ files merged, \d+ files removed, \d+ files unresolved", out)
     if match is None:
         match = re.match("abort: empty revision set", err)
         if match is None:
-            raise Exception("Could not recognize strip output: (%s, %s)" % (out, err))
+            raise Exception("Could not recognize strip output: (%s, %s, %s)" % (process.returncode, out, err))
         else:
             print err
     else:
@@ -403,14 +406,19 @@ def strip(repo):
 def revert(repo):
     execute('hg -R %s revert --all' % repo)
 
-def purge(repo):
-    execute('hg -R %s purge' % repo)
+def purge(repo, all=False):
+    if all:
+        cmd = 'hg -R %s purge  --all' % repo
+    else:
+        cmd = 'hg -R %s purge' % repo
+    execute(cmd)
 
 def clean_repo(repo, prompt):
     if maybe_prompt_yn( 'Remove all modified files, untracked files and outgoing commits from %s ?' % repo, prompt ):
-        revert(repo) #avoids the issue when you add changes to test after a release_build
+        revert(repo)
         strip(repo)
-        purge(repo)
+        purge(repo, all)
+        revert(repo) #avoids the issue of purge deleting ignored files we want to get back
     print ''
 
 def clean_repos(repos, prompt):
