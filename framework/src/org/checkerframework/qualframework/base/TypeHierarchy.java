@@ -5,6 +5,6 @@ package org.checkerframework.qualframework.base;
  * checks between {@link QualifiedTypeMirror}s.
  */
 public interface TypeHierarchy<Q> {
-    /** Checks if <code>a</code> is a subtype of <code>b</code>. */
-    boolean isSubtype(QualifiedTypeMirror<Q> a, QualifiedTypeMirror<Q> b);
+    /** Checks if <code>subtype</code> is a subtype of <code>supertype</code>. */
+    boolean isSubtype(QualifiedTypeMirror<Q> subtype, QualifiedTypeMirror<Q> supertype);
 }
