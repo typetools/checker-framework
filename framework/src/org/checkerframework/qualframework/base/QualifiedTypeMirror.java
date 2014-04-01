@@ -38,6 +38,8 @@ import org.checkerframework.qualframework.util.ExtendedTypeMirror;
  * <code>qtm.getUnderlyingType().getComponent()</code> is equivalent to
  * <code>qtm.getComponent().getUnderlyingType()</code> according to
  * <code>Object.equals</code>.
+ *
+ * @see QualifiedTypeFactory
  */
 public abstract class QualifiedTypeMirror<Q> {
     /** The underlying {@link ExtendedTypeMirror}. */
