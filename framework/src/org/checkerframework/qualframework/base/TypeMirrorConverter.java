@@ -198,7 +198,7 @@ class TypeMirrorConverter<Q> {
                     ((WrappedAnnotatedTypeMirror)qtm.getUnderlyingType()).unwrap());
         } else {
             atm = AnnotatedTypeMirror.createType(
-                qtm.getUnderlyingType().getRaw(), getTypeFactory());
+                qtm.getUnderlyingType().getOriginalType(), getTypeFactory());
         }
         applyQualifiers(qtm, atm);
         return atm;
