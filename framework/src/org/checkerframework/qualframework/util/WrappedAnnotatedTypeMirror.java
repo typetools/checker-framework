@@ -35,7 +35,7 @@ import org.checkerframework.framework.util.AnnotatedTypes;
  * ExtendedTypeMirror} interface.  Instances of this class are immutable.
  */
 public abstract class WrappedAnnotatedTypeMirror implements ExtendedTypeMirror {
-    private AnnotatedTypeMirror raw;
+    private AnnotatedTypeMirror underlying;
 
     /**
      * Helper class for the {@link wrap} method.
@@ -96,11 +96,11 @@ public abstract class WrappedAnnotatedTypeMirror implements ExtendedTypeMirror {
         }
     }
 
-    private WrappedAnnotatedTypeMirror(AnnotatedTypeMirror raw) {
-        if (raw == null) {
-            throw new IllegalArgumentException("raw ATM must be non-null");
+    private WrappedAnnotatedTypeMirror(AnnotatedTypeMirror underlying) {
+        if (underlying == null) {
+            throw new IllegalArgumentException("underlying ATM must be non-null");
         }
-        this.raw = raw;
+        this.underlying = underlying;
     }
 
     /**
@@ -125,17 +125,17 @@ public abstract class WrappedAnnotatedTypeMirror implements ExtendedTypeMirror {
      * {@link AnnotatedTypeMirror}.
      */
     public AnnotatedTypeMirror unwrap() {
-        return this.raw;
+        return this.underlying;
     }
 
     @Override
-    public TypeMirror getRaw() {
-        return raw.getUnderlyingType();
+    public TypeMirror getOriginalType() {
+        return underlying.getUnderlyingType();
     }
 
     @Override
     public TypeKind getKind() {
-        return raw.getKind();
+        return underlying.getKind();
     }
 
     @Override
@@ -146,7 +146,7 @@ public abstract class WrappedAnnotatedTypeMirror implements ExtendedTypeMirror {
     @Override
     public List<? extends AnnotationMirror> getAnnotationMirrors() {
         List<AnnotationMirror> result = new ArrayList<>();
-        result.addAll(raw.getAnnotations());
+        result.addAll(underlying.getAnnotations());
         return result;
     }
 
@@ -157,7 +157,7 @@ public abstract class WrappedAnnotatedTypeMirror implements ExtendedTypeMirror {
 
     @Override
     public String toString() {
-        return raw.toString();
+        return underlying.toString();
     }
 
     @Override
@@ -166,25 +166,25 @@ public abstract class WrappedAnnotatedTypeMirror implements ExtendedTypeMirror {
             return false;
         }
         WrappedAnnotatedTypeMirror other = (WrappedAnnotatedTypeMirror)obj;
-        return this.raw.equals(other.raw);
+        return this.underlying.equals(other.underlying);
     }
 
     @Override
     public int hashCode() {
-        return raw.hashCode();
+        return underlying.hashCode();
     }
 
     public static class WrappedAnnotatedArrayType extends WrappedAnnotatedReferenceType implements ExtendedArrayType {
         private WrappedAnnotatedTypeMirror componentType;
 
-        private WrappedAnnotatedArrayType(AnnotatedArrayType raw, Factory factory) {
-            super(raw);
-            this.componentType = factory.wrap(raw.getComponentType());
+        private WrappedAnnotatedArrayType(AnnotatedArrayType underlying, Factory factory) {
+            super(underlying);
+            this.componentType = factory.wrap(underlying.getComponentType());
         }
 
         @Override
-        public ArrayType getRaw() {
-            return (ArrayType)super.getRaw();
+        public ArrayType getOriginalType() {
+            return (ArrayType)super.getOriginalType();
         }
 
         @Override
@@ -207,15 +207,15 @@ public abstract class WrappedAnnotatedTypeMirror implements ExtendedTypeMirror {
         private WrappedAnnotatedTypeMirror enclosingType;
         private List<WrappedAnnotatedTypeMirror> typeArguments;
 
-        private WrappedAnnotatedDeclaredType(AnnotatedDeclaredType raw, Factory factory) {
-            super(raw);
-            this.enclosingType = factory.wrap(raw.getEnclosingType());
-            this.typeArguments = factory.wrapList(raw.getTypeArguments());
+        private WrappedAnnotatedDeclaredType(AnnotatedDeclaredType underlying, Factory factory) {
+            super(underlying);
+            this.enclosingType = factory.wrap(underlying.getEnclosingType());
+            this.typeArguments = factory.wrapList(underlying.getTypeArguments());
         }
 
         @Override
-        public DeclaredType getRaw() {
-            return (DeclaredType)super.getRaw();
+        public DeclaredType getOriginalType() {
+            return (DeclaredType)super.getOriginalType();
         }
 
         @Override
@@ -230,7 +230,7 @@ public abstract class WrappedAnnotatedTypeMirror implements ExtendedTypeMirror {
 
         @Override
         public Element asElement() {
-            return getRaw().asElement();
+            return getOriginalType().asElement();
         }
 
         @Override
@@ -251,18 +251,18 @@ public abstract class WrappedAnnotatedTypeMirror implements ExtendedTypeMirror {
         private List<? extends WrappedAnnotatedTypeMirror> thrownTypes;
         private List<? extends WrappedAnnotatedTypeVariable> typeVariables;
 
-        private WrappedAnnotatedExecutableType(AnnotatedExecutableType raw, Factory factory) {
-            super(raw);
-            this.parameterTypes = factory.wrapList(raw.getParameterTypes());
-            this.receiverType = factory.wrap(raw.getReceiverType());
-            this.returnType = factory.wrap(raw.getReturnType());
-            this.thrownTypes = factory.wrapList(raw.getThrownTypes());
-            this.typeVariables = factory.wrapTypeVarList(raw.getTypeVariables());
+        private WrappedAnnotatedExecutableType(AnnotatedExecutableType underlying, Factory factory) {
+            super(underlying);
+            this.parameterTypes = factory.wrapList(underlying.getParameterTypes());
+            this.receiverType = factory.wrap(underlying.getReceiverType());
+            this.returnType = factory.wrap(underlying.getReturnType());
+            this.thrownTypes = factory.wrapList(underlying.getThrownTypes());
+            this.typeVariables = factory.wrapTypeVarList(underlying.getTypeVariables());
         }
 
         @Override
-        public ExecutableType getRaw() {
-            return (ExecutableType)super.getRaw();
+        public ExecutableType getOriginalType() {
+            return (ExecutableType)super.getOriginalType();
         }
 
         @Override
@@ -309,14 +309,14 @@ public abstract class WrappedAnnotatedTypeMirror implements ExtendedTypeMirror {
     public static class WrappedAnnotatedIntersectionType extends WrappedAnnotatedTypeMirror implements ExtendedIntersectionType {
         private List<? extends WrappedAnnotatedTypeMirror> bounds;
 
-        private WrappedAnnotatedIntersectionType(AnnotatedIntersectionType raw, Factory factory) {
-            super(raw);
-            this.bounds = factory.wrapList(raw.directSuperTypes());
+        private WrappedAnnotatedIntersectionType(AnnotatedIntersectionType underlying, Factory factory) {
+            super(underlying);
+            this.bounds = factory.wrapList(underlying.directSuperTypes());
         }
 
         @Override
-        public IntersectionType getRaw() {
-            return (IntersectionType)super.getRaw();
+        public IntersectionType getOriginalType() {
+            return (IntersectionType)super.getOriginalType();
         }
 
         @Override
@@ -336,13 +336,13 @@ public abstract class WrappedAnnotatedTypeMirror implements ExtendedTypeMirror {
     }
 
     public static class WrappedAnnotatedNoType extends WrappedAnnotatedTypeMirror implements ExtendedNoType {
-        private WrappedAnnotatedNoType(AnnotatedNoType raw, Factory factory) {
-            super(raw);
+        private WrappedAnnotatedNoType(AnnotatedNoType underlying, Factory factory) {
+            super(underlying);
         }
 
         @Override
-        public NoType getRaw() {
-            return (NoType)super.getRaw();
+        public NoType getOriginalType() {
+            return (NoType)super.getOriginalType();
         }
 
         @Override
@@ -357,13 +357,13 @@ public abstract class WrappedAnnotatedTypeMirror implements ExtendedTypeMirror {
     }
 
     public static class WrappedAnnotatedNullType extends WrappedAnnotatedReferenceType implements ExtendedNullType {
-        private WrappedAnnotatedNullType(AnnotatedNullType raw, Factory factory) {
-            super(raw);
+        private WrappedAnnotatedNullType(AnnotatedNullType underlying, Factory factory) {
+            super(underlying);
         }
 
         @Override
-        public NullType getRaw() {
-            return (NullType)super.getRaw();
+        public NullType getOriginalType() {
+            return (NullType)super.getOriginalType();
         }
 
         @Override
@@ -378,13 +378,13 @@ public abstract class WrappedAnnotatedTypeMirror implements ExtendedTypeMirror {
     }
 
     public static class WrappedAnnotatedPrimitiveType extends WrappedAnnotatedTypeMirror implements ExtendedPrimitiveType {
-        private WrappedAnnotatedPrimitiveType(AnnotatedPrimitiveType raw, Factory factory) {
-            super(raw);
+        private WrappedAnnotatedPrimitiveType(AnnotatedPrimitiveType underlying, Factory factory) {
+            super(underlying);
         }
 
         @Override
-        public PrimitiveType getRaw() {
-            return (PrimitiveType)super.getRaw();
+        public PrimitiveType getOriginalType() {
+            return (PrimitiveType)super.getOriginalType();
         }
 
         @Override
@@ -399,19 +399,19 @@ public abstract class WrappedAnnotatedTypeMirror implements ExtendedTypeMirror {
     }
 
     static abstract class WrappedAnnotatedReferenceType extends WrappedAnnotatedTypeMirror implements ExtendedReferenceType {
-        private WrappedAnnotatedReferenceType(AnnotatedTypeMirror raw) {
-            super(raw);
+        private WrappedAnnotatedReferenceType(AnnotatedTypeMirror underlying) {
+            super(underlying);
         }
     }
 
     public static class WrappedAnnotatedTypeVariable extends WrappedAnnotatedReferenceType implements ExtendedTypeVariable {
-        private WrappedAnnotatedTypeVariable(AnnotatedTypeVariable raw, Factory factory) {
-            super(raw);
+        private WrappedAnnotatedTypeVariable(AnnotatedTypeVariable underlying, Factory factory) {
+            super(underlying);
         }
 
         @Override
-        public TypeVariable getRaw() {
-            return (TypeVariable)super.getRaw();
+        public TypeVariable getOriginalType() {
+            return (TypeVariable)super.getOriginalType();
         }
 
         @Override
@@ -426,21 +426,21 @@ public abstract class WrappedAnnotatedTypeMirror implements ExtendedTypeMirror {
 
         @Override
         public Element asElement() {
-            return getRaw().asElement();
+            return getOriginalType().asElement();
         }
     }
 
     public static class WrappedAnnotatedUnionType extends WrappedAnnotatedTypeMirror implements ExtendedUnionType {
         private List<? extends WrappedAnnotatedTypeMirror> alternatives;
 
-        private WrappedAnnotatedUnionType(AnnotatedUnionType raw, Factory factory) {
-            super(raw);
-            this.alternatives = factory.wrapList(raw.getAlternatives());
+        private WrappedAnnotatedUnionType(AnnotatedUnionType underlying, Factory factory) {
+            super(underlying);
+            this.alternatives = factory.wrapList(underlying.getAlternatives());
         }
 
         @Override
-        public UnionType getRaw() {
-            return (UnionType)super.getRaw();
+        public UnionType getOriginalType() {
+            return (UnionType)super.getOriginalType();
         }
 
         @Override
@@ -463,15 +463,15 @@ public abstract class WrappedAnnotatedTypeMirror implements ExtendedTypeMirror {
         private WrappedAnnotatedTypeMirror extendsBound;
         private WrappedAnnotatedTypeMirror superBound;
 
-        private WrappedAnnotatedWildcardType(AnnotatedWildcardType raw, Factory factory) {
-            super(raw);
-            this.extendsBound = factory.wrap(raw.getExtendsBound());
-            this.superBound = factory.wrap(raw.getSuperBound());
+        private WrappedAnnotatedWildcardType(AnnotatedWildcardType underlying, Factory factory) {
+            super(underlying);
+            this.extendsBound = factory.wrap(underlying.getExtendsBound());
+            this.superBound = factory.wrap(underlying.getSuperBound());
         }
 
         @Override
-        public WildcardType getRaw() {
-            return (WildcardType)super.getRaw();
+        public WildcardType getOriginalType() {
+            return (WildcardType)super.getOriginalType();
         }
 
         @Override
