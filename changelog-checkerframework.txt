@@ -1,4 +1,4 @@
-Version 1.8.0, 1 April 2014
+Version 1.8.0, 2 April 2014
 
 Restructure the Checker Framework project and package layout,
 using the org.checkerframework prefix.
