@@ -284,7 +284,7 @@ defining, e.g.:
 \begin{alltt}
 @UI
 public class UIRunnable extends Runnable \{...\}
-@Safe
+@AlwaysSafe
 public class SafeRunnable extends Runnable \{...\}
 \end{alltt}
 The GUI Effect Checker will automatically apply the qualifier to all classes and interfaces the class
@@ -306,7 +306,7 @@ may safely call any other method.
 
 This induces a subtyping hierarchy on type qualifiers:
 
-\centerline{\code{@Safe} $\prec$ \code{@PolyUI} $\prec$ \code{@UI}}
+\centerline{\code{@AlwaysSafe} $\prec$ \code{@PolyUI} $\prec$ \code{@UI}}
 
 \noindent
 This is sound because a method instantiated according to any qualifier will always be
