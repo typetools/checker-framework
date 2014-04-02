@@ -24,7 +24,7 @@
 
     <dependency>
       <groupId>org.checkerframework</groupId>
-      <artifactId>checker-quals</artifactId>
+      <artifactId>checker-qual</artifactId>
       <version><!-- checker-framework-version -->1.7.6<!-- /checker-framework-version --></version>
     </dependency>
 

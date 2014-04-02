@@ -30,7 +30,7 @@ The artifacts have a shared group id of "org.checkerframework".
 
 The artifact names are:
   checkerframework-maven-plugin - the Checker Framework maven plugin itself
-  checker-quals - checkers-quals.jar
+  checker-qual - checkers-qual.jar
   compiler - jsr308-langtools compiler's javac.jar
   framework - checkers.jar
   jdk7 - jdk7.jar
