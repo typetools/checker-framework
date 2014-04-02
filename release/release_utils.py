@@ -506,6 +506,9 @@ def find_first_instance(regex, file, delim=""):
                     return m.group(0)
     return None
 
+def delete( file ):
+    os.remove(file)
+
 def delete_path( path ):
     shutil.rmtree(path)
 
@@ -680,8 +683,16 @@ def mvn_plugin_version(pluginDir):
         sys.exit(1)
     return version
 
+def find_mvn_plugin_jar(pluginDir, version, suffix=None):
+    if suffix is None:
+        name = "%s/target/checkerframework-maven-plugin-%s.jar" % (pluginDir, version)
+    else:
+        name = "%s/target/checkerframework-maven-plugin-%s-%s.jar" % (pluginDir, version, suffix)
+
+    return name
+
 def mvn_deploy_mvn_plugin(pluginDir, pom, version, mavenRepo):
-    jarFile = "%s/target/checkerframework-maven-plugin-%s.jar" % (pluginDir, version)
+    jarFile = find_mvn_plugin_jar(pluginDir, version)
     return mvn_deploy(jarFile, pom, mavenRepo)
 
 def mvn_sign_and_deploy(url, repo_id, pom_file, file, classifier):

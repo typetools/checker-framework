@@ -306,6 +306,8 @@
         <jar destfile="${dest.dir}/jdk8-source.jar"  basedir="${maven.release.dir}" includes="README-jdk"/>
         <jar destfile="${dest.dir}/jdk8-javadoc.jar" basedir="${maven.release.dir}" includes="README-jdk"/>
 
+        <jar destfile="${dest.dir}/checkerframework-maven-plugin-javadoc.jar" basedir="${maven.release.dir}" includes="README-plugin"/>
+
     </target>
 
     <target name="langtools-website-docs" description="Copies the relevant JSR308 Langtools files to the given directory">
