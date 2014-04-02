@@ -14,7 +14,7 @@
     </description>
 
     <groupId>org.checkerframework</groupId>
-    <artifactId>jdk7</artifactId>
+    <artifactId>jdk8</artifactId>
 
     <licenses>
         <license>
@@ -33,6 +33,66 @@
         <connection>https://code.google.com/p/checker-framework/</connection>
     </scm>
 
-    <developers></developers>
+
+    <developers>
+
+        <developer>
+            <id>Michael Ernst &lt;mernst@cs.washington.edu&gt;</id>
+            <name>Michael Ernst</name>
+            <email>mernst@cs.washington.edu</email>
+            <url>http://homes.cs.washington.edu/~mernst/</url>
+            <organization>University of Washington</organization>
+            <organizationUrl>https://www.cs.washington.edu/</organizationUrl>
+        </developer>
+
+        <developer>
+            <id>wmdietl</id>
+            <name>Werner M. Deitl</name>
+            <email>wdietl@uwaterloo.ca</email>
+            <organization>University of Waterloo</organization>
+            <organizationUrl>http://uwaterloo.ca/</organizationUrl>
+        </developer>
+
+        <developer>
+            <id>Suzanne Millstein  &lt;smillst@cs.washington.edu&gt;</id>
+            <name>Suzanne Millstein</name>
+            <email>smillst@cs.washington.edu</email>
+            <organization>University of Washington PLSE Group</organization>
+            <organizationUrl>https://www.cs.washington.edu/research/plse/</organizationUrl>
+        </developer>
+
+        <developer>
+            <id>David McArthur &lt;mcarthur@cs.washington.edu&lt;</id>
+            <name>David McArthur</name>
+            <email>mcarthur@cs.washington.edu</email>
+            <organization>University of Washington PLSE Group</organization>
+            <organizationUrl>https://www.cs.washington.edu/research/plse/</organizationUrl>
+        </developer>
+
+        <developer>
+            <id>Javier Thaine &lt;jthaine@cs.washington.edu&lt;</id>
+            <name>David McArthur</name>
+            <email>jthaine@cs.washington.edu</email>
+            <organization>University of Washington PLSE Group</organization>
+            <organizationUrl>https://www.cs.washington.edu/research/plse/</organizationUrl>
+        </developer>
+
+        <developer>
+            <id>Dan Brown &lt;dbro@cs.washington.edu&lt;</id>
+            <name>Dan Brown</name>
+            <email>dbro@cs.washington.edu</email>
+            <organization>University of Washington PLSE Group</organization>
+            <organizationUrl>https://www.cs.washington.edu/research/plse/</organizationUrl>
+        </developer>
+
+        <developer>
+            <id>jonathangburke@gmail.com</id>
+            <name>Jonathan G. Burke</name>
+            <email>jburke@cs.washington.edu</email>
+            <organization>University of Washington PLSE Group</organization>
+            <organizationUrl>https://www.cs.washington.edu/research/plse/</organizationUrl>
+        </developer>
+
+    </developers>
 
 </project>
