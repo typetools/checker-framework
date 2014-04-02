@@ -14,11 +14,11 @@ import javax.lang.model.type.TypeMirror;
  */
 public interface ExtendedTypeMirror extends AnnotatedConstruct {
     /**
-     * Returns the same type represented as a standard {@link TypeMirror}, if
+     * Returns the original {@link TypeMirror} representation of the type, if
      * possible.  This method may return null if no {@link TypeMirror}
      * representation is available.
      */
-    TypeMirror getRaw();
+    TypeMirror getOriginalType();
 
     /** Returns the kind of this type. */
     TypeKind getKind();
