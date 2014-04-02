@@ -267,7 +267,7 @@ qualifiers before a use of the type:
 As an example:
 
 \begin{alltt}
-@Safe Runnable s = ...;     s.run();     // s.run() is @SafeEffect
+@AlwaysSafe Runnable s = ...;     s.run();     // s.run() is @SafeEffect
 @PolyUI Runnable p = ...;   p.run();     // p.run() is @PolyUIEffect (context-dependent)
 @UI Runnable u = ...;       u.run();     // u.run() is @UIEffect
 \end{alltt}
@@ -289,7 +289,7 @@ public class SafeRunnable extends Runnable \{...\}
 \end{alltt}
 The GUI Effect Checker will automatically apply the qualifier to all classes and interfaces the class
 being defined extends or implements.  (This means you cannot write a class that is a subtype of a
-\code{@Safe Foo} and a \code{@UI Bar}, but this has not been a problem in our experience.)
+\code{@AlwaysSafe Foo} and a \code{@UI Bar}, but this has not been a problem in our experience.)
 
 \subsection{Subtyping with polymorphic effects\label{guieffect-subtyping}}
 With three effect annotations, we must extend the static sub-effecting relationship:
