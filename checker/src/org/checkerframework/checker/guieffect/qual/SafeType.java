@@ -7,8 +7,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Class declaration annotation to make methods default to {@code @Safe}.
- * While the normal default is already {@code @Safe} methods,
+ * Class declaration annotation to make methods default to {@code @AlwaysSafe}.
+ * While the normal default is already {@code @AlwaysSafe} methods,
  * this is useful for a type inside a package marked {@code @UIPackage}.
  *
  * @checker_framework_manual #guieffect-checker GUI Effect Checker

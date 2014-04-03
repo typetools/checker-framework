@@ -20,13 +20,16 @@ def check_release_version( previous_release, new_release ):
                          "the new release version( " + new_release + " )" )
 
 def run_sanity_check( new_checkers_release_zip, release_version ):
-    cmd = "mkdir -p " + SANITY_DIR
-    execute( cmd )
+    execute( "mkdir -p " + SANITY_DIR )
 
-    sanity_zip = os.path.join( SANITY_DIR, "checkers.zip" )
+    sanity_zip = os.path.join( SANITY_DIR, "checker-framework.zip" )
 
     print( "Attempting to download %s to %s" % ( new_checkers_release_zip, sanity_zip ) )
     download_binary( new_checkers_release_zip, sanity_zip, MAX_DOWNLOAD_SIZE )
+
+    nullness_example_url = "https://checker-framework.googlecode.com/hg/checker/examples/NullnessExampleWithWarnings.java"
+    nullness_example = os.path.join( SANITY_DIR, "NullnessExampleWithWarnings.java" )
+    download_binary( nullness_example_url, nullness_example, MAX_DOWNLOAD_SIZE )
 
     deploy_dir = os.path.join( SANITY_DIR, "checker-framework-" + release_version )
 
@@ -40,11 +43,10 @@ def run_sanity_check( new_checkers_release_zip, release_version ):
     cmd = "chmod -R u+rwx " + deploy_dir
     execute( cmd )
 
-    sanity_javac = os.path.join( deploy_dir, "binary", "javac" )
-    nullness_example = os.path.join( deploy_dir, "examples", "NullnessExampleWithWarnings.java" )
+    sanity_javac = os.path.join( deploy_dir, "bin", "javac" )
     nullness_output  = os.path.join( deploy_dir, "output.log" )
 
-    cmd = sanity_javac + " -processor checkers.nullness.NullnessChecker " + nullness_example + " -Anomsgtext &> " + nullness_output
+    cmd = sanity_javac + " -processor org.checkerframework.checker.nullness.NullnessChecker " + nullness_example + " -Anomsgtext &> " + nullness_output
     execute( cmd, False )
 
     expected_errors = [ "NullnessExampleWithWarnings.java:25: error: (assignment.type.incompatible)",
@@ -94,11 +96,81 @@ def push_maven_artifacts_to_release_repo( version ):
     # Deploy jsr308 and checker-qual jars to maven repo
     mvn_deploy( CHECKER_BINARY, CHECKER_BINARY_POM, MAVEN_LIVE_REPO )
     mvn_deploy( CHECKER_QUAL,   CHECKER_QUAL_POM,   MAVEN_LIVE_REPO )
-    mvn_deploy( JAVAC_BINARY,    JAVAC_BINARY_POM,    MAVEN_LIVE_REPO )
-    mvn_deploy( JDK7_BINARY,     JDK7_BINARY_POM,     MAVEN_LIVE_REPO )
-    mvn_deploy( JDK8_BINARY,     JDK8_BINARY_POM,     MAVEN_LIVE_REPO )
+    mvn_deploy( JAVAC_BINARY,   JAVAC_BINARY_POM,   MAVEN_LIVE_REPO )
+    mvn_deploy( JDK7_BINARY,    JDK7_BINARY_POM,    MAVEN_LIVE_REPO )
+    mvn_deploy( JDK8_BINARY,    JDK8_BINARY_POM,    MAVEN_LIVE_REPO )
 
-def push_interm_to_build_repos():
+def stage_maven_artifacts_in_maven_central( new_checker_version ):
+
+    mvn_dist = os.path.join(MAVEN_PLUGIN_DIR, "dist" )
+    execute( "mkdir -p " + mvn_dist )
+
+    #build Jar files with only readmes for artifacts that don't have sources/javadocs
+    ant_cmd = "ant -f release.xml -Ddest.dir=%s -Dmaven.plugin.dir=%s jar-maven-extras" % (mvn_dist, MAVEN_PLUGIN_DIR)
+    execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
+
+    #At the moment, checker.jar is the only artifact with legitimate accompanying source/javadoc jars
+    mvn_sign_and_deploy_all( SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, CHECKER_BINARY_RELEASE_POM, CHECKER_BINARY,
+                             CHECKER_SOURCE, CHECKER_JAVADOC )
+
+    mvn_sign_and_deploy_all( SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, CHECKER_QUAL_RELEASE_POM, CHECKER_QUAL,
+                             os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "checker-qual-source.jar"  ),
+                             os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "checker-qual-javadoc.jar" ) )
+
+    mvn_sign_and_deploy_all( SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, JAVAC_BINARY_RELEASE_POM, JAVAC_BINARY,
+                             os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "compiler-source.jar"  ),
+                             os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "compiler-javadoc.jar" ) )
+
+    mvn_sign_and_deploy_all( SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, JDK7_BINARY_RELEASE_POM, JDK7_BINARY,
+                             os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "jdk7-source.jar"  ),
+                             os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "jdk7-javadoc.jar" ) )
+
+    mvn_sign_and_deploy_all( SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, JDK8_BINARY_RELEASE_POM, JDK8_BINARY,
+                             os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "jdk8-source.jar"  ),
+                             os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "jdk8-javadoc.jar" ) )
+
+    plugin_jar = find_mvn_plugin_jar( MAVEN_PLUGIN_DIR, new_checker_version )
+    plugin_source_jar  = find_mvn_plugin_jar( MAVEN_PLUGIN_DIR, new_checker_version, "sources" )
+    plugin_javadoc_jar = os.path.join( MAVEN_RELEASE_DIR, mvn_dist, "checkerframework-maven-plugin-javadoc.jar" )
+
+    mvn_sign_and_deploy_all( SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, MAVEN_PLUGIN_RELEASE_POM, plugin_jar,
+                             plugin_source_jar, plugin_javadoc_jar )
+
+    delete_path( mvn_dist )
+
+def run_link_checker( site, output ):
+    check_links_script = os.path.join(CHECKER_FRAMEWORK_RELEASE, "checkLinks.sh")
+    cmd = ["sh", check_links_script, site]
+
+    out_file = open( output, 'w+' )
+
+    print("Executing: " + " ".join(cmd) )
+    process = subprocess.Popen(cmd, stdout=out_file, stderr=out_file)
+    process.communicate()
+    process.wait()
+    out_file.close()
+
+    if process.returncode != 0:
+        raise Exception('Non-zero return code( %s ) while executing %s' % (process.returncode, cmd))
+
+    return output
+
+def check_all_links( jsr308_website, afu_website, checker_website, suffix ):
+    jsr308Check  = run_link_checker( jsr308_website,  "/tmp/jsr308." + suffix + ".check" )
+    afuCheck     = run_link_checker( afu_website,     "/tmp/afu." + suffix + ".check" )
+    checkerCheck = run_link_checker( checker_website, "/tmp/checker-framework." + suffix + ".check" )
+    print( "Link checker results can be found at:\n" +
+           "\t" + jsr308Check  + "\n" +
+           "\t" + afuCheck     + "\n" +
+           "\t" + checkerCheck + "\n" )
+
+    continue_script = prompt_w_suggestion("Delete DEV site link checker results?", "yes", "^(Yes|yes|No|no)$")
+    if is_yes(continue_script):
+        delete( jsr308Check )
+        delete( afuCheck )
+        delete( checkerCheck )
+
+def push_interm_to_release_repos():
     hg_push_or_fail( INTERM_JSR308_REPO )
     hg_push_or_fail( INTERM_ANNO_REPO )
     hg_push_or_fail( INTERM_CHECKER_REPO )
@@ -109,45 +181,107 @@ def continue_or_exit( msg ):
                 raise Exception( "User elected NOT to continue at prompt: " + msg )
 
 def main(argv):
-    dev_checker_website  = os.path.join( HTTP_PATH_TO_DEV_SITE, "checker-framework" )
+    print(
+        "\nVerify Sonatype Credentials\n" +
+          "---------------------------\n" +
+        "In order to stage artifacts to the Sonatype Central repositories "   +
+        "you will need an account at:\n"        +
+        "https://issues.sonatype.org/\n\n"       +
+
+        "You will also need to setup your Maven settings.xml to include your " +
+        "Sonatype credentials as outline in: \n" +
+        "https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide#SonatypeOSSMavenRepositoryUsageGuide-7b.StageExistingArtifacts\n\n" +
+        "Finally, section 2 in the above link will also describe how to be added to " +
+        "an existing repository's committers list.\n\n" )
+
+    continue_or_exit("")
+
+
+    print( "\n\nChecking Release Versions\n" +
+                "-------------------------\n" )
+    dev_jsr308_website  = os.path.join( HTTP_PATH_TO_DEV_SITE,  "jsr308" )
+    live_jsr308_website = os.path.join( HTTP_PATH_TO_LIVE_SITE, "jsr308" )
+    dev_afu_website  = os.path.join( HTTP_PATH_TO_DEV_SITE,  "annotation-file-utilities" )
+    live_afu_website = os.path.join( HTTP_PATH_TO_LIVE_SITE, "annotation-file-utilities" )
+
+    dev_checker_website  = os.path.join( HTTP_PATH_TO_DEV_SITE,  "checker-framework" )
     live_checker_website = os.path.join( HTTP_PATH_TO_LIVE_SITE, "checker-framework" )
     current_checker_version = current_distribution_by_website( live_checker_website )
     new_checker_version     = current_distribution( CHECKER_FRAMEWORK )
     check_release_version( current_checker_version, new_checker_version )
 
     #note, get_afu_version_from_html uses the file path not the web url
-    dev_afu_website  = os.path.join( FILE_PATH_TO_DEV_SITE, "annotation-file-utilities", "index.html" )
-    live_afu_website = os.path.join( FILE_PATH_TO_LIVE_SITE, "annotation-file-utilities", "index.html" )
-    current_afu_version = get_afu_version_from_html( live_afu_website )
-    new_afu_version     = get_afu_version_from_html( dev_afu_website )
+    dev_afu_website_file  = os.path.join( FILE_PATH_TO_DEV_SITE,  "annotation-file-utilities", "index.html" )
+    live_afu_website_file = os.path.join( FILE_PATH_TO_LIVE_SITE, "annotation-file-utilities", "index.html" )
+    current_afu_version = get_afu_version_from_html( live_afu_website_file )
+    new_afu_version     = get_afu_version_from_html( dev_afu_website_file )
     check_release_version( current_afu_version, new_afu_version )
 
-    new_checkers_release_zip = os.path.join( dev_checker_website, "current", "checkers.zip" )
+    new_checkers_release_zip = os.path.join( dev_checker_website, "current", "checker-framework.zip" )
 
+    print("Checker Framework/JSR308:  current-version=%s    new-version=%s" % (current_checker_version, new_checker_version ) )
+    print("AFU:                       current-version=%s    new-version=%s" % (current_afu_version, new_afu_version ) )
+
+    continue_or_exit("Please ensure that you have run release_build.py since the last push to " +
+                     "any of the JSR308, AFU, or Checker Framework repositories." )
+
+
+    print( "\n\nCheck Dev Site Links\n" +
+               "--------------------\n" )
+    continue_script = prompt_w_suggestion("Run link Checker on DEV site?", "yes", "^(Yes|yes|No|no)$")
+    if is_yes( continue_script ):
+        check_all_links( dev_jsr308_website, dev_afu_website, dev_checker_website, "dev" )
+
+    print( "\n\nSmoke Tests\n" +
+               "-----------\n" )
     continue_or_exit(
-        "Please do one of the following:\n" +
-        " 1) Check that the Jenkins release_build job has run since the most recent Mercurial pushes (<<add Jenkins URL>>).\n" +
-        " 2) If release_build was not run recently, in /scratch/jsr308-release/scripts, exit this script and run release_build.py\n"
-    )
+       "Please build and install the Eclipse plugin using the latest artifacts. See:\n" +
+       "https://code.google.com/p/checker-framework/source/browse/eclipse/developer-README\n\n" +
 
-    continue_or_exit( "Please check the link checker results at <add location>" )
-    continue_or_exit( "Please check that the tutorial works (using the new release instead of current)." )
+       "Please run the Eclipse version of  the Checker Framework Tutorial. See:\n"      +
+       dev_checker_website + "\n\n" +
 
-    run_santity = prompt_w_suggestion(" Run a sanity check?", "yes", "^(Yes|yes|No|no)$")
-    if run_santity == "yes" or run_santity == "Yes":
-        run_sanity_check( new_checkers_release_zip, new_checker_version )
+       "Note: You will be prompted to run the Maven tutorial (automatically, via this script) below.\n\n" )
 
-    copy_releases_to_live_site( new_checker_version, new_afu_version )
-    ensure_group_access_to_releases()
-    #update_release_symlinks( new_checker_version, new_afu_version )
+    run_sanity = prompt_w_suggestion(" Run command-line sanity check?", "yes", "^(Yes|yes|No|no)$")
+    #if is_yes( run_sanity ):
+    #    run_sanity_check( new_checkers_release_zip, new_checker_version )
 
-    continue_script = prompt_w_suggestion("Push the release to Google code repositories?  This is irreversible.", "no", "^(Yes|yes|No|no)$")
+    #Run Maven tutorial
+    print( "Please run the Maven examples\n" )
+
+    print( "\n\nPush Maven Artifacts\n" +
+               "--------------------\n" )
+    continue_script = prompt_w_suggestion("Push Maven artifacts to our repository?", "no", "^(Yes|yes|No|no)$")
     if continue_script == "yes" or continue_script == "Yes":
         push_maven_artifacts_to_release_repo( new_checker_version )
+        print( "Pushed Maven Artifacts to repos" )
 
-    #run maven sanity check
+    continue_script = prompt_w_suggestion("Stage Maven artifacts in Maven Central?", "no", "^(Yes|yes|No|no)$")
+    if continue_script == "yes" or continue_script == "Yes":
+        stage_maven_artifacts_in_maven_central( new_checker_version )
+        print( "Maven artifacts have been staged!  To deploy, log into https://oss.sonatype.org using your " +
+               "Sonatype credentials and follow the release instructions at: " + SONATYPE_RELEASE_DIRECTIONS_URL )
 
-    #push_interm_to_build_repos()
+    print( "\n\nPush Website\n" +
+               "------------\n" )
+    continue_or_exit("Copy release to the live website?")
+    copy_releases_to_live_site( new_checker_version, new_afu_version )
+    ensure_group_access_to_releases()
+    update_release_symlinks( new_checker_version, new_afu_version )
+
+    print( "\n\nCheck Live Site Links\n" +
+               "--------------------\n" )
+    continue_script = prompt_w_suggestion("Run link Checker on LIVE site?", "yes", "^(Yes|yes|No|no)$")
+    if is_yes( continue_script ):
+        check_all_links( live_jsr308_website, live_afu_website, live_checker_website, "live" )
+
+    print( "\n\nCommit to Repositories\n" +
+               "----------------------\n" )
+    continue_script = prompt_w_suggestion("Push the release to Google code repositories?  This is irreversible.", "no", "^(Yes|yes|No|no)$")
+    if continue_script == "yes" or continue_script == "Yes":
+        push_interm_to_release_repos()
+        print( "Pushed to repos" )
 
     continue_or_exit( "Please follow these instructions to release the Eclipse plugin:\n<path to Eclipse release instructions>\n" )
     continue_or_exit( "Please log in to google code and mark all issues that were 'pushed' to 'fixed'." )

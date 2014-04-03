@@ -121,7 +121,11 @@ def execute(command_args, halt_if_fail=True, capture_output=False, working_dir=N
     args = shlex.split(command_args) if isinstance(command_args, str) else command_args
 
     if capture_output:
-        return subprocess.Popen(args, stdout=subprocess.PIPE, cwd=working_dir).communicate()[0]
+        process = subprocess.Popen(args, stdout=subprocess.PIPE, cwd=working_dir)
+        out = process.communicate()[0]
+        process.wait()
+        return out
+
     else:
         r = subprocess.call(args, cwd=working_dir)
         if halt_if_fail and r:
@@ -387,13 +391,16 @@ def repo_exists(repo):
 def strip(repo):
     strip_args = ['hg', '-R', repo, 'strip', '--no-backup', 'roots(outgoing())']
     print "Executing: " + " ".join(strip_args)
-    out, err = subprocess.Popen(strip_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+    process = subprocess.Popen(strip_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+    out, err = process.communicate()
+    process.wait()
 
     match = re.match("\d+ files updated, \d+ files merged, \d+ files removed, \d+ files unresolved", out)
     if match is None:
         match = re.match("abort: empty revision set", err)
         if match is None:
-            raise Exception("Could not recognize strip output: (%s, %s)" % (out, err))
+            raise Exception("Could not recognize strip output: (%s, %s, %s)" % (process.returncode, out, err))
         else:
             print err
     else:
@@ -403,14 +410,19 @@ def strip(repo):
 def revert(repo):
     execute('hg -R %s revert --all' % repo)
 
-def purge(repo):
-    execute('hg -R %s purge' % repo)
+def purge(repo, all=False):
+    if all:
+        cmd = 'hg -R %s purge  --all' % repo
+    else:
+        cmd = 'hg -R %s purge' % repo
+    execute(cmd)
 
 def clean_repo(repo, prompt):
     if maybe_prompt_yn( 'Remove all modified files, untracked files and outgoing commits from %s ?' % repo, prompt ):
-        revert(repo) #avoids the issue when you add changes to test after a release_build
+        revert(repo)
         strip(repo)
-        purge(repo)
+        purge(repo, all)
+        revert(repo) #avoids the issue of purge deleting ignored files we want to get back
     print ''
 
 def clean_repos(repos, prompt):
@@ -494,6 +506,9 @@ def find_first_instance(regex, file, delim=""):
                     return m.group(0)
     return None
 
+def delete( file ):
+    os.remove(file)
+
 def delete_path( path ):
     shutil.rmtree(path)
 
@@ -503,6 +518,11 @@ def prompt_or_auto_delete( path, auto ):
     else:
         print
         delete_path( path )
+
+def is_yes(prompt_results):
+    if prompt_results == "yes" or prompt_results == "Yes":
+        return True
+    return False
 
 def prompt_to_delete(path):
     if os.path.exists(path):
@@ -663,16 +683,32 @@ def mvn_plugin_version(pluginDir):
         sys.exit(1)
     return version
 
+def find_mvn_plugin_jar(pluginDir, version, suffix=None):
+    if suffix is None:
+        name = "%s/target/checkerframework-maven-plugin-%s.jar" % (pluginDir, version)
+    else:
+        name = "%s/target/checkerframework-maven-plugin-%s-%s.jar" % (pluginDir, version, suffix)
+
+    return name
+
 def mvn_deploy_mvn_plugin(pluginDir, pom, version, mavenRepo):
-    jarFile = "%s/target/checkerframework-maven-plugin-%s.jar" % (pluginDir, version)
+    jarFile = find_mvn_plugin_jar(pluginDir, version)
     return mvn_deploy(jarFile, pom, mavenRepo)
+
+def mvn_sign_and_deploy(url, repo_id, pom_file, file, classifier):
+    cmd = "mvn gpg:sign-and-deploy-file -Durl=%s -DrepositoryId=%s -DpomFile=%s -Dfile=%s" % (url, repo_id, pom_file, file)
+    if classifier is not None:
+        cmd += " -Dclassifier=" + classifier
+
+    execute(cmd)
+
+def mvn_sign_and_deploy_all(url, repo_id, pom_file, artifact_jar, source_jar, javadoc_jar):
+    mvn_sign_and_deploy(url, repo_id, pom_file, artifact_jar, None)
+    mvn_sign_and_deploy(url, repo_id, pom_file, source_jar,  "sources")
+    mvn_sign_and_deploy(url, repo_id, pom_file, javadoc_jar, "javadoc")
 
 #=========================================================================================
 # Misc. Utils
-
-def checklinks(makeFile, site_url=None):
-    os.putenv('jsr308_www_online', site_url) # set environment var for subshell
-    return execute('make -f %s checklinks' % makeFile, halt_if_fail=False)
 
 #def find_project_locations( ):
 #    afu_version       = max_version( AFU_INTERM_RELEASES_DIR    )

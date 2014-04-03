@@ -248,7 +248,7 @@ To instantiate an effect-polymorphic type, write one of these three type
 qualifiers before a use of the type:
 \begin{itemize}
 \item
-  \refqualclass{checker/guieffect/qual}{Safe}
+  \refqualclass{checker/guieffect/qual}{AlwaysSafe}
   instantiates the type's effect to \code{@SafeEffect}.
 \item
   \refqualclass{checker/guieffect/qual}{UI}
@@ -267,7 +267,7 @@ qualifiers before a use of the type:
 As an example:
 
 \begin{alltt}
-@Safe Runnable s = ...;     s.run();     // s.run() is @SafeEffect
+@AlwaysSafe Runnable s = ...;     s.run();     // s.run() is @SafeEffect
 @PolyUI Runnable p = ...;   p.run();     // p.run() is @PolyUIEffect (context-dependent)
 @UI Runnable u = ...;       u.run();     // u.run() is @UIEffect
 \end{alltt}
@@ -284,12 +284,12 @@ defining, e.g.:
 \begin{alltt}
 @UI
 public class UIRunnable extends Runnable \{...\}
-@Safe
+@AlwaysSafe
 public class SafeRunnable extends Runnable \{...\}
 \end{alltt}
 The GUI Effect Checker will automatically apply the qualifier to all classes and interfaces the class
 being defined extends or implements.  (This means you cannot write a class that is a subtype of a
-\code{@Safe Foo} and a \code{@UI Bar}, but this has not been a problem in our experience.)
+\code{@AlwaysSafe Foo} and a \code{@UI Bar}, but this has not been a problem in our experience.)
 
 \subsection{Subtyping with polymorphic effects\label{guieffect-subtyping}}
 With three effect annotations, we must extend the static sub-effecting relationship:
@@ -306,7 +306,7 @@ may safely call any other method.
 
 This induces a subtyping hierarchy on type qualifiers:
 
-\centerline{\code{@Safe} $\prec$ \code{@PolyUI} $\prec$ \code{@UI}}
+\centerline{\code{@AlwaysSafe} $\prec$ \code{@PolyUI} $\prec$ \code{@UI}}
 
 \noindent
 This is sound because a method instantiated according to any qualifier will always be
