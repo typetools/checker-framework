@@ -1,0 +1,317 @@
+import org.checkerframework.common.value.qual.*;
+
+package android.util;
+
+class Base64{
+    @Analyzable static byte[] decode(byte[] input, int offet, int len, int flags);
+    @Analyzable static byte[] decode(byte[] input, int flags);
+    @Analyzable static byte[] decode(String input, int flags);
+    @Analyzable static byte[] encode(byte[] input, int flags);
+    @Analyzable static byte[] encode(byte[] input, int offset, int len, int flags);
+    @Analyzable static String encodeToString(byte[] input, int offset, int len, int flags);
+    @Analyzable static String encodeToString(byte[] input, int flags);
+}
+
+
+package java.lang;
+
+class Boolean{
+    @Analyzable boolean booleanValue();
+    @Analyzable static boolean getBoolean(String name);
+    @Analyzable static boolean parseBoolean(String s);
+    @Analyzable String toString();
+    @Analyzable static String toString(boolean b);
+    @Analyzable static Boolean valueOf(boolean b);
+    @Analyzable static Boolean valueOf(String s);
+}
+
+class Byte{
+    @Analyzable byte byteValue();
+    @Analyzable static Byte decode(String nm);
+    @Analyzable double doubleValue();
+    @Analyzable float floatValue();
+    @Analyzable int intValue();
+    @Analyzable long longValue();
+    @Analyzable static byte parseByte(String s);
+    @Analyzable static byte parseByte(String s, int radix);
+    @Analyzable short shortValue();
+    @Analyzable String toString();
+    @Analyzable static String toString(byte b);
+    @Analyzable static Byte valueOf(byte b);
+    @Analyzable static Byte valueOf(String s);
+    @Analyzable static Byte valueOf(String s, int radix);
+}
+
+class Character{
+    @Analyzable static int charCount(int codePoint);
+    @Analyzable char charValue();
+    @Analyzable static int codePointAt(char[] a, int index);
+    @Analyzable static int codePointAt(char[] a, int index, int limit);
+    @Analyzable static int codePointAt(CharSequence seq, int index);
+    @Analyzable static int codePointBefore(char[] a, int index);
+    @Analyzable static int codePointBefore(char[] a, int index, int start);
+    @Analyzable static int codePointBefore(CharSequence seq, int index);
+    @Analyzable static int codePointCount(char[] a, int offset, int count);
+    @Analyzable static int codePointCount(CharSequence seq, int beginIndex, int endIndex);
+    @Analyzable static int digit(char ch, int radix);
+    @Analyzable static int digit(int codePoint, int radix);
+    @Analyzable static char forDigit(int digit, int radix);
+    @Analyzable static byte getDirectionality(char ch);
+    @Analyzable static byte getDirectionality(int codePoint);
+    @Analyzable static int getNumericValue(char ch);
+    @Analyzable static int getNumericValue(int codePoint);
+    @Analyzable static int getType(char ch);
+    @Analyzable static int getType(int codePoint);
+    @Analyzable static boolean isDefined(char ch);
+    @Analyzable static boolean isDefined(int codePoint);
+    @Analyzable static boolean isDigit(char ch);
+    @Analyzable static boolean isDigit(int codePoint);
+    @Analyzable static boolean isHighSurrogate(char ch);
+    @Analyzable static boolean isIdentifierIgnorable(char ch);
+    @Analyzable static boolean isIdentifierIgnorable(int codePoint);
+    @Analyzable static boolean isISOControl(char ch);
+    @Analyzable static boolean isISOControl(int codePoint);
+    @Analyzable static boolean isJavaIdentifierPart(char ch);
+    @Analyzable static boolean isJavaIdentifierPart(int codePoint);
+    @Analyzable static boolean isJavaIdentifierStart(char ch);
+    @Analyzable static boolean isJavaIdentifierStart(int codePoint);
+    @Analyzable static boolean isJavaLetter(char ch);
+    @Analyzable static boolean isJavaLetterOrDigit(char ch);
+    @Analyzable static boolean isLetter(char ch);
+    @Analyzable static boolean isLetter(int codePoint);
+    @Analyzable static boolean isLetterOrDigit(char ch);
+    @Analyzable static boolean isLetterOrDigit(int codePoint);
+    @Analyzable static boolean isLowerCase(char ch);
+    @Analyzable static boolean isLowerCase(int codePoint);
+    @Analyzable static boolean isLowSurrogate(char ch);
+    @Analyzable static boolean isMirrored(char ch);
+    @Analyzable static boolean isMirrored(int codePoint);
+    @Analyzable static boolean isSpace(char ch);
+    @Analyzable static boolean isSpaceChar(char ch);
+    @Analyzable static boolean isSpaceChar(int codePoint);
+    @Analyzable static boolean isSupplementaryCodePoint(int codePoint);
+    @Analyzable static boolean isSurrogatePair(char high, char low);
+    @Analyzable static boolean isTitleCase(char ch);
+    @Analyzable static boolean isTitleCase(int codePoint);
+    @Analyzable static boolean isUnicodeIdentifierPart(char ch);
+    @Analyzable static boolean isUnicodeIdentifierPart(int codePoint);
+    @Analyzable static boolean isUnicodeIdentifierStart(char ch);
+    @Analyzable static boolean isUnicodeIdentifierStart(int codePoint);
+    @Analyzable static boolean isUpperCase(char ch);
+    @Analyzable static boolean isUpperCase(int codePoint);
+    @Analyzable static boolean isValidCodePoint(int codePoint);
+    @Analyzable static boolean isWhitespace(char ch);
+    @Analyzable static boolean isWhitespace(int codePoint);
+    @Analyzable static int offsetByCodePoints(char[] a, int start, int count, int index, int codePointOffset);
+    @Analyzable static int offsetByCodePoints(CharSequence seq, int index, int codePointOffset);
+    @Analyzable static char reverseBytes(char ch);
+    @Analyzable static char[] toChars(int codePoint);
+    @Analyzable static int toChars(int codePoint, char[] dst, int dstIndex);
+    @Analyzable static int toCodePoint(char high, char low);
+    @Analyzable static char toLowerCase(char ch);
+    @Analyzable static int toLowerCase(int codePoint);
+    @Analyzable String toString();
+    @Analyzable static String toString(char c);
+    @Analyzable static char toTitleCase(char ch);
+    @Analyzable static int toTitleCase(int codePoint);
+    @Analyzable static char toUpperCase(char ch);
+    @Analyzable static int toUpperCase(int codePoint);
+    @Analyzable static Character valueOf(char c);
+}
+
+class Double{
+    @Analyzable byte byteValue();
+    @Analyzable static int compare(double d1, double d2);
+    @Analyzable static long doubleToLongBits(double value);
+    @Analyzable static long doubleToRawLongBits(double value);
+    @Analyzable double doubleValue();
+    @Analyzable float floatValue();
+    @Analyzable int intValue();
+    @Analyzable boolean isInfinite();
+    @Analyzable static boolean isInfinite(double v);
+    @Analyzable boolean isNaN();
+    @Analyzable static boolean isNaN(double v);
+    @Analyzable static double longBitsToDouble(long bits);
+    @Analyzable long longValue();
+    @Analyzable static double parseDouble(String s);
+    @Analyzable short shortValue();
+    @Analyzable static String toHexString(double d);
+    @Analyzable String toString();
+    @Analyzable static String toString(double d);
+    @Analyzable static Double valueOf(double d);
+    @Analyzable static Double valueOf(String s);
+}
+class Float{
+    @Analyzable byte byteValue();
+    @Analyzable static int compare(float f1, float f2);
+    @Analyzable double doubleValue();
+    @Analyzable static int floatToIntBits(float value);
+    @Analyzable static int floatToRawIntBits(float value);
+    @Analyzable float floatValue();
+    @Analyzable static float intBitsToFloat(int bits);
+    @Analyzable int intValue();
+    @Analyzable boolean isInfinite();
+    @Analyzable static boolean isInfinite(float v);
+    @Analyzable boolean isNaN();
+    @Analyzable static boolean isNaN(float v);
+    @Analyzable long longValue();
+    @Analyzable static float parseFloat(String s);
+    @Analyzable short shortValue();
+    @Analyzable static String toHexString(float f);
+    @Analyzable String toString();
+    @Analyzable static String toString(float f);
+    @Analyzable static Float valueOf(float f);
+    @Analyzable static Float valueOf(String s);
+}
+
+class Integer{
+    @Analyzable static int bitCount(int i);
+    @Analyzable byte byteValue();
+    @Analyzable static Integer decode(String nm);
+    @Analyzable double doubleValue();
+    @Analyzable float floatValue();
+    @Analyzable static Integer getInteger(String nm);
+    @Analyzable static Integer getInteger(String nm, int val);
+    @Analyzable static Integer getInteger(String nm, Integer val);
+    @Analyzable static int highestOneBit(int i);
+    @Analyzable int intValue();
+    @Analyzable long longValue();
+    @Analyzable static int lowestOneBit(int i);
+    @Analyzable static int numberOfLeadingZeros(int i);
+    @Analyzable static int numberOfTrailingZeros(int i);
+    @Analyzable static int parseInt(String s);
+    @Analyzable static int parseInt(String s, int radix);
+    @Analyzable static int reverse(int i);
+    @Analyzable static int reverseBytes(int i);
+    @Analyzable static int rotateLeft(int i, int distance);
+    @Analyzable static int rotateRight(int i, int distance);
+    @Analyzable short  shortValue();
+    @Analyzable static int signum(int i);
+    @Analyzable static String toBinaryString(int i);
+    @Analyzable static String toHexString(int i);
+    @Analyzable static String toOctalString(int i);
+    @Analyzable String toString();
+    @Analyzable static String toString(int i);
+    @Analyzable static String toString(int i, int radix);
+    @Analyzable static Integer valueOf(int i);
+    @Analyzable static Integer valueOf(String s);
+    @Analyzable static Integer valueOf(String s, int radix);
+}
+
+class Long{
+    @Analyzable static int bitCount(long i);
+    @Analyzable byte byteValue();
+    @Analyzable static Long decode(String nm);
+    @Analyzable double doubleValue();
+    @Analyzable float floatValue();
+    @Analyzable static Long getLong(String nm);
+    @Analyzable static Long getLong(String nm, long val);
+    @Analyzable static Long getLong(String nm, Long val);
+    @Analyzable static long highestOneBit(long i);
+    @Analyzable int intValue();
+    @Analyzable long longValue();
+    @Analyzable static long lowestOneBit(long i);
+    @Analyzable static int numberOfLeadingZeros(long i);
+    @Analyzable static int numberOfTrailingZeros(long i);
+    @Analyzable static long parseLong(String s);
+    @Analyzable static long parseLong(String s, int radix);
+    @Analyzable static long reverse(long i);
+    @Analyzable static long reverseBytes(long i);
+    @Analyzable static long rotateLeft(long i, int distance);
+    @Analyzable static long rotateRight(long i, int distance);
+    @Analyzable short shortValue();
+    @Analyzable static int signum(long i);
+    @Analyzable static String toBinaryString(long i);
+    @Analyzable static String toHexString(long i);
+    @Analyzable static String toOctalString(long i);
+    @Analyzable String toString();
+    @Analyzable static String toString(long i);
+    @Analyzable static String toString(long i, int radix);
+    @Analyzable static Long valueOf(long l);
+    @Analyzable static Long valueOf(String s);
+    @Analyzable static Long valueOf(String s, int radix);
+}
+
+class Short{
+    @Analyzable byte byteValue();
+    @Analyzable static Short decode(String nm);
+    @Analyzable double doubleValue();
+    @Analyzable float floatValue();
+    @Analyzable int intValue();
+    @Analyzable long longValue();
+    @Analyzable static short parseShort(String s);
+    @Analyzable static short parseShort(String s, int radix);
+    @Analyzable static short reverseBytes(short i);
+    @Analyzable short shortValue();
+    @Analyzable String toString();
+    @Analyzable static String toString(short s);
+    @Analyzable static Short valueOf(short s);
+    @Analyzable static Short valueOf(String s);
+    @Analyzable static Short valueOf(String s, int radix);
+}
+
+class String{
+    @Analyzable char charAt(int index);
+    @Analyzable int codePointAt(int index);
+    @Analyzable int codePointBefore(int index);
+    @Analyzable int codePointCount(int beginIndex, int endIndex);
+    @Analyzable int compareTo(String anotherString);
+    @Analyzable int compareToIgnoreCase(String str);
+    @Analyzable String concat(String str);
+    @Analyzable boolean contains(CharSequence s);
+    @Analyzable boolean contentEquals(CharSequence cs);
+    @Analyzable boolean contentEquals(StringBuffer sb);
+    @Analyzable static String copyValueOf(char[] data);
+    @Analyzable static String copyValueOf(char[] data, int offset, int count);
+    @Analyzable boolean endsWith(String suffix);
+    @Analyzable boolean equalsIgnoreCase(String anotherString);
+    @Analyzable static String format(Locale l, String format, Object... args);
+    @Analyzable static String format(String format, Object... args);
+    @Analyzable byte[] getBytes();
+    @Analyzable byte[] getBytes(Charset charset);
+    @Analyzable void getBytes(int srcBegin, int srcEnd, byte[] dst, int dstBegin);
+    @Analyzable byte[] getBytes(String charsetName);
+    @Analyzable void getChars(int srcBegin, int srcEnd, char[] dst, int dstBegin);
+    @Analyzable int indexOf(int ch);
+    @Analyzable int indexOf(int ch, int fromIndex);
+    @Analyzable int indexOf(String str);
+    @Analyzable int indexOf(String str, int fromIndex);
+    @Analyzable String intern();
+    @Analyzable boolean isEmpty();
+    @Analyzable int lastIndexOf(int ch);
+    @Analyzable int lastIndexOf(int ch, int fromIndex);
+    @Analyzable int lastIndexOf(String str);
+    @Analyzable int lastIndexOf(String str, int fromIndex);
+    @Analyzable int length();
+    @Analyzable boolean matches(String regex);
+    @Analyzable int offsetByCodePoints(int index, int codePointOffset);
+    @Analyzable boolean regionMatches(boolean ignoreCase, int toffset, String other, int ooffset, int len);
+    @Analyzable boolean regionMatches(int toffset, String other, int ooffset, int len);
+    @Analyzable String replace(char oldChar, char newChar);
+    @Analyzable String replace(CharSequence target, CharSequence replacement);
+    @Analyzable String replaceAll(String regex, String replacement);
+    @Analyzable String replaceFirst(String regex, String replacement);
+    @Analyzable String[] split(String regex);
+    @Analyzable String[] split(String regex, int limit);
+    @Analyzable boolean  startsWith(String prefix);
+    @Analyzable boolean  startsWith(String prefix, int toffset);
+    @Analyzable CharSequence subSequence(int beginIndex, int endIndex);
+    @Analyzable String substring(int beginIndex);
+    @Analyzable String substring(int beginIndex, int endIndex);
+    @Analyzable char[] toCharArray();
+    @Analyzable String toLowerCase();
+    @Analyzable String toLowerCase(Locale locale);
+    @Analyzable String toString();
+    @Analyzable String toUpperCase();
+    @Analyzable String toUpperCase(Locale locale);
+    @Analyzable String trim();
+    @Analyzable static String valueOf(boolean b);
+    @Analyzable static String valueOf(char c);
+    @Analyzable static String valueOf(char[] data);
+    @Analyzable static String valueOf(char[] data, int offset, int count);
+    @Analyzable static String valueOf(double d);
+    @Analyzable static String valueOf(float f);
+    @Analyzable static String valueOf(int i);
+    @Analyzable static String valueOf(long l);
+    @Analyzable static String valueOf(Object obj) ;
+}
