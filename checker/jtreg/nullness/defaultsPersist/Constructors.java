@@ -52,7 +52,7 @@ public class Constructors {
 
     @TADescriptions({
         @TADescription(annotation = "org/checkerframework/checker/nullness/qual/NonNull", type = METHOD_RECEIVER),
-        @TADescription(annotation = "org/checkerframework/checker/initialization/qual/UnderInitialization", type = METHOD_RECEIVER),
+        @TADescription(annotation = "org/checkerframework/checker/initialization/qual/Initialized", type = METHOD_RECEIVER),
         @TADescription(annotation = "org/checkerframework/checker/nullness/qual/UnknownKeyFor", type = METHOD_RECEIVER),
     })
     @TestClass("Outer$Inner")
