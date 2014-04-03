@@ -111,13 +111,22 @@ public abstract class WrappedAnnotatedTypeMirror implements ExtendedTypeMirror {
      * affect the wrapped version.
      */
     public static WrappedAnnotatedTypeMirror wrap(AnnotatedTypeMirror atm) {
-        // TODO: Uh oh... something is broken in TypeMirrorConverter.  Using
-        // 'deepCopy' here (which is necessary to make WATM instances actually
-        // be immutable) results in lots of "cannot construct
-        // QualifiedTypeMirror with null qualifier" errors.
+        AnnotatedTypeMirror atmCopy = AnnotatedTypes.deepCopy(atm);
 
-        //return new Factory().wrap(AnnotatedTypes.deepCopy(atm));
-        return new Factory().wrap(atm);
+        // Qualifiers for ExecutableType don't make a whole lot of sense, but
+        // we have them for consistency.  Unfortunately, deepCopy considers
+        // annotations on AnnotatedExecutableType to be meaningless and
+        // therefore doesn't preserve them.  So we have to copy them here.
+        // (Note that only the top-level ATM can be an ExecutableType - there
+        // are no arrays, etc. of ExecutableTypes.)
+        if (atm instanceof AnnotatedExecutableType) {
+            atmCopy.clearAnnotations();
+            for (AnnotationMirror anno : atm.getAnnotations()) {
+                atmCopy.addAnnotation(anno);
+            }
+        }
+
+        return new Factory().wrap(atmCopy);
     }
 
     /**
