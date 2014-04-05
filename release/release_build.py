@@ -202,7 +202,7 @@ def build_checker_framework_release(auto, version, afu_release_date, checker_fra
 
     #copy the remaining checker-framework website files to release_interm_dir
     ant_props = "-Dchecker=%s -Ddest.dir=%s -Dmanual.name=%s -Dchecker.webpage=%s" % (
-                 checker_dir, checker_framework_interm_dir, "checkers-manual", "checkers-webpage.html"
+                 checker_dir, checker_framework_interm_dir, "checker-framework-manual", "checker-framework-webpage.html"
     )
 
     ant_cmd   = "ant -f release.xml %s checker-framework-website-docs " % ant_props
