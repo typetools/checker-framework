@@ -82,7 +82,7 @@
         <fail unless="afu.release.date"    message="afu.release.date property is not set!"/>
 
         <property name="checker.manual"      value="${checker}/manual"                       />
-        <property name="checkerWebPage"      value="${checker.manual}/checkers-webpage.html" />
+        <property name="checkerWebPage"      value="${checker.manual}/checker-framework-webpage.html" />
         <property name="maven.plugin"         value="${checker}/../maven-plugin"             />
         <property name="checker.binary.poms"  value="${maven.plugin}/poms"                   />
         <property name="checker.release.poms" value="${maven.plugin}/release/"               />
