@@ -22,7 +22,7 @@
       </h4>
      </li>
      <li><a href="http://types.cs.washington.edu/checker-framework/">Main Site</a></li>
-     <li><a href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html">Manual</a></li>
+     <li><a href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html">Manual</a></li>
      <li><a href="https://groups.google.com/forum/?fromgroups#!forum/checker-framework-discuss">Discussion List</a></li>
      <li><a href="http://code.google.com/p/checker-framework/issues/list">Issue Tracker</a></li>
      <li><a href="http://code.google.com/p/checker-framework/source/checkout">Source Code</a></li>
@@ -140,14 +140,14 @@ RegexExample.java:18: error: [group.count.invalid] invalid groups parameter 1. O
 					To fix, <b>verify the user input</b> using the
 					RegexUtil.isRegex(String, int) method. You must <b>import
 						org.checkerframework.checker.regex.RegexUtil</b>. Please see the <a
-						href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#annotating-with-regex">
+						href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#annotating-with-regex">
 						Regex chapter</a> in the manual for a full discussion of
 					<code>RegexUtil</code>
 					class. If it is not a valid regular expression, <b>print an
 						error message</b> and do not check for matches. If it is a valid
 					regular expression, preform as before. It is not necessary to add
 					an annotation to regex because the Regex Checker adds <a
-						href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#effective-qualifier">
+						href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#effective-qualifier">
 						implicit qualifiers</a>. Below are all the changes that need to be
 					made to RegexExample.java to correctly handle the user input.
 				</p>
@@ -183,7 +183,7 @@ Input is not a regular expression "[01]??[d-([0123]??d)-d{4}+": Illegal characte
 </pre>
 				<p>
 					For a full discussion of this checker, please see the <a
-						href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#regex-checker">
+						href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#regex-checker">
 						Regex Checker section</a> of the manual.
 				</p>
 
