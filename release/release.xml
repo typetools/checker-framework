@@ -252,7 +252,7 @@
                         includes="bin/javac" filemode="755"/>
 
             <zipfileset dir="${checkerframework}" prefix="checker-framework-${version}"
-                        includes="api/** changelog-checkerframework.txt README.txt"/>
+                        includes="api/** changelog-checkerframework.txt README.html LICENSE.txt"/>
 
             <zipfileset dir="${checkerframework}" prefix="checker-framework-${version}"
                         includes="tutorial/**"
