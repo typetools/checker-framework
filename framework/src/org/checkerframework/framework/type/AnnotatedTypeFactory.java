@@ -72,7 +72,6 @@ import org.checkerframework.javacutil.trees.DetachedVarSymbol;
 //The following imports are from com.sun, but they are all
 //@jdk.Exported and therefore somewhat safe to use.
 //Try to avoid using non-@jdk.Exported classes.
-
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
@@ -1253,13 +1252,30 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * TODO: handle enclosing classes correctly.
      */
     public AnnotatedDeclaredType getSelfType(Tree tree) {
-        AnnotatedDeclaredType type = getCurrentClassType(tree);
-        AnnotatedDeclaredType methodReceiver = getCurrentMethodReceiver(tree);
-        if (shouldTakeFromReceiver(methodReceiver)) {
-            // TODO what about all annotations on the receiver?
-            // Code is also duplicated above.
-            type.clearAnnotations();
-            type.addAnnotations(methodReceiver.getAnnotations());
+        TreePath path = getPath(tree);
+        ClassTree enclosingClass = TreeUtils.enclosingClass(path);
+        if (enclosingClass == null) {
+            // I hope this only happens when tree is a fake tree that
+            // we created, e.g. when desugaring enhanced-for-loops.
+            enclosingClass = getCurrentClassTree(tree);
+        }
+        AnnotatedDeclaredType type = getAnnotatedType(enclosingClass);
+
+        MethodTree enclosingMethod = TreeUtils.enclosingMethod(path);
+        if (enclosingClass.getSimpleName().length() != 0 &&
+                enclosingMethod != null) {
+            AnnotatedDeclaredType methodReceiver;
+            if (TreeUtils.isConstructor(enclosingMethod)) {
+                methodReceiver = (AnnotatedDeclaredType) getAnnotatedType(enclosingMethod).getReturnType();
+            } else {
+                methodReceiver = getAnnotatedType(enclosingMethod).getReceiverType();
+            }
+            if (shouldTakeFromReceiver(methodReceiver)) {
+                // TODO what about all annotations on the receiver?
+                // Code is also duplicated above.
+                type.clearAnnotations();
+                type.addAnnotations(methodReceiver.getAnnotations());
+            }
         }
         return type;
     }
@@ -1267,7 +1283,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /**
      * Determine the type of the most enclosing class of the given tree that
      * is a subtype of the given element. Receiver type annotations of an
-     * enclosing method are considered.
+     * enclosing method are considered, similarly return type annotations of an
+     * enclosing constructor.
      */
     public AnnotatedDeclaredType getEnclosingType(TypeElement element, Tree tree) {
         Element enclosingElt = getMostInnerClassOrMethod(tree);
@@ -1278,8 +1295,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 if (method.asType() != null // XXX: hack due to a compiler bug
                         && isSubtype((TypeElement)method.getEnclosingElement(), element)) {
                     if (ElementUtils.isStatic(method)) {
-                        // TODO: why not the type of the class?
-                        return null;
+                        // Static methods should use type of enclosing class,
+                        // by simply taking another turn in the loop.
+                    } else if (method.getKind() == ElementKind.CONSTRUCTOR){
+                        // return getSelfType(this.declarationFromElement(method));
+                        return (AnnotatedDeclaredType) getAnnotatedType(method).getReturnType();
                     } else {
                         return getAnnotatedType(method).getReceiverType();
                     }
@@ -1807,14 +1827,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /**
      * Returns the receiver type of the current method being visited, and
-     * returns null if the visited tree is not within a method.
+     * returns null if the visited tree is not within a method or if that
+     * method has no receiver (e.g. a static method).
      *
      * The method uses the parameter only if the most enclosing method cannot
      * be found directly.
      *
      * @return receiver type of the most enclosing method being visited.
      */
-    protected final AnnotatedDeclaredType getCurrentMethodReceiver(Tree tree) {
+    protected final /*@Nullable*/ AnnotatedDeclaredType getCurrentMethodReceiver(Tree tree) {
         AnnotatedDeclaredType res = visitorState.getMethodReceiver();
         if (res == null) {
             TreePath path = getPath(tree);
