@@ -1062,12 +1062,20 @@ error if a program tries to access \<myMammal.pouchSize>.
 
 If you cannot use subtypes in your program, you can enforce similar
 requirements using type qualifiers.
-% Section~\ref{unused-fields}
-Section~\ref{unused-annotation}
-describes
-the \<@Unused> annotation, which enforces that a field or method may only
+For fields, use the \<@Unused> annotation (Section~\ref{unused-annotation}), which enforces that a field or method may only
 be accessed from a receiver expression with a given annotation (or one of
 its subtypes).
+For methods, annotate the receiver parameter \<this>; then a method call
+type-checks only if the actual receiver is of the specified type.
+
+% For example, consider the declaration
+%   void getChars(@Untainted String this, int srcBegin, int srcEnd, char[] dst,
+%   int dstBegin) { ... }
+% Now, the invocation
+%   myString.getChars(a, b, c, d)
+% type-checks only if myString has type @Untainted String.  It does not
+% type-check if myString has type @Tainted String.
+
 
 % Then,
 % Section~\ref{dependent-types} describes an even more powerful mechanism, by

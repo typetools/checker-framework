@@ -82,7 +82,7 @@
         <fail unless="afu.release.date"    message="afu.release.date property is not set!"/>
 
         <property name="checker.manual"      value="${checker}/manual"                       />
-        <property name="checkerWebPage"      value="${checker.manual}/checkers-webpage.html" />
+        <property name="checkerWebPage"      value="${checker.manual}/checker-framework-webpage.html" />
         <property name="maven.plugin"         value="${checker}/../maven-plugin"             />
         <property name="checker.binary.poms"  value="${maven.plugin}/poms"                   />
         <property name="checker.release.poms" value="${maven.plugin}/release/"               />
@@ -252,7 +252,7 @@
                         includes="bin/javac" filemode="755"/>
 
             <zipfileset dir="${checkerframework}" prefix="checker-framework-${version}"
-                        includes="api/** changelog-checkerframework.txt README.txt"/>
+                        includes="api/** changelog.txt README.html LICENSE.txt"/>
 
             <zipfileset dir="${checkerframework}" prefix="checker-framework-${version}"
                         includes="tutorial/**"
@@ -361,7 +361,7 @@
             <fileset dir="${checker.tutorial}" includes="**"/>
         </copy>
 
-        <copy todir="${dest.dir}" file="${checker}/../changelog-checkerframework.txt" />
+        <copy todir="${dest.dir}" file="${checker}/../changelog.txt" />
 
         <copy todir="${dest.dir}/api" flatten="false">
             <fileset dir="${checker}/../api">

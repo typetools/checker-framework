@@ -461,10 +461,10 @@ In other cases, your code needs to be run by people who are not using a Java~8
 JVM\@.  Section~\ref{java5-class-files} discusses this situation, which
 you can handle by passing the \code{-target 5} command-line argument.
 
-(\textbf{Note:} These are features of the Type Annotations compiler that is
+(\textbf{Note:} These are features of the javac compiler that is
 distributed along with the Checker Framework.  They are \emph{not}
-supported by the mainline OpenJDK compiler.  These features are the key
-difference between the Type Annotations compiler and the OpenJDK compiler
+supported by the mainline OpenJDK javac.  These features are the key
+difference between the Checker Framework compiler and the OpenJDK compiler
 on which it is built.)
 
 %   For more details
@@ -481,9 +481,9 @@ declarations (but not on generic arguments, casts, \<extends> clauses, method re
 So that your code can be compiled by any Java compiler (for any version of
 the Java language), you may write any single annotation inside a
 \code{/*}\ldots\code{*/} Java comment, as in \code{List</*@NonNull*/ String>}.
-The Type Annotations compiler treats the code exactly as if you had not written the
+The Checker Framework compiler treats the code exactly as if you had not written the
 \code{/*} and \code{*/}.
-In other words, the Type Annotations compiler will recognize the
+In other words, the Checker Framework compiler will recognize the
 annotation, but your code will still compile with any other Java compiler.
 
 This feature only works if you provide no \code{-source} command-line
@@ -513,11 +513,11 @@ inserting spaces:  in the Formatter preferences, in the Comments tab,
 unselect the ``enable block comment formatting'' checkbox.
 
 Compiler flag \code{-XDTA:noannotationsincomments} causes the compiler
-to ignore annotation comments.  With this compiler flag the Type
-Annotations compiler behaves like a standard Java 8 compiler that does
+to ignore annotation comments.  With this compiler flag the 
+Checker Framework compiler behaves like a standard Java 8 compiler that does
 not support annotations in comments.  If your code already contains
 comments of the form \</*@...*/> that look like type annotations, and
-you want the Type Annotations compiler not to try to interpret them,
+you want the Checker Framework compiler not to try to interpret them,
 then you can either selectively add spaces to the comments or use
 \code{-XDTA:noannotationsincomments} to turn off all annotation
 comments.
@@ -526,8 +526,8 @@ There is a more powerful mechanism that permits arbitrary code to be
 written in a comment that is formatted as ``\code{/*>>>}\ldots\code{*/}'',
 with the first three characters of the comment being greater-than signs. As
 with annotations in comments, the commented code is ignored by ordinary
-compilers but is treated like ordinary code by the UW Type Annotations
-compiler.
+compilers but is treated like ordinary code by the
+Checker Framework compiler.
 
 This mechanism is intended for two purposes.
 First, it supports the receiver (\<this> parameter) syntax, as in
@@ -560,7 +560,7 @@ inside its own comment, as in \</*@NonNull*/ /*@Interned*/ String s;>.
 
 It would be possible to abuse the \code{/*>>>...*/} mechanism to inject
 code only when using
-the Type Annotations compiler.  Doing so is not a sanctioned use of the
+the Checker Framework compiler.  Doing so is not a sanctioned use of the
 mechanism.
 
 
@@ -591,12 +591,12 @@ Write an import statement in a comment, just as for annotations in comments:
 \item
 An alternative is to set the shell environment variable
 \code{jsr308\_imports} when you compile the code.
-The Type Annotations compiler treats this as if the given packages/classes were
+The Checker Framework compiler treats this as if the given packages/classes were
 imported, but other compilers
 ignore the
 \code{jsr308\_imports} environment variable --- they do not need it, since
 they do not support annotations in comments.  Thus, your code can compile
-whether or not the Type Annotations compiler is being used.
+whether or not the Checker Framework compiler is being used.
 
 \begin{sloppypar}
 You can specify multiple packages/classes separated by the classpath separator
@@ -684,7 +684,7 @@ explicit import statements into your code.
 
 If you supply the \code{-target 5} command-line argument along with no
 \code{-source} argument (or \code{-source 8}, which is equivalent), then the
-Type Annotations compiler creates a \code{.class} file that can be run on a
+Checker Framework compiler creates a \code{.class} file that can be run on a
 Java 5 JVM, but that contains the type annotations.  (It does not matter
 whether the type annotations were written in comments or not.)  The fact
 that the \code{.class} file contains the type annotations is useful when
