@@ -118,8 +118,10 @@ The type com.sun.source.util.AbstractTypeProcessor cannot be resolved.
 \end{alltt}
 
 \noindent
-then you are likely NOT using the Checker Framework compiler.  Use
-either \code{\$CHECKERFRAMEWORK/checker/bin/javac} or \code{"java -jar \$CHECKERFRAMEWORK/checker/dist/checker.jar"}.
+then you are likely \textbf{not} using the Checker Framework compiler.  Use
+either \code{\$CHECKERFRAMEWORK/checker/bin/javac} one of the alternatives
+described in Section~\ref{installation}.
+
 
 \item
 If you get the error
@@ -314,7 +316,7 @@ If the annotations do not appear in the \code{.class} file, here are two
 ways to solve the problem:
 \begin{itemize}
 \item
-  Re-compile the method's class with the Type Annotations compiler.  This will
+  Re-compile the method's class with the Checker Framework compiler.  This will
   ensure that the type annotations are written to the class file, even if
   no type-checking happens during that execution.
 \item
@@ -551,6 +553,13 @@ in the Checker Framework release.)
 
 
 \subsection{Build the Type Annotations compiler}
+
+The Checker Framework compiler is built upon a compiler called the Type
+Annotations compiler.  The Type Annotations compiler is a variant of the
+OpenJDK javac that supports annotations in comments.  The Checker Framework
+compiler is a small wrapper around the Type Annotations compiler, which
+adds annotated JDKs and the Checker Framework jars to the classpath.
+
 
 \begin{enumerate}
 \item
