@@ -1718,6 +1718,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          */
         private AnnotationMirror resultAnnotationHandler(Class<?> resultClass,
                 List<Object> results) {
+            //For some reason null is included in the list of values,
+            //so remove it so that it does not cause a NPE else where.
+            results.remove(null);
             if (results.size() == 0) {
                 return UNKNOWNVAL;
             } else if (resultClass == Boolean.class
