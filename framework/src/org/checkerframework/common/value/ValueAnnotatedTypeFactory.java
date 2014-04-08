@@ -1,5 +1,11 @@
 package org.checkerframework.common.value;
 
+import static org.checkerframework.framework.qual.DefaultLocation.LOCAL_VARIABLE;
+import static org.checkerframework.framework.qual.DefaultLocation.OTHERWISE;
+import static org.checkerframework.framework.qual.DefaultLocation.RECEIVERS;
+import static org.checkerframework.framework.qual.DefaultLocation.RESOURCE_VARIABLE;
+import static org.checkerframework.framework.qual.DefaultLocation.UPPER_BOUNDS;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -32,6 +38,7 @@ import org.checkerframework.common.value.qual.LongVal;
 import org.checkerframework.common.value.qual.ShortVal;
 import org.checkerframework.common.value.qual.StringVal;
 import org.checkerframework.common.value.qual.UnknownVal;
+import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.qual.TypeQualifiers;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -41,6 +48,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayTyp
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
+import org.checkerframework.framework.util.QualifierDefaults;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
@@ -431,6 +439,15 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return new ValueTreeAnnotator(this);
     }
 
+    @Override
+    protected QualifierDefaults createQualifierDefaults() {
+        QualifierDefaults defaults =  super.createQualifierDefaults();
+        defaults.addAbsoluteDefault(UNKNOWNVAL, OTHERWISE);
+
+        return defaults;
+    }
+
+    
     /**
      * The TreeAnnotator for this AnnotatedTypeFactory
      */
@@ -690,8 +707,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     Class<?> argClass = getTypeValueClass(finalTypeString, tree);
                     handleCast(tree.getExpression(), finalTypeString, argType);
 
-                    AnnotationMirror argAnno = argType
-                            .getAnnotationInHierarchy(UNKNOWNVAL);
+                    AnnotationMirror argAnno = getValueAnnotation(argType);
                     AnnotationMirror newAnno = evaluateUnaryOperator(argAnno,
                             operation.toString(), argClass, tree);
                     if (newAnno != null) {
@@ -766,10 +782,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 else {
 
                     if (AnnotationUtils.areSameIgnoringValues(
-                            lhsType.getAnnotationInHierarchy(UNKNOWNVAL),
+                            getValueAnnotation(lhsType),
                             STRINGVAL)) {
-                        argClass = getAnnotationValueClass(lhsType
-                                .getAnnotationInHierarchy(UNKNOWNVAL));
+                        argClass = getAnnotationValueClass(getValueAnnotation(lhsType));
                     } else {
                         argClass = getTypeValueClass("double", tree);
 
@@ -777,10 +792,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                                 tree.getRightOperand(), rhsType, "double");
                     }
                 }
-                AnnotationMirror lhsAnno = lhsType
-                        .getAnnotationInHierarchy(UNKNOWNVAL);
-                AnnotationMirror rhsAnno = rhsType
-                        .getAnnotationInHierarchy(UNKNOWNVAL);
+                AnnotationMirror lhsAnno = getValueAnnotation(lhsType);
+                AnnotationMirror rhsAnno = getValueAnnotation(rhsType);
 
                 AnnotationMirror newAnno = evaluateBinaryOperator(lhsAnno,
                         rhsAnno, operation.toString(), argClass, tree);
@@ -1300,7 +1313,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // KNOWN-LENGTH ARRAYS
             if (AnnotationUtils
                     .areSameIgnoringValues(
-                            receiverType.getAnnotationInHierarchy(UNKNOWNVAL),
+                            getValueAnnotation(receiverType),
                             ARRAYLEN)) {
                 if (tree.getIdentifier().contentEquals("length")) {
                     type.replaceAnnotation(handleArrayLength(receiverType));
@@ -1348,8 +1361,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          */
         private AnnotationMirror handleArrayLength(
                 AnnotatedTypeMirror receiverType) {
-            AnnotationMirror recAnno = receiverType
-                    .getAnnotationInHierarchy(UNKNOWNVAL);
+            AnnotationMirror recAnno = getValueAnnotation(receiverType);
 
             if (AnnotationUtils.areSameIgnoringValues(recAnno, ARRAYLEN)) {
                 HashSet<Integer> lengthValues = new HashSet<Integer>(
@@ -1573,8 +1585,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (!nonValueAnno(typeMirror)) {
                 // Class<?> annoValueClass =
                 // getTypeValueClass(typeMirror.getUnderlyingType().toString());
-                Class<?> annoValueClass = getAnnotationValueClass(typeMirror
-                        .getAnnotationInHierarchy(UNKNOWNVAL));
+                Class<?> annoValueClass = getAnnotationValueClass(getValueAnnotation(typeMirror));
 
                 @SuppressWarnings("unchecked")
                 // We know any type of value array
@@ -1583,7 +1594,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 // casting it to that
                 List<Object> tempValues = (List<Object>) AnnotationUtils
                         .getElementValueArray(
-                                typeMirror.getAnnotationInHierarchy(UNKNOWNVAL),
+                                getValueAnnotation(typeMirror),
                                 "value", annoValueClass, true);
 
                 // Since we will be reflectively invoking the method with these
@@ -1718,6 +1729,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          */
         private AnnotationMirror resultAnnotationHandler(Class<?> resultClass,
                 List<Object> results) {
+            //For some reason null is included in the list of values,
+            //so remove it so that it does not cause a NPE else where.
+            results.remove(null);
             if (results.size() == 0) {
                 return UNKNOWNVAL;
             } else if (resultClass == Boolean.class
@@ -1817,8 +1831,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
             AnnotatedTypeMirror treeType = getAnnotatedType(tree);
             if (!nonValueAnno(treeType)) {
-                AnnotationMirror treeAnno = treeType
-                        .getAnnotationInHierarchy(UNKNOWNVAL);
+                AnnotationMirror treeAnno = getValueAnnotation(treeType);
 
                 String anno = "org.checkerframework.common.value.qual.";
                 if (castTypeString.equals("boolean")) {
@@ -1918,6 +1931,14 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
         }
 
+        private AnnotationMirror getValueAnnotation(AnnotatedTypeMirror atm) {
+            AnnotationMirror anno = atm.getAnnotationInHierarchy(UNKNOWNVAL);
+            if(anno == null){
+                anno = atm.getEffectiveAnnotationInHierarchy(UNKNOWNVAL);
+            }
+            return anno;
+        }
+
         /**
          * To make these numerous calls to check if an annotation is UnknownVal
          * or ArrayLen a little nicer looking
@@ -1930,7 +1951,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          */
         private boolean nonValueAnno(AnnotatedTypeMirror mirror) {
             return AnnotationUtils.areSameIgnoringValues(
-                    mirror.getAnnotationInHierarchy(UNKNOWNVAL), UNKNOWNVAL)
+                    getValueAnnotation(mirror), UNKNOWNVAL)
                     || AnnotationUtils
                             .areSameIgnoringValues(
                                     mirror.getAnnotationInHierarchy(ARRAYLEN),
