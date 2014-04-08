@@ -23,7 +23,7 @@ import org.checkerframework.checker.regex.qual.*;
  * <p>
  *
  * For an example of intended use, see section <a
- * href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#regexutil-methods">Testing
+ * href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#regexutil-methods">Testing
  * whether a string is a regular expression</a> in the Checker Framework
  * manual.
  * <p>

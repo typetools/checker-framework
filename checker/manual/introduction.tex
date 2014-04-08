@@ -210,9 +210,8 @@ optional step.
   Optionally, update your execution path or create an alias.
 
   When doing pluggable type-checking, you need to use the ``Checker
-  Framework compiler''.  The Checker Framework compiler in turn uses the
-  ``Type Annotations compiler'', an advance version of the OpenJDK 8 javac
-  compiler that understands type annotations.  The Type Annotations
+  Framework compiler'', a variant of the OpenJDK 8 javac
+  compiler.  The Checker Framework
   compiler is backward-compatible, so using it as your Java compiler, even
   when you are not doing pluggable type-checking, should have no negative
   consequences.
@@ -220,25 +219,31 @@ optional step.
   You can use the Checker Framework compiler in three ways.  You can use any one of them.  However, if
   you are using the Windows command shell, you must use the last one.
 
-  First, set a \code{CHECKERFRAMEWORK} environment variable to the
-  \code{.../checker-framework} directory.  Alternately, you can
+  (The directions use a \code{CHECKERFRAMEWORK} environment variable to the
+  \code{.../checker-framework} directory.  You can set such an environment
+  variable, or alternately, you can
   use an absolute path where the below instructions use the \code{CHECKERFRAMEWORK}
-  environment variable.
+  environment variable.)
 
   % Is the last one required for Cygwin, as well as for the Windows command shell?
 
   \begin{itemize}
   \item
+    Option 1:
     Add directory
     \code{\$CHECKERFRAMEWORK/checker/bin} to your path, \emph{before} any other
     directory that contains a \<javac> executable.  Now, whenever
     you run \code{javac}, you will use the updated compiler.  If you are
     using the bash shell, a way to do this is to add the following to your
-    \verb|~/.bashrc| file:
+    \verb|~/.profile| (or alternately \verb|~/.bash_profle| or \verb|~/.bashrc|) file:
 \begin{Verbatim}
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.8.0
   export PATH=${CHECKERFRAMEWORK}/checker/bin:${PATH}
 \end{Verbatim}
+    then log out and back in to ensure that the environment variable
+    setting takes effect.
   \item
+    Option 2:
     Whenever this document tells you to run \code{javac}, you
     can instead run \code{\$CHECKERFRAMEWORK/checker/bin/javac}.
 
@@ -251,7 +256,8 @@ optional step.
   alias javacheck='$CHECKERFRAMEWORK/checker/bin/javac'
 \end{Verbatim}
 
- \item
+   \item
+   Option 3:
    Whenever this document tells you to run \code{javac}, instead
    run checker.jar via \<java> (not \<javac>) as in:
 
@@ -259,7 +265,7 @@ optional step.
   java -jar $CHECKERFRAMEWORK/checker/dist/checker.jar ...
 \end{Verbatim}
 
-   More generally, anywhere that you use \<javac.jar>, you can substitute
+   More generally, anywhere that you would use \<javac.jar>, you can substitute
    \<\$CHECKERFRAMEWORK/checker/dist/checker.jar>; the result is to use the Checker
    Framework compiler instead of the regular \<javac>.
 
@@ -294,7 +300,7 @@ full pathname to \<javac> or the alias, if you did not add the Type Annotations 
 The output should be:
 
 \begin{Verbatim}
-  javac 1.7.0-jsr308-1.7.5
+  javac 1.7.0-jsr308-1.8.0
 \end{Verbatim}
 
 That's all there is to it!  Now you are ready to start using the checkers.
@@ -333,8 +339,8 @@ then you will instead use the command line:
 \end{alltt}
 
 \noindent
-but take note that the \code{javac} command must refer to the Type
-Annotations compiler (see Section~\ref{installation}).
+but take note that the \code{javac} command must refer to the
+Checker Framework compiler (see Section~\ref{installation}).
 
 
 If you usually do your coding within an IDE, you will need to configure
@@ -479,11 +485,11 @@ receivers.  Here are a few examples:
 \end{alltt}
 
 You can also write the annotations within comments, as in
-\code{List</*@NonNull*/ String>}.  The Type Annotations compiler, which is
+\code{List</*@NonNull*/ String>}.  The Checker Framework compiler, which is
 distributed with the Checker Framework, will still process
 the annotations.
 However, your code will remain compilable by people who are not using the
-Type Annotations compiler.  For more details, see
+Checker Framework compiler.  For more details, see
 Section~\ref{annotations-in-comments}.
 
 
@@ -564,8 +570,8 @@ Two concrete examples (using the Nullness Checker) are:
 
 \noindent
 Note that the two invocations above are equivalent.  Each one invokes the
-Checker Framework compiler, which in turn invokes the Type Annotations compiler
-with an annotated JDK on its classpath.  For more information on annotated
+Checker Framework compiler, automatically adds 
+the annotated JDK to the classpath.  For more information on annotated
 JDKs, see Section~\ref{skeleton-using}.
 
 The checker is run on only the Java files that javac compiles.
@@ -717,7 +723,7 @@ checker is a type of ``annotation processor''.
 \item \<-XDTA:noannotationsincomments> and \<-XDTA:spacesincomments>
   to turn off parsing annotation comments and
   to turn on parsing annotation comments even when they
-  contain spaces; applicable only to the Type Annotations compiler;
+  contain spaces; applicable only to the Checker Framework compiler;
   see Section~\ref{annotations-in-comments}
 \item \<-J> Supply an argument to the JVM that is running javac; example: \\
   \<-J-Djsr308\_imports=org.checkerframework.checker.nullness.qual.*:org.checkerframework.dataflow.qual.*> \\

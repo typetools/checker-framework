@@ -95,7 +95,7 @@ JDK8_BINARY      = os.path.join(CHECKER_BIN_DIR, 'jdk8.jar' )
 
 FRAMEWORK_BINARY = os.path.join(CHECKER_FRAMEWORK, 'framework', 'dist', 'framework.jar' )
 
-CHECKER_CHANGELOG = os.path.join(CHECKER_FRAMEWORK, 'changelog-checkerframework.txt')
+CHECKER_CHANGELOG = os.path.join(CHECKER_FRAMEWORK, 'changelog.txt')
 
 JSR308_LANGTOOLS    = os.path.join(BUILD_DIR, 'jsr308-langtools')
 JSR308_LT_DOC       = os.path.join(JSR308_LANGTOOLS, 'doc')
