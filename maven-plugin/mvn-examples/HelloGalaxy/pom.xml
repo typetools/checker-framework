@@ -34,28 +34,13 @@
       <version>3.1</version>
     </dependency>
     
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>servlet-api</artifactId>
-            <version>2.4</version>
-            <scope>provided</scope>
-        </dependency>
+    <dependency>
+        <groupId>javax.servlet</groupId>
+        <artifactId>servlet-api</artifactId>
+        <version>2.4</version>
+        <scope>provided</scope>
+    </dependency>
   </dependencies>
-
-  <repositories>
-    <repository>
-        <id>checker-framework-repo</id>
-        <url>http://types.cs.washington.edu/m2-repo</url>
-    </repository>
-  </repositories>
-
-  <pluginRepositories>
-    <pluginRepository>
-      <id>checker-framework-repo</id>
-      <!--<url>file:/Users/jburke/Documents/local_repos/m2-repo</url>-->
-      <url>http://types.cs.washington.edu/m2-repo</url>
-    </pluginRepository>
-  </pluginRepositories>
 
   <build>
     <plugins>
