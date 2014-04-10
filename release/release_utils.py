@@ -132,11 +132,33 @@ def execute(command_args, halt_if_fail=True, capture_output=False, working_dir=N
             raise Exception('Error %s while executing %s' % (r, command_args))
         return r
 
+def execute_write_to_file(command_args, output_file_path, halt_if_fail=True, working_dir=None):
+    print("Executing: %s" % (command_args))
+    import shlex
+    args = shlex.split(command_args) if isinstance(command_args, str) else command_args
+
+    output_file = open( output_file_path, 'w+' )
+    process = subprocess.Popen(args, stdout=output_file, stderr=output_file, cwd=working_dir)
+    process.communicate()
+    process.wait()
+    output_file.close()
+
+    if process.returncode != 0 and halt_if_fail:
+        raise Exception('Error %s while executing %s' % (process.returncode, command_args))
+
 def check_command(command):
     p = execute(['which', command], False)
     if p:
         raise AssertionError('command not found: %s' % command)
     print ''
+
+def prompt_yes_no( msg, default=False ):
+    default_str = "no"
+    if default:
+        default_str="yes"
+
+    result = prompt_w_suggestion(msg, default_str, "^(Yes|yes|No|no)$")
+    return is_yes( result )
 
 def prompt_yn(msg):
     y_or_n = 'z'
@@ -151,6 +173,10 @@ def maybe_prompt_yn(msg, prompt):
         return True
 
     return prompt_yn(msg)
+
+def prompt_until_yes():
+    while( not prompt_yes_no("Continue?" ) ):
+        pass
 
 def prompt_w_suggestion(msg, suggestion, validRegex=None):
     answer = None
@@ -327,17 +353,14 @@ def get_afu_version_from_html( html_file_path ):
 
     return version
 
-
-    
 #=========================================================================================
 # Mercurial Utils
 
 def hg_push_or_fail( repo_root ):
     cmd = 'hg -R %s push' % repo_root
-    print("EXE: " + cmd)
-    #result = os.system('hg -R %s push' % repo_root)
-    #if result is not 0:
-    #    raise Exception("Could not push to: " + repo_root)
+    result = os.system('hg -R %s push' % repo_root)
+    if result is not 0:
+        raise Exception("Could not push to: " + repo_root)
 
 def hg_push( repo_root ):
     execute('hg -R %s push' % repo_root)
@@ -441,8 +464,80 @@ def check_repos(repos, fail_on_error):
                     if not prompt_yn( '%s is not clean and up to date! Continue?' % repo):
                         raise Exception( '%s is not clean and up to date! Halting!' % repo )
 
+def get_tag_line( lines, revision, tag_prefixes ):
+    for line in lines:
+        for prefix in tag_prefixes:
+            full_tag = prefix + revision
+            if line.startswith( full_tag ):
+                return line
+    return None
+
+def get_hash_for_tag( revision, repo_file_path, tag_prefixes ):
+    tags = execute("hg tags -R " + repo_file_path, True, True)
+    lines = tags.split( "\n" )
+
+    target = get_tag_line( lines, revision, tag_prefixes )
+    if target is None:
+        msg = "Could not find revision %s in repo %s using tags %s " %  ( revision, repo_file_path, ",".join( tag_prefixes ) )
+        raise Exception( msg )
+
+    tokens = target.split()
+    hash = tokens[1].split(":")[1]
+    return hash
+
+def get_tip_hash( repository ):
+    return get_hash_for_tag( "tip", repository, [""] )
+
+def write_changesets_since( old_version, repository, tag_prefixes, file ):
+    old_tag = get_hash_for_tag( old_version, repository, tag_prefixes )
+    tip_tag = get_tip_hash( repository )
+
+    cmd = "hg -R %s log -r%s:%s" % ( repository, old_tag, tip_tag )
+    execute_write_to_file( cmd, file)
+
+def write_changes_to_file( old_version, repository, tag_prefixes, dir_path, file ):
+    old_tag = get_hash_for_tag( old_version, repository, tag_prefixes )
+    tip_tag = get_tip_hash( repository )
+    cmd = "hg -R %s diff -w -r%s:%s %s" % (repository, old_tag, tip_tag, dir_path )
+    execute_write_to_file( cmd, file )
+
+def propose_changelog_edit( project_name, changelog_file_path, changeset_output_file,
+                            old_version, repository_path, tag_prefixes ):
+    if prompt_yes_no( "Review changelog for %s ?" % project_name, True ):
+        write_changesets_since( old_version, repository_path, tag_prefixes, changeset_output_file )
+        print( "Please review the " + project_name + "changelog and compare it to the list of changesets.  Add any " +
+               "changes you feel are missing.  In the README-maintainers.html there is a section "  +
+               "Changelog Style Guidelines.  Please be sure the changelog meets these guidelines.\n"  +
+               "changelog : "  + changelog_file_path + "\n" +
+               "changesets : " + changeset_output_file + "\n" )
+        prompt_until_yes()
+
+def propose_change_review( dir_title, old_version, repository_path, tag_prefixes,
+                              dir_path, diff_output_file ):
+    if prompt_yes_no( "Review %s?" %dir_title, True ):
+        write_changes_to_file( old_version, repository_path, tag_prefixes, dir_path, diff_output_file )
+        print( "Please review " + dir_title + " and make any edits you deem necessary in:\n" + dir_path )
+        print( "Diff file: " + diff_output_file )
+        prompt_until_yes()
+
 #=========================================================================================
 # File Utils
+
+#since download_binary does not seem to work on source files
+def wget_file( source_url, destination_dir ):
+    print("DEST DIR: " + destination_dir)
+    execute( "wget %s" % source_url, True, False, destination_dir )
+
+#Note:  This will download the directory into a directory location as follow:
+#Suppose we have a ur:  http://level0/level1/target
+#It will download the files into the following directory
+#destination_dir/level0/level1/target
+#use wget_dir_flat if you'd like all files to be just output to destination_dir
+def wget_dir( source_url, destination_dir ):
+    execute( "wget -r -l1 --no-parent %s" % source_url, True, False, destination_dir )
+
+def wget_dir_flat( source_url, desination_dir ):
+    execute( "wget -r -l1 --no-parent -nd %s" % source_url, True, False, destination_dir )
 
 def download_binary( source_url, destination, max_size ):
     http_response = urllib2.urlopen(url=source_url)
@@ -457,6 +552,12 @@ def download_binary( source_url, destination, max_size ):
     dest_file = open(destination,'wb')
     dest_file.write(http_response.read())
     dest_file.close()
+
+def read_first_line( file_path ):
+    file = open( file_path, 'r' )
+    first_line = file.readline()
+    file.close()
+    return first_line
 
 def file_contains(path, text):
     f = open(path, 'r')
@@ -524,6 +625,12 @@ def is_yes(prompt_results):
         return True
     return False
 
+def is_no(prompt_results):
+    if prompt_results == "no" or prompt_results == "No":
+        return True
+    return False
+
+
 def prompt_to_delete(path):
     if os.path.exists(path):
         result = prompt_w_suggestion("Delete the following file:\n %s [Yes|No]" % path, "no", "^(Yes|yes|No|no)$")
@@ -554,6 +661,23 @@ def are_in_file( file_path, strs_to_find ):
                 index = index + 1
 
     return len( strs_to_find ) == 0
+
+def insert_before_line( to_insert, file_path, line ):
+    mid_line = line - 1
+
+    with open( file_path ) as file:
+        content = file.readlines()
+
+    output = open(file_path, "w")
+    for i in range(0, mid_line ):
+        output.write( content[i] )
+
+    output.write( to_insert )
+
+    for i in range( mid_line, len(content) ):
+        output.write( content[i] )
+
+    output.close()
 
 #=========================================================================================
 # Change Log utils
@@ -695,20 +819,31 @@ def mvn_deploy_mvn_plugin(pluginDir, pom, version, mavenRepo):
     jarFile = find_mvn_plugin_jar(pluginDir, version)
     return mvn_deploy(jarFile, pom, mavenRepo)
 
-def mvn_sign_and_deploy(url, repo_id, pom_file, file, classifier):
+def mvn_sign_and_deploy( url, repo_id, pom_file, file, classifier, pgp_user, pgp_passphrase ):
     cmd = "mvn gpg:sign-and-deploy-file -Durl=%s -DrepositoryId=%s -DpomFile=%s -Dfile=%s" % (url, repo_id, pom_file, file)
     if classifier is not None:
         cmd += " -Dclassifier=" + classifier
 
+    cmd += ( " -Dgpg.keyname=%s -Dgpg.passphrase=%s" % ( pgp_user, pgp_passphrase ) )
+
     execute(cmd)
 
-def mvn_sign_and_deploy_all(url, repo_id, pom_file, artifact_jar, source_jar, javadoc_jar):
-    mvn_sign_and_deploy(url, repo_id, pom_file, artifact_jar, None)
-    mvn_sign_and_deploy(url, repo_id, pom_file, source_jar,  "sources")
-    mvn_sign_and_deploy(url, repo_id, pom_file, javadoc_jar, "javadoc")
+def mvn_sign_and_deploy_all(url, repo_id, pom_file, artifact_jar, source_jar, javadoc_jar, pgp_user, pgp_passphrase):
+    mvn_sign_and_deploy(url, repo_id, pom_file, artifact_jar, None,     pgp_user, pgp_passphrase)
+    mvn_sign_and_deploy(url, repo_id, pom_file, source_jar,  "sources", pgp_user, pgp_passphrase)
+    mvn_sign_and_deploy(url, repo_id, pom_file, javadoc_jar, "javadoc", pgp_user, pgp_passphrase)
 
 #=========================================================================================
 # Misc. Utils
+
+def print_step( step ):
+    print( "\n" )
+    print( step )
+
+    dashStr = ""
+    for i in range(0, len(step) ):
+        dashStr += "-"
+    print( dashStr )
 
 #def find_project_locations( ):
 #    afu_version       = max_version( AFU_INTERM_RELEASES_DIR    )

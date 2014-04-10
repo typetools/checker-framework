@@ -46,9 +46,12 @@ FILE_PATH_TO_DEV_SITE  = "/cse/www2/types/dev/"
 HTTP_PATH_TO_LIVE_SITE  = "http://types.cs.washington.edu"
 FILE_PATH_TO_LIVE_SITE  = "/cse/www2/types"
 
+PGP_PASSPHRASE_FILE = "/projects/swlab1/checker-framework/release-private.password"
 SONATYPE_OSS_URL = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
 SONATYPE_STAGING_REPO_ID = "sonatype-nexus-staging"
+SONATYPE_CLOSING_DIRECTIONS_URL = "https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide#SonatypeOSSMavenRepositoryUsageGuide-8.a.1.ClosingaStagingRepository"
 SONATYPE_RELEASE_DIRECTIONS_URL = "https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide#SonatypeOSSMavenRepositoryUsageGuide-8a.ReleaseIt"
+SONATYPE_DROPPING_DIRECTIONS_URL = "https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide#SonatypeOSSMavenRepositoryUsageGuide-DroppingaStagingRepository%28i.e.WhattoDoifYourStagingRepositoryHasErrors%29"
 
 #Location in which we will download files to run sanity checks
 SANITY_DIR = "/scratch/jsr308-release/sanity"
@@ -82,12 +85,14 @@ BUILD_DIR        = "/scratch/jsr308-release/build/"
 CHECKER_FRAMEWORK = os.path.join(BUILD_DIR, 'checker-framework')
 CHECKER_FRAMEWORK_RELEASE = os.path.join(CHECKER_FRAMEWORK, 'release')
 CHECKER_BIN_DIR  = os.path.join(CHECKER_FRAMEWORK, 'checker', 'dist')
+CHECKER_TAG_PREFIXES = [ "checkers-", "checker-framework-" ]
 
 CHECKER_BINARY   = os.path.join(CHECKER_BIN_DIR, 'checker.jar' )
 CHECKER_SOURCE   = os.path.join(CHECKER_BIN_DIR, 'checker-source.jar' )
 CHECKER_JAVADOC  = os.path.join(CHECKER_BIN_DIR, 'checker-javadoc.jar' )
 
 CHECKER_QUAL        = os.path.join(CHECKER_BIN_DIR, 'checker-qual.jar' )
+CHECKER_MANUAL = os.path.join( CHECKER_FRAMEWORK, "checker", "manual" )
 
 JAVAC_BINARY     = os.path.join(CHECKER_BIN_DIR, 'javac.jar')
 JDK7_BINARY      = os.path.join(CHECKER_BIN_DIR, 'jdk7.jar' )
@@ -101,9 +106,13 @@ JSR308_LANGTOOLS    = os.path.join(BUILD_DIR, 'jsr308-langtools')
 JSR308_LT_DOC       = os.path.join(JSR308_LANGTOOLS, 'doc')
 JSR308_CHANGELOG    = os.path.join(JSR308_LANGTOOLS, 'doc', 'changelog-jsr308.txt')
 JSR308_MAKE         = os.path.join(JSR308_LANGTOOLS, 'make')
+JSR308_TAG_PREFIXES = ["jsr308-"]
 
 ANNO_TOOLS          = os.path.join(BUILD_DIR, 'annotation-tools')
 ANNO_FILE_UTILITIES = os.path.join(ANNO_TOOLS,  'annotation-file-utilities')
+AFU_CHANGELOG = os.path.join( ANNO_FILE_UTILITIES, 'changelog.html')
+AFU_TAG_PREFIXES = [""]
+AFU_MANUAL =  os.path.join( ANNO_FILE_UTILITIES, 'annotation-file-utilities.html' )
 
 PLUME_LIB = os.path.join(BUILD_DIR, 'plume-lib')
 PLUME_BIB = os.path.join(BUILD_DIR, 'plume-bib')
