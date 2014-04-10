@@ -230,7 +230,7 @@ public abstract class DefaultQualifiedTypeFactory<Q> implements QualifiedTypeFac
 
     @Override
     public Pair<QualifiedExecutableType<Q>, List<QualifiedTypeMirror<Q>>> methodFromUse(MethodInvocationTree tree) {
-        throw new UnsupportedOperationException();
+        return adapter.superMethodFromUse(tree);
     }
 
     @Override
