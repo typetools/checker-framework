@@ -1,17 +1,23 @@
 package org.checkerframework.qualframework.base;
 
+import java.util.*;
+
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.javacutil.Pair;
 
 import org.checkerframework.qualframework.util.WrappedAnnotatedTypeMirror;
+import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedExecutableType;
 
 /**
  * Adapter class for {@link QualifiedTypeFactory}, extending
@@ -220,5 +226,31 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
         AnnotatedWildcardType result = super.getUninferredWildcardType(var);
         typeAnnotator.scanAndReduce(result, null, null);
         return result;
+    }
+
+
+    @Override
+    public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> methodFromUse(MethodInvocationTree tree) {
+        Pair<QualifiedExecutableType<Q>, List<QualifiedTypeMirror<Q>>> qualResult =
+            underlying.methodFromUse(tree);
+
+        TypeMirrorConverter<Q> conv = getCheckerAdapter().getTypeMirrorConverter();
+        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> annoResult =
+            Pair.of((AnnotatedExecutableType)conv.getAnnotatedType(qualResult.first),
+                    conv.getAnnotatedTypeList(qualResult.second));
+
+        return annoResult;
+    }
+
+    Pair<QualifiedExecutableType<Q>, List<QualifiedTypeMirror<Q>>> superMethodFromUse(MethodInvocationTree tree) {
+        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> annoResult =
+            super.methodFromUse(tree);
+
+        TypeMirrorConverter<Q> conv = getCheckerAdapter().getTypeMirrorConverter();
+        Pair<QualifiedExecutableType<Q>, List<QualifiedTypeMirror<Q>>> qualResult =
+            Pair.of((QualifiedExecutableType<Q>)conv.getQualifiedType(annoResult.first),
+                    conv.getQualifiedTypeList(annoResult.second));
+
+        return qualResult;
     }
 }

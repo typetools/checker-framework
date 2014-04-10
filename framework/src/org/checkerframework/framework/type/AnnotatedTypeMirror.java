@@ -1172,8 +1172,7 @@ public abstract class AnnotatedTypeMirror {
         private AnnotatedTypeMirror returnType;
         final private List<AnnotatedTypeMirror> throwsTypes =
             new ArrayList<AnnotatedTypeMirror>();
-        final private List<AnnotatedTypeVariable> typeVarTypes =
-            new ArrayList<AnnotatedTypeVariable>();
+        private List<AnnotatedTypeVariable> typeVarTypes = null;
 
         /**
          * @return true if this type represents a varargs method
@@ -1339,16 +1338,19 @@ public abstract class AnnotatedTypeMirror {
          * @param types the type variables of this executable type
          */
         void setTypeVariables(List<AnnotatedTypeVariable> types) {
-            typeVarTypes.clear();
-            typeVarTypes.addAll(types);
+            if (types == null) {
+                typeVarTypes = null;
+            } else {
+                typeVarTypes = new ArrayList<>(types);
+            }
         }
 
         /**
          * @return the type variables of this executable type, if any
          */
         public List<AnnotatedTypeVariable> getTypeVariables() {
-            if (typeVarTypes.isEmpty()
-                    && !actualType.getTypeVariables().isEmpty()) { // lazy init
+            if (typeVarTypes == null) { // lazy init
+                typeVarTypes = new ArrayList<AnnotatedTypeVariable>(); 
                 for (TypeMirror t : actualType.getTypeVariables()) {
                     typeVarTypes.add((AnnotatedTypeVariable)createType(
                             t, atypeFactory, true));
