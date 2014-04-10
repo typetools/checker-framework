@@ -67,19 +67,6 @@ public interface QualifiedTypeFactory<Q> {
      */
     QualifiedTypeMirror<Q> postAsMemberOf(QualifiedTypeMirror<Q> memberType, QualifiedTypeMirror<Q> receiverType, Element memberElement);
 
-    /**
-     * Hook for customizing the instantiation behavior for generics.
-     *
-     * @param type
-     *      an instantiation of a generic type
-     * @param element
-     *      the {@link Element} corresponding to <code>type</code>
-     * @return
-     *      a copy of <code>type.getTypeArguments()</code> after applying
-     *      checker-specific adjustments
-     */
-    List<QualifiedTypeVariable<Q>> typeVariablesFromUse(QualifiedDeclaredType<Q> type, TypeElement element);
-
     /** Hook for customizing type parameter inference for methods.
      *
      * @param tree

@@ -229,11 +229,6 @@ public abstract class DefaultQualifiedTypeFactory<Q> implements QualifiedTypeFac
     }
 
     @Override
-    public List<QualifiedTypeVariable<Q>> typeVariablesFromUse(QualifiedDeclaredType<Q> type, TypeElement element) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public Pair<QualifiedExecutableType<Q>, List<QualifiedTypeMirror<Q>>> methodFromUse(MethodInvocationTree tree) {
         throw new UnsupportedOperationException();
     }
