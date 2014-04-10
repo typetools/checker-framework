@@ -77,6 +77,10 @@ class TypeMirrorConverter<Q> {
      * annotated-to-qualified conversions. */
     private HashMap<Integer, Q> indexToQual;
 
+    /** Default qualifier to use for {@link QualifiedExecutableType}, when the
+     * underlying Checker Framework loses track of the actual annotation. */
+    Q executableDefault;
+
     @TypeQualifier
     @SubtypeOf({})
     public static @interface Key {
@@ -88,7 +92,8 @@ class TypeMirrorConverter<Q> {
     }
 
 
-    public TypeMirrorConverter(ProcessingEnvironment processingEnv, CheckerAdapter<Q> checkerAdapter) {
+    public TypeMirrorConverter(ProcessingEnvironment processingEnv, CheckerAdapter<Q> checkerAdapter,
+            Q executableDefault) {
         this.checkerAdapter = checkerAdapter;
         this.processingEnv = processingEnv;
         this.indexElement = TreeUtils.getMethod(Key.class.getCanonicalName(), "index", 0, processingEnv);
@@ -99,6 +104,8 @@ class TypeMirrorConverter<Q> {
 
         this.qualToIndex = new HashMap<>();
         this.indexToQual = new HashMap<>();
+
+        this.executableDefault = executableDefault;
     }
 
     /** Returns the type factory to use for building {@link
@@ -390,6 +397,10 @@ class TypeMirrorConverter<Q> {
                         (QualifiedTypeVariable<Q>)getQualifiedTypeFromWrapped(
                                 (WrappedAnnotatedTypeVariable)extendedTypeVariables.get(i));
                     qualifiedTypeVariables.add(qualified);
+                }
+
+                if (qual == null) {
+                    qual = executableDefault;
                 }
 
                 return new QualifiedExecutableType<Q>(watm, qual,
