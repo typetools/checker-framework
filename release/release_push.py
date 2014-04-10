@@ -10,6 +10,7 @@ Copyright (c) 2013 University of Washington. All rights reserved.
 
 from release_vars  import *
 from release_utils import *
+from sanity_checks import *
 import urllib
 import zipfile
 
@@ -18,47 +19,6 @@ def check_release_version( previous_release, new_release ):
     if version_to_integer( previous_release ) >= version_to_integer( new_release ):
         raise Exception( "Previous release version ( " + previous_release + " ) should be less than " +
                          "the new release version( " + new_release + " )" )
-
-def run_sanity_check( new_checkers_release_zip, release_version ):
-    execute( "mkdir -p " + SANITY_DIR )
-
-    sanity_zip = os.path.join( SANITY_DIR, "checker-framework.zip" )
-
-    print( "Attempting to download %s to %s" % ( new_checkers_release_zip, sanity_zip ) )
-    download_binary( new_checkers_release_zip, sanity_zip, MAX_DOWNLOAD_SIZE )
-
-    nullness_example_url = "https://checker-framework.googlecode.com/hg/checker/examples/NullnessExampleWithWarnings.java"
-    nullness_example = os.path.join( SANITY_DIR, "NullnessExampleWithWarnings.java" )
-    download_binary( nullness_example_url, nullness_example, MAX_DOWNLOAD_SIZE )
-
-    deploy_dir = os.path.join( SANITY_DIR, "checker-framework-" + release_version )
-
-    if os.path.exists( deploy_dir ):
-        print( "Deleting existing path: " + deploy_dir )
-        delete_path(deploy_dir)
-
-    with zipfile.ZipFile(sanity_zip, "r") as z:
-        z.extractall( SANITY_DIR )
-
-    cmd = "chmod -R u+rwx " + deploy_dir
-    execute( cmd )
-
-    sanity_javac = os.path.join( deploy_dir, "bin", "javac" )
-    nullness_output  = os.path.join( deploy_dir, "output.log" )
-
-    cmd = sanity_javac + " -processor org.checkerframework.checker.nullness.NullnessChecker " + nullness_example + " -Anomsgtext &> " + nullness_output
-    execute( cmd, False )
-
-    expected_errors = [ "NullnessExampleWithWarnings.java:25: error: (assignment.type.incompatible)",
-                        "NullnessExampleWithWarnings.java:36: error: (argument.type.incompatible)"  ]
-    found_errors = are_in_file( nullness_output, expected_errors )
-
-    if not found_errors:
-        raise Exception( "Sanity check did not work!\n" +
-                         "File: " + nullness_output + "\n" +
-                         "should contain the following errors: [ " + ", ".join(expected_errors) )
-    else:
-        print( "\nsanity check - zip file: passed!\n" )
 
 def copy_release_dir( path_to_dev, path_to_live, release_version ):
     source_location = os.path.join( path_to_dev, release_version )
@@ -81,9 +41,16 @@ def copy_releases_to_live_site( checker_version, afu_version):
     copy_release_dir( AFU_INTERM_RELEASES_DIR, AFU_LIVE_RELEASES_DIR, afu_version )
 
 def update_release_symlinks( checker_version, afu_version ):
+    afu_latest_release_dir = os.path.join( AFU_LIVE_RELEASES_DIR,  afu_version )
+    checker_latest_release_dir = os.path.join( CHECKER_LIVE_RELEASES_DIR, checker_version )
+
     force_symlink( os.path.join( JSR308_LIVE_RELEASES_DIR,  checker_version ), os.path.join( JSR308_LIVE_SITE,  "current" ) )
-    force_symlink( os.path.join( CHECKER_LIVE_RELEASES_DIR, checker_version ), os.path.join( CHECKER_LIVE_SITE, "current" ) )
-    force_symlink( os.path.join( AFU_LIVE_RELEASES_DIR,     afu_version ),     os.path.join( AFU_LIVE_SITE,     "current" ) )
+    force_symlink( checker_latest_release_dir, os.path.join( CHECKER_LIVE_SITE, "current" ) )
+    force_symlink( afu_latest_release_dir,     os.path.join( AFU_LIVE_SITE,     "current" ) )
+
+    #After the copy operations the index.htmls will point into the dev directory
+    force_symlink( os.path.join( afu_latest_release_dir,  "annotation-file-utilities.html" ), os.path.join( afu_latest_release_dir, "index.html" ) )
+    force_symlink( os.path.join( checker_latest_release_dir, "checker-framework-webpage.html" ), os.path.join( checker_latest_release_dir, "index.html" ) )
 
 def ensure_group_access_to_releases():
     ensure_group_access( JSR308_LIVE_RELEASES_DIR )
@@ -102,6 +69,9 @@ def push_maven_artifacts_to_release_repo( version ):
 
 def stage_maven_artifacts_in_maven_central( new_checker_version ):
 
+    pgp_user="checker-framework-dev@googlegroups.com"
+    pgp_passphrase = read_first_line( PGP_PASSPHRASE_FILE )
+
     mvn_dist = os.path.join(MAVEN_PLUGIN_DIR, "dist" )
     execute( "mkdir -p " + mvn_dist )
 
@@ -111,30 +81,35 @@ def stage_maven_artifacts_in_maven_central( new_checker_version ):
 
     #At the moment, checker.jar is the only artifact with legitimate accompanying source/javadoc jars
     mvn_sign_and_deploy_all( SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, CHECKER_BINARY_RELEASE_POM, CHECKER_BINARY,
-                             CHECKER_SOURCE, CHECKER_JAVADOC )
+                             CHECKER_SOURCE, CHECKER_JAVADOC,
+                             pgp_user, pgp_passphrase )
 
     mvn_sign_and_deploy_all( SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, CHECKER_QUAL_RELEASE_POM, CHECKER_QUAL,
                              os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "checker-qual-source.jar"  ),
-                             os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "checker-qual-javadoc.jar" ) )
+                             os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "checker-qual-javadoc.jar" ),
+                             pgp_user, pgp_passphrase  )
 
     mvn_sign_and_deploy_all( SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, JAVAC_BINARY_RELEASE_POM, JAVAC_BINARY,
                              os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "compiler-source.jar"  ),
-                             os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "compiler-javadoc.jar" ) )
+                             os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "compiler-javadoc.jar" ),
+                             pgp_user, pgp_passphrase  )
 
     mvn_sign_and_deploy_all( SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, JDK7_BINARY_RELEASE_POM, JDK7_BINARY,
                              os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "jdk7-source.jar"  ),
-                             os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "jdk7-javadoc.jar" ) )
+                             os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "jdk7-javadoc.jar" ),
+                             pgp_user, pgp_passphrase  )
 
     mvn_sign_and_deploy_all( SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, JDK8_BINARY_RELEASE_POM, JDK8_BINARY,
                              os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "jdk8-source.jar"  ),
-                             os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "jdk8-javadoc.jar" ) )
+                             os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "jdk8-javadoc.jar" ),
+                             pgp_user, pgp_passphrase  )
 
     plugin_jar = find_mvn_plugin_jar( MAVEN_PLUGIN_DIR, new_checker_version )
     plugin_source_jar  = find_mvn_plugin_jar( MAVEN_PLUGIN_DIR, new_checker_version, "sources" )
     plugin_javadoc_jar = os.path.join( MAVEN_RELEASE_DIR, mvn_dist, "checkerframework-maven-plugin-javadoc.jar" )
 
     mvn_sign_and_deploy_all( SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, MAVEN_PLUGIN_RELEASE_POM, plugin_jar,
-                             plugin_source_jar, plugin_javadoc_jar )
+                             plugin_source_jar, plugin_javadoc_jar, pgp_user, pgp_passphrase  )
 
     delete_path( mvn_dist )
 
@@ -180,25 +155,47 @@ def continue_or_exit( msg ):
     if continue_script == "no" or continue_script == "No":
                 raise Exception( "User elected NOT to continue at prompt: " + msg )
 
-def main(argv):
-    print(
-        "\nVerify Sonatype Credentials\n" +
-          "---------------------------\n" +
-        "In order to stage artifacts to the Sonatype Central repositories "   +
-        "you will need an account at:\n"        +
-        "https://issues.sonatype.org/\n\n"       +
+def read_args(argv):
+    test = True
+    if len( argv ) == 2:
+        if argv[1] == "release":
+            test = False
+        else:
+            print_usage()
+    else:
+        if len( argv ) > 2:
+            print_usage()
+            raise Exception( "Invalid arguments. " + ",".join(argv) )
 
-        "You will also need to setup your Maven settings.xml to include your " +
-        "Sonatype credentials as outline in: \n" +
-        "https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide#SonatypeOSSMavenRepositoryUsageGuide-7b.StageExistingArtifacts\n\n" +
-        "Finally, section 2 in the above link will also describe how to be added to " +
-        "an existing repository's committers list.\n\n" )
+    return test
+
+def print_usage():
+    print ( "Usage: python release_build.py [release]\n" +
+            "The only argument this script takes is \"release\".  If this argument is " +
+            "NOT specified then the script will execute all steps that checking and prompting " +
+            "steps but will NOT actually perform a release.  This is for testing the script." )
+
+def main(argv):
+    test_mode = read_args( argv )
+
+    msg = ( "You have chosen test_mode.  This means that this script will execute all build steps that " +
+            "do not have side-effects.  That is, this is a test run of the script.  All checks and user prompts "  +
+            "will be shown but no steps will be executed that will cause the release to be deployed or partially " +
+            "deployed.\n" +
+            "If you meant to do an actual release, re-run this script with one argument, \"release\"." )
+
+    if not test_mode:
+        msg = "You have chosen release_mode.  Please follow the prompts to run a full Checker Framework release"
+
+    continue_or_exit( msg + "\n" )
+
+    print_step( Push Step 0: Verify Requirements\n" )
+    print( " If this is your first time running the release_push script, please verify that you have met " +
+           "all the requirements specified in README-maintainers.html \"Pre-release Checklist\"\n" )
 
     continue_or_exit("")
 
-
-    print( "\n\nChecking Release Versions\n" +
-                "-------------------------\n" )
+    print_step( "Push Step 1: Checking release versions" )
     dev_jsr308_website  = os.path.join( HTTP_PATH_TO_DEV_SITE,  "jsr308" )
     live_jsr308_website = os.path.join( HTTP_PATH_TO_LIVE_SITE, "jsr308" )
     dev_afu_website  = os.path.join( HTTP_PATH_TO_DEV_SITE,  "annotation-file-utilities" )
@@ -217,23 +214,17 @@ def main(argv):
     new_afu_version     = get_afu_version_from_html( dev_afu_website_file )
     check_release_version( current_afu_version, new_afu_version )
 
-    new_checkers_release_zip = os.path.join( dev_checker_website, "current", "checker-framework.zip" )
-
     print("Checker Framework/JSR308:  current-version=%s    new-version=%s" % (current_checker_version, new_checker_version ) )
     print("AFU:                       current-version=%s    new-version=%s" % (current_afu_version, new_afu_version ) )
 
     continue_or_exit("Please ensure that you have run release_build.py since the last push to " +
                      "any of the JSR308, AFU, or Checker Framework repositories." )
 
-
-    print( "\n\nCheck Dev Site Links\n" +
-               "--------------------\n" )
-    continue_script = prompt_w_suggestion("Run link Checker on DEV site?", "yes", "^(Yes|yes|No|no)$")
-    if is_yes( continue_script ):
+    print_step( "Push Step 2: Check links on development site" )
+    if prompt_yes_no( "Run link Checker on DEV site?", True ):
         check_all_links( dev_jsr308_website, dev_afu_website, dev_checker_website, "dev" )
 
-    print( "\n\nSmoke Tests\n" +
-               "-----------\n" )
+    print_step( "Push Step 3: Run development sanity tests" )
     continue_or_exit(
        "Please build and install the Eclipse plugin using the latest artifacts. See:\n" +
        "https://code.google.com/p/checker-framework/source/browse/eclipse/developer-README\n\n" +
@@ -243,50 +234,93 @@ def main(argv):
 
        "Note: You will be prompted to run the Maven tutorial (automatically, via this script) below.\n\n" )
 
-    run_sanity = prompt_w_suggestion(" Run command-line sanity check?", "yes", "^(Yes|yes|No|no)$")
-    #if is_yes( run_sanity ):
-    #    run_sanity_check( new_checkers_release_zip, new_checker_version )
+    print_step(" 3a: Run javac sanity test on development release." )
+    if prompt_yes_no( "Run javac sanity test on development release?", True ):
+        javac_sanity_check( dev_checker_website, new_checker_version )
 
-    #Run Maven tutorial
-    print( "Please run the Maven examples\n" )
+    print_step("3b: Run Maven sanity test on development release." )
+    if prompt_yes_no( "Run Maven sanity test on development repo?", True ):
+        maven_sanity_check( "maven-dev", MAVEN_DEV_REPO, new_checker_version )
 
-    print( "\n\nPush Maven Artifacts\n" +
-               "--------------------\n" )
-    continue_script = prompt_w_suggestion("Push Maven artifacts to our repository?", "no", "^(Yes|yes|No|no)$")
-    if continue_script == "yes" or continue_script == "Yes":
-        push_maven_artifacts_to_release_repo( new_checker_version )
-        print( "Pushed Maven Artifacts to repos" )
+    print_step( "3c: Build the Eclipse plugin and test." )
+    print("Please download: http://types.cs.washington.edu/dev/checker-framework/current/checker-framework.zip")
+    print("Use the jars in the dist directory along with the instructions at " +
+          "checker-framework/eclipse/developer-README to build the Eclipse plugin to build the Eclipse plugin." +
+          "Please install this version in the latest version of Eclipse and follow the tutorial at:\n" +
+          "http://types.cs.washington.edu/dev/checker-framework/tutorial/" )
+    continue_or_exit("If the tutorial doesn't work, please abort the release and contact the appropriate developer.")
 
-    continue_script = prompt_w_suggestion("Stage Maven artifacts in Maven Central?", "no", "^(Yes|yes|No|no)$")
-    if continue_script == "yes" or continue_script == "Yes":
+    print_step( "Push Step 4: Stage Maven artifacts in Central" )
+
+    print_step("4a: Stage the artifacts at Maven central." )
+    if prompt_yes_no( "Stage Maven artifacts in Maven Central?" ):
         stage_maven_artifacts_in_maven_central( new_checker_version )
-        print( "Maven artifacts have been staged!  To deploy, log into https://oss.sonatype.org using your " +
-               "Sonatype credentials and follow the release instructions at: " + SONATYPE_RELEASE_DIRECTIONS_URL )
 
-    print( "\n\nPush Website\n" +
-               "------------\n" )
+        print_step("4b: Close staged artifacts at Maven central." )
+        print( "Maven artifacts have been staged!  Please 'close' (but don't release) the artifacts. " +
+               "To close, log into https://oss.sonatype.org using your " +
+               "Sonatype credentials and follow the 'close' instructions at: " + SONATYPE_CLOSING_DIRECTIONS_URL )
+
+        print_step("4c: Run Maven sanity test on Maven central artifacts." )
+        if prompt_yes_no( "Run Maven sanity test on Maven central artifacts?", True ):
+            repo_url = raw_input( "Please enter the repo URL of the closed artifacts.  To find this URL " +
+                                  "log into https://oss.sonatype.org.  Go to the Staging Repositories.  Find " +
+                                  "the repository you just closed and type that URL in." )
+
+            maven_sanity_check( "maven-staging", repo_url, new_checker_version )
+
+    print_step("Push Step 5. Push dev website to live website" )
     continue_or_exit("Copy release to the live website?")
-    copy_releases_to_live_site( new_checker_version, new_afu_version )
-    ensure_group_access_to_releases()
-    update_release_symlinks( new_checker_version, new_afu_version )
+    if not test_mode:
+        print("Copying to live site")
+        #copy_releases_to_live_site( new_checker_version, new_afu_version )
+        #ensure_group_access_to_releases()
+        #update_release_symlinks( new_checker_version, new_afu_version )
+    else:
+        print( "Test mode: Skipping copy to live site!" )
 
-    print( "\n\nCheck Live Site Links\n" +
-               "--------------------\n" )
-    continue_script = prompt_w_suggestion("Run link Checker on LIVE site?", "yes", "^(Yes|yes|No|no)$")
-    if is_yes( continue_script ):
+    print( "Push Step 6. Check live site links" )
+    if prompt_yes_no( "Run link Checker on LIVE site?", True ):
         check_all_links( live_jsr308_website, live_afu_website, live_checker_website, "live" )
 
-    print( "\n\nCommit to Repositories\n" +
-               "----------------------\n" )
-    continue_script = prompt_w_suggestion("Push the release to Google code repositories?  This is irreversible.", "no", "^(Yes|yes|No|no)$")
-    if continue_script == "yes" or continue_script == "Yes":
-        push_interm_to_release_repos()
-        print( "Pushed to repos" )
+    print_step( "Push Step 7: Run javac sanity test on the live release." )
+    if prompt_yes_no( "Run javac sanity test on live release?", True ):
+        javac_sanity_check( live_checker_website, new_checker_version )
 
-    continue_or_exit( "Please follow these instructions to release the Eclipse plugin:\n<path to Eclipse release instructions>\n" )
+    print_step("Push Step 8: Deploy the Eclipse Plugin to the live site." )
+    continue_or_exit( "Follow the instruction under 'UW Website' in checker-framework/eclipse/developer-README to " +
+                      "deploy the Eclipse plugin to the live website.  Please install the plugin from the new " +
+                      "live repository and run it on a file in which you expect a type error.  If you run into errors, " +
+                      "back out the release!" )
+
+    print_step( "Push Step 9. Commit changes to repositories" )
+    if prompt_yes_no( "Push the release to Google code repositories?  This is irreversible." ):
+        if not test_mode:
+            #push_interm_to_release_repos()
+            print( "Pushed to repos" )
+        else:
+            print( "Test mode: Skipping push to Google Code!" )
+
+    print_step( "Push Step 10. Release staged artifacts in Central repository." )
+    if test_mode:
+        msg = ( "Test Mode: You are in test_mode.  Please 'DROP' the artifacts. "   +
+                "To drop, log into https://oss.sonatype.org using your " +
+                "Sonatype credentials and follow the 'DROP' instructions at: " + SONATYPE_DROPPING_DIRECTIONS_URL )
+    else:
+        msg = ( "Please 'release' the artifacts. "                    +
+                "To release, log into https://oss.sonatype.org using your " +
+                "Sonatype credentials and follow the 'close' instructions at: " + SONATYPE_RELEASE_DIRECTIONS_URL )
+
+    print( msg )
+    prompt_until_yes()
+
+    print_step( "Push Step 11. Update pushed issues." )
     continue_or_exit( "Please log in to google code and mark all issues that were 'pushed' to 'fixed'." )
+
+    print_step( "Push Step 12. Announce the release." )
     continue_or_exit( "Please announce the release using the email structure below:\n" +
                        get_announcement_email( new_checker_version ) )
+
 
 if __name__ == "__main__":
     sys.exit(main(sys.argv))

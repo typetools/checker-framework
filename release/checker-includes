@@ -1,4 +1,4 @@
-bin/**
-dist/**
-manual/manual.html
-manual/manual.pdf
+checker/bin/**
+checker/dist/**
+checker/manual/manual.html
+checker/manual/manual.pdf

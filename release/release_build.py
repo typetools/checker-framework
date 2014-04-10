@@ -8,12 +8,7 @@ Created by Jonathan Burke on 2013-08-01.
 Copyright (c) 2013 University of Washington. All rights reserved.
 """
 
-#TODO: NEED TO MODULARIZE BASED ON PROJECT, i.e. in release_vars create project defs for each project
-#TODO: RATHER than referring to individual variables we can then refer to the projects props
-#TODO: Need a script to build the basic structure of the site for people who want to build
-#TODO: them on their local machines
-
-#TODO: CURL THE RELEVANT UTILS BEFORE IMPORTING THEM
+#See README-maintainers.html for more information
 
 from release_vars  import *
 from release_utils import *
@@ -22,9 +17,6 @@ def print_usage():
     print( "Usage:    python release_build.py [projects] [options]" )
     print_projects( True, 1, 4 )
     print( "\n  --auto  accepts or chooses the default for all prompts" )
-
-#TODO: CREATE A VERSION THAT WOULD RUN ON JENKINS
-#TODO: FAIL THAT VERSION IF IT HITS ANY PROMPT (AND GUARD PROMPTS WITH --auto)
 
 #If the relevant repos do not exist, clone them, otherwise, update them.
 def update_repos():
@@ -56,7 +48,7 @@ def jsr308_checker_framework_version( auto ):
     else:
         print "New version: " + new_version
 
-    return new_version
+    return (curr_version, new_version)
 
 def create_interm_dir( project_name, version, auto ):
     interm_dir = os.path.join(FILE_PATH_TO_DEV_SITE, project_name, "releases", version )
@@ -127,14 +119,12 @@ def get_afu_version( auto ):
     else:
         print "New version: " + new_version
 
-    return new_version
+    return (version, new_version)
 
 def build_annotation_tools_release( auto, version, afu_interm_dir ):
     jv = execute( 'java -version', True )
 
     date = get_current_date()
-
-    #Add changelog editing
 
     build = os.path.join(ANNO_FILE_UTILITIES, "build.xml")
     ant_cmd   = "ant -buildfile %s -e update-versions -Drelease.ver=\"%s\" -Drelease.date=\"%s\"" % (build, version, date)
@@ -178,18 +168,16 @@ def build_checker_framework_release(auto, version, afu_release_date, checker_fra
     #ensure all PluginUtil.java files are identical
     execute("sh checkPluginUtil.sh", True, False, CHECKER_FRAMEWORK_RELEASE)
 
-    #Add changelog editing
-
     #build the checker framework binaries and documents, run checker framework tests
     execute("ant -Dhalt.on.test.failure=true dist-release", True, False, checker_dir)
 
     #make the Checker Framework Manual
-    checkers_manual_dir = os.path.join(checker_dir, "manual")
-    execute("make manual.pdf manual.html", True, False, checkers_manual_dir)
+    checker_manual_dir = os.path.join(checker_dir, "manual")
+    execute("make manual.pdf manual.html", True, False, checker_manual_dir)
 
     #make the checker framework tutorial
-    checkers_tutorial_dir = os.path.join(CHECKER_FRAMEWORK, "tutorial")
-    execute("make", True, False, checkers_tutorial_dir)
+    checker_tutorial_dir = os.path.join(CHECKER_FRAMEWORK, "tutorial")
+    execute("make", True, False, checker_tutorial_dir)
 
     #zip up checker-framework.zip and put it in releases_iterm_dir
     ant_props = "-Dchecker=%s -Ddest.dir=%s -Dfile.name=%s -Dversion=%s" % (checker_dir, checker_framework_interm_dir, "checker-framework.zip", version)
@@ -223,7 +211,7 @@ def commit_to_interm_projects(jsr308_version, afu_version, projects_to_release):
         commit_tag_and_push(afu_version, ANNO_TOOLS, "")
 
     if projects_to_release[CF_OPT]:
-        commit_tag_and_push(jsr308_version, CHECKER_FRAMEWORK, "checkers-")
+        commit_tag_and_push(jsr308_version, CHECKER_FRAMEWORK, "checker-framework-")
 
 def main(argv):
     projects_to_release = read_projects( argv, print_usage )
@@ -241,51 +229,85 @@ def main(argv):
     print( "Building a new release of Langtools, Annotation Tools, and the Checker Framework!" )
     print( "\nPATH:\n" + os.environ['PATH'] + "\n" )
 
+    print_step("Build Step 1: Clean and update the build and intermediate repositories.")
+
+    print_step("1a: Clean repositories.")
     clean_repos( INTERM_REPOS,  not auto )
     clean_repos( BUILD_REPOS, not auto )
 
     #check we are cloning LIVE -> INTERM, INTERM -> RELEASE
+    print_step("\n1b: Update repositories.")
     update_repos()
 
+    print_step("1c: Verify repositories.")
     check_repos( INTERM_REPOS, False )
     check_repos( BUILD_REPOS,  False )
 
+    print_step("1d: Optionally replace files.")
     if not auto:
-        continue_script = prompt_w_suggestion("Replace files then type yes to continue", "no", "^(Yes|yes|No|no)$")
-        if continue_script == "no" or continue_script == "No":
+        if not prompt_yes_no("Replace any files you would like then type yes to continue"):
             raise Exception("No prompt")
 
+    print_step("Build Step 2: Check tools.")
     check_tools( TOOLS )
 
-    jsr308_version = jsr308_checker_framework_version( auto )
-    afu_version = get_afu_version( auto )
+    print_step("Build Step 3: Determine release versions.")
+    (old_jsr308_version, jsr308_version) = jsr308_checker_framework_version( auto )
+    (old_afu_version, afu_version)       = get_afu_version( auto )
     version_dirs = create_interm_version_dirs( jsr308_version, afu_version, auto )
     jsr308_interm_dir            = version_dirs[0]
     afu_interm_dir               = version_dirs[1]
     checker_framework_interm_dir = version_dirs[2]
 
+    print_step("Build Step 4: Review changelogs.")
+    if not auto:
+        if projects_to_release[LT_OPT]:
+            propose_changelog_edit( "JSR308 Type Annotations Compiler", JSR308_CHANGELOG, "/tmp/jsr308.changes",
+                                    old_jsr308_version, JSR308_LANGTOOLS , JSR308_TAG_PREFIXES )
+
+        if projects_to_release[AFU_OPT]:
+            propose_changelog_edit( "Annotation File Utilities", AFU_CHANGELOG, "/tmp/afu.changes",
+                                    old_afu_version, ANNO_TOOLS, AFU_TAG_PREFIXES  )
+
+        if projects_to_release[CF_OPT]:
+            propose_changelog_edit( "Checker Framework", CHECKER_CHANGELOG, "/tmp/checker-framework.changes",
+                                    old_jsr308_version, CHECKER_FRAMEWORK, CHECKER_TAG_PREFIXES )
+
+    print_step("Build Step 5: Review manual changes.")
+    if not auto:
+        if projects_to_release[LT_OPT]:
+            propose_change_review( "the JSR308 manual", old_jsr308_version, JSR308_LANGTOOLS,
+                                   JSR308_TAG_PREFIXES, JSR308_LT_DOC, "/tmp/jsr308.manual" )
+
+        if projects_to_release[AFU_OPT]:
+            propose_change_review( "the Annotation File Utilities manual", old_afu_version, ANNO_TOOLS,
+                                   AFU_TAG_PREFIXES, AFU_MANUAL, "/tmp/afu.manual"  )
+
+        if projects_to_release[CF_OPT]:
+            propose_change_review( "the Checker Framework", old_jsr308_version, CHECKER_FRAMEWORK,
+                                   CHECKER_TAG_PREFIXES, CHECKER_MANUAL, "/tmp/checker-framework.manual"  )
+
+    print_step("Build Step 6: Build projects and websites.")
     print( projects_to_release )
     if projects_to_release[LT_OPT]:
+        print_step("6a: Build Type Annotations Compiler.")
         build_jsr308_langtools_release(auto, jsr308_version, afu_date, checker_framework_interm_dir, jsr308_interm_dir)
 
     if projects_to_release[AFU_OPT]:
+        print_step("6b: Build Annotation File Utilities.")
         build_annotation_tools_release( auto, afu_version, afu_interm_dir )
 
     if projects_to_release[CF_OPT]:
+        print_step("6c: Build Checker Framework.")
         build_checker_framework_release(auto, jsr308_version, afu_date, checker_framework_interm_dir, jsr308_interm_dir)
 
+    print_step("Build Step 7: Commit projects to intermediate repos.")
     commit_to_interm_projects( jsr308_version, afu_version, projects_to_release )
 
+    print_step("\n\n8: Add permissions to websites.")
     ensure_group_access( jsr308_interm_dir )
     ensure_group_access( afu_interm_dir )
     ensure_group_access( checker_framework_interm_dir )
-
-    print("\n\nAdditional Manual Steps\n\n")
-    print( "Please remember to go through the Checker Framework and Annotation Tools issue trackers and change any " +
-           "issues that are marked 'pushed' to 'fixed'\n" )
-    print( "Please try to follow the Checker Framework tutorial to make sure all steps work.\n" )
-    print( "Please run the link checker on the development website.\n" )
-    print( "Please build the Eclipse plugin and run it once.\n" )
 
 if __name__ == "__main__":
     sys.exit(main(sys.argv))
