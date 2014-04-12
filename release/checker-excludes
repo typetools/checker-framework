@@ -1,4 +1,4 @@
-bin/README
-bin/javac
-checker/bin-devel/javac
-dist/*.asc
+checker/bin/README
+checker/bin/javac
+checker/checker/bin-devel/javac
+checker/dist/*.asc
