@@ -245,14 +245,14 @@
         <delete file="${dest.file}"/>
 
         <zip destfile="${dest.file}" update="true">
-            <zipfileset dir="${checker}" prefix="checker-framework-${version}"
+            <zipfileset dir="${checkerframework}" prefix="checker-framework-${version}"
                         includesfile="${checker.includes}" excludesfile="${checker.excludes}"/>
 
-            <zipfileset dir="${checker}" prefix="checker-framework-${version}"
-                        includes="bin/javac" filemode="755"/>
+            <zipfileset dir="${checkerframework}" prefix="checker-framework-${version}"
+                        includes="checker/bin/javac" filemode="755"/>
 
             <zipfileset dir="${checkerframework}" prefix="checker-framework-${version}"
-                        includes="api/** changelog.txt README.html LICENSE.txt"/>
+                        includes="changelog.txt README.html LICENSE.txt" excludes="api/**"/>
 
             <zipfileset dir="${checkerframework}" prefix="checker-framework-${version}"
                         includes="tutorial/**"
@@ -373,6 +373,26 @@
         <symlink overwrite="true"
                  link="${web.root}/current/favicon-jsr308.png" resource="${web.root}/favicon-jsr308.png"/>
 
+    </target>
+
+    <target name="update-and-copy-hello-galaxy" description="Update version/repo information of the HelloGalaxy Maven example and copy it do dest.dir">
+
+        <fail unless="dest.dir"   message="dest.dir property is not set!" />
+        <fail unless="checker"    message="checker property is not set!" />
+        <fail unless="version"    message="version is not set!" />
+
+        <property name="maven.plugin"         value="${checker}/../maven-plugin"             />
+
+        <copy todir="${dest.dir}/HelloGalaxy" flatten="false">
+            <fileset dir="${maven.plugin}/mvn-examples/HelloGalaxy">
+                <include name="**" />
+            </fileset>
+        </copy>
+
+        <!-- examples -->
+        <update file="${dest.dir}/HelloGalaxy/pom.xml"
+                start="${checkers.ver.0}" end="${checkers.ver.1}"
+                with="${version}"/>
     </target>
 
 </project>
