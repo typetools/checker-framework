@@ -282,18 +282,30 @@ public class TypeAnnotationUtils {
      * to create a TypeAnnotationPosition.
      * These methods must then be implemented using reflection in order to
      * compile in either setting.
+     * Note that we cannot use lambda for this as long as we want to
+     * support Java 7.
      */
     interface TAPCall {
         TypeAnnotationPosition call8(Object ... param) throws Throwable;
         TypeAnnotationPosition call9(Object ... param) throws Throwable;
     }
 
+    /**
+     * Use the SourceVersion to decide whether to call the Java 8 or Java 9 version.
+     * Catch all exceptions and abort if one occurs - the reflection code should
+     * never break once fully debugged.
+     *
+     * @param ver The SourceVersion to decide what API to use.
+     * @param tc The TAPCall abstraction to encapsulate two methods.
+     * @return The created TypeAnnotationPosition.
+     */
     private static TypeAnnotationPosition call8or9(SourceVersion ver, TAPCall tc) {
         try {
             boolean isNine;
             try {
                 // If the RELEASE_9 enum value is defined, we have to use the updated
                 // TypeAnnotationPosition API. Otherwise, stick with the Java 8 API.
+                // This might not work if the 8u20 release uses the changed API.
                 isNine = SourceVersion.valueOf("RELEASE_9") != null;
             } catch(IllegalArgumentException iae) {
                 isNine = false;
