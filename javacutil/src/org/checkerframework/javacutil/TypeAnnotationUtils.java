@@ -277,6 +277,12 @@ public class TypeAnnotationUtils {
         }
     }
 
+    /**
+     * An interface to abstract a Java 8 and a Java 9 version of how
+     * to create a TypeAnnotationPosition.
+     * These methods must then be implemented using reflection in order to
+     * compile in either setting.
+     */
     interface TAPCall {
         TypeAnnotationPosition call8(Object ... param) throws Throwable;
         TypeAnnotationPosition call9(Object ... param) throws Throwable;
