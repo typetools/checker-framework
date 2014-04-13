@@ -45,8 +45,6 @@ public class TestInput {
         this.options.add("-Xmaxerrs");
         this.options.add("9999");
         this.options.add("-g");
-        this.options.add("-source");
-        this.options.add("1.9");
         // Always output warnings for unchecked constructs
         this.options.add("-Xlint:unchecked");
         // Use short javac diagnostics
