@@ -855,7 +855,7 @@
     <target name="dist-nojdk" depends="-prep-dist,jar"
             description="Build checker.jar, checker-quals.jar WITHOUT updating jdkX.jar.  Move all relevant files to the binary directory.">
 
-        <copy todir="dist" file="${javac.lib}"
+        <copy tofile="dist/javac.jar" file="${javac.lib}"
               overwrite="true" failonerror="true" />
 
         <condition property="an.annotated.jdk.exists">
