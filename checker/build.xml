@@ -829,7 +829,7 @@
             description="Create the instrumented jdkX.jar using the JDK specified by JAVA_HOME">
 
       <exec executable="make" failonerror="true">
-         <arg value="LANGTOOLS=${jsr308.langtools}"/>
+         <arg value="LANGTOOLS=${jsr308.langtools.dist}"/>
          <arg value="ANNOTATION_TOOLS=${annotation.tools}"/>
          <arg value="CLASSPATH=${basedir}/${build}"/>
          <arg value="-C"/>
