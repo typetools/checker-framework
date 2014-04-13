@@ -1,11 +1,5 @@
 package org.checkerframework.common.value;
 
-import static org.checkerframework.framework.qual.DefaultLocation.LOCAL_VARIABLE;
-import static org.checkerframework.framework.qual.DefaultLocation.OTHERWISE;
-import static org.checkerframework.framework.qual.DefaultLocation.RECEIVERS;
-import static org.checkerframework.framework.qual.DefaultLocation.RESOURCE_VARIABLE;
-import static org.checkerframework.framework.qual.DefaultLocation.UPPER_BOUNDS;
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -18,9 +12,9 @@ import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.VariableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
@@ -42,14 +36,14 @@ import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.qual.TypeQualifiers;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.type.TreeAnnotator;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.type.TreeAnnotator;
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
-import org.checkerframework.framework.util.QualifierDefaults;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.framework.util.QualifierDefaults;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -84,9 +78,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     protected final AnnotationMirror INTVAL, DOUBLEVAL, BOOLVAL, CHARVAL,
             ARRAYLEN, STRINGVAL, BOTTOMVAL, UNKNOWNVAL, ANALYZABLE, SHORTVAL,
             BYTEVAL, LONGVAL, FLOATVAL;
-    
+
     protected static final Set<Modifier> PUBLIC_STATIC_FINAL_SET = new HashSet<Modifier>(3);
-        
+
 
     private long t = 0;
 
@@ -442,12 +436,12 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     protected QualifierDefaults createQualifierDefaults() {
         QualifierDefaults defaults =  super.createQualifierDefaults();
-        defaults.addAbsoluteDefault(UNKNOWNVAL, OTHERWISE);
+        defaults.addAbsoluteDefault(UNKNOWNVAL, DefaultLocation.OTHERWISE);
 
         return defaults;
     }
 
-    
+
     /**
      * The TreeAnnotator for this AnnotatedTypeFactory
      */
@@ -514,8 +508,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         }
 
                         if (allLiterals) {
-                            HashSet<String> stringFromChars = new HashSet<String>(
-                                    1);
+                            HashSet<String> stringFromChars = new HashSet<String>(1);
                             stringFromChars.add(new String(chars));
                             newQual = createAnnotation(
                                     "org.checkerframework.common.value.qual.StringVal",
@@ -1318,8 +1311,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 if (tree.getIdentifier().contentEquals("length")) {
                     type.replaceAnnotation(handleArrayLength(receiverType));
                 }
-            } 
-            
+            }
+
             if (isClassCovered(elem.asType())){
                 if (ElementUtils.isCompileTimeConstant(elem)) {
 
@@ -1336,7 +1329,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
                 }
                 // Check that:
-                // A) the element is a field 
+                // A) the element is a field
                 // B) the field is static final
                 // C) the field is not "class"
                 else if (elem.getKind() == javax.lang.model.element.ElementKind.FIELD && ElementUtils.isStatic(elem) && ElementUtils.isFinal(elem) && !tree.getIdentifier().toString().equals("class")) {
@@ -1399,7 +1392,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 result.add(field.get(recClass));
 
                 return resultAnnotationHandler(retType, result, tree);
-            } 
+            }
             catch (ClassNotFoundException e){
                 checker.report(Result.warning("class.not.found", recType.getUnderlyingType()), tree);
                 return null;
