@@ -5,7 +5,6 @@ import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.igj.qual.Immutable;
 import org.checkerframework.checker.igj.qual.ReadOnly;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.nullness.NullnessChecker;
 */
 
 import java.lang.annotation.Annotation;
@@ -118,8 +117,8 @@ import com.sun.tools.javac.tree.TreeInfo;
  *
  * Note that since this implementation only performs assignment and
  * pseudo-assignment checking, other rules for custom type systems must be added
- * in subclasses (e.g., dereference checking in the {@link NullnessChecker} is
- * implemented in the {@link NullnessChecker}'s
+ * in subclasses (e.g., dereference checking in the {@link org.checkerframework.checker.nullness.NullnessChecker} is
+ * implemented in the {@link org.checkerframework.checker.nullness.NullnessChecker}'s
  * {@link TreeScanner#visitMemberSelect} method).
  *
  * <p>
@@ -1400,7 +1399,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @param varTree the AST node for the variable
      * @param valueExp the AST node for the value
      * @param errorKey the error message to use if the check fails (must be a
-     *        compiler message key, see {@link CompilerMessageKey})
+     *        compiler message key, see {@link org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey})
      */
     protected void commonAssignmentCheck(Tree varTree, ExpressionTree valueExp,
             /*@CompilerMessageKey*/ String errorKey) {
@@ -1435,7 +1434,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @param varType the annotated type of the variable
      * @param valueExp the AST node for the value
      * @param errorKey the error message to use if the check fails (must be a
-     *        compiler message key, see {@link CompilerMessageKey})
+     *        compiler message key, see {@link org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey})
      * @param isLocalVariableAssignement
      *            Are we dealing with an assignment and is the lhs a local
      *            variable?
@@ -1471,7 +1470,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @param valueType the annotated type of the value
      * @param valueTree the location to use when reporting the error message
      * @param errorKey the error message to use if the check fails (must be a
-     *        compiler message key, see {@link CompilerMessageKey})
+     *        compiler message key, see {@link org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey})
      * @param isLocalVariableAssignement
      *            Are we dealing with an assignment and is the lhs a local
      *            variable?
@@ -2111,8 +2110,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * In most cases, {@code useType} simply needs to be a subtype of
      * {@code declarationType}, but there are exceptions.  In IGJ, a variable may be
      * declared {@code @ReadOnly String}, even though {@link String} is
-     * {@code @Immutable String};  {@link ReadOnly} is not a subtype of
-     * {@link Immutable}.
+     * {@code @Immutable String};  {@link org.checkerframework.checker.igj.qual.ReadOnly} is not a subtype of
+     * {@link org.checkerframework.checker.igj.qual.Immutable}.
      *
      * @param declarationType the type of the class (TypeElement)
      * @param useType the use of the class (instance type)
