@@ -1,10 +1,5 @@
 package org.checkerframework.framework.qual;
 
-/*>>>
-import org.checkerframework.checker.interning.qual.PolyInterned;
-import org.checkerframework.checker.nullness.qual.PolyNull;
-*/
-
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -25,8 +20,8 @@ import org.checkerframework.framework.util.QualifierPolymorphism;
  * the polymorphic type qualifier are replaced by one of the other type
  * qualifiers.
  *
- * @see PolyNull
- * @see PolyInterned
+ * @see org.checkerframework.checker.nullness.qual.PolyNull
+ * @see org.checkerframework.checker.interning.qual.PolyInterned
  * @see QualifierPolymorphism
  */
 @Documented

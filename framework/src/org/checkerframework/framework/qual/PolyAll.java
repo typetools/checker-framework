@@ -1,10 +1,5 @@
 package org.checkerframework.framework.qual;
 
-/*>>>
-import org.checkerframework.checker.interning.qual.PolyInterned;
-import org.checkerframework.checker.nullness.qual.PolyNull;
-*/
-
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -41,8 +36,8 @@ import org.checkerframework.framework.util.QualifierPolymorphism;
  * To support <tt>@PolyAll</tt> in a type system, simply add it to the
  * list of <tt>@TypeQualifiers</tt>.
  *
- * @see PolyNull
- * @see PolyInterned
+ * @see org.checkerframework.checker.nullness.qual.PolyNull
+ * @see org.checkerframework.checker.interning.qual.PolyInterned
  * @see PolymorphicQualifier
  * @see QualifierPolymorphism
  */
