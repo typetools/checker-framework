@@ -7,10 +7,10 @@
 CHECKERFRAMEWORK ?= ../../..
 CHECKER_JAR ?= $(CHECKERFRAMEWORK)/checker/dist/checker.jar
 
-LANGTOOLS ?= ../../../../jsr308-langtools
-JAVADOCLIB ?= $(LANGTOOLS)/build/classes
-JAVAC ?= $(LANGTOOLS)/dist/bin/javac -Xlint
-JAVAP ?= $(LANGTOOLS)/dist/bin/javap
+LANGTOOLS ?= ../../../../jsr308-langtools/dist
+JAVADOCLIB ?= $(LANGTOOLS)/../build/classes
+JAVAC ?= $(LANGTOOLS)/bin/javac -Xlint
+JAVAP ?= $(LANGTOOLS)/bin/javap
 
 RTJAR ?= $(JAVA_HOME)/jre/lib/rt.jar
 
