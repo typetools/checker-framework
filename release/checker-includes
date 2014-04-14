@@ -1,0 +1,4 @@
+checker/bin/**
+checker/dist/**
+checker/manual/manual.html
+checker/manual/manual.pdf
