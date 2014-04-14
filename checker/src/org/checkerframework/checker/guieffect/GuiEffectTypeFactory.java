@@ -24,6 +24,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.TreeAnnotator;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -386,10 +387,8 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
             // STEP 2: Fix up the method receiver annotation
             AnnotatedTypeMirror.AnnotatedDeclaredType receiverType = methType.getReceiverType();
             if (receiverType != null &&
-                    receiverType.getAnnotations().isEmpty()) {
-                AnnotatedTypeMirror receiver = receiverType;//methType.getReceiverType();
-                receiver.clearAnnotations();
-                receiver.addAnnotation(isPolymorphicType(cls) ? PolyUI.class :
+                    !receiverType.isAnnotatedInHierarchy(AnnotationUtils.fromClass(elements, UI.class))) {
+                receiverType.addAnnotation(isPolymorphicType(cls) ? PolyUI.class :
                     fromElement(cls).hasAnnotation(UI.class) ? UI.class : AlwaysSafe.class );
             }
             return super.visitMethod(node, type);

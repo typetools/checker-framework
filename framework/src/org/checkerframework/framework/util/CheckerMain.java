@@ -293,8 +293,7 @@ public class CheckerMain {
     }
 
     protected void addMainArgs(final List<String> args) {
-        args.add("-jar");
-        args.add(javacJar.getAbsolutePath());
+        args.add("com.sun.tools.javac.Main");
     }
 
     /**

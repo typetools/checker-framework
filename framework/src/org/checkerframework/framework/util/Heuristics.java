@@ -1,9 +1,5 @@
 package org.checkerframework.framework.util;
 
-/*>>>
-import org.checkerframework.checker.interning.InterningVisitor;
-*/
-
 import java.util.Arrays;
 import java.util.LinkedList;
 
@@ -22,7 +18,7 @@ import com.sun.source.util.TreePath;
 /**
  * Utilities for determining tree-based heuristics.
  *
- * @see InterningVisitor for an example
+ * @see org.checkerframework.checker.interning.InterningVisitor for an example
  */
 public class Heuristics {
 

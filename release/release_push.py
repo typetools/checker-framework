@@ -178,7 +178,7 @@ def print_usage():
 def main(argv):
     test_mode = read_args( argv )
 
-    msg = ( "You have chosen test_mode.  This means that this script will execute all build steps that " +
+    msg = ( "You have chosen test_mode.  \nThis means that this script will execute all build steps that " +
             "do not have side-effects.  That is, this is a test run of the script.  All checks and user prompts "  +
             "will be shown but no steps will be executed that will cause the release to be deployed or partially " +
             "deployed.\n" +
@@ -188,8 +188,12 @@ def main(argv):
         msg = "You have chosen release_mode.  Please follow the prompts to run a full Checker Framework release"
 
     continue_or_exit( msg + "\n" )
+    if test_mode:
+        print("Continuing in test mode.")
+    else:
+        print("Continuing in release mode.")
 
-    print_step( Push Step 0: Verify Requirements\n" )
+    print_step( "Push Step 0: Verify Requirements\n" )
     print( " If this is your first time running the release_push script, please verify that you have met " +
            "all the requirements specified in README-maintainers.html \"Pre-release Checklist\"\n" )
 
@@ -265,7 +269,7 @@ def main(argv):
         if prompt_yes_no( "Run Maven sanity test on Maven central artifacts?", True ):
             repo_url = raw_input( "Please enter the repo URL of the closed artifacts.  To find this URL " +
                                   "log into https://oss.sonatype.org.  Go to the Staging Repositories.  Find " +
-                                  "the repository you just closed and type that URL in." )
+                                  "the repository you just closed and paste that URL here:\n" )
 
             maven_sanity_check( "maven-staging", repo_url, new_checker_version )
 
@@ -273,19 +277,19 @@ def main(argv):
     continue_or_exit("Copy release to the live website?")
     if not test_mode:
         print("Copying to live site")
-        #copy_releases_to_live_site( new_checker_version, new_afu_version )
-        #ensure_group_access_to_releases()
-        #update_release_symlinks( new_checker_version, new_afu_version )
+        copy_releases_to_live_site( new_checker_version, new_afu_version )
+        ensure_group_access_to_releases()
+        update_release_symlinks( new_checker_version, new_afu_version )
     else:
         print( "Test mode: Skipping copy to live site!" )
 
-    print( "Push Step 6. Check live site links" )
-    if prompt_yes_no( "Run link Checker on LIVE site?", True ):
-        check_all_links( live_jsr308_website, live_afu_website, live_checker_website, "live" )
+     print( "Push Step 6. Check live site links" )
+     if prompt_yes_no( "Run link Checker on LIVE site?", True ):
+         check_all_links( live_jsr308_website, live_afu_website, live_checker_website, "live" )
 
-    print_step( "Push Step 7: Run javac sanity test on the live release." )
-    if prompt_yes_no( "Run javac sanity test on live release?", True ):
-        javac_sanity_check( live_checker_website, new_checker_version )
+     print_step( "Push Step 7: Run javac sanity test on the live release." )
+     if prompt_yes_no( "Run javac sanity test on live release?", True ):
+         javac_sanity_check( live_checker_website, new_checker_version )
 
     print_step("Push Step 8: Deploy the Eclipse Plugin to the live site." )
     continue_or_exit( "Follow the instruction under 'UW Website' in checker-framework/eclipse/developer-README to " +
@@ -296,7 +300,7 @@ def main(argv):
     print_step( "Push Step 9. Commit changes to repositories" )
     if prompt_yes_no( "Push the release to Google code repositories?  This is irreversible." ):
         if not test_mode:
-            #push_interm_to_release_repos()
+            push_interm_to_release_repos()
             print( "Pushed to repos" )
         else:
             print( "Test mode: Skipping push to Google Code!" )

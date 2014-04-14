@@ -522,8 +522,10 @@
     <target name="dist" depends="-prep-dist,jar"
             description="Build framework.jar">
 
-        <copy todir="dist" file="${javac.lib}"
+        <!-- No need to copy javac.jar for the framework.
+        <copy tofile="dist/javac.jar" file="${javac.lib}"
               overwrite="true" failonerror="true" />
+        -->
     </target>
 
 

@@ -25,15 +25,15 @@ import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.type.TreeAnnotator;
-import org.checkerframework.framework.type.TypeAnnotator;
-import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
+import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.type.TreeAnnotator;
+import org.checkerframework.framework.type.TypeAnnotator;
+import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeVisitor;
 import org.checkerframework.framework.util.AnnotatedTypes;
@@ -236,6 +236,7 @@ public class ImmutabilityAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             } else {
                 receiver = type.getReceiverType();
             }
+
             if (receiver != null &&
                     hasImmutabilityAnnotation(receiver)) {
                 return super.visitExecutable(type, p);
@@ -247,17 +248,17 @@ public class ImmutabilityAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (type.getElement().getKind() == ElementKind.CONSTRUCTOR) {
                 // TODO: hack
                 if (ownerType.hasEffectiveAnnotation(MUTABLE) || ownerType.hasEffectiveAnnotation(BOTTOM_QUAL))
-                    receiver.addAnnotation(MUTABLE);
+                    receiver.replaceAnnotation(MUTABLE);
                 else
-                    receiver.addAnnotation(ASSIGNS_FIELDS);
+                    receiver.replaceAnnotation(ASSIGNS_FIELDS);
             } else if (receiver == null) {
                 // Nothing to do for static methods.
             } else if (ElementUtils.isObject(ownerElement) || ownerType.hasEffectiveAnnotation(IMMUTABLE)) {
                 // case 3
-                receiver.addAnnotation(BOTTOM_QUAL);
+                receiver.replaceAnnotation(BOTTOM_QUAL);
             } else {
                 // case 10: rest
-                receiver.addAnnotation(MUTABLE);
+                receiver.replaceAnnotation(MUTABLE);
             }
 
             return super.visitExecutable(type, p);
@@ -323,12 +324,13 @@ public class ImmutabilityAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 AnnotatedTypeMirror ct = fromElement(
                         ((AnnotatedDeclaredType)p).getUnderlyingType().asElement());
 
-                if (!hasImmutabilityAnnotation(ct) || ct.hasEffectiveAnnotation(I)) {
+                if (!hasImmutabilityAnnotation(ct) || ct.hasAnnotationRelaxed(I)) {
                     AnnotatedExecutableType con = getAnnotatedType(TreeUtils.elementFromUse(node));
-                    if (con.getReceiverType().hasEffectiveAnnotation(IMMUTABLE))
-                        p.addAnnotation(IMMUTABLE);
+                    if (con.getReceiverType() != null &&
+                            con.getReceiverType().hasEffectiveAnnotation(IMMUTABLE))
+                        p.replaceAnnotation(IMMUTABLE);
                     else
-                        p.addAnnotation(MUTABLE);
+                        p.replaceAnnotation(MUTABLE);
                 } else {
                     // case 2: known immutability type
                     p.addAnnotations(ct.getAnnotations());
@@ -352,8 +354,7 @@ public class ImmutabilityAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     protected AnnotatedDeclaredType getImplicitReceiverType(ExpressionTree tree) {
         AnnotatedDeclaredType receiver = super.getImplicitReceiverType(tree);
         if (receiver != null && !isMostEnclosingThisDeref(tree)) {
-            receiver.removeAnnotation(ASSIGNS_FIELDS);
-            receiver.addAnnotation(READONLY);
+            receiver.replaceAnnotation(READONLY);
         }
         return receiver;
     }
@@ -365,7 +366,12 @@ public class ImmutabilityAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     public AnnotatedDeclaredType getSelfType(Tree tree) {
         AnnotatedDeclaredType act = getCurrentClassType(tree);
-        AnnotatedDeclaredType methodReceiver = getCurrentMethodReceiver(tree);
+        AnnotatedDeclaredType methodReceiver;
+        if (isWithinConstructor(tree)) {
+            methodReceiver = (AnnotatedDeclaredType) getAnnotatedType(visitorState.getMethodTree()).getReturnType();
+        } else {
+            methodReceiver = getCurrentMethodReceiver(tree);
+        }
 
         if (methodReceiver == null)
             return act;
@@ -377,9 +383,9 @@ public class ImmutabilityAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (methodReceiver.hasEffectiveAnnotation(MUTABLE) ||
                 methodReceiver.hasEffectiveAnnotation(IMMUTABLE)) {
             return methodReceiver;
-        } else if (act.hasEffectiveAnnotation(I) || act.hasEffectiveAnnotation(IMMUTABLE)) {
+        } else if (act.hasAnnotationRelaxed(I) || act.hasEffectiveAnnotation(IMMUTABLE)) {
             if (methodReceiver.hasEffectiveAnnotation(ASSIGNS_FIELDS))
-                act.addAnnotation(ASSIGNS_FIELDS);
+                act.replaceAnnotation(ASSIGNS_FIELDS);
             return act;
         } else
             return methodReceiver;
@@ -460,12 +466,11 @@ public class ImmutabilityAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         new AnnotatedTypeScanner<Void, Void>() {
             @Override
             public Void visitDeclared(AnnotatedDeclaredType type, Void p) {
-                if (type.hasEffectiveAnnotation(I)) {
+                if (type.hasAnnotationRelaxed(I)) {
                     AnnotationMirror anno =
                         type.getAnnotation(I.class);
                     if (!mapping.containsValue(anno)) {
-                        type.removeAnnotation(I);
-                        type.addAnnotation(BOTTOM_QUAL);
+                        type.replaceAnnotation(BOTTOM_QUAL);
                     }
                 }
                 return super.visitDeclared(type, p);
@@ -524,13 +529,12 @@ public class ImmutabilityAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         @Override
         public Void visitDeclared(AnnotatedDeclaredType type,
                 Map<String, AnnotationMirror> p) {
-            if (type.hasEffectiveAnnotation(I)) {
+            if (type.hasAnnotationRelaxed(I)) {
                 String immutableString =
                     AnnotationUtils.getElementValue(getImmutabilityAnnotation(type),
                             IMMUTABILITY_KEY, String.class, true);
                 if (p.containsKey(immutableString)) {
-                    type.removeAnnotation(I);
-                    type.addAnnotation(p.get(immutableString));
+                    type.replaceAnnotation(p.get(immutableString));
                 }
             }
 
@@ -612,7 +616,7 @@ public class ImmutabilityAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             Map<String, AnnotationMirror> result =
                 new HashMap<String, AnnotationMirror>();
 
-            if (dcType.hasEffectiveAnnotation(I)) {
+            if (dcType.hasAnnotationRelaxed(I)) {
                 String immutableString =
                     AnnotationUtils.getElementValue(getImmutabilityAnnotation(dcType),
                             IMMUTABILITY_KEY, String.class, true);
@@ -656,12 +660,12 @@ public class ImmutabilityAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             Map<String, AnnotationMirror> result =
                 new HashMap<String, AnnotationMirror>();
 
-            if (arType.hasEffectiveAnnotation(I)) {
+            if (arType.hasAnnotationRelaxed(I)) {
                 String immutableString =
                     AnnotationUtils.getElementValue(getImmutabilityAnnotation(arType),
                             IMMUTABILITY_KEY, String.class, true);
                 AnnotationMirror immutability = getImmutabilityAnnotation(type);
-                // Assertion failes some times
+                // Assertion fails some times
                 assert immutability != null;
                 if (!type.hasEffectiveAnnotation(ASSIGNS_FIELDS))
                     result.put(immutableString, immutability);
@@ -741,9 +745,13 @@ public class ImmutabilityAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         // @I and @AssignsFields annotate the type of 'this' together
         // this one ensures that it returns @I
         //
-        if (type.hasEffectiveAnnotation(I))
+        if (type.hasAnnotationRelaxed(I))
             return type.getAnnotation(I.class);
-        return type.getAnnotations().iterator().next();
+        if (hasImmutabilityAnnotation(type)) {
+            return type.getAnnotationInHierarchy(READONLY);
+        } else {
+            return null;
+        }
     }
 
     /**

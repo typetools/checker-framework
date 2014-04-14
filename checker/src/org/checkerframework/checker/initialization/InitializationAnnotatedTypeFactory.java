@@ -32,12 +32,12 @@ import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.qual.Unused;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.TreeAnnotator;
 import org.checkerframework.framework.type.TypeAnnotator;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
@@ -613,9 +613,9 @@ public abstract class InitializationAnnotatedTypeFactory<
             Void result = super.visitExecutable(t, p);
             Element elem = t.getElement();
             if (elem.getKind() == ElementKind.CONSTRUCTOR) {
-                AnnotatedDeclaredType receiverType = t.getReceiverType();
-                DeclaredType underlyingType = receiverType.getUnderlyingType();
-                receiverType.replaceAnnotation(getFreeOrRawAnnotationOfSuperType(underlyingType));
+                AnnotatedDeclaredType returnType = (AnnotatedDeclaredType) t.getReturnType();
+                DeclaredType underlyingType = returnType.getUnderlyingType();
+                returnType.replaceAnnotation(getFreeOrRawAnnotationOfSuperType(underlyingType));
             }
             return result;
         }
@@ -633,10 +633,9 @@ public abstract class InitializationAnnotatedTypeFactory<
             if (TreeUtils.isConstructor(node)) {
                 assert p instanceof AnnotatedExecutableType;
                 AnnotatedExecutableType exeType = (AnnotatedExecutableType) p;
-                DeclaredType underlyingType = exeType.getReceiverType()
-                        .getUnderlyingType();
+                DeclaredType underlyingType = (DeclaredType) exeType.getReturnType().getUnderlyingType();
                 AnnotationMirror a = getFreeOrRawAnnotationOfSuperType(underlyingType);
-                exeType.getReceiverType().replaceAnnotation(a);
+                exeType.getReturnType().replaceAnnotation(a);
             }
             return result;
         }

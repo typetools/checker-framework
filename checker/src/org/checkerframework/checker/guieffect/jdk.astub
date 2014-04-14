@@ -51,7 +51,7 @@ package java.beans;
     @PolyUIEffect void propertyChange(PropertyChangeEvent evt) @PolyUI;
 }
 @PolyUIType public class PropertyChangeSupport implements Serializable {
-    @SafeEffect public PropertyChangeSupport(@PolyUI Object sourceBean) @PolyUI;
+    @SafeEffect public PropertyChangeSupport(@PolyUI Object sourceBean);
     @PolyUIEffect public void addPropertyChangeListener(@PolyUI PropertyChangeListener listener) @PolyUI;
     @PolyUIEffect public void removePropertyChangeListener(PropertyChangeListener listener) @PolyUI;
     @PolyUIEffect public @PolyUI PropertyChangeListener[] getPropertyChangeListeners() @PolyUI;
