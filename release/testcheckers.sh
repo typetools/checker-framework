@@ -1,11 +1,11 @@
 #!/bin/bash
 
-rm -rf checkers.zip
-wget -q http://types.cs.washington.edu/checker-framework/current/checkers.zip
+rm -rf checker-framework.zip
+wget -q http://types.cs.washington.edu/checker-framework/current/checker-framework.zip
 rm -rf checker-framework-*/
-unzip -q checkers.zip
+unzip -q checker-framework.zip
 
-export CHECKERS=`pwd`/`ls -d checker-framework-*`
+export CHECKERFRAMEWORK=`pwd`/`ls -d checker-framework-*`
 export ORIG_PATH=$PATH
 
 
@@ -13,19 +13,19 @@ function cfruntest() {
   echo `which java`
   java -version
 
-  $CHECKERS/binary/javac -version
+  $CHECKERFRAMEWORK/checker/bin/javac -version
   if (($?)); then exit 6; fi
 
-  java -jar $CHECKERS/binary/checkers.jar -version
+  java -jar $CHECKERFRAMEWORK/checker/dist/checker.jar -version
   if (($?)); then exit 6; fi
 
-  $CHECKERS/binary/javac -processor checkers.nullness.NullnessChecker \
-      $CHECKERS/examples/NullnessReleaseTests.java 
+  $CHECKERFRAMEWORK/checker/bin/javac -processor org.checkerframework.checker.nullness.NullnessChecker \
+      $CHECKERFRAMEWORK/checker/examples/NullnessReleaseTests.java 
   if (($?)); then exit 6; fi
 
-  java -jar $CHECKERS/binary/checkers.jar \
-      -processor checkers.nullness.NullnessChecker \
-      $CHECKERS/examples/NullnessReleaseTests.java 
+  java -jar $CHECKERFRAMEWORK/checker/dist/checker.jar \
+      -processor org.checkerframework.checker.nullness.NullnessChecker \
+      $CHECKERFRAMEWORK/checker/examples/NullnessReleaseTests.java 
   if (($?)); then exit 6; fi
 }
 
@@ -44,12 +44,10 @@ export PATH=$JAVA_HOME/bin:$ORIG_PATH
 
 cfruntest
 
-# Jenkins is currently configured that JAVA8_HOME is
-# the following. At some point we may want to test
-# against the official Java 8 releases in addition.
-# echo "Testing with latest type-annotations build:"
 
-# export JAVA_HOME=$WORKSPACE/../../type-annotations/lastSuccessful/archive/build/linux-x86_64-normal-server-release/images/j2sdk-image
-# export PATH=$JAVA_HOME/bin:$ORIG_PATH
+echo "Testing with latest type-annotations build:"
 
-# cfruntest
+export JAVA_HOME=$WORKSPACE/../../type-annotations/lastSuccessful/archive/build/linux-x86_64-normal-server-release/images/j2sdk-image
+export PATH=$JAVA_HOME/bin:$ORIG_PATH
+
+cfruntest
