@@ -13,10 +13,14 @@ import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedDecl
 import org.checkerframework.qualframework.base.TreeAnnotator;
 import org.checkerframework.qualframework.util.ExtendedTypeMirror;
 
-public class TaintingQualifiedTypeFactory extends DefaultQualifiedTypeFactory<Tainting> {
+import org.checkerframework.checker.qualparam.QualifierParameterHierarchy;
+import org.checkerframework.checker.qualparam.QualifierParameterTypeFactory;
+import org.checkerframework.checker.qualparam.QualParams;
+
+public class TaintingQualifiedTypeFactory extends QualifierParameterTypeFactory<Tainting> {
     @Override
-    protected QualifierHierarchy<Tainting> createQualifierHierarchy() {
-        return new TaintingQualifierHierarchy();
+    protected QualifierHierarchy<QualParams<Tainting>> createQualifierHierarchy() {
+        return new QualifierParameterHierarchy<>(new TaintingQualifierHierarchy());
     }
 
     @Override
@@ -25,13 +29,13 @@ public class TaintingQualifiedTypeFactory extends DefaultQualifiedTypeFactory<Ta
     }
 
     @Override
-    protected TreeAnnotator<Tainting> createTreeAnnotator() {
-        return new TreeAnnotator<Tainting>() {
+    protected TreeAnnotator<QualParams<Tainting>> createTreeAnnotator() {
+        return new TreeAnnotator<QualParams<Tainting>>() {
             @Override
-            public QualifiedTypeMirror<Tainting> visitLiteral(LiteralTree tree, ExtendedTypeMirror type) {
+            public QualifiedTypeMirror<QualParams<Tainting>> visitLiteral(LiteralTree tree, ExtendedTypeMirror type) {
                 if (tree.getKind() == Tree.Kind.STRING_LITERAL) {
-                    return new QualifiedDeclaredType<Tainting>(
-                            type, Tainting.UNTAINTED, new ArrayList<>());
+                    return new QualifiedDeclaredType<QualParams<Tainting>>(
+                            type, new QualParams<>("Main", Tainting.UNTAINTED), new ArrayList<>());
                 } else {
                     return super.visitLiteral(tree, type);
                 }
