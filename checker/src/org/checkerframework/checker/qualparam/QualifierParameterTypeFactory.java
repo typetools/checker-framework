@@ -6,10 +6,13 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 
 import org.checkerframework.qualframework.base.DefaultQualifiedTypeFactory;
+import org.checkerframework.qualframework.base.QualifiedTypeMirror;
+import org.checkerframework.qualframework.util.QualifierMapVisitor;
 
 public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedTypeFactory<QualParams<Q>> {
     
     public Set<String> getDeclaredParameters(Element elt) {
+        // TODO
         return new HashSet<>();
     }
 
@@ -115,6 +118,21 @@ public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedT
             return memberQual;
         return memberQual.substituteAll(objectQual);
     }
+
+
+    private QualifierMapVisitor<QualParams<Q>, QualParams<Q>, QualParams<Q>> SUBSTITUTE_VISITOR =
+        new QualifierMapVisitor<QualParams<Q>, QualParams<Q>, QualParams<Q>>() {
+            @Override
+            public QualParams<Q> process(QualParams<Q> memberQual, QualParams<Q> objectQual) {
+                return qualifierAsMemberOf(memberQual, objectQual);
+            }
+        };
+
+    @Override
+    public QualifiedTypeMirror<QualParams<Q>> postAsMemberOf(
+            QualifiedTypeMirror<QualParams<Q>> memberType,
+            QualifiedTypeMirror<QualParams<Q>> receiverType,
+            Element memberElement) {
+        return SUBSTITUTE_VISITOR.visit(memberType, receiverType.getQualifier());
+    }
 }
-
-

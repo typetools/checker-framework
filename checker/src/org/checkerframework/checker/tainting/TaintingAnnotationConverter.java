@@ -9,18 +9,22 @@ import javax.lang.model.element.QualifiedNameable;
 import org.checkerframework.qualframework.base.AnnotationConverter;
 
 import org.checkerframework.checker.qualparam.QualParams;
+import org.checkerframework.checker.qualparam.QualVar;
 
 import org.checkerframework.checker.tainting.qual.Tainted;
 import org.checkerframework.checker.tainting.qual.Untainted;
+import org.checkerframework.checker.tainting.qual.UseMain;
 
 
 public class TaintingAnnotationConverter implements AnnotationConverter<QualParams<Tainting>> {
     private String taintedName;
     private String untaintedName;
+    private String useMainName;
 
     public TaintingAnnotationConverter() {
         this.taintedName = Tainted.class.getName();
         this.untaintedName = Untainted.class.getName();
+        this.useMainName = UseMain.class.getName();
     }
 
     private String getAnnotationTypeName(AnnotationMirror anno) {
@@ -41,6 +45,8 @@ public class TaintingAnnotationConverter implements AnnotationConverter<QualPara
                 return new QualParams<>("Main", Tainting.TAINTED);
             } else if (untaintedName.equals(name)) {
                 return new QualParams<>("Main", Tainting.UNTAINTED);
+            } else if (useMainName.equals(name)) {
+                return new QualParams<>("Main", new QualVar<>("Main"));
             }
         }
         return null;
@@ -49,7 +55,7 @@ public class TaintingAnnotationConverter implements AnnotationConverter<QualPara
     @Override
     public boolean isAnnotationSupported(AnnotationMirror anno) {
         String name = getAnnotationTypeName(anno);
-        return (taintedName.equals(name) || untaintedName.equals(name));
+        return (taintedName.equals(name) || untaintedName.equals(name) || useMainName.equals(name));
     }
 }
 
