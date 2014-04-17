@@ -8,11 +8,13 @@ import javax.lang.model.element.QualifiedNameable;
 
 import org.checkerframework.qualframework.base.AnnotationConverter;
 
+import org.checkerframework.checker.qualparam.QualParams;
+
 import org.checkerframework.checker.tainting.qual.Tainted;
 import org.checkerframework.checker.tainting.qual.Untainted;
 
 
-public class TaintingAnnotationConverter implements AnnotationConverter<Tainting> {
+public class TaintingAnnotationConverter implements AnnotationConverter<QualParams<Tainting>> {
     private String taintedName;
     private String untaintedName;
 
@@ -24,7 +26,6 @@ public class TaintingAnnotationConverter implements AnnotationConverter<Tainting
     private String getAnnotationTypeName(AnnotationMirror anno) {
         Element elt = anno.getAnnotationType().asElement();
         if (elt instanceof QualifiedNameable) {
-            @SuppressWarnings("unchecked")
             QualifiedNameable nameable = (QualifiedNameable)elt;
             return nameable.getQualifiedName().toString();
         } else {
@@ -33,13 +34,13 @@ public class TaintingAnnotationConverter implements AnnotationConverter<Tainting
     }
 
     @Override
-    public Tainting fromAnnotations(Collection<? extends AnnotationMirror> annos) {
+    public QualParams<Tainting> fromAnnotations(Collection<? extends AnnotationMirror> annos) {
         for (AnnotationMirror anno : annos) {
             String name = getAnnotationTypeName(anno);
             if (taintedName.equals(name)) {
-                return Tainting.TAINTED;
+                return new QualParams<>("Main", Tainting.TAINTED);
             } else if (untaintedName.equals(name)) {
-                return Tainting.UNTAINTED;
+                return new QualParams<>("Main", Tainting.UNTAINTED);
             }
         }
         return null;
