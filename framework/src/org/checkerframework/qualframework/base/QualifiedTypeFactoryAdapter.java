@@ -230,6 +230,33 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
 
 
     @Override
+    public void postAsMemberOf(AnnotatedTypeMirror memberType, AnnotatedTypeMirror receiverType, Element memberElement) {
+        TypeMirrorConverter<Q> conv = getCheckerAdapter().getTypeMirrorConverter();
+
+        QualifiedTypeMirror<Q> qualMemberType = conv.getQualifiedType(memberType);
+        QualifiedTypeMirror<Q> qualReceiverType = conv.getQualifiedType(receiverType);
+
+        QualifiedTypeMirror<Q> qualResult = underlying.postAsMemberOf(
+                qualMemberType, qualReceiverType, memberElement);
+
+        conv.applyQualifiers(qualResult, memberType);
+    }
+
+    QualifiedTypeMirror<Q> superPostAsMemberOf(
+            QualifiedTypeMirror<Q> memberType, QualifiedTypeMirror<Q> receiverType, Element memberElement) {
+        TypeMirrorConverter<Q> conv = getCheckerAdapter().getTypeMirrorConverter();
+
+        AnnotatedTypeMirror annoMemberType = conv.getAnnotatedType(memberType);
+        AnnotatedTypeMirror annoReceiverType = conv.getAnnotatedType(receiverType);
+
+        super.postAsMemberOf(annoMemberType, annoReceiverType, memberElement);
+
+        QualifiedTypeMirror<Q> qualResult = conv.getQualifiedType(annoMemberType);
+        return qualResult;
+    }
+
+
+    @Override
     public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> methodFromUse(MethodInvocationTree tree) {
         Pair<QualifiedExecutableType<Q>, List<QualifiedTypeMirror<Q>>> qualResult =
             underlying.methodFromUse(tree);
