@@ -225,7 +225,7 @@ public abstract class DefaultQualifiedTypeFactory<Q> implements QualifiedTypeFac
 
     @Override
     public QualifiedTypeMirror<Q> postAsMemberOf(QualifiedTypeMirror<Q> memberType, QualifiedTypeMirror<Q> receiverType, Element memberElement) {
-        throw new UnsupportedOperationException();
+        return adapter.superPostAsMemberOf(memberType, receiverType, memberElement);
     }
 
     @Override
