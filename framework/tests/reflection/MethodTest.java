@@ -142,6 +142,35 @@ public class MethodTest {
         }
     }
 
+    // Test lub of return types
+    public void testLubReturnPass() {
+        try {
+            Class<?> c = Class.forName("MethodTest$SuperClass");
+            Method m;
+            if (c != null) {
+                m = c.getMethod("getA", new Class[0]);
+            } else {
+                m = c.getMethod("getB", new Class[0]);
+            }
+            @Top Object o = m.invoke(new SuperClass(), new @ReflectBottom Object @ReflectBottom [0]);
+        } catch (Exception ignore) {
+        }
+    }
+    public void testLubReturnFail() {
+        try {
+            Class<?> c = Class.forName("MethodTest$SuperClass");
+            Method m;
+            if (c != null) {
+                m = c.getMethod("getA", new Class[0]);
+            } else {
+                m = c.getMethod("getB", new Class[0]);
+            }
+            //:: error: (assignment.type.incompatible)
+            @ReflectBottom Object o = m.invoke(new SuperClass(), new @ReflectBottom Object @ReflectBottom [0]);
+        } catch (Exception ignore) {
+        }
+    }
+
     public void fail1() {
         try {
             Class<?> c = MethodTest.class;

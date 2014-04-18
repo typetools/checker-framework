@@ -517,7 +517,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
         if (set1 == null || set1.size() == 0) {
             return set2;
         } else {
-            return factory.getQualifierHierarchy().greatestLowerBounds(set1,
+            return factory.getQualifierHierarchy().leastUpperBounds(set1,
                     set2);
         }
     }
