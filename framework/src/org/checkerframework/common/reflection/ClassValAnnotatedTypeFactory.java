@@ -6,6 +6,7 @@ import java.util.List;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
@@ -26,6 +27,7 @@ import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
@@ -393,20 +395,16 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * Return String representation of class name.
          */
         private String getClassname(Type classType) {
-            StringBuilder className = new StringBuilder(classType.tsym.name);
-            // Checker whether this class is an inner class
-            // EDITED 1-2-14 by plvines
-            // added this if/else due to nullpointer exceptions
-            if (classType.getEnclosingType() == null) {
-                return "No class name found! ClassValAnnotatedTypeFactory.java::266";
-            } else {
+            StringBuilder className = new StringBuilder(TypesUtils.getQualifiedName((DeclaredType) classType).toString());
+            if (classType.getEnclosingType() != null) {
                 while (classType.getEnclosingType().getKind() != TypeKind.NONE) {
                     classType = classType.getEnclosingType();
-                    className.insert(0, classType.tsym.name.toString() + "$");
+                    int last = className.lastIndexOf(".");
+                    if (last > -1)
+                        className.replace(last, last + 1, "$");
                 }
-                
-                return className.toString();
             }
+            return className.toString();
         }
     }
 }

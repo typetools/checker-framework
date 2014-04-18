@@ -9,6 +9,18 @@ public class MethodTest {
 
     @Sibling1 int sibling1;
     @Sibling2 int sibling2;
+    
+    public void real_class(){
+        try {
+        Class<?> c = Object.class;
+        Method m = c.getMethod("equals", Object.class);
+        Object rec = new Object();
+        Object param = new Object();
+        Boolean other = (Boolean) rec.equals(param);
+        Boolean equals = (Boolean) m.invoke(rec, param);
+        } catch (Exception ignore) {
+        }
+    }
     public void pass1(@ReflectBottom MethodTest this ) {
         try {
             Class<?> c = Class.forName("MethodTest$SuperClass");
