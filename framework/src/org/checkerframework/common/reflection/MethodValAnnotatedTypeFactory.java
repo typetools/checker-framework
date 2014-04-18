@@ -9,6 +9,7 @@ import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.DeclaredType;
 
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -29,6 +30,7 @@ import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.ExpressionTree;
@@ -564,7 +566,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
             // Calling from a Class object
             // TODO BOUND
-            else if (classReceiver.getKind() == Tree.Kind.IDENTIFIER) {
+            else if (classReceiver.getKind() == Tree.Kind.IDENTIFIER ||classReceiver.getKind()== Tree.Kind.MEMBER_SELECT) {
                 AnnotationMirror annotation = annotationProvider
                         .getAnnotationMirror(classReceiver, ClassVal.class);
                 if (annotation != null) {
@@ -586,18 +588,6 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         classNames.add("Unannotated Class: "
                                 + classReceiver.toString());
                     }
-                }
-            }
-            // Calling from a static .class. i.e. String.class.getMethod()
-            else if (classReceiver.getKind() == Tree.Kind.MEMBER_SELECT) {
-                // check if the identifier of the member is ".class",
-                // then just annotate with the expression side
-                if ("class".equals(((MemberSelectTree) classReceiver)
-                        .getIdentifier().toString())) {
-                    classNames.add(((MemberSelectTree) classReceiver)
-                            .getExpression().toString());
-                } else {
-                    assert false : "Unknown Member Select call (not '.class')";
                 }
             }
             return classNames;
