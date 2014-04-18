@@ -15,7 +15,6 @@ import com.sun.tools.javac.code.Attribute;
 import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Type;
-import com.sun.tools.javac.code.TypeAnnotationPosition;
 import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.List;
@@ -54,7 +53,7 @@ public class CFTreeBuilder extends TreeBuilder {
         for (AnnotationMirror am : annotations) {
             // TODO: what TypeAnnotationPosition should be used?
             Attribute.TypeCompound typeCompound =
-                    TypeAnnotationUtils.createTypeCompoundFromAnnotationMirror(env, am, TypeAnnotationPosition.unknown);
+                    TypeAnnotationUtils.createTypeCompoundFromAnnotationMirror(env, am, TypeAnnotationUtils.unknownTAPosition(env.getSourceVersion()));
             JCTree.JCAnnotation annotationTree =
                     maker.Annotation(typeCompound);
             JCTree.JCAnnotation typeAnnotationTree =

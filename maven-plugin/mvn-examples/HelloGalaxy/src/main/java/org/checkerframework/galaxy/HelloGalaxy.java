@@ -27,7 +27,7 @@ public class HelloGalaxy {
 
         StrBuilder stb = new StrBuilder();
 
-        @NonNull Object nn = nullable;
+        @NonNull Object nn = nullable;  //error on this line
         System.out.println(nn);
     }
 

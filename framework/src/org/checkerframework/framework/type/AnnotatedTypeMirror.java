@@ -1232,9 +1232,9 @@ public abstract class AnnotatedTypeMirror {
                     && actualType.getReturnType() != null) {// lazy init
                 TypeMirror aret = actualType.getReturnType();
                 if (((MethodSymbol)element).isConstructor()) {
-                        // For constructors, the underlying return type is void.
-                        // Take the type of the enclosing class instead.
-                        aret = element.getEnclosingElement().asType();
+                    // For constructors, the underlying return type is void.
+                    // Take the type of the enclosing class instead.
+                    aret = element.getEnclosingElement().asType();
                 }
                 returnType = createType(aret, atypeFactory);
             }
@@ -1255,9 +1255,16 @@ public abstract class AnnotatedTypeMirror {
          */
         public /*@Nullable*/ AnnotatedDeclaredType getReceiverType() {
             if (receiverType == null &&
-                    getElement() != null &&
-                    !ElementUtils.isStatic(getElement())) {
+                    // Static methods don't have a receiver
+                    !ElementUtils.isStatic(getElement()) &&
+                    // Top-level constructors don't have a receiver
+                    (getElement().getKind() != ElementKind.CONSTRUCTOR ||
+                    getElement().getEnclosingElement().getEnclosingElement().getKind() != ElementKind.PACKAGE)) {
                 TypeElement encl = ElementUtils.enclosingClass(getElement());
+                if (getElement().getKind() == ElementKind.CONSTRUCTOR) {
+                    // Can only reach this branch if we're the constructor of a nested class
+                    encl =  ElementUtils.enclosingClass(encl.getEnclosingElement());
+                }
                 AnnotatedTypeMirror type = createType(encl.asType(), atypeFactory);
                 assert type instanceof AnnotatedDeclaredType;
                 receiverType = (AnnotatedDeclaredType)type;

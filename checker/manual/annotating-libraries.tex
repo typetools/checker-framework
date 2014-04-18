@@ -378,14 +378,15 @@ in the library's \<.class> files instead.
 \section{Using distributed annotated JDKs\label{skeleton-using}\label{skeleton}}
 
 The Checker Framework distribution contains two
-annotated JDKs at the paths \<checker/bin/jdk7.jar> and
+annotated JDKs at the paths \<checker/dist/jdk7.jar> and
 \<checker/dist/jdk8.jar>.
 The \<javac> that is distributed with the Checker Framework and the command
-\code{java -jar \$CHECKERFRAMEWORK/checker/dist/checker.jar} both use the appropriate jdk6.jar or jdk7.jar
+\code{java -jar \$CHECKERFRAMEWORK/checker/dist/checker.jar} both use the appropriate \<jdk7.jar> or \<jdk8.jar>
 based on the version of Java used to run them.
 
 The annotated JDKs should \emph{not} be in your classpath at run time, only
-at compile time.
+at compile time; and they are automatically added to your classpath at
+compile time.
 
 % Skeleton classes are inferior to stub classes for two reasons.  First,
 % skeleton files must be on the classpath during compilation but must

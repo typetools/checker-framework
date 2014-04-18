@@ -5,7 +5,7 @@ For general user instructions, see the homepage at:
 http://types.cs.washington.edu/checker-framework/eclipse
 
 
-Prerequisites: checker.jar, checker-quals.jar, javac.jar, jdk6.jar, and jdk7.jar.
+Prerequisites: checker.jar, checker-qual.jar, javac.jar, jdk7.jar, and jdk8.jar.
 Some of these are redundant (and will be removed in the future).
 These are all available from the checker-framework and jsr308 projects
 respectively. For instructions on building these, see the documentation for

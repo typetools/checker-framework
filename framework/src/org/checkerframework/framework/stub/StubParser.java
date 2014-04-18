@@ -466,7 +466,15 @@ public class StubParser {
             }
         }
 
-        annotate(methodType.getReceiverType(), decl.getReceiverAnnotations());
+        if (methodType.getReceiverType() == null &&
+                decl.getReceiverAnnotations() != null &&
+                !decl.getReceiverAnnotations().isEmpty()) {
+            stubAlwaysWarn(String.format("parseMethod: static methods cannot have receiver annotations%n" +
+                "Method: %s%n" +
+                "Receiver annotations: %s", methodType, decl.getReceiverAnnotations()));
+        } else {
+            annotate(methodType.getReceiverType(), decl.getReceiverAnnotations());
+        }
 
         putNew(atypes, elt, methodType);
     }
@@ -587,7 +595,15 @@ public class StubParser {
             annotate(paramType, param.getType());
         }
 
-        annotate(methodType.getReceiverType(), decl.getReceiverAnnotations());
+        if (methodType.getReceiverType() == null &&
+                decl.getReceiverAnnotations() != null &&
+                !decl.getReceiverAnnotations().isEmpty()) {
+            stubAlwaysWarn(String.format("parseConstructor: constructor of a top-level class cannot have receiver annotations%n" +
+                "Constructor: %s%n" +
+                "Receiver annotations: %s", methodType, decl.getReceiverAnnotations()));
+        } else {
+            annotate(methodType.getReceiverType(), decl.getReceiverAnnotations());
+        }
 
         putNew(atypes, elt, methodType);
     }

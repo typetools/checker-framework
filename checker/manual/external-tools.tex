@@ -25,11 +25,7 @@ licensing restrictions.
 If you use \code{javac} compiler from the command line, then you can
 instead use the Checker Framework compiler that is bundled with the Checker
 Framework.  The bundled \code{javac} is a variant of the OpenJDK
-\code{javac} that recognizes type annotations.  Eventually, the OpenJDK
-\code{javac} will recognize type annotations.  The bundled \code{javac}
-also supports annotations in comments (see
-Section~\ref{annotations-in-comments}), which the OpenJDK \code{javac} will
-not.
+\code{javac} that recognizes type annotations in comments.
 
 This section describes how you can install and use the bundled
 \code{javac}, using either Unix/Linux/MacOS (see
@@ -465,7 +461,7 @@ error and warning output, set \code{failOnError} to false.
     <failOnError>false</failOnError>
 \end{Verbatim}
 
-Errors reported by the Checker Framework Maven plugin use a similar format to the Maven compiler plugin. If
+Errors reported by the Checker Framework Maven plugin use a format similar to the Maven compiler plugin. If
 you want to see the exact output of the Checker Framework compiler instead, use the following option:
 
 \begin{Verbatim}
