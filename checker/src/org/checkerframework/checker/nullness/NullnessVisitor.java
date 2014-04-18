@@ -444,11 +444,13 @@ public class NullnessVisitor extends InitializationVisitor<NullnessAnnotatedType
     @Override
     protected void checkMethodInvocability(AnnotatedExecutableType method,
             MethodInvocationTree node) {
-        if (!TreeUtils.isSelfAccess(node)) {
-            Set<AnnotationMirror> recvAnnos = atypeFactory
-                    .getReceiverType(node).getAnnotations();
-            AnnotatedTypeMirror methodReceiver = method.getReceiverType()
-                    .getErased();
+        if (!TreeUtils.isSelfAccess(node) &&
+                // Static methods don't have a receiver
+                method.getReceiverType() != null) {
+                // TODO: should all or some constructors be excluded?
+                // method.getElement().getKind() != ElementKind.CONSTRUCTOR) {
+            Set<AnnotationMirror> recvAnnos = atypeFactory.getReceiverType(node).getAnnotations();
+            AnnotatedTypeMirror methodReceiver = method.getReceiverType().getErased();
             AnnotatedTypeMirror treeReceiver = methodReceiver.getCopy(false);
             AnnotatedTypeMirror rcv = atypeFactory.getReceiverType(node);
             treeReceiver.addAnnotations(rcv.getEffectiveAnnotations());

@@ -16,7 +16,7 @@ import java.lang.annotation.Target;
  *
  * @author Stefan Heule
  * @see <a
- *      href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#java-expressions-as-arguments">Syntax
+ *      href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#java-expressions-as-arguments">Syntax
  *      of Java expressions</a>
  */
 @Documented
@@ -27,7 +27,7 @@ public @interface RequiresQualifier {
      * The Java expressions for which the annotation need to be present.
      *
      * @see <a
-     *      href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#java-expressions-as-arguments">Syntax
+     *      href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#java-expressions-as-arguments">Syntax
      *      of Java expressions</a>
      */
     String[] expression();

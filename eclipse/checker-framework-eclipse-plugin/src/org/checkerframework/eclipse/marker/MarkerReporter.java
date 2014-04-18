@@ -3,6 +3,7 @@ package org.checkerframework.eclipse.marker;
 import java.util.Iterator;
 import java.util.List;
 
+import org.checkerframework.eclipse.prefs.CheckerPreferences;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRunnable;
@@ -53,6 +54,11 @@ public class MarkerReporter implements IWorkspaceRunnable
     @Override
     public void run(IProgressMonitor monitor) throws CoreException {
 
+        boolean reportAsError =
+            ! CheckerPlugin.getDefault()
+                .getPreferenceStore()
+                .getBoolean(CheckerPreferences.PREF_CHECKER_A_WARNS);
+
         if (CheckerPlugin.DEBUG) {
             System.out.println("Creating marker for " + resource.getLocation());
         }
@@ -65,7 +71,7 @@ public class MarkerReporter implements IWorkspaceRunnable
 
         marker.setAttribute(IMarker.LINE_NUMBER, startLine);
         marker.setAttribute(IMarker.MESSAGE, message);
-        marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
+        marker.setAttribute(IMarker.SEVERITY, reportAsError ? IMarker.SEVERITY_ERROR : IMarker.SEVERITY_WARNING);
         marker.setAttribute(IMarker.CHAR_START, startPosition);
         marker.setAttribute(IMarker.CHAR_END, endPosition);
 

@@ -7,10 +7,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/*>>>
-import org.checkerframework.checker.nullness.NullnessChecker;
-*/
-
 /**
  * Specifies the argument that this checker recognizes for suppressing warnings
  * via the {@link SuppressWarnings} annotation.  The given argument suppresses
@@ -24,7 +20,7 @@ import org.checkerframework.checker.nullness.NullnessChecker;
  * <p>
  *
  * For example, warnings issued by the Nullness Checker can be suppressed using
- * {@code @SuppressWarnings("nullness")} because {@link NullnessChecker} is
+ * {@code @SuppressWarnings("nullness")} because {@link org.checkerframework.checker.nullness.NullnessChecker} is
  * annotated with {@code @SuppressWarningsKey("nullness")}.
  *
  * TODO: the previous paragraph about the Nullness Checker is out-of-date.

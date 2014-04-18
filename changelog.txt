@@ -1,9 +1,21 @@
 Version 1.8.0, 2 April 2014
 
-Restructure the Checker Framework project and package layout,
-using the org.checkerframework prefix.
+Added the GUI Effect Checker, which prevents "invalid thread access" errors
+when a background thread in a GUI attempts to access the UI.
 
-Added the GUI Effect Checker, which prevents "invalid thread access" errors when a background thread in a GUI attempts to access the UI.
+Changed the Java package of all type-checkers and qualifiers.  The package
+"checkers" has been renamed to "org.checkerframeork.checker".  This
+requires you to change your import statements, such as from
+  import checkers.nullness.quals.*;
+to 
+  import org.checkerframework.checker.nullness.qual.*;
+It also requires you to change command-line invocations of javac, such as from
+  javac -processor checkers.nullness.NullnessChecker ...
+to 
+  javac -processor org.checkerframework.checker.nullness.NullnessChecker ...
+
+Restructured the Checker Framework project and package layout,
+using the org.checkerframework prefix.
 
 ----------------------------------------------------------------------
 
