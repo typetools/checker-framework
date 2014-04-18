@@ -1,0 +1,12 @@
+src/net/eyde/personalblog/struts/action/ReadAction.java:58: error: incompatible types.
+                  	pblog.getPostsByCategory(reqCategory));
+                  	                         ^
+  found   : @Tainted String
+  required: @Untainted String
+1 error
+
+BUILD FAILED
+build.xml:11: The following error occurred while executing this line:
+ant.xml:43: Java returned: 1
+
+Total time: 2 seconds

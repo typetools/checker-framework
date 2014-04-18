@@ -1,0 +1,7 @@
+import org.checkerframework.checker.nullness.qual.Nullable;
+
+package java.lang;
+
+class String {
+    String valueOf(@Nullable Object s);
+}
