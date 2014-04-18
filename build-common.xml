@@ -28,11 +28,14 @@
     <property name="compiler.version.goal.jsr308"
               value="javac 1.8.0-jsr308-${build.version}"/>
 
+    <property name="compiler.version.goal.java8.release"
+              value="javac 1.8.0"/>
+
     <property name="compiler.version.goal.java8.internal"
               value="javac 1.8.0-internal"/>
 
-    <!-- In the future might add ...java8.build or ...java8.release
-         etc. -->
+    <property name="compiler.version.goal.java9.internal"
+              value="javac 1.9.0-internal"/>
 
     <target name="prep-all"
             description="Perform preparation useful for all projects">
@@ -49,16 +52,30 @@
                 arg2="${compiler.version.goal.jsr308}"/>
         </condition>
 
+        <condition property="compiler.exists.java8.release">
+            <equals
+                arg1="${compiler.version}"
+                arg2="${compiler.version.goal.java8.release}"/>
+        </condition>
+
         <condition property="compiler.exists.java8.internal">
             <equals
                 arg1="${compiler.version}"
                 arg2="${compiler.version.goal.java8.internal}"/>
         </condition>
 
+        <condition property="compiler.exists.java9.internal">
+            <equals
+                arg1="${compiler.version}"
+                arg2="${compiler.version.goal.java9.internal}"/>
+        </condition>
+
 	<condition property="compiler.exists">
             <or>
                 <istrue value="${compiler.exists.jsr308}"/>
+                <istrue value="${compiler.exists.java8.release}"/>
                 <istrue value="${compiler.exists.java8.internal}"/>
+                <istrue value="${compiler.exists.java9.internal}"/>
             </or>
         </condition>
 

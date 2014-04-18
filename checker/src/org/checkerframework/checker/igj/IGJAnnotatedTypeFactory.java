@@ -25,15 +25,15 @@ import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.type.TreeAnnotator;
-import org.checkerframework.framework.type.TypeAnnotator;
-import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
+import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.type.TreeAnnotator;
+import org.checkerframework.framework.type.TypeAnnotator;
+import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeVisitor;
 import org.checkerframework.framework.util.AnnotatedTypes;
@@ -378,7 +378,8 @@ public class IGJAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
                 if (!hasImmutabilityAnnotation(ct) || ct.hasAnnotationRelaxed(I)) {
                     AnnotatedExecutableType con = getAnnotatedType(TreeUtils.elementFromUse(node));
-                    if (con.getReceiverType().hasEffectiveAnnotation(IMMUTABLE))
+                    if (con.getReceiverType() != null &&
+                            con.getReceiverType().hasEffectiveAnnotation(IMMUTABLE))
                         p.replaceAnnotation(IMMUTABLE);
                     else
                         p.replaceAnnotation(MUTABLE);
@@ -417,7 +418,12 @@ public class IGJAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     public AnnotatedDeclaredType getSelfType(Tree tree) {
         AnnotatedDeclaredType act = getCurrentClassType(tree);
-        AnnotatedDeclaredType methodReceiver = getCurrentMethodReceiver(tree);
+        AnnotatedDeclaredType methodReceiver;
+        if (isWithinConstructor(tree)) {
+            methodReceiver = (AnnotatedDeclaredType) getAnnotatedType(visitorState.getMethodTree()).getReturnType();
+        } else {
+            methodReceiver = getCurrentMethodReceiver(tree);
+        }
 
         if (methodReceiver == null)
             return act;
