@@ -289,8 +289,10 @@
             <exclude name="lubglb/qual/*"/>
             <exclude name="polyall/qual/*"/>
             <!-- Watch out for inner anonymous class within utilities -->
+            <include name="**/FormatUtil*"/>
             <include name="**/NullnessUtil*"/>
             <include name="**/RegexUtil*"/>
+            <include name="**/UnitsTools*"/>
         </jar>
     </target>
 
