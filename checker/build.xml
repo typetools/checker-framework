@@ -846,15 +846,15 @@
 
     <target name="dist-all"
             depends="-prep-dist,jar,all.jdks.jar,dist-nojdk"
-            description="Build checker.jar, checker-quals.jar, jdkX.jar(s).  This comprises all jars needed to run the framework.">
+            description="Build checker.jar, checker-qual.jar, jdkX.jar(s).  This comprises all jars needed to run the framework.">
     </target>
 
     <target name="dist" depends="-prep-dist,jar,jdk.jar,dist-nojdk"
-            description="Build checker.jar, checker-quals.jar, and jdkX.jar where X is the major version number of java in JAVA_HOME (only Java 6/7/8 are currently supported).  This comprises all jars needed to run the framework.">
+            description="Build checker.jar, checker-qual.jar, and jdkX.jar where X is the major version number of java in JAVA_HOME (only Java 6/7/8 are currently supported).  This comprises all jars needed to run the framework.">
     </target>
 
     <target name="dist-nojdk" depends="-prep-dist,jar"
-            description="Build checker.jar, checker-quals.jar WITHOUT updating jdkX.jar.  Move all relevant files to the binary directory.">
+            description="Build checker.jar, checker-qual.jar WITHOUT updating jdkX.jar.  Move all relevant files to the binary directory.">
 
         <copy tofile="dist/javac.jar" file="${javac.lib}"
               overwrite="true" failonerror="true" />
