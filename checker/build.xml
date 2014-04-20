@@ -850,7 +850,7 @@
     </target>
 
     <target name="dist" depends="-prep-dist,jar,jdk.jar,dist-nojdk"
-            description="Build checker.jar, checker-qual.jar, and jdkX.jar where X is the major version number of java in JAVA_HOME (only Java 6/7/8 are currently supported).  This comprises all jars needed to run the framework.">
+            description="Build checker.jar, checker-qual.jar, and jdkX.jar where X is the major version number of java in JAVA_HOME (only Java 7/8/9 are currently supported).  This comprises all jars needed to run the framework.">
     </target>
 
     <target name="dist-nojdk" depends="-prep-dist,jar"
