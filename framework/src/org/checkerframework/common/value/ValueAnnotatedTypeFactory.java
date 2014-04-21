@@ -12,9 +12,13 @@ import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
@@ -47,6 +51,7 @@ import org.checkerframework.framework.util.QualifierDefaults;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
@@ -905,56 +910,21 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
                 if (known) {
 
-                    Class<?>[] argClasses = getClassList(argTypes, tree);
 
                     boolean isStatic = false;
                     AnnotatedTypeMirror recType = null;
                     Method method = null;
-                    Class<?> recClass;
 
                     try {
-                        if (tree.getMethodSelect().getKind() == Tree.Kind.IDENTIFIER) {
-                            // Method is defined within the same class
-                            recType = getSelfType(tree);
+                    	method = getMethodObject(tree);
+                        isStatic = java.lang.reflect.Modifier.isStatic(method.getModifiers());
 
-                            do {
-                                recClass = Class.forName(recType
-                                        .getUnderlyingType().toString());
-                                try {
-                                    method = recClass.getMethod(
-                                            ((IdentifierTree) methodTree)
-                                                    .getName().toString(),
-                                            argClasses);
-                                } catch (NoSuchMethodException e) {
-                                    checker.report(Result.warning(
-                                            "method.find.failed",
-                                            ((IdentifierTree) methodTree)
-                                                    .getName(), argTypes,
-                                            recClass), tree);
-                                }
-                                recType = ((AnnotatedDeclaredType) recType)
-                                        .getEnclosingType();
-                            } while (method == null && recType != null);
-
-                            if (method != null) {
-                                isStatic = java.lang.reflect.Modifier.isStatic(method
-                                        .getModifiers());
-                            } else {
-                                type.replaceAnnotation(UNKNOWNVAL);
-                                return null;
-                            }
-                        } else if (tree.getMethodSelect().getKind() == Tree.Kind.MEMBER_SELECT) {
+                        if(!isStatic) {
                             // Method is defined in another class
                             recType = getAnnotatedType(((MemberSelectTree) methodTree)
                                     .getExpression());
-                            recClass = Class.forName(recType
-                                    .getUnderlyingType().toString());
-                            method = recClass.getMethod(
-                                    ((MemberSelectTree) methodTree)
-                                            .getIdentifier().toString(),
-                                    argClasses);
-                            isStatic = java.lang.reflect.Modifier.isStatic(method.getModifiers());
                         }
+                        
 
                         // Check if this is a method that can be evaluated
 
@@ -993,6 +963,38 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             type.replaceAnnotation(UNKNOWNVAL);
 
             return null;
+        }
+
+        private Method getMethodObject(MethodInvocationTree tree) throws ClassNotFoundException, NoSuchMethodException {
+            Method method;
+            ExecutableElement ele = TreeUtils.elementFromUse(tree);
+            ele.getEnclosingElement();
+            Name clazz = TypesUtils.getQualifiedName((DeclaredType) ele.getEnclosingElement().asType());
+            List<? extends VariableElement> paramEles = ele.getParameters();
+            List<Class<?>> paramClzz = new ArrayList<>();
+            for (Element e : paramEles) {
+                TypeMirror pType = ElementUtils.getType(e);
+                if (pType.getKind() == TypeKind.ARRAY) {
+                    ArrayType pArrayType = (ArrayType) pType;
+                    String par = TypesUtils.getQualifiedName((DeclaredType) pArrayType.getComponentType()).toString();
+                    if (par.equals("java.lang.Object")) {
+                        paramClzz.add(java.lang.Object[].class);
+                    } else if (par.equals("java.lang.String")) {
+                        paramClzz.add(java.lang.String[].class);
+                    }
+
+                } else {
+					String paramClass = ElementUtils.getType(e).toString();
+					if (paramClass.contains("java")) {
+						paramClzz.add(Class.forName(paramClass));
+					} else {
+						paramClzz.add(getClass(paramClass, tree));
+					}
+                }
+            }
+            Class<?> clzz = Class.forName(clazz.toString());
+            method = clzz.getMethod(ele.getSimpleName().toString(), paramClzz.toArray(new Class<?>[0]));
+            return method;
         }
 
         /**
