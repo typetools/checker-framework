@@ -31,6 +31,7 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.api.JavacScope;
+import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
@@ -328,8 +329,11 @@ public class DefaultReflectionResolver implements ReflectionResolver {
             // Resolve the Symbol(s) for the current method
             for (Symbol symbol : getMethodSymbolsfor(className, methodName,
                     paramLength, env)) {
-                debugReflection("Resolved method: " + symbol.owner + "."
-                        + symbol);
+                if ((symbol.flags() & Flags.PUBLIC) > 0) {
+                    debugReflection("Resolved public method: " + symbol.owner + "." + symbol);
+                } else {
+                    debugReflection("Resolved non-public method: " + symbol.owner + "." + symbol);
+                }
 
                 JCExpression method = make.Select(receiver, symbol);
                 // Build method invocation tree depending on the number of
@@ -444,7 +448,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
                 classSym = (ClassSymbol) t.tsym;
             }
             if (result.size() == 0)
-                debugReflection("Unable to resolve method: " + methodName);
+                debugReflection("Unable to resolve method: " + className + "@" + methodName);
         } catch (SecurityException | NoSuchMethodException
                 | IllegalAccessException | IllegalArgumentException
                 | InvocationTargetException e) {
@@ -517,7 +521,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
         if (set1 == null || set1.size() == 0) {
             return set2;
         } else {
-            return factory.getQualifierHierarchy().greatestLowerBounds(set1,
+            return factory.getQualifierHierarchy().leastUpperBounds(set1,
                     set2);
         }
     }
