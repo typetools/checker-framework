@@ -5,7 +5,10 @@ import java.util.Arrays;
 import java.util.List;
 
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 
@@ -25,6 +28,7 @@ import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -324,18 +328,13 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * with their value
          */
         @Override
-        public Void visitMemberSelect(MemberSelectTree tree,
-                AnnotatedTypeMirror type) {
-            // TODO hackish fix
-            if ("class".equals(tree.getIdentifier().toString())
-                    && TreeUtils.getReceiverTree(tree) != null) {
-                Type clType = (Type) InternalUtils.typeOf(TreeUtils
-                        .getReceiverTree(tree));
-                String className = getClassname(clType);
-                AnnotationMirror newQual = createClassVal(Arrays
-                        .asList(className));
-                type.replaceAnnotation(newQual);
-
+        public Void visitMemberSelect(MemberSelectTree tree, AnnotatedTypeMirror type) {
+            ExpressionTree etree = tree.getExpression();
+            Element e = InternalUtils.symbol(etree);
+            if (e != null) {
+                String name = getClassname(e);
+                AnnotationMirror newQual = createClassVal(Arrays.asList(name));
+                type.replaceAnnotation(newQual);;
                 return null;
             }
             return super.visitMemberSelect(tree, type);
@@ -402,6 +401,20 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     int last = className.lastIndexOf(".");
                     if (last > -1)
                         className.replace(last, last + 1, "$");
+                }
+            }
+            return className.toString();
+        }
+
+        private String getClassname(Element classType) {
+            StringBuilder className = new StringBuilder(ElementUtils.getQualifiedClassName(classType));
+            if (classType.getEnclosingElement() != null) {
+                while (classType.getEnclosingElement().getKind() == ElementKind.CLASS  ) {
+                    classType = classType.getEnclosingElement();
+                    int last = className.lastIndexOf(".");
+                    if (last > -1)
+                        className.replace(last, last + 1, "$");
+                    if (classType == null) break;
                 }
             }
             return className.toString();
