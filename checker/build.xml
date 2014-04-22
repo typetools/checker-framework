@@ -289,8 +289,10 @@
             <exclude name="lubglb/qual/*"/>
             <exclude name="polyall/qual/*"/>
             <!-- Watch out for inner anonymous class within utilities -->
+            <include name="**/FormatUtil*"/>
             <include name="**/NullnessUtil*"/>
             <include name="**/RegexUtil*"/>
+            <include name="**/UnitsTools*"/>
         </jar>
     </target>
 
@@ -828,6 +830,10 @@
     <target name="jdk.jar" depends="jar"
             description="Create the instrumented jdkX.jar using the JDK specified by JAVA_HOME">
 
+      <property name="afu.jar" value="${annotation.tools}/annotation-file-utilities/annotation-file-utilities.jar"/>
+      <available property="afu.exist" file="${afu.jar}" />
+      <fail unless="afu.exist" message="Could not find annotation-file-utilities.jar: ${afu.jar}.  You must build Annotation Tools; see http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#build-source" />
+
       <exec executable="make" failonerror="true">
          <arg value="LANGTOOLS=${jsr308.langtools}"/>
          <arg value="LANGTOOLSDIST=${jsr308.langtools.dist}"/>
@@ -846,15 +852,15 @@
 
     <target name="dist-all"
             depends="-prep-dist,jar,all.jdks.jar,dist-nojdk"
-            description="Build checker.jar, checker-quals.jar, jdkX.jar(s).  This comprises all jars needed to run the framework.">
+            description="Build checker.jar, checker-qual.jar, jdkX.jar(s).  This comprises all jars needed to run the framework.">
     </target>
 
     <target name="dist" depends="-prep-dist,jar,jdk.jar,dist-nojdk"
-            description="Build checker.jar, checker-quals.jar, and jdkX.jar where X is the major version number of java in JAVA_HOME (only Java 6/7/8 are currently supported).  This comprises all jars needed to run the framework.">
+            description="Build checker.jar, checker-qual.jar, and jdkX.jar where X is the major version number of java in JAVA_HOME (only Java 7/8/9 are currently supported).  This comprises all jars needed to run the framework.">
     </target>
 
     <target name="dist-nojdk" depends="-prep-dist,jar"
-            description="Build checker.jar, checker-quals.jar WITHOUT updating jdkX.jar.  Move all relevant files to the binary directory.">
+            description="Build checker.jar, checker-qual.jar WITHOUT updating jdkX.jar.  Move all relevant files to the binary directory.">
 
         <copy tofile="dist/javac.jar" file="${javac.lib}"
               overwrite="true" failonerror="true" />
