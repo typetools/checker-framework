@@ -1,0 +1,46 @@
+<!--
+  This is a configuration file for use by Ant when building the 
+  Checker Framework.
+  This top-level build file simply delegates to the subprojects.
+  It assumes that the "checker" project is aware of all dependencies
+  and that it is sufficient to run targets from there.
+-->
+<project name="checkerframework" default="dist"
+        basedir=".">
+
+  <target name="dist"
+          description="Compile and jar all subprojects">
+    <ant dir="checker">
+      <target name="dist"/>
+    </ant>
+  </target>
+
+  <target name="build"
+          description="Compile all subprojects">
+    <ant dir="checker">
+      <target name="build"/>
+    </ant>
+  </target>
+
+  <target name="clean"
+          description="Clean all subprojects">
+    <ant dir="checker">
+      <target name="clean"/>
+    </ant>
+  </target>
+
+  <target name="tests" depends="dist"
+          description="Run test cases for all subprojects">
+    <ant dir="checker">
+      <target name="all-tests-nojdk"/>
+    </ant>
+  </target>
+
+  <target name="javadoc"
+          description="Generate javadoc for all subprojects">
+    <ant dir="checker">
+      <target name="javadoc"/>
+    </ant>
+  </target>
+
+</project>
