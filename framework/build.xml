@@ -258,6 +258,7 @@
                haltonfailure="${halt.on.test.failure}">
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <jvmarg line="-ea"/>
+            <jvmarg line="-Dorg.checkerframework.common.reflection.debug=false"/>
 
             <classpath>
                 <pathelement path="${build}"/>
