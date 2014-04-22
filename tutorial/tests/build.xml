@@ -1,0 +1,19 @@
+<project name="personalblog" basedir="../eclipse-projects/personalblog-demo/" default="check-tutorial">
+
+    <property file="../../../build-common.properties"/>
+    <import file="ant.xml"/>
+
+    <target name="check-pblog">
+      <check-demo-common target="check-tainting" step="0" dir="../../tests/testdemo"/>
+      <check-demo-common target="check-tainting" step="1" dir="../../tests/testdemo"/>
+      <check-demo-common target="check-tainting" step="2" dir="../../tests/testdemo"/>
+      <echo message="pblog demo works as expected" />
+      <revert-demo target="check-tainting" step="2" dir="../../tests/testdemo"/>
+      <revert-demo target="check-tainting" step="1" dir="../../tests/testdemo"/>
+      <revert-demo target="check-tainting" step="0" dir="../../tests/testdemo"/>
+    </target>
+
+    <target name="check-tutorial" depends="check-pblog">
+    </target>
+
+</project>
