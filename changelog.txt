@@ -1,3 +1,9 @@
+Version 1.8.1, 1 May 2014
+
+Fixes for Issues 204, 304, 320.
+
+----------------------------------------------------------------------
+
 Version 1.8.0, 2 April 2014
 
 Added the GUI Effect Checker, which prevents "invalid thread access" errors
