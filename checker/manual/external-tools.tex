@@ -416,7 +416,7 @@ you can find the Checker Framework in Maven Central (MC):
 
 The above example attaches the "check" goal to the "process-lifecycle" phase which occurs directly after
 the "compile" phase (see \url{http://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html}).
-This means that any maven target that exercises that phase will also run the Checker Framework
+This means that any Maven target that exercises that phase will also run the Checker Framework
 (e.g., \<mvn package>, \<mvn verify>).
 
 To run only checking:
@@ -442,11 +442,11 @@ by the DirectoryScanner documentation found at:
 \url{http://plexus.codehaus.org/plexus-utils/apidocs/org/codehaus/plexus/util/DirectoryScanner.html} (see setIncludes/setExcludes)
 
 \begin{Verbatim}
-    <!-- a list of patterns to include, in the standard maven syntax; defaults to **/*.java -->
+    <!-- a list of patterns to include, in the standard Maven syntax; defaults to **/*.java -->
     <includes>
         <include>org/company/important/**/*.java</include>
     </includes>
-    <!-- a list of patterns to exclude, in the standard maven syntax; defaults to an empty list -->
+    <!-- a list of patterns to exclude, in the standard Maven syntax; defaults to an empty list -->
     <excludes>
         <exclude>org/company/notimportant/**/*.java</exclude>
     </excludes>
