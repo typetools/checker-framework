@@ -58,6 +58,7 @@ annotated: $(addsuffix .annotated, $(CHECKER_DIRS))
 
 annotated/%.class:
 	mkdir -p annotated
+# Extract exactly one file from $(RTJAR)
 # Ignore errors for now; we get errors when building the JDK for Java 6 but looking for files that are in the annotated JDK because of Java 7.
 	-cd annotated; unzip $(RTJAR) '$*.class' > /dev/null
 
