@@ -60,6 +60,7 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.PackageTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.PrimitiveTypeTree;
@@ -623,6 +624,12 @@ public class PurityChecker {
 
         @Override
         public PurityResult visitErroneous(ErroneousTree node, PurityResult p) {
+            assert false : "this type of tree is unexpected here";
+            return null;
+        }
+
+        @Override
+        public PurityResult visitPackage(PackageTree node, PurityResult p) {
             assert false : "this type of tree is unexpected here";
             return null;
         }
