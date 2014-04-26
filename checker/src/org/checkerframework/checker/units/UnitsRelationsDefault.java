@@ -1,5 +1,9 @@
 package org.checkerframework.checker.units;
 
+/*>>>
+import org.checkerframework.checker.nullness.qual.Nullable;
+*/
+
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Elements;
@@ -54,7 +58,7 @@ public class UnitsRelationsDefault implements UnitsRelations {
     }
 
     @Override
-    public AnnotationMirror multiplication(AnnotatedTypeMirror p1, AnnotatedTypeMirror p2) {
+    public /*@Nullable*/ AnnotationMirror multiplication(AnnotatedTypeMirror p1, AnnotatedTypeMirror p2) {
         // TODO: does this handle scaling correctly?
         if (AnnotationUtils.containsSameIgnoringValues(p1.getAnnotations(), m) &&
                 AnnotationUtils.containsSameIgnoringValues(p2.getAnnotations(), m)) {
@@ -70,7 +74,7 @@ public class UnitsRelationsDefault implements UnitsRelations {
     }
 
     @Override
-    public AnnotationMirror division(AnnotatedTypeMirror p1, AnnotatedTypeMirror p2) {
+    public /*@Nullable*/ AnnotationMirror division(AnnotatedTypeMirror p1, AnnotatedTypeMirror p2) {
         if (AnnotationUtils.containsSameIgnoringValues(p1.getAnnotations(), m) &&
                 AnnotationUtils.containsSameIgnoringValues(p2.getAnnotations(), s)) {
             return mPERs;
