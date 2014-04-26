@@ -1,5 +1,6 @@
 Version 1.8.1, 1 May 2014
 
+Support to directly use the Java 8 javac in addition to jsr308-langtools.
 Fixes for Issues 204, 304, 320.
 
 ----------------------------------------------------------------------
