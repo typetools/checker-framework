@@ -6,6 +6,10 @@ import org.checkerframework.checker.units.qual.*;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.AnnotationBuilder;
 
+/*>>>
+import org.checkerframework.checker.nullness.qual.Nullable;
+*/
+
 /** Relations among units of frequency. */
 public class FrequencyRelations implements UnitsRelations {
 
@@ -24,13 +28,13 @@ public class FrequencyRelations implements UnitsRelations {
     }
 
     // No multiplications yield Hertz.
-    public AnnotationMirror multiplication(AnnotatedTypeMirror p1, AnnotatedTypeMirror p2) {
+    public /*@Nullable*/ AnnotationMirror multiplication(AnnotatedTypeMirror p1, AnnotatedTypeMirror p2) {
         return null;
     }
 
     // Division of a scalar by seconds yields Hertz.
     // Other divisions yield an unannotated value.
-    public AnnotationMirror division(AnnotatedTypeMirror p1, AnnotatedTypeMirror p2) {
+    public /*@Nullable*/ AnnotationMirror division(AnnotatedTypeMirror p1, AnnotatedTypeMirror p2) {
         if (p1.getAnnotations().isEmpty() && p2.getAnnotations().contains(s)) {
             return hz;
         }
