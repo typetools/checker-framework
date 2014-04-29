@@ -893,6 +893,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         annotateImplicit(element, type);
     }
 
+    public void postTypeVarSubstitution(AnnotatedTypeVariable varDecl,
+            AnnotatedTypeVariable varUse, AnnotatedTypeMirror value) {
+        if (!varUse.annotations.isEmpty()
+                && !AnnotationUtils.areSame(varUse.annotations, varDecl.annotations)) {
+            value.replaceAnnotations(varUse.annotations);
+        }
+    }
+
 
     /**
      * Adapt the upper bounds of the type variables of a class relative
