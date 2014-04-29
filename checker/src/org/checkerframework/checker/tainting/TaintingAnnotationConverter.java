@@ -1,6 +1,6 @@
 package org.checkerframework.checker.tainting;
 
-import java.util.Collection;
+import java.util.*;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -8,23 +8,26 @@ import javax.lang.model.element.QualifiedNameable;
 
 import org.checkerframework.qualframework.base.AnnotationConverter;
 
+import org.checkerframework.checker.qualparam.BaseQual;
+import org.checkerframework.checker.qualparam.ParamValue;
 import org.checkerframework.checker.qualparam.QualParams;
 import org.checkerframework.checker.qualparam.QualVar;
+import org.checkerframework.checker.qualparam.WildcardQual;
 
-import org.checkerframework.checker.tainting.qual.Tainted;
-import org.checkerframework.checker.tainting.qual.Untainted;
-import org.checkerframework.checker.tainting.qual.UseMain;
+import org.checkerframework.checker.tainting.qual.*;
 
 
 public class TaintingAnnotationConverter implements AnnotationConverter<QualParams<Tainting>> {
-    private String taintedName;
-    private String untaintedName;
-    private String useMainName;
+    private Map<String, ParamValue<Tainting>> lookup;
 
     public TaintingAnnotationConverter() {
-        this.taintedName = Tainted.class.getName();
-        this.untaintedName = Untainted.class.getName();
-        this.useMainName = UseMain.class.getName();
+        lookup = new HashMap<>();
+        lookup.put(Untainted.class.getName(), new BaseQual<>(Tainting.UNTAINTED));
+        lookup.put(Tainted.class.getName(), new BaseQual<>(Tainting.TAINTED));
+        lookup.put(UseMain.class.getName(), new QualVar<>("Main"));
+        lookup.put(ExtendsUntainted.class.getName(), new WildcardQual<>(null, Tainting.UNTAINTED));
+        lookup.put(ExtendsTainted.class.getName(), new WildcardQual<>(null, Tainting.TAINTED));
+        lookup.put(ExtendsMain.class.getName(), new WildcardQual<>(null, new QualVar<>("Main")));
     }
 
     private String getAnnotationTypeName(AnnotationMirror anno) {
@@ -41,12 +44,9 @@ public class TaintingAnnotationConverter implements AnnotationConverter<QualPara
     public QualParams<Tainting> fromAnnotations(Collection<? extends AnnotationMirror> annos) {
         for (AnnotationMirror anno : annos) {
             String name = getAnnotationTypeName(anno);
-            if (taintedName.equals(name)) {
-                return new QualParams<>("Main", Tainting.TAINTED);
-            } else if (untaintedName.equals(name)) {
-                return new QualParams<>("Main", Tainting.UNTAINTED);
-            } else if (useMainName.equals(name)) {
-                return new QualParams<>("Main", new QualVar<>("Main"));
+            ParamValue<Tainting> value = lookup.get(name);
+            if (value != null) {
+                return new QualParams<>("Main", value);
             }
         }
         return null;
@@ -55,7 +55,7 @@ public class TaintingAnnotationConverter implements AnnotationConverter<QualPara
     @Override
     public boolean isAnnotationSupported(AnnotationMirror anno) {
         String name = getAnnotationTypeName(anno);
-        return (taintedName.equals(name) || untaintedName.equals(name) || useMainName.equals(name));
+        return lookup.containsKey(name);
     }
 }
 
