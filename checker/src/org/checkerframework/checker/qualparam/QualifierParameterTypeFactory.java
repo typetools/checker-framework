@@ -4,10 +4,15 @@ import java.util.*;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodInvocationTree;
+
+import org.checkerframework.javacutil.Pair;
 
 import org.checkerframework.qualframework.base.DefaultQualifiedTypeFactory;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror;
 import org.checkerframework.qualframework.util.QualifierMapVisitor;
+import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedExecutableType;
 
 public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedTypeFactory<QualParams<Q>> {
     
@@ -120,7 +125,7 @@ public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedT
     }
 
 
-    private QualifierMapVisitor<QualParams<Q>, QualParams<Q>, QualParams<Q>> SUBSTITUTE_VISITOR =
+    private QualifierMapVisitor<QualParams<Q>, QualParams<Q>, QualParams<Q>> AS_MEMBER_OF_VISITOR =
         new QualifierMapVisitor<QualParams<Q>, QualParams<Q>, QualParams<Q>>() {
             @Override
             public QualParams<Q> process(QualParams<Q> memberQual, QualParams<Q> objectQual) {
@@ -133,6 +138,48 @@ public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedT
             QualifiedTypeMirror<QualParams<Q>> memberType,
             QualifiedTypeMirror<QualParams<Q>> receiverType,
             Element memberElement) {
-        return SUBSTITUTE_VISITOR.visit(memberType, receiverType.getQualifier());
+        return AS_MEMBER_OF_VISITOR.visit(memberType, receiverType.getQualifier());
+    }
+
+    private QualifierMapVisitor<QualParams<Q>, QualParams<Q>, Map<String, ParamValue<Q>>> SUBSTITUTE_VISITOR =
+        new QualifierMapVisitor<QualParams<Q>, QualParams<Q>, Map<String, ParamValue<Q>>>() {
+            @Override
+            public QualParams<Q> process(QualParams<Q> params, Map<String, ParamValue<Q>> substs) {
+                return params.substituteAll(substs);
+            }
+        };
+
+    @Override
+    public Pair<QualifiedExecutableType<QualParams<Q>>, List<QualifiedTypeMirror<QualParams<Q>>>> methodFromUse(MethodInvocationTree tree) {
+        Pair<QualifiedExecutableType<QualParams<Q>>, List<QualifiedTypeMirror<QualParams<Q>>>> result = super.methodFromUse(tree);
+
+        List<? extends QualifiedTypeMirror<QualParams<Q>>> formals = result.first.getParameterTypes();
+        List<QualifiedTypeMirror<QualParams<Q>>> actuals = new ArrayList<>();
+        for (ExpressionTree actualExpr : tree.getArguments()) {
+            actuals.add(getQualifiedType(actualExpr));
+        }
+
+        List<String> qualParams = new ArrayList<>();
+        qualParams.add("Main");
+
+        InferenceContext<Q> inference = new InferenceContext<>(qualParams, formals, actuals);
+        QualifierParameterHierarchy<Q> hierarchy = (QualifierParameterHierarchy<Q>)getQualifierHierarchy();
+        inference.run(getTypeHierarchy(), hierarchy);
+
+        Map<String, ParamValue<Q>> subst = inference.getAssignment();
+
+        if (subst != null) {
+            QualifiedExecutableType<QualParams<Q>> newMethodType =
+                (QualifiedExecutableType<QualParams<Q>>)SUBSTITUTE_VISITOR.visit(result.first, subst);
+            List<QualifiedTypeMirror<QualParams<Q>>> newTypeArgs = new ArrayList<>();
+            for (QualifiedTypeMirror<QualParams<Q>> qtm : result.second) {
+                newTypeArgs.add(SUBSTITUTE_VISITOR.visit(qtm, subst));
+            }
+            result = Pair.of(newMethodType, newTypeArgs);
+        } else {
+            // TODO: report error
+        }
+
+        return result;
     }
 }
