@@ -1811,23 +1811,23 @@ public abstract class AnnotatedTypeMirror {
             for (Map.Entry<K, V> entry : mappings.entrySet()) {
                 K possible = entry.getKey();
                 V possValue = entry.getValue();
-                if (possible == key) return possValue;
                 if (possible instanceof AnnotatedTypeVariable) {
                     AnnotatedTypeVariable other = (AnnotatedTypeVariable)possible;
                     Element oElt = other.getUnderlyingType().asElement();
                     if (key.getUnderlyingType().asElement().equals(oElt)) {
                         // Not identical AnnotatedTypeMirrors, but they wrap the same TypeMirror.
-                        if (!key.annotations.isEmpty()
-                                && !AnnotationUtils.areSame(key.annotations, other.annotations)) {
-                            // An annotated type variable use means to override
-                            // any annotations on the actual type argument.
-                            @SuppressWarnings("unchecked")
-                            V found = (V)possValue.getCopy(false);
-                            found.addAnnotations(possValue.getAnnotations());
-                            found.replaceAnnotations(key.annotations);
-                            return found;
-                        } else {
+                        @SuppressWarnings("unchecked")
+                        V found = (V)possValue.getCopy(false);
+                        found.addAnnotations(possValue.getAnnotations());
+                        key.atypeFactory.postTypeVarSubstitution((AnnotatedTypeVariable)possible, key, found);
+                        // Everything is terrible, especially this code.  Returning a copy of
+                        // `possValue` instead of the original causes some tests to break.  So we
+                        // have this hack to return the original `possValue` if the annotations are
+                        // all the same.
+                        if (found.equals(possValue)) {
                             return possValue;
+                        } else {
+                            return found;
                         }
                     }
                 }
