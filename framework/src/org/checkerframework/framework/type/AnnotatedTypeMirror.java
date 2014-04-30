@@ -1820,15 +1820,7 @@ public abstract class AnnotatedTypeMirror {
                         V found = (V)possValue.getCopy(false);
                         found.addAnnotations(possValue.getAnnotations());
                         key.atypeFactory.postTypeVarSubstitution((AnnotatedTypeVariable)possible, key, found);
-                        // Everything is terrible, especially this code.  Returning a copy of
-                        // `possValue` instead of the original causes some tests to break.  So we
-                        // have this hack to return the original `possValue` if the annotations are
-                        // all the same.
-                        if (found.equals(possValue)) {
-                            return possValue;
-                        } else {
-                            return found;
-                        }
+                        return found;
                     }
                 }
             }
@@ -1856,14 +1848,11 @@ public abstract class AnnotatedTypeMirror {
                     new AnnotatedTypeVariable(actualType, env, atypeFactory);
             copyFields(type, true);*/
 
-            Map<AnnotatedTypeMirror, AnnotatedTypeMirror> newMappings =
-                new HashMap<AnnotatedTypeMirror, AnnotatedTypeMirror>(mappings);
-            newMappings.put(this, type);
             if (lowerBound != null) {
-                type.setLowerBound(lowerBound.substitute(newMappings));
+                type.setLowerBound(lowerBound.substitute(mappings));
             }
             if (upperBound != null) {
-                type.setUpperBound(upperBound.substitute(newMappings));
+                type.setUpperBound(upperBound.substitute(mappings));
             }
             return type;
         }
