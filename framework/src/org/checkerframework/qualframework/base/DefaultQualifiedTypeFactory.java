@@ -237,4 +237,10 @@ public abstract class DefaultQualifiedTypeFactory<Q> implements QualifiedTypeFac
     public Pair<QualifiedExecutableType<Q>, List<QualifiedTypeMirror<Q>>> constructorFromUse(NewClassTree tree) {
         throw new UnsupportedOperationException();
     }
+
+    @Override
+    public QualifiedTypeMirror<Q> postTypeVarSubstitution(QualifiedTypeVariable<Q> varDecl,
+            QualifiedTypeVariable<Q> varUse, QualifiedTypeMirror<Q> value) {
+        return adapter.superPostTypeVarSubstitution(varDecl, varUse, value);
+    }
 }
