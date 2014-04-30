@@ -20,7 +20,7 @@ public class QualifierParameterHierarchy<Q> implements QualifierHierarchy<QualPa
 
 
     public QualifierParameterHierarchy(QualifierHierarchy<Q> baseHierarchy) {
-        this.containmentHierarchy = new ContainmentHierarchy<Q>(baseHierarchy);
+        this.containmentHierarchy = new LUBContainmentHierarchy<Q>(baseHierarchy);
     }
 
     // Allow clients to provied a custom ContainmentHierarchy, so they can add
