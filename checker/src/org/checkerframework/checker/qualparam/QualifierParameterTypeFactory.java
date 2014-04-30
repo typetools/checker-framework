@@ -12,7 +12,9 @@ import org.checkerframework.javacutil.Pair;
 import org.checkerframework.qualframework.base.DefaultQualifiedTypeFactory;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror;
 import org.checkerframework.qualframework.util.QualifierMapVisitor;
+import org.checkerframework.qualframework.util.SetQualifierVisitor;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedExecutableType;
+import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedTypeVariable;
 
 public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedTypeFactory<QualParams<Q>> {
     
@@ -181,5 +183,17 @@ public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedT
         }
 
         return result;
+    }
+
+
+    public QualifiedTypeMirror<QualParams<Q>> postTypeVarSubstitution(QualifiedTypeVariable<QualParams<Q>> varDecl,
+            QualifiedTypeVariable<QualParams<Q>> varUse, QualifiedTypeMirror<QualParams<Q>> value) {
+        QualParams<Q> useParams = varUse.getQualifier();
+        QualParams<Q> valueParams = value.getQualifier();
+
+        QualifierParameterHierarchy<Q> hierarchy = (QualifierParameterHierarchy<Q>)getQualifierHierarchy();
+        QualParams<Q> resultParams = hierarchy.leastUpperBound(useParams, valueParams);
+
+        return value.accept(new SetQualifierVisitor<>(), resultParams);
     }
 }
