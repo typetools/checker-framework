@@ -88,4 +88,10 @@ public interface QualifiedTypeFactory<Q> {
      *      parameter
      */
     Pair<QualifiedExecutableType<Q>, List<QualifiedTypeMirror<Q>>> constructorFromUse(NewClassTree tree);
+
+    /**
+     * Hook for customizing type variable substitution behavior.
+     */
+    QualifiedTypeMirror<Q> postTypeVarSubstitution(QualifiedTypeVariable<Q> varDecl, QualifiedTypeVariable<Q> varUse,
+            QualifiedTypeMirror<Q> value);
 }

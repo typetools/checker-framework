@@ -18,6 +18,7 @@ import org.checkerframework.javacutil.Pair;
 
 import org.checkerframework.qualframework.util.WrappedAnnotatedTypeMirror;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedExecutableType;
+import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedTypeVariable;
 
 /**
  * Adapter class for {@link QualifiedTypeFactory}, extending
@@ -277,7 +278,35 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
         Pair<QualifiedExecutableType<Q>, List<QualifiedTypeMirror<Q>>> qualResult =
             Pair.of((QualifiedExecutableType<Q>)conv.getQualifiedType(annoResult.first),
                     conv.getQualifiedTypeList(annoResult.second));
+        return qualResult;
+    }
 
+
+    public void postTypeVarSubstitution(AnnotatedTypeVariable varDecl,
+            AnnotatedTypeVariable varUse, AnnotatedTypeMirror value) {
+        TypeMirrorConverter<Q> conv = getCheckerAdapter().getTypeMirrorConverter();
+
+        QualifiedTypeVariable<Q> qualVarDecl = (QualifiedTypeVariable<Q>)conv.getQualifiedType(varDecl);
+        QualifiedTypeVariable<Q> qualVarUse = (QualifiedTypeVariable<Q>)conv.getQualifiedType(varUse);
+        QualifiedTypeMirror<Q> qualValue = conv.getQualifiedType(value);
+
+        QualifiedTypeMirror<Q> qualResult = underlying.postTypeVarSubstitution(
+                qualVarDecl, qualVarUse, qualValue);
+
+        conv.applyQualifiers(qualResult, value);
+    }
+
+    QualifiedTypeMirror<Q> superPostTypeVarSubstitution(QualifiedTypeVariable<Q> varDecl,
+            QualifiedTypeVariable<Q> varUse, QualifiedTypeMirror<Q> value) {
+        TypeMirrorConverter<Q> conv = getCheckerAdapter().getTypeMirrorConverter();
+
+        AnnotatedTypeVariable annoVarDecl = (AnnotatedTypeVariable)conv.getAnnotatedType(varDecl);
+        AnnotatedTypeVariable annoVarUse = (AnnotatedTypeVariable)conv.getAnnotatedType(varUse);
+        AnnotatedTypeMirror annoValue = conv.getAnnotatedType(value);
+
+        super.postTypeVarSubstitution(annoVarDecl, annoVarUse, annoValue);
+
+        QualifiedTypeMirror<Q> qualResult = conv.getQualifiedType(annoValue);
         return qualResult;
     }
 }
