@@ -1,6 +1,9 @@
 Version 1.8.1, 1 May 2014
 
 Support to directly use the Java 8 javac in addition to jsr308-langtools.
+Added checker/examples directory to checker-framework.zip
+New section in the manual describing the contents of checker-framework.zip
+
 Fixes for Issues 204, 304, 320.
 
 ----------------------------------------------------------------------
