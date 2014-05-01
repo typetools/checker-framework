@@ -6,7 +6,7 @@ CHECKER_QUAL_JAR=../checker/dist/checker-qual.jar
 
 all: eclipse-projects.zip sourcefiles.zip 
 
-eclipse-projects.zip: copy-checkers-quals clean-classes
+eclipse-projects.zip: copy-checker-qual clean-classes
 	zip -r eclipse-projects.zip eclipse-projects/
 
 copy-checker-qual:
@@ -16,7 +16,7 @@ copy-checker-qual:
 	cp ${CHECKER_QUAL_JAR} eclipse-projects/encryption-checker/lib/
 	cp ${CHECKER_QUAL_JAR} eclipse-projects/personalblog-demo/lib/
 
-sourcefiles.zip: copy-checkers-quals clean-classes copy-files-from-eclipse
+sourcefiles.zip: copy-checker-qual clean-classes copy-files-from-eclipse
 	zip -r sourcefiles.zip src/
 
 copy-files-from-eclipse:
