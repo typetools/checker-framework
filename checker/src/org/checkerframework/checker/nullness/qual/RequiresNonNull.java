@@ -20,7 +20,7 @@ import org.checkerframework.framework.qual.PreconditionAnnotation;
  * &nbsp;@Nullable Object field1;
  * &nbsp;@Nullable Object field2;
  *
- * &nbsp;@NonNullOnEntry("field1")
+ * &nbsp;@RequiresNonNull("field1")
  *  void method1() {
  *    field1.toString();        // OK, field1 is known to be non-null
  *    field2.toString();        // error, might throw NullPointerException
