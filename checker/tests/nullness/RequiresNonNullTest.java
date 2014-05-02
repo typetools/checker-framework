@@ -2,7 +2,7 @@ import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.framework.qual.*;
 import org.checkerframework.dataflow.qual.Pure;
 
-class NonNullOnEntryTest {
+class RequiresNonNullTest {
 
   @Nullable Object field1;
   @Nullable Object field2;
@@ -34,12 +34,12 @@ class NonNullOnEntryTest {
   @RequiresNonNull("field")
   public void requiresNonNullField() {}
 
-  public void clientFail(NonNullOnEntryTest arg1) {
+  public void clientFail(RequiresNonNullTest arg1) {
     //:: error: (contracts.precondition.not.satisfied)
     arg1.requiresNonNullField();
   }
 
-  public void clientOK(NonNullOnEntryTest arg2) {
+  public void clientOK(RequiresNonNullTest arg2) {
     arg2.field = new Object();
     // note that the following line works
     @NonNull Object o = arg2.field;
@@ -59,27 +59,27 @@ class NonNullOnEntryTest {
   }
 
   @Pure
-  @RequiresNonNull("NonNullOnEntryTest.staticfield")
+  @RequiresNonNull("RequiresNonNullTest.staticfield")
   //:: warning: (purity.deterministic.void.method)
   public void reqStaticQualName() {
     reqStaticName();
   }
 
-  public void statClientOK(NonNullOnEntryTest arg1) {
+  public void statClientOK(RequiresNonNullTest arg1) {
     staticfield = new Object();
     arg1.reqStaticName();
 
     staticfield = new Object();
     arg1.reqStaticQualName();
 
-    NonNullOnEntryTest.staticfield = new Object();
+    RequiresNonNullTest.staticfield = new Object();
     arg1.reqStaticName();
-    NonNullOnEntryTest.staticfield = new Object();
+    RequiresNonNullTest.staticfield = new Object();
     arg1.reqStaticQualName();
 
   }
 
-  public void statClientFail(NonNullOnEntryTest arg1) {
+  public void statClientFail(RequiresNonNullTest arg1) {
     //:: error: (contracts.precondition.not.satisfied)
     arg1.reqStaticName();
     //:: error: (contracts.precondition.not.satisfied)
@@ -88,7 +88,7 @@ class NonNullOnEntryTest {
 
 
 
-  class NNOESubTest extends NonNullOnEntryTest {
+  class NNOESubTest extends RequiresNonNullTest {
     public void subClientOK(NNOESubTest arg3) {
       arg3.field = new Object();
       arg3.requiresNonNullField();
@@ -100,7 +100,7 @@ class NonNullOnEntryTest {
     }
 
     public void subStat(NNOESubTest arg5) {
-      NonNullOnEntryTest.staticfield = new Object();
+      RequiresNonNullTest.staticfield = new Object();
       arg5.reqStaticQualName();
 
       staticfield = new Object();
@@ -113,7 +113,7 @@ class NonNullOnEntryTest {
 
   private @Nullable Object notHidden;
 
-  class NNOEHidingTest extends NonNullOnEntryTest {
+  class NNOEHidingTest extends RequiresNonNullTest {
 
     protected @Nullable String field;
 
