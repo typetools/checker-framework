@@ -1720,22 +1720,29 @@ annotations.
 
 The Checker Framework supports two different initialization checkers that
 are integrated with the Nullness Checker.
-One uses the three annotations 
+You can use whichever one you prefer.
+
+One (described in most of Section~\ref{initialization-checker}) uses the three annotations 
 \refqualclass{checker/initialization/qual}{Initialized},
 \refqualclass{checker/initialization/qual}{UnknownInitialization}, and
 \refqualclass{checker/initialization/qual}{UnderInitialization}.
-The other uses the two annotations
-\refqualclass{checker/nullness/qual}{Raw} (which corresponds to \code{@UnknownInitialization}) and
-\refqualclass{checker/nullness/qual}{NonRaw} (which corresponds to \code{@Initialized}).
+We recommend that you use it.
+
+The other (described here in Section~\ref{initialization-rawness-checker})
+uses the two annotations
+\refqualclass{checker/nullness/qual}{Raw} and
+\refqualclass{checker/nullness/qual}{NonRaw}.
 The rawness type system is slightly easier to use but slightly less
 expressive.
-In practice, you can use whichever one you prefer.
 
 To run the Nullness Checker with the rawness variant of the Initialization
 Checker, invoke the NullnessRawnessChecker rather than the NullnessChecker;
 that is, supply the \code{-processor org.checkerframework.checker.nullness.NullnessRawnessChecker}
 command-line option to javac.
-
+Although \code{@Raw} roughly corresponds to \code{@UnknownInitialization}
+and \code{@NonRaw} roughly corresponds to \code{@Initialized}, the
+annotations are not aliased and you must use the ones that correspond to
+the type-checker that you are running.
 
 
 %% TODO: cut much of this, which is redundant with the text above.
