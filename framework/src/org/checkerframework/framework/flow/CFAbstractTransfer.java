@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -664,7 +666,17 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
             }
 
             try {
-                FlowExpressions.Receiver r = FlowExpressionParseUtil.parse(
+                FlowExpressions.Receiver r = null;
+
+                String s = expression.trim();
+
+                Pattern selfPattern = Pattern.compile("^(this)$");
+                Matcher selfMatcher = selfPattern.matcher(s);
+                if (selfMatcher.matches()) {
+                    s = flowExprContext.receiver.toString(); // it is possible that s == "this" after this call
+                }      
+
+                r = FlowExpressionParseUtil.parse(
                         expression, flowExprContext,
                         analysis.atypeFactory.getPath(tree));
                 store.insertValue(r, anno);

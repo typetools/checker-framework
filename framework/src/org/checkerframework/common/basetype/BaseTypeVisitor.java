@@ -16,6 +16,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -33,6 +35,9 @@ import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.BooleanLiteralNode;
+import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
+import org.checkerframework.dataflow.cfg.node.ImplicitThisLiteralNode;
+import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
@@ -838,7 +843,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
 
         // check precondition annotations
-        checkPreconditions(node, invokedMethodElement);
+        checkPreconditions(node, invokedMethodElement, true);
 
         // Do not call super, as that would observe the arguments without
         // a set assignment context.
@@ -846,16 +851,30 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         return null; // super.visitMethodInvocation(node, p);
     }
 
-    /**
+   	/**
      * Checks all the preconditions of the method invocation {@code tree} with
      * element {@code invokedMethodElement}.
      */
-    protected void checkPreconditions(MethodInvocationTree tree,
-            ExecutableElement invokedMethodElement) {
+    protected void checkPreconditions(Tree tree,
+            Element invokedElement, boolean methodCall) {
+    	checkPreconditions(tree, invokedElement, methodCall, null);
+	}
+    	
+   	/**
+     * Checks all the preconditions of the method invocation {@code tree} with
+     * element {@code invokedMethodElement}.
+     */
+    protected void checkPreconditions(Tree tree,
+            Element invokedElement, boolean methodCall, Set<Pair<String, String>> additionalPreconditions) {
         Set<Pair<String, String>> preconditions = contractsUtils
-                .getPreconditions(invokedMethodElement);
+                .getPreconditions(invokedElement);
+        
+        if (additionalPreconditions != null) {
+        	preconditions.addAll(additionalPreconditions);
+        }
+        
         FlowExpressionContext flowExprContext = null;
-
+        
         for (Pair<String, String> p : preconditions) {
             String expression = p.first;
             AnnotationMirror anno = AnnotationUtils
@@ -865,30 +884,94 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             if (!atypeFactory.isSupportedQualifier(anno)) {
                 return;
             }
+            String fieldName = null;
+            
             if (flowExprContext == null) {
                 Node nodeNode = atypeFactory.getNodeForTree(tree);
-                flowExprContext = FlowExpressionParseUtil
-                        .buildFlowExprContextForUse(
-                                (MethodInvocationNode) nodeNode, atypeFactory);
+                if (methodCall) {
+                    flowExprContext = FlowExpressionParseUtil
+                            .buildFlowExprContextForUse(
+                                    (MethodInvocationNode) nodeNode, atypeFactory);
+                }
+                else if (nodeNode instanceof FieldAccessNode) {
+                    // Adapted from FlowExpressionParseUtil.buildFlowExprContextForUse
+                   
+                    Receiver internalReceiver = FlowExpressions.internalReprOf(atypeFactory,
+                        ((FieldAccessNode) nodeNode).getReceiver());
+                        
+                    flowExprContext = new FlowExpressionContext(
+                            internalReceiver, null, atypeFactory);
+                    
+                    fieldName = ((FieldAccessNode) nodeNode).getFieldName();
+                }
+                else if (nodeNode instanceof LocalVariableNode) {
+                    // Adapted from org.checkerframework.dataflow.cfg.CFGBuilder.CFGTranslationPhaseOne.visitVariable
+
+                    ClassTree enclosingClass = TreeUtils
+                            .enclosingClass(getCurrentPath());
+                    TypeElement classElem = TreeUtils
+                            .elementFromDeclaration(enclosingClass);
+                    Node receiver = new ImplicitThisLiteralNode(classElem.asType());
+
+                    Receiver internalReceiver = FlowExpressions.internalReprOf(atypeFactory,
+                            receiver);
+                
+                    flowExprContext = new FlowExpressionContext(
+                            internalReceiver, null, atypeFactory);                
+                }
             }
 
-            FlowExpressions.Receiver expr = null;
-            try {
-                expr = FlowExpressionParseUtil.parse(expression,
-                        flowExprContext, getCurrentPath());
+            if (flowExprContext != null) {
+                FlowExpressions.Receiver expr = null;
+                try {
+                    CFAbstractStore<?, ?> store = atypeFactory.getStoreBefore(tree);
 
-                CFAbstractStore<?, ?> store = atypeFactory.getStoreBefore(tree);
-                CFAbstractValue<?> value = store.getValue(expr);
+                    String s = expression.trim();
 
-                AnnotationMirror inferredAnno = value == null ? null : value
-                        .getType().getAnnotationInHierarchy(anno);
-                if (!checkContract(expr, anno, inferredAnno, store)) {
-                    checker.report(Result.failure(
-                            "contracts.precondition.not.satisfied",
-                            expr.toString()), tree);
+                    Pattern selfPattern = Pattern.compile("^(this)$");
+                    Matcher selfMatcher = selfPattern.matcher(s);
+                    if (selfMatcher.matches()) {
+                        s = flowExprContext.receiver.toString(); // it is possible that s == "this" after this call
+                    }      
+
+                    // Try local variables first
+                    CFAbstractValue<?> value = store.getValueOfLocalVariableByName(s);
+                    
+                    boolean theFieldIsTheLock = false;
+                    
+                    if (value == null) // Not a recognized local variable
+                    {
+                        expr = FlowExpressionParseUtil.parse(expression,
+                                flowExprContext, getCurrentPath());
+        
+                        if (fieldName != null)
+                        {
+                            FlowExpressions.Receiver fieldExpr = FlowExpressionParseUtil.parse(fieldName,
+                                    flowExprContext, getCurrentPath());
+                            
+                            if (fieldExpr.equals(expr)) {
+                                // Avoid issuing warnings when accessing the field that is guarding the receiver.
+                                // e.g. avoid issuing a warning when accessing bar below:
+                                // void foo(@GuardedBy("bar") myClass this){ synchronized(bar){ ... }}
+                                theFieldIsTheLock = true;
+                            }
+                        }
+                        
+                        value = store.getValue(expr);
+                    }
+
+                    AnnotationMirror inferredAnno = value == null ? null : value
+                            .getType().getAnnotationInHierarchy(anno);
+                    if (!theFieldIsTheLock &&
+                        !checkContract(expr, anno, inferredAnno, store)) {
+                        
+                        checker.report(Result.failure(
+                                methodCall ? "contracts.precondition.not.satisfied" : "contracts.precondition.not.satisfied.field",
+                                expr == null ? expression : expr.toString()), tree);
+                    }
+                } catch (FlowExpressionParseException e) {
+                    // errors are reported at declaration site
                 }
-            } catch (FlowExpressionParseException e) {
-                // errors are reported at declaration site
             }
         }
     }
@@ -2052,6 +2135,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         ExpressionTree tree;
         Element elem;
 
+        checkPreconditions(node, TreeUtils.elementFromUse(node), false);
+
         if (memberSel == null) {
             tree = node;
             elem = TreeUtils.elementFromUse(node);
@@ -2064,6 +2149,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return;
 
         AnnotatedTypeMirror receiver = atypeFactory.getReceiverType(tree);
+
+        checkPreconditions(tree, elem, false);
 
         if (!isAccessAllowed(elem, receiver, tree)) {
             checker.report(Result.failure("unallowed.access", elem, receiver), node);
@@ -2314,7 +2401,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 }
 
                 if (!foundNN) {
-                    String jdkJarName = PluginUtil.getJdkJarName();
+                	String jdkJarName = PluginUtil.getJdkJarName();
 
                     checker.getProcessingEnvironment().getMessager().printMessage(Kind.WARNING,
                         "You do not seem to be using the distributed annotated JDK.  To fix the" +

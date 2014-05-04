@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 
 import org.checkerframework.framework.qual.ConditionalPostconditionAnnotation;
@@ -49,19 +50,19 @@ public class ContractsUtils {
 
     /**
      * Returns a set of pairs {@code (expr, annotation)} of preconditions on the
-     * method {@code methodElement}.
+     * element {@code element}.
      */
     public Set<Pair<String, String>> getPreconditions(
-            ExecutableElement methodElement) {
+            Element element) {
         Set<Pair<String, String>> result = new HashSet<>();
         // Check for a single contract.
         AnnotationMirror requiresAnnotation = factory.getDeclAnnotation(
-                methodElement, RequiresQualifier.class);
+                element, RequiresQualifier.class);
         result.addAll(getPrecondition(requiresAnnotation));
 
         // Check for multiple contracts.
         AnnotationMirror requiresAnnotations = factory.getDeclAnnotation(
-                methodElement, RequiresQualifiers.class);
+                element, RequiresQualifiers.class);
         if (requiresAnnotations != null) {
             List<AnnotationMirror> annotations = AnnotationUtils
                     .getElementValueArray(requiresAnnotations, "value", AnnotationMirror.class, false);
@@ -73,7 +74,7 @@ public class ContractsUtils {
         // Check type-system specific annotations.
         Class<PreconditionAnnotation> metaAnnotation = PreconditionAnnotation.class;
         List<Pair<AnnotationMirror, AnnotationMirror>> declAnnotations = factory
-                .getDeclAnnotationWithMetaAnnotation(methodElement,
+                .getDeclAnnotationWithMetaAnnotation(element,
                         metaAnnotation);
         for (Pair<AnnotationMirror, AnnotationMirror> r : declAnnotations) {
             AnnotationMirror anno = r.first;
