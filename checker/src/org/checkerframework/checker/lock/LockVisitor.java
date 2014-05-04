@@ -63,7 +63,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
     @Override
     protected void commonAssignmentCheck(AnnotatedTypeMirror varType,
-            AnnotatedTypeMirror valueType, Tree valueTree, /*@CompilerMessageKey*/ String errorKey,
+            AnnotatedTypeMirror valueType, Tree valueTree, String errorKey,
             boolean isLocalVariableAssignement) {
         
     	if (valueType instanceof AnnotatedNullType) {

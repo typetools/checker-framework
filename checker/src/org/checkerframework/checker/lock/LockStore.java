@@ -39,7 +39,7 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
         insertExactValue(r, analysis.createSingleAnnotationValue(a, r.getType()));
     }
 
-    public void insertExactValue(FlowExpressions.Receiver r, /*@Nullable*/ CFValue value) {
+    public void insertExactValue(FlowExpressions.Receiver r, CFValue value) {
         if (value == null) {
             // No need to insert a null abstract value because it represents
             // top and top is also the default value.
