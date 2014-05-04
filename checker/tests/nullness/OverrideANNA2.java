@@ -5,7 +5,7 @@ class OverrideANNA2 {
   static class Super {
     Object f;
 
-    @EnsuresNonNull("f")
+    @EnsuresNonNull("f") // Super.f must be non-null
     void setf(@Raw @UnknownInitialization Super this) {
       f = new Object();
     }
@@ -16,10 +16,12 @@ class OverrideANNA2 {
   }
 
   static class Sub extends Super {
-    Object f;
+    Object f; // This shadows super.f
 
     @Override
     @EnsuresNonNull("f")
+    // We cannot ensure that Super.f is non-null since it is
+    // shadowed by Sub.f, hence we get an error.
     //:: error: (contracts.postcondition.override.invalid)
     void setf(@Raw @UnknownInitialization Sub this) {
       f = new Object();

@@ -1,4 +1,5 @@
 import net.jcip.annotations.*;
+import org.checkerframework.dataflow.qual.*;
 
 // Smoke test for supporting JCIP annotations
 public class JCIPAnnotations {
@@ -8,17 +9,23 @@ public class JCIPAnnotations {
     @GuardedBy("lock") Object guardedField;
     Object unguardedField;
 
+    @LockingFree
     void guardedReceiver(@GuardedBy("lock") JCIPAnnotations this) { }
+    @LockingFree
     void unguardedReceiver(JCIPAnnotations this) { }
 
+    @LockingFree
     void guardedArg(@GuardedBy("lock") Object arg) { }
+    @LockingFree
     void unguardedArg(Object arg) { }
 
+    @LockingFree
     static void guardedStaticArg(@GuardedBy("lock") Object x) { }
+    @LockingFree
     static void unguardedStaticArg(Object x) { }
 
     void testUnguardedAccess(Object x) {
-        //:: error: (unguarded.access)
+        //:: error: (contracts.precondition.not.satisfied.field)
         this.guardedField.toString();   // error
         this.unguardedField.toString();
         this.guardedReceiver();
@@ -30,21 +37,21 @@ public class JCIPAnnotations {
     }
 
     void testGuardedAccess(@GuardedBy("lock") JCIPAnnotations this, @GuardedBy("lock") Object x) {
-        //:: error: (unguarded.access)
+        //:: error: (contracts.precondition.not.satisfied.field)
         this.guardedField.toString();
-        //:: error: (unguarded.access)
+        //:: error: (contracts.precondition.not.satisfied.field)
         this.unguardedField.toString();
-        //:: error: (unguarded.access)
+        //:: error: (contracts.precondition.not.satisfied)
         this.guardedReceiver();
-        //:: error: (unguarded.access)
+        //:: error: (contracts.precondition.not.satisfied)
         this.unguardedReceiver();
-        //:: error: (unguarded.access)
+        //:: error: (contracts.precondition.not.satisfied) :: error: (contracts.precondition.not.satisfied.field)
         this.guardedArg(x);
-        //:: error: (unguarded.access) :: error: (argument.type.incompatible)
+        //:: error: (contracts.precondition.not.satisfied) :: error: (contracts.precondition.not.satisfied.field)
         this.unguardedArg(x);
-        //:: error: (argument.type.incompatible)
+        // :: error: (contracts.precondition.not.satisfied.field)
         unguardedStaticArg(x);
-        //:: error: (unguarded.access)
+        //:: error: (contracts.precondition.not.satisfied.field)
         guardedStaticArg(x);
         synchronized(lock) {
             this.guardedField.toString();
@@ -59,17 +66,17 @@ public class JCIPAnnotations {
     }
 
     void testSemiGuardedAccess(@GuardedBy("lock") JCIPAnnotations this, Object x) {
-        //:: error: (unguarded.access)
+        //:: error: (contracts.precondition.not.satisfied.field)
         this.guardedField.toString();
-        //:: error: (unguarded.access)
+        //:: error: (contracts.precondition.not.satisfied.field)
         this.unguardedField.toString();
-        //:: error: (unguarded.access)
+        //:: error: (contracts.precondition.not.satisfied)
         this.guardedReceiver();
-        //:: error: (unguarded.access)
+        //:: error: (contracts.precondition.not.satisfied)
         this.unguardedReceiver();
-        //:: error: (unguarded.access)
+        //:: error: (contracts.precondition.not.satisfied)
         this.guardedArg(x);
-        //:: error: (unguarded.access)
+        //:: error: (contracts.precondition.not.satisfied)
         this.unguardedArg(x);
         unguardedStaticArg(x);
         guardedStaticArg(x);

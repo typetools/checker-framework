@@ -60,6 +60,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     protected final Map<Element, V> localVariableValues;
 
     /**
+     * Information collected about the current object.
+     */
+    protected V thisValue;
+    
+    /**
      * Information collected about fields, using the internal representation
      * {@link FieldAccess}.
      */
@@ -91,6 +96,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             boolean sequentialSemantics) {
         this.analysis = analysis;
         localVariableValues = new HashMap<>();
+        thisValue = null;
         fieldValues = new HashMap<>();
         methodValues = new HashMap<>();
         arrayValues = new HashMap<>();
@@ -101,6 +107,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     protected CFAbstractStore(CFAbstractStore<V, S> other) {
         this.analysis = other.analysis;
         localVariableValues = new HashMap<>(other.localVariableValues);
+        thisValue = other.thisValue;
         fieldValues = new HashMap<>(other.fieldValues);
         methodValues = new HashMap<>(other.methodValues);
         arrayValues = new HashMap<>(other.arrayValues);
@@ -118,6 +125,16 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             localVariableValues.put(p.getElement(), value);
         }
     }
+    
+    /**
+     * Set the value of the current object. Any previous information is erased;
+     * this method should only be used to initialize the value.
+     */
+    public void initializeThisValue(AnnotationMirror a, TypeMirror underlyingType) {
+        if (a != null) {
+            thisValue = analysis.createSingleAnnotationValue(a, underlyingType);        
+        }
+    }    
 
     /* --------------------------------------------------------- */
     /* Handling of fields */
@@ -231,6 +248,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      */
     public static boolean canInsertReceiver(Receiver r) {
         if (r instanceof FlowExpressions.FieldAccess
+                || r instanceof FlowExpressions.ThisReference
                 || r instanceof FlowExpressions.LocalVariable
                 || r instanceof FlowExpressions.PureMethodCall
                 || r instanceof FlowExpressions.ArrayAccess) {
@@ -302,11 +320,53 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                     arrayValues.put(arrayAccess, newValue);
                 }
             }
+        } else if (r instanceof FlowExpressions.ThisReference) {
+            FlowExpressions.ThisReference thisRef = (FlowExpressions.ThisReference) r;
+            if (sequentialSemantics || thisRef.isUnmodifiableByOtherCode()) {
+                V oldValue = thisValue;
+                V newValue = value.mostSpecific(oldValue, null);
+                if (newValue != null) {
+                    thisValue = newValue;
+                }
+            }
         } else {
             // No other types of expressions need to be stored.
         }
     }
 
+    public void insertValueToLocalVariableByName(String identifier, AnnotationMirror a) {
+        if (a == null) {
+            return;
+        }
+
+        for (Entry<Element, V> e : localVariableValues.entrySet()) {
+            Element localVar = e.getKey();
+            if (localVar.getSimpleName().toString().equals(identifier)) {                
+                V value = analysis.createSingleAnnotationValue(a, localVar.asType());       
+
+                V oldValue = localVariableValues.get(localVar);
+                V newValue = value.mostSpecific(oldValue, null);
+                if (newValue != null) {
+                    localVariableValues.put(localVar, newValue);
+                }
+            }            
+        }
+    }
+
+    public void insertThisValue(AnnotationMirror a, TypeMirror underlyingType) {
+        if (a == null) {
+            return;
+        }
+
+        V value = analysis.createSingleAnnotationValue(a, underlyingType);       
+
+        V oldValue = thisValue;
+        V newValue = value.mostSpecific(oldValue, null);
+        if (newValue != null) {
+            thisValue = newValue;
+        }
+    }    
+    
     /**
      * Completely replaces the abstract value {@code value} for the expression
      * {@code r} (correctly deciding where to store the information depending on
@@ -358,6 +418,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             Element localVar = ((FlowExpressions.LocalVariable) expr)
                     .getElement();
             return localVariableValues.get(localVar);
+        } else if (expr instanceof FlowExpressions.ThisReference) {
+            return thisValue;
         } else if (expr instanceof FlowExpressions.FieldAccess) {
             FlowExpressions.FieldAccess fieldAcc = (FlowExpressions.FieldAccess) expr;
             return fieldValues.get(fieldAcc);
@@ -371,6 +433,17 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             assert false;
             return null;
         }
+    }
+
+    public V getValueOfLocalVariableByName(String identifier)
+    {
+        for (Entry<Element, V> e : localVariableValues.entrySet()) {
+            if (e.getKey().getSimpleName().toString().equals(identifier)) {
+                return e.getValue();
+            }            
+        }
+        
+        return null;
     }
 
     /**
@@ -726,6 +799,17 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                 }
             }
         }
+        
+        // information about the current object
+        {
+            V otherVal = other.thisValue;
+            V myVal = thisValue;
+            V mergedVal = myVal == null ? null : myVal.leastUpperBound(otherVal);
+            if (mergedVal != null) {
+                newStore.thisValue = mergedVal;
+            }
+        }
+        
         for (Entry<FlowExpressions.FieldAccess, V> e : other.fieldValues
                 .entrySet()) {
             // information about fields that are only part of one store, but not
@@ -858,6 +942,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     protected void internalDotOutput(StringBuilder result) {
         for (Entry<Element, V> entry : localVariableValues.entrySet()) {
             result.append("  " + entry.getKey() + " > " + entry.getValue()
+                    + "\\n");
+        }
+        if (thisValue != null) {
+            result.append("  this > " + thisValue
                     + "\\n");
         }
         for (Entry<FlowExpressions.FieldAccess, V> entry : fieldValues

@@ -112,11 +112,17 @@ public class FlowExpressionParseUtil {
     public static FlowExpressions. /*@Nullable*/ Receiver parse(String s,
             FlowExpressionContext context, TreePath path)
             throws FlowExpressionParseException {
+        return parse(s, context, path, false);
+    }    
+    
+    private static FlowExpressions. /*@Nullable*/ Receiver parse(String s,
+            FlowExpressionContext context, TreePath path, boolean recursiveCall)
+            throws FlowExpressionParseException {
         Receiver result = parse(s, context, path, true, true, true, true, true, true,
-                true);
+                true, recursiveCall);
         return result;
     }
-
+    
     /**
      * Private implementation of {@link #parse} with a choice of which classes
      * of expressions should be parsed.
@@ -124,12 +130,22 @@ public class FlowExpressionParseUtil {
     private static FlowExpressions. /*@Nullable*/ Receiver parse(String s,
             FlowExpressionContext context, TreePath path, boolean allowSelf,
             boolean allowIdentifier, boolean allowParameter, boolean allowDot,
-            boolean allowMethods, boolean allowArrays, boolean allowLiterals)
+            boolean allowMethods, boolean allowArrays, boolean allowLiterals, boolean recursiveCall)
             throws FlowExpressionParseException {
         s = s.trim();
 
-        Matcher identifierMatcher = identifierPattern.matcher(s);
         Matcher selfMatcher = selfPattern.matcher(s);
+
+        // Do not do this in recursive calls, otherwise we can get an infinite loop where
+        // "this" gets converted to "this.<fieldname>" in the line below, then
+        // dotMatcher matches "this.<fieldname>" and calls this function recursively
+        // with s == "this"
+        if (selfMatcher.matches() && allowSelf && !recursiveCall) {
+            s = context.receiver.toString(); // it is possible that s == "this" after this call
+            selfMatcher = selfPattern.matcher(s); // Refresh the matcher
+        }
+
+        Matcher identifierMatcher = identifierPattern.matcher(s);
         Matcher superMatcher = superPattern.matcher(s);
         Matcher parameterMatcher = parameterPattern.matcher(s);
         Matcher methodMatcher = methodPattern.matcher(s);
@@ -157,7 +173,7 @@ public class FlowExpressionParseUtil {
             return new ValueLiteral(types.getDeclaredType(stringTypeElem),
                     s.substring(1, s.length() - 1));
         } else if (selfMatcher.matches() && allowSelf) {
-            // this literal
+            // this literal, even after the call above to set s = context.receiver.toString();
             return new ThisReference(context.receiver.getType());
         } else if (superMatcher.matches() && allowSelf) {
             // super literal
@@ -197,7 +213,7 @@ public class FlowExpressionParseUtil {
                 }
 
                 if (fieldElem == null || fieldElem.getKind() != ElementKind.FIELD) {
-                    throw constructParserException(s);
+                    throw constructParserException(s); // TODO: It is poor design to use exceptions to pass information around. We should change this.
                 }
                 TypeMirror fieldType = ElementUtils.getType(fieldElem);
                 if (ElementUtils.isStatic(fieldElem)) {
@@ -210,7 +226,7 @@ public class FlowExpressionParseUtil {
                     return new FieldAccess(context.receiver,
                             fieldType, fieldElem);
                 }
-            } catch (Throwable t) {
+            } catch (Throwable t) { // TODO: It is poor design to use exceptions to pass information around. We should change this.
                 try {
                     // class literal
                     Element classElem = resolver.findClass(s, path);
@@ -330,12 +346,12 @@ public class FlowExpressionParseUtil {
             String remainingString = dotMatcher.group(2);
 
             // Parse the receiver first.
-            Receiver receiver = parse(receiverString, context, path);
+            Receiver receiver = parse(receiverString, context, path, true);
 
             // Parse the rest, with a new receiver.
             FlowExpressionContext newContext = context.changeReceiver(receiver);
             return parse(remainingString, newContext, path, false, true, false,
-                    true, true, false, false);
+                    true, true, false, false, true);
         } else {
             throw constructParserException(s);
         }
@@ -553,7 +569,7 @@ public class FlowExpressionParseUtil {
         List<Receiver> internalArguments = new ArrayList<>();
         for (VariableTree arg : node.getParameters()) {
             internalArguments.add(FlowExpressions.internalReprOf(factory,
-                    new LocalVariableNode(arg)));
+                    new LocalVariableNode(arg, receiver)));
         }
         FlowExpressionContext flowExprContext = new FlowExpressionContext(
                 internalReceiver, internalArguments, factory);
@@ -572,7 +588,7 @@ public class FlowExpressionParseUtil {
         List<Receiver> internalArguments = new ArrayList<>();
         for (VariableTree arg : node.getParameters()) {
             internalArguments.add(FlowExpressions.internalReprOf(factory,
-                    new LocalVariableNode(arg)));
+                    new LocalVariableNode(arg, receiver)));
         }
         FlowExpressionContext flowExprContext = new FlowExpressionContext(
                 internalReceiver, internalArguments, factory);

@@ -11,6 +11,7 @@ import javax.lang.model.type.TypeMirror;
 
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
 import org.checkerframework.dataflow.cfg.node.ClassNameNode;
+import org.checkerframework.dataflow.cfg.node.ExplicitThisLiteralNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
@@ -98,6 +99,8 @@ public class FlowExpressions {
         if (receiverNode instanceof FieldAccessNode) {
             receiver = internalReprOfFieldAccess(provider,
                     (FieldAccessNode) receiverNode);
+        } else if (receiverNode instanceof ExplicitThisLiteralNode) {
+            receiver = new ThisReference(receiverNode.getType());
         } else if (receiverNode instanceof ThisLiteralNode) {
             receiver = new ThisReference(receiverNode.getType());
         } else if (receiverNode instanceof SuperNode) {
