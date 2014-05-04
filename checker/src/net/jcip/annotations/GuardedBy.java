@@ -2,16 +2,26 @@ package net.jcip.annotations;
 
 import java.lang.annotation.*;
 
-import org.checkerframework.framework.qual.TypeQualifier;
+import org.checkerframework.checker.lock.qual.LockHeld;
+import org.checkerframework.framework.qual.PreconditionAnnotation;
+
+// The JCIP annotation can be used on a field (in which case it corresponds
+// to the Lock Checker's @GuardedBy annotation) or on a method (in which case
+// it is a declaration annotation corresponding to the Lock Checker's @Holding
+// annotation).
 
 @Documented
-// The JCIP annotation can be used on a field (in which case it is a type
-// qualifier corresponding to the Lock Checker's @GuardedBy) or on a method
-// (in which case it is a declaration annotation corresponding to the Lock
-// Checker's @Holding).
-@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-@TypeQualifier
+@Target({ ElementType.METHOD, ElementType.CONSTRUCTOR, ElementType.FIELD,
+    ElementType.PARAMETER, ElementType.LOCAL_VARIABLE, ElementType.TYPE_USE })
+@PreconditionAnnotation(qualifier = LockHeld.class)
 public @interface GuardedBy {
-  String value();
+    /**
+     * The Java expressions which need to be {@link LockHeld}.
+     *
+     * @see <a
+     *      href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#java-expressions-as-arguments">Syntax
+     *      of Java expressions</a>
+     */
+    String[] value();
 }

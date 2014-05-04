@@ -31,14 +31,21 @@ import com.sun.source.tree.VariableTree;
 public class LocalVariableNode extends Node {
 
     protected Tree tree;
+    protected Node receiver;
 
     public LocalVariableNode(Tree t) {
         super(InternalUtils.typeOf(t));
         // IdentifierTree for normal uses of the local variable or parameter,
-        // and VariableTree for the translation of an initilizer block
+        // and VariableTree for the translation of an initializer block
         assert t != null;
         assert t instanceof IdentifierTree || t instanceof VariableTree;
         tree = t;
+        this.receiver = null;
+    }
+
+    public LocalVariableNode(Tree t, Node receiver) {
+        this(t);
+        this.receiver = receiver;
     }
 
     public Element getElement() {
@@ -51,7 +58,11 @@ public class LocalVariableNode extends Node {
         }
         return el;
     }
-
+    
+    public Node getReceiver() {
+        return receiver;
+    }
+    
     public String getName() {
         if (tree instanceof IdentifierTree) {
             return ((IdentifierTree) tree).getName().toString();

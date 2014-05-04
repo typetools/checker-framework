@@ -75,6 +75,7 @@ import org.checkerframework.dataflow.cfg.node.StringConcatenateNode;
 import org.checkerframework.dataflow.cfg.node.StringConversionNode;
 import org.checkerframework.dataflow.cfg.node.StringLiteralNode;
 import org.checkerframework.dataflow.cfg.node.SuperNode;
+import org.checkerframework.dataflow.cfg.node.SynchronizedNode;
 import org.checkerframework.dataflow.cfg.node.TernaryExpressionNode;
 import org.checkerframework.dataflow.cfg.node.ThisLiteralNode;
 import org.checkerframework.dataflow.cfg.node.ThrowNode;
@@ -1387,6 +1388,12 @@ public class CFGBuilder {
          * or null if there is no such statement.
          */
         protected Node switchExpr;
+
+        /**
+         * Node yielding the value for the lexically enclosing synchronized statement,
+         * or null if there is no such statement.
+         */
+        protected Node synchronizedExpr;
 
         /**
          * Maps from AST {@link Tree}s to {@link Node}s.  Every Tree that produces
@@ -3650,13 +3657,12 @@ public class CFGBuilder {
         public Node visitSynchronized(SynchronizedTree tree, Void p) {
             // see JLS 14.19
 
-            scan(tree.getExpression(), p);
-
-            extendWithNode(new MarkerNode(tree, "start of synchronized block", env.getTypeUtils()));
-
+            synchronizedExpr = scan(tree.getExpression(), p);
+            SynchronizedNode synchronizedStartNode = new SynchronizedNode(tree, synchronizedExpr, true, env.getTypeUtils());
+            extendWithNode(synchronizedStartNode);
             scan(tree.getBlock(), p);
-
-            extendWithNode(new MarkerNode(tree, "end of synchronized block", env.getTypeUtils()));
+            SynchronizedNode synchronizedEndNode = new SynchronizedNode(tree, synchronizedExpr, false, env.getTypeUtils());
+            extendWithNode(synchronizedEndNode);
 
             return null;
         }
@@ -3931,12 +3937,13 @@ public class CFGBuilder {
             boolean isField = TreeUtils.enclosingOfKind(getCurrentPath(), Kind.BLOCK) == null;
             Node node = null;
 
+            ClassTree enclosingClass = TreeUtils
+                    .enclosingClass(getCurrentPath());
+            TypeElement classElem = TreeUtils
+                    .elementFromDeclaration(enclosingClass);
+            Node receiver = new ImplicitThisLiteralNode(classElem.asType());
+
             if (isField) {
-                ClassTree enclosingClass = TreeUtils
-                        .enclosingClass(getCurrentPath());
-                TypeElement classElem = TreeUtils
-                        .elementFromDeclaration(enclosingClass);
-                Node receiver = new ImplicitThisLiteralNode(classElem.asType());
                 ExpressionTree initializer = tree.getInitializer();
                 assert initializer != null;
                 node = translateAssignment(
@@ -3953,7 +3960,7 @@ public class CFGBuilder {
 
                 ExpressionTree initializer = tree.getInitializer();
                 if (initializer != null) {
-                    node = translateAssignment(tree, new LocalVariableNode(tree),
+                    node = translateAssignment(tree, new LocalVariableNode(tree, receiver),
                             initializer);
                 }
             }

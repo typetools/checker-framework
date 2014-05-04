@@ -10,7 +10,7 @@ public class Constructors {
     Constructors() {
         unlocked = "m";
         guardedThis = "m";
-        //:: error: (unguarded.access)
+        //:: error: (contracts.precondition.not.satisfied.field)
         guardedOther = "m"; //error
     }
 }
