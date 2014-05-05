@@ -134,7 +134,9 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     		additionalPreconditions = new HashSet<>();
     	}
     		
-		// Retrieve the @GuardedBy annotation on the receiver of the enclosing method
+    	/* Temporarily disable this as ExecutableElement.getReceiverType() requires JDK 8 or above.
+
+        // Retrieve the @GuardedBy annotation on the receiver of the enclosing method
         // and add it to the preconditions set if the receiver on the enclosing method is
         // the same as the receiver on the field/method we are checking preconditions for.
         MethodTree enclosingMethod = TreeUtils.enclosingMethod(atypeFactory.getPath(tree));
@@ -188,7 +190,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 				    }
 				}
 		    }
-        }
+        }*/
     	
     	super.checkPreconditions(tree, invokedElement, methodCall, additionalPreconditions);
     }    

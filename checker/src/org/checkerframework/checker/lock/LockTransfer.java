@@ -128,6 +128,8 @@ public class LockTransfer extends
                 store.insertThisValue(LOCKHELD, classType);
             }
             
+            /* Temporarily disable this as ExecutableElement.getReceiverType() requires JDK 8 or above.
+            
             TypeMirror rt = methodElement.getReceiverType();
             
             if (rt != null) {
@@ -147,7 +149,7 @@ public class LockTransfer extends
                     }
                 }
 
-            }            
+            } */           
 
         }       
         
