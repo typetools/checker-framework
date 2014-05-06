@@ -39,7 +39,7 @@ import com.sun.source.tree.Tree;
  * In the case of {@link Collection#toArray(Object[])
  * Collection.toArray(T[])}, the type of the returned array depends on the
  * passed parameter as well and its size.  In particular, the returned
- * array component would of type {@code @NonNull} if the following
+ * array component would be of type {@code @NonNull} if the following
  * conditions hold:
  *
  * <ol>
