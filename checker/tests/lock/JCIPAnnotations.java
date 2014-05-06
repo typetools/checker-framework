@@ -49,7 +49,7 @@ public class JCIPAnnotations {
         this.guardedArg(x);
         //:: error: (contracts.precondition.not.satisfied) :: error: (contracts.precondition.not.satisfied.field)
         this.unguardedArg(x);
-        // :: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (contracts.precondition.not.satisfied.field)
         unguardedStaticArg(x);
         //:: error: (contracts.precondition.not.satisfied.field)
         guardedStaticArg(x);
