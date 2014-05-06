@@ -2,9 +2,6 @@ import net.jcip.annotations.*;
 import org.checkerframework.dataflow.qual.*;
 
 // Smoke test for supporting JCIP annotations
-/*
- * @skip-test   -  Temporarily disable this as ExecutableElement.getReceiverType() requires JDK 8 or above.
- */
 public class JCIPAnnotations {
 
     Object lock;
