@@ -6,24 +6,24 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.checkerframework.framework.qual.PreconditionAnnotation;
+import org.checkerframework.framework.qual.PostconditionAnnotation;
 
 /**
- * Indicates a method precondition:  the method expects the specified
- * expressions to be @LockHeld when the annotated method is invoked.
+ * Indicates that the value expressions are @LockHeld if the method
+ * terminates successfully.
+ * <p>
  *
- * The possible annotation parameter values are explained in {@link GuardedBy}.
- *
- * @see GuardedBy
+ * @see LockHeld
  * @checker_framework_manual #lock-checker Lock Checker
  */
 @Documented
-@Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 @Retention(RetentionPolicy.RUNTIME)
-@PreconditionAnnotation(qualifier = LockHeld.class)
-public @interface Holding {
+@Target({ ElementType.METHOD, ElementType.CONSTRUCTOR })
+@PostconditionAnnotation(qualifier = LockHeld.class)
+public @interface EnsuresLockHeld {
     /**
-     * The Java expressions which need to be {@link LockHeld}.
+     * The Java expressions that are ensured to be {@link LockHeld} on successful
+     * method termination.
      *
      * @see <a
      *      href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#java-expressions-as-arguments">Syntax

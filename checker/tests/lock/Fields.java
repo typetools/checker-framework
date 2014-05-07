@@ -7,12 +7,12 @@ public class Fields {
 
     synchronized void wrongLocks() {
         // without locking
-        //:: error: (unguarded.access)
+        //:: error: (contracts.precondition.not.satisfied.field)
         locked.toString();    // error
 
         // locking over wrong lock
         synchronized(this) {
-            //:: error: (unguarded.access)
+            //:: error: (contracts.precondition.not.satisfied.field)
             locked.toString();    // error
         }
     }
@@ -23,7 +23,7 @@ public class Fields {
         }
 
         // accessing after the synchronized object
-        //:: error: (unguarded.access)
+        //:: error: (contracts.precondition.not.satisfied.field)
         locked.toString();    // error
     }
 
@@ -36,11 +36,11 @@ public class Fields {
 
     void wrongLocksb() {
         // without locking
-        //:: error: (unguarded.access)
+        //:: error: (contracts.precondition.not.satisfied.field)
         lockedByThis.toString();    // error
 
         synchronized(Fields.class) {
-            //:: error: (unguarded.access)
+            //:: error: (contracts.precondition.not.satisfied.field)
             lockedByThis.toString();    // error
         }
     }
@@ -51,7 +51,7 @@ public class Fields {
         }
 
         // accessing after the synchronized object
-        //:: error: (unguarded.access)
+        //:: error: (contracts.precondition.not.satisfied.field)
         lockedByThis.toString();    // error
     }
 
@@ -66,24 +66,24 @@ public class Fields {
 
         synchronized(this) {
             lockedByThis.toString();
-            //:: error: (unguarded.access)
+            //:: error: (contracts.precondition.not.satisfied.field)
             a.lockedByThis.toString();  // error
-            //:: error: (unguarded.access)
+            //:: error: (contracts.precondition.not.satisfied.field)
             b.lockedByThis.toString();  // error
         }
 
         synchronized(a) {
-            //:: error: (unguarded.access)
+            //:: error: (contracts.precondition.not.satisfied.field)
             lockedByThis.toString();    // error
             a.lockedByThis.toString();
-            //:: error: (unguarded.access)
+            //:: error: (contracts.precondition.not.satisfied.field)
             b.lockedByThis.toString();  // error
         }
 
         synchronized(b) {
-            //:: error: (unguarded.access)
+            //:: error: (contracts.precondition.not.satisfied.field)
             lockedByThis.toString();    // error
-            //:: error: (unguarded.access)
+            //:: error: (contracts.precondition.not.satisfied.field)
             a.lockedByThis.toString();  // error
             b.lockedByThis.toString();
         }

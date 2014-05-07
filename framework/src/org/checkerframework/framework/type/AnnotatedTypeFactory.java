@@ -1248,7 +1248,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * neither explicitly nor implicitly.
      * This method should be overridden for type-system specific behavior.
      *
-     * TODO: in 1.3, handle all receiver type annotations.
+     * TODO: in 1.8.2, handle all receiver type annotations.
      * TODO: handle enclosing classes correctly.
      */
     public AnnotatedDeclaredType getSelfType(Tree tree) {
@@ -1271,7 +1271,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 methodReceiver = getAnnotatedType(enclosingMethod).getReceiverType();
             }
             if (shouldTakeFromReceiver(methodReceiver)) {
-                // TODO what about all annotations on the receiver?
+                // TODO  what about all annotations on the receiver?
                 // Code is also duplicated above.
                 type.clearAnnotations();
                 type.addAnnotations(methodReceiver.getAnnotations());

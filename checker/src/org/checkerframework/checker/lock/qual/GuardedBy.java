@@ -7,13 +7,15 @@
  * Any republication or derived work distributed in source code form
  * must include this copyright and license notice.
  */
+/*
+ * Modified for use with the Checker Framework Lock Checker
+ */
 
 package org.checkerframework.checker.lock.qual;
 
 import java.lang.annotation.*;
 
-import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
+import org.checkerframework.framework.qual.PreconditionAnnotation;
 
 /**
  * The field (or other variable) to which this annotation is applied can
@@ -65,11 +67,17 @@ import org.checkerframework.framework.qual.TypeQualifier;
  * @see Holding
  * @checker_framework_manual #lock-checker Lock Checker
  */
-@TypeQualifier
-@SubtypeOf(GuardedByTop.class)
 @Documented
-@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
+@Target({ ElementType.FIELD, ElementType.PARAMETER, ElementType.LOCAL_VARIABLE, ElementType.TYPE_USE })
+@PreconditionAnnotation(qualifier = LockHeld.class)
 public @interface GuardedBy {
-    String value();
+    /**
+     * The Java expressions which need to be {@link LockHeld}.
+     *
+     * @see <a
+     *      href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#java-expressions-as-arguments">Syntax
+     *      of Java expressions</a>
+     */
+    String[] value();
 }

@@ -12,22 +12,22 @@ public class Methods {
 
     // unguarded calls
     void unguardedCalls() {
-        //:: error: (unguarded.invocation)
+        //:: error: (contracts.precondition.not.satisfied)
         lockedByLock();     // error
-        //:: error: (unguarded.invocation)
+        //:: error: (contracts.precondition.not.satisfied)
         lockedByThis();     // error
     }
 
     @Holding("lock")
     void usingHolding1() {
         lockedByLock();
-        //:: error: (unguarded.invocation)
+        //:: error: (contracts.precondition.not.satisfied)
         lockedByThis();     // error
     }
 
     @Holding("this")
     void usingHolding2() {
-        //:: error: (unguarded.invocation)
+        //:: error: (contracts.precondition.not.satisfied)
         lockedByLock();     // error
         lockedByThis();
     }
@@ -35,21 +35,21 @@ public class Methods {
     void usingSynchronization1() {
         synchronized(lock) {
             lockedByLock();
-            //:: error: (unguarded.invocation)
+            //:: error: (contracts.precondition.not.satisfied)
             lockedByThis(); // error
         }
     }
 
     void usingSynchronization2() {
         synchronized(this) {
-            //:: error: (unguarded.invocation)
+            //:: error: (contracts.precondition.not.satisfied)
             lockedByLock(); // error
             lockedByThis();
         }
     }
 
     synchronized void usingMethodModifier() {
-        //:: error: (unguarded.invocation)
+        //:: error: (contracts.precondition.not.satisfied)
         lockedByLock();     // error
         lockedByThis();
     }
