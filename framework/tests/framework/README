@@ -1,0 +1,9 @@
+To add a new file to the test suite, see
+  ../README
+
+To run the tests, do
+  ant -e -find build.xml framework-tests
+
+To run a single test, do something like:
+  cd $CHECKERFRAMEWORK/framework/tests/framework
+  (cd $CHECKERFRAMEWORK && ant -e dist) && javac -processor tests.util.TestChecker -classpath $CHECKERFRAMEWORK/framework/tests/build GenericTest10.java
