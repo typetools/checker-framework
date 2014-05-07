@@ -362,13 +362,12 @@ public class AnnotatedTypes {
 
         final AnnotatedTypeMirror elemType = atypeFactory.getAnnotatedType(elem);
 
-        // I cannot think of why it wouldn't be a declared type!
-        // Defensive Programming
+        // t.getKind() may be a TypeKind.ARRAY for Array.length calls.
+        // We don't _think_ there are any other cases where t.getKind() != TypeKind.DECLARED
         if (t.getKind() != TypeKind.DECLARED) {
             return elemType;
         }
 
-        //
         // Basic Algorithm:
         // 1. Find the owner of the element
         // 2. Find the base type of owner (e.g. type of owner as supertype

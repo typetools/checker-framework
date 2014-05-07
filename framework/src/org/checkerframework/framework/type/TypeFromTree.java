@@ -244,7 +244,7 @@ abstract class TypeFromTree extends
                 }
                 // We need the original t with the implicit annotations
                 AnnotatedTypeMirror t = f.getAnnotatedType(node.getExpression());
-                if (t instanceof AnnotatedDeclaredType)
+                if (t instanceof AnnotatedDeclaredType || t instanceof AnnotatedArrayType)
                     return AnnotatedTypes.asMemberOf(f.types, f, t, elt);
             }
 
