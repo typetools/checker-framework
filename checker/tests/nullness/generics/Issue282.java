@@ -1,0 +1,29 @@
+// Test case for Issue 282
+// https://code.google.com/p/checker-framework/issues/detail?id=282
+import org.checkerframework.checker.nullness.qual.*;
+
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Set;
+
+@SuppressWarnings("nullness")
+abstract class ImmutableSortedSet<E extends @NonNull Object> implements Set<E> {
+  static <E> ImmutableSortedSet<E> copyOf(
+      Comparator<? super E> comparator, Collection<? extends E> elements) {
+    return null;
+  }
+}
+
+@SuppressWarnings("nullness")
+abstract class Ordering<T> implements Comparator<T> {
+  static Ordering<Object> usingToString() {
+    return null;
+  }
+}
+
+abstract class Example {
+  private static <@NonNull T extends @NonNull Object> ImmutableSortedSet<T> setSortedByToString(
+      Collection<T> set) {
+    return ImmutableSortedSet.copyOf(Ordering.usingToString(), set);
+  }
+}
