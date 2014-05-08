@@ -10,6 +10,7 @@ import org.checkerframework.qualframework.base.TypeHierarchy;
 import org.checkerframework.qualframework.util.QualifierMapVisitor;
 
 class InferenceContext<Q> {
+    /*
     private List<String> qualParams;
     private List<? extends QualifiedTypeMirror<QualParams<Q>>> formals;
     private List<? extends QualifiedTypeMirror<QualParams<Q>>> actuals;
@@ -237,4 +238,5 @@ class InferenceContext<Q> {
             return "?" + id + ":" + name;
         }
     }
+    */
 }

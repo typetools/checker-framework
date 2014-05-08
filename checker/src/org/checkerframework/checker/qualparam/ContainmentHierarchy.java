@@ -1,106 +1,76 @@
 package org.checkerframework.checker.qualparam;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.checkerframework.qualframework.base.QualifierHierarchy;
 
-/** A <code>ContainmentHierarchy&lt;Q&gt;</code> describes the containment
- * relation over qualifier parameter values of type
- * <code>ParamValue&lt;Q&gt;</code>.  We say that "A contains B" if for all
- * possible assignments of concrete types to type variables, the set of types
- * ranged over by the wildcard B is a subset of the set of types ranged over by
- * the wildcard A.  (If A or B is not a wildcard, it is equivalent to a
- * wildcard which ranges over exactly one type.  That is, we treat
- * <code>Integer</code> as if it were the equivalent <code>? extends Integer
- * super Integer</code>.)
- */
-public class ContainmentHierarchy<Q> {
-    private QualifierHierarchy<Q> baseHierarchy;
+public class ContainmentHierarchy<Q> implements QualifierHierarchy<Wildcard<Q>> {
+    private QualifierHierarchy<PolyQual<Q>> polyQualHierarchy;
 
-    public ContainmentHierarchy(QualifierHierarchy<Q> baseHierarchy) {
-        this.baseHierarchy = baseHierarchy;
+    public ContainmentHierarchy(QualifierHierarchy<PolyQual<Q>> polyQualHierarchy) {
+        this.polyQualHierarchy = polyQualHierarchy;
     }
 
-    /** Returns the <code>QualifierHierarchy</code> that is used to compare
-     * concrete qualifiers of type <code>Q</code>.
-     */
-    protected QualifierHierarchy<Q> getBaseHierarchy() {
-        return baseHierarchy;
-    }
-
-
-    /** Check if the first argument is contained in the second argument.
-     */
-    public boolean isContained(ParamValue<Q> a, ParamValue<Q> b) {
-        // Match: _, QualVar
-        // Match: _, BaseQual
-        // Use getClass instead of instanceof, because instanceof doesn't work
-        // with generics.
-        if (!b.getClass().equals(WildcardQual.class)) {
-            return a.equals(b);
+    @Override
+    public boolean isSubtype(Wildcard<Q> subtype, Wildcard<Q> supertype) {
+        if (subtype.isEmpty()) {
+            return true;
         }
 
-        // Match: _, WildcardQual
-        @SuppressWarnings("unchecked")
-        WildcardQual<Q> wild = (WildcardQual<Q>)b;
-
-        Q aMin = a.getMinimum().getBase(baseHierarchy);
-        Q aMax = a.getMaximum().getBase(baseHierarchy);
-
-        Q wildLower = wild.getLower().getMaximum().getBase(baseHierarchy);
-        Q wildUpper = wild.getUpper().getMinimum().getBase(baseHierarchy);
-
-        return baseHierarchy.isSubtype(wildLower, aMin) &&
-            baseHierarchy.isSubtype(aMax, wildUpper);
-    }
-
-    /** Compute the least upper bound of two <code>ParamValue</code>s.
-     */
-    public ParamValue<Q> leastUpperBound(ParamValue<Q> a, ParamValue<Q> b) {
-        return combine(a, b, false);
-    }
-
-    /** Compute the greatest lower bound of two <code>ParamValue</code>s.
-     */
-    public ParamValue<Q> greatestLowerBound(ParamValue<Q> a, ParamValue<Q> b) {
-        return combine(a, b, true);
-    }
-
-    /** Combine two <code>ParamValue</code>s using either LUB or GLB.
-     */
-    protected ParamValue<Q> combine(
-            ParamValue<Q> a, ParamValue<Q> b, boolean useGLB) {
-        // Match: QualVar, _
-        // Match: _, QualVar
-        if (a.getClass() == QualVar.class || b.getClass() == QualVar.class) {
-            throw new IllegalArgumentException(
-                    "don't know how to " + (useGLB ? "GLB" : "LUB") + " variables");
+        if (supertype.isEmpty()) {
+            return false;
         }
 
-        // Match: (BaseQual | WildcardQual), (BaseQual | WildcardQual)
+        // We consider SUB to be a subtype of SUPER if SUB is contained by
+        // SUPER.  SUPER contains SUB if the bounds of SUPER lie outside the
+        // bounds of SUB.
+        return polyQualHierarchy.isSubtype(supertype.getLowerBound(), subtype.getLowerBound())
+            && polyQualHierarchy.isSubtype(subtype.getUpperBound(), supertype.getUpperBound());
+    }
 
-        Q aMin = a.getMinimum().getBase(baseHierarchy);
-        Q aMax = a.getMaximum().getBase(baseHierarchy);
+    @Override
+    public Wildcard<Q> leastUpperBound(Wildcard<Q> a, Wildcard<Q> b) {
+        if (a.isEmpty()) {
+            return b;
+        }
 
-        Q bMin = b.getMinimum().getBase(baseHierarchy);
-        Q bMax = b.getMaximum().getBase(baseHierarchy);
+        if (b.isEmpty()) {
+            return a;
+        }
 
-        Q minimum;
-        Q maximum;
+        // Take the more permissive input for each bound, to produce a new
+        // wildcard that contains both `a` and `b`.
+        return new Wildcard<Q>(
+                polyQualHierarchy.greatestLowerBound(a.getLowerBound(), b.getLowerBound()),
+                polyQualHierarchy.leastUpperBound(a.getUpperBound(), b.getUpperBound()));
+    }
 
-        if (!useGLB) {
-            minimum = baseHierarchy.leastUpperBound(aMin, bMin);
-            maximum = baseHierarchy.leastUpperBound(aMax, bMax);
+    @Override
+    public Wildcard<Q> greatestLowerBound(Wildcard<Q> a, Wildcard<Q> b) {
+        if (a.isEmpty()) {
+            return a;
+        }
+
+        if (b.isEmpty()) {
+            return b;
+        }
+
+        PolyQual<Q> newLower = polyQualHierarchy.leastUpperBound(a.getLowerBound(), b.getLowerBound());
+        PolyQual<Q> newUpper = polyQualHierarchy.greatestLowerBound(a.getUpperBound(), b.getUpperBound());
+
+        if (!polyQualHierarchy.isSubtype(newLower, newUpper)) {
+            return Wildcard.empty();
         } else {
-            minimum = baseHierarchy.greatestLowerBound(aMin, bMin);
-            maximum = baseHierarchy.greatestLowerBound(aMax, bMax);
+            return new Wildcard<Q>(newLower, newUpper);
         }
+    }
 
-        if (maximum.equals(minimum))
-            return new BaseQual<Q>(minimum);
-        else
-            return new WildcardQual<Q>(minimum, maximum);
+    @Override
+    public Wildcard<Q> getTop() {
+        return new Wildcard<Q>(polyQualHierarchy.getBottom(), polyQualHierarchy.getTop());
+    }
+
+    @Override
+    public Wildcard<Q> getBottom() {
+        return Wildcard.empty();
     }
 }
+
