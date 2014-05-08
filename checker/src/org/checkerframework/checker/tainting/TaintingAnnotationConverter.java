@@ -8,26 +8,28 @@ import javax.lang.model.element.QualifiedNameable;
 
 import org.checkerframework.qualframework.base.AnnotationConverter;
 
-import org.checkerframework.checker.qualparam.BaseQual;
-import org.checkerframework.checker.qualparam.ParamValue;
+import org.checkerframework.checker.qualparam.PolyQual.GroundQual;
+import org.checkerframework.checker.qualparam.PolyQual.QualVar;
 import org.checkerframework.checker.qualparam.QualParams;
-import org.checkerframework.checker.qualparam.QualVar;
-import org.checkerframework.checker.qualparam.WildcardQual;
+import org.checkerframework.checker.qualparam.Wildcard;
 
 import org.checkerframework.checker.tainting.qual.*;
 
 
 public class TaintingAnnotationConverter implements AnnotationConverter<QualParams<Tainting>> {
-    private Map<String, ParamValue<Tainting>> lookup;
+    private Map<String, Wildcard<Tainting>> lookup;
 
     public TaintingAnnotationConverter() {
+        QualVar<Tainting> mainVar = new QualVar<>("Main", Tainting.UNTAINTED, Tainting.TAINTED);
+
         lookup = new HashMap<>();
-        lookup.put(Untainted.class.getName(), new BaseQual<>(Tainting.UNTAINTED));
-        lookup.put(Tainted.class.getName(), new BaseQual<>(Tainting.TAINTED));
-        lookup.put(UseMain.class.getName(), new QualVar<>("Main"));
-        lookup.put(ExtendsUntainted.class.getName(), new WildcardQual<>(null, Tainting.UNTAINTED));
-        lookup.put(ExtendsTainted.class.getName(), new WildcardQual<>(null, Tainting.TAINTED));
-        lookup.put(ExtendsMain.class.getName(), new WildcardQual<>(null, new QualVar<>("Main")));
+        lookup.put(Untainted.class.getName(), new Wildcard<>(Tainting.UNTAINTED));
+        lookup.put(Tainted.class.getName(), new Wildcard<>(Tainting.TAINTED));
+        lookup.put(UseMain.class.getName(), new Wildcard<>(mainVar));
+        lookup.put(ExtendsUntainted.class.getName(), new Wildcard<>(Tainting.UNTAINTED, Tainting.UNTAINTED));
+        lookup.put(ExtendsTainted.class.getName(), new Wildcard<>(Tainting.UNTAINTED, Tainting.TAINTED));
+        lookup.put(ExtendsMain.class.getName(), new Wildcard<>(
+                    new GroundQual<>(Tainting.UNTAINTED), mainVar));
     }
 
     private String getAnnotationTypeName(AnnotationMirror anno) {
@@ -44,7 +46,7 @@ public class TaintingAnnotationConverter implements AnnotationConverter<QualPara
     public QualParams<Tainting> fromAnnotations(Collection<? extends AnnotationMirror> annos) {
         for (AnnotationMirror anno : annos) {
             String name = getAnnotationTypeName(anno);
-            ParamValue<Tainting> value = lookup.get(name);
+            Wildcard<Tainting> value = lookup.get(name);
             if (value != null) {
                 return new QualParams<>("Main", value);
             }

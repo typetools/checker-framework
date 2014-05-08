@@ -12,28 +12,34 @@ import org.checkerframework.qualframework.base.QualifierHierarchy;
  * the corresponding parameter in B.
  */
 public class QualifierParameterHierarchy<Q> implements QualifierHierarchy<QualParams<Q>> {
-    private ContainmentHierarchy<Q> containmentHierarchy;
-    private List<Pair<ParamValue<Q>, ParamValue<Q>>> constraintTarget = null;
+    private QualifierHierarchy<Wildcard<Q>> containmentHierarchy;
+    private List<Pair<Wildcard<Q>, Wildcard<Q>>> constraintTarget = null;
 
     public final QualParams<Q> PARAMS_BOTTOM = QualParams.<Q>getBottom();
     public final QualParams<Q> PARAMS_TOP = QualParams.<Q>getTop();
 
 
-    public QualifierParameterHierarchy(QualifierHierarchy<Q> baseHierarchy) {
-        this.containmentHierarchy = new LUBContainmentHierarchy<Q>(baseHierarchy);
-    }
-
-    // Allow clients to provied a custom ContainmentHierarchy, so they can add
-    // support for new ParamValue subtypes.
-    public QualifierParameterHierarchy(ContainmentHierarchy<Q> containmentHierarchy) {
+    public QualifierParameterHierarchy(QualifierHierarchy<Wildcard<Q>> containmentHierarchy) {
         this.containmentHierarchy = containmentHierarchy;
     }
 
-    protected ContainmentHierarchy<Q> getContaintmentHierarchy() {
+    public static <Q> QualifierParameterHierarchy<Q> fromContainment(QualifierHierarchy<Wildcard<Q>> containmentHierarchy) {
+        return new QualifierParameterHierarchy<>(containmentHierarchy);
+    }
+
+    public static <Q> QualifierParameterHierarchy<Q> fromPolyQual(QualifierHierarchy<PolyQual<Q>> polyQualHierarchy) {
+        return fromContainment(new ContainmentHierarchy<Q>(polyQualHierarchy));
+    }
+
+    public static <Q> QualifierParameterHierarchy<Q> fromGround(QualifierHierarchy<Q> groundHierarchy) {
+        return fromPolyQual(new PolyQualHierarchy<Q>(groundHierarchy));
+    }
+
+    protected QualifierHierarchy<Wildcard<Q>> getContaintmentHierarchy() {
         return containmentHierarchy;
     }
 
-    public void setConstraintTarget(List<Pair<ParamValue<Q>, ParamValue<Q>>> constraintTarget) {
+    public void setConstraintTarget(List<Pair<Wildcard<Q>, Wildcard<Q>>> constraintTarget) {
         this.constraintTarget = constraintTarget;
     }
 
@@ -57,7 +63,7 @@ public class QualifierParameterHierarchy<Q> implements QualifierHierarchy<QualPa
 
         for (String k : subtype.keySet()) {
             if (constraintTarget == null) {
-                if (!containmentHierarchy.isContained(subtype.get(k), supertype.get(k)))
+                if (!containmentHierarchy.isSubtype(subtype.get(k), supertype.get(k)))
                     return false;
             } else {
                 constraintTarget.add(Pair.of(subtype.get(k), supertype.get(k)));
@@ -85,7 +91,7 @@ public class QualifierParameterHierarchy<Q> implements QualifierHierarchy<QualPa
             throw new IllegalArgumentException(
                     "tried to LUB two maps with different params defined");
 
-        Map<String, ParamValue<Q>> result = new HashMap<>();
+        Map<String, Wildcard<Q>> result = new HashMap<>();
         for (String k : a.keySet()) {
             result.put(k, containmentHierarchy.leastUpperBound(a.get(k), b.get(k)));
         }
@@ -111,7 +117,7 @@ public class QualifierParameterHierarchy<Q> implements QualifierHierarchy<QualPa
             throw new IllegalArgumentException(
                     "tried to GLB two maps with different params defined");
 
-        Map<String, ParamValue<Q>> result = new HashMap<>();
+        Map<String, Wildcard<Q>> result = new HashMap<>();
         for (String k : a.keySet()) {
             result.put(k, containmentHierarchy.greatestLowerBound(a.get(k), b.get(k)));
         }

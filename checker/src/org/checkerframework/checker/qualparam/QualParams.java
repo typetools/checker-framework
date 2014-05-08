@@ -3,10 +3,10 @@ package org.checkerframework.checker.qualparam;
 import java.util.*;
 
 /** A map of qualifier parameters.  A <code>QualParams</code> object maps
- * qualifier parameter names to <code>ParamValue</code> objects.
+ * qualifier parameter names to <code>Wildcard</code> objects.
  */
-public class QualParams<Q> implements Map<String, ParamValue<Q>> {
-    private Map<String, ParamValue<Q>> map;
+public class QualParams<Q> implements Map<String, Wildcard<Q>> {
+    private Map<String, Wildcard<Q>> map;
 
     /** Construct an empty qualifier parameter map. */
     public QualParams() {
@@ -17,17 +17,17 @@ public class QualParams<Q> implements Map<String, ParamValue<Q>> {
      * from the underlying hierarchy.
      */
     public QualParams(String name, Q qual) {
-        this(name, new BaseQual<Q>(qual));
+        this(name, new Wildcard<Q>(qual));
     }
 
     /** Construct a map containing a single entry.
      */
-    public QualParams(String name, ParamValue<Q> qual) {
+    public QualParams(String name, Wildcard<Q> qual) {
         this();
         this.map.put(name, qual);
     }
 
-    public QualParams(Map<String, ParamValue<Q>> map) {
+    public QualParams(Map<String, Wildcard<Q>> map) {
         this.map = new HashMap<>(map);
     }
 
@@ -40,9 +40,9 @@ public class QualParams<Q> implements Map<String, ParamValue<Q>> {
     // particular class
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    private static final QualParams BOTTOM = new QualParams("__BOTTOM__", (ParamValue)null);
+    private static final QualParams BOTTOM = new QualParams("__BOTTOM__", (Wildcard)null);
     @SuppressWarnings({"rawtypes", "unchecked"})
-    private static final QualParams TOP = new QualParams("__TOP__", (ParamValue)null);
+    private static final QualParams TOP = new QualParams("__TOP__", (Wildcard)null);
 
     @SuppressWarnings("unchecked")
     public static <Q> QualParams<Q> getBottom() {
@@ -57,27 +57,29 @@ public class QualParams<Q> implements Map<String, ParamValue<Q>> {
 
     /** Apply capture conversion to each value in this map.
      */
+    /*
     public QualParams<Q> capture() {
         if (this == QualParams.<Q>getTop() || this == QualParams.<Q>getBottom())
             return this;
 
-        Map<String, ParamValue<Q>> newMap = new HashMap<>();
+        Map<String, Wildcard<Q>> newMap = new HashMap<>();
         for (String k : this.map.keySet()) {
-            ParamValue<Q> newValue = this.map.get(k).capture();
+            Wildcard<Q> newValue = this.map.get(k).capture();
             newMap.put(k, newValue);
         }
         return new QualParams<Q>(newMap);
     }
+    */
 
     /** Apply a substitution to each value in this map.
      */
-    public QualParams<Q> substitute(String name, ParamValue<Q> substValue) {
+    public QualParams<Q> substitute(String name, Wildcard<Q> substValue) {
         if (this == QualParams.<Q>getTop() || this == QualParams.<Q>getBottom())
             return this;
 
-        Map<String, ParamValue<Q>> newMap = new HashMap<>();
+        Map<String, Wildcard<Q>> newMap = new HashMap<>();
         for (String k : this.map.keySet()) {
-            ParamValue<Q> newValue = this.map.get(k).substitute(name, substValue);
+            Wildcard<Q> newValue = this.map.get(k).substitute(name, substValue);
             newMap.put(k, newValue);
         }
         return new QualParams<Q>(newMap);
@@ -85,14 +87,14 @@ public class QualParams<Q> implements Map<String, ParamValue<Q>> {
 
     /** Apply a set of substitutions to each value in this map.
      */
-    public QualParams<Q> substituteAll(Map<String, ParamValue<Q>> substs) {
+    public QualParams<Q> substituteAll(Map<String, Wildcard<Q>> substs) {
         if (this == QualParams.<Q>getTop() || this == QualParams.<Q>getBottom())
             return this;
 
-        Map<String, ParamValue<Q>> newMap = new HashMap<>();
+        Map<String, Wildcard<Q>> newMap = new HashMap<>();
         for (String k : this.map.keySet()) {
-            ParamValue<Q> newValue = this.map.get(k);
-            for (Map.Entry<String, ParamValue<Q>> subst : substs.entrySet()) {
+            Wildcard<Q> newValue = this.map.get(k);
+            for (Map.Entry<String, Wildcard<Q>> subst : substs.entrySet()) {
                 newValue = newValue.substitute(subst.getKey(), subst.getValue());
             }
             newMap.put(k, newValue);
@@ -119,7 +121,7 @@ public class QualParams<Q> implements Map<String, ParamValue<Q>> {
     }
 
     @Override
-    public Set<Map.Entry<String, ParamValue<Q>>> entrySet() {
+    public Set<Map.Entry<String, Wildcard<Q>>> entrySet() {
         // TODO: make immutable?
         return map.entrySet();
     }
@@ -135,7 +137,7 @@ public class QualParams<Q> implements Map<String, ParamValue<Q>> {
     }
 
     @Override
-    public ParamValue<Q> get(Object key) {
+    public Wildcard<Q> get(Object key) {
         return map.get(key);
     }
 
@@ -156,19 +158,19 @@ public class QualParams<Q> implements Map<String, ParamValue<Q>> {
     }
 
     @Override
-    public ParamValue<Q> put(String key, ParamValue<Q> value) {
+    public Wildcard<Q> put(String key, Wildcard<Q> value) {
         // TODO: make immutable?
         return map.put(key, value);
     }
 
     @Override
-    public void putAll(Map<? extends String, ? extends ParamValue<Q>> m) {
+    public void putAll(Map<? extends String, ? extends Wildcard<Q>> m) {
         // TODO: make immutable?
         map.putAll(m);
     }
 
     @Override
-    public ParamValue<Q> remove(Object key) {
+    public Wildcard<Q> remove(Object key) {
         // TODO: make immutable?
         return map.remove(key);
     }
@@ -184,7 +186,7 @@ public class QualParams<Q> implements Map<String, ParamValue<Q>> {
     }
 
     @Override
-    public Collection<ParamValue<Q>> values() {
+    public Collection<Wildcard<Q>> values() {
         // TODO: make immutable?
         return map.values();
     }
