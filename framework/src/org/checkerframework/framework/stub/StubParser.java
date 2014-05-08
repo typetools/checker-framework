@@ -588,6 +588,7 @@ public class StubParser {
         annotateDecl(declAnnos, elt, decl.getAnnotations());
         AnnotatedExecutableType methodType = atypeFactory.fromElement(elt);
         addDeclAnnotations(declAnnos, elt);
+        annotate(methodType.getReturnType(), decl.getAnnotations());
 
         for (int i = 0; i < methodType.getParameterTypes().size(); ++i) {
             AnnotatedTypeMirror paramType = methodType.getParameterTypes().get(i);
