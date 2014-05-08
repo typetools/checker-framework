@@ -8,6 +8,7 @@ import javax.lang.model.element.QualifiedNameable;
 
 import org.checkerframework.qualframework.base.AnnotationConverter;
 
+import org.checkerframework.checker.qualparam.CombiningOperation;
 import org.checkerframework.checker.qualparam.PolyQual.GroundQual;
 import org.checkerframework.checker.qualparam.PolyQual.QualVar;
 import org.checkerframework.checker.qualparam.QualParams;
@@ -18,6 +19,7 @@ import org.checkerframework.checker.tainting.qual.*;
 
 public class TaintingAnnotationConverter implements AnnotationConverter<QualParams<Tainting>> {
     private Map<String, Wildcard<Tainting>> lookup;
+    private CombiningOperation<Tainting> lubOp;
 
     public TaintingAnnotationConverter() {
         QualVar<Tainting> mainVar = new QualVar<>("Main", Tainting.UNTAINTED, Tainting.TAINTED);
@@ -30,6 +32,8 @@ public class TaintingAnnotationConverter implements AnnotationConverter<QualPara
         lookup.put(ExtendsTainted.class.getName(), new Wildcard<>(Tainting.UNTAINTED, Tainting.TAINTED));
         lookup.put(ExtendsMain.class.getName(), new Wildcard<>(
                     new GroundQual<>(Tainting.UNTAINTED), mainVar));
+
+        this.lubOp = new CombiningOperation.Lub<>(new TaintingQualifierHierarchy());
     }
 
     private String getAnnotationTypeName(AnnotationMirror anno) {
@@ -44,14 +48,21 @@ public class TaintingAnnotationConverter implements AnnotationConverter<QualPara
 
     @Override
     public QualParams<Tainting> fromAnnotations(Collection<? extends AnnotationMirror> annos) {
+        Map<String, Wildcard<Tainting>> params = new HashMap<>();
         for (AnnotationMirror anno : annos) {
-            String name = getAnnotationTypeName(anno);
-            Wildcard<Tainting> value = lookup.get(name);
-            if (value != null) {
-                return new QualParams<>("Main", value);
+            String name = "Main";
+
+            String annoName = getAnnotationTypeName(anno);
+            Wildcard<Tainting> value = lookup.get(annoName);
+
+            Wildcard<Tainting> oldValue = params.get(name);
+            if (oldValue != null) {
+                value = value.combineWith(oldValue, lubOp, lubOp);
             }
+
+            params.put(name, value);
         }
-        return null;
+        return (params.isEmpty() ? null : new QualParams<>(params));
     }
 
     @Override
