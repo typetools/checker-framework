@@ -1,5 +1,7 @@
 package org.checkerframework.checker.qualparam;
 
+import java.util.*;
+
 public class Wildcard<Q> {
     private final PolyQual<Q> lower;
     private final PolyQual<Q> upper;
@@ -53,10 +55,25 @@ public class Wildcard<Q> {
         return this.lower == null;
     }
 
-    public Wildcard<Q> substitute(String name, Wildcard<Q> value) {
-        PolyQual<Q> newLower = lower.substitute(name, value.getLowerBound());
-        PolyQual<Q> newUpper = upper.substitute(name, value.getUpperBound());
+    public Wildcard<Q> substitute(Map<String, Wildcard<Q>> substs) {
+        Map<String, PolyQual<Q>> lowerSubsts = new HashMap<>();
+        Map<String, PolyQual<Q>> upperSubsts = new HashMap<>();
+
+        for (String k : substs.keySet()) {
+            lowerSubsts.put(k, substs.get(k).getLowerBound());
+            upperSubsts.put(k, substs.get(k).getUpperBound());
+        }
+
+        PolyQual<Q> newLower = lower.substitute(lowerSubsts);
+        PolyQual<Q> newUpper = upper.substitute(lowerSubsts);
         return new Wildcard<Q>(newLower, newUpper);
+    }
+
+    public Wildcard<Q> combineWith(Wildcard<Q> other,
+            CombiningOperation<Q> lowerOp, CombiningOperation<Q> upperOp) {
+        return new Wildcard<Q>(
+                this.getLowerBound().combineWith(other.getLowerBound(), lowerOp),
+                this.getUpperBound().combineWith(other.getUpperBound(), upperOp));
     }
 
     @Override
