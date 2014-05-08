@@ -74,15 +74,9 @@ public class QualParams<Q> implements Map<String, Wildcard<Q>> {
     /** Apply a substitution to each value in this map.
      */
     public QualParams<Q> substitute(String name, Wildcard<Q> substValue) {
-        if (this == QualParams.<Q>getTop() || this == QualParams.<Q>getBottom())
-            return this;
-
-        Map<String, Wildcard<Q>> newMap = new HashMap<>();
-        for (String k : this.map.keySet()) {
-            Wildcard<Q> newValue = this.map.get(k).substitute(name, substValue);
-            newMap.put(k, newValue);
-        }
-        return new QualParams<Q>(newMap);
+        Map<String, Wildcard<Q>> subst = new HashMap<>();
+        subst.put(name, substValue);
+        return this.substituteAll(subst);
     }
 
     /** Apply a set of substitutions to each value in this map.
@@ -93,10 +87,7 @@ public class QualParams<Q> implements Map<String, Wildcard<Q>> {
 
         Map<String, Wildcard<Q>> newMap = new HashMap<>();
         for (String k : this.map.keySet()) {
-            Wildcard<Q> newValue = this.map.get(k);
-            for (Map.Entry<String, Wildcard<Q>> subst : substs.entrySet()) {
-                newValue = newValue.substitute(subst.getKey(), subst.getValue());
-            }
+            Wildcard<Q> newValue = this.map.get(k).substitute(substs);
             newMap.put(k, newValue);
         }
         return new QualParams<Q>(newMap);
