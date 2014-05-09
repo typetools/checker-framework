@@ -1,13 +1,14 @@
 package org.checkerframework.checker.tainting;
 
+import java.lang.annotation.Annotation;
 import java.util.*;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.QualifiedNameable;
 
-import org.checkerframework.qualframework.base.AnnotationConverter;
 
+import org.checkerframework.checker.qualparam.QualifierParameterAnnotationConverter;
 import org.checkerframework.checker.qualparam.CombiningOperation;
 import org.checkerframework.checker.qualparam.PolyQual.GroundQual;
 import org.checkerframework.checker.qualparam.PolyQual.QualVar;
@@ -17,7 +18,7 @@ import org.checkerframework.checker.qualparam.Wildcard;
 import org.checkerframework.checker.tainting.qual.*;
 
 
-public class TaintingAnnotationConverter implements AnnotationConverter<QualParams<Tainting>> {
+public class TaintingAnnotationConverter implements QualifierParameterAnnotationConverter<Tainting> {
     private Map<String, Wildcard<Tainting>> lookup;
     private CombiningOperation<Tainting> lubOp;
 
@@ -70,5 +71,13 @@ public class TaintingAnnotationConverter implements AnnotationConverter<QualPara
         String name = getAnnotationTypeName(anno);
         return lookup.containsKey(name);
     }
-}
 
+    @Override
+    public Set<String> getDeclaredParameters(Element elt) {
+        Set<String> result = new HashSet<>();
+        for (Annotation a : elt.getAnnotationsByType(TaintingParam.class)) {
+            result.add(((TaintingParam)a).value());
+        }
+        return result;
+    }
+}

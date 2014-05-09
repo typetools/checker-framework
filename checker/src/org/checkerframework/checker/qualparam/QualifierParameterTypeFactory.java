@@ -9,6 +9,7 @@ import com.sun.source.tree.MethodInvocationTree;
 
 import org.checkerframework.javacutil.Pair;
 
+import org.checkerframework.qualframework.base.QualifierHierarchy;
 import org.checkerframework.qualframework.base.DefaultQualifiedTypeFactory;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror;
 import org.checkerframework.qualframework.util.QualifierMapVisitor;
@@ -17,10 +18,33 @@ import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedExec
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedTypeVariable;
 
 public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedTypeFactory<QualParams<Q>> {
+    QualifierHierarchy<Q> groundHierarchy;
 
-    public Set<String> getDeclaredParameters(Element elt) {
-        // TODO
-        return new HashSet<>();
+    @Override
+    protected abstract QualifierParameterAnnotationConverter<Q> createAnnotationConverter();
+
+    public QualifierParameterAnnotationConverter<Q> getAnnotationConverter() {
+        return (QualifierParameterAnnotationConverter<Q>)super.getAnnotationConverter();
+    }
+
+    protected abstract QualifierHierarchy<Q> createGroundQualifierHierarchy();
+
+    public QualifierHierarchy<Q> getGroundQualifierHierarchy() {
+        if (groundHierarchy == null) {
+            groundHierarchy = createGroundQualifierHierarchy();
+        }
+        return groundHierarchy;
+    }
+
+    @Override
+    protected QualifierHierarchy<QualParams<Q>> createQualifierHierarchy() {
+        return QualifierParameterHierarchy.fromGround(getGroundQualifierHierarchy());
+    }
+
+    @Override
+    protected QualifierParameterTypeAnnotator<Q> createTypeAnnotator() {
+        return new QualifierParameterTypeAnnotator<Q>(getAnnotationConverter(),
+                new ContainmentHierarchy<>(new PolyQualHierarchy<>(getGroundQualifierHierarchy())));
     }
 
     /*
@@ -31,7 +55,6 @@ public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedT
         return objectQual.capture();
     }
     */
-
     public final QualParams<Q> qualifierAsMemberOf(QualParams<Q> memberQual, QualParams<Q> objectQual) {
         if (memberQual == null || memberQual == QualParams.<Q>getBottom()
                 || memberQual == QualParams.<Q>getTop())
