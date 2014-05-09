@@ -65,7 +65,7 @@ public class Wildcard<Q> {
         }
 
         PolyQual<Q> newLower = lower.substitute(lowerSubsts);
-        PolyQual<Q> newUpper = upper.substitute(lowerSubsts);
+        PolyQual<Q> newUpper = upper.substitute(upperSubsts);
         return new Wildcard<Q>(newLower, newUpper);
     }
 

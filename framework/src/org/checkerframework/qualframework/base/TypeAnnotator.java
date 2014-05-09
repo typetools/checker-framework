@@ -62,6 +62,11 @@ public class TypeAnnotator<Q> implements ExtendedTypeVisitor<QualifiedTypeMirror
     }
 
 
+    public AnnotationConverter<Q> getAnnotationConverter() {
+        return annotationConverter;
+    }
+
+
     public QualifiedTypeMirror<Q> visit(ExtendedTypeMirror type, Void p) {
         if (type == null) {
             return null;

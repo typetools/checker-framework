@@ -158,7 +158,7 @@ public abstract class DefaultQualifiedTypeFactory<Q> implements QualifiedTypeFac
 
 
     @Override
-    public final QualifierHierarchy<Q> getQualifierHierarchy() {
+    public QualifierHierarchy<Q> getQualifierHierarchy() {
         if (this.qualifierHierarchy == null) {
             this.qualifierHierarchy = createQualifierHierarchy();
         }
@@ -174,7 +174,7 @@ public abstract class DefaultQualifiedTypeFactory<Q> implements QualifiedTypeFac
 
 
     @Override
-    public final TypeHierarchy<Q> getTypeHierarchy() {
+    public TypeHierarchy<Q> getTypeHierarchy() {
         if (this.typeHierarchy == null) {
             this.typeHierarchy = createTypeHierarchy(getQualifierHierarchy());
         }
@@ -196,7 +196,7 @@ public abstract class DefaultQualifiedTypeFactory<Q> implements QualifiedTypeFac
     /**
      * Gets the {@link AnnotationConverter} for the current type system.
      */
-    public final AnnotationConverter<Q> getAnnotationConverter() {
+    public AnnotationConverter<Q> getAnnotationConverter() {
         if (this.annotationConverter == null) {
             this.annotationConverter = createAnnotationConverter();
         }

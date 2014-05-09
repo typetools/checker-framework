@@ -19,8 +19,8 @@ import org.checkerframework.checker.qualparam.QualParams;
 
 public class TaintingQualifiedTypeFactory extends QualifierParameterTypeFactory<Tainting> {
     @Override
-    protected QualifierHierarchy<QualParams<Tainting>> createQualifierHierarchy() {
-        return QualifierParameterHierarchy.fromGround(new TaintingQualifierHierarchy());
+    protected QualifierHierarchy<Tainting> createGroundQualifierHierarchy() {
+        return new TaintingQualifierHierarchy();
     }
 
     @Override
