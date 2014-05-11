@@ -2,9 +2,6 @@ import net.jcip.annotations.*;
 import org.checkerframework.dataflow.qual.*;
 
 // Smoke test for supporting JCIP annotations
-/*
- * @skip-test   -  Temporarily disable this as ExecutableElement.getReceiverType() requires JDK 8 or above.
- */
 public class JCIPAnnotations {
 
     Object lock;
@@ -52,7 +49,7 @@ public class JCIPAnnotations {
         this.guardedArg(x);
         //:: error: (contracts.precondition.not.satisfied) :: error: (contracts.precondition.not.satisfied.field)
         this.unguardedArg(x);
-        // :: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (contracts.precondition.not.satisfied.field)
         unguardedStaticArg(x);
         //:: error: (contracts.precondition.not.satisfied.field)
         guardedStaticArg(x);
