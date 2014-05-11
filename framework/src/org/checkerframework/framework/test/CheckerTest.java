@@ -297,12 +297,20 @@ abstract public class CheckerTest {
                 }
             }
             if (nomsgtext) {
-                if (result.contains("\n")){
-                    result = result.substring(0, result.indexOf('\n'));
+                if (!result.contains("unexpected Throwable")) {
+                    String firstline;
+                    if (result.contains("\n")) {
+                        firstline = result.substring(0, result.indexOf('\n'));
+                    } else {
+                        firstline = result;
+                    }
+                    if (firstline.contains(".java:")) {
+                        firstline = firstline.substring(firstline.indexOf(".java:") + 5).trim();
+                    }
+                    result = firstline;
                 }
-                if (result.contains(".java:")) {
-                    result = result.substring(result.indexOf(".java:") + 5).trim();
-                }
+                // Lines with "unexpected Throwable" are stack traces
+                // and should be printed in full.
             }
             resultsList.add(result);
         }
