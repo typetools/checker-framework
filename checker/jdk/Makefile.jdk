@@ -38,7 +38,7 @@ DIFFS = $(patsubst src/%.java,build/%.diff, $(SOURCES))
 classes: $(SOURCES)
 	mkdir -p build
 	@echo "Building the JDK..."
-	@$(JAVAC) -cp $(CHECKER_JAR):$(JAVADOCLIB) -d build $?
+	@$(JAVAC) -XDignore.symbol.file -cp $(CHECKER_JAR):$(JAVADOCLIB) -d build $?
 
 # This rule does not seem to be used.
 build/%.class: src/%.java
