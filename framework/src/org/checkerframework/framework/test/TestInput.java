@@ -49,6 +49,7 @@ public class TestInput {
         this.options.add("-Xlint:unchecked");
         // Use short javac diagnostics
         this.options.add("-XDrawDiagnostics");
+        this.options.add("-AprintErrorStack");
 
         // Pass the source path to allow test files that depend
         // on each other.
