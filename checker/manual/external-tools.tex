@@ -1,11 +1,25 @@
 \htmlhr
 \chapter{Integration with external tools\label{external-tools}}
 
-This chapter discusses how to run a checker from your favorite IDE\@.
+This chapter discusses how to run a checker from the command line, from a
+build system, or from an IDE\@.  You can skip to the appropriate section:
 
-Or, if your favorite isn't here, you should customize how it runs the
-javac command on your behalf.  See the IDE documentation to learn how to
-customize it, adapting the instructions for javac in Section~\ref{running}.
+% Keep this list up to date with the sections of this chapter and with TWO
+% copies of the list in file inroduction.tex .
+\begin{itemize}
+\item javac (Section~\ref{javac-installation})
+\item Ant (Section~\ref{ant-task})
+\item Maven (Section~\ref{maven-plugin})
+\item Gradle (Section~\ref{gradle})
+\item IntelliJ IDEA (Section~\ref{intellij})
+\item Eclipse (Section~\ref{eclipse})
+\item tIDE (Section~\ref{tide})
+\end{itemize}
+
+If your build system or IDE is not listed above, you should customize how
+it runs the javac command on your behalf.  See your build system or IDE
+documentation to learn how to
+customize it, adapting the instructions for javac in Section~\ref{javac-installation}.
 If you make another tool support running a checker, please
 inform us via the
 \ahref{\url{http://groups.google.com/group/checker-framework-discuss}}{mailing
@@ -20,198 +34,147 @@ All examples in this chapter are in the public domain, with no copyright nor
 licensing restrictions.
 
 
-\section{Javac Compiler\label{javac-installation}}
+\section{Javac compiler\label{javac-installation}}
 
-If you use \code{javac} compiler from the command line, then you can
-instead use the Checker Framework compiler that is bundled with the Checker
-Framework.  The bundled \code{javac} is a variant of the OpenJDK
-\code{javac} that recognizes type annotations in comments.
+If you use the \code{javac} compiler from the command line, then you can
+instead use the ``Checker Framework compiler'', a variant of the OpenJDK
+\code{javac} that recognizes type annotations in comments and that includes
+the Checker Framework jar files on its path.
+The Checker Framework compiler is backward-compatible, so using it as your
+Java compiler, even when you are not doing pluggable type-checking, has no
+negative consequences.
 
-This section describes how you can install and use the bundled
-\code{javac}, using either Unix/Linux/MacOS (see
-Section~\ref{unix-installation}) or Windows (see
-Section~\ref{windows-installation}).
-The instructions are identical to those of Section~\ref{installation},
-but are given as commands that you can cut and paste into your command shell.
-
-
-%%% *****
-%%% UPDATE
-%%% *****
-
-%%% Note that much of this section is duplicated with the "Windows
-%%% installation" section.  That is better for users, even though it is
-%%% longer and makes the maintainers keep two versions in sync.
-\subsection{Unix/Linux/MacOS installation\label{unix-installation}}
-
-These instructions assume that you use the bash or sh shell.  If you use a
-different shell, you may need to slightly adjust the commands.
-
-\begin{enumerate}
-
-\item
-  Download the latest Checker Framework distribution
-  % (\ahrefurl{http://types.cs.washington.edu/checker-framework/current/checker-framework.zip})
-  and unzip it.  You can put it anywhere you like by changing the
-  definition of environment variable \code{JSR308} below; a standard place
-  is in a
-  new directory named \code{jsr308}.
-
-\begin{Verbatim}
-  export JSR308=$HOME/jsr308
-  mkdir -p ${JSR308}
-  cd ${JSR308}
-  # or:  wget http://types.cs.washington.edu/checker-framework/current/checker-framework.zip
-  curl -O http://types.cs.washington.edu/checker-framework/current/checker-framework.zip
-  unzip checker-framework.zip
-  chmod +x checker-framework/checker/bin/javac
-  checker-framework/checker/bin/javac -version
-\end{Verbatim}
-
-The output of the last command should be:
-
-\begin{Verbatim}
-  javac 1.7.0-jsr308-1.8.1
-\end{Verbatim}
+You can use the Checker Framework compiler in three ways.  You can use any
+one of them.  However, if you are using the Windows command shell, you must
+use the last one.
+% Is the last one required for Cygwin, as well as for the Windows command shell?
 
 
-\item
-  Place the following commands in your \code{.bashrc} file:
-\begin{Verbatim}
-  export JSR308=$HOME/jsr308
-  export CHECKERFRAMEWORK=$JSR308/checker-framework
-  export PATH=$CHECKERFRAMEWORK/checker/bin:${PATH}
-\end{Verbatim}
-
-% It is not necessary to add checker.jar to your classpath, because the
-% shipped compiler already does so.
-%   export CLASSPATH=$JSR308/checker-framework/checker/dist/checker.jar:${CLASSPATH}
-
-Also execute them on the command line, or log out and back in.  Then,
-verify that the installation works.  From the command line, run:
-
-\begin{Verbatim}
-  javac -version
-\end{Verbatim}
-
-The output should be:
-
-\begin{Verbatim}
-  javac 1.7.0-jsr308-1.8.1
-\end{Verbatim}
-
-\end{enumerate}
-
-That's all there is to it!  Now you are ready to start using the checkers with
-the new \code{javac} compiler.
-
-\subsection{Windows installation\label{windows-installation}}
-
-\begin{enumerate}
-
-\item
-  Download the latest Checker Framework distribution
-  % (\ahrefurl{http://types.cs.washington.edu/checker-framework/current/checker-framework.zip})
-  and unzip it to create a \<checkers> directory.  You can put it anywhere
-  you like; a standard place is in a new directory under \<C:\ttbs{}Program
-  Files>.
-
-\begin{enumerate}
-\item
-  Save the file
-  \ahrefurl{http://types.cs.washington.edu/checker-framework/current/checker-framework.zip}
-  to your Desktop.
-\item
-  Double-click the \<checker-framework.zip> file on your computer.  Click on
-  the \<checkers> directory, then Select \<Extract all files>, and use
-  \<C:\ttbs{}Program Files> as the destination.  You will obtain a new
-  \<C:\ttbs{}Program Files\ttbs{}checker-framework> folder.
-\item
-  Verify that the installation works.  From a Windows command prompt, run:
-
-% Do I need to quote the space in "Program Files"?
-\begin{Verbatim}
-  set CHECKERFRAMEWORK = C:\Program Files\checker-framework\
-  java -jar C:%CHECKERFRAMEWORK%\checker\dist\checker.jar -version
-\end{Verbatim}
-
-The output should be:
-
-\begin{Verbatim}
-  javac 1.7.0-jsr308-1.8.1
-\end{Verbatim}
-
-\end{enumerate}
-
-
-\item
-\begin{sloppypar}
-  In order to use the updated compiler when you type \code{javac}, add the
-  directory \<C:\ttbs{}Program Files\ttbs{}checker-framework\ttbs{}checkers\ttbs{}binary> to the
-  beginning of your path variable.  Also set a \code{CHECKERFRAMEWORK} variable.
-\end{sloppypar}
-
-% Instructions stolen from http://www.webreference.com/js/tips/020429.html
-
-To set an environment variable, you have two options:  make the change
-temporarily or permanently.
 \begin{itemize}
-\item
-To make the change \textbf{temporarily}, type at the command shell prompt:
-
-\begin{alltt}
-path = \emph{newdir};%PATH%
-\end{alltt}
-
-For example:
-
+  \item
+    Option 1:
+    Add directory
+    \code{.../checker-framework-1.8.1/checker/bin} to your path, \emph{before} any other
+    directory that contains a \<javac> executable.  Now, whenever
+    you run \code{javac}, you will use the updated compiler.  If you are
+    using the bash shell, a way to do this is to add the following to your
+    \verb|~/.profile| (or alternately \verb|~/.bash_profle| or \verb|~/.bashrc|) file:
 \begin{Verbatim}
-set CHECKERFRAMEWORK = C:\Program Files\checker-framework
-path = %CHECKERFRAMEWORK%\checker\bin;%PATH%
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.8.1
+  export PATH=${CHECKERFRAMEWORK}/checker/bin:${PATH}
+\end{Verbatim}
+    then log out and back in to ensure that the environment variable
+    setting takes effect.
+  \item
+    Option 2:
+    Whenever this document tells you to run \code{javac}, you
+    can instead run \code{\$CHECKERFRAMEWORK/checker/bin/javac}.
+
+    You can simplify this by introducing an alias.  Then,
+    whenever this document tells you to run \code{javac}, instead use that
+    alias.  Here is the syntax for your 
+    \verb|~/.bashrc| file:
+% No Windows example because this doesn't work under Windows.
+\begin{Verbatim}
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.8.1
+  alias javacheck='$CHECKERFRAMEWORK/checker/bin/javac'
 \end{Verbatim}
 
-This is a temporary change that endures until the window is closed, and you
-must re-do it every time you start a new command shell.
+   \item
+   Option 3:
+   Whenever this document tells you to run \code{javac}, instead
+   run checker.jar via \<java> (not \<javac>) as in:
 
-\item
-To make the change \textbf{permanently},
-Right-click the \<My Computer> icon and
-select \<Properties>. Select the \<Advanced> tab and click the
-\<Environment Variables> button. You can set the variable as a ``System
-Variable'' (visible to all users) or as a ``User Variable'' (visible to
-just this user).  Both work; the instructions below show how to set as a
-``System Variable''.
-In the \<System Variables> pane, select
-\<Path> from the list and click \<Edit>. In the \<Edit System Variable>
-dialog box, move the cursor to the beginning of the string in the
-\<Variable Value> field and type the full directory name (not using the
-\verb|%CHECKERFRAMEWORK%| environment variable) followed by a
-semicolon (\<;>).
+\begin{Verbatim}
+  java -jar $CHECKERFRAMEWORK/checker/dist/checker.jar ...
+\end{Verbatim}
 
-% This is for the benefit of the Ant task.
-Similarly, set the \code{CHECKERFRAMEWORK} variable.
+    You can simplify the above command by introducing an alias.  Then,
+    whenever this document tells you to run \code{javac}, instead use that
+    alias.  For example:
 
-This is a permanent change that only needs to be done once ever.
+\begin{Verbatim}
+  # Unix
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.8.1
+  alias javacheck='java -jar $CHECKERFRAMEWORK/checker/dist/checker.jar'
+
+  # Windows
+  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-1.8.1\
+  doskey javacheck=java -jar %CHECKERFRAMEWORK%\checker\dist\checker.jar $*
+\end{Verbatim}
+
+   (Explanation for advanced users:  More generally, anywhere that you would use \<javac.jar>, you can substitute
+   \<\$CHECKERFRAMEWORK/checker/dist/checker.jar>; 
+   the result is to use the Checker
+   Framework compiler instead of the regular \<javac>.)
+
 \end{itemize}
 
 
-% It is not necessary to add checker.jar to your classpath, because the
-% shipped compiler already does so.
-%   export CLASSPATH=$JSR308/checker-framework/checker/dist/checker.jar:${CLASSPATH}
-
-Now, verify that the installation works.  From the command line, run:
-
-\begin{Verbatim}
-  javac -version
-\end{Verbatim}
-
+To ensure that you are using the Checker Framework compiler, run
+\<javac -version> (possibly using the
+full pathname to \<javac> or the alias, if you did not add the Checker
+Framework \<javac> to your path).
 The output should be:
 
 \begin{Verbatim}
   javac 1.7.0-jsr308-1.8.1
 \end{Verbatim}
 
-\end{enumerate}
+
+
+
+%% Does this work?  Text elsewhere in the manual imples that it does not.
+% \item
+% \begin{sloppypar}
+%   In order to use the updated compiler when you type \code{javac}, add the
+%   directory \<C:\ttbs{}Program Files\ttbs{}checker-framework\ttbs{}checkers\ttbs{}binary> to the
+%   beginning of your path variable.  Also set a \code{CHECKERFRAMEWORK} variable.
+% \end{sloppypar}
+% 
+% % Instructions stolen from http://www.webreference.com/js/tips/020429.html
+% 
+% To set an environment variable, you have two options:  make the change
+% temporarily or permanently.
+% \begin{itemize}
+% \item
+% To make the change \textbf{temporarily}, type at the command shell prompt:
+% 
+% \begin{alltt}
+% path = \emph{newdir};%PATH%
+% \end{alltt}
+% 
+% For example:
+% 
+% \begin{Verbatim}
+% set CHECKERFRAMEWORK = C:\Program Files\checker-framework
+% path = %CHECKERFRAMEWORK%\checker\bin;%PATH%
+% \end{Verbatim}
+% 
+% This is a temporary change that endures until the window is closed, and you
+% must re-do it every time you start a new command shell.
+% 
+% \item
+% To make the change \textbf{permanently},
+% Right-click the \<My Computer> icon and
+% select \<Properties>. Select the \<Advanced> tab and click the
+% \<Environment Variables> button. You can set the variable as a ``System
+% Variable'' (visible to all users) or as a ``User Variable'' (visible to
+% just this user).  Both work; the instructions below show how to set as a
+% ``System Variable''.
+% In the \<System Variables> pane, select
+% \<Path> from the list and click \<Edit>. In the \<Edit System Variable>
+% dialog box, move the cursor to the beginning of the string in the
+% \<Variable Value> field and type the full directory name (not using the
+% \verb|%CHECKERFRAMEWORK%| environment variable) followed by a
+% semicolon (\<;>).
+% 
+% % This is for the benefit of the Ant task.
+% Similarly, set the \code{CHECKERFRAMEWORK} variable.
+% 
+% This is a permanent change that only needs to be done once ever.
+% \end{itemize}
+
 
 
 \section{Ant task\label{ant-task}}
