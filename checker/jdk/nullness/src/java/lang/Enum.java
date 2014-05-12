@@ -1,12 +1,12 @@
 /*
- * Copyright 2003-2009 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright (c) 2003, 2011, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 2 only, as
- * published by the Free Software Foundation.  Sun designates this
+ * published by the Free Software Foundation.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the LICENSE file that accompanied this code.
+ * by Oracle in the LICENSE file that accompanied this code.
  *
  * This code is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
@@ -18,9 +18,9 @@
  * 2 along with this work; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * Please contact Sun Microsystems, Inc., 4150 Network Circle, Santa Clara,
- * CA 95054 USA or visit www.sun.com if you need additional information or
- * have any questions.
+ * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
+ * or visit www.oracle.com if you need additional information or have any
+ * questions.
  */
 
 package java.lang;
@@ -40,9 +40,13 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  *
  * More information about enums, including descriptions of the
  * implicitly declared methods synthesized by the compiler, can be
- * found in <i>The Java&trade; Language Specification, Java SE
- * Edition</i>, <a
- * href="http://docs.oracle.com/javase/specs/jls/se7/html/jls-8.html#jls-8.9">&sect;8.9</a>.
+ * found in section 8.9 of
+ * <cite>The Java&trade; Language Specification</cite>.
+ *
+ * <p> Note that when using an enumeration type as the type of a set
+ * or as the type of the keys in a map, specialized and efficient
+ * {@linkplain java.util.EnumSet set} and {@linkplain
+ * java.util.EnumMap map} implementations are available.
  *
  * @param <E> The enum type subclass
  * @author  Josh Bloch
@@ -172,8 +176,8 @@ public abstract class Enum<E extends Enum<E>>
      */
     @SuppressWarnings("rawtypes")
     public final int compareTo(E o) {
-        Enum other = (Enum)o;
-        Enum self = this;
+        Enum<?> other = (Enum<?>)o;
+        Enum<E> self = this;
         if (self.getClass() != other.getClass() && // optimization
             self.getDeclaringClass() != other.getDeclaringClass())
             throw new ClassCastException();
@@ -194,9 +198,9 @@ public abstract class Enum<E extends Enum<E>>
      */
     @SuppressWarnings({"rawtypes","unchecked"})
     public final Class<E> getDeclaringClass() {
-        Class clazz = getClass();
-        Class zuper = clazz.getSuperclass();
-        return (zuper == Enum.class) ? clazz : zuper;
+        Class<?> clazz = getClass();
+        Class<?> zuper = clazz.getSuperclass();
+        return (zuper == Enum.class) ? (Class<E>)clazz : (Class<E>)zuper;
     }
 
     /**
