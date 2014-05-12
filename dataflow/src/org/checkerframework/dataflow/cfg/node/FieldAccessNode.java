@@ -49,9 +49,9 @@ public class FieldAccessNode extends Node {
         }
     }
 
-    public FieldAccessNode(VariableElement element, Node receiver) {
+    public FieldAccessNode(Tree tree, VariableElement element, Node receiver) {
         super(element.asType());
-        this.tree = null;
+        this.tree = tree;
         this.element = element;
         this.receiver = receiver;
         this.field = element.getSimpleName().toString();
