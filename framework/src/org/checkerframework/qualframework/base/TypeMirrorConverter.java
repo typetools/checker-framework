@@ -306,7 +306,7 @@ class TypeMirrorConverter<Q> {
                     seenATVs.put(atm, null);
                     QualifiedTypeParameterBounds<Q> bounds =
                         getTypeFactory().getUnderlying()
-                            .getQualifiedTypeParameterBounds(qtm.asElement());
+                            .getQualifiedTypeParameterBounds(qtm.getUnderlyingType());
                     try {
                         if (seenATVs.size() == 1) {
                             // We're at the top level.  Make sure both bounds
