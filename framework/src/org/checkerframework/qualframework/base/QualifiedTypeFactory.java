@@ -15,6 +15,7 @@ import org.checkerframework.qualframework.base.QualifiedTypeMirror;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedDeclaredType;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedExecutableType;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedTypeVariable;
+import org.checkerframework.qualframework.util.ExtendedTypeVariable;
 
 /**
  * Used to compute the qualified type of a {@link Tree} or {@link Element}.
@@ -31,7 +32,7 @@ public interface QualifiedTypeFactory<Q> {
 
     /** Gets the qualified types of the bounds of a type parameter, identified
      * by its {@link Element}. */
-    QualifiedTypeParameterBounds<Q> getQualifiedTypeParameterBounds(Element element);
+    QualifiedTypeParameterBounds<Q> getQualifiedTypeParameterBounds(ExtendedTypeVariable etv);
 
     /** Gets the {@link QualifierHierarchy} used with this type system. */
     QualifierHierarchy<Q> getQualifierHierarchy();
