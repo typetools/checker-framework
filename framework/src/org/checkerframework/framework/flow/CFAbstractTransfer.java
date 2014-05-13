@@ -133,6 +133,8 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
      */
     protected V getValueFromFactory(Tree tree, Node node) {
         GenericAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory = analysis.atypeFactory;
+        Tree preTree = analysis.getCurrentTree();
+        Pair<Tree, AnnotatedTypeMirror> preCtxt = factory.getVisitorState().getAssignmentContext();
         analysis.setCurrentTree(tree);
         // is there an assignment context node available?
         if (node != null && node.getAssignmentContext() != null) {
@@ -159,8 +161,8 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
             factory.setUseFlow(oldFlow);
         }
         AnnotatedTypeMirror at = factory.getAnnotatedType(tree);
-        analysis.setCurrentTree(null);
-        factory.getVisitorState().setAssignmentContext(null);
+        analysis.setCurrentTree(preTree);
+        factory.getVisitorState().setAssignmentContext(preCtxt);
         return analysis.createAbstractValue(at);
     }
 
@@ -674,7 +676,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
                 Matcher selfMatcher = selfPattern.matcher(s);
                 if (selfMatcher.matches()) {
                     s = flowExprContext.receiver.toString(); // it is possible that s == "this" after this call
-                }      
+                }
 
                 r = FlowExpressionParseUtil.parse(
                         expression, flowExprContext,

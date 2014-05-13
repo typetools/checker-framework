@@ -49,6 +49,7 @@ public class TestInput {
         this.options.add("-Xlint:unchecked");
         // Use short javac diagnostics
         this.options.add("-XDrawDiagnostics");
+        this.options.add("-AprintErrorStack");
 
         // Use the annotated jdk for the compile bootclasspath
         // This is set by build.xml
