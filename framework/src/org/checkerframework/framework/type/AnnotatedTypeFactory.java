@@ -1415,7 +1415,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 typeargs.add(typeVarMapping.get(tv));
             }
             methodType = methodType.substitute(typeVarMapping);
-            methodType.setTypeVariables(Collections.emptyList());
         }
 
         return Pair.of(methodType, typeargs);
