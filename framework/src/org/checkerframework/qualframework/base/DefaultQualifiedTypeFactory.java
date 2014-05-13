@@ -1,7 +1,6 @@
 package org.checkerframework.qualframework.base;
 
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -21,7 +20,9 @@ import org.checkerframework.qualframework.base.QualifiedTypeMirror;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedDeclaredType;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedExecutableType;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedTypeVariable;
+import org.checkerframework.qualframework.util.ExtendedTypeVariable;
 import org.checkerframework.qualframework.util.WrappedAnnotatedTypeMirror;
+import org.checkerframework.qualframework.util.WrappedAnnotatedTypeMirror.WrappedAnnotatedTypeVariable;
 
 /** Default implementation of {@link QualifiedTypeFactory}.  Most type systems
  * should extend this class (or a subclass) instead of implementing {@link
@@ -52,8 +53,7 @@ import org.checkerframework.qualframework.util.WrappedAnnotatedTypeMirror;
  * QualifierHierarchy}.
  */
 public abstract class DefaultQualifiedTypeFactory<Q> implements QualifiedTypeFactory<Q> {
-    private HashMap<TypeParameterElement, QualifiedTypeParameterBounds<Q>> paramBoundsMap =
-        new HashMap<>();
+    private IdentityHashMap<ExtendedTypeVariable, QualifiedTypeParameterBounds<Q>> paramBoundsMap = new IdentityHashMap<>();
 
     private QualifierHierarchy<Q> qualifierHierarchy;
     private TypeHierarchy<Q> typeHierarchy;
@@ -87,16 +87,12 @@ public abstract class DefaultQualifiedTypeFactory<Q> implements QualifiedTypeFac
 
 
     @Override
-    public final QualifiedTypeParameterBounds<Q> getQualifiedTypeParameterBounds(Element elt) {
-        if (elt.getKind() != ElementKind.TYPE_PARAMETER) {
-            throw new IllegalArgumentException("expected a TYPE_PARAMETER, not " + elt.getKind());
+    public final QualifiedTypeParameterBounds<Q> getQualifiedTypeParameterBounds(ExtendedTypeVariable etv) {
+        if (!paramBoundsMap.containsKey(etv)) {
+            QualifiedTypeParameterBounds<Q> bounds = computeQualifiedTypeParameterBounds(etv);
+            paramBoundsMap.put(etv, bounds);
         }
-        TypeParameterElement paramElt = (TypeParameterElement)elt;
-        if (!paramBoundsMap.containsKey(paramElt)) {
-            QualifiedTypeParameterBounds<Q> bounds = computeQualifiedTypeParameterBounds(paramElt);
-            paramBoundsMap.put(paramElt, bounds);
-        }
-        return paramBoundsMap.get(paramElt);
+        return paramBoundsMap.get(etv);
     }
 
     /**
@@ -104,18 +100,14 @@ public abstract class DefaultQualifiedTypeFactory<Q> implements QualifiedTypeFac
      * processes the type annotations of the upper and lower bounds using the
      * {@link TypeAnnotator}.
      */
-    protected QualifiedTypeParameterBounds<Q> computeQualifiedTypeParameterBounds(
-            TypeParameterElement paramElt) {
-        AnnotatedTypeVariable atm = (AnnotatedTypeVariable)adapter.fromElement(paramElt);
+    protected QualifiedTypeParameterBounds<Q> computeQualifiedTypeParameterBounds(ExtendedTypeVariable etv) {
         TypeAnnotator<Q> annotator = getTypeAnnotator();
 
-        WrappedAnnotatedTypeMirror wrappedUpper =
-            WrappedAnnotatedTypeMirror.wrap(atm.getUpperBound());
-        QualifiedTypeMirror<Q> upper = annotator.visit(wrappedUpper, null);
-
-        WrappedAnnotatedTypeMirror wrappedLower =
-            WrappedAnnotatedTypeMirror.wrap(atm.getLowerBound());
-        QualifiedTypeMirror<Q> lower = annotator.visit(wrappedLower, null);
+        WrappedAnnotatedTypeVariable watv = (WrappedAnnotatedTypeVariable)etv;
+        WrappedAnnotatedTypeMirror rawUpper = WrappedAnnotatedTypeMirror.wrap(watv.unwrap().getUpperBound());
+        WrappedAnnotatedTypeMirror rawLower = WrappedAnnotatedTypeMirror.wrap(watv.unwrap().getLowerBound());
+        QualifiedTypeMirror<Q> upper = annotator.visit(rawUpper, null);
+        QualifiedTypeMirror<Q> lower = annotator.visit(rawLower, null);
 
         return new QualifiedTypeParameterBounds<Q>(upper, lower);
     }
