@@ -165,10 +165,10 @@ synonyms.
 
 \section{Installation\label{installation}}
 
-This section describes how to install the Checker
-Framework for use from the command line, Ant, and Maven.  If you wish to
+This section describes how to install the Checker Framework.
+(If you wish to
 use the Checker Framework from Eclipse, see the Checker Framework Eclipse
-Plugin webpage: \ahrefurl{http://types.cs.washington.edu/checker-framework/eclipse/}.
+Plugin webpage: \ahrefurl{http://types.cs.washington.edu/checker-framework/eclipse/}.)
 The Checker Framework release contains everything that you need, both to
 run checkers and to write your own checkers.  As an alternative, you can
 build the latest development version from source
@@ -192,133 +192,40 @@ optional step.
   \\
   %END LATEX
   \ahrefurl{http://types.cs.washington.edu/checker-framework/current/checker-framework.zip}
+
 \item 
   Unzip it to create a \code{checker-framework} directory.
+
+\item
+  \label{installation-configure-step}
+  Configure your IDE, build system, or command shell to use the Checker
+  Framework compiler.  Choose the appropriate section of
+  Chapter~\ref{external-tools} for
+% Keep this list up to date with the list at the beginning
+% of file external-tools.tex .
+javac (Section~\ref{javac-installation}),
+Ant (Section~\ref{ant-task}),
+Maven (Section~\ref{maven-plugin}),
+Gradle (Section~\ref{gradle}),
+IntelliJ IDEA (Section~\ref{intellij}),
+Eclipse (Section~\ref{eclipse}),
+or
+tIDE (Section~\ref{tide}).
+
 
 \end{enumerate}
 
 That's all there is to it!  Now you are ready to start using the checkers.
 
-Section~\ref{example-use} walks you through a simple example.  More detailed
-instructions for using a checker appear in Chapter~\ref{using-a-checker}.
-There is also a \ahreforurl{http://types.cs.washington.edu/checker-framework/tutorial/}{tutorial}
-that walks you through how to use the Checker Framework in Eclipse or on
+We recommend that you work through the
+\ahreforurl{http://types.cs.washington.edu/checker-framework/tutorial/}{Checker
+Framework tutorial}, which walks you through how to use the Checker
+Framework in Eclipse or on
 the command line.
 
-TODO: Organize the following, pssobly moving it into section 24.1.
+Section~\ref{example-use} walks you through a simple example.  More detailed
+instructions for using a checker appear in Chapter~\ref{using-a-checker}.
 
-You can also learn more about how to run the Checker Framework from the
-command line (Section~\ref{running-command-line}), 
-
-
-%% Not needed any more.
-%   Then, set the
-%   \code{CHECKERFRAMEWORK} environment variable to the
-%   \code{checker-framework} directory.  For instance, if you use
-%   the bash shell, then add this to your \code{.bashrc} file (don't forget
-%   to replace the ``\code{...}''!):
-% \begin{Verbatim}
-%   export CHECKERFRAMEWORK=.../checker-framework
-% \end{Verbatim}
-%   Also execute it on the command line, or log out and back in.
-
-\begin{enumerate}
-\item
-  Optionally, update your execution path or create an alias.
-
-  When doing pluggable type-checking, you need to use the ``Checker
-  Framework compiler'', a variant of the OpenJDK 8 javac
-  compiler.  The Checker Framework
-  compiler is backward-compatible, so using it as your Java compiler, even
-  when you are not doing pluggable type-checking, has no negative
-  consequences.
-
-  You can use the Checker Framework compiler in three ways.  You can use any one of them.  However, if
-  you are using the Windows command shell, you must use the last one.
-
-  (The directions use a \code{CHECKERFRAMEWORK} environment variable to the
-  \code{.../checker-framework} directory.  You can set such an environment
-  variable, or alternately, you can
-  use an absolute path where the below instructions use the \code{CHECKERFRAMEWORK}
-  environment variable.)
-
-  % Is the last one required for Cygwin, as well as for the Windows command shell?
-
-  \begin{itemize}
-  \item
-    Option 1:
-    Add directory
-    \code{\$CHECKERFRAMEWORK/checker/bin} to your path, \emph{before} any other
-    directory that contains a \<javac> executable.  Now, whenever
-    you run \code{javac}, you will use the updated compiler.  If you are
-    using the bash shell, a way to do this is to add the following to your
-    \verb|~/.profile| (or alternately \verb|~/.bash_profle| or \verb|~/.bashrc|) file:
-\begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.8.0
-  export PATH=${CHECKERFRAMEWORK}/checker/bin:${PATH}
-\end{Verbatim}
-    then log out and back in to ensure that the environment variable
-    setting takes effect.
-  \item
-    Option 2:
-    Whenever this document tells you to run \code{javac}, you
-    can instead run \code{\$CHECKERFRAMEWORK/checker/bin/javac}.
-
-    You can simplify this by introducing an alias.  Then,
-    whenever this document tells you to run \code{javac}, instead use that
-    alias.  Here is the syntax for your 
-    \verb|~/.bashrc| file:
-% No Windows example because this doesn't work under Windows.
-\begin{Verbatim}
-  alias javacheck='$CHECKERFRAMEWORK/checker/bin/javac'
-\end{Verbatim}
-
-   \item
-   Option 3:
-   Whenever this document tells you to run \code{javac}, instead
-   run checker.jar via \<java> (not \<javac>) as in:
-
-\begin{Verbatim}
-  java -jar $CHECKERFRAMEWORK/checker/dist/checker.jar ...
-\end{Verbatim}
-
-   More generally, anywhere that you would use \<javac.jar>, you can substitute
-   \<\$CHECKERFRAMEWORK/checker/dist/checker.jar>; the result is to use the Checker
-   Framework compiler instead of the regular \<javac>.
-
-%     Note: Previous versions of these instructions required the use of
-%     \$CHECKERFRAMEWORK/checker/bin/javac.jar and providing jsr308-all.jar on the bootclasspath.
-%     This is no longer the case.  The provided javac script and checker.jar
-%     will automatically fix up the classpath and bootclasspath for use with
-%     the Checker Framework and call the type-annotations compiler appropriately.
-%     jsr308-all.jar no longer exists.  Finally, anywhere javac.jar might be used
-%     you can substitute \$CHECKERFRAMEWORK/checker/dist/checker.jar in order to use
-%     the Checker Framework.
-
-    You can simplify the above command by introducing an alias.  Then,
-    whenever this document tells you to run \code{javac}, instead use that
-    alias.  For example:
-
-\begin{Verbatim}
-  # Unix
-  alias javacheck='java -jar $CHECKERFRAMEWORK/checker/dist/checker.jar'
-
-  # Windows
-  doskey javacheck=java -jar %CHECKERFRAMEWORK%\checker\dist\checker.jar $*
-\end{Verbatim}
-\end{itemize}
-
-\end{enumerate}
-
-
-To ensure that it was installed properly, run \<javac -version> (possibly using the
-full pathname to \<javac> or the alias, if you did not add the Type Annotations \<javac> to your path).
-
-The output should be:
-
-\begin{Verbatim}
-  javac 1.7.0-jsr308-1.8.1
-\end{Verbatim}
 
 
 \section{Example use:  detecting a null pointer bug\label{example-use}}
@@ -329,11 +236,10 @@ that gives more extensive instructions for using the Checker Framework in
 Eclipse or on the command line.
 
 
-To run a checker on a source file, just run javac as usual, passing the
-\<-processor> flag.  (You can also use an IDE or other build tool; see
-Chapter~\ref{external-tools}.)
+To run a checker on a source file, just compile as usual, but pass the
+\<-processor> flag to the compiler.
 
-For instance, if you usually run the compiler like
+For instance, if you usually run the javac compiler like
 this:
 
 \begin{Verbatim}
@@ -344,28 +250,21 @@ this:
 then you will instead use the command line:
 
 \begin{alltt}
-  javac -processor \textit{ProcessorName} Foo.java Bar.java
+  javac \textbf{-processor \textit{ProcessorName}} Foo.java Bar.java
 \end{alltt}
 
 \noindent
 but take note that the \code{javac} command must refer to the
-Checker Framework compiler (see Section~\ref{installation}).
-
+Checker Framework compiler (see Section~\ref{javac-installation}).
 
 If you usually do your coding within an IDE, you will need to configure
-the IDE.  This manual contains instructions for
-Ant (Section~\ref{ant-task}),
-Maven (Section~\ref{maven-plugin}),
-IntelliJ IDEA (Section~\ref{intellij}),
-Eclipse (Section~\ref{eclipse}), and
-tIDE (Section~\ref{tide}).
-Otherwise, see your IDE documentation for details.
+the IDE; see Chapter~\ref{external-tools}.
 
 
 \begin{enumerate}
 \item
-  Let's consider this very simple Java class.  One local variable is
-  annotated as \<NonNull>, indicating that \<ref> must be a reference to a
+  Let's consider this very simple Java class.  The local variable \<ref> is
+  annotated as \<@NonNull>, indicating that \<ref> must be a reference to a
   non-null object.  Save the file as \<GetStarted.java>.
 
 \begin{Verbatim}
@@ -386,16 +285,17 @@ public class GetStarted {
 \end{Verbatim}
 
 \noindent
-or compile from within your IDE, which you have customized to use the
+or compile from within your IDE, which you have customized (see
+Chapter~\ref{external-tools} to use the
 Checker Framework compiler and to pass the extra arguments.
 
   The compilation should complete without any errors.
 
 \item
   Let's introduce an error now.  Modify \<ref>'s assignment to:
-\begin{Verbatim}
-  @NonNull Object ref = null;
-\end{Verbatim}
+\begin{alltt}
+  @NonNull Object ref = \textbf{null};
+\end{alltt}
 
 \item
   Run the Nullness Checker again, just as before.  This run should emit
@@ -412,8 +312,8 @@ required: @NonNull Object
 \end{enumerate}
 
 The type qualifiers (e.g., \<@NonNull>) are permitted anywhere
-that would write a type, including generics and casts; see
-Section~\ref{writing-annotations}.
+that you can write a type, including generics and casts; see
+Section~\ref{writing-annotations}.  Here are some examples:
 
 \begin{alltt}
   \underline{@Interned} String intern() \ttlcb{} ... \ttrcb{}             // return value
@@ -429,8 +329,8 @@ directories and files:
 
 \begin{itemize}
 \item \<changelog-checkerframework.txt> The changelog.
-\item \<checker/bin/javac> A \<javac> replacement script to use the
-Checker Framework.
+\item \<checker/bin/javac> A replacement for the \<javac> compiler that
+  enables use of the Checker Framework.
 \item \<checker/manual/> A local copy of this manual in PDF and HTML formats.
 \item \<tutorial/> The Checker Framework tutorial.
 \item \<checker/dist/> Contains jar files for use by advanced users:
@@ -438,14 +338,14 @@ Checker Framework.
   \item \<javac.jar> A Java 9 javac with additional support for
   Checker Framework extensions.
   \item \<checker.jar> The Checker Framework classes.
-  \item \<jdk7.jar> and \<jdk8.jar> The annotated JDK classes for
+  \item \<jdk7.jar> and \<jdk8.jar> Annotated versions of the JDK classes for
   Java~7 and Java~8.
   \item \<checker-qual.jar> The annotation types defined by the
   Checker Framework. This jar file is useful to distribute with code
   that uses Checker Framework annotations. See Section~\ref{distributing}.
   \item \<checker-source.jar> The Checker Framework source code for
   use by IDEs.
-  \item \<checker-javadoc.jar> The Checker Framework javadoc for use
+  \item \<checker-javadoc.jar> The Checker Framework Javadoc for use
   by IDEs.
   \end{itemize}
 \end{itemize}
@@ -589,6 +489,7 @@ option.
 Chapter~\ref{external-tools} for details about
 Ant (Section~\ref{ant-task}),
 Maven (Section~\ref{maven-plugin}),
+Gradle (Section~\ref{gradle}),
 IntelliJ IDEA (Section~\ref{intellij}),
 Eclipse (Section~\ref{eclipse}),
 and
@@ -596,18 +497,18 @@ tIDE (Section~\ref{tide}), and about customizing other IDEs and build tools.)
 Remember that you must be using the
 Type Annotations version of \<javac>, which you already installed (see Section~\ref{installation}).
 
-Two concrete examples (using the Nullness Checker) are:
+A concrete examples (using the Nullness Checker) is:
 
 %BEGIN LATEX
 \begin{smaller}
 %END LATEX
 \begin{Verbatim}
   javac -processor org.checkerframework.checker.nullness.NullnessChecker MyFile.java
-  java -jar $CHECKERFRAMEWORK/checker/dist/checker.jar -processor org.checkerframework.checker.nullness.NullnessChecker MyFile.java
 \end{Verbatim}
 %BEGIN LATEX
 \end{smaller}
 %END LATEX
+
 
 \noindent
 Note that the two invocations above are equivalent.  Each one invokes the

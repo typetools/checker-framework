@@ -851,16 +851,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         return null; // super.visitMethodInvocation(node, p);
     }
 
-   	/**
+    /**
      * Checks all the preconditions of the method invocation {@code tree} with
      * element {@code invokedMethodElement}.
      */
     protected void checkPreconditions(Tree tree,
             Element invokedElement, boolean methodCall) {
-    	checkPreconditions(tree, invokedElement, methodCall, null);
-	}
-    	
-   	/**
+        checkPreconditions(tree, invokedElement, methodCall, null);
+    }
+
+    /**
      * Checks all the preconditions of the method invocation {@code tree} with
      * element {@code invokedMethodElement}.
      */
@@ -868,24 +868,23 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             Element invokedElement, boolean methodCall, Set<Pair<String, String>> additionalPreconditions) {
         Set<Pair<String, String>> preconditions = contractsUtils
                 .getPreconditions(invokedElement);
-        
+
         if (additionalPreconditions != null) {
-        	preconditions.addAll(additionalPreconditions);
+            preconditions.addAll(additionalPreconditions);
         }
-        
+
         FlowExpressionContext flowExprContext = null;
-        
+
         for (Pair<String, String> p : preconditions) {
             String expression = p.first;
-            AnnotationMirror anno = AnnotationUtils
-                    .fromName(elements, p.second);
+            AnnotationMirror anno = AnnotationUtils.fromName(elements, p.second);
 
             // Only check if the precondition concerns this checker
             if (!atypeFactory.isSupportedQualifier(anno)) {
                 return;
             }
             String fieldName = null;
-            
+
             if (flowExprContext == null) {
                 Node nodeNode = atypeFactory.getNodeForTree(tree);
                 if (methodCall) {
@@ -895,13 +894,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 }
                 else if (nodeNode instanceof FieldAccessNode) {
                     // Adapted from FlowExpressionParseUtil.buildFlowExprContextForUse
-                   
+
                     Receiver internalReceiver = FlowExpressions.internalReprOf(atypeFactory,
                         ((FieldAccessNode) nodeNode).getReceiver());
-                        
+
                     flowExprContext = new FlowExpressionContext(
                             internalReceiver, null, atypeFactory);
-                    
+
                     fieldName = ((FieldAccessNode) nodeNode).getFieldName();
                 }
                 else if (nodeNode instanceof LocalVariableNode) {
@@ -915,9 +914,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
                     Receiver internalReceiver = FlowExpressions.internalReprOf(atypeFactory,
                             receiver);
-                
+
                     flowExprContext = new FlowExpressionContext(
-                            internalReceiver, null, atypeFactory);                
+                            internalReceiver, null, atypeFactory);
                 }
             }
 
@@ -932,23 +931,23 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     Matcher selfMatcher = selfPattern.matcher(s);
                     if (selfMatcher.matches()) {
                         s = flowExprContext.receiver.toString(); // it is possible that s == "this" after this call
-                    }      
+                    }
 
                     // Try local variables first
                     CFAbstractValue<?> value = store.getValueOfLocalVariableByName(s);
-                    
+
                     boolean theFieldIsTheLock = false;
-                    
+
                     if (value == null) // Not a recognized local variable
                     {
                         expr = FlowExpressionParseUtil.parse(expression,
                                 flowExprContext, getCurrentPath());
-        
+
                         if (fieldName != null)
                         {
                             FlowExpressions.Receiver fieldExpr = FlowExpressionParseUtil.parse(fieldName,
                                     flowExprContext, getCurrentPath());
-                            
+
                             if (fieldExpr.equals(expr)) {
                                 // Avoid issuing warnings when accessing the field that is guarding the receiver.
                                 // e.g. avoid issuing a warning when accessing bar below:
@@ -956,7 +955,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                                 theFieldIsTheLock = true;
                             }
                         }
-                        
+
                         value = store.getValue(expr);
                     }
 
@@ -964,7 +963,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                             .getType().getAnnotationInHierarchy(anno);
                     if (!theFieldIsTheLock &&
                         !checkContract(expr, anno, inferredAnno, store)) {
-                        
+
                         checker.report(Result.failure(
                                 methodCall ? "contracts.precondition.not.satisfied" : "contracts.precondition.not.satisfied.field",
                                 expr == null ? expression : expr.toString()), tree);
@@ -2401,7 +2400,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 }
 
                 if (!foundNN) {
-                	String jdkJarName = PluginUtil.getJdkJarName();
+                    String jdkJarName = PluginUtil.getJdkJarName();
 
                     checker.getProcessingEnvironment().getMessager().printMessage(Kind.WARNING,
                         "You do not seem to be using the distributed annotated JDK.  To fix the" +

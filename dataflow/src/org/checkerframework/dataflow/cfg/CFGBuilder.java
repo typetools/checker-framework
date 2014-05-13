@@ -3948,8 +3948,7 @@ public class CFGBuilder {
                 assert initializer != null;
                 node = translateAssignment(
                         tree,
-                        new FieldAccessNode(TreeUtils
-                                .elementFromDeclaration(tree), receiver),
+                        new FieldAccessNode(tree, TreeUtils.elementFromDeclaration(tree), receiver),
                         initializer);
             } else {
                 // local variable definition
