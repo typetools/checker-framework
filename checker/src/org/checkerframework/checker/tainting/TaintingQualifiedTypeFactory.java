@@ -13,9 +13,11 @@ import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedDecl
 import org.checkerframework.qualframework.base.TreeAnnotator;
 import org.checkerframework.qualframework.util.ExtendedTypeMirror;
 
+import org.checkerframework.checker.qualparam.CombiningOperation;
 import org.checkerframework.checker.qualparam.QualifierParameterHierarchy;
 import org.checkerframework.checker.qualparam.QualifierParameterTypeFactory;
 import org.checkerframework.checker.qualparam.QualParams;
+import org.checkerframework.checker.qualparam.Wildcard;
 
 public class TaintingQualifiedTypeFactory extends QualifierParameterTypeFactory<Tainting> {
     @Override
@@ -41,5 +43,13 @@ public class TaintingQualifiedTypeFactory extends QualifierParameterTypeFactory<
                 }
             }
         };
+    }
+
+
+    private CombiningOperation<Tainting> lubOp = new CombiningOperation.Lub<>(new TaintingQualifierHierarchy());
+
+    @Override
+    protected Wildcard<Tainting> combineForSubstitution(Wildcard<Tainting> a, Wildcard<Tainting> b) {
+        return a.combineWith(b, lubOp, lubOp);
     }
 }
