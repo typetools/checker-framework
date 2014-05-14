@@ -127,14 +127,25 @@ public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedT
     */
 
 
+    protected abstract Wildcard<Q> combineForSubstitution(Wildcard<Q> a, Wildcard<Q> b);
+
     public QualifiedTypeMirror<QualParams<Q>> postTypeVarSubstitution(QualifiedTypeVariable<QualParams<Q>> varDecl,
             QualifiedTypeVariable<QualParams<Q>> varUse, QualifiedTypeMirror<QualParams<Q>> value) {
         QualParams<Q> useParams = varUse.getQualifier();
         QualParams<Q> valueParams = value.getQualifier();
 
-        QualifierParameterHierarchy<Q> hierarchy = (QualifierParameterHierarchy<Q>)getQualifierHierarchy();
-        QualParams<Q> resultParams = hierarchy.leastUpperBound(useParams, valueParams);
+        HashMap<String, Wildcard<Q>> newParams = new HashMap<>(useParams);
+        for (String name : valueParams.keySet()) {
+            Wildcard<Q> newValue = valueParams.get(name);
 
-        return value.accept(new SetQualifierVisitor<>(), resultParams);
+            Wildcard<Q> oldValue = newParams.get(name);
+            if (oldValue != null) {
+                newValue = combineForSubstitution(oldValue, newValue);
+            }
+
+            newParams.put(name, newValue);
+        }
+
+        return value.accept(new SetQualifierVisitor<>(), new QualParams<>(newParams));
     }
 }
