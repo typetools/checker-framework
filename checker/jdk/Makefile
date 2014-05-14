@@ -2,12 +2,12 @@
 #   make all
 # which creates the jdk.jar file.
 
-RTJAR ?= $(JAVA_HOME)/jre/lib/rt.jar
+CTSYM ?= $(JAVA_HOME)/lib/ct.sym
 
 CHECKER_DIRS = nullness igj javari
 
 all: clean classes
-# Extracts unannotated .class files from $(RTJAR)
+# Extracts unannotated .class files from $(CTSYM)
 	$(MAKE) unmodified
 # Insert annotations in those files.
 	$(MAKE) jaifs annotated
@@ -25,7 +25,7 @@ jdk.jar:
 # All class files that contain an annotation, by directory
 ANNOTATED_CLASSES_BY_DIR = $(shell find $(CHECKER_DIRS) -name '*.class')
 # All class files that contain some annotation, possibly with duplicates.
-# These, and only these, need to be extracted from $(RTJAR).
+# These, and only these, need to be extracted from $(CTSYM).
 ANNOTATED_CLASSES = \
 	$(patsubst nullness/build/%.class,annotated/%.class, \
 	  $(patsubst igj/build/%.class,annotated/%.class, \
@@ -42,7 +42,7 @@ JAVARIFIER_REQUIRED = \
 	annotated/java/lang/annotation/Retention.class \
 	annotated/java/lang/annotation/Target.class
 
-# Extract from $(RTJAR) an unannotated version of every file that will
+# Extract from $(CTSYM) an unannotated version of every file that will
 # eventually get any annotation.
 unmodified: $(ANNOTATED_CLASSES) $(JAVARIFIER_REQUIRED)
 
@@ -58,9 +58,13 @@ annotated: $(addsuffix .annotated, $(CHECKER_DIRS))
 
 annotated/%.class:
 	mkdir -p annotated
-# Extract exactly one file from $(RTJAR)
+# Extract exactly one file from $(CTSYM)
 # Ignore errors for now; we get errors when building the JDK for Java 6 but looking for files that are in the annotated JDK because of Java 7.
-	-cd annotated; unzip $(RTJAR) '$*.class' > /dev/null
+	-cd annotated; unzip $(CTSYM) 'META-INF/sym/rt.jar/$*.class' > /dev/null
+	-cp -R annotated/META-INF/sym/rt.jar/* annotated/
+	-rm -rf annotated/META-INF
+
+
 
 # Helper targets to invoke subdir make files
 # "$*" expands to the stem that matched the "%".
