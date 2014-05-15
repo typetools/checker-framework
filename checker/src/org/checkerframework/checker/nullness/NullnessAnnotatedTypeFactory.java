@@ -259,9 +259,10 @@ public class NullnessAnnotatedTypeFactory
     @Override
     protected ListTreeAnnotator createTreeAnnotator() {
         return new ListTreeAnnotator(
-                new NullnessTreeAnnotator(this),
+
                 new PropagationTreeAnnotator(this),
-                new ImplicitsTreeAnnotator(this)
+                new ImplicitsTreeAnnotator(this),
+                new NullnessTreeAnnotator(this)
         );
     }
 

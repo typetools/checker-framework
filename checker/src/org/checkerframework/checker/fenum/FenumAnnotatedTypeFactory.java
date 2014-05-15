@@ -1,7 +1,6 @@
 package org.checkerframework.checker.fenum;
 
 import java.lang.annotation.Annotation;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -11,7 +10,6 @@ import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.fenum.qual.Fenum;
 import org.checkerframework.checker.fenum.qual.FenumTop;
 import org.checkerframework.checker.fenum.qual.FenumUnqualified;
-import org.checkerframework.checker.propkey.qual.PropertyKey;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.Bottom;
