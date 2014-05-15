@@ -21,9 +21,7 @@ import org.checkerframework.common.reflection.qual.UnknownMethod;
 import org.checkerframework.common.value.qual.ArrayLen;
 import org.checkerframework.common.value.qual.StringVal;
 import org.checkerframework.framework.qual.DefaultLocation;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.type.TreeAnnotator;
+import org.checkerframework.framework.type.*;
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationProvider;
@@ -328,8 +326,12 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    protected TreeAnnotator createTreeAnnotator() {
-        return new MethodValTreeAnnotator(this);
+    protected ListTreeAnnotator createTreeAnnotator() {
+        return new ListTreeAnnotator(
+                new PropagationTreeAnnotator(this),
+                new ImplicitsTreeAnnotator(this),
+                new MethodValTreeAnnotator(this)
+        );
     }
 
     /**
@@ -349,7 +351,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          */
         @Override
         public Void visitLiteral(LiteralTree tree, AnnotatedTypeMirror type) {
-            type.addAnnotation(UNKNOWN_METHOD);
+            type.replaceAnnotation(UNKNOWN_METHOD);
             return super.visitLiteral(tree, type);
         }
 

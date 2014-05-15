@@ -1,11 +1,7 @@
 package org.checkerframework.checker.units;
 
 import java.lang.annotation.Annotation;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import javax.lang.model.element.AnnotationMirror;
 
@@ -45,9 +41,7 @@ import org.checkerframework.checker.units.qual.radians;
 import org.checkerframework.checker.units.qual.s;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.type.TreeAnnotator;
+import org.checkerframework.framework.type.*;
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
@@ -71,6 +65,7 @@ import com.sun.source.tree.Tree;
 public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     protected final AnnotationMirror mixedUnits = AnnotationUtils.fromClass(elements, MixedUnits.class);
+    protected AnnotationMirror BOTTOM;
 
     // Map from canonical class name to the corresponding UnitsRelations instance.
     // We use the string to prevent instantiating the UnitsRelations multiple times.
@@ -82,11 +77,9 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         // use true for flow inference
         super(checker, false);
 
-        AnnotationMirror BOTTOM = AnnotationUtils.fromClass(elements, UnitsBottom.class);
-
+        BOTTOM = AnnotationUtils.fromClass(elements, UnitsBottom.class);
         this.postInit();
 
-        this.treeAnnotator.addTreeKind(Tree.Kind.NULL_LITERAL, BOTTOM);
         this.typeAnnotator.addTypeName(java.lang.Void.class, BOTTOM);
     }
 
@@ -244,8 +237,34 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    protected TreeAnnotator createTreeAnnotator() {
-        return new UnitsTreeAnnotator(this);
+    public ListTreeAnnotator createTreeAnnotator() {
+        ImplicitsTreeAnnotator implicitsTreeAnnotator = new ImplicitsTreeAnnotator(this);
+        implicitsTreeAnnotator.addTreeKind(Tree.Kind.NULL_LITERAL, BOTTOM);
+        return new ListTreeAnnotator(
+                new UnitsPropagationTreeAnnotator(this),
+                implicitsTreeAnnotator,
+                new UnitsTreeAnnotator(this)
+        );
+    }
+
+    private static class UnitsPropagationTreeAnnotator extends PropagationTreeAnnotator {
+
+        public UnitsPropagationTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
+            super(atypeFactory);
+        }
+
+
+        // Handled completely by UnitsTreeAnnotator
+        @Override
+        public Void visitBinary(BinaryTree node, AnnotatedTypeMirror type) {
+            return null;
+        }
+
+        // Handled completely by UnitsTreeAnnotator
+        @Override
+        public Void visitCompoundAssignment(CompoundAssignmentTree node, AnnotatedTypeMirror type) {
+            return null;
+        }
     }
 
     /**
@@ -346,7 +365,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             AnnotatedTypeMirror varType = getAnnotatedType(var);
 
             type.replaceAnnotations(varType.getAnnotations());
-            return super.visitCompoundAssignment(node, type);
+            return null;
         }
 
         private AnnotationMirror useUnitsRelation(Tree.Kind kind, UnitsRelations ur,

@@ -23,17 +23,12 @@ import org.checkerframework.checker.oigj.qual.Mutable;
 import org.checkerframework.checker.oigj.qual.ReadOnly;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.framework.type.AnnotatedTypeFactory;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.*;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
-import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.type.TreeAnnotator;
-import org.checkerframework.framework.type.TypeAnnotator;
-import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeVisitor;
 import org.checkerframework.framework.util.AnnotatedTypes;
@@ -146,8 +141,12 @@ public class ImmutabilityAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    protected TreeAnnotator createTreeAnnotator() {
-        return new IGJTreePreAnnotator(this);
+    protected ListTreeAnnotator createTreeAnnotator() {
+        return new ListTreeAnnotator(
+                new PropagationTreeAnnotator(this),
+                new ImplicitsTreeAnnotator(this),
+                new IGJTreePreAnnotator(this)
+        );
     }
 
     @Override
