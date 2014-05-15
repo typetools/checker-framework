@@ -1,6 +1,7 @@
 package org.checkerframework.checker.fenum;
 
 import java.lang.annotation.Annotation;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -10,10 +11,11 @@ import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.fenum.qual.Fenum;
 import org.checkerframework.checker.fenum.qual.FenumTop;
 import org.checkerframework.checker.fenum.qual.FenumUnqualified;
+import org.checkerframework.checker.propkey.qual.PropertyKey;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.Bottom;
-import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.type.*;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -35,9 +37,16 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         // Reuse the framework Bottom annotation and make it the default for the
         // null literal.
-        treeAnnotator.addTreeKind(Tree.Kind.NULL_LITERAL, BOTTOM);
         typeAnnotator.addTypeName(java.lang.Void.class, BOTTOM);
     }
+
+    @Override
+    public ListTreeAnnotator createTreeAnnotator() {
+        ImplicitsTreeAnnotator implicitsTreeAnnotator = new ImplicitsTreeAnnotator(this);
+        implicitsTreeAnnotator.addTreeKind(Tree.Kind.NULL_LITERAL, BOTTOM);
+        return new ListTreeAnnotator(new PropagationTreeAnnotator(this), implicitsTreeAnnotator);
+    }
+
 
     /** Copied from SubtypingChecker.
      * Instead of returning an empty set if no "quals" option is given,
