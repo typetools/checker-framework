@@ -328,7 +328,8 @@
                dir="${basedir}"
                printsummary="true"
                haltonfailure="${halt.on.test.failure}">
-            <jvmarg line="-Xbootclasspath/p:${javac.lib}:${basedir}/dist/${jdkName}"/>
+            <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
+            <sysproperty key="JDK_JAR" value="${basedir}/dist/${jdkName}"/>
             <jvmarg line="-ea"/>
 
             <classpath>
@@ -371,8 +372,9 @@
              dir="${basedir}"
              printsummary="true"
              haltonfailure="${halt.on.test.failure}">
-          <jvmarg line="-Xbootclasspath/p:${javac.lib}:${basedir}/dist/${jdkName}"/>
+          <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
           <jvmarg line="-ea"/>
+          <sysproperty key="JDK_JAR" value="${basedir}/dist/${jdkName}"/>
 
           <classpath>
               <pathelement path="${build}"/>
