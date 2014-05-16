@@ -27,6 +27,7 @@ import org.checkerframework.framework.source.SupportedLintOptions;
         // Forbidding is sound and will eventually be the only possibility.
         // Allowing is unsound but permitted until flow-sensitivity changes are
         // made.
+        // See issues 154 and 322.
         "arrays:forbidnonnullcomponents" })
 public class AbstractNullnessFbcChecker extends AbstractNullnessChecker {
 

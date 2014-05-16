@@ -15,7 +15,7 @@ public class NullnessRawnessTest extends ParameterizedCheckerTest {
 
     public NullnessRawnessTest(File testFile) {
         // TODO: remove arrays:forbidnonnullcomponents option once it's no
-        // longer needed.
+        // longer needed.  See issues 154 and 322.
         super(testFile,
                 org.checkerframework.checker.nullness.NullnessRawnessChecker.class,
                 "nullness",
