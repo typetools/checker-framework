@@ -90,7 +90,6 @@ public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedT
             }
         };
 
-    /*
     @Override
     public Pair<QualifiedExecutableType<QualParams<Q>>, List<QualifiedTypeMirror<QualParams<Q>>>> methodFromUse(MethodInvocationTree tree) {
         Pair<QualifiedExecutableType<QualParams<Q>>, List<QualifiedTypeMirror<QualParams<Q>>>> result = super.methodFromUse(tree);
@@ -101,21 +100,28 @@ public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedT
             actuals.add(getQualifiedType(actualExpr));
         }
 
+        // TODO: look at the actual declared params of the method
         List<String> qualParams = new ArrayList<>();
         qualParams.add("Main");
 
-        InferenceContext<Q> inference = new InferenceContext<>(qualParams, formals, actuals);
         QualifierParameterHierarchy<Q> hierarchy = (QualifierParameterHierarchy<Q>)getQualifierHierarchy();
+        InferenceContext<Q> inference = new InferenceContext<>(qualParams, formals, actuals,
+                groundHierarchy, new PolyQualHierarchy<>(groundHierarchy));
         inference.run(getTypeHierarchy(), hierarchy);
 
-        Map<String, Wildcard<Q>> subst = inference.getAssignment();
+        Map<String, PolyQual<Q>> subst = inference.getAssignment();
 
         if (subst != null) {
+            Map<String, Wildcard<Q>> wildSubst = new HashMap<>();
+            for (String name : subst.keySet()) {
+                wildSubst.put(name, new Wildcard<>(subst.get(name)));
+            }
+
             QualifiedExecutableType<QualParams<Q>> newMethodType =
-                (QualifiedExecutableType<QualParams<Q>>)SUBSTITUTE_VISITOR.visit(result.first, subst);
+                (QualifiedExecutableType<QualParams<Q>>)SUBSTITUTE_VISITOR.visit(result.first, wildSubst);
             List<QualifiedTypeMirror<QualParams<Q>>> newTypeArgs = new ArrayList<>();
             for (QualifiedTypeMirror<QualParams<Q>> qtm : result.second) {
-                newTypeArgs.add(SUBSTITUTE_VISITOR.visit(qtm, subst));
+                newTypeArgs.add(SUBSTITUTE_VISITOR.visit(qtm, wildSubst));
             }
             result = Pair.of(newMethodType, newTypeArgs);
         } else {
@@ -124,7 +130,6 @@ public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedT
 
         return result;
     }
-    */
 
 
     protected abstract Wildcard<Q> combineForSubstitution(Wildcard<Q> a, Wildcard<Q> b);
