@@ -9,29 +9,43 @@ import org.checkerframework.qualframework.base.QualifierHierarchy;
 import org.checkerframework.qualframework.base.TypeHierarchy;
 import org.checkerframework.qualframework.util.QualifierMapVisitor;
 
+import org.checkerframework.checker.qualparam.PolyQual.*;
+
 class InferenceContext<Q> {
-    /*
     private List<String> qualParams;
     private List<? extends QualifiedTypeMirror<QualParams<Q>>> formals;
     private List<? extends QualifiedTypeMirror<QualParams<Q>>> actuals;
 
+    private QualifierHierarchy<Q> groundHierarchy;
+    private QualifierHierarchy<PolyQual<Q>> polyQualHierarchy;
 
     public InferenceContext(
             List<String> qualParams,
             List<? extends QualifiedTypeMirror<QualParams<Q>>> formals,
-            List<? extends QualifiedTypeMirror<QualParams<Q>>> actuals) {
+            List<? extends QualifiedTypeMirror<QualParams<Q>>> actuals,
+            QualifierHierarchy<Q> groundHierarchy,
+            QualifierHierarchy<PolyQual<Q>> polyQualHierarchy) {
         this.qualParams = qualParams;
         this.formals = formals;
         this.actuals = actuals;
+        this.groundHierarchy = groundHierarchy;
+        this.polyQualHierarchy = polyQualHierarchy;
+    }
+
+    private static final String INFER_TAG = "_INFER";
+
+    private QualVar<Q> makeInferVar(String name, int i) {
+        return new QualVar<Q>(INFER_TAG + i + ":" + name,
+                groundHierarchy.getBottom(), groundHierarchy.getTop());
     }
 
     public void run(TypeHierarchy<QualParams<Q>> typeHierarchy,
             QualifierParameterHierarchy<Q> qualParamHierarchy) {
-        List<InferVar<Q>> inferVars = new ArrayList<>();
-        Map<String, ParamValue<Q>> inferSubst = new HashMap<>();
+        List<QualVar<Q>> inferVars = new ArrayList<>();
+        Map<String, Wildcard<Q>> inferSubst = new HashMap<>();
         for (int i = 0; i < qualParams.size(); ++i) {
-            inferVars.add(new InferVar<>(qualParams.get(i), i));
-            inferSubst.put(qualParams.get(i), inferVars.get(i));
+            inferVars.add(makeInferVar(qualParams.get(i), i));
+            inferSubst.put(qualParams.get(i), new Wildcard<Q>(inferVars.get(i)));
         }
 
         List<QualifiedTypeMirror<QualParams<Q>>> substitutedFormals = new ArrayList<>();
@@ -40,7 +54,7 @@ class InferenceContext<Q> {
         }
 
 
-        List<Pair<ParamValue<Q>, ParamValue<Q>>> constraints = new ArrayList<>();
+        List<Pair<Wildcard<Q>, Wildcard<Q>>> constraints = new ArrayList<>();
         qualParamHierarchy.setConstraintTarget(constraints);
 
         for (int i = 0; i < formals.size(); ++i) {
@@ -49,27 +63,24 @@ class InferenceContext<Q> {
 
         qualParamHierarchy.setConstraintTarget(null);
 
-        baseHierarchy = qualParamHierarchy.getContaintmentHierarchy().getBaseHierarchy();
-
-
         this.unsatisfiable = false;
         this.assignments = new ArrayList<>();
         this.lowerBounds = new ArrayList<>();
         this.upperBounds = new ArrayList<>();
         for (int i = 0; i < qualParams.size(); ++i) {
             this.assignments.add(null);
-            this.upperBounds.add(new BaseQual<>(baseHierarchy.getTop()));
-            this.lowerBounds.add(new BaseQual<>(baseHierarchy.getBottom()));
+            this.upperBounds.add(polyQualHierarchy.getTop());
+            this.lowerBounds.add(polyQualHierarchy.getBottom());
         }
 
-        for (Pair<ParamValue<Q>, ParamValue<Q>> p : constraints) {
+        for (Pair<Wildcard<Q>, Wildcard<Q>> p : constraints) {
             if (p == null) {
                 unsatisfiable = true;
                 continue;
             }
 
-            ParamValue<Q> subset = p.first;
-            ParamValue<Q> superset = p.second;
+            Wildcard<Q> subset = p.first;
+            Wildcard<Q> superset = p.second;
 
             processConstraint(subset, superset);
         }
@@ -77,60 +88,55 @@ class InferenceContext<Q> {
 
     private QualifierHierarchy<Q> baseHierarchy;
     private boolean unsatisfiable;
-    private List<ParamValue<Q>> assignments;
-    private List<ParamValue<Q>> upperBounds;
-    private List<ParamValue<Q>> lowerBounds;
+    private List<PolyQual<Q>> assignments;
+    private List<PolyQual<Q>> upperBounds;
+    private List<PolyQual<Q>> lowerBounds;
 
-    private void processConstraint(ParamValue<Q> subset, ParamValue<Q> superset) {
-        if (subset instanceof WildcardQual && superset instanceof WildcardQual) {
-            WildcardQual<Q> subWild = (WildcardQual<Q>)subset;
-            WildcardQual<Q> superWild = (WildcardQual<Q>)superset;
-            addSubtypeBound(superWild.getLower(), subWild.getLower());
-            addSubtypeBound(subWild.getLower(), subWild.getUpper());
-            addSubtypeBound(subWild.getUpper(), superWild.getUpper());
-        } else if (subset instanceof WildcardQual) {
-            addFalseBound();
-        } else if (superset instanceof WildcardQual) {
-            WildcardQual<Q> superWild = (WildcardQual<Q>)superset;
-            addSubtypeBound(superWild.getLower(), subset);
-            addSubtypeBound(subset, superWild.getUpper());
-        } else {
-            addEqualityBound(superset, subset);
-        }
+    private void processConstraint(Wildcard<Q> subset, Wildcard<Q> superset) {
+        addSubtypeBound(superset.getLowerBound(), subset.getLowerBound());
+        addSubtypeBound(subset.getLowerBound(), subset.getUpperBound());
+        addSubtypeBound(subset.getUpperBound(), superset.getUpperBound());
     }
 
-    private void addSubtypeBound(ParamValue<Q> subtype, ParamValue<Q> supertype) {
-        if (subtype instanceof InferVar && supertype instanceof InferVar) {
+    private boolean isInferVar(PolyQual<Q> q) {
+        return q instanceof QualVar && ((QualVar<Q>)q).getName().startsWith(INFER_TAG);
+    }
+
+    private int inferVarIndex(PolyQual<Q> q) {
+        QualVar<Q> v = (QualVar<Q>)q;
+        String name = v.getName();
+        return Integer.parseInt(name.substring(INFER_TAG.length(), name.indexOf(':')));
+    }
+
+    private void addSubtypeBound(PolyQual<Q> subtype, PolyQual<Q> supertype) {
+        if (isInferVar(subtype) && isInferVar(supertype)) {
             throw new UnsupportedOperationException();
-        } else if (subtype instanceof InferVar) {
-            InferVar<Q> subInfer = (InferVar<Q>)subtype;
-            ParamValue<Q> oldUpper = upperBounds.get(subInfer.id);
-            upperBounds.set(subInfer.id, greatestLowerBound(oldUpper, supertype));
-        } else if (supertype instanceof InferVar) {
-            InferVar<Q> superInfer = (InferVar<Q>)supertype;
-            ParamValue<Q> oldLower = lowerBounds.get(superInfer.id);
-            lowerBounds.set(superInfer.id, leastUpperBound(oldLower, subtype));
+        } else if (isInferVar(subtype)) {
+            int id = inferVarIndex(subtype);
+            PolyQual<Q> oldUpper = upperBounds.get(id);
+            upperBounds.set(id, polyQualHierarchy.greatestLowerBound(oldUpper, supertype));
+        } else if (isInferVar(supertype)) {
+            int id = inferVarIndex(supertype);
+            PolyQual<Q> oldLower = lowerBounds.get(id);
+            lowerBounds.set(id, polyQualHierarchy.leastUpperBound(oldLower, subtype));
         } else {
-            // `subtype` and `supertype` are either `BaseQual` or `QualVar`.
-            Q subMax = subtype.getMaximum().getBase(baseHierarchy);
-            Q superMin = supertype.getMinimum().getBase(baseHierarchy);
-            if (!baseHierarchy.isSubtype(subMax, superMin)) {
+            if (!polyQualHierarchy.isSubtype(subtype, supertype)) {
                 addFalseBound();
             }
         }
     }
 
-    private void addEqualityBound(ParamValue<Q> a, ParamValue<Q> b) {
-        if (a instanceof InferVar && b instanceof InferVar) {
+    private void addEqualityBound(PolyQual<Q> a, PolyQual<Q> b) {
+        if (isInferVar(a) && isInferVar(b)) {
             throw new UnsupportedOperationException();
-        } else if (a instanceof InferVar) {
-            InferVar<Q> aInfer = (InferVar<Q>)a;
-            ParamValue<Q> oldAssign = this.assignments.get(aInfer.id);
+        } else if (isInferVar(a)) {
+            int id = inferVarIndex(a);
+            PolyQual<Q> oldAssign = this.assignments.get(id);
             if (oldAssign != null) {
                 addEqualityBound(oldAssign, b);
             }
-            this.assignments.set(aInfer.id, b);
-        } else if (b instanceof InferVar) {
+            this.assignments.set(id, b);
+        } else if (isInferVar(b)) {
             addEqualityBound(b, a);
         } else {
             if (!a.equals(b)) {
@@ -143,100 +149,31 @@ class InferenceContext<Q> {
         this.unsatisfiable = true;
     }
 
-    private ParamValue<Q> leastUpperBound(ParamValue<Q> a, ParamValue<Q> b) {
-        if (a.equals(b)) {
-            return a;
-        }
-        if (baseHierarchy.isSubtype(a.getMaximum().getBase(baseHierarchy), b.getMinimum().getBase(baseHierarchy))) {
-            // In every assignment, a <: b
-            return b;
-        }
-        if (baseHierarchy.isSubtype(b.getMaximum().getBase(baseHierarchy), a.getMinimum().getBase(baseHierarchy))) {
-            // In every assignment, b <: a
-            return a;
-        }
-        // Sometimes a <: b and sometimes b <: a.  Return the least upper
-        // bound of their maximums.
-        return new BaseQual<>(baseHierarchy.leastUpperBound(
-                    a.getMaximum().getBase(baseHierarchy), b.getMaximum().getBase(baseHierarchy)));
-    }
-
-    private ParamValue<Q> greatestLowerBound(ParamValue<Q> a, ParamValue<Q> b) {
-        if (a.equals(b)) {
-            return a;
-        }
-        if (baseHierarchy.isSubtype(a.getMaximum().getBase(baseHierarchy), b.getMinimum().getBase(baseHierarchy))) {
-            // In every assignment, a <: b
-            return a;
-        }
-        if (baseHierarchy.isSubtype(b.getMaximum().getBase(baseHierarchy), a.getMinimum().getBase(baseHierarchy))) {
-            // In every assignment, b <: a
-            return b;
-        }
-        // Sometimes a <: b and sometimes b <: a.  Return the greatest lower
-        // bound of their minimums.
-        return new BaseQual<>(baseHierarchy.greatestLowerBound(
-                    a.getMinimum().getBase(baseHierarchy), b.getMinimum().getBase(baseHierarchy)));
-    }
-
-    private QualifierMapVisitor<QualParams<Q>, QualParams<Q>, Map<String, ParamValue<Q>>> SUBSTITUTE_VISITOR =
-        new QualifierMapVisitor<QualParams<Q>, QualParams<Q>, Map<String, ParamValue<Q>>>() {
+    private QualifierMapVisitor<QualParams<Q>, QualParams<Q>, Map<String, Wildcard<Q>>> SUBSTITUTE_VISITOR =
+        new QualifierMapVisitor<QualParams<Q>, QualParams<Q>, Map<String, Wildcard<Q>>>() {
             @Override
-            public QualParams<Q> process(QualParams<Q> params, Map<String, ParamValue<Q>> substs) {
+            public QualParams<Q> process(QualParams<Q> params, Map<String, Wildcard<Q>> substs) {
                 return params.substituteAll(substs);
             }
         };
 
-
-    public Map<String, ParamValue<Q>> getAssignment() {
+    public Map<String, PolyQual<Q>> getAssignment() {
         if (unsatisfiable) {
             return null;
         }
 
-        Map<String, ParamValue<Q>> map = new HashMap<>();
+        Map<String, PolyQual<Q>> map = new HashMap<>();
         for (int i = 0; i < qualParams.size(); ++i) {
-            ParamValue<Q> assign = assignments.get(i);
-            ParamValue<Q> lower = lowerBounds.get(i);
-            ParamValue<Q> upper = upperBounds.get(i);
-            map.put(qualParams.get(i), assignments.get(i));
+            PolyQual<Q> assign = assignments.get(i);
+            PolyQual<Q> lower = lowerBounds.get(i);
+            PolyQual<Q> upper = upperBounds.get(i);
+            if (assign == null) {
+                assign = lower;
+            }
+            map.put(qualParams.get(i), assign);
+            // TODO: check that `lower <: assign <: upper`.
         }
 
         return map;
     }
-
-    private static class InferVar<Q> extends ParamValue<Q> {
-        public String name;
-        public int id;
-
-        public InferVar(String name, int id) {
-            this.name = name;
-            this.id = id;
-        }
-
-        @Override
-        public ParamValue<Q> substitute(String name, ParamValue<Q> value) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public ParamValue<Q> capture() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public BaseQual<Q> getMinimum() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public BaseQual<Q> getMaximum() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public String toString() {
-            return "?" + id + ":" + name;
-        }
-    }
-    */
 }
