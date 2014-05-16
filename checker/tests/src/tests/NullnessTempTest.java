@@ -14,7 +14,7 @@ public class NullnessTempTest extends ParameterizedCheckerTest {
 
     public NullnessTempTest(File testFile) {
         // TODO: remove arrays:forbidnonnullcomponents option once it's no
-        // longer needed.
+        // longer needed.  See issues 154 and 322.
         super(testFile,
                 org.checkerframework.checker.nullness.NullnessChecker.class,
                 "nullness",
