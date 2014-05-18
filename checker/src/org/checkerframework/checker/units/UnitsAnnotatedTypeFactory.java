@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
+import javax.tools.Diagnostic.Kind;
 
 import org.checkerframework.checker.units.qual.A;
 import org.checkerframework.checker.units.qual.Acceleration;
@@ -139,10 +140,8 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     qualSet.add(q);
                     addUnitsRelations(q);
                 } catch (ClassNotFoundException e) {
-                    // TODO: use a proper error message key
-                    @SuppressWarnings("CompilerMessages")
-                    /*@org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey*/ String msg = "Could not find class for unit: " + qualName + ". Ignoring unit.";
-                    checker.message(javax.tools.Diagnostic.Kind.WARNING, root, msg);
+                    checker.message(javax.tools.Diagnostic.Kind.WARNING,
+                            "Could not find class for unit: " + qualName + ". Ignoring unit.");
                 }
             }
         }
@@ -268,8 +267,8 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 AnnotationMirror res = useUnitsRelation(kind, ur, lht, rht);
 
                 if (bestres != null && res != null && !bestres.equals(res)) {
-                    // TODO: warning
-                    System.out.println("UnitsRelation mismatch, taking neither! Previous: "
+                    checker.message(Kind.WARNING,
+                            "UnitsRelation mismatch, taking neither! Previous: "
                                     + bestres + " and current: " + res);
                     return null; // super.visitBinary(node, type);
                 }
