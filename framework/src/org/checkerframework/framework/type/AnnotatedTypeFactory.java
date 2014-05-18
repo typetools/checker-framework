@@ -1386,16 +1386,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         List<AnnotatedTypeMirror> typeargs = new LinkedList<AnnotatedTypeMirror>();
 
         Map<AnnotatedTypeVariable, AnnotatedTypeMirror> typeVarMapping =
-            AnnotatedTypes.findTypeArguments(processingEnv, this, tree);
+            AnnotatedTypes.findTypeArguments(processingEnv, this, tree, methodElt, methodType);
 
         if (!typeVarMapping.isEmpty()) {
-            for ( AnnotatedTypeVariable tv : methodType.getTypeVariables()) {
+            for (AnnotatedTypeVariable tv : methodType.getTypeVariables()) {
                 if (typeVarMapping.get(tv) == null) {
-                    System.err.println("Detected a mismatch between the declared method" +
-                            " type variables and the inferred method type arguments. Something is going wrong!");
-                    System.err.println("Method type variables: " + methodType.getTypeVariables());
-                    System.err.println("Inferred method type arguments: " + typeVarMapping);
-                    ErrorReporter.errorAbort("AnnotatedTypeFactory.methodFromUse: mismatch between declared method type variables and the inferred method type arguments!");
+                    ErrorReporter.errorAbort("AnnotatedTypeFactory.methodFromUse:" +
+                            "mismatch between declared method type variables and the inferred method type arguments! " +
+                            "Method type variables: " + methodType.getTypeVariables() + "; " +
+                            "Inferred method type arguments: " + typeVarMapping);
                 }
                 typeargs.add(typeVarMapping.get(tv));
             }
@@ -1441,10 +1440,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         List<AnnotatedTypeMirror> typeargs = new LinkedList<AnnotatedTypeMirror>();
 
         Map<AnnotatedTypeVariable, AnnotatedTypeMirror> typeVarMapping =
-            AnnotatedTypes.findTypeArguments(processingEnv, this, tree);
+            AnnotatedTypes.findTypeArguments(processingEnv, this, tree, ctor, con);
 
         if (!typeVarMapping.isEmpty()) {
-            for ( AnnotatedTypeVariable tv : con.getTypeVariables()) {
+            for (AnnotatedTypeVariable tv : con.getTypeVariables()) {
                 typeargs.add(typeVarMapping.get(tv));
             }
             con = con.substitute(typeVarMapping);
@@ -2139,14 +2138,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     continue;
                 }
                 // We couldn't handle the stubPath -> error message.
-                System.err.println("Did not find stub file or files within directory: " + stubPath);
+                checker.message(Kind.NOTE,
+                        "Did not find stub file or files within directory: " + stubPath);
             }
             for (StubResource resource : stubs) {
                 InputStream stubStream;
                 try {
                     stubStream = resource.getInputStream();
                 } catch (IOException e) {
-                    System.err.println("Could not read stub resource: " + resource.getDescription());
+                    checker.message(Kind.NOTE,
+                            "Could not read stub resource: " + resource.getDescription());
                     continue;
                 }
                 StubParser stubParser = new StubParser(resource.getDescription(), stubStream, this, processingEnv);
