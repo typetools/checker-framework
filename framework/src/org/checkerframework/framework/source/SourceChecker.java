@@ -413,7 +413,7 @@ public abstract class SourceChecker
             pattern = System.getenv(patternName);
 
         if (pattern.indexOf("/") != -1) {
-            getProcessingEnvironment().getMessager().printMessage(Kind.WARNING,
+            message(Kind.WARNING,
               "The " + patternName + " property contains \"/\", which will never match a class name: " + pattern);
         }
 
@@ -899,6 +899,27 @@ public abstract class SourceChecker
         else
             ErrorReporter.errorAbort("invalid position source: "
                     + source.getClass().getName());
+    }
+
+    /**
+     * Print a non-localized message using the javac messager.
+     * This is preferable to using System.out or System.err, but should
+     * only be used for exceptional cases that don't happen in correct usage.
+     * Localized messages should be raised using
+     * {@link SourceChecker#message(Kind, Object, String, Object...)}.
+     *
+     * @param kind The kind of message to print.
+     * @param msg The message text.
+     * @param args Optional arguments to substitute in the message.
+     *
+     * @see SourceChecker#message(Kind, Object, String, Object...)
+     */
+    public void message(Diagnostic.Kind kind, String msg, Object... args) {
+        if (messager != null) {
+            messager.printMessage(kind, String.format(msg, args));
+        } else {
+            System.err.println(kind + ": " + String.format(msg, args));
+        }
     }
 
     /**
@@ -1562,8 +1583,8 @@ public abstract class SourceChecker
 
             prop.load(base);
         } catch (IOException e) {
-            System.err.println("Couldn't parse " + filePath + " file");
-            e.printStackTrace();
+            message(Kind.WARNING, "Couldn't parse properties file: " + filePath);
+            // e.printStackTrace();
             // ignore the possible customization file
         }
         return prop;
