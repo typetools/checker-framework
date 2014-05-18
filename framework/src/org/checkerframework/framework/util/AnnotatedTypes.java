@@ -605,20 +605,17 @@ public class AnnotatedTypes {
      *
      * @param expr the method or constructor invocation tree; the passed argument
      *   has to be a subtype of MethodInvocationTree or NewClassTree.
+     * @param elt the element corresponding to the tree.
+     * @param preType the (partially annotated) type corresponding to the tree.
      * @return the mapping of the type variables to type arguments for
      *   this method or constructor invocation.
      */
     public static Map<AnnotatedTypeVariable, AnnotatedTypeMirror>
-    findTypeArguments(final ProcessingEnvironment processingEnv, final AnnotatedTypeFactory atypeFactory, final ExpressionTree expr) {
-        ExecutableElement elt;
-        if (expr instanceof MethodInvocationTree ||
-                expr instanceof NewClassTree) {
-            elt = (ExecutableElement) TreeUtils.elementFromUse(expr);
-        } else {
-            // This case should never happen.
-            ErrorReporter.errorAbort("AnnotatedTypes.findTypeArguments: unexpected tree: " + expr);
-            return null; // dead code
-        }
+    findTypeArguments(final ProcessingEnvironment processingEnv,
+            final AnnotatedTypeFactory atypeFactory,
+            final ExpressionTree expr,
+            final ExecutableElement elt,
+            final AnnotatedExecutableType preType) {
 
         // Is the method a generic method?
         if (elt.getTypeParameters().isEmpty()) {
@@ -638,19 +635,19 @@ public class AnnotatedTypes {
 
         // Has the user supplied type arguments?
         if (!targs.isEmpty()) {
-            List<? extends TypeParameterElement> tvars = elt.getTypeParameters();
+            List<? extends AnnotatedTypeVariable> tvars = preType.getTypeVariables();
 
             Map<AnnotatedTypeVariable, AnnotatedTypeMirror> typeArguments =
                     new HashMap<AnnotatedTypeVariable, AnnotatedTypeMirror>();
             for (int i = 0; i < elt.getTypeParameters().size(); ++i) {
-                AnnotatedTypeVariable typeVar = (AnnotatedTypeVariable) atypeFactory.getAnnotatedType(tvars.get(i));
+                AnnotatedTypeVariable typeVar = tvars.get(i);
                 AnnotatedTypeMirror typeArg = atypeFactory.getAnnotatedTypeFromTypeTree(targs.get(i));
                 typeArguments.put(typeVar, typeArg);
             }
             return typeArguments;
         } else {
             Map<AnnotatedTypeVariable, AnnotatedTypeMirror> typeArguments =
-                    inferTypeArguments(processingEnv, atypeFactory, expr, elt);
+                    inferTypeArguments(processingEnv, atypeFactory, expr, elt, preType);
             return typeArguments;
         }
     }
@@ -664,6 +661,7 @@ public class AnnotatedTypes {
      * @param expr the method or constructor invocation tree; the passed argument
      *   has to be a subtype of MethodInvocationTree or NewClassTree.
      * @param elt the element corresponding to the tree.
+     * @param preType the (partially annotated) type corresponding to the tree.
      * @return the mapping of the type variables to type arguments for
      *   this method or constructor invocation.
      */
@@ -673,8 +671,11 @@ public class AnnotatedTypes {
     // <T> void test(T arg1, T arg2)
     // in such cases, T is inferred to be '? extends T.upperBound'
     private static Map<AnnotatedTypeVariable, AnnotatedTypeMirror>
-    inferTypeArguments(final ProcessingEnvironment processingEnv, final AnnotatedTypeFactory atypeFactory,
-            final ExpressionTree expr, final ExecutableElement elt) {
+    inferTypeArguments(final ProcessingEnvironment processingEnv,
+            final AnnotatedTypeFactory atypeFactory,
+            final ExpressionTree expr,
+            final ExecutableElement elt,
+            final AnnotatedExecutableType preType) {
         Types types = processingEnv.getTypeUtils();
         //
         // The basic algorithm used here, for each type variable:
@@ -695,33 +696,19 @@ public class AnnotatedTypes {
         AnnotatedTypeMirror returnType = atypeFactory.type(expr);
         atypeFactory.annotateImplicit(expr, returnType);
 
-        AnnotatedExecutableType methodType;
-
-        if (expr instanceof MethodInvocationTree) {
-            methodType = asMemberOf(types, atypeFactory, atypeFactory.getReceiverType(expr), elt);
-        } else if (expr instanceof NewClassTree) {
-            // consider the constructor type itself as the viewpoint
-            methodType = asMemberOf(types, atypeFactory, returnType, elt);
-        } else {
-            methodType = null;
-        }
-
         // Using assignment context first
         AnnotatedTypeMirror assigned =
             assignedTo(types, atypeFactory, atypeFactory.getPath(expr));
 
-        for (TypeParameterElement var : elt.getTypeParameters()) {
-            // Find the un-annotated binding for the type variable
-            AnnotatedTypeVariable typeVar = (AnnotatedTypeVariable) atypeFactory.getAnnotatedType(var);
-
+        for (AnnotatedTypeVariable typeVar : preType.getTypeVariables()) {
             AnnotatedTypeMirror argument = null;
 
             // first use the arguments
-            argument = inferTypeArgsUsingArgs(processingEnv, atypeFactory, typeVar, returnType, methodType, expr);
+            argument = inferTypeArgsUsingArgs(processingEnv, atypeFactory, typeVar, returnType, preType, expr);
 
             if (assigned != null) {
                 // if we also have an assignment context, try using it
-                AnnotatedTypeMirror rettype = methodType.getReturnType();
+                AnnotatedTypeMirror rettype = preType.getReturnType();
                 AnnotatedTypeMirror returnTypeBase = asSuper(types, atypeFactory, rettype, assigned);
 
                 List<AnnotatedTypeMirror> lst =
@@ -744,10 +731,10 @@ public class AnnotatedTypes {
             }
 
             if (argument == null && assigned != null) {
-                AnnotatedTypeMirror rettype = methodType.getReturnType();
+                AnnotatedTypeMirror rettype = preType.getReturnType();
                 if (rettype.getKind() == TypeKind.TYPEVAR) {
                     AnnotatedTypeVariable atvrettype = (AnnotatedTypeVariable) rettype;
-                    if (atvrettype.getUnderlyingType().asElement() == var) {
+                    if (atvrettype.getUnderlyingType().asElement() == typeVar.getUnderlyingType().asElement()) {
                         // Special case if the return type is the type variable we are looking at
                         if (!atypeFactory.getQualifierHierarchy().isSubtype(assigned.getAnnotations(),
                                 rettype.getEffectiveAnnotations())) {
@@ -766,7 +753,7 @@ public class AnnotatedTypes {
                 if (argument == null) {
                     // Inferring using context failed for some reason; use the
                     // best we can from the arguments.
-                    argument = inferTypeArgsUsingArgs(processingEnv, atypeFactory, typeVar, returnType, methodType, expr);
+                    argument = inferTypeArgsUsingArgs(processingEnv, atypeFactory, typeVar, returnType, preType, expr);
                 }
             }
 
