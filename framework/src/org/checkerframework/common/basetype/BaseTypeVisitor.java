@@ -2402,7 +2402,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 if (!foundNN) {
                     String jdkJarName = PluginUtil.getJdkJarName();
 
-                    checker.getProcessingEnvironment().getMessager().printMessage(Kind.WARNING,
+                    checker.message(Kind.WARNING,
                         "You do not seem to be using the distributed annotated JDK.  To fix the" +
                         System.getProperty("line.separator") +
                         "problem, supply this argument (first, fill in the \"...\") when you run javac:" +
