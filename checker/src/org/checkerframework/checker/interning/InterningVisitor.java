@@ -14,6 +14,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
+import javax.tools.Diagnostic.Kind;
 
 import org.checkerframework.checker.interning.qual.Interned;
 import org.checkerframework.checker.interning.qual.UsesObjectEquals;
@@ -643,7 +644,6 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
             // Maybe a type variable or wildcard had no upper bound
             return false;
         }
-        tm = ((com.sun.tools.javac.code.Type)tm).unannotatedType();
         if (tm.getKind() == TypeKind.TYPEVAR) {
             tm = ((TypeVariable) tm).getUpperBound();
         }
@@ -654,13 +654,14 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
             // Bound of a wildcard might be null
             return false;
         }
-        tm = ((com.sun.tools.javac.code.Type)tm).unannotatedType();
         if (tm.getKind() != TypeKind.DECLARED) {
-            System.out.printf("InterningVisitor.classIsAnnotated: tm = %s (%s)%n", tm, tm.getClass());
+            checker.message(Kind.WARNING,
+                    "InterningVisitor.classIsAnnotated: tm = %s (%s)%n", tm, tm.getClass());
         }
         Element classElt = ((DeclaredType) tm).asElement();
         if (classElt == null) {
-            System.out.printf("InterningVisitor.classIsAnnotated: classElt = null for tm = %s (%s)%n", tm, tm.getClass());
+            checker.message(Kind.WARNING,
+                    "InterningVisitor.classIsAnnotated: classElt = null for tm = %s (%s)%n", tm, tm.getClass());
         }
         if (classElt != null) {
             AnnotatedTypeMirror classType = atypeFactory.fromElement(classElt);
