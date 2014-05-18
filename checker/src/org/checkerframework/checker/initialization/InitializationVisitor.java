@@ -65,7 +65,7 @@ public class InitializationVisitor<Factory extends InitializationAnnotatedTypeFa
     // Error message keys
     private static final /*@CompilerMessageKey*/ String COMMITMENT_INVALID_CAST = "initialization.invalid.cast";
     private static final /*@CompilerMessageKey*/ String COMMITMENT_FIELDS_UNINITIALIZED = "initialization.fields.uninitialized";
-    private static final /*@CompilerMessageKey*/ String COMMITMENT_INVALID_FIELD_ANNOTATION = "initialization.invalid.field.annotation";
+    private static final /*@CompilerMessageKey*/ String COMMITMENT_INVALID_FIELD_TYPE = "initialization.invalid.field.type";
     private static final /*@CompilerMessageKey*/ String COMMITMENT_INVALID_CONSTRUCTOR_RETURN_TYPE = "initialization.invalid.constructor.return.type";
     private static final /*@CompilerMessageKey*/ String COMMITMENT_INVALID_FIELD_WRITE_UNCLASSIFIED = "initialization.invalid.field.write.unknown";
     private static final /*@CompilerMessageKey*/ String COMMITMENT_INVALID_FIELD_WRITE_COMMITTED = "initialization.invalid.field.write.initialized";
@@ -164,7 +164,7 @@ public class InitializationVisitor<Factory extends InitializationAnnotatedTypeFa
                     if (atypeFactory.isUnclassified(a)) continue; // unclassified is allowed
                     if (AnnotationUtils.areSameByClass(a, c)) {
                         checker.report(Result.failure(
-                                COMMITMENT_INVALID_FIELD_ANNOTATION, node),
+                                COMMITMENT_INVALID_FIELD_TYPE, node),
                                 node);
                         break;
                     }
@@ -397,7 +397,7 @@ public class InitializationVisitor<Factory extends InitializationAnnotatedTypeFa
             com.sun.tools.javac.code.Type rcv = (com.sun.tools.javac.code.Type) ((ExecutableType) meth
                     .asType()).getReceiverType();
             if (rcv != null && rcv.isAnnotated()) {
-                rcvannos = ((com.sun.tools.javac.code.Type.AnnotatedType)rcv).getAnnotationMirrors();
+                rcvannos = rcv.getAnnotationMirrors();
             } else {
                 rcvannos = Collections.<AnnotationMirror> emptyList();
             }
