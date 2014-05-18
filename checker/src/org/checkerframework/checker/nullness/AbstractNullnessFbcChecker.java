@@ -9,6 +9,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.framework.qual.PolyAll;
+import org.checkerframework.framework.qual.StubFiles;
 import org.checkerframework.framework.qual.TypeQualifiers;
 import org.checkerframework.framework.source.SupportedLintOptions;
 
@@ -29,6 +30,7 @@ import org.checkerframework.framework.source.SupportedLintOptions;
         // made.
         // See issues 154 and 322.
         "arrays:forbidnonnullcomponents" })
+@StubFiles("astubs/gnu-getopt.astub")
 public class AbstractNullnessFbcChecker extends AbstractNullnessChecker {
 
     public AbstractNullnessFbcChecker() {
