@@ -86,11 +86,8 @@ public final class TypesUtils {
      * @return type iff type represents a declared type of the qualified name
      */
     public static boolean isDeclaredOfName(TypeMirror type, CharSequence qualifiedName) {
-        type = ((com.sun.tools.javac.code.Type)type).unannotatedType();
-
         return type.getKind() == TypeKind.DECLARED
             && getQualifiedName((DeclaredType)type).contentEquals(qualifiedName);
-
     }
 
     public static boolean isBoxedPrimitive(TypeMirror type) {
@@ -128,7 +125,6 @@ public final class TypesUtils {
      * @return  whether the argument is a primitive type
      */
     public static boolean isPrimitive(TypeMirror type) {
-        type = ((com.sun.tools.javac.code.Type)type).unannotatedType();
         switch (type.getKind()) {
         case BOOLEAN:
         case BYTE:
@@ -163,7 +159,6 @@ public final class TypesUtils {
      * @return  whether the argument is a primitive numeric type
      */
     public static boolean isNumeric(TypeMirror type) {
-        type = ((com.sun.tools.javac.code.Type)type).unannotatedType();
         switch (type.getKind()) {
         case BYTE:
         case CHAR:
@@ -184,7 +179,6 @@ public final class TypesUtils {
      * @return  whether the argument is an integral type
      */
     public static boolean isIntegral(TypeMirror type) {
-        type = ((com.sun.tools.javac.code.Type)type).unannotatedType();
         switch (type.getKind()) {
         case BYTE:
         case CHAR:
@@ -203,7 +197,6 @@ public final class TypesUtils {
      * @return  whether the argument is a floating point type
      */
     public static boolean isFloating(TypeMirror type) {
-        type = ((com.sun.tools.javac.code.Type)type).unannotatedType();
         switch (type.getKind()) {
         case DOUBLE:
         case FLOAT:

@@ -5,9 +5,9 @@ public class Commitment {
 
     @NonNull String t;
 
-    //TODO:: error: (commitment.invalid.constructor.return.type)
+    //:: error: (initialization.invalid.field.type)
     @NonNull @UnderInitialization String a;
-    //TODO:: error: (commitment.invalid.constructor.return.type)
+    //:: error: (initialization.invalid.field.type)
     @Initialized String b;
     @UnknownInitialization @Nullable String c;
 
