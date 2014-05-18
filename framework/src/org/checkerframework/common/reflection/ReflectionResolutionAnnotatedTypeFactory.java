@@ -47,8 +47,7 @@ public class ReflectionResolutionAnnotatedTypeFactory extends
         // TODO: Use command line switches to enable reflection resolution and
         // verbose debugging
         boolean debug = Boolean.getBoolean("org.checkerframework.common.reflection.debug");
-        resolver = new DefaultReflectionResolver(this, debug,
-                checker.getProcessingEnvironment());
+        resolver = new DefaultReflectionResolver(checker, this, debug);
 
         factories.add(new ValueAnnotatedTypeFactory(checker));
         factories.add(new ClassValAnnotatedTypeFactory(checker, this));
