@@ -493,7 +493,7 @@ abstract class TypeFromTree extends
             ExecutableElement elt = TreeUtils.elementFromDeclaration(node);
 
             AnnotatedExecutableType result =
-                (AnnotatedExecutableType)f.toAnnotatedType(elt.asType());
+                (AnnotatedExecutableType)f.toAnnotatedType(elt.asType(), false);
             result.setElement(elt);
 
             TypeFromElement.annotate(result, elt);
@@ -521,7 +521,7 @@ abstract class TypeFromTree extends
         public AnnotatedTypeMirror visitClass(ClassTree node,
                 AnnotatedTypeFactory f) {
             TypeElement elt = TreeUtils.elementFromDeclaration(node);
-            AnnotatedTypeMirror result = f.toAnnotatedType(elt.asType());
+            AnnotatedTypeMirror result = f.toAnnotatedType(elt.asType(), true);
 
             TypeFromElement.annotate(result, elt);
 
@@ -551,7 +551,7 @@ abstract class TypeFromTree extends
                 AnnotatedTypeFactory f) {
             AnnotatedTypeMirror type = visit(node.getUnderlyingType(), f);
             if (type == null) // e.g., for receiver type
-                type = f.toAnnotatedType(f.types.getNoType(TypeKind.NONE));
+                type = f.toAnnotatedType(f.types.getNoType(TypeKind.NONE), false);
             assert AnnotatedTypeFactory.validAnnotatedType(type);
             List<? extends AnnotationMirror> annos = InternalUtils.annotationsFromTree(node);
             type.addAnnotations(annos);
