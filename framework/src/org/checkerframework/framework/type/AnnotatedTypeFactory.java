@@ -620,7 +620,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             return AnnotatedTypes.deepCopy(elementCache.get(elt));
         }
         if (elt.getKind() == ElementKind.PACKAGE)
-            return toAnnotatedType(elt.asType());
+            return toAnnotatedType(elt.asType(), true);
         AnnotatedTypeMirror type;
         Tree decl = declarationFromElement(elt);
 
@@ -629,7 +629,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (decl == null && indexTypes != null && indexTypes.containsKey(elt)) {
             type = AnnotatedTypes.deepCopy(indexTypes.get(elt));
         } else if (decl == null && (indexTypes == null || !indexTypes.containsKey(elt))) {
-            type = toAnnotatedType(elt.asType());
+            type = toAnnotatedType(elt.asType(), true);
             TypeFromElement.annotate(type, elt);
 
             if (elt instanceof ExecutableElement
@@ -1487,7 +1487,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (!TreeUtils.isDiamondTree(tree)) {
             type = (AnnotatedDeclaredType) fromTypeTree(tree.getIdentifier());
         } else {
-            type = (AnnotatedDeclaredType) toAnnotatedType(InternalUtils.typeOf(tree));
+            type = (AnnotatedDeclaredType) toAnnotatedType(InternalUtils.typeOf(tree), false);
         }
 
         if (tree.getClassBody() != null) {
@@ -1590,7 +1590,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         PrimitiveType primitiveType =
             types.unboxedType(type.getUnderlyingType());
         AnnotatedPrimitiveType pt = (AnnotatedPrimitiveType)
-            AnnotatedTypeMirror.createType(primitiveType, this);
+            AnnotatedTypeMirror.createType(primitiveType, this, false);
         pt.addAnnotations(type.getAnnotations());
         return pt;
     }
@@ -1732,9 +1732,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return an {@link AnnotatedTypeMirror} that has {@code t} as its
      * underlying type
      */
-    public final AnnotatedTypeMirror toAnnotatedType(TypeMirror t) {
-        return AnnotatedTypeMirror.createType(t, this);
+    public final AnnotatedTypeMirror toAnnotatedType(TypeMirror t, boolean declaration) {
+        return AnnotatedTypeMirror.createType(t, this, declaration);
     }
+
+    public final AnnotatedTypeMirror toAnnotatedType(TypeMirror t) {
+        return toAnnotatedType(t, false);
+    }
+
 
     /**
      * Determines an empty annotated type of the given tree. In other words,
@@ -1749,10 +1754,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return the type of {@code node}, without any annotations
      */
     public AnnotatedTypeMirror type(Tree node) {
+        boolean isDeclaration = TreeUtils.isTypeDeclaration(node);
 
         // Attempt to obtain the type via JCTree.
         if (InternalUtils.typeOf(node) != null) {
-            AnnotatedTypeMirror result = toAnnotatedType(InternalUtils.typeOf(node));
+            AnnotatedTypeMirror result = toAnnotatedType(InternalUtils.typeOf(node), isDeclaration);
             return result;
         }
 
@@ -1763,7 +1769,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         TypeMirror t = trees.getTypeMirror(path);
         assert validType(t) : "Invalid type " + t + " for node " + t;
 
-        return toAnnotatedType(t);
+        return toAnnotatedType(t, isDeclaration);
     }
 
     /**
@@ -2377,7 +2383,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     public AnnotatedWildcardType getUninferredWildcardType(AnnotatedTypeVariable typeVar) {
         WildcardType wc = types.getWildcardType(typeVar.getUnderlyingType(), null);
-        AnnotatedWildcardType wctype = (AnnotatedWildcardType) AnnotatedTypeMirror.createType(wc, this);
+        AnnotatedWildcardType wctype = (AnnotatedWildcardType) AnnotatedTypeMirror.createType(wc, this, false);
         wctype.setExtendsBound(typeVar);
         wctype.addAnnotations(typeVar.getAnnotations());
         wctype.setTypeArgHack();
@@ -2386,7 +2392,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     public AnnotatedWildcardType getWildcardBoundedBy(AnnotatedTypeMirror upper) {
         WildcardType wc = types.getWildcardType(upper.getUnderlyingType(), null);
-        AnnotatedWildcardType wctype = (AnnotatedWildcardType) AnnotatedTypeMirror.createType(wc, this);
+        AnnotatedWildcardType wctype = (AnnotatedWildcardType) AnnotatedTypeMirror.createType(wc, this, false);
         wctype.setExtendsBound(upper);
         return wctype;
     }
