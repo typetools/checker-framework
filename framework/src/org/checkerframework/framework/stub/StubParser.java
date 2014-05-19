@@ -303,15 +303,19 @@ public class StubParser {
     private void parse(CompilationUnit cu, Map<Element, AnnotatedTypeMirror> atypes, Map<String, Set<AnnotationMirror>> declAnnos) {
         theCompilationUnit = cu;
         final String packageName;
+        final List<AnnotationExpr> packageAnnos;
+
         if (cu.getPackage() == null) {
             packageName = null;
+            packageAnnos = null;
         } else {
             packageName = cu.getPackage().getName().toString();
+            packageAnnos = cu.getPackage().getAnnotations();
             parsePackage(cu.getPackage(), atypes, declAnnos);
         }
         if (cu.getTypes() != null) {
             for (TypeDeclaration typeDecl : cu.getTypes())
-                parse(typeDecl, packageName, atypes, declAnnos);
+                parse(typeDecl, packageName, packageAnnos, atypes, declAnnos);
         }
     }
 
@@ -328,13 +332,33 @@ public class StubParser {
 
     // typeDecl's name may be a binary name such as "A$B".
     // That is a hack because the StubParser does not handle nested classes.
-    private void parse(TypeDeclaration typeDecl, String packageName, Map<Element, AnnotatedTypeMirror> atypes, Map<String, Set<AnnotationMirror>> declAnnos) {
+    private void parse(TypeDeclaration typeDecl,
+            String packageName, List<AnnotationExpr> packageAnnos,
+            Map<Element, AnnotatedTypeMirror> atypes,
+            Map<String, Set<AnnotationMirror>> declAnnos) {
         // Fully-qualified name of the type being parsed
         String typeName = (packageName == null ? "" : packageName + ".") + typeDecl.getName().replace('$', '.');
         TypeElement typeElt = elements.getTypeElement(typeName);
         // couldn't find type.  not in class path
         if (typeElt == null) {
-            stubWarning("Type not found: " + typeName);
+            boolean warn = true;
+            if (typeDecl != null && typeDecl.getAnnotations() != null) {
+                for (AnnotationExpr anno : typeDecl.getAnnotations()) {
+                    if (anno.getName().getName().contentEquals("NoStubParserWarning")) {
+                        warn = false;
+                    }
+                }
+            }
+            if (packageAnnos != null) {
+                for (AnnotationExpr anno : packageAnnos) {
+                    if (anno.getName().getName().contentEquals("NoStubParserWarning")) {
+                        warn = false;
+                    }
+                }
+            }
+            if (warn) {
+                stubWarning("Type not found: " + typeName);
+            }
             return;
         }
 
