@@ -74,13 +74,12 @@ public class DefaultReflectionResolver implements ReflectionResolver {
     private final ExecutableElement newInstance;
 
     /**
-     * 
+     * @param checker
+     *            The type checker to use
      * @param provider
      *            The AnnotationProvider that provides the MethodVal annotations
      * @param debug
      *            Flag to enable debugging of the reflection resolution process
-     * @param processingEnv
-     *            The current processing environment
      */
     public DefaultReflectionResolver(BaseTypeChecker checker,
             AnnotationProvider provider,
