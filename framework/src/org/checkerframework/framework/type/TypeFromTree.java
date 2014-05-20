@@ -677,7 +677,8 @@ abstract class TypeFromTree extends
                 int idx = typeElt.getTypeParameters().indexOf(tpe);
                 ClassTree cls = (ClassTree) f.declarationFromElement(typeElt);
                 if (cls != null) {
-                    AnnotatedTypeMirror result = visit(cls.getTypeParameters().get(idx), f);
+                    AnnotatedTypeMirror result = visit(cls.getTypeParameters().get(idx), f).getCopy(true);
+                    ((AnnotatedTypeVariable)result).setDeclaration(false);
                     return result;
                 } else {
                     // We already have all info from the element -> nothing to do.
@@ -688,7 +689,8 @@ abstract class TypeFromTree extends
                 int idx = exElt.getTypeParameters().indexOf(tpe);
                 MethodTree meth = (MethodTree) f.declarationFromElement(exElt);
                 if (meth != null) {
-                    AnnotatedTypeMirror result = visit(meth.getTypeParameters().get(idx), f);
+                    AnnotatedTypeMirror result = visit(meth.getTypeParameters().get(idx), f).getCopy(true);
+                    ((AnnotatedTypeVariable)result).setDeclaration(false);
                     return result;
                 } else {
                     // ErrorReporter.errorAbort("TypeFromTree.forTypeVariable: did not find source for: " + elt);

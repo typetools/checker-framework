@@ -226,6 +226,15 @@ public abstract class AnnotatedTypeMirror {
         return actualType;
     }
 
+    /**
+     * Returns true if this type mirror represents a declaration, rather than a
+     * use, of a type.
+     *
+     * For example, <code>class List<T> { ... }</code> declares a new type
+     * {@code List<T>}, while {@code List<Integer>} is a use of the type.
+     *
+     * @return  true if this represents a declaration
+     */
     public boolean isDeclaration() {
         return false;
     }
@@ -886,7 +895,7 @@ public abstract class AnnotatedTypeMirror {
 
         protected List<AnnotatedDeclaredType> supertypes = null;
 
-        private final boolean declaration;
+        private boolean declaration;
 
         /**
          * Constructor for this type
@@ -913,6 +922,7 @@ public abstract class AnnotatedTypeMirror {
             this.declaration = declaration;
         }
 
+        @Override
         public boolean isDeclaration() {
             return declaration;
         }
@@ -1625,10 +1635,21 @@ public abstract class AnnotatedTypeMirror {
         /** The upper bound of the type variable. **/
         private AnnotatedTypeMirror upperBound;
 
-        private final boolean declaration;
+        private boolean declaration;
 
+        @Override
         public boolean isDeclaration() {
             return declaration;
+        }
+
+        /**
+         * Change whether this {@code AnnotatedTypeVariable} is considered a
+         * use or a declaration.
+         *
+         * @param declaration  true if this type variable should be considered a declaration
+         */
+        public void setDeclaration(boolean declaration) {
+            this.declaration = declaration;
         }
 
         @Override
