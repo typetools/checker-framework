@@ -316,9 +316,9 @@ hierarchy, see Figure~\ref{fig-nullness-hierarchy}).
 The rest of this section explains the rationale and implementation of
 CLIMB-to-top.
 
-Casts, local variables (including resource variables in the
-try-with-resources construct, variables in for statements, etc.), and
-instanceof should be defaulted to top because they are the locations to
+Casts and local variables (including resource variables in the
+try-with-resources construct, variables in for statements, etc.)
+should be defaulted to top because they are the locations to
 which type refinement (Section~\ref{type-refinement}) is applied.  If they
 start as the top type, then the Checker Framework chooses the best (most
 general) possible type for them.  As a result, a programmer rarely writes
@@ -343,6 +343,7 @@ Framework tracks both of them separately and allows the programmer to
 specify both by using a declaration on a wildcard or type variable name;
 see Section~\ref{type-parameter-rationale}.
 
+%todo{explain why instanceof is defaulted to top.}
 
 Here is how the CLIMB-to-top rule is expressed for the Nullness Checker:
 
