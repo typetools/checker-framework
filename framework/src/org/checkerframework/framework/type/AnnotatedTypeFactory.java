@@ -620,7 +620,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             return AnnotatedTypes.deepCopy(elementCache.get(elt));
         }
         if (elt.getKind() == ElementKind.PACKAGE)
-            return toAnnotatedType(elt.asType(), true);
+            return toAnnotatedType(elt.asType(), false);
         AnnotatedTypeMirror type;
         Tree decl = declarationFromElement(elt);
 
@@ -629,7 +629,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (decl == null && indexTypes != null && indexTypes.containsKey(elt)) {
             type = AnnotatedTypes.deepCopy(indexTypes.get(elt));
         } else if (decl == null && (indexTypes == null || !indexTypes.containsKey(elt))) {
-            type = toAnnotatedType(elt.asType(), true);
+            type = toAnnotatedType(elt.asType(), false);
             TypeFromElement.annotate(type, elt);
 
             if (elt instanceof ExecutableElement
