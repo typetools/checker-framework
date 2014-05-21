@@ -20,7 +20,8 @@ import org.checkerframework.qualframework.base.QualifiedTypeMirror;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedDeclaredType;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedExecutableType;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedTypeVariable;
-import org.checkerframework.qualframework.util.ExtendedTypeVariable;
+import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedParameterDeclaration;
+import org.checkerframework.qualframework.util.ExtendedParameterDeclaration;
 import org.checkerframework.qualframework.util.WrappedAnnotatedTypeMirror;
 import org.checkerframework.qualframework.util.WrappedAnnotatedTypeMirror.WrappedAnnotatedTypeVariable;
 
@@ -53,7 +54,7 @@ import org.checkerframework.qualframework.util.WrappedAnnotatedTypeMirror.Wrappe
  * QualifierHierarchy}.
  */
 public abstract class DefaultQualifiedTypeFactory<Q> implements QualifiedTypeFactory<Q> {
-    private IdentityHashMap<ExtendedTypeVariable, QualifiedTypeParameterBounds<Q>> paramBoundsMap = new IdentityHashMap<>();
+    private IdentityHashMap<ExtendedParameterDeclaration, QualifiedTypeParameterBounds<Q>> paramBoundsMap = new IdentityHashMap<>();
 
     private QualifierHierarchy<Q> qualifierHierarchy;
     private TypeHierarchy<Q> typeHierarchy;
@@ -87,12 +88,12 @@ public abstract class DefaultQualifiedTypeFactory<Q> implements QualifiedTypeFac
 
 
     @Override
-    public final QualifiedTypeParameterBounds<Q> getQualifiedTypeParameterBounds(ExtendedTypeVariable etv) {
-        if (!paramBoundsMap.containsKey(etv)) {
-            QualifiedTypeParameterBounds<Q> bounds = computeQualifiedTypeParameterBounds(etv);
-            paramBoundsMap.put(etv, bounds);
+    public final QualifiedTypeParameterBounds<Q> getQualifiedTypeParameterBounds(ExtendedParameterDeclaration etm) {
+        if (!paramBoundsMap.containsKey(etm)) {
+            QualifiedTypeParameterBounds<Q> bounds = computeQualifiedTypeParameterBounds(etm);
+            paramBoundsMap.put(etm, bounds);
         }
-        return paramBoundsMap.get(etv);
+        return paramBoundsMap.get(etm);
     }
 
     /**
@@ -100,10 +101,10 @@ public abstract class DefaultQualifiedTypeFactory<Q> implements QualifiedTypeFac
      * processes the type annotations of the upper and lower bounds using the
      * {@link TypeAnnotator}.
      */
-    protected QualifiedTypeParameterBounds<Q> computeQualifiedTypeParameterBounds(ExtendedTypeVariable etv) {
+    protected QualifiedTypeParameterBounds<Q> computeQualifiedTypeParameterBounds(ExtendedParameterDeclaration etm) {
         TypeAnnotator<Q> annotator = getTypeAnnotator();
 
-        WrappedAnnotatedTypeVariable watv = (WrappedAnnotatedTypeVariable)etv;
+        WrappedAnnotatedTypeVariable watv = (WrappedAnnotatedTypeVariable)etm;
         WrappedAnnotatedTypeMirror rawUpper = WrappedAnnotatedTypeMirror.wrap(watv.unwrap().getUpperBound());
         WrappedAnnotatedTypeMirror rawLower = WrappedAnnotatedTypeMirror.wrap(watv.unwrap().getLowerBound());
         QualifiedTypeMirror<Q> upper = annotator.visit(rawUpper, null);
@@ -231,7 +232,7 @@ public abstract class DefaultQualifiedTypeFactory<Q> implements QualifiedTypeFac
     }
 
     @Override
-    public QualifiedTypeMirror<Q> postTypeVarSubstitution(QualifiedTypeVariable<Q> varDecl,
+    public QualifiedTypeMirror<Q> postTypeVarSubstitution(QualifiedParameterDeclaration<Q> varDecl,
             QualifiedTypeVariable<Q> varUse, QualifiedTypeMirror<Q> value) {
         return adapter.superPostTypeVarSubstitution(varDecl, varUse, value);
     }

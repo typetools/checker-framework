@@ -11,6 +11,8 @@ import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedPrim
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedTypeVariable;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedUnionType;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedWildcardType;
+import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedTypeDeclaration;
+import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedParameterDeclaration;
 
 /**
  * A visitor for {@link QualifiedTypeMirror}s, patterned after {@link
@@ -29,4 +31,7 @@ public interface QualifiedTypeVisitor<Q,R,P> {
     R visitNoType(QualifiedNoType<Q> type, P p);
     R visitNull(QualifiedNullType<Q> type, P p);
     R visitWildcard(QualifiedWildcardType<Q> type, P p);
+
+    R visitTypeDeclaration(QualifiedTypeDeclaration<Q> type, P p);
+    R visitParameterDeclaration(QualifiedParameterDeclaration<Q> type, P p);
 }

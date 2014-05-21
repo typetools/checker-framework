@@ -36,5 +36,5 @@ public interface ExtendedExecutableType extends ExtendedTypeMirror {
 
     /** Returns the type variables declared by the formal type parameters of
      * this executable. */
-    List<? extends ExtendedTypeVariable> getTypeVariables();
+    List<? extends ExtendedParameterDeclaration> getTypeParameters();
 }

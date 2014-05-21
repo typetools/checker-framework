@@ -91,11 +91,11 @@ class TypeHierarchyAdapter<Q> extends org.checkerframework.framework.type.TypeHi
     @Override
     protected boolean isSubtypeTypeArguments(AnnotatedDeclaredType subtype, AnnotatedDeclaredType supertype) {
         return defaultUnderlying.isSubtypeTypeArguments(
-                (QualifiedDeclaredType<Q>)converter.getQualifiedType(subtype),
-                (QualifiedDeclaredType<Q>)converter.getQualifiedType(supertype));
+                converter.getQualifiedType(subtype),
+                converter.getQualifiedType(supertype));
     }
 
-    boolean superIsSubtypeTypeArguments(QualifiedDeclaredType<Q> subtype, QualifiedDeclaredType<Q> supertype) {
+    boolean superIsSubtypeTypeArguments(QualifiedTypeMirror<Q> subtype, QualifiedTypeMirror<Q> supertype) {
         return super.isSubtypeTypeArguments(
                 (AnnotatedDeclaredType)converter.getAnnotatedType(subtype),
                 (AnnotatedDeclaredType)converter.getAnnotatedType(supertype));
