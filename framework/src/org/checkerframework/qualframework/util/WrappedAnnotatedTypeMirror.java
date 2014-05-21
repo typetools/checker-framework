@@ -148,6 +148,11 @@ public abstract class WrappedAnnotatedTypeMirror implements ExtendedTypeMirror {
     }
 
     @Override
+    public boolean isDeclaration() {
+        return underlying.isDeclaration();
+    }
+
+    @Override
     public <A extends Annotation> A getAnnotation(Class<A> annotationType) {
         throw new UnsupportedOperationException("ATM doesn't support getAnnotation");
     }
@@ -212,7 +217,8 @@ public abstract class WrappedAnnotatedTypeMirror implements ExtendedTypeMirror {
         }
     }
 
-    public static class WrappedAnnotatedDeclaredType extends WrappedAnnotatedReferenceType implements ExtendedDeclaredType {
+    public static class WrappedAnnotatedDeclaredType extends WrappedAnnotatedReferenceType
+            implements ExtendedDeclaredType, ExtendedTypeDeclaration {
         private WrappedAnnotatedTypeMirror enclosingType;
         private List<WrappedAnnotatedTypeMirror> typeArguments;
 
@@ -234,7 +240,11 @@ public abstract class WrappedAnnotatedTypeMirror implements ExtendedTypeMirror {
 
         @Override
         public <R,P> R accept(ExtendedTypeVisitor<R,P> v, P p) {
-            return v.visitDeclared(this, p);
+            if (isDeclaration()) {
+                return v.visitTypeDeclaration(this, p);
+            } else {
+                return v.visitDeclared(this, p);
+            }
         }
 
         @Override
@@ -251,6 +261,12 @@ public abstract class WrappedAnnotatedTypeMirror implements ExtendedTypeMirror {
         public List<? extends WrappedAnnotatedTypeMirror> getTypeArguments() {
             return typeArguments;
         }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public List<? extends WrappedAnnotatedTypeVariable> getTypeParameters() {
+            return (List<? extends WrappedAnnotatedTypeVariable>)(List<?>)typeArguments;
+        }
     }
 
     public static class WrappedAnnotatedExecutableType extends WrappedAnnotatedTypeMirror implements ExtendedExecutableType {
@@ -258,7 +274,7 @@ public abstract class WrappedAnnotatedTypeMirror implements ExtendedTypeMirror {
         private WrappedAnnotatedTypeMirror receiverType;
         private WrappedAnnotatedTypeMirror returnType;
         private List<? extends WrappedAnnotatedTypeMirror> thrownTypes;
-        private List<? extends WrappedAnnotatedTypeVariable> typeVariables;
+        private List<? extends WrappedAnnotatedTypeVariable> typeParameters;
 
         private WrappedAnnotatedExecutableType(AnnotatedExecutableType underlying, Factory factory) {
             super(underlying);
@@ -266,7 +282,7 @@ public abstract class WrappedAnnotatedTypeMirror implements ExtendedTypeMirror {
             this.receiverType = factory.wrap(underlying.getReceiverType());
             this.returnType = factory.wrap(underlying.getReturnType());
             this.thrownTypes = factory.wrapList(underlying.getThrownTypes());
-            this.typeVariables = factory.wrapTypeVarList(underlying.getTypeVariables());
+            this.typeParameters = factory.wrapTypeVarList(underlying.getTypeVariables());
         }
 
         @Override
@@ -310,8 +326,8 @@ public abstract class WrappedAnnotatedTypeMirror implements ExtendedTypeMirror {
         }
 
         @Override
-        public List<? extends WrappedAnnotatedTypeVariable> getTypeVariables() {
-            return typeVariables;
+        public List<? extends WrappedAnnotatedTypeVariable> getTypeParameters() {
+            return typeParameters;
         }
     }
 
@@ -413,7 +429,8 @@ public abstract class WrappedAnnotatedTypeMirror implements ExtendedTypeMirror {
         }
     }
 
-    public static class WrappedAnnotatedTypeVariable extends WrappedAnnotatedReferenceType implements ExtendedTypeVariable {
+    public static class WrappedAnnotatedTypeVariable extends WrappedAnnotatedReferenceType
+            implements ExtendedTypeVariable, ExtendedParameterDeclaration {
         private WrappedAnnotatedTypeVariable(AnnotatedTypeVariable underlying, Factory factory) {
             super(underlying);
         }
@@ -430,12 +447,24 @@ public abstract class WrappedAnnotatedTypeMirror implements ExtendedTypeMirror {
 
         @Override
         public <R,P> R accept(ExtendedTypeVisitor<R,P> v, P p) {
-            return v.visitTypeVariable(this, p);
+            if (isDeclaration()) {
+                return v.visitParameterDeclaration(this, p);
+            } else {
+                return v.visitTypeVariable(this, p);
+            }
         }
 
         @Override
         public Element asElement() {
             return getOriginalType().asElement();
+        }
+
+        @Override
+        public ExtendedParameterDeclaration getDeclaration() {
+            AnnotatedTypeVariable copy = AnnotatedTypes.deepCopy(unwrap());
+            copy.clearAnnotations();
+            copy.setDeclaration(true);
+            return (ExtendedParameterDeclaration)wrap(copy);
         }
     }
 

@@ -25,4 +25,13 @@ public interface ExtendedTypeMirror extends AnnotatedConstruct {
 
     /** Applies an {@link ExtendedTypeVisitor} to this object. */
     <R,P> R accept(ExtendedTypeVisitor<R,P> v, P p);
+
+    /** Returns true iff this {@link ExtendedTypeMirror} represents a type
+     * declaration, rather than a use of a type.  This can happen only because
+     * the underlying annotation-based framework uses {@link
+     * AnnotatedTypeMirror}s for both declarations and uses of types.  Once the
+     * framework is fixed to no longer mix the two, this method will be
+     * removed.
+     */
+    boolean isDeclaration();
 }

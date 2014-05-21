@@ -14,4 +14,7 @@ public interface ExtendedTypeVisitor<R,P> {
     R visitTypeVariable(ExtendedTypeVariable t, P p);
     R visitUnion(ExtendedUnionType t, P p);
     R visitWildcard(ExtendedWildcardType t, P p);
+
+    R visitTypeDeclaration(ExtendedTypeDeclaration t, P p);
+    R visitParameterDeclaration(ExtendedParameterDeclaration t, P p);
 }
