@@ -11,6 +11,8 @@ import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedPrim
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedTypeVariable;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedUnionType;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedWildcardType;
+import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedTypeDeclaration;
+import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedParameterDeclaration;
 
 /**
  * A simple implementation of {@link QualifiedTypeVisitor}, patterned after
@@ -88,6 +90,17 @@ public class SimpleQualifiedTypeVisitor<Q,R,P> implements QualifiedTypeVisitor<Q
 
     @Override
     public R visitWildcard(QualifiedWildcardType<Q> type, P p) {
+        return defaultAction(type, p);
+    }
+
+
+    @Override
+    public R visitTypeDeclaration(QualifiedTypeDeclaration<Q> type, P p) {
+        return defaultAction(type, p);
+    }
+
+    @Override
+    public R visitParameterDeclaration(QualifiedParameterDeclaration<Q> type, P p) {
         return defaultAction(type, p);
     }
 }

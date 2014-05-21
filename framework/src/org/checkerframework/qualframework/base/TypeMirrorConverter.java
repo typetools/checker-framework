@@ -32,6 +32,8 @@ import org.checkerframework.qualframework.util.ExtendedPrimitiveType;
 import org.checkerframework.qualframework.util.ExtendedTypeVariable;
 import org.checkerframework.qualframework.util.ExtendedUnionType;
 import org.checkerframework.qualframework.util.ExtendedWildcardType;
+import org.checkerframework.qualframework.util.ExtendedParameterDeclaration;
+import org.checkerframework.qualframework.util.ExtendedTypeDeclaration;
 import org.checkerframework.qualframework.util.ExtendedTypeMirror;
 import org.checkerframework.qualframework.util.ExtendedTypeVisitor;
 import org.checkerframework.qualframework.util.WrappedAnnotatedTypeMirror;
@@ -177,12 +179,15 @@ class TypeMirrorConverter<Q> {
         }
         assert qtm != null && atm != null;
 
-        // Apply the qualifier for this QTM-ATM pair.
-        int index = getIndexForQualifier(qtm.getQualifier());
-        AnnotationMirror key = createKey(index, qtm.getQualifier());
-
         atm.clearAnnotations();
-        atm.addAnnotation(key);
+
+        if (qtm.getQualifier() != null) {
+            // Apply the qualifier for this QTM-ATM pair.
+            int index = getIndexForQualifier(qtm.getQualifier());
+            AnnotationMirror key = createKey(index, qtm.getQualifier());
+
+            atm.addAnnotation(key);
+        }
 
         // Recursively create entries for all component QTM-ATM pairs.
         APPLY_COMPONENT_QUALIFIERS_VISITOR.visit(qtm, atm);
@@ -275,7 +280,7 @@ class TypeMirrorConverter<Q> {
                 applyQualifiers(qtm.getReceiverType(), atm.getReceiverType());
                 applyQualifiers(qtm.getReturnType(), atm.getReturnType());
                 applyQualifiersToLists(qtm.getThrownTypes(), atm.getThrownTypes());
-                applyQualifiersToLists(qtm.getTypeVariables(), atm.getTypeVariables());
+                applyQualifiersToLists(qtm.getTypeParameters(), atm.getTypeVariables());
                 return null;
             }
 
@@ -302,6 +307,24 @@ class TypeMirrorConverter<Q> {
 
             public Void visitTypeVariable(QualifiedTypeVariable<Q> qtm, AnnotatedTypeMirror rawAtm) {
                 AnnotatedTypeVariable atm = (AnnotatedTypeVariable)rawAtm;
+                typeVariableHelper(qtm.getDeclaration(), atm);
+                return null;
+            }
+
+            public Void visitUnion(QualifiedUnionType<Q> qtm, AnnotatedTypeMirror rawAtm) {
+                AnnotatedUnionType atm = (AnnotatedUnionType)rawAtm;
+                applyQualifiersToLists(qtm.getAlternatives(), atm.getAlternatives());
+                return null;
+            }
+
+            public Void visitWildcard(QualifiedWildcardType<Q> qtm, AnnotatedTypeMirror rawAtm) {
+                AnnotatedWildcardType atm = (AnnotatedWildcardType)rawAtm;
+                applyQualifiers(qtm.getExtendsBound(), atm.getExtendsBound());
+                applyQualifiers(qtm.getSuperBound(), atm.getSuperBound());
+                return null;
+            }
+
+            private void typeVariableHelper(QualifiedParameterDeclaration<Q> qtm, AnnotatedTypeVariable atm) {
                 if (!seenATVs.containsKey(atm)) {
                     seenATVs.put(atm, null);
                     QualifiedTypeParameterBounds<Q> bounds =
@@ -327,19 +350,17 @@ class TypeMirrorConverter<Q> {
                         seenATVs.remove(atm);
                     }
                 }
+            }
+
+            public Void visitParameterDeclaration(QualifiedParameterDeclaration<Q> qtm, AnnotatedTypeMirror rawAtm) {
+                AnnotatedTypeVariable atm = (AnnotatedTypeVariable)rawAtm;
+                typeVariableHelper(qtm, atm);
                 return null;
             }
 
-            public Void visitUnion(QualifiedUnionType<Q> qtm, AnnotatedTypeMirror rawAtm) {
-                AnnotatedUnionType atm = (AnnotatedUnionType)rawAtm;
-                applyQualifiersToLists(qtm.getAlternatives(), atm.getAlternatives());
-                return null;
-            }
-
-            public Void visitWildcard(QualifiedWildcardType<Q> qtm, AnnotatedTypeMirror rawAtm) {
-                AnnotatedWildcardType atm = (AnnotatedWildcardType)rawAtm;
-                applyQualifiers(qtm.getExtendsBound(), atm.getExtendsBound());
-                applyQualifiers(qtm.getSuperBound(), atm.getSuperBound());
+            public Void visitTypeDeclaration(QualifiedTypeDeclaration<Q> qtm, AnnotatedTypeMirror rawAtm) {
+                AnnotatedDeclaredType atm = (AnnotatedDeclaredType)rawAtm;
+                applyQualifiersToLists(qtm.getTypeParameters(), atm.getTypeArguments());  
                 return null;
             }
         };
@@ -414,26 +435,25 @@ class TypeMirrorConverter<Q> {
             public QualifiedTypeMirror<Q> visitExecutable(ExtendedExecutableType extended, Q qual) {
                 WrappedAnnotatedExecutableType watm = (WrappedAnnotatedExecutableType)extended;
 
-                List<? extends ExtendedTypeVariable> extendedTypeVariables = watm.getTypeVariables();
-                List<QualifiedTypeVariable<Q>> qualifiedTypeVariables = new ArrayList<>();
-                for (int i = 0; i < extendedTypeVariables.size(); ++i) {
-                    @SuppressWarnings("unchecked")
-                    QualifiedTypeVariable<Q> qualified =
-                        (QualifiedTypeVariable<Q>)getQualifiedTypeFromWrapped(
-                                (WrappedAnnotatedTypeVariable)extendedTypeVariables.get(i));
-                    qualifiedTypeVariables.add(qualified);
+                List<? extends ExtendedParameterDeclaration> extendedParameters = watm.getTypeParameters();
+                List<QualifiedParameterDeclaration<Q>> qualifiedParameters = new ArrayList<>();
+                for (int i = 0; i < extendedParameters.size(); ++i) {
+                    QualifiedParameterDeclaration<Q> qualified =
+                        (QualifiedParameterDeclaration<Q>)getQualifiedTypeFromWrapped(
+                                (WrappedAnnotatedTypeMirror)extendedParameters.get(i));
+                    qualifiedParameters.add(qualified);
                 }
 
                 if (qual == null) {
                     qual = executableDefault;
                 }
 
-                return new QualifiedExecutableType<Q>(watm, qual,
+                return new QualifiedExecutableType<Q>(watm,
                         getQualifiedTypeListFromWrapped(watm.getParameterTypes()),
                         getQualifiedTypeFromWrapped(watm.getReceiverType()),
                         getQualifiedTypeFromWrapped(watm.getReturnType()),
                         getQualifiedTypeListFromWrapped(watm.getThrownTypes()),
-                        qualifiedTypeVariables);
+                        qualifiedParameters);
             }
 
             public QualifiedTypeMirror<Q> visitIntersection(ExtendedIntersectionType extended, Q qual) {
@@ -470,9 +490,30 @@ class TypeMirrorConverter<Q> {
 
             public QualifiedTypeMirror<Q> visitWildcard(ExtendedWildcardType extended, Q qual) {
                 WrappedAnnotatedWildcardType watm = (WrappedAnnotatedWildcardType)extended;
-                return new QualifiedWildcardType<Q>(watm, qual,
+                return new QualifiedWildcardType<Q>(watm,
                         getQualifiedTypeFromWrapped(watm.getExtendsBound()),
                         getQualifiedTypeFromWrapped(watm.getSuperBound()));
+            }
+
+            public QualifiedTypeMirror<Q> visitParameterDeclaration(ExtendedParameterDeclaration extended, Q qual) {
+                WrappedAnnotatedTypeVariable watm = (WrappedAnnotatedTypeVariable)extended;
+                return new QualifiedParameterDeclaration<Q>(watm);
+            }
+
+            public QualifiedTypeMirror<Q> visitTypeDeclaration(ExtendedTypeDeclaration extended, Q qual) {
+                WrappedAnnotatedDeclaredType watm = (WrappedAnnotatedDeclaredType)extended;
+
+                List<? extends ExtendedParameterDeclaration> extendedParameters = watm.getTypeParameters();
+                List<QualifiedParameterDeclaration<Q>> qualifiedParameters = new ArrayList<>();
+                for (int i = 0; i < extendedParameters.size(); ++i) {
+                    QualifiedParameterDeclaration<Q> qualified =
+                        (QualifiedParameterDeclaration<Q>)getQualifiedTypeFromWrapped(
+                                (WrappedAnnotatedTypeVariable)extendedParameters.get(i));
+                    qualifiedParameters.add(qualified);
+                }
+
+                return new QualifiedTypeDeclaration<Q>(watm, qual,
+                        qualifiedParameters);
             }
         };
 

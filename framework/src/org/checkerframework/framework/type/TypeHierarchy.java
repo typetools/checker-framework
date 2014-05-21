@@ -456,8 +456,9 @@ public class TypeHierarchy {
         }
 
         for (int i = 0; i < lhsTypeArgs.size(); ++i) {
-            if (!isSubtypeAsTypeArgument(rhsTypeArgs.get(i), lhsTypeArgs.get(i)))
+            if (!isSubtypeAsTypeArgument(rhsTypeArgs.get(i), lhsTypeArgs.get(i))) {
                 return false;
+            }
         }
 
         return true;

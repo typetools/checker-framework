@@ -19,6 +19,7 @@ import org.checkerframework.javacutil.Pair;
 import org.checkerframework.qualframework.util.WrappedAnnotatedTypeMirror;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedExecutableType;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedTypeVariable;
+import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedParameterDeclaration;
 
 /**
  * Adapter class for {@link QualifiedTypeFactory}, extending
@@ -286,7 +287,7 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
             AnnotatedTypeVariable varUse, AnnotatedTypeMirror value) {
         TypeMirrorConverter<Q> conv = getCheckerAdapter().getTypeMirrorConverter();
 
-        QualifiedTypeVariable<Q> qualVarDecl = (QualifiedTypeVariable<Q>)conv.getQualifiedType(varDecl);
+        QualifiedParameterDeclaration<Q> qualVarDecl = (QualifiedParameterDeclaration<Q>)conv.getQualifiedType(varDecl);
         QualifiedTypeVariable<Q> qualVarUse = (QualifiedTypeVariable<Q>)conv.getQualifiedType(varUse);
         QualifiedTypeMirror<Q> qualValue = conv.getQualifiedType(value);
 
@@ -296,7 +297,7 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
         conv.applyQualifiers(qualResult, value);
     }
 
-    QualifiedTypeMirror<Q> superPostTypeVarSubstitution(QualifiedTypeVariable<Q> varDecl,
+    QualifiedTypeMirror<Q> superPostTypeVarSubstitution(QualifiedParameterDeclaration<Q> varDecl,
             QualifiedTypeVariable<Q> varUse, QualifiedTypeMirror<Q> value) {
         TypeMirrorConverter<Q> conv = getCheckerAdapter().getTypeMirrorConverter();
 

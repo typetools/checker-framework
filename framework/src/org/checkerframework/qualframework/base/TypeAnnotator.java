@@ -20,6 +20,8 @@ import org.checkerframework.qualframework.util.ExtendedPrimitiveType;
 import org.checkerframework.qualframework.util.ExtendedTypeVariable;
 import org.checkerframework.qualframework.util.ExtendedUnionType;
 import org.checkerframework.qualframework.util.ExtendedWildcardType;
+import org.checkerframework.qualframework.util.ExtendedParameterDeclaration;
+import org.checkerframework.qualframework.util.ExtendedTypeDeclaration;
 import org.checkerframework.qualframework.util.ExtendedTypeMirror;
 import org.checkerframework.qualframework.util.ExtendedTypeVisitor;
 
@@ -34,6 +36,8 @@ import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedPrim
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedTypeVariable;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedUnionType;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedWildcardType;
+import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedParameterDeclaration;
+import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedTypeDeclaration;
 
 /**
  * {@link DefaultQualifiedTypeFactory} component for annotating a {@link
@@ -115,7 +119,6 @@ public class TypeAnnotator<Q> implements ExtendedTypeVisitor<QualifiedTypeMirror
 
     @Override
     public QualifiedTypeMirror<Q> visitDeclared(ExtendedDeclaredType type, Void p) {
-        List<? extends QualifiedTypeMirror<Q>> args = this.mapVisit(type.getTypeArguments(), null);
         QualifiedTypeMirror<Q> result = new QualifiedDeclaredType<Q>(
                 type,
                 getQualifier(type),
@@ -133,22 +136,20 @@ public class TypeAnnotator<Q> implements ExtendedTypeVisitor<QualifiedTypeMirror
     public QualifiedTypeMirror<Q> visitExecutable(ExtendedExecutableType type, Void p) {
         // QualifiedExecutableType requires a list of QualifiedTypeVariables
         // rather than a list of generic QualifiedTypeMirrors.
-        List<QualifiedTypeVariable<Q>> qualifiedTypeVariables = new ArrayList<>();
-        for (ExtendedTypeVariable typeVar : type.getTypeVariables()) {
-            @SuppressWarnings("unchecked")
-            QualifiedTypeVariable<Q> qualifiedTypeVar =
-                (QualifiedTypeVariable<Q>)this.visit(typeVar, null);
-            qualifiedTypeVariables.add(qualifiedTypeVar);
+        List<QualifiedParameterDeclaration<Q>> qualifiedParameters = new ArrayList<>();
+        for (ExtendedParameterDeclaration typeVar : type.getTypeParameters()) {
+            QualifiedParameterDeclaration<Q> qualifiedParam =
+                (QualifiedParameterDeclaration<Q>)this.visit(typeVar, null);
+            qualifiedParameters.add(qualifiedParam);
         }
 
         return new QualifiedExecutableType<Q>(
                 type,
-                getQualifier(type),
                 this.mapVisit(type.getParameterTypes(), null),
                 this.visit(type.getReceiverType(), null),
                 this.visit(type.getReturnType(), null),
                 this.mapVisit(type.getThrownTypes(), null),
-                qualifiedTypeVariables);
+                qualifiedParameters);
     }
 
     @Override
@@ -199,8 +200,28 @@ public class TypeAnnotator<Q> implements ExtendedTypeVisitor<QualifiedTypeMirror
     public QualifiedTypeMirror<Q> visitWildcard(ExtendedWildcardType type, Void p) {
         return new QualifiedWildcardType<Q>(
                 type,
-                getQualifier(type),
                 this.visit(type.getExtendsBound(), null),
                 this.visit(type.getSuperBound(), null));
+    }
+
+    @Override
+    public QualifiedTypeMirror<Q> visitParameterDeclaration(ExtendedParameterDeclaration type, Void p) {
+        return new QualifiedParameterDeclaration<Q>(
+                type);
+    }
+
+    @Override
+    public QualifiedTypeMirror<Q> visitTypeDeclaration(ExtendedTypeDeclaration type, Void p) {
+        @SuppressWarnings("unchecked")
+        List<? extends QualifiedParameterDeclaration<Q>> params =
+            (List<? extends QualifiedParameterDeclaration<Q>>)(List<?>)
+            this.mapVisit(type.getTypeParameters(), null);
+
+        QualifiedTypeMirror<Q> result = new QualifiedTypeDeclaration<Q>(
+                type,
+                getQualifier(type),
+                params);
+
+        return result;
     }
 }

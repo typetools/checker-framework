@@ -57,8 +57,12 @@ public class DefaultTypeHierarchy<Q> implements TypeHierarchy<Q> {
      * provided types is not a parameterized type.  A parameterized
      * type, rhs, is a subtype of another, lhs, only if their actual type
      * parameters are invariant. 
+     *
+     * The arguments are declared as type {@link QualifiedTypeMirror} because
+     * they may be either {@link QualifiedDeclaredType} or {@link
+     * QualifiedTypeDeclaration}.
      */
-    protected boolean isSubtypeTypeArguments(QualifiedDeclaredType<Q> subtype, QualifiedDeclaredType<Q> supertype) {
+    protected boolean isSubtypeTypeArguments(QualifiedTypeMirror<Q> subtype, QualifiedTypeMirror<Q> supertype) {
         return adapter.superIsSubtypeTypeArguments(subtype, supertype);
     }
 }
