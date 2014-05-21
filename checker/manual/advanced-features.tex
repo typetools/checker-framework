@@ -316,6 +316,11 @@ hierarchy, see Figure~\ref{fig-nullness-hierarchy}).
 The rest of this section explains the rationale and implementation of
 CLIMB-to-top.
 
+Here is the rationale for CLIMB-to-top:
+
+\begin{itemize}
+
+\item
 Casts and local variables (including resource variables in the
 try-with-resources construct, variables in for statements, etc.)
 should be defaulted to top because they are the locations to
@@ -324,6 +329,14 @@ start as the top type, then the Checker Framework chooses the best (most
 general) possible type for them.  As a result, a programmer rarely writes
 an explicit annotation on any of those locations.
 
+\item
+Instanceof types are defaulted to top for a similar reason:  so that
+programmers do not need to write annotations on them.  If the
+\<instanceof>'s quaifier is top, then the Checker Framework will never
+issue an error that the \<instanceof> qualifier is not compatible with the
+argument.
+
+\item
 Implicit upper bounds are defaulted to top to allow them to be instantiated
 in any way.  If a user declared \code{class C<T> \ttlcb\ ... \ttrcb}, then
 we assume that the user intended to allow any instantiation of the class,
@@ -336,6 +349,7 @@ such as \code{class C<T extends D> \ttlcb\ ... \ttrcb}, then the user
 intends some restriction on instantiation and can write a qualifier on the
 upper bound as desired.
 
+\item
 Implicit \emph{lower} bounds are defaulted to the bottom type, again to allow
 maximal instantiation.  Note that Java does not allow a programmer to
 express both the upper and lower bounds of a type, but the Checker
@@ -343,7 +357,7 @@ Framework tracks both of them separately and allows the programmer to
 specify both by using a declaration on a wildcard or type variable name;
 see Section~\ref{type-parameter-rationale}.
 
-%todo{explain why instanceof is defaulted to top.}
+\end{itemize}
 
 Here is how the CLIMB-to-top rule is expressed for the Nullness Checker:
 
@@ -1248,5 +1262,5 @@ class @Marsupial-Animal {
 %  LocalWords:  AenablePurity AassumeSideEffectFree iMplicit instanceof m2
 %  LocalWords:  AassumeAssertionsAreEnabled myArray vals propkey forName
 %  LocalWords:  fenum igj javari i18n RequiresQualifier EnsuresQualifier
-%  LocalWords:  EnsuresQualifierIf AsuppressWarnings AinvariantArrays
-%  LocalWords:  formatter
+%  LocalWords:  EnsuresQualifierIf AsuppressWarnings AinvariantArrays asts
+%  LocalWords:  formatter ocals nstanceof plicit ounds
