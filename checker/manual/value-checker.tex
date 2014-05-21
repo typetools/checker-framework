@@ -6,7 +6,7 @@ each variable, it determines whether that variable's value can be
 known at compile time.
 
 
-The Constant Vlaue Checker is automatically run by every other type
+The Constant Value Checker is automatically run by every other type
 checker, but it is rarely used directly by programmers.
 
 To run just the Value Checker, supply the
@@ -34,7 +34,7 @@ Each annotation has an array of values representing all the values the
 annotated type could be. This array is limited to 10 entries for
 performance reasons. Therefore, if a variable, due to program logic,
 could be more than 10 different values at any given point the Value
-Checker gives up and it is annotated as @UnknownVal instead.
+Checker gives up and it is annotated as \<@UnknownVal> instead.
 
 In addition to the hierarchy shown above, an annotation is also
 considered a subtype of another annotation if its value array is a
@@ -97,7 +97,7 @@ be \refqualclass{dataflow/qual}{Pure} (side-effect free and
 deterministic).
 
 Additionally, @Analyzable methods and any methods they call must be on
-the Classpath for the compiler because they are reflectively called at
+the classpath for the compiler because they are reflectively called at
 compile-time to perform the constant value analysis.
 
 \section{Warnings}
@@ -108,3 +108,5 @@ the checker is run but the only negative effect is that the return
 value of the function will be @UnknownVal instead of being able to be
 resolved to a specific value annotation.
 
+
+%%  LocalWords:  9cm UnknownVal 5cm
