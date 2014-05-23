@@ -36,8 +36,8 @@ public abstract class QualifierMapVisitor<Q,R,P> implements QualifiedTypeVisitor
     }
 
     @SuppressWarnings("unchecked")
-    private List<QualifiedTypeVariable<R>> visitTypeVariables(List<? extends QualifiedTypeVariable<Q>> types, P p) {
-        return (List<QualifiedTypeVariable<R>>)(List<?>)visitTypes(types, p);
+    private List<QualifiedParameterDeclaration<R>> visitTypeParameters(List<? extends QualifiedParameterDeclaration<Q>> types, P p) {
+        return (List<QualifiedParameterDeclaration<R>>)(List<?>)visitTypes(types, p);
     }
 
 
@@ -60,12 +60,11 @@ public abstract class QualifierMapVisitor<Q,R,P> implements QualifiedTypeVisitor
     @Override
     public QualifiedTypeMirror<R> visitExecutable(QualifiedExecutableType<Q> type, P p) {
         return new QualifiedExecutableType<R>(type.getUnderlyingType(),
-                process(type.getQualifier(), p),
                 visitTypes(type.getParameterTypes(), p),
                 visit(type.getReceiverType(), p),
                 visit(type.getReturnType(), p),
                 visitTypes(type.getThrownTypes(), p),
-                visitTypeVariables(type.getTypeVariables(), p)
+                visitTypeParameters(type.getTypeParameters(), p)
                 );
     }
 
@@ -116,9 +115,22 @@ public abstract class QualifierMapVisitor<Q,R,P> implements QualifiedTypeVisitor
     @Override
     public QualifiedTypeMirror<R> visitWildcard(QualifiedWildcardType<Q> type, P p) {
         return new QualifiedWildcardType<R>(type.getUnderlyingType(),
-                process(type.getQualifier(), p),
                 visit(type.getExtendsBound(), p),
                 visit(type.getSuperBound(), p)
                 );
+    }
+
+
+    @Override
+    public QualifiedTypeMirror<R> visitTypeDeclaration(QualifiedTypeDeclaration<Q> type, P p) {
+        return new QualifiedTypeDeclaration<R>(type.getUnderlyingType(),
+                process(type.getQualifier(), p),
+                visitTypeParameters(type.getTypeParameters(), p)
+                );
+    }
+
+    @Override
+    public QualifiedTypeMirror<R> visitParameterDeclaration(QualifiedParameterDeclaration<Q> type, P p) {
+        return new QualifiedParameterDeclaration<R>(type.getUnderlyingType());
     }
 }
