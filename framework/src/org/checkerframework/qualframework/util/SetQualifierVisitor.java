@@ -44,12 +44,11 @@ public class SetQualifierVisitor<Q> implements QualifiedTypeVisitor<Q, Qualified
     @Override
     public QualifiedTypeMirror<Q> visitExecutable(QualifiedExecutableType<Q> type, Q newQual) {
         return new QualifiedExecutableType<Q>(type.getUnderlyingType(),
-                newQual,
                 type.getParameterTypes(),
                 type.getReceiverType(),
                 type.getReturnType(),
                 type.getThrownTypes(),
-                type.getTypeVariables()
+                type.getTypeParameters()
                 );
     }
 
@@ -100,9 +99,22 @@ public class SetQualifierVisitor<Q> implements QualifiedTypeVisitor<Q, Qualified
     @Override
     public QualifiedTypeMirror<Q> visitWildcard(QualifiedWildcardType<Q> type, Q newQual) {
         return new QualifiedWildcardType<Q>(type.getUnderlyingType(),
-                newQual,
                 type.getExtendsBound(),
                 type.getSuperBound()
                 );
+    }
+
+
+    @Override
+    public QualifiedTypeMirror<Q> visitTypeDeclaration(QualifiedTypeDeclaration<Q> type, Q newQual) {
+        return new QualifiedTypeDeclaration<Q>(type.getUnderlyingType(),
+                newQual,
+                type.getTypeParameters()
+                );
+    }
+
+    @Override
+    public QualifiedTypeMirror<Q> visitParameterDeclaration(QualifiedParameterDeclaration<Q> type, Q newQual) {
+        return new QualifiedParameterDeclaration<Q>(type.getUnderlyingType());
     }
 }
