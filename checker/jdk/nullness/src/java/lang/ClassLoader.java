@@ -1,10 +1,13 @@
 package java.lang;
 
+import java.net.URL;
+
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 
 public abstract class ClassLoader{
   protected ClassLoader() {}
+  protected ClassLoader(@Nullable ClassLoader parent) { throw new RuntimeException("skeleton method"); }
   public Class<?> loadClass(String a1) throws ClassNotFoundException { throw new RuntimeException("skeleton method"); }
   protected Class<?> loadClass(String a1, boolean a2) throws ClassNotFoundException { throw new RuntimeException("skeleton method"); }
   public java.net. @Nullable URL getResource(String a1) { throw new RuntimeException("skeleton method"); }
@@ -25,5 +28,12 @@ public abstract class ClassLoader{
   protected Class<?> defineClass(@Nullable String name, java.nio.ByteBuffer b, java.security. @Nullable ProtectionDomain protectionDomain) throws ClassFormatError { throw new RuntimeException("skeleton method"); }
   protected void resolveClass(Class<?> c) { throw new RuntimeException("skeleton method"); }
     protected final Class<?> findLoadedClass(String name) { throw new RuntimeException("skeleton method"); }
+    protected Package definePackage(String name, @Nullable String specTitle,
+                                    @Nullable String specVersion, @Nullable String specVendor,
+                                    @Nullable String implTitle, @Nullable String implVersion,
+                                    String implVendor, @Nullable URL sealBase)
+        throws IllegalArgumentException
+    { throw new RuntimeException("skeleton method"); }
+    protected @Nullable Package getPackage(String name) { throw new RuntimeException("skeleton method"); }
     
 }
