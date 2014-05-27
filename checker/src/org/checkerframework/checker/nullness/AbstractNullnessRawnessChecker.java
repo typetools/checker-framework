@@ -7,6 +7,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.checker.nullness.qual.Raw;
 import org.checkerframework.framework.qual.PolyAll;
+import org.checkerframework.framework.qual.StubFiles;
 import org.checkerframework.framework.qual.TypeQualifiers;
 import org.checkerframework.framework.source.SupportedLintOptions;
 
@@ -23,7 +24,9 @@ import org.checkerframework.framework.source.SupportedLintOptions;
         // Forbidding is sound and will eventually be the only possibility.
         // Allowing is unsound but permitted until flow-sensitivity changes are
         // made.
+        // See issues 154 and 322.
         "arrays:forbidnonnullcomponents" })
+@StubFiles("astubs/gnu-getopt.astub")
 public class AbstractNullnessRawnessChecker extends AbstractNullnessChecker {
 
     public AbstractNullnessRawnessChecker() {

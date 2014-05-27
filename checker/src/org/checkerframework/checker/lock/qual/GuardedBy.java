@@ -29,7 +29,7 @@ import org.checkerframework.framework.qual.PreconditionAnnotation;
  * It merely indicates that the lock must be held when the
  * variable is accessed.
  * <p>
- * 
+ *
  * The argument is a string that indicates which lock guards the annotated variable:
  * <ul>
  * <li>
@@ -65,6 +65,7 @@ import org.checkerframework.framework.qual.PreconditionAnnotation;
  * <p>
  *
  * @see Holding
+ * @see HoldingOnEntry
  * @checker_framework_manual #lock-checker Lock Checker
  */
 @Documented

@@ -5,7 +5,7 @@ This chapter discusses how to run a checker from the command line, from a
 build system, or from an IDE\@.  You can skip to the appropriate section:
 
 % Keep this list up to date with the sections of this chapter and with TWO
-% copies of the list in file inroduction.tex .
+% copies of the list in file introduction.tex .
 \begin{itemize}
 \item javac (Section~\ref{javac-installation})
 \item Ant (Section~\ref{ant-task})
@@ -290,11 +290,86 @@ run.  You can supply additional arguments to the checker as well.
 \end{enumerate}
 
 
-\section{Maven plugin\label{maven-plugin}}
+\section{Maven\label{maven-plugin}}
 
 If you use the \ahref{\url{http://maven.apache.org/}}{Maven} tool,
 then you can specify pluggable type-checking as part of your build
 process.
+
+There are two ways to do this. The first is to point Maven to a
+script that executes the Checker Framework's copy of javac, and
+the second is to use the Maven plugin. \textbf{The Maven plugin
+is deprecated in favor of the first approach and will be removed
+as of July 1, 2014.}
+
+\subsection{Pointing Maven to the Checker Framework script\label{maven-javac-script}}
+
+\begin{enumerate}
+
+\item Declare a dependency on the type qualifier annotations.  Find the
+  existing \code{<dependencies>} section and add a new
+  \code{<dependencies>} item:
+
+\begin{alltt}
+    <dependencies>
+        ... existing <dependency> items ...
+
+        <!-- annotations from the Checker Framework: nullness, interning, locking, ... -->
+        <dependency>
+            <groupId>org.checkerframework</groupId>
+            <artifactId>checker-qual</artifactId>
+            <version>\ReleaseVersion{}</version>
+        </dependency>
+
+    </dependencies>
+\end{alltt}
+
+\item Point the Maven compiler plugin to the javac\_maven script. Find
+the existing reference to the \code{maven-compiler-plugin} within the \code{<plugins>}
+section or add it if necessary.
+
+\begin{alltt}
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>1.8</source>
+          <target>1.8</target>
+          <verbose>true</verbose>
+          <fork>true</fork>
+          <executable>(absolute path to checker framework installation)/checker/bin/javac_maven</executable>
+        </configuration>
+      </plugin>
+\end{alltt}
+
+On Windows, javac\_maven.bat is used instead of the javac\_maven script, but it is not necessary to
+include the .bat extension in the absolute path above.
+
+This script assumes that the Checker Framework is the only annotation processor being run.
+If this is not the case, please modify the javac\_maven script accordingly.
+
+\item Create a text file named `argfile' in the same directory as the pom.xml and include in it the
+command-line parameters to pass to the Java compiler.
+
+Example contents of argfile:
+
+\begin{alltt}
+-processor org.checkerframework.checker.nullness.NullnessChecker
+-AsuppressWarnings=purity.invalid.overriding
+-Alint
+-AprintErrorStack
+-Awarns
+-Xmaxwarns 10000
+\end{alltt}
+
+Due to limitations of the pom.xml syntax, some command-line options are difficult or impossible
+to pass via the pom.xml, hence the need for this file.
+
+If you would like to call this file something other than 'argfile', please modify the javac\_maven
+script accordingly.
+
+\end{enumerate}
+
+\subsection{Using the Maven plugin\label{maven-deprecated-plugin}}
 
 \begin{enumerate}
 

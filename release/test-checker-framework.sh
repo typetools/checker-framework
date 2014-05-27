@@ -45,9 +45,9 @@ export PATH=$JAVA_HOME/bin:$ORIG_PATH
 cfruntest
 
 
-echo "Testing with latest type-annotations build:"
+# echo "Testing with latest type-annotations build:"
 
-export JAVA_HOME=$WORKSPACE/../../type-annotations/lastSuccessful/archive/build/linux-x86_64-normal-server-release/images/j2sdk-image
-export PATH=$JAVA_HOME/bin:$ORIG_PATH
+# export JAVA_HOME=$WORKSPACE/../../type-annotations/lastSuccessful/archive/build/linux-x86_64-normal-server-release/images/j2sdk-image
+# export PATH=$JAVA_HOME/bin:$ORIG_PATH
 
-cfruntest
+# cfruntest

@@ -11,6 +11,7 @@ import java.util.Set;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.TypeElement;
+import javax.tools.Diagnostic.Kind;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.util.TreePath;
@@ -58,7 +59,7 @@ public abstract class AggregateChecker extends SourceChecker {
                 SourceChecker instance = checkerClass.newInstance();
                 checkers.add(instance);
             } catch (Exception e) {
-                System.err.println("Couldn't instantiate an instance of " + checkerClass);
+                message(Kind.ERROR, "Couldn't instantiate an instance of " + checkerClass);
             }
         }
     }

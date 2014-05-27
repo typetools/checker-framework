@@ -21,22 +21,20 @@ public final class  String {
 public class NullnessStubfileMerge{
    @Nullable String nullString = null;
    @NonNull String nonNull = "Hello!";
-    
+
    void method( ){
-      
        //:: error: (assignment.type.incompatible)
        @NonNull String error1 = nonNull.intern();
-       
+
        nonNull.substring('!');
-       
+
        @NonNull String y= nonNull.substring('!');
-       
+
        char[] nonNullChars = {'1','1'};
        char[] nullChars = null;
        nonNull.getChars(1, 1,nonNullChars, 1);
-       
+
        //:: error: (argument.type.incompatible)
        nonNull.getChars(1, 1, nullChars, 1);
-      
    }
 }
