@@ -8,14 +8,11 @@ import org.checkerframework.checker.lock.qual.LockPossiblyHeld;
 import org.checkerframework.dataflow.qual.LockingFree;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
-import org.checkerframework.framework.type.GeneralAnnotatedTypeFactory;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.TreeAnnotator;
 import org.checkerframework.framework.type.TypeAnnotator;
-import org.checkerframework.framework.util.DependentTypes;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -30,31 +27,24 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.VariableElement;
 
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.NewClassTree;
-import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.Tree;
 
 /**
- * The annotated type factory for the lock type-system.
+ * LockAnnotatedTypeFactory builds types with LockHeld and LockPossiblyHeld annotations.
+ * LockHeld identifies that an object is being used as a lock and is being held when a
+ * given tree is executed. LockPossiblyHeld is the default type qualifier for this
+ * hierarchy and applies to all fields, local variables and parameters - hence it does
+ * not convey any information other than that it is not LockHeld.
+ *
+ * However, there are a number of other annotations used in conjunction with these annotations
+ * to enforce proper locking. Consult the Lock Checker documentation at
+ * http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#lock-checker"
  */
 public class LockAnnotatedTypeFactory
     extends GenericAnnotatedTypeFactory<CFValue, LockStore, LockTransfer, LockAnalysis> {
 
     /** Annotation constants */
     protected final AnnotationMirror LOCKHELD, LOCKPOSSIBLYHELD, SIDEEFFECTFREE;
-
-    /** Dependent types instance. */
-    protected final DependentTypes dependentTypes;
-
-    /**
-     * Factory for arbitrary qualifiers, used for declarations and "unused"
-     * qualifier.
-     */
-    protected final GeneralAnnotatedTypeFactory generalFactory;
 
     // Cache for the lock annotations
     protected final Set<Class<? extends Annotation>> lockAnnos;
@@ -70,10 +60,6 @@ public class LockAnnotatedTypeFactory
         tempLockAnnos.add(LockHeld.class);
         tempLockAnnos.add(LockPossiblyHeld.class);
         lockAnnos = Collections.unmodifiableSet(tempLockAnnos);
-
-        generalFactory = new GeneralAnnotatedTypeFactory(checker);
-        // Alias the same generalFactory below and ensure that setRoot updates it.
-        dependentTypes = new DependentTypes(checker, generalFactory);
 
         // This alias is only true for the Lock Checker. All other checkers must
         // ignore the @LockingFree annotation.
@@ -98,37 +84,6 @@ public class LockAnnotatedTypeFactory
         public LockTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
             super(atypeFactory);
         }
-    }    
-    
-    @Override
-    public void setRoot(CompilationUnitTree root) {
-        generalFactory.setRoot(root);
-        super.setRoot(root);
-    }
-
-    // handle dependent types
-    @Override
-    protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type, boolean useFlow) {
-        super.annotateImplicit(tree, type, useFlow);
-        dependentTypes.handle(tree, type);
-    }
-
-
-    @Override
-    public AnnotatedTypeMirror getDefaultedAnnotatedType(Tree varTree,
-            ExpressionTree valueTree) {
-        return super.getDefaultedAnnotatedType(varTree, valueTree);
-    }
-
-    // handle dependent types
-    @Override
-    public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> constructorFromUse(
-            NewClassTree tree) {
-        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> fromUse = super.constructorFromUse(tree);
-        AnnotatedExecutableType constructor = fromUse.first;
-        dependentTypes.handleConstructor(tree,
-                generalFactory.getAnnotatedType(tree), constructor);
-        return fromUse;
     }
 
     @Override
@@ -139,20 +94,6 @@ public class LockAnnotatedTypeFactory
     @Override
     public LockTransfer createFlowTransferFunction(CFAbstractAnalysis<CFValue, LockStore, LockTransfer> analysis) {
         return new LockTransfer((LockAnalysis) analysis,(LockChecker)this.checker);
-    }
-
-    @Override
-    public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> methodFromUse(
-            MethodInvocationTree tree) {
-        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair = super
-                .methodFromUse(tree);
-
-        return mfuPair;
-    }
-
-    @Override
-    public AnnotatedTypeMirror getMethodReturnType(MethodTree m, ReturnTree r) {
-        return super.getMethodReturnType(m, r);
     }
 
     protected AnnotatedTypeMirror getDeclaredAndDefaultedAnnotatedType(Tree tree) {

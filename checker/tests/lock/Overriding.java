@@ -4,27 +4,27 @@ public class Overriding {
 
     class SuperClass {
         protected Object a, b, c;
-    
-        @Holding("a")
+
+        @HoldingOnEntry("a")
         void guardedByOne() { }
 
-        @Holding({"a", "b"})
+        @HoldingOnEntry({"a", "b"})
         void guardedByTwo() { }
 
-        @Holding({"a", "b", "c"})
+        @HoldingOnEntry({"a", "b", "c"})
         void guardedByThree() { }
 
     }
 
     class SubClass extends SuperClass {
-        @Holding({"a", "b"})  // error
+        @HoldingOnEntry({"a", "b"})  // error
           //:: error: (override.holding.invalid)
         @Override void guardedByOne() { }
 
-        @Holding({"a", "b"})
+        @HoldingOnEntry({"a", "b"})
         @Override void guardedByTwo() { }
 
-        @Holding({"a", "b"})
+        @HoldingOnEntry({"a", "b"})
         @Override void guardedByThree() { }
     }
 }

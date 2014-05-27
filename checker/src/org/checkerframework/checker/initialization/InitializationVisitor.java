@@ -384,21 +384,12 @@ public class InitializationVisitor<Factory extends InitializationAnnotatedTypeFa
         // because that would only have the nullness annotations; here we want
         // to
         // see all annotations on the receiver.
-        List<? extends AnnotationMirror> rcvannos;
+        List<? extends AnnotationMirror> rcvannos = null;
         if (TreeUtils.isConstructor(node)) {
             com.sun.tools.javac.code.Symbol meth = (com.sun.tools.javac.code.Symbol) TreeUtils
                     .elementFromDeclaration(node);
             rcvannos = meth.getRawTypeAttributes();
             if (rcvannos == null) {
-                rcvannos = Collections.<AnnotationMirror> emptyList();
-            }
-        } else {
-            ExecutableElement meth = TreeUtils.elementFromDeclaration(node);
-            com.sun.tools.javac.code.Type rcv = (com.sun.tools.javac.code.Type) ((ExecutableType) meth
-                    .asType()).getReceiverType();
-            if (rcv != null && rcv.isAnnotated()) {
-                rcvannos = rcv.getAnnotationMirrors();
-            } else {
                 rcvannos = Collections.<AnnotationMirror> emptyList();
             }
         }

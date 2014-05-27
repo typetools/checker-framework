@@ -3,6 +3,7 @@ package net.jcip.annotations;
 import java.lang.annotation.*;
 
 import org.checkerframework.checker.lock.qual.LockHeld;
+import org.checkerframework.framework.qual.PostconditionAnnotation;
 import org.checkerframework.framework.qual.PreconditionAnnotation;
 
 // The JCIP annotation can be used on a field (in which case it corresponds
@@ -15,6 +16,7 @@ import org.checkerframework.framework.qual.PreconditionAnnotation;
 @Target({ ElementType.METHOD, ElementType.CONSTRUCTOR, ElementType.FIELD,
     ElementType.PARAMETER, ElementType.LOCAL_VARIABLE, ElementType.TYPE_USE })
 @PreconditionAnnotation(qualifier = LockHeld.class)
+@PostconditionAnnotation(qualifier = LockHeld.class)
 public @interface GuardedBy {
     /**
      * The Java expressions which need to be {@link LockHeld}.
