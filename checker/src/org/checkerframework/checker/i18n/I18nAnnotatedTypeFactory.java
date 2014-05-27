@@ -23,8 +23,7 @@ public class I18nAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     public ListTreeAnnotator createTreeAnnotator() {
         return new ListTreeAnnotator(
-                new PropagationTreeAnnotator(this),
-                new ImplicitsTreeAnnotator(this),
+                super.createTreeAnnotator(),
                 new I18nTreeAnnotator(this)
         );
     }
