@@ -4,6 +4,12 @@ package org.checkerframework.dataflow.cfg.node;
 import org.checkerframework.checker.nullness.qual.Nullable;
 */
 
+/*
+ * This represents the start and end of synchronized code block.
+ * If startOfBlock == true it is the node preceding a synchronized code block.
+ * Otherwise it is the node immediately after a synchronized code block.
+ */
+
 import org.checkerframework.dataflow.util.HashCodeUtils;
 
 import java.util.Collection;
@@ -31,11 +37,11 @@ public class SynchronizedNode extends Node {
     public Tree getTree() {
         return tree;
     }
-    
+
     public Node getExpression() {
         return expression;
     }
-    
+
     public boolean getIsStartOfBlock() {
         return startOfBlock;
     }

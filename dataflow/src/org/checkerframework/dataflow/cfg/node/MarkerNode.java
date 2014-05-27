@@ -19,7 +19,7 @@ import com.sun.source.tree.Tree;
  * They can hold a Tree and a message, which will be part of the
  * String representation of the MarkerNode.
  *
- * An initial use case for MarkerNodes is representing switch
+ * An example use case for MarkerNodes is representing switch
  * statements.
  *
  * @author Stefan Heule
