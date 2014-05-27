@@ -23,7 +23,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
@@ -817,6 +816,13 @@ public class AnnotatedTypes {
             AnnotatedTypeMirror requiredArg = requiredParams.get(i);
             if (types.isSameType(requiredArg.getUnderlyingType(), typeVar.getUnderlyingType())) {
                 tvOnlyAsTypeArg = false;
+                if (!requiredArg.getAnnotations().isEmpty()) {
+                    // Ignore arguments where the parameter is an annotated
+                    // type variable. At the moment this is only done for
+                    // top-level uses, e.g. @Nullable T p, not for uses as
+                    // type arguments, e.g. List<@Nullable T> p.
+                    continue;
+                }
             }
             AnnotatedTypeMirror pasAsSuper = asSuper(types, atypeFactory, passedArg, requiredArg);
             if (pasAsSuper != null) {
