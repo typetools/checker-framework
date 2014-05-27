@@ -9,7 +9,7 @@ to use the Checker Framework from Maven.  The Maven plug-in is deprecated
 and will be removed as of July 1, 2014. Added an explanation of how
 to use the script in the Maven section of the manual.
 
-Fixes for Issue 315.
+Fixes for Issue 315, 319, 326, 327.
 
 ----------------------------------------------------------------------
 
