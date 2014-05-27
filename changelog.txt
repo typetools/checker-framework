@@ -4,7 +4,7 @@ Converted from using rt.jar to ct.sym for creating the annotated jdk.
 Using the annotated jdk on the bootclasspath of a VM will cause the
 vm to crash immediately.
 
-Fixes for Issue 315.
+Fixes for Issue 315, 319, 326, 327.
 
 ----------------------------------------------------------------------
 
