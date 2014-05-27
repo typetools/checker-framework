@@ -8,6 +8,8 @@ import java.util.Set;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 
+import org.checkerframework.framework.qual.SubtypeOf;
+
 public class SubtypingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     public SubtypingAnnotatedTypeFactory(BaseTypeChecker checker) {
@@ -34,6 +36,17 @@ public class SubtypingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 qualSet.add(q);
             } catch (ClassNotFoundException e) {
                 checker.userErrorAbort("Could not load class for qualifier: " + qualName + "; ensure that your classpath is correct.");
+            }
+        }
+
+        for (Class<? extends Annotation> qual : qualSet) {
+            Annotation subtypeOfAnnotation = qual.getAnnotation(SubtypeOf.class);
+            if (subtypeOfAnnotation != null) {
+                for (Class<? extends Annotation> superqual : qual.getAnnotation(SubtypeOf.class).value()) {
+                    if (! qualSet.contains(superqual)) {
+                        checker.errorAbort("SubtypingChecker:  qualifier " + qual + " was specified via -Aquals but its super-qualifier " + superqual + " was not");
+                    }
+                }
             }
         }
 
