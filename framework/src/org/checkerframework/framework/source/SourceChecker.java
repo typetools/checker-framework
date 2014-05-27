@@ -413,7 +413,7 @@ public abstract class SourceChecker
             pattern = System.getenv(patternName);
 
         if (pattern.indexOf("/") != -1) {
-            getProcessingEnvironment().getMessager().printMessage(Kind.WARNING,
+            message(Kind.WARNING,
               "The " + patternName + " property contains \"/\", which will never match a class name: " + pattern);
         }
 
@@ -531,8 +531,12 @@ public abstract class SourceChecker
      */
     @SuppressWarnings("serial")
     public static class CheckerError extends RuntimeException {
-        public CheckerError(String msg, Throwable cause) {
+        // Whether this error is caused by a user error, e.g. incorrect command-line arguments.
+        public final boolean userError;
+
+        public CheckerError(String msg, Throwable cause, boolean userError) {
             super(msg, cause);
+            this.userError = userError;
         }
     }
 
@@ -544,12 +548,33 @@ public abstract class SourceChecker
      */
     @Override
     public void errorAbort(String msg) {
-        throw new CheckerError(msg, new Throwable());
+        throw new CheckerError(msg, new Throwable(), false);
     }
 
+
+    /**
+     * Log an error message and abort processing.
+     * Call this method instead of raising an exception.
+     *
+     * @param msg The error message to log.
+     * @param cause The original error cause.
+     */
     @Override
     public void errorAbort(String msg, Throwable cause) {
-        throw new CheckerError(msg, cause);
+        throw new CheckerError(msg, cause, false);
+    }
+
+    /**
+     * Log a user error message and abort processing.
+     * Call this method instead of raising an exception or
+     * using System.out.
+     * In contrast to {@link SourceChecker#errorAbort(String)} this method
+     * presents a more user-friendly output.
+     *
+     * @param msg The error message to log.
+     */
+    public void userErrorAbort(String msg) {
+        throw new CheckerError(msg, new Throwable(), true);
     }
 
     private void logCheckerError(CheckerError ce) {
@@ -574,7 +599,11 @@ public abstract class SourceChecker
                 cause = cause.getCause();
             }
         } else {
-            msg.append("; invoke the compiler with -AprintErrorStack to see the stack trace.");
+            if (ce.userError) {
+                msg.append('.');
+            } else {
+                msg.append("; invoke the compiler with -AprintErrorStack to see the stack trace.");
+            }
         }
 
         if (this.messager == null) {
@@ -736,7 +765,8 @@ public abstract class SourceChecker
            t.getClass().getSimpleName() + ")" +
            ((p == null) ? "" : " while processing " + p.getCompilationUnit().getSourceFile().getName()) +
            (t.getMessage() == null ? "" : "; message: " + t.getMessage()),
-           t);
+           t,
+           false);
     }
 
     /**
@@ -899,6 +929,27 @@ public abstract class SourceChecker
         else
             ErrorReporter.errorAbort("invalid position source: "
                     + source.getClass().getName());
+    }
+
+    /**
+     * Print a non-localized message using the javac messager.
+     * This is preferable to using System.out or System.err, but should
+     * only be used for exceptional cases that don't happen in correct usage.
+     * Localized messages should be raised using
+     * {@link SourceChecker#message(Kind, Object, String, Object...)}.
+     *
+     * @param kind The kind of message to print.
+     * @param msg The message text.
+     * @param args Optional arguments to substitute in the message.
+     *
+     * @see SourceChecker#message(Kind, Object, String, Object...)
+     */
+    public void message(Diagnostic.Kind kind, String msg, Object... args) {
+        if (messager != null) {
+            messager.printMessage(kind, String.format(msg, args));
+        } else {
+            System.err.println(kind + ": " + String.format(msg, args));
+        }
     }
 
     /**
@@ -1562,8 +1613,8 @@ public abstract class SourceChecker
 
             prop.load(base);
         } catch (IOException e) {
-            System.err.println("Couldn't parse " + filePath + " file");
-            e.printStackTrace();
+            message(Kind.WARNING, "Couldn't parse properties file: " + filePath);
+            // e.printStackTrace();
             // ignore the possible customization file
         }
         return prop;

@@ -54,6 +54,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  * @see     Class#getEnumConstants()
  * @since   1.5
  */
+@SuppressWarnings("serial")
 public abstract class Enum<E extends Enum<E>>
         implements Comparable<E>, Serializable {
     /**

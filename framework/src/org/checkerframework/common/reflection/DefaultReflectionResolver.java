@@ -17,6 +17,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.util.ElementFilter;
 
+import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.reflection.qual.MethodVal;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -63,6 +64,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
     // Message prefix added to verbose reflection messages
     public static final String MSG_PREFEX_REFLECTION = "[Reflection] ";
 
+    private final BaseTypeChecker checker;
     private final AnnotationProvider provider;
     private final ProcessingEnvironment processingEnv;
     private final Trees trees;
@@ -72,18 +74,19 @@ public class DefaultReflectionResolver implements ReflectionResolver {
     private final ExecutableElement newInstance;
 
     /**
-     * 
+     * @param checker
+     *            The type checker to use
      * @param provider
      *            The AnnotationProvider that provides the MethodVal annotations
      * @param debug
      *            Flag to enable debugging of the reflection resolution process
-     * @param processingEnv
-     *            The current processing environment
      */
-    public DefaultReflectionResolver(AnnotationProvider provider,
-            boolean debug, ProcessingEnvironment processingEnv) {
+    public DefaultReflectionResolver(BaseTypeChecker checker,
+            AnnotationProvider provider,
+            boolean debug) {
+        this.checker = checker;
         this.provider = provider;
-        this.processingEnv = processingEnv;
+        this.processingEnv = checker.getProcessingEnvironment();
         this.trees = Trees.instance(processingEnv);
         this.debug = debug;
 
@@ -552,16 +555,9 @@ public class DefaultReflectionResolver implements ReflectionResolver {
      *            the debug message
      */
     private void debugReflection(String msg) {
-        // check whether debugging is enabled
         if (debug) {
-            // TODO There should be a clean logger interface!
-            if (processingEnv.getMessager() != null) {
-                processingEnv.getMessager().printMessage(
-                        javax.tools.Diagnostic.Kind.NOTE,
+            checker.message(javax.tools.Diagnostic.Kind.NOTE,
                         MSG_PREFEX_REFLECTION + msg);
-            } else {
-                System.err.println(MSG_PREFEX_REFLECTION + msg);
-            }
         }
     }
 }

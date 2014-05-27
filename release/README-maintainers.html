@@ -84,7 +84,7 @@
 </p>
 <div class="alert alert-success">
     <strong>Note:</strong> If you have already read this document and just want to perform a release, skip
-    to the section <a href="#step-by-step">Step by Step</a>
+    to the section <a href="#step_by_step">Step by Step</a>
 </div>
 
 <section id="pre_release_checklist">
@@ -93,12 +93,12 @@
     <table class="table">
         <tr>
             <td>1.</td>
-            <td><strong>Ensure you are a member of the types_www group</strong><br/>
+            <td><strong>Ensure you are a member of the types_www and pl_gang groups</strong><br/>
                 Run the command "groups" on the file system (perhaps on Buffalo).
-                If the group types_www does not appear in the list email the appropriate
-                person to be added.
+                If the group types_www or pl_gang do not appear in the list, email the appropriate
+                person to be added (currently Michael Ernst and Werner Dietl for types_www and
+                Michael Ernst for pl_gang).
             </td>
-
         </tr>
         <tr>
             <td>2.</td>
@@ -118,6 +118,7 @@
                 Remember to be asked to be added to the org.checkerframework repository by creating
                 a ticket (see the note at the bottom of
                 <a href="https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide#SonatypeOSSMavenRepositoryUsageGuide-3.CreateaJIRAticket">section 3</a>).
+                You may be able to sign up but then not sign in. If that happens, instead of creating a ticket, Jonathan Burke or Javier Thaine can add you to the existing ticket.
             </td>
         </tr>
         <tr>
@@ -131,6 +132,14 @@
         </tr>
         <tr>
             <td>5.</td>
+            <td><strong>Copy your .hgrc file to your home directory in Buffalo.</strong><br/>
+                On your local machine, you probably have an .hgrc file in your home directory
+                with login information for Mercurial. Copy this file to your home directory on
+                Buffalo.<br/>
+            </td>
+        </tr>
+        <tr>
+            <td>6.</td>
             <td><strong>Install Eclipse with RCP</strong><br/>
                 On your local machine, you will need a copy of Eclipse with support for
                 developing Rich Client Platform (RCP) applications.<br/>
@@ -139,7 +148,7 @@
             </td>
         </tr>
         <tr>
-            <td>6.</td>	
+            <td>7.</td>	
             <td><strong>Get edit privileges for Checker Framework, JSR308, Annotation Tools</strong><br/>
                 Once a release has been completed, you will be prompted to update issues in the Google Code
                 issue tracker for each project that has been released.
@@ -152,7 +161,7 @@
 
 <section id="release_process_overview">
     <h2>Release Process Overview</h2>
-    <p>The release process consists of running two scripts, release_build.py and release_push.y,
+    <p>The release process consists of running two scripts, release_build.py and release_push.py,
         and a few manual steps (prompted by the release scripts).  However, before releasing, it would be beneficial
         to first understand the structure of the projects on disk on Buffalo.</p>
 
@@ -232,7 +241,7 @@
                 <td colspan="2">&lt;project&gt;/current</td>
                 <td>A symlink to the location of the latest release of the given project.  Each project subdirectory contains a releases directory.
                     These directories contain the current/past releases.  The manual/website of the Checker Framework is written with references to
-                    the file:<br/><a href="http://types.cs.washington.edu/current/checkers-manual.html">http://types.cs.washington.edu/current/checkers-manual.html</a>
+                    the file:<br/><a href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html">http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html</a>
                 </td>
             </tr>
             <tr>
@@ -249,7 +258,7 @@
 
             <tr>
                 <td colspan="3" class="top_file">/cse/www2/types/dev</td>
-                <td>The file system location of the developtment staging website: <br/><a href="http://types.cs.washington.edu/">http://types.cs.washington.edu/dev</a>.</td>
+                <td>The file system location of the development staging website: <br/><a href="http://types.cs.washington.edu/">http://types.cs.washington.edu/dev</a>.</td>
             </tr>
             <tr>
                 <td></td>
@@ -302,7 +311,7 @@
             </tr>
             <tr>
                 <td>sanity_checks.py</td>
-                <td>Contains methods to run various sanity checks.  These methods are called rom release_push.py
+                <td>Contains methods to run various sanity checks.  These methods are called from release_push.py
                 </td>
             </tr>
             <tr>
@@ -316,7 +325,7 @@
             <tr>
                 <td>release.xml</td>
                 <td>The previous release script used Ant to do a number of tasks.  Rather than
-                    reinvent the wheel, we still use a the targets from this script.
+                    reinvent the wheel, we still use the targets from this script.
                     They are called from release_push and release_build.
                 </td>
             </tr>
@@ -377,7 +386,9 @@
     <tr>
         <td colspan="2">
             <span style="float: right;" class="glyphicon glyphicon-eye-open"></span>
-            <strong>Build Step 0: Run release_build</strong>
+            <strong>Build Step 0: Run release_build</strong><br/>
+            Ensure the HGUSER is set. For example: <br />
+            <code>export HGUSER=jthaine<br/><br /></code>
             Run the following command: <br/>
             <code>python release_build.py all<br/><br/></code>
             <strong>Note:</strong> The &quot;all&quot; argument specifies that all projects should be built.
@@ -432,7 +443,12 @@
                     You may wish to experiment with the build (for instance testing changes before
                     committing them to the repository).  The above 3 steps will revert any of those
                     changes you previously wrote the build repositories.  At this step, the script
-                    pauses to allow you to replace any files you wish before actually executing the build.
+                    pauses to allow you to replace any files you wish before actually executing the build.<br /><br />
+                    
+                    At this point make sure hevea.sty and comment.sty are in the
+                    <code>/scratch/jsr308-release/build/checker-framework/checker/manual</code> directory.
+                    Otherwise copy <code>/usr/share/texlive/texmf/tex/latex/hevea/hevea.sty</code> and
+                    <a href="http://ctan.math.utah.edu/ctan/tex-archive/macros/latex/contrib/comment/comment.sty">http://ctan.math.utah.edu/ctan/tex-archive/macros/latex/contrib/comment/comment.sty</a> into it.                    
                 </li>
             </ul>
         </td>
@@ -483,7 +499,7 @@
             <span style="float: right;" class="glyphicon glyphicon-eye-close"></span>
             <strong>Build Step 5: Verify manual changes.</strong><br/>
             This step will write out all of the changes that happened to the individual projects'
-            manuals to an temporary file.  Please review these changes for errors.  You can edit them
+            manuals to a temporary file.  Please review these changes for errors.  You can edit them
             in the build repository and they will be committed by the release_push.py script.
         </td>
     </tr>
@@ -598,14 +614,14 @@
             <strong>Push Step 5. Push dev website to live website</strong><br/>
             This step copies the development release directories to the live release directories.  It then adds
             the appropriate permissions to the release.  Symlinks need to be updated to point to the live
-            website rather than the development website.  A straing copy of the directory will NOT update the
+            website rather than the development website.  A straight copy of the directory will NOT update the
             symlinks.
         </td>
     </tr>
     <tr>
         <td colspan="2">
             <span style="float: right;" class="glyphicon glyphicon-eye-close"></span>
-            <strong>Push Step 6: Check links on livet site</strong><br/>
+            <strong>Push Step 6: Check links on live site</strong><br/>
             Runs the link the checker on all websites at:<br/>
             <a href="http://types.cs.washington.edu/">http://types.cs.washington.edu/</a><br/>
             The output of the link checker is written to files in the /tmp directory whose locations
@@ -732,7 +748,7 @@
         <li>The push from the interm repositories to the Google Code (release) repositories</li>
         <li>The release of the staged Maven artifacts</li>
     </ol>
-    <p> If you have executed either of these steps and then realized there is a breaking error.  You should do another
+    <p> If you have executed either of these steps and then realized there is a breaking error, you should do another
         release.  The release script will allow you to do a point release like &quot;1.8.0.1&quot; when a version
         &quot;1.8.0&quot; already exists.<br/>
         <br/>
@@ -902,7 +918,7 @@ Exception: Could not recognize strip output: (0, , )
     <section id="fi_option_parsing">
         <h3>Option Parsing</h3>
         There is currently some primitive option parsing written into the release scripts.  We should use
-        Python's built in option parsing library.  There are multiple built-in libraries.  Please use the latest one.
+        Python's built-in option parsing library.  There are multiple built-in libraries.  Please use the latest one.
         <h4>Tasks:</h4>
         <ul>
             <li>Look up the latest Python parsing library.</li>
@@ -918,14 +934,14 @@ Exception: Could not recognize strip output: (0, , )
         <h4>Tasks:</h4>
         <ul>
             <li>Improve option parsing to allow the user to select only certain projects to build.</li>
-            <li>Improve scripts to resolve dependencies between projects and only buidl the selected projects and
+            <li>Improve scripts to resolve dependencies between projects and only build the selected projects and
                 their dependencies.
             </li>
         </ul>
     </section>
     <section id="fi_repl_mode">
         <h3>REPL Mode</h3>
-        The current script is built in an imperative style with little use of object orientation.  This imrpovement
+        The current script is built in an imperative style with little use of object orientation.  This improvement
         would create methods or objects that further encapsulate the current set of steps.  We could then provide
         an easy way to execute these steps from the Python REPL.  This would allow the user to execute individual steps
         in whatever order they saw fit from the Python REPL.  This could also be used to
@@ -942,7 +958,7 @@ Exception: Could not recognize strip output: (0, , )
     <section id="fi_automate_eclipse_build">
         <h3>Automate the Eclipse Build</h3>
         The Checker Framework Eclipse plugin is the cause of the most burdensome manual steps in the release
-        process.  There exists ways to automate the plugin build and tests.  However, the process is complicated and
+        process.  There exist ways to automate the plugin build and tests.  However, the process is complicated and
         would take a while to perfect.  It may or may not be worth it.
         <h4>Tasks:</h4>
         <ul>

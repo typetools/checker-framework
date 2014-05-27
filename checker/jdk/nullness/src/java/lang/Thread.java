@@ -22,10 +22,10 @@ public class Thread implements Runnable {
   public Thread(@Nullable Runnable a1) { throw new RuntimeException("skeleton method"); }
   public Thread(@Nullable ThreadGroup a1, @Nullable Runnable a2) { throw new RuntimeException("skeleton method"); }
   public Thread(String a1) { throw new RuntimeException("skeleton method"); }
-  public Thread(ThreadGroup a1, String a2) { throw new RuntimeException("skeleton method"); }
-  public Thread(Runnable a1, String a2) { throw new RuntimeException("skeleton method"); }
-  public Thread(ThreadGroup a1, Runnable a2, String a3) { throw new RuntimeException("skeleton method"); }
-  public Thread(ThreadGroup a1, Runnable a2, String a3, long a4) { throw new RuntimeException("skeleton method"); }
+  public Thread(@Nullable ThreadGroup a1, String a2) { throw new RuntimeException("skeleton method"); }
+  public Thread(@Nullable Runnable a1, String a2) { throw new RuntimeException("skeleton method"); }
+  public Thread(@Nullable ThreadGroup a1, @Nullable Runnable a2, String a3) { throw new RuntimeException("skeleton method"); }
+  public Thread(@Nullable ThreadGroup a1, @Nullable Runnable a2, String a3, long a4) { throw new RuntimeException("skeleton method"); }
   public static Thread currentThread() { throw new RuntimeException("skeleton method"); }
   public static void yield() { throw new RuntimeException("skeleton method"); }
   public static void sleep(long a1) throws InterruptedException { throw new RuntimeException("skeleton method"); }
@@ -56,7 +56,7 @@ public class Thread implements Runnable {
   public final void checkAccess() { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public String toString() { throw new RuntimeException("skeleton method"); }
   public @Nullable ClassLoader getContextClassLoader() { throw new RuntimeException("skeleton method"); }
-  public void setContextClassLoader(ClassLoader a1) { throw new RuntimeException("skeleton method"); }
+  public void setContextClassLoader(@Nullable ClassLoader a1) { throw new RuntimeException("skeleton method"); }
   public StackTraceElement[] getStackTrace() { throw new RuntimeException("skeleton method"); }
   public static java.util.Map<Thread, StackTraceElement[]> getAllStackTraces() { throw new RuntimeException("skeleton method"); }
   public long getId() { throw new RuntimeException("skeleton method"); }

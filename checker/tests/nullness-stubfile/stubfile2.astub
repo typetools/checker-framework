@@ -6,14 +6,9 @@ import org.checkerframework.checker.nullness.qual.*;
 
 package java.lang;
 
-
-
 public final class String {
     public @Nullable String intern();
     public @NonNull String substring(@Nullable int beginIndex) @Nullable;
     String(@Nullable String arg0);
     void getChars(@Nullable int arg0, @NonNull int arg1, @NonNull char @NonNull [] arg2,  int arg3) ;
 }
-
-
-
