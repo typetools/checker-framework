@@ -852,8 +852,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Checks all the preconditions of the method invocation {@code tree} with
-     * element {@code invokedMethodElement}.
+     * Checks all the preconditions of the method invocation or variable access {@code tree} with
+     * element {@code invokedElement}.
      */
     protected void checkPreconditions(Tree tree,
             Element invokedElement, boolean methodCall) {
@@ -861,8 +861,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Checks all the preconditions of the method invocation {@code tree} with
-     * element {@code invokedMethodElement}.
+     * Checks all the preconditions of the method invocation or variable access {@code tree} with
+     * element {@code invokedElement}.
      */
     protected void checkPreconditions(Tree tree,
             Element invokedElement, boolean methodCall, Set<Pair<String, String>> additionalPreconditions) {

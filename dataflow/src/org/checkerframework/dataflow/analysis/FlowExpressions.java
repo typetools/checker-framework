@@ -97,8 +97,15 @@ public class FlowExpressions {
             Node receiverNode, boolean allowNonDeterminitic) {
         Receiver receiver = null;
         if (receiverNode instanceof FieldAccessNode) {
-            receiver = internalReprOfFieldAccess(provider,
-                    (FieldAccessNode) receiverNode);
+            FieldAccessNode fan = (FieldAccessNode) receiverNode;
+
+            if (fan.getFieldName().equals("this")) {
+                // For some reason, "className.this" is considered a field access.
+                // We right this wrong here.
+                receiver = new ThisReference(fan.getReceiver().getType());
+            } else {
+                receiver = internalReprOfFieldAccess(provider, fan);
+            }
         } else if (receiverNode instanceof ExplicitThisLiteralNode) {
             receiver = new ThisReference(receiverNode.getType());
         } else if (receiverNode instanceof ThisLiteralNode) {

@@ -15,12 +15,8 @@ import org.checkerframework.framework.flow.CFAbstractTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.checker.lock.qual.LockHeld;
 import org.checkerframework.checker.lock.qual.LockPossiblyHeld;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 
 import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
@@ -28,14 +24,17 @@ import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
+import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGStatement;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.Kind;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
-import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.SynchronizedNode;
 
+/*
+ * LockTransfer handles constructors and synchronized methods and blocks.
+ */
 public class LockTransfer extends
-	CFAbstractTransfer<CFValue, LockStore, LockTransfer> {
+    CFAbstractTransfer<CFValue, LockStore, LockTransfer> {
 
     /** Type-specific version of super.analysis. */
     protected LockAnalysis analysis;
@@ -43,7 +42,7 @@ public class LockTransfer extends
 
     /** Annotations of the lock type system. */
     protected final AnnotationMirror LOCKHELD, LOCKPOSSIBLYHELD;
-    
+
     public LockTransfer(LockAnalysis analysis, LockChecker checker) {
         super(analysis);
         this.analysis = analysis;
@@ -103,19 +102,18 @@ public class LockTransfer extends
             makeLockPossiblyHeld(result.getRegularStore(), node);
         }
     }
-    
+
     @Override
     public LockStore initialStore(UnderlyingAST underlyingAST,
             /*@Nullable */ List<LocalVariableNode> parameters) {
 
         LockStore store = super.initialStore(underlyingAST, parameters);
-        
-        // Handle synchronized methods, constructors and
-        // @GuardedBy annotations on receivers.
+
+        // Handle synchronized methods and constructors.
         if (underlyingAST.getKind() == Kind.METHOD) {
             CFGMethod method = (CFGMethod) underlyingAST;
             MethodTree methodTree = method.getMethod();
-            
+
             ExecutableElement methodElement = TreeUtils.elementFromDeclaration(methodTree);
 
             // Constructors and methods with the 'synchronized' modifier are
@@ -127,36 +125,15 @@ public class LockTransfer extends
 
                 store.insertThisValue(LOCKHELD, classType);
             }
-            
-            TypeMirror rt = methodElement.getReceiverType();
-            
-            if (rt != null) {
-                List<? extends AnnotationMirror> gb = rt.getAnnotationMirrors();
-                
-                // Check if there is a @GuardedBy annotation on the receiver
-                for (AnnotationMirror annotationMirror : gb) {
-                    String typeString = "interface " + annotationMirror.getAnnotationType().toString();
-                    
-                    if (typeString.equals(org.checkerframework.checker.lock.qual.GuardedBy.class.toString()) ||
-                        typeString.equals(javax.annotation.concurrent.GuardedBy.class.toString()) ||
-                        typeString.equals(net.jcip.annotations.GuardedBy.class.toString())) {
+        }
 
-                        // Retrieve the value array of the GuardedBy annotation on the receiver and save it for future use by the BaseTypeVisitor
-                        List<String> guardedByValue = AnnotationUtils.getElementValueArray(annotationMirror, "value", String.class, false);
-                        store.setReceiverGuardedByValue(guardedByValue);
-                    }
-                }
-            }
-
-        }       
-        
         return store;
     }
-    
+
     @Override
     public TransferResult<CFValue, LockStore> visitSynchronized(SynchronizedNode n,
             TransferInput<CFValue, LockStore> p) {
-        
+
         TransferResult<CFValue, LockStore> result = super.visitSynchronized(n,
                 p);
 
@@ -168,29 +145,6 @@ public class LockTransfer extends
             makeLockPossiblyHeld(result, n.getExpression());
         }
 
-        return result;
-    }
-
-    @Override
-    public TransferResult<CFValue, LockStore> visitMethodInvocation(
-            MethodInvocationNode n, TransferInput<CFValue, LockStore> in) {
-        TransferResult<CFValue, LockStore> result = super
-                .visitMethodInvocation(n, in);
-
-        // For all formal parameters with a LockHeld annotation, make the actual
-        // argument LockHeld.
-        MethodInvocationTree tree = n.getTree();
-        ExecutableElement method = TreeUtils.elementFromUse(tree);
-        AnnotatedExecutableType methodType = analysis.getTypeFactory()
-                .getAnnotatedType(method);
-        List<AnnotatedTypeMirror> methodParams = methodType.getParameterTypes();
-        List<? extends ExpressionTree> methodArgs = tree.getArguments();
-        for (int i = 0; i < methodParams.size() && i < methodArgs.size(); ++i) {
-            if (methodParams.get(i).hasAnnotation(LOCKHELD)) {
-                makeLockHeld(result, n.getArgument(i));
-            }
-        }
-        
         return result;
     }
 }
