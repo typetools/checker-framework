@@ -7,6 +7,7 @@ import java.lang.annotation.Annotation;
 import java.util.*;
 
 import javax.lang.model.element.AnnotationMirror;
+import javax.tools.Diagnostic.Kind;
 
 import org.checkerframework.checker.propkey.qual.PropertyKey;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
@@ -146,7 +147,7 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         String[] namesArr = names.split(":");
 
         if (namesArr == null) {
-            System.err.println("Couldn't parse the properties files: <" + names + ">");
+            checker.message(Kind.WARNING, "Couldn't parse the properties files: <" + names + ">");
             return Collections.emptySet();
         }
 
@@ -178,7 +179,7 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 }
 
                 if (in == null) {
-                    System.err.println("Couldn't find the properties file: " + name);
+                    checker.message(Kind.WARNING, "Couldn't find the properties file: " + name);
                     // report(Result.failure("propertykeychecker.filenotfound",
                     // name), null);
                     // return Collections.emptySet();
@@ -191,7 +192,7 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 // TODO: is there a nicer way to report messages, that are not
                 // connected to an AST node?
                 // One cannot use report, because it needs a node.
-                System.err.println("Exception in PropertyKeyChecker.keysOfPropertyFile: " + e);
+                checker.message(Kind.WARNING, "Exception in PropertyKeyChecker.keysOfPropertyFile: " + e);
                 e.printStackTrace();
             }
         }
@@ -203,7 +204,7 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         String[] namesArr = bundleNames.split(":");
 
         if (namesArr == null) {
-            System.err.println("Couldn't parse the resource bundles: <" + bundleNames + ">");
+            checker.message(Kind.WARNING, "Couldn't parse the resource bundles: <" + bundleNames + ">");
             return Collections.emptySet();
         }
 
@@ -212,7 +213,7 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         for (String bundleName : namesArr) {
             ResourceBundle bundle = ResourceBundle.getBundle(bundleName);
             if (bundle == null) {
-                System.err.println("Couldn't find the resource bundle: <" + bundleName
+                checker.message(Kind.WARNING, "Couldn't find the resource bundle: <" + bundleName
                     + "> for locale <" + Locale.getDefault() + ">");
                 continue;
             }

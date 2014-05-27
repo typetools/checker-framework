@@ -1,44 +1,40 @@
 package org.checkerframework.checker.lock;
 
-import java.util.List;
-
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
-
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ArrayAccess;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFValue;
 
+/*
+ * The Lock Store behaves like CFAbstractStore but requires the ability
+ * to insert exact annotations. This is because we want to be able to
+ * insert @LockPossiblyHeld to replace @LockHeld, which normally is
+ * not possible in CFAbstractStore since @LockHeld is more specific.
+ */
 public class LockStore extends CFAbstractStore<CFValue, LockStore> {
-
-    // List of locks the receiver on the enclosing method is guarded by
-    protected List<String> receiverGuardedByValue;
 
     public LockStore(CFAbstractAnalysis<CFValue, LockStore, ?> analysis, boolean sequentialSemantics) {
         super(analysis, sequentialSemantics);
-        receiverGuardedByValue = null;
     }
 
     public LockStore(CFAbstractAnalysis<CFValue, LockStore, ?> analysis,
             CFAbstractStore<CFValue, LockStore> other) {
         super(other);
-        receiverGuardedByValue = ((LockStore) other).receiverGuardedByValue;
-    }
-    
-    public void setReceiverGuardedByValue(List<String> receiverGuardedByValue) {
-        this.receiverGuardedByValue = receiverGuardedByValue;
     }
 
-    public List<String> getReceiverGuardedByValue() {
-        return receiverGuardedByValue;
-    }
-
+    /*
+     * Insert an annotation exactly, without regard to whether an annotation was already present.
+     */
     public void insertExactValue(FlowExpressions.Receiver r, AnnotationMirror a) {
         insertExactValue(r, analysis.createSingleAnnotationValue(a, r.getType()));
     }
 
+    /*
+     * Insert an annotation exactly, without regard to whether an annotation was already present.
+     */
     public void insertExactValue(FlowExpressions.Receiver r, CFValue value) {
         if (value == null) {
             // No need to insert a null abstract value because it represents
@@ -73,7 +69,7 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
         } else if (r instanceof FlowExpressions.ThisReference) {
             FlowExpressions.ThisReference thisRef = (FlowExpressions.ThisReference) r;
             // Only store information about final fields (where the receiver is
-            // also fixed) if concurrent semantics are enabled. <-- ???
+            // also fixed) if concurrent semantics are enabled.
             if (sequentialSemantics || thisRef.isUnmodifiableByOtherCode()) {
                 thisValue = value;
             }

@@ -1,18 +1,23 @@
-Version 1.8.2, 1 Jun 2014
+Version 1.8.2, 2 Jun 2014
 
 Converted from using rt.jar to ct.sym for creating the annotated jdk.
 Using the annotated jdk on the bootclasspath of a VM will cause the
 vm to crash immediately.
 
-Fixes for Issue 315.
+Provided a javac_maven script (and batch file) to make it simpler
+to use the Checker Framework from Maven.  The Maven plug-in is deprecated
+and will be removed as of July 1, 2014. Added an explanation of how
+to use the script in the Maven section of the manual.
+
+Fixes for Issue 315, 319, 326, 327.
 
 ----------------------------------------------------------------------
 
 Version 1.8.1, 1 May 2014
 
 Support to directly use the Java 8 javac in addition to jsr308-langtools.
-Added checker/examples directory to checker-framework.zip
-New section in the manual describing the contents of checker-framework.zip
+Added checker/examples directory to checker-framework.zip.
+New section in the manual describing the contents of checker-framework.zip.
 
 Fixes for Issues 204, 304, 320.
 

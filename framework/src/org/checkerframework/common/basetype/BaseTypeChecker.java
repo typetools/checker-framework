@@ -176,7 +176,13 @@ public abstract class BaseTypeChecker extends SourceChecker {
                 Throwable err = t.getCause();
                 String msg;
                 if (err instanceof CheckerError) {
-                    msg = err.getMessage();
+                    CheckerError ce = (CheckerError) err;
+                    if (ce.userError) {
+                        // Don't add another stack frame, just show the message.
+                        throw ce;
+                    } else {
+                        msg = err.getMessage();
+                    }
                 } else {
                     msg = err.toString();
                 }
