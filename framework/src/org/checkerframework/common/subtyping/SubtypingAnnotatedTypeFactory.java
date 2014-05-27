@@ -21,7 +21,7 @@ public class SubtypingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         String qualNames = checker.getOption("quals");
         if (qualNames == null) {
-            checker.errorAbort("SubtypingChecker: missing required option: -Aquals");
+            checker.userErrorAbort("Missing required option: -Aquals");
             return null; // dead code
         }
 
@@ -33,7 +33,7 @@ public class SubtypingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     (Class<? extends Annotation>)Class.forName(qualName);
                 qualSet.add(q);
             } catch (ClassNotFoundException e) {
-                checker.errorAbort("SubtypingChecker: could not load class for qualifier: " + qualName + "; ensure that your classpath is correct.");
+                checker.userErrorAbort("Could not load class for qualifier: " + qualName + "; ensure that your classpath is correct.");
             }
         }
 
