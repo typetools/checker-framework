@@ -678,8 +678,12 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
                     s = flowExprContext.receiver.toString(); // it is possible that s == "this" after this call
                 }
 
+                if (flowExprContext.receiver instanceof FieldAccess) {
+                    flowExprContext = flowExprContext.changeReceiver(((FieldAccess) flowExprContext.receiver).getReceiver());
+                }
+
                 r = FlowExpressionParseUtil.parse(
-                        expression, flowExprContext,
+                        s, flowExprContext,
                         analysis.atypeFactory.getPath(tree));
                 store.insertValue(r, anno);
             } catch (FlowExpressionParseException e) {
@@ -718,8 +722,22 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
             }
 
             try {
-                FlowExpressions.Receiver r = FlowExpressionParseUtil.parse(
-                        expression, flowExprContext,
+                FlowExpressions.Receiver r = null;
+
+                String s = expression.trim();
+
+                Pattern selfPattern = Pattern.compile("^(this)$");
+                Matcher selfMatcher = selfPattern.matcher(s);
+                if (selfMatcher.matches()) {
+                    s = flowExprContext.receiver.toString(); // it is possible that s == "this" after this call
+                }
+
+                if (flowExprContext.receiver instanceof FieldAccess) {
+                    flowExprContext = flowExprContext.changeReceiver(((FieldAccess) flowExprContext.receiver).getReceiver());
+                }
+
+                r = FlowExpressionParseUtil.parse(
+                        s, flowExprContext,
                         analysis.atypeFactory.getPath(tree));
                 if (result) {
                     thenStore.insertValue(r, anno);

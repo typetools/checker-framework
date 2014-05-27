@@ -5,11 +5,13 @@ public class Fields {
     @GuardedBy("lockingObject") Object locked;
     Object lockingObject;
 
-    synchronized void wrongLocks() {
-        // without locking
+    synchronized void wrongLock1() {
+        // locking over wrong lock
         //:: error: (contracts.precondition.not.satisfied.field)
         locked.toString();    // error
+    }
 
+    synchronized void wrongLock2() {
         // locking over wrong lock
         synchronized(this) {
             //:: error: (contracts.precondition.not.satisfied.field)

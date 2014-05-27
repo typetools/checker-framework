@@ -63,7 +63,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * Information collected about the current object.
      */
     protected V thisValue;
-    
+
     /**
      * Information collected about fields, using the internal representation
      * {@link FieldAccess}.
@@ -83,6 +83,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     protected Map<FlowExpressions.PureMethodCall, V> methodValues;
 
     /**
+     * {@link ClassName}.
+     */
+    protected Map<FlowExpressions.ClassName, V> classValues;
+
+    /**
      * Should the analysis use sequential Java semantics (i.e., assume that only
      * one thread is running at all times)?
      */
@@ -100,6 +105,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         fieldValues = new HashMap<>();
         methodValues = new HashMap<>();
         arrayValues = new HashMap<>();
+        classValues = new HashMap<>();
         this.sequentialSemantics = sequentialSemantics;
     }
 
@@ -111,6 +117,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         fieldValues = new HashMap<>(other.fieldValues);
         methodValues = new HashMap<>(other.methodValues);
         arrayValues = new HashMap<>(other.arrayValues);
+        classValues = new HashMap<>(other.classValues);
         sequentialSemantics = other.sequentialSemantics;
     }
 
@@ -125,16 +132,16 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             localVariableValues.put(p.getElement(), value);
         }
     }
-    
+
     /**
      * Set the value of the current object. Any previous information is erased;
      * this method should only be used to initialize the value.
      */
     public void initializeThisValue(AnnotationMirror a, TypeMirror underlyingType) {
         if (a != null) {
-            thisValue = analysis.createSingleAnnotationValue(a, underlyingType);        
+            thisValue = analysis.createSingleAnnotationValue(a, underlyingType);
         }
-    }    
+    }
 
     /* --------------------------------------------------------- */
     /* Handling of fields */
@@ -329,7 +336,17 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                     thisValue = newValue;
                 }
             }
-        } else {
+        } else if (r instanceof FlowExpressions.ClassName) {
+            FlowExpressions.ClassName className = (FlowExpressions.ClassName) r;
+            if (sequentialSemantics || className.isUnmodifiableByOtherCode()) {
+                V oldValue = classValues.get(className);
+                V newValue = value.mostSpecific(oldValue, null);
+                if (newValue != null) {
+                    classValues.put(className, newValue);
+                }
+            }
+        }
+        else {
             // No other types of expressions need to be stored.
         }
     }
@@ -341,15 +358,15 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
         for (Entry<Element, V> e : localVariableValues.entrySet()) {
             Element localVar = e.getKey();
-            if (localVar.getSimpleName().toString().equals(identifier)) {                
-                V value = analysis.createSingleAnnotationValue(a, localVar.asType());       
+            if (localVar.getSimpleName().toString().equals(identifier)) {
+                V value = analysis.createSingleAnnotationValue(a, localVar.asType());
 
                 V oldValue = localVariableValues.get(localVar);
                 V newValue = value.mostSpecific(oldValue, null);
                 if (newValue != null) {
                     localVariableValues.put(localVar, newValue);
                 }
-            }            
+            }
         }
     }
 
@@ -358,15 +375,15 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             return;
         }
 
-        V value = analysis.createSingleAnnotationValue(a, underlyingType);       
+        V value = analysis.createSingleAnnotationValue(a, underlyingType);
 
         V oldValue = thisValue;
         V newValue = value.mostSpecific(oldValue, null);
         if (newValue != null) {
             thisValue = newValue;
         }
-    }    
-    
+    }
+
     /**
      * Completely replaces the abstract value {@code value} for the expression
      * {@code r} (correctly deciding where to store the information depending on
@@ -404,7 +421,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         } else if (r instanceof FlowExpressions.ArrayAccess) {
             ArrayAccess a = (ArrayAccess) r;
             arrayValues.remove(a);
-        } else {
+        } else if (r instanceof FlowExpressions.ClassName) {
+            FlowExpressions.ClassName c = (FlowExpressions.ClassName) r;
+            classValues.remove(c);
+        } else { // thisValue ...
             // No other types of expressions are stored.
         }
     }
@@ -429,6 +449,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         } else if (expr instanceof FlowExpressions.ArrayAccess) {
             FlowExpressions.ArrayAccess a = (FlowExpressions.ArrayAccess) expr;
             return arrayValues.get(a);
+        } else if (expr instanceof FlowExpressions.ClassName) {
+            FlowExpressions.ClassName c = (FlowExpressions.ClassName) expr;
+            return classValues.get(c);
         } else {
             assert false;
             return null;
@@ -440,9 +463,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         for (Entry<Element, V> e : localVariableValues.entrySet()) {
             if (e.getKey().getSimpleName().toString().equals(identifier)) {
                 return e.getValue();
-            }            
+            }
         }
-        
+
         return null;
     }
 
@@ -799,7 +822,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                 }
             }
         }
-        
+
         // information about the current object
         {
             V otherVal = other.thisValue;
@@ -809,7 +832,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                 newStore.thisValue = mergedVal;
             }
         }
-        
+
         for (Entry<FlowExpressions.FieldAccess, V> e : other.fieldValues
                 .entrySet()) {
             // information about fields that are only part of one store, but not
@@ -854,7 +877,18 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                 }
             }
         }
-
+        for (Entry<FlowExpressions.ClassName, V> e : other.classValues
+                .entrySet()) {
+            FlowExpressions.ClassName el = e.getKey();
+            if (classValues.containsKey(el)) {
+                V otherVal = e.getValue();
+                V thisVal = classValues.get(el);
+                V mergedVal = thisVal.leastUpperBound(otherVal);
+                if (mergedVal != null) {
+                    newStore.classValues.put(el, mergedVal);
+                }
+            }
+        }
         return newStore;
     }
 
@@ -893,6 +927,14 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             FlowExpressions.PureMethodCall key = e.getKey();
             if (!methodValues.containsKey(key)
                     || !methodValues.get(key).equals(e.getValue())) {
+                return false;
+            }
+        }
+        for (Entry<FlowExpressions.ClassName, V> e : other.classValues
+                .entrySet()) {
+            FlowExpressions.ClassName key = e.getKey();
+            if (!classValues.containsKey(key)
+                    || !classValues.get(key).equals(e.getValue())) {
                 return false;
             }
         }
@@ -961,6 +1003,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         for (Entry<PureMethodCall, V> entry : methodValues.entrySet()) {
             result.append("  " + entry.getKey().toString().replace("\"", "\\\"")
                     + " > " + entry.getValue() + "\\n");
+        }
+        for (Entry<FlowExpressions.ClassName, V> entry : classValues
+                .entrySet()) {
+            result.append("  " + entry.getKey() + " > " + entry.getValue()
+                    + "\\n");
         }
     }
 }

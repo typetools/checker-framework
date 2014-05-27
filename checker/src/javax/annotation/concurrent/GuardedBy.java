@@ -11,18 +11,19 @@ package javax.annotation.concurrent;
 /*
  * Modified for use with the Checker Framework Lock Checker
  */
- 
+
 import java.lang.annotation.*;
 import org.checkerframework.checker.lock.qual.LockHeld;
+import org.checkerframework.framework.qual.PostconditionAnnotation;
 import org.checkerframework.framework.qual.PreconditionAnnotation;
 
 /**
  * GuardedBy
- * 
+ *
  * The field or method to which this annotation is applied can only be accessed
  * when holding a particular lock, which may be a built-in (synchronization)
  * lock, or may be an explicit java.util.concurrent.Lock.
- * 
+ *
  * The argument determines which locks guard the annotated field or method: this :
  * The string literal "this" means that this field is guarded by the class in
  * which it is defined. class-name.this : For inner classes, it may be necessary
@@ -45,6 +46,7 @@ import org.checkerframework.framework.qual.PreconditionAnnotation;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.FIELD, ElementType.PARAMETER, ElementType.LOCAL_VARIABLE, ElementType.METHOD, ElementType.CONSTRUCTOR, ElementType.TYPE_USE })
 @PreconditionAnnotation(qualifier = LockHeld.class)
+@PostconditionAnnotation(qualifier = LockHeld.class)
 public @interface GuardedBy {
     /**
      * The Java expressions which need to be {@link LockHeld}.
