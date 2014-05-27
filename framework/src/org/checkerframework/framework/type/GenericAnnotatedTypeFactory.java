@@ -793,7 +793,42 @@ public abstract class GenericAnnotatedTypeFactory<
      * </ul>
      * @param tree the tree to check and possibly perform flow analysis on.
      */
-    private void checkAndPerformFlowAnalysis(Tree tree) {
+    protected void annotateImplicitWithFlow(Tree tree, AnnotatedTypeMirror type) {
+        assert useFlow : "useFlow must be true to use flow analysis";
+
+        if (iUseFlow) {
+             /**
+             * We perform flow analysis on each {@link ClassTree} that is
+             * passed to annotateImplicitWithFlow.  This works correctly when
+             * a {@link ClassTree} is passed to this method before any of its
+             * sub-trees.  It also helps to satisfy the requirement that a
+             * {@link ClassTree} has been advanced to annotation before we
+             * analyze it.
+             */
+            checkAndPerformFlowAnalysis(tree);
+        }
+
+        treeAnnotator.visit(tree, type);
+        typeAnnotator.visit(type, null);
+        defaults.annotate(tree, type);
+
+        if (iUseFlow) {
+            Value as = getInferredValueFor(tree);
+            if (as != null) {
+                applyInferredAnnotations(type, as);
+            }
+        }
+    }
+
+    /**
+     * Flow analysis will be performed if:
+     * <ul>
+     *     <li>tree is a {@link ClassTree}</li>
+     *     <li>Flow analysis has not already been performed on tree</li>
+     * </ul>
+     * @param tree the tree to check and possibly perform flow analysis on.
+     */
+    protected void checkAndPerformFlowAnalysis(Tree tree) {
         // For performance reasons, we require that getAnnotatedType is called
         // on the ClassTree before it's called on any code contained in the class,
         // so that we can perform flow analysis on the class.  Previously we
