@@ -29,8 +29,7 @@ public class OwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     protected ListTreeAnnotator createTreeAnnotator() {
         return new ListTreeAnnotator(
-                new PropagationTreeAnnotator(this),
-                new ImplicitsTreeAnnotator(this),
+                super.createTreeAnnotator(),
                 new OwnershipTreeAnnotator(this)
         );
     }

@@ -597,8 +597,7 @@ public abstract class InitializationAnnotatedTypeFactory<
     @Override
     protected ListTreeAnnotator createTreeAnnotator() {
         return new ListTreeAnnotator(
-                new PropagationTreeAnnotator(this),
-                new ImplicitsTreeAnnotator(this),
+                super.createTreeAnnotator(),
                 new CommitmentTreeAnnotator(this)
         );
     }

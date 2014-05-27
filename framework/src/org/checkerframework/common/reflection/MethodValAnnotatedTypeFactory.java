@@ -325,8 +325,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     protected ListTreeAnnotator createTreeAnnotator() {
         return new ListTreeAnnotator(
-                new PropagationTreeAnnotator(this),
-                new ImplicitsTreeAnnotator(this),
+                super.createTreeAnnotator(),
                 new MethodValTreeAnnotator(this)
         );
     }
