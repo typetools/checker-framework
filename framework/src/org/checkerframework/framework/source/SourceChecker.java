@@ -532,7 +532,7 @@ public abstract class SourceChecker
     @SuppressWarnings("serial")
     public static class CheckerError extends RuntimeException {
         // Whether this error is caused by a user error, e.g. incorrect command-line arguments.
-        boolean userError;
+        public final boolean userError;
 
         public CheckerError(String msg, Throwable cause, boolean userError) {
             super(msg, cause);
