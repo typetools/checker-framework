@@ -678,10 +678,6 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
                     s = flowExprContext.receiver.toString(); // it is possible that s == "this" after this call
                 }
 
-                if (flowExprContext.receiver instanceof FieldAccess) {
-                    flowExprContext = flowExprContext.changeReceiver(((FieldAccess) flowExprContext.receiver).getReceiver());
-                }
-
                 r = FlowExpressionParseUtil.parse(
                         s, flowExprContext,
                         analysis.atypeFactory.getPath(tree));
@@ -730,10 +726,6 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
                 Matcher selfMatcher = selfPattern.matcher(s);
                 if (selfMatcher.matches()) {
                     s = flowExprContext.receiver.toString(); // it is possible that s == "this" after this call
-                }
-
-                if (flowExprContext.receiver instanceof FieldAccess) {
-                    flowExprContext = flowExprContext.changeReceiver(((FieldAccess) flowExprContext.receiver).getReceiver());
                 }
 
                 r = FlowExpressionParseUtil.parse(
