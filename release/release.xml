@@ -82,10 +82,13 @@
         <fail unless="afu.release.date"    message="afu.release.date property is not set!"/>
 
         <property name="checker.manual"      value="${checker}/manual"                       />
+        <property name="checker.eclipse"     value="${checker}/../eclipse"                   />
+        <property name="checker.tutorial"    value="${checker}/../tutorial"                  />
         <property name="checkerWebPage"      value="${checker.manual}/checker-framework-webpage.html" />
         <property name="maven.plugin"         value="${checker}/../maven-plugin"             />
         <property name="checker.binary.poms"  value="${maven.plugin}/poms"                   />
         <property name="checker.release.poms" value="${maven.plugin}/release/"               />
+        <property name="release.version.regexp" value="\d\.\d\.\d(?:\.\d)"                   />
 
         <!-- for afu.date.0 and afu.date.1 -->
         <loadproperties srcFile="${afu.properties}"/>
@@ -107,13 +110,19 @@
                 with="${afu.release.date}"/>
 
         <replaceregexp file="${checker.manual}/introduction.tex" byline="true"
-                       match="1.7.0-jsr308-\S*" replace="1.7.0-jsr308-${release.ver}"/>
+                       match="1.8.0-jsr308-\S*" replace="1.8.0-jsr308-${release.ver}"/>
 
         <replaceregexp file="${checker.manual}/external-tools.tex" byline="true"
-                       match="1.7.0-jsr308-\S*" replace="1.7.0-jsr308-${release.ver}"/>
+                       match="checker-framework-${release.version.regexp}{0,1}" replace="checker-framework-${release.ver}"/>
+
+        <replaceregexp file="${checker.manual}/external-tools.tex" byline="true"
+                       match="1.8.0-jsr308-\S*" replace="1.8.0-jsr308-${release.ver}"/>
 
         <replaceregexp file="${checker}/../build-common.properties" byline="true"
-                       match="build.version = \d\.\d\.\d(?:\.\d){0,1}" replace="build.version = ${release.ver}"/>
+                       match="build.version = ${release.version.regexp}{0,1}" replace="build.version = ${release.ver}"/>
+
+        <replaceregexp file="${checker.tutorial}/tests/testdemo/check-tainting.0.expected" byline="true"
+                       match="1.8.0-jsr308-\S*" replace="1.8.0-jsr308-${release.ver}"/>
 
         <update file="${checker}/build.properties"
                 start="build.version = " with="${release.ver}"/>
@@ -126,6 +135,17 @@
                 start="${release.ver.0}" end="${release.ver.1}"
                 with="${release.ver}"/>
 
+        <replaceregexp file="${checker.eclipse}/checker-framework-eclipse-feature/feature.xml" byline="true"
+                       match="version=\"${release.version.regexp}{0,1}\"" replace="version=\"${release.ver}\""/>
+
+        <replaceregexp file="${checker.eclipse}/checker-framework-eclipse-update-site/site.xml" byline="true"
+                       match="version=\"${release.version.regexp}{0,1}\"" replace="version=\"${release.ver}\""/>
+
+        <replaceregexp file="${checker.eclipse}/checker-framework-eclipse-update-site/site.xml" byline="true"
+                       match="checker\.framework\.eclipse\.feature_${release.version.regexp}{0,1}" replace="checker\.framework\.eclipse\.feature_${release.ver}"/>
+
+        <replaceregexp file="${checker.eclipse}/checker-framework-eclipse-plugin/META-INF/MANIFEST.MF" byline="true"
+                       match="Bundle-Version:.${release.version.regexp}{0,1}" replace="Bundle-Version: ${release.ver}"/>
 
         <!-- Checker Framework Maven artifacts -->
 
@@ -241,6 +261,7 @@
         <fail unless="${checker.excludes.available}" message="${checker.excludes} excludes file not available"/>
 
         <chmod file="${checker}/bin/javac" perm="+x"/>
+        <chmod file="${checker}/bin/javac_maven" perm="+x"/>
 
         <delete file="${dest.file}"/>
 
@@ -252,6 +273,9 @@
                         includes="checker/bin/javac" filemode="755"/>
 
             <zipfileset dir="${checkerframework}" prefix="checker-framework-${version}"
+                        includes="checker/bin/javac_maven" filemode="755"/>
+
+                        <zipfileset dir="${checkerframework}" prefix="checker-framework-${version}"
                         includes="changelog.txt README.html LICENSE.txt" excludes="api/**"/>
 
             <zipfileset dir="${checkerframework}" prefix="checker-framework-${version}"
