@@ -4,6 +4,13 @@ Converted from using rt.jar to ct.sym for creating the annotated jdk.
 Using the annotated jdk on the bootclasspath of a VM will cause the
 vm to crash immediately.
 
+The Lock Checker has been rewritten to support dataflow analysis.
+It can now understand conditional expressions, for example, and
+knows that "lock" is held in the body of statements like
+"if (lock.tryLock()){ ... }"
+The Lock Checker chapter in the manual has been updated accordingly
+and describes the new Lock Checker features in detail.
+
 Provided a javac_maven script (and batch file) to make it simpler
 to use the Checker Framework from Maven.  The Maven plug-in is deprecated
 and will be removed as of July 1, 2014. Added an explanation of how
