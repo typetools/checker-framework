@@ -23,29 +23,28 @@ command-line option to javac.
 
 \section{Lock annotations\label{lock-annotations}}
 
-\textbf{Summary of annotations used by the Lock Checker.}
+\textbf{Summary of declaration annotations used by the Lock Checker.}\\
 
 \begin{tabular}{l|l|l}
-\textbf{Type qualifier} & \textbf{Purpose} \\
+\textbf{Declaration annotation} & \textbf{Indicates} \\
 @GuardedBy(String lock) &
-Indicates fields/variables that can only be accessed after acquiring the given lock.
+Fields/variables only accessible after acquiring the given lock.
 \\
-\textbf{Method annotation} & \textbf{Purpose} \\
 @Holding(String[] locks) &
-Indicates which locks must be held before the method is called.
+Locks that must be held before the method is called.
 \\
 @EnsuresLockHeld(String[] expressions) &
-Indicates which locks are guaranteed to be held when the method returns.
+Locks guaranteed to be held when the method returns.
 \\
-@EnsuresLockHeldIf(String[] expressions, boolean result) &
-Indicates which locks are guaranteed to be held when the method returns the given result.
+@EnsuresLockHeldIf(String[] expr, boolean result) &
+Locks guaranteed to be held when the method returns the given result.
 \\
 @LockingFree &
-Indicates that a method does not make any use of locks or synchronization.
+The method does not make any use of locks or synchronization.
 \\
 \end{tabular}
 
-\subsection{Qualifiers for types of objects protected by locks}
+\subsection{Declaration annotations for objects protected by locks}
 
 \begin{description}
 \item[\refqualclass{checker/lock/qual}{GuardedBy}\small{(String lock)}]
@@ -67,8 +66,10 @@ method itself rather than to some particular type.
 \item[\refqualclass{checker/lock/qual}{EnsuresLockHeld}\small{(String[] expressions)}]
 \item[\refqualclass{checker/lock/qual}{EnsuresLockHeldIf}\small{(String[] expressions, boolean result)}]
   indicate a method postcondition. With \code{@EnsuresLockHeld}, the given
-  expressions are annotated with \code{@LockHeld} after the method returns; this
-  is useful for annotating a method that takes a lock.
+  expressions are known to be objects used as locks and are known to be in
+  a locked state (i.e. they are annotated with \code{@LockHeld}, see
+  section~\ref{lock-checker-internals}) after the
+  method returns; this is useful for annotating a method that takes a lock.
   With \code{@EnsuresLockHeldIf}, if the annotated method returns the given
   boolean value (true or false), then the given expressions are annotated
   with \code{@LockHeld}.  See section~\ref{ensureslockheld-examples} for examples.
@@ -156,7 +157,7 @@ The advantages of the \<@Holding> annotation include:
   succeeds, it still consumes time.
 \end{itemize}
 
-\subsection{A note on Lock Checker internals}
+\subsection{A note on Lock Checker internals\label{lock-checker-internals}}
 
 The following qualifiers are inferred and used internally by the Lock Checker
 and should never need to be written by the programmer.  They are presented
@@ -297,7 +298,9 @@ private @GuardedBy("lock") Object x; // Initialized in the constructor
 [...]
  
 @LockingFree
-void myMethod() { // This method does not use locks or synchronization but cannot be annotated as @SideEffectFree since it alters myField.
+// This method does not use locks or synchronization but cannot
+// be annotated as @SideEffectFree since it alters myField.
+void myMethod() {
     myField = new Object();
 }
  
