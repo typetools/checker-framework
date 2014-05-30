@@ -1705,9 +1705,12 @@ public abstract class AnnotatedTypeMirror {
          * with annotations on the type variable considered.
         */
         public AnnotatedTypeMirror getEffectiveLowerBound() {
-            AnnotatedTypeMirror effbnd = AnnotatedTypes.deepCopy(getLowerBound());
-            effbnd.replaceAnnotations(annotations);
-            return effbnd;
+            AnnotatedTypeVariable thisUse = this.getCopy(true);
+            thisUse.declaration = false;
+            AnnotatedTypeVariable thisDecl = this.getCopy(true);
+            thisDecl.declaration = true;
+            thisDecl.clearAnnotations();
+            return thisUse.substitute(Collections.singletonMap(thisDecl, this.getLowerBound()));
         }
 
 
@@ -1805,9 +1808,12 @@ public abstract class AnnotatedTypeMirror {
          * with annotations on the type variable considered.
         */
         public AnnotatedTypeMirror getEffectiveUpperBound() {
-            AnnotatedTypeMirror effbnd = AnnotatedTypes.deepCopy(getUpperBound());
-            effbnd.replaceAnnotations(annotations);
-            return effbnd;
+            AnnotatedTypeVariable thisUse = this.getCopy(true);
+            thisUse.declaration = false;
+            AnnotatedTypeVariable thisDecl = this.getCopy(true);
+            thisDecl.declaration = true;
+            thisDecl.clearAnnotations();
+            return thisUse.substitute(Collections.singletonMap(thisDecl, this.getUpperBound()));
         }
 
         /**
