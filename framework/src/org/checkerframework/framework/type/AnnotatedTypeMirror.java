@@ -140,19 +140,6 @@ public abstract class AnnotatedTypeMirror {
         return result;
     }
 
-    /**
-     * Creates the appropriate AnnotatedTypeMirror specific wrapper for the
-     * provided type.  The result will not be considered a type declaration.
-     *
-     * @param type
-     * @param atypeFactory
-     * @return [to document]
-     */
-    public static AnnotatedTypeMirror createType(TypeMirror type,
-        AnnotatedTypeFactory atypeFactory) {
-        return createType(type, atypeFactory, false);
-    }
-
     /** The factory to use for lazily creating annotated types. */
     protected final AnnotatedTypeFactory atypeFactory;
 

@@ -1745,18 +1745,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return AnnotatedTypeMirror.createType(t, this, declaration);
     }
 
-    /**
-     * A convenience method that converts a {@link TypeMirror} to a non-declaration {@link
-     * AnnotatedTypeMirror} using {@link AnnotatedTypeMirror#createType}.
-     *
-     * @param t the {@link TypeMirror}
-     * @return an {@link AnnotatedTypeMirror} that has {@code t} as its
-     * underlying type
-     */
-    public final AnnotatedTypeMirror toAnnotatedType(TypeMirror t) {
-        return toAnnotatedType(t, false);
-    }
-
 
     /**
      * Determines an empty annotated type of the given tree. In other words,
