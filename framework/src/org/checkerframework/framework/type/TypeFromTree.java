@@ -677,6 +677,11 @@ abstract class TypeFromTree extends
                 int idx = typeElt.getTypeParameters().indexOf(tpe);
                 ClassTree cls = (ClassTree) f.declarationFromElement(typeElt);
                 if (cls != null) {
+                    // `forTypeVariable` is called for Identifier, MemberSelect and UnionType trees,
+                    // none of which are declarations.  But `cls.getTypeParameters()` returns a list
+                    // of type parameter declarations (`TypeParameterTree`), so this recursive call
+                    // to `visit` will return a declaration ATV.  So we must copy the result and set
+                    // its `isDeclaration` field to `false`.
                     AnnotatedTypeMirror result = visit(cls.getTypeParameters().get(idx), f).getCopy(true);
                     ((AnnotatedTypeVariable)result).setDeclaration(false);
                     return result;
@@ -689,6 +694,8 @@ abstract class TypeFromTree extends
                 int idx = exElt.getTypeParameters().indexOf(tpe);
                 MethodTree meth = (MethodTree) f.declarationFromElement(exElt);
                 if (meth != null) {
+                    // This works the same as the case above.  Even though `meth` itself is not a
+                    // type declaration tree, the elements of `meth.getTypeParameters()` still are.
                     AnnotatedTypeMirror result = visit(meth.getTypeParameters().get(idx), f).getCopy(true);
                     ((AnnotatedTypeVariable)result).setDeclaration(false);
                     return result;

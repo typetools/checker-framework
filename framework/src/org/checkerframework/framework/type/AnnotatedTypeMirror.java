@@ -81,6 +81,7 @@ public abstract class AnnotatedTypeMirror {
      *
      * @param type
      * @param atypeFactory
+     * @param isDeclaration true if the result should is a type declaration
      * @return [to document]
      */
     public static AnnotatedTypeMirror createType(TypeMirror type,
@@ -139,6 +140,14 @@ public abstract class AnnotatedTypeMirror {
         return result;
     }
 
+    /**
+     * Creates the appropriate AnnotatedTypeMirror specific wrapper for the
+     * provided type.  The result will not be considered a type declaration.
+     *
+     * @param type
+     * @param atypeFactory
+     * @return [to document]
+     */
     public static AnnotatedTypeMirror createType(TypeMirror type,
         AnnotatedTypeFactory atypeFactory) {
         return createType(type, atypeFactory, false);
@@ -1643,8 +1652,8 @@ public abstract class AnnotatedTypeMirror {
         }
 
         /**
-         * Change whether this {@code AnnotatedTypeVariable} is considered a
-         * use or a declaration.
+         * Change whether this {@code AnnotatedTypeVariable} is considered a use or a declaration
+         * (use this method with caution).
          *
          * @param declaration  true if this type variable should be considered a declaration
          */
@@ -1705,6 +1714,7 @@ public abstract class AnnotatedTypeMirror {
          * with annotations on the type variable considered.
         */
         public AnnotatedTypeMirror getEffectiveLowerBound() {
+            // See comments in `getEffectiveUpperBound` for an explanation of this implementation.
             AnnotatedTypeVariable thisUse = this.getCopy(true);
             thisUse.declaration = false;
             AnnotatedTypeVariable thisDecl = this.getCopy(true);
@@ -1808,6 +1818,15 @@ public abstract class AnnotatedTypeMirror {
          * with annotations on the type variable considered.
         */
         public AnnotatedTypeMirror getEffectiveUpperBound() {
+            // Given a declaration `T extends @U Upper super @L Lower` and a use `@A T`, the
+            // "effective upper bound" of `@A T` is the LUB of all types that could possibly result
+            // from substituting `T := X` into `@A T`, where `@L Lower <: X <: @U Upper`.
+            // Substitution is monotonic (if `X` is a subtype of `Y`, then the result of
+            // substituting with `T := X` is a subtype of the result of `T := Y`), so the effective
+            // upper bound of `@A T` is simply the result of substituting with `T := @U Upper`.
+
+            // We need a declaration of `T` to use as a key in the map passed to `substitute`, and a
+            // use of `T` to be the receiver.  So we make a "decl" copy and a "use" copy of `this`.
             AnnotatedTypeVariable thisUse = this.getCopy(true);
             thisUse.declaration = false;
             AnnotatedTypeVariable thisDecl = this.getCopy(true);
@@ -1859,6 +1878,8 @@ public abstract class AnnotatedTypeMirror {
 
         private static <K extends AnnotatedTypeMirror, V extends AnnotatedTypeMirror>
         V mapGetHelper(Map<K, V> mappings, AnnotatedTypeVariable key) {
+            // Search through `mappings` for an ATV which represents the declaration of the type
+            // variable `key`.
             for (Map.Entry<K, V> entry : mappings.entrySet()) {
                 K possible = entry.getKey();
                 V possValue = entry.getValue();
@@ -1866,7 +1887,9 @@ public abstract class AnnotatedTypeMirror {
                     AnnotatedTypeVariable other = (AnnotatedTypeVariable)possible;
                     Element oElt = other.getUnderlyingType().asElement();
                     if (key.getUnderlyingType().asElement().equals(oElt)) {
-                        // Not identical AnnotatedTypeMirrors, but they wrap the same TypeMirror.
+                        // The underlying `Element` is the same for `key` and `other`, so `other` is
+                        // the declaration of `key`.  Replace type variable `other` with type
+                        // `possValue` at type variable use `key`.
                         @SuppressWarnings("unchecked")
                         V found = (V)possValue.getCopy(false);
                         found.addAnnotations(possValue.getAnnotations());

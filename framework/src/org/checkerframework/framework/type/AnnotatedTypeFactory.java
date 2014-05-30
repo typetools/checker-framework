@@ -893,6 +893,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         annotateImplicit(element, type);
     }
 
+    /**
+     * A callback method for the AnnotatedTypeFactory subtypes to customize
+     * AnnotatedTypeMirror.substitute().
+     *
+     * @param varDecl   a declaration of a type variable
+     * @param varUse    a use of the same type variable
+     * @param value     the new type to substitute in for the type variable
+     */
     public void postTypeVarSubstitution(AnnotatedTypeVariable varDecl,
             AnnotatedTypeVariable varUse, AnnotatedTypeMirror value) {
         if (!varUse.annotations.isEmpty()
@@ -1729,6 +1737,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * AnnotatedTypeMirror} using {@link AnnotatedTypeMirror#createType}.
      *
      * @param t the {@link TypeMirror}
+     * @param declaration   true if the result should be marked as a type declaration
      * @return an {@link AnnotatedTypeMirror} that has {@code t} as its
      * underlying type
      */
@@ -1736,6 +1745,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return AnnotatedTypeMirror.createType(t, this, declaration);
     }
 
+    /**
+     * A convenience method that converts a {@link TypeMirror} to a non-declaration {@link
+     * AnnotatedTypeMirror} using {@link AnnotatedTypeMirror#createType}.
+     *
+     * @param t the {@link TypeMirror}
+     * @return an {@link AnnotatedTypeMirror} that has {@code t} as its
+     * underlying type
+     */
     public final AnnotatedTypeMirror toAnnotatedType(TypeMirror t) {
         return toAnnotatedType(t, false);
     }
