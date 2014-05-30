@@ -1893,11 +1893,14 @@ public abstract class AnnotatedTypeMirror {
                     new AnnotatedTypeVariable(actualType, env, atypeFactory);
             copyFields(type, true);*/
 
+            Map<AnnotatedTypeMirror, AnnotatedTypeMirror> newMappings =
+                new HashMap<AnnotatedTypeMirror, AnnotatedTypeMirror>(mappings);
+            newMappings.put(this, type);
             if (lowerBound != null) {
-                type.setLowerBound(lowerBound.substitute(mappings));
+                type.setLowerBound(lowerBound.substitute(newMappings));
             }
             if (upperBound != null) {
-                type.setUpperBound(upperBound.substitute(mappings));
+                type.setUpperBound(upperBound.substitute(newMappings));
             }
             return type;
         }
