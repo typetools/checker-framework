@@ -27,7 +27,7 @@ public class ToArray {
         for (@Nullable String o : nonnullList.toArray(new String[0]));
         // No error expected here. Note that the heuristics determine that the given array
         // is not used and that a new one will be created.
-        //for (@NonNull String o : nonnullList.toArray(new @Nullable String[0]));
+        for (@NonNull String o : nonnullList.toArray(new @Nullable String[0]));
         for (@Nullable String o : nonnullList.toArray(new @NonNull String[0]));
         for (@NonNull String o : nonnullList.toArray(new @NonNull String[0]));
     }
@@ -57,7 +57,7 @@ public class ToArray {
         for (@Nullable String o : nonnullCol.toArray(new String[0]));
         // No error expected here. Note that the heuristics determine that the given array
         // is not used and that a new one will be created.
-        //for (@NonNull String o : nonnullCol.toArray(new @Nullable String[0]));
+        for (@NonNull String o : nonnullCol.toArray(new @Nullable String[0]));
         for (@Nullable String o : nonnullCol.toArray(new @NonNull String[0]));
         for (@NonNull String o : nonnullCol.toArray(new @NonNull String[0]));
     }
