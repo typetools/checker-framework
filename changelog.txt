@@ -19,7 +19,7 @@ to use the script in the Maven section of the manual.
 The Checker Framework installation instructions in the manual have
 been updated.
 
-Fixes for Issue 312, 315, 319, 324, 326, 327.
+Fixes for Issues 312, 315, 316, 318, 319, 324, 326, 327.
 
 ----------------------------------------------------------------------
 
@@ -72,7 +72,7 @@ to the final bytecode.
 
 Reduce special treatment of checkers.quals.Unqualified.
 
-Fixes for Issues 240, 265, 281.
+Fixes for Issues 170, 240, 265, 281.
 
 ----------------------------------------------------------------------
 
