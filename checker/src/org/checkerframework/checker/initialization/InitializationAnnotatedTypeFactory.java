@@ -595,7 +595,7 @@ public abstract class InitializationAnnotatedTypeFactory<
     }
 
     @Override
-    protected ListTreeAnnotator createTreeAnnotator() {
+    protected TreeAnnotator createTreeAnnotator() {
         return new ListTreeAnnotator(
                 super.createTreeAnnotator(),
                 new CommitmentTreeAnnotator(this)
@@ -659,7 +659,7 @@ public abstract class InitializationAnnotatedTypeFactory<
         @Override
         public Void visitLiteral(LiteralTree tree, AnnotatedTypeMirror type) {
             if (tree.getKind() != Tree.Kind.NULL_LITERAL) {
-                type.addAnnotation(COMMITTED);
+                type.replaceAnnotation(COMMITTED);
             }
             return super.visitLiteral(tree, type);
         }

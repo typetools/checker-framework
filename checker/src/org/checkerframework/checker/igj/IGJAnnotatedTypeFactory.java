@@ -172,7 +172,7 @@ public class IGJAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    protected ListTreeAnnotator createTreeAnnotator() {
+    protected TreeAnnotator createTreeAnnotator() {
         return new ListTreeAnnotator(
                 super.createTreeAnnotator(),
                 new IGJTreePreAnnotator(this)

@@ -323,7 +323,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    protected ListTreeAnnotator createTreeAnnotator() {
+    protected TreeAnnotator createTreeAnnotator() {
         return new ListTreeAnnotator(
                 super.createTreeAnnotator(),
                 new MethodValTreeAnnotator(this)

@@ -20,7 +20,7 @@ public class CompilerMessagesAnnotatedTypeFactory extends PropertyKeyAnnotatedTy
     }
 
     @Override
-    public ListTreeAnnotator createTreeAnnotator() {
+    public TreeAnnotator createTreeAnnotator() {
         return new ListTreeAnnotator(
                 super.createTreeAnnotator(),
                 new KeyLookupTreeAnnotator(this, CompilerMessageKey.class)

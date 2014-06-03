@@ -133,7 +133,7 @@ public class RegexAnnotatedTypeFactory extends GenericAnnotatedTypeFactory<CFVal
     }
 
     @Override
-    public ListTreeAnnotator createTreeAnnotator() {
+    public TreeAnnotator createTreeAnnotator() {
         return new ListTreeAnnotator(
                 new ImplicitsTreeAnnotator(this),
                 new RegexTreeAnnotator(this),

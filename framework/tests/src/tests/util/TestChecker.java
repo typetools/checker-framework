@@ -68,7 +68,7 @@ class TestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    public ListTreeAnnotator createTreeAnnotator() {
+    public TreeAnnotator createTreeAnnotator() {
         ImplicitsTreeAnnotator implicitsTreeAnnotator = new ImplicitsTreeAnnotator(this);
         implicitsTreeAnnotator.addTreeKind(com.sun.source.tree.Tree.Kind.NULL_LITERAL, BOTTOM);
         return new ListTreeAnnotator(new PropagationTreeAnnotator(this), implicitsTreeAnnotator);

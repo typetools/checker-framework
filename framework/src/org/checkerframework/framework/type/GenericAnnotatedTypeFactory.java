@@ -88,7 +88,7 @@ public abstract class GenericAnnotatedTypeFactory<
     protected TypeAnnotator typeAnnotator;
 
     /** to annotate types based on the given un-annotated types */
-    protected ListTreeAnnotator treeAnnotator;
+    protected TreeAnnotator treeAnnotator;
 
     /** to handle any polymorphic types */
     protected QualifierPolymorphism poly;
@@ -204,7 +204,7 @@ public abstract class GenericAnnotatedTypeFactory<
      *
      * @return a tree annotator
      */
-    protected ListTreeAnnotator createTreeAnnotator() {
+    protected TreeAnnotator createTreeAnnotator() {
         return new ListTreeAnnotator(
                 new PropagationTreeAnnotator(this),
                 new ImplicitsTreeAnnotator(this)
