@@ -39,10 +39,9 @@ import org.checkerframework.common.value.qual.UnknownVal;
 import org.checkerframework.framework.qual.DefaultLocation;
 import org.checkerframework.framework.qual.TypeQualifiers;
 import org.checkerframework.framework.source.Result;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.*;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
-import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.type.TreeAnnotator;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
@@ -404,8 +403,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    protected TreeAnnotator createTreeAnnotator() {
-        return new ValueTreeAnnotator(this);
+    protected ListTreeAnnotator createTreeAnnotator() {
+        return new ListTreeAnnotator(
+                super.createTreeAnnotator(),
+                new ValueTreeAnnotator(this)
+        );
     }
 
     @Override

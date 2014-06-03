@@ -5,16 +5,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 */
 
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.IdentityHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -23,6 +14,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 
+import com.sun.source.util.SimpleTreeVisitor;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.AnalysisResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
@@ -96,7 +88,7 @@ public abstract class GenericAnnotatedTypeFactory<
     protected TypeAnnotator typeAnnotator;
 
     /** to annotate types based on the given un-annotated types */
-    protected TreeAnnotator treeAnnotator;
+    protected ListTreeAnnotator treeAnnotator;
 
     /** to handle any polymorphic types */
     protected QualifierPolymorphism poly;
@@ -212,8 +204,11 @@ public abstract class GenericAnnotatedTypeFactory<
      *
      * @return a tree annotator
      */
-    protected TreeAnnotator createTreeAnnotator() {
-        return new TreeAnnotator(this);
+    protected ListTreeAnnotator createTreeAnnotator() {
+        return new ListTreeAnnotator(
+                new PropagationTreeAnnotator(this),
+                new ImplicitsTreeAnnotator(this)
+        );
     }
 
     /**
@@ -752,20 +747,6 @@ public abstract class GenericAnnotatedTypeFactory<
         return mfuPair;
     }
 
-    protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type,
-            boolean iUseFlow) {
-        assert root != null : "GenericAnnotatedTypeFactory.annotateImplicit: " +
-            " root needs to be set when used on trees; factory: " + this.getClass();
-
-        if (iUseFlow) {
-            annotateImplicitWithFlow(tree, type);
-        } else {
-            treeAnnotator.visit(tree, type);
-            typeAnnotator.visit(type, null);
-            defaults.annotate(tree, type);
-        }
-    }
-
     /**
      * This method is final. Override
      * {@link #annotateImplicit(Tree, AnnotatedTypeMirror, boolean)}
@@ -776,17 +757,43 @@ public abstract class GenericAnnotatedTypeFactory<
         annotateImplicit(tree, type, this.useFlow);
     }
 
-    /**
-     * We perform flow analysis on each {@link ClassTree} that is
-     * passed to annotateImplicitWithFlow.  This works correctly when
-     * a {@link ClassTree} is passed to this method before any of its
-     * sub-trees.  It also helps to satisfy the requirement that a
-     * {@link ClassTree} has been advanced to annotation before we
-     * analyze it.
-     */
-    protected void annotateImplicitWithFlow(Tree tree, AnnotatedTypeMirror type) {
-        assert useFlow : "useFlow must be true to use flow analysis";
+    protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
+        assert root != null : "GenericAnnotatedTypeFactory.annotateImplicit: " +
+                " root needs to be set when used on trees; factory: " + this.getClass();
 
+        if (iUseFlow) {
+             /**
+             * We perform flow analysis on each {@link ClassTree} that is
+             * passed to annotateImplicitWithFlow.  This works correctly when
+             * a {@link ClassTree} is passed to this method before any of its
+             * sub-trees.  It also helps to satisfy the requirement that a
+             * {@link ClassTree} has been advanced to annotation before we
+             * analyze it.
+             */
+            checkAndPerformFlowAnalysis(tree);
+        }
+
+        treeAnnotator.visit(tree, type);
+        typeAnnotator.visit(type, null);
+        defaults.annotate(tree, type);
+
+        if (iUseFlow) {
+            Value as = getInferredValueFor(tree);
+            if (as != null) {
+                applyInferredAnnotations(type, as);
+            }
+        }
+    }
+
+    /**
+     * Flow analysis will be performed if:
+     * <ul>
+     *     <li>tree is a {@link ClassTree}</li>
+     *     <li>Flow analysis has not already been performed on tree</li>
+     * </ul>
+     * @param tree the tree to check and possibly perform flow analysis on.
+     */
+    protected void checkAndPerformFlowAnalysis(Tree tree) {
         // For performance reasons, we require that getAnnotatedType is called
         // on the ClassTree before it's called on any code contained in the class,
         // so that we can perform flow analysis on the class.  Previously we
@@ -798,15 +805,6 @@ public abstract class GenericAnnotatedTypeFactory<
             if (!scannedClasses.containsKey(classTree)) {
                 performFlowAnalysis(classTree);
             }
-        }
-
-        treeAnnotator.visit(tree, type);
-        typeAnnotator.visit(type, null);
-        defaults.annotate(tree, type);
-
-        Value as = getInferredValueFor(tree);
-        if (as != null) {
-            applyInferredAnnotations(type, as);
         }
     }
 

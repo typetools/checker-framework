@@ -22,8 +22,7 @@ import org.checkerframework.checker.guieffect.qual.UIType;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.source.Result;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.TreeAnnotator;
+import org.checkerframework.framework.type.*;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -339,8 +338,11 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    protected TreeAnnotator createTreeAnnotator() {
-        return new GuiEffectTreeAnnotator();
+    protected ListTreeAnnotator createTreeAnnotator() {
+        return new ListTreeAnnotator(
+                super.createTreeAnnotator(),
+                new GuiEffectTreeAnnotator()
+        );
     }
 
     /**
