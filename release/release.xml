@@ -135,18 +135,6 @@
                 start="${release.ver.0}" end="${release.ver.1}"
                 with="${release.ver}"/>
 
-        <replaceregexp file="${checker.eclipse}/checker-framework-eclipse-feature/feature.xml" byline="true"
-                       match="version=\"${release.version.regexp}{0,1}\"" replace="version=\"${release.ver}\""/>
-
-        <replaceregexp file="${checker.eclipse}/checker-framework-eclipse-update-site/site.xml" byline="true"
-                       match="version=\"${release.version.regexp}{0,1}\"" replace="version=\"${release.ver}\""/>
-
-        <replaceregexp file="${checker.eclipse}/checker-framework-eclipse-update-site/site.xml" byline="true"
-                       match="checker\.framework\.eclipse\.feature_${release.version.regexp}{0,1}" replace="checker\.framework\.eclipse\.feature_${release.ver}"/>
-
-        <replaceregexp file="${checker.eclipse}/checker-framework-eclipse-plugin/META-INF/MANIFEST.MF" byline="true"
-                       match="Bundle-Version:.${release.version.regexp}{0,1}" replace="Bundle-Version: ${release.ver}"/>
-
         <!-- Checker Framework Maven artifacts -->
 
         <!-- checker -->
