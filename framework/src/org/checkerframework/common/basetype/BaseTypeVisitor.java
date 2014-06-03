@@ -829,7 +829,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         List<AnnotatedTypeParameterBounds> paramBounds = new ArrayList<>();
         for (AnnotatedTypeVariable param : invokedMethod.getTypeVariables()) {
-            paramBounds.add(param.getEffectiveBounds());
+            paramBounds.add(param.getBounds());
         }
 
         checkTypeArguments(node, paramBounds, typeargs, node.getTypeArguments());
@@ -1118,7 +1118,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         List<AnnotatedTypeParameterBounds> paramBounds = new ArrayList<>();
         for (AnnotatedTypeVariable param : constructor.getTypeVariables()) {
-            paramBounds.add(param.getEffectiveBounds());
+            paramBounds.add(param.getBounds());
         }
 
         checkTypeArguments(node, paramBounds, typeargs, node.getTypeArguments());
