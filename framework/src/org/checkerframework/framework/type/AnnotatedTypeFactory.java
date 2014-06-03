@@ -1415,7 +1415,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 }
                 typeargs.add(typeVarMapping.get(tv));
             }
-            methodType = methodType.substitute(typeVarMapping);
+            methodType = (AnnotatedExecutableType)methodType.substitute(typeVarMapping);
         }
 
         return Pair.of(methodType, typeargs);
@@ -1463,7 +1463,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             for (AnnotatedTypeVariable tv : con.getTypeVariables()) {
                 typeargs.add(typeVarMapping.get(tv));
             }
-            con = con.substitute(typeVarMapping);
+            con = (AnnotatedExecutableType)con.substitute(typeVarMapping);
         }
 
         return Pair.of(con, typeargs);
