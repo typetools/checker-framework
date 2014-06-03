@@ -997,7 +997,16 @@ public abstract class AnnotatedTypeMirror {
             if (ts == null || ts.isEmpty()) {
                 typeArgs = Collections.emptyList();
             } else {
-                typeArgs = Collections.unmodifiableList(new ArrayList<AnnotatedTypeMirror>(ts));
+                if (isDeclaration()) {
+                    // TODO: check that all args are really declarations
+                    typeArgs = Collections.unmodifiableList(ts);
+                } else {
+                    List<AnnotatedTypeMirror> uses = new ArrayList<>();
+                    for (AnnotatedTypeMirror t : ts) {
+                        uses.add(t.asUse());
+                    }
+                    typeArgs = Collections.unmodifiableList(uses);
+                }
             }
         }
 
