@@ -8,6 +8,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 */
 
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -58,6 +59,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.framework.type.AnnotatedTypeParameterBounds;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.TypeHierarchy;
@@ -825,8 +827,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         AnnotatedExecutableType invokedMethod = mfuPair.first;
         List<AnnotatedTypeMirror> typeargs = mfuPair.second;
 
-        checkTypeArguments(node, invokedMethod.getTypeVariables(),
-                typeargs, node.getTypeArguments());
+        List<AnnotatedTypeParameterBounds> paramBounds = new ArrayList<>();
+        for (AnnotatedTypeVariable param : invokedMethod.getTypeVariables()) {
+            paramBounds.add(param.getEffectiveBounds());
+        }
+
+        checkTypeArguments(node, paramBounds, typeargs, node.getTypeArguments());
 
         List<AnnotatedTypeMirror> params =
             AnnotatedTypes.expandVarArgs(atypeFactory, invokedMethod, node.getArguments());
@@ -1110,8 +1116,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         checkArguments(params, passedArguments);
 
-        checkTypeArguments(node, constructor.getTypeVariables(),
-                typeargs, node.getTypeArguments());
+        List<AnnotatedTypeParameterBounds> paramBounds = new ArrayList<>();
+        for (AnnotatedTypeVariable param : constructor.getTypeVariables()) {
+            paramBounds.add(param.getEffectiveBounds());
+        }
+
+        checkTypeArguments(node, paramBounds, typeargs, node.getTypeArguments());
 
         boolean valid = validateTypeOf(node);
 
@@ -1647,66 +1657,59 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @param typeargTrees the type arguments as trees, used for error reporting
      */
     protected void checkTypeArguments(Tree toptree,
-            List<? extends AnnotatedTypeVariable> typevars,
+            List<? extends AnnotatedTypeParameterBounds> paramBounds,
             List<? extends AnnotatedTypeMirror> typeargs,
             List<? extends Tree> typeargTrees) {
 
         // System.out.printf("BaseTypeVisitor.checkTypeArguments: %s, TVs: %s, TAs: %s, TATs: %s\n",
-        //         toptree, typevars, typeargs, typeargTrees);
+        //         toptree, paramBounds, typeargs, typeargTrees);
 
         // If there are no type variables, do nothing.
-        if (typevars.isEmpty())
+        if (paramBounds.isEmpty())
             return;
 
-        assert typevars.size() == typeargs.size() :
+        assert paramBounds.size() == typeargs.size() :
             "BaseTypeVisitor.checkTypeArguments: mismatch between type arguments: " +
-            typeargs + " and type variables" + typevars;
+            typeargs + " and type parameter bounds" + paramBounds;
 
-        Iterator<? extends AnnotatedTypeVariable> varIter = typevars.iterator();
+        Iterator<? extends AnnotatedTypeParameterBounds> boundsIter = paramBounds.iterator();
         Iterator<? extends AnnotatedTypeMirror> argIter = typeargs.iterator();
 
-        while (varIter.hasNext()) {
+        while (boundsIter.hasNext()) {
 
-            AnnotatedTypeVariable typeVar = varIter.next();
+            AnnotatedTypeParameterBounds bounds = boundsIter.next();
             AnnotatedTypeMirror typearg = argIter.next();
 
             // TODO skip wildcards for now to prevent a crash
             if (typearg.getKind() == TypeKind.WILDCARD)
                 continue;
 
-            if (typeVar.getEffectiveUpperBound() != null) {
+            if (typeargTrees == null || typeargTrees.isEmpty()) {
+                // The type arguments were inferred and we mark the whole method.
+                // The inference fails if we provide invalid arguments,
+                // therefore issue an error for the arguments.
+                // I hope this is less confusing for users.
+                commonAssignmentCheck(bounds.getUpperBound(),
+                        typearg, toptree,
+                        "type.argument.type.incompatible", false);
+            } else {
+                commonAssignmentCheck(bounds.getUpperBound(), typearg,
+                        typeargTrees.get(typeargs.indexOf(typearg)),
+                        "type.argument.type.incompatible", false);
+            }
+
+            if (!atypeFactory.getTypeHierarchy().isSubtype(bounds.getLowerBound(), typearg)) {
                 if (typeargTrees == null || typeargTrees.isEmpty()) {
                     // The type arguments were inferred and we mark the whole method.
-                    // The inference fails if we provide invalid arguments,
-                    // therefore issue an error for the arguments.
-                    // I hope this is less confusing for users.
-                    commonAssignmentCheck(typeVar.getEffectiveUpperBound(),
-                            typearg, toptree,
-                            "type.argument.type.incompatible", false);
+                    checker.report(Result.failure("type.argument.type.incompatible",
+                            typearg, bounds),
+                            toptree);
                 } else {
-                    commonAssignmentCheck(typeVar.getEffectiveUpperBound(), typearg,
-                            typeargTrees.get(typeargs.indexOf(typearg)),
-                            "type.argument.type.incompatible", false);
+                    checker.report(Result.failure("type.argument.type.incompatible",
+                            typearg, bounds),
+                            typeargTrees.get(typeargs.indexOf(typearg)));
                 }
             }
-
-            // Should we compare lower bounds instead of the annotations on the
-            // type variables?
-            if (!typeVar.getAnnotations().isEmpty()) {
-                if (!typearg.getEffectiveAnnotations().equals(typeVar.getEffectiveAnnotations())) {
-                    if (typeargTrees == null || typeargTrees.isEmpty()) {
-                        // The type arguments were inferred and we mark the whole method.
-                        checker.report(Result.failure("type.argument.type.incompatible",
-                                typearg, typeVar),
-                                toptree);
-                    } else {
-                        checker.report(Result.failure("type.argument.type.incompatible",
-                                typearg, typeVar),
-                                typeargTrees.get(typeargs.indexOf(typearg)));
-                    }
-                }
-            }
-
         }
     }
 

@@ -928,9 +928,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *
      * @param type The use of the type
      * @param element The corresponding element
-     * @return The adapted type variables
+     * @return The adapted bounds of the type parameters
      */
-    public List<AnnotatedTypeVariable> typeVariablesFromUse(
+    public List<AnnotatedTypeParameterBounds> typeVariablesFromUse(
             AnnotatedDeclaredType type, TypeElement element) {
 
         AnnotatedDeclaredType generic = getAnnotatedType(element);
@@ -946,13 +946,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             mapping.put((AnnotatedTypeVariable)tvars.get(i), targs.get(i));
         }
 
-        List<AnnotatedTypeVariable> res = new LinkedList<AnnotatedTypeVariable>();
+        List<AnnotatedTypeParameterBounds> res = new LinkedList<>();
 
         for (AnnotatedTypeMirror atm : tvars) {
             AnnotatedTypeVariable atv = (AnnotatedTypeVariable)atm;
-            atv.setUpperBound(atv.getUpperBound().substitute(mapping));
-            atv.setLowerBound(atv.getLowerBound().substitute(mapping));
-            res.add(atv);
+            // TODO: this maybe needs to use getEffective*Bound, not sure
+            AnnotatedTypeMirror upper = atv.getUpperBound().substitute(mapping);
+            AnnotatedTypeMirror lower = atv.getLowerBound().substitute(mapping);
+            res.add(new AnnotatedTypeParameterBounds(upper, lower));
         }
         return res;
     }

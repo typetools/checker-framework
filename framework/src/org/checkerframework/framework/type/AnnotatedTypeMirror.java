@@ -1822,6 +1822,18 @@ public abstract class AnnotatedTypeMirror {
             return thisUse.substitute(Collections.singletonMap(thisDecl, this.getUpperBound()));
         }
 
+        public AnnotatedTypeParameterBounds getBounds() {
+            return new AnnotatedTypeParameterBounds(getUpperBound(), getLowerBound());
+        }
+
+        public AnnotatedTypeParameterBounds getBoundFields() {
+            return new AnnotatedTypeParameterBounds(getUpperBoundField(), getLowerBoundField());
+        }
+
+        public AnnotatedTypeParameterBounds getEffectiveBounds() {
+            return new AnnotatedTypeParameterBounds(getEffectiveUpperBound(), getEffectiveLowerBound());
+        }
+
         /**
          *  Used to terminate recursion into upper bounds.
          */
