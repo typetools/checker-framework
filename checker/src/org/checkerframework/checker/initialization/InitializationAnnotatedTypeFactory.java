@@ -659,7 +659,7 @@ public abstract class InitializationAnnotatedTypeFactory<
         @Override
         public Void visitLiteral(LiteralTree tree, AnnotatedTypeMirror type) {
             if (tree.getKind() != Tree.Kind.NULL_LITERAL) {
-                type.replaceAnnotation(COMMITTED);
+                type.addAnnotation(COMMITTED);
             }
             return super.visitLiteral(tree, type);
         }
