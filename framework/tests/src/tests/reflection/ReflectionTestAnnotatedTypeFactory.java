@@ -37,7 +37,7 @@ public final class ReflectionTestAnnotatedTypeFactory extends
     }
 
     @Override
-    public ListTreeAnnotator createTreeAnnotator() {
+    public TreeAnnotator createTreeAnnotator() {
         ImplicitsTreeAnnotator implicitsTreeAnnotator = new ImplicitsTreeAnnotator(this);
         AnnotationMirror bottom = AnnotationUtils.fromClass(elements,
                 ReflectBottom.class);

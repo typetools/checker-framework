@@ -39,7 +39,7 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    public ListTreeAnnotator createTreeAnnotator() {
+    public TreeAnnotator createTreeAnnotator() {
         ImplicitsTreeAnnotator implicitsTreeAnnotator = new ImplicitsTreeAnnotator(this);
         implicitsTreeAnnotator.addTreeKind(Tree.Kind.NULL_LITERAL, BOTTOM);
         return new ListTreeAnnotator(new PropagationTreeAnnotator(this), implicitsTreeAnnotator);
