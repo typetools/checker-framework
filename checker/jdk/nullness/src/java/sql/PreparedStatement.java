@@ -32,6 +32,10 @@ import java.io.InputStream;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 
+// Note about @Nullable annotations on parameters "Object x" and "String x":
+// JDBC 4.1 Spec 13.2.2.4 says: "If a Java null is passed to any of the setter
+// methods that take a Java object, the parameter will be set to JDBC NULL".
+
 /**
  * An object that represents a precompiled SQL statement.
  * <P>A SQL statement is precompiled and stored in a
@@ -235,7 +239,7 @@ public interface PreparedStatement extends Statement {
      * marker in the SQL statement; if a database access error occurs or
      * this method is called on a closed <code>PreparedStatement</code>
      */
-    void setString(int parameterIndex, String x) throws SQLException;
+    void setString(int parameterIndex, @Nullable String x) throws SQLException;
 
     /**
      * Sets the designated parameter to the given Java array of bytes.  The driver converts
@@ -406,7 +410,7 @@ public interface PreparedStatement extends Statement {
     * the JDBC driver does not support the specified targetSqlType
     * @see Types
     */
-    void setObject(int parameterIndex, Object x, int targetSqlType)
+    void setObject(int parameterIndex, @Nullable Object x, int targetSqlType)
       throws SQLException;
 
     /**
@@ -446,7 +450,7 @@ public interface PreparedStatement extends Statement {
      *  this method is called on a closed <code>PreparedStatement</code>
      * or the type of the given object is ambiguous
      */
-    void setObject(int parameterIndex, Object x) throws SQLException;
+    void setObject(int parameterIndex, @Nullable Object x) throws SQLException;
 
     /**
      * Executes the SQL statement in this <code>PreparedStatement</code> object,
@@ -957,7 +961,7 @@ public interface PreparedStatement extends Statement {
      * @see Types
      *
      */
-    void setObject(int parameterIndex, Object x, int targetSqlType, int scaleOrLength)
+    void setObject(int parameterIndex, @Nullable Object x, int targetSqlType, int scaleOrLength)
             throws SQLException;
    /**
      * Sets the designated parameter to the given input stream, which will have
@@ -1262,7 +1266,7 @@ public interface PreparedStatement extends Statement {
      * @see SQLType
      * @since 1.8
      */
-    default void setObject(int parameterIndex, Object x, SQLType targetSqlType,
+    default void setObject(int parameterIndex, @Nullable Object x, SQLType targetSqlType,
              int scaleOrLength) throws SQLException {
         throw new SQLFeatureNotSupportedException("setObject not implemented");
     }
@@ -1288,7 +1292,7 @@ public interface PreparedStatement extends Statement {
      * @see SQLType
      * @since 1.8
      */
-    default void setObject(int parameterIndex, Object x, SQLType targetSqlType)
+    default void setObject(int parameterIndex, @Nullable Object x, SQLType targetSqlType)
       throws SQLException {
         throw new SQLFeatureNotSupportedException("setObject not implemented");
     }
