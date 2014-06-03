@@ -257,10 +257,12 @@ public class NullnessAnnotatedTypeFactory
     }
 
     @Override
-    protected ListTreeAnnotator createTreeAnnotator() {
+    protected TreeAnnotator createTreeAnnotator() {
         return new ListTreeAnnotator(
-                super.createTreeAnnotator(),
-                new NullnessTreeAnnotator(this)
+                new NullnessPropagationAnnotator(this),
+                new ImplicitsTreeAnnotator(this),
+                new NullnessTreeAnnotator(this),
+                new CommitmentTreeAnnotator(this)
         );
     }
 
@@ -304,8 +306,31 @@ public class NullnessAnnotatedTypeFactory
                 || var.getSimpleName().contentEquals("class") || inJavaPackage);
     }
 
-    protected class NullnessTreeAnnotator
-        extends InitializationAnnotatedTypeFactory<NullnessValue, NullnessStore, NullnessTransfer, NullnessAnalysis>.CommitmentTreeAnnotator {
+    /**
+     * Nullness doesn't call propagation on binary and unary because
+     * the result is always @Initialized (the default qualifier).
+     *
+     * Would this be valid to move into CommitmentTreeAnnotator.
+     */
+    protected class NullnessPropagationAnnotator extends PropagationTreeAnnotator {
+
+        public NullnessPropagationAnnotator(AnnotatedTypeFactory atypeFactory) {
+            super(atypeFactory);
+        }
+
+        @Override
+        public Void visitBinary(BinaryTree node, AnnotatedTypeMirror type) {
+            return null;
+        }
+
+        @Override
+        public Void visitUnary(UnaryTree node, AnnotatedTypeMirror type) {
+            return null;
+        }
+    }
+
+    protected class NullnessTreeAnnotator extends TreeAnnotator
+        /*extends InitializationAnnotatedTypeFactory<NullnessValue, NullnessStore, NullnessTransfer, NullnessAnalysis>.CommitmentTreeAnnotator*/ {
 
         public NullnessTreeAnnotator(NullnessAnnotatedTypeFactory atypeFactory) {
             super(atypeFactory);
@@ -319,7 +344,7 @@ public class NullnessAnnotatedTypeFactory
             assert elt != null;
             // case 8: class in static member access
             annotateIfStatic(elt, type);
-            return super.visitMemberSelect(node, type);
+            return null;
         }
 
         @Override
@@ -332,7 +357,7 @@ public class NullnessAnnotatedTypeFactory
                     type.addAnnotation(NONNULL);
                 }
             }
-            return super.visitVariable(node, type);
+            return null;
         }
 
         @Override
@@ -353,14 +378,14 @@ public class NullnessAnnotatedTypeFactory
                 type.replaceAnnotation(NONNULL);
             }
 
-            return super.visitIdentifier(node, type);
+            return null;
         }
 
         // The result of a binary operation is always non-null.
         @Override
         public Void visitBinary(BinaryTree node, AnnotatedTypeMirror type) {
             type.replaceAnnotation(NONNULL);
-            return null; // super.visitBinary(node, type);
+            return null;
         }
 
         // The result of a compound operation is always non-null.
@@ -368,22 +393,22 @@ public class NullnessAnnotatedTypeFactory
         public Void visitCompoundAssignment(CompoundAssignmentTree node,
                 AnnotatedTypeMirror type) {
             type.replaceAnnotation(NONNULL);
-            // call super for initialization defaults
-            return super.visitCompoundAssignment(node, type);
+            // Committment will run after for initialization defaults
+            return null;
         }
 
         // The result of a unary operation is always non-null.
         @Override
         public Void visitUnary(UnaryTree node, AnnotatedTypeMirror type) {
             type.replaceAnnotation(NONNULL);
-            return null; // super.visitUnary(node, type);
+            return null;
         }
 
         // The result of newly allocated structures is always non-null.
         @Override
         public Void visitNewClass(NewClassTree node, AnnotatedTypeMirror type) {
             type.replaceAnnotation(NONNULL);
-            return super.visitNewClass(node, type);
+            return null;
         }
     }
 

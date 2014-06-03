@@ -73,7 +73,7 @@ public class LockAnnotatedTypeFactory
     }
 
     @Override
-    public ListTreeAnnotator createTreeAnnotator() {
+    public TreeAnnotator createTreeAnnotator() {
         return new ListTreeAnnotator(
                 super.createTreeAnnotator(),
                 new LockTreeAnnotator(this)
