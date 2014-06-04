@@ -241,7 +241,7 @@ public class NullnessTransfer extends
         TypeMirror dummy = analysis.getEnv().getTypeUtils()
                 .getPrimitiveType(TypeKind.BOOLEAN);
         AnnotatedTypeMirror annotatedDummy = AnnotatedTypeMirror.createType(
-                dummy, analysis.getTypeFactory());
+                dummy, analysis.getTypeFactory(), false);
         annotatedDummy.addAnnotation(NonNull.class);
         annotatedDummy.addAnnotation(NonRaw.class);
         annotatedDummy.addAnnotation(Initialized.class);
