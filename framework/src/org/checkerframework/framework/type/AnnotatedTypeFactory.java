@@ -629,7 +629,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (decl == null && indexTypes != null && indexTypes.containsKey(elt)) {
             type = AnnotatedTypes.deepCopy(indexTypes.get(elt));
         } else if (decl == null && (indexTypes == null || !indexTypes.containsKey(elt))) {
-            type = toAnnotatedType(elt.asType(), false);
+            type = toAnnotatedType(elt.asType(), ElementUtils.isTypeDeclaration(elt));
             TypeFromElement.annotate(type, elt);
 
             if (elt instanceof ExecutableElement

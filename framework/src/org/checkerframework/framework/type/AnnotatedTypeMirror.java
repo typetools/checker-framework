@@ -235,6 +235,10 @@ public abstract class AnnotatedTypeMirror {
         return false;
     }
 
+    public AnnotatedTypeMirror asUse() {
+        return this;
+    }
+
     /**
      * Returns true if an annotation from the given sub-hierarchy targets this type.
      *
@@ -929,10 +933,32 @@ public abstract class AnnotatedTypeMirror {
             return declaration;
         }
 
+        public AnnotatedDeclaredType asUse() {
+            if (!this.isDeclaration()) {
+                return this;
+            }
+
+            AnnotatedDeclaredType result = this.getCopy(true);
+            result.declaration = false;
+
+            List<AnnotatedTypeMirror> newArgs = new ArrayList<>();
+            for (AnnotatedTypeMirror arg : result.getTypeArguments()) {
+                AnnotatedTypeVariable paramDecl = (AnnotatedTypeVariable)arg;
+                assert paramDecl.isDeclaration();
+                newArgs.add(paramDecl.asUse());
+            }
+            result.setTypeArguments(newArgs);
+
+            return result;
+        }
+
         @SideEffectFree
         @Override
         public String toString(boolean printInvisible) {
             StringBuilder sb = new StringBuilder();
+            if (declaration) {
+                sb.append("/*DECL*/ ");
+            }
             final Element typeElt = this.getUnderlyingType().asElement();
             String smpl = typeElt.getSimpleName().toString();
             if (smpl.isEmpty()) {
@@ -1654,6 +1680,17 @@ public abstract class AnnotatedTypeMirror {
             this.declaration = declaration;
         }
 
+        public AnnotatedTypeVariable asUse() {
+            if (!this.isDeclaration()) {
+                return this;
+            }
+
+            AnnotatedTypeVariable result = this.getCopy(true);
+            result.declaration = false;
+
+            return result;
+        }
+
         @Override
         public <R, P> R accept(AnnotatedTypeVisitor<R, P> v, P p) {
             return v.visitTypeVariable(this, p);
@@ -1676,6 +1713,8 @@ public abstract class AnnotatedTypeMirror {
          * @param type the lower bound type
          */
         void setLowerBound(AnnotatedTypeMirror type) {
+            if (type != null)
+                type = type.asUse();
             this.lowerBound = type;
         }
 
@@ -1775,6 +1814,8 @@ public abstract class AnnotatedTypeMirror {
          */
         void setUpperBound(AnnotatedTypeMirror type) {
             // TODO: create a deepCopy?
+            if (type != null)
+                type = type.asUse();
             this.upperBound = type;
         }
 
@@ -1948,6 +1989,9 @@ public abstract class AnnotatedTypeMirror {
         @Override
         public String toString(boolean printInvisible) {
             StringBuilder sb = new StringBuilder();
+            if (declaration) {
+                sb.append("/*DECL*/ ");
+            }
             sb.append(formatAnnotationString(annotations, printInvisible));
             sb.append(actualType);
             if (!isPrintingBound) {
@@ -2155,6 +2199,8 @@ public abstract class AnnotatedTypeMirror {
          * @param type  the type of the lower bound
          */
         void setSuperBound(AnnotatedTypeMirror type) {
+            if (type != null)
+                type = type.asUse();
             this.superBound = type;
         }
 
@@ -2193,6 +2239,8 @@ public abstract class AnnotatedTypeMirror {
          * @param type  the type of the upper bound
          */
         void setExtendsBound(AnnotatedTypeMirror type) {
+            if (type != null)
+                type = type.asUse();
             this.extendsBound = type;
         }
 
