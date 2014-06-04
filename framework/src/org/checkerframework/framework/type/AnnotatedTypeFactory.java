@@ -629,7 +629,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (decl == null && indexTypes != null && indexTypes.containsKey(elt)) {
             type = AnnotatedTypes.deepCopy(indexTypes.get(elt));
         } else if (decl == null && (indexTypes == null || !indexTypes.containsKey(elt))) {
-            type = toAnnotatedType(elt.asType(), false);
+            type = toAnnotatedType(elt.asType(), ElementUtils.isTypeDeclaration(elt));
             TypeFromElement.annotate(type, elt);
 
             if (elt instanceof ExecutableElement
@@ -928,9 +928,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *
      * @param type The use of the type
      * @param element The corresponding element
-     * @return The adapted type variables
+     * @return The adapted bounds of the type parameters
      */
-    public List<AnnotatedTypeVariable> typeVariablesFromUse(
+    public List<AnnotatedTypeParameterBounds> typeVariablesFromUse(
             AnnotatedDeclaredType type, TypeElement element) {
 
         AnnotatedDeclaredType generic = getAnnotatedType(element);
@@ -946,13 +946,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             mapping.put((AnnotatedTypeVariable)tvars.get(i), targs.get(i));
         }
 
-        List<AnnotatedTypeVariable> res = new LinkedList<AnnotatedTypeVariable>();
+        List<AnnotatedTypeParameterBounds> res = new LinkedList<>();
 
         for (AnnotatedTypeMirror atm : tvars) {
             AnnotatedTypeVariable atv = (AnnotatedTypeVariable)atm;
-            atv.setUpperBound(atv.getUpperBound().substitute(mapping));
-            atv.setLowerBound(atv.getLowerBound().substitute(mapping));
-            res.add(atv);
+            // TODO: this maybe needs to use getEffective*Bound, not sure
+            AnnotatedTypeMirror upper = atv.getUpperBound().substitute(mapping);
+            AnnotatedTypeMirror lower = atv.getLowerBound().substitute(mapping);
+            res.add(new AnnotatedTypeParameterBounds(upper, lower));
         }
         return res;
     }
@@ -1414,7 +1415,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 }
                 typeargs.add(typeVarMapping.get(tv));
             }
-            methodType = methodType.substitute(typeVarMapping);
+            methodType = (AnnotatedExecutableType)methodType.substitute(typeVarMapping);
         }
 
         return Pair.of(methodType, typeargs);
@@ -1462,7 +1463,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             for (AnnotatedTypeVariable tv : con.getTypeVariables()) {
                 typeargs.add(typeVarMapping.get(tv));
             }
-            con = con.substitute(typeVarMapping);
+            con = (AnnotatedExecutableType)con.substitute(typeVarMapping);
         }
 
         return Pair.of(con, typeargs);
@@ -1743,18 +1744,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     public final AnnotatedTypeMirror toAnnotatedType(TypeMirror t, boolean declaration) {
         return AnnotatedTypeMirror.createType(t, this, declaration);
-    }
-
-    /**
-     * A convenience method that converts a {@link TypeMirror} to a non-declaration {@link
-     * AnnotatedTypeMirror} using {@link AnnotatedTypeMirror#createType}.
-     *
-     * @param t the {@link TypeMirror}
-     * @return an {@link AnnotatedTypeMirror} that has {@code t} as its
-     * underlying type
-     */
-    public final AnnotatedTypeMirror toAnnotatedType(TypeMirror t) {
-        return toAnnotatedType(t, false);
     }
 
 
