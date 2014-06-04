@@ -165,7 +165,7 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>,
     public V createSingleAnnotationValue(AnnotationMirror anno,
             TypeMirror underlyingType) {
         AnnotatedTypeMirror type = AnnotatedTypeMirror.createType(
-                underlyingType, getTypeFactory());
+                underlyingType, getTypeFactory(), false);
         Set<? extends AnnotationMirror> tops = getTypeFactory().getQualifierHierarchy()
                 .getTopAnnotations();
         makeTop(type, tops);
