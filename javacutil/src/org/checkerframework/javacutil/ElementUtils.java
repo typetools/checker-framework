@@ -361,4 +361,20 @@ public class ElementUtils {
         }
         return Collections.<ExecutableElement>unmodifiableList(meths);
     }
+
+    public static boolean isTypeDeclaration(Element elt) {
+        switch (elt.getKind()) {
+            // These tree kinds are always declarations.  Uses of the declared
+            // types have tree kind IDENTIFIER.
+            case ANNOTATION_TYPE:
+            case CLASS:
+            case ENUM:
+            case INTERFACE:
+            case TYPE_PARAMETER:
+                return true;
+
+            default:
+                return false;
+        }
+    }
 }
