@@ -396,7 +396,35 @@ class TypeMirrorConverter<Q> {
         if (watm == null) {
             return null;
         }
-        return watm.accept(UPDATED_QTM_BUILDER, getQualifier(watm.unwrap()));
+        // FIXME: This is a total hack to work around a particularly nasty
+        // aspect of the framework's AnnotatedTypeVariable handling.
+        //
+        // Consider:
+        //      class C<T> {
+        //          class D<U extends T> { }
+        //      }
+        //
+        // When processing the declaration of `U`, the underlying
+        // AnnotatedTypeMirror initially has no @Key annotations.  During
+        // processing, TypeMirrorConverter will request the qualified
+        // bounds of `U`.  This leads to a call chain: ATV.getLowerBound ->
+        // fixupBoundAnnotations -> getUpperBound().getEffectiveAnnotations() ->
+        // getEffectiveUpperBound().  This results in calling substitute (and
+        // therefore postTypeVarSubstitution) on the upper bound, which
+        // currently has no annotations.  So the ATM -> QTM conversion fails
+        // ("can't create QTM with null qualifier").  Using TypeAnnotator
+        // instead of UPDATED_QTM_BUILDER is not a great solution (since we end
+        // up running TypeAnnotator on the same type more than once) but it does
+        // work around this issue.
+        //
+        // TODO: This also works around the problem of capture-converted
+        // wildcards starting out with no top-level annotation.  This is another
+        // one we should fix properly instead of hacking around.
+        DefaultQualifiedTypeFactory<Q> defaultFactory = (DefaultQualifiedTypeFactory<Q>)getTypeFactory().getUnderlying();
+        return watm.accept(defaultFactory.getTypeAnnotator(), null);
+        // UPDATED_QTM_BUILDER was deleted in the same commit that added the
+        // workaround.
+        //return watm.accept(UPDATED_QTM_BUILDER, getQualifier(watm.unwrap()));
     }
 
     /** getQualifiedType lifted to operate on a list of AnnotatedTypeMirrors.
@@ -408,115 +436,6 @@ class TypeMirrorConverter<Q> {
         }
         return result;
     }
-
-    /** A visitor to recursively construct QualifiedTypeMirrors from
-     * AnnotatedTypeMirrors.
-     */
-    private ExtendedTypeVisitor<QualifiedTypeMirror<Q>, Q> UPDATED_QTM_BUILDER =
-        new ExtendedTypeVisitor<QualifiedTypeMirror<Q>, Q>() {
-            private IdentityHashMap<ExtendedTypeVariable, QualifiedTypeVariable<Q>> typeVarMap =
-                new IdentityHashMap<>();
-
-            public QualifiedTypeMirror<Q> visitArray(ExtendedArrayType extended, Q qual) {
-                WrappedAnnotatedArrayType watm = (WrappedAnnotatedArrayType)extended;
-                return new QualifiedArrayType<Q>(watm, qual,
-                        getQualifiedTypeFromWrapped(watm.getComponentType()));
-            }
-
-            public QualifiedTypeMirror<Q> visitDeclared(ExtendedDeclaredType extended, Q qual) {
-                WrappedAnnotatedDeclaredType watm = (WrappedAnnotatedDeclaredType)extended;
-                return new QualifiedDeclaredType<Q>(watm, qual,
-                        getQualifiedTypeListFromWrapped(watm.getTypeArguments()));
-            }
-
-            public QualifiedTypeMirror<Q> visitError(ExtendedErrorType extended, Q qual) {
-                throw new IllegalArgumentException("impossible: ERROR type in WrappedAnnotatedTypeMirror");
-            }
-
-            public QualifiedTypeMirror<Q> visitExecutable(ExtendedExecutableType extended, Q qual) {
-                WrappedAnnotatedExecutableType watm = (WrappedAnnotatedExecutableType)extended;
-
-                List<? extends ExtendedParameterDeclaration> extendedParameters = watm.getTypeParameters();
-                List<QualifiedParameterDeclaration<Q>> qualifiedParameters = new ArrayList<>();
-                for (int i = 0; i < extendedParameters.size(); ++i) {
-                    QualifiedParameterDeclaration<Q> qualified =
-                        (QualifiedParameterDeclaration<Q>)getQualifiedTypeFromWrapped(
-                                (WrappedAnnotatedTypeMirror)extendedParameters.get(i));
-                    qualifiedParameters.add(qualified);
-                }
-
-                if (qual == null) {
-                    qual = executableDefault;
-                }
-
-                return new QualifiedExecutableType<Q>(watm,
-                        getQualifiedTypeListFromWrapped(watm.getParameterTypes()),
-                        getQualifiedTypeFromWrapped(watm.getReceiverType()),
-                        getQualifiedTypeFromWrapped(watm.getReturnType()),
-                        getQualifiedTypeListFromWrapped(watm.getThrownTypes()),
-                        qualifiedParameters);
-            }
-
-            public QualifiedTypeMirror<Q> visitIntersection(ExtendedIntersectionType extended, Q qual) {
-                WrappedAnnotatedIntersectionType watm = (WrappedAnnotatedIntersectionType)extended;
-                return new QualifiedIntersectionType<Q>(watm, qual,
-                        getQualifiedTypeListFromWrapped(watm.getBounds()));
-            }
-
-            public QualifiedTypeMirror<Q> visitNoType(ExtendedNoType extended, Q qual) {
-                // NoType has no components.
-                return new QualifiedNoType<Q>(extended, qual);
-            }
-
-            public QualifiedTypeMirror<Q> visitNull(ExtendedNullType extended, Q qual) {
-                // NullType has no components.
-                return new QualifiedNullType<Q>(extended, qual);
-            }
-
-            public QualifiedTypeMirror<Q> visitPrimitive(ExtendedPrimitiveType extended, Q qual) {
-                // PrimitiveType has no components.
-                return new QualifiedPrimitiveType<Q>(extended, qual);
-            }
-
-            public QualifiedTypeMirror<Q> visitTypeVariable(ExtendedTypeVariable extended, Q qual) {
-                WrappedAnnotatedTypeVariable watm = (WrappedAnnotatedTypeVariable)extended;
-                return new QualifiedTypeVariable<Q>(watm, qual);
-            }
-
-            public QualifiedTypeMirror<Q> visitUnion(ExtendedUnionType extended, Q qual) {
-                WrappedAnnotatedUnionType watm = (WrappedAnnotatedUnionType)extended;
-                return new QualifiedUnionType<Q>(watm, qual,
-                        getQualifiedTypeListFromWrapped(watm.getAlternatives()));
-            }
-
-            public QualifiedTypeMirror<Q> visitWildcard(ExtendedWildcardType extended, Q qual) {
-                WrappedAnnotatedWildcardType watm = (WrappedAnnotatedWildcardType)extended;
-                return new QualifiedWildcardType<Q>(watm,
-                        getQualifiedTypeFromWrapped(watm.getExtendsBound()),
-                        getQualifiedTypeFromWrapped(watm.getSuperBound()));
-            }
-
-            public QualifiedTypeMirror<Q> visitParameterDeclaration(ExtendedParameterDeclaration extended, Q qual) {
-                WrappedAnnotatedTypeVariable watm = (WrappedAnnotatedTypeVariable)extended;
-                return new QualifiedParameterDeclaration<Q>(watm);
-            }
-
-            public QualifiedTypeMirror<Q> visitTypeDeclaration(ExtendedTypeDeclaration extended, Q qual) {
-                WrappedAnnotatedDeclaredType watm = (WrappedAnnotatedDeclaredType)extended;
-
-                List<? extends ExtendedParameterDeclaration> extendedParameters = watm.getTypeParameters();
-                List<QualifiedParameterDeclaration<Q>> qualifiedParameters = new ArrayList<>();
-                for (int i = 0; i < extendedParameters.size(); ++i) {
-                    QualifiedParameterDeclaration<Q> qualified =
-                        (QualifiedParameterDeclaration<Q>)getQualifiedTypeFromWrapped(
-                                (WrappedAnnotatedTypeVariable)extendedParameters.get(i));
-                    qualifiedParameters.add(qualified);
-                }
-
-                return new QualifiedTypeDeclaration<Q>(watm, qual,
-                        qualifiedParameters);
-            }
-        };
 
 
     /* Conversion functions between qualifiers and @Key AnnotationMirrors */
