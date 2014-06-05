@@ -9,7 +9,7 @@ import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.qual.Bottom;
 import org.checkerframework.framework.qual.TypeQualifiers;
 import org.checkerframework.framework.qual.Unqualified;
-import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.type.*;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
@@ -65,7 +65,13 @@ class TestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         this.postInit();
 
         this.typeAnnotator.addTypeName(java.lang.Void.class, BOTTOM);
-        this.treeAnnotator.addTreeKind(com.sun.source.tree.Tree.Kind.NULL_LITERAL, BOTTOM);
+    }
+
+    @Override
+    public TreeAnnotator createTreeAnnotator() {
+        ImplicitsTreeAnnotator implicitsTreeAnnotator = new ImplicitsTreeAnnotator(this);
+        implicitsTreeAnnotator.addTreeKind(com.sun.source.tree.Tree.Kind.NULL_LITERAL, BOTTOM);
+        return new ListTreeAnnotator(new PropagationTreeAnnotator(this), implicitsTreeAnnotator);
     }
 
     @Override

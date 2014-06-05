@@ -1,6 +1,7 @@
 package org.checkerframework.checker.regex;
 
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -16,11 +17,7 @@ import org.checkerframework.checker.regex.qual.RegexBottom;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
-import org.checkerframework.framework.type.AnnotatedTypeFactory;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
-import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.type.TreeAnnotator;
+import org.checkerframework.framework.type.*;
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
@@ -137,7 +134,11 @@ public class RegexAnnotatedTypeFactory extends GenericAnnotatedTypeFactory<CFVal
 
     @Override
     public TreeAnnotator createTreeAnnotator() {
-        return new RegexTreeAnnotator(this);
+        return new ListTreeAnnotator(
+                new ImplicitsTreeAnnotator(this),
+                new RegexTreeAnnotator(this),
+                new RegexPropagationAnnotator(this)
+        );
     }
 
     /**
@@ -236,6 +237,20 @@ public class RegexAnnotatedTypeFactory extends GenericAnnotatedTypeFactory<CFVal
             return false;
         }
         return true;
+    }
+
+    private class RegexPropagationAnnotator extends PropagationTreeAnnotator {
+
+        public RegexPropagationAnnotator(AnnotatedTypeFactory atypeFactory) {
+            super(atypeFactory);
+        }
+
+        @Override
+        public Void visitBinary(BinaryTree node, AnnotatedTypeMirror type) {
+            // Don't call super method which will try to create a LUB
+            // Even when it is not yet valid: i.e. between a @PolyRegex and a @Regex
+            return null;
+        }
     }
 
     private class RegexTreeAnnotator extends TreeAnnotator {

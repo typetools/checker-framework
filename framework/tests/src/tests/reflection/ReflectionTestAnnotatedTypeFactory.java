@@ -2,10 +2,12 @@ package tests.reflection;
 
 import javax.lang.model.element.AnnotationMirror;
 
+import com.sun.source.tree.Tree;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.reflection.ReflectionResolutionAnnotatedTypeFactory;
+import org.checkerframework.framework.qual.Bottom;
 import org.checkerframework.framework.qual.TypeQualifiers;
-import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.type.*;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -32,10 +34,19 @@ public final class ReflectionTestAnnotatedTypeFactory extends
         AnnotationMirror bottom = AnnotationUtils.fromClass(elements,
                 ReflectBottom.class);
         this.typeAnnotator.addTypeName(java.lang.Void.class, bottom);
-        this.treeAnnotator.addTreeKind(
+    }
+
+    @Override
+    public TreeAnnotator createTreeAnnotator() {
+        ImplicitsTreeAnnotator implicitsTreeAnnotator = new ImplicitsTreeAnnotator(this);
+        AnnotationMirror bottom = AnnotationUtils.fromClass(elements,
+                ReflectBottom.class);
+        implicitsTreeAnnotator.addTreeKind(
                 com.sun.source.tree.Tree.Kind.NULL_LITERAL, bottom);
-        this.treeAnnotator.addTreeKind(
+        implicitsTreeAnnotator.addTreeKind(
                 com.sun.source.tree.Tree.Kind.INT_LITERAL, bottom);
+
+        return new ListTreeAnnotator(new PropagationTreeAnnotator(this), implicitsTreeAnnotator);
     }
 
     @Override

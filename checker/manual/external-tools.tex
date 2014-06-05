@@ -54,13 +54,13 @@ use the last one.
   \item
     Option 1:
     Add directory
-    \code{.../checker-framework-1.8.1/checker/bin} to your path, \emph{before} any other
+    \code{.../checker-framework-1.8.2/checker/bin} to your path, \emph{before} any other
     directory that contains a \<javac> executable.  Now, whenever
     you run \code{javac}, you will use the updated compiler.  If you are
     using the bash shell, a way to do this is to add the following to your
     \verb|~/.profile| (or alternately \verb|~/.bash_profle| or \verb|~/.bashrc|) file:
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.8.1
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.8.2
   export PATH=${CHECKERFRAMEWORK}/checker/bin:${PATH}
 \end{Verbatim}
     then log out and back in to ensure that the environment variable
@@ -76,7 +76,7 @@ use the last one.
     \verb|~/.bashrc| file:
 % No Windows example because this doesn't work under Windows.
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.8.1
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.8.2
   alias javacheck='$CHECKERFRAMEWORK/checker/bin/javac'
 \end{Verbatim}
 
@@ -95,11 +95,11 @@ use the last one.
 
 \begin{Verbatim}
   # Unix
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.8.1
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.8.2
   alias javacheck='java -jar $CHECKERFRAMEWORK/checker/dist/checker.jar'
 
   # Windows
-  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-1.8.1\
+  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-1.8.2\
   doskey javacheck=java -jar %CHECKERFRAMEWORK%\checker\dist\checker.jar $*
 \end{Verbatim}
 
@@ -118,7 +118,7 @@ Framework \<javac> to your path).
 The output should be:
 
 \begin{Verbatim}
-  javac 1.8.0-jsr308-1.8.1
+  javac 1.8.0-jsr308-1.8.2
 \end{Verbatim}
 
 
@@ -296,13 +296,13 @@ If you use the \ahref{\url{http://maven.apache.org/}}{Maven} tool,
 then you can specify pluggable type-checking as part of your build
 process.
 
-There are two ways to do this. The first is to point Maven to a
-script that executes the Checker Framework's copy of javac, and
+There are two ways to do this. The first is to point Maven to a script that
+makes Maven use the Type Annotations compiler, and
 the second is to use the Maven plugin. \textbf{The Maven plugin
 is deprecated in favor of the first approach and will be removed
 as of July 1, 2014.}
 
-\subsection{Pointing Maven to the Checker Framework script\label{maven-javac-script}}
+\subsection{Using the Type Annotations compiler script from Maven\label{maven-javac-script}}
 
 \begin{enumerate}
 
@@ -324,7 +324,7 @@ as of July 1, 2014.}
     </dependencies>
 \end{alltt}
 
-\item Point the Maven compiler plugin to the javac\_maven script. Find
+\item Direct the Maven compiler plugin to use the \code{javac\_maven} script. Find
 the existing reference to the \code{maven-compiler-plugin} within the \code{<plugins>}
 section or add it if necessary.
 
@@ -341,16 +341,17 @@ section or add it if necessary.
       </plugin>
 \end{alltt}
 
-On Windows, javac\_maven.bat is used instead of the javac\_maven script, but it is not necessary to
-include the .bat extension in the absolute path above.
+On Windows, the \code{javac\_maven.bat} script is automatically used instead
+of the \code{javac\_maven} script -- it is not necessary to include the .bat
+extension in the absolute path above.
 
 This script assumes that the Checker Framework is the only annotation processor being run.
-If this is not the case, please modify the javac\_maven script accordingly.
+If this is not the case, please modify the \code{javac\_maven} script accordingly.
 
-\item Create a text file named `argfile' in the same directory as the pom.xml and include in it the
-command-line parameters to pass to the Java compiler.
+\item Create a text file named \code{argfile} in the same directory as the \code{pom.xml}
+and include in it the command-line parameters to pass to the Java compiler.
 
-Example contents of argfile:
+Example contents of \code{argfile}:
 
 \begin{alltt}
 -processor org.checkerframework.checker.nullness.NullnessChecker
@@ -361,11 +362,11 @@ Example contents of argfile:
 -Xmaxwarns 10000
 \end{alltt}
 
-Due to limitations of the pom.xml syntax, some command-line options are difficult or impossible
-to pass via the pom.xml, hence the need for this file.
+Due to limitations of the \code{pom.xml} syntax, some command-line options are
+difficult or impossible to pass via the \code{pom.xml}, hence the need for this file.
 
-If you would like to call this file something other than 'argfile', please modify the javac\_maven
-script accordingly.
+If you would like to call this file something other than \code{argfile},
+please modify the \code{javac\_maven} script accordingly.
 
 \end{enumerate}
 

@@ -4,12 +4,22 @@ Converted from using rt.jar to ct.sym for creating the annotated jdk.
 Using the annotated jdk on the bootclasspath of a VM will cause the
 vm to crash immediately.
 
+The Lock Checker has been rewritten to support dataflow analysis.
+It can now understand conditional expressions, for example, and
+knows that "lock" is held in the body of statements like
+"if (lock.tryLock()){ ... }"
+The Lock Checker chapter in the manual has been updated accordingly
+and describes the new Lock Checker features in detail.
+
 Provided a javac_maven script (and batch file) to make it simpler
 to use the Checker Framework from Maven.  The Maven plug-in is deprecated
 and will be removed as of July 1, 2014. Added an explanation of how
 to use the script in the Maven section of the manual.
 
-Fixes for Issue 312, 315, 319, 326, 327.
+The Checker Framework installation instructions in the manual have
+been updated.
+
+Fixes for Issues 312, 315, 316, 318, 319, 324, 326, 327.
 
 ----------------------------------------------------------------------
 
@@ -62,7 +72,7 @@ to the final bytecode.
 
 Reduce special treatment of checkers.quals.Unqualified.
 
-Fixes for Issues 240, 265, 281.
+Fixes for Issues 170, 240, 265, 281.
 
 ----------------------------------------------------------------------
 
