@@ -79,9 +79,10 @@ command-line options are provided.  (See
 Section~\ref{alint} for more details about the \code{-Alint}
 command-line option.)
 
+\label{lint-nulltest-section}\label{lint-uninitialized-section}
 \begin{enumerate}
 \item
-  \label{lint-nulltest}%
+  \label{lint-nulltest-item}%
   If you supply the \code{-Alint=redundantNullComparison} command-line option, then the
   checker warns when a null check is performed against a value that is
   guaranteed to be non-null, as in \code{("m" == null)}.  Such a check is
@@ -90,7 +91,7 @@ command-line option.)
   part of ordinary defensive programming.  
 
 \item
-  \label{lint-uninitialized}%
+  \label{lint-uninitialized-item}%
   If you supply the \code{-Alint=uninitialized} command-line option, then
   the checker warns if a constructor fails to initialize any field,
   including \refqualclass{checker/nullness/qual}{Nullable} types and primitive
@@ -1381,7 +1382,7 @@ for all the fields that the helper method assigns.
 It's a bit odd, but you use that same annotation, \code{@EnsuresNonNull},
 to indicate that a primitive field has its value set in a helper method,
 which is relevant when you supply the \code{-Alint=uninitialized}
-command-line option (see Section~\ref{lint-uninitialized}).
+command-line option (see Section~\ref{lint-uninitialized-section}).
 
 % TODO:
 % We need an
@@ -1689,7 +1690,7 @@ You can suppress warnings related to partially-initialized objects with
 
 When the \code{-Alint=uninitialized} command-line option is provided, then
 an object is considered uninitialized until \emph{all} its fields are assigned, not
-just the \code{@NonNull} ones.  See Section~\ref{lint-uninitialized}.
+just the \code{@NonNull} ones.  See Section~\ref{lint-uninitialized-section}.
 
 
 \paragraph{Use of method annotations}
@@ -1965,7 +1966,7 @@ for all the fields that the helper method assigns.
 It's a bit odd, but you use that same annotation, \code{@EnsuresNonNull},
 to indicate that a primitive field has its value set in a helper method,
 which is relevant when you supply the \code{-Alint=uninitialized}
-command-line option (see Section~\ref{lint-uninitialized}).
+command-line option (see Section~\ref{lint-uninitialized-section}).
 
 % TODO:
 % We need an
@@ -2185,7 +2186,7 @@ You can suppress warnings related to partially-initialized objects with
 
 When the \code{-Alint=uninitialized} command-line option is provided, then
 an object is considered raw until \emph{all} its fields are assigned, not
-just the \code{@NonNull} ones.  See Section~\ref{lint-uninitialized}.
+just the \code{@NonNull} ones.  See Section~\ref{lint-uninitialized-section}.
 
 
 \paragraph{Use of method annotations}
