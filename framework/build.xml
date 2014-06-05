@@ -254,7 +254,7 @@
         <mkdir dir="${build.reports}"/>
         <junit fork="${run.tests.should.fork}"
                dir="${basedir}"
-               printsummary="true"
+               printsummary="false"
                haltonfailure="${halt.on.test.failure}">
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <jvmarg line="-ea"/>
@@ -286,7 +286,7 @@
 
       <junit fork="${run.tests.should.fork}"
              dir="${basedir}"
-             printsummary="true"
+             printsummary="false"
              haltonfailure="${halt.on.test.failure}">
           <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
           <jvmarg line="-ea"/>
