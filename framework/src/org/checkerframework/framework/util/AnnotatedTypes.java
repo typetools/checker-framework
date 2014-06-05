@@ -787,11 +787,6 @@ public class AnnotatedTypes {
         TypeResolutionFinder finder = new TypeResolutionFinder(processingEnv, atypeFactory, typeVar);
         List<AnnotatedTypeMirror> lubForVar = finder.visit(exeType.getReturnType(), returnType);
 
-        // TODO: This may introduce a bug, but I don't want to deal with it right now
-        if (lubForVar.isEmpty()) {
-            return null;
-        }
-
         List<? extends ExpressionTree> args;
         if (expr instanceof MethodInvocationTree) {
             args = ((MethodInvocationTree) expr).getArguments();
@@ -830,8 +825,18 @@ public class AnnotatedTypes {
             }
             passedArgs.addAll(finder.visit(requiredArg, passedArg));
         }
-        if (passedArgs.isEmpty())
+        if (passedArgs.isEmpty()) {
             return null;
+        }
+
+        if (lubForVar.isEmpty()) {
+            // If the return type is void, take a (copy of!) the first arg and
+            // annotate it as the LUB of all passed args. Use this
+            // as the inferred type argument for the
+            AnnotatedTypeMirror res = passedArgs.get(0).getCopy(false);
+            annotateAsLub(processingEnv, atypeFactory, res, passedArgs);
+            return res;
+        }
 
         // Found arguments! Great!
         annotateAsLub(processingEnv, atypeFactory, lubForVar.get(0), passedArgs);
@@ -1443,8 +1448,9 @@ public class AnnotatedTypes {
      */
     public static boolean isValidType(QualifierHierarchy qualifierHierarchy,
             AnnotatedTypeMirror type) {
-        return isValidType(qualifierHierarchy, type,
+        boolean res = isValidType(qualifierHierarchy, type,
                 Collections.<AnnotatedTypeMirror> emptySet());
+        return res;
     }
 
     private static boolean isValidType(QualifierHierarchy qualifierHierarchy,
@@ -1527,10 +1533,10 @@ public class AnnotatedTypes {
         // TODO: the recursive checks on type arguments are currently skipped, because
         // this breaks various tests.  it seems that checking the validity changes the
         // annotations on some types.
-//        if (type instanceof AnnotatedDeclaredType) {
+//        } else if (type instanceof AnnotatedDeclaredType) {
 //            AnnotatedDeclaredType at = (AnnotatedDeclaredType) type;
 //            for (AnnotatedTypeMirror typeArgument : at.getTypeArguments()) {
-//                if (!isValidValue(qualifierHierarchy, typeArgument, visited)) {
+//                if (!isValidType(qualifierHierarchy, typeArgument, visited)) {
 //                    return false;
 //                }
 //            }

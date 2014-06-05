@@ -1646,6 +1646,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @param typeargs the type arguments from the type or method invocation
      * @param typeargTrees the type arguments as trees, used for error reporting
      */
+    // TODO: see updated version below that performs more well-formedness checks.
     protected void checkTypeArguments(Tree toptree,
             List<? extends AnnotatedTypeVariable> typevars,
             List<? extends AnnotatedTypeMirror> typeargs,
@@ -1671,6 +1672,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             AnnotatedTypeMirror typearg = argIter.next();
 
             // TODO skip wildcards for now to prevent a crash
+            // FIXME this is BAD! See nullness/generics/Issue329.java for
+            // a false negative because of this.
             if (typearg.getKind() == TypeKind.WILDCARD)
                 continue;
 
@@ -1709,6 +1712,80 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         }
     }
+
+    /* Updated version that performs more well-formedness checks.
+
+    protected void checkTypeArguments(Tree toptree,
+            List<? extends AnnotatedTypeVariable> typevars,
+            List<? extends AnnotatedTypeMirror> typeargs,
+            List<? extends Tree> typeargTrees) {
+
+        // System.out.printf("BaseTypeVisitor.checkTypeArguments: %s, TVs: %s, TAs: %s, TATs: %s\n",
+        //         toptree, typevars, typeargs, typeargTrees);
+
+        // If there are no type variables, do nothing.
+        if (typevars.isEmpty())
+            return;
+
+        assert typevars.size() == typeargs.size() :
+            "BaseTypeVisitor.checkTypeArguments: mismatch between type arguments: " +
+            typeargs + " and type variables " + typevars;
+
+        assert typeargTrees.isEmpty() ||
+                    typeargTrees.size() == typeargs.size() :
+            "BaseTypeVisitor.checkTypeArguments: mismatch between type arguments: " +
+            typeargs + " and their trees " + typeargTrees;
+
+        Iterator<? extends AnnotatedTypeVariable> varIter = typevars.iterator();
+        Iterator<? extends AnnotatedTypeMirror> argIter = typeargs.iterator();
+        Iterator<? extends Tree> argTreeIter = typeargTrees.iterator();
+
+        while (varIter.hasNext()) {
+
+            AnnotatedTypeVariable typeVar = varIter.next();
+            AnnotatedTypeMirror typearg = argIter.next();
+
+            Tree typeArgTree = null;
+            if (argTreeIter.hasNext()) {
+                typeArgTree = argTreeIter.next();
+            }
+
+            if (typeArgTree != null) {
+                boolean valid = validateType(typeArgTree, typearg);
+                if (!valid) {
+                    // validateType already issued an error; check the next argument.
+                    continue;
+                }
+            } else {
+                if (!AnnotatedTypes.isValidType(atypeFactory.getQualifierHierarchy(), typearg)) {
+                    continue;
+                }
+                typeArgTree = toptree;
+            }
+
+            if (typeVar.getEffectiveUpperBound() != null) {
+                if (!AnnotatedTypes.isValidType(atypeFactory.getQualifierHierarchy(), typeVar.getEffectiveUpperBound())) {
+                    continue;
+                }
+
+                commonAssignmentCheck(typeVar.getEffectiveUpperBound(),
+                        typearg, typeArgTree,
+                        "type.argument.type.incompatible", false);
+            }
+
+            // Should we compare lower bounds instead of the annotations on the
+            // type variables?
+            if (!typeVar.getAnnotations().isEmpty()) {
+                if (!typearg.getEffectiveAnnotations().equals(typeVar.getEffectiveAnnotations())) {
+                    checker.report(Result.failure("type.argument.type.incompatible",
+                            typearg, typeVar),
+                            typeArgTree);
+                }
+            }
+
+        }
+    }
+    */
 
     /**
      * Tests whether the method can be invoked using the receiver of the 'node'
@@ -2242,7 +2319,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Tests whether the tree expressed by the passed type tree is a valid type,
+     * Tests whether the type expressed by the passed type tree is a valid type,
      * and emits an error if that is not the case (e.g. '@Mutable String').
      * If the tree is a method or constructor, check the return type.
      *
@@ -2275,7 +2352,18 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         default:
             type = atypeFactory.getAnnotatedType(tree);
         }
+        return validateType(tree, type);
+    }
 
+    /**
+     * Tests whether the type and corresponding type tree is a valid type,
+     * and emits an error if that is not the case (e.g. '@Mutable String').
+     * If the tree is a method or constructor, check the return type.
+     *
+     * @param tree  the type tree supplied by the user
+     * @param type  the type corresponding to tree
+     */
+    public boolean validateType(Tree tree, AnnotatedTypeMirror type) {
         // basic consistency checks
         if (!AnnotatedTypes.isValidType(atypeFactory.getQualifierHierarchy(), type)) {
             checker.report(Result.failure("type.invalid", type.getAnnotations(),
