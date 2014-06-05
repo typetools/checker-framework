@@ -166,7 +166,10 @@ public class MethodInvocation {
         (true ? immutable : new @Mutable MethodInvocation()).assignsFieldsMethod();  // should emit error
     }
 
-
+    // This test currently only passes because wildcards are not checked correctly.
+    // IGJ defaulting rules use "B" as shorthand for "B extends @Readonly Object", which
+    // then fails against the bounds of Map. If this gets fixed, make the bound explicit.
+    // public static <A, B extends Object> java.util.Map<A, B> forMap(
     public static <A, B> java.util.Map<A, B> forMap(
             java.util.Map<? super A, ? extends B> map, final B defaultValue) {
         return forMap(map, null);

@@ -53,7 +53,7 @@ class Methods {
    }
 
    static void bad2() {
-      //:: error: (argument.type.incompatible)
+      //:: error: (type.argument.type.incompatible)
       addNull2(new PriorityQueue1<@NonNull Object>());
    }
 
@@ -62,7 +62,7 @@ class Methods {
    }
 
    static void bad3() {
-      //:: error: (argument.type.incompatible)
+      //:: error: (type.argument.type.incompatible)
       addNull2(new PriorityQueue2<@NonNull Object>());
    }
 
