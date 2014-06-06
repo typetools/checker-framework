@@ -1155,6 +1155,20 @@ tool like the Checker Framework.)
 
 \section{Initialization Checker\label{initialization-checker}}
 
+Every object's fields start out as null.  By the time the constructor
+finishes executing, the \<@NonNull> fields have been set to a different
+value.  Your code can suffer a NullPointerException when using a
+\<@NonNull> field, if your code uses the field during initialization.
+The Nullness Checker prevents this problem by warning you anytime that you
+may be accessing an uninitialized field.  This check is useful because it
+prevents errors in your code.  However, the analysis can be confusing to
+understand.  If you wish to disable the initialization checks, pass the
+command-line argument \<-AsuppressWarnings=uninitialized> when running the
+Nullness Checker.  You will no longer get a guarantee of no null pointer
+exceptions, but you can still use the Nullness Checker to find most of the
+null pointer problems in your code.
+
+
 An object is partially initialized from the time that its constructor starts until its constructor
 finishes.  This is relevant to the Nullness Checker because while the
 constructor is executing --- that is, before initialization completes ---
