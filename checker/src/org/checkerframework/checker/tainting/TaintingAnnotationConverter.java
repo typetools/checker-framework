@@ -7,6 +7,9 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.QualifiedNameable;
 
+import org.checkerframework.javacutil.AnnotationUtils;
+
+import org.checkerframework.qualframework.base.AnnotationConverter;
 
 import org.checkerframework.checker.qualparam.QualifierParameterAnnotationConverter;
 import org.checkerframework.checker.qualparam.CombiningOperation;
@@ -16,7 +19,6 @@ import org.checkerframework.checker.qualparam.QualParams;
 import org.checkerframework.checker.qualparam.Wildcard;
 
 import org.checkerframework.checker.tainting.qual.*;
-
 
 public class TaintingAnnotationConverter implements QualifierParameterAnnotationConverter<Tainting> {
     private Map<String, Wildcard<Tainting>> lookup;
@@ -37,14 +39,9 @@ public class TaintingAnnotationConverter implements QualifierParameterAnnotation
         this.lubOp = new CombiningOperation.Lub<>(new TaintingQualifierHierarchy());
     }
 
-    private String getAnnotationTypeName(AnnotationMirror anno) {
-        Element elt = anno.getAnnotationType().asElement();
-        if (elt instanceof QualifiedNameable) {
-            QualifiedNameable nameable = (QualifiedNameable)elt;
-            return nameable.getQualifiedName().toString();
-        } else {
-            return null;
-        }
+    private Wildcard<Tainting> fromAnnotation(AnnotationMirror anno) {
+        String name = AnnotationUtils.annotationName(anno);
+        return lookup.get(name);
     }
 
     @Override
@@ -53,8 +50,10 @@ public class TaintingAnnotationConverter implements QualifierParameterAnnotation
         for (AnnotationMirror anno : annos) {
             String name = "Main";
 
-            String annoName = getAnnotationTypeName(anno);
-            Wildcard<Tainting> value = lookup.get(annoName);
+            Wildcard<Tainting> value = fromAnnotation(anno);
+            if (value == null) {
+                continue;
+            }
 
             Wildcard<Tainting> oldValue = params.get(name);
             if (oldValue != null) {
@@ -68,7 +67,7 @@ public class TaintingAnnotationConverter implements QualifierParameterAnnotation
 
     @Override
     public boolean isAnnotationSupported(AnnotationMirror anno) {
-        String name = getAnnotationTypeName(anno);
+        String name = AnnotationUtils.annotationName(anno);
         return lookup.containsKey(name);
     }
 

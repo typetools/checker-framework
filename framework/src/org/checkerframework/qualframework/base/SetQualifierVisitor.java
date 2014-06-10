@@ -1,4 +1,4 @@
-package org.checkerframework.qualframework.util;
+package org.checkerframework.qualframework.base;
 
 import java.util.*;
 
@@ -10,6 +10,34 @@ import org.checkerframework.qualframework.base.QualifiedTypeVisitor;
 /** Visitor that replaces the qualifier of a {@link QualifiedTypeMirror}.
  */
 public class SetQualifierVisitor<Q> implements QualifiedTypeVisitor<Q, QualifiedTypeMirror<Q>, Q> {
+    // This class has no fields that refer to `Q`, so all instances have the
+    // same representation.  That means we can reuse a single instance for all
+    // instantiations of `Q`.
+    @SuppressWarnings("rawtypes")
+    private static SetQualifierVisitor INSTANCE = new SetQualifierVisitor();
+
+    /**
+     * Get an instance of {@code SetQualifierVisitor}.  This method may be more
+     * efficient than calling the constructor, since it may reuse instances
+     * sometimes.
+     */
+    @SuppressWarnings("unchecked")
+    public static <Q> SetQualifierVisitor<Q> getInstance() {
+        return (SetQualifierVisitor<Q>)INSTANCE;
+    }
+
+    /**
+     * Helper method to apply a {@code SetQualifierVisitor} to a {@link
+     * QualifiedTypeMirror}.
+     *
+     * Calling {@code apply(...)} is like {@code getInstance().visit(...)}, but
+     * doesn't require an explicit type argument like {@code getInstance}
+     * does.
+     */
+    public static <Q> QualifiedTypeMirror<Q> apply(QualifiedTypeMirror<Q> type, Q newQual) {
+        return SetQualifierVisitor.<Q>getInstance().visit(type, newQual);
+    }
+
 
     @Override
     public QualifiedTypeMirror<Q> visit(QualifiedTypeMirror<Q> type) {

@@ -7,7 +7,7 @@ import org.checkerframework.javacutil.Pair;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror;
 import org.checkerframework.qualframework.base.QualifierHierarchy;
 import org.checkerframework.qualframework.base.TypeHierarchy;
-import org.checkerframework.qualframework.util.QualifierMapVisitor;
+import org.checkerframework.qualframework.base.QualifierMapVisitor;
 
 import org.checkerframework.checker.qualparam.PolyQual.*;
 
