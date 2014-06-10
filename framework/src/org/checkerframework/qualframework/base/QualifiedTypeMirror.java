@@ -254,7 +254,7 @@ public abstract class QualifiedTypeMirror<Q> {
     public static final class QualifiedArrayType<Q> extends QualifiedTypeMirror<Q> {
         private final QualifiedTypeMirror<Q> componentType;
 
-        public QualifiedArrayType(ExtendedTypeMirror underlying, Q qualifier,
+        QualifiedArrayType(ExtendedTypeMirror underlying, Q qualifier,
                 QualifiedTypeMirror<Q> componentType) {
             super(underlying, qualifier);
             checkUnderlyingKind(underlying, TypeKind.ARRAY);
@@ -304,7 +304,7 @@ public abstract class QualifiedTypeMirror<Q> {
     public static final class QualifiedDeclaredType<Q> extends QualifiedTypeMirror<Q> {
         private final List<? extends QualifiedTypeMirror<Q>> typeArguments;
 
-        public QualifiedDeclaredType(ExtendedTypeMirror underlying, Q qualifier,
+        QualifiedDeclaredType(ExtendedTypeMirror underlying, Q qualifier,
                 List<? extends QualifiedTypeMirror<Q>> typeArguments) {
             super(underlying, qualifier);
             checkUnderlyingKind(underlying, TypeKind.DECLARED);
@@ -366,7 +366,7 @@ public abstract class QualifiedTypeMirror<Q> {
         private final List<? extends QualifiedTypeMirror<Q>> thrownTypes;
         private final List<? extends QualifiedParameterDeclaration<Q>> typeParameters;
 
-        public QualifiedExecutableType(ExtendedTypeMirror underlying,
+        QualifiedExecutableType(ExtendedTypeMirror underlying,
                 List<? extends QualifiedTypeMirror<Q>> parameterTypes,
                 QualifiedTypeMirror<Q> receiverType,
                 QualifiedTypeMirror<Q> returnType,
@@ -479,7 +479,7 @@ public abstract class QualifiedTypeMirror<Q> {
     public static final class QualifiedIntersectionType<Q> extends QualifiedTypeMirror<Q> {
         private final List<? extends QualifiedTypeMirror<Q>> bounds;
 
-        public QualifiedIntersectionType(ExtendedTypeMirror underlying, Q qualifier,
+        QualifiedIntersectionType(ExtendedTypeMirror underlying, Q qualifier,
                 List<? extends QualifiedTypeMirror<Q>> bounds) {
             super(underlying, qualifier);
             checkUnderlyingKind(underlying, TypeKind.INTERSECTION);
@@ -526,7 +526,7 @@ public abstract class QualifiedTypeMirror<Q> {
     }
 
     public static final class QualifiedNoType<Q> extends QualifiedTypeMirror<Q> {
-        public QualifiedNoType(ExtendedTypeMirror underlying, Q qualifier) {
+        QualifiedNoType(ExtendedTypeMirror underlying, Q qualifier) {
             super(underlying, qualifier);
             // According to the ExtendedNoType javadocs, valid kinds are NONE, PACKAGE,
             // and VOID.
@@ -553,7 +553,7 @@ public abstract class QualifiedTypeMirror<Q> {
     }
 
     public static final class QualifiedNullType<Q> extends QualifiedTypeMirror<Q> {
-        public QualifiedNullType(ExtendedTypeMirror underlying, Q qualifier) {
+        QualifiedNullType(ExtendedTypeMirror underlying, Q qualifier) {
             super(underlying, qualifier);
             checkUnderlyingKind(underlying, TypeKind.NULL);
         }
@@ -577,7 +577,7 @@ public abstract class QualifiedTypeMirror<Q> {
     }
 
     public static final class QualifiedPrimitiveType<Q> extends QualifiedTypeMirror<Q> {
-        public QualifiedPrimitiveType(ExtendedTypeMirror underlying, Q qualifier) {
+        QualifiedPrimitiveType(ExtendedTypeMirror underlying, Q qualifier) {
             super(underlying, qualifier);
             checkUnderlyingKindIsPrimitive(underlying);
         }
@@ -606,7 +606,7 @@ public abstract class QualifiedTypeMirror<Q> {
     // ExtendedDeclaredType, ExtendedNullType, ExtendedTypeVariable).
 
     public static final class QualifiedTypeVariable<Q> extends QualifiedTypeMirror<Q> {
-        public QualifiedTypeVariable(ExtendedTypeMirror underlying, Q qualifier) {
+        QualifiedTypeVariable(ExtendedTypeMirror underlying, Q qualifier) {
             super(underlying, qualifier);
             checkUnderlyingKind(underlying, TypeKind.TYPEVAR);
             if (getUnderlyingType().asElement().getKind() != ElementKind.TYPE_PARAMETER) {
@@ -647,7 +647,7 @@ public abstract class QualifiedTypeMirror<Q> {
     public static final class QualifiedUnionType<Q> extends QualifiedTypeMirror<Q> {
         private final List<? extends QualifiedTypeMirror<Q>> alternatives;
 
-        public QualifiedUnionType(ExtendedTypeMirror underlying, Q qualifier,
+        QualifiedUnionType(ExtendedTypeMirror underlying, Q qualifier,
                 List<? extends QualifiedTypeMirror<Q>> alternatives) {
             super(underlying, qualifier);
             checkUnderlyingKind(underlying, TypeKind.UNION);
@@ -697,7 +697,7 @@ public abstract class QualifiedTypeMirror<Q> {
         private final QualifiedTypeMirror<Q> extendsBound;
         private final QualifiedTypeMirror<Q> superBound;
 
-        public QualifiedWildcardType(ExtendedTypeMirror underlying,
+        QualifiedWildcardType(ExtendedTypeMirror underlying,
                 QualifiedTypeMirror<Q> extendsBound,
                 QualifiedTypeMirror<Q> superBound) {
             super(underlying);
@@ -763,7 +763,7 @@ public abstract class QualifiedTypeMirror<Q> {
     public static final class QualifiedTypeDeclaration<Q> extends QualifiedTypeMirror<Q> {
         private final List<? extends QualifiedParameterDeclaration<Q>> typeParameters;
 
-        public QualifiedTypeDeclaration(ExtendedTypeMirror underlying, Q qualifier,
+        QualifiedTypeDeclaration(ExtendedTypeMirror underlying, Q qualifier,
                 List<? extends QualifiedParameterDeclaration<Q>> typeParameters) {
             super(underlying, qualifier);
             checkUnderlyingKind(underlying, TypeKind.DECLARED, true);
@@ -822,7 +822,7 @@ public abstract class QualifiedTypeMirror<Q> {
         // This class has no fields.  Its upper and lower bounds are stored in
         // the QTM's symbol table.
 
-        public QualifiedParameterDeclaration(ExtendedTypeMirror underlying) {
+        QualifiedParameterDeclaration(ExtendedTypeMirror underlying) {
             super(underlying);
             checkUnderlyingKind(underlying, TypeKind.TYPEVAR, true);
             if (getUnderlyingType().asElement().getKind() != ElementKind.TYPE_PARAMETER) {

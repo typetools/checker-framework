@@ -1,4 +1,4 @@
-package org.checkerframework.qualframework.util;
+package org.checkerframework.qualframework.base;
 
 import java.util.*;
 
