@@ -12,8 +12,8 @@ import org.checkerframework.javacutil.Pair;
 import org.checkerframework.qualframework.base.QualifierHierarchy;
 import org.checkerframework.qualframework.base.DefaultQualifiedTypeFactory;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror;
-import org.checkerframework.qualframework.util.QualifierMapVisitor;
-import org.checkerframework.qualframework.util.SetQualifierVisitor;
+import org.checkerframework.qualframework.base.QualifierMapVisitor;
+import org.checkerframework.qualframework.base.SetQualifierVisitor;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedExecutableType;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedTypeVariable;
 
