@@ -213,7 +213,7 @@ public abstract class DefaultQualifiedTypeFactory<Q> implements QualifiedTypeFac
 
     @Override
     public List<QualifiedTypeMirror<Q>> postDirectSuperTypes(QualifiedTypeMirror<Q> subtype, List<? extends QualifiedTypeMirror<Q>> supertypes) {
-        throw new UnsupportedOperationException();
+        return adapter.superPostDirectSuperTypes(subtype, supertypes);
     }
 
     @Override
