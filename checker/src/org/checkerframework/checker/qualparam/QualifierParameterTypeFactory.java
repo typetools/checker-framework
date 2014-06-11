@@ -154,4 +154,23 @@ public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedT
 
         return value.accept(new SetQualifierVisitor<>(), new QualParams<>(newParams));
     }
+
+
+    @Override
+    public List<QualifiedTypeMirror<QualParams<Q>>> postDirectSuperTypes(
+            QualifiedTypeMirror<QualParams<Q>> subtype,
+            List<? extends QualifiedTypeMirror<QualParams<Q>>> supertypes) {
+        QualParams<Q> subQuals = subtype.getQualifier();
+        if (subQuals == null) {
+            return new ArrayList<>(supertypes);
+        }
+
+        List<QualifiedTypeMirror<QualParams<Q>>> result = new ArrayList<>();
+        for (QualifiedTypeMirror<QualParams<Q>> supertype : supertypes) {
+            QualParams<Q> superQuals = supertype.getQualifier().substituteAll(subQuals);
+            result.add(SetQualifierVisitor.apply(supertype, superQuals));
+        }
+
+        return result;
+    }
 }
