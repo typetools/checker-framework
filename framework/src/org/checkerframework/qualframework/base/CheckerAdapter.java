@@ -50,6 +50,18 @@ public class CheckerAdapter<Q> extends BaseTypeChecker {
         // TODO: check if lazy init is actually necessary for typeFactory.
         if (typeFactory == null) {
             typeFactory = createTypeFactory();
+            // We have to delay postInit until after the typeFactory field has
+            // been set.
+            //
+            // ATF.postInit runs some initialization steps that require the
+            // TypeMirrorConverter to be ready.  The TMC requires an ATF
+            // instance, so it calls this getTypeFactory method.  That leads to
+            // infinite recurison through postInit -> some TMC method ->
+            // getTypeFactory -> createTypeFactory -> postInit.  To avoid this,
+            // we delay postInit until after typeFactory has been initialized,
+            // to break the getTypeFactory -> createTypeFactory edge of the
+            // cycle.
+            typeFactory.doPostInit();
         }
         return typeFactory;
     }
@@ -71,6 +83,7 @@ public class CheckerAdapter<Q> extends BaseTypeChecker {
 
         return factoryAdapter;
     }
+
 
     @Override
     protected BaseTypeVisitor<?> createSourceVisitor() {
