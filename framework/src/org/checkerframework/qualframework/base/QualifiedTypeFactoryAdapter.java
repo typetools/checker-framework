@@ -44,7 +44,7 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
 
     /** Returns {@link checker}, downcast to a more precise type. */
     @SuppressWarnings("unchecked")
-    private CheckerAdapter<Q> getCheckerAdapter() {
+    CheckerAdapter<Q> getCheckerAdapter() {
         return (CheckerAdapter<Q>)checker;
     }
 
