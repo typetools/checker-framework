@@ -94,7 +94,8 @@ public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedT
     public Pair<QualifiedExecutableType<QualParams<Q>>, List<QualifiedTypeMirror<QualParams<Q>>>> methodFromUse(MethodInvocationTree tree) {
         Pair<QualifiedExecutableType<QualParams<Q>>, List<QualifiedTypeMirror<QualParams<Q>>>> result = super.methodFromUse(tree);
 
-        List<? extends QualifiedTypeMirror<QualParams<Q>>> formals = result.first.getParameterTypes();
+        List<? extends QualifiedTypeMirror<QualParams<Q>>> formals =
+            getQualifiedTypes().expandVarArgs(result.first, tree.getArguments());
         List<QualifiedTypeMirror<QualParams<Q>>> actuals = new ArrayList<>();
         for (ExpressionTree actualExpr : tree.getArguments()) {
             actuals.add(getQualifiedType(actualExpr));
