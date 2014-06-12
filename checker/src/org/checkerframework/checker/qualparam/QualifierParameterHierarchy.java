@@ -87,13 +87,20 @@ public class QualifierParameterHierarchy<Q> implements QualifierHierarchy<QualPa
         if (a == PARAMS_TOP || b == PARAMS_TOP)
             return PARAMS_TOP;
 
-        if (!a.keySet().equals(b.keySet()))
-            throw new IllegalArgumentException(
-                    "tried to LUB two maps with different params defined");
-
         Map<String, Wildcard<Q>> result = new HashMap<>();
+
         for (String k : a.keySet()) {
-            result.put(k, containmentHierarchy.leastUpperBound(a.get(k), b.get(k)));
+            if (b.containsKey(k)) {
+                result.put(k, containmentHierarchy.leastUpperBound(a.get(k), b.get(k)));
+            } else {
+                result.put(k, a.get(k));
+            }
+        }
+
+        for (String k : b.keySet()) {
+            if (!a.containsKey(k)) {
+                result.put(k, b.get(k));
+            }
         }
 
         return new QualParams<Q>(result);
@@ -113,13 +120,20 @@ public class QualifierParameterHierarchy<Q> implements QualifierHierarchy<QualPa
         if (a == PARAMS_BOTTOM || b == PARAMS_BOTTOM)
             return PARAMS_BOTTOM;
 
-        if (!a.keySet().equals(b.keySet()))
-            throw new IllegalArgumentException(
-                    "tried to GLB two maps with different params defined");
-
         Map<String, Wildcard<Q>> result = new HashMap<>();
+
         for (String k : a.keySet()) {
-            result.put(k, containmentHierarchy.greatestLowerBound(a.get(k), b.get(k)));
+            if (b.containsKey(k)) {
+                result.put(k, containmentHierarchy.greatestLowerBound(a.get(k), b.get(k)));
+            } else {
+                result.put(k, a.get(k));
+            }
+        }
+
+        for (String k : b.keySet()) {
+            if (!a.containsKey(k)) {
+                result.put(k, b.get(k));
+            }
         }
 
         return new QualParams<Q>(result);
