@@ -94,6 +94,21 @@ public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedT
     public Pair<QualifiedExecutableType<QualParams<Q>>, List<QualifiedTypeMirror<QualParams<Q>>>> methodFromUse(MethodInvocationTree tree) {
         Pair<QualifiedExecutableType<QualParams<Q>>, List<QualifiedTypeMirror<QualParams<Q>>>> result = super.methodFromUse(tree);
 
+        Set<String> qualParams = getAnnotationConverter().getDeclaredParameters(
+                result.first.getUnderlyingType().asElement());
+        if (qualParams.isEmpty()) {
+            // This check is not just a performance optimization - it saves us
+            // from crashing in one obscure corner case.  An `enum`
+            // declarations gets an auto-generated constructor with an
+            // auto-generated `super()` call.  But the actual java.lang.Enum
+            // constructor takes two arguments.  So trying to do inference on
+            // that super call will cause a crash.  (This problem shows up as
+            // an IndexOutOfBoundsException in tests/all-systems/Enums.java.)
+            // The constructor has no qualifier parameters, though, so we can
+            // skip processing it using this check.
+            return result;
+        }
+
         List<? extends QualifiedTypeMirror<QualParams<Q>>> formals =
             getQualifiedTypes().expandVarArgs(result.first, tree.getArguments());
         List<QualifiedTypeMirror<QualParams<Q>>> actuals = new ArrayList<>();
@@ -101,12 +116,9 @@ public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedT
             actuals.add(getQualifiedType(actualExpr));
         }
 
-        // TODO: look at the actual declared params of the method
-        List<String> qualParams = new ArrayList<>();
-        qualParams.add("Main");
-
         QualifierParameterHierarchy<Q> hierarchy = (QualifierParameterHierarchy<Q>)getQualifierHierarchy();
-        InferenceContext<Q> inference = new InferenceContext<>(qualParams, formals, actuals,
+        InferenceContext<Q> inference = new InferenceContext<>(
+                new ArrayList<>(qualParams), formals, actuals,
                 groundHierarchy, new PolyQualHierarchy<>(groundHierarchy));
         inference.run(getTypeHierarchy(), hierarchy);
 
