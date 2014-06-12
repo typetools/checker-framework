@@ -17,6 +17,7 @@
     <target name="prep" depends="prep-all"
             description="Create required directories">
         <mkdir dir="${build}"/>
+        <mkdir dir="${tmpdir}" />
     </target>
 
     <target name="clean" description="Remove generated files">
@@ -24,6 +25,7 @@
         <delete file="${javacutil.lib}"/>
         <delete dir="dist"/>
         <delete dir="${dist.doc}"/>
+        <delete dir="${tmpdir}"/>
         <delete dir="${temp.dir}"/>
     </target>
 
