@@ -42,6 +42,7 @@
     </target>
 
     <target name="dist" depends="build" description="Create jar file">
+        <mkdir dir="${dist}"/>
         <jar destfile="${stubparser.lib}" basedir="${build}"/>
     </target>
 
