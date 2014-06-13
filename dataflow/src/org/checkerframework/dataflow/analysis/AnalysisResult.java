@@ -37,7 +37,7 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
     protected final IdentityHashMap<Tree, Node> treeLookup;
 
     /** Map from (effectively final) local variable elements to their abstract value. */
-    protected HashMap<Element, A> finalLocalValues;
+    protected final HashMap<Element, A> finalLocalValues;
 
     /**
      * The stores before every method call.
@@ -226,9 +226,5 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
             analysis.currentNode = oldCurrentNode;
             analysis.isRunning = false;
         }
-    }
-
-    public void clearFinalLocalValues() {
-        finalLocalValues = new HashMap<>();
     }
 }
