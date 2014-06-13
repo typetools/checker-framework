@@ -39,7 +39,7 @@ import org.checkerframework.javacutil.Pair;
 /**
  * A store for the checker framework analysis tracks the annotations of memory
  * locations such as local variables and fields.
- *
+ * 
  * @author Charlie Garrett
  * @author Stefan Heule
  */
@@ -89,7 +89,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * one thread is running at all times)?
      */
     protected final boolean sequentialSemantics;
-
+    
     /* --------------------------------------------------------- */
     /* Initialization */
     /* --------------------------------------------------------- */

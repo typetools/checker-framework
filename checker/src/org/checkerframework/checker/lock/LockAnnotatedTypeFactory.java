@@ -8,12 +8,11 @@ import org.checkerframework.checker.lock.qual.LockPossiblyHeld;
 import org.checkerframework.dataflow.qual.LockingFree;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.type.*;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
-import org.checkerframework.framework.util.DependentTypes;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.TreeUtils;
 
 import java.lang.annotation.Annotation;
 import java.util.Collections;
@@ -22,8 +21,12 @@ import java.util.List;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 
 /**
@@ -123,5 +126,41 @@ public class LockAnnotatedTypeFactory
         public LockQualifierHierarchy(MultiGraphFactory f) {
             super(f, LOCKHELD);
         }
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public LockStore getStoreBefore(Tree tree) {
+        LockStore store = super.getStoreBefore(tree);
+
+        if (store != null) {
+            MethodTree enclosingMethod = TreeUtils.enclosingMethod(getPath(tree));
+            ExecutableElement enclosingMethodElement = null;
+
+            if (enclosingMethod != null) {
+                enclosingMethodElement = TreeUtils.elementFromDeclaration(enclosingMethod);
+            }
+
+            ClassTree enclosingClass = TreeUtils.enclosingClass(getPath(tree));
+
+            // If there is no enclosing method, we are in a class definition. If there is an enclosing method,
+            // we may still be in a class definition if that class is defined within the method - we can still
+            // detect that, since in that case the enclosing method would be equal to the enclosing class's enclosing method.
+
+            // We don't want to issue any lock warnings for initializers. Since initialization is effectively single-threaded,
+            // we don't care which locks are held.
+
+            if ((enclosingMethod == null ||
+                 enclosingMethod.equals(TreeUtils.enclosingMethod(getPath(enclosingClass)))) || // If we are in an initializer ...
+                 (enclosingMethodElement != null && enclosingMethodElement.getKind() == ElementKind.CONSTRUCTOR)) { // ... or we are in a constructor
+
+                store.setInConstructorOrInitializer(); // Temporary since this store will be thrown away
+            }
+        }
+
+        return store;
     }
 }

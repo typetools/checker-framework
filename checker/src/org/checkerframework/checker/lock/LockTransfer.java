@@ -115,14 +115,35 @@ public class LockTransfer extends
 
             ExecutableElement methodElement = TreeUtils.elementFromDeclaration(methodTree);
 
-            // Constructors and methods with the 'synchronized' modifier are
+            // Methods with the 'synchronized' modifier are
             // holding the 'this' lock.
-            if (methodElement.getModifiers().contains(Modifier.SYNCHRONIZED)
-                || methodElement.getKind() == ElementKind.CONSTRUCTOR) {
+
+            // There is a subtle difference between synchronized methods
+            // and constructors/initializers. A synchronized method is only
+            // taking the intrinsic lock of the current object. It says nothing
+            // about any fields of the current object.
+
+            // Furthermore, since the current object already exists,
+            // other objects may be @GuardedBy the current object. So
+            // a synchronized method can affect the behavior of other
+            // objects.
+
+            // A constructor/initializer behaves as if the current object
+            // and all its non-static fields were held as locks. But in
+            // reality no locks are held.
+
+            // Furthermore, since the current object is being constructed,
+            // no other object can be @GuardedBy it or any of its non-static
+            // fields.
+
+            if (methodElement.getModifiers().contains(Modifier.SYNCHRONIZED)) {
                 final ClassTree classTree = method.getClassTree();
                 TypeMirror classType = InternalUtils.typeOf(classTree);
 
                 store.insertThisValue(LOCKHELD, classType);
+            }
+            else if (methodElement.getKind() == ElementKind.CONSTRUCTOR) {
+                store.setInConstructorOrInitializer();
             }
         }
 
