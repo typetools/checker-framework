@@ -14,9 +14,15 @@ import org.checkerframework.qualframework.base.SetQualifierVisitor;
 import org.checkerframework.qualframework.base.TreeAnnotator;
 import org.checkerframework.qualframework.util.ExtendedTypeMirror;
 
-public class TaintingQualifiedTypeFactory extends DefaultQualifiedTypeFactory<Tainting> {
+import org.checkerframework.checker.qualparam.CombiningOperation;
+import org.checkerframework.checker.qualparam.QualifierParameterHierarchy;
+import org.checkerframework.checker.qualparam.QualifierParameterTypeFactory;
+import org.checkerframework.checker.qualparam.QualParams;
+import org.checkerframework.checker.qualparam.Wildcard;
+
+public class TaintingQualifiedTypeFactory extends QualifierParameterTypeFactory<Tainting> {
     @Override
-    protected QualifierHierarchy<Tainting> createQualifierHierarchy() {
+    protected QualifierHierarchy<Tainting> createGroundQualifierHierarchy() {
         return new TaintingQualifierHierarchy();
     }
 
@@ -26,16 +32,24 @@ public class TaintingQualifiedTypeFactory extends DefaultQualifiedTypeFactory<Ta
     }
 
     @Override
-    protected TreeAnnotator<Tainting> createTreeAnnotator() {
-        return new TreeAnnotator<Tainting>() {
+    protected TreeAnnotator<QualParams<Tainting>> createTreeAnnotator() {
+        return new TreeAnnotator<QualParams<Tainting>>() {
             @Override
-            public QualifiedTypeMirror<Tainting> visitLiteral(LiteralTree tree, ExtendedTypeMirror type) {
-                QualifiedTypeMirror<Tainting> result = super.visitLiteral(tree, type);
+            public QualifiedTypeMirror<QualParams<Tainting>> visitLiteral(LiteralTree tree, ExtendedTypeMirror type) {
+                QualifiedTypeMirror<QualParams<Tainting>> result = super.visitLiteral(tree, type);
                 if (tree.getKind() == Tree.Kind.STRING_LITERAL) {
-                    result = SetQualifierVisitor.apply(result, Tainting.UNTAINTED);
+                    result = SetQualifierVisitor.apply(result, new QualParams<>("Main", Tainting.UNTAINTED));
                 }
                 return result;
             }
         };
+    }
+
+
+    private CombiningOperation<Tainting> lubOp = new CombiningOperation.Lub<>(new TaintingQualifierHierarchy());
+
+    @Override
+    protected Wildcard<Tainting> combineForSubstitution(Wildcard<Tainting> a, Wildcard<Tainting> b) {
+        return a.combineWith(b, lubOp, lubOp);
     }
 }
