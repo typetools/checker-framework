@@ -2,11 +2,14 @@ package org.checkerframework.checker.lock;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+
+import org.checkerframework.checker.lock.qual.LockHeld;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ArrayAccess;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.javacutil.AnnotationUtils;
 
 /*
  * The Lock Store behaves like CFAbstractStore but requires the ability
@@ -16,13 +19,19 @@ import org.checkerframework.framework.flow.CFValue;
  */
 public class LockStore extends CFAbstractStore<CFValue, LockStore> {
 
+    protected boolean inConstructorOrInitializer = false;
+
+    protected final AnnotationMirror LOCKHELD = AnnotationUtils.fromClass(analysis.getTypeFactory().getElementUtils(), LockHeld.class);
+
     public LockStore(CFAbstractAnalysis<CFValue, LockStore, ?> analysis, boolean sequentialSemantics) {
         super(analysis, sequentialSemantics);
     }
 
+    /** Copy constructor. */
     public LockStore(CFAbstractAnalysis<CFValue, LockStore, ?> analysis,
             CFAbstractStore<CFValue, LockStore> other) {
         super(other);
+        inConstructorOrInitializer = ((LockStore)other).inConstructorOrInitializer;
     }
 
     /*
@@ -76,5 +85,42 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
         } else {
             // No other types of expressions need to be stored.
         }
+    }
+
+    public void setInConstructorOrInitializer() {
+        inConstructorOrInitializer = true;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public /*@Nullable*/ CFValue getValue(FlowExpressions.Receiver expr) {
+
+        if (inConstructorOrInitializer) {
+            if (expr instanceof FlowExpressions.ThisReference) {
+                initializeThisValue(LOCKHELD, expr.getType());
+                return thisValue;
+            } else if (expr instanceof FlowExpressions.FieldAccess) {
+                FlowExpressions.FieldAccess fieldAcc = (FlowExpressions.FieldAccess) expr;
+                if (!fieldAcc.isStatic() && // Static fields are not automatically considered synchronized within a constructor or initializer
+                    fieldAcc.getReceiver() instanceof FlowExpressions.ThisReference) {
+                    insertValue(fieldAcc, LOCKHELD);
+                    return fieldValues.get(fieldAcc);
+                }
+            }
+        }
+
+        return super.getValue(expr);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected void internalDotOutput(StringBuilder result) {
+        result.append("  inConstructorOrInitializer = " + inConstructorOrInitializer
+                + "\\n");
+        super.internalDotOutput(result);
     }
 }

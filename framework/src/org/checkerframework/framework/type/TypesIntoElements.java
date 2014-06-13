@@ -1,7 +1,6 @@
 package org.checkerframework.framework.type;
 
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Types;
@@ -25,12 +24,12 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.tools.javac.code.Attribute;
-import com.sun.tools.javac.code.Attribute.TypeCompound;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
-import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.TypeAnnotationPosition;
+import com.sun.tools.javac.code.Attribute.TypeCompound;
+import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.code.TypeAnnotationPosition.TypePathEntry;
 import com.sun.tools.javac.code.TypeAnnotationPosition.TypePathEntryKind;
 import com.sun.tools.javac.tree.JCTree;
@@ -95,13 +94,12 @@ public class TypesIntoElements {
         List<Attribute.TypeCompound> tcs = List.nil();
 
         storeTypeParameters(processingEnv, types, atypeFactory, meth.getTypeParameters(), sym);
-        SourceVersion srcvers = processingEnv.getSourceVersion();
 
         {
             // return type
             JCTree ret = ((JCTree.JCMethodDecl) meth).getReturnType();
             if (ret != null) {
-                tapos = TypeAnnotationUtils.methodReturnTAPosition(srcvers, ret.pos);
+                tapos = TypeAnnotationPosition.methodReturn(ret.pos);
                 tcs = tcs.appendList(generateTypeCompounds(processingEnv, mtype.getReturnType(), tapos));
             }
         }
@@ -109,7 +107,7 @@ public class TypesIntoElements {
             // receiver
             JCTree recv = ((JCTree.JCMethodDecl) meth).getReceiverParameter();
             if (recv != null) {
-                tapos = TypeAnnotationUtils.methodReceiverTAPosition(srcvers, recv.pos);
+                tapos = TypeAnnotationPosition.methodReceiver(recv.pos);
                 tcs = tcs.appendList(generateTypeCompounds(processingEnv, mtype.getReceiverType(), tapos));
             }
         }
@@ -118,7 +116,7 @@ public class TypesIntoElements {
             int pidx = 0;
             java.util.List<AnnotatedTypeMirror> ptypes = mtype.getParameterTypes();
             for (JCTree param : ((JCTree.JCMethodDecl) meth).getParameters()) {
-                tapos = TypeAnnotationUtils.methodParameterTAPosition(srcvers, pidx, param.pos);
+                tapos = TypeAnnotationPosition.methodParameter(pidx, param.pos);
                 tcs = tcs.appendList(generateTypeCompounds(processingEnv, ptypes.get(pidx), tapos));
                 ++pidx;
             }
@@ -128,7 +126,7 @@ public class TypesIntoElements {
             int tidx = 0;
             java.util.List<AnnotatedTypeMirror> ttypes = mtype.getThrownTypes();
             for (JCTree thr : ((JCTree.JCMethodDecl) meth).getThrows()) {
-                tapos = TypeAnnotationUtils.methodThrowsTAPosition(srcvers, tidx, thr.pos);
+                tapos = TypeAnnotationPosition.methodThrows(TypeAnnotationPosition.emptyPath, null, tidx, thr.pos);
                 tcs = tcs.appendList(generateTypeCompounds(processingEnv, ttypes.get(tidx), tapos));
                 ++tidx;
             }
@@ -150,7 +148,7 @@ public class TypesIntoElements {
             type = atypeFactory.getAnnotatedType(var);
         }
 
-        TypeAnnotationPosition tapos = TypeAnnotationUtils.fieldTAPosition(processingEnv.getSourceVersion(), ((JCTree)var).pos);
+        TypeAnnotationPosition tapos = TypeAnnotationPosition.field(((JCTree)var).pos);
 
         List<Attribute.TypeCompound> tcs;
         tcs = generateTypeCompounds(processingEnv, type, tapos);
@@ -174,7 +172,7 @@ public class TypesIntoElements {
             pos = ((JCTree) ext).pos;
         }
 
-        TypeAnnotationPosition tapos = TypeAnnotationUtils.classExtendsTAPosition(processingEnv.getSourceVersion(), implidx, pos);
+        TypeAnnotationPosition tapos = TypeAnnotationPosition.classExtends(implidx, pos);
 
         List<Attribute.TypeCompound> tcs;
         tcs = generateTypeCompounds(processingEnv, type, tapos);
@@ -186,7 +184,6 @@ public class TypesIntoElements {
             java.util.List<? extends TypeParameterTree> tps, Symbol sym) {
         boolean isClass = sym.getKind().isClass();
         List<Attribute.TypeCompound> tcs = List.nil();
-        SourceVersion srcvers = processingEnv.getSourceVersion();
 
         int tpidx = 0;
         for (TypeParameterTree tp : tps) {
@@ -197,9 +194,9 @@ public class TypesIntoElements {
             // Note: we use the type parameter pos also for the bounds;
             // the bounds may not be explicit and we couldn't look up separate pos.
             if (isClass) {
-                tapos = TypeAnnotationUtils.typeParameterTAPosition(srcvers, tpidx, ((JCTree)tp).pos);
+                tapos = TypeAnnotationPosition.typeParameter(TypeAnnotationPosition.emptyPath, null, tpidx, ((JCTree)tp).pos);
             } else {
-                tapos = TypeAnnotationUtils.methodTypeParameterTAPosition(srcvers, tpidx, ((JCTree)tp).pos);
+                tapos = TypeAnnotationPosition.methodTypeParameter(TypeAnnotationPosition.emptyPath, null, tpidx, ((JCTree)tp).pos);
             }
 
             tcs = tcs.appendList(generateTypeCompounds(processingEnv, type, tapos));
@@ -220,9 +217,9 @@ public class TypesIntoElements {
                 }
 
                 if (isClass) {
-                    tapos = TypeAnnotationUtils.typeParameterBoundTAPosition(srcvers, tpidx, bndidx, ((JCTree)tp).pos);
+                    tapos = TypeAnnotationPosition.typeParameterBound(TypeAnnotationPosition.emptyPath, null, tpidx, bndidx, ((JCTree)tp).pos);
                 } else {
-                    tapos = TypeAnnotationUtils.methodTypeParameterBoundTAPosition(srcvers, tpidx, bndidx, ((JCTree)tp).pos);
+                    tapos = TypeAnnotationPosition.methodTypeParameterBound(TypeAnnotationPosition.emptyPath, null, tpidx, bndidx, ((JCTree)tp).pos);
                 }
 
                 tcs = tcs.appendList(generateTypeCompounds(processingEnv, bound, tapos));
@@ -326,7 +323,7 @@ public class TypesIntoElements {
 
             int arg = 0;
             for (AnnotatedTypeMirror ta : type.getTypeArguments()) {
-                TypeAnnotationPosition newpos = TypeAnnotationUtils.copyTAPosition(processingEnv.getSourceVersion(), tapos);
+                TypeAnnotationPosition newpos = TypeAnnotationPosition.copy(tapos);
                 newpos.location = tapos.location.append(new TypePathEntry(TypePathEntryKind.TYPE_ARGUMENT, arg));
                 res = scanAndReduce(ta, newpos, res);
                 ++ arg;
@@ -334,7 +331,7 @@ public class TypesIntoElements {
 
             AnnotatedTypeMirror encl = type.getEnclosingType();
             if (encl != null && encl.getKind() != TypeKind.NONE) {
-                TypeAnnotationPosition newpos = TypeAnnotationUtils.copyTAPosition(processingEnv.getSourceVersion(), tapos);
+                TypeAnnotationPosition newpos = TypeAnnotationPosition.copy(tapos);
                 newpos.location = tapos.location.append(TypePathEntry.INNER_TYPE);
                 res = scanAndReduce(encl, newpos, res);
             }
@@ -348,7 +345,7 @@ public class TypesIntoElements {
             List<Attribute.TypeCompound> res;
             res = directAnnotations(type, tapos);
 
-            TypeAnnotationPosition newpos = TypeAnnotationUtils.copyTAPosition(processingEnv.getSourceVersion(), tapos);
+            TypeAnnotationPosition newpos = TypeAnnotationPosition.copy(tapos);
             newpos.location = tapos.location.append(TypePathEntry.ARRAY);
 
             return reduce(super.visitArray(type, newpos), res);
@@ -377,14 +374,14 @@ public class TypesIntoElements {
             if (((Type.WildcardType)type.getUnderlyingType()).isExtendsBound()) {
                 AnnotatedTypeMirror ext = type.getExtendsBoundField();
                 if (ext != null) {
-                    TypeAnnotationPosition newpos = TypeAnnotationUtils.copyTAPosition(processingEnv.getSourceVersion(), tapos);
+                    TypeAnnotationPosition newpos = TypeAnnotationPosition.copy(tapos);
                     newpos.location = tapos.location.append(TypePathEntry.WILDCARD);
                     res = scanAndReduce(ext, newpos, res);
                 }
             } else {
                 AnnotatedTypeMirror sup = type.getSuperBoundField();
                 if (sup != null) {
-                    TypeAnnotationPosition newpos = TypeAnnotationUtils.copyTAPosition(processingEnv.getSourceVersion(), tapos);
+                    TypeAnnotationPosition newpos = TypeAnnotationPosition.copy(tapos);
                     newpos.location = tapos.location.append(TypePathEntry.WILDCARD);
                     res = scanAndReduce(sup, newpos, res);
                 }

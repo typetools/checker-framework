@@ -346,6 +346,7 @@
         scp -r $CF/release/* &lt;your-username&gt;@buffalo.cs.washington.edu:///scratch/jsr308-release/scripts<br/>
         ssh &lt;your-username&gt;@buffalo.cs.washington.edu<br/>
         cd /scratch/jsr308-release/scripts<br/>
+        export HGUSER=&lt;your-username&gt<br/>
         python release_build.py all<br/>
         python release_push.py<br/>
     </code>

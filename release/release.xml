@@ -76,19 +76,19 @@
 
     <target name="update-checker-framework-versions" description="updates version info in Checker Framework documents and build configs">
 
-        <fail unless="checker"            message="checker property is not set!"   />
+        <fail unless="checkerframework"            message="checkerframework property is not set!"   />
         <fail unless="release.ver"         message="release.ver property is not set!"/>
         <fail unless="afu.properties"      message="afu.properties property is not set!"/>
         <fail unless="afu.release.date"    message="afu.release.date property is not set!"/>
 
-        <property name="checker.manual"      value="${checker}/manual"                       />
-        <property name="checker.eclipse"     value="${checker}/../eclipse"                   />
-        <property name="checker.tutorial"    value="${checker}/../tutorial"                  />
-        <property name="checkerWebPage"      value="${checker.manual}/checker-framework-webpage.html" />
-        <property name="maven.plugin"         value="${checker}/../maven-plugin"             />
-        <property name="checker.binary.poms"  value="${maven.plugin}/poms"                   />
-        <property name="checker.release.poms" value="${maven.plugin}/release/"               />
-        <property name="release.version.regexp" value="\d\.\d\.\d(?:\.\d)"                   />
+        <property name="checkerframework.manual"      value="${checkerframework}/manual"                                />
+        <property name="checkerframework.eclipse"     value="${checkerframework}/../eclipse"                            />
+        <property name="checkerframework.tutorial"    value="${checkerframework}/../tutorial"                           />
+        <property name="checkerframeworkWebPage"      value="${checkerframework.manual}/checker-framework-webpage.html" />
+        <property name="maven.plugin"         value="${checkerframework}/../maven-plugin"                               />
+        <property name="checkerframework.binary.poms"  value="${maven.plugin}/poms"                                     />
+        <property name="checkerframework.release.poms" value="${maven.plugin}/release/"                                 />
+        <property name="release.version.regexp" value="\d\.\d\.\d(?:\.\d)"                                              />
 
         <!-- for afu.date.0 and afu.date.1 -->
         <loadproperties srcFile="${afu.properties}"/>
@@ -109,31 +109,43 @@
                 start="${afu.date.0}" end="${afu.date.1}"
                 with="${afu.release.date}"/>
 
-        <replaceregexp file="${checker.manual}/introduction.tex" byline="true"
+        <replaceregexp file="${checkerframework.manual}/introduction.tex" byline="true"
                        match="1.8.0-jsr308-\S*" replace="1.8.0-jsr308-${release.ver}"/>
 
-        <replaceregexp file="${checker.manual}/external-tools.tex" byline="true"
+        <replaceregexp file="${checkerframework.manual}/external-tools.tex" byline="true"
                        match="checker-framework-${release.version.regexp}{0,1}" replace="checker-framework-${release.ver}"/>
 
-        <replaceregexp file="${checker.manual}/external-tools.tex" byline="true"
+        <replaceregexp file="${checkerframework.manual}/external-tools.tex" byline="true"
                        match="1.8.0-jsr308-\S*" replace="1.8.0-jsr308-${release.ver}"/>
 
-        <replaceregexp file="${checker}/../build-common.properties" byline="true"
+        <replaceregexp file="${checkerframework}/../build-common.properties" byline="true"
                        match="build.version = ${release.version.regexp}{0,1}" replace="build.version = ${release.ver}"/>
 
-        <replaceregexp file="${checker.tutorial}/tests/testdemo/check-tainting.0.expected" byline="true"
+        <replaceregexp file="${checkerframework.tutorial}/tests/testdemo/check-tainting.0.expected" byline="true"
                        match="1.8.0-jsr308-\S*" replace="1.8.0-jsr308-${release.ver}"/>
 
-        <update file="${checker}/build.properties"
+        <update file="${checkerframework}/build.properties"
                 start="build.version = " with="${release.ver}"/>
 
-        <update file="${checker.manual}/manual.tex"
+        <update file="${checkerframework.manual}/manual.tex"
                 start="${release.info.0}" end="${release.info.1}"
                 with="${release.ver} (${release.date})"/>
 
-        <update file="${checker.manual}/manual.tex"
+        <update file="${checkerframework.manual}/manual.tex"
                 start="${release.ver.0}" end="${release.ver.1}"
                 with="${release.ver}"/>
+
+        <replaceregexp file="${checkerframework.eclipse}/checker-framework-eclipse-feature/feature.xml" byline="true"
+                       match="version=\"${release.version.regexp}{0,1}\"" replace="version=\"${release.ver}\""/>
+
+        <replaceregexp file="${checkerframework.eclipse}/checker-framework-eclipse-update-site/site.xml" byline="true"
+                       match="version=\"${release.version.regexp}{0,1}\"" replace="version=\"${release.ver}\""/>
+
+        <replaceregexp file="${checkerframework.eclipse}/checker-framework-eclipse-update-site/site.xml" byline="true"
+                       match="checker\.framework\.eclipse\.feature_${release.version.regexp}{0,1}" replace="checker\.framework\.eclipse\.feature_${release.ver}"/>
+
+        <replaceregexp file="${checkerframework.eclipse}/checker-framework-eclipse-plugin/META-INF/MANIFEST.MF" byline="true"
+                       match="Bundle-Version:.${release.version.regexp}{0,1}" replace="Bundle-Version: ${release.ver}"/>
 
         <!-- Checker Framework Maven artifacts -->
 
@@ -156,7 +168,7 @@
                 with="${release.ver}"/>
 
         <!-- jsr308 compiler -->
-        <update file="${checker.binary.poms}/compilerPom.xml"
+        <update file="${checkerframework.binary.poms}/compilerPom.xml"
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
                 with="${release.ver}"/>
 
@@ -350,27 +362,27 @@
         <!-- THe -->
         <fail unless="dest.dir"   message="dest.dir property is not set!" />
         <fail unless="manual.name"        message="manual.name property is not set!" />
-        <fail unless="checker.webpage"   message="checker.webpage property is not set!" />
+        <fail unless="checkerframework.webpage"   message="checkerframework.webpage property is not set!" />
 
         <!-- //TODO: PERHAPS CHECK THAT THESE FILES EXIST -->
-        <property name="checker.manual"   value="${checker}/manual" />
-        <property name="checker.tutorial" value="${checker}/../tutorial" />
-        <property name="web.root"          value="${dest.dir}/../.." />
+        <property name="checkerframework.manual"   value="${checker}/manual"      />
+        <property name="checkerframework.tutorial" value="${checker}/../tutorial" />
+        <property name="web.root"          value="${dest.dir}/../.."              />
 
-        <copy file="${checker.manual}/manual.html" tofile="${dest.dir}/${manual.name}.html"/>
-        <copy file="${checker.manual}/manual.pdf"  tofile="${dest.dir}/${manual.name}.pdf"/>
+        <copy file="${checkerframework.manual}/manual.html" tofile="${dest.dir}/${manual.name}.html"/>
+        <copy file="${checkerframework.manual}/manual.pdf"  tofile="${dest.dir}/${manual.name}.pdf" />
 
-        <copy file="${checker.manual}/${checker.webpage}" tofile="${dest.dir}/${checker.webpage}" />
+        <copy file="${checkerframework.manual}/${checkerframework.webpage}" tofile="${dest.dir}/${checkerframework.webpage}" />
 
         <copy todir="${dest.dir}" flatten="true">
-            <fileset dir="${checker.manual}">
+            <fileset dir="${checkerframework.manual}">
                 <include name="*.png"/>
                 <include name="*.gif"/>
             </fileset>
         </copy>
 
         <copy todir="${dest.dir}/tutorial" >
-            <fileset dir="${checker.tutorial}" includes="**"/>
+            <fileset dir="${checkerframework.tutorial}" includes="**"/>
         </copy>
 
         <copy todir="${dest.dir}" file="${checker}/../changelog.txt" />
@@ -381,7 +393,7 @@
             </fileset>
         </copy>
 
-        <symlink overwrite="true" link="${dest.dir}/index.html" resource="${dest.dir}/${checker.webpage}" />
+        <symlink overwrite="true" link="${dest.dir}/index.html" resource="${dest.dir}/${checkerframework.webpage}" />
         <symlink overwrite="true"
                  link="${web.root}/current/favicon-jsr308.png" resource="${web.root}/favicon-jsr308.png"/>
 

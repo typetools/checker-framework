@@ -693,6 +693,8 @@ public abstract class GenericAnnotatedTypeFactory<
         }
 
         analyses.removeFirst();
+        
+        flowResult.clearFinalLocalValues();
 
         // add classes declared in method
         queue.addAll(builder.getDeclaredClasses());
