@@ -56,6 +56,7 @@ import org.checkerframework.qualframework.util.WrappedAnnotatedTypeMirror.Wrappe
 public abstract class DefaultQualifiedTypeFactory<Q> implements QualifiedTypeFactory<Q> {
     private IdentityHashMap<ExtendedParameterDeclaration, QualifiedTypeParameterBounds<Q>> paramBoundsMap = new IdentityHashMap<>();
 
+    private QualifiedTypes<Q> qualifiedTypes;
     private QualifierHierarchy<Q> qualifierHierarchy;
     private TypeHierarchy<Q> typeHierarchy;
     private AnnotationConverter<Q> annotationConverter;
@@ -154,6 +155,18 @@ public abstract class DefaultQualifiedTypeFactory<Q> implements QualifiedTypeFac
         // default.
         return new TypeAnnotator<Q>(getAnnotationConverter(),
                 getQualifierHierarchy().getTop());
+    }
+
+
+    protected final QualifiedTypes<Q> getQualifiedTypes() {
+        if (this.qualifiedTypes == null) {
+            this.qualifiedTypes = createQualifiedTypes();
+        }
+        return this.qualifiedTypes;
+    }
+
+    protected QualifiedTypes<Q> createQualifiedTypes() {
+        return new AdapterQualifiedTypes<Q>(adapter);
     }
 
 
