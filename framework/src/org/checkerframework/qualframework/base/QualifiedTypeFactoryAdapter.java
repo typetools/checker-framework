@@ -34,6 +34,14 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
         super(checker, true);
         this.underlying = underlying;
 
+        // We can't call postInit yet.  See CheckerAdapter.getTypeFactory for
+        // explanation.
+    }
+
+    /** Allow CheckerAdapter to call postInit when it's ready.  See
+     * CheckerAdapter.getTypeFactory for explanation.
+     */
+    void doPostInit() {
         this.postInit();
     }
 
@@ -227,6 +235,32 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
         AnnotatedWildcardType result = super.getUninferredWildcardType(var);
         typeAnnotator.scanAndReduce(result, null, null);
         return result;
+    }
+
+
+    @Override
+    public void postDirectSuperTypes(AnnotatedTypeMirror subtype, List<? extends AnnotatedTypeMirror> supertypes) {
+        TypeMirrorConverter<Q> conv = getCheckerAdapter().getTypeMirrorConverter();
+
+        QualifiedTypeMirror<Q> qualSubtype = conv.getQualifiedType(subtype);
+        List<QualifiedTypeMirror<Q>> qualSupertypes = conv.getQualifiedTypeList(supertypes);
+
+        List<QualifiedTypeMirror<Q>> qualResult = underlying.postDirectSuperTypes(qualSubtype, qualSupertypes);
+
+        for (int i = 0; i < supertypes.size(); ++i) {
+            conv.applyQualifiers(qualResult.get(i), supertypes.get(i));
+        }
+    }
+
+    List<QualifiedTypeMirror<Q>> superPostDirectSuperTypes(QualifiedTypeMirror<Q> subtype, List<? extends QualifiedTypeMirror<Q>> supertypes) {
+        TypeMirrorConverter<Q> conv = getCheckerAdapter().getTypeMirrorConverter();
+
+        AnnotatedTypeMirror annoSubtype = conv.getAnnotatedType(subtype);
+        List<AnnotatedTypeMirror> annoSupertypes = conv.getAnnotatedTypeList(supertypes);
+
+        super.postDirectSuperTypes(annoSubtype, annoSupertypes);
+
+        return conv.getQualifiedTypeList(annoSupertypes);
     }
 
 
