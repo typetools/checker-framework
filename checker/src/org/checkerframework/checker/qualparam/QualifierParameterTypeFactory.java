@@ -4,6 +4,7 @@ import java.util.*;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.type.TypeKind;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 
@@ -17,6 +18,7 @@ import org.checkerframework.qualframework.base.SetQualifierVisitor;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedExecutableType;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedParameterDeclaration;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedTypeVariable;
+import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedWildcardType;
 
 public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedTypeFactory<QualParams<Q>> {
     QualifierHierarchy<Q> groundHierarchy;
@@ -151,6 +153,28 @@ public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedT
     @Override
     public QualifiedTypeMirror<QualParams<Q>> postTypeVarSubstitution(QualifiedParameterDeclaration<QualParams<Q>> varDecl,
             QualifiedTypeVariable<QualParams<Q>> varUse, QualifiedTypeMirror<QualParams<Q>> value) {
+        if (value.getKind() == TypeKind.WILDCARD) {
+            // Ideally we would never get a wildcard type as `value`, but
+            // sometimes it happens due to checker framework misbehavior.
+            // There are no top-level qualifiers on a wildcard type, so instead
+            // we apply the combining to both the upper and lower bounds of the
+            // wildcard.
+            QualifiedWildcardType<QualParams<Q>> wild = (QualifiedWildcardType<QualParams<Q>>)value;
+            QualifiedTypeMirror<QualParams<Q>> extendsBound = wild.getExtendsBound();
+            QualifiedTypeMirror<QualParams<Q>> superBound = wild.getSuperBound();
+
+            if (extendsBound != null) {
+                extendsBound = postTypeVarSubstitution(varDecl, varUse, extendsBound);
+            }
+
+            if (superBound != null) {
+                superBound = postTypeVarSubstitution(varDecl, varUse, superBound);
+            }
+
+            return new QualifiedWildcardType<QualParams<Q>>(
+                    wild.getUnderlyingType(), extendsBound, superBound);
+        }
+
         QualParams<Q> useParams = varUse.getQualifier();
         QualParams<Q> valueParams = value.getQualifier();
 
