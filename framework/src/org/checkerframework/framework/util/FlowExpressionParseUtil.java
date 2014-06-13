@@ -4,7 +4,6 @@ package org.checkerframework.framework.util;
 import org.checkerframework.checker.nullness.qual.Nullable;
 */
 
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -47,7 +46,6 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
-import com.sun.tools.javac.code.Scope;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Type.ClassType;
 
@@ -85,7 +83,7 @@ public class FlowExpressionParseUtil {
     protected static final Pattern arrayPattern = Pattern.compile("^(.*)\\[(.*)\\]$");
     /** Matches a field access */
     protected static final Pattern dotPattern = Pattern
-            .compile("^(.+)\\.([^.]+)$");
+            .compile("^([^.]+)\\.(.+)$");
     /** Matches integer literals */
     protected static final Pattern intPattern = Pattern
             .compile("^([1-9][0-9]*)$");
@@ -198,13 +196,11 @@ public class FlowExpressionParseUtil {
                 throw constructParserException(s);
             }
             return new ThisReference(superType);
-        } else if (allowIdentifier && (identifierMatcher.matches() || (recursiveCall && dotMatcher.matches() && allowDot))) {
+        } else if (identifierMatcher.matches() && allowIdentifier) {
             Resolver resolver = new Resolver(env);
             try {
                 // field access
-                TypeMirror originalReceiverType = context.receiver.getType();
-
-                TypeMirror receiverType = originalReceiverType;
+                TypeMirror receiverType = context.receiver.getType();
                 VariableElement fieldElem = null;
 
                 // Search for field in each enclosing class.
@@ -214,31 +210,6 @@ public class FlowExpressionParseUtil {
                         break;
                     }
                     receiverType = ((DeclaredType)receiverType).getEnclosingType();
-                }
-
-                if (fieldElem == null &&
-                    originalReceiverType.getKind() == TypeKind.DECLARED) {
-                    // Search for field in each parent class.
-                    // Resolver.findField will return public and protected
-                    // fields of supertypes, but will not return private
-                    // fields.
-                    // We work around this by calling Resolver.findField
-                    // on the supertypes directly.
-                    
-                    List<? extends TypeMirror> superTypes = 
-                            types.directSupertypes((DeclaredType)originalReceiverType);
-                    
-
-                    for(TypeMirror tm : superTypes) {
-                        Scope.Entry e = .members().lookup(s);
-                        
-
-                        
-                        fieldElem = resolver.findField(s, tm, path);
-                        if (fieldElem != null) {
-                            break;
-                        }
-                    }
                 }
 
                 if (fieldElem == null || fieldElem.getKind() != ElementKind.FIELD) {

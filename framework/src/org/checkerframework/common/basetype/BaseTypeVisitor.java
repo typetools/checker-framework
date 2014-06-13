@@ -32,7 +32,6 @@ import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic.Kind;
 
 import org.checkerframework.dataflow.analysis.FlowExpressions;
-import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.BooleanLiteralNode;
@@ -949,7 +948,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                             FlowExpressions.Receiver fieldExpr = FlowExpressionParseUtil.parse(fieldName,
                                     flowExprContext, getCurrentPath());
 
-                            if (fieldExpr.equals(expr)) {// || fieldExpr.equals("itself")) {
+                            if (fieldExpr.equals(expr)) {
                                 // Avoid issuing warnings when accessing the field that is guarding the receiver.
                                 // e.g. avoid issuing a warning when accessing bar below:
                                 // void foo(@GuardedBy("bar") myClass this){ synchronized(bar){ ... }}
@@ -962,7 +961,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
                     AnnotationMirror inferredAnno = value == null ? null : value
                             .getType().getAnnotationInHierarchy(anno);
-
                     if (!theFieldIsTheLock &&
                         !checkContract(expr, anno, inferredAnno, store)) {
 
