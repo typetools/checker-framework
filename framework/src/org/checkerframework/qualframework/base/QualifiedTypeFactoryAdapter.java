@@ -192,7 +192,6 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
 
     QualifiedTypeMirror<Q> superGetAnnotatedType(Element elt) {
         AnnotatedTypeMirror atm = super.getAnnotatedType(elt);
-        typeAnnotator.visit(atm, null);
         return getCheckerAdapter().getTypeMirrorConverter().getQualifiedType(atm);
     }
 
@@ -204,7 +203,6 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
 
     QualifiedTypeMirror<Q> superGetAnnotatedType(Tree tree) {
         AnnotatedTypeMirror atm = super.getAnnotatedType(tree);
-        typeAnnotator.visit(atm, null);
         return getCheckerAdapter().getTypeMirrorConverter().getQualifiedType(atm);
     }
 
@@ -216,7 +214,6 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
 
     QualifiedTypeMirror<Q> superGetAnnotatedTypeFromTypeTree(Tree tree) {
         AnnotatedTypeMirror atm = super.getAnnotatedTypeFromTypeTree(tree);
-        typeAnnotator.visit(atm, null);
         return getCheckerAdapter().getTypeMirrorConverter().getQualifiedType(atm);
     }
 
