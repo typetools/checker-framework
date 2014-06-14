@@ -215,6 +215,8 @@
         <unjar src="${javacutil.lib}" dest="${build}" />
         <unjar src="${dataflow.lib}" dest="${build}" />
 
+        <mkdir dir="dist" />
+
         <jar destfile="${framework.lib}" basedir="${build}" excludes="polyall/,tests/,lubglb/,jtreg/">
             <manifest>
                 <attribute name="Main-Class" value="org.checkerframework.framework.util.CheckerMain"/>
@@ -523,8 +525,6 @@
 
     <target name="dist" depends="-prep-dist,jar"
             description="Build framework.jar">
-
-        <mkdir dir="dist" />
 
         <!-- No need to copy javac.jar for the framework.
         <copy tofile="dist/javac.jar" file="${javac.lib}"
