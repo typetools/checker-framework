@@ -70,6 +70,7 @@
         <delete file="jdk/jdk9.jar"/>
 
         <delete dir="${dist}"/>
+        <delete dir="dist" />
     </target>
 
     <target name="clean-nojdk" description="Remove generated files, but not the jdkX.jar files">
@@ -863,6 +864,8 @@
 
     <target name="dist-nojdk" depends="-prep-dist,jar"
             description="Build checker.jar, checker-qual.jar WITHOUT updating jdkX.jar.  Move all relevant files to the binary directory.">
+
+        <mkdir dir="dist"/>
 
         <copy tofile="dist/javac.jar" file="${javac.lib}"
               overwrite="true" failonerror="true" />
