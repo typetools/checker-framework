@@ -11,12 +11,12 @@ import org.checkerframework.qualframework.base.QualifierHierarchy;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedDeclaredType;
 import org.checkerframework.qualframework.base.SetQualifierVisitor;
-import org.checkerframework.qualframework.base.TreeAnnotator;
 import org.checkerframework.qualframework.util.ExtendedTypeMirror;
 
 import org.checkerframework.checker.qualparam.CombiningOperation;
 import org.checkerframework.checker.qualparam.QualifierParameterHierarchy;
 import org.checkerframework.checker.qualparam.QualifierParameterTypeFactory;
+import org.checkerframework.checker.qualparam.QualifierParameterTreeAnnotator;
 import org.checkerframework.checker.qualparam.QualParams;
 import org.checkerframework.checker.qualparam.Wildcard;
 
@@ -32,8 +32,8 @@ public class TaintingQualifiedTypeFactory extends QualifierParameterTypeFactory<
     }
 
     @Override
-    protected TreeAnnotator<QualParams<Tainting>> createTreeAnnotator() {
-        return new TreeAnnotator<QualParams<Tainting>>() {
+    protected QualifierParameterTreeAnnotator<Tainting> createTreeAnnotator() {
+        return new QualifierParameterTreeAnnotator<Tainting>(this) {
             @Override
             public QualifiedTypeMirror<QualParams<Tainting>> visitLiteral(LiteralTree tree, ExtendedTypeMirror type) {
                 QualifiedTypeMirror<QualParams<Tainting>> result = super.visitLiteral(tree, type);

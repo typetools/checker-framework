@@ -3,8 +3,6 @@ package org.checkerframework.checker.qualparam;
 import java.util.*;
 
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.TypeElement;
 
 import org.checkerframework.qualframework.base.TypeAnnotator;
 import org.checkerframework.qualframework.base.QualifierHierarchy;
@@ -46,15 +44,7 @@ public class QualifierParameterTypeAnnotator<Q> extends TypeAnnotator<QualParams
 
         switch (type.getKind()) {
             case DECLARED:
-                // TODO - temporary hack for java.lang.String and boxed
-                // primitives, until I figure out how to do stub files
-                Element elt = ((ExtendedDeclaredType)type).asElement();
-                if (elt.getKind() == ElementKind.CLASS &&
-                        ((TypeElement)elt).getQualifiedName().toString().startsWith("java.lang.")) {
-                    names = Collections.singleton("Main");
-                } else {
-                    names = getAnnotationConverter().getDeclaredParameters(((ExtendedDeclaredType)type).asElement());
-                }
+                names = getAnnotationConverter().getDeclaredParameters(((ExtendedDeclaredType)type).asElement());
                 break;
             case EXECUTABLE:
                 names = getAnnotationConverter().getDeclaredParameters(((ExtendedExecutableType)type).asElement());
@@ -74,6 +64,9 @@ public class QualifierParameterTypeAnnotator<Q> extends TypeAnnotator<QualParams
                 names = Collections.emptySet();
                 break;
             default:
+                // TODO: the checker should get to make this decision.  Maybe
+                // take the parameters from the declaration of the boxed
+                // version of the primitive type?
                 if (type.getKind().isPrimitive()) {
                     names = Collections.singleton("Main");
                     break;
