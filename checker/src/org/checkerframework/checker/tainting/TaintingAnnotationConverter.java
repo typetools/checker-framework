@@ -5,6 +5,8 @@ import java.util.*;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.QualifiedNameable;
 
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -77,6 +79,17 @@ public class TaintingAnnotationConverter implements QualifierParameterAnnotation
         for (Annotation a : elt.getAnnotationsByType(TaintingParam.class)) {
             result.add(((TaintingParam)a).value());
         }
+
+        switch (elt.getKind()) {
+            case CLASS:
+            case INTERFACE:
+            case ENUM:
+                result.add("Main");
+                break;
+            default:
+                break;
+        }
+
         return result;
     }
 }
