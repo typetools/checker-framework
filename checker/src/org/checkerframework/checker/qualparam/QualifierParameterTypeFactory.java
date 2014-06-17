@@ -50,6 +50,11 @@ public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedT
                 new ContainmentHierarchy<>(new PolyQualHierarchy<>(getGroundQualifierHierarchy())));
     }
 
+    @Override
+    protected QualifierParameterTreeAnnotator<Q> createTreeAnnotator() {
+        return new QualifierParameterTreeAnnotator<Q>(this);
+    }
+
     /*
     public final QualParams<Q> applyCaptureConversion(QualParams<Q> objectQual) {
         if (objectQual == null || objectQual == QualParams.<Q>getBottom()
