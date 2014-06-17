@@ -56,6 +56,8 @@ public class QualifierParameterTypeAnnotator<Q> extends TypeAnnotator<QualParams
                 names = Collections.emptySet();
                 break;
             case ARRAY:
+                names = Collections.singleton("Main");
+                break;
             case INTERSECTION:
             case UNION:
             case NULL:
