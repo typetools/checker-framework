@@ -6,8 +6,11 @@ import java.util.*;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.QualifiedNameable;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeMirror;
 
 import org.checkerframework.javacutil.AnnotationUtils;
 
@@ -28,6 +31,7 @@ public class TaintingAnnotationConverter implements QualifierParameterAnnotation
 
     public TaintingAnnotationConverter() {
         QualVar<Tainting> mainVar = new QualVar<>("Main", Tainting.UNTAINTED, Tainting.TAINTED);
+        QualVar<Tainting> polyVar = new QualVar<>("_poly", Tainting.UNTAINTED, Tainting.TAINTED);
 
         lookup = new HashMap<>();
         lookup.put(Untainted.class.getName(), new Wildcard<>(Tainting.UNTAINTED));
@@ -37,6 +41,7 @@ public class TaintingAnnotationConverter implements QualifierParameterAnnotation
         lookup.put(ExtendsTainted.class.getName(), new Wildcard<>(Tainting.UNTAINTED, Tainting.TAINTED));
         lookup.put(ExtendsMain.class.getName(), new Wildcard<>(
                     new GroundQual<>(Tainting.UNTAINTED), mainVar));
+        lookup.put(PolyTainting.class.getName(), new Wildcard<>(polyVar));
 
         this.lubOp = new CombiningOperation.Lub<>(new TaintingQualifierHierarchy());
     }
@@ -86,10 +91,43 @@ public class TaintingAnnotationConverter implements QualifierParameterAnnotation
             case ENUM:
                 result.add("Main");
                 break;
+            case CONSTRUCTOR:
+            case METHOD:
+                if (hasPolyAnnotation((ExecutableElement)elt)) {
+                    result.add("_poly");
+                }
+                break;
             default:
                 break;
         }
 
         return result;
+    }
+
+    private boolean hasPolyAnnotation(ExecutableElement elt) {
+        if (hasPolyAnnotation(elt.getReturnType())) {
+            return true;
+        }
+        if (hasPolyAnnotation(elt.getReceiverType())) {
+            return true;
+        }
+        for (VariableElement paramElt : elt.getParameters()) {
+            if (hasPolyAnnotation(paramElt.asType())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean hasPolyAnnotation(TypeMirror type) {
+        if (type == null) {
+            return false;
+        }
+        for (AnnotationMirror anno : type.getAnnotationMirrors()) {
+            if (AnnotationUtils.annotationName(anno).equals(PolyTainting.class.getName())) {
+                return true;
+            }
+        }
+        return false;
     }
 }
