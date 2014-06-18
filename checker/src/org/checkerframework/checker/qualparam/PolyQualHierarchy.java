@@ -2,6 +2,11 @@ package org.checkerframework.checker.qualparam;
 
 import org.checkerframework.qualframework.base.QualifierHierarchy;
 
+/** A qualifier hierarchy for {@link PolyQual} instances.  This class extends
+ * the underlying subtyping hierarchy with qualifier variables, which are
+ * handled like Java type variables (JLS 4.10.2 - a type variable is a subtype
+ * of its upper bound and a supertype of its lower bound).
+ */
 public class PolyQualHierarchy<Q> implements QualifierHierarchy<PolyQual<Q>> {
     private QualifierHierarchy<Q> groundHierarchy;
 

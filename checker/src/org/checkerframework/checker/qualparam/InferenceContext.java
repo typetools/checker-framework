@@ -11,6 +11,8 @@ import org.checkerframework.qualframework.base.QualifierMapVisitor;
 
 import org.checkerframework.checker.qualparam.PolyQual.*;
 
+/** A context for performing method qualifier parameter inference.
+ */
 class InferenceContext<Q> {
     private List<String> qualParams;
     private List<? extends QualifiedTypeMirror<QualParams<Q>>> formals;

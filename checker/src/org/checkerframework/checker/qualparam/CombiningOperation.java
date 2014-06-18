@@ -2,33 +2,36 @@ package org.checkerframework.checker.qualparam;
 
 import org.checkerframework.qualframework.base.QualifierHierarchy;
 
+/** A binary operation for combining qualifiers of type {@code Q}.
+ */
 public interface CombiningOperation<Q> {
+    /** Apply the operation to two qualifiers, producing a new qualifier.  The
+     * operation is expected to be commutative and associative.
+     */
     Q combine(Q a, Q b);
+
+    /** The identity element for this operation.  It should always be the case
+     * that {@code op.combine(op.identity(), x)} is equivalent to {@code x}.
+     */
     Q identity();
 
-    public static class HierarchyOperation<Q> implements CombiningOperation<Q> {
-        private final QualifierHierarchy<Q> hierarchy;
-        private final boolean useGlb;
+    /** The least-upper-bound operation over a qualifier hierarchy.
+     */
+    public static class Lub<Q> implements CombiningOperation<Q> {
+        QualifierHierarchy<Q> hierarchy;
 
-        public HierarchyOperation(QualifierHierarchy<Q> hierarchy, boolean useGlb) {
+        public Lub(QualifierHierarchy<Q> hierarchy) {
             this.hierarchy = hierarchy;
-            this.useGlb = useGlb;
         }
 
+        @Override
         public Q combine(Q a, Q b) {
-            if (useGlb) {
-                return hierarchy.greatestLowerBound(a, b);
-            } else {
-                return hierarchy.leastUpperBound(a, b);
-            }
+            return hierarchy.leastUpperBound(a, b);
         }
 
+        @Override
         public Q identity() {
-            if (useGlb) {
-                return hierarchy.getTop();
-            } else {
-                return hierarchy.getBottom();
-            }
+            return hierarchy.getBottom();
         }
 
         @Override
@@ -37,32 +40,58 @@ public interface CombiningOperation<Q> {
                 return false;
             }
             @SuppressWarnings("rawtypes")
-            HierarchyOperation other = (HierarchyOperation)o;
-            return this.hierarchy.equals(other.hierarchy)
-                && this.useGlb == other.useGlb;
+            Lub other = (Lub)o;
+            return this.hierarchy.equals(other.hierarchy);
         }
 
         @Override
         public int hashCode() {
-            return this.hierarchy.hashCode() * 17
-                + (this.useGlb ? 37 : 0);
+            return this.hierarchy.hashCode();
         }
 
         @Override
         public String toString() {
-            return (useGlb ? "Glb" : "Lub");
+            return "Lub";
         }
     }
 
-    public static class Lub<Q> extends HierarchyOperation<Q> {
-        public Lub(QualifierHierarchy<Q> hierarchy) {
-            super(hierarchy, false);
-        }
-    }
+    /** The greatest-lower-bound operation over a qualifier hierarchy.
+     */
+    public static class Glb<Q> implements CombiningOperation <Q> {
+        QualifierHierarchy<Q> hierarchy;
 
-    public static class Glb<Q> extends HierarchyOperation<Q> {
         public Glb(QualifierHierarchy<Q> hierarchy) {
-            super(hierarchy, true);
+            this.hierarchy = hierarchy;
+        }
+
+        @Override
+        public Q combine(Q a, Q b) {
+            return hierarchy.greatestLowerBound(a, b);
+        }
+
+        @Override
+        public Q identity() {
+            return hierarchy.getTop();
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == null || o.getClass() != this.getClass()) {
+                return false;
+            }
+            @SuppressWarnings("rawtypes")
+            Glb other = (Glb)o;
+            return this.hierarchy.equals(other.hierarchy);
+        }
+
+        @Override
+        public int hashCode() {
+            return this.hierarchy.hashCode();
+        }
+
+        @Override
+        public String toString() {
+            return "Glb";
         }
     }
 }

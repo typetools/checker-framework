@@ -18,6 +18,7 @@ import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedExec
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedTypeVariable;
 */
 
+/** {@link TypeAnnotator} implementation for qualifier parameter checkers. */
 public class QualifierParameterTypeAnnotator<Q> extends TypeAnnotator<QualParams<Q>> {
     private QualifierHierarchy<Wildcard<Q>> containmentHierarchy;
 
@@ -38,8 +39,12 @@ public class QualifierParameterTypeAnnotator<Q> extends TypeAnnotator<QualParams
 
     @Override
     protected QualParams<Q> getQualifier(ExtendedTypeMirror type) {
+        // Use the appropriate top qualifier by default.  The top qualifier in
+        // this system assigns an unbounded wildcard to every parameter.
+
         QualParams<Q> result = super.getQualifier(type);
 
+        // Find the names of all parameters that are valid on this type.
         Set<String> names = null;
 
         switch (type.getKind()) {
@@ -79,6 +84,8 @@ public class QualifierParameterTypeAnnotator<Q> extends TypeAnnotator<QualParams
         if (names.isEmpty()) {
             return result;
         }
+
+        // Add an unbounded wildcard for each parameter that wasn't set.
 
         Map<String, Wildcard<Q>> newParams = new HashMap<>(result);
 
