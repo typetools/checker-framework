@@ -2,10 +2,11 @@ package org.checkerframework.checker.qualparam;
 
 import java.util.*;
 
+/** A qualifier wildcard, bounded above and below by {@link PolyQual}s.
+ */
 public class Wildcard<Q> {
     private final PolyQual<Q> lower;
     private final PolyQual<Q> upper;
-
 
     public Wildcard(PolyQual<Q> lower, PolyQual<Q> upper) {
         // Don't let the user pass in `null`.  We use `null` to represent the
@@ -38,23 +39,30 @@ public class Wildcard<Q> {
         this.upper = null;
     }
 
+    /** Produce the empty wildcard. */
     public static <Q> Wildcard<Q> empty() {
         return new Wildcard<Q>();
     }
 
 
+    /** Get the lower bound of the wildcard, or {@code null} if this is the
+     * empty wildcard. */
     public PolyQual<Q> getLowerBound() {
         return this.lower;
     }
 
+    /** Get the upper bound of the wildcard, or {@code null} if this is the
+     * empty wildcard. */
     public PolyQual<Q> getUpperBound() {
         return this.upper;
     }
 
+    /** Check if this is the empty wildcard. */
     public boolean isEmpty() {
         return this.lower == null;
     }
 
+    /** Substitute wildcards for qualifier parameters. */
     public Wildcard<Q> substitute(Map<String, Wildcard<Q>> substs) {
         Map<String, PolyQual<Q>> lowerSubsts = new HashMap<>();
         Map<String, PolyQual<Q>> upperSubsts = new HashMap<>();
@@ -69,6 +77,9 @@ public class Wildcard<Q> {
         return new Wildcard<Q>(newLower, newUpper);
     }
 
+    /** Combine with another wildcard, using the provided {@link
+     * CombiningOperation}s for the upper and lower bounds.
+     */
     public Wildcard<Q> combineWith(Wildcard<Q> other,
             CombiningOperation<Q> lowerOp, CombiningOperation<Q> upperOp) {
         return new Wildcard<Q>(
