@@ -11,6 +11,7 @@ import org.checkerframework.qualframework.base.QualifiedTypeMirror;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedDeclaredType;
 import org.checkerframework.qualframework.util.ExtendedTypeMirror;
 
+/** {@code TreeAnnotator} instance for qualifier parameter checkers. */
 public class QualifierParameterTreeAnnotator<Q> extends TreeAnnotator<QualParams<Q>> {
     private QualifierParameterTypeFactory<Q> factory;
 
@@ -18,6 +19,12 @@ public class QualifierParameterTreeAnnotator<Q> extends TreeAnnotator<QualParams
         super();
         this.factory = factory;
     }
+
+    // These overrides are intended to avoid adding invalid qualifier
+    // parameters due to the Checker Framework's default annotation handling.
+    // In particular, we want to prevent the framework from adding more
+    // qualifier parameters than the type actually declares, such as producing
+    // the type "C<<Q=Regex(1), R=Regex(2)>>" when C only declares "C<<Q>>".
 
     @Override
     public QualifiedTypeMirror<QualParams<Q>> visitCompoundAssignment(CompoundAssignmentTree node, ExtendedTypeMirror type) {
@@ -49,6 +56,9 @@ public class QualifierParameterTreeAnnotator<Q> extends TreeAnnotator<QualParams
         return filterParams(result);
     }
 
+    /** Filter the {@link QualParams} on a {@link QualifiedTypeMirror} to
+     * ensure that only the type's declared parameters are present.
+     */
     private QualifiedTypeMirror<QualParams<Q>> filterParams(QualifiedTypeMirror<QualParams<Q>> type) {
         if (type.getKind() != TypeKind.DECLARED) {
             return type;

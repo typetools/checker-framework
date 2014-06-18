@@ -2,9 +2,15 @@ package org.checkerframework.checker.qualparam;
 
 import org.checkerframework.qualframework.base.QualifierHierarchy;
 
+/** A hierarchy of {@link Wildcard}s, ordered by the containment relation (JLS
+ * 4.5.1).
+ */
 public class ContainmentHierarchy<Q> implements QualifierHierarchy<Wildcard<Q>> {
     private QualifierHierarchy<PolyQual<Q>> polyQualHierarchy;
 
+    /**
+     * @param polyQualHierarchy  the hierarchy to use for comparing wildcard bounds
+     */
     public ContainmentHierarchy(QualifierHierarchy<PolyQual<Q>> polyQualHierarchy) {
         this.polyQualHierarchy = polyQualHierarchy;
     }
