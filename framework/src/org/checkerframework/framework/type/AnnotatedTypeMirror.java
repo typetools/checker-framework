@@ -81,10 +81,11 @@ public abstract class AnnotatedTypeMirror {
      *
      * @param type
      * @param atypeFactory
+     * @param isDeclaration true if the result should is a type declaration
      * @return [to document]
      */
     public static AnnotatedTypeMirror createType(TypeMirror type,
-        AnnotatedTypeFactory atypeFactory) {
+        AnnotatedTypeFactory atypeFactory, boolean isDeclaration) {
         if (type == null) {
             ErrorReporter.errorAbort("AnnotatedTypeMirror.createType: input type must not be null!");
             return null;
@@ -96,7 +97,7 @@ public abstract class AnnotatedTypeMirror {
                 result = new AnnotatedArrayType((ArrayType) type, atypeFactory);
                 break;
             case DECLARED:
-                result = new AnnotatedDeclaredType((DeclaredType) type, atypeFactory);
+                result = new AnnotatedDeclaredType((DeclaredType) type, atypeFactory, isDeclaration);
                 break;
             case ERROR:
                 ErrorReporter.errorAbort("AnnotatedTypeMirror.createType: input should type-check already! Found error type: " + type);
@@ -113,7 +114,7 @@ public abstract class AnnotatedTypeMirror {
                 result = new AnnotatedNullType((NullType) type, atypeFactory);
                 break;
             case TYPEVAR:
-                result = new AnnotatedTypeVariable((TypeVariable) type, atypeFactory);
+                result = new AnnotatedTypeVariable((TypeVariable) type, atypeFactory, isDeclaration);
                 break;
             case WILDCARD:
                 result = new AnnotatedWildcardType((WildcardType) type, atypeFactory);
@@ -219,6 +220,23 @@ public abstract class AnnotatedTypeMirror {
      */
     public TypeMirror getUnderlyingType() {
         return actualType;
+    }
+
+    /**
+     * Returns true if this type mirror represents a declaration, rather than a
+     * use, of a type.
+     *
+     * For example, <code>class List<T> { ... }</code> declares a new type
+     * {@code List<T>}, while {@code List<Integer>} is a use of the type.
+     *
+     * @return  true if this represents a declaration
+     */
+    public boolean isDeclaration() {
+        return false;
+    }
+
+    public AnnotatedTypeMirror asUse() {
+        return this;
     }
 
     /**
@@ -840,6 +858,12 @@ public abstract class AnnotatedTypeMirror {
     public AnnotatedTypeMirror substitute(
             Map<? extends AnnotatedTypeMirror,
                     ? extends AnnotatedTypeMirror> mappings) {
+        return this.substitute(mappings, false);
+    }
+
+    public AnnotatedTypeMirror substitute(
+            Map<? extends AnnotatedTypeMirror,
+                    ? extends AnnotatedTypeMirror> mappings, boolean forDeepCopy) {
         if (mappings.containsKey(this)) {
             return mappings.get(this).getCopy(true);
         }
@@ -877,6 +901,8 @@ public abstract class AnnotatedTypeMirror {
 
         protected List<AnnotatedDeclaredType> supertypes = null;
 
+        private boolean declaration;
+
         /**
          * Constructor for this type
          *
@@ -884,7 +910,7 @@ public abstract class AnnotatedTypeMirror {
          * @param atypeFactory TODO
          */
         private AnnotatedDeclaredType(DeclaredType type,
-                AnnotatedTypeFactory atypeFactory) {
+                AnnotatedTypeFactory atypeFactory, boolean declaration) {
             super(type, atypeFactory);
             TypeElement typeelem = (TypeElement) type.asElement();
             DeclaredType declty = (DeclaredType) typeelem.asType();
@@ -893,17 +919,46 @@ public abstract class AnnotatedTypeMirror {
 
             TypeMirror encl = type.getEnclosingType();
             if (encl.getKind() == TypeKind.DECLARED) {
-                this.enclosingType = (AnnotatedDeclaredType) createType(encl, atypeFactory);
+                this.enclosingType = (AnnotatedDeclaredType) createType(encl, atypeFactory, true);
             } else if (encl.getKind() != TypeKind.NONE) {
                 ErrorReporter.errorAbort("AnnotatedDeclaredType: unsupported enclosing type: " +
                         type.getEnclosingType() + " (" + encl.getKind() + ")");
             }
+
+            this.declaration = declaration;
+        }
+
+        @Override
+        public boolean isDeclaration() {
+            return declaration;
+        }
+
+        public AnnotatedDeclaredType asUse() {
+            if (!this.isDeclaration()) {
+                return this;
+            }
+
+            AnnotatedDeclaredType result = this.getCopy(true);
+            result.declaration = false;
+
+            List<AnnotatedTypeMirror> newArgs = new ArrayList<>();
+            for (AnnotatedTypeMirror arg : result.getTypeArguments()) {
+                AnnotatedTypeVariable paramDecl = (AnnotatedTypeVariable)arg;
+                assert paramDecl.isDeclaration();
+                newArgs.add(paramDecl.asUse());
+            }
+            result.setTypeArguments(newArgs);
+
+            return result;
         }
 
         @SideEffectFree
         @Override
         public String toString(boolean printInvisible) {
             StringBuilder sb = new StringBuilder();
+            if (declaration) {
+                sb.append("/*DECL*/ ");
+            }
             final Element typeElt = this.getUnderlyingType().asElement();
             String smpl = typeElt.getSimpleName().toString();
             if (smpl.isEmpty()) {
@@ -942,7 +997,16 @@ public abstract class AnnotatedTypeMirror {
             if (ts == null || ts.isEmpty()) {
                 typeArgs = Collections.emptyList();
             } else {
-                typeArgs = Collections.unmodifiableList(new ArrayList<AnnotatedTypeMirror>(ts));
+                if (isDeclaration()) {
+                    // TODO: check that all args are really declarations
+                    typeArgs = Collections.unmodifiableList(ts);
+                } else {
+                    List<AnnotatedTypeMirror> uses = new ArrayList<>();
+                    for (AnnotatedTypeMirror t : ts) {
+                        uses.add(t.asUse());
+                    }
+                    typeArgs = Collections.unmodifiableList(uses);
+                }
             }
         }
 
@@ -954,7 +1018,7 @@ public abstract class AnnotatedTypeMirror {
                 typeArgs = new ArrayList<AnnotatedTypeMirror>();
                 if (!((DeclaredType)actualType).getTypeArguments().isEmpty()) { // lazy init
                     for (TypeMirror t : ((DeclaredType)actualType).getTypeArguments()) {
-                        typeArgs.add(createType(t, atypeFactory));
+                        typeArgs.add(createType(t, atypeFactory, declaration));
                     }
                 }
                 typeArgs = Collections.unmodifiableList(typeArgs);
@@ -1011,7 +1075,7 @@ public abstract class AnnotatedTypeMirror {
         @Override
         public AnnotatedDeclaredType getCopy(boolean copyAnnotations) {
             AnnotatedDeclaredType type =
-                new AnnotatedDeclaredType(getUnderlyingType(), atypeFactory);
+                new AnnotatedDeclaredType(getUnderlyingType(), atypeFactory, declaration);
             if (copyAnnotations)
                 type.addAnnotations(annotations);
             type.setEnclosingType(getEnclosingType());
@@ -1022,7 +1086,7 @@ public abstract class AnnotatedTypeMirror {
         @Override
         public AnnotatedTypeMirror substitute(
                 Map<? extends AnnotatedTypeMirror,
-                    ? extends AnnotatedTypeMirror> mappings) {
+                    ? extends AnnotatedTypeMirror> mappings, boolean forDeepCopy) {
             if (mappings.containsKey(this))
                 return mappings.get(this);
 
@@ -1034,7 +1098,7 @@ public abstract class AnnotatedTypeMirror {
 
             List<AnnotatedTypeMirror> typeArgs = new ArrayList<AnnotatedTypeMirror>();
             for (AnnotatedTypeMirror t : getTypeArguments())
-                typeArgs.add(t.substitute(newMappings));
+                typeArgs.add(t.substitute(newMappings, forDeepCopy));
             type.setTypeArguments(typeArgs);
 
             return type;
@@ -1050,7 +1114,7 @@ public abstract class AnnotatedTypeMirror {
                 AnnotatedDeclaredType rType =
                     (AnnotatedDeclaredType)AnnotatedTypeMirror.createType(
                             types.erasure(actualType),
-                            atypeFactory);
+                            atypeFactory, declaration);
                 rType.addAnnotations(getAnnotations());
                 rType.setTypeArguments(Collections.<AnnotatedTypeMirror> emptyList());
                 return rType.getErased();
@@ -1203,7 +1267,7 @@ public abstract class AnnotatedTypeMirror {
             if (paramTypes.isEmpty()
                     && !actualType.getParameterTypes().isEmpty()) { // lazy init
                 for (TypeMirror t : actualType.getParameterTypes())
-                    paramTypes.add(createType(t, atypeFactory));
+                    paramTypes.add(createType(t, atypeFactory, false));
             }
             return Collections.unmodifiableList(paramTypes);
         }
@@ -1233,7 +1297,7 @@ public abstract class AnnotatedTypeMirror {
                     // Take the type of the enclosing class instead.
                     aret = element.getEnclosingElement().asType();
                 }
-                returnType = createType(aret, atypeFactory);
+                returnType = createType(aret, atypeFactory, false);
             }
             return returnType;
         }
@@ -1262,7 +1326,7 @@ public abstract class AnnotatedTypeMirror {
                     // Can only reach this branch if we're the constructor of a nested class
                     encl =  ElementUtils.enclosingClass(encl.getEnclosingElement());
                 }
-                AnnotatedTypeMirror type = createType(encl.asType(), atypeFactory);
+                AnnotatedTypeMirror type = createType(encl.asType(), atypeFactory, false);
                 assert type instanceof AnnotatedDeclaredType;
                 receiverType = (AnnotatedDeclaredType)type;
             }
@@ -1287,7 +1351,7 @@ public abstract class AnnotatedTypeMirror {
             if (throwsTypes.isEmpty()
                     && !actualType.getThrownTypes().isEmpty()) { // lazy init
                 for (TypeMirror t : actualType.getThrownTypes())
-                    throwsTypes.add(createType(t, atypeFactory));
+                    throwsTypes.add(createType(t, atypeFactory, false));
             }
             return Collections.unmodifiableList(throwsTypes);
         }
@@ -1310,7 +1374,7 @@ public abstract class AnnotatedTypeMirror {
                     && !actualType.getTypeVariables().isEmpty()) { // lazy init
                 for (TypeMirror t : actualType.getTypeVariables()) {
                     typeVarTypes.add((AnnotatedTypeVariable)createType(
-                            t, atypeFactory));
+                            t, atypeFactory, true));
                 }
             }
             return Collections.unmodifiableList(typeVarTypes);
@@ -1369,7 +1433,7 @@ public abstract class AnnotatedTypeMirror {
         @Override
         public AnnotatedExecutableType substitute(
                 Map<? extends AnnotatedTypeMirror,
-                        ? extends AnnotatedTypeMirror> mappings) {
+                        ? extends AnnotatedTypeMirror> mappings, boolean forDeepCopy) {
             // Shouldn't substitute for methods!
             AnnotatedExecutableType type = getCopy(true);
 
@@ -1377,21 +1441,21 @@ public abstract class AnnotatedTypeMirror {
             {
                 List<AnnotatedTypeMirror> params = new ArrayList<AnnotatedTypeMirror>();
                 for (AnnotatedTypeMirror t : getParameterTypes()) {
-                    params.add(t.substitute(mappings));
+                    params.add(t.substitute(mappings, forDeepCopy));
                 }
                 type.setParameterTypes(params);
             }
 
             if (getReceiverType() != null)
-                type.setReceiverType((AnnotatedDeclaredType)getReceiverType().substitute(mappings));
+                type.setReceiverType((AnnotatedDeclaredType)getReceiverType().substitute(mappings, forDeepCopy));
 
-            type.setReturnType(getReturnType().substitute(mappings));
+            type.setReturnType(getReturnType().substitute(mappings, forDeepCopy));
 
             // Throws
             {
                 List<AnnotatedTypeMirror> throwns = new ArrayList<AnnotatedTypeMirror>();
                 for (AnnotatedTypeMirror t : getThrownTypes()) {
-                    throwns.add(t.substitute(mappings));
+                    throwns.add(t.substitute(mappings, forDeepCopy));
                 }
                 type.setThrownTypes(throwns);
             }
@@ -1404,12 +1468,12 @@ public abstract class AnnotatedTypeMirror {
                     AnnotatedTypeVariable newtv = AnnotatedTypes.deepCopy(t);
                     AnnotatedTypeMirror bnd = newtv.getUpperBoundField();
                     if (bnd != null) {
-                        bnd = bnd.substitute(mappings);
+                        bnd = bnd.substitute(mappings, forDeepCopy);
                         newtv.setUpperBound(bnd);
                     }
                     bnd = newtv.getLowerBoundField();
                     if (bnd != null) {
-                        bnd = bnd.substitute(mappings);
+                        bnd = bnd.substitute(mappings, forDeepCopy);
                         newtv.setLowerBound(bnd);
                     }
                     mtvs.add(newtv);
@@ -1519,7 +1583,7 @@ public abstract class AnnotatedTypeMirror {
         public AnnotatedTypeMirror getComponentType() {
             if (componentType == null) // lazy init
                 setComponentType(createType(
-                        actualType.getComponentType(), atypeFactory));
+                        actualType.getComponentType(), atypeFactory, false));
             return componentType;
         }
 
@@ -1536,13 +1600,13 @@ public abstract class AnnotatedTypeMirror {
         @Override
         public AnnotatedTypeMirror substitute(
                 Map<? extends AnnotatedTypeMirror,
-                        ? extends AnnotatedTypeMirror> mappings) {
+                        ? extends AnnotatedTypeMirror> mappings, boolean forDeepCopy) {
             if (mappings.containsKey(this))
                 return mappings.get(this);
 
             AnnotatedArrayType type = getCopy(true);
             AnnotatedTypeMirror c = getComponentType();
-            AnnotatedTypeMirror cs = c.substitute(mappings);
+            AnnotatedTypeMirror cs = c.substitute(mappings, forDeepCopy);
             type.setComponentType(cs);
             return type;
         }
@@ -1597,8 +1661,9 @@ public abstract class AnnotatedTypeMirror {
     implements AnnotatedReferenceType {
 
         private AnnotatedTypeVariable(TypeVariable type,
-                AnnotatedTypeFactory factory) {
+                AnnotatedTypeFactory factory, boolean declaration) {
             super(type, factory);
+            this.declaration = declaration;
         }
 
         /** The lower bound of the type variable. **/
@@ -1606,6 +1671,34 @@ public abstract class AnnotatedTypeMirror {
 
         /** The upper bound of the type variable. **/
         private AnnotatedTypeMirror upperBound;
+
+        private boolean declaration;
+
+        @Override
+        public boolean isDeclaration() {
+            return declaration;
+        }
+
+        /**
+         * Change whether this {@code AnnotatedTypeVariable} is considered a use or a declaration
+         * (use this method with caution).
+         *
+         * @param declaration  true if this type variable should be considered a declaration
+         */
+        public void setDeclaration(boolean declaration) {
+            this.declaration = declaration;
+        }
+
+        public AnnotatedTypeVariable asUse() {
+            if (!this.isDeclaration()) {
+                return this;
+            }
+
+            AnnotatedTypeVariable result = this.getCopy(true);
+            result.declaration = false;
+
+            return result;
+        }
 
         @Override
         public <R, P> R accept(AnnotatedTypeVisitor<R, P> v, P p) {
@@ -1629,6 +1722,8 @@ public abstract class AnnotatedTypeMirror {
          * @param type the lower bound type
          */
         void setLowerBound(AnnotatedTypeMirror type) {
+            if (type != null)
+                type = type.asUse();
             this.lowerBound = type;
         }
 
@@ -1649,7 +1744,7 @@ public abstract class AnnotatedTypeMirror {
          */
         public AnnotatedTypeMirror getLowerBound() {
             if (lowerBound == null && ((TypeVariable)actualType).getLowerBound() != null) { // lazy init
-                setLowerBound(createType(((TypeVariable)actualType).getLowerBound(), atypeFactory));
+                setLowerBound(createType(((TypeVariable)actualType).getLowerBound(), atypeFactory, false));
                 fixupBoundAnnotations();
             }
             return lowerBound;
@@ -1660,9 +1755,13 @@ public abstract class AnnotatedTypeMirror {
          * with annotations on the type variable considered.
         */
         public AnnotatedTypeMirror getEffectiveLowerBound() {
-            AnnotatedTypeMirror effbnd = AnnotatedTypes.deepCopy(getLowerBound());
-            effbnd.replaceAnnotations(annotations);
-            return effbnd;
+            // See comments in `getEffectiveUpperBound` for an explanation of this implementation.
+            AnnotatedTypeVariable thisUse = this.getCopy(true);
+            thisUse.declaration = false;
+            AnnotatedTypeVariable thisDecl = this.getCopy(true);
+            thisDecl.declaration = true;
+            thisDecl.clearAnnotations();
+            return thisUse.substitute(Collections.singletonMap(thisDecl, this.getLowerBound()));
         }
 
 
@@ -1724,6 +1823,8 @@ public abstract class AnnotatedTypeMirror {
          */
         void setUpperBound(AnnotatedTypeMirror type) {
             // TODO: create a deepCopy?
+            if (type != null)
+                type = type.asUse();
             this.upperBound = type;
         }
 
@@ -1749,7 +1850,7 @@ public abstract class AnnotatedTypeMirror {
          */
         public AnnotatedTypeMirror getUpperBound() {
             if (upperBound == null && ((TypeVariable)actualType).getUpperBound() != null) { // lazy init
-                setUpperBound(createType(((TypeVariable)actualType).getUpperBound(), atypeFactory));
+                setUpperBound(createType(((TypeVariable)actualType).getUpperBound(), atypeFactory, false));
                 fixupBoundAnnotations();
             }
             return upperBound;
@@ -1760,9 +1861,33 @@ public abstract class AnnotatedTypeMirror {
          * with annotations on the type variable considered.
         */
         public AnnotatedTypeMirror getEffectiveUpperBound() {
-            AnnotatedTypeMirror effbnd = AnnotatedTypes.deepCopy(getUpperBound());
-            effbnd.replaceAnnotations(annotations);
-            return effbnd;
+            // Given a declaration `T extends @U Upper super @L Lower` and a use `@A T`, the
+            // "effective upper bound" of `@A T` is the LUB of all types that could possibly result
+            // from substituting `T := X` into `@A T`, where `@L Lower <: X <: @U Upper`.
+            // Substitution is monotonic (if `X` is a subtype of `Y`, then the result of
+            // substituting with `T := X` is a subtype of the result of `T := Y`), so the effective
+            // upper bound of `@A T` is simply the result of substituting with `T := @U Upper`.
+
+            // We need a declaration of `T` to use as a key in the map passed to `substitute`, and a
+            // use of `T` to be the receiver.  So we make a "decl" copy and a "use" copy of `this`.
+            AnnotatedTypeVariable thisUse = this.getCopy(true);
+            thisUse.declaration = false;
+            AnnotatedTypeVariable thisDecl = this.getCopy(true);
+            thisDecl.declaration = true;
+            thisDecl.clearAnnotations();
+            return thisUse.substitute(Collections.singletonMap(thisDecl, this.getUpperBound()));
+        }
+
+        public AnnotatedTypeParameterBounds getBounds() {
+            return new AnnotatedTypeParameterBounds(getUpperBound(), getLowerBound());
+        }
+
+        public AnnotatedTypeParameterBounds getBoundFields() {
+            return new AnnotatedTypeParameterBounds(getUpperBoundField(), getLowerBoundField());
+        }
+
+        public AnnotatedTypeParameterBounds getEffectiveBounds() {
+            return new AnnotatedTypeParameterBounds(getEffectiveUpperBound(), getEffectiveLowerBound());
         }
 
         /**
@@ -1773,7 +1898,7 @@ public abstract class AnnotatedTypeMirror {
         @Override
         public AnnotatedTypeVariable getCopy(boolean copyAnnotations) {
             AnnotatedTypeVariable type =
-                new AnnotatedTypeVariable(((TypeVariable)actualType), atypeFactory);
+                new AnnotatedTypeVariable(((TypeVariable)actualType), atypeFactory, declaration);
             if (copyAnnotations)
                 type.addAnnotations(annotations);
             if (!inUpperBounds) {
@@ -1807,28 +1932,26 @@ public abstract class AnnotatedTypeMirror {
          */
 
         private static <K extends AnnotatedTypeMirror, V extends AnnotatedTypeMirror>
-        V mapGetHelper(Map<K, V> mappings, AnnotatedTypeVariable key) {
+        V mapGetHelper(Map<K, V> mappings, AnnotatedTypeVariable key, boolean forDeepCopy) {
+            // Search through `mappings` for an ATV which represents the declaration of the type
+            // variable `key`.
             for (Map.Entry<K, V> entry : mappings.entrySet()) {
                 K possible = entry.getKey();
                 V possValue = entry.getValue();
-                if (possible == key) return possValue;
                 if (possible instanceof AnnotatedTypeVariable) {
                     AnnotatedTypeVariable other = (AnnotatedTypeVariable)possible;
                     Element oElt = other.getUnderlyingType().asElement();
                     if (key.getUnderlyingType().asElement().equals(oElt)) {
-                        // Not identical AnnotatedTypeMirrors, but they wrap the same TypeMirror.
-                        if (!key.annotations.isEmpty()
-                                && !AnnotationUtils.areSame(key.annotations, other.annotations)) {
-                            // An annotated type variable use means to override
-                            // any annotations on the actual type argument.
-                            @SuppressWarnings("unchecked")
-                            V found = (V)possValue.getCopy(false);
-                            found.addAnnotations(possValue.getAnnotations());
-                            found.replaceAnnotations(key.annotations);
-                            return found;
-                        } else {
-                            return possValue;
+                        // The underlying `Element` is the same for `key` and `other`, so `other` is
+                        // the declaration of `key`.  Replace type variable `other` with type
+                        // `possValue` at type variable use `key`.
+                        @SuppressWarnings("unchecked")
+                        V found = (V)possValue.getCopy(false);
+                        found.addAnnotations(possValue.getAnnotations());
+                        if (!forDeepCopy) {
+                            key.atypeFactory.postTypeVarSubstitution((AnnotatedTypeVariable)possible, key, found);
                         }
+                        return found;
                     }
                 }
             }
@@ -1838,8 +1961,8 @@ public abstract class AnnotatedTypeMirror {
         @Override
         public AnnotatedTypeMirror substitute(
                 Map<? extends AnnotatedTypeMirror,
-                        ? extends AnnotatedTypeMirror> mappings) {
-            AnnotatedTypeMirror found = mapGetHelper(mappings, this);
+                        ? extends AnnotatedTypeMirror> mappings, boolean forDeepCopy) {
+            AnnotatedTypeMirror found = mapGetHelper(mappings, this, forDeepCopy);
             if (found != null) {
                 return found;
             }
@@ -1860,10 +1983,10 @@ public abstract class AnnotatedTypeMirror {
                 new HashMap<AnnotatedTypeMirror, AnnotatedTypeMirror>(mappings);
             newMappings.put(this, type);
             if (lowerBound != null) {
-                type.setLowerBound(lowerBound.substitute(newMappings));
+                type.setLowerBound(lowerBound.substitute(newMappings, forDeepCopy));
             }
             if (upperBound != null) {
-                type.setUpperBound(upperBound.substitute(newMappings));
+                type.setUpperBound(upperBound.substitute(newMappings, forDeepCopy));
             }
             return type;
         }
@@ -1875,6 +1998,9 @@ public abstract class AnnotatedTypeMirror {
         @Override
         public String toString(boolean printInvisible) {
             StringBuilder sb = new StringBuilder();
+            if (declaration) {
+                sb.append("/*DECL*/ ");
+            }
             sb.append(formatAnnotationString(annotations, printInvisible));
             sb.append(actualType);
             if (!isPrintingBound) {
@@ -1959,7 +2085,7 @@ public abstract class AnnotatedTypeMirror {
         @Override
         public AnnotatedTypeMirror substitute(
                 Map<? extends AnnotatedTypeMirror,
-                        ? extends AnnotatedTypeMirror> mappings) {
+                        ? extends AnnotatedTypeMirror> mappings, boolean forDeepCopy) {
             // Cannot substitute
             return getCopy(true);
         }
@@ -1996,7 +2122,7 @@ public abstract class AnnotatedTypeMirror {
         @Override
         public AnnotatedTypeMirror substitute(
                 Map<? extends AnnotatedTypeMirror,
-                        ? extends AnnotatedTypeMirror> mappings) {
+                        ? extends AnnotatedTypeMirror> mappings, boolean forDeepCopy) {
             // cannot substitute
             return getCopy(true);
         }
@@ -2047,7 +2173,7 @@ public abstract class AnnotatedTypeMirror {
         @Override
         public AnnotatedTypeMirror substitute(
                 Map<? extends AnnotatedTypeMirror,
-                        ? extends AnnotatedTypeMirror> mappings) {
+                        ? extends AnnotatedTypeMirror> mappings, boolean forDeepCopy) {
             if (mappings.containsKey(this))
                 return mappings.get(this);
             return getCopy(true);
@@ -2082,6 +2208,8 @@ public abstract class AnnotatedTypeMirror {
          * @param type  the type of the lower bound
          */
         void setSuperBound(AnnotatedTypeMirror type) {
+            if (type != null)
+                type = type.asUse();
             this.superBound = type;
         }
 
@@ -2097,7 +2225,7 @@ public abstract class AnnotatedTypeMirror {
             if (superBound == null
                     && ((WildcardType)actualType).getSuperBound() != null) {
                 // lazy init
-                AnnotatedTypeMirror annosupertype = createType(((WildcardType)actualType).getSuperBound(), atypeFactory);
+                AnnotatedTypeMirror annosupertype = createType(((WildcardType)actualType).getSuperBound(), atypeFactory, false);
                 setSuperBound(annosupertype);
                 fixupBoundAnnotations();
             }
@@ -2120,6 +2248,8 @@ public abstract class AnnotatedTypeMirror {
          * @param type  the type of the upper bound
          */
         void setExtendsBound(AnnotatedTypeMirror type) {
+            if (type != null)
+                type = type.asUse();
             this.extendsBound = type;
         }
 
@@ -2142,7 +2272,7 @@ public abstract class AnnotatedTypeMirror {
                     com.sun.tools.javac.util.Context ctx = ((com.sun.tools.javac.processing.JavacProcessingEnvironment) atypeFactory.processingEnv).getContext();
                     extType = com.sun.tools.javac.code.Types.instance(ctx).upperBound(wct);
                 }
-                AnnotatedTypeMirror annoexttype = createType(extType, atypeFactory);
+                AnnotatedTypeMirror annoexttype = createType(extType, atypeFactory, false);
                 // annoexttype.setElement(this.element);
                 setExtendsBound(annoexttype);
                 fixupBoundAnnotations();
@@ -2227,7 +2357,7 @@ public abstract class AnnotatedTypeMirror {
         @Override
         public AnnotatedTypeMirror substitute(
                 Map<? extends AnnotatedTypeMirror,
-                        ? extends AnnotatedTypeMirror> mappings) {
+                        ? extends AnnotatedTypeMirror> mappings, boolean forDeepCopy) {
             if (mappings.containsKey(this))
                 return mappings.get(this);
 
@@ -2240,9 +2370,9 @@ public abstract class AnnotatedTypeMirror {
             // The extends and super bounds can be null because the underlying
             // type's extends and super bounds can be null.
             if (extendsBound != null)
-                type.setExtendsBound(extendsBound.substitute(newMapping));
+                type.setExtendsBound(extendsBound.substitute(newMapping, forDeepCopy));
             if (superBound != null)
-                type.setSuperBound(superBound.substitute(newMapping));
+                type.setSuperBound(superBound.substitute(newMapping, forDeepCopy));
 
             if (type.getExtendsBound() != null &&
                     type.getSuperBound() != null &&
@@ -2351,7 +2481,7 @@ public abstract class AnnotatedTypeMirror {
                 List<? extends TypeMirror> ubounds = ((IntersectionType)actualType).getBounds();
                 List<AnnotatedDeclaredType> res = new ArrayList<AnnotatedDeclaredType>(ubounds.size());
                 for (TypeMirror bnd : ubounds) {
-                    res.add((AnnotatedDeclaredType) createType(bnd, atypeFactory));
+                    res.add((AnnotatedDeclaredType) createType(bnd, atypeFactory, false));
                 }
                 supertypes = Collections.unmodifiableList(res);
             }
@@ -2369,7 +2499,7 @@ public abstract class AnnotatedTypeMirror {
         @Override
         public AnnotatedTypeMirror substitute(
                 Map<? extends AnnotatedTypeMirror,
-                    ? extends AnnotatedTypeMirror> mappings) {
+                    ? extends AnnotatedTypeMirror> mappings, boolean forDeepCopy) {
             if (mappings.containsKey(this))
                 return mappings.get(this);
 
@@ -2383,7 +2513,7 @@ public abstract class AnnotatedTypeMirror {
                 // watch need to copy upper bound as well
                 List<AnnotatedDeclaredType> supertypes = new ArrayList<AnnotatedDeclaredType>();
                 for (AnnotatedDeclaredType t : directSuperTypes())
-                    supertypes.add((AnnotatedDeclaredType)t.substitute(newMappings));
+                    supertypes.add((AnnotatedDeclaredType)t.substitute(newMappings, forDeepCopy));
                 type.supertypes = supertypes;
             }
             return type;
@@ -2442,7 +2572,7 @@ public abstract class AnnotatedTypeMirror {
                 List<? extends TypeMirror> ualts = ((UnionType)actualType).getAlternatives();
                 List<AnnotatedDeclaredType> res = new ArrayList<AnnotatedDeclaredType>(ualts.size());
                 for (TypeMirror alt : ualts) {
-                    res.add((AnnotatedDeclaredType) createType(alt, atypeFactory));
+                    res.add((AnnotatedDeclaredType) createType(alt, atypeFactory, false));
                 }
                 alternatives = Collections.unmodifiableList(res);
             }
@@ -2452,7 +2582,7 @@ public abstract class AnnotatedTypeMirror {
         @Override
         public AnnotatedTypeMirror substitute(
                 Map<? extends AnnotatedTypeMirror,
-                    ? extends AnnotatedTypeMirror> mappings) {
+                    ? extends AnnotatedTypeMirror> mappings, boolean forDeepCopy) {
             if (mappings.containsKey(this))
                 return mappings.get(this);
 
@@ -2466,7 +2596,7 @@ public abstract class AnnotatedTypeMirror {
                 // watch need to copy alternatives as well
                 List<AnnotatedDeclaredType> alternatives = new ArrayList<AnnotatedDeclaredType>();
                 for (AnnotatedDeclaredType t : getAlternatives())
-                    alternatives.add((AnnotatedDeclaredType)t.substitute(newMappings));
+                    alternatives.add((AnnotatedDeclaredType)t.substitute(newMappings, forDeepCopy));
                 type.alternatives = alternatives;
             }
             return type;
@@ -2574,7 +2704,7 @@ public abstract class AnnotatedTypeMirror {
 
             if (superPrimitiveType != null) {
                 AnnotatedPrimitiveType superPrimitive = (AnnotatedPrimitiveType)
-                    atypeFactory.toAnnotatedType(types.getPrimitiveType(superPrimitiveType));
+                    atypeFactory.toAnnotatedType(types.getPrimitiveType(superPrimitiveType), false);
                 superPrimitive.addAnnotations(annotations);
                 superTypes.add(superPrimitive);
             }
@@ -2621,7 +2751,7 @@ public abstract class AnnotatedTypeMirror {
             // Find the super types: Start with enums and superclass
             if (typeElement.getKind() == ElementKind.ENUM) {
                 DeclaredType dt = (DeclaredType) typeElement.getSuperclass();
-                AnnotatedDeclaredType adt = (AnnotatedDeclaredType) atypeFactory.toAnnotatedType(dt);
+                AnnotatedDeclaredType adt = (AnnotatedDeclaredType) atypeFactory.toAnnotatedType(dt, false);
                 List<AnnotatedTypeMirror> tas = adt.getTypeArguments();
                 List<AnnotatedTypeMirror> newtas = new ArrayList<AnnotatedTypeMirror>();
                 for (AnnotatedTypeMirror t : tas) {
@@ -2636,14 +2766,14 @@ public abstract class AnnotatedTypeMirror {
             } else if (typeElement.getSuperclass().getKind() != TypeKind.NONE) {
                 DeclaredType superClass = (DeclaredType) typeElement.getSuperclass();
                 AnnotatedDeclaredType dt =
-                    (AnnotatedDeclaredType) atypeFactory.toAnnotatedType(superClass);
+                    (AnnotatedDeclaredType) atypeFactory.toAnnotatedType(superClass, false);
                 supertypes.add(dt);
             } else if (!ElementUtils.isObject(typeElement)) {
                 supertypes.add(createTypeOfObject(atypeFactory));
             }
             for (TypeMirror st : typeElement.getInterfaces()) {
                 AnnotatedDeclaredType ast =
-                    (AnnotatedDeclaredType) atypeFactory.toAnnotatedType(st);
+                    (AnnotatedDeclaredType) atypeFactory.toAnnotatedType(st, false);
                 supertypes.add(ast);
             }
             TypeFromElement.annotateSupers(supertypes, typeElement);
@@ -2675,7 +2805,7 @@ public abstract class AnnotatedTypeMirror {
             TypeElement elem = TreeUtils.elementFromDeclaration(classTree);
             if (elem.getKind() == ElementKind.ENUM) {
                 DeclaredType dt = (DeclaredType) elem.getSuperclass();
-                AnnotatedDeclaredType adt = (AnnotatedDeclaredType) atypeFactory.toAnnotatedType(dt);
+                AnnotatedDeclaredType adt = (AnnotatedDeclaredType) atypeFactory.toAnnotatedType(dt, false);
                 List<AnnotatedTypeMirror> tas = adt.getTypeArguments();
                 List<AnnotatedTypeMirror> newtas = new ArrayList<AnnotatedTypeMirror>();
                 for (AnnotatedTypeMirror t : tas) {
@@ -2729,7 +2859,7 @@ public abstract class AnnotatedTypeMirror {
                 for (AnnotatedTypeMirror sup : type.getComponentType().directSuperTypes()) {
                     ArrayType arrType = atypeFactory.types.getArrayType(sup.getUnderlyingType());
                     AnnotatedArrayType aarrType = (AnnotatedArrayType)
-                        atypeFactory.toAnnotatedType(arrType);
+                        atypeFactory.toAnnotatedType(arrType, false);
                     aarrType.setComponentType(sup);
                     aarrType.addAnnotations(annotations);
                     superTypes.add(aarrType);
