@@ -73,6 +73,28 @@ public class StubGenerator {
     public StubGenerator(OutputStream out) {
         this.out = new PrintStream(out);
     }
+    
+    /**
+     * Generate the skeleton file for all the classes within the provided
+     * package.
+     */
+    public void skeletonFromField(Element elt) {
+        if(!(elt.getKind() == ElementKind.FIELD) )
+            return;
+
+        TypeElement conclass = (TypeElement) elt.getEnclosingElement();
+
+        String fullClassName = conclass.getQualifiedName().toString();
+        if (fullClassName.indexOf('.') != -1) {
+            int index = fullClassName.lastIndexOf('.');
+            currentPackage = fullClassName.substring(0, index);
+            currentIndention = "    ";
+            indent();
+        }
+        VariableElement field = (VariableElement) elt;
+        printFieldDecl(field);
+
+    }
 
     /**
      * Generate the skeleton file for all the classes within the provided
@@ -110,7 +132,7 @@ public class StubGenerator {
         if (fullClassName.indexOf('.') != -1) {
             int index = fullClassName.lastIndexOf('.');
             currentPackage = fullClassName.substring(0, index);
-            this.currentIndention = "    ";
+            currentIndention = "    ";
             indent();
         }
         ExecutableElement method = (ExecutableElement) elt;
