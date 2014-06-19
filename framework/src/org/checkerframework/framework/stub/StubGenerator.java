@@ -88,7 +88,7 @@ public class StubGenerator {
         if (fullClassName.indexOf('.') != -1) {
             int index = fullClassName.lastIndexOf('.');
             currentPackage = fullClassName.substring(0, index);
-            this.currentIndention = "    ";
+            currentIndention = "    ";
             indent();
         }
         VariableElement field = (VariableElement) elt;
@@ -132,7 +132,7 @@ public class StubGenerator {
         if (fullClassName.indexOf('.') != -1) {
             int index = fullClassName.lastIndexOf('.');
             currentPackage = fullClassName.substring(0, index);
-            this.currentIndention = "    ";
+            currentIndention = "    ";
             indent();
         }
         ExecutableElement method = (ExecutableElement) elt;
