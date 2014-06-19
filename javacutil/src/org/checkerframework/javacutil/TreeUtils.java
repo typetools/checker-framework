@@ -853,4 +853,25 @@ public final class TreeUtils {
         return correctClass && correctMethod;
     }
 
+    /** Determine whether the given tree represents a declaration of a type
+     * (including type parameters).
+     *
+     * @param node  the Tree to test
+     * @return true if the tree is a type declaration
+     */
+    public static boolean isTypeDeclaration(Tree node) {
+        switch (node.getKind()) {
+            // These tree kinds are always declarations.  Uses of the declared
+            // types have tree kind IDENTIFIER.
+            case ANNOTATION_TYPE:
+            case CLASS:
+            case ENUM:
+            case INTERFACE:
+            case TYPE_PARAMETER:
+                return true;
+
+            default:
+                return false;
+        }
+    }
 }

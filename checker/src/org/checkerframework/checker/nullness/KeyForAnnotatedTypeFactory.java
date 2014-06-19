@@ -121,7 +121,7 @@ public class KeyForAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     // TODO: upper bounds, throws?
 
-    method = method.substitute(mappings);
+    method = (AnnotatedExecutableType)method.substitute(mappings);
 
     // System.out.println("adapted method: " + method);
 

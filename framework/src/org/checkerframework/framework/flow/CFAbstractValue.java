@@ -113,19 +113,19 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
                 TypeMirror underlyingType = elements.getTypeElement(
                         "java.lang.Object").asType();
                 lubAnnotatedType = AnnotatedTypeMirror.createType(
-                        underlyingType, factory);
+                        underlyingType, factory, false);
             } else {
                 TypeMirror underlyingType = TypesUtils.createArrayType(
                         analysis.getTypes(), componentLub.getUnderlyingType());
                 lubAnnotatedType = AnnotatedTypeMirror.createType(
-                        underlyingType, factory);
+                        underlyingType, factory, false);
                 AnnotatedArrayType aLubAnnotatedType = (AnnotatedArrayType) lubAnnotatedType;
                 aLubAnnotatedType.setComponentType(componentLub);
             }
         } else {
             TypeMirror lubType = InternalUtils.leastUpperBound(processingEnv,
                     type.getUnderlyingType(), otherType.getUnderlyingType());
-            lubAnnotatedType = AnnotatedTypeMirror.createType(lubType, factory);
+            lubAnnotatedType = AnnotatedTypeMirror.createType(lubType, factory, false);
         }
 
         Set<AnnotationMirror> annos1;
@@ -301,7 +301,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
             }
         }
         AnnotatedTypeMirror result = AnnotatedTypeMirror.createType(
-                underlyingType, analysis.getTypeFactory());
+                underlyingType, analysis.getTypeFactory(), false);
         QualifierHierarchy qualHierarchy = analysis.getTypeFactory()
                 .getQualifierHierarchy();
         AnnotatedTypeMirror otherType = other.getType();
