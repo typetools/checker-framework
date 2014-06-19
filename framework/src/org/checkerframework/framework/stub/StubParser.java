@@ -510,7 +510,7 @@ public class StubParser {
      * @param elt
      */
     private void addDeclAnnotations(
-            Map<String, Set<AnnotationMirror>> declAnnos, ExecutableElement elt) {
+            Map<String, Set<AnnotationMirror>> declAnnos, Element elt) {
         if (fromStubFile != null) {
             Set<AnnotationMirror> annos = declAnnos.get(ElementUtils
                     .getVerboseName(elt));
@@ -635,6 +635,7 @@ public class StubParser {
 
     private void parseField(FieldDeclaration decl,
             VariableElement elt, Map<Element, AnnotatedTypeMirror> atypes, Map<String, Set<AnnotationMirror>> declAnnos) {
+        addDeclAnnotations(declAnnos, elt);
         annotateDecl(declAnnos, elt, decl.getAnnotations());
         // StubParser parses all annotations in type annotation position as type annotations
         annotateDecl(declAnnos, elt, decl.getType().getAnnotations());
