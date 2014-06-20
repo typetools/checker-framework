@@ -234,6 +234,9 @@ import com.sun.tools.javac.util.Log;
     // org.checkerframework.framework.type.GenericAnnotatedTypeFactory.analyze
     "flowdotdir",
 
+    // Enable additional output in the flow .dot files.
+    "verbosecfg",
+
     // Whether to output resource statistics at JVM shutdown
     // org.checkerframework.framework.source.SourceChecker.shutdownHook()
     "resourceStats",
