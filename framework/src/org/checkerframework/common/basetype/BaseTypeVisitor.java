@@ -1652,7 +1652,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * not.
      *
      * @param toptree the tree for error reporting, only used for inferred type arguments
-     * @param typevars the type variables from a class or method declaration
+     * @param paramBounds the bounds of the type parameters from a class or method declaration
      * @param typeargs the type arguments from the type or method invocation
      * @param typeargTrees the type arguments as trees, used for error reporting
      */
