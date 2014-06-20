@@ -2291,6 +2291,11 @@ public abstract class AnnotatedTypeMirror {
          *         annotations on the type variable considered.
          */
         public AnnotatedTypeMirror getEffectiveExtendsBound() {
+            if (typeArgHack) {
+                AnnotatedTypeMirror effbnd = AnnotatedTypes.deepCopy(((AnnotatedTypeVariable)getExtendsBound()).getUpperBound());
+                effbnd.replaceAnnotations(annotations);
+                return effbnd;
+            }
             AnnotatedTypeMirror effbnd = AnnotatedTypes.deepCopy(getExtendsBound());
             effbnd.replaceAnnotations(annotations);
             return effbnd;
