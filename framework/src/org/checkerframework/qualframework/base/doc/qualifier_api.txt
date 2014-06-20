@@ -69,7 +69,7 @@ inspecting types, and it simplifies the API by removing the need for most of
 the getAnnotation/hasAnnotation variants.  Similar functionality to the removed
 methods can be obtained by adding appropriate instance methods to the qualifier
 representation.  For example, atm.hasAnnotation(Tainted.class) might be
-replaced by qtm.getAnnotation() == TAINTED or qtm.getAnnotation().isTainted(),
+replaced by qtm.getQualifier() == TAINTED or qtm.getQualifier().isTainted(),
 depending on how the checker defines its qualifier representation.
 
 Note that the "one Q per QualifiedTypeMirror" rule does not restrict type
