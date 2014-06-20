@@ -144,8 +144,8 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>,
     /**
      * Print a DOT graph of the CFG and analysis info for inspection.
      */
-    public void outputToDotFile(String outputFile) {
-        String s = CFGDOTVisualizer.visualize(cfg.getEntryBlock(), this);
+    public void outputToDotFile(String outputFile, boolean verbose) {
+        String s = CFGDOTVisualizer.visualize(cfg, cfg.getEntryBlock(), this, verbose);
 
         try {
             FileWriter fstream = new FileWriter(outputFile);
