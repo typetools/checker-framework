@@ -31,8 +31,7 @@ public class CheckerAdapter<Q> extends BaseTypeChecker {
     public TypeMirrorConverter<Q> getTypeMirrorConverter() {
         if (this.typeMirrorConverter == null) {
             this.typeMirrorConverter =
-                new TypeMirrorConverter<Q>(getProcessingEnvironment(), this,
-                        underlying.getTypeFactory().getQualifierHierarchy().getTop());
+                new TypeMirrorConverter<Q>(getProcessingEnvironment(), this);
         }
         return this.typeMirrorConverter;
     }
