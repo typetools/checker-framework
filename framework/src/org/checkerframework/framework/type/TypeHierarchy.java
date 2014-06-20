@@ -591,13 +591,7 @@ public class TypeHierarchy {
                     return false;
                 }
             }
-            if (((AnnotatedWildcardType)lhs).isTypeArgHack()) {
-                // If it is the hack wildcard, also skip over the type variable.
-                lhs = ((AnnotatedTypeVariable)((AnnotatedWildcardType)lhs)
-                        .getEffectiveExtendsBound()).getEffectiveUpperBound();
-            } else {
-                lhs = ((AnnotatedWildcardType)lhs).getEffectiveExtendsBound();
-            }
+            lhs = ((AnnotatedWildcardType)lhs).getEffectiveExtendsBound();
             if (lhs == null)
                 return true;
 
