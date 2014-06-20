@@ -103,6 +103,11 @@ public abstract class QualifiedTypeMirror<Q> {
     /** Check that the underlying ExtendedTypeMirror has a specific TypeKind, and
      * throw an exception if it does not.  This is a helper method for
      * QualifiedTypeMirror subclass constructors.
+     *
+     * Note that we consider the {@code isDeclaration} field to be part of the
+     * type kind.  In other words, we consider a {@code TYPEVAR} TypeMirror
+     * with {@code isDeclaration} set to have kind {@code TYPEVAR DECLARATION},
+     * which is distinct from ordinary {@code TYPEVAR}.
      */
     private static void checkUnderlyingKind(ExtendedTypeMirror underlying,
             TypeKind expectedKind, boolean expectedDeclaration) {
@@ -124,6 +129,10 @@ public abstract class QualifiedTypeMirror<Q> {
     /** Check that the underlying ExtendedTypeMirror has one of the indicated
      * TypeKinds, and throw an exception if it does not.  This is a helper
      * method for QualifiedTypeMirror subclass constructors.
+     *
+     * This method requires the underlying type to have a non-{@code
+     * DECLARATION} kind.  There is no flag to indicate that a declaration is
+     * expected, unlike {@link checkUnderlyingKind}.
      */
     private static void checkUnderlyingKindIsOneOf(ExtendedTypeMirror underlying, TypeKind... validKinds) {
         TypeKind actualKind = underlying.getKind();
@@ -820,7 +829,7 @@ public abstract class QualifiedTypeMirror<Q> {
 
     public static final class QualifiedParameterDeclaration<Q> extends QualifiedTypeMirror<Q> {
         // This class has no fields.  Its upper and lower bounds are stored in
-        // the QTM's symbol table.
+        // the QTF's symbol table.
 
         public QualifiedParameterDeclaration(ExtendedTypeMirror underlying) {
             super(underlying);
