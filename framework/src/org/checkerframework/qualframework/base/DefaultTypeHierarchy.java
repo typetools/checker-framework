@@ -77,7 +77,7 @@ public class DefaultTypeHierarchy<Q> implements TypeHierarchy<Q> {
      *
      * The arguments are declared as type {@link QualifiedTypeMirror} because
      * they may be either {@link QualifiedDeclaredType} or {@link
-     * QualifiedTypeDeclaration}.
+     * QualifiedTypeMirror.QualifiedTypeDeclaration}.
      */
     protected boolean isSubtypeTypeArguments(QualifiedTypeMirror<Q> subtype, QualifiedTypeMirror<Q> supertype) {
         return adapter.superIsSubtypeTypeArguments(subtype, supertype);
