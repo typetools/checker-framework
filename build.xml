@@ -43,4 +43,40 @@
     </ant>
   </target>
 
+  <target name="tags"
+          description="Generate TAGS file">
+    <ant dir="checker">
+      <target name="tags"/>
+    </ant>
+    <ant dir="dataflow">
+      <target name="tags"/>
+    </ant>
+    <ant dir="framework">
+      <target name="tags"/>
+    </ant>
+    <ant dir="javacutil">
+      <target name="tags"/>
+    </ant>
+    <ant dir="stubparser">
+      <target name="tags"/>
+    </ant>
+    <exec executable="make" dir="checker/manual">
+      <arg value="tags"/>
+    </exec>
+    <exec executable="etags">
+      <arg value="-i"/>
+      <arg value="checker/TAGS"/>
+      <arg value="-i"/>
+      <arg value="dataflow/TAGS"/>
+      <arg value="-i"/>
+      <arg value="framework/TAGS"/>
+      <arg value="-i"/>
+      <arg value="javacutil/TAGS"/>
+      <arg value="-i"/>
+      <arg value="stubparser/TAGS"/>
+      <arg value="-i"/>
+      <arg value="checker/manual/TAGS"/>
+    </exec>
+  </target>
+
 </project>
