@@ -95,6 +95,7 @@ very_clean: clean
 checklink:
 	${INV}/scripts/checklink -q -e `cat ${INV}/scripts/checklink-args.txt` manual.html
 
+.PHONY: tags
 tags: TAGS
 TAGS: ${TEX_FILES}
 	etags ${TEX_FILES}
