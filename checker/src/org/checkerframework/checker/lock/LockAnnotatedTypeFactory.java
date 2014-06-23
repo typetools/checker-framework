@@ -7,12 +7,9 @@ import org.checkerframework.checker.lock.qual.LockHeld;
 import org.checkerframework.checker.lock.qual.LockPossiblyHeld;
 import org.checkerframework.dataflow.qual.LockingFree;
 import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.AnnotatedTypeFactory;
-import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
-import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.type.TreeAnnotator;
-import org.checkerframework.framework.type.TypeAnnotator;
+import org.checkerframework.framework.type.*;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.util.DependentTypes;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -77,7 +74,10 @@ public class LockAnnotatedTypeFactory
 
     @Override
     public TreeAnnotator createTreeAnnotator() {
-        return new LockTreeAnnotator(this);
+        return new ListTreeAnnotator(
+                super.createTreeAnnotator(),
+                new LockTreeAnnotator(this)
+        );
     }
 
     private class LockTreeAnnotator extends TreeAnnotator {

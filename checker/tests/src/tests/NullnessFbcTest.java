@@ -15,7 +15,9 @@ public class NullnessFbcTest extends ParameterizedCheckerTest {
 
     public NullnessFbcTest(File testFile) {
         // TODO: remove arrays:forbidnonnullcomponents option once it's no
-        // longer needed.  See issues 154 and 322.
+        // longer needed.  See issues 154 and 322:
+        // https://code.google.com/p/checker-framework/issues/detail?id=154
+        // https://code.google.com/p/checker-framework/issues/detail?id=322
         super(testFile,
                 org.checkerframework.checker.nullness.NullnessChecker.class,
                 "nullness",

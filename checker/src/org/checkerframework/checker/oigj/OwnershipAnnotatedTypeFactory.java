@@ -6,10 +6,7 @@ import javax.lang.model.element.AnnotationMirror;
 
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.type.TreeAnnotator;
-import org.checkerframework.framework.type.TypeAnnotator;
+import org.checkerframework.framework.type.*;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
@@ -31,7 +28,10 @@ public class OwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected TreeAnnotator createTreeAnnotator() {
-        return new OwnershipTreeAnnotator(this);
+        return new ListTreeAnnotator(
+                super.createTreeAnnotator(),
+                new OwnershipTreeAnnotator(this)
+        );
     }
 
     @Override

@@ -31,13 +31,9 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.qual.Unused;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.*;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
-import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
-import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.type.TreeAnnotator;
-import org.checkerframework.framework.type.TypeAnnotator;
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
@@ -600,7 +596,10 @@ public abstract class InitializationAnnotatedTypeFactory<
 
     @Override
     protected TreeAnnotator createTreeAnnotator() {
-        return new CommitmentTreeAnnotator(this);
+        return new ListTreeAnnotator(
+                super.createTreeAnnotator(),
+                new CommitmentTreeAnnotator(this)
+        );
     }
 
     protected class CommitmentTypeAnnotator extends TypeAnnotator {
