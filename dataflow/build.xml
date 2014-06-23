@@ -40,6 +40,7 @@
         <delete file="${dataflow.lib}"/>
         <delete dir="${dist.doc}"/>
         <delete dir="${temp.dir}"/>
+        <delete dir="dist" />
     </target>
 
     <target name="build.check.uptodate"
@@ -141,6 +142,7 @@
     <target name="dist"
             depends="build"
             description="Create jar file">
+        <mkdir dir="dist" />
         <jar destfile="${dataflow.lib}" basedir="${build}"/>
     </target>
 

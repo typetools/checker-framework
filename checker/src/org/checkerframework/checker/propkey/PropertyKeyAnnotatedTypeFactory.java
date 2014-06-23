@@ -4,12 +4,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Locale;
-import java.util.Properties;
-import java.util.ResourceBundle;
-import java.util.Set;
+import java.util.*;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.tools.Diagnostic.Kind;
@@ -18,8 +13,7 @@ import org.checkerframework.checker.propkey.qual.PropertyKey;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.Bottom;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.TreeAnnotator;
+import org.checkerframework.framework.type.*;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -38,6 +32,7 @@ import com.sun.source.tree.Tree;
 public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     private final Set<String> lookupKeys;
+    protected AnnotationMirror BOTTOM;
 
     public PropertyKeyAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
@@ -45,19 +40,22 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         // Reuse the framework Bottom annotation and make it the default for the
         // null literal.
-        AnnotationMirror BOTTOM = AnnotationUtils.fromClass(elements, Bottom.class);
+        BOTTOM = AnnotationUtils.fromClass(elements, Bottom.class);
 
         this.postInit();
-
-        this.treeAnnotator.addTreeKind(Tree.Kind.NULL_LITERAL, BOTTOM);
         this.typeAnnotator.addTypeName(java.lang.Void.class, BOTTOM);
     }
 
     @Override
     public TreeAnnotator createTreeAnnotator() {
-           return new KeyLookupTreeAnnotator(this, PropertyKey.class);
-    }
+        ImplicitsTreeAnnotator implicitsTreeAnnotator = new ImplicitsTreeAnnotator(this);
+        implicitsTreeAnnotator.addTreeKind(Tree.Kind.NULL_LITERAL, BOTTOM);
 
+        return new ListTreeAnnotator(
+                new PropagationTreeAnnotator(this),
+                implicitsTreeAnnotator,
+                new KeyLookupTreeAnnotator(this, PropertyKey.class));
+    }
 
     /**
      * This TreeAnnotator checks for every String literal whether it is included in the lookup

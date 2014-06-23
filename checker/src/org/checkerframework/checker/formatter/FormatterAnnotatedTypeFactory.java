@@ -11,11 +11,7 @@ import org.checkerframework.checker.formatter.qual.InvalidFormat;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
-import org.checkerframework.framework.type.AnnotatedTypeFactory;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
-import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.type.TreeAnnotator;
+import org.checkerframework.framework.type.*;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -60,7 +56,10 @@ public class FormatterAnnotatedTypeFactory extends
 
     @Override
     public TreeAnnotator createTreeAnnotator() {
-        return new FormatterTreeAnnotator(this);
+        return new ListTreeAnnotator(
+                super.createTreeAnnotator(),
+                new FormatterTreeAnnotator(this)
+        );
     }
 
     private class FormatterTreeAnnotator extends TreeAnnotator {
