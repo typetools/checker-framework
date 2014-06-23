@@ -18,12 +18,8 @@ import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlock;
 import org.checkerframework.dataflow.cfg.block.SpecialBlock;
 import org.checkerframework.dataflow.cfg.node.Node;
 
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Queue;
-import java.util.Set;
 
 import javax.lang.model.type.TypeMirror;
 
@@ -35,8 +31,8 @@ import javax.lang.model.type.TypeMirror;
  */
 public class CFGDOTVisualizer {
 
-    public static String visualize(Block entry) {
-        return visualize(entry, null);
+    public static String visualize(ControlFlowGraph cfg, Block entry) {
+        return visualize(cfg, entry, null, false);
     }
 
     /**
@@ -55,8 +51,10 @@ public class CFGDOTVisualizer {
      * @return String representation of the graph in the DOT language.
      */
     public static <A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<A, S>> String visualize(
+            ControlFlowGraph cfg,
             Block entry,
-            /*@Nullable*/ Analysis<A, S, T> analysis) {
+            /*@Nullable*/ Analysis<A, S, T> analysis,
+            boolean verbose) {
         StringBuilder sb1 = new StringBuilder();
         StringBuilder sb2 = new StringBuilder();
         Set<Block> visited = new HashSet<>();
@@ -130,6 +128,8 @@ public class CFGDOTVisualizer {
             cur = worklist.poll();
         }
 
+        IdentityHashMap<Block, List<Integer>> processOrder = getProcessOrder(cfg);
+
         // definition of all nodes including their labels
         for (Block v : visited) {
             sb1.append("    " + v.getId() + " [");
@@ -138,9 +138,12 @@ public class CFGDOTVisualizer {
             } else if (v.getType() == BlockType.SPECIAL_BLOCK) {
                 sb1.append("shape=oval ");
             }
-            sb1.append("label=\""
-                    + visualizeContent(v, analysis).replace("\\n", "\\l")
-                    + "\",];\n");
+            sb1.append("label=\"");
+            if (verbose) {
+                sb1.append("Process order: " + processOrder.get(v).toString().replaceAll("[\\[\\]]", "") + "\\n");
+            }
+            sb1.append(visualizeContent(v, analysis, verbose).replace("\\n", "\\l")
+                    + " \",];\n");
         }
 
         sb1.append("\n");
@@ -152,6 +155,18 @@ public class CFGDOTVisualizer {
         return sb1.toString();
     }
 
+    private static IdentityHashMap<Block, List<Integer>> getProcessOrder(ControlFlowGraph cfg) {
+        IdentityHashMap<Block, List<Integer>> depthFirstOrder = new IdentityHashMap<>();
+        int count = 1;
+        for (Block b : cfg.getDepthFirstOrderedBlocks()) {
+            if (depthFirstOrder.get(b) == null) {
+                depthFirstOrder.put(b, new ArrayList<Integer>());
+            }
+            depthFirstOrder.get(b).add(count++);
+        }
+        return depthFirstOrder;
+    }
+
     /**
      * Produce a string representation of the contests of a basic block.
      *
@@ -161,7 +176,9 @@ public class CFGDOTVisualizer {
      */
     protected static <A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<A, S>> String visualizeContent(
             Block bb,
-            /*@Nullable*/ Analysis<A, S, T> analysis) {
+            /*@Nullable*/ Analysis<A, S, T> analysis,
+            boolean verbose) {
+
         StringBuilder sb = new StringBuilder();
 
         // loop over contents
@@ -220,12 +237,33 @@ public class CFGDOTVisualizer {
 
             // split input representation to two lines
             String s = input.toDOToutput().replace("}, else={", "}\\nelse={");
+            sb2.append("Before:");
             sb2.append(s.subSequence(1, s.length() - 1));
 
             // separator
             sb2.append("\\n~~~~~~~~~\\n");
             sb2.append(sb);
             sb = sb2;
+
+            if (verbose) {
+                Node lastNode = null;
+                switch (bb.getType()) {
+                    case REGULAR_BLOCK:
+                        List<Node> blockContents = ((RegularBlock) bb).getContents();
+                        lastNode = contents.get(blockContents.size() - 1);
+                        break;
+                    case EXCEPTION_BLOCK:
+                        lastNode = ((ExceptionBlock) bb).getNode();
+                        break;
+                }
+                if (lastNode != null) {
+                    sb2.append("\\n~~~~~~~~~\\n");
+                    s = analysis.getResult().getStoreAfter(lastNode.getTree()).
+                            toDOToutput().replace("}, else={", "}\\nelse={");
+                    sb2.append("After:");
+                    sb2.append(s);
+                }
+            }
         }
 
         return sb.toString() + (centered ? "" : "\\n");

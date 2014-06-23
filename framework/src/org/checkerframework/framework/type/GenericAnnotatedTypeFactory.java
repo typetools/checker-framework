@@ -689,7 +689,8 @@ public abstract class GenericAnnotatedTypeFactory<
             // make path safe for Windows
             dotfilename = dotfilename.replace("<", "_").replace(">", "");
             System.err.println("Output to DOT file: " + dotfilename);
-            analyses.getFirst().outputToDotFile(dotfilename);
+            boolean verbose = checker.hasOption("verbosecfg");
+            analyses.getFirst().outputToDotFile(dotfilename, verbose);
         }
 
         analyses.removeFirst();
