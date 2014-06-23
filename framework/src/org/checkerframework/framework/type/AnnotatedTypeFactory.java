@@ -939,6 +939,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         assert targs.size() == tvars.size() : "Mismatch in type argument size between " + type + " and " + generic;
 
+        //System.err.printf("TVFU\n  type: %s\n  generic: %s\n", type, generic);
+
         Map<AnnotatedTypeVariable, AnnotatedTypeMirror> mapping =
                 new HashMap<AnnotatedTypeVariable, AnnotatedTypeMirror>();
 

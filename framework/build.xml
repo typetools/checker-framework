@@ -197,6 +197,7 @@
             <package name="org.checkerframework.stubparser.*"/>
             -->
             <package name="org.checkerframework.framework.*"/>
+            <package name="org.checkerframework.qualframework.*"/>
             <package name="org.checkerframework.checker.*"/>
 
             <link href="http://types.cs.washington.edu/checker-framework/api/jdk/"/>

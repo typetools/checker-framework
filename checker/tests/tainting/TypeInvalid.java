@@ -1,3 +1,5 @@
+// @skip-tests  type.invalid is currently hard to support in the qualifier api
+
 // Test case for Issue 292:
 // https://code.google.com/p/checker-framework/issues/detail?id=292
 
