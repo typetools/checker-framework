@@ -39,6 +39,9 @@ public interface QualifiedTypeFactory<Q> {
     QualifierHierarchy<Q> getQualifierHierarchy();
     /** Gets the {@link TypeHierarchy} used with this type system. */
     TypeHierarchy<Q> getTypeHierarchy();
+    /** Gets the {@link QualifiedTypes} helper object used with this type
+     * system. */
+    QualifiedTypes<Q> getQualifiedTypes();
 
     /**
      * Hook for customizing the behavior of <code>directSuperTypes</code>.
