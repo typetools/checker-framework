@@ -24,6 +24,7 @@ public class CheckerAdapter<Q> extends BaseTypeChecker {
      * {@link Checker}. */
     public CheckerAdapter(Checker<Q> underlying) {
         this.underlying = underlying;
+        underlying.setAdapter(this);
     }
 
     /** Gets the {@link TypeMirrorConverter} used by this {@link CheckerAdapter}
@@ -45,7 +46,7 @@ public class CheckerAdapter<Q> extends BaseTypeChecker {
     // This method has package access so it can be called from
     // TypeMirrorConverter.  It should be made private once the converter is no
     // longer needed.
-    QualifiedTypeFactoryAdapter<Q> getTypeFactory() {
+    public QualifiedTypeFactoryAdapter<Q> getTypeFactory() {
         // TODO: check if lazy init is actually necessary for typeFactory.
         if (typeFactory == null) {
             typeFactory = createTypeFactory();

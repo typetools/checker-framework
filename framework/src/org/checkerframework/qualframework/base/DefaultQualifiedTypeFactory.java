@@ -158,7 +158,7 @@ public abstract class DefaultQualifiedTypeFactory<Q> implements QualifiedTypeFac
     }
 
 
-    protected final QualifiedTypes<Q> getQualifiedTypes() {
+    public final QualifiedTypes<Q> getQualifiedTypes() {
         if (this.qualifiedTypes == null) {
             this.qualifiedTypes = createQualifiedTypes();
         }
