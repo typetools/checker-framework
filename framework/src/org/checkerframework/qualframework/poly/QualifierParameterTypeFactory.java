@@ -150,10 +150,10 @@ public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedT
         QualifierParameterHierarchy<Q> hierarchy = (QualifierParameterHierarchy<Q>)getQualifierHierarchy();
         InferenceContext<Q> inference = new InferenceContext<>(
                 new ArrayList<>(qualParams), formals, actuals,
-                groundHierarchy, new PolyQualHierarchy<>(groundHierarchy));
-        inference.run(getTypeHierarchy(), hierarchy);
+                groundHierarchy, new PolyQualHierarchy<>(groundHierarchy),
+                hierarchy, getTypeHierarchy());
 
-        Map<String, PolyQual<Q>> subst = inference.getAssignment();
+        Map<String, PolyQual<Q>> subst = inference.infer();
 
         if (subst != null) {
             Map<String, Wildcard<Q>> wildSubst = new HashMap<>();
