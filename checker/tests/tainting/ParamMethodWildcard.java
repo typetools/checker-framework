@@ -2,9 +2,9 @@
 import org.checkerframework.checker.tainting.qual.*;
 
 abstract class Test {
-    static void test1(@Tainted Integer i, @ExtendsTainted Integer j) { }
+    static void test1(@Tainted Integer i, @Extends @Tainted Integer j) { }
     @TaintingParam("Main")
-    static void test2(@UseMain Integer i, @ExtendsMain Integer j) { }
+    static void test2(@Var("Main") Integer i, @Extends @Var("Main") Integer j) { }
 
     abstract @Tainted Integer makeTainted();
     abstract @Untainted Integer makeUntainted();

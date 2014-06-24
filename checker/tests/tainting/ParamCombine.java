@@ -4,11 +4,11 @@ import org.checkerframework.checker.tainting.qual.*;
 @TaintingParam("Main")
 class A {
     // Integer<<Main + TAINTED>> x;
-    public @UseMain @Tainted Integer x;
+    public @Var("Main") @Tainted Integer x;
     // Integer<<Main + UNTAINTED>> y;
-    public @UseMain @Untainted Integer y;
+    public @Var("Main") @Untainted Integer y;
     // Integer<<Main>> z;
-    public @UseMain Integer z;
+    public @Var("Main") Integer z;
 }
 
 abstract class Test {

@@ -7,4 +7,7 @@ import org.checkerframework.framework.qual.*;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-public @interface ExtendsUntainted {}
+@Repeatable(MultiSuper.class)
+public @interface Super {
+    String target() default "Main";
+}
