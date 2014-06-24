@@ -13,12 +13,12 @@ import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedDecl
 import org.checkerframework.qualframework.base.SetQualifierVisitor;
 import org.checkerframework.qualframework.util.ExtendedTypeMirror;
 
-import org.checkerframework.checker.qualparam.CombiningOperation;
-import org.checkerframework.checker.qualparam.QualifierParameterHierarchy;
-import org.checkerframework.checker.qualparam.QualifierParameterTypeFactory;
-import org.checkerframework.checker.qualparam.QualifierParameterTreeAnnotator;
-import org.checkerframework.checker.qualparam.QualParams;
-import org.checkerframework.checker.qualparam.Wildcard;
+import org.checkerframework.qualframework.poly.CombiningOperation;
+import org.checkerframework.qualframework.poly.QualifierParameterHierarchy;
+import org.checkerframework.qualframework.poly.QualifierParameterTypeFactory;
+import org.checkerframework.qualframework.poly.QualifierParameterTreeAnnotator;
+import org.checkerframework.qualframework.poly.QualParams;
+import org.checkerframework.qualframework.poly.Wildcard;
 
 public class TaintingQualifiedTypeFactory extends QualifierParameterTypeFactory<Tainting> {
     @Override
