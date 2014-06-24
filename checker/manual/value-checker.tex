@@ -60,7 +60,7 @@ public void foo(boolean b) {
    i = i + 1;     // i is now @IntVal({2,3})
 }
 \end{Verbatim}
-\caption{An example of the Value Checker accumulating possible values
+\caption{An example of the Constant Value Checker accumulating possible values
     of a variable.}
 \label{fig-value-multivalue}
 \end{figure}
@@ -87,6 +87,23 @@ compile-time evaluation of calls to methods annotated with
 @StaticallyExecutable method are constant-value types then the return
 value of that call is also assigned a constant-value type based on
 evaluating the method call.
+
+\begin{figure}
+\begin{Verbatim}
+public void @StaticallyExeutable @Pure foo(int a, int b){
+       return (a + b);
+}
+
+public void bar() {
+       int a = 5; // a is @IntVal({5})
+       int b = 4; // b is @IntVal({4})
+       @IntVal({9}) c = foo(a, b); 
+}
+\end{Verbatim}
+\caption{An example of using the @StaticallyExecutable annotation to
+       continue constant propagation through a method call}
+\label{fig-value-multivalue}
+\end{figure}
 
 @StaticallyExecutable methods must
 be \refqualclass{dataflow/qual}{Pure} (side-effect free and
