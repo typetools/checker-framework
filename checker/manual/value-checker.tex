@@ -39,7 +39,7 @@ In addition to the hierarchy shown above, an annotation is also
 considered a subtype of another annotation if its value array is a
 subset of the value array of the other annotation (see
 Figure~\ref{fig-value-subtype}. This allows the possible values of
-variables to continue to be tracked even when code branches cannot be
+variables to continue to be statically evaluated even when code branches cannot be
 predicted at compile-time as in Figure~\ref{fig-value-multivalue}.
 
 \begin{figure}
@@ -79,19 +79,14 @@ shown in Figure~\ref{fig-value-subtyping}.
 \end{figure}
 
 \subsection{@StaticallyExecutable}
-To use the Value Checker in another checkerhhh
 In addition to the value annotations on variables discussed above, the
 Value Checker also uses a method annotation,
-@StaticallyExecutable. The Constant Value Checker resolves method
-calls when performed on expressions with constant value types to track
-the values returned.
-
-Annotating a method with @StaticallyExecutable causes the Constant
-Value Checker to be able to track the return value of that method; if
-all arguments (including the receiver) to a call of a
+@StaticallyExecutable. The Constant Value Checker attempts to perform
+compile-time evaluation of calls to methods annotated with
+@StaticallyExecutable. If all arguments and the receiver for a
 @StaticallyExecutable method are constant-value types then the return
-value of that call is also assigned a constant-value type
-corresponding to execution of the call.
+value of that call is also assigned a constant-value type based on
+evaluating the method call.
 
 @StaticallyExecutable methods must
 be \refqualclass{dataflow/qual}{Pure} (side-effect free and
