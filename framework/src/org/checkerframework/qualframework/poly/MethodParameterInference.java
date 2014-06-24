@@ -11,9 +11,9 @@ import org.checkerframework.qualframework.base.QualifierMapVisitor;
 
 import org.checkerframework.qualframework.poly.PolyQual.*;
 
-/** A context for performing method qualifier parameter inference.
+/** Helper class for performing method qualifier parameter inference.
  */
-class InferenceContext<Q> {
+class MethodParameterInference<Q> {
     /** The names of the qualifier parameters we are trying to infer. */
     private List<String> qualParams;
     /** The types of the method's formal parameters (ordinary parameters, not
@@ -42,7 +42,7 @@ class InferenceContext<Q> {
     private boolean alreadyRan;
 
 
-    public InferenceContext(
+    public MethodParameterInference(
             List<String> qualParams,
             List<? extends QualifiedTypeMirror<QualParams<Q>>> formals,
             List<? extends QualifiedTypeMirror<QualParams<Q>>> actuals,
@@ -94,7 +94,7 @@ class InferenceContext<Q> {
      * constructor. */
     public Map<String, PolyQual<Q>> infer() {
         if (this.alreadyRan) {
-            throw new IllegalStateException("already ran infer() on this InferenceContext");
+            throw new IllegalStateException("already ran infer() on this MethodParameterInference object");
         }
         this.alreadyRan = true;
 

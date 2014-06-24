@@ -148,7 +148,7 @@ public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedT
         }
 
         QualifierParameterHierarchy<Q> hierarchy = (QualifierParameterHierarchy<Q>)getQualifierHierarchy();
-        InferenceContext<Q> inference = new InferenceContext<>(
+        MethodParameterInference<Q> inference = new MethodParameterInference<>(
                 new ArrayList<>(qualParams), formals, actuals,
                 groundHierarchy, new PolyQualHierarchy<>(groundHierarchy),
                 hierarchy, getTypeHierarchy());
