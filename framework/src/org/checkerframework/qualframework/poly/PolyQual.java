@@ -214,7 +214,7 @@ public abstract class PolyQual<Q> {
             this.ground = ground;
         }
 
-        /** Like the main Combined<Q> constructor, but returns a simpler
+        /** Like the main {@code Combined<Q>} constructor, but returns a simpler
          * PolyQual (GroundQual or QualVar) when possible.
          */
         public static <Q> PolyQual<Q> from(CombiningOperation<Q> op, Collection<QualVar<Q>> vars, Q ground) {
