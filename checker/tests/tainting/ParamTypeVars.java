@@ -4,9 +4,9 @@ import org.checkerframework.checker.tainting.qual.*;
 @TaintingParam("Main")
 class List<T> {
     // (T + MAIN) head
-    @UseMain T head;
+    @Var("Main") T head;
     // List<T><<MAIN>>
-    @UseMain List<T> tail;
+    @Var("Main") List<T> tail;
 }
 
 abstract class Test {

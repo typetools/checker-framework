@@ -7,7 +7,7 @@ import org.checkerframework.framework.qual.*;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD, ElementType.CONSTRUCTOR})
-@Repeatable(TaintingParams.class)
+@Repeatable(MultiTaintingParam.class)
 public @interface TaintingParam {
     String value();
 }

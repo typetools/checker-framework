@@ -29,45 +29,121 @@ public class TaintingAnnotationConverter implements QualifierParameterAnnotation
     private Map<String, Wildcard<Tainting>> lookup;
     private CombiningOperation<Tainting> lubOp;
 
+    private static final Tainting BOTTOM = Tainting.UNTAINTED;
+    private static final Tainting TOP = Tainting.TAINTED;
+
+    private static final String MULTI_ANNO_NAME_PREFIX = MultiTainted.class.getPackage().getName() + ".Multi";
+    private static final String DEFAULT_NAME = "Main";
+    private static final String POLY_NAME = "_poly";
+
     public TaintingAnnotationConverter() {
-        QualVar<Tainting> mainVar = new QualVar<>("Main", Tainting.UNTAINTED, Tainting.TAINTED);
-        QualVar<Tainting> polyVar = new QualVar<>("_poly", Tainting.UNTAINTED, Tainting.TAINTED);
-
-        lookup = new HashMap<>();
-        lookup.put(Untainted.class.getName(), new Wildcard<>(Tainting.UNTAINTED));
-        lookup.put(Tainted.class.getName(), new Wildcard<>(Tainting.TAINTED));
-        lookup.put(UseMain.class.getName(), new Wildcard<>(mainVar));
-        lookup.put(ExtendsUntainted.class.getName(), new Wildcard<>(Tainting.UNTAINTED, Tainting.UNTAINTED));
-        lookup.put(ExtendsTainted.class.getName(), new Wildcard<>(Tainting.UNTAINTED, Tainting.TAINTED));
-        lookup.put(ExtendsMain.class.getName(), new Wildcard<>(
-                    new GroundQual<>(Tainting.UNTAINTED), mainVar));
-        lookup.put(PolyTainting.class.getName(), new Wildcard<>(polyVar));
-
         this.lubOp = new CombiningOperation.Lub<>(new TaintingQualifierHierarchy());
     }
 
-    private Wildcard<Tainting> fromAnnotation(AnnotationMirror anno) {
+    private void mergeParams(
+            Map<String, Wildcard<Tainting>> params,
+            Map<String, Wildcard<Tainting>> newParams) {
+        if (newParams == null) {
+            return;
+        }
+
+        for (String name : newParams.keySet()) {
+            if (!params.containsKey(name)) {
+                params.put(name, newParams.get(name));
+                continue;
+            }
+
+            Wildcard<Tainting> oldWild = params.get(name);
+            Wildcard<Tainting> newWild = newParams.get(name);
+            Wildcard<Tainting> combinedWild = oldWild.combineWith(newWild, lubOp, lubOp);
+
+            //System.err.printf("COMBINE[%s]: %s + %s = %s\n", name, oldWild, newWild, combinedWild);
+
+            params.put(name, combinedWild);
+        }
+    }
+
+    private Map<String, Wildcard<Tainting>> fromAnnotation(AnnotationMirror anno) {
         String name = AnnotationUtils.annotationName(anno);
-        return lookup.get(name);
+
+        if (name.startsWith(MULTI_ANNO_NAME_PREFIX)) {
+            Map<String, Wildcard<Tainting>> result = new HashMap<>();
+            AnnotationMirror[] subAnnos = AnnotationUtils.getElementValue(
+                    anno, "value", AnnotationMirror[].class, true);
+            for (AnnotationMirror subAnno : subAnnos) {
+                mergeParams(result, fromAnnotation(subAnno));
+            }
+            return result;
+
+        } else if (name.equals(Tainted.class.getName())) {
+            String target = AnnotationUtils.getElementValue(anno, "target", String.class, true);
+            return Collections.singletonMap(target, new Wildcard<>(Tainting.TAINTED));
+
+        } else if (name.equals(Untainted.class.getName())) {
+            String target = AnnotationUtils.getElementValue(anno, "target", String.class, true);
+            return Collections.singletonMap(target, new Wildcard<>(Tainting.UNTAINTED));
+
+        } else if (name.equals(Var.class.getName())) {
+            String target = AnnotationUtils.getElementValue(anno, "target", String.class, true);
+            String value = AnnotationUtils.getElementValue(anno, "value", String.class, true);
+            Wildcard<Tainting> valueWild = new Wildcard<>(
+                    new QualVar<>(value, BOTTOM, TOP));
+            return Collections.singletonMap(target, valueWild);
+
+        } else if (name.equals(PolyTainting.class.getName())) {
+            String target = AnnotationUtils.getElementValue(anno, "target", String.class, true);
+            Wildcard<Tainting> polyWild = new Wildcard<>(
+                    new QualVar<>(POLY_NAME, BOTTOM, TOP));
+            return Collections.singletonMap(target, polyWild);
+
+        } else if (name.equals(Wild.class.getName())) {
+            String target = AnnotationUtils.getElementValue(anno, "target", String.class, true);
+            return Collections.singletonMap(target, new Wildcard<>(BOTTOM, TOP));
+
+        }
+
+        return null;
+    }
+
+    private boolean handleExtendsSuper(AnnotationMirror anno, Map<String, Wildcard<Tainting>> params) {
+        String name = AnnotationUtils.annotationName(anno);
+
+        if (name.startsWith(MULTI_ANNO_NAME_PREFIX)) {
+            Map<String, Wildcard<Tainting>> result = new HashMap<>();
+            AnnotationMirror[] subAnnos = AnnotationUtils.getElementValue(
+                    anno, "value", AnnotationMirror[].class, true);
+            for (AnnotationMirror subAnno : subAnnos) {
+                handleExtendsSuper(subAnno, params);
+            }
+            return (subAnnos.length > 0);
+
+        } else if (name.equals(Extends.class.getName())) {
+            String target = AnnotationUtils.getElementValue(anno, "target", String.class, true);
+            Wildcard<Tainting> oldWild = params.get(target);
+            Wildcard<Tainting> newWild = new Wildcard<>(new GroundQual<>(BOTTOM), oldWild.getUpperBound());
+            params.put(target, newWild);
+            return true;
+
+        } else if (name.equals(Super.class.getName())) {
+            String target = AnnotationUtils.getElementValue(anno, "target", String.class, true);
+            Wildcard<Tainting> oldWild = params.get(target);
+            Wildcard<Tainting> newWild = new Wildcard<>(oldWild.getLowerBound(), new GroundQual<>(TOP));
+            params.put(target, newWild);
+            return true;
+
+        }
+
+        return false;
     }
 
     @Override
     public QualParams<Tainting> fromAnnotations(Collection<? extends AnnotationMirror> annos) {
         Map<String, Wildcard<Tainting>> params = new HashMap<>();
         for (AnnotationMirror anno : annos) {
-            String name = "Main";
-
-            Wildcard<Tainting> value = fromAnnotation(anno);
-            if (value == null) {
-                continue;
-            }
-
-            Wildcard<Tainting> oldValue = params.get(name);
-            if (oldValue != null) {
-                value = value.combineWith(oldValue, lubOp, lubOp);
-            }
-
-            params.put(name, value);
+            mergeParams(params, fromAnnotation(anno));
+        }
+        for (AnnotationMirror anno : annos) {
+            handleExtendsSuper(anno, params);
         }
         return (params.isEmpty() ? null : new QualParams<>(params));
     }
@@ -75,7 +151,12 @@ public class TaintingAnnotationConverter implements QualifierParameterAnnotation
     @Override
     public boolean isAnnotationSupported(AnnotationMirror anno) {
         String name = AnnotationUtils.annotationName(anno);
-        return lookup.containsKey(name);
+        // Avoid running fromAnnotation on Multi* annotations, since that could
+        // involve a nontrivial amount of work.
+        return name.startsWith(MULTI_ANNO_NAME_PREFIX)
+            || name.equals(Extends.class.getName())
+            || name.equals(Super.class.getName())
+            || fromAnnotation(anno) != null;
     }
 
     @Override
@@ -89,12 +170,12 @@ public class TaintingAnnotationConverter implements QualifierParameterAnnotation
             case CLASS:
             case INTERFACE:
             case ENUM:
-                result.add("Main");
+                result.add(DEFAULT_NAME);
                 break;
             case CONSTRUCTOR:
             case METHOD:
                 if (hasPolyAnnotation((ExecutableElement)elt)) {
-                    result.add("_poly");
+                    result.add(POLY_NAME);
                 }
                 break;
             default:

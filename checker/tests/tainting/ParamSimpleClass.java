@@ -5,7 +5,7 @@ import org.checkerframework.checker.tainting.qual.*;
 class A {
     public @Tainted Integer x;
     public @Untainted Integer y;
-    public @UseMain Integer z;
+    public @Var("Main") Integer z;
 }
 
 abstract class Test {
