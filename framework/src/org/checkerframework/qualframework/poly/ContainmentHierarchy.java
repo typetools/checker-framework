@@ -1,4 +1,4 @@
-package org.checkerframework.checker.qualparam;
+package org.checkerframework.qualframework.poly;
 
 import org.checkerframework.qualframework.base.QualifierHierarchy;
 

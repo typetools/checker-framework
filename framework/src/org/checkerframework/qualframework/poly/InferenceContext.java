@@ -1,4 +1,4 @@
-package org.checkerframework.checker.qualparam;
+package org.checkerframework.qualframework.poly;
 
 import java.util.*;
 
@@ -9,7 +9,7 @@ import org.checkerframework.qualframework.base.QualifierHierarchy;
 import org.checkerframework.qualframework.base.TypeHierarchy;
 import org.checkerframework.qualframework.base.QualifierMapVisitor;
 
-import org.checkerframework.checker.qualparam.PolyQual.*;
+import org.checkerframework.qualframework.poly.PolyQual.*;
 
 /** A context for performing method qualifier parameter inference.
  */
