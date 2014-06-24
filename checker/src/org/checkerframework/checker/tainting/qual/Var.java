@@ -7,7 +7,9 @@ import org.checkerframework.framework.qual.*;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-@Repeatable(MultiPolyTainting.class)
-public @interface PolyTainting {
+@Repeatable(MultiVar.class)
+public @interface Var {
+    String value();
     String target() default "Main";
 }
+

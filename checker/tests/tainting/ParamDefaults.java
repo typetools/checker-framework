@@ -3,7 +3,7 @@ import org.checkerframework.checker.tainting.qual.*;
 
 @TaintingParam("Main")
 class A {
-    public @UseMain Integer z;
+    public @Var("Main") Integer z;
 }
 
 abstract class Test {
