@@ -20,18 +20,30 @@ import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedPara
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedTypeVariable;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedWildcardType;
 
+/** Type factory with qualifier polymorphism support.  This type factory
+ * extends an underlying qualifier system with qualifier variables, combined
+ * qualifiers (using {@link CombiningOperation}), wildcards, typechecking
+ * support for all of the above, substitution for accessing fields whose types
+ * refer to qualifier parameters, and qualifier inference for method qualifier
+ * parameters.
+ */
 public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedTypeFactory<QualParams<Q>> {
     QualifierHierarchy<Q> groundHierarchy;
 
     @Override
     protected abstract QualifierParameterAnnotationConverter<Q> createAnnotationConverter();
 
+    @Override
     public QualifierParameterAnnotationConverter<Q> getAnnotationConverter() {
         return (QualifierParameterAnnotationConverter<Q>)super.getAnnotationConverter();
     }
 
+    /** Create a {@link QualifierHierarchy} for ground qualifiers (represented
+     * by instances of {@code Q}).
+     */
     protected abstract QualifierHierarchy<Q> createGroundQualifierHierarchy();
 
+    /** Get the ground qualifier hierarchy used by this type system. */
     public QualifierHierarchy<Q> getGroundQualifierHierarchy() {
         if (groundHierarchy == null) {
             groundHierarchy = createGroundQualifierHierarchy();
@@ -63,7 +75,12 @@ public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedT
         return objectQual.capture();
     }
     */
-    public final QualParams<Q> qualifierAsMemberOf(QualParams<Q> memberQual, QualParams<Q> objectQual) {
+
+    /** Apply substitution to get the effective type of a class member when
+     * accessed through an instance with particular qualifiers.  This method
+     * roughly corresponds to AnnotatedTypes.asMemberOf.
+     */
+    private QualParams<Q> qualifierAsMemberOf(QualParams<Q> memberQual, QualParams<Q> objectQual) {
         if (memberQual == null || memberQual == QualParams.<Q>getBottom()
                 || memberQual == QualParams.<Q>getTop())
             return memberQual;
@@ -73,7 +90,9 @@ public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedT
         return memberQual.substituteAll(objectQual);
     }
 
-
+    /** Visitor to apply {@code qualifierAsMemberOf} at every location within a
+     * {@link QualifiedTypeMirror}.
+     */
     private QualifierMapVisitor<QualParams<Q>, QualParams<Q>, QualParams<Q>> AS_MEMBER_OF_VISITOR =
         new QualifierMapVisitor<QualParams<Q>, QualParams<Q>, QualParams<Q>>() {
             @Override
@@ -90,6 +109,10 @@ public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedT
         return AS_MEMBER_OF_VISITOR.visit(memberType, receiverType.getQualifier());
     }
 
+    /** Visitor to apply substitution at every location within a {@link
+     * QualifiedTypeMirror}.  This is used in {@code methodFromUse} to
+     * substitute in the newly-inferred values for method qualifier parameters.
+     */
     private QualifierMapVisitor<QualParams<Q>, QualParams<Q>, Map<String, Wildcard<Q>>> SUBSTITUTE_VISITOR =
         new QualifierMapVisitor<QualParams<Q>, QualParams<Q>, Map<String, Wildcard<Q>>>() {
             @Override
@@ -153,6 +176,10 @@ public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedT
     }
 
 
+    /** Combine two wildcards into one when substituting a qualified type into
+     * a qualified type variable use (for example, substituting {@code
+     * [T := C<<Q=TAINTED>>]} into the use {@code T + <<Q=UNTAINTED>>}).
+     */
     protected abstract Wildcard<Q> combineForSubstitution(Wildcard<Q> a, Wildcard<Q> b);
 
     @Override
