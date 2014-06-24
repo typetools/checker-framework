@@ -16,12 +16,12 @@ import org.checkerframework.javacutil.AnnotationUtils;
 
 import org.checkerframework.qualframework.base.AnnotationConverter;
 
-import org.checkerframework.checker.qualparam.QualifierParameterAnnotationConverter;
-import org.checkerframework.checker.qualparam.CombiningOperation;
-import org.checkerframework.checker.qualparam.PolyQual.GroundQual;
-import org.checkerframework.checker.qualparam.PolyQual.QualVar;
-import org.checkerframework.checker.qualparam.QualParams;
-import org.checkerframework.checker.qualparam.Wildcard;
+import org.checkerframework.qualframework.poly.QualifierParameterAnnotationConverter;
+import org.checkerframework.qualframework.poly.CombiningOperation;
+import org.checkerframework.qualframework.poly.PolyQual.GroundQual;
+import org.checkerframework.qualframework.poly.PolyQual.QualVar;
+import org.checkerframework.qualframework.poly.QualParams;
+import org.checkerframework.qualframework.poly.Wildcard;
 
 import org.checkerframework.checker.tainting.qual.*;
 
