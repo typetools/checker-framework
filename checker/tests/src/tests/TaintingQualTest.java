@@ -6,17 +6,17 @@ import java.util.Collection;
 import org.checkerframework.framework.test.ParameterizedCheckerTest;
 import org.junit.runners.Parameterized.Parameters;
 
-public class TaintingTest extends ParameterizedCheckerTest {
+public class TaintingQualTest extends ParameterizedCheckerTest {
 
-    public TaintingTest(File testFile) {
+    public TaintingQualTest(File testFile) {
         super(testFile,
-                org.checkerframework.checker.tainting.TaintingChecker.class,
-                "tainting",
+                org.checkerframework.checker.experimental.tainting_qual.TaintingCheckerAdapter.class,
+                "tainting_qual",
                 "-Anomsgtext");
     }
 
     @Parameters
     public static Collection<Object[]> data() {
-        return testFiles("tainting", "all-systems");
+        return testFiles("tainting_qual", "all-systems");
     }
 }
