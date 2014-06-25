@@ -15,6 +15,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeQualifiers;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.javacutil.AbstractTypeProcessor;
@@ -76,7 +77,7 @@ import org.checkerframework.javacutil.ErrorReporter;
  *
  * @see org.checkerframework.framework.qual
  */
-public abstract class BaseTypeChecker extends SourceChecker {
+public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeContext {
 
     /*
     @Override
@@ -199,4 +200,24 @@ public abstract class BaseTypeChecker extends SourceChecker {
         }
     }
 
+
+    @Override
+    public BaseTypeContext getContext() {
+        return this;
+    }
+
+    @Override
+    public BaseTypeChecker getChecker() {
+        return this;
+    }
+
+    @Override
+    public BaseTypeVisitor<?> getVisitor() {
+        return (BaseTypeVisitor<?>)super.getVisitor();
+    }
+
+    @Override
+    public GenericAnnotatedTypeFactory<?, ?, ?, ?> getTypeFactory() {
+        return getVisitor().getTypeFactory();
+    }
 }

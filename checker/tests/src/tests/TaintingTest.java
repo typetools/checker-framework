@@ -10,7 +10,7 @@ public class TaintingTest extends ParameterizedCheckerTest {
 
     public TaintingTest(File testFile) {
         super(testFile,
-                org.checkerframework.checker.tainting.TaintingCheckerAdapter.class,
+                org.checkerframework.checker.tainting.TaintingChecker.class,
                 "tainting",
                 "-Anomsgtext");
     }

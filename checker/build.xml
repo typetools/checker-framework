@@ -562,6 +562,20 @@
         </antcall>
     </target>
 
+    <target name="tainting_qual-tests" depends="jar,build-tests"
+            description="Run tests for the qualifier API Tainting Checker">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.TaintingQualTest"/>
+        </antcall>
+    </target>
+
+    <target name="tainting_qual_poly-tests" depends="jar,build-tests"
+            description="Run tests for the qualifier polymorphism Tainting Checker">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.TaintingQualPolyTest"/>
+        </antcall>
+    </target>
+
     <target name="units-tests" depends="jar,build-tests"
             description="Run tests for the Units Checker">
         <antcall target="-run-tests">
