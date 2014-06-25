@@ -75,6 +75,7 @@
         <delete dir="${build}"/>
         <delete dir="${dist.doc}"/>
         <delete dir="${temp.dir}"/>
+        <delete dir="dist" />
 
         <delete file="${framework.lib}"/>
     </target>
@@ -214,6 +215,8 @@
         <unjar src="${stubparser.lib}" dest="${build}" />
         <unjar src="${javacutil.lib}" dest="${build}" />
         <unjar src="${dataflow.lib}" dest="${build}" />
+
+        <mkdir dir="dist" />
 
         <jar destfile="${framework.lib}" basedir="${build}" excludes="polyall/,tests/,lubglb/,jtreg/">
             <manifest>

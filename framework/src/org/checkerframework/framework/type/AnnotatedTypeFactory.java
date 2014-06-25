@@ -659,7 +659,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Adds @FromByteCode to methods and constructors declared in class files
+     * Adds @FromByteCode to methods, constructors, and fields declared in class files
      * that are not already annotated with @FromStubFile
      *
      * @param elt
@@ -671,8 +671,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
 
         if (elt.getKind() == ElementKind.CONSTRUCTOR ||
-                elt.getKind() == ElementKind.METHOD) {
-            // Only add @FromByteCode to Methods and Constructors
+                elt.getKind() == ElementKind.METHOD || elt.getKind() == ElementKind.FIELD) {
+            // Only add @FromByteCode to methods, constructors, and fields
             if (ElementUtils.isElementFromByteCode(elt)) {
                 Set<AnnotationMirror> annos = indexDeclAnnos.get(ElementUtils
                         .getVerboseName(elt));
@@ -2201,7 +2201,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /**
      * Returns true if the element appears in a stub file
-     * (Currently only works for methods and constructors)
+     * (Currently only works for methods, constructors, and fields)
      */
     public boolean isFromStubFile(Element element) {
         return this.getDeclAnnotation(element, FromStubFile.class) != null;
@@ -2210,7 +2210,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /**
      * Returns true if the element is from byte code
      * and the if the element did not appear in a stub file
-     * (Currently only works for methods and constructors )
+     * (Currently only works for methods, constructors, and fields)
      */
     public boolean isFromByteCode(Element element) {
         if (isFromStubFile(element)) return false;
