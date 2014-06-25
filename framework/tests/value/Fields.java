@@ -20,8 +20,8 @@ class Fields {
     }
 
     public void otherClassFields(){
-        @CharVal({56319}) char x = Character.MAX_HIGH_SURROGATE;
-        @ByteVal({16}) byte y = Character.FORMAT;
+        @IntVal({56319}) char x = Character.MAX_HIGH_SURROGATE;
+        @IntVal({16}) byte y = Character.FORMAT;
 
         @BoolVal({false}) boolean a = Boolean.FALSE;
         //:: error: (assignment.type.incompatible)
