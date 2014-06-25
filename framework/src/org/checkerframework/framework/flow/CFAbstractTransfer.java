@@ -676,6 +676,31 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
                 Matcher selfMatcher = selfPattern.matcher(s);
                 if (selfMatcher.matches()) {
                     s = flowExprContext.receiver.toString(); // it is possible that s == "this" after this call
+
+                    if (flowExprContext.receiver instanceof FieldAccess) {
+                        // This changes the receiver from the one expressed in the postcondition
+                        // declaration to the actual receiver at the site of the postcondition evaluation.
+
+                        // For example, it will ensure that in the call to myLock.lock(),
+                        // the receiver is myLock (and not the instance of foo):
+
+                        // public class ReentrantLock {
+                        //     @EnsuresLockHeld("this")
+                        //     void lock();
+                        // }
+
+                        // public class foo {
+                        //     ReentrantLock myLock = new ReentrantLock();
+                        //     void lockTheLock() {
+                        //         myLock.lock();
+                        //     }
+                        // }
+
+                        FieldAccess foo = ((FieldAccess) flowExprContext.receiver);
+                        Receiver bar = foo.getReceiver();
+
+                        flowExprContext = flowExprContext.changeReceiver(bar);
+                    }
                 }
 
                 r = FlowExpressionParseUtil.parse(
@@ -726,6 +751,28 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
                 Matcher selfMatcher = selfPattern.matcher(s);
                 if (selfMatcher.matches()) {
                     s = flowExprContext.receiver.toString(); // it is possible that s == "this" after this call
+
+                    if (flowExprContext.receiver instanceof FieldAccess) {
+                        // This changes the receiver from the one expressed in the postcondition
+                        // declaration to the actual receiver at the site of the postcondition evaluation.
+
+                        // For example, it will ensure that in the call to myLock.tryLock(),
+                        // the receiver is myLock (and not the instance of foo):
+
+                        // public class ReentrantLock {
+                        //     @EnsuresLockHeldIf(expression="this", result=true)
+                        //     boolean tryLock();
+                        // }
+
+                        // public class foo {
+                        //     ReentrantLock myLock = new ReentrantLock();
+                        //     boolean tryToLockTheLock() {
+                        //         return myLock.tryLock();
+                        //     }
+                        // }
+
+                        flowExprContext = flowExprContext.changeReceiver(((FieldAccess) flowExprContext.receiver).getReceiver());
+                    }
                 }
 
                 r = FlowExpressionParseUtil.parse(
