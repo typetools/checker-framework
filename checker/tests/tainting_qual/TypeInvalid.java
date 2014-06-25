@@ -1,3 +1,5 @@
+// @skip-tests  type.invalid is currently hard to support in the qualifier api
+
 // Test case for Issue 292:
 // https://code.google.com/p/checker-framework/issues/detail?id=292
 
@@ -6,7 +8,7 @@
 // We should also add a jtreg version of this test to
 // ensure that each error is only output once and in the right place.
 
-import org.checkerframework.checker.tainting.qual.*;
+import org.checkerframework.checker.experimental.tainting_qual.qual.*;
 
 abstract class TypeInvalid {
     // Duplication forbidden
