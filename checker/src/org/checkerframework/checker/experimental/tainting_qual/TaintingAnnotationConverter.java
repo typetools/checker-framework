@@ -1,4 +1,4 @@
-package org.checkerframework.checker.tainting;
+package org.checkerframework.checker.experimental.tainting_qual;
 
 import java.util.Collection;
 
@@ -10,8 +10,8 @@ import org.checkerframework.javacutil.AnnotationUtils;
 
 import org.checkerframework.qualframework.base.AnnotationConverter;
 
-import org.checkerframework.checker.tainting.qual.Tainted;
-import org.checkerframework.checker.tainting.qual.Untainted;
+import org.checkerframework.checker.experimental.tainting_qual.qual.Tainted;
+import org.checkerframework.checker.experimental.tainting_qual.qual.Untainted;
 
 
 public class TaintingAnnotationConverter implements AnnotationConverter<Tainting> {

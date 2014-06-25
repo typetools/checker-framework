@@ -1,4 +1,4 @@
-package org.checkerframework.checker.tainting;
+package org.checkerframework.checker.experimental.tainting_qual;
 
 import java.util.ArrayList;
 
