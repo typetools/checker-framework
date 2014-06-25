@@ -24,18 +24,18 @@ class Methods {
         @IntVal({ 'l' }) char j = e.charAt(k);
     }
 
-    // public static void Boolean() {
-    //     String a = "true";
-    //     @BoolVal({ true }) boolean b = Boolean.valueOf(a);
-    // }
+    public static void Boolean() {
+        String a = "true";
+        @BoolVal({ true }) boolean b = Boolean.valueOf(a);
+    }
 
     public static void Byte() {
         @IntVal({ 127 }) byte a = Byte.MAX_VALUE;
         @IntVal({ -128 }) byte b = Byte.MIN_VALUE;
 
-        // String c = "59";
-        // int d = 10;
-        // @IntVal({ 59 }) byte e = Byte.valueOf(c, d);
+        String c = "59";
+        int d = 10;
+        @IntVal({ 59 }) byte e = Byte.valueOf(c, d);
     }
 
     public static void Character() {
@@ -54,7 +54,7 @@ class Methods {
     public static void Float() {
         @IntVal({ Float.MIN_EXPONENT }) int a = Float.MIN_EXPONENT;
         String b = "59.32";
-        @FloatVal({ 59.32f }) float c = Float.valueOf(b);
+        @DoubleVal({ 59.32f }) float c = Float.valueOf(b);
     }
 
     public static void Integer() {
@@ -76,10 +76,10 @@ class Methods {
         @IntVal({ 53 }) short c = Short.valueOf(b);
     }
 
-    // public static void String() {
+    public static void String() {
 
-    //     @StringVal({ "herro" }) String a = "hello".replace('l', 'r');
-    //     //:: error: (assignment.type.incompatible)
-    //     @StringVal({ "hello" }) String b = "hello".replace('l', 'r');
-    // }
+        @StringVal({ "herro" }) String a = "hello".replace('l', 'r');
+        //:: error: (assignment.type.incompatible)
+        @StringVal({ "hello" }) String b = "hello".replace('l', 'r');
+    }
 }
