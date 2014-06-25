@@ -27,13 +27,9 @@ import org.checkerframework.common.value.qual.StaticallyExecutable;
 import org.checkerframework.common.value.qual.ArrayLen;
 import org.checkerframework.common.value.qual.BoolVal;
 import org.checkerframework.common.value.qual.BottomVal;
-import org.checkerframework.common.value.qual.ByteVal;
-import org.checkerframework.common.value.qual.CharVal;
 import org.checkerframework.common.value.qual.DoubleVal;
 import org.checkerframework.common.value.qual.FloatVal;
 import org.checkerframework.common.value.qual.IntVal;
-import org.checkerframework.common.value.qual.LongVal;
-import org.checkerframework.common.value.qual.ShortVal;
 import org.checkerframework.common.value.qual.StringVal;
 import org.checkerframework.common.value.qual.UnknownVal;
 import org.checkerframework.framework.qual.DefaultLocation;
@@ -71,13 +67,13 @@ import com.sun.source.util.TreePath;
  *         AnnotatedTypeFactory for the Value type system.
  * 
  */
-@TypeQualifiers({ ArrayLen.class, BoolVal.class, CharVal.class, DoubleVal.class, IntVal.class, StringVal.class,
-        BottomVal.class, UnknownVal.class, FloatVal.class, ShortVal.class, ByteVal.class, LongVal.class })
+@TypeQualifiers({ ArrayLen.class, BoolVal.class, DoubleVal.class, IntVal.class, StringVal.class,
+        BottomVal.class, UnknownVal.class, FloatVal.class })
 public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** Annotation constants */
-    protected final AnnotationMirror INTVAL, DOUBLEVAL, BOOLVAL, CHARVAL, ARRAYLEN, STRINGVAL, BOTTOMVAL, UNKNOWNVAL,
-            ANALYZABLE, SHORTVAL, BYTEVAL, LONGVAL, FLOATVAL;
+    protected final AnnotationMirror INTVAL, DOUBLEVAL, BOOLVAL, ARRAYLEN, STRINGVAL, BOTTOMVAL, UNKNOWNVAL,
+            ANALYZABLE, FLOATVAL;
 
     protected static final Set<Modifier> PUBLIC_STATIC_FINAL_SET = new HashSet<Modifier>(3);
 
@@ -103,13 +99,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         PUBLIC_STATIC_FINAL_SET.add(Modifier.FINAL);
         PUBLIC_STATIC_FINAL_SET.add(Modifier.STATIC);
         INTVAL = AnnotationUtils.fromClass(elements, IntVal.class);
-        CHARVAL = AnnotationUtils.fromClass(elements, CharVal.class);
         BOOLVAL = AnnotationUtils.fromClass(elements, BoolVal.class);
         ARRAYLEN = AnnotationUtils.fromClass(elements, ArrayLen.class);
         DOUBLEVAL = AnnotationUtils.fromClass(elements, DoubleVal.class);
-        SHORTVAL = AnnotationUtils.fromClass(elements, ShortVal.class);
-        LONGVAL = AnnotationUtils.fromClass(elements, LongVal.class);
-        BYTEVAL = AnnotationUtils.fromClass(elements, ByteVal.class);
         STRINGVAL = AnnotationUtils.fromClass(elements, StringVal.class);
         FLOATVAL = AnnotationUtils.fromClass(elements, FloatVal.class);
         BOTTOMVAL = AnnotationUtils.fromClass(elements, BottomVal.class);
@@ -118,26 +110,18 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         constantAnnotations = new ArrayList<AnnotationMirror>(9);
         constantAnnotations.add(DOUBLEVAL);
         constantAnnotations.add(INTVAL);
-        constantAnnotations.add(CHARVAL);
         constantAnnotations.add(BOOLVAL);
         constantAnnotations.add(STRINGVAL);
         constantAnnotations.add(BOTTOMVAL);
         constantAnnotations.add(ARRAYLEN);
         constantAnnotations.add(ANALYZABLE);
         constantAnnotations.add(FLOATVAL);
-        constantAnnotations.add(LONGVAL);
-        constantAnnotations.add(SHORTVAL);
-        constantAnnotations.add(BYTEVAL);
         constantAnnotations.add(UNKNOWNVAL);
 
         orderedNumberAnnotations = new ArrayList<AnnotationMirror>();
         orderedNumberAnnotations.add(DOUBLEVAL);
         orderedNumberAnnotations.add(FLOATVAL);
-        orderedNumberAnnotations.add(LONGVAL);
         orderedNumberAnnotations.add(INTVAL);
-        orderedNumberAnnotations.add(SHORTVAL);
-        orderedNumberAnnotations.add(BYTEVAL);
-        orderedNumberAnnotations.add(CHARVAL);
 
         coveredClassStrings = new HashSet<String>(19);
         coveredClassStrings.add("int");
@@ -253,18 +237,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     String anno = "org.checkerframework.common.value.qual.";
                     List<Number> valuesToCast;
 
-                    // lower is CharVal
-                    if (AnnotationUtils.areSameIgnoringValues(lower, CHARVAL)) {
-                        List<Character> charVals = AnnotationUtils.getElementValueArray(lower, "value", Character.class,
-                                true);
-
-                        valuesToCast = new ArrayList<Number>(charVals.size());
-                        for (Character c : charVals) {
-                            valuesToCast.add(new Integer(c.charValue()));
-                        }
-                    } else {
-                        valuesToCast = AnnotationUtils.getElementValueArray(lower, "value", Number.class, true);
-                    }
+                    valuesToCast = AnnotationUtils.getElementValueArray(lower, "value", Number.class, true);
 
                     HashSet<Object> newValues = new HashSet<Object>(AnnotationUtils.getElementValueArray(higher, "value",
                             Object.class, true));
@@ -276,29 +249,14 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         anno += "DoubleVal";
                     } else if (AnnotationUtils.areSameIgnoringValues(higher, INTVAL)) {
                         for (Number n : valuesToCast) {
-                            newValues.add(new Integer(n.intValue()));
+                            newValues.add(new Long(n.intValue()));
                         }
                         anno += "IntVal";
-                    } else if (AnnotationUtils.areSameIgnoringValues(higher, LONGVAL)) {
-                        for (Number n : valuesToCast) {
-                            newValues.add(new Long(n.longValue()));
-                        }
-                        anno += "LongVal";
                     } else if (AnnotationUtils.areSameIgnoringValues(higher, FLOATVAL)) {
                         for (Number n : valuesToCast) {
                             newValues.add(new Float(n.floatValue()));
                         }
                         anno += "FloatVal";
-                    } else if (AnnotationUtils.areSameIgnoringValues(higher, SHORTVAL)) {
-                        for (Number n : valuesToCast) {
-                            newValues.add(new Short(n.shortValue()));
-                        }
-                        anno += "ShortVal";
-                    } else if (AnnotationUtils.areSameIgnoringValues(higher, BYTEVAL)) {
-                        for (Number n : valuesToCast) {
-                            newValues.add(new Byte(n.byteValue()));
-                        }
-                        anno += "ByteVal";
                     }
 
                     return createAnnotation(anno, newValues);
@@ -358,16 +316,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // are number subtypes or chars, and if lhs is the higher of the two
             if (sorted != null && sorted[0] == lhs && isNumberAnnotation(sorted[1])) {
                 List<Number> rhsValues;
-                if (AnnotationUtils.areSameIgnoringValues(rhs, CHARVAL)) {
-                    List<Character> charVals = AnnotationUtils.getElementValueArray(rhs, "value", Character.class, true);
-
-                    rhsValues = new ArrayList<Number>(charVals.size());
-                    for (Character c : charVals) {
-                        rhsValues.add(new Integer(c.charValue()));
-                    }
-                } else {
-                    rhsValues = AnnotationUtils.getElementValueArray(rhs, "value", Number.class, true);
-                }
+                rhsValues = AnnotationUtils.getElementValueArray(rhs, "value", Number.class, true);
 
                 List<Number> lhsValues = AnnotationUtils.getElementValueArray(lhs, "value", Number.class, true);
 
@@ -471,7 +420,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         for (int i = 0; i < chars.length && allLiterals; i++) {
                             ExpressionTree e = initializers.get(i);
                             if (e.getKind() == Tree.Kind.INT_LITERAL) {
-                                chars[i] = (char) (((Integer) ((LiteralTree) initializers.get(i)).getValue()).intValue());
+                                chars[i] = (char) (((Long) ((LiteralTree) initializers.get(i)).getValue()).intValue());
                             } else {
                                 allLiterals = false;
                             }
@@ -519,9 +468,12 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
             AnnotationMirror dimType = getAnnotatedType(dimensions.get(0)).getAnnotationInHierarchy(INTVAL);
             if (AnnotationUtils.areSameIgnoringValues(dimType, INTVAL)) {
-                HashSet<Integer> lengths = new HashSet<Integer>(AnnotationUtils.getElementValueArray(dimType, "value",
-                        Integer.class, true));
+                List<Long> longLengths = AnnotationUtils.getElementValueArray(dimType, "value", Long.class, true);
 
+                HashSet<Integer> lengths = new HashSet<Integer>(longLengths.size());
+                for (Long l : longLengths){
+                    lengths.add(l.intValue());
+                }
                 AnnotationMirror newQual = createAnnotation("org.checkerframework.common.value.qual.ArrayLen", lengths);
                 type.replaceAnnotation(newQual);
             } else {
@@ -560,9 +512,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
                 // Handle Char Literal
                 else if (tree.getKind() == Tree.Kind.CHAR_LITERAL) {
-                    HashSet<Character> values = new HashSet<Character>();
-                    values.add((Character) tree.getValue());
-                    AnnotationMirror newQual = createAnnotation("org.checkerframework.common.value.qual.CharVal", values);
+                    HashSet<Long> values = new HashSet<Long>();
+                    values.add((long)((Character)tree.getValue()).charValue());
+                    // System.out.println("LITERAL: " + tree.getValue());
+                    AnnotationMirror newQual = createAnnotation("org.checkerframework.common.value.qual.IntVal", values);
                     type.replaceAnnotation(newQual);
 
                     return null;
@@ -598,8 +551,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     // createAnnotation("org.checkerframework.common.value.qual.CharVal",
                     // values);
                     // }else{
-                    HashSet<Integer> values = new HashSet<Integer>();
-                    values.add((Integer) tree.getValue());
+                    HashSet<Long> values = new HashSet<Long>();
+                    values.add(new Long((Integer)tree.getValue()));
                     newQual = createAnnotation("org.checkerframework.common.value.qual.IntVal", values);
                     // }
                     type.replaceAnnotation(newQual);
@@ -609,7 +562,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 else if (tree.getKind() == Tree.Kind.LONG_LITERAL) {
                     HashSet<Long> values = new HashSet<Long>();
                     values.add((Long) tree.getValue());
-                    AnnotationMirror newQual = createAnnotation("org.checkerframework.common.value.qual.LongVal", values);
+                    AnnotationMirror newQual = createAnnotation("org.checkerframework.common.value.qual.IntVal", values);
                     type.replaceAnnotation(newQual);
 
                     return null;
@@ -651,6 +604,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
                 if (!nonValueAnno(argType)) {
                     Class<?> argClass = getTypeValueClass(finalTypeString, tree);
+                    // System.out.println("ARGCLASS: " + argClass);
                     handleCast(tree.getExpression(), finalTypeString, argType);
 
                     AnnotationMirror argAnno = getValueAnnotation(argType);
@@ -698,13 +652,17 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (!nonValueAnno(lhsType) && !nonValueAnno(rhsType)) {
 
                 Class<?> argClass = null;
+                AnnotationMirror newAnno = null; 
 
                 // Non-Comparison Binary Operation
                 if (operation != Tree.Kind.EQUAL_TO && operation != Tree.Kind.NOT_EQUAL_TO
                         && operation != Tree.Kind.GREATER_THAN && operation != Tree.Kind.GREATER_THAN_EQUAL
                         && operation != Tree.Kind.LESS_THAN && operation != Tree.Kind.LESS_THAN_EQUAL) {
-                    argClass = getTypeValueClass(finalTypeString, tree);
+                    argClass = getClass(finalTypeString, tree);
+                    // argClass = getTypeValueClass(finalTypeString, tree);
                     handleBinaryCast(tree.getLeftOperand(), lhsType, tree.getRightOperand(), rhsType, finalTypeString);
+                    // System.out.println("BINARY: " + lhsType + " " + rhsType + " " + operation + " " + argClass);
+                    newAnno = evaluateBinaryOperator(lhsType, rhsType, operation.toString(), argClass, tree);
                 }
                 // Comparison Binary Operation We're okay to cast
                 // everything to DoubleVal *UNLESS* we're
@@ -713,23 +671,16 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 // non-double versions of comparisons in
                 // Operators.java
                 else {
-
                     if (AnnotationUtils.areSameIgnoringValues(getValueAnnotation(lhsType), STRINGVAL)) {
                         argClass = getAnnotationValueClass(getValueAnnotation(lhsType));
                     } else {
                         argClass = getTypeValueClass("double", tree);
-
                         handleBinaryCast(tree.getLeftOperand(), lhsType, tree.getRightOperand(), rhsType, "double");
                     }
+                    newAnno = evaluateComparison(lhsType, rhsType, operation.toString(), argClass, tree);
                 }
-                AnnotationMirror lhsAnno = getValueAnnotation(lhsType);
-                AnnotationMirror rhsAnno = getValueAnnotation(rhsType);
-
-                AnnotationMirror newAnno = evaluateBinaryOperator(lhsAnno, rhsAnno, operation.toString(), argClass, tree);
-
                 if (newAnno != null) {
                     type.replaceAnnotation(newAnno);
-
                     return null;
                 }
             }
@@ -755,13 +706,44 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             handleCast(rhs, finalTypeString, rhsType);
         }
 
+
+
+       private AnnotationMirror evaluateComparison(AnnotatedTypeMirror lhsType, AnnotatedTypeMirror rhsType,
+                String operation, Class<?> argClass, BinaryTree tree) {
+            try {
+                Class<?>[] argClasses = new Class<?>[] { argClass, argClass };
+                Method m = Operators.class.getMethod(operation, argClasses);
+  
+                List<?> lhsAnnoValues = AnnotationUtils.getElementValueArray(getValueAnnotation(lhsType), "value", argClass, true);
+                List<?> rhsAnnoValues = AnnotationUtils.getElementValueArray(getValueAnnotation(rhsType), "value", argClass, true);
+                ArrayList<Object> results = new ArrayList<Object>(lhsAnnoValues.size() * rhsAnnoValues.size());
+
+                // System.out.println("RHS: " + rhsType + " " + rhsAnnoValues.getClass());
+                // System.out.println("LHS: " + lhsType + " " + lhsAnnoValues.getClass());
+                // System.out.println("METHOD: " + m);
+                for (Object lhsO : lhsAnnoValues) {
+                    for (Object rhsO : rhsAnnoValues) {
+                        // System.out.println("comparing: " + lhsO.toString() + " " + rhsO.toString());
+                        results.add(m.invoke(null, new Object[] { lhsO, rhsO }));
+                    }
+                }
+                return resultAnnotationHandler(m.getReturnType(), results);
+            } catch (ReflectiveOperationException e) {
+                checker.report(Result.warning("operator.binary.evaluation.failed", operation, argClass), tree);
+                return null;
+            }
+        }
+
+
+
+
         /**
          * This method resolves a binary operator by converting it to a
          * reflective call to one of the operators defined in
          * BinaryOperators.java. This method's arguments need to be correct
          * (such as annotations not being UnknownVal or being of different value
          * annotation types) so be careful you are going to call this.
-         * 
+         * TODO
          * @param lhsAnno
          *            the value annotation of the LHS argument (Not UnknownVal)
          * @param rhsAnno
@@ -774,16 +756,22 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * 
          * @return
          */
-        private AnnotationMirror evaluateBinaryOperator(AnnotationMirror lhsAnno, AnnotationMirror rhsAnno,
+        private AnnotationMirror evaluateBinaryOperator(AnnotatedTypeMirror lhsType, AnnotatedTypeMirror rhsType,
                 String operation, Class<?> argClass, BinaryTree tree) {
             try {
                 Class<?>[] argClasses = new Class<?>[] { argClass, argClass };
                 Method m = Operators.class.getMethod(operation, argClasses);
 
-                List<?> lhsAnnoValues = AnnotationUtils.getElementValueArray(lhsAnno, "value", argClass, true);
-                List<?> rhsAnnoValues = AnnotationUtils.getElementValueArray(rhsAnno, "value", argClass, true);
+                List<?> lhsAnnoValues = getCastedValues(lhsType, argClass, tree);
+                    //AnnotationUtils.getElementValueArray(lhsAnno, "value", argClass, true);
+                List<?> rhsAnnoValues = getCastedValues(rhsType, argClass, tree);
+                    //AnnotationUtils.getElementValueArray(rhsAnno, "value", argClass, true);
                 ArrayList<Object> results = new ArrayList<Object>(lhsAnnoValues.size() * rhsAnnoValues.size());
 
+
+                // System.out.println("RHS: " + rhsType + " " + rhsAnnoValues.getClass());
+                // System.out.println("LHS: " + lhsType + " " + lhsAnnoValues.getClass());
+                // System.out.println("METHOD: " + m);
                 for (Object lhsO : lhsAnnoValues) {
                     for (Object rhsO : rhsAnnoValues) {
                         results.add(m.invoke(null, new Object[] { lhsO, rhsO }));
@@ -811,6 +799,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         @Override
         public Void visitMethodInvocation(MethodInvocationTree tree, AnnotatedTypeMirror type) {
             super.visitMethodInvocation(tree, type);
+            // System.out.println("INVOKING: " + tree + " " + type);
 
             if (isClassCovered(type) && methodIsStaticallyExecutable(TreeUtils.elementFromUse(tree))) {
                 ExpressionTree methodTree = tree.getMethodSelect();
@@ -1001,6 +990,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     else {
                         // If there were arguments, invoke with them
                         if (values.size() > 0) {
+                            System.out.print("invoking: " + method + " ( " + values + " ) ");
                             results.add(method.invoke(null, values.toArray()));
                         }
                         // Otherwise, invoke without them
@@ -1243,8 +1233,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             AnnotationMirror recAnno = getValueAnnotation(receiverType);
 
             if (AnnotationUtils.areSameIgnoringValues(recAnno, ARRAYLEN)) {
-                HashSet<Integer> lengthValues = new HashSet<Integer>(AnnotationUtils.getElementValueArray(recAnno, "value",
-                        Integer.class, true));
+                HashSet<Long> lengthValues = new HashSet<Long>(AnnotationUtils.getElementValueArray(recAnno, "value",
+                        Long.class, true));
 
                 return createAnnotation("org.checkerframework.common.value.qual.IntVal", lengthValues);
             } else {
@@ -1348,16 +1338,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         private Class<?> getAnnotationValueClass(AnnotationMirror anno) {
-            if (AnnotationUtils.areSameIgnoringValues(anno, CHARVAL)) {
-                return Character.class;
-            } else if (AnnotationUtils.areSameIgnoringValues(anno, INTVAL)) {
-                return Integer.class;
-            } else if (AnnotationUtils.areSameIgnoringValues(anno, LONGVAL)) {
+            if (AnnotationUtils.areSameIgnoringValues(anno, INTVAL)) {
                 return Long.class;
-            } else if (AnnotationUtils.areSameIgnoringValues(anno, SHORTVAL)) {
-                return Short.class;
-            } else if (AnnotationUtils.areSameIgnoringValues(anno, BYTEVAL)) {
-                return Byte.class;
             } else if (AnnotationUtils.areSameIgnoringValues(anno, FLOATVAL)) {
                 return Float.class;
             } else if (AnnotationUtils.areSameIgnoringValues(anno, DOUBLEVAL)) {
@@ -1388,19 +1370,19 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             switch (stringType) {
             case "int":
             case "java.lang.Integer":
-                return Integer.class;
+                return Long.class;
             case "long":
             case "java.lang.Long":
                 return Long.class;
             case "short":
             case "java.lang.Short":
-                return Short.class;
+                return Long.class;
             case "byte":
             case "java.lang.Byte":
-                return Byte.class;
+                return Long.class;
             case "char":
             case "java.lang.Character":
-                return Character.class;
+                return Long.class;
             case "double":
             case "java.lang.Double":
                 return Double.class;
@@ -1440,11 +1422,13 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return classList;
         }
 
+        private List<Object> getCastedValues(AnnotatedTypeMirror typeMirror, Tree tree) {
+            return getCastedValues(typeMirror, getClass(typeMirror.getUnderlyingType().toString(), tree), tree);
+        }
         /**
          * Extracts the list of values on an annotation as a List of Object
          * while ensuring the actual type of each element is the same type as
-         * the underlyingType of the typeMirror input (so an Integer returns a
-         * list of Integer, not Long)
+         * the underlyingType of the typeMirror input 
          * 
          * @param typeMirror
          *            the AnnotatedTypeMirror to pull values from and use to
@@ -1453,7 +1437,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * @return List of Object where each element is the same type as the
          *         underlyingType of typeMirror
          */
-        private List<Object> getCastedValues(AnnotatedTypeMirror typeMirror, Tree tree) {
+        private List<Object> getCastedValues(AnnotatedTypeMirror typeMirror, Class<?> underlyingType, Tree tree) {
             if (!nonValueAnno(typeMirror)) {
                 // Class<?> annoValueClass =
                 // getTypeValueClass(typeMirror.getUnderlyingType().toString());
@@ -1472,7 +1456,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 // and not Long for an int argument), so fix them if necessary
 
                 fixAnnotationValueObjectType(tempValues, annoValueClass,
-                        getClass(typeMirror.getUnderlyingType().toString(), tree));
+                                             underlyingType);
                 return tempValues;
             } else {
                 return null;
@@ -1522,32 +1506,37 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // Only need to do this if the annotation values were Doubles or
             // Longs because only these annotations apply to multiple types
 
-            // if (origClass == Long.class || origClass == Double.class){
+            if (origClass == Long.class || origClass == Double.class){
 
-            // if (newClass == Integer.class || newClass == int.class){
-            // for (int i = 0; i < listToFix.size(); i++){
-            // listToFix.set(i, new
-            // Integer(((Long)listToFix.get(i)).intValue()));
-            // }
-            // }
-            // else if (newClass == Short.class || newClass == short.class){
-            // for (int i = 0; i < listToFix.size(); i++){
-            // listToFix.set(i, new
-            // Short(((Long)listToFix.get(i)).shortValue()));
-            // }
-            // }
-            // else if (newClass == Byte.class || newClass == byte.class){
-            // for (int i = 0; i < listToFix.size(); i++){
-            // listToFix.set(i, new Byte(((Long)listToFix.get(i)).byteValue()));
-            // }
-            // }
-            // else if (newClass == Float.class || newClass == float.class){
-            // for (int i = 0; i < listToFix.size(); i++){
-            // listToFix.set(i, new
-            // Float(((Double)listToFix.get(i)).floatValue()));
-            // }
-            // }
-            // }
+                if (newClass == Integer.class || newClass == int.class){
+                    for (int i = 0; i < listToFix.size(); i++){
+                        listToFix.set(i, new
+                                      Integer(((Long)listToFix.get(i)).intValue()));
+                    }
+                }
+                else if (newClass == Short.class || newClass == short.class){
+                    for (int i = 0; i < listToFix.size(); i++){
+                        listToFix.set(i, new
+                                      Short(((Long)listToFix.get(i)).shortValue()));
+                    }
+                }
+                else if (newClass == Byte.class || newClass == byte.class){
+                    for (int i = 0; i < listToFix.size(); i++){
+                        listToFix.set(i, new Byte(((Long)listToFix.get(i)).byteValue()));
+                    }
+                }
+                else if (newClass == Float.class || newClass == float.class){
+                    for (int i = 0; i < listToFix.size(); i++){
+                        listToFix.set(i, new
+                                      Float(((Double)listToFix.get(i)).floatValue()));
+                    }
+                }
+                else if (newClass == Character.class || newClass == char.class){
+                    for (int i = 0; i < listToFix.size(); i++){
+                        listToFix.set(i, new Character((char)((Number)listToFix.get(i)).intValue()));
+                    }
+                }
+            }
             if (origClass == String.class && newClass == byte[].class) {
                 for (int i = 0; i < listToFix.size(); i++) {
                     listToFix.set(i, ((String) listToFix.get(i)).getBytes());
@@ -1613,37 +1602,19 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     floatVals.add((Float) o);
                 }
                 return createAnnotation("org.checkerframework.common.value.qual.FloatVal", floatVals);
-            } else if (resultClass == Integer.class || resultClass == int.class) {
-                HashSet<Integer> intVals = new HashSet<Integer>(results.size());
+            } else if (resultClass == Integer.class || resultClass == int.class || resultClass == Long.class || resultClass == long.class || resultClass == Short.class || resultClass == short.class || resultClass == Byte.class || resultClass == byte.class) {
+                HashSet<Long> intVals = new HashSet<Long>(results.size());
                 for (Object o : results) {
-                    intVals.add((Integer) o);
+                    intVals.add(((Number) o).longValue());
                 }
                 return createAnnotation("org.checkerframework.common.value.qual.IntVal", intVals);
-            } else if (resultClass == Short.class || resultClass == short.class) {
-                HashSet<Short> shortVals = new HashSet<Short>(results.size());
+            } else if(resultClass == char.class || resultClass == Character.class){
+                HashSet<Long> intVals = new HashSet<Long>(results.size());
                 for (Object o : results) {
-                    shortVals.add((Short) o);
+                    intVals.add(new Long( ((Character)o).charValue()));
                 }
-                return createAnnotation("org.checkerframework.common.value.qual.ShortVal", shortVals);
-            } else if (resultClass == Byte.class || resultClass == byte.class) {
-                HashSet<Byte> byteVals = new HashSet<Byte>(results.size());
-                for (Object o : results) {
-                    byteVals.add((Byte) o);
-                }
-                return createAnnotation("org.checkerframework.common.value.qual.ByteVal", byteVals);
-            } else if (resultClass == Long.class || resultClass == long.class) {
-                HashSet<Long> longVals = new HashSet<Long>(results.size());
-                for (Object o : results) {
-                    longVals.add((Long) o);
-                }
-                return createAnnotation("org.checkerframework.common.value.qual.LongVal", longVals);
-            } else if (resultClass == Character.class || resultClass == char.class) {
-                HashSet<Character> charVals = new HashSet<Character>(results.size());
-                for (Object o : results) {
-                    charVals.add((Character) o);
-                }
-                return createAnnotation("org.checkerframework.common.value.qual.CharVal", charVals);
-            } else if (resultClass == String.class) {
+                return createAnnotation("org.checkerframework.common.value.qual.IntVal", intVals);
+            }else if (resultClass == String.class) {
                 HashSet<String> stringVals = new HashSet<String>(results.size());
                 for (Object o : results) {
                     stringVals.add((String) o);
@@ -1689,32 +1660,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     }
                     anno += "StringVal";
                     alteredType.replaceAnnotation(createAnnotation(anno, newValues));
-                } else if (castTypeString.equals("char") && isNumberAnnotation(treeAnno)) {
-                    if (AnnotationUtils.areSameIgnoringValues(treeAnno, CHARVAL)) {
-                        alteredType.replaceAnnotation(treeAnno);
-                    } else {
-                        HashSet<Character> newValues = new HashSet<Character>();
-                        List<Number> valuesToCast = AnnotationUtils.getElementValueArray(treeAnno, "value", Number.class,
-                                true);
-                        for (Number n : valuesToCast) {
-                            newValues.add((char) n.intValue());
-                        }
-                        anno += "CharVal";
-                        alteredType.replaceAnnotation(createAnnotation(anno, newValues));
-                    }
-                } else {
+                }                 
+                else {
                     List<Number> valuesToCast;
-                    if (AnnotationUtils.areSameIgnoringValues(treeAnno, CHARVAL)) {
-                        List<Character> charVals = AnnotationUtils.getElementValueArray(treeAnno, "value", Character.class,
-                                true);
-
-                        valuesToCast = new ArrayList<Number>(charVals.size());
-                        for (Character c : charVals) {
-                            valuesToCast.add(new Integer(c.charValue()));
-                        }
-                    } else {
-                        valuesToCast = AnnotationUtils.getElementValueArray(treeAnno, "value", Number.class, true);
-                    }
+                    valuesToCast = AnnotationUtils.getElementValueArray(treeAnno, "value", Number.class, true);
 
                     HashSet<Object> newValues = new HashSet<Object>();
 
@@ -1727,7 +1676,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
                     else if (castTypeString.equals("int")) {
                         for (Number n : valuesToCast) {
-                            newValues.add(new Integer(n.intValue()));
+                            newValues.add(new Long(n.intValue()));
                         }
                         anno += "IntVal";
                     }
@@ -1736,7 +1685,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         for (Number n : valuesToCast) {
                             newValues.add(new Long(n.longValue()));
                         }
-                        anno += "LongVal";
+                        anno += "IntVal";
                     }
 
                     else if (castTypeString.equals("float")) {
@@ -1748,18 +1697,24 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
                     else if (castTypeString.equals("short")) {
                         for (Number n : valuesToCast) {
-                            newValues.add(new Short(n.shortValue()));
+                            newValues.add(new Long(n.shortValue()));
                         }
-                        anno += "ShortVal";
+                        anno += "IntVal";
                     }
 
                     else if (castTypeString.equals("byte")) {
                         for (Number n : valuesToCast) {
-                            newValues.add(new Byte(n.byteValue()));
+                            newValues.add(new Long(n.byteValue()));
                         }
-                        anno += "ByteVal";
+                        anno += "IntVal";
                     }
 
+                    else if (castTypeString.equals("char")) {
+                        for (Number n : valuesToCast) {
+                            newValues.add(new Long(n.intValue()));
+                        }
+                        anno += "IntVal";
+                    }
                     alteredType.replaceAnnotation(createAnnotation(anno, newValues));
                 }
             }

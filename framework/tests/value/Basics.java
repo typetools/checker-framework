@@ -18,10 +18,10 @@ class Basics {
         if (true) {
             a = 'b';
         }
-        @CharVal({ 'a', 'b' }) Character b = a;
+        @IntVal({ 'a', 'b' }) Character b = a;
 
         //:: error: (assignment.type.incompatible)
-        @CharVal({ 'a' }) Character c = a;
+        @IntVal({ 'a' }) Character c = a;
     }
 
     public void charTest() {
@@ -29,10 +29,10 @@ class Basics {
         if (true) {
             a = 'b';
         }
-        @CharVal({ 'a', 'b' }) char b = a;
+        @IntVal({ 'a', 'b' }) char b = a;
 
         //:: error: (assignment.type.incompatible)
-        @CharVal({ 'a' }) char c = a;
+        @IntVal({ 'a' }) char c = a;
     }
 
     public void DoubleTest() {

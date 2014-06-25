@@ -18,5 +18,5 @@ import org.checkerframework.framework.qual.TypeQualifier;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE_PARAMETER, ElementType.TYPE_USE })
 public @interface IntVal {
-    int[] value();
+    long[] value();
 }
