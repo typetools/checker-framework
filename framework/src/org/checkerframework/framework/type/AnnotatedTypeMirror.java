@@ -226,7 +226,7 @@ public abstract class AnnotatedTypeMirror {
      * Returns true if this type mirror represents a declaration, rather than a
      * use, of a type.
      *
-     * For example, <code>class List<T> { ... }</code> declares a new type
+     * For example, <code>class List&lt;T&gt; { ... }</code> declares a new type
      * {@code List<T>}, while {@code List<Integer>} is a use of the type.
      *
      * @return  true if this represents a declaration

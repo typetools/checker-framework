@@ -14,10 +14,10 @@ public interface ExtendedTypeDeclaration extends ExtendedTypeMirror {
      * instance. */
     ExtendedTypeMirror getEnclosingType();
     /**
-     * Returns the actual type arguments of this type. For a type nested within
-     * a parameterized type (such as
+     * Returns the type parameters declared by this type. For a type nested
+     * within a parameterized type (such as
      * <code>Outer&lt;String&gt;.Inner&lt;Number&gt;</code>), only the type
-     * arguments of the innermost type are included.
+     * parameters of the innermost type are included.
      */
     List<? extends ExtendedParameterDeclaration> getTypeParameters();
 }
