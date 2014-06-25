@@ -98,6 +98,9 @@ which project they belong to.
 \subsubsection{Nodes}
 \label{sec:node_classes}
 
+Dataflow doesn't actually work on trees; it works on Nodes. Nodes
+simplify writing a dataflow analysis by separating the dataflow
+analysis from the original source code.
 A Node class represents an individual operation of a program,
 including arithmetic operations, logical operations, method calls,
 variable references, array accesses, etc.  \autoref{tab:nodes} lists
@@ -1313,6 +1316,7 @@ transfer function to compute it from the initial store.
 
 
 \subsection{Answering Questions}
+\label{sec:answering-questions}
 After the flow analysis for a particular method has been computed,
 there are two kinds of information that have been computed.  Firstly,
 the node-value mapping stores an abstract value for every node, and
@@ -1537,11 +1541,26 @@ applies type qualifiers from method postconditions after calls.
 \subsection{Interaction of the Checker Framework and the Dataflow Analysis}
 \label{sec:flow-cf-interaction}
 
-The \code{AnnotatedTypeFactory} of a checker already implements how
-different annotations need to be combined to determine the type of a
-larger expression.  For instance, the Regex Checker can determine that
-the string concatenation of two regular expression string
-(\code{@Regex}) is itself a regular expression.
+This section describes how the dataflow analysis is integrated into the
+Checker Framework to enable flow-sensitive type checking.
+
+A main purpose of a type factory is to create an \code{AnnotatedTypeMirror}
+based on an input tree node. Using the results of the dataflow analysis,
+the type factory can return a more refined type than otherwise possible.
+
+Type factories that extend from \code{GeneralAnnotatedTypeFactory}
+and set the constructor parameter \code{useFlow} to true will automatically
+run dataflow analysis and use the result of the analysis when creating an
+\code{AnnotatedTypeMirror}.  The first time that a \code{GenericAnnotatedTypeFactory}
+instance visits a \code{ClassTree}, the type factory runs the dataflow analysis on all the field initializers of the class first, then the bodies of methods in
+the class, and then finally the dataflow analysis is
+ran recursively on the members of nested classes. The result of
+dataflow analysis are stored in the \code{GenericAnnotatedTypeFactory} instance.
+
+When creating an \code{AnnotatedTypeMirror} for a tree node, the type factory
+queries the result of the dataflow analysis to determine if a more refined
+type for the tree node was inferred by the analysis. This is the first
+type of query described in \autoref{sec:answering-questions}.
 
 \begin{workinprogress}
 I found the below section confusing.  I had a hard time putting my finger
@@ -1551,11 +1570,8 @@ those?  ``we'':  is that the analysis writer or the framework implementor
 (or the runtime system)?
 \end{workinprogress}
 
-The dataflow analysis will have to perform very similar operations for
-the transfer function for intermediary nodes.  To reuse the code in
-the \code{AnnotatedTypeFactory}, we use the following default
-implementation for all transfer methods, and let the Dataflow
-Framework interact with the factory in the following way.
+Dataflow itself uses the type factory to get the initial
+\code{AnnotatedTypeMirror} for a tree node in the following way.
 
 For a given node \code{n}
 \begin{itemize}
