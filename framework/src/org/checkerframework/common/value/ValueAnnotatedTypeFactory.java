@@ -990,7 +990,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     else {
                         // If there were arguments, invoke with them
                         if (values.size() > 0) {
-                            System.out.print("invoking: " + method + " ( " + values + " ) ");
+                            System.out.println("invoking: " + method + " ( " + values + " ) ");
                             results.add(method.invoke(null, values.toArray()));
                         }
                         // Otherwise, invoke without them

@@ -19,8 +19,7 @@ class Binaries {
         if (true) {
             e = '2';
         }
-        //:: warning: (cast.unsafe)
-        @CharVal({ '3', '4' }) char f = (char) (e + 2);
+        @IntVal({ '3', '4' }) char f = (char) (e + 2);
 
         String g = "A";
         if (true) {
@@ -47,8 +46,8 @@ class Binaries {
         if (true) {
             e = '3';
         }
-        //:: warning: (cast.unsafe)
-        @CharVal({ '0', '1' }) char f = (char) (e - 2);
+        
+        @IntVal({ '0', '1' }) char f = (char) (e - 2);
 
     }
 
@@ -65,14 +64,14 @@ class Binaries {
         }
         @DoubleVal({ 2.0, 4.0 }) double d = (double) (c * 2);
 
-        //:: warning: (cast.unsafe)
+       
         char e = (char) 25;
         if (true) {
-            //:: warning: (cast.unsafe)
+      
             e = (char) 26;
         }
-        //:: warning: (cast.unsafe)
-        @CharVal({ '2', '4' }) char f = (char) (e * 2);
+     
+        @IntVal({ '2', '4' }) char f = (char) (e * 2);
 
     }
 
@@ -89,14 +88,13 @@ class Binaries {
         }
         @DoubleVal({ 0.5, 1.0 }) double d = c / 2;
 
-        //:: warning: (cast.unsafe)
+    
         char e = (char) 96;
         if (true) {
-            //:: warning: (cast.unsafe)
             e = (char) 98;
         }
-        //:: warning: (cast.unsafe)
-        @CharVal({ '0', '1' }) char f = (char) (e / 2);
+
+        @IntVal({ '0', '1' }) char f = (char) (e / 2);
 
     }
 
@@ -113,14 +111,13 @@ class Binaries {
         }
         @DoubleVal({ 1.0, 2.0 }) double d = c % 3;
 
-        //:: warning: (cast.unsafe)
+
         char e = (char) 98;
         if (true) {
-            //:: warning: (cast.unsafe)
             e = (char) 99;
         }
-        //:: warning: (cast.unsafe)
-        @CharVal({ '0', '1' }) char f = (char) (e % 50);
+
+        @IntVal({ '0', '1' }) char f = (char) (e % 50);
 
     }
 
@@ -137,14 +134,14 @@ class Binaries {
         }
         @IntVal({ 0, 1 }) int d = c & 3;
 
-        //:: warning: (cast.unsafe)
+
         char e = (char) 48;
         if (true) {
-            //:: warning: (cast.unsafe)
+
             e = (char) 51;
         }
-        //:: warning: (cast.unsafe)
-        @CharVal({ '0', '2' }) char f = (char) (e & 50);
+
+        @IntVal({ '0', '2' }) char f = (char) (e & 50);
     }
 
     public void or() {
@@ -160,14 +157,13 @@ class Binaries {
         }
         @IntVal({ 7 }) int d = c | 3;
 
-        //:: warning: (cast.unsafe)
+
         char e = (char) 48;
         if (true) {
-            //:: warning: (cast.unsafe)
             e = (char) 51;
         }
-        //:: warning: (cast.unsafe)
-        @CharVal({ '1', '3' }) char f = (char) (e | 1);
+
+        @IntVal({ '1', '3' }) char f = (char) (e | 1);
     }
 
     public void xor() {
@@ -183,14 +179,14 @@ class Binaries {
         }
         @IntVal({ 7, 6 }) int d = c ^ 3;
 
-        //:: warning: (cast.unsafe)
+
         char e = (char) 48;
         if (true) {
-            //:: warning: (cast.unsafe)
+
             e = (char) 51;
         }
-        //:: warning: (cast.unsafe)
-        @CharVal({ '1', '2' }) char f = (char) (e ^ 1);
+
+        @IntVal({ '1', '2' }) char f = (char) (e ^ 1);
     }
 
     public void boolAnd() {
@@ -205,7 +201,6 @@ class Binaries {
         @BoolVal({ true }) boolean c = 1 > 0.5;
         @BoolVal({ true }) boolean d = 1 >= 1.0;
         @BoolVal({ true }) boolean e = 1 < 1.1f;
-        //:: warning: (cast.unsafe)
         @BoolVal({ true }) boolean f = (char) 2 <= 2.0;
     }
 
@@ -228,14 +223,12 @@ class Binaries {
         }
         @IntVal({ Integer.MAX_VALUE / 2 - 1, 1 }) int f = e >>> 2;
 
-        //:: warning: (cast.unsafe)
         char g = (char) 24;
         if (true) {
-            //:: warning: (cast.unsafe)
             g = (char) 25;
         }
-        //:: warning: (cast.unsafe)
-        @CharVal({ '0', '2' }) char h = (char) (g << 1);
+
+        @IntVal({ '0', '2' }) char h = (char) (g << 1);
     }
 
     public void chains() {
@@ -244,7 +237,7 @@ class Binaries {
         double c = 5;
 
         @DoubleVal({ 1 }) double d = a * b - c;
-        //:: warning: (cast.unsafe)
+
         @DoubleVal({ 3 }) double e = a * c - 2 * b - (char) 1;
     }
 }

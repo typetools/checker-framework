@@ -8,18 +8,18 @@ class Unaries {
 
         @IntVal({ -5 }) int c = ~4;
 
-        @LongVal({ -123456789 }) long d = ~123456788;
+        @IntVal({ -123456789 }) long d = ~123456788;
     }
 
     public void prefix() {
         byte a = 1;
-        @ByteVal({ 2 }) byte b = ++a;
+        @IntVal({ 2 }) byte b = ++a;
 
-        @ShortVal({ 3 }) short c = ++a;
+        @IntVal({ 3 }) short c = ++a;
 
         @IntVal({ 4 }) int d = ++a;
 
-        @LongVal({ 5 }) long e = ++a;
+        @IntVal({ 5 }) long e = ++a;
         ++a;
         e = --a;
         d = --a;
@@ -33,7 +33,7 @@ class Unaries {
         @IntVal({ 1 }) int c = a--;
         b = a++;
 
-        @LongVal({ 1 }) long d = a--;
+        @IntVal({ 1 }) long d = a--;
 
         double e = 0.25;
         @DoubleVal({ 0.25 }) double f = e++;
@@ -46,7 +46,7 @@ class Unaries {
         @IntVal({ 48 }) int a = +48;
         @IntVal({ -49 }) int b = -49;
 
-        @LongVal({ 34 }) long c = +34;
-        @LongVal({ -34 }) long d = -34;
+        @IntVal({ 34 }) long c = +34;
+        @IntVal({ -34 }) long d = -34;
     }
 }
