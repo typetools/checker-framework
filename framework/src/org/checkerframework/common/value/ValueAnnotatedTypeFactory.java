@@ -154,6 +154,10 @@ import com.sun.source.util.TreePath;
             builder.setValue("value", valuesList);
             return builder.build();
         } else {
+            if (values.size() >= MAX_VALUES) {
+                checker.report(Result.warning("too.many.values", MAX_VALUES),
+                        visitorState.getClassTree());
+            }
             return UNKNOWNVAL;
         }
     }
@@ -889,9 +893,14 @@ import com.sun.source.util.TreePath;
                             }
                         }
                     } catch (ClassNotFoundException e) {
-                        checker.report(
-                                Result.warning("class.find.failed", recType),
-                                tree);
+                        if (recType != null) {
+                            checker.report(Result.warning("class.find.failed",
+                                    recType), tree);
+                        } else {
+                            checker.report(Result.warning("class.find.failed",
+                                    (TreeUtils.elementFromUse(tree))
+                                            .getEnclosingElement()), tree);
+                        }
                     } catch (NoSuchMethodException e) {
                         checker.report(Result
                                 .warning("method.find.failed",
@@ -1346,7 +1355,7 @@ import com.sun.source.util.TreePath;
 
                 return resultAnnotationHandler(retType, result, tree);
             } catch (ClassNotFoundException e) {
-                checker.report(Result.warning("class.not.found", clzzname),
+                checker.report(Result.warning("class.find.failed", clzzname),
                         tree);
                 return null;
             } catch (ReflectiveOperationException e) {
