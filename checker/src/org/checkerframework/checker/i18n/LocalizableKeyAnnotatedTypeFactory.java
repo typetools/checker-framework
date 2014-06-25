@@ -1,8 +1,13 @@
 package org.checkerframework.checker.i18n;
 
+import com.sun.source.tree.Tree;
 import org.checkerframework.checker.i18n.qual.LocalizableKey;
 import org.checkerframework.checker.propkey.PropertyKeyAnnotatedTypeFactory;
+import org.checkerframework.checker.propkey.qual.PropertyKey;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.framework.type.ImplicitsTreeAnnotator;
+import org.checkerframework.framework.type.ListTreeAnnotator;
+import org.checkerframework.framework.type.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.TreeAnnotator;
 
 /**
@@ -19,6 +24,12 @@ public class LocalizableKeyAnnotatedTypeFactory extends
 
     @Override
     public TreeAnnotator createTreeAnnotator() {
-        return new KeyLookupTreeAnnotator(this, LocalizableKey.class);
+        ImplicitsTreeAnnotator implicitsTreeAnnotator = new ImplicitsTreeAnnotator(this);
+        implicitsTreeAnnotator.addTreeKind(Tree.Kind.NULL_LITERAL, BOTTOM);
+
+        return new ListTreeAnnotator(
+                new PropagationTreeAnnotator(this),
+                implicitsTreeAnnotator,
+                new KeyLookupTreeAnnotator(this, LocalizableKey.class));
     }
 }

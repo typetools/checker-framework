@@ -29,9 +29,9 @@ public interface ExtendedTypeMirror extends AnnotatedConstruct {
     /** Returns true iff this {@link ExtendedTypeMirror} represents a type
      * declaration, rather than a use of a type.  This can happen only because
      * the underlying annotation-based framework uses {@link
-     * AnnotatedTypeMirror}s for both declarations and uses of types.  Once the
-     * framework is fixed to no longer mix the two, this method will be
-     * removed.
+     * org.checkerframework.framework.type.AnnotatedTypeMirror}s for both
+     * declarations and uses of types.  Once the framework is fixed to no
+     * longer mix the two, this method will be removed.
      */
     boolean isDeclaration();
 }

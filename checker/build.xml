@@ -70,6 +70,7 @@
         <delete file="jdk/jdk9.jar"/>
 
         <delete dir="${dist}"/>
+        <delete dir="dist" />
     </target>
 
     <target name="clean-nojdk" description="Remove generated files, but not the jdkX.jar files">
@@ -273,6 +274,8 @@
         <!-- Only unjar the stubparser - everything else is recompiled. -->
         <unjar src="${stubparser.lib}" dest="${build}" />
 
+        <mkdir dir="dist" />
+
         <jar destfile="${checker.lib}" basedir="${build}" excludes="polyall/,tests/,lubglb/,jtreg/">
             <manifest>
                 <attribute name="Main-Class" value="org.checkerframework.framework.util.CheckerMain"/>
@@ -284,6 +287,8 @@
     <!-- TODO: include jdk dependencies for qualifiers. -->
     <target name="checker-qual-jar" depends="build"
             description="Create checker-qual.jar file for annotations">
+        <mkdir dir="dist" />
+
         <jar destfile="${checker.qual.lib}" basedir="${build}">
             <include name="**/qual/*"/>
             <!-- Exclude test-only qualifiers -->
@@ -878,6 +883,8 @@
 
     <target name="dist-nojdk" depends="-prep-dist,jar"
             description="Build checker.jar, checker-qual.jar WITHOUT updating jdkX.jar.  Move all relevant files to the binary directory.">
+
+        <mkdir dir="dist" />
 
         <copy tofile="dist/javac.jar" file="${javac.lib}"
               overwrite="true" failonerror="true" />

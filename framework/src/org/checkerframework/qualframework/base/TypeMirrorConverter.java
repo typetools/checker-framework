@@ -79,10 +79,6 @@ class TypeMirrorConverter<Q> {
      * annotated-to-qualified conversions. */
     private HashMap<Integer, Q> indexToQual;
 
-    /** Default qualifier to use for {@link QualifiedExecutableType}, when the
-     * underlying Checker Framework loses track of the actual annotation. */
-    Q executableDefault;
-
     @TypeQualifier
     @SubtypeOf({})
     public static @interface Key {
@@ -94,8 +90,7 @@ class TypeMirrorConverter<Q> {
     }
 
 
-    public TypeMirrorConverter(ProcessingEnvironment processingEnv, CheckerAdapter<Q> checkerAdapter,
-            Q executableDefault) {
+    public TypeMirrorConverter(ProcessingEnvironment processingEnv, CheckerAdapter<Q> checkerAdapter) {
         this.checkerAdapter = checkerAdapter;
         this.processingEnv = processingEnv;
         this.indexElement = TreeUtils.getMethod(Key.class.getCanonicalName(), "index", 0, processingEnv);
@@ -106,8 +101,6 @@ class TypeMirrorConverter<Q> {
 
         this.qualToIndex = new HashMap<>();
         this.indexToQual = new HashMap<>();
-
-        this.executableDefault = executableDefault;
     }
 
     /** Returns the type factory to use for building {@link
@@ -250,7 +243,7 @@ class TypeMirrorConverter<Q> {
      */
     private SimpleQualifiedTypeVisitor<Q, Void, AnnotatedTypeMirror> APPLY_COMPONENT_QUALIFIERS_VISITOR =
         new SimpleQualifiedTypeVisitor<Q, Void, AnnotatedTypeMirror>() {
-            private IdentityHashMap<AnnotatedTypeVariable, Void> seenATVs = new IdentityHashMap<>();
+            private HashMap<AnnotatedTypeVariable, Void> seenATVs = new HashMap<>();
 
             public Void visitArray(QualifiedArrayType<Q> qtm, AnnotatedTypeMirror rawAtm) {
                 AnnotatedArrayType atm = (AnnotatedArrayType)rawAtm;
@@ -332,21 +325,8 @@ class TypeMirrorConverter<Q> {
                         getTypeFactory().getUnderlying()
                             .getQualifiedTypeParameterBounds(qtm.getUnderlyingType());
                     try {
-                        if (seenATVs.size() == 1) {
-                            // We're at the top level.  Make sure both bounds
-                            // are filled in.
-                            applyQualifiers(bounds.getUpperBound(), atm.getUpperBound());
-                            applyQualifiers(bounds.getLowerBound(), atm.getLowerBound());
-                        } else {
-                            if (atm.getUpperBoundField() != null) {
-                                applyQualifiers(bounds.getUpperBound(),
-                                        atm.getUpperBoundField());
-                            }
-                            if (atm.getLowerBoundField() != null) {
-                                applyQualifiers(bounds.getLowerBound(),
-                                        atm.getLowerBoundField());
-                            }
-                        }
+                        applyQualifiers(bounds.getUpperBound(), atm.getUpperBound());
+                        applyQualifiers(bounds.getLowerBound(), atm.getLowerBound());
                     } finally {
                         seenATVs.remove(atm);
                     }

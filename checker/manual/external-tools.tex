@@ -9,7 +9,7 @@ build system, or from an IDE\@.  You can skip to the appropriate section:
 \begin{itemize}
 \item javac (Section~\ref{javac-installation})
 \item Ant (Section~\ref{ant-task})
-\item Maven (Section~\ref{maven-plugin})
+\item Maven (Section~\ref{maven})
 \item Gradle (Section~\ref{gradle})
 \item IntelliJ IDEA (Section~\ref{intellij})
 \item Eclipse (Section~\ref{eclipse})
@@ -54,13 +54,13 @@ use the last one.
   \item
     Option 1:
     Add directory
-    \code{.../checker-framework-1.8.1/checker/bin} to your path, \emph{before} any other
+    \code{.../checker-framework-1.8.2/checker/bin} to your path, \emph{before} any other
     directory that contains a \<javac> executable.  Now, whenever
     you run \code{javac}, you will use the updated compiler.  If you are
     using the bash shell, a way to do this is to add the following to your
     \verb|~/.profile| (or alternately \verb|~/.bash_profle| or \verb|~/.bashrc|) file:
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.8.1
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.8.2
   export PATH=${CHECKERFRAMEWORK}/checker/bin:${PATH}
 \end{Verbatim}
     then log out and back in to ensure that the environment variable
@@ -76,7 +76,7 @@ use the last one.
     \verb|~/.bashrc| file:
 % No Windows example because this doesn't work under Windows.
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.8.1
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.8.2
   alias javacheck='$CHECKERFRAMEWORK/checker/bin/javac'
 \end{Verbatim}
 
@@ -95,11 +95,11 @@ use the last one.
 
 \begin{Verbatim}
   # Unix
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.8.1
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.8.2
   alias javacheck='java -jar $CHECKERFRAMEWORK/checker/dist/checker.jar'
 
   # Windows
-  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-1.8.1\
+  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-1.8.2\
   doskey javacheck=java -jar %CHECKERFRAMEWORK%\checker\dist\checker.jar $*
 \end{Verbatim}
 
@@ -118,7 +118,7 @@ Framework \<javac> to your path).
 The output should be:
 
 \begin{Verbatim}
-  javac 1.8.0-jsr308-1.8.1
+  javac 1.8.0-jsr308-1.8.2
 \end{Verbatim}
 
 
@@ -290,19 +290,16 @@ run.  You can supply additional arguments to the checker as well.
 \end{enumerate}
 
 
-\section{Maven\label{maven-plugin}}
+\section{Maven\label{maven}}
+
+\textbf{Note: The Maven plugin
+was deprecated in favor of the following approach.  The plugin is no
+longer maintained and the final release was on June 2, 2014.}
 
 If you use the \ahref{\url{http://maven.apache.org/}}{Maven} tool,
 then you can specify pluggable type-checking as part of your build
-process.
-
-There are two ways to do this. The first is to point Maven to a
-script that executes the Checker Framework's copy of javac, and
-the second is to use the Maven plugin. \textbf{The Maven plugin
-is deprecated in favor of the first approach and will be removed
-as of July 1, 2014.}
-
-\subsection{Pointing Maven to the Checker Framework script\label{maven-javac-script}}
+process. This is done by pointing Maven to a script that
+makes Maven use the Type Annotations compiler.
 
 \begin{enumerate}
 
@@ -324,7 +321,7 @@ as of July 1, 2014.}
     </dependencies>
 \end{alltt}
 
-\item Point the Maven compiler plugin to the javac\_maven script. Find
+\item Direct the Maven compiler plugin to use the \code{javac\_maven} script. Find
 the existing reference to the \code{maven-compiler-plugin} within the \code{<plugins>}
 section or add it if necessary.
 
@@ -341,16 +338,17 @@ section or add it if necessary.
       </plugin>
 \end{alltt}
 
-On Windows, javac\_maven.bat is used instead of the javac\_maven script, but it is not necessary to
-include the .bat extension in the absolute path above.
+On Windows, the \code{javac\_maven.bat} script is automatically used instead
+of the \code{javac\_maven} script -- it is not necessary to include the .bat
+extension in the absolute path above.
 
 This script assumes that the Checker Framework is the only annotation processor being run.
-If this is not the case, please modify the javac\_maven script accordingly.
+If this is not the case, please modify the \code{javac\_maven} script accordingly.
 
-\item Create a text file named `argfile' in the same directory as the pom.xml and include in it the
-command-line parameters to pass to the Java compiler.
+\item Create a text file named \code{argfile} in the same directory as the \code{pom.xml}
+and include in it the command-line parameters to pass to the Java compiler.
 
-Example contents of argfile:
+Example contents of \code{argfile}:
 
 \begin{alltt}
 -processor org.checkerframework.checker.nullness.NullnessChecker
@@ -361,192 +359,13 @@ Example contents of argfile:
 -Xmaxwarns 10000
 \end{alltt}
 
-Due to limitations of the pom.xml syntax, some command-line options are difficult or impossible
-to pass via the pom.xml, hence the need for this file.
+Due to limitations of the \code{pom.xml} syntax, some command-line options are
+difficult or impossible to pass via the \code{pom.xml}, hence the need for this file.
 
-If you would like to call this file something other than 'argfile', please modify the javac\_maven
-script accordingly.
-
-\end{enumerate}
-
-\subsection{Using the Maven plugin\label{maven-deprecated-plugin}}
-
-\begin{enumerate}
-
-\item Add the repositories to your \code{pom.xml} file:
-
-\begin{Verbatim}
-    <repositories>
-        <repository>
-            <id>checker-framework-repo</id>
-            <url>http://types.cs.washington.edu/m2-repo</url>
-        </repository>
-    </repositories>
-    <pluginRepositories>
-        <pluginRepository>
-            <id>checker-framework-repo</id>
-            <url>http://types.cs.washington.edu/m2-repo</url>
-        </pluginRepository>
-    </pluginRepositories>
-\end{Verbatim}
-
-\urldef{\cfmavencentral}{\url}{http://search.maven.org/#search|ga|1|a%3A%22checker-framework%22}
-
-As an alternative to the
-\ahref{\url{http://types.cs.washington.edu/m2-repo/}}{repository},
-you can find the Checker Framework in Maven Central (MC):
-\ahref{\cfmavencentral}{\cfmavencentral}
-
-
-\item Declare a dependency on the type qualifier annotations.  Find the
-  existing \code{<dependencies>} section and add a new
-  \code{<dependencies>} item:
-
-\begin{alltt}
-    <dependencies>
-        ... existing <dependency> items ...
-
-        <!-- annotations from the Checker Framework: nullness, interning, locking, ... -->
-        <dependency>
-            <groupId>org.checkerframework</groupId>
-            <artifactId>checker-qual</artifactId>
-            <version>\ReleaseVersion{}</version>
-        </dependency>
-
-    </dependencies>
-\end{alltt}
-
-\item Attach the plugin to your build lifecycle by adding a new
-  \code{<plugin>} item within \code{<plugins>}, or a new \code{<plugins>}
-  item if necessary.
-
-\begin{alltt}
-    <build>
-        <plugins>
-            ... existing <plugin> items ...
-
-            <plugin>
-                <groupId>org.checkerframework</groupId>
-                <artifactId>checkerframework-maven-plugin</artifactId>
-                <version>\ReleaseVersion{}</version>
-                <executions>
-                    <execution>
-                        <!-- run the checkers after compilation; this can also be any later phase -->
-                        <phase>process-classes</phase>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <!-- required configuration options -->
-                    <!-- a list of processors to run -->
-                    <processors>
-                        <processor>org.checkerframework.checker.nullness.NullnessChecker</processor>
-                        <processor>org.checkerframework.checker.interning.InterningChecker</processor>
-                    </processors>
-                    <!-- optional configuration options go here -->
-                </configuration>
-              </plugin>
-        </plugins>
-    </build>
-\end{alltt}
-
-The above example attaches the "check" goal to the "process-lifecycle" phase which occurs directly after
-the "compile" phase (see \url{http://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html}).
-This means that any Maven target that exercises that phase will also run the Checker Framework
-(e.g., \<mvn package>, \<mvn verify>).
-
-To run only checking:
-\code{mvn checkerframework:check}
-
-\item Add optional parameters
-
-Within the configuration element you can add a number of parameters.
-
-\begin{Verbatim}
-    <procOnly>false</procOnly>
-\end{Verbatim}
-By default, the Checker Framework Maven plugin will only check source files but will not produce
-class files for the source files it checks (see \<-proc:only> at \url{http://docs.oracle.com/javase/6/docs/technotes/tools/solaris/javac.html}).
-Setting \code{procOnly} to false will cause the Checker Framework compiler to generate class files.
-Note: If your Maven project's output directory has not been created then the plugin will attempt to
-create it and all required directories preceding it.  The check task will fail
-in the event that these directories cannot be created.
-
-You may want to check only a subset of source files in your project.  To do so you can use the \code{includes} and \code{excludes}
-elements using the standard Maven syntax.  The semantics of including/excluding files are also described
-by the DirectoryScanner documentation found at:
-\url{http://plexus.codehaus.org/plexus-utils/apidocs/org/codehaus/plexus/util/DirectoryScanner.html} (see setIncludes/setExcludes)
-
-\begin{Verbatim}
-    <!-- a list of patterns to include, in the standard Maven syntax; defaults to **/*.java -->
-    <includes>
-        <include>org/company/important/**/*.java</include>
-    </includes>
-    <!-- a list of patterns to exclude, in the standard Maven syntax; defaults to an empty list -->
-    <excludes>
-        <exclude>org/company/notimportant/**/*.java</exclude>
-    </excludes>
-\end{Verbatim}
-
-By default, an error reported by the Checker Framework Maven plugin will cause your build to fail.
-Maven also occasionally causes a build to fail when it encounters a message it does not recognize,
-even if that message is not an error or a warning. To prevent a build from failing and still produce
-error and warning output, set \code{failOnError} to false.
-
-\begin{Verbatim}
-    <failOnError>false</failOnError>
-\end{Verbatim}
-
-Errors reported by the Checker Framework Maven plugin use a format similar to the Maven compiler plugin. If
-you want to see the exact output of the Checker Framework compiler instead, use the following option:
-
-\begin{Verbatim}
-    <useJavacOutput>true</useJavacOutput>
-\end{Verbatim}
-
-You may want to run the Checker Framework using a Java version that differs from the version running Maven.  The
-\code{executable} element specifies a Java executable to use when running the Checker Framework.
-
-\begin{Verbatim}
-    <executable>/usr/bin/java</executable>
-\end{Verbatim}
-
-The version of the Checker Framework run by the Maven plugin will share the same version as the Maven plugin
-by default.  That is, if you are using the Checker Framework Maven plugin version \ReleaseVersion{} then it will run the
-Checker Framework version \ReleaseVersion{} when checking source code.  However, you can specify an earlier
-or later version of the Checker Framework using the \code{checkerFrameworkVersion} element.
-Note: The Checker Framework Maven plugin will only work with Checker Framework versions 1.5.0 and higher.
-
-\begin{Verbatim}
-    <checkerFrameworkVersion>1.6.2-johndoe</checkerFrameworkVersion>
-\end{Verbatim}
-
-To disable the Checker Framework check without removing it from your pom file you can use the \code{skip} option.
-\begin{Verbatim}
-    <skip>true</skip>
-\end{Verbatim}
-
-Finally, the Checker Framework compiler is an extension of the javac compiler and therefore accepts any parameter
-that can be provided to javac or the JVM.  To provide javac parameters you can use the \code{javacParams}
-element.  To provide JVM arguments you can use the \code{javaParams} element.
-
-\begin{Verbatim}
-    <!-- additional parameters passed to the Java compiler -->
-    <javacParams>-Alint</javacParams>
-    <!-- additional parameters to pass to the forked JVM -->
-    <javaParams>-Xdebug</javaParams>
-\end{Verbatim}
+If you would like to call this file something other than \code{argfile},
+please modify the \code{javac\_maven} script accordingly.
 
 \end{enumerate}
-
-You can find an example Maven project that uses the Checker Framework Maven plugin at:
-\url{http://types.cs.washington.edu/checker-framework/current/mvn-examples.zip}
-
-The plugin was contributed by Adam Warski.
-% [Thanks Adam!]
-
 
 \section{Gradle\label{gradle}}
 
