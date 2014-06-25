@@ -12,16 +12,12 @@ public class TestTreeKinds {
   Object foo = new Object();
 
   @EnsuresLockHeld("lock")
-  // Temporary while I investigate why this is failing in Jenkins and not locally
-  //:: error: (contracts.postcondition.not.satisfied)
   void lockTheLock() {
     lock.lock();
   }
 
   @EnsuresLockHeldIf(expression="lock",result=true)
   boolean tryToLockTheLock() {
-    // Temporary while I investigate why this is failing in Jenkins and not locally
-    //:: error: (contracts.conditional.postcondition.not.satisfied)
     return lock.tryLock();
   }
 
