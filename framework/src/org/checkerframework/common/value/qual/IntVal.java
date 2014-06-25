@@ -10,7 +10,7 @@ import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
  * 
- * TODO Integer or int value
+ * Annotation for byte, short, char, int and long types
  * 
  */
 @TypeQualifier
