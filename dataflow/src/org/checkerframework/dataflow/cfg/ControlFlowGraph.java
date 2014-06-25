@@ -4,6 +4,9 @@ package org.checkerframework.dataflow.cfg;
 import org.checkerframework.checker.nullness.qual.Nullable;
 */
 
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Tree;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.Block.BlockType;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
@@ -14,11 +17,14 @@ import org.checkerframework.dataflow.cfg.block.SpecialBlockImpl;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 
-import java.util.*;
-
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.Tree;
+import java.util.Collections;
+import java.util.Deque;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
+import java.util.Set;
 
 /**
  * A control flow graph (CFG for short) of a single method.
@@ -165,7 +171,7 @@ public class ControlFlowGraph {
         Set<Block> visited = new HashSet<>();
         Deque<Block> worklist = new LinkedList<>();
         worklist.add(entryBlock);
-        while (worklist.size() > 0) {
+        while (!worklist.isEmpty()) {
             Block cur = worklist.getLast();
             if (visited.contains(cur)) {
                 dfsOrderResult.add(cur);
