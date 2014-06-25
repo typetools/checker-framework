@@ -46,7 +46,7 @@ class Binaries {
         if (true) {
             e = '3';
         }
-        
+
         @IntVal({ '0', '1' }) char f = (char) (e - 2);
 
     }
@@ -64,13 +64,12 @@ class Binaries {
         }
         @DoubleVal({ 2.0, 4.0 }) double d = (double) (c * 2);
 
-       
         char e = (char) 25;
         if (true) {
-      
+
             e = (char) 26;
         }
-     
+
         @IntVal({ '2', '4' }) char f = (char) (e * 2);
 
     }
@@ -88,7 +87,6 @@ class Binaries {
         }
         @DoubleVal({ 0.5, 1.0 }) double d = c / 2;
 
-    
         char e = (char) 96;
         if (true) {
             e = (char) 98;
@@ -110,7 +108,6 @@ class Binaries {
             c = 5.0;
         }
         @DoubleVal({ 1.0, 2.0 }) double d = c % 3;
-
 
         char e = (char) 98;
         if (true) {
@@ -134,7 +131,6 @@ class Binaries {
         }
         @IntVal({ 0, 1 }) int d = c & 3;
 
-
         char e = (char) 48;
         if (true) {
 
@@ -157,7 +153,6 @@ class Binaries {
         }
         @IntVal({ 7 }) int d = c | 3;
 
-
         char e = (char) 48;
         if (true) {
             e = (char) 51;
@@ -178,7 +173,6 @@ class Binaries {
             c = 5;
         }
         @IntVal({ 7, 6 }) int d = c ^ 3;
-
 
         char e = (char) 48;
         if (true) {
