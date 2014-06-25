@@ -18,10 +18,15 @@ import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlock;
 import org.checkerframework.dataflow.cfg.block.SpecialBlock;
 import org.checkerframework.dataflow.cfg.node.Node;
 
-import java.util.*;
-import java.util.Map.Entry;
-
 import javax.lang.model.type.TypeMirror;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Queue;
+import java.util.Set;
 
 /**
  * Generate a graph description in the DOT language of a control graph.
@@ -31,6 +36,13 @@ import javax.lang.model.type.TypeMirror;
  */
 public class CFGDOTVisualizer {
 
+    /**
+     * Output a graph description in the DOT language, representing the control
+     * flow graph starting at <code>entry</code>. Does not output verbose information
+     * or stores at the beginning of basic blocks.
+     *
+     * @see #visualize(ControlFlowGraph, Block, Analysis, boolean)
+     */
     public static String visualize(ControlFlowGraph cfg, Block entry) {
         return visualize(cfg, entry, null, false);
     }
@@ -48,6 +60,8 @@ public class CFGDOTVisualizer {
      *            from <code>entry</code> and per-node information for value
      *            producing {@link Node}s. Can also be <code>null</code> to
      *            indicate that this information should not be output.
+     * @param verbose
+     *            Add more output to the CFG description.
      * @return String representation of the graph in the DOT language.
      */
     public static <A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<A, S>> String visualize(
