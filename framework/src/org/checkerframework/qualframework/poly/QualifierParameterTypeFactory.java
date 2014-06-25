@@ -222,7 +222,7 @@ public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedT
             newParams.put(name, newValue);
         }
 
-        return value.accept(new SetQualifierVisitor<>(), new QualParams<>(newParams));
+        return SetQualifierVisitor.apply(value, new QualParams<>(newParams));
     }
 
 
