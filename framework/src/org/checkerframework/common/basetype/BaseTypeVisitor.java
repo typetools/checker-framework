@@ -949,7 +949,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
                     AnnotationMirror inferredAnno = value == null ? null : value
                             .getType().getAnnotationInHierarchy(anno);
-                    if (!checkExpressionAllowed(tree, expr, flowExprContext) &&
+                    if (!checkExpressionAllowed(tree, expr, flowExprContext) ||
                         !checkContract(expr, anno, inferredAnno, store)) {
 
                         checker.report(Result.failure(
