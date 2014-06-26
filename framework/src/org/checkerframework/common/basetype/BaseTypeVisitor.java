@@ -889,7 +889,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             if (!atypeFactory.isSupportedQualifier(anno)) {
                 return;
             }
-            String fieldName = null;
 
             if (flowExprContext == null) {
                 Node nodeNode = atypeFactory.getNodeForTree(tree);
@@ -906,8 +905,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
                     flowExprContext = new FlowExpressionContext(
                             internalReceiver, null, atypeFactory);
-
-                    fieldName = ((FieldAccessNode) nodeNode).getFieldName();
                 }
                 else if (nodeNode instanceof LocalVariableNode) {
                     // Adapted from org.checkerframework.dataflow.cfg.CFGBuilder.CFGTranslationPhaseOne.visitVariable
@@ -942,36 +939,22 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     // Try local variables first
                     CFAbstractValue<?> value = store.getValueOfLocalVariableByName(s);
 
-                    boolean theFieldIsTheLock = false;
-
                     if (value == null) // Not a recognized local variable
                     {
                         expr = FlowExpressionParseUtil.parse(expression,
                                 flowExprContext, getCurrentPath());
-
-                        if (fieldName != null)
-                        {
-                            FlowExpressions.Receiver fieldExpr = FlowExpressionParseUtil.parse(fieldName,
-                                    flowExprContext, getCurrentPath());
-
-                            if (fieldExpr.equals(expr)) {
-                                // Avoid issuing warnings when accessing the field that is guarding the receiver.
-                                // e.g. avoid issuing a warning when accessing bar below:
-                                // void foo(@GuardedBy("bar") myClass this){ synchronized(bar){ ... }}
-                                theFieldIsTheLock = true;
-                            }
-                        }
 
                         value = store.getValue(expr);
                     }
 
                     AnnotationMirror inferredAnno = value == null ? null : value
                             .getType().getAnnotationInHierarchy(anno);
-                    if (!theFieldIsTheLock &&
+                    if (!checkExpressionAllowed(tree, expr, flowExprContext) &&
                         !checkContract(expr, anno, inferredAnno, store)) {
 
                         checker.report(Result.failure(
                                 methodCall ? "contracts.precondition.not.satisfied" : "contracts.precondition.not.satisfied.field",
+                                tree.toString(),
                                 expr == null ? expression : expr.toString()), tree);
                     }
                 } catch (FlowExpressionParseException e) {
@@ -979,6 +962,23 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 }
             }
         }
+    }
+
+    /**
+     * Additional checks to ensure that a condition with
+     * given expression {@code expr} is valid for the
+     * tree {@code tree} under the context {@code flowExprContext}.
+     *
+     *  @param tree The tree that is being analyzed.
+     *  @param expr The expression condition to consider.
+     *  @param flowExprContext The current context.
+     *
+     *  @return Whether the expression is valid.
+     */
+    protected boolean checkExpressionAllowed(Tree tree, FlowExpressions.Receiver expr, FlowExpressionContext flowExprContext) {
+        // Intended to be overridden, but code may be added here.
+
+        return true;
     }
 
     /**
